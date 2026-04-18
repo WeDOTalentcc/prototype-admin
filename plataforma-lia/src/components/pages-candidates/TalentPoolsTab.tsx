@@ -3,7 +3,7 @@
 import React, { useState } from"react"
 import { Database, Plus, Users, Bot, ArrowRight } from"lucide-react"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   textStyles, cardStyles, badgeStyles, buttonStyles,
@@ -113,7 +113,7 @@ function PoolCard({ pool, onClick }: { pool: TalentPoolSummary; onClick: () => v
               </p>
             )}
           </div>
-          <Badge className={status.style}>{status.label}</Badge>
+          <Chip variant="neutral" muted className={status.style}>{status.label}</Chip>
         </div>
 
         {/* Stats row */}

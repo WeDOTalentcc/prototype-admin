@@ -2,7 +2,7 @@
 
 import { textStyles, badgeStyles } from '@/lib/design-tokens'
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   GraduationCap, Award, Languages, DollarSign,
   User, Home, MapPin
@@ -110,9 +110,9 @@ function ProfileLanguagesCard({ languagesData }: { languagesData: LanguageEntry[
                 {lang.language}
               </span>
               {lang.proficiency && (
-                <Badge className="text-xs px-1.5 py-0 h-4 bg-lia-interactive-active text-lia-text-primary border-lia-border-default font-semibold">
+                <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4 bg-lia-interactive-active text-lia-text-primary border-lia-border-default font-semibold">
                   {lang.proficiency}
-                </Badge>
+                </Chip>
               )}
             </div>
           ))
@@ -197,59 +197,59 @@ function ProfilePreferencesCard({ candidate }: { candidate: Record<string, unkno
         {!!candidate.gender && (
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>Gênero</span>
-            <Badge className={badgeStyles.default}>
+            <Chip variant="neutral" muted className={badgeStyles.default}>
               {candidate.gender as string}
-            </Badge>
+            </Chip>
           </div>
         )}
         {!!(candidate.work_model_preference || candidate.workModelPreference || candidate.workModel) && (
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>Modelo de Trabalho</span>
-            <Badge className={badgeStyles.default}>
+            <Chip variant="neutral" muted className={badgeStyles.default}>
               {(candidate.work_model_preference || candidate.workModelPreference || candidate.workModel) as string}
-            </Badge>
+            </Chip>
           </div>
         )}
         {!!(candidate.contract_type_preference || candidate.contractTypePreference || candidate.contractType) && (
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>Tipo de Contrato</span>
-            <Badge className={badgeStyles.default}>
+            <Chip variant="neutral" muted className={badgeStyles.default}>
               {(candidate.contract_type_preference || candidate.contractTypePreference || candidate.contractType) as string}
-            </Badge>
+            </Chip>
           </div>
         )}
         {candidate.is_remote !== undefined && (
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>Aceita Remoto</span>
-            <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.is_remote ? '' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
+            <Chip variant="neutral" muted className={`text-xs px-1.5 py-0 h-4 ${candidate.is_remote ? '' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
               {candidate.is_remote ? 'Sim' : 'Não'}
-            </Badge>
+            </Chip>
           </div>
         )}
         {(candidate.willing_to_relocate !== undefined || candidate.willingToRelocate !== undefined) && (
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>Aceita Mudança</span>
-            <Badge className={`text-xs px-1.5 py-0 h-4 ${(candidate.willing_to_relocate ?? candidate.willingToRelocate) ? '' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
+            <Chip variant="neutral" muted className={`text-xs px-1.5 py-0 h-4 ${(candidate.willing_to_relocate ?? candidate.willingToRelocate) ? '' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
               {(candidate.willing_to_relocate ?? candidate.willingToRelocate) === true ? 'Sim' : 
                (candidate.willing_to_relocate ?? candidate.willingToRelocate) === false ? 'Não' : 
                String(candidate.willing_to_relocate ?? candidate.willingToRelocate)}
-            </Badge>
+            </Chip>
           </div>
         )}
         {candidate.mobility !== undefined && (
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>Disponibilidade Viagens</span>
-            <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.mobility ? '' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
+            <Chip variant="neutral" muted className={`text-xs px-1.5 py-0 h-4 ${candidate.mobility ? '' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
               {candidate.mobility === true ? 'Sim' : candidate.mobility === false ? 'Não' : String(candidate.mobility)}
-            </Badge>
+            </Chip>
           </div>
         )}
         {candidate.communication_consent !== undefined && (
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>Consentimento LGPD</span>
-            <Badge className={`text-xs px-1.5 py-0 h-4 ${candidate.communication_consent ? '' : ''}`}>
+            <Chip variant="neutral" muted className={`text-xs px-1.5 py-0 h-4 ${candidate.communication_consent ? '' : ''}`}>
               {candidate.communication_consent ? '✓ Consentido' : '✗ Não consentido'}
-            </Badge>
+            </Chip>
           </div>
         )}
       </CardContent>

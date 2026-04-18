@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Bell, AlertTriangle, AlertCircle, Info, Briefcase, Clock, Brain } from"lucide-react"
 import { getAlertSeverityStyle, getSeverityLabel } from"../task-helpers"
@@ -36,29 +36,29 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
           <div className="flex items-center gap-2">
             <Bell className="w-3.5 h-3.5 text-amber-500" />
             <CardTitle className={`${textStyles.label} font-semibold text-lia-text-primary`}>Alertas Ativos</CardTitle>
-            <Badge variant="outline" className="text-xs font-inter">
+            <Chip variant="neutral" className="text-xs font-inter">
               {activeAlerts.length}
-            </Badge>
+            </Chip>
           </div>
           <div className="flex items-center gap-1.5">
-            <Badge
+            <Chip
               variant="danger"
               className="text-xs font-medium"
             >
               {activeAlerts.filter(a => a.severity === 'critical' || a.severity === 'high').length} Alto/Crítico
-            </Badge>
-            <Badge
+            </Chip>
+            <Chip
               variant="warning"
               className="text-xs font-medium"
             >
               {activeAlerts.filter(a => a.severity === 'medium').length} Médio
-            </Badge>
-            <Badge
+            </Chip>
+            <Chip
               variant="info"
               className="text-xs font-medium"
             >
               {activeAlerts.filter(a => a.severity === 'low').length} Baixo
-            </Badge>
+            </Chip>
           </div>
         </div>
       </CardHeader>
@@ -84,11 +84,11 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
                       <h4 className="text-xs font-inter font-semibold text-lia-text-primary">
                         {alert.title}
                       </h4>
-                      <Badge
+                      <Chip variant="neutral" muted
                         className={`border-0 text-xs py-0 px-1.5 font-medium ${getAlertSeverityStyle(alert.severity)}`}
                       >
                         {getSeverityLabel(alert.severity)}
-                      </Badge>
+                      </Chip>
                     </div>
                     <p className="text-xs font-open-sans text-lia-text-primary mb-1 line-clamp-1">
                       {alert.description}

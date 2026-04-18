@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback } from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   Sheet,
@@ -181,38 +181,38 @@ export function IntegrationDetailDrawer({
               </SheetDescription>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {resolvedStatus ==="connected" ? (
-                  <Badge variant="success" className="text-[10px] gap-1 px-2 py-0.5">
+                  <Chip variant="success" className="text-[10px] gap-1 px-2 py-0.5">
                     <CheckCircle2 className="w-3 h-3" />
                     Conectado
-                  </Badge>
+                  </Chip>
                 ) : isComingSoon ? (
-                  <Badge variant="secondary" className="text-[10px] gap-1 px-2 py-0.5">
+                  <Chip variant="neutral" muted className="text-[10px] gap-1 px-2 py-0.5">
                     <Clock className="w-3 h-3" />
                     Em breve
-                  </Badge>
+                  </Chip>
                 ) : (
-                  <Badge variant="outline" className="text-[10px] gap-1 px-2 py-0.5 text-lia-text-secondary">
+                  <Chip variant="neutral" className="text-[10px] gap-1 px-2 py-0.5 text-lia-text-secondary">
                     <Settings className="w-3 h-3" />
                     Não configurado
-                  </Badge>
+                  </Chip>
                 )}
                 {(isActivePrimary || isPrimaryProvider) && (
-                  <Badge variant="info" className="text-[10px] gap-1 px-2 py-0.5">
+                  <Chip variant="info" className="text-[10px] gap-1 px-2 py-0.5">
                     <Zap className="w-3 h-3" />
                     Provedor ativo
-                  </Badge>
+                  </Chip>
                 )}
                 {isAiProvider && isUsingOwnKey && (
-                  <Badge variant="default" className="text-[10px] gap-1 px-2 py-0.5">
+                  <Chip variant="neutral" muted className="text-[10px] gap-1 px-2 py-0.5">
                     <Key className="w-3 h-3" />
                     Chave própria
-                  </Badge>
+                  </Chip>
                 )}
                 {isAiProvider && !isUsingOwnKey && (
-                  <Badge variant="outline" className="text-[10px] gap-1 px-2 py-0.5 text-lia-text-tertiary">
+                  <Chip variant="neutral" className="text-[10px] gap-1 px-2 py-0.5 text-lia-text-tertiary">
                     <ShieldCheck className="w-3 h-3" />
                     Chave do sistema
-                  </Badge>
+                  </Chip>
                 )}
               </div>
             </div>
@@ -236,9 +236,9 @@ export function IntegrationDetailDrawer({
             <div className="flex flex-wrap gap-2">
               {integration.capabilities.map((cap) => (
                 <div key={cap.name} className="group relative">
-                  <Badge variant="default" className="text-[10px] px-2.5 py-1 cursor-default">
+                  <Chip variant="neutral" muted className="text-[10px] px-2.5 py-1 cursor-default">
                     {cap.name}
-                  </Badge>
+                  </Chip>
                   <div className="invisible group-hover:visible absolute bottom-full left-0 mb-1 px-2 py-1 bg-lia-bg-inverse dark:bg-lia-bg-primary text-lia-text-inverse dark:text-lia-text-primary text-[10px] rounded-xl whitespace-nowrap z-10 shadow-md">
                     {cap.description}
                   </div>

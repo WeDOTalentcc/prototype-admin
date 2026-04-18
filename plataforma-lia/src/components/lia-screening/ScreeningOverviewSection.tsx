@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { CheckCircle, Clock, Target, Users } from"lucide-react"
 
 interface ScreeningOverviewSectionProps {
@@ -56,19 +56,19 @@ export function ScreeningOverviewSection({ requirements }: ScreeningOverviewSect
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span>Competências Técnicas</span>
-                  <Badge variant="outline">40%</Badge>
+                  <Chip variant="neutral">40%</Chip>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Fit Cultural</span>
-                  <Badge variant="outline">30%</Badge>
+                  <Chip variant="neutral">30%</Chip>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Motivação</span>
-                  <Badge variant="outline">20%</Badge>
+                  <Chip variant="neutral">20%</Chip>
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Expectativas</span>
-                  <Badge variant="outline">10%</Badge>
+                  <Chip variant="neutral">10%</Chip>
                 </div>
               </div>
             </CardContent>

@@ -4,7 +4,7 @@ import React, { useState } from"react"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Label } from"@/components/ui/label"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Textarea } from"@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from"@/components/ui/tabs"
@@ -411,22 +411,22 @@ export function WSIQuestionsPanel({
                             {template.question}
                           </p>
                           <div className="flex flex-wrap items-center gap-2 mt-2">
-                            <Badge 
+                            <Chip variant="neutral" muted 
                               className="text-xs bg-[var(--lia-bg-tertiary)] text-lia-text-secondary border border-[var(--lia-border-subtle)]"
                             >
                               Bloom: {template.bloom_level}
-                            </Badge>
-                            <Badge 
+                            </Chip>
+                            <Chip variant="neutral" muted 
                               className="text-xs bg-[var(--lia-bg-tertiary)] text-lia-text-secondary border border-[var(--lia-border-subtle)]"
                             >
                               Dreyfus: {template.dreyfus_level}
-                            </Badge>
-                            <Badge 
-                              variant="outline" 
+                            </Chip>
+                            <Chip 
+                              variant="neutral" 
                               className="text-xs border-[var(--lia-border-default)] text-lia-text-tertiary"
                             >
                               {template.competency}
-                            </Badge>
+                            </Chip>
                             <span 
                               className="text-xs flex items-center gap-1 text-lia-text-tertiary"
                             >
@@ -625,22 +625,22 @@ function QuestionCard({
               {question.question}
             </p>
             <div className="flex flex-wrap items-center gap-2 mt-2">
-              <Badge 
+              <Chip variant="neutral" muted 
                 className="text-xs bg-[var(--lia-bg-tertiary)] text-lia-text-secondary border border-[var(--lia-border-subtle)]"
               >
                 {question.bloom_level}
-              </Badge>
-              <Badge 
+              </Chip>
+              <Chip variant="neutral" muted 
                 className="text-xs bg-[var(--lia-bg-tertiary)] text-lia-text-secondary border border-[var(--lia-border-subtle)]"
               >
                 {question.dreyfus_level}
-              </Badge>
-              <Badge 
-                variant="outline" 
+              </Chip>
+              <Chip 
+                variant="neutral" 
                 className="text-xs border-[var(--lia-border-default)] text-lia-text-tertiary"
               >
                 {question.competency}
-              </Badge>
+              </Chip>
               <span 
                 className="text-xs flex items-center gap-1 text-lia-text-tertiary"
               >

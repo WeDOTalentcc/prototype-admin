@@ -11,7 +11,7 @@ import React from"react"
 import {
   Brain, Wand2, Loader2, Target, Search, MapPin, Building2, Plus, Pencil, Trash2,
 } from"lucide-react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import type { ArchetypeData, BackendEntities } from"@/components/search/expandable-ai-prompt.types"
 
 interface ArchetypesListProps {
@@ -62,9 +62,9 @@ export function ArchetypesList({
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-lia-text-primary">Criar Novo Arquétipo</span>
           {naturalSearchValue && (
-            <Badge variant="outline" className="text-micro bg-wedo-cyan/10 text-lia-text-secondary border-lia-btn-primary-bg dark:border-lia-border-subtle">
+            <Chip variant="neutral" className="text-micro bg-wedo-cyan/10 text-lia-text-secondary border-lia-btn-primary-bg dark:border-lia-border-subtle">
               Busca ativa detectada
-            </Badge>
+            </Chip>
           )}
         </div>
 
@@ -81,31 +81,31 @@ export function ArchetypesList({
             {Object.keys(parsedEntities).length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {parsedEntities.job_title && (
-                  <Badge variant="secondary" className="text-micro -dark border-lia-border-default dark:border-lia-border-default">
+                  <Chip variant="neutral" muted className="text-micro -dark border-lia-border-default dark:border-lia-border-default">
                     {parsedEntities.job_title}
-                  </Badge>
+                  </Chip>
                 )}
                 {parsedEntities.location && (
-                  <Badge variant="secondary" className="text-micro bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">
+                  <Chip variant="neutral" muted className="text-micro bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">
                     <MapPin className="w-2.5 h-2.5 mr-0.5" />
                     {parsedEntities.location}
-                  </Badge>
+                  </Chip>
                 )}
                 {parsedEntities.seniority && (
-                  <Badge variant="secondary" className="text-micro bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">
+                  <Chip variant="neutral" muted className="text-micro bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">
                     {parsedEntities.seniority}
-                  </Badge>
+                  </Chip>
                 )}
                 {parsedEntities.industry && (
-                  <Badge variant="secondary" className="text-micro bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">
+                  <Chip variant="neutral" muted className="text-micro bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">
                     <Building2 className="w-2.5 h-2.5 mr-0.5" />
                     {parsedEntities.industry}
-                  </Badge>
+                  </Chip>
                 )}
                 {parsedEntities.skills && parsedEntities.skills.map((skill, idx) => (
-                  <Badge key={idx} variant="secondary" className="text-micro bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">
+                  <Chip key={idx} variant="neutral" muted className="text-micro bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">
                     {skill}
-                  </Badge>
+                  </Chip>
                 ))}
               </div>
             )}
@@ -191,9 +191,9 @@ export function ArchetypesList({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-medium text-lia-text-primary">Meus Arquétipos</span>
-          <Badge variant="outline" className="text-micro">
+          <Chip variant="neutral" className="text-micro">
             {filteredArchetypes.length} {filteredArchetypes.length === 1 ? 'arquétipo' : 'arquétipos'}
-          </Badge>
+          </Chip>
         </div>
 
         {/* Campo de busca */}
@@ -259,7 +259,7 @@ export function ArchetypesList({
                         <p className="text-xs text-lia-text-secondary mt-0.5 line-clamp-2">{arch.description}</p>
                       )}
                       {arch.department && (
-                        <Badge variant="outline" className="mt-1.5 text-micro">{arch.department}</Badge>
+                        <Chip variant="neutral" className="mt-1.5 text-micro">{arch.department}</Chip>
                       )}
                     </div>
                   </div>

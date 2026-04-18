@@ -7,7 +7,7 @@ import {
   Brain
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
@@ -176,9 +176,9 @@ export function CalibrationCard({
                     </a>
                   )}
                   {candidate.lia_score && (
-                    <Badge className="text-xs py-0 px-1.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
+                    <Chip variant="neutral" muted className="text-xs py-0 px-1.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
                       Score: {candidate.lia_score}
-                    </Badge>
+                    </Chip>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
@@ -220,21 +220,21 @@ export function CalibrationCard({
             {candidate.skills && candidate.skills.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-2">
                 {candidate.skills.slice(0, 5).map((skill) => (
-                  <Badge 
+                  <Chip 
                     key={skill} 
-                    variant="secondary"
+                    variant="neutral" muted
                     className="text-xs py-0 px-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
                   >
                     {skill}
-                  </Badge>
+                  </Chip>
                 ))}
                 {candidate.skills.length > 5 && (
-                  <Badge 
-                    variant="outline"
+                  <Chip 
+                    variant="neutral"
                     className="text-xs py-0 px-1.5"
                   >
                     +{candidate.skills.length - 5}
-                  </Badge>
+                  </Chip>
                 )}
               </div>
             )}

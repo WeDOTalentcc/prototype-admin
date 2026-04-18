@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   DollarSign,
@@ -125,12 +125,12 @@ export function CompensationSummaryCard({
                   <Gift className="h-4 w-4" />
                   Benefícios
                 </div>
-                <Badge
-                  variant="secondary"
+                <Chip
+                  variant="neutral" muted
                   className="text-xs bg-lia-bg-tertiary text-lia-text-secondary"
                 >
                   {data.benefits.length} itens
-                </Badge>
+                </Chip>
               </div>
 
               <div className="flex flex-wrap gap-1.5">
@@ -144,12 +144,12 @@ export function CompensationSummaryCard({
                   </div>
                 ))}
                 {data.benefits.length > (compact ? 4 : 8) && (
-                  <Badge
-                    variant="outline"
+                  <Chip
+                    variant="neutral"
                     className="text-xs border-lia-border-subtle text-lia-text-tertiary"
                   >
                     +{data.benefits.length - (compact ? 4 : 8)}
-                  </Badge>
+                  </Chip>
                 )}
               </div>
             </div>

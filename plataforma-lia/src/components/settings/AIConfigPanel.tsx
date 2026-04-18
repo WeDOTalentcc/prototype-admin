@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Progress } from "@/components/ui/progress"
 import {
   Collapsible,
@@ -421,7 +421,7 @@ export function AIConfigPanel({ className }: { className?: string }) {
                     85% das empresas do seu setor usam peso 70/30
                   </span>
                   {Math.round(config.scoring.technical_weight * 100) === 70 && (
-                    <Badge className={badgeStyles.success}>No padrao</Badge>
+                    <Chip variant="neutral" muted className={badgeStyles.success}>No padrao</Chip>
                   )}
                 </div>
               </div>

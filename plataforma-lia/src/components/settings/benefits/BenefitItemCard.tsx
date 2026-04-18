@@ -4,7 +4,7 @@
 import { CURRENCY_SYMBOL } from"@/lib/pricing"
 import React from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Switch } from"@/components/ui/switch"
 import {
   DollarSign,
@@ -113,12 +113,12 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
             <Star className="w-3.5 h-3.5 text-status-warning fill-yellow-500" />
           )}
           {benefit.is_mandatory && (
-            <Badge variant="secondary" className="text-micro">Obrigatório</Badge>
+            <Chip variant="neutral" muted className="text-micro">Obrigatório</Chip>
           )}
           {benefit.is_discount && (
-            <Badge variant="outline" className="text-micro text-status-error border-status-error/30">
+            <Chip variant="neutral" className="text-micro text-status-error border-status-error/30">
               Desconto
-            </Badge>
+            </Chip>
           )}
         </div>
         <p className={textStyles.description +" truncate mb-1.5"}>

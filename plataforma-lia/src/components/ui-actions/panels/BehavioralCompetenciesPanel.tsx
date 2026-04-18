@@ -3,7 +3,7 @@
 import React, { useState } from"react"
 import { Button } from"@/components/ui/button"
 import { Label } from"@/components/ui/label"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Loader2, ChevronDown, ChevronRight, MessageCircle, Target } from"lucide-react"
 import { COMPETENCIES_CATALOG, Competency, BehavioralCompetenciesData } from"../types"
@@ -85,9 +85,9 @@ export function BehavioralCompetenciesPanel({
             <span className="flex items-center gap-2">
               🧠 Competências Comportamentais
             </span>
-            <Badge variant="secondary" className="text-xs">
+            <Chip variant="neutral" muted className="text-xs">
               Média: {getAverageLevel()}
-            </Badge>
+            </Chip>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-1">
@@ -179,12 +179,12 @@ function CompetencyCard({
               </div>
             </div>
           </div>
-          <Badge
+          <Chip variant="neutral" muted
             className="shrink-0 text-xs"
             style={LEVEL_STYLES[competency.level].style}
           >
             {LEVEL_STYLES[competency.level].label}
-          </Badge>
+          </Chip>
         </div>
       </button>
 

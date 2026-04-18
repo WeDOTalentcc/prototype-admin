@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { cn } from"@/lib/utils"
 import { 
   Loader2,
@@ -74,8 +74,8 @@ function SectionHeader({
         <Icon className={cn("h-4 w-4", iconColor)} />
         <span className="text-xs font-semibold text-lia-text-primary dark:text-white">{title}</span>
       </div>
-      <Badge 
-        variant="outline" 
+      <Chip 
+        variant="neutral" 
         className={cn("text-micro h-4 px-1.5 border",
           isLocked 
             ?"bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default"
@@ -87,7 +87,7 @@ function SectionHeader({
         ) : (
           <><Pencil className="h-2.5 w-2.5 mr-0.5" /> Editável</>
         )}
-      </Badge>
+      </Chip>
     </div>
   )
 }
@@ -266,15 +266,15 @@ export function VacancyFullSummary({
                         <Wrench className="h-3 w-3 text-lia-text-secondary flex-shrink-0" />
                         <span className="text-xs font-medium truncate">{skill.name}</span>
                         {skill.required && (
-                          <Badge variant="outline" className="text-micro h-3.5 px-1 border-status-error/30  dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
+                          <Chip variant="neutral" className="text-micro h-3.5 px-1 border-status-error/30  dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
                             Req
-                          </Badge>
+                          </Chip>
                         )}
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <Badge variant="outline" className={cn("text-micro h-3.5 px-1 border", levelConfig.className)}>
+                        <Chip variant="neutral" className={cn("text-micro h-3.5 px-1 border", levelConfig.className)}>
                           {levelConfig.label}
-                        </Badge>
+                        </Chip>
                         <WeightStars weight={skill.weight} />
                       </div>
                     </div>
@@ -305,9 +305,9 @@ export function VacancyFullSummary({
                   <div key={idx} className="p-2 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
                     <p className="text-xs text-lia-text-primary dark:text-white">{idx + 1}. {q.question}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="secondary" className="text-micro h-3.5 px-1">
+                      <Chip variant="neutral" muted className="text-micro h-3.5 px-1">
                         {q.type === 'yes-no' ? 'Sim/Não' : q.type === 'multiple-choice' ? 'Múltipla escolha' : q.type === 'numeric' ? 'Numérico' : 'Aberta'}
-                      </Badge>
+                      </Chip>
                     </div>
                   </div>
                 ))}

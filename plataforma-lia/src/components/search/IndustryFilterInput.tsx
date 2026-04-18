@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from"react"
 import { X, Search, ChevronDown, Brain, Loader2, AlertCircle, Zap } from"lucide-react"
 import { cn } from"@/lib/utils"
 import { useTagInputState } from"@/hooks/ui/useTagInputState"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Input } from"@/components/ui/input"
 import {
   Popover,
@@ -436,7 +436,7 @@ export function IndustryFilterInput({
       {value.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {value.map(industry => (
-            <Badge
+            <Chip variant="neutral" muted
               key={industry}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle"
             >
@@ -448,7 +448,7 @@ export function IndustryFilterInput({
               >
                 <X className="w-3 h-3" />
               </button>
-            </Badge>
+            </Chip>
           ))}
         </div>
       )}

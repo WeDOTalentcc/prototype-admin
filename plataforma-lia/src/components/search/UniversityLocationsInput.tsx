@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from"react"
 import { X, Search } from"lucide-react"
 import { cn } from"@/lib/utils"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Input } from"@/components/ui/input"
 import { UNIVERSITY_CITIES as CITIES, UNIVERSITY_COUNTRIES as COUNTRIES } from"@/data/location-data"
 
@@ -193,7 +193,7 @@ export function UniversityLocationsInput({
       {value.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {value.map(location => (
-            <Badge
+            <Chip variant="neutral" muted
               key={location}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle"
             >
@@ -205,7 +205,7 @@ export function UniversityLocationsInput({
               >
                 <X className="w-3 h-3" />
               </button>
-            </Badge>
+            </Chip>
           ))}
         </div>
       )}

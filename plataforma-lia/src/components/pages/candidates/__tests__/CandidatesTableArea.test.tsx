@@ -23,8 +23,8 @@ vi.mock("@/components/ui/button", () => ({
     <button onClick={onClick}>{children}</button>
   ),
 }))
-vi.mock("@/components/ui/badge", () => ({
-  Badge: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+vi.mock("@/components/ui/chip", () => ({
+  Chip: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }))
 vi.mock("lucide-react", () => ({
   Users: () => <span>users</span>,

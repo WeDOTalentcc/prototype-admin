@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { 
   ThumbsUp, 
   ThumbsDown, 
@@ -347,9 +347,9 @@ export function SharedContent({ hook }: SharedContentProps) {
                                 )}
                               </div>
                               {candidate.wsi_score !== undefined && (
-                                <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-0 flex-shrink-0">
+                                <Chip variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-0 flex-shrink-0">
                                   WSI {candidate.wsi_score}
-                                </Badge>
+                                </Chip>
                               )}
                             </div>
                             <div className="flex flex-wrap gap-3 mt-2 text-sm text-lia-text-secondary">
@@ -397,21 +397,21 @@ export function SharedContent({ hook }: SharedContentProps) {
                             {candidate.skills && candidate.skills.length > 0 && (
                               <div className="flex flex-wrap gap-1.5 mt-3">
                                 {candidate.skills.slice(0, 5).map((skill) => (
-                                  <Badge
+                                  <Chip
                                     key={skill}
-                                    variant="secondary"
+                                    variant="neutral" muted
                                     className="bg-lia-btn-primary-hover text-lia-text-disabled border-0 text-xs"
                                   >
                                     {skill}
-                                  </Badge>
+                                  </Chip>
                                 ))}
                                 {candidate.skills.length > 5 && (
-                                  <Badge
-                                    variant="secondary"
+                                  <Chip
+                                    variant="neutral" muted
                                     className="bg-lia-btn-primary-hover text-lia-text-secondary border-0 text-xs"
                                   >
                                     +{candidate.skills.length - 5}
-                                  </Badge>
+                                  </Chip>
                                 )}
                               </div>
                             )}
@@ -454,13 +454,13 @@ export function SharedContent({ hook }: SharedContentProps) {
                                 <h4 className="text-sm font-medium text-lia-text-disabled mb-2">Todas as habilidades</h4>
                                 <div className="flex flex-wrap gap-1.5">
                                   {candidate.skills.map((skill) => (
-                                    <Badge
+                                    <Chip
                                       key={skill}
-                                      variant="secondary"
+                                      variant="neutral" muted
                                       className="bg-lia-btn-primary-hover text-lia-text-disabled border-0 text-xs"
                                     >
                                       {skill}
-                                    </Badge>
+                                    </Chip>
                                   ))}
                                 </div>
                               </div>

@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Clock, Eye, Edit, Share2, FileText, Users, Briefcase,
   MoreVertical, MapPin, Brain, Copy, Trash2, User, Linkedin, Globe
@@ -24,25 +24,25 @@ export function JobListItem({ job, onLIAAction, onNavigate }: JobListItemProps) 
         <div className="flex-1 space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-semibold text-sm text-lia-text-primary">{job.title}</h3>
-            <Badge variant="outline" className="text-xs">{job.jobId}</Badge>
+            <Chip variant="neutral" className="text-xs">{job.jobId}</Chip>
             {getUrgencyBadge(job.urgencyLevel, job.daysOpen)}
             {job.publishedLinkedIn && (
-              <Badge className="border-transparent dark:bg-wedo-cyan/20 dark:text-wedo-cyan text-xs flex items-center gap-1 font-medium">
+              <Chip variant="neutral" muted className="border-transparent dark:bg-wedo-cyan/20 dark:text-wedo-cyan text-xs flex items-center gap-1 font-medium">
                 <Linkedin className="w-2.5 h-2.5" />
                 LI
-              </Badge>
+              </Chip>
             )}
             {job.publishedWebsite && (
-              <Badge className="border-transparent dark:bg-wedo-green/20 dark:text-wedo-green text-xs flex items-center gap-1 font-medium">
+              <Chip variant="neutral" muted className="border-transparent dark:bg-wedo-green/20 dark:text-wedo-green text-xs flex items-center gap-1 font-medium">
                 <Globe className="w-2.5 h-2.5" />
                 Site
-              </Badge>
+              </Chip>
             )}
             {job.publishedIndeed && (
-              <Badge className="border-transparent dark:bg-wedo-orange/20 dark:text-wedo-orange text-xs flex items-center gap-1 font-medium">
+              <Chip variant="neutral" muted className="border-transparent dark:bg-wedo-orange/20 dark:text-wedo-orange text-xs flex items-center gap-1 font-medium">
                 <Briefcase className="w-2.5 h-2.5" />
                 Indeed
-              </Badge>
+              </Chip>
             )}
           </div>
           <div className="flex items-center gap-3 text-xs text-lia-text-primary flex-wrap">

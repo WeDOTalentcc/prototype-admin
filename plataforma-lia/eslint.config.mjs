@@ -30,6 +30,17 @@ const eslintConfig = [...compat.extends("next/core-web-vitals", "next/typescript
     // WeDo DS — Regras de enforçamento de tokens
     // Sprint 10: prevenir regressões de padronização
     // ──────────────────────────────────────────────
+    "no-restricted-imports": [
+      "warn",
+      {
+        "paths": [
+          {
+            "name": "@/components/ui/badge",
+            "message": "[WeDo DS] Use o componente canônico `Chip` (`@/components/ui/chip`) para pílulas de status/estado. O `Badge` primitivo está mantido apenas para affordances do tipo chip-com-botão (raro). Veja docs/design-system/00-design-system-v4.md § 3.39."
+          }
+        ]
+      }
+    ],
     "no-restricted-syntax": [
       "warn",
       {

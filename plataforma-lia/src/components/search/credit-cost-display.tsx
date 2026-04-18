@@ -2,7 +2,7 @@
 
 import { useMemo } from"react"
 import { AlertCircle, Coins, Mail, TrendingUp, Zap } from"lucide-react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { 
   CreditEstimate,
   calculateCreditsLocally 
@@ -78,12 +78,12 @@ export function CreditCostDisplay({
           <Coins className="w-5 h-5 text-lia-text-primary" />
           <span className="font-semibold text-sm">Estimativa de Custos</span>
         </div>
-        <Badge 
-          variant="outline" 
+        <Chip 
+          variant="neutral" 
           className={`${costColor} border-current`}
         >
           {formatCreditCost(estimate.total_estimated)} + ${estimate.apify_total.toFixed(2)} Apify
-        </Badge>
+        </Chip>
       </div>
 
       {showBreakdown && (
@@ -163,12 +163,12 @@ export function CreditCostBadge({ cost, suffix ="", className ="" }: CreditCostB
   const color = getCostColor(level)
   
   return (
-    <Badge 
-      variant="secondary" 
+    <Chip 
+      variant="neutral" muted 
       className={`text-xs ${color} ${className}`}
     >
       {cost > 0 ? `+${cost}` : cost} {suffix ||"creditos"}
-    </Badge>
+    </Chip>
   )
 }
 

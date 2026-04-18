@@ -22,7 +22,7 @@ import {
 } from"@/components/ui/alert-dialog"
 
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
@@ -192,9 +192,9 @@ export function CandidatePage({
               <tab.icon className="w-3 h-3" />
               {tab.label}
               {tab.badge !== undefined && tab.badge > 0 && (
-                <Badge className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-cyan/15">
+                <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-cyan/15">
                   {tab.badge}
-                </Badge>
+                </Chip>
               )}
             </button>
           ))}

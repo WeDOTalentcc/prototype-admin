@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from"react"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   X, Brain, RefreshCw, TrendingUp, TrendingDown, Target,
@@ -341,9 +341,9 @@ export function CandidateComparison({
                         Candidato Recomendado: {candidates.find(c => c.id === liaAnalysis.winner)?.name}
                       </span>
                     </div>
-                    <Badge >
+                    <Chip variant="neutral" muted >
                       {liaAnalysis.confidence}% de confiança
-                    </Badge>
+                    </Chip>
                   </div>
                 </div>
 
@@ -418,10 +418,10 @@ export function CandidateComparison({
                 {/* Winner Badge */}
                 {liaAnalysis && candidate.id === liaAnalysis.winner && (
                   <div className="absolute top-3 right-3 z-10">
-                    <Badge className="border-status-warning/30 gap-1">
+                    <Chip variant="neutral" muted className="border-status-warning/30 gap-1">
                       <Crown className="w-3 h-3" />
                       LIA Recomenda
-                    </Badge>
+                    </Chip>
                   </div>
                 )}
 
@@ -441,16 +441,16 @@ export function CandidateComparison({
                         {candidate.role} • {candidate.seniority}
                       </p>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">
+                        <Chip variant="neutral" className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">
                           {candidate.matchPercentage}% Match
-                        </Badge>
-                        <Badge variant="outline" className={
+                        </Chip>
+                        <Chip variant="neutral" className={
  candidate.riskLevel === 'Baixo' ? 'text-status-success border-status-success/30' :
                           candidate.riskLevel === 'Médio' ? 'text-status-warning border-status-warning/30' :
                           'text-status-error border-status-error/30'
                         }>
                           {candidate.riskLevel} Risco
-                        </Badge>
+                        </Chip>
                       </div>
                     </div>
                   </div>
@@ -480,14 +480,14 @@ export function CandidateComparison({
                     </h6>
                     <div className="flex flex-wrap gap-1">
                       {candidate.skills.slice(0, 4).map((skill, idx) => (
-                        <Badge key={idx} variant="secondary" className="text-xs">
+                        <Chip key={idx} variant="neutral" muted className="text-xs">
                           {skill}
-                        </Badge>
+                        </Chip>
                       ))}
                       {candidate.skills.length > 4 && (
-                        <Badge variant="outline" className="text-xs">
+                        <Chip variant="neutral" className="text-xs">
                           +{candidate.skills.length - 4}
-                        </Badge>
+                        </Chip>
                       )}
                     </div>
                   </div>

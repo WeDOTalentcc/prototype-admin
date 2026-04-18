@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   TrendingUp, Clock, Phone, Calendar, Award, Zap, CheckCircle
 } from"lucide-react"
@@ -43,9 +43,9 @@ export function LiaMetricsKPIs({
         <CardContent className="p-3">
           <div className="flex items-center justify-between mb-1">
             <Phone className="w-4 h-4 text-lia-text-secondary" />
-            <Badge className={`text-xs px-1.5 py-0.5 ${contactRate >= 80 ? 'bg-status-success' : contactRate >= 60 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
+            <Chip variant="neutral" muted className={`text-xs px-1.5 py-0.5 ${contactRate >= 80 ? 'bg-status-success' : contactRate >= 60 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
               {contactRate.toFixed(0)}%
-            </Badge>
+            </Chip>
           </div>
           <div className={`text-lg font-semibold text-lia-text-primary`}>
             {contacted}/{totalCandidates}
@@ -60,9 +60,9 @@ export function LiaMetricsKPIs({
         <CardContent className="p-3">
           <div className="flex items-center justify-between mb-1">
             <CheckCircle className="w-4 h-4 text-status-success" />
-            <Badge className={`text-xs px-1.5 py-0.5 ${triageConversionRate >= 70 ? 'bg-status-success' : triageConversionRate >= 50 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
+            <Chip variant="neutral" muted className={`text-xs px-1.5 py-0.5 ${triageConversionRate >= 70 ? 'bg-status-success' : triageConversionRate >= 50 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
               {triageConversionRate.toFixed(0)}%
-            </Badge>
+            </Chip>
           </div>
           <div className={`text-lg font-semibold text-lia-text-primary`}>
             {triageCompleted}/{contacted}
@@ -77,9 +77,9 @@ export function LiaMetricsKPIs({
         <CardContent className="p-3">
           <div className="flex items-center justify-between mb-1">
             <Award className="w-4 h-4 text-status-success" />
-            <Badge className={`text-xs px-1.5 py-0.5 ${triageApprovalRate >= 60 ? 'bg-status-success' : triageApprovalRate >= 40 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
+            <Chip variant="neutral" muted className={`text-xs px-1.5 py-0.5 ${triageApprovalRate >= 60 ? 'bg-status-success' : triageApprovalRate >= 40 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
               {triageApprovalRate.toFixed(0)}%
-            </Badge>
+            </Chip>
           </div>
           <div className={`text-lg font-semibold text-lia-text-primary`}>
             {triageApproved}/{triageCompleted}
@@ -94,9 +94,9 @@ export function LiaMetricsKPIs({
         <CardContent className="p-3">
           <div className="flex items-center justify-between mb-1">
             <Calendar className="w-4 h-4 text-wedo-purple" />
-            <Badge className={`text-xs px-1.5 py-0.5 ${interviewConversionRate >= 50 ? 'bg-status-success' : interviewConversionRate >= 30 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
+            <Chip variant="neutral" muted className={`text-xs px-1.5 py-0.5 ${interviewConversionRate >= 50 ? 'bg-status-success' : interviewConversionRate >= 30 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
               {interviewConversionRate.toFixed(0)}%
-            </Badge>
+            </Chip>
           </div>
           <div className={`text-lg font-semibold text-lia-text-primary`}>
             {interviewScheduled}/{triageApproved}
@@ -126,9 +126,9 @@ export function LiaMetricsKPIs({
         <CardContent className="p-3">
           <div className="flex items-center justify-between mb-1">
             <Zap className="w-4 h-4 text-lia-text-secondary" />
-            <Badge className="text-xs px-1.5 py-0.5 bg-lia-btn-primary-bg text-lia-btn-primary-text">
+            <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5 bg-lia-btn-primary-bg text-lia-btn-primary-text">
               {avgLiaScore.toFixed(1)}
-            </Badge>
+            </Chip>
           </div>
           <div className={`text-lg font-semibold text-lia-text-primary`}>
             {avgSkillsMatch}%

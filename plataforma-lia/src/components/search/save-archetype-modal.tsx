@@ -3,7 +3,7 @@
 import { useState, useEffect } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { X, Save, Target, Plus, Loader2, Brain } from"lucide-react"
 import type { SearchSpec } from"@/lib/api/candidate-search"
 import {
@@ -214,7 +214,7 @@ const [isSaving, setIsSaving] = useState(false)
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
                 {tags.map((tag, index) => (
-                  <Badge key={`tag-${index}`} className={badgeStyles.primary}>
+                  <Chip variant="neutral" muted key={`tag-${index}`} className={badgeStyles.primary}>
                     {tag}
                     <button
                       onClick={() => handleRemoveTag(tag)}
@@ -222,7 +222,7 @@ const [isSaving, setIsSaving] = useState(false)
                     >
                       <X className="w-3 h-3" />
                     </button>
-                  </Badge>
+                  </Chip>
                 ))}
               </div>
             )}

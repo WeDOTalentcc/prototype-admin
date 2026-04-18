@@ -3,7 +3,7 @@
 import { formatBRL } from"@/lib/pricing"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Calendar, Clock, MapPin, DollarSign, Heart, Shield, Building, Lock, Globe,
   ChevronRight, ClipboardList, Lightbulb,
@@ -141,9 +141,9 @@ export function JobScreeningSection({
                             return (
                               <div className="flex flex-wrap gap-1.5">
                                 {fallbackSkills.slice(0, 6).map((skill: string) => (
-                                  <Badge key={skill} className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-[0.625rem] leading-none px-1.5 py-0.5 font-medium">
+                                  <Chip variant="neutral" muted key={skill} className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-[0.625rem] leading-none px-1.5 py-0.5 font-medium">
                                     {skill}
-                                  </Badge>
+                                  </Chip>
                                 ))}
                               </div>
                             )
@@ -156,9 +156,9 @@ export function JobScreeningSection({
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Técnicas</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {(technicalSkills as string[]).map((skill: string) => (
-                                      <Badge key={skill} className="bg-wedo-cyan/10 dark:bg-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan-dark text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-wedo-cyan/30">
+                                      <Chip variant="neutral" muted key={skill} className="bg-wedo-cyan/10 dark:bg-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan-dark text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-wedo-cyan/30">
                                         {skill}
-                                      </Badge>
+                                      </Chip>
                                     ))}
                                   </div>
                                 </div>
@@ -168,9 +168,9 @@ export function JobScreeningSection({
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Comportamentais</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {(behavioralSkills as string[]).map((skill: string) => (
-                                      <Badge key={skill} className="bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-wedo-purple/30">
+                                      <Chip variant="neutral" muted key={skill} className="bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-wedo-purple/30">
                                         {skill}
-                                      </Badge>
+                                      </Chip>
                                     ))}
                                   </div>
                                 </div>
@@ -180,9 +180,9 @@ export function JobScreeningSection({
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Responsabilidades</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {(responsibilitySkills as string[]).slice(0, 8).map((skill: string) => (
-                                      <Badge key={skill} className="bg-status-warning/10 dark:bg-status-warning/30 text-status-warning dark:text-status-warning text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-status-warning/30">
+                                      <Chip variant="neutral" muted key={skill} className="bg-status-warning/10 dark:bg-status-warning/30 text-status-warning dark:text-status-warning text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-status-warning/30">
                                         {skill}
-                                      </Badge>
+                                      </Chip>
                                     ))}
                                   </div>
                                 </div>
@@ -218,14 +218,14 @@ export function JobScreeningSection({
                                     {lang.language}
                                   </span>
                                   {lang.level && (
-                                    <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">
+                                    <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">
                                       {lang.level}
-                                    </Badge>
+                                    </Chip>
                                   )}
                                   {lang.required && (
-                                    <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5  border border-status-error/30">
+                                    <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5  border border-status-error/30">
                                       Obrigatório
-                                    </Badge>
+                                    </Chip>
                                   )}
                                 </div>
                               ))}
@@ -295,9 +295,9 @@ export function JobScreeningSection({
                                       <span className="text-micro text-lia-text-tertiary block mb-1">Benefícios:</span>
                                       <div className="flex flex-wrap gap-1.5">
                                         {(benefits as Benefit[]).map((b: Benefit, idx: number) => (
-                                          <Badge key={`benefit-${idx}`} className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">
+                                          <Chip variant="neutral" muted key={`benefit-${idx}`} className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">
                                             {typeof b === 'string' ? b : b.name}
-                                          </Badge>
+                                          </Chip>
                                         ))}
                                       </div>
                                     </div>
@@ -370,11 +370,11 @@ export function JobScreeningSection({
                             <div className="flex items-center gap-2">
                               <ClipboardList className="w-4 h-4 text-lia-text-secondary" />
                               <h4 className="text-xs font-semibold text-lia-text-primary">Roteiro de Triagem Automática</h4>
-                              <Badge 
+                              <Chip variant="neutral" muted 
                                 className={`text-[0.625rem] leading-none px-1.5 py-0.5 text-lia-text-primary ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-lia-interactive-active'}`}
                               >
                                 {(screeningConfig?.status?.enabled ?? true) ? 'Ativo' : 'Pausado'}
-                              </Badge>
+                              </Chip>
                             </div>
                           </div>
 
@@ -383,11 +383,11 @@ export function JobScreeningSection({
                           <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
                             <ClipboardList className="w-3.5 h-3.5 text-lia-text-secondary" />
                             Resumo da Triagem
-                            <Badge
+                            <Chip variant="neutral" muted
                               className={`text-[0.625rem] leading-none px-1.5 py-0.5 text-lia-text-primary ${(screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-lia-interactive-active'}`}
                             >
                               {(screeningConfig?.status?.enabled ?? true) ? 'Ativo' : 'Pausado'}
-                            </Badge>
+                            </Chip>
                           </h5>
                           {collapsedPreviewSections.includes('fluxo-resumido') ? (
                             <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
@@ -417,9 +417,9 @@ export function JobScreeningSection({
                           <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
                             <Layers3 className="w-3.5 h-3.5 text-lia-text-secondary" />
                             Fluxo de Triagem WSI
-                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-interactive-active text-lia-text-primary">
+                            <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-interactive-active text-lia-text-primary">
                               6 Blocos
-                            </Badge>
+                            </Chip>
                           </h5>
                           {collapsedPreviewSections.includes('fluxo-wsi') ? (
                             <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
@@ -499,23 +499,23 @@ export function JobScreeningSection({
                                       <span className="text-micro text-lia-text-tertiary ml-1.5">({block.duration})</span>
                                     </div>
                                     {!block.editable && (
-                                      <Badge className="text-micro px-1 py-0 h-3.5 bg-lia-interactive-active text-lia-text-tertiary">
+                                      <Chip variant="neutral" muted className="text-micro px-1 py-0 h-3.5 bg-lia-interactive-active text-lia-text-tertiary">
                                         Auto
-                                      </Badge>
+                                      </Chip>
                                     )}
                                   </div>
                                   <div className="flex items-center gap-1.5">
                                     {block.editable && blockQuestions.length > 0 && (
                                       <>
                                         {eliminatoryCount > 0 && (
-                                          <Badge className="text-micro px-1.5 py-0  border border-status-error/30">
+                                          <Chip variant="neutral" muted className="text-micro px-1.5 py-0  border border-status-error/30">
                                             {eliminatoryCount} Elim.
-                                          </Badge>
+                                          </Chip>
                                         )}
                                         {informativeCount > 0 && (
-                                          <Badge className="text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-secondary">
+                                          <Chip variant="neutral" muted className="text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-secondary">
                                             {informativeCount} Info.
-                                          </Badge>
+                                          </Chip>
                                         )}
                                       </>
                                     )}
@@ -575,7 +575,7 @@ export function JobScreeningSection({
                                               className="p-2.5 bg-lia-bg-primary border border-lia-border-subtle rounded-xl"
                                             >
                                               <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                                                <Badge className={`text-[0.625rem] leading-none px-1.5 py-0.5 rounded-full ${
+                                                <Chip variant="neutral" muted className={`text-[0.625rem] leading-none px-1.5 py-0.5 rounded-full ${
                                                   item.category === 'behavioral' || item.category === 'Comportamental'
                                                     ? ' border border-wedo-purple/30'
                                                     : item.category === 'technical' || item.category === 'Técnica'
@@ -589,11 +589,11 @@ export function JobScreeningSection({
                                                     : item.category === 'eligibility' ? 'Elegibilidade'
                                                     : item.category === 'cultural' ? 'Cultural'
                                                     : item.category || 'Geral'}
-                                                </Badge>
+                                                </Chip>
                                                 {(item.type === 'eliminatory' || item.required) && (
-                                                  <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 rounded-full  border border-status-error/30">
+                                                  <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5 rounded-full  border border-status-error/30">
                                                     Eliminatória
-                                                  </Badge>
+                                                  </Chip>
                                                 )}
                                               </div>
                                               <p className="text-micro text-lia-text-primary leading-relaxed mb-1.5">
@@ -645,9 +645,9 @@ export function JobScreeningSection({
                             <h5 className="text-xs font-semibold text-lia-text-primary">Agendamento Automático</h5>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <Badge className={`${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-lia-bg-inverse text-white dark:bg-lia-bg-elevated' : 'bg-lia-border-medium text-white'} text-[0.625rem] leading-none px-1.5 py-0.5`}>
+                            <Chip variant="neutral" muted className={`${(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-lia-bg-inverse text-white dark:bg-lia-bg-elevated' : 'bg-lia-border-medium text-white'} text-[0.625rem] leading-none px-1.5 py-0.5`}>
                               {(screeningConfig?.scheduling?.auto_enabled ?? true) ? 'Ativo' : 'Inativo'}
-                            </Badge>
+                            </Chip>
                             {collapsedPreviewSections.includes('agendamento') ? (
                               <ChevronDown className="w-3.5 h-3.5 text-lia-text-disabled transition-transform motion-reduce:transition-none" />
                             ) : (
@@ -727,26 +727,26 @@ export function JobScreeningSection({
                         <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                           <div className="flex items-center justify-between">
                             <span className="text-[0.625rem] text-lia-text-tertiary">Score Mínimo{'\n'}Aprovação</span>
-                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-inverse text-white">{(() => {
+                            <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-inverse text-white">{(() => {
                               const preset = screeningConfig?.settings?.min_score_preset
                               switch(preset) {
                                 case 'rigorous': return 'Rigoroso'
                                 case 'flexible': return 'Flexível'
                                 default: return 'Recomendado'
                               }
-                            })()}</Badge>
+                            })()}</Chip>
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-[0.625rem] text-lia-text-tertiary">Timeout Resposta</span>
-                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">{screeningConfig?.settings?.response_timeout_hours ?? 48}h</Badge>
+                            <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">{screeningConfig?.settings?.response_timeout_hours ?? 48}h</Chip>
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-[0.625rem] text-lia-text-tertiary">Re-tentativas</span>
-                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">{screeningConfig?.settings?.max_retries ?? 2}x</Badge>
+                            <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">{screeningConfig?.settings?.max_retries ?? 2}x</Chip>
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-[0.625rem] text-lia-text-tertiary">Fallback</span>
-                            <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5">Revisão Manual</Badge>
+                            <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5">Revisão Manual</Chip>
                           </div>
                         </div>
 

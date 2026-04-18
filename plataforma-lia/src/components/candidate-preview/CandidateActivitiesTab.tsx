@@ -1,7 +1,7 @@
 "use client"
 import React, { useState } from"react"
 import { textStyles, cardStyles, badgeStyles, formatScorePercent } from '@/lib/design-tokens'
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   Brain, ChevronDown,
@@ -143,14 +143,14 @@ export function CandidateActivitiesTab({
                     </div>
                     <div className="flex items-center gap-1.5">
                       {activity.score && (
-                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : ' border-status-error/30 font-medium'}`}>
+                        <Chip variant="neutral" muted className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : ' border-status-error/30 font-medium'}`}>
                           {formatScorePercent(activity.score)}
-                        </Badge>
+                        </Chip>
                       )}
                       {activity.statusLabel && (
-                        <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? ' border-status-error/30 font-medium' : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle'}`}>
+                        <Chip variant="neutral" muted className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? ' border-status-error/30 font-medium' : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle'}`}>
                           {activity.statusLabel}
-                        </Badge>
+                        </Chip>
                       )}
                       <ChevronDown className={`w-3.5 h-3.5 text-lia-text-secondary transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
                     </div>
@@ -214,14 +214,14 @@ export function CandidateActivitiesTab({
                 </div>
                 <div className="flex items-center gap-1.5">
                   {activity.score && (
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : ' border-status-error/30 font-medium'}`}>
+                    <Chip variant="neutral" muted className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : ' border-status-error/30 font-medium'}`}>
                       {formatScorePercent(activity.score)}
-                    </Badge>
+                    </Chip>
                   )}
                   {activity.statusLabel && (
-                    <Badge className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? ' border-status-error/30 font-medium' : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle'}`}>
+                    <Chip variant="neutral" muted className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? ' border-status-error/30 font-medium' : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle'}`}>
                       {activity.statusLabel}
-                    </Badge>
+                    </Chip>
                   )}
                   <ChevronDown className={`w-3.5 h-3.5 text-lia-text-secondary transition-transform motion-reduce:transition-none ${isExpanded ? 'rotate-180' : ''}`} />
                 </div>

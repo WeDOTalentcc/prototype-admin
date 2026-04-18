@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { textStyles } from"@/lib/design-tokens"
 import {
   BarChart3,
@@ -89,9 +89,9 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                     <span className={category.color}>{category.icon}</span>
                     <span className="text-sm font-medium text-lia-text-primary">{category.label}</span>
                   </div>
-                  <Badge className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">
+                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">
                     {category.count}
-                  </Badge>
+                  </Chip>
                 </button>
               ))}
             </div>
@@ -144,7 +144,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                         {t('testLibrary.test1Desc')}
                       </p>
                     </div>
-                    <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">{t('testLibrary.badgePopular')}</Badge>
+                    <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">{t('testLibrary.badgePopular')}</Chip>
                   </div>
 
                   <div className="bg-lia-bg-secondary rounded-xl p-3 mb-3">
@@ -158,10 +158,10 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                           <div className="flex items-baseline gap-2">
                             <p className="text-2xl font-semibold text-lia-text-primary">7.4</p>
                             <span className="text-xs text-lia-text-primary">/10</span>
-                            <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">
+                            <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">
                               <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
                               +0.3
-                            </Badge>
+                            </Chip>
                           </div>
                         </div>
                       </div>
@@ -236,7 +236,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-lia-text-primary">{t('testLibrary.levelLabel')}</span>
-                      <Badge className="bg-lia-interactive-active text-lia-text-primary text-xs">{t('testLibrary.levelMid')}</Badge>
+                      <Chip variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary text-xs">{t('testLibrary.levelMid')}</Chip>
                     </div>
                   </div>
 
@@ -298,7 +298,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                         {t('testLibrary.test2Desc')}
                       </p>
                     </div>
-                    <Badge className="bg-lia-interactive-active text-lia-text-primary text-xs">{t('testLibrary.badgeNew')}</Badge>
+                    <Chip variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary text-xs">{t('testLibrary.badgeNew')}</Chip>
                   </div>
 
                   <div className="space-y-2 mb-3">
@@ -312,7 +312,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-lia-text-primary">{t('testLibrary.levelLabel')}</span>
-                      <Badge className="bg-lia-border-default text-lia-text-primary text-xs">{t('testLibrary.levelSenior')}</Badge>
+                      <Chip variant="neutral" muted className="bg-lia-border-default text-lia-text-primary text-xs">{t('testLibrary.levelSenior')}</Chip>
                     </div>
                   </div>
 
@@ -365,7 +365,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                         {t('testLibrary.test3Desc')}
                       </p>
                     </div>
-                    <Badge className="bg-lia-interactive-active text-lia-text-primary text-xs">{t('testLibrary.badgeRecommended')}</Badge>
+                    <Chip variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary text-xs">{t('testLibrary.badgeRecommended')}</Chip>
                   </div>
 
                   <div className="space-y-2 mb-3">
@@ -379,7 +379,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-lia-text-primary">{t('testLibrary.levelLabel')}</span>
-                      <Badge className="bg-lia-interactive-active text-lia-text-primary text-xs">{t('testLibrary.levelMid')}</Badge>
+                      <Chip variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary text-xs">{t('testLibrary.levelMid')}</Chip>
                     </div>
                   </div>
 
@@ -432,7 +432,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                         {t('testLibrary.test4Desc')}
                       </p>
                     </div>
-                    <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-xs">{t('testLibrary.badgeTechnical')}</Badge>
+                    <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary text-xs">{t('testLibrary.badgeTechnical')}</Chip>
                   </div>
 
                   <div className="space-y-2 mb-3">
@@ -446,7 +446,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-lia-text-primary">{t('testLibrary.levelLabel')}</span>
-                      <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">{t('testLibrary.levelJunior')}</Badge>
+                      <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">{t('testLibrary.levelJunior')}</Chip>
                     </div>
                   </div>
 

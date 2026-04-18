@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { X, Brain, Download, Share2, FileText } from"lucide-react"
 import { useScreeningGuide } from"./lia-screening/useScreeningGuide"
 import { ScreeningOverviewSection } from"./lia-screening/ScreeningOverviewSection"
@@ -93,11 +93,11 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-lia-text-primary">Nível:</span>
-                  <Badge variant="outline">{j.str('level')}</Badge>
+                  <Chip variant="neutral">{j.str('level')}</Chip>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-lia-text-primary">Modalidade:</span>
-                  <Badge variant="outline">{j.str('workModel')}</Badge>
+                  <Chip variant="neutral">{j.str('workModel')}</Chip>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-lia-text-primary">Urgência:</span>
@@ -166,12 +166,12 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
         <div className="p-6 border-t border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" >
+              <Chip variant="neutral" >
                 Roteiro Personalizado para {j.str('title')}
-              </Badge>
-              <Badge variant="outline" className="text-xs">
+              </Chip>
+              <Chip variant="neutral" className="text-xs">
                 Gerado pela LIA
-              </Badge>
+              </Chip>
             </div>
             <div className="flex items-center gap-3">
               <Button variant="outline" className="gap-2">

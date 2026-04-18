@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Briefcase, CheckCircle } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { CompanyDataCard } from '../CompanyDataCard'
 import { selectClass } from '../useCompanyDataForm'
 import type { CompanyData } from '../useCompanyDataForm'
@@ -113,7 +113,7 @@ export function WorkModelSection({
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
               {(companyData.seniority_levels || []).map((level: string, idx: number) => (
-                <Badge key={level} className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary text-micro px-2 py-0.5 rounded-full">
+                <Chip variant="neutral" muted key={level} className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary text-micro px-2 py-0.5 rounded-full">
                   {level}
                   {isEditing && (
                     <button
@@ -124,7 +124,7 @@ export function WorkModelSection({
                       className="ml-1 hover:text-status-error"
                     >×</button>
                   )}
-                </Badge>
+                </Chip>
               ))}
             </div>
             <div className="flex flex-wrap gap-1">

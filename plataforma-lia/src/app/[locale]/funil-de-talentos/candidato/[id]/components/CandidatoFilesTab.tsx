@@ -3,7 +3,7 @@
 import React from"react"
 import { Card, CardContent } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { FileText, Plus, Upload, Download, X, Tag } from"lucide-react"
 import { TabsContent } from"@/components/ui/tabs"
 import { ACCEPTED_FILE_TYPES, MAX_FILE_SIZE_LABEL } from"../candidato-page.constants"
@@ -79,7 +79,7 @@ export function CandidatoFilesTab({
                 <h4 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
                   <FileText className="w-4 h-4 text-lia-text-primary" />
                   Arquivos e Documentos
-                  <Badge className="text-xs px-1.5 py-0">{candidateFiles.length}</Badge>
+                  <Chip variant="neutral" muted className="text-xs px-1.5 py-0">{candidateFiles.length}</Chip>
                   {isLoadingFiles && (
                     <div
                       className="animate-spin motion-reduce:animate-none rounded-full h-3.5 w-3.5 border border-lia-border-medium border-t-lia-border-strong"
@@ -101,24 +101,24 @@ export function CandidatoFilesTab({
 
               {/* Categorias */}
               <div className="flex gap-1.5 flex-wrap">
-                <Badge
-                  variant="outline"
+                <Chip
+                  variant="neutral"
                   className={`text-xs px-2 py-0.5 cursor-pointer hover:bg-lia-bg-tertiary ${!selectedCategory ?"bg-lia-bg-tertiary" :""}`}
                   onClick={() => setSelectedCategory(null)}
                 >
                   📁 Todos ({candidateFiles.length})
-                </Badge>
+                </Chip>
                 {fileCategories
                   .filter((c) => (c.count as number) > 0)
                   .map((cat: Record<string, unknown>) => (
-                    <Badge
+                    <Chip
                       key={String(cat.category)}
-                      variant="outline"
+                      variant="neutral"
                       className={`text-xs px-2 py-0.5 cursor-pointer hover:bg-lia-bg-tertiary ${selectedCategory === String(cat.category) ?"bg-lia-bg-tertiary" :""}`}
                       onClick={() => setSelectedCategory(selectedCategory === String(cat.category) ? null : String(cat.category))}
                     >
                       {String(cat.icon)} {String(cat.label)} ({cat.count as number})
-                    </Badge>
+                    </Chip>
                   ))}
               </div>
             </div>
@@ -186,13 +186,13 @@ export function CandidatoFilesTab({
                                   {formatFileSize(Number(file.file_size) || 0)} • {String(file.file_name ||"").split(".").pop()?.toUpperCase()}
                                 </span>
                                 <span className="text-xs text-lia-text-secondary">{formatRelativeTime(String(file.created_at ||""))}</span>
-                                <Badge
+                                <Chip variant="neutral" muted
                                   className="text-xs px-1.5 py-0 h-4"
                                   style={{ backgroundColor: colors.bg, color: colors.text }}
                                 >
                                   <Tag className="w-2.5 h-2.5 mr-0.5" />
                                   {getCategoryLabel(String(file.file_type ||""))}
-                                </Badge>
+                                </Chip>
                               </div>
                             </div>
                             <div className="flex items-center gap-1.5">

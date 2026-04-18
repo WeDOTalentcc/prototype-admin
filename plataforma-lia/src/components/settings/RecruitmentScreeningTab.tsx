@@ -3,7 +3,7 @@
 import React from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   MessageSquare, Plus, Trash2, Save, X,
   CheckCircle, AlertCircle,
@@ -173,16 +173,16 @@ export function RecruitmentScreeningTab({
                     {q.question}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge variant="outline" className={`text-micro py-0 px-1.5 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
+                    <Chip variant="neutral" className={`text-micro py-0 px-1.5 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
                       {q.type === 'text' ? t("recruitment.screening.typeText") : q.type === 'yesno' ? t("recruitment.screening.typeYesNo") : t("recruitment.screening.typeScale")}
-                    </Badge>
+                    </Chip>
                     {q.required && (
-                      <Badge className={`text-micro py-0 px-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text ${!isEditingQuestions ? 'opacity-60' : ''}`}>{t("recruitment.screening.required")}</Badge>
+                      <Chip variant="neutral" muted className={`text-micro py-0 px-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text ${!isEditingQuestions ? 'opacity-60' : ''}`}>{t("recruitment.screening.required")}</Chip>
                     )}
                     {q.is_eliminatory && (
-                      <Badge className={`text-micro py-0 px-1.5  border border-status-error/30 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
+                      <Chip variant="neutral" muted className={`text-micro py-0 px-1.5  border border-status-error/30 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
                         {t("recruitment.screening.eliminatory")} {q.expected_answer && `(${q.expected_answer})`}
-                      </Badge>
+                      </Chip>
                     )}
                     {q.isDefault && (
                       <span className="text-micro text-lia-text-tertiary">{t("recruitment.screening.default")}</span>
@@ -232,7 +232,7 @@ function QuestionBankSection({
           <div className="flex items-center gap-2">
             <Brain className="w-4 h-4 text-wedo-cyan" />
             <span className={textStyles.h4}>{t("recruitment.screening.suggestedBankTitle")}</span>
-            <Badge variant="outline" className="text-micro">{t("recruitment.screening.questionsCount", { count: ELIGIBILITY_QUESTIONS_BANK.length })}</Badge>
+            <Chip variant="neutral" className="text-micro">{t("recruitment.screening.questionsCount", { count: ELIGIBILITY_QUESTIONS_BANK.length })}</Chip>
           </div>
           <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={onClose}>
             <X className="w-3.5 h-3.5" />
@@ -256,7 +256,7 @@ function QuestionBankSection({
                 <div className="flex items-center gap-2">
                   <span className="text-sm">{categoryInfo.icon}</span>
                   <span className={textStyles.label}>{categoryInfo.label}</span>
-                  <Badge variant="outline" className="text-micro py-0 px-1.5">{categoryQuestions.length}</Badge>
+                  <Chip variant="neutral" className="text-micro py-0 px-1.5">{categoryQuestions.length}</Chip>
                 </div>
                 {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-lia-text-tertiary" /> : <ChevronDown className="w-3.5 h-3.5 text-lia-text-tertiary" />}
               </button>
@@ -282,12 +282,12 @@ function QuestionBankSection({
                         <div className="flex-1 min-w-0">
                           <p className={textStyles.bodySmall}>{q.question}</p>
                           <div className="flex items-center gap-1.5 mt-1">
-                            <Badge variant="outline" className="text-micro py-0 px-1">
+                            <Chip variant="neutral" className="text-micro py-0 px-1">
                               {q.type === 'text' ? t("recruitment.screening.typeText") : q.type === 'yesno' ? t("recruitment.screening.typeYesNo") : q.type === 'scale' ? t("recruitment.screening.typeScale") : t("recruitment.screening.typeMultiple")}
-                            </Badge>
+                            </Chip>
                             <span className={textStyles.caption}>{q.contextHint}</span>
                             {isAdded && (
-                              <Badge className="text-micro py-0 px-1">{t("recruitment.screening.alreadyAdded")}</Badge>
+                              <Chip variant="neutral" muted className="text-micro py-0 px-1">{t("recruitment.screening.alreadyAdded")}</Chip>
                             )}
                           </div>
                         </div>

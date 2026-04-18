@@ -2,7 +2,7 @@
 
 import React, { forwardRef, useImperativeHandle, useState } from"react"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Globe, Info, Loader2, CheckCircle, AlertCircle } from"lucide-react"
 import { Switch } from"@/components/ui/switch"
 import { Users, Settings, DollarSign } from"lucide-react"
@@ -84,9 +84,9 @@ export const GlobalSearchHub = forwardRef<GlobalSearchHubRef, GlobalSearchHubPro
                   Habilitar Busca Global
                 </span>
                 {settings.globalSearchEnabled ? (
-                  <Badge className="text-xs">Ativo</Badge>
+                  <Chip variant="neutral" muted className="text-xs">Ativo</Chip>
                 ) : (
-                  <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">Desativado</Badge>
+                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">Desativado</Chip>
                 )}
               </div>
               <p className="text-xs text-lia-text-secondary mb-2" aria-live="polite" aria-atomic="true">

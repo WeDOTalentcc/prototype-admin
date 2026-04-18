@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { CheckCircle, Clock, ChevronRight } from"lucide-react"
 
 export function ScreeningTimelineSection() {
@@ -32,7 +32,7 @@ export function ScreeningTimelineSection() {
                 <div className="font-medium text-lia-text-primary">Preparação (5 min antes)</div>
                 <p className="text-sm text-lia-text-secondary">Revisar currículo, preparar perguntas específicas, configurar ambiente</p>
               </div>
-              <Badge variant="outline" className="text-xs">5 min</Badge>
+              <Chip variant="neutral" className="text-xs">5 min</Chip>
             </div>
 
             <div className="flex items-start gap-4">
@@ -43,7 +43,7 @@ export function ScreeningTimelineSection() {
                 <div className="font-medium text-lia-text-primary">Triagem (20-30 min)</div>
                 <p className="text-sm text-lia-text-secondary">Execução da conversa seguindo roteiro estruturado</p>
               </div>
-              <Badge variant="outline" className="text-xs">25 min</Badge>
+              <Chip variant="neutral" className="text-xs">25 min</Chip>
             </div>
 
             <div className="flex items-start gap-4">
@@ -54,7 +54,7 @@ export function ScreeningTimelineSection() {
                 <div className="font-medium text-lia-text-primary">Avaliação (5-10 min após)</div>
                 <p className="text-sm text-lia-text-secondary">Análise das respostas, decisão e anotações</p>
               </div>
-              <Badge variant="outline" className="text-xs">10 min</Badge>
+              <Chip variant="neutral" className="text-xs">10 min</Chip>
             </div>
 
             <div className="flex items-start gap-4">
@@ -65,7 +65,7 @@ export function ScreeningTimelineSection() {
                 <div className="font-medium text-lia-text-primary">Feedback (24-48h após)</div>
                 <p className="text-sm text-lia-text-secondary">Envio de retorno personalizado ao candidato</p>
               </div>
-              <Badge variant="outline" className="text-xs">1-2 dias</Badge>
+              <Chip variant="neutral" className="text-xs">1-2 dias</Chip>
             </div>
           </div>
         </CardContent>

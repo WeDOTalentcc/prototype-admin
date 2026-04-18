@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from"react"
 import NextImage from"next/image"
 import { useParams } from"next/navigation"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { 
  MapPin, 
  Briefcase, 
@@ -349,15 +349,15 @@ export default function PublicVacancyPage() {
  <header className="mb-10">
  <div className="flex flex-wrap gap-2 mb-4">
  {vacancy.is_affirmative && (
- <Badge className="bg-wedo-magenta/10 text-wedo-magenta border-wedo-magenta/30 font-normal">
+ <Chip variant="neutral" muted className="bg-wedo-magenta/10 text-wedo-magenta border-wedo-magenta/30 font-normal">
  <Heart className="w-3 h-3 mr-1" />
  Vaga Afirmativa
- </Badge>
+ </Chip>
  )}
  {vacancy.department && (
- <Badge variant="outline" className="border-lia-border-subtle dark:border-lia-border-medium text-lia-text-secondary dark:text-lia-text-disabled font-normal">
+ <Chip variant="neutral" className="border-lia-border-subtle dark:border-lia-border-medium text-lia-text-secondary dark:text-lia-text-disabled font-normal">
  {vacancy.department}
- </Badge>
+ </Chip>
  )}
  </div>
  
@@ -439,9 +439,9 @@ export default function PublicVacancyPage() {
  </h3>
  <div className="flex flex-wrap gap-2">
  {vacancy.technical_requirements.map((tech, idx) => (
- <Badge 
+ <Chip 
  key={`tech-${idx}`} 
- variant="outline"
+ variant="neutral"
  className={
  tech.required 
  ?"border-lia-border-default dark:border-lia-border-medium text-lia-text-primary dark:text-lia-text-disabled bg-lia-bg-secondary dark:bg-lia-bg-inverse font-normal"
@@ -454,7 +454,7 @@ export default function PublicVacancyPage() {
  · {tech.level}
  </span>
  )}
- </Badge>
+ </Chip>
  ))}
  </div>
  </section>
@@ -468,9 +468,9 @@ export default function PublicVacancyPage() {
  </h3>
  <div className="flex flex-wrap gap-2">
  {vacancy.languages.map((lang, idx) => (
- <Badge 
+ <Chip 
  key={`lang-${idx}`}
- variant="outline"
+ variant="neutral"
  className={
  lang.required 
  ?"border-lia-border-default dark:border-lia-border-medium text-lia-text-primary dark:text-lia-text-disabled bg-lia-bg-secondary dark:bg-lia-bg-inverse font-normal"
@@ -483,7 +483,7 @@ export default function PublicVacancyPage() {
  · {levelLabels[lang.level] || lang.level}
  </span>
  )}
- </Badge>
+ </Chip>
  ))}
  </div>
  </section>
@@ -497,13 +497,13 @@ export default function PublicVacancyPage() {
  </h3>
  <div className="flex flex-wrap gap-2">
  {vacancy.behavioral_competencies.map((comp, idx) => (
- <Badge 
+ <Chip 
  key={`comp-${idx}`}
- variant="outline"
+ variant="neutral"
  className="border-lia-border-subtle dark:border-lia-border-medium text-lia-text-secondary dark:text-lia-text-disabled font-normal"
  >
  {comp.competency}
- </Badge>
+ </Chip>
  ))}
  </div>
  </section>

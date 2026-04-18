@@ -6,7 +6,7 @@ import { useTranslations, useLocale } from "next-intl"
 import { LogIn } from"lucide-react"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from"@/components/ui/tabs"
 import { BulkActionsBar } from"@/components/ui/bulk-actions-bar"
 import { CandidatesTable } from"@/components/pages/candidates/CandidatesTable"
@@ -258,9 +258,9 @@ const SENIORITY_OPTIONS = [
               <Search className="w-3.5 h-3.5 mr-1" />
               {t('tabs.search')}
               {activeTab ==="todos" && total > 0 && (
-                <Badge className="ml-1.5 h-4 px-1.5 text-micro  dark:bg-wedo-cyan/20 dark:text-wedo-cyan">
+                <Chip variant="neutral" muted className="ml-1.5 h-4 px-1.5 text-micro  dark:bg-wedo-cyan/20 dark:text-wedo-cyan">
                   {total}
-                </Badge>
+                </Chip>
               )}
             </TabsTrigger>
             <TabsTrigger value="favoritos" className="rounded-lg text-xs"><Heart className="w-3.5 h-3.5 mr-1" />{t('tabs.favorites')}</TabsTrigger>

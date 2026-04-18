@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Plus, Edit, X, CheckCircle, Search, Loader2, BarChart3
 } from"lucide-react"
@@ -215,24 +215,24 @@ export function GoalsTemplateSelectModal({
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-0.5">
-                  <Badge className={`text-micro px-1.5 py-0.5 ${getCategoryColor(template.category)}`}>
+                  <Chip variant="neutral" muted className={`text-micro px-1.5 py-0.5 ${getCategoryColor(template.category)}`}>
                     {template.category}
-                  </Badge>
+                  </Chip>
                   {isAppliedToAll && (
-                    <Badge className="text-micro px-1.5 py-0.5  border-status-success/30">
+                    <Chip variant="neutral" muted className="text-micro px-1.5 py-0.5  border-status-success/30">
                       <CheckCircle className="w-2.5 h-2.5 mr-0.5" />
                       Aplicado a Todos
-                    </Badge>
+                    </Chip>
                   )}
                   {isPartiallyApplied && (
-                    <Badge className="text-micro px-1.5 py-0.5  border-status-warning/30">
+                    <Chip variant="neutral" muted className="text-micro px-1.5 py-0.5  border-status-warning/30">
                       {appliedCount}/{users.length} usuários
-                    </Badge>
+                    </Chip>
                   )}
                   {selectedUser && isAppliedToSelectedUser && !isAppliedToAll && (
-                    <Badge className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
+                    <Chip variant="neutral" muted className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle">
                       Já aplicado a {selectedUser.name.split(' ')[0]}
-                    </Badge>
+                    </Chip>
                   )}
                 </div>
               </div>
@@ -252,10 +252,10 @@ export function GoalsTemplateSelectModal({
                   Meta: {template.defaultTarget} {template.unit}
                 </span>
                 <div className="flex items-center gap-1.5">
-                  <Badge variant="outline" className="text-micro px-1.5 py-0.5">
+                  <Chip variant="neutral" className="text-micro px-1.5 py-0.5">
                     {template.period === 'monthly' ? 'Mensal' :
                      template.period === 'quarterly' ? 'Trimestral' : 'Anual'}
-                  </Badge>
+                  </Chip>
                   <div className="flex items-center gap-0.5">
                     <Button
                       variant="ghost"

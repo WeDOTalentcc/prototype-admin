@@ -2,7 +2,7 @@
 
 import React from"react"
 import { X } from"lucide-react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Input } from"@/components/ui/input"
 
 export interface TagInputProps {
@@ -30,12 +30,12 @@ export function TagInput({ placeholder, tags, onAdd, onRemove }: TagInputProps) 
       {tags.length > 0 && (
         <div data-testid="tag-list" className="flex flex-wrap gap-1">
           {tags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-micro px-2 py-0.5 flex items-center gap-1">
+            <Chip key={tag} variant="neutral" muted className="text-micro px-2 py-0.5 flex items-center gap-1">
               {tag}
               <button data-testid={`remove-tag-${tag}`} onClick={() => onRemove(tag)}>
                 <X className="w-2.5 h-2.5" />
               </button>
-            </Badge>
+            </Chip>
           ))}
         </div>
       )}

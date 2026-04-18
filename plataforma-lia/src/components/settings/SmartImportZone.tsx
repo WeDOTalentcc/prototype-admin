@@ -4,7 +4,7 @@ import React, { useState, useRef, useCallback } from"react"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { Button } from"@/components/ui/button"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { ThinkingDots } from"@/components/ui/thinking-dots"
 import {
   FileSpreadsheet,
@@ -256,14 +256,14 @@ export function SmartImportZone({
             {description}
           </p>
           <div className="flex items-center gap-2">
-            <Badge variant="outline" className="text-micro rounded-full">
+            <Chip variant="neutral" className="text-micro rounded-full">
               <FileSpreadsheet className="w-3.5 h-3.5 mr-1" />
               Excel (.xlsx, .xls)
-            </Badge>
-            <Badge variant="outline" className="text-micro rounded-full">
+            </Chip>
+            <Chip variant="neutral" className="text-micro rounded-full">
               <FileText className="w-3.5 h-3.5 mr-1" />
               CSV
-            </Badge>
+            </Chip>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -302,13 +302,13 @@ export function SmartImportZone({
               </p>
               <div className="flex flex-wrap justify-center gap-1.5">
                 {expectedFields.map((field) => (
-                  <Badge 
+                  <Chip 
                     key={field} 
-                    variant="secondary" 
+                    variant="neutral" muted 
                     className="text-micro bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary rounded-xl"
                   >
                     {field}
-                  </Badge>
+                  </Chip>
                 ))}
               </div>
             </div>
@@ -403,9 +403,9 @@ export function SmartImportZone({
                     Campos identificados:
                   </span>
                   {previewData.matchedFields.map((field) => (
-                    <Badge key={field} className="text-micro  dark:bg-status-success/30 dark:text-status-success rounded-full">
+                    <Chip variant="neutral" muted key={field} className="text-micro  dark:bg-status-success/30 dark:text-status-success rounded-full">
                       {field}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               )}
@@ -416,9 +416,9 @@ export function SmartImportZone({
                     Não encontrados:
                   </span>
                   {previewData.unmatchedFields.map((field) => (
-                    <Badge key={field} className="text-micro  dark:bg-status-warning/30 dark:text-status-warning rounded-full">
+                    <Chip variant="neutral" muted key={field} className="text-micro  dark:bg-status-warning/30 dark:text-status-warning rounded-full">
                       {field}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               )}

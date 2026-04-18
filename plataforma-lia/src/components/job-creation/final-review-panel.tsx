@@ -7,7 +7,7 @@ import { cn } from"@/lib/utils"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Input } from"@/components/ui/input"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Progress } from"@/components/ui/progress"
 import { ScrollArea } from"@/components/ui/scroll-area"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from"@/components/ui/collapsible"
@@ -310,14 +310,14 @@ export function FinalReviewPanel({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold font-sans">Revisão Final</CardTitle>
-          <Badge
-            variant="outline"
+          <Chip
+            variant="neutral"
             className={cn("text-sm font-semibold",
               can_publish ?"border-status-success/30 text-status-success" :"border-status-error/30 text-status-error"
             )}
           >
             {can_publish ?"Pronto para publicar" :"Campos obrigatórios pendentes"}
-          </Badge>
+          </Chip>
         </div>
         
         <div className="mt-3">

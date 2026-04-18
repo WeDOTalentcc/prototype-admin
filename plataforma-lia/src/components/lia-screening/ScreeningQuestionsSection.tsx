@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { CheckCircle, Edit, Target, Copy } from"lucide-react"
 
@@ -39,9 +39,9 @@ export function ScreeningQuestionsSection({ screeningQuestions, copiedSection, o
                 {section.category}
               </CardTitle>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-xs">
+                <Chip variant="neutral" className="text-xs">
                   {section.questions.length} perguntas
-                </Badge>
+                </Chip>
                 <Button
                   variant="outline"
                   size="sm"

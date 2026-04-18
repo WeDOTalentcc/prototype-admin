@@ -4,7 +4,7 @@ import { useState, useMemo } from"react"
 import { useChatStateStore } from"@/stores/chat-state-store"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Input } from"@/components/ui/input"
 import { Textarea } from"@/components/ui/textarea"
 import {
@@ -290,15 +290,15 @@ export function TemplatesPage() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge className={`text-xs px-2 py-1 ${getCategoryColor(template.category)}`}>
+                    <Chip variant="neutral" muted className={`text-xs px-2 py-1 ${getCategoryColor(template.category)}`}>
                       {getCategoryIcon(template.category)}
                       <span className="ml-1 capitalize">{template.category}</span>
-                    </Badge>
+                    </Chip>
                     {template.isShared && (
-                      <Badge variant="outline" className="text-xs">
+                      <Chip variant="neutral" className="text-xs">
                         <Users className="w-3 h-3 mr-1" />
                         Compartilhado
-                      </Badge>
+                      </Chip>
                     )}
                   </div>
                   <CardTitle className="text-lg">{template.name}</CardTitle>
@@ -317,9 +317,9 @@ export function TemplatesPage() {
               {/* Tags */}
               <div className="flex flex-wrap gap-1 mb-3">
                 {template.tags.map((tag, index) => (
-                  <Badge key={tag} variant="outline" className="text-xs">
+                  <Chip key={tag} variant="neutral" className="text-xs">
                     {tag}
-                  </Badge>
+                  </Chip>
                 ))}
               </div>
 

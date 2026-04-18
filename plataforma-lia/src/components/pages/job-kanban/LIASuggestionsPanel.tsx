@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Brain, RefreshCw, Target, Wand2, X } from"lucide-react"
 import { useTranslations } from "next-intl"
 
@@ -77,9 +77,9 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
                   <h4 className="text-sm font-medium text-lia-text-primary group-hover:text-lia-text-primary">
                     {pergunta}
                   </h4>
-                  <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">
+                  <Chip variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">
                     {index === 0 ? t('recommendedBadge') : index === 1 ? t('popularBadge') : t('suggestedBadge')}
-                  </Badge>
+                  </Chip>
                 </div>
                 <div className="mt-3 flex items-center justify-between">
                   <div className="flex items-center gap-4 text-xs text-lia-text-primary">

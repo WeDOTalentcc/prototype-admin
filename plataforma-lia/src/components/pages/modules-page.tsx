@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react"
 import { useTranslations } from "next-intl"
+import { Chip } from "@/components/ui/chip"
 import { cn } from "@/lib/utils"
 import {
   Brain,
@@ -20,7 +21,6 @@ import {
   Layers,
 } from "lucide-react"
 import { BetaBadge } from "@/components/ui/beta-badge"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/auth-context"
 
@@ -92,13 +92,13 @@ const MODULE_FEATURE_KEYS: Record<string, string[]> = {
   ],
 }
 
-const STATUS_DISPLAY: Record<ModuleStatusType, { labelKey: string; variant: "lilac" | "success" | "info" | "default" | "secondary"; icon: React.ElementType }> = {
-  beta: { labelKey: "status.beta", variant: "lilac", icon: Sparkles },
+const STATUS_DISPLAY: Record<ModuleStatusType, { labelKey: string; variant: "info" | "success" | "neutral"; muted?: boolean; icon: React.ElementType }> = {
+  beta: { labelKey: "status.beta", variant: "info", icon: Sparkles },
   trial: { labelKey: "status.trial", variant: "info", icon: Clock },
   active: { labelKey: "status.active", variant: "success", icon: CheckCircle },
-  expired: { labelKey: "status.expired", variant: "default", icon: Clock },
-  disabled: { labelKey: "status.disabled", variant: "secondary", icon: Lock },
-  coming_soon: { labelKey: "status.comingSoon", variant: "secondary", icon: Clock },
+  expired: { labelKey: "status.expired", variant: "neutral", muted: true, icon: Clock },
+  disabled: { labelKey: "status.disabled", variant: "neutral", muted: true, icon: Lock },
+  coming_soon: { labelKey: "status.comingSoon", variant: "neutral", muted: true, icon: Clock },
 }
 
 function ModuleCard({ module }: { module: ModuleInfo }) {
@@ -145,7 +145,7 @@ function ModuleCard({ module }: { module: ModuleInfo }) {
           {isBeta ? (
             <BetaBadge size="md" />
           ) : (
-            <Badge variant={statusConfig.variant}>{t(statusConfig.labelKey)}</Badge>
+            <Chip variant={statusConfig.variant} muted={statusConfig.muted}>{t(statusConfig.labelKey)}</Chip>
           )}
         </div>
 

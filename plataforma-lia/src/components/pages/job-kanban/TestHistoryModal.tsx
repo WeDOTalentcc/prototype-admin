@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { textStyles } from"@/lib/design-tokens"
 import {
   Award,
@@ -69,10 +69,10 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                     <p className="text-base-ui font-semibold">7.4</p>
                     <span className="text-lg opacity-80">/10</span>
                     <div className="flex items-center gap-2 ml-3">
-                      <Badge className="bg-lia-bg-primary/20 text-white border-white/30">
+                      <Chip variant="neutral" muted className="bg-lia-bg-primary/20 text-white border-white/30">
                         <TrendingUp className="w-3 h-3 mr-1" />
                         {t('testHistory.vsPreviousMonth', { diff: '+0.3' })}
-                      </Badge>
+                      </Chip>
                     </div>
                   </div>
                 </div>
@@ -156,7 +156,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h4 className="font-medium text-lia-text-primary">UX Designer Sênior</h4>
-                    <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-tertiary text-xs">{t('testHistory.statusFinished')}</Badge>
+                    <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-tertiary text-xs">{t('testHistory.statusFinished')}</Chip>
                     <span className="text-xs text-lia-text-primary">Sodexo • São Paulo</span>
                   </div>
                   <div className="flex items-center gap-6 text-xs text-lia-text-secondary">
@@ -188,10 +188,10 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <div className="flex items-center justify-between mb-1">
                   <span className={textStyles.description}>{t('testHistory.scoreDistribution')}</span>
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs px-1.5">
+                    <Chip variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs px-1.5">
                       <Trophy className="w-2.5 h-2.5 mr-0.5" />
                       {t('testHistory.avgScore', { score: '7.8/10' })}
-                    </Badge>
+                    </Chip>
                   </div>
                 </div>
                 <div className="flex items-end gap-0.5 h-6">
@@ -211,7 +211,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h4 className="font-medium text-lia-text-primary">Product Designer</h4>
-                    <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">{t('testHistory.statusInProgress')}</Badge>
+                    <Chip variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">{t('testHistory.statusInProgress')}</Chip>
                     <span className="text-xs text-lia-text-primary">Nubank • Remoto</span>
                   </div>
                   <div className="flex items-center gap-6 text-xs text-lia-text-secondary">
@@ -243,10 +243,10 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <div className="flex items-center justify-between mb-1">
                   <span className={textStyles.description}>{t('testHistory.scoreDistribution')}</span>
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs px-1.5">
+                    <Chip variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs px-1.5">
                       <Trophy className="w-2.5 h-2.5 mr-0.5" />
                       {t('testHistory.avgScore', { score: '7.2/10' })}
-                    </Badge>
+                    </Chip>
                   </div>
                 </div>
                 <div className="flex items-end gap-0.5 h-6">
@@ -266,7 +266,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h4 className="font-medium text-lia-text-primary">UI/UX Designer</h4>
-                    <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-xs">{t('testHistory.statusCancelled')}</Badge>
+                    <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary text-xs">{t('testHistory.statusCancelled')}</Chip>
                     <span className="text-xs text-lia-text-primary">iFood • Campinas</span>
                   </div>
                   <div className="flex items-center gap-6 text-xs text-lia-text-secondary">
@@ -298,10 +298,10 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <div className="flex items-center justify-between mb-1">
                   <span className={textStyles.description}>{t('testHistory.scoreDistribution')}</span>
                   <div className="flex items-center gap-2">
-                    <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs px-1.5">
+                    <Chip variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs px-1.5">
                       <Trophy className="w-2.5 h-2.5 mr-0.5" />
                       {t('testHistory.avgScore', { score: '6.5/10' })}
-                    </Badge>
+                    </Chip>
                   </div>
                 </div>
                 <div className="flex items-end gap-0.5 h-6">

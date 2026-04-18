@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from"react"
 import { createPortal } from"react-dom"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { Textarea } from"@/components/ui/textarea"
 import {
@@ -679,9 +679,9 @@ useEffect(() => {
                 <Eye className="w-4 h-4 text-lia-text-secondary" />
                 <span className={textStyles.subtitle}>{t('invite.messagePreview')}</span>
               </div>
-              <Badge variant="outline" className="text-micro">
+              <Chip variant="neutral" className="text-micro">
                 {channel === 'email' ? t('invite.email') : channel === 'whatsapp' ? t('invite.whatsapp') : channel === 'both' ? t('invite.both') : t('invite.phone')}
-              </Badge>
+              </Chip>
             </div>
 
             {/* Preview Card - Different styles per channel */}

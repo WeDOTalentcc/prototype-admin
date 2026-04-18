@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Database, Plus, ChevronDown, ChevronRight, Bot } from"lucide-react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { textStyles, badgeStyles } from"@/lib/design-tokens"
 import { useTalentPools, TalentPoolSummary } from"./useTalentPools"
 
@@ -57,7 +57,7 @@ export default function TalentPoolsSidebar({
         </div>
         <div className="flex items-center gap-1">
           {activePools.length > 0 && (
-            <Badge className={badgeStyles.success}>{activePools.length}</Badge>
+            <Chip variant="neutral" muted className={badgeStyles.success}>{activePools.length}</Chip>
           )}
           {isExpanded ? (
             <ChevronDown className="w-3.5 h-3.5 text-lia-text-tertiary" />

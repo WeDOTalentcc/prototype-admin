@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Mic, Play, ClipboardCheck, Video } from"lucide-react"
 import { textStyles, cardStyles } from '@/lib/design-tokens'
@@ -26,9 +26,9 @@ export function ActivityVoiceScreeningDetails({ activity, candidate, onOpenTriag
         <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
           <Mic className="w-3 h-3 text-status-error" />
           Triagem por Voz
-          <Badge className="ml-2 text-micro px-1.5 py-0">
+          <Chip variant="neutral" muted className="ml-2 text-micro px-1.5 py-0">
             {activity.details.questionsAnswered}/{activity.details.totalQuestions} perguntas
-          </Badge>
+          </Chip>
         </h5>
         <div className="grid grid-cols-3 gap-2 mb-3">
           <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
@@ -97,9 +97,9 @@ export function ActivityVideoInterviewDetails({ activity, onSetScreeningModalDat
         <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
           <Video className="w-3 h-3 text-wedo-purple" />
           Entrevista em Vídeo
-          <Badge className={`ml-2  border-status-success/30`}>
+          <Chip variant="neutral" muted className={`ml-2  border-status-success/30`}>
             {activity.details.questionsAnswered}/{activity.details.totalQuestions} perguntas
-          </Badge>
+          </Chip>
         </h5>
         <div className="grid grid-cols-3 gap-2 mb-3">
           <div className="text-center p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">

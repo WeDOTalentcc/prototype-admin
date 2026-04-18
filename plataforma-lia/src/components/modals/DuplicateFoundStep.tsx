@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Card, CardContent } from"@/components/ui/card"
 import {
   AlertCircle, ExternalLink, Building, MapPin, Loader2
@@ -56,16 +56,16 @@ export function DuplicateFoundStep({
                 )}
                 <div className="flex flex-wrap items-center gap-2 mt-2">
                   {duplicateResult.candidate.current_company && (
-                    <Badge variant="outline" className="text-micro py-0 px-1.5">
+                    <Chip variant="neutral" className="text-micro py-0 px-1.5">
                       <Building className="w-2.5 h-2.5 mr-1" />
                       {duplicateResult.candidate.current_company}
-                    </Badge>
+                    </Chip>
                   )}
                   {duplicateResult.candidate.location_city && (
-                    <Badge variant="outline" className="text-micro py-0 px-1.5">
+                    <Chip variant="neutral" className="text-micro py-0 px-1.5">
                       <MapPin className="w-2.5 h-2.5 mr-1" />
                       {duplicateResult.candidate.location_city}
-                    </Badge>
+                    </Chip>
                   )}
                 </div>
                 {duplicateResult.matchType && (

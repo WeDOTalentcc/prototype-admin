@@ -1,6 +1,6 @@
 import { CURRENCY_SYMBOL } from"@/lib/pricing"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   ConversionFunnelChart,
 } from"@/components/charts/interactive-charts"
@@ -107,7 +107,7 @@ export function StrategicTab() {
                     <span>{item.level}</span>
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{item.days} dias</span>
-                      <Badge
+                      <Chip variant="neutral" muted
                         className={
                           item.days <= item.target
                             ?""
@@ -115,7 +115,7 @@ export function StrategicTab() {
                         }
                       >
                         {item.days <= item.target ?"✓" :"!"}
-                      </Badge>
+                      </Chip>
                     </div>
                   </div>
                   <div className="w-full bg-lia-interactive-active rounded-full h-2">

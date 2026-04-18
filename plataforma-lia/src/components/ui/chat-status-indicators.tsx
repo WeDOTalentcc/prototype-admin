@@ -6,7 +6,7 @@ import {
   FileText, Search, Target, ArrowRight, Calendar
 } from"lucide-react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 
 // Thinking Indicator Component
 export const ThinkingIndicator = ({ message }: { message?: string }) => {
@@ -101,9 +101,9 @@ export const ProgressSteps = ({ steps, currentStep }: {
                     {step.label}
                   </span>
                   {isProcessing && (
-                    <Badge variant="outline" className="text-xs bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary border-lia-border-default">
+                    <Chip variant="neutral" className="text-xs bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary border-lia-border-default">
                       Em andamento
-                    </Badge>
+                    </Chip>
                   )}
                 </div>
                 {step.details && (

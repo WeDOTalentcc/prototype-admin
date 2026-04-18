@@ -5,7 +5,7 @@ import { useState, useEffect } from"react"
 import { Button } from"@/components/ui/button"
 import { useOnboardingStore } from"@/stores/onboarding-store"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Shield, Mail, CheckCircle, AlertCircle, Loader2,
   Building, User, Eye, EyeOff, Key, ArrowRight,
@@ -319,9 +319,9 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     <h4 className="lia-title-medium text-lia-text-primary mb-3">
                       {accessData?.companyName}
                     </h4>
-                    <Badge className="lia-bg-mint text-lia-text-primary border-0 px-4 py-2 lia-font-sans font-semibold">
+                    <Chip variant="neutral" muted className="lia-bg-mint text-lia-text-primary border-0 px-4 py-2 lia-font-sans font-semibold">
                       ✓ Convite válido
-                    </Badge>
+                    </Chip>
                   </div>
 
                   <div className="space-y-4 lia-text-medium">

@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent, CardHeader } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Save, CheckCircle, AlertCircle,
   Loader2, Pencil
@@ -72,9 +72,9 @@ export function RecruitmentPipelineTab({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           {isEditingPipeline && hasStageChanges && (
-            <Badge variant="outline" className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
+            <Chip variant="neutral" className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
               {t("recruitment.pipeline.unsavedChanges")}
-            </Badge>
+            </Chip>
           )}
         </div>
         <div className="flex items-center gap-2">

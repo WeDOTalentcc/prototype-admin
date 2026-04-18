@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { CheckCircle2, ArrowRight, Brain } from"lucide-react"
 import Link from"next/link"
 import { PLANS } from"@/lib/pricing"
@@ -15,9 +15,9 @@ export default function UpgradePage() {
       </div>
 
       <div className="text-center mb-10 max-w-xl">
-        <Badge variant="outline" className="mb-4 border-status-warning/30 text-status-warning bg-status-warning/10">
+        <Chip variant="neutral" className="mb-4 border-status-warning/30 text-status-warning bg-status-warning/10">
           Período de trial encerrado
-        </Badge>
+        </Chip>
         <h1 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">
           Seu trial expirou
         </h1>
@@ -37,7 +37,7 @@ export default function UpgradePage() {
           >
             <div>
               {plan.highlighted && (
-                <Badge className="mb-3 bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">Mais popular</Badge>
+                <Chip variant="neutral" muted className="mb-3 bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">Mais popular</Chip>
               )}
               <h2 className="text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary">{plan.name}</h2>
               <div className="flex items-baseline gap-1 mt-1">

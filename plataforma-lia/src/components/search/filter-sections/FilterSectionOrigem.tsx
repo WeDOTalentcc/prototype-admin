@@ -3,7 +3,7 @@ import React from"react"
 import { Globe, Home, RefreshCw, Check, Eye } from"lucide-react"
 import { cn } from"@/lib/utils"
 import { textStyles } from"@/lib/design-tokens"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Switch } from"@/components/ui/switch"
 import { RadioGroup, RadioGroupItem } from"@/components/ui/radio-group"
 import { type SearchSource, type SearchFilters } from"../advancedFiltersTypes"
@@ -59,12 +59,12 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
               :"border-lia-border-subtle hover:border-lia-border-default"
           )}
         >
-          <Badge
+          <Chip variant="neutral" muted
             className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium text-status-warning"
            
           >
             1 CRED + $0.01 APIFY
-          </Badge>
+          </Chip>
           <div className="flex items-center gap-2 mb-2">
             <RadioGroupItem value="hybrid" id="hybrid" className="sr-only" />
             <RefreshCw className={cn("w-4 h-4", searchSource ==="hybrid" ?"text-lia-text-primary" :"text-lia-text-secondary")} />
@@ -87,12 +87,12 @@ export const FilterSectionOrigem = React.memo(function FilterSectionOrigem({
               :"border-lia-border-subtle hover:border-lia-border-default"
           )}
         >
-          <Badge
+          <Chip variant="neutral" muted
             className="absolute top-2 right-2 text-micro px-1.5 py-0.5 font-medium text-status-warning"
            
           >
             1 CRED + $0.01 APIFY
-          </Badge>
+          </Chip>
           <div className="flex items-center gap-2 mb-2">
             <RadioGroupItem value="global" id="global" className="sr-only" />
             <Globe className={cn("w-4 h-4", searchSource ==="global" ?"text-lia-text-primary" :"text-lia-text-secondary")} />

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useCallback, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Upload, FileText, CheckCircle, AlertTriangle, Loader2, X, Clock,
   BookOpen, Network, DollarSign, Code,
@@ -348,19 +348,19 @@ export function DocumentUploadCard() {
                     {uploaded && uploaded.warnings.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1.5">
                         {uploaded.warnings.slice(0, 2).map((w, i) => (
-                          <Badge
+                          <Chip
                             key={i}
-                            variant="outline"
+                            variant="neutral"
                             className="text-micro bg-status-warning/10 text-status-warning border-status-warning/30 rounded-full px-1.5 py-0"
                           >
                             <AlertTriangle className="w-2.5 h-2.5 mr-0.5" />
                             {w.length > 50 ? w.substring(0, 50) + "…" : w}
-                          </Badge>
+                          </Chip>
                         ))}
                         {uploaded.warnings.length > 2 && (
-                          <Badge variant="outline" className="text-micro text-status-warning border-status-warning/30 rounded-full px-1.5 py-0">
+                          <Chip variant="neutral" className="text-micro text-status-warning border-status-warning/30 rounded-full px-1.5 py-0">
                             +{uploaded.warnings.length - 2}
-                          </Badge>
+                          </Chip>
                         )}
                       </div>
                     )}
@@ -417,13 +417,13 @@ export function DocumentUploadCard() {
           </p>
           <div className="flex flex-wrap gap-1">
             {fairnessWarnings.map((warning, i) => (
-              <Badge
+              <Chip
                 key={i}
-                variant="outline"
+                variant="neutral"
                 className="text-micro bg-status-warning/10 text-status-warning border-status-warning/30 rounded-full"
               >
                 {warning}
-              </Badge>
+              </Chip>
             ))}
           </div>
         </div>

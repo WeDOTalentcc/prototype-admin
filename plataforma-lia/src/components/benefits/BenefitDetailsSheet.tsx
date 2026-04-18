@@ -10,7 +10,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from"@/components/ui/sheet"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { ScrollArea } from"@/components/ui/scroll-area"
 import {
   Utensils,
@@ -286,15 +286,15 @@ function BenefitCard({ benefit, isHighlighted = false }: BenefitCardProps) {
 
       <div className="flex flex-wrap gap-1 mt-2">
         {benefit.is_mandatory && (
-          <Badge variant="secondary" className="text-xs">Obrigatório</Badge>
+          <Chip variant="neutral" muted className="text-xs">Obrigatório</Chip>
         )}
         {benefit.is_discount && (
-          <Badge variant="outline" className="text-xs text-status-error border-status-error/30 dark:text-status-error dark:border-status-error/30">
+          <Chip variant="neutral" className="text-xs text-status-error border-status-error/30 dark:text-status-error dark:border-status-error/30">
             Desconto
-          </Badge>
+          </Chip>
         )}
         {benefit.provider && (
-          <Badge variant="outline" className="text-xs">{benefit.provider}</Badge>
+          <Chip variant="neutral" className="text-xs">{benefit.provider}</Chip>
         )}
       </div>
     </div>

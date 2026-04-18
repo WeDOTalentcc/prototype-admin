@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   useDecisionExplanation,
   type DecisionItem,
@@ -52,8 +52,8 @@ function ConfidenceBar({ value, level }: { value: number | null; level: string |
 function FairnessBadge({ status }: { status: string }) {
   const passed = status === "passed"
   return (
-    <Badge
-      variant="outline"
+    <Chip
+      variant="neutral"
       className={cn(
         "gap-1 text-xs",
         passed
@@ -67,7 +67,7 @@ function FairnessBadge({ status }: { status: string }) {
         <ShieldAlert className="w-3 h-3" aria-hidden="true" />
       )}
       {passed ? "Fairness OK" : "Revisar fairness"}
-    </Badge>
+    </Chip>
   )
 }
 
@@ -81,9 +81,9 @@ function DecisionCard({ decision }: { decision: DecisionItem }) {
         <div className="flex items-center gap-2">
           <Brain className="w-4 h-4 text-wedo-cyan" aria-hidden="true" />
           <span className="text-xs font-medium">{decision.agent}</span>
-          <Badge variant="secondary" className="text-xs">
+          <Chip variant="neutral" muted className="text-xs">
             {decision.type.replace(/_/g, " ")}
-          </Badge>
+          </Chip>
         </div>
         <div className="flex items-center gap-2">
           {result.score != null && (
@@ -139,18 +139,18 @@ function DecisionCard({ decision }: { decision: DecisionItem }) {
       {Object.keys(explanation.calibration_weights_used).length > 0 && (
         <div className="flex gap-2 flex-wrap">
           {Object.entries(explanation.calibration_weights_used).map(([dim, weight]) => (
-            <Badge key={dim} variant="outline" className="text-xs">
+            <Chip key={dim} variant="neutral" className="text-xs">
               {dim}: {(weight * 100).toFixed(0)}%
-            </Badge>
+            </Chip>
           ))}
         </div>
       )}
 
       {decision.human_reviewed && (
-        <Badge variant="outline" className="text-xs border-wedo-coral/30 text-wedo-coral">
+        <Chip variant="neutral" className="text-xs border-wedo-coral/30 text-wedo-coral">
           Revisado por humano
           {decision.human_override && ` (override: ${decision.human_override})`}
-        </Badge>
+        </Chip>
       )}
 
       {decision.timestamp && (

@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import {
   Maximize2, Minimize2, Play, Pause, RefreshCw, Calendar,
   BarChart3, TrendingUp, TrendingDown, Users, Briefcase,

@@ -2,7 +2,7 @@
 
 import React from "react"
 import { useTranslations } from "next-intl"
-import { Badge } from "@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Input } from "@/components/ui/input"
 import { X, MapPin, Brain, Code, CheckCircle, Bookmark, Calendar } from "lucide-react"
 import { badgeStyles, textStyles } from "@/lib/design-tokens"
@@ -60,7 +60,7 @@ export function FilterSectionsAdvanced({
           {tableFilters.softSkills.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {tableFilters.softSkills.map((skill) => (
-                <Badge key={skill} variant="secondary" className={`${badgeStyles.default} px-2 py-0.5 flex items-center gap-1`}>
+                <Chip key={skill} variant="neutral" muted className={`${badgeStyles.default} px-2 py-0.5 flex items-center gap-1`}>
                   {skill}
                   <button
                     onClick={() =>
@@ -72,7 +72,7 @@ export function FilterSectionsAdvanced({
                   >
                     <X className="w-2.5 h-2.5" />
                   </button>
-                </Badge>
+                </Chip>
               ))}
             </div>
           )}
@@ -107,7 +107,7 @@ export function FilterSectionsAdvanced({
           {tableFilters.certifications.length > 0 && (
             <div className="flex flex-wrap gap-1">
               {tableFilters.certifications.map((cert) => (
-                <Badge key={cert} variant="secondary" className={`${badgeStyles.default} px-2 py-0.5 flex items-center gap-1`}>
+                <Chip key={cert} variant="neutral" muted className={`${badgeStyles.default} px-2 py-0.5 flex items-center gap-1`}>
                   {cert}
                   <button
                     onClick={() =>
@@ -119,7 +119,7 @@ export function FilterSectionsAdvanced({
                   >
                     <X className="w-2.5 h-2.5" />
                   </button>
-                </Badge>
+                </Chip>
               ))}
             </div>
           )}

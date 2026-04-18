@@ -5,7 +5,7 @@ import { formatBRL } from"@/lib/pricing"
 import { useState } from"react"
 import { useModalA11y } from"@/hooks/ui/use-modal-a11y"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback } from"@/components/ui/avatar"
 import {
   X, MapPin, Linkedin, Github, Mail, Phone, Star,
@@ -118,9 +118,9 @@ export function QuickViewModal({
                 {candidate.position}
               </p>
               <div className="flex items-center gap-2 mt-1">
-                <Badge className={`text-micro px-2 py-1 ${getStatusColor(candidate.status)}`}>
+                <Chip variant="neutral" muted className={`text-micro px-2 py-1 ${getStatusColor(candidate.status)}`}>
                   {getStatusLabel(candidate.status)}
-                </Badge>
+                </Chip>
                 <div className={`px-2 py-1 rounded-full text-micro font-bold ${getScoreColor(candidate.liaAnalysis?.score || candidate.score)}`}>
                   {candidate.liaAnalysis?.score || candidate.score}% LIA
                 </div>
@@ -234,9 +234,9 @@ export function QuickViewModal({
                 <h3 className="text-xs font-medium text-lia-text-primary mb-3">Competências</h3>
                 <div className="flex flex-wrap gap-2">
                   {candidate.skills.map((skill) => (
-                    <Badge key={skill} variant="outline" className="text-micro border-lia-border-subtle dark:border-lia-border-default text-lia-text-secondary">
+                    <Chip key={skill} variant="neutral" className="text-micro border-lia-border-subtle dark:border-lia-border-default text-lia-text-secondary">
                       {skill}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -247,9 +247,9 @@ export function QuickViewModal({
                   <h3 className="text-xs font-medium text-lia-text-primary mb-3">Tags</h3>
                   <div className="flex flex-wrap gap-2">
                     {candidate.tags.map((tag) => (
-                      <Badge key={tag} className="text-micro bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
+                      <Chip variant="neutral" muted key={tag} className="text-micro bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
                         {tag}
-                      </Badge>
+                      </Chip>
                     ))}
                   </div>
                 </div>
@@ -267,7 +267,7 @@ export function QuickViewModal({
                       <div key={`job-${index}-${job.company || (job as any).title}`} className="border-l-2 border-lia-border-subtle pl-4 pb-4">
                         <div className="flex items-center gap-2 mb-2">
                           <h4 className="font-medium text-lia-text-primary text-xs">{job.position}</h4>
-                          <Badge variant="outline" className="text-micro border-lia-border-subtle">{job.period}</Badge>
+                          <Chip variant="neutral" className="text-micro border-lia-border-subtle">{job.period}</Chip>
                         </div>
                         <p className="text-xs text-lia-text-secondary font-medium mb-2">{job.company}</p>
                         <p className="text-xs text-lia-text-secondary">{job.description}</p>

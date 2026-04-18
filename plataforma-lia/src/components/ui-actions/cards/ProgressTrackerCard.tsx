@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Progress } from"@/components/ui/progress"
 import {
   Target,
@@ -68,8 +68,8 @@ export function ProgressTrackerCard({
               </div>
             </div>
           </div>
-          <Badge
-            variant="outline"
+          <Chip
+            variant="neutral"
             className="border border-lia-border-default bg-lia-bg-primary text-lia-text-primary"
           >
             {isOnTrack ? (
@@ -83,7 +83,7 @@ export function ProgressTrackerCard({
                 Atenção
               </>
             )}
-          </Badge>
+          </Chip>
         </div>
 
         <div className="mb-4">

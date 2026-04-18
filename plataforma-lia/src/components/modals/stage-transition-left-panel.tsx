@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Select,
@@ -87,26 +87,26 @@ export function StageTransitionLeftPanel({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Badge className={badgeStyles.default}>
+            <Chip variant="neutral" muted className={badgeStyles.default}>
               {getStageDisplayName(currentStage)}
-            </Badge>
+            </Chip>
             <ChevronRight className="h-4 w-4 text-lia-text-disabled" />
-            <Badge className={cn("text-white",
+            <Chip variant="neutral" muted className={cn("text-white",
               headerColor === 'red' ? 'bg-status-error' : 'bg-lia-btn-primary-bg'
             )}>
               {getStageDisplayName(newStage)}
-            </Badge>
+            </Chip>
           </div>
         </div>
 
         {wsiData && (
           <div className="flex items-center gap-2 mt-2">
-            <Badge className={cn("text-xs px-2 py-0.5 font-medium",
+            <Chip variant="neutral" muted className={cn("text-xs px-2 py-0.5 font-medium",
               getWsiClassificationColor(wsiData.classification).bg,
               getWsiClassificationColor(wsiData.classification).text
             )}>
               WSI: {wsiData.overall_wsi}% ({wsiData.classification})
-            </Badge>
+            </Chip>
           </div>
         )}
 
@@ -148,10 +148,10 @@ export function StageTransitionLeftPanel({
                         {action.name}
                       </span>
                       {action.recommended && (
-                        <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-micro px-1.5 py-0">
+                        <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary text-micro px-1.5 py-0">
                           <Brain className="h-3 w-3 mr-0.5 text-wedo-cyan" />
                           Recomendado
-                        </Badge>
+                        </Chip>
                       )}
                     </div>
                     <p className={textStyles.caption}>{action.description}</p>

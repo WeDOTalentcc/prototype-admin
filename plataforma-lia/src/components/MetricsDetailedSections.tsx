@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   TrendingUp, Clock, Users, Target, CheckCircle,
@@ -80,10 +80,10 @@ export function MetricsDetailedSections({
                   <div className="flex items-center justify-between text-xs mb-1">
                     <span className="font-medium text-lia-text-primary">{source.source}</span>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs px-1 py-0">{source.count} cand.</Badge>
-                      <Badge className={`text-xs px-1 py-0 ${source.conversionRate >= 70 ? 'bg-status-success' : source.conversionRate >= 50 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
+                      <Chip variant="neutral" className="text-xs px-1 py-0">{source.count} cand.</Chip>
+                      <Chip variant="neutral" muted className={`text-xs px-1 py-0 ${source.conversionRate >= 70 ? 'bg-status-success' : source.conversionRate >= 50 ? 'bg-status-warning' : 'bg-status-error'} text-white`}>
                         {source.conversionRate.toFixed(0)}%
-                      </Badge>
+                      </Chip>
                     </div>
                   </div>
                   <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1">
@@ -218,25 +218,25 @@ export function MetricsDetailedSections({
           <div className="space-y-4">
             <div className="grid grid-cols-4 gap-4 mb-4">
               <div className="p-3 bg-lia-bg-tertiary rounded-xl">
-                <div className="flex items-center justify-between mb-2"><Timer className="w-5 h-5 text-lia-text-secondary" /><Badge className="bg-status-success text-white text-xs">✓ No Prazo</Badge></div>
+                <div className="flex items-center justify-between mb-2"><Timer className="w-5 h-5 text-lia-text-secondary" /><Chip variant="neutral" muted className="bg-status-success text-white text-xs">✓ No Prazo</Chip></div>
                 <div className="text-2xl font-semibold text-lia-text-primary">{avgTimeContact.toFixed(1)}d</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Contato Inicial</div>
                 <div className="text-xs text-lia-text-secondary mt-1">SLA: 2 dias</div>
               </div>
               <div className="p-3 bg-status-success/10 dark:bg-lia-bg-secondary rounded-xl">
-                <div className="flex items-center justify-between mb-2"><Timer className="w-5 h-5 text-status-success" /><Badge className="bg-status-success text-white text-xs">✓ No Prazo</Badge></div>
+                <div className="flex items-center justify-between mb-2"><Timer className="w-5 h-5 text-status-success" /><Chip variant="neutral" muted className="bg-status-success text-white text-xs">✓ No Prazo</Chip></div>
                 <div className="text-2xl font-semibold text-lia-text-primary">{avgTimeTriage.toFixed(1)}d</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Triagem Completa</div>
                 <div className="text-xs text-lia-text-secondary mt-1">SLA: 3 dias</div>
               </div>
               <div className="p-3 bg-status-warning/10 dark:bg-lia-bg-secondary rounded-xl">
-                <div className="flex items-center justify-between mb-2"><Timer className="w-5 h-5 text-status-warning" /><Badge className="bg-status-warning text-white text-xs">⚠ Atenção</Badge></div>
+                <div className="flex items-center justify-between mb-2"><Timer className="w-5 h-5 text-status-warning" /><Chip variant="neutral" muted className="bg-status-warning text-white text-xs">⚠ Atenção</Chip></div>
                 <div className="text-2xl font-semibold text-lia-text-primary">{avgTimeInterview.toFixed(1)}d</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Agendamento</div>
                 <div className="text-xs text-lia-text-secondary mt-1">SLA: 5 dias</div>
               </div>
               <div className="p-3 bg-wedo-purple/10 dark:bg-lia-bg-secondary rounded-xl">
-                <div className="flex items-center justify-between mb-2"><Clock className="w-5 h-5 text-wedo-purple" /><Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">Total</Badge></div>
+                <div className="flex items-center justify-between mb-2"><Clock className="w-5 h-5 text-wedo-purple" /><Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">Total</Chip></div>
                 <div className="text-2xl font-semibold text-lia-text-primary">{avgTimeTotal.toFixed(1)}d</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Tempo Total</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Contato → Entrevista</div>
@@ -255,7 +255,7 @@ export function MetricsDetailedSections({
                 <div className="text-right">
                   <div className="text-xs text-lia-text-secondary mb-1">Meta do Mercado</div>
                   <div className="text-2xl font-semibold text-lia-text-primary">15 dias</div>
-                  <Badge className="mt-2 bg-status-success text-white"><TrendingUp className="w-3 h-3 mr-1" />Dentro da Meta</Badge>
+                  <Chip variant="neutral" muted className="mt-2 bg-status-success text-white"><TrendingUp className="w-3 h-3 mr-1" />Dentro da Meta</Chip>
                 </div>
               </div>
               <div className="mt-4">

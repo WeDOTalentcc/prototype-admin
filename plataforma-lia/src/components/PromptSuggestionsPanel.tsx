@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { LIAIcon } from"@/components/ui/lia-icon"
 
 interface SavedTemplate {
@@ -182,9 +182,9 @@ export function PromptSuggestionsPanel({
         <div className="flex items-center gap-2">
           <LIAIcon size="sm" />
           <span className="text-sm font-medium text-lia-text-primary">💡 Sugestões Inteligentes</span>
-          <Badge variant="outline" className="text-xs">
+          <Chip variant="neutral" className="text-xs">
             {suggestions.length} disponíveis
-          </Badge>
+          </Chip>
         </div>
 
         {commandHistory.length > 0 && (
@@ -238,9 +238,9 @@ export function PromptSuggestionsPanel({
                 {suggestion.description}
               </div>
               {suggestion.category && (
-                <Badge className="mt-2 text-micro bg-lia-bg-tertiary text-lia-text-primary border-0">
+                <Chip variant="neutral" muted className="mt-2 text-micro bg-lia-bg-tertiary text-lia-text-primary border-0">
                   {suggestion.category}
-                </Badge>
+                </Chip>
               )}
             </div>
           </button>

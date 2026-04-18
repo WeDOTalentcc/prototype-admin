@@ -18,7 +18,7 @@ import {
 
 import { cn } from"@/lib/utils"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Popover,
   PopoverContent,
@@ -134,9 +134,9 @@ export function VariableSelector({
                 Variáveis Disponíveis
               </h3>
             </div>
-            <Badge variant="secondary" className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary">
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary">
               {totalVariables} variáveis
-            </Badge>
+            </Chip>
           </div>
           
           <div className="relative mb-2.5">

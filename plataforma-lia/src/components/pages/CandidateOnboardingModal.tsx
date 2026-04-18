@@ -4,7 +4,7 @@ import { formatBRL } from"@/lib/pricing"
 import { useState } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   CheckCircle, Clock, FileText, Mail, Phone,
@@ -33,12 +33,12 @@ export function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboar
               <h2 className="text-xl font-semibold text-lia-text-primary">{candidate.name}</h2>
               <p className="text-lia-text-secondary">{candidate.position} • {candidate.department}</p>
               <div className="flex items-center gap-2 mt-1">
-                <Badge className={kanbanStages.find(s => s.id === candidate.stage)?.color}>
+                <Chip variant="neutral" muted className={kanbanStages.find(s => s.id === candidate.stage)?.color}>
                   {kanbanStages.find(s => s.id === candidate.stage)?.name}
-                </Badge>
-                <Badge variant="outline">
+                </Chip>
+                <Chip variant="neutral">
                   {candidate.progress}% concluído
-                </Badge>
+                </Chip>
               </div>
             </div>
           </div>
@@ -202,19 +202,18 @@ export function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboar
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-2">
                         <h4 className="font-medium">{doc.name}</h4>
-                        <Badge variant={
-                          doc.status === 'approved' ? 'default' :
-                          doc.status === 'uploaded' ? 'secondary' :
-                          doc.status === 'rejected' ? 'destructive' : 'outline'
-                        }>
+                        <Chip
+                          variant={doc.status === 'rejected' ? 'danger' : doc.status === 'approved' ? 'success' : 'neutral'}
+                          muted={doc.status === 'uploaded'}
+                        >
                           {doc.status === 'approved' ? 'Aprovado' :
                            doc.status === 'uploaded' ? 'Enviado' :
                            doc.status === 'rejected' ? 'Rejeitado' : 'Pendente'}
-                        </Badge>
+                        </Chip>
                       </div>
                       <p className="text-sm text-lia-text-secondary mb-3">{doc.type}</p>
                       {doc.isRequired && (
-                        <Badge variant="outline" className="text-xs">Obrigatório</Badge>
+                        <Chip variant="neutral" className="text-xs">Obrigatório</Chip>
                       )}
                     </CardContent>
                   </Card>

@@ -3,7 +3,7 @@
 import React from"react"
 import { Avatar, AvatarFallback } from"@/components/ui/avatar"
 import { LIAIcon } from"@/components/ui/lia-icon"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Users } from"lucide-react"
 import type { QuickAction } from"@/components/ui/quick-action-chips"
 
@@ -101,9 +101,9 @@ export function ExpandableAIPrompt(props: ExpandableAIPromptProps) {
                 {candidateContext.position} • Score: {(candidateContext as any).liaAnalysis?.score || candidateContext.score}%
               </div>
             </div>
-            <Badge className="bg-wedo-green-light/10 text-wedo-green-light border-0 text-micro">
+            <Chip variant="neutral" muted className="bg-wedo-green-light/10 text-wedo-green-light border-0 text-micro">
               Foco Individual
-            </Badge>
+            </Chip>
           </div>
         </div>
       )}

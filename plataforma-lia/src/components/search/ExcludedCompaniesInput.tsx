@@ -3,7 +3,7 @@
 import { useState, useCallback } from"react"
 import { X, Brain, Loader2, Search, ChevronDown, Info, RotateCcw, Save, List } from"lucide-react"
 import { cn } from"@/lib/utils"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import {
@@ -285,7 +285,7 @@ export function ExcludedCompaniesInput({
       {value.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {value.map(company => (
-            <Badge
+            <Chip variant="neutral" muted
               key={company.name}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium  border border-status-warning/30"
             >
@@ -300,7 +300,7 @@ export function ExcludedCompaniesInput({
               >
                 <X className="w-3 h-3" />
               </button>
-            </Badge>
+            </Chip>
           ))}
         </div>
       )}

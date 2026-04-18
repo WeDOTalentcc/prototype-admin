@@ -2,7 +2,7 @@
 
 import React, { useState, memo } from 'react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { Button } from '@/components/ui/button'
 import {
   Popover,
@@ -151,12 +151,12 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
           {(liaScore !== null && liaScore !== undefined) ? (
             <>
               <BrainCircuit className="w-3 h-3 text-lia-text-primary" />
-              <Badge 
-                variant="secondary" 
+              <Chip 
+                variant="neutral" muted 
                 className="text-xs px-2 py-0.5 font-semibold border-0 text-lia-text-primary bg-[color:var(--lia-border-default)]"
               >
                 {formatScorePercent(liaScore, 0)}
-              </Badge>
+              </Chip>
             </>
           ) : (
             <span className="text-xs text-lia-text-secondary">—</span>
@@ -167,20 +167,20 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
       <td className="px-2 py-2">
         <div className="flex items-center gap-1 justify-center">
           <Target className="w-3 h-3 text-lia-text-primary" />
-          <Badge 
-            variant="secondary" 
+          <Chip 
+            variant="neutral" muted 
             className="text-xs px-2 py-0.5 font-semibold border-0 text-lia-text-primary bg-[color:var(--lia-text-tertiary)]"
           >
             {formatScorePercent(skillsMatch, 0)}
-          </Badge>
+          </Chip>
         </div>
       </td>
 
       <td className="px-2 py-2">
         {(technicalTestScore !== null && technicalTestScore !== undefined) ? (
           <div className="flex items-center gap-1 justify-center group">
-            <Badge
-              variant="secondary"
+            <Chip
+              variant="neutral" muted
               className={`text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none text-lia-text-primary ${getScoreBgClass(technicalTestScore)}`}
               onClick={(e) => {
                 e.stopPropagation()
@@ -188,7 +188,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
               title="Clique para ver detalhes"
             >
               {formatScorePercent(technicalTestScore, 0)}
-            </Badge>
+            </Chip>
             <Eye className="w-3 h-3 text-lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none" />
           </div>
         ) : (
@@ -199,8 +199,8 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
       <td className="px-2 py-2">
         {(englishTestScore !== null && englishTestScore !== undefined) ? (
           <div className="flex items-center gap-1 justify-center group">
-            <Badge
-              variant="secondary"
+            <Chip
+              variant="neutral" muted
               className={`text-xs px-2 py-0.5 font-semibold border-0 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none text-lia-text-primary ${getScoreBgClass(englishTestScore)}`}
               onClick={(e) => {
                 e.stopPropagation()
@@ -208,7 +208,7 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
               title="Clique para ver detalhes"
             >
               {formatScorePercent(englishTestScore, 0)}
-            </Badge>
+            </Chip>
             <Eye className="w-3 h-3 text-lia-text-secondary opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none" />
           </div>
         ) : (
@@ -319,11 +319,11 @@ const CandidateTableRowComponent = memo(function CandidateTableRow({
       </td>
 
       <td className="px-2 py-2">
-        <Badge
+        <Chip variant="neutral" muted
           className={`text-xs font-semibold border-0 whitespace-nowrap text-lia-text-primary ${getStageBgClass(candidate.stage || '')}`}
         >
           {candidate.stage}
-        </Badge>
+        </Chip>
       </td>
 
       <td className="px-4 py-2">

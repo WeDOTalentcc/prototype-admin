@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
@@ -53,9 +53,9 @@ export function RecruiterGoalsView({ filteredRecruiters, getStatusColor }: Recru
                           <span className="text-lia-text-primary">
                             {goal.current}/{goal.target}
                           </span>
-                          <Badge className={`text-xs ${getStatusColor(goal.status)}`}>
+                          <Chip variant="neutral" muted className={`text-xs ${getStatusColor(goal.status)}`}>
                             {getGoalStatusLabel(goal.status)}
-                          </Badge>
+                          </Chip>
                         </div>
                       </div>
                       <div className="w-full bg-lia-interactive-active rounded-full h-2">
@@ -87,9 +87,9 @@ export function RecruiterGoalsView({ filteredRecruiters, getStatusColor }: Recru
                           <span className="text-lia-text-primary">
                             {goal.current}/{goal.target}
                           </span>
-                          <Badge className={`text-xs ${getStatusColor(goal.status)}`}>
+                          <Chip variant="neutral" muted className={`text-xs ${getStatusColor(goal.status)}`}>
                             {getGoalStatusLabel(goal.status)}
-                          </Badge>
+                          </Chip>
                         </div>
                       </div>
                       <div className="w-full bg-lia-interactive-active rounded-full h-2">

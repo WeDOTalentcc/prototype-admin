@@ -3,7 +3,7 @@
 
 import { CURRENCY_SYMBOL } from"@/lib/pricing"
 import { useState } from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import {
@@ -187,9 +187,9 @@ export function EventsSection() {
 
   const getPriorityBadge = (priority: string) => {
     const badges = {
-      high: <Badge variant="outline" className="text-xs border-status-error/30 text-status-error dark:border-status-error/30 dark:text-status-error">Urgente</Badge>,
-      medium: <Badge variant="outline" className="text-xs border-status-warning/30 text-status-warning dark:border-status-warning/30 dark:text-status-warning">Média</Badge>,
-      low: <Badge variant="outline" className="text-xs border-lia-border-subtle text-lia-text-primary dark:border-lia-border-subtle">Baixa</Badge>
+      high: <Chip variant="neutral" className="text-xs border-status-error/30 text-status-error dark:border-status-error/30 dark:text-status-error">Urgente</Chip>,
+      medium: <Chip variant="neutral" className="text-xs border-status-warning/30 text-status-warning dark:border-status-warning/30 dark:text-status-warning">Média</Chip>,
+      low: <Chip variant="neutral" className="text-xs border-lia-border-subtle text-lia-text-primary dark:border-lia-border-subtle">Baixa</Chip>
     }
     return badges[priority as keyof typeof badges]
   }
@@ -223,9 +223,9 @@ export function EventsSection() {
               {event.title}
             </h4>
             {event.isSuggested && (
- <Badge variant="outline" className="text-xs border-lia-border-default text-lia-text-secondary">
+ <Chip variant="neutral" className="text-xs border-lia-border-default text-lia-text-secondary">
                 LIA
-              </Badge>
+              </Chip>
             )}
             {getPriorityBadge(event.priority)}
           </div>
@@ -288,10 +288,10 @@ export function EventsSection() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-xs border-lia-border-subtle dark:border-lia-border-default px-2 py-1">
+              <Chip variant="neutral" className="text-xs border-lia-border-subtle dark:border-lia-border-default px-2 py-1">
                 <Clock className="w-3 h-3 mr-1" />
                 Hoje
-              </Badge>
+              </Chip>
 
               <Button
                 variant="ghost"
@@ -380,9 +380,9 @@ export function EventsSection() {
                               {event.title}
                             </h3>
                             {event.isSuggested && (
- <Badge variant="outline" className="text-xs border-lia-border-default text-lia-text-secondary">
+ <Chip variant="neutral" className="text-xs border-lia-border-default text-lia-text-secondary">
                                 Sugerido pela LIA
-                              </Badge>
+                              </Chip>
                             )}
                             {getPriorityBadge(event.priority)}
                           </div>

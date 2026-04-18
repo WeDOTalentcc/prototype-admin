@@ -7,7 +7,7 @@ import {
   Users, ArrowRight, Plus, Database, Briefcase, Heart
 } from"lucide-react"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
@@ -274,9 +274,9 @@ export default function MultiStrategySearchPanel({
                         {strategies.map(s => {
                           const cfg = STRATEGY_CONFIG[s]
                           return cfg ? (
-                            <Badge key={s} className={`${cfg.color} text-xs`} title={s}>
+                            <Chip variant="neutral" muted key={s} className={`${cfg.color} text-xs`} title={s}>
                               {cfg.icon}
-                            </Badge>
+                            </Chip>
                           ) : null
                         })}
                       </div>
@@ -284,7 +284,7 @@ export default function MultiStrategySearchPanel({
                     <td className="py-2 px-3">
                       <div className="flex gap-1 flex-wrap">
                         {c.skills?.slice(0, 4).map(sk => (
-                          <Badge key={sk} className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">{sk}</Badge>
+                          <Chip variant="neutral" muted key={sk} className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">{sk}</Chip>
                         ))}
                       </div>
                     </td>

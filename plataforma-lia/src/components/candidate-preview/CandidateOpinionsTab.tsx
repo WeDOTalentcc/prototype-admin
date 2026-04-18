@@ -2,7 +2,7 @@
 
 import React from"react"
 import { textStyles } from"@/lib/design-tokens"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Brain, FileText, ChevronDown, Check, Copy, Trash2 } from"lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from"@/components/ui/tooltip"
 import { OpinionCard } from"@/components/candidate-preview/OpinionCard"
@@ -59,9 +59,9 @@ opinionsSubTab === 'pareceres'
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Pareceres da LIA
           {opinionsHistory.length > 0 && (
-            <Badge className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-cyan/15">
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-cyan/15">
               {opinionsHistory.length}
-            </Badge>
+            </Chip>
           )}
         </button>
         <button
@@ -75,9 +75,9 @@ opinionsSubTab === 'analises'
           <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
           Análises
           {savedAnalyses && savedAnalyses.total_analyses > 0 && (
-            <Badge className="text-micro px-1.5 py-0 h-4 ml-1">
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 ml-1">
               {savedAnalyses.total_analyses}
-            </Badge>
+            </Chip>
           )}
         </button>
       </div>
@@ -125,9 +125,9 @@ opinionsSubTab === 'analises'
               {opinionsHistory.map((opinion: Record<string, any>) => (
                 <div key={opinion.id as string} className="relative">
                   {!opinion.is_current && (
-                    <Badge className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-tertiary z-10">
+                    <Chip variant="neutral" muted className="absolute top-2 right-2 text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-tertiary z-10">
                       v{(opinion.version as React.ReactNode)} - Histórico
-                    </Badge>
+                    </Chip>
                   )}
                   <OpinionCard
                     opinion={opinion}
@@ -211,12 +211,12 @@ opinionsSubTab === 'analises'
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
                             <span className={`${textStyles.bodySmall} font-medium`}>Análise LIA</span>
-                            <Badge
+                            <Chip variant="neutral" muted
                               className="text-micro px-1.5 py-0 h-4"
                              
                             >
                               {(analysisLabels[analysis.analysis_type as string] || analysis.analysis_type as React.ReactNode)}
-                            </Badge>
+                            </Chip>
                           </div>
                           <span className={`${textStyles.caption} text-lia-text-secondary`}>
                             {analysis.created_at ? new Date(analysis.created_at as string).toLocaleDateString('pt-BR', {

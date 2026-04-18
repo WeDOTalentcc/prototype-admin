@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   Target, Check, AlertTriangle, X, FileText, 
@@ -184,9 +184,9 @@ export function RubricEvaluationCard({
           </span>
         </div>
         {data.recommendation && (
-          <Badge className={`${getRecommendationBadge(data.recommendation).className} border-0`}>
+          <Chip variant="neutral" muted className={`${getRecommendationBadge(data.recommendation).className} border-0`}>
             {getRecommendationBadge(data.recommendation).label}
-          </Badge>
+          </Chip>
         )}
       </div>
 
@@ -214,9 +214,9 @@ export function RubricEvaluationCard({
           <span className={`${textStyles.label} text-lia-text-primary font-bold min-w-10`}>
             {score}%
           </span>
-          <Badge className={`${scoreBadge.className} text-micro px-2 py-0.5 border font-medium`}>
+          <Chip variant="neutral" muted className={`${scoreBadge.className} text-micro px-2 py-0.5 border font-medium`}>
             {data.score_label || scoreBadge.label}
-          </Badge>
+          </Chip>
         </div>
       </div>
 
@@ -300,9 +300,9 @@ export function RubricEvaluationCard({
             </span>
             <div className="flex flex-wrap gap-1">
               {data.strengths.map((strength, idx) => (
-                <Badge key={idx} variant="secondary" className="text-micro">
+                <Chip key={idx} variant="neutral" muted className="text-micro">
                   {strength}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>
@@ -318,9 +318,9 @@ export function RubricEvaluationCard({
             </span>
             <div className="flex flex-wrap gap-1">
               {data.concerns.map((concern, idx) => (
-                <Badge key={idx} variant="secondary" className="text-micro">
+                <Chip key={idx} variant="neutral" muted className="text-micro">
                   {concern}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>

@@ -3,7 +3,7 @@
 import { CURRENCY_SYMBOL } from"@/lib/pricing"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   MessageSquare, Target, Network,
   Plus, Edit
@@ -324,12 +324,12 @@ export function BranchesSection() {
                     <p className="text-sm text-lia-text-primary">CNPJ: {branch.cnpj}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={branch.type === 'Matriz' ? 'default' : 'secondary'}>
+                    <Chip variant="neutral" muted>
                       {branch.type}
-                    </Badge>
-                    <Badge variant="outline" className="text-status-success border-status-success/30">
+                    </Chip>
+                    <Chip variant="neutral" className="text-status-success border-status-success/30">
                       {branch.status}
-                    </Badge>
+                    </Chip>
                     <Button variant="ghost" size="sm">
                       <Edit className="w-4 h-4" />
                     </Button>

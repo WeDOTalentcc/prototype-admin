@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from "react"
 import { Brain, Settings2, Sparkles, RefreshCw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
@@ -101,9 +101,9 @@ export function RecruiterPreferencesPanel({ className }: { className?: string })
             <Brain className="w-4 h-4 text-wedo-cyan" aria-hidden="true" />
             Personalizacao da LIA
           </span>
-          <Badge className={cn("text-xs", LEVEL_COLORS[level] || LEVEL_COLORS.none)}>
+          <Chip variant="neutral" muted className={cn("text-xs", LEVEL_COLORS[level] || LEVEL_COLORS.none)}>
             {LEVEL_LABELS[level] || level}
-          </Badge>
+          </Chip>
         </CardTitle>
       </CardHeader>
 
@@ -137,7 +137,7 @@ export function RecruiterPreferencesPanel({ className }: { className?: string })
               <div className="flex flex-wrap gap-1">
                 <span className="text-[10px] text-lia-text-tertiary w-full">Senioridades:</span>
                 {summary.preferred_seniorities.map((s) => (
-                  <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>
+                  <Chip key={s} variant="neutral" muted className="text-[10px]">{s}</Chip>
                 ))}
               </div>
             )}
@@ -146,7 +146,7 @@ export function RecruiterPreferencesPanel({ className }: { className?: string })
               <div className="flex flex-wrap gap-1">
                 <span className="text-[10px] text-lia-text-tertiary w-full">Departamentos:</span>
                 {summary.preferred_departments.map((d) => (
-                  <Badge key={d} variant="secondary" className="text-[10px]">{d}</Badge>
+                  <Chip key={d} variant="neutral" muted className="text-[10px]">{d}</Chip>
                 ))}
               </div>
             )}
@@ -155,7 +155,7 @@ export function RecruiterPreferencesPanel({ className }: { className?: string })
               <div className="flex flex-wrap gap-1">
                 <span className="text-[10px] text-lia-text-tertiary w-full">Campos que voce costuma ajustar:</span>
                 {summary.fields_often_corrected.map((f) => (
-                  <Badge key={f} variant="outline" className="text-[10px] border-wedo-orange/30 text-wedo-orange">{f}</Badge>
+                  <Chip key={f} variant="neutral" className="text-[10px] border-wedo-orange/30 text-wedo-orange">{f}</Chip>
                 ))}
               </div>
             )}

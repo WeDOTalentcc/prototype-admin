@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
 import {
@@ -77,26 +77,26 @@ export function CandidatePageOpinionsTab({
     if (!rec) return null
     if (rec ==="approved") {
       return (
-        <Badge className={`${badgeStyles.success} flex items-center gap-0.5`}>
+        <Chip variant="neutral" muted className={`${badgeStyles.success} flex items-center gap-0.5`}>
           <CheckCircle className="w-2.5 h-2.5" />
           APROVADO
-        </Badge>
+        </Chip>
       )
     }
     if (rec ==="pending_review") {
       return (
-        <Badge className={`${badgeStyles.warning} flex items-center gap-0.5`}>
+        <Chip variant="neutral" muted className={`${badgeStyles.warning} flex items-center gap-0.5`}>
           <Clock className="w-2.5 h-2.5" />
           PENDENTE
-        </Badge>
+        </Chip>
       )
     }
     if (rec ==="not_approved") {
       return (
-        <Badge className={`${badgeStyles.error} flex items-center gap-0.5`}>
+        <Chip variant="neutral" muted className={`${badgeStyles.error} flex items-center gap-0.5`}>
           <X className="w-2.5 h-2.5" />
           NÃO APROVADO
-        </Badge>
+        </Chip>
       )
     }
     return null
@@ -118,9 +118,9 @@ export function CandidatePageOpinionsTab({
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
             Pareceres da LIA
             {opinionsHistory.length > 0 && (
-              <Badge className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-cyan/15">
+              <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 ml-1 bg-wedo-cyan/15">
                 {opinionsHistory.length}
-              </Badge>
+              </Chip>
             )}
           </button>
           <button
@@ -134,9 +134,9 @@ export function CandidatePageOpinionsTab({
             <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
             Análises
             {savedAnalyses && savedAnalyses.total_analyses > 0 && (
-              <Badge className="text-micro px-1.5 py-0 h-4 ml-1">
+              <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 ml-1">
                 {savedAnalyses.total_analyses}
-              </Badge>
+              </Chip>
             )}
           </button>
         </div>
@@ -211,14 +211,14 @@ export function CandidatePageOpinionsTab({
                                 {isWsiOpinion ?"Parecer WSI" : (opinion.job_vacancy_id ?"Parecer de Vaga" :"Parecer Geral")}
                               </span>
                               {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
-                                <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default flex items-center gap-1">
+                                <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default flex items-center gap-1">
                                   <Briefcase className="w-2.5 h-2.5" />
                                   #{String(opinion.job_vacancy_id).slice(0, 6)} - {opinion.job_vacancy_title as string}
-                                </Badge>
+                                </Chip>
                               ) : !opinion.job_vacancy_id ? (
-                                <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle">
+                                <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle dark:border-lia-border-subtle">
                                   Sem vaga vinculada
-                                </Badge>
+                                </Chip>
                               ) : null}
                             </div>
                             <div className="flex items-center gap-2 mt-0.5">
@@ -409,9 +409,9 @@ export function CandidatePageOpinionsTab({
                           <div className="min-w-0">
                             <div className="flex items-center gap-2">
                               <span className={`${textStyles.bodySmall} font-medium`}>Análise LIA</span>
-                              <Badge className="text-micro px-1.5 py-0 h-4">
+                              <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4">
                                 {analysisLabels[analysis.analysis_type as string] || analysis.analysis_type as string}
-                              </Badge>
+                              </Chip>
                             </div>
                             <span className={`${textStyles.caption} text-lia-text-secondary`}>
                               {analysis.created_at ? new Date(analysis.created_at as string).toLocaleDateString("pt-BR", {

@@ -3,7 +3,7 @@
 import React from"react"
 import { Button } from"@/components/ui/button"
 import { Avatar, AvatarImage, AvatarFallback } from"@/components/ui/avatar"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   ExternalLink, CalendarClock, XCircle as XCircleIcon,
   Briefcase, Building2, User, Check, Share2
@@ -119,10 +119,10 @@ export function InterviewCard({
                 {interview.duration}min
               </span>
               {variant === 'past' && (
-                <Badge className={`text-micro px-1.5 py-0 ml-1 border font-medium flex items-center gap-1 ${getStatusClasses(interview.status)}`}>
+                <Chip variant="neutral" muted className={`text-micro px-1.5 py-0 ml-1 border font-medium flex items-center gap-1 ${getStatusClasses(interview.status)}`}>
                   {getStatusIcon(interview.status)}
                   {getStatusLabel(interview.status)}
-                </Badge>
+                </Chip>
               )}
             </div>
 

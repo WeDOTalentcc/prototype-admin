@@ -5,7 +5,7 @@ import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Label } from"@/components/ui/label"
 import { Checkbox } from"@/components/ui/checkbox"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Textarea } from"@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import {
@@ -452,25 +452,25 @@ export function InterviewSchedulingPanel({
                   {formatDisplayDate(selectedDate)} às {selectedTime}
                 </p>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  <Badge
-                    variant="secondary"
+                  <Chip
+                    variant="neutral" muted
                     className="text-xs border-0 bg-lia-bg-tertiary text-lia-text-secondary"
                   >
                     {DURATION_OPTIONS.find((d) => d.value === duration)?.label}
-                  </Badge>
-                  <Badge
-                    variant="secondary"
+                  </Chip>
+                  <Chip
+                    variant="neutral" muted
                     className="text-xs border-0 bg-lia-bg-tertiary text-lia-text-secondary"
                   >
                     {INTERVIEW_TYPES.find((t) => t.value === interviewType)?.label}
-                  </Badge>
+                  </Chip>
                   {selectedInterviewers.length > 0 && (
-                    <Badge
-                      variant="secondary"
+                    <Chip
+                      variant="neutral" muted
                       className="text-xs border-0 bg-lia-bg-tertiary text-lia-text-secondary"
                     >
                       {selectedInterviewers.length} entrevistador(es)
-                    </Badge>
+                    </Chip>
                   )}
                 </div>
               </div>

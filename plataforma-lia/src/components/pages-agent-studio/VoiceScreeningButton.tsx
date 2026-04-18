@@ -4,7 +4,7 @@ import React, { useState } from"react"
 import { useTranslations } from "next-intl"
 import { Phone, PhoneCall, Loader2, CheckCircle, MessageSquare } from"lucide-react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from"@/components/ui/dialog"
 import {
   textStyles, badgeStyles, buttonStyles
@@ -165,7 +165,7 @@ export default function VoiceScreeningButton({
             ) : (
               <div className="space-y-4 py-4">
                 <div className="flex items-center gap-2">
-                  <Badge className={badgeStyles.warning}>{sessionState}</Badge>
+                  <Chip variant="neutral" muted className={badgeStyles.warning}>{sessionState}</Chip>
                   <span className={textStyles.caption}>
                     {t('questionProgress', { current: Math.min((progress * 5) + 1, 5).toFixed(0), total: 5 })}
                   </span>

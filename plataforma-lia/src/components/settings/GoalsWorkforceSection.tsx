@@ -4,7 +4,7 @@ import { CURRENCY_PLACEHOLDER } from"@/lib/pricing"
 import React from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Calendar, Plus, Edit, Trash2, Save, X,
   ChevronDown, ChevronUp, Download, RefreshCw, Loader2
@@ -90,10 +90,10 @@ export function GoalsWorkforceSection({
                 <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />
                 Planejamento de Headcount {selectedYear}
                 {departmentsLoaded && (
-                  <Badge variant="outline" className={`${badgeStyles.success} text-micro font-normal`}>
+                  <Chip variant="neutral" className={`${badgeStyles.success} text-micro font-normal`}>
                     <RefreshCw className="w-2.5 h-2.5 mr-1" />
                     Sincronizado
-                  </Badge>
+                  </Chip>
                 )}
                 <div className="flex items-center gap-2 ml-2">
                   <LiaFieldToggle

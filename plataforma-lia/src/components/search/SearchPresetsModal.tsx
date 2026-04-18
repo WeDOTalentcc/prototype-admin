@@ -5,7 +5,7 @@ import { X, Search, Plus, Trash2 } from"lucide-react"
 import { cn } from"@/lib/utils"
 import { Input } from"@/components/ui/input"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Label } from"@/components/ui/label"
 import { useUIPreferencesStore } from"@/stores/ui-preferences-store"
 
@@ -144,9 +144,9 @@ export function SearchPresetsModal<T>({
             {preset.description}
           </div>
         </div>
-        <Badge className="text-micro bg-lia-bg-tertiary text-lia-text-secondary">
+        <Chip variant="neutral" muted className="text-micro bg-lia-bg-tertiary text-lia-text-secondary">
           {preset.items.length} {itemLabel}
-        </Badge>
+        </Chip>
       </div>
       {renderItemBadges?.(preset.items)}
     </>
@@ -338,9 +338,9 @@ export function SearchPresetsModal<T>({
                           </div>
                         </button>
                         <div className="flex items-center gap-2">
-                          <Badge className="text-micro bg-lia-bg-tertiary text-lia-text-secondary">
+                          <Chip variant="neutral" muted className="text-micro bg-lia-bg-tertiary text-lia-text-secondary">
                             {preset.items.length} {itemLabel}
-                          </Badge>
+                          </Chip>
                           <button
                             onClick={e => {
                               e.stopPropagation()

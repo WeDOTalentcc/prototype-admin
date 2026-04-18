@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Chip } from "@/components/ui/chip";
 import {
   Users,
   Network,
@@ -100,11 +100,11 @@ export function OrgChartDialog({
                 .map(([level, members]) => (
                   <div key={level} className="space-y-2">
                     <div className="flex items-center gap-2 mb-2">
-                      <Badge
+                      <Chip variant="neutral" muted
                         className={`text-micro px-2 py-0.5 rounded-full border ${getLevelColor(level)}`}
                       >
                         {getLevelLabel(level)}
-                      </Badge>
+                      </Chip>
                       <div className="flex-1 h-px bg-lia-interactive-active"></div>
                       <span className="text-micro text-lia-text-tertiary">
                         {members.length}{" "}

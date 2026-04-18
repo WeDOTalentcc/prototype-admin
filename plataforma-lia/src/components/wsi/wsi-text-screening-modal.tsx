@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Progress } from"@/components/ui/progress"
 import { Textarea } from"@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
@@ -374,9 +374,9 @@ export function WSITextScreeningModal({
                 <div className="text-sm font-medium">{arch.archetype}</div>
                 <div className="text-xs text-lia-text-secondary">{arch.description}</div>
               </div>
-              <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
+              <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
                 {arch.match_score}%
-              </Badge>
+              </Chip>
             </div>
           ))}
         </div>
@@ -399,9 +399,9 @@ export function WSITextScreeningModal({
               <div>
                 <DialogTitle className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
                   {t('textScreening.title')}
-                  <Badge variant="outline" className="text-micro font-normal">
+                  <Chip variant="neutral" className="text-micro font-normal">
                     Bloom + Dreyfus + Big Five
-                  </Badge>
+                  </Chip>
                 </DialogTitle>
                 <DialogDescription className="text-xs text-lia-text-secondary mt-1">
                   {candidate.name} • {effectiveJobVacancy.title}
@@ -409,9 +409,9 @@ export function WSITextScreeningModal({
               </div>
             </div>
             {step === 'questions' && (
-              <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
+              <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
                 {t('textScreening.ofQuestions', { current: currentQuestionIndex + 1, total: questions.length })}
-              </Badge>
+              </Chip>
             )}
           </div>
         </DialogHeader>
@@ -463,12 +463,12 @@ export function WSITextScreeningModal({
                       <Card className="bg-lia-bg-primary border-lia-border-subtle">
                         <CardContent className="p-3">
                           <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            <Badge className={`text-micro ${BLOOM_COLORS[question.bloom_level]}`}>
+                            <Chip variant="neutral" muted className={`text-micro ${BLOOM_COLORS[question.bloom_level]}`}>
                               {question.bloom_level_name} (B{question.bloom_level})
-                            </Badge>
-                            <Badge variant="outline" className="text-micro">
+                            </Chip>
+                            <Chip variant="neutral" className="text-micro">
                               {question.skill_targeted}
-                            </Badge>
+                            </Chip>
                           </div>
                           <p className="text-sm">{question.text}</p>
                         </CardContent>
@@ -531,7 +531,7 @@ export function WSITextScreeningModal({
                     }`}>
                       {result.overall_score.toFixed(1)}
                     </div>
-                    <Badge className={`mt-2 ${
+                    <Chip variant="neutral" muted className={`mt-2 ${
  result.classification === 'excelente' || result.classification === 'alto' 
                         ? ' border-status-success/30' :
                       result.classification === 'medio' 
@@ -539,7 +539,7 @@ export function WSITextScreeningModal({
                       ' border-status-error/30'
                     }`}>
                       {result.classification.charAt(0).toUpperCase() + result.classification.slice(1)}
-                    </Badge>
+                    </Chip>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">

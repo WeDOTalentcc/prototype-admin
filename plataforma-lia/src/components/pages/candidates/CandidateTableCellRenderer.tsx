@@ -2,7 +2,7 @@
 
 import React from "react"
 import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Eye, ChevronsLeftRight, MapPin,
@@ -119,9 +119,9 @@ export function createCellRenderer(deps: CellRendererDeps) {
       case "enrichment_source": {
         if (candidate.is_enriching) {
           return (
-            <Badge className="text-micro px-1.5 py-0.5 bg-status-warning/15 text-status-warning animate-pulse">
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0.5 bg-status-warning/15 text-status-warning animate-pulse">
               {t ? t('enriching') : "Enriquecendo..."}
-            </Badge>
+            </Chip>
           )
         }
         if (!candidate.enrichment_source) return <span className="text-xs text-lia-text-tertiary">—</span>
@@ -134,9 +134,9 @@ export function createCellRenderer(deps: CellRendererDeps) {
               ? { label: 'Local', cls: 'bg-stone-400/15 text-stone-500' }
               : { label: candidate.enrichment_source, cls: 'bg-lia-bg-tertiary text-lia-text-secondary' }
         return (
-          <Badge className={`text-micro px-1.5 py-0.5 ${eConfig.cls}`}>
+          <Chip variant="neutral" muted className={`text-micro px-1.5 py-0.5 ${eConfig.cls}`}>
             {eConfig.label}
-          </Badge>
+          </Chip>
         )
       }
 
@@ -296,9 +296,9 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
       case "seniority_level":
         return (
-          <Badge variant="outline" className="text-xs">
+          <Chip variant="neutral" className="text-xs">
             {candidate.seniority_level || ""}
-          </Badge>
+          </Chip>
         )
       case "years_of_experience":
         return (
@@ -401,12 +401,12 @@ export function createCellRenderer(deps: CellRendererDeps) {
 
       case "is_remote":
         return (
-          <Badge
-            variant="outline"
+          <Chip
+            variant="neutral"
             className={`text-xs ${candidate.is_remote ? " border-status-success/30" : ""}`}
           >
             {formatBoolean(candidate.is_remote)}
-          </Badge>
+          </Chip>
         )
       case "willing_to_relocate":
         return (
@@ -419,7 +419,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
       case "work_model_preference": {
         const workModel = candidate.work_model_preference || candidate.workModel
         return (
-          <Badge
+          <Chip variant="neutral" muted
             className="text-xs"
            
           >
@@ -430,7 +430,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
                 : workModel === "presencial"
                   ? (t ? t('onsiteWork') : "🏢 Presencial")
                   : workModel || ""}
-          </Badge>
+          </Chip>
         )
       }
       case "contract_type_preference":
@@ -536,25 +536,25 @@ export function createCellRenderer(deps: CellRendererDeps) {
           reprovado: "bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error",
         }
         return (
-          <Badge
+          <Chip variant="neutral" muted
             className={`text-xs ${statusColors[candidate.status || ""] || "bg-lia-bg-tertiary text-lia-text-primary"}`}
           >
             {candidate.status || ""}
-          </Badge>
+          </Chip>
         )
       }
       case "is_active":
         return (
-          <Badge
-            variant="outline"
+          <Chip
+            variant="neutral"
             className={`text-xs ${candidate.is_active ? "" : ""}`}
           >
             {formatBoolean(candidate.is_active)}
-          </Badge>
+          </Chip>
         )
       case "is_blacklisted":
         return candidate.is_blacklisted ? (
-          <Badge className="text-xs">{t ? t('yes') : "Sim"}</Badge>
+          <Chip variant="neutral" muted className="text-xs">{t ? t('yes') : "Sim"}</Chip>
         ) : (
           <span className="text-xs text-lia-text-primary">{t ? t('no') : "Não"}</span>
         )
@@ -577,12 +577,12 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
       case "communication_consent":
         return (
-          <Badge
-            variant="outline"
+          <Chip
+            variant="neutral"
             className={`text-xs ${candidate.communication_consent ? "" : ""}`}
           >
             {formatBoolean(candidate.communication_consent)}
-          </Badge>
+          </Chip>
         )
 
       case "completed_register":

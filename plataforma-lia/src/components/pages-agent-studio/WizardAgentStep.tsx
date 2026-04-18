@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl"
 import { Bot, ChevronRight, Zap } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import {
   textStyles, cardStyles, badgeStyles, buttonStyles
 } from "@/lib/design-tokens"

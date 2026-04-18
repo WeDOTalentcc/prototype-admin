@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Edit, Trash2, Mail, MapPin, Users, Shield, Loader2, Send
@@ -66,14 +66,14 @@ export function UserList({
                     <h4 className={textStyles.subtitle}>{user.name}</h4>
                     <p className={textStyles.description}>{user.role}</p>
                     <div className="flex items-center gap-1.5 mt-1">
-                      <Badge className={`text-micro ${getStatusColor(user.status)}`}>
+                      <Chip variant="neutral" muted className={`text-micro ${getStatusColor(user.status)}`}>
                         {user.status === 'active' ? t('statusActive') : user.status === 'inactive' ? t('statusInactive') : t('statusPending')}
-                      </Badge>
+                      </Chip>
                       {user.isScimManaged && (
-                        <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
+                        <Chip variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
                           <Shield className="w-2.5 h-2.5 mr-0.5" />
                           SSO
-                        </Badge>
+                        </Chip>
                       )}
                     </div>
                   </div>
@@ -115,10 +115,10 @@ export function UserList({
                 </div>
 
                 {user.isManager && (
-                  <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-subtle text-micro">
+                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-subtle text-micro">
                     <Users className="w-3 h-3 mr-1" />
                     {t('manager')}
-                  </Badge>
+                  </Chip>
                 )}
 
                 {user.status === 'inactive' && (
@@ -196,14 +196,14 @@ export function UserList({
                   </td>
                   <td className="px-2 py-1.5 whitespace-nowrap">
                     <div className="flex items-center gap-1.5">
-                      <Badge className={`${getStatusColor(user.status)} text-micro`}>
+                      <Chip variant="neutral" muted className={`${getStatusColor(user.status)} text-micro`}>
                         {user.status === 'active' ? t('statusActive') : user.status === 'inactive' ? t('statusInactive') : t('statusPending')}
-                      </Badge>
+                      </Chip>
                       {user.isScimManaged && (
-                        <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
+                        <Chip variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
                           <Shield className="w-2.5 h-2.5 mr-0.5" />
                           SSO
-                        </Badge>
+                        </Chip>
                       )}
                     </div>
                   </td>

@@ -27,7 +27,7 @@ import {
   HelpCircle,
   Loader2
 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import type { FastTrackSuggestion } from '@/hooks/recruitment/useFastTrack'
 
 interface FastTrackSuggestionsProps {
@@ -95,9 +95,9 @@ export function FastTrackSuggestions({
           <Zap className="w-4 h-4 text-lia-text-secondary" />
           <span className="text-sm font-medium text-white">Fast Track Disponível</span>
         </div>
-        <Badge variant="outline" className="text-xs border-lia-border-default dark:border-lia-border-default text-lia-text-secondary">
+        <Chip variant="neutral" className="text-xs border-lia-border-default dark:border-lia-border-default text-lia-text-secondary">
           {suggestions.length} {suggestions.length === 1 ? 'vaga' : 'vagas'}
-        </Badge>
+        </Chip>
       </div>
       
       <div className="space-y-2">
@@ -128,12 +128,12 @@ export function FastTrackSuggestions({
                       <span className="font-medium text-white truncate">
                         {job.job_title}
                       </span>
-                      <Badge 
-                        variant="outline" 
+                      <Chip 
+                        variant="neutral" 
                         className={cn("text-xs shrink-0", getMatchBadgeColor(job.similarity_score))}
                       >
                         {Math.round(job.similarity_score * 100)}% match
-                      </Badge>
+                      </Chip>
                     </div>
                     
                     <div className="flex items-center gap-3 mt-1 text-xs text-lia-text-tertiary">
@@ -200,21 +200,21 @@ export function FastTrackSuggestions({
                       </div>
                       <div className="flex flex-wrap gap-1">
                         {job.skills.slice(0, 5).map((skill) => (
-                          <Badge 
+                          <Chip 
                             key={skill} 
-                            variant="outline" 
+                            variant="neutral" 
                             className="text-xs bg-lia-btn-primary-hover border-lia-border-default text-lia-text-disabled"
                           >
                             {skill}
-                          </Badge>
+                          </Chip>
                         ))}
                         {job.skills.length > 5 && (
-                          <Badge 
-                            variant="outline" 
+                          <Chip 
+                            variant="neutral" 
                             className="text-xs bg-lia-btn-primary-hover border-lia-border-default text-lia-text-secondary"
                           >
                             +{job.skills.length - 5}
-                          </Badge>
+                          </Chip>
                         )}
                       </div>
                     </div>
@@ -230,22 +230,22 @@ export function FastTrackSuggestions({
                         {job.behavioral_competencies.slice(0, 3).map((comp, idx) => {
                           const compName = typeof comp === 'string' ? comp : comp.name
                           return (
-                            <Badge 
+                            <Chip 
                               key={`${compName}-${idx}`}
-                              variant="outline" 
+                              variant="neutral" 
                               className="text-xs bg-lia-btn-primary-hover border-lia-border-default text-lia-text-disabled"
                             >
                               {compName}
-                            </Badge>
+                            </Chip>
                           )
                         })}
                         {job.behavioral_competencies.length > 3 && (
-                          <Badge 
-                            variant="outline" 
+                          <Chip 
+                            variant="neutral" 
                             className="text-xs bg-lia-btn-primary-hover border-lia-border-default text-lia-text-secondary"
                           >
                             +{job.behavioral_competencies.length - 3}
-                          </Badge>
+                          </Chip>
                         )}
                       </div>
                     </div>

@@ -4,7 +4,7 @@ import React from"react"
 
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Label } from"@/components/ui/label"
 import { Textarea } from"@/components/ui/textarea"
 import { Switch } from"@/components/ui/switch"
@@ -354,7 +354,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                           </div>
                           <div className="flex flex-wrap gap-1.5">
                             {(formData.accessList || []).map((email, idx) => (
-                              <Badge key={idx} variant="secondary" className="text-xs py-1 px-2 bg-lia-bg-primary border border-lia-border-subtle">
+                              <Chip key={idx} variant="neutral" muted className="text-xs py-1 px-2 bg-lia-bg-primary border border-lia-border-subtle">
                                 <UserPlus className="w-3 h-3 mr-1 text-lia-text-disabled" />
                                 {email}
                                 <button
@@ -363,7 +363,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                                 >
                                   <X className="w-3 h-3" />
                                 </button>
-                              </Badge>
+                              </Chip>
                             ))}
                           </div>
                           <p className="text-xs text-lia-text-tertiary mt-1" aria-live="polite" aria-atomic="true">Usuários com acesso à vaga confidencial</p>
@@ -423,9 +423,9 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                     <div className="flex items-center gap-2 mb-4">
                       <Users className="w-4 h-4 text-lia-text-disabled" />
                       <h3 className="text-xs font-semibold text-lia-text-tertiary">Informações do Registro</h3>
-                      <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-lia-bg-secondary text-lia-text-disabled border-lia-border-subtle">
+                      <Chip variant="neutral" className="text-micro px-1.5 py-0 h-4 bg-lia-bg-secondary text-lia-text-disabled border-lia-border-subtle">
                         Somente leitura
-                      </Badge>
+                      </Chip>
                     </div>
                     
                     <div className="p-4 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
@@ -541,7 +541,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {(formData.languages || []).map((lang, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-xs py-1 px-2  border border-wedo-purple/30">
+                      <Chip key={idx} variant="neutral" muted className="text-xs py-1 px-2  border border-wedo-purple/30">
                         {lang.language} ({lang.level})
                         <button
                           onClick={() => removeLanguage(idx)}
@@ -549,7 +549,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                         >
                           <X className="w-3 h-3" />
                         </button>
-                      </Badge>
+                      </Chip>
                     ))}
                   </div>
                 </section>
@@ -644,19 +644,19 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-lia-text-primary">{q.question_text}</p>
                         <div className="flex items-center gap-2 mt-1.5">
-                          <Badge variant="outline" className="text-micro bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle">
+                          <Chip variant="neutral" className="text-micro bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle">
                             {getCategoryLabel(q.category)}
-                          </Badge>
-                          <Badge variant="outline" className="text-micro -dark border-wedo-cyan/30">
+                          </Chip>
+                          <Chip variant="neutral" className="text-micro -dark border-wedo-cyan/30">
                             {q.question_type === 'yes_no' ? 'Sim/Não' : 
                              q.question_type === 'single_choice' ? 'Escolha única' : 
                              q.question_type === 'multiple_choice' ? 'Múltipla escolha' : 
                              q.question_type === 'scale' ? 'Escala' : 'Texto'}
-                          </Badge>
+                          </Chip>
                           {q.is_required && (
-                            <Badge variant="outline" className="text-micro  border-status-error/30">
+                            <Chip variant="neutral" className="text-micro  border-status-error/30">
                               Obrigatória
-                            </Badge>
+                            </Chip>
                           )}
                         </div>
                       </div>

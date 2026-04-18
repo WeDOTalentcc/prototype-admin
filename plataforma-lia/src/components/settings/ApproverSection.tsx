@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
+import { Chip } from "@/components/ui/chip";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Plus,
@@ -239,12 +239,12 @@ export const ApproverSection = React.memo(function ApproverSection({
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Badge
-                            variant={approver.isActive ? "default" : "outline"}
-                            
+                          <Chip
+                            variant="neutral"
+                            muted={!approver.isActive}
                           >
                             {approver.isActive ? t("active") : t("inactive")}
-                          </Badge>
+                          </Chip>
                           <Button
                             variant="ghost"
                             size="sm"

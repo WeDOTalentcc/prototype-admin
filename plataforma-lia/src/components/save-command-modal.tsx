@@ -3,7 +3,7 @@
 import { useState, useEffect } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   X,
   Save,
@@ -324,7 +324,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               {tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag, index) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
+                    <Chip key={tag} variant="neutral" muted className="text-xs">
                       {tag}
                       <button
                         onClick={() => handleRemoveTag(tag)}
@@ -332,7 +332,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
                       >
                         <X className="w-3 h-3" />
                       </button>
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               )}

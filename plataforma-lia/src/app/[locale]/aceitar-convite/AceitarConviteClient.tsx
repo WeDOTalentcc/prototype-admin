@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from"react"
 import { useSearchParams, useRouter } from"next/navigation"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import Image from"next/image"
 import Link from"next/link"
 import { toast } from"sonner"
@@ -308,7 +308,7 @@ function AceitarConviteContent() {
                       <Briefcase className="w-4 h-4" />
                       <span>Sua função:</span>
                     </div>
-                    <Badge variant="info">{getRoleName(invitationInfo.role)}</Badge>
+                    <Chip variant="info">{getRoleName(invitationInfo.role)}</Chip>
                   </div>
 
                   {invitationInfo.expires_at && (

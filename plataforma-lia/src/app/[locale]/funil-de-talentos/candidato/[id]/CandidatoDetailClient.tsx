@@ -3,7 +3,7 @@
 import React from"react"
 import { useRouter } from"next/navigation"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { Card, CardContent } from"@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from"@/components/ui/tabs"
@@ -121,16 +121,16 @@ export default function CandidateProfilePage() {
                     <span className="text-xs font-mono text-lia-text-secondary bg-lia-bg-tertiary px-2 py-0.5 rounded-xl">
                       {getShortId(candidate.id)}
                     </span>
-                    {!!candidate.seniority_level && <Badge className={badgeStyles.primary}>{candidate.seniority_level}</Badge>}
+                    {!!candidate.seniority_level && <Chip variant="neutral" muted className={badgeStyles.primary}>{candidate.seniority_level}</Chip>}
                     {!!candidate.years_of_experience && (
-                      <Badge variant="outline" className="text-xs">{candidate.years_of_experience} anos exp.</Badge>
+                      <Chip variant="neutral" className="text-xs">{candidate.years_of_experience} anos exp.</Chip>
                     )}
                     {!!candidate.communication_consent && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Badge className="text-xs  border-status-success/30">
+                          <Chip variant="neutral" muted className="text-xs  border-status-success/30">
                             <Shield className="w-3 h-3 mr-1" />LGPD
-                          </Badge>
+                          </Chip>
                         </TooltipTrigger>
                         <TooltipContent>Consentimento LGPD obtido</TooltipContent>
                       </Tooltip>
@@ -138,7 +138,7 @@ export default function CandidateProfilePage() {
                     {!!candidate.is_blacklisted && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Badge className="text-xs  border-status-error/30">⚠️ LCNU</Badge>
+                          <Chip variant="neutral" muted className="text-xs  border-status-error/30">⚠️ LCNU</Chip>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p className="font-medium">Lista de Candidatos Não Utilizáveis</p>
@@ -147,14 +147,14 @@ export default function CandidateProfilePage() {
                       </Tooltip>
                     )}
                     {!!candidate.is_tech && (
-                      <Badge variant="outline" className="text-xs bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default">Tech</Badge>
+                      <Chip variant="neutral" className="text-xs bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default">Tech</Chip>
                     )}
                     {!!candidate.is_potential && (
-                      <Badge variant="outline" className="text-xs  border-wedo-purple/30">Potencial</Badge>
+                      <Chip variant="neutral" className="text-xs  border-wedo-purple/30">Potencial</Chip>
                     )}
-                    <Badge className={`text-xs ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}>
+                    <Chip variant="neutral" muted className={`text-xs ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}>
                       {statusConfig.label}
-                    </Badge>
+                    </Chip>
                     <LiaAnalysisModal
                       isOpen={showLiaAnalysisModal}
                       onClose={() => setShowLiaAnalysisModal(false)}
@@ -240,13 +240,13 @@ export default function CandidateProfilePage() {
                 {/* Right column — work prefs + dates */}
                 <div className="text-right space-y-3 min-w-sidebar-content">
                   <div className="flex flex-wrap gap-1.5 justify-end">
-                    {!!candidate.work_model && <Badge variant="outline" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.work_model)}</Badge>}
-                    {!!candidate.work_mode && <Badge variant="outline" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.work_mode)}</Badge>}
-                    {!!candidate.contract_type && <Badge variant="outline" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.contract_type)}</Badge>}
-                    {!!candidate.is_remote && <Badge variant="outline" className="text-xs bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default">🌐 Remoto</Badge>}
-                    {!!candidate.willing_to_relocate && <Badge variant="outline" className="text-xs  border-status-success/30">✈️ Aceita Mudança</Badge>}
-                    {!!candidate.mobility && <Badge variant="outline" className="text-xs  border-wedo-purple/30">🚗 Mobilidade</Badge>}
-                    {!!candidate.availability && <Badge variant="outline" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.availability)}</Badge>}
+                    {!!candidate.work_model && <Chip variant="neutral" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.work_model)}</Chip>}
+                    {!!candidate.work_mode && <Chip variant="neutral" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.work_mode)}</Chip>}
+                    {!!candidate.contract_type && <Chip variant="neutral" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.contract_type)}</Chip>}
+                    {!!candidate.is_remote && <Chip variant="neutral" className="text-xs bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default">🌐 Remoto</Chip>}
+                    {!!candidate.willing_to_relocate && <Chip variant="neutral" className="text-xs  border-status-success/30">✈️ Aceita Mudança</Chip>}
+                    {!!candidate.mobility && <Chip variant="neutral" className="text-xs  border-wedo-purple/30">🚗 Mobilidade</Chip>}
+                    {!!candidate.availability && <Chip variant="neutral" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.availability)}</Chip>}
                   </div>
                   <div className="text-xs text-lia-text-secondary space-y-0.5">
                     <p className="font-semibold text-lia-text-primary">Datas</p>

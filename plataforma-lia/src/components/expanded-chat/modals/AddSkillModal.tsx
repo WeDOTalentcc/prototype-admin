@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import {
@@ -110,8 +110,8 @@ function SkillCard({ skill, isSelected, onAdd }: SkillCardProps) {
             {skill.name}
           </h4>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <Badge
-              variant="outline"
+            <Chip
+              variant="neutral"
               className={cn(
  'text-micro border',
                 colors.border,
@@ -121,7 +121,7 @@ function SkillCard({ skill, isSelected, onAdd }: SkillCardProps) {
             >
               <CategoryIcon className="w-2.5 h-2.5 mr-0.5" />
               {CATEGORY_LABELS[skill.category]}
-            </Badge>
+            </Chip>
             {skill.weight && (
               <div className="flex items-center gap-0.5">
                 {[1, 2, 3, 4, 5].map((w) => (

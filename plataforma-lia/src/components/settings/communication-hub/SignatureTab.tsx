@@ -1,6 +1,6 @@
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Edit, Save, PenTool, Loader2, AlertCircle, CheckCircle } from"lucide-react"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 
@@ -83,9 +83,9 @@ export function SignatureTab({
             </label>
             <div className="flex flex-wrap gap-1">
               {['recrutador_nome', 'cargo', 'empresa_nome', 'email', 'telefone', 'website', 'linkedin'].map((v) => (
-                <Badge key={v} variant="outline" className="text-micro font-mono cursor-pointer hover:bg-lia-bg-tertiary rounded-full border-lia-border-default text-lia-text-primary dark:border-lia-border-default">
+                <Chip key={v} variant="neutral" className="text-micro font-mono cursor-pointer hover:bg-lia-bg-tertiary rounded-full border-lia-border-default text-lia-text-primary dark:border-lia-border-default">
                   {`{{${v}}}`}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>

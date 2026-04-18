@@ -4,7 +4,7 @@ import NextImage from"next/image"
 import React, { useState } from 'react'
 import { ExternalLink, Linkedin, MapPin, Briefcase, GraduationCap, Building2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { ReviewCandidate } from './candidate-review-modal-types'
 
 interface CandidateProfileColumnProps {
@@ -150,9 +150,9 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-sm text-lia-text-primary">{exp.title}</p>
                         {exp.isPromotion && (
-                          <Badge className="text-xs px-1.5 py-0.5  border-status-success/30">
+                          <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5  border-status-success/30">
                             Promotion
-                          </Badge>
+                          </Chip>
                         )}
                       </div>
                       <p className="text-xs text-lia-text-secondary mt-1">{exp.period}</p>
@@ -202,9 +202,9 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
               <h4 className="text-sm font-semibold text-lia-text-primary mb-2">Skills</h4>
               <div className="flex flex-wrap gap-2">
                 {candidate.skills?.map((skill) => (
-                  <Badge key={skill} variant="outline" className="text-xs">
+                  <Chip key={skill} variant="neutral" className="text-xs">
                     {skill}
-                  </Badge>
+                  </Chip>
                 )) || (
                   <p className="text-sm text-lia-text-secondary">No skills data available</p>
                 )}
@@ -215,9 +215,9 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
                 <h4 className="text-sm font-semibold text-lia-text-primary mb-2">Languages</h4>
                 <div className="flex flex-wrap gap-2">
                   {candidate.languages.map((lang, idx) => (
-                    <Badge key={`lang-${idx}`} variant="outline" className="text-xs">
+                    <Chip key={`lang-${idx}`} variant="neutral" className="text-xs">
                       {lang}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>

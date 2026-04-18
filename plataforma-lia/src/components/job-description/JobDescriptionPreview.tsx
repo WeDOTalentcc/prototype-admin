@@ -2,7 +2,7 @@
 
 import { formatBRL } from"@/lib/pricing";
 import { cn } from"@/lib/utils";
-import { Badge } from"@/components/ui/badge";
+import { Chip } from "@/components/ui/chip";
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card";
 import { Separator } from"@/components/ui/separator";
 import { 
@@ -36,20 +36,20 @@ interface JobDescriptionPreviewProps {
 function SuggestionBadge({ isNew }: { isNew: boolean }) {
   if (!isNew) return null;
   return (
-    <Badge variant="outline" className="ml-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default text-xs">
+    <Chip variant="neutral" className="ml-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default text-xs">
       <Lightbulb className="w-3 h-3 mr-1" />
       Sugerido pela LIA
-    </Badge>
+    </Chip>
   );
 }
 
 function AlertBadge({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <Badge variant="outline" className="ml-2  border-status-warning/30/30 text-xs">
+    <Chip variant="neutral" className="ml-2  border-status-warning/30/30 text-xs">
       <AlertTriangle className="w-3 h-3 mr-1" />
       {message}
-    </Badge>
+    </Chip>
   );
 }
 
@@ -141,18 +141,18 @@ export function JobDescriptionPreview({
           <div className="flex flex-col items-end gap-2">
             <CompletenessIndicator score={data.completeness_score} />
             {data.suggestions_count > 0 && (
-              <Badge variant="outline" className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default">
+              <Chip variant="neutral" className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default">
                 <Lightbulb className="w-3 h-3 mr-1" />
                 {data.suggestions_count} sugestões
-              </Badge>
+              </Chip>
             )}
           </div>
         </div>
         
         {data.is_affirmative && (
-          <Badge className="w-fit mt-2  border-wedo-purple/30/30">
+          <Chip variant="neutral" muted className="w-fit mt-2  border-wedo-purple/30/30">
             🏳️‍🌈 {data.affirmative_type ||"Vaga Afirmativa"}
-          </Badge>
+          </Chip>
         )}
       </CardHeader>
 
@@ -305,9 +305,9 @@ export function JobDescriptionPreview({
               {data.compensation.market_comparison && (
                 <p className="flex items-center gap-2">
                   <strong>Comparativa de Mercado:</strong>
-                  <Badge variant="outline" className="text-xs -dark border-wedo-cyan/30/30">
+                  <Chip variant="neutral" className="text-xs -dark border-wedo-cyan/30/30">
                     {data.compensation.market_comparison}
-                  </Badge>
+                  </Chip>
                 </p>
               )}
               {data.compensation.market_percentile !== undefined && (

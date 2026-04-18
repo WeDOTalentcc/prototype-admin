@@ -9,7 +9,7 @@ import {
   FileText, ArrowRight, Info, Loader2
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -367,16 +367,16 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <p className={textStyles.subtitle}>{twin.twin_name}</p>
-              <Badge className={twin.is_active ? badgeStyles.success : badgeStyles.warning}>
+              <Chip variant="neutral" muted className={twin.is_active ? badgeStyles.success : badgeStyles.warning}>
                 {twin.is_active ? t("active") : t("inactive")}
-              </Badge>
+              </Chip>
             </div>
             {twin.specialties.length > 0 && (
               <div className="flex gap-1 mt-1 flex-wrap">
                 {twin.specialties.slice(0, 4).map((s) => (
-                  <Badge key={s} className="bg-cyan-50 dark:bg-cyan-950/30 text-wedo-cyan text-xs">
+                  <Chip variant="neutral" muted key={s} className="bg-cyan-50 dark:bg-cyan-950/30 text-wedo-cyan text-xs">
                     {s}
-                  </Badge>
+                  </Chip>
                 ))}
               </div>
             )}
@@ -543,13 +543,13 @@ export function EvaluateWithTwinModal({
                 <div className="space-y-2 max-h-32 overflow-y-auto">
                   {evaluation.supporting_examples.map((ex, i) => (
                     <div key={i} className="flex items-start gap-2 text-sm">
-                      <Badge
+                      <Chip variant="neutral" muted
                         className={
                           ex.decision === "approved" ? badgeStyles.success : badgeStyles.error
                         }
                       >
                         {ex.decision === "approved" ? "✅" : "❌"}
-                      </Badge>
+                      </Chip>
                       <div className="min-w-0">
                         <p className={textStyles.bodySmall}>{ex.reasoning}</p>
                         <p className={textStyles.caption}>

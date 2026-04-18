@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from"react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from"@/components/ui/dialog"
 import { VisuallyHidden } from"@radix-ui/react-visually-hidden"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { ScrollArea } from"@/components/ui/scroll-area"
 import {
   X, Download, Play, Pause, Volume2, VolumeX,
@@ -288,9 +288,9 @@ export function ScreeningMediaModal({
             </h3>
             
             <div className="mb-3">
-              <Badge variant="outline" className="bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default">
+              <Chip variant="neutral" className="bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default">
                 {type === 'audio' ? t('media.audioScreening') : t('media.videoInterview')}
-              </Badge>
+              </Chip>
               <span className={`${textStyles.caption} ml-2`}>{t('media.duration', { duration })}</span>
             </div>
 

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { CompanyDataCard } from '../CompanyDataCard'
 import { inputClass, textareaClass } from '../useCompanyDataForm'
 import type { CompanyData } from '../useCompanyDataForm'
@@ -83,7 +83,7 @@ export function CultureIdentitySection({
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
               {(companyData.values || []).map((value: string, idx: number) => (
-                <Badge key={value} className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary text-micro px-2 py-0.5 rounded-full">
+                <Chip variant="neutral" muted key={value} className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary text-micro px-2 py-0.5 rounded-full">
                   {value}
                   {isEditing && (
                     <button
@@ -94,7 +94,7 @@ export function CultureIdentitySection({
                       className="ml-1 hover:text-status-error"
                     >×</button>
                   )}
-                </Badge>
+                </Chip>
               ))}
             </div>
             <input
@@ -130,7 +130,7 @@ export function CultureIdentitySection({
           <div className="space-y-2">
             <div className="flex flex-wrap gap-2">
               {(companyData.coreCompetencies || []).map((comp: string, idx: number) => (
-                <Badge key={comp} className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary text-micro px-2 py-0.5 rounded-full">
+                <Chip variant="neutral" muted key={comp} className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary text-micro px-2 py-0.5 rounded-full">
                   {comp}
                   {isEditing && (
                     <button
@@ -142,7 +142,7 @@ export function CultureIdentitySection({
                       aria-label={`Remover ${comp}`}
                     >×</button>
                   )}
-                </Badge>
+                </Chip>
               ))}
             </div>
             <input

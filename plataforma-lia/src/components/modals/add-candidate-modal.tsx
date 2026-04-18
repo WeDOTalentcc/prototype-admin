@@ -8,7 +8,7 @@ import { Input } from"@/components/ui/input"
 import { Label } from"@/components/ui/label"
 import { Textarea } from"@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Card, CardContent } from"@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from"@/components/ui/tabs"
 import { LIAIcon } from"@/components/ui/lia-icon"
@@ -436,7 +436,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {skills.map((skill) => (
-                    <Badge key={skill} variant="secondary" className="px-3 py-1">
+                    <Chip key={skill} variant="neutral" muted className="px-3 py-1">
                       {skill}
                       <button
                         onClick={() => handleRemoveSkill(skill)}
@@ -444,7 +444,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                       >
                         <X className="w-3 h-3" />
                       </button>
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
                 {liaAnalysis?.suggestedSkills && (
@@ -455,9 +455,9 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {liaAnalysis.suggestedSkills.map((skill: string) => (
-                        <Badge
+                        <Chip
                           key={skill}
-                          variant="outline"
+                          variant="neutral"
                           className="cursor-pointer hover:bg-lia-interactive-hover"
                           onClick={() => {
                             if (!skills.includes(skill)) {
@@ -467,7 +467,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                         >
                           <Plus className="w-3 h-3 mr-1" />
                           {skill}
-                        </Badge>
+                        </Chip>
                       ))}
                     </div>
                   </div>

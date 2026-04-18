@@ -3,7 +3,7 @@
 
 import { CURRENCY_SYMBOL } from"@/lib/pricing"
 import React, { useState } from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { cn } from"@/lib/utils"
@@ -241,8 +241,8 @@ export function CompensationChatMessage({
 
             <div className="flex items-center justify-between text-xs px-1">
               <span className="text-lia-text-tertiary">Posição no mercado:</span>
-              <Badge 
-                variant="outline" 
+              <Chip 
+                variant="neutral" 
                 className={cn("text-micro h-5",
                   analysis.salary.percentileVsMarket >= 50 
                     ?"border-status-success/30  dark:border-status-success/30 dark:bg-status-success/30"
@@ -250,7 +250,7 @@ export function CompensationChatMessage({
                 )}
               >
                 Percentil {analysis.salary.percentileVsMarket}
-              </Badge>
+              </Chip>
             </div>
 
             {analysis.salary.suggestion && (

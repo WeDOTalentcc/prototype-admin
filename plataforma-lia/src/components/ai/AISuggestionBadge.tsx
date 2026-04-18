@@ -3,7 +3,7 @@
 import React, { useState } from"react"
 import { cn } from"@/lib/utils"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Brain, Check, X } from"lucide-react"
 import {
   Popover,
@@ -74,15 +74,15 @@ export function AISuggestionBadge({
     return (
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <Badge 
-            variant="outline" 
+          <Chip 
+            variant="neutral" 
             className={cn("cursor-pointer gap-1 border-lia-border-default dark:border-lia-border-default text-lia-text-primary hover:bg-lia-bg-tertiary dark:bg-lia-bg-secondary",
  className
             )}
           >
             <Brain className="h-3 w-3 text-wedo-cyan" />
             LIA
-          </Badge>
+          </Chip>
         </PopoverTrigger>
         <PopoverContent className="w-64 p-3" align="start">
           <div className="space-y-3">

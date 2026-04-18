@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useCallback } from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { EmptyState } from"@/components/ui/empty-state"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
@@ -248,9 +248,9 @@ export function FavoritesTab({
                 <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary transition-colors motion-reduce:transition-none group">
                   <TrendingUp className="w-3.5 h-3.5 text-lia-text-secondary" />
                   <span className="text-xs font-medium text-lia-text-secondary">Análises</span>
-                  <Badge className="h-4 px-1.5 text-xs bg-lia-bg-inverse text-white">
+                  <Chip variant="neutral" muted className="h-4 px-1.5 text-xs bg-lia-bg-inverse text-white">
                     {filteredCandidates.length}
-                  </Badge>
+                  </Chip>
                 </button>
               </PopoverTrigger>
               <PopoverContent 
@@ -282,9 +282,9 @@ export function FavoritesTab({
                       <span className="text-xs text-lia-text-primary block mb-1.5">Top skills</span>
                       <div className="flex flex-wrap gap-1">
                         {Array.from(new Set(filteredCandidates.flatMap(c => ((c.skills || c.technical_skills || []) as string[]).slice(0, 2)))).slice(0, 4).map((skill, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs bg-lia-interactive-active text-lia-text-secondary dark:bg-lia-bg-elevated">
+                          <Chip key={idx} variant="neutral" muted className="text-xs bg-lia-interactive-active text-lia-text-secondary dark:bg-lia-bg-elevated">
                             {skill}
-                          </Badge>
+                          </Chip>
                         ))}
                       </div>
                     </div>
@@ -293,10 +293,10 @@ export function FavoritesTab({
                       <span className="text-xs text-lia-text-primary block mb-1.5">Localizações</span>
                       <div className="flex flex-wrap gap-1">
                         {Array.from(new Set(filteredCandidates.map(c => ((c.location || '') as string).split(',')[0]).filter(Boolean))).slice(0, 3).map((loc, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs  dark:bg-status-success/10 dark:text-status-success">
+                          <Chip key={idx} variant="neutral" muted className="text-xs  dark:bg-status-success/10 dark:text-status-success">
                             <MapPin className="w-2.5 h-2.5 mr-0.5" />
                             {loc}
-                          </Badge>
+                          </Chip>
                         ))}
                       </div>
                     </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   CheckCircle, Clock, UserPlus, TrendingUp
@@ -100,9 +100,9 @@ export function OnboardingOverview() {
                   </div>
 
                   <div className="text-right">
-                    <Badge className={getStatusColor(candidate.status)}>
+                    <Chip variant="neutral" muted className={getStatusColor(candidate.status)}>
                       {getStatusLabel(candidate.status)}
-                    </Badge>
+                    </Chip>
                     <p className="text-sm text-lia-text-primary mt-1">{candidate.currentStep}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <div className="w-24 bg-lia-interactive-active rounded-full h-2">
@@ -149,9 +149,9 @@ export function OnboardingOverview() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-lia-text-primary">{item.dueDate}</p>
-                  <Badge variant="outline" className="text-xs">
+                  <Chip variant="neutral" className="text-xs">
                     {item.priority === 'high' ? 'Alta' : item.priority === 'medium' ? 'Média' : 'Baixa'}
-                  </Badge>
+                  </Chip>
                 </div>
               </div>
             ))}

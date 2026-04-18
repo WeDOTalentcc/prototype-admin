@@ -12,7 +12,7 @@ import {
   PauseCircle, PlayCircle, Archive, Calendar, Link2, RotateCcw,
 } from"lucide-react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { toast } from"sonner"
 
 interface KanbanJobHeaderProps {
@@ -71,9 +71,9 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                   )}
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none select-none">
+                      <Chip variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none select-none">
                         {(((jobEditForm.status || currentJob.status) as string) as string) as string}
-                      </Badge>
+                      </Chip>
                     </PopoverTrigger>
                     <PopoverContent className="w-44 p-1" align="start">
                       {(() => { const st = ((jobEditForm.status || currentJob.status) as string) as string; return st === 'Ativa' || st === 'active' })() ? (
@@ -136,9 +136,9 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                       }
                     }
                     const badge = (
-                      <Badge className={`font-semibold whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none select-none ${(scrStyles as Record<string, string>)[scrStatus as string] || scrStyles.not_configured}`}>
+                      <Chip variant="neutral" muted className={`font-semibold whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none select-none ${(scrStyles as Record<string, string>)[scrStatus as string] || scrStyles.not_configured}`}>
                         {(scrLabels as Record<string, string>)[scrStatus as string] || t('screeningNA')}
-                      </Badge>
+                      </Chip>
                     )
                     if ((scrStatus as string) === 'completed') return badge
                     return (
@@ -206,34 +206,34 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap mt-1">
                   {(currentJob.status as string) === 'Rascunho' && (
-                    <Badge className="bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 text-status-warning dark:text-status-warning font-semibold whitespace-nowrap text-micro px-1.5 py-0">
+                    <Chip variant="neutral" muted className="bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 text-status-warning dark:text-status-warning font-semibold whitespace-nowrap text-micro px-1.5 py-0">
                       {t('draft')}
-                    </Badge>
+                    </Chip>
                   )}
-                  <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-semibold whitespace-nowrap text-micro px-1.5 py-0">
+                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-semibold whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.level as string}
-                  </Badge>
-                  <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium capitalize whitespace-nowrap text-micro px-1.5 py-0">
+                  </Chip>
+                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium capitalize whitespace-nowrap text-micro px-1.5 py-0">
                     {(currentJob.workModel as string | undefined) || '—'}
-                  </Badge>
-                  <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                  </Chip>
+                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {(currentJob.type as string | undefined) || '—'}
-                  </Badge>
-                  <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                  </Chip>
+                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.department as string}
-                  </Badge>
-                  <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                  </Chip>
+                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.location as string}
-                  </Badge>
+                  </Chip>
                   {!!(currentJob.salary) && (currentJob.salary as string) !== 'A combinar' && (
-                    <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Chip variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       {currentJob.salary as string}
-                    </Badge>
+                    </Chip>
                   )}
                   {!!(currentJob.publishedLinkedIn) && (
-                    <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Chip variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       {t('published')}
-                    </Badge>
+                    </Chip>
                   )}
                   <span className="text-micro text-lia-text-disabled mx-0.5">|</span>
                   {!!(currentJob.openDate) && (
@@ -258,25 +258,25 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                     </span>
                   )}
                   {!!(currentJob.deadlineScreening) && (
-                    <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Chip variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
                       {t('screeningDeadline')}: {new Date(currentJob.deadlineScreening as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
-                    </Badge>
+                    </Chip>
                   )}
                   {!!(currentJob.deadlineShortlist) && (
-                    <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Chip variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
                       {t('shortlistDeadline')}: {new Date(currentJob.deadlineShortlist as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
-                    </Badge>
+                    </Chip>
                   )}
                   {!!(currentJob.deadlineClosing) && (
-                    <Badge className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
+                    <Chip variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-micro px-1.5 py-0">
                       <Calendar className="w-3 h-3 mr-0.5" />
                       {t('closing')}: {new Date(currentJob.deadlineClosing as string).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
-                    </Badge>
+                    </Chip>
                   )}
                   {computedSuggestions.length > 0 && (
-                    <Badge 
+                    <Chip variant="neutral" muted 
                       className="bg-wedo-cyan text-white border-0 font-semibold whitespace-nowrap text-micro px-1.5 py-0 cursor-pointer hover:bg-wedo-cyan-dark transition-colors motion-reduce:transition-none"
                       onClick={() => {
                         setShowLiaSuggestionsPanel(true)
@@ -284,7 +284,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                     >
                       <Lightbulb className="w-3 h-3 mr-1" />
                       {t('liaSuggestions', { count: computedSuggestions.length })}
-                    </Badge>
+                    </Chip>
                   )}
                 </div>
               </div>
@@ -328,13 +328,13 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
             >
               <Layers3 className="w-3.5 h-3.5" />
               {t('jobManagement')}
-              <Badge className={`text-micro px-1.5 py-0 ml-1 ${
+              <Chip variant="neutral" muted className={`text-micro px-1.5 py-0 ml-1 ${
                 activeTab === 'management'
                   ? 'bg-lia-interactive-active text-lia-text-secondary'
                   : 'bg-lia-interactive-active text-lia-text-secondary'
               }`}>
                 {allTableCandidates?.length || 0}
-              </Badge>
+              </Chip>
             </button>
             <button
               onClick={() => { setActiveTab('edit'); setShowJobEditor(true); }}

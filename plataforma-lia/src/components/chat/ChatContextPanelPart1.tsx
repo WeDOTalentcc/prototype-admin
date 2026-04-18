@@ -7,7 +7,7 @@ import {
 } from"lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { ContextPanelData } from"@/types/chat"
 
 interface Props {
@@ -33,7 +33,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                   <DollarSign className="w-5 h-5 text-lia-text-secondary" />
                   <span className="text-lia-text-primary">Pacote de Compensação</span>
                 </div>
-                <Badge variant="outline" className="border-lia-border-subtle text-lia-text-secondary">Inteligência de Mercado</Badge>
+                <Chip variant="neutral" className="border-lia-border-subtle text-lia-text-secondary">Inteligência de Mercado</Chip>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
@@ -44,7 +44,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                       <p className="text-sm text-lia-text-secondary">Recomendação LIA - Target</p>
                       <p className="text-xl font-semibold text-lia-text-primary">{data.recommended_package.base_salary.target}</p>
                     </div>
-                    <Badge className="bg-status-warning/10 dark:bg-status-warning/20 text-lia-text-primary">Percentil 90</Badge>
+                    <Chip variant="neutral" muted className="bg-status-warning/10 dark:bg-status-warning/20 text-lia-text-primary">Percentil 90</Chip>
                   </div>
                   <p className="text-sm text-lia-text-secondary">{data.recommended_package.total_compensation.positioning}</p>
                 </div>
@@ -78,7 +78,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                           <h5 className="font-medium text-lia-text-primary">{company.company}</h5>
                           <p className="text-sm text-lia-text-secondary">{company.notes}</p>
                         </div>
-                        <Badge variant="outline" className="border-lia-border-subtle">{company.range}</Badge>
+                        <Chip variant="neutral" className="border-lia-border-subtle">{company.range}</Chip>
                       </div>
                     ))}
                   </div>
@@ -199,11 +199,11 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <h4 className="text-sm font-medium text-lia-text-secondary mb-2">Dias Presenciais</h4>
-                    <div className="flex flex-wrap gap-1">{data.office_days.map((day: string, index: number) => (<Badge key={`${index}-${day}`} variant="outline" className="text-xs">{day}</Badge>))}</div>
+                    <div className="flex flex-wrap gap-1">{data.office_days.map((day: string, index: number) => (<Chip key={`${index}-${day}`} variant="neutral" className="text-xs">{day}</Chip>))}</div>
                   </div>
                   <div>
                     <h4 className="text-sm font-medium text-lia-text-secondary mb-2">Home Office</h4>
-                    <div className="flex flex-wrap gap-1">{data.home_office_days.map((day: string, index: number) => (<Badge key={`${index}-${day}`} variant="outline" className="text-xs">{day}</Badge>))}</div>
+                    <div className="flex flex-wrap gap-1">{data.home_office_days.map((day: string, index: number) => (<Chip key={`${index}-${day}`} variant="neutral" className="text-xs">{day}</Chip>))}</div>
                   </div>
                 </div>
                 <div><h4 className="text-sm font-medium text-lia-text-secondary mb-2">Benefícios Inclusos</h4><p className="text-sm text-lia-text-secondary">{data.benefits}</p></div>
@@ -276,7 +276,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                   <Globe className="w-5 h-5 text-lia-text-secondary" />
                   <span className="text-lia-text-primary">Publicação Multi-Canal</span>
                 </div>
-                <Badge className="bg-status-success/10 dark:bg-status-success/20 text-lia-text-primary">{data.ats_integration.status}</Badge>
+                <Chip variant="neutral" muted className="bg-status-success/10 dark:bg-status-success/20 text-lia-text-primary">{data.ats_integration.status}</Chip>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
@@ -302,7 +302,7 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                           <h5 className="font-medium text-lia-text-primary">{channel.platform}</h5>
                           <p className="text-sm mt-1 text-lia-text-secondary">{channel.reach} • {channel.budget}</p>
                         </div>
-                        <Badge variant="outline" className="border-lia-border-subtle text-lia-text-primary">{channel.status}</Badge>
+                        <Chip variant="neutral" className="border-lia-border-subtle text-lia-text-primary">{channel.status}</Chip>
                       </div>
                     ))}
                   </div>

@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from"react"
 import { Card, CardContent } from"@/components/ui/card"
 import { Progress } from"@/components/ui/progress"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Loader2, CheckCircle2, XCircle, RefreshCw } from"lucide-react"
 
@@ -187,13 +187,13 @@ export function AsyncJobProgress({
 
         <div className="flex items-center gap-2">
           {usePolling && status !=="completed" && status !=="failed" && (
-            <Badge variant="outline" className="text-xs px-1.5 py-0 text-lia-text-secondary">
+            <Chip variant="neutral" className="text-xs px-1.5 py-0 text-lia-text-secondary">
               <RefreshCw className="h-2.5 w-2.5 mr-1" />
               polling
-            </Badge>
+            </Chip>
           )}
-          <Badge
-            variant="outline"
+          <Chip
+            variant="neutral"
             className={`text-xs px-1.5 py-0 ${
  status ==="completed"
                 ?"text-status-success border-status-success/30"
@@ -205,7 +205,7 @@ export function AsyncJobProgress({
             {status ==="queued" ?"Na fila" :
              status ==="processing" ?"Processando" :
              status ==="completed" ?"Concluído" :"Falhou"}
-          </Badge>
+          </Chip>
         </div>
       </div>
 

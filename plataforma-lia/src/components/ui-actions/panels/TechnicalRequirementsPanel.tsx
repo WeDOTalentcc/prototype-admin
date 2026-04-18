@@ -5,7 +5,7 @@ import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Label } from"@/components/ui/label"
 import { Checkbox } from"@/components/ui/checkbox"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from"@/components/ui/tabs"
 import {
@@ -147,9 +147,9 @@ export function TechnicalRequirementsPanel({
                               <div className="flex items-center gap-2">
                                 <span className="text-sm font-medium">{req.name}</span>
                                 {req.required && (
-                                  <Badge variant="secondary" className="text-xs">
+                                  <Chip variant="neutral" muted className="text-xs">
                                     Obrigatória
-                                  </Badge>
+                                  </Chip>
                                 )}
                               </div>
                             </td>
@@ -212,13 +212,14 @@ export function TechnicalRequirementsPanel({
               </span>
             ) : (
               requirements.map((req) => (
-                <Badge
+                <Chip
                   key={req.id}
-                  variant={req.required ?"secondary" :"outline"}
+                  variant="neutral"
+                  muted={req.required}
                   className="text-xs dark:border-lia-border-default"
                 >
                   {req.name} ({req.level.charAt(0)})
-                </Badge>
+                </Chip>
               ))
             )}
           </div>

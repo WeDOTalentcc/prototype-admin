@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   AlertCircle,
   CheckCircle,
@@ -103,7 +103,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                     </div>
                   </div>
                 </div>
-                <Badge className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">{t('testPreview.points', { count: 10 })}</Badge>
+                <Chip variant="neutral" muted className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">{t('testPreview.points', { count: 10 })}</Chip>
               </div>
               <div className="ml-11 space-y-2">
                 {[
@@ -144,7 +144,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                     </div>
                   </div>
                 </div>
-                <Badge className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">{t('testPreview.points', { count: 10 })}</Badge>
+                <Chip variant="neutral" muted className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">{t('testPreview.points', { count: 10 })}</Chip>
               </div>
               <div className="ml-11 space-y-2">
                 {[
@@ -185,7 +185,7 @@ export function TestPreviewModal({ open, onClose }: TestPreviewModalProps) {
                     </div>
                   </div>
                 </div>
-                <Badge className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">{t('testPreview.points', { count: 10 })}</Badge>
+                <Chip variant="neutral" muted className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-secondary">{t('testPreview.points', { count: 10 })}</Chip>
               </div>
               <div className="ml-11 space-y-2">
                 {[

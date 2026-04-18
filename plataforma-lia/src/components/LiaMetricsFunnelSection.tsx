@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   TrendingUp, Phone, Target, Activity, Timer, ArrowRight,
   CheckCircle, Award, Calendar
@@ -57,9 +57,9 @@ export function LiaMetricsFunnelSection({ data }: LiaMetricsFunnelSectionProps) 
                           <span className="text-xs text-lia-text-secondary">
                             {stage.count}/{stage.total}
                           </span>
-                          <Badge className="text-xs px-1.5 py-0.5" variant="outline">
+                          <Chip className="text-xs px-1.5 py-0.5" variant="neutral">
                             {stage.rate.toFixed(0)}%
-                          </Badge>
+                          </Chip>
                         </div>
                       </div>
                       <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1.5">

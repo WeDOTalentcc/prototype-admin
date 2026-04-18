@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from"react"
 import { Bell, Loader2, Brain, Check, X, ArrowRight, Clock, User } from"lucide-react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { Popover, PopoverContent, PopoverTrigger } from"@/components/ui/popover"
 import { cn } from"@/lib/utils"
@@ -300,9 +300,9 @@ export function ProactiveActionsBell({
               </span>
             </div>
             {pendingCount > 0 && (
-              <Badge variant="secondary" className="text-micro">
+              <Chip variant="neutral" muted className="text-micro">
                 {pendingCount} {pendingCount === 1 ? 'nova' : 'novas'}
-              </Badge>
+              </Chip>
             )}
           </div>
         </div>
@@ -339,9 +339,9 @@ export function ProactiveActionsBell({
                     <span className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wide">
                       {group.vacancyTitle}
                     </span>
-                    <Badge variant="outline" className="ml-2 text-micro py-0 h-4">
+                    <Chip variant="neutral" className="ml-2 text-micro py-0 h-4">
                       {group.actions.length}
-                    </Badge>
+                    </Chip>
                   </div>
                   <div className="divide-y divide-lia-border-subtle dark:divide-lia-border-strong">
                     {group.actions.map(renderActionCard)}

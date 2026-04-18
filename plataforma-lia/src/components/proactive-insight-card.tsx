@@ -8,7 +8,7 @@ import {
   Building, GraduationCap, Globe
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
@@ -241,13 +241,13 @@ export function ProactiveInsightCard({
                 </h4>
                 <div className="flex flex-wrap gap-1">
                   {seniorityEntries.map(([level, count]) => (
-                    <Badge 
+                    <Chip 
                       key={level} 
-                      variant="secondary"
+                      variant="neutral" muted
                       className="text-xs py-0.5 px-1.5 bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
                     >
                       {level}: {count}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -261,13 +261,13 @@ export function ProactiveInsightCard({
                 </h4>
                 <div className="flex flex-wrap gap-1">
                   {locationEntries.map(([location, count]) => (
-                    <Badge 
+                    <Chip 
                       key={location} 
-                      variant="outline"
+                      variant="neutral"
                       className="text-xs py-0.5 px-1.5"
                     >
                       {location}: {count}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -281,9 +281,9 @@ export function ProactiveInsightCard({
                 </h4>
                 <div className="flex flex-wrap gap-1">
                   {workModelEntries.map(([model, count]) => (
-                    <Badge 
+                    <Chip 
                       key={model} 
-                      variant="outline"
+                      variant="neutral"
                       className={cn("text-xs py-0.5 px-1.5",
                         model.toLowerCase().includes('remoto') &&"bg-status-success/10 border-status-success/30 text-status-success",
                         model.toLowerCase().includes('híbrido') &&"bg-lia-bg-secondary dark:bg-lia-bg-primary border-lia-border-default dark:border-lia-border-default text-wedo-cyan-dark",
@@ -291,7 +291,7 @@ export function ProactiveInsightCard({
                       )}
                     >
                       {model}: {count}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -305,12 +305,12 @@ export function ProactiveInsightCard({
                 </h4>
                 <div className="flex flex-wrap gap-1">
                   {top_skills.slice(0, 8).map((skill) => (
-                    <Badge 
+                    <Chip variant="neutral" muted 
                       key={skill.skill} 
                       className="text-xs py-0.5 px-1.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle hover:bg-lia-interactive-active"
                     >
                       {skill.skill} ({skill.count})
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -324,13 +324,13 @@ export function ProactiveInsightCard({
                 </h4>
                 <div className="flex flex-wrap gap-1">
                   {top_companies.slice(0, 6).map((company) => (
-                    <Badge 
+                    <Chip 
                       key={company.company} 
-                      variant="secondary"
+                      variant="neutral" muted
                       className="text-xs py-0.5 px-1.5"
                     >
                       {company.company} ({company.count})
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>

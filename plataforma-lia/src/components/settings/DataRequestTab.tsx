@@ -3,7 +3,7 @@
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   ClipboardList, Settings, FileText, Palette,
   Lightbulb, Shield, MessageSquare,
@@ -46,7 +46,7 @@ const CollapsibleSection = ({
         <Icon className="w-4 h-4 text-lia-text-primary" />
         <span className={textStyles.subtitle}>{title}</span>
         {count !== undefined && (
-          <Badge variant="outline" className="ml-1 text-micro">{count} itens</Badge>
+          <Chip variant="neutral" className="ml-1 text-micro">{count} itens</Chip>
         )}
       </div>
       <ChevronDown className={cn("w-4 h-4 text-lia-text-secondary transition-transform duration-200",

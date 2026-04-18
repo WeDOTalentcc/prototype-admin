@@ -5,7 +5,7 @@ import { useTranslations, useLocale } from 'next-intl'
 import { JobReadinessDrawer, StageBadge } from"@/components/pages/jobs/readiness/JobReadinessDrawer"
 import type { ReadinessStage } from"@/services/lia-api/readiness-api"
 import { SCREENING_STATUS_LABELS, type ScreeningStatus } from"@/types/screening"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { Button } from"@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
@@ -620,13 +620,13 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                           return (
                             <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
                               <div className="space-y-1">
-                                <Badge
-                                  variant="outline"
+                                <Chip
+                                  variant="neutral"
                                   className="border-0 text-xs font-normal px-2 py-0.5 text-lia-text-primary"
                                   style={{backgroundColor: getStatusColor(job.status)}} /* dynamic */
                                 >
                                   {statusLabels[job.status] || job.status}
-                                </Badge>
+                                </Chip>
                               </div>
                             </td>
                           )
@@ -644,8 +644,8 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                           }
                           return (
                             <td key={columnId} className="py-2 px-3" style={{width: `${width}px`}} /* dynamic */>
-                              <Badge
-                                variant="outline"
+                              <Chip
+                                variant="neutral"
                                 className="border-0 text-micro font-normal px-2 py-0.5 text-lia-text-primary cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none"
                                 style={{backgroundColor: screeningColors[status] || 'var(--lia-border-subtle)'}} /* dynamic */
                                 onClick={(e) => {
@@ -654,7 +654,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                 }}
                               >
                                 {statusLabels[status] || ta('notConfigured')}
-                              </Badge>
+                              </Chip>
                             </td>
                           )
                         }

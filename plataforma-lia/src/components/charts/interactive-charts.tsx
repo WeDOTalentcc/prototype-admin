@@ -20,7 +20,7 @@ import {
 import { Line, Bar, Pie, Chart } from 'react-chartjs-2'
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Calendar, TrendingUp, TrendingDown, BarChart3, PieChart as PieIcon,
   Activity, Users, DollarSign, Clock, Target, AlertCircle, CheckCircle,
@@ -381,9 +381,9 @@ export function InteractiveChart({
         {/* Legend Controls */}
         <div className="flex flex-wrap gap-2 mt-2">
           {dataKeys.map((key, index) => (
-            <Badge
+            <Chip
               key={key}
-              variant="outline"
+              variant="neutral"
               className={`cursor-pointer transition-colors motion-reduce:transition-none ${
  highlightedSeries === key ? 'border-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary' : ''
               }`}
@@ -395,7 +395,7 @@ export function InteractiveChart({
                 style={{backgroundColor: COLORS[index % COLORS.length]}}
               />
               {key}
-            </Badge>
+            </Chip>
           ))}
         </div>
       </CardHeader>

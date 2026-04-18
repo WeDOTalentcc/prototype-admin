@@ -32,7 +32,7 @@ import {
   Database,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { formatScorePercent } from "@/lib/design-tokens"
 import { getStageIcon, getStageColor, translateStatus } from "@/lib/pipeline-stage-maps"
@@ -1022,15 +1022,15 @@ function PipelineCandidateCard({
         {(vacancyBadges.length > 0 || sla) && (
           <div className="flex items-center gap-1 mt-1 flex-wrap">
             {vacancyBadges.map((b) => (
-              <Badge
+              <Chip variant="neutral" muted
                 key={b.key}
                 className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-[10px] px-1.5 py-0 h-auto leading-4 rounded-sm"
               >
                 {b.label}
-              </Badge>
+              </Chip>
             ))}
             {sla && (
-              <Badge
+              <Chip variant="neutral" muted
                 className={`border whitespace-nowrap text-[10px] px-1.5 py-0 h-auto leading-4 rounded-sm font-semibold ${
                   sla.isLate
                     ? "bg-status-error/10 border-status-error/30 text-status-error"
@@ -1038,7 +1038,7 @@ function PipelineCandidateCard({
                 }`}
               >
                 {sla.days}d {sla.isLate ? "de atraso" : "aberta"}
-              </Badge>
+              </Chip>
             )}
           </div>
         )}
@@ -1263,12 +1263,12 @@ function PipelineVacancyCard({ vacancy, stageKey, stageColor }: PipelineVacancyC
         {metaBadges.length > 0 && (
           <div className="flex items-center gap-1 mt-1 flex-wrap">
             {metaBadges.map((b) => (
-              <Badge
+              <Chip variant="neutral" muted
                 key={b.key}
                 className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-[10px] px-1.5 py-0 h-auto leading-4 rounded-sm"
               >
                 {b.label}
-              </Badge>
+              </Chip>
             ))}
           </div>
         )}

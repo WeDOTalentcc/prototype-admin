@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { ArrowUpDown, CheckCircle, Target, ChevronsLeftRight } from"lucide-react"
 import type { TableColumn } from"./CandidateSearchResultsView.types"
 import { useTranslations } from "next-intl"
@@ -35,20 +35,20 @@ export function SearchControlsBar({
   return (
     <div data-testid="search-controls-bar" className="flex items-center gap-3">
       {selectedCandidatesForBatch.size > 0 && (
-        <Badge data-testid="batch-selection-count" className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0 text-xs font-medium">
+        <Chip variant="neutral" muted data-testid="batch-selection-count" className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0 text-xs font-medium">
           🎯 {selectedCandidatesForBatch.size}
-        </Badge>
+        </Chip>
       )}
 
       {searchSortBy !== 'relevance' && (
-        <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0 text-xs font-medium gap-1">
+        <Chip variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0 text-xs font-medium gap-1">
           <ArrowUpDown className="w-3 h-3" />
           {searchSortBy === 'score_desc' ? t('controls.sortScoreDesc') :
            searchSortBy === 'score_asc' ? t('controls.sortScoreAsc') :
            searchSortBy === 'name_asc' ? t('controls.sortNameAsc') :
            searchSortBy === 'name_desc' ? t('controls.sortNameDesc') :
            searchSortBy === 'experience_desc' ? t('controls.sortExperienceDesc') : t('controls.sortRelevance')}
-        </Badge>
+        </Chip>
       )}
 
       {selectedCandidatesForBatch.size === 0 && sortedCandidatesLength > 0 && (

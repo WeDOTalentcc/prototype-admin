@@ -2,7 +2,7 @@
 
 import React, { useState } from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Textarea } from"@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Loader2, Check, X, HelpCircle, MapPin, Briefcase, Star } from"lucide-react"
@@ -280,13 +280,13 @@ function CandidateCard({
                   {candidate.title}
                 </p>
               </div>
-              <Badge
+              <Chip variant="neutral" muted
                 className="text-xs shrink-0 border-0"
                 style={{backgroundColor: scoreStyle.bg, color: scoreStyle.text}}
               >
                 <Star className="h-3 w-3 mr-1" />
                 {candidate.match_score}%
-              </Badge>
+              </Chip>
             </div>
 
             <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-lia-text-tertiary">
@@ -302,21 +302,21 @@ function CandidateCard({
 
             <div className="flex flex-wrap gap-1.5 mt-3">
               {candidate.skills.slice(0, 5).map((skill) => (
-                <Badge
+                <Chip
                   key={skill}
-                  variant="outline"
+                  variant="neutral"
                   className="text-xs dark:border-lia-border-default border-lia-border-subtle text-lia-text-secondary"
                 >
                   {skill}
-                </Badge>
+                </Chip>
               ))}
               {candidate.skills.length > 5 && (
-                <Badge
-                  variant="outline"
+                <Chip
+                  variant="neutral"
                   className="text-xs dark:border-lia-border-default border-lia-border-subtle text-lia-text-tertiary"
                 >
                   +{candidate.skills.length - 5}
-                </Badge>
+                </Chip>
               )}
             </div>
 

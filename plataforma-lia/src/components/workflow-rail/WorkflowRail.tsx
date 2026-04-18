@@ -6,7 +6,7 @@ import {
   ChevronUp, ChevronDown, X, Briefcase, Database,
   Search, ArrowRight, Plus, Zap
 } from"lucide-react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Progress } from"@/components/ui/progress"
 import {
@@ -72,7 +72,7 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
           </div>
           <div className="flex items-center gap-2 flex-shrink-0 ml-3">
             {pendingCount > 0 && (
-              <Badge className="bg-yellow-500 text-yellow-900 text-xs">{pendingCount} pendente{pendingCount > 1 ?"s" :""}</Badge>
+              <Chip variant="neutral" muted className="bg-yellow-500 text-yellow-900 text-xs">{pendingCount} pendente{pendingCount > 1 ?"s" :""}</Chip>
             )}
             {hasEntries && (isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />)}
           </div>

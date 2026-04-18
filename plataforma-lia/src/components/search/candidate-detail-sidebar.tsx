@@ -4,7 +4,7 @@ import React from"react"
 import { getScoreBadgeClasses } from"@/lib/score-utils"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from"@/components/ui/sheet"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { ScrollArea } from"@/components/ui/scroll-area"
 import { Separator } from"@/components/ui/separator"
@@ -124,10 +124,10 @@ export function CandidateDetailSidebar({
                   {candidate.name}
                 </SheetTitle>
                 {candidate.is_open_to_work && (
-                  <Badge className="bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30">
+                  <Chip variant="neutral" muted className="bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30">
                     <CheckCircle className="h-3 w-3 mr-1" />
                     Aberto
-                  </Badge>
+                  </Chip>
                 )}
               </div>
               {candidate.current_title && (
@@ -144,8 +144,8 @@ export function CandidateDetailSidebar({
               )}
               <div className="flex flex-col gap-1 mt-2">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Badge 
-                    variant="outline" 
+                  <Chip 
+                    variant="neutral" 
                     className={`${
                       candidate.source ==="local" 
                         ?"border-lia-border-default dark:border-lia-border-default bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-secondary" 
@@ -163,10 +163,10 @@ export function CandidateDetailSidebar({
                         Base Global
                       </>
                     )}
-                  </Badge>
+                  </Chip>
                   {candidate.enrichment_source && (
-                    <Badge 
-                      variant="outline" 
+                    <Chip 
+                      variant="neutral" 
                       className={`${
                         candidate.enrichment_source === "apify"
                           ? "border-status-info/30 bg-status-info/10 text-status-info"
@@ -177,28 +177,28 @@ export function CandidateDetailSidebar({
                     >
                       <Zap className="h-3 w-3 mr-1" />
                       {candidate.enrichment_source === "apify" ? "Apify" : candidate.enrichment_source === "pearch" ? "Pearch" : "Local"}
-                    </Badge>
+                    </Chip>
                   )}
                   {candidate.is_enriching && (
-                    <Badge variant="outline" className="border-status-info/30 bg-status-info/10 text-status-info">
+                    <Chip variant="neutral" className="border-status-info/30 bg-status-info/10 text-status-info">
                       <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                       Enriquecendo...
-                    </Badge>
+                    </Chip>
                   )}
                   {candidate.is_discovered && (
-                    <Badge 
-                      variant="outline" 
+                    <Chip 
+                      variant="neutral" 
                       className="border-status-warning/30 dark:border-status-warning/30 bg-status-warning/10 dark:bg-status-warning/30 text-status-warning dark:text-status-warning"
                     >
                       <Eye className="h-3 w-3 mr-1" />
                       Descoberto
-                    </Badge>
+                    </Chip>
                   )}
                   {candidate.score && (
-                    <Badge className={getScoreColor(candidate.score)}>
+                    <Chip variant="neutral" muted className={getScoreColor(candidate.score)}>
                       <Star className="h-3 w-3 mr-1" />
                       {Math.round(candidate.score)}% match
-                    </Badge>
+                    </Chip>
                   )}
                 </div>
                 {candidate.is_discovered && (
@@ -242,13 +242,13 @@ export function CandidateDetailSidebar({
                 <h4 className="text-sm font-medium text-lia-text-primary mb-2">Habilidades</h4>
                 <div className="flex flex-wrap gap-1.5">
                   {candidate.skills.map((skill) => (
-                    <Badge 
+                    <Chip 
                       key={skill} 
-                      variant="secondary" 
+                      variant="neutral" muted 
                       className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary font-normal"
                     >
                       {skill}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -315,10 +315,10 @@ export function CandidateDetailSidebar({
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {candidate.languages.map((lang, idx) => (
-                    <Badge key={`lang-${idx}`} variant="outline" className="border-lia-border-default dark:border-lia-border-default">
+                    <Chip key={`lang-${idx}`} variant="neutral" className="border-lia-border-default dark:border-lia-border-default">
                       {lang.language}
                       {lang.proficiency && ` (${lang.proficiency})`}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>

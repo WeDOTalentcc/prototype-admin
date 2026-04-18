@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { Eye, Settings } from"lucide-react"
@@ -35,9 +35,9 @@ export function RecruiterCardView({ filteredRecruiters, getStatusColor }: Recrui
                   <p className="text-sm text-lia-text-secondary">
                     {recruiter.role}
                   </p>
-                  <Badge variant="outline" className="mt-1 text-xs">
+                  <Chip variant="neutral" className="mt-1 text-xs">
                     {recruiter.department}
-                  </Badge>
+                  </Chip>
                 </div>
               </div>
               <div className="text-right">
@@ -100,9 +100,9 @@ export function RecruiterCardView({ filteredRecruiters, getStatusColor }: Recrui
                       <span className="text-lia-text-primary">
                         {goal.current}/{goal.target}
                       </span>
-                      <Badge className={`text-xs ${getStatusColor(goal.status)}`}>
+                      <Chip variant="neutral" muted className={`text-xs ${getStatusColor(goal.status)}`}>
                         {getGoalStatusLabel(goal.status)}
-                      </Badge>
+                      </Chip>
                     </div>
                   </div>
                 ))}

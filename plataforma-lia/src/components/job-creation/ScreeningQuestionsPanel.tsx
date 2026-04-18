@@ -3,7 +3,7 @@
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { ScrollArea } from"@/components/ui/scroll-area"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
 import {
@@ -111,9 +111,9 @@ export function ScreeningQuestionsPanel({
           <div className="flex items-center gap-2">
             <Brain className="h-4 w-4 text-wedo-cyan" />
             <CardTitle className="text-sm font-medium">Roteiro WSI de Triagem</CardTitle>
-            <Badge variant="outline" className="text-micro px-1.5 py-0 rounded-full  border-status-success/30">
+            <Chip variant="neutral" className="text-micro px-1.5 py-0 rounded-full  border-status-success/30">
               Ativo
-            </Badge>
+            </Chip>
             <AIDisclaimer />
           </div>
         </div>
@@ -156,9 +156,9 @@ export function ScreeningQuestionsPanel({
               {distributionItems.map((item, idx) => (
                 <React.Fragment key={item.key}>
                   {idx > 0 && <span className="lia-text-muted text-micro">|</span>}
-                  <Badge variant="outline" className="text-micro px-2 py-0.5 bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle">
+                  <Chip variant="neutral" className="text-micro px-2 py-0.5 bg-lia-bg-secondary text-lia-text-secondary border-lia-border-subtle">
                     Bloco {item.key} · {item.name}: {item.count} {item.count === 1 ? 'pergunta' : 'perguntas'}
-                  </Badge>
+                  </Chip>
                 </React.Fragment>
               ))}
             </div>

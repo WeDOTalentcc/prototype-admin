@@ -1,6 +1,6 @@
 "use client"
 
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { cn } from"@/lib/utils"
 import { cardStyles, textStyles } from"@/lib/design-tokens"
@@ -51,36 +51,36 @@ export function IntegrationCard({ integration, onClick }: IntegrationCardProps) 
                 {integration.name}
               </h3>
               {integration.isActiveProvider && (
-                <Badge variant="info" className="text-[10px] px-1.5 py-0 flex-shrink-0">
+                <Chip variant="info" className="text-[10px] px-1.5 py-0 flex-shrink-0">
                   {t("integrations.card.active")}
-                </Badge>
+                </Chip>
               )}
               {integration.usingSystemKey && (
-                <Badge
-                  variant="outline"
+                <Chip
+                  variant="neutral"
                   className="text-[10px] px-1.5 py-0 flex-shrink-0 text-lia-text-secondary"
                   title={t("integrations.card.systemKeyTooltip")}
                 >
                   {t("integrations.card.systemKey")}
-                </Badge>
+                </Chip>
               )}
             </div>
             <div className="flex-shrink-0">
               {isConnected ? (
-                <Badge variant="success" className="text-[10px] gap-1 px-2 py-0.5">
+                <Chip variant="success" className="text-[10px] gap-1 px-2 py-0.5">
                   <CheckCircle2 className="w-3 h-3" />
                   {t("integrations.card.connected")}
-                </Badge>
+                </Chip>
               ) : isComingSoon ? (
-                <Badge variant="secondary" className="text-[10px] gap-1 px-2 py-0.5">
+                <Chip variant="neutral" muted className="text-[10px] gap-1 px-2 py-0.5">
                   <Clock className="w-3 h-3" />
                   {t("integrations.card.comingSoon")}
-                </Badge>
+                </Chip>
               ) : (
-                <Badge variant="outline" className="text-[10px] gap-1 px-2 py-0.5 text-lia-text-secondary">
+                <Chip variant="neutral" className="text-[10px] gap-1 px-2 py-0.5 text-lia-text-secondary">
                   <Settings className="w-3 h-3" />
                   {t("integrations.card.notConfigured")}
-                </Badge>
+                </Chip>
               )}
             </div>
           </div>

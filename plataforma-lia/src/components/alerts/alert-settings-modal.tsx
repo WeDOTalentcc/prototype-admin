@@ -3,7 +3,7 @@
 import { useState, useEffect } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   X, Plus, Save, Settings, Bell, BellOff, Edit2, Trash2,
   Clock, Target, Users, DollarSign, Star, AlertTriangle,
@@ -294,9 +294,9 @@ export function AlertSettingsModal({
                         <div className="flex items-center gap-2">
                           <h4 className="font-medium text-lia-text-primary">{rule.name}</h4>
                           {getSeverityIcon(rule.severity)}
-                          <Badge className={`text-xs ${getSeverityColor(rule.severity)}`}>
+                          <Chip variant="neutral" muted className={`text-xs ${getSeverityColor(rule.severity)}`}>
                             {rule.severity}
-                          </Badge>
+                          </Chip>
                         </div>
                         <div className="flex items-center gap-2">
                           <button

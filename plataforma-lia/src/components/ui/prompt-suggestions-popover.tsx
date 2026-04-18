@@ -13,7 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from"@/components/ui/popover"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { cn } from"@/lib/utils"
 
 export interface PromptSuggestion {
@@ -253,9 +253,9 @@ export function PromptSuggestionsPopover({
                 Ações Sugeridas
               </h3>
             </div>
-            <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+            <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5">
               {filteredSuggestions.length} disponíveis
-            </Badge>
+            </Chip>
           </div>
           
           <div className="flex flex-wrap gap-1">
@@ -319,12 +319,12 @@ export function PromptSuggestionsPopover({
                         {suggestion.description}
                       </p>
                     </div>
-                    <Badge 
-                      variant="secondary" 
+                    <Chip 
+                      variant="neutral" muted 
                       className={cn("text-xs px-1 py-0 flex-shrink-0", categoryInfo.color)}
                     >
                       {categoryInfo.label}
-                    </Badge>
+                    </Chip>
                   </div>
                 </button>
               )

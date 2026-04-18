@@ -3,7 +3,7 @@
 import React from"react"
 import { useTranslations } from "next-intl"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Popover,
@@ -195,12 +195,12 @@ export function createKanbanCellRenderer(props: KanbanTableCellRendererProps) {
           <Popover>
             <PopoverTrigger asChild>
               <button className="inline-flex items-center gap-1 group/stage" onClick={(e) => e.stopPropagation()}>
-                <Badge
+                <Chip variant="neutral" muted
                   className="text-xs font-semibold border-0 whitespace-nowrap text-lia-text-primary cursor-pointer"
                   style={{backgroundColor: currentStageObj?.color || 'var(--lia-border-subtle)'}}
                 >
                   {currentStageObj?.displayName || (candidate.stage as string | undefined)}
-                </Badge>
+                </Chip>
                 <ChevronDown className="w-3 h-3 text-lia-text-disabled group-hover/stage:text-lia-text-secondary transition-colors motion-reduce:transition-none" />
               </button>
             </PopoverTrigger>

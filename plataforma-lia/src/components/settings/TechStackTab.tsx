@@ -2,7 +2,7 @@
 
 import React from"react";
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card";
-import { Badge } from"@/components/ui/badge";
+import { Chip } from "@/components/ui/chip";
 import {
   Code,
   ChevronDown,
@@ -88,9 +88,9 @@ export function TechStackTab({
                     {category.label}
                   </span>
                   {categoryTechs.length > 0 && (
-                    <Badge className="bg-lia-bg-primary/50 dark:bg-black/20 text-micro px-1.5 py-0.5">
+                    <Chip variant="neutral" muted className="bg-lia-bg-primary/50 dark:bg-black/20 text-micro px-1.5 py-0.5">
                       {categoryTechs.length}
-                    </Badge>
+                    </Chip>
                   )}
                 </div>
                 {isExpanded ? (
@@ -105,7 +105,7 @@ export function TechStackTab({
                   {categoryTechs.length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
                       {categoryTechs.map((tech, idx) => (
-                        <Badge
+                        <Chip variant="neutral" muted
                           key={idx}
                           className={`${category.color} text-xs px-2.5 py-1 rounded-full`}
                         >
@@ -120,7 +120,7 @@ export function TechStackTab({
                               ×
                             </button>
                           )}
-                        </Badge>
+                        </Chip>
                       ))}
                     </div>
                   )}
@@ -179,9 +179,9 @@ export function TechStackTab({
               <div className="flex items-center gap-2">
                 <Code className="w-4 h-4" />
                 <span className="text-xs font-medium">Outros</span>
-                <Badge className="bg-lia-bg-primary/50 dark:bg-black/20 text-micro px-1.5 py-0.5">
+                <Chip variant="neutral" muted className="bg-lia-bg-primary/50 dark:bg-black/20 text-micro px-1.5 py-0.5">
                   {techStackByCategory["outros"].length}
-                </Badge>
+                </Chip>
               </div>
               {expandedCategories.outros ? (
                 <ChevronUp className="w-4 h-4" />
@@ -194,7 +194,7 @@ export function TechStackTab({
               <div className="p-3 bg-lia-bg-primary dark:bg-lia-bg-secondary space-y-3">
                 <div className="flex flex-wrap gap-1.5">
                   {techStackByCategory["outros"].map((tech, idx) => (
-                    <Badge
+                    <Chip variant="neutral" muted
                       key={idx}
                       className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary text-xs px-2.5 py-1 rounded-full"
                     >
@@ -207,7 +207,7 @@ export function TechStackTab({
                           ×
                         </button>
                       )}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
 

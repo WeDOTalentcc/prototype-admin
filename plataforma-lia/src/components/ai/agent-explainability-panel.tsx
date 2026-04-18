@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from"react"
 import { cn } from"@/lib/utils"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -159,12 +159,12 @@ export function AgentExplainabilityPanel({
             Raciocínio da LIA
           </span>
           {summary && !loading && (
-            <Badge
-              variant="outline"
+            <Chip
+              variant="neutral"
               className="ml-2 border-wedo-cyan/30 text-wedo-cyan text-micro px-1.5 py-0"
             >
               {summary.total_steps} passos
-            </Badge>
+            </Chip>
           )}
         </div>
         <ChevronDown
@@ -249,13 +249,13 @@ export function AgentExplainabilityPanel({
 
                         <div className="ml-auto flex items-center gap-2">
                           {step.tool_used && (
-                            <Badge
-                              variant="outline"
+                            <Chip
+                              variant="neutral"
                               className="border-lia-border-default text-lia-text-tertiary text-micro px-1.5 py-0 gap-1"
                             >
                               <Wrench className="h-2.5 w-2.5" />
                               {step.tool_used}
-                            </Badge>
+                            </Chip>
                           )}
                           <div className="flex items-center gap-1 text-lia-text-secondary">
                             <Clock className="h-3 w-3" />

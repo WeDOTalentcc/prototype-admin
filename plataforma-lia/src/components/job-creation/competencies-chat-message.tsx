@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { cn } from"@/lib/utils"
 import { 
@@ -115,17 +115,17 @@ function TechnicalSkillCard({ skill }: { skill: TechnicalSkillSuggestion }) {
           <Code className="h-3.5 w-3.5 text-lia-text-secondary flex-shrink-0" />
           <span className="text-xs font-medium truncate">{skill.name}</span>
           {skill.required && (
-            <Badge variant="outline" className="text-micro h-4 px-1.5 border-status-error/30  dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
+            <Chip variant="neutral" className="text-micro h-4 px-1.5 border-status-error/30  dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
               Obrigatório
-            </Badge>
+            </Chip>
           )}
         </div>
-        <Badge 
-          variant="outline" 
+        <Chip 
+          variant="neutral" 
           className={cn("text-micro h-4 px-1.5 border", levelConfig.bgClassName, levelConfig.className)}
         >
           {levelConfig.label}
-        </Badge>
+        </Chip>
       </div>
       
       <div className="flex items-center justify-between gap-2">
@@ -233,9 +233,9 @@ export function CompetenciesChatMessage({
               <div className="flex items-center gap-1.5 text-xs font-medium">
                 <Code className="h-3.5 w-3.5 text-lia-text-secondary" />
                 <span>Competências Técnicas</span>
-                <Badge variant="secondary" className="text-micro h-4 px-1.5">
+                <Chip variant="neutral" muted className="text-micro h-4 px-1.5">
                   {technicalSkills.length}
-                </Badge>
+                </Chip>
               </div>
               <div className="space-y-2 max-h-chart-sm overflow-y-auto pr-1">
                 {technicalSkills.map((skill, index) => (
@@ -250,9 +250,9 @@ export function CompetenciesChatMessage({
               <div className="flex items-center gap-1.5 text-xs font-medium">
                 <Brain className="h-3.5 w-3.5 text-wedo-purple" />
                 <span>Competências Comportamentais</span>
-                <Badge variant="secondary" className="text-micro h-4 px-1.5">
+                <Chip variant="neutral" muted className="text-micro h-4 px-1.5">
                   {behavioralCompetencies.length}
-                </Badge>
+                </Chip>
               </div>
               <div className="space-y-2 max-h-chart-sm overflow-y-auto pr-1">
                 {behavioralCompetencies.map((competency, index) => (

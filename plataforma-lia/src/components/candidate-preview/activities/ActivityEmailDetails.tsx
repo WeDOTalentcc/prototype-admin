@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { CheckCircle, Mail } from"lucide-react"
 import { textStyles } from '@/lib/design-tokens'
 import type { Activity as ActivityData } from"@/data/demo-activities"
@@ -46,9 +46,9 @@ export function ActivityEmailSentDetails({ activity }: ActivityEmailDetailsProps
             <p className="text-micro text-lia-text-tertiary mb-1">Anexos:</p>
             <div className="flex flex-wrap gap-1">
               {activity.details.attachments.map((att: string, i: number) => (
-                <Badge key={`att-${i}`} variant="outline" className="text-micro px-1.5 py-0 bg-lia-bg-primary">
+                <Chip key={`att-${i}`} variant="neutral" className="text-micro px-1.5 py-0 bg-lia-bg-primary">
                   📎 {att}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>
@@ -63,9 +63,9 @@ export function ActivityEmailSentDetails({ activity }: ActivityEmailDetailsProps
       {activity.details.suggestedTimes && (
         <div className="flex flex-wrap gap-1">
           {activity.details.suggestedTimes.map((t: string, i: number) => (
-            <Badge key={`stime-${i}`} className="text-micro px-2 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle">
+            <Chip variant="neutral" muted key={`stime-${i}`} className="text-micro px-2 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle">
               📅 {t}
-            </Badge>
+            </Chip>
           ))}
         </div>
       )}
@@ -83,9 +83,9 @@ export function ActivityGenericEmailDetails({ activity }: ActivityEmailDetailsPr
             {activity.type === 'email-sent' ? 'Email Enviado' : 'Email Recebido'}
           </h5>
           {activity.details.opened && (
-            <Badge className="text-xs px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">
+            <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">
               ✓ Lido
-            </Badge>
+            </Chip>
           )}
         </div>
         <div className="bg-lia-bg-primary p-2 rounded-xl mb-2 text-xs space-y-1">
@@ -116,9 +116,9 @@ export function ActivityGenericEmailDetails({ activity }: ActivityEmailDetailsPr
                   <p className={`${textStyles.bodySmall} mb-1`}>📎 Anexos:</p>
                   <div className="flex flex-wrap gap-1">
                     {activity.details.attachments.map((file: string, i: number) => (
-                      <Badge key={`file-${i}`} variant="outline" className="text-xs px-1.5 py-0.5">
+                      <Chip key={`file-${i}`} variant="neutral" className="text-xs px-1.5 py-0.5">
                         {file}
-                      </Badge>
+                      </Chip>
                     ))}
                   </div>
                 </div>

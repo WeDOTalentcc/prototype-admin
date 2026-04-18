@@ -2,7 +2,7 @@
 
 import { useAiCredits, useAiConsumptionHistory } from '@/hooks/ai/use-ai-credits'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from "@/components/ui/chip"
 import {
   BarChart,
   Bar,
@@ -105,9 +105,9 @@ function DailyUsageAlert({ percentage }: { percentage: number }) {
         <span>
           <strong>Limite diário crítico:</strong> {percentage.toFixed(0)}% do limite diário de tokens atingido. Operações de IA podem ser bloqueadas.
         </span>
-        <Badge variant="destructive" className="ml-auto shrink-0 text-xs">
+        <Chip variant="danger" className="ml-auto shrink-0 text-xs">
           {percentage.toFixed(0)}%
-        </Badge>
+        </Chip>
       </div>
     )
   }
@@ -118,9 +118,9 @@ function DailyUsageAlert({ percentage }: { percentage: number }) {
         <span>
           <strong>Alerta diário:</strong> {percentage.toFixed(0)}% do limite diário consumido. Considere reduzir o uso para evitar bloqueio.
         </span>
-        <Badge variant="secondary" className="ml-auto shrink-0 text-xs">
+        <Chip variant="neutral" muted className="ml-auto shrink-0 text-xs">
           {percentage.toFixed(0)}%
-        </Badge>
+        </Chip>
       </div>
     )
   }
@@ -147,8 +147,9 @@ export function AiCreditsPage({ companyId }: Props) {
 
   const usagePct = balance?.usage_percentage ?? 0
   const dailyPct = summary?.daily_usage_percentage ?? 0
-  const alertVariant =
-    usagePct >= 100 ? 'destructive' : usagePct >= 80 ? 'secondary' : 'outline'
+  const alertVariant: 'danger' | 'neutral' =
+    usagePct >= 100 ? 'danger' : 'neutral'
+  const alertMuted = usagePct < 100 && usagePct < 80
 
   const chartData = byDay.map((d) => ({
     date: d.date.slice(5),
@@ -217,14 +218,14 @@ export function AiCreditsPage({ companyId }: Props) {
         </div>
         <div className="flex items-center gap-2">
           {dailyPct >= 80 && (
-            <Badge variant={dailyPct >= 95 ? 'destructive' : 'secondary'} className="text-xs">
+            <Chip variant={dailyPct >= 95 ? 'danger' : 'neutral'} muted={dailyPct < 95} className="text-xs">
               Diário: {dailyPct.toFixed(0)}%
-            </Badge>
+            </Chip>
           )}
           {balance && (
-            <Badge variant={alertVariant} className="text-xs">
+            <Chip variant={alertVariant} muted={alertMuted} className="text-xs">
               {usagePct.toFixed(0)}% utilizado
-            </Badge>
+            </Chip>
           )}
         </div>
       </div>
@@ -486,9 +487,9 @@ export function AiCreditsPage({ companyId }: Props) {
                     <span>{formatTokens(agent.tokens)} tokens</span>
                     <span>{formatCost(agent.cost)}</span>
                     <span>{agent.operations} ops</span>
-                    <Badge variant="outline" className="text-xs font-normal">
+                    <Chip variant="neutral" className="text-xs font-normal">
                       {agent.percentage}%
-                    </Badge>
+                    </Chip>
                   </div>
                 </div>
               ))}

@@ -2,7 +2,7 @@
 
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   CheckCircle, Calendar, Mail, Phone, User
@@ -28,9 +28,9 @@ export function CandidateDetailModal({ candidate, onClose }: CandidateDetailModa
             <div>
               <h2 className="text-xl font-semibold text-lia-text-primary">{candidate.name}</h2>
               <p className="text-lia-text-secondary">{candidate.position} • {candidate.department}</p>
-              <Badge className={`mt-1 ${getStatusColor(candidate.status)}`}>
+              <Chip variant="neutral" muted className={`mt-1 ${getStatusColor(candidate.status)}`}>
                 {getStatusLabel(candidate.status)}
-              </Badge>
+              </Chip>
             </div>
           </div>
           <Button variant="ghost" onClick={onClose}>
@@ -104,17 +104,17 @@ export function CandidateDetailModal({ candidate, onClose }: CandidateDetailModa
                           <div className="flex items-center justify-between mb-1">
                             <h4 className="font-medium text-lia-text-primary">{task.title}</h4>
                             <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="text-xs">
+                              <Chip variant="neutral" className="text-xs">
                                 {task.assignedTo === 'candidate' ? 'Colaborador' :
                                  task.assignedTo === 'hr' ? 'RH' :
                                  task.assignedTo === 'manager' ? 'Gestor' :
                                  task.assignedTo === 'it' ? 'TI' : 'Admin'}
-                              </Badge>
-                              <Badge variant={task.priority === 'critical' ? 'destructive' : 'outline'} className="text-xs">
+                              </Chip>
+                              <Chip variant={task.priority === 'critical' ? 'danger' : 'neutral'} className="text-xs">
                                 {task.priority === 'critical' ? 'Crítica' :
                                  task.priority === 'high' ? 'Alta' :
                                  task.priority === 'medium' ? 'Média' : 'Baixa'}
-                              </Badge>
+                              </Chip>
                             </div>
                           </div>
                           <p className="text-sm text-lia-text-secondary mb-2">{task.description}</p>

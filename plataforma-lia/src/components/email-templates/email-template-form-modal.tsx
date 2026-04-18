@@ -7,7 +7,7 @@ import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Label } from"@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from"@/components/ui/tabs"
 import { Card, CardContent } from"@/components/ui/card"
 import { Mail, Save, X, Eye, Edit3, FileText, RefreshCw, Info, Copy } from"lucide-react"
@@ -330,9 +330,9 @@ export function EmailTemplateFormModal({
                         </h4>
                         <div className="flex flex-wrap gap-2">
                           {detectedVariables.map((v) => (
-                            <Badge key={v} >
+                            <Chip variant="neutral" muted key={v} >
                               {`{{${v}}}`}
-                            </Badge>
+                            </Chip>
                           ))}
                         </div>
                       </CardContent>

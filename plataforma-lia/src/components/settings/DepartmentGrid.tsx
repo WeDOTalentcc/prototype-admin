@@ -3,7 +3,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Chip } from "@/components/ui/chip";
 import {
   Users,
   Network,
@@ -120,12 +120,12 @@ export function DepartmentGrid({
                     <span>{dept.headcount} {t('employees')}</span>
                   </div>
                   {dept.manager && (
-                    <Badge
-                      variant="outline"
+                    <Chip
+                      variant="neutral"
                       className="text-micro rounded-xl border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary"
                     >
                       {dept.manager}
-                    </Badge>
+                    </Chip>
                   )}
                 </div>
               </CardContent>

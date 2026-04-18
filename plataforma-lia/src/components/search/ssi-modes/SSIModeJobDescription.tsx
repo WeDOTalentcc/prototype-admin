@@ -3,7 +3,7 @@
 import React from 'react'
 import { cn } from"@/lib/utils"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
 import {
   Briefcase, ChevronRight, FileText, Globe,
@@ -133,12 +133,12 @@ export const SSIModeJobDescription = React.memo(function SSIModeJobDescription(p
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-base-ui font-medium text-lia-text-primary truncate">{vacancy.title}</p>
-                          <Badge
-                            variant="outline"
+                          <Chip
+                            variant="neutral"
                             className={`text-micro px-1.5 py-0 h-4 flex-shrink-0 ${vacancy.status === 'Ativa' ? 'border-status-success text-status-success' : 'border-lia-text-tertiary text-lia-text-secondary'}`}
                           >
                             {vacancy.status}
-                          </Badge>
+                          </Chip>
                         </div>
                         <div className="flex items-center gap-2 mt-0.5">
                           {vacancy.job_id && (

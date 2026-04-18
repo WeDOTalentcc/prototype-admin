@@ -7,7 +7,7 @@ import {
   Table as TableIcon, LayoutGrid
 } from"lucide-react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { ViewToggle } from"@/components/ui/view-toggle"
 import { ToolbarButton } from"@/components/ui/toolbar-button"
 import { EmptyState } from"@/components/ui/empty-state"
@@ -152,9 +152,9 @@ export function JobsListContent(props: JobsListContentProps) {
               ]}
             />
             {selectedJobsForBatch.size > 0 && (
-              <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default text-xs font-bold">
+              <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default text-xs font-bold">
                 🎯 {selectedJobsForBatch.size}
-              </Badge>
+              </Chip>
             )}
             {selectedJobsForBatch.size === 0 && filteredJobs.length > 0 && (
               <ToolbarButton
@@ -173,7 +173,7 @@ export function JobsListContent(props: JobsListContentProps) {
               icon={<Target />}
               trailing={
                 getActiveJobFiltersCount() > 0 ? (
-                  <Badge variant="secondary" className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-btn-primary-bg ml-1 text-xs font-bold">{getActiveJobFiltersCount()}</Badge>
+                  <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-btn-primary-bg ml-1 text-xs font-bold">{getActiveJobFiltersCount()}</Chip>
                 ) : null
               }
             >
@@ -186,7 +186,7 @@ export function JobsListContent(props: JobsListContentProps) {
               title={t('configureColumns')}
               icon={<ChevronsLeftRight />}
               trailing={
-                <Badge variant="secondary" className={`ml-1 text-xs ${showColumnConfig ? 'bg-lia-btn-primary-hover text-white dark:bg-lia-bg-tertiary font-bold' : 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated'}`}>6</Badge>
+                <Chip variant="neutral" muted className={`ml-1 text-xs ${showColumnConfig ? 'bg-lia-btn-primary-hover text-white dark:bg-lia-bg-tertiary font-bold' : 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated'}`}>6</Chip>
               }
             >
               {t('columns')}
@@ -197,7 +197,7 @@ export function JobsListContent(props: JobsListContentProps) {
       <div className="flex-shrink-0 flex items-center justify-between mb-2">
         <div className="text-xs text-lia-text-primary flex items-center gap-3">
           {(searchTerm || selectedDaysFilter !== 'todas') && (
-            <Badge variant="outline" className="text-xs bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default font-medium">{t('activeFilters')}</Badge>
+            <Chip variant="neutral" className="text-xs bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default font-medium">{t('activeFilters')}</Chip>
           )}
         </div>
         <div className="flex items-center gap-2" />
@@ -270,7 +270,7 @@ export function JobsListContent(props: JobsListContentProps) {
                 </span>
               </div>
               {selectedJobsForBatch.size > 0 && (
-                <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs px-1.5 py-0.5">{selectedJobsForBatch.size}</Badge>
+                <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs px-1.5 py-0.5">{selectedJobsForBatch.size}</Chip>
               )}
             </div>
           ) : (

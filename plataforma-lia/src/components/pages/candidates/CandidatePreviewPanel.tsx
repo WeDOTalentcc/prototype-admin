@@ -3,7 +3,7 @@
 import React, { useState } from "react"
 import { useTranslations } from "next-intl"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Calendar, Mail, MessageSquare, Star, Briefcase, User, Phone, Linkedin, X } from"lucide-react"
 import { LIAIcon } from"@/components/ui/lia-icon"
@@ -41,7 +41,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                   </div>
                   <div className="flex justify-between items-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                     <span className={`${textStyles.bodySmall}`}>{t('statusLabel')}</span>
-                    <Badge className={`${
+                    <Chip variant="neutral" muted className={`${
                       candidate.status === 'active' ? badgeStyles.success :
                       candidate.status === 'prospect' ? badgeStyles.info :
                       candidate.status === 'interview' ? badgeStyles.warning :
@@ -50,7 +50,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                       {candidate.status === 'active' ? t('statusActive') :
                        candidate.status === 'prospect' ? t('statusProspect') :
                        candidate.status === 'interview' ? t('statusInterview') : t('statusHired')}
-                    </Badge>
+                    </Chip>
                   </div>
                 </div>
               </div>
@@ -128,9 +128,9 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     <h5 className={`${textStyles.label} mb-1`}>Frontend</h5>
                     <div className="flex flex-wrap gap-1">
                       {['React', 'TypeScript', 'Next.js', 'Tailwind CSS'].map((skill, index) => (
-                        <Badge key={skill} className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
+                        <Chip variant="neutral" muted key={skill} className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
                           {skill}
-                        </Badge>
+                        </Chip>
                       ))}
                     </div>
                   </div>
@@ -138,9 +138,9 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     <h5 className="text-xs font-medium text-lia-text-primary mb-2">Backend</h5>
                     <div className="flex flex-wrap gap-2">
                       {['Node.js', 'Python', 'PostgreSQL', 'MongoDB'].map((skill, index) => (
-                        <Badge key={skill} className="text-xs  border-0">
+                        <Chip variant="neutral" muted key={skill} className="text-xs  border-0">
                           {skill}
-                        </Badge>
+                        </Chip>
                       ))}
                     </div>
                   </div>
@@ -148,9 +148,9 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     <h5 className="text-xs font-medium text-lia-text-primary mb-2">{t('softSkills')}</h5>
                     <div className="flex flex-wrap gap-2">
                       {[t('skillLeadership'), t('skillCommunication'), t('skillTeamwork'), t('skillProblemSolving')].map((skill, index) => (
-                        <Badge key={index} className="text-xs  border-0">
+                        <Chip variant="neutral" muted key={index} className="text-xs  border-0">
                           {skill}
-                        </Badge>
+                        </Chip>
                       ))}
                     </div>
                   </div>
@@ -250,7 +250,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
               <div className="text-lia-text-primary">{t('evaluation')}</div>
             </div>
             <div className="text-center p-2 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
-              <Badge className={`text-xs ${
+              <Chip variant="neutral" muted className={`text-xs ${
                 candidate.status === 'active' ? 'bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success' :
                 candidate.status === 'prospect' ? 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary' :
                 candidate.status === 'interview' ? 'bg-status-warning/15 dark:bg-status-warning/30 text-status-warning dark:text-status-warning' :
@@ -259,7 +259,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                 {candidate.status === 'active' ? t('statusActive') :
                  candidate.status === 'prospect' ? t('statusProspect') :
                  candidate.status === 'interview' ? t('statusInterview') : t('statusHired')}
-              </Badge>
+              </Chip>
             </div>
           </div>
         </div>

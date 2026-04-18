@@ -3,7 +3,7 @@
 import { useState, useEffect } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Input } from"@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
 import {
@@ -369,13 +369,13 @@ export function EmailTemplatesManager() {
                       </h3>
                     </div>
                     {template.category && (
-                      <Badge
+                      <Chip variant="neutral" muted
                         className={`text-xs ${
  CATEGORY_LABELS[template.category]?.color ||"bg-lia-bg-tertiary text-lia-text-primary"
                         }`}
                       >
                         {CATEGORY_LABELS[template.category]?.label || template.category}
-                      </Badge>
+                      </Chip>
                     )}
                   </div>
                   <DropdownMenu>
@@ -423,14 +423,14 @@ export function EmailTemplatesManager() {
                 {template.variables && template.variables.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-3">
                     {template.variables.slice(0, 3).map((variable) => (
-                      <Badge key={variable} variant="outline" className="text-xs">
+                      <Chip key={variable} variant="neutral" className="text-xs">
                         {`{{${variable}}}`}
-                      </Badge>
+                      </Chip>
                     ))}
                     {template.variables.length > 3 && (
-                      <Badge variant="outline" className="text-xs">
+                      <Chip variant="neutral" className="text-xs">
                         +{template.variables.length - 3}
-                      </Badge>
+                      </Chip>
                     )}
                   </div>
                 )}
@@ -440,12 +440,13 @@ export function EmailTemplatesManager() {
                     <Calendar className="w-3 h-3" />
                     {formatDate(template.updated_at)}
                   </div>
-                  <Badge
-                    variant={template.is_active ?"default" :"secondary"}
+                  <Chip
+                    variant="neutral"
+                    muted
                     className="text-xs"
                   >
                     {template.is_active ?"Ativo" :"Inativo"}
-                  </Badge>
+                  </Chip>
                 </div>
               </CardContent>
             </Card>
@@ -493,9 +494,9 @@ export function EmailTemplatesManager() {
                   <span className="text-sm font-medium text-lia-text-secondary">Variáveis:</span>
                   <div className="flex flex-wrap gap-2 mt-2">
                     {selectedTemplate.variables.map((v) => (
-                      <Badge key={v} variant="outline" className="bg-lia-bg-primary">
+                      <Chip key={v} variant="neutral" className="bg-lia-bg-primary">
                         {`{{${v}}}`}
-                      </Badge>
+                      </Chip>
                     ))}
                   </div>
                 </div>

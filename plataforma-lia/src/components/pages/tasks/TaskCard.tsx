@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   CheckCircle, XCircle,
   MessageSquare, Calendar, Search, FileText, Users,
@@ -43,11 +43,11 @@ export const TaskCard = React.memo(function TaskCard({ task, onConfirm, onReject
               <h4 className="text-xs font-inter font-semibold text-lia-text-primary">
                 {task.title}
               </h4>
-              <Badge
+              <Chip variant="neutral" muted
                 className={`border-0 text-xs py-0 px-1.5 font-medium ${getTaskPriorityStyle(task.priority as 'high' | 'medium' | 'low') ??""}`}
               >
                 {getPriorityLabel(task.priority as 'high' | 'medium' | 'low')}
-              </Badge>
+              </Chip>
             </div>
             <p className="text-xs font-open-sans text-lia-text-primary mb-1 line-clamp-1">
               {task.description}

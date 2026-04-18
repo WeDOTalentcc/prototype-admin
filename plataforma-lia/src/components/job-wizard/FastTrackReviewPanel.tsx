@@ -30,7 +30,7 @@ import {
   Check
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -89,9 +89,9 @@ function CollapsibleSection({
           <span className="text-lia-text-tertiary">{icon}</span>
           <span className="text-sm font-medium text-white">{title}</span>
           {count !== undefined && (
-            <Badge variant="outline" className="text-xs border-lia-border-default text-lia-text-tertiary">
+            <Chip variant="neutral" className="text-xs border-lia-border-default text-lia-text-tertiary">
               {count}
-            </Badge>
+            </Chip>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -319,9 +319,9 @@ export function FastTrackReviewPanel({
         >
           <div className="flex flex-wrap gap-1">
             {jobData.technicalSkills.map((skill) => (
-              <Badge 
+              <Chip 
                 key={skill.id} 
-                variant="outline" 
+                variant="neutral" 
                 className={cn("text-xs",
                   skill.required 
                     ?"bg-lia-bg-tertiary dark:bg-lia-bg-secondary border-lia-border-default dark:border-lia-border-default text-lia-text-secondary" 
@@ -330,7 +330,7 @@ export function FastTrackReviewPanel({
               >
                 {skill.name}
                 {skill.required && <span className="ml-1 text-lia-text-secondary">*</span>}
-              </Badge>
+              </Chip>
             ))}
           </div>
         </CollapsibleSection>
@@ -378,13 +378,13 @@ export function FastTrackReviewPanel({
             {jobData.salaryInfo.benefits && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {jobData.salaryInfo.benefits.filter(b => b.enabled).map((benefit) => (
-                  <Badge 
+                  <Chip 
                     key={benefit.id}
-                    variant="outline" 
+                    variant="neutral" 
                     className="text-xs bg-lia-btn-primary-hover border-lia-border-default text-lia-text-tertiary"
                   >
                     {benefit.name}
-                  </Badge>
+                  </Chip>
                 ))}
               </div>
             )}
@@ -403,12 +403,12 @@ export function FastTrackReviewPanel({
                 <div key={question.id} className="text-sm">
                   <span className="text-lia-text-secondary">{index + 1}.</span>{' '}
                   <span className="text-lia-text-disabled">{question.question}</span>
-                  <Badge 
-                    variant="outline" 
+                  <Chip 
+                    variant="neutral" 
                     className="ml-2 text-xs border-lia-border-default text-lia-text-secondary"
                   >
                     {question.type}
-                  </Badge>
+                  </Chip>
                 </div>
               ))}
             </div>

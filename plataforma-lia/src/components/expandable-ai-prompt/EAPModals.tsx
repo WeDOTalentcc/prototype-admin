@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -234,9 +234,9 @@ export function EAPModals({
                 {editArchetypeTags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mb-2">
                     {editArchetypeTags.map((tag, index) => (
-                      <Badge
+                      <Chip
                         key={`tag-${index}`}
-                        variant="secondary"
+                        variant="neutral" muted
                         className="text-xs bg-lia-bg-tertiary text-lia-text-primary pr-1 flex items-center gap-1"
                       >
                         {tag}
@@ -247,7 +247,7 @@ export function EAPModals({
                         >
                           <X className="w-2.5 h-2.5" />
                         </button>
-                      </Badge>
+                      </Chip>
                     ))}
                   </div>
                 )}

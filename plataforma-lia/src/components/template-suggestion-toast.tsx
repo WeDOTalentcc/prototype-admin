@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Card, CardContent } from"@/components/ui/card"
 import {
   X, Lightbulb, Clock, Zap, Archive, Settings,
@@ -144,9 +144,9 @@ export function TemplateSuggestionToast({
 
           {/* Motivo */}
           <div className="mb-3">
-            <Badge className={`text-xs px-2 py-1 ${getBadgeColor()}`}>
+            <Chip variant="neutral" muted className={`text-xs px-2 py-1 ${getBadgeColor()}`}>
               {suggestion.reason}
-            </Badge>
+            </Chip>
           </div>
 
           {/* Comando */}

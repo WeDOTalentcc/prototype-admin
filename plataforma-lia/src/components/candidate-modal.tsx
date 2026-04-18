@@ -7,7 +7,7 @@ import { useModalA11y } from"@/hooks/ui/use-modal-a11y"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { CandidateAvatar } from"@/components/candidate-profile/CandidateAvatar"
 import { CandidateSkillsList } from"@/components/candidate-profile/CandidateSkillsList"
 import {
@@ -226,9 +226,9 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                 <span className="text-lia-text-secondary">
                   {candidateData.currentRole} • {candidateData.experience}
                 </span>
-                <Badge className={`${candidateData.status === 'Em triagem' ? '' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
+                <Chip variant="neutral" muted className={`${candidateData.status === 'Em triagem' ? '' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
                   {candidateData.status}
-                </Badge>
+                </Chip>
               </div>
 
               <div className="flex items-center gap-4 mt-2">
@@ -386,9 +386,9 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                     <label className="text-sm font-medium text-lia-text-primary mb-2 block">Tags</label>
                     <div className="flex flex-wrap gap-2">
                       {candidateData.tags.map((tag: string, index: number) => (
-                        <Badge key={tag} variant="outline" className="text-xs border-status-success/30 text-status-success">
+                        <Chip key={tag} variant="neutral" className="text-xs border-status-success/30 text-status-success">
                           {tag}
-                        </Badge>
+                        </Chip>
                       ))}
                     </div>
                   </div>

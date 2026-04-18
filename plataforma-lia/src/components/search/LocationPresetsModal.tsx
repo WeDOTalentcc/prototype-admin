@@ -1,6 +1,6 @@
 "use client"
 
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { SearchPresetsModal, type SearchPreset, type SearchPresetsModalConfig } from"./SearchPresetsModal"
 
 export interface LocationItem {
@@ -216,14 +216,14 @@ const toGeneric = (p: LocationPreset): SearchPreset<LocationItem> => ({
 const renderLocationBadges = (items: LocationItem[]) => (
   <div className="flex flex-wrap gap-1.5 mt-2">
     {items.slice(0, 4).map((loc, i) => (
-      <Badge key={i} className="bg-lia-bg-secondary text-lia-text-secondary text-micro font-normal">
+      <Chip variant="neutral" muted key={i} className="bg-lia-bg-secondary text-lia-text-secondary text-micro font-normal">
         {loc.value.split(',')[0]}
-      </Badge>
+      </Chip>
     ))}
     {items.length > 4 && (
-      <Badge className="bg-lia-bg-secondary text-lia-text-secondary text-micro font-normal">
+      <Chip variant="neutral" muted className="bg-lia-bg-secondary text-lia-text-secondary text-micro font-normal">
         +{items.length - 4} more
-      </Badge>
+      </Chip>
     )}
   </div>
 )

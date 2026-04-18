@@ -2,7 +2,7 @@
 
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Plus, Target, Users, Settings,
@@ -198,9 +198,9 @@ export function GoalsManagement({ users, onGoalUpdate }: GoalsManagementProps) {
                             {template.description}
                           </p>
                         </div>
-                        <Badge className={`text-micro ml-2 ${getCategoryColor(template.category)}`}>
+                        <Chip variant="neutral" muted className={`text-micro ml-2 ${getCategoryColor(template.category)}`}>
                           {template.category}
-                        </Badge>
+                        </Chip>
                       </div>
                       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         <Button

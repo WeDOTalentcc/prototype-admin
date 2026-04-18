@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   AlertCircle,
   BookOpen,
@@ -42,9 +42,9 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
             <h3 className="text-sm font-semibold text-lia-text-primary">
               Tutorial: Metodologia WSI
             </h3>
-            <Badge className="text-micro px-2 py-0.5 h-5 bg-lia-bg-tertiary text-lia-text-secondary">
+            <Chip variant="neutral" muted className="text-micro px-2 py-0.5 h-5 bg-lia-bg-tertiary text-lia-text-secondary">
               WeDoTalent Skill Index
-            </Badge>
+            </Chip>
           </div>
           <button
             onClick={onClose}
@@ -78,7 +78,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2 mb-1">
-                  <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-secondary text-lia-text-secondary">CBI</Badge>
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-secondary text-lia-text-secondary">CBI</Chip>
                   <span className="text-micro text-lia-text-secondary">McClelland, 1973</span>
                 </div>
                 <p className="text-micro text-lia-text-primary">
@@ -87,7 +87,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
               </div>
               <div className="p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2 mb-1">
-                  <Badge className="text-micro px-1.5 py-0 h-4">Bloom</Badge>
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4">Bloom</Chip>
                   <span className="text-micro text-lia-text-secondary">Anderson et al., 2001</span>
                 </div>
                 <p className="text-micro text-lia-text-primary">
@@ -96,7 +96,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
               </div>
               <div className="p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2 mb-1">
-                  <Badge className="text-micro px-1.5 py-0 h-4">Dreyfus</Badge>
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4">Dreyfus</Chip>
                   <span className="text-micro text-lia-text-secondary">1980</span>
                 </div>
                 <p className="text-micro text-lia-text-primary">
@@ -105,7 +105,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
               </div>
               <div className="p-3 bg-lia-bg-primary rounded-xl border border-lia-border-subtle">
                 <div className="flex items-center gap-2 mb-1">
-                  <Badge className="text-micro px-1.5 py-0 h-4">Big Five</Badge>
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4">Big Five</Chip>
                   <span className="text-micro text-lia-text-secondary">1992</span>
                 </div>
                 <p className="text-micro text-lia-text-primary">
@@ -134,7 +134,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                 <tbody className="bg-lia-bg-primary divide-y divide-lia-border-subtle">
                   <tr>
                     <td className="p-2">
-                      <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary">WSI Compact</Badge>
+                      <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary">WSI Compact</Chip>
                     </td>
                     <td className="p-2 text-center text-lia-text-primary">6-8</td>
                     <td className="p-2 text-center text-lia-text-primary">5-7 min</td>
@@ -142,7 +142,7 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                   </tr>
                   <tr>
                     <td className="p-2">
-                      <Badge className="text-micro px-1.5 py-0 h-4">WSI Compact+</Badge>
+                      <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4">WSI Compact+</Chip>
                     </td>
                     <td className="p-2 text-center text-lia-text-primary">8-10</td>
                     <td className="p-2 text-center text-lia-text-primary">7-9 min</td>
@@ -176,12 +176,12 @@ export function WSITutorialModal({ open, onClose }: WSITutorialModalProps) {
                   <div className="flex-1">
                     <span className="text-xs font-medium text-lia-text-primary">{block.name}</span>
                   </div>
-                  <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle">
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle">
                     {block.time}
-                  </Badge>
-                  <Badge className={`text-micro px-1.5 py-0 h-4 ${block.color}`}>
+                  </Chip>
+                  <Chip variant="neutral" muted className={`text-micro px-1.5 py-0 h-4 ${block.color}`}>
                     {block.type}
-                  </Badge>
+                  </Chip>
                 </div>
               ))}
             </div>

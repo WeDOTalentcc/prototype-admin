@@ -1,6 +1,6 @@
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Edit, Save, Clock, Shield, Loader2, AlertCircle, CheckCircle } from"lucide-react"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 
@@ -127,9 +127,9 @@ export function ScheduleTab({
           <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-micro font-medium text-lia-text-secondary">Janela de Envio</span>
-              <Badge variant="outline" className="text-micro rounded-full border-lia-border-default text-lia-text-primary dark:border-lia-border-default">
+              <Chip variant="neutral" className="text-micro rounded-full border-lia-border-default text-lia-text-primary dark:border-lia-border-default">
                 {sendingHours.end - sendingHours.start} horas/dia
-              </Badge>
+              </Chip>
             </div>
             <div className="relative h-6 bg-lia-interactive-active rounded-full overflow-hidden">
               <div

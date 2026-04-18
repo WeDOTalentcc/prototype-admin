@@ -1,7 +1,7 @@
 "use client"
 
 import { textStyles, badgeStyles } from '@/lib/design-tokens'
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { CandidateAvatar } from"@/components/candidate-profile/CandidateAvatar"
 import {
@@ -63,32 +63,32 @@ export function CandidatePreviewHeader({
             <h3 className={`${textStyles.title} truncate`}>
               {c.name as string}
             </h3>
-            <Badge className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-default">
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-default">
               {generateShortId(c.name as string, (c.id as string | undefined) || (c.candidateId as string | undefined) || (c.pearch_id as string | undefined))}
-            </Badge>
+            </Chip>
             {(c.seniority_level || c.seniorityLevel) && (
-              <Badge className={badgeStyles.warning}>
+              <Chip variant="neutral" muted className={badgeStyles.warning}>
                 {(c.seniority_level as string | undefined) || (c.seniorityLevel as string | undefined)}
-              </Badge>
+              </Chip>
             )}
             {(c.years_of_experience !== undefined && c.years_of_experience !== null) || 
              (c.yearsOfExperience !== undefined && c.yearsOfExperience !== null) ? (
-              <Badge className={badgeStyles.default}>
+              <Chip variant="neutral" muted className={badgeStyles.default}>
                 {typeof (c.years_of_experience || c.yearsOfExperience) === 'number' 
                   ? `${((c.years_of_experience as number | undefined) || (c.yearsOfExperience as number | undefined) || 0).toFixed(1)} anos` 
                   : `${c.years_of_experience || c.yearsOfExperience} anos`}
-              </Badge>
+              </Chip>
             ) : null}
             {(c.communication_consent !== undefined || c.communicationConsent !== undefined) && (
-              <Badge className={`text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 ${(c.communication_consent ?? c.communicationConsent) ? '' : ''}`}>
+              <Chip variant="neutral" muted className={`text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 ${(c.communication_consent ?? c.communicationConsent) ? '' : ''}`}>
                 {(c.communication_consent ?? c.communicationConsent) ? <CheckCircle className="w-2.5 h-2.5" /> : <AlertCircle className="w-2.5 h-2.5" />}
                 LGPD
-              </Badge>
+              </Chip>
             )}
             {c.is_enriching && (
-              <Badge className="text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 bg-status-warning/15 text-status-warning border-status-warning/30 animate-pulse">
+              <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 bg-status-warning/15 text-status-warning border-status-warning/30 animate-pulse">
                 Enriquecendo...
-              </Badge>
+              </Chip>
             )}
             {c.enrichment_source && !c.is_enriching && (() => {
               const src = String(c.enrichment_source).toLowerCase()
@@ -100,9 +100,9 @@ export function CandidatePreviewHeader({
                     ? { label: 'Local', cls: 'bg-stone-400/15 text-stone-500 border-stone-400/30' }
                     : { label: String(c.enrichment_source), cls: 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default' }
               return (
-                <Badge className={`text-micro px-1.5 py-0 h-4 ${config.cls}`}>
+                <Chip variant="neutral" muted className={`text-micro px-1.5 py-0 h-4 ${config.cls}`}>
                   {config.label}
-                </Badge>
+                </Chip>
               )
             })()}
           </div>

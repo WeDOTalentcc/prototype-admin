@@ -3,7 +3,7 @@
 import { formatScorePercent } from"@/lib/design-tokens"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Users, Check, Search, Calendar, MapPin
@@ -153,24 +153,24 @@ selectedCandidates.has(candidate.id)
                   </div>
                 </div>
 
-                <Badge className={`${getPriorityColor(candidate.priority)} text-xs`}>
+                <Chip variant="neutral" muted className={`${getPriorityColor(candidate.priority)} text-xs`}>
                   {candidate.priority}
-                </Badge>
+                </Chip>
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-lia-text-secondary">Score LIA:</span>
-                  <Badge className={`${getScoreColor(candidate.liaScore)} text-xs font-bold`}>
+                  <Chip variant="neutral" muted className={`${getScoreColor(candidate.liaScore)} text-xs font-bold`}>
                     {formatScorePercent(candidate.liaScore)}
-                  </Badge>
+                  </Chip>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-lia-text-secondary">Etapa:</span>
-                  <Badge variant="outline" className="text-xs">
+                  <Chip variant="neutral" className="text-xs">
                     {availableStages.find(s => s.id === candidate.currentStage)?.name || candidate.currentStage}
-                  </Badge>
+                  </Chip>
                 </div>
 
                 <div className="flex items-center gap-1 text-xs text-lia-text-secondary">
@@ -187,14 +187,14 @@ selectedCandidates.has(candidate.id)
               <div className="mt-3 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex flex-wrap gap-1">
                   {candidate.skills.slice(0, 3).map((skill) => (
-                    <Badge key={skill} variant="secondary" className="text-xs px-1 py-0">
+                    <Chip key={skill} variant="neutral" muted className="text-xs px-1 py-0">
                       {skill}
-                    </Badge>
+                    </Chip>
                   ))}
                   {candidate.skills.length > 3 && (
-                    <Badge variant="outline" className="text-xs px-1 py-0">
+                    <Chip variant="neutral" className="text-xs px-1 py-0">
                       +{candidate.skills.length - 3}
-                    </Badge>
+                    </Chip>
                   )}
                 </div>
               </div>

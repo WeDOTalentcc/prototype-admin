@@ -3,7 +3,7 @@
 import { useState } from"react"
 import { formatRelativeTime } from"@/lib/format-utils"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Input } from"@/components/ui/input"
 import { LIAIcon } from"@/components/ui/lia-icon"
 import {
@@ -263,9 +263,9 @@ export function HistoryTab({
                           <Clock className="w-3 h-3" />
                           {formatRelativeTime(item.timestamp, { includeTime: true })}
                         </span>
-                        <Badge variant="outline" className="h-5 text-xs px-1.5">
+                        <Chip variant="neutral" className="h-5 text-xs px-1.5">
                           {getModeLabel(item.mode)}
-                        </Badge>
+                        </Chip>
                         <span className="flex items-center gap-1">
                           <SourceIcon className="w-3 h-3" />
                           {getSourceLabel(item.source)}

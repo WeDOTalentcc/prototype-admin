@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback } from"@/components/ui/avatar"
 import {
   Mail, MessageSquare, Eye, Info, CheckCircle, CalendarDays, Clock
@@ -59,9 +59,9 @@ export function CommunicationPreviewPanel({
             <Eye className="w-3.5 h-3.5 text-lia-text-secondary" />
             Preview da Mensagem
           </h4>
-          <Badge variant="outline" className={badgeStyles.default}>
+          <Chip variant="neutral" className={badgeStyles.default}>
             {channel === 'email' ? 'Email' : channel === 'whatsapp' ? 'WhatsApp' : 'Email + WhatsApp'}
-          </Badge>
+          </Chip>
         </div>
 
         <div className={`rounded-md overflow-hidden ${

@@ -1,7 +1,7 @@
 import React from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Input } from"@/components/ui/input"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from"@/components/ui/accordion"
 import { VariableSelector } from"@/components/ui/variable-selector"
@@ -182,7 +182,7 @@ export function TemplatesTab({
                         <div className="flex items-center gap-2 text-left">
                           <span className="text-lg">{group.icon}</span>
                           <span className="text-xs font-semibold text-lia-text-primary">{group.label}</span>
-                          <Badge variant="outline" className="text-micro ml-1">{groupTemplates.length}</Badge>
+                          <Chip variant="neutral" className="text-micro ml-1">{groupTemplates.length}</Chip>
                         </div>
                       </AccordionTrigger>
                       <AccordionContent className="px-2 pb-2">
@@ -215,22 +215,22 @@ export function TemplatesTab({
                                       </div>
                                       <div className="flex items-center gap-1 mt-0.5 flex-wrap">
                                         {template.trigger_type && (
-                                          <Badge className={`text-micro px-1.5 py-0 ${TRIGGER_TYPE_LABELS[template.trigger_type]?.color || ''}`}>
+                                          <Chip variant="neutral" muted className={`text-micro px-1.5 py-0 ${TRIGGER_TYPE_LABELS[template.trigger_type]?.color || ''}`}>
                                             {TRIGGER_TYPE_LABELS[template.trigger_type]?.label || template.trigger_type}
-                                          </Badge>
+                                          </Chip>
                                         )}
                                         {template.used_in && template.used_in.slice(0, 2).map((usage, idx) => (
-                                          <Badge key={idx} variant="outline" className="text-micro px-1.5 py-0">{usage}</Badge>
+                                          <Chip key={idx} variant="neutral" className="text-micro px-1.5 py-0">{usage}</Chip>
                                         ))}
                                         {template.used_in && template.used_in.length > 2 && (
-                                          <Badge variant="outline" className="text-micro px-1.5 py-0">+{template.used_in.length - 2}</Badge>
+                                          <Chip variant="neutral" className="text-micro px-1.5 py-0">+{template.used_in.length - 2}</Chip>
                                         )}
                                       </div>
                                     </div>
                                   </div>
-                                  <Badge variant={template.isActive ?"default" :"outline"} className="text-micro flex-shrink-0 bg-lia-btn-primary-bg text-lia-btn-primary-text">
+                                  <Chip variant="neutral" muted={!template.isActive} className="text-micro flex-shrink-0 bg-lia-btn-primary-bg text-lia-btn-primary-text">
                                     {template.isActive ? 'Ativo' : 'Inativo'}
-                                  </Badge>
+                                  </Chip>
                                 </div>
                               </CardContent>
                             </Card>
@@ -330,9 +330,9 @@ export function TemplatesTab({
                       <label className="block text-micro font-medium text-lia-text-secondary mb-1">Variáveis Disponíveis</label>
                       <div className="flex flex-wrap gap-1">
                         {selectedTemplate.variables.map((v) => (
-                          <Badge key={v} variant="outline" className="text-micro font-mono rounded-full border-lia-border-default text-lia-text-primary dark:border-lia-border-default">
+                          <Chip key={v} variant="neutral" className="text-micro font-mono rounded-full border-lia-border-default text-lia-text-primary dark:border-lia-border-default">
                             {`{{${v}}}`}
-                          </Badge>
+                          </Chip>
                         ))}
                       </div>
                     </div>
@@ -411,10 +411,10 @@ export function TemplatesTab({
                           </label>
                           <div className="flex flex-wrap gap-1.5">
                             {aiResultModal.changesMade.map((change, idx) => (
-                              <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full  dark:bg-status-success dark:text-status-success">
+                              <Chip variant="neutral" muted key={idx} className="text-xs px-2 py-0.5 rounded-full  dark:bg-status-success dark:text-status-success">
                                 <Check className="w-3 h-3 mr-1" />
                                 {change}
-                              </Badge>
+                              </Chip>
                             ))}
                           </div>
                         </div>

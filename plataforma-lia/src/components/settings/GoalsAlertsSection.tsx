@@ -2,7 +2,6 @@
 
 import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import {
   Bell, Edit, Save, Calendar, Clock, Brain,
   RefreshCw, Loader2, CheckCircle, AlertCircle, MessageSquare

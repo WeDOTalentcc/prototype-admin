@@ -8,7 +8,6 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
 import { textStyles } from "@/lib/design-tokens"
 import { DeleteConfirmModal } from "./goals"
 import type { GoalTemplate, UserGoal, CustomGoalForm } from "./use-goals-management"

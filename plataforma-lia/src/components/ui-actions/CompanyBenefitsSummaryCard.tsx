@@ -4,7 +4,7 @@ import { formatBRL } from"@/lib/pricing"
 
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   Gift,
@@ -80,10 +80,10 @@ export function CompanyBenefitsSummaryCard({
           <Gift className="w-4 h-4 text-wedo-purple" />
           <span>Benefícios da Empresa</span>
           {highlighted_count && highlighted_count > 0 && (
-            <Badge variant="outline" className="ml-auto text-xs text-wedo-purple">
+            <Chip variant="neutral" className="ml-auto text-xs text-wedo-purple">
               <Star className="w-3 h-3 mr-1 fill-current" />
               {highlighted_count} em destaque
-            </Badge>
+            </Chip>
           )}
         </CardTitle>
       </CardHeader>
@@ -95,9 +95,9 @@ export function CompanyBenefitsSummaryCard({
             const value = formatValue(benefit)
             
             return (
-              <Badge
+              <Chip
                 key={benefit.id || index}
-                variant="outline"
+                variant="neutral"
                 className="flex items-center gap-1 py-1 px-2 text-xs bg-lia-bg-primary dark:bg-lia-bg-secondary"
                 title={benefit.description}
               >
@@ -117,17 +117,17 @@ export function CompanyBenefitsSummaryCard({
                 {benefit.is_discount && (
                   <span className="text-micro px-0.5 rounded-md bg-status-error/15 dark:bg-status-error/30 text-status-error dark:text-status-error">desc.</span>
                 )}
-              </Badge>
+              </Chip>
             )
           })}
           {remainingCount > 0 && (
-            <Badge
-              variant="outline"
+            <Chip
+              variant="neutral"
               className="py-1 px-2 text-xs bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple cursor-pointer hover:bg-wedo-purple/15"
               onClick={onViewAll}
             >
               +{remainingCount} mais
-            </Badge>
+            </Chip>
           )}
         </div>
         

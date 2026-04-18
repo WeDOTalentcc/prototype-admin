@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Card } from"@/components/ui/card"
 import {
@@ -147,9 +147,9 @@ export function ScheduledInterviewActivityCard({
       <div className="p-3 space-y-2.5">
         {/* Urgency Badge */}
         <div className="flex items-center justify-between">
-          <Badge className={cn(getUrgencyBadgeStyle(timeInfo.urgency),"border-0")}>
+          <Chip variant="neutral" muted className={cn(getUrgencyBadgeStyle(timeInfo.urgency),"border-0")}>
             {timeInfo.label}
-          </Badge>
+          </Chip>
           <span className={`${textStyles.caption} text-lia-text-tertiary`}>
             Entrevista agendada
           </span>

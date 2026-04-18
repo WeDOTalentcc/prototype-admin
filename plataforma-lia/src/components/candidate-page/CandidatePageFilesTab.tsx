@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   FileText, Video, Mic, Image, Award, Eye, Download, Play, Upload, Plus,
@@ -82,8 +82,8 @@ export function CandidatePageFilesTab({
                 <h4 className="font-medium text-sm truncate">CV_{(_candidate.name as string).replace("","_")}_2025.pdf</h4>
                 <p className="text-xs text-lia-text-primary">2.1 MB • há 3 dias</p>
                 <div className="flex gap-1 mt-2">
-                  <Badge className="text-xs">✓ Verificado</Badge>
-                  <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">LIA: 95%</Badge>
+                  <Chip variant="neutral" muted className="text-xs">✓ Verificado</Chip>
+                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">LIA: 95%</Chip>
                 </div>
               </div>
             </div>
@@ -116,8 +116,8 @@ export function CandidatePageFilesTab({
                 <h4 className="font-medium text-sm truncate">Portfolio_UX_2025.pdf</h4>
                 <p className="text-xs text-lia-text-primary">12.3 MB • há 1 dia</p>
                 <div className="flex gap-1 mt-2">
-                  <Badge className="text-xs">✓ Verificado</Badge>
-                  <Badge className="text-xs">Destacado</Badge>
+                  <Chip variant="neutral" muted className="text-xs">✓ Verificado</Chip>
+                  <Chip variant="neutral" muted className="text-xs">Destacado</Chip>
                 </div>
               </div>
             </div>
@@ -141,8 +141,8 @@ export function CandidatePageFilesTab({
                 <h4 className="font-medium text-sm truncate">Apresentacao_Pessoal.mp4</h4>
                 <p className="text-xs text-lia-text-primary">25.4 MB • 3:45 min</p>
                 <div className="flex gap-1 mt-2">
-                  <Badge className="text-xs">✓ Analisado</Badge>
-                  <Badge className="text-xs">Triagem</Badge>
+                  <Chip variant="neutral" muted className="text-xs">✓ Analisado</Chip>
+                  <Chip variant="neutral" muted className="text-xs">Triagem</Chip>
                 </div>
               </div>
             </div>
@@ -169,8 +169,8 @@ export function CandidatePageFilesTab({
                 <h4 className="font-medium text-sm truncate">Case_UX_Design.mp4</h4>
                 <p className="text-xs text-lia-text-primary">45.2 MB • 8:20 min</p>
                 <div className="flex gap-1 mt-2">
-                  <Badge className="text-xs">Destaque</Badge>
-                  <Badge className="text-xs">Nota: 88%</Badge>
+                  <Chip variant="neutral" muted className="text-xs">Destaque</Chip>
+                  <Chip variant="neutral" muted className="text-xs">Nota: 88%</Chip>
                 </div>
               </div>
             </div>
@@ -197,8 +197,8 @@ export function CandidatePageFilesTab({
                 <h4 className="font-medium text-sm truncate">Triagem_Voz_{_candidate.name.split("")[0]}.mp3</h4>
                 <p className="text-xs text-lia-text-primary">1.8 MB • 4:32 min • há 1 dia</p>
                 <div className="flex gap-1 mt-2">
-                  <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">Triagem WSI</Badge>
-                  <Badge className="text-xs">Nota: 92%</Badge>
+                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-xs">Triagem WSI</Chip>
+                  <Chip variant="neutral" muted className="text-xs">Nota: 92%</Chip>
                 </div>
               </div>
             </div>
@@ -237,7 +237,7 @@ export function CandidatePageFilesTab({
                 <h4 className="font-medium text-sm truncate">foto_perfil.jpg</h4>
                 <p className="text-xs text-lia-text-primary">456 KB • há 2 horas</p>
                 <div className="flex gap-1 mt-2">
-                  <Badge className="text-xs">✓ Verificado</Badge>
+                  <Chip variant="neutral" muted className="text-xs">✓ Verificado</Chip>
                 </div>
               </div>
             </div>
@@ -271,7 +271,7 @@ export function CandidatePageFilesTab({
                 <h4 className="font-medium text-sm truncate">Certificados.zip</h4>
                 <p className="text-xs text-lia-text-primary">3.2 MB • há 1 semana</p>
                 <div className="flex gap-1 mt-2">
-                  <Badge className="text-xs">5 arquivos</Badge>
+                  <Chip variant="neutral" muted className="text-xs">5 arquivos</Chip>
                 </div>
               </div>
             </div>

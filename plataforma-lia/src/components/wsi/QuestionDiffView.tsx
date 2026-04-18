@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Check, RotateCcw, ArrowRight } from"lucide-react"
 import { cn } from"@/lib/utils"
@@ -49,9 +49,9 @@ export function QuestionDiffView({
       <div className="flex items-center gap-1.5">
         <ArrowRight className="h-3.5 w-3.5 text-lia-text-secondary" />
         <span className="text-xs font-semibold text-lia-text-primary">Antes / Depois</span>
-        <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle">
+        <Chip variant="neutral" className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle">
           {diffs.length} alteração(ões)
-        </Badge>
+        </Chip>
       </div>
 
       <div className="space-y-2">
@@ -63,9 +63,9 @@ export function QuestionDiffView({
               className="rounded-xl border border-lia-border-subtle overflow-hidden"
             >
               <div className="px-3 py-1.5 bg-lia-bg-secondary flex items-center gap-2">
-                <Badge variant="outline" className={badge.className} style={badge.style}>
+                <Chip variant="neutral" className={badge.className} style={badge.style}>
                   {badge.label}
-                </Badge>
+                </Chip>
                 {diff.reason && (
                   <span className="text-micro text-lia-text-secondary truncate">{diff.reason}</span>
                 )}

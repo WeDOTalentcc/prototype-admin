@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   Brain, Calendar, ExternalLink, CheckCircle, Download, Linkedin,
@@ -28,7 +28,7 @@ export function ActivityInterviewScheduledDetails({ activity }: { activity: Acti
           <Calendar className="w-3 h-3 text-wedo-purple" />
           {activity.details.interviewType}
           {activity.details.stage && (
-            <Badge className="ml-2 text-micro px-1.5 py-0">{activity.details.stage}</Badge>
+            <Chip variant="neutral" muted className="ml-2 text-micro px-1.5 py-0">{activity.details.stage}</Chip>
           )}
         </h5>
         <div className="grid grid-cols-2 gap-2 mb-3">
@@ -101,7 +101,7 @@ export function ActivityLiaEvaluationDetails({ activity }: { activity: ActivityD
             <p className="text-xs font-semibold text-lia-text-primary mb-1">Pontos Fortes</p>
             <div className="flex flex-wrap gap-1">
               {activity.details.strengths.map((s: string, i: number) => (
-                <Badge key={`str-${i}`} className="text-micro px-1.5 py-0  border-status-success/30">✓ {s}</Badge>
+                <Chip variant="neutral" muted key={`str-${i}`} className="text-micro px-1.5 py-0  border-status-success/30">✓ {s}</Chip>
               ))}
             </div>
           </div>
@@ -121,7 +121,7 @@ export function ActivityJobApplicationDetails({ activity }: { activity: Activity
       <div className="bg-lia-bg-primary p-3 rounded-xl border border-lia-border-subtle">
         <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
           <FileText className="w-3 h-3 text-status-success" />Candidatura Recebida
-          <Badge className="ml-2 text-micro px-1.5 py-0">{activity.details.source}</Badge>
+          <Chip variant="neutral" muted className="ml-2 text-micro px-1.5 py-0">{activity.details.source}</Chip>
         </h5>
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div className="bg-lia-bg-secondary p-2 rounded-xl">
@@ -156,7 +156,7 @@ export function ActivityOfferSentDetails({ activity }: { activity: ActivityData 
       <div className={`${cardStyles.default} p-3`}>
         <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
           <Gift className="w-3 h-3 text-lia-text-secondary" />Proposta Salarial
-          <Badge className={`ml-2 ${badgeStyles.primary}`}>{activity.statusLabel || 'Enviada'}</Badge>
+          <Chip variant="neutral" muted className={`ml-2 ${badgeStyles.primary}`}>{activity.statusLabel || 'Enviada'}</Chip>
         </h5>
         <div className="text-center p-3 bg-gradient-to-r from-lia-bg-secondary to-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3">
           <p className="text-2xl font-semibold text-lia-text-primary">{activity.details.salary}</p>
@@ -175,9 +175,9 @@ export function ActivityOfferSentDetails({ activity }: { activity: ActivityData 
         {activity.details.benefits && (
           <div className="flex flex-wrap gap-1">
             {activity.details.benefits.map((b: Record<string, unknown> | string, i: number) => (
-              <Badge key={`ben-${i}`} variant="outline" className="text-micro px-1.5 py-0">
+              <Chip key={`ben-${i}`} variant="neutral" className="text-micro px-1.5 py-0">
                 {typeof b === 'object' ? String(b.name ?? '') : String(b)}
-              </Badge>
+              </Chip>
             ))}
           </div>
         )}
@@ -192,9 +192,9 @@ export function ActivityTestCompletedDetails({ activity }: { activity: ActivityD
       <div className={`${cardStyles.default} p-3`}>
         <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
           <Code className="w-3 h-3 text-status-warning" />{activity.details.testName}
-          <Badge className={`ml-2 ${(activity.score ?? 0) >= 70 ? badgeStyles.success : badgeStyles.warning}`}>
+          <Chip variant="neutral" muted className={`ml-2 ${(activity.score ?? 0) >= 70 ? badgeStyles.success : badgeStyles.warning}`}>
             {(activity.score ?? 0) >= 70 ? 'Aprovado' : 'Atenção'}
-          </Badge>
+          </Chip>
         </h5>
         <div className="grid grid-cols-3 gap-2 mb-3">
           <div className="text-center p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
@@ -240,9 +240,9 @@ export function ActivityRubricEvaluationDetails({ activity }: { activity: Activi
       <div className={`${cardStyles.default} p-3`}>
         <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
           <ClipboardCheck className="w-3 h-3 text-lia-text-secondary" />Avaliação por Rubrica (CV vs Vaga)
-          <Badge className={`ml-2 ${activity.details.overallFit >= 80 ? badgeStyles.success : activity.details.overallFit >= 60 ? badgeStyles.warning : badgeStyles.error}`}>
+          <Chip variant="neutral" muted className={`ml-2 ${activity.details.overallFit >= 80 ? badgeStyles.success : activity.details.overallFit >= 60 ? badgeStyles.warning : badgeStyles.error}`}>
             {activity.details.overallFit}% fit
-          </Badge>
+          </Chip>
         </h5>
         <div className="text-center p-3 bg-gradient-to-r from-lia-bg-secondary to-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3">
           <p className="text-3xl font-semibold text-lia-text-primary">{activity.details.overallFit}%</p>
@@ -255,7 +255,7 @@ export function ActivityRubricEvaluationDetails({ activity }: { activity: Activi
               return (
                 <div key={i} className="flex justify-between text-xs bg-lia-bg-secondary p-1.5 rounded-xl border border-lia-border-subtle">
                   <span className="text-lia-text-primary">{String(c.criteria ?? '')}</span>
-                  <Badge className={`text-micro px-1.5 ${cScore >= 80 ? badgeStyles.success : cScore >= 60 ? badgeStyles.warning : badgeStyles.error}`}>{cScore}%</Badge>
+                  <Chip variant="neutral" muted className={`text-micro px-1.5 ${cScore >= 80 ? badgeStyles.success : cScore >= 60 ? badgeStyles.warning : badgeStyles.error}`}>{cScore}%</Chip>
                 </div>
               )
             })}
@@ -277,7 +277,7 @@ export function ActivityAssessmentDetails({ activity, candidate, onSetDiscModalD
         <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
           <Brain className="w-3 h-3 text-wedo-cyan" />
           {activity.details.assessmentType || 'Assessment Comportamental'}
-          <Badge className={`ml-2 ${badgeStyles.primary}`}>{activity.details.profile}</Badge>
+          <Chip variant="neutral" muted className={`ml-2 ${badgeStyles.primary}`}>{activity.details.profile}</Chip>
         </h5>
         <div className="text-center p-3 bg-gradient-to-r from-lia-bg-tertiary to-lia-bg-secondary rounded-xl border border-lia-border-default mb-3">
           <p className="text-xl font-semibold text-lia-text-primary">{activity.details.profile}</p>
@@ -298,7 +298,7 @@ export function ActivityAssessmentDetails({ activity, candidate, onSetDiscModalD
             <p className={`${textStyles.labelSmall} text-lia-text-primary mb-1`}>⚠️ Áreas de Desenvolvimento</p>
             <div className="flex flex-wrap gap-1">
               {activity.details.developmentAreas.map((a: string, i: number) => (
-                <Badge key={`dev-${i}`} variant="outline" className="text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default">{a}</Badge>
+                <Chip key={`dev-${i}`} variant="neutral" className="text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default">{a}</Chip>
               ))}
             </div>
           </div>
@@ -361,7 +361,7 @@ export function ActivityMiscDetails({ activity }: { activity: ActivityData & { d
               <p className={textStyles.bodySmall}>Documentos Verificados</p>
               <div className="flex flex-wrap gap-1">
                 {activity.details.documentsVerified?.map((doc: string) => (
-                  <Badge key={doc} variant="outline" className="text-xs px-1.5 py-0">{doc}</Badge>
+                  <Chip key={doc} variant="neutral" className="text-xs px-1.5 py-0">{doc}</Chip>
                 ))}
               </div>
             </div>
@@ -424,7 +424,7 @@ export function ActivityMiscDetails({ activity }: { activity: ActivityData & { d
               {activity.details.technicalQuestions.map((q: Record<string, unknown>, i: number) => (
                 <div key={i} className="flex items-center justify-between">
                   <span className={textStyles.bodySmall}>{String(q.question ?? '')}</span>
-                  <Badge className="text-xs px-1 py-0">{String(q.score ?? 0)}/10</Badge>
+                  <Chip variant="neutral" muted className="text-xs px-1 py-0">{String(q.score ?? 0)}/10</Chip>
                 </div>
               ))}
             </div>

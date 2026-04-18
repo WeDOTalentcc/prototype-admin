@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react'
 import { Search, Filter, X, SlidersHorizontal, Hash, Calendar, User, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { cn } from '@/lib/utils'
 
 export interface SearchFilters {
@@ -107,9 +107,9 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
             <div className="absolute right-2 flex items-center gap-1">
               {activeFiltersCount > 0 && (
                 <div>
-                  <Badge variant="secondary" className="text-xs">
+                  <Chip variant="neutral" muted className="text-xs">
                     {activeFiltersCount}
-                  </Badge>
+                  </Chip>
                 </div>
               )}
               <Button
@@ -285,7 +285,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
         >
           <span className="text-xs text-lia-text-secondary">Filtros ativos:</span>
           {filters.categories.map((category) => (
-            <Badge key={category} variant="secondary" className="text-xs">
+            <Chip key={category} variant="neutral" muted className="text-xs">
               {filterCategories.find(c => c.id === category)?.label}
               <button
                 onClick={() => toggleArrayFilter('categories', category)}
@@ -293,10 +293,10 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
               >
                 <X className="w-3 h-3" />
               </button>
-            </Badge>
+            </Chip>
           ))}
           {filters.types.map((type) => (
-            <Badge key={type} variant="secondary" className="text-xs">
+            <Chip key={type} variant="neutral" muted className="text-xs">
               {filterTypes.find(t => t.id === type)?.label}
               <button
                 onClick={() => toggleArrayFilter('types', type)}
@@ -304,10 +304,10 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
               >
                 <X className="w-3 h-3" />
               </button>
-            </Badge>
+            </Chip>
           ))}
           {filters.tags.map((tag) => (
-            <Badge key={tag} variant="secondary" className="text-xs">
+            <Chip key={tag} variant="neutral" muted className="text-xs">
               #{tag}
               <button
                 onClick={() => toggleArrayFilter('tags', tag)}
@@ -315,7 +315,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
               >
                 <X className="w-3 h-3" />
               </button>
-            </Badge>
+            </Chip>
           ))}
         </div>
       )}

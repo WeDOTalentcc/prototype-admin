@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Bot, ShieldCheck, AlertTriangle, Activity, TrendingDown, Loader2 } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
@@ -174,9 +174,9 @@ export function StudioComplianceView() {
                     <span className="text-xs text-lia-text-disabled font-inter">{i + 1}.</span>
                     <span className="text-lia-text-primary">{a.agent_name}</span>
                   </div>
-                  <Badge className="bg-status-warning/15 text-status-warning text-xs">
+                  <Chip variant="neutral" muted className="bg-status-warning/15 text-status-warning text-xs">
                     {a.blocked_count} bloqueio{a.blocked_count !== 1 ? "s" : ""}
-                  </Badge>
+                  </Chip>
                 </div>
               ))}
             </div>

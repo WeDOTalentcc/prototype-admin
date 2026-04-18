@@ -5,7 +5,7 @@ import { MessageSquare, Shield, Scale, Zap, Mail, Phone, Users2, Check } from "l
 import { cn } from "@/lib/utils"
 import { textStyles, cardStyles, badgeStyles } from "@/lib/design-tokens"
 import { Switch } from "@/components/ui/switch"
-import { Badge } from "@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { AIConfigPreview } from "@/components/settings/AIConfigPreview"
 
 // ── Tone Picker Card (Step 1) ────────────────────────────────────
@@ -184,9 +184,9 @@ export function ChannelTogglesCard({
         {Object.entries(channels)
           .filter(([, v]) => v)
           .map(([k]) => (
-            <Badge key={k} className={badgeStyles.success}>
+            <Chip variant="neutral" muted key={k} className={badgeStyles.success}>
               {CHANNELS.find((c) => c.key === k)?.label}
-            </Badge>
+            </Chip>
           ))}
       </div>
     </div>

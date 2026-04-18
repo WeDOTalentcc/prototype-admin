@@ -3,7 +3,7 @@
 import { useState } from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Users, Calendar, MessageSquare, ArrowRight, X, Eye, Mail, Phone,
   AlertTriangle, Clock, CheckCircle, ChevronDown, ChevronUp, Briefcase,
@@ -109,9 +109,9 @@ const CandidateCard = ({
               {candidate.name}
             </h4>
             {candidate.lia_score && (
-              <Badge variant="outline" className="text-xs shrink-0 border-lia-text-primary text-lia-text-secondary">
+              <Chip variant="neutral" className="text-xs shrink-0 border-lia-text-primary text-lia-text-secondary">
                 LIA {candidate.lia_score}%
-              </Badge>
+              </Chip>
             )}
           </div>
           <p className="text-sm text-lia-text-secondary truncate">
@@ -119,9 +119,9 @@ const CandidateCard = ({
             {candidate.current_company && ` • ${candidate.current_company}`}
           </p>
         </div>
-        <Badge className={`${styles.badge} shrink-0 ml-2`}>
+        <Chip variant="neutral" muted className={`${styles.badge} shrink-0 ml-2`}>
           {candidate.status_label}
-        </Badge>
+        </Chip>
       </div>
       
       <div className="flex items-center gap-2 mb-3">
@@ -190,9 +190,9 @@ const JobGroup = ({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs">
+          <Chip variant="neutral" className="text-xs">
             {group.candidates.filter(c => c.urgency ==="critical").length} críticos
-          </Badge>
+          </Chip>
           {isExpanded ? (
             <ChevronUp className="w-5 h-5 text-lia-text-secondary" />
           ) : (

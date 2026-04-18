@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { AlertTriangle, TrendingUp, Lightbulb, Clock, Users, Globe, Search, Settings } from 'lucide-react'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { toast } from 'sonner'
@@ -153,19 +153,19 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
   const sourcingPercent = Math.min(data.sourcing.percentage, 100)
 
   const badgeElement = isSaturated ? (
-    <Badge variant="danger" className="gap-1 cursor-pointer font-semibold rounded-lg" title="Funil Saturado">
+    <Chip variant="danger" className="gap-1 cursor-pointer font-semibold rounded-lg" title="Funil Saturado">
       <AlertTriangle className="w-3 h-3 shrink-0" />
       <span>{data.organic.count}/{data.organic.threshold} org</span>
       <span>|</span>
       <span>{data.sourcing.count}/{data.sourcing.threshold} src</span>
-    </Badge>
+    </Chip>
   ) : (
-    <Badge variant="warning" className="gap-1 cursor-pointer font-semibold rounded-lg" title="Quase Saturado">
+    <Chip variant="warning" className="gap-1 cursor-pointer font-semibold rounded-lg" title="Quase Saturado">
       <TrendingUp className="w-3 h-3 shrink-0" />
       <span>{data.organic.count}/{data.organic.threshold} org</span>
       <span>|</span>
       <span>{data.sourcing.count}/{data.sourcing.threshold} src</span>
-    </Badge>
+    </Chip>
   )
 
   return (

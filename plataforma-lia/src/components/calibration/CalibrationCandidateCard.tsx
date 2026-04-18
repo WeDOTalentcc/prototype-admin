@@ -24,7 +24,7 @@ import {
   X,
 } from"lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { cn } from"@/lib/utils"
 import type { NormalizedCandidate, MatchLevel } from"./types"
 
@@ -104,13 +104,13 @@ export function CalibrationCandidateCard({
         {candidate.skills.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-4">
             {candidate.skills.slice(0, 8).map((skill) => (
-              <Badge
+              <Chip
                 key={skill}
-                variant="secondary"
+                variant="neutral" muted
                 className="bg-lia-bg-tertiary text-lia-text-secondary text-xs rounded-xl border-none"
               >
                 {skill}
-              </Badge>
+              </Chip>
             ))}
           </div>
         )}
@@ -217,12 +217,12 @@ export function CalibrationCandidateCard({
               const badge = MATCH_BADGE[mc.match]
               return (
                 <div key={mc.id} className="space-y-1">
-                  <Badge
-                    variant="outline"
+                  <Chip
+                    variant="neutral"
                     className={cn("text-xs rounded-md", badge.className)}
                   >
                     {badge.label}
-                  </Badge>
+                  </Chip>
                   <p className="text-sm font-medium text-lia-text-primary">
                     {mc.criterion}
                   </p>

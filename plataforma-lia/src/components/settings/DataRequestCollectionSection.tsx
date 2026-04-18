@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Label } from"@/components/ui/label"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Tooltip,
   TooltipContent,
@@ -72,18 +72,18 @@ export function DataRequestCollectionSection({
                 </div>
                 <p className="text-micro text-lia-text-secondary">{option.desc}</p>
                 {option.value === 'candidate_choice' && (
-                  <Badge className="mt-1 bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated text-micro h-4">Recomendado</Badge>
+                  <Chip variant="neutral" muted className="mt-1 bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated text-micro h-4">Recomendado</Chip>
                 )}
               </button>
             ))}
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <Badge className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated text-micro">
+            <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated text-micro">
               {config.collectionMode === 'portal_only' && 'Apenas Portal'}
               {config.collectionMode === 'chat_only' && 'Apenas Chat'}
               {config.collectionMode === 'candidate_choice' && 'Candidato Escolhe'}
-            </Badge>
+            </Chip>
             <span className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">
               {config.collectionMode === 'portal_only' && '- Envia link direto para formulário'}
               {config.collectionMode === 'chat_only' && '- Coleta via conversa no WhatsApp'}

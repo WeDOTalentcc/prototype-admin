@@ -12,7 +12,7 @@ import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Label } from"@/components/ui/label"
 import { Calendar, Loader2, Send, Brain, AlertTriangle } from"lucide-react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { sanitizeHtml } from"@/lib/sanitize"
 
 
@@ -180,10 +180,10 @@ export function InterviewSchedulingModal({
                   <Label className="text-xs font-medium text-lia-text-primary">
                     Email de Convite
                   </Label>
-                  <Badge className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
+                  <Chip variant="neutral" muted className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
                     <Brain className="w-3 h-3 mr-1 text-wedo-cyan" />
                     Gerado por LIA
-                  </Badge>
+                  </Chip>
                 </div>
 
                 {isGeneratingEmail ? (

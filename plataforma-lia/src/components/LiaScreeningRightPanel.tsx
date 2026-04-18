@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   Target, MessageSquare, Star, Heart, Clock, CheckCircle,
@@ -51,7 +51,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
                     {screeningData.overview.criteria.map((criterion) => (
                       <div key={criterion.name} className="flex items-center justify-between text-sm">
                         <span>{criterion.name}</span>
-                        <Badge variant="outline">{criterion.weight}%</Badge>
+                        <Chip variant="neutral">{criterion.weight}%</Chip>
                       </div>
                     ))}
                   </div>
@@ -183,7 +183,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
 
                   <div className="flex flex-wrap gap-1">
                     {((jobData?.benefits as string[]) || ['Benefícios competitivos']).map((benefit: string) => (
-                      <Badge key={benefit} variant="secondary" className="text-xs">{benefit}</Badge>
+                      <Chip key={benefit} variant="neutral" muted className="text-xs">{benefit}</Chip>
                     ))}
                   </div>
                 </div>

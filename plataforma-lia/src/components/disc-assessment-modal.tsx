@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { X, TrendingUp, Download, Brain, Users, Target, Zap, Shield } from"lucide-react"
 
@@ -421,9 +421,9 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
 
                     <div className="flex flex-wrap gap-1">
                       {levelData.keywords.map((kw, i) => (
-                        <Badge key={i} variant="outline" className="text-micro px-1.5 py-0 bg-lia-bg-primary/50">
+                        <Chip key={i} variant="neutral" className="text-micro px-1.5 py-0 bg-lia-bg-primary/50">
                           {kw}
-                        </Badge>
+                        </Chip>
                       ))}
                     </div>
                   </div>
@@ -444,9 +444,9 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                     <p className="text-xs font-semibold text-lia-text-primary mb-1">Pontos Fortes</p>
                     <div className="flex flex-wrap gap-1">
                       {profileInfo.strengths.map((s, i) => (
-                        <Badge key={i} className="text-micro bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default">
+                        <Chip variant="neutral" muted key={i} className="text-micro bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default">
                           ✓ {s}
-                        </Badge>
+                        </Chip>
                       ))}
                     </div>
                   </div>
@@ -461,9 +461,9 @@ export function DISCAssessmentModal({ isOpen, onClose, candidate, assessmentData
                 <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl p-4 border border-lia-border-subtle dark:border-lia-border-subtle">
                   <h3 className="text-sm font-semibold text-lia-text-primary mb-3">Estilo de Liderança</h3>
                   <div className="flex items-center gap-3 mb-3">
-                    <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default">
+                    <Chip variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-lia-border-default dark:border-lia-border-default">
                       {data.leadershipStyle}
-                    </Badge>
+                    </Chip>
                     {data.leadershipScore && (
                       <span className="text-lg font-semibold text-lia-text-primary">{data.leadershipScore}%</span>
                     )}

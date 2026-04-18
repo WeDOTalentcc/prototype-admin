@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { toast } from 'sonner'
 import {
@@ -398,18 +398,18 @@ export function SCMSectionPerguntasEdit({
                       <span className={`text-xs font-semibold ${block.editable ? 'text-lia-text-primary' : 'text-lia-text-primary'}`}>{block.name}</span>
                       <span className="text-micro text-lia-text-secondary ml-2">({block.duration})</span>
                     </div>
-                    {!block.editable && <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-interactive-active text-lia-text-secondary ml-1">Automático</Badge>}
+                    {!block.editable && <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-interactive-active text-lia-text-secondary ml-1">Automático</Chip>}
                   </div>
                   <div className="flex items-center gap-2">
                     {block.editable && blockQuestions.length > 0 && (
                       <>
-                        {eliminatoryCount > 0 && <Badge className="text-micro px-2 py-0.5  border border-status-error/30">{eliminatoryCount} Eliminatória{eliminatoryCount > 1 ? 's' : ''}</Badge>}
-                        {informativeCount > 0 && <Badge className="text-micro px-2 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">{informativeCount} Informativa{informativeCount > 1 ? 's' : ''}</Badge>}
+                        {eliminatoryCount > 0 && <Chip variant="neutral" muted className="text-micro px-2 py-0.5  border border-status-error/30">{eliminatoryCount} Eliminatória{eliminatoryCount > 1 ? 's' : ''}</Chip>}
+                        {informativeCount > 0 && <Chip variant="neutral" muted className="text-micro px-2 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">{informativeCount} Informativa{informativeCount > 1 ? 's' : ''}</Chip>}
                       </>
                     )}
                     {blockGenerated.length > 0 && (
                       <>
-                        <Badge className="text-micro px-2 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">{acceptedCountForBlock}/{blockGenerated.length} aceitas</Badge>
+                        <Chip variant="neutral" muted className="text-micro px-2 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">{acceptedCountForBlock}/{blockGenerated.length} aceitas</Chip>
                         {acceptedCountForBlock < blockGenerated.length && <span className="w-2 h-2 rounded-full bg-status-warning animate-pulse motion-reduce:animate-none"></span>}
                       </>
                     )}
@@ -469,11 +469,11 @@ export function SCMSectionPerguntasEdit({
                                     />
                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none shrink-0">
                                       {isDeactivated ? (
-                                        <Badge className="text-micro px-2 py-0.5 h-5 rounded-full bg-lia-bg-tertiary text-lia-text-tertiary border border-lia-border-subtle">Inativa</Badge>
+                                        <Chip variant="neutral" muted className="text-micro px-2 py-0.5 h-5 rounded-full bg-lia-bg-tertiary text-lia-text-tertiary border border-lia-border-subtle">Inativa</Chip>
                                       ) : (
-                                        <Badge className="text-micro px-2 py-0.5 h-5 rounded-full  border border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30">
+                                        <Chip variant="neutral" muted className="text-micro px-2 py-0.5 h-5 rounded-full  border border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30">
                                           <CheckCircle className="w-3 h-3 mr-1" />Aceita
-                                        </Badge>
+                                        </Chip>
                                       )}
                                     </div>
                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">

@@ -3,7 +3,7 @@
 import React from"react"
 import { textStyles } from"@/lib/design-tokens"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   CheckCircle2, MessageSquare, Search, Calendar, Clock,
@@ -106,9 +106,9 @@ export function MyTasksCard({
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-3.5 h-3.5 text-lia-text-primary" />
             <CardTitle className={`${textStyles.label} font-semibold text-lia-text-primary`}>Minhas Tarefas</CardTitle>
-            <Badge variant="outline" className="text-xs font-inter">
+            <Chip variant="neutral" className="text-xs font-inter">
               {nonInterviewTasks.length + todayInterviews.length}
-            </Badge>
+            </Chip>
           </div>
         </div>
       </CardHeader>

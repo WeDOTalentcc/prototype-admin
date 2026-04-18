@@ -1,7 +1,7 @@
 "use client"
 import React from"react"
 import { Zap, Mail, Phone, TrendingUp, AlertCircle } from"lucide-react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Label } from"@/components/ui/label"
 import { Switch } from"@/components/ui/switch"
 import { type SearchFilters, type SearchSource } from"../advancedFiltersTypes"
@@ -29,9 +29,9 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
               <Zap className="w-3.5 h-3.5 text-lia-text-secondary" />
               <span className="font-medium text-xs">Custo Estimado</span>
             </div>
-            <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-lia-border-medium text-lia-text-primary">
+            <Chip variant="neutral" className="text-xs px-1.5 py-0.5 border-lia-border-medium text-lia-text-primary">
               Tempo Real
-            </Badge>
+            </Chip>
           </div>
 
           <div className="flex items-end justify-between">

@@ -3,7 +3,7 @@
 import React from"react"
 import { getPercentageScoreColorClass } from"@/lib/score-utils"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from"@/components/ui/tooltip"
 import {
@@ -37,9 +37,9 @@ function getScoreColor(score: number | null | undefined): string {
 
 function RecommendationBadge({ rec }: { rec: unknown }) {
   if (!rec) return null
-  if (rec ==="approved") return <Badge className="text-xs flex items-center gap-0.5"><CheckCircle className="w-2.5 h-2.5" />APROVADO</Badge>
-  if (rec ==="pending_review") return <Badge className="text-xs flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />PENDENTE</Badge>
-  if (rec ==="not_approved") return <Badge className="text-xs flex items-center gap-0.5"><X className="w-2.5 h-2.5" />NÃO APROVADO</Badge>
+  if (rec ==="approved") return <Chip variant="neutral" muted className="text-xs flex items-center gap-0.5"><CheckCircle className="w-2.5 h-2.5" />APROVADO</Chip>
+  if (rec ==="pending_review") return <Chip variant="neutral" muted className="text-xs flex items-center gap-0.5"><Clock className="w-2.5 h-2.5" />PENDENTE</Chip>
+  if (rec ==="not_approved") return <Chip variant="neutral" muted className="text-xs flex items-center gap-0.5"><X className="w-2.5 h-2.5" />NÃO APROVADO</Chip>
   return null
 }
 
@@ -99,7 +99,7 @@ export function CandidatoOpinionsTab({
               <Brain className="w-4 h-4 text-wedo-cyan" />
               Pareceres da LIA
               {opinionsHistory.length > 0 && (
-                <Badge className="text-xs px-1.5 py-0 h-4 bg-lia-btn-primary-bg text-lia-btn-primary-text">{opinionsHistory.length}</Badge>
+                <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4 bg-lia-btn-primary-bg text-lia-btn-primary-text">{opinionsHistory.length}</Chip>
               )}
             </button>
             <button
@@ -113,7 +113,7 @@ export function CandidatoOpinionsTab({
               <Brain className="w-4 h-4 text-wedo-cyan" />
               Análises
               {(savedAnalyses?.total_analyses as number || 0) > 0 && (
-                <Badge className="text-xs px-1.5 py-0 h-4 bg-wedo-purple text-white">{savedAnalyses?.total_analyses as number}</Badge>
+                <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4 bg-wedo-purple text-white">{savedAnalyses?.total_analyses as number}</Chip>
               )}
             </button>
           </div>
@@ -148,9 +148,9 @@ export function CandidatoOpinionsTab({
                     return (
                       <div key={opinion.id as string} className="relative">
                         {!opinion.is_current && (
-                          <Badge className="absolute top-2 right-2 text-xs px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary z-10">
+                          <Chip variant="neutral" muted className="absolute top-2 right-2 text-xs px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary z-10">
                             v{opinion.version as number} - Histórico
-                          </Badge>
+                          </Chip>
                         )}
                         <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle rounded-xl overflow-hidden">
                           <button
@@ -165,15 +165,15 @@ export function CandidatoOpinionsTab({
                                 <div className="flex items-center gap-2 flex-wrap">
                                   <span className="text-sm font-semibold text-lia-text-primary">{isWsi ?"Parecer WSI" :"Parecer Geral"}</span>
                                   {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
-                                    <Badge className="text-xs px-1.5 py-0 h-4 bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default flex items-center gap-1">
+                                    <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4 bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default flex items-center gap-1">
                                       <Briefcase className="w-2.5 h-2.5" />
                                       {`#${String(opinion.job_vacancy_id).slice(0, 6)} - ${String(opinion.job_vacancy_title)}`}
-                                    </Badge>
+                                    </Chip>
                                   ) : opinion.job_vacancy_title ? (
-                                    <Badge className="text-xs px-1.5 py-0 h-4 bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default flex items-center gap-1">
+                                    <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4 bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default flex items-center gap-1">
                                       <Briefcase className="w-2.5 h-2.5" />
                                       {String(opinion.job_vacancy_title)}
-                                    </Badge>
+                                    </Chip>
                                   ) : null}
                                 </div>
                                 <div className="flex items-center gap-2 mt-0.5">
@@ -321,9 +321,9 @@ export function CandidatoOpinionsTab({
                                 <span className="text-sm font-semibold text-lia-text-primary">
                                   {ANALYSIS_TYPE_LABELS[analysis.analysis_type as string] || String(analysis.analysis_type)}
                                 </span>
-                                <Badge className="text-xs px-1.5 py-0 h-4  border-wedo-purple/30">
+                                <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4  border-wedo-purple/30">
                                   Análise LIA
-                                </Badge>
+                                </Chip>
                               </div>
                               <span className="text-xs text-lia-text-secondary mt-0.5">
                                 {analysis.created_at

@@ -2,6 +2,7 @@
 
 import * as React from"react"
 import { useState, useEffect } from"react"
+import { Chip } from "@/components/ui/chip"
 import { 
   getInterviewAnalysisStatus, 
   triggerInterviewAnalysis 
@@ -22,7 +23,6 @@ import {
 } from"lucide-react"
 import { Card, CardHeader, CardContent } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
 import { Textarea } from"@/components/ui/textarea"
 import { Checkbox } from"@/components/ui/checkbox"
 import { StarRating, LikertRating } from"@/components/ui/interview-rating"
@@ -313,11 +313,11 @@ export function InterviewNoteCard({
                 </button>
               </div>
             )}
-            <Badge
+            <Chip
               variant={note.status ==="completed" ?"success" :"warning"}
             >
               {note.status ==="completed" ?"Concluída" :"Rascunho"}
-            </Badge>
+            </Chip>
           </div>
         </div>
       </CardHeader>

@@ -1,6 +1,6 @@
 "use client"
 
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
 import { LiaAnalysisModal } from"@/components/modals/lia-analysis-modal"
@@ -79,9 +79,9 @@ export function CandidatePageHeader({
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base font-semibold text-lia-text-primary">{_candidate.name as string}</h1>
-                <Badge variant="outline" className="text-xs px-1.5 py-0">
+                <Chip variant="neutral" className="text-xs px-1.5 py-0">
                   {_candidate.candidateId || _candidate.id}
-                </Badge>
+                </Chip>
                 <CandidateScoreBadge score={liaScore} format="percent" />
               </div>
               <div className="flex items-center gap-2 text-xs text-lia-text-secondary">

@@ -1,6 +1,6 @@
 import React from "react"
 import { Copy } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { textStyles, badgeStyles } from "@/lib/design-tokens"
 import type { Candidate } from "@/components/pages/candidates/types"
 
@@ -15,28 +15,28 @@ export function renderPearchInsightCell(
     case "is_open_to_work": {
       const isOpenToWork = candidate.is_opentowork || candidate.is_open_to_work
       return isOpenToWork ? (
-        <Badge className="text-xs">Open to Work</Badge>
+        <Chip variant="neutral" muted className="text-xs">Open to Work</Chip>
       ) : (
         <span className="text-xs text-lia-text-tertiary">—</span>
       )
     }
     case "is_decision_maker":
       return candidate.is_decision_maker ? (
-        <Badge className="text-xs">Decision Maker</Badge>
+        <Chip variant="neutral" muted className="text-xs">Decision Maker</Chip>
       ) : (
         <span className="text-xs text-lia-text-tertiary">—</span>
       )
     case "is_top_universities":
       return candidate.is_top_universities ? (
-        <Badge className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">
+        <Chip variant="neutral" muted className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">
           Top University
-        </Badge>
+        </Chip>
       ) : (
         <span className="text-xs text-lia-text-tertiary">—</span>
       )
     case "is_hiring":
       return candidate.is_hiring ? (
-        <Badge className="text-xs">{t ? t('hiring') : "Contratando"}</Badge>
+        <Chip variant="neutral" muted className="text-xs">{t ? t('hiring') : "Contratando"}</Chip>
       ) : (
         <span className="text-xs text-lia-text-tertiary">—</span>
       )
@@ -165,7 +165,7 @@ export function renderPearchInsightCell(
         <div className="flex flex-col gap-0.5">
           {queryInsights.slice(0, 2).map((insight, idx) => (
             <div key={idx} className="flex items-center gap-1">
-              <Badge
+              <Chip variant="neutral" muted
                 className={`text-micro px-1 py-0 ${
                   insight.match_level === "Exceeds"
                     ? "bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success"
@@ -177,7 +177,7 @@ export function renderPearchInsightCell(
                 }`}
               >
                 {insight.match_level}
-              </Badge>
+              </Chip>
               <span
                 className={`${textStyles.caption} truncate max-w-[150px]`}
                 title={insight.subquery}
@@ -232,9 +232,9 @@ export function renderPearchInsightCell(
       return (
         <div className="flex flex-wrap gap-1">
           {arr.slice(0, 3).map((keyword, idx) => (
-            <Badge key={idx} variant="outline" className={`${badgeStyles.default} px-1 py-0`}>
+            <Chip key={idx} variant="neutral" className={`${badgeStyles.default} px-1 py-0`}>
               {keyword}
-            </Badge>
+            </Chip>
           ))}
           {arr.length > 3 && (
             <span className={textStyles.caption}>+{arr.length - 3}</span>

@@ -17,7 +17,7 @@ import {
   SlidersHorizontal
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { cn } from '@/lib/utils'
 
 export interface RobustFilters {
@@ -147,9 +147,9 @@ export function RobustFilters({
                 </span>
               )}
               {activeFiltersCount > 0 && (
-                <Badge variant="secondary" className="text-xs">
+                <Chip variant="neutral" muted className="text-xs">
                   {activeFiltersCount}
-                </Badge>
+                </Chip>
               )}
               <Button
                 variant="ghost"
@@ -377,7 +377,7 @@ export function RobustFilters({
             Filtros aplicados ({activeFiltersCount}):
           </span>
           {filters.status.map((status) => (
-            <Badge key={status} variant="secondary" className="text-xs">
+            <Chip key={status} variant="neutral" muted className="text-xs">
               {statuses.find(s => s.id === status)?.label}
               <button
                 onClick={() => toggleArrayFilter('status', status)}
@@ -385,10 +385,10 @@ export function RobustFilters({
               >
                 <X className="w-3 h-3" />
               </button>
-            </Badge>
+            </Chip>
           ))}
           {filters.location.map((location) => (
-            <Badge key={location} variant="secondary" className="text-xs">
+            <Chip key={location} variant="neutral" muted className="text-xs">
               📍 {location}
               <button
                 onClick={() => toggleArrayFilter('location', location)}
@@ -396,10 +396,10 @@ export function RobustFilters({
               >
                 <X className="w-3 h-3" />
               </button>
-            </Badge>
+            </Chip>
           ))}
           {filters.skills.map((skill) => (
-            <Badge key={skill} variant="secondary" className="text-xs">
+            <Chip key={skill} variant="neutral" muted className="text-xs">
               🏷️ {skill}
               <button
                 onClick={() => toggleArrayFilter('skills', skill)}
@@ -407,7 +407,7 @@ export function RobustFilters({
               >
                 <X className="w-3 h-3" />
               </button>
-            </Badge>
+            </Chip>
           ))}
         </div>
       )}

@@ -6,7 +6,7 @@ import { Input } from"@/components/ui/input"
 import { Checkbox } from"@/components/ui/checkbox"
 import { Label } from"@/components/ui/label"
 import { Textarea } from"@/components/ui/textarea"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { ScrollArea } from"@/components/ui/scroll-area"
 import {
   Select,
@@ -193,9 +193,9 @@ export function CommunicationStep({ hook }: StepProps) {
                     <p className="text-xs font-medium text-lia-text-primary truncate">{candidate.name}</p>
                     <p className="text-micro text-lia-text-tertiary">{candidate.email || candidate.phone || 'Sem contato'}</p>
                   </div>
-                  <Badge className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary font-normal">
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary font-normal">
                     {candidate.stage}
-                  </Badge>
+                  </Chip>
                 </div>
               ))}
             </div>
@@ -353,9 +353,9 @@ export function UnpublishCommunicationStep({
                     <p className="text-xs font-medium text-lia-text-primary truncate">{candidate.name}</p>
                     <p className="text-micro text-lia-text-tertiary">{candidate.email || candidate.phone || 'Sem contato'}</p>
                   </div>
-                  <Badge className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary font-normal">
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary font-normal">
                     {candidate.stage}
-                  </Badge>
+                  </Chip>
                 </div>
               ))}
             </div>

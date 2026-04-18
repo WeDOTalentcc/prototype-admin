@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   CheckCircle, XCircle, ArrowRight, MessageSquare,
@@ -255,28 +255,28 @@ export function BatchReviewStep({
                 <label className="text-sm font-medium text-lia-text-primary">Ações Adicionais:</label>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {batchAction.notifyTeam && (
-                    <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary flex items-center gap-1">
+                    <Chip variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary flex items-center gap-1">
                       <Bell className="w-3 h-3" />
                       Notificar equipe
-                    </Badge>
+                    </Chip>
                   )}
                   {batchAction.sendEmail && (
-                    <Badge className="flex items-center gap-1">
+                    <Chip variant="neutral" muted className="flex items-center gap-1">
                       <Mail className="w-3 h-3" />
                       Enviar emails
-                    </Badge>
+                    </Chip>
                   )}
                   {batchAction.scheduleInterview && (
-                    <Badge className="flex items-center gap-1">
+                    <Chip variant="neutral" muted className="flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       Agendar entrevistas
-                    </Badge>
+                    </Chip>
                   )}
                   {batchAction.addToTalentPool && (
-                    <Badge className="flex items-center gap-1">
+                    <Chip variant="neutral" muted className="flex items-center gap-1">
                       <Star className="w-3 h-3" />
                       Banco de talentos
-                    </Badge>
+                    </Chip>
                   )}
                 </div>
               </div>
@@ -313,9 +313,9 @@ export function BatchReviewStep({
                       </div>
                     </div>
 
-                    <Badge className={`${getScoreColor(candidate.liaScore)} text-xs`}>
+                    <Chip variant="neutral" muted className={`${getScoreColor(candidate.liaScore)} text-xs`}>
                       {formatScorePercent(candidate.liaScore)}
-                    </Badge>
+                    </Chip>
                   </div>
                 )
               })}

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Progress } from"@/components/ui/progress"
 import {
   Dialog,
@@ -355,7 +355,7 @@ export function WSIVoiceScreeningStatus({
                       }`}>
                         {result.overall_wsi.toFixed(1)}
                       </div>
-                      <Badge className={`mt-1 ${
+                      <Chip variant="neutral" muted className={`mt-1 ${
  result.classification === 'excelente' || result.classification === 'alto' 
                           ? '' :
                         result.classification === 'medio' 
@@ -363,7 +363,7 @@ export function WSIVoiceScreeningStatus({
                         ''
                       }`}>
                         {result.classification.charAt(0).toUpperCase() + result.classification.slice(1)}
-                      </Badge>
+                      </Chip>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">

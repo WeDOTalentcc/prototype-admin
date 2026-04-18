@@ -22,8 +22,8 @@ vi.mock('@/components/ui/avatar', () => ({
   AvatarFallback: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
   AvatarImage: ({ src }: { src?: string }) => <img src={src} alt="" />,
 }))
-vi.mock('@/components/ui/badge', () => ({
-  Badge: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+vi.mock('@/components/ui/chip', () => ({
+  Chip: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }))
 vi.mock('@/components/ui/button', () => ({
   Button: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (

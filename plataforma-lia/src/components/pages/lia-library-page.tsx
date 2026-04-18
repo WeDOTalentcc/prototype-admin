@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react'
 import { useUIPreferencesStore } from '@/stores/ui-preferences-store'
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   BookOpen, Search, Users, Star, Copy, MessageCircle,
   Target, Zap, BarChart3, MessageSquare, Brain,
@@ -322,13 +322,13 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                   {/* Footer */}
                   <div className="flex items-center justify-between pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                     <div className="flex items-center gap-2">
-                      <Badge 
-                        variant="secondary" 
+                      <Chip 
+                        variant="neutral" muted 
                         className="text-xs px-1.5 py-0 h-5 font-open-sans"
                         style={{backgroundColor: categoryInfo.bgColor, color: categoryInfo.color}}
                       >
                         {categoryInfo.label}
-                      </Badge>
+                      </Chip>
                       {command.usageCount && (
                         <span className="text-xs text-lia-text-primary">
                           {command.usageCount} usos

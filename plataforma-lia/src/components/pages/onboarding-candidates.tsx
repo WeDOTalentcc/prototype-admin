@@ -2,7 +2,7 @@
 
 import { Button } from"@/components/ui/button"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Plus, Search, Eye, MoreHorizontal, MessageSquare
@@ -84,9 +84,9 @@ export function OnboardingCandidates({
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-lia-text-primary">Status:</span>
-                  <Badge className={getStatusColor(candidate.status)}>
+                  <Chip variant="neutral" muted className={getStatusColor(candidate.status)}>
                     {getStatusLabel(candidate.status)}
-                  </Badge>
+                  </Chip>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">

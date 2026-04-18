@@ -7,7 +7,7 @@ import {
   ThumbsUp, ThumbsDown, AlertCircle
 } from"lucide-react"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   textStyles, cardStyles, badgeStyles, buttonStyles
@@ -191,7 +191,7 @@ function AgentPanel({
           <div className="flex items-center gap-2">
             <Bot className="w-5 h-5 text-lia-text-secondary" />
             <span className={textStyles.subtitle}>{agent.agent_name}</span>
-            <Badge className={statusCfg.style}>{t(statusCfg.labelKey)}</Badge>
+            <Chip variant="neutral" muted className={statusCfg.style}>{t(statusCfg.labelKey)}</Chip>
             <span className={textStyles.caption}>v{agent.calibration_v}</span>
           </div>
           <div className="flex items-center gap-2">
@@ -207,13 +207,13 @@ function AgentPanel({
         {/* Strategy summary */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           {strategy.required_skills?.map(s => (
-            <Badge key={s} className="bg-green-50 text-green-700 text-xs">✅ {s}</Badge>
+            <Chip variant="neutral" muted key={s} className="bg-green-50 text-green-700 text-xs">✅ {s}</Chip>
           ))}
           {strategy.exclusions?.map(e => (
-            <Badge key={e} className="bg-red-50 text-red-700 text-xs">❌ {e}</Badge>
+            <Chip variant="neutral" muted key={e} className="bg-red-50 text-red-700 text-xs">❌ {e}</Chip>
           ))}
-          {strategy.seniority && <Badge className="bg-blue-50 text-blue-700 text-xs">{strategy.seniority}</Badge>}
-          {strategy.location && <Badge className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">{strategy.location}</Badge>}
+          {strategy.seniority && <Chip variant="neutral" muted className="bg-blue-50 text-blue-700 text-xs">{strategy.seniority}</Chip>}
+          {strategy.location && <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">{strategy.location}</Chip>}
         </div>
 
         {/* Stats */}

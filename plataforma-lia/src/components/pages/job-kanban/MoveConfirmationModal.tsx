@@ -10,7 +10,7 @@ import {
   DialogFooter,
 } from"@/components/ui/dialog"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Textarea } from"@/components/ui/textarea"
 import { RadioGroup, RadioGroupItem } from"@/components/ui/radio-group"
 import { Label } from"@/components/ui/label"
@@ -122,12 +122,12 @@ export function MoveConfirmationModal({
                     >
                       {suggestion.content}
                     </Label>
-                    <Badge 
-                      variant="outline" 
+                    <Chip 
+                      variant="neutral" 
  className="border-lia-border-default dark:border-lia-border-default text-lia-text-primary text-xs"
                     >
                       {Math.round(suggestion.confidence * 100)}%
-                    </Badge>
+                    </Chip>
                   </div>
                 ))}
               </RadioGroup>

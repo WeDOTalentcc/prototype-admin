@@ -1,6 +1,6 @@
 "use client"
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { textStyles, cardStyles, badgeStyles, formatScorePercent } from '@/lib/design-tokens'
 import {
@@ -72,9 +72,9 @@ export function ActivityEvaluationDetails({
                 <p className="text-xs font-semibold text-lia-text-primary mb-1">Pontos Fortes</p>
                 <div className="flex flex-wrap gap-1">
                   {activity.details.strengths.map((s: string, i: number) => (
-                    <Badge key={`str-${i}`} className="text-micro px-1.5 py-0  border-status-success/30">
+                    <Chip variant="neutral" muted key={`str-${i}`} className="text-micro px-1.5 py-0  border-status-success/30">
                       ✓ {s}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -93,9 +93,9 @@ export function ActivityEvaluationDetails({
             <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
               <Mic className="w-3 h-3 text-status-error" />
               Triagem por Voz
-              <Badge className="ml-2 text-micro px-1.5 py-0">
+              <Chip variant="neutral" muted className="ml-2 text-micro px-1.5 py-0">
                 {activity.details.questionsAnswered}/{activity.details.totalQuestions} perguntas
-              </Badge>
+              </Chip>
             </h5>
             <div className="grid grid-cols-3 gap-2 mb-3">
               <div className="text-center p-2 bg-lia-bg-secondary rounded-xl">
@@ -182,9 +182,9 @@ export function ActivityEvaluationDetails({
             <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
               <ClipboardCheck className="w-3 h-3 text-lia-text-secondary" />
               Avaliação por Rubrica (CV vs Vaga)
-              <Badge className={`ml-2 ${activity.details.overallFit >= 80 ? badgeStyles.success : activity.details.overallFit >= 60 ? badgeStyles.warning : badgeStyles.error}`}>
+              <Chip variant="neutral" muted className={`ml-2 ${activity.details.overallFit >= 80 ? badgeStyles.success : activity.details.overallFit >= 60 ? badgeStyles.warning : badgeStyles.error}`}>
                 {activity.details.overallFit}% fit
-              </Badge>
+              </Chip>
             </h5>
             <div className="text-center p-3 bg-gradient-to-r from-lia-bg-secondary to-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3">
               <p className="text-3xl font-semibold text-lia-text-primary">{activity.details.overallFit}%</p>
@@ -197,9 +197,9 @@ export function ActivityEvaluationDetails({
                   return (
                   <div key={i} className="flex justify-between text-xs bg-lia-bg-secondary p-1.5 rounded-xl border border-lia-border-subtle">
                     <span className="text-lia-text-primary">{String(c.criteria ?? '')}</span>
-                    <Badge className={`text-micro px-1.5 ${cScore >= 80 ? badgeStyles.success : cScore >= 60 ? badgeStyles.warning : badgeStyles.error}`}>
+                    <Chip variant="neutral" muted className={`text-micro px-1.5 ${cScore >= 80 ? badgeStyles.success : cScore >= 60 ? badgeStyles.warning : badgeStyles.error}`}>
                       {cScore}%
-                    </Badge>
+                    </Chip>
                   </div>
                   )
                 })}
@@ -219,9 +219,9 @@ export function ActivityEvaluationDetails({
             <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
               <Brain className="w-3 h-3 text-wedo-cyan" />
               {activity.details.assessmentType || 'Assessment Comportamental'}
-              <Badge className={`ml-2 ${badgeStyles.primary}`}>
+              <Chip variant="neutral" muted className={`ml-2 ${badgeStyles.primary}`}>
                 {activity.details.profile}
-              </Badge>
+              </Chip>
             </h5>
             <div className="text-center p-3 bg-gradient-to-r from-lia-bg-tertiary to-lia-bg-secondary rounded-xl border border-lia-border-default mb-3">
               <p className="text-xl font-semibold text-lia-text-primary">{activity.details.profile}</p>
@@ -242,9 +242,9 @@ export function ActivityEvaluationDetails({
                 <p className={`${textStyles.labelSmall} text-lia-text-primary mb-1`}>⚠️ Áreas de Desenvolvimento</p>
                 <div className="flex flex-wrap gap-1">
                   {activity.details.developmentAreas.map((a: string, i: number) => (
-                    <Badge key={`dev-${i}`} variant="outline" className="text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default">
+                    <Chip key={`dev-${i}`} variant="neutral" className="text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default">
                       {a}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -279,9 +279,9 @@ export function ActivityEvaluationDetails({
             <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
               <Video className="w-3 h-3 text-wedo-purple" />
               Entrevista em Vídeo
-              <Badge className={`ml-2 ${badgeStyles.success}`}>
+              <Chip variant="neutral" muted className={`ml-2 ${badgeStyles.success}`}>
                 {activity.details.questionsAnswered}/{activity.details.totalQuestions} perguntas
-              </Badge>
+              </Chip>
             </h5>
             <div className="grid grid-cols-3 gap-2 mb-3">
               <div className="text-center p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">

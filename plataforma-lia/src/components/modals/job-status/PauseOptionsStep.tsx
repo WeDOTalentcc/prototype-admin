@@ -5,7 +5,7 @@ import { Button } from"@/components/ui/button"
 import { Checkbox } from"@/components/ui/checkbox"
 import { Textarea } from"@/components/ui/textarea"
 import { Label } from"@/components/ui/label"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { ScrollArea } from"@/components/ui/scroll-area"
 import {
   Select,
@@ -141,7 +141,7 @@ export function PauseOptionsStep({
               </p>
               <div className="mt-2 space-y-1">
                 {candidatesInProposal.slice(0, 3).map(c => (
-                  <Badge key={c.id} variant="outline" className="text-micro bg-lia-bg-primary border-status-error/30 text-status-error">{c.name}</Badge>
+                  <Chip key={c.id} variant="neutral" className="text-micro bg-lia-bg-primary border-status-error/30 text-status-error">{c.name}</Chip>
                 ))}
                 {candidatesInProposal.length > 3 && (
                   <span className="text-micro text-status-error">+{candidatesInProposal.length - 3} mais</span>

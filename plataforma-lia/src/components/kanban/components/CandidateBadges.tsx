@@ -1,6 +1,7 @@
 'use client'
 
 import React, { memo } from 'react'
+import { Chip } from '@/components/ui/chip'
 import {
   Send,
   Calendar,
@@ -17,7 +18,6 @@ import {
   type LucideIcon
 } from 'lucide-react'
 import { cn } from '@/lib/design-tokens'
-import { Badge } from '@/components/ui/badge'
 import { getCandidateBadges } from '../utils/badge-utils'
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -35,12 +35,12 @@ const ICON_MAP: Record<string, LucideIcon> = {
   'user-plus': UserPlus,
 }
 
-const COLOR_TO_VARIANT: Record<string, 'default' | 'secondary' | 'warning' | 'danger' | 'success'> = {
-  cyan: 'default',
+const COLOR_TO_VARIANT: Record<string, 'neutral' | 'warning' | 'danger' | 'success' | 'info'> = {
+  cyan: 'info',
   amber: 'warning',
   red: 'danger',
   green: 'success',
-  gray: 'secondary',
+  gray: 'neutral',
 }
 
 interface CandidateBadgesProps {
@@ -71,14 +71,15 @@ const CandidateBadges = memo(function CandidateBadges({
       {badges.map((badge, i) => {
         const IconComponent = ICON_MAP[badge.icon]
         return (
-          <Badge
+          <Chip
             key={i}
             variant={COLOR_TO_VARIANT[badge.color]}
+            muted={badge.color === 'gray'}
             className={cn("gap-1", compact &&"px-1 py-0")}
           >
             {IconComponent && <IconComponent className={cn("w-3 h-3", compact &&"w-2.5 h-2.5")} />}
             {badge.label}
-          </Badge>
+          </Chip>
         )
       })}
     </div>

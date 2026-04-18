@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Progress } from"@/components/ui/progress"
 import {
@@ -74,30 +74,30 @@ export function WSIScoreCard({
     switch (recommendation) {
       case"Aprovado":
         return (
-          <Badge
+          <Chip variant="neutral" muted
             className="border border-lia-border-default bg-lia-bg-primary text-lia-text-primary"
           >
             <CheckCircle2 className="h-3 w-3 mr-1 text-wedo-green" />
             Aprovado
-          </Badge>
+          </Chip>
         )
       case"Reprovado":
         return (
-          <Badge
+          <Chip variant="neutral" muted
             className="border border-lia-border-default bg-lia-bg-primary text-lia-text-primary"
           >
             <AlertCircle className="h-3 w-3 mr-1 text-wedo-magenta" />
             Reprovado
-          </Badge>
+          </Chip>
         )
       default:
         return (
-          <Badge
+          <Chip variant="neutral" muted
             className="border border-lia-border-default bg-lia-bg-primary text-lia-text-secondary"
           >
             <Minus className="h-3 w-3 mr-1 text-lia-text-secondary" />
             Aguardando
-          </Badge>
+          </Chip>
         )
     }
   }

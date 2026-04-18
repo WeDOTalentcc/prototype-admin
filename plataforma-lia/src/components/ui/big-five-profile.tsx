@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Card, CardContent } from"@/components/ui/card"
 import {
   Tooltip,
@@ -268,29 +268,29 @@ export function BigFiveProfile({ scores, compact = false, showInsights = true }:
             <div className="flex flex-wrap gap-1">
               <span className="text-xs text-lia-text-tertiary">Fit:</span>
               {scores.conscientiousness > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 text-status-success">
+                <Chip variant="neutral" className="text-xs px-1.5 py-0 h-4 text-status-success">
                   Gestão
-                </Badge>
+                </Chip>
               )}
               {scores.openness > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 text-status-error">
+                <Chip variant="neutral" className="text-xs px-1.5 py-0 h-4 text-status-error">
                   Inovação
-                </Badge>
+                </Chip>
               )}
               {scores.extraversion > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4 text-status-warning">
+                <Chip variant="neutral" className="text-xs px-1.5 py-0 h-4 text-status-warning">
                   Liderança
-                </Badge>
+                </Chip>
               )}
               {scores.agreeableness > 70 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4">
+                <Chip variant="neutral" className="text-xs px-1.5 py-0 h-4">
                   Atendimento
-                </Badge>
+                </Chip>
               )}
               {scores.neuroticism < 30 && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0 h-4">
+                <Chip variant="neutral" className="text-xs px-1.5 py-0 h-4">
                   Alta Pressão
-                </Badge>
+                </Chip>
               )}
             </div>
           </div>

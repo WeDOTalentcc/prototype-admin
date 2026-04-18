@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Users, Save, Loader2, Pencil } from"lucide-react"
 import { RadioGroup, RadioGroupItem } from"@/components/ui/radio-group"
 import { Label } from"@/components/ui/label"
@@ -109,9 +109,9 @@ export function GlobalSearchLimitsTab({
                       {option.label}
                     </Label>
                     {option.recommended && (
-                      <Badge className="dark:bg-status-success/30 dark:text-status-success text-micro px-1.5 py-0.5">
+                      <Chip variant="neutral" muted className="dark:bg-status-success/30 dark:text-status-success text-micro px-1.5 py-0.5">
                         Recomendado
-                      </Badge>
+                      </Chip>
                     )}
                   </div>
                   <p className="text-micro text-lia-text-primary mt-0.5">

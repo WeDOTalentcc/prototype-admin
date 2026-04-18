@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { cn } from"@/lib/utils"
 import { 
   Loader2,
@@ -111,12 +111,12 @@ function VacancyCard({
             <h4 className="text-sm font-semibold text-lia-text-primary dark:text-white truncate group-hover:text-lia-text-primary dark:group-hover:text-lia-text-inverse transition-colors motion-reduce:transition-none">
               {vacancy.title}
             </h4>
-            <Badge 
-              variant="outline" 
+            <Chip 
+              variant="neutral" 
               className={cn("text-micro h-5 px-1.5 border flex-shrink-0", statusConfig.bgClassName, statusConfig.borderClassName, statusConfig.className)}
             >
               {statusConfig.label}
-            </Badge>
+            </Chip>
           </div>
           
           <div className="grid grid-cols-2 gap-2 text-xs text-lia-text-tertiary">
@@ -139,12 +139,12 @@ function VacancyCard({
           </div>
 
           <div className="flex items-center justify-between gap-2">
-            <Badge 
-              variant="outline" 
+            <Chip 
+              variant="neutral" 
               className={cn("text-micro h-4 px-1.5 border", workModelConfig.className)}
             >
               {workModelConfig.label}
-            </Badge>
+            </Chip>
             {vacancy.hired_candidate && vacancy.status === 'hired' && (
               <span className="text-micro text-status-success flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" />

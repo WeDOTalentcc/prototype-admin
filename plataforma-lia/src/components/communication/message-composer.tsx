@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useCallback, useEffect } from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Card, CardContent } from"@/components/ui/card"
 import { VariableSelector } from"@/components/ui/variable-selector"
 import {
@@ -438,10 +438,10 @@ export function MessageComposer({
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {aiResultModal.changesMade.map((change, idx) => (
-                    <Badge key={idx} className="text-xs px-2 py-0.5 rounded-full bg-lia-interactive-active/30 text-wedo-cyan-dark">
+                    <Chip variant="neutral" muted key={idx} className="text-xs px-2 py-0.5 rounded-full bg-lia-interactive-active/30 text-wedo-cyan-dark">
                       <Check className="w-3 h-3 mr-1" />
                       {change}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>

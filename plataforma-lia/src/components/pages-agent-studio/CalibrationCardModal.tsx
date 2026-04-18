@@ -7,7 +7,7 @@ import {
   X, CheckCircle, Edit3, Loader2, Users
 } from"lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from"@/components/ui/dialog"
 import {
@@ -295,7 +295,7 @@ export default function CalibrationCardModal({
               {candidate.skills?.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-4">
                   {candidate.skills.slice(0, 8).map(skill => (
-                    <Badge key={skill} className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">{skill}</Badge>
+                    <Chip variant="neutral" muted key={skill} className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">{skill}</Chip>
                   ))}
                 </div>
               )}
@@ -360,7 +360,7 @@ export default function CalibrationCardModal({
                     return (
                       <div key={i} className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <Badge className={badgeStyle}>{t(badgeKey)}</Badge>
+                          <Chip variant="neutral" muted className={badgeStyle}>{t(badgeKey)}</Chip>
                         </div>
                         <p className={textStyles.subtitle}>{mc.criterion}</p>
                         <p className={textStyles.bodySmall}>{mc.explanation}</p>

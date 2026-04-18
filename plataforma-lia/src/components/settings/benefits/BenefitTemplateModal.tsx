@@ -4,7 +4,7 @@ import React from"react"
 import { textStyles } from"@/lib/design-tokens"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Select,
   SelectContent,
@@ -186,9 +186,9 @@ export function BenefitTemplateModal({
                     <span className={`${textStyles.label}`}>
                       {category.name}
                     </span>
-                    <Badge variant="secondary" className="text-micro h-4 px-1">
+                    <Chip variant="neutral" muted className="text-micro h-4 px-1">
                       {catTemplates.length}
-                    </Badge>
+                    </Chip>
                   </div>
                   <div className="grid grid-cols-1 gap-1">
                     {catTemplates.map((template) => {

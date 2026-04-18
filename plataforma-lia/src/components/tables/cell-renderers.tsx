@@ -3,7 +3,7 @@ import NextImage from"next/image"
 
 import React, { useState, lazy, Suspense } from"react"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   Popover,
@@ -140,10 +140,10 @@ export function ScoreCell({ score, showIcon = true }: { score: number; showIcon?
   const formattedScore = Number.isInteger(score) ? score : score.toFixed(1)
 
   return (
-    <Badge className="text-xs px-1.5 py-0.5" style={getScoreStyle(score)}>
+    <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5" style={getScoreStyle(score)}>
       {showIcon && <Star className="w-2.5 h-2.5 mr-0.5" />}
       {formattedScore}
-    </Badge>
+    </Chip>
   )
 }
 
@@ -237,9 +237,9 @@ export function SourceCell({ source }: { source?: string }) {
   const config = getSourceConfig(source)
 
   return (
-    <Badge className="text-micro px-1.5 py-0.5" style={config.style}>
+    <Chip variant="neutral" muted className="text-micro px-1.5 py-0.5" style={config.style}>
       {config.label}
-    </Badge>
+    </Chip>
   )
 }
 
@@ -292,14 +292,14 @@ export function SkillsCell({ skills, maxShow = 3 }: { skills?: string[]; maxShow
   return (
     <div className="flex flex-wrap gap-1">
       {visible.map((skill, idx) => (
-        <Badge key={idx} variant="secondary" className="text-micro px-1.5 py-0">
+        <Chip key={idx} variant="neutral" muted className="text-micro px-1.5 py-0">
           {skill}
-        </Badge>
+        </Chip>
       ))}
       {remaining > 0 && (
-        <Badge variant="outline" className="text-micro px-1.5 py-0">
+        <Chip variant="neutral" className="text-micro px-1.5 py-0">
           +{remaining}
-        </Badge>
+        </Chip>
       )}
     </div>
   )
@@ -319,9 +319,9 @@ export function WorkModelCell({ model }: { model?: string }) {
   const config = getModelConfig(model)
 
   return (
-    <Badge className="text-micro px-1.5 py-0.5" style={config.style}>
+    <Chip variant="neutral" muted className="text-micro px-1.5 py-0.5" style={config.style}>
       {config.label}
-    </Badge>
+    </Chip>
   )
 }
 
@@ -393,12 +393,12 @@ export function SubStatusCell({ stage, subStatus }: { stage?: string; subStatus?
   const colors = getSubStatusColors(subStatusMetadata)
 
   return (
-    <Badge 
+    <Chip variant="neutral" muted 
       className="text-micro px-1.5 py-0.5" 
       style={{backgroundColor: colors.bgStyle, color: colors.textStyle}}
     >
       {displayName}
-    </Badge>
+    </Chip>
   )
 }
 
@@ -461,13 +461,13 @@ export function InteractiveSubStatusCell({
           className="flex items-center gap-1 hover:opacity-80 transition-opacity motion-reduce:transition-none cursor-pointer"
           disabled={isUpdating}
         >
-          <Badge 
+          <Chip variant="neutral" muted 
             className="text-micro px-1.5 py-0.5 flex items-center gap-0.5" 
             style={{backgroundColor: colors.bgStyle, color: colors.textStyle}}
           >
             {isUpdating ? 'Atualizando...' : displayName}
             <ChevronDown className="w-2.5 h-2.5" />
-          </Badge>
+          </Chip>
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-56 p-2" align="start" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
@@ -564,12 +564,12 @@ export function InteractiveStageCell({
 
   if (!onStageChange && !onTransitionRequest) {
     return (
-      <Badge 
+      <Chip variant="neutral" muted 
         className="text-micro px-1.5 py-0.5 font-medium"
         style={{backgroundColor: currentStageInfo?.color || 'var(--lia-border-subtle)'}}
       >
         {stageDisplayName}
-      </Badge>
+      </Chip>
     )
   }
 
@@ -582,13 +582,13 @@ export function InteractiveStageCell({
         }}
         className="hover:opacity-80 transition-opacity motion-reduce:transition-none cursor-pointer"
       >
-        <Badge 
+        <Chip variant="neutral" muted 
           className="text-micro px-1.5 py-0.5 flex items-center gap-0.5 font-medium"
           style={{backgroundColor: currentStageInfo?.color || 'var(--lia-border-subtle)'}}
         >
           {stageDisplayName}
           <ChevronDown className="w-2.5 h-2.5" />
-        </Badge>
+        </Chip>
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
@@ -689,12 +689,12 @@ export function StageCell({ stage }: { stage?: string }) {
   const displayName = stageInfo?.displayName || stage
   
   return (
-    <Badge 
+    <Chip variant="neutral" muted 
       className="text-micro px-1.5 py-0.5"
       style={{backgroundColor: stageInfo?.color || 'var(--lia-text-tertiary)', color: 'var(--lia-bg-secondary)'}}
     >
       {displayName}
-    </Badge>
+    </Chip>
   )
 }
 

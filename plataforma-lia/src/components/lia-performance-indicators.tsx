@@ -2,7 +2,7 @@
 
 import React from"react"
 import { CheckCircle, Clock, XCircle, Calendar, Phone, MessageCircle, Target, TrendingUp } from"lucide-react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 
 interface LiaPerformanceIndicatorsProps {
   candidate: Record<string, any>
@@ -85,13 +85,13 @@ export function LiaPerformanceIndicators({ candidate }: LiaPerformanceIndicators
     <div className="flex flex-col gap-2">
       {/* Status da Triagem */}
       <div className="flex items-center gap-2">
-        <Badge
-          variant="outline"
+        <Chip
+          variant="neutral"
           className={`text-xs px-2 py-1 ${triageStatus.color}`}
         >
           {triageStatus.icon}
           <span className="ml-1">{triageStatus.label}</span>
-        </Badge>
+        </Chip>
       </div>
 
       {/* Indicadores de Conversão */}

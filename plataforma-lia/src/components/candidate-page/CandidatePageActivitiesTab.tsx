@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   Brain, Activity, ChevronDown, List,
@@ -118,7 +118,7 @@ export function CandidatePageActivitiesTab({
             <h4 className="text-sm font-medium text-lia-text-primary flex items-center gap-1.5">
               <Activity className="w-4 h-4 text-lia-text-secondary" />
               Feed de Atividades
-              <Badge className="text-xs px-1.5 py-0">{filteredActivities.length}</Badge>
+              <Chip variant="neutral" muted className="text-xs px-1.5 py-0">{filteredActivities.length}</Chip>
             </h4>
             <div className="flex items-center gap-2">
               <select
@@ -242,9 +242,9 @@ export function CandidatePageActivitiesTab({
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-wedo-cyan" />
               <CardTitle className="text-sm">Previsão de Próximas Etapas - IA</CardTitle>
-              <Badge className="text-xs px-1.5 py-0.5 bg-wedo-purple text-white">
+              <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5 bg-wedo-purple text-white">
                 Análise Preditiva
-              </Badge>
+              </Chip>
             </div>
             <ChevronDown
               className={`w-4 h-4 text-wedo-purple transition-transform motion-reduce:transition-none ${
@@ -265,13 +265,13 @@ export function CandidatePageActivitiesTab({
                       <h5 className="text-xs font-semibold text-lia-text-primary">
                         {prediction.title}
                       </h5>
-                      <Badge
+                      <Chip variant="neutral" muted
                         className="text-xs px-1 py-0 h-4 mt-1"
                         style={{backgroundColor: getBgColor(prediction.color),
                           color: prediction.color}}
                       >
                         {prediction.probability}%
-                      </Badge>
+                      </Chip>
                       <p className="text-xs text-lia-text-secondary mt-1">
                         {prediction.timeframe}
                       </p>
@@ -331,11 +331,11 @@ export function CandidatePageActivitiesTab({
                                 </div>
                                 <div className="flex items-center gap-2">
                                   {activity.score && (
-                                    <Badge
+                                    <Chip variant="neutral" muted
                                       className={`text-xs bg-lia-bg-tertiary ${activity.score >= 80 ? 'text-status-success' : 'text-status-warning'}`}
                                     >
                                       {activity.score}%
-                                    </Badge>
+                                    </Chip>
                                   )}
                                   <ChevronDown
                                     className={`w-4 h-4 text-lia-text-secondary transition-transform motion-reduce:transition-none ${

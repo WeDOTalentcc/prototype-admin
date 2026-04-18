@@ -12,7 +12,7 @@ import {
   DialogFooter,
 } from"@/components/ui/dialog"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Input } from"@/components/ui/input"
 import { toast } from"sonner"
 import type { ModalAISuggestion, ModalArchetype } from"./CandidatesPageModals.types"
@@ -84,7 +84,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
             </label>
             <div className="flex flex-wrap gap-2">
               {previewTags.map((tag, index) => (
-                <Badge
+                <Chip variant="neutral" muted
                   key={`tag-${index}`}
                   className="!text-xs !px-2 !py-1 flex items-center gap-1.5"
                  
@@ -96,7 +96,7 @@ const [previewTags, setPreviewTags] = useState<string[]>([])
                   >
                     <X className="w-3 h-3" />
                   </button>
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>

@@ -3,7 +3,7 @@
 import { useState } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Download, FileText, FileSpreadsheet, File, Image,
   Calendar, Filter, Mail, Share2, Settings, Clock,
@@ -148,9 +148,9 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                   }`}
                 >
                   {format.recommended && (
-                    <Badge className="absolute -top-2 -right-2 bg-wedo-orange text-white text-xs">
+                    <Chip variant="neutral" muted className="absolute -top-2 -right-2 bg-wedo-orange text-white text-xs">
                       Recomendado
-                    </Badge>
+                    </Chip>
                   )}
 
                   <div className="flex items-center gap-3 mb-2">
@@ -165,9 +165,9 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                   </p>
 
                   <div className="flex items-center justify-between">
-                    <Badge variant="outline" className={format.color}>
+                    <Chip variant="neutral" className={format.color}>
                       {format.format.toUpperCase()}
-                    </Badge>
+                    </Chip>
 
                     {isExporting ? (
                       <div className="flex items-center gap-1 text-xs text-lia-text-secondary">

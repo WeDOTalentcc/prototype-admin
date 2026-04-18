@@ -33,8 +33,8 @@ vi.mock('@/components/ui/avatar', () => ({
   AvatarImage: ({ src }: { src?: string }) => <img src={src} alt="" />,
 }))
 
-vi.mock('@/components/ui/badge', () => ({
-  Badge: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
+vi.mock('@/components/ui/chip', () => ({
+  Chip: ({ children }: { children: React.ReactNode }) => <span>{children}</span>,
 }))
 
 vi.mock('@/components/ui/button', () => ({

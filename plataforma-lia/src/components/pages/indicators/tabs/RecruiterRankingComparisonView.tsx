@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { Trophy, BarChart3, LineChart } from"lucide-react"
 import type { RecruiterData } from"../indicators.types"
@@ -92,7 +92,7 @@ export function RecruiterRankingView({ filteredRecruiters }: RecruiterRankingVie
 
               <div className="text-right">
                 {index < 3 && (
-                  <Badge
+                  <Chip variant="neutral" muted
                     className={
                       index === 0
                         ?""
@@ -102,7 +102,7 @@ export function RecruiterRankingView({ filteredRecruiters }: RecruiterRankingVie
                     }
                   >
                     #{recruiter.ranking}
-                  </Badge>
+                  </Chip>
                 )}
               </div>
             </div>

@@ -3,7 +3,7 @@
 import React from"react"
 import { Card } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Loader2, AlertTriangle, Clock, TrendingUp, Users, FileText, Search, Plus, Briefcase, RefreshCw } from"lucide-react"
 import type { SuggestionCard } from"@/hooks/ai/use-lia-suggestions"
 
@@ -127,23 +127,23 @@ export function LiaSuggestionCards({
                     <h5 className="text-xs font-medium text-lia-text-primary truncate">
                       {suggestion.title}
                     </h5>
-                    <Badge 
-                      variant="outline" 
+                    <Chip 
+                      variant="neutral" 
                       className="text-micro px-1.5 py-0 h-4 shrink-0"
                     >
                       {typeInfo.label}
-                    </Badge>
+                    </Chip>
                   </div>
                   <p className="text-xs text-lia-text-secondary line-clamp-2">
                     {suggestion.description}
                   </p>
                   <div className="flex items-center gap-2 mt-2">
-                    <Badge 
-                      variant="secondary" 
+                    <Chip 
+                      variant="neutral" muted 
                       className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary"
                     >
                       {suggestion.category}
-                    </Badge>
+                    </Chip>
                     {!!suggestion.metadata?.count && (
                       <span className="text-micro text-lia-text-secondary">
                         {suggestion.metadata!.count as number} item(s)

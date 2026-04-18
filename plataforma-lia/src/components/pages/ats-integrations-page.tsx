@@ -3,7 +3,7 @@
 import { textStyles, cardStyles } from '@/lib/design-tokens'
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Link2, Settings, Activity, CheckCircle, AlertTriangle, XCircle,
   Plus, Play, Eye, Edit, Trash2, Download,
@@ -213,9 +213,9 @@ function SystemsView({ atsSystems, getStatusColor, openSystemModal }: Pick<HookS
                 </div>
                 <div className="flex items-center gap-2">
                   {getStatusIcon(system.status)}
-                  <Badge variant={system.status === 'connected' ? 'default' : system.status === 'connecting' ? 'secondary' : system.status === 'error' ? 'destructive' : 'outline'} className="text-xs" aria-live="polite">
+                  <Chip variant={system.status === 'connected' ? 'success' : system.status === 'error' ? 'danger' : 'neutral'} muted={system.status === 'connecting'} className="text-xs" aria-live="polite">
                     {STATUS_LABEL[system.status] ?? system.status}
-                  </Badge>
+                  </Chip>
                 </div>
               </div>
             </CardHeader>
@@ -225,7 +225,7 @@ function SystemsView({ atsSystems, getStatusColor, openSystemModal }: Pick<HookS
                 <div>
                   <p className="text-sm font-medium text-lia-text-primary mb-2">Funcionalidades:</p>
                   <div className="flex flex-wrap gap-1">
-                    {system.features.map(f => <Badge key={f} variant="outline" className="text-xs">{f}</Badge>)}
+                    {system.features.map(f => <Chip key={f} variant="neutral" className="text-xs">{f}</Chip>)}
                   </div>
                 </div>
                 {system.status === 'connected' && (
@@ -280,9 +280,9 @@ function IntegrationsView({ integrations }: Pick<HookState, 'integrations'>) {
                     <h4 className={textStyles.subtitle}>{integration.name}</h4>
                     <p className={textStyles.bodySmall}>{integration.system.name}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant={integration.isActive ? 'default' : 'secondary'} className="text-xs">{integration.isActive ? 'Ativa' : 'Inativa'}</Badge>
-                      <Badge variant="outline" className="text-xs">{integration.direction === 'bidirectional' ? '↔️ Bidirecional' : integration.direction === 'import' ? '⬇️ Import' : '⬆️ Export'}</Badge>
-                      <Badge variant="outline" className="text-xs">{integration.frequency === 'realtime' ? '⚡ Tempo Real' : integration.frequency === 'hourly' ? '🕐 A cada hora' : integration.frequency === 'daily' ? '📅 Diário' : '📆 Semanal'}</Badge>
+                      <Chip variant="neutral" muted className="text-xs">{integration.isActive ? 'Ativa' : 'Inativa'}</Chip>
+                      <Chip variant="neutral" className="text-xs">{integration.direction === 'bidirectional' ? '↔️ Bidirecional' : integration.direction === 'import' ? '⬇️ Import' : '⬆️ Export'}</Chip>
+                      <Chip variant="neutral" className="text-xs">{integration.frequency === 'realtime' ? '⚡ Tempo Real' : integration.frequency === 'hourly' ? '🕐 A cada hora' : integration.frequency === 'daily' ? '📅 Diário' : '📆 Semanal'}</Chip>
                     </div>
                   </div>
                 </div>

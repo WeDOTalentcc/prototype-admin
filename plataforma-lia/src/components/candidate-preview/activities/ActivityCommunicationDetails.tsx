@@ -1,6 +1,6 @@
 "use client"
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { textStyles } from '@/lib/design-tokens'
 import {
   Calendar, ExternalLink, CheckCircle, Mail
@@ -49,9 +49,9 @@ export function ActivityCommunicationDetails({ activity }: ActivityCommunication
                 <p className="text-micro text-lia-text-tertiary mb-1">Anexos:</p>
                 <div className="flex flex-wrap gap-1">
                   {activity.details.attachments.map((att: string, i: number) => (
-                    <Badge key={`att-${i}`} variant="outline" className="text-micro px-1.5 py-0 bg-lia-bg-primary">
+                    <Chip key={`att-${i}`} variant="neutral" className="text-micro px-1.5 py-0 bg-lia-bg-primary">
                       📎 {att}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -66,9 +66,9 @@ export function ActivityCommunicationDetails({ activity }: ActivityCommunication
           {activity.details.suggestedTimes && (
             <div className="flex flex-wrap gap-1">
               {activity.details.suggestedTimes.map((t: string, i: number) => (
-                <Badge key={`stime-${i}`} className="text-micro px-2 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle">
+                <Chip variant="neutral" muted key={`stime-${i}`} className="text-micro px-2 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle">
                   📅 {t}
-                </Badge>
+                </Chip>
               ))}
             </div>
           )}
@@ -82,7 +82,7 @@ export function ActivityCommunicationDetails({ activity }: ActivityCommunication
               <Calendar className="w-3 h-3 text-wedo-purple" />
               {activity.details.interviewType}
               {activity.details.stage && (
-                <Badge className="ml-2 text-micro px-1.5 py-0">{activity.details.stage}</Badge>
+                <Chip variant="neutral" muted className="ml-2 text-micro px-1.5 py-0">{activity.details.stage}</Chip>
               )}
             </h5>
             <div className="grid grid-cols-2 gap-2 mb-3">
@@ -171,9 +171,9 @@ export function ActivityCommunicationDetails({ activity }: ActivityCommunication
                 {activity.type === 'email-sent' ? 'Email Enviado' : 'Email Recebido'}
               </h5>
               {activity.details.opened && (
-                <Badge className="text-xs px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">
+                <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">
                   ✓ Lido
-                </Badge>
+                </Chip>
               )}
             </div>
             <div className="bg-lia-bg-primary p-2 rounded-xl mb-2 text-xs space-y-1">
@@ -204,9 +204,9 @@ export function ActivityCommunicationDetails({ activity }: ActivityCommunication
                       <p className={`${textStyles.bodySmall} mb-1`}>📎 Anexos:</p>
                       <div className="flex flex-wrap gap-1">
                         {activity.details.attachments.map((file: string, i: number) => (
-                          <Badge key={`file-${i}`} variant="outline" className="text-xs px-1.5 py-0.5">
+                          <Chip key={`file-${i}`} variant="neutral" className="text-xs px-1.5 py-0.5">
                             {file}
-                          </Badge>
+                          </Chip>
                         ))}
                       </div>
                     </div>

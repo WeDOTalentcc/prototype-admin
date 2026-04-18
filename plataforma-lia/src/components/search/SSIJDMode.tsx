@@ -1,7 +1,7 @@
 "use client"
 
 import { cn } from"@/lib/utils"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
 import {
@@ -101,12 +101,12 @@ export function SSIJDMode(props: SSIJDModeProps) {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="text-base-ui font-medium text-lia-text-primary truncate">{vacancy.title}</p>
-                        <Badge 
-                          variant="outline" 
+                        <Chip 
+                          variant="neutral" 
                           className={`text-micro px-1.5 py-0 h-4 flex-shrink-0 ${vacancy.status === 'Ativa' ? 'border-status-success text-status-success' : 'border-lia-text-tertiary text-lia-text-secondary'}`}
                         >
                           {vacancy.status}
-                        </Badge>
+                        </Chip>
                       </div>
                       <div className="flex items-center gap-2 mt-0.5">
                         {vacancy.job_id && (

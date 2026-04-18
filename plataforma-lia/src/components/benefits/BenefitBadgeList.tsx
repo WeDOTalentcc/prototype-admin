@@ -3,7 +3,7 @@
 import { formatBRL } from"@/lib/pricing"
 
 import React, { useState } from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Tooltip,
   TooltipContent,
@@ -196,13 +196,13 @@ export function BenefitBadgeList({
                   
                   <div className="flex flex-wrap gap-1">
                     {benefit.is_mandatory && (
-                      <Badge variant="secondary" className="text-xs">Obrigatório</Badge>
+                      <Chip variant="neutral" muted className="text-xs">Obrigatório</Chip>
                     )}
                     {benefit.is_discount && (
-                      <Badge variant="outline" className="text-xs text-status-error border-status-error/30">Desconto</Badge>
+                      <Chip variant="neutral" className="text-xs text-status-error border-status-error/30">Desconto</Chip>
                     )}
                     {benefit.provider && (
-                      <Badge variant="outline" className="text-xs">{benefit.provider}</Badge>
+                      <Chip variant="neutral" className="text-xs">{benefit.provider}</Chip>
                     )}
                   </div>
                 </div>

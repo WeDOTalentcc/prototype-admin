@@ -4382,6 +4382,19 @@ Diretrizes para gráficos e visualizações de dados nos dashboards de KPI da pl
 ## 3.39 Chip (ex-StatusBadge) `[Stable]`
 
 > **⚠️ Migração concluída (Task #461):** O componente legacy `StatusBadge` (`src/components/ui/status-badge.tsx`) e seus subcomponentes (`ChannelBadge`, `SourceBadge`, `WarningBadge`, `DateTimeBadge`, `OriginBadge`, `AwaitingBadge`, `HiredBadge`, `OffLimitsBadge`) foram removidos. O Kanban moderno (`pages/job-kanban`) utiliza `KanbanChip` + `KanbanCardStatusBadges`, e os demais consumidores foram migrados para o componente canônico `Chip`.
+>
+> **✅ Migração massiva concluída (Task #466):** Todos os ~1.000 usos ad-hoc de `<Badge>` em `plataforma-lia/src` foram migrados para `Chip` (307 arquivos). Uma regra ESLint (`no-restricted-imports` em `eslint.config.mjs`) emite **warning** ao importar `@/components/ui/badge`, redirecionando novos consumidores para `@/components/ui/chip`. O primitivo `Badge` permanece no repo apenas para affordances raras do tipo "chip-com-botão" (shadcn-style), mas não deve ser usado para pílulas de status/estado.
+>
+> **Mapeamento aplicado pela migração:**
+> | Badge variant | Chip equivalente |
+> |--------------|------------------|
+> | `default` / sem variant | `variant="neutral" muted` |
+> | `secondary` | `variant="neutral" muted` |
+> | `outline` | `variant="neutral"` |
+> | `destructive` / `danger` | `variant="danger"` |
+> | `success` | `variant="success"` |
+> | `warning` | `variant="warning"` |
+> | `info` | `variant="info"` |
 
 Chip é o componente canônico de pill/badge da plataforma. Encapsula `kanbanChipStyles` (definido em `src/lib/design-tokens.ts`) garantindo paridade visual light/dark e consistência com o Kanban.
 

@@ -3,7 +3,7 @@
 import React from"react"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Label } from"@/components/ui/label"
 import {
   Select,
@@ -141,9 +141,9 @@ export function EditJobModalRequirements({
             <Label className="text-xs text-lia-text-secondary mb-2 block">Benefícios</Label>
             <div className="flex flex-wrap gap-2 mb-3">
               {(formData.benefits || []).map((benefit, idx) => (
-                <Badge
+                <Chip
                   key={idx}
-                  variant="outline"
+                  variant="neutral"
                   className="flex items-center gap-1 py-0.5 px-2 text-xs bg-lia-bg-primary"
                 >
                   <button
@@ -157,7 +157,7 @@ export function EditJobModalRequirements({
                   {companyBenefits.find(cb => cb.name === benefit)?.is_highlighted && (
                     <Heart className="w-3 h-3 text-wedo-magenta fill-pink-500" />
                   )}
-                </Badge>
+                </Chip>
               ))}
             </div>
             {companyBenefits.length > 0 && (
@@ -167,9 +167,9 @@ export function EditJobModalRequirements({
                   {companyBenefits.map((benefit) => {
                     const isAdded = (formData.benefits || []).includes(benefit.name)
                     return (
-                      <Badge
+                      <Chip
                         key={benefit.id}
-                        variant="outline"
+                        variant="neutral"
                         className={`text-xs px-2 py-0.5 cursor-pointer transition-colors motion-reduce:transition-none ${
                           isAdded 
                             ? 'bg-lia-bg-tertiary border-lia-btn-primary-bg text-lia-text-primary' 
@@ -188,7 +188,7 @@ export function EditJobModalRequirements({
                         {benefit.is_highlighted && <Heart className="w-3 h-3 mr-1 text-wedo-magenta" />}
                         {benefit.name}
                         {!isAdded && <Plus className="w-3 h-3 ml-1" />}
-                      </Badge>
+                      </Chip>
                     )
                   })}
                 </div>
@@ -223,9 +223,9 @@ export function EditJobModalRequirements({
             <Layers className="w-4 h-4 text-lia-text-secondary" />
             <h3 className="text-base-ui font-semibold text-lia-text-primary">Etapas do Processo Seletivo</h3>
             {(formData.interviewStages || []).length > 0 && (
-              <Badge variant="outline" className="text-xs bg-lia-bg-tertiary border-lia-border-default text-lia-text-secondary">
+              <Chip variant="neutral" className="text-xs bg-lia-bg-tertiary border-lia-border-default text-lia-text-secondary">
                 {(formData.interviewStages || []).length} etapas
-              </Badge>
+              </Chip>
             )}
           </div>
           <div className="flex items-center gap-2">
@@ -253,7 +253,7 @@ export function EditJobModalRequirements({
                 {pipelineTemplates.map(template => (
                   <SelectItem key={template.id} value={template.id} className="text-xs">
                     <div className="flex items-center gap-2">
-                      {template.is_default && <Badge variant="outline" className="text-micro px-1 py-0 h-4">Padrão</Badge>}
+                      {template.is_default && <Chip variant="neutral" className="text-micro px-1 py-0 h-4">Padrão</Chip>}
                       {template.name}
                       <span className="text-lia-text-disabled">({template.stages.length} etapas)</span>
                     </div>

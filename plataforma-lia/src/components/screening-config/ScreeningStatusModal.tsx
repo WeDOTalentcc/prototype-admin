@@ -9,7 +9,7 @@ import {
   DialogFooter,
 } from"@/components/ui/dialog"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Input } from"@/components/ui/input"
 import { Label } from"@/components/ui/label"
 import { Textarea } from"@/components/ui/textarea"
@@ -148,10 +148,10 @@ export function ScreeningStatusModal({
                 {jobTitle}
               </p>
             </div>
-            <Badge className={`${statusConfig.bgColor} ${statusConfig.darkBgColor} ${statusConfig.color} border-0 text-micro px-2 py-0.5 flex items-center gap-1`}>
+            <Chip variant="neutral" muted className={`${statusConfig.bgColor} ${statusConfig.darkBgColor} ${statusConfig.color} border-0 text-micro px-2 py-0.5 flex items-center gap-1`}>
               <StatusIcon className="w-3 h-3" />
               {statusConfig.label}
-            </Badge>
+            </Chip>
           </div>
         </DialogHeader>
 

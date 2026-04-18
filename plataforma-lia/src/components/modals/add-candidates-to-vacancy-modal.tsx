@@ -6,7 +6,7 @@ import { liaApi, JobVacancy } from"@/services/lia-api"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Briefcase, Search, Loader2, Users, Check, Building2, MapPin, Star, X, AlertCircle } from"lucide-react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { ScrollArea } from"@/components/ui/scroll-area"
 import { cn } from"@/lib/utils"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
@@ -210,11 +210,11 @@ const [vacancies, setVacancies] = useState<VacancyDisplay[]>([])
   const getPriorityBadge = (priority?: string) => {
     switch (priority) {
       case 'alta':
-        return <Badge className={badgeStyles.error}>Alta</Badge>
+        return <Chip variant="neutral" muted className={badgeStyles.error}>Alta</Chip>
       case 'media':
-        return <Badge className={badgeStyles.warning}>Média</Badge>
+        return <Chip variant="neutral" muted className={badgeStyles.warning}>Média</Chip>
       case 'baixa':
-        return <Badge className={badgeStyles.success}>Baixa</Badge>
+        return <Chip variant="neutral" muted className={badgeStyles.success}>Baixa</Chip>
       default:
         return null
     }

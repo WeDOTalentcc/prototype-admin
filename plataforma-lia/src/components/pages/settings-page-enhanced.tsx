@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useCallback, useEffect } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Settings, Building, Zap, Users, Database, GitBranch,
   ChevronRight, Plus, Edit, Trash2, Save, X, Check, AlertTriangle,
@@ -497,12 +497,12 @@ export default function SettingsPageEnhanced() {
                             </div>
                           </div>
                           <div className="flex items-center gap-1 flex-shrink-0">
-                            <Badge
-                              variant="outline"
+                            <Chip
+                              variant="neutral"
                               className={`text-micro px-1.5 py-0.5 ${getCompletionBadgeColor(sectionCompletion[section.id] || 0)} border-0 rounded-full font-medium`}
                             >
                               {sectionCompletion[section.id] || 0}%
-                            </Badge>
+                            </Chip>
                           </div>
                         </>
                       )}
@@ -577,14 +577,14 @@ export default function SettingsPageEnhanced() {
                         </span>
                       )}
                       {tenantInfo.planId && (
-                        <Badge className={badgeStyles.info}>
+                        <Chip variant="neutral" muted className={badgeStyles.info}>
                           {tenantInfo.planId}
-                        </Badge>
+                        </Chip>
                       )}
                       {tenantInfo.status && (
-                        <Badge className={tenantInfo.status === 'active' ? badgeStyles.success : badgeStyles.warning}>
+                        <Chip variant="neutral" muted className={tenantInfo.status === 'active' ? badgeStyles.success : badgeStyles.warning}>
                           {tenantInfo.status === 'active' ? 'Ativo' : tenantInfo.status}
-                        </Badge>
+                        </Chip>
                       )}
                     </div>
                   </div>

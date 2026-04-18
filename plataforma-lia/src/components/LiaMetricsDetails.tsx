@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   TrendingUp, Clock, Users, Target, Phone,
@@ -146,16 +146,16 @@ export function LiaMetricsDetails({
                   <div className="flex items-center justify-between text-xs mb-1">
                     <span className="font-medium text-lia-text-primary">{source.source}</span>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-xs px-1 py-0">
+                      <Chip variant="neutral" className="text-xs px-1 py-0">
                         {source.count} cand.
-                      </Badge>
-                      <Badge className={`text-xs px-1 py-0 ${
+                      </Chip>
+                      <Chip variant="neutral" muted className={`text-xs px-1 py-0 ${
                         source.conversionRate >= 70 ? 'bg-status-success' :
                         source.conversionRate >= 50 ? 'bg-status-warning' :
                         'bg-status-error'
                       } text-white`}>
                         {source.conversionRate.toFixed(0)}%
-                      </Badge>
+                      </Chip>
                     </div>
                   </div>
                   <div className="w-full bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-full h-1">

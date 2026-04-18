@@ -5,7 +5,7 @@ import {
   Loader2, Clock, Globe, CheckCircle, XCircle
 } from"lucide-react"
 import { useAuthStore } from"@/stores/auth-store"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent } from"@/components/ui/card"
 import {
@@ -80,9 +80,9 @@ const ChatMessageListComponent = memo(function ChatMessageList({
               userName={userDisplayName}
               labelExtra={
                 isCurrentMessage ? (
-                  <Badge variant="secondary" className="text-xs border-0">
+                  <Chip variant="neutral" muted className="text-xs border-0">
                     Selecionada
-                  </Badge>
+                  </Chip>
                 ) : undefined
               }
             >
@@ -420,14 +420,14 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                           {message.approvalRequest.title}
                         </h4>
                       </div>
-                      <Badge
-                        variant="secondary"
+                      <Chip
+                        variant="neutral" muted
                         className="text-xs border-0 bg-lia-bg-primary bg-lia-bg-primary text-lia-text-secondary"
                       >
                         {message.approvalStatus ==="pending"
                           ?"Aguardando"
                           : message.approvalStatus}
-                      </Badge>
+                      </Chip>
                     </div>
                     <p
                       className="text-sm mb-3 text-lia-text-secondary"

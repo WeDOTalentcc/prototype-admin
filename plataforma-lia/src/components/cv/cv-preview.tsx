@@ -13,7 +13,7 @@ import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Textarea } from"@/components/ui/textarea"
 import { Label } from"@/components/ui/label"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Progress } from"@/components/ui/progress"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import {
@@ -401,9 +401,9 @@ export function CVPreview({
                 <div className="flex items-center gap-2">
                   <Briefcase className="w-4 h-4 text-lia-text-primary" />
                   <h3 className="font-medium text-sm">Experiências Profissionais</h3>
-                  <Badge variant="secondary" className="text-xs">
+                  <Chip variant="neutral" muted className="text-xs">
                     {editedCV.experiences.length}
-                  </Badge>
+                  </Chip>
                 </div>
 
                 {editedCV.experiences.length === 0 ? (
@@ -423,7 +423,7 @@ export function CVPreview({
                               </p>
                             </div>
                             {exp.is_current && (
-                              <Badge variant="outline" className="text-xs">Atual</Badge>
+                              <Chip variant="neutral" className="text-xs">Atual</Chip>
                             )}
                           </div>
                           {exp.description && (
@@ -440,9 +440,9 @@ export function CVPreview({
                 <div className="flex items-center gap-2">
                   <GraduationCap className="w-4 h-4 text-lia-text-primary" />
                   <h3 className="font-medium text-sm">Formação Acadêmica</h3>
-                  <Badge variant="secondary" className="text-xs">
+                  <Chip variant="neutral" muted className="text-xs">
                     {editedCV.education.length}
-                  </Badge>
+                  </Chip>
                 </div>
 
                 {editedCV.education.length === 0 ? (
@@ -476,7 +476,7 @@ export function CVPreview({
                 <Label>Habilidades</Label>
                 <div className="flex flex-wrap gap-2">
                   {editedCV.skills.map((skill) => (
-                    <Badge key={skill} className="bg-lia-bg-tertiary text-lia-text-primary px-2 py-1">
+                    <Chip variant="neutral" muted key={skill} className="bg-lia-bg-tertiary text-lia-text-primary px-2 py-1">
                       {skill}
                       <button
                         onClick={() => handleRemoveSkill(skill)}
@@ -484,7 +484,7 @@ export function CVPreview({
                       >
                         <X className="w-3 h-3" />
                       </button>
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
                 <div className="flex gap-2">
@@ -508,7 +508,7 @@ export function CVPreview({
                     <p className="text-sm text-lia-text-primary italic">Nenhum idioma extraído</p>
                   ) : (
                     editedCV.languages.map((lang) => (
-                      <Badge key={lang} variant="outline">{lang}</Badge>
+                      <Chip key={lang} variant="neutral">{lang}</Chip>
                     ))
                   )}
                 </div>
@@ -521,7 +521,7 @@ export function CVPreview({
                     <p className="text-sm text-lia-text-primary italic">Nenhuma certificação extraída</p>
                   ) : (
                     editedCV.certifications.map((cert) => (
-                      <Badge key={cert} variant="outline">{cert}</Badge>
+                      <Chip key={cert} variant="neutral">{cert}</Chip>
                     ))
                   )}
                 </div>
@@ -533,7 +533,7 @@ export function CVPreview({
                 <Label>Tags</Label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {tags.map((tag) => (
-                    <Badge key={tag} className="bg-lia-bg-tertiary text-lia-text-primary px-2 py-1">
+                    <Chip variant="neutral" muted key={tag} className="bg-lia-bg-tertiary text-lia-text-primary px-2 py-1">
                       <Tag className="w-3 h-3 mr-1" />
                       {tag}
                       <button
@@ -542,7 +542,7 @@ export function CVPreview({
                       >
                         <X className="w-3 h-3" />
                       </button>
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
                 <div className="flex gap-2">
@@ -597,7 +597,7 @@ export function CVPreview({
                 <div className="flex items-center gap-2 p-3 bg-lia-bg-secondary rounded-xl text-xs text-lia-text-secondary mt-4">
                   <FileText className="w-4 h-4" />
                   <span>Arquivo: {editedCV.file_name}</span>
-                  {editedCV.file_type && <Badge variant="outline">{editedCV.file_type.toUpperCase()}</Badge>}
+                  {editedCV.file_type && <Chip variant="neutral">{editedCV.file_type.toUpperCase()}</Chip>}
                 </div>
               )}
             </TabsContent>

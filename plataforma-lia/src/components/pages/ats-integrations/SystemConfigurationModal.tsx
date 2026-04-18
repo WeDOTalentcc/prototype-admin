@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import {
   Link2, Settings, RefreshCw, Zap, Server, Database,
   CheckCircle, XCircle, Wifi, ArrowRight, Trash2, GitBranch, Save

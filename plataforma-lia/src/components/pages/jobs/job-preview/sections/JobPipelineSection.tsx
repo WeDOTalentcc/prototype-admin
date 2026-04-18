@@ -3,7 +3,7 @@
 
 import { CURRENCY_SYMBOL, formatBRLCompact } from"@/lib/pricing"
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Clock, Shield, Target, TrendingUp, Lightbulb, BarChart3, AlertCircle,
   Share2, Linkedin, Briefcase, Brain, Globe
@@ -362,9 +362,9 @@ export function JobPipelineSection({
                               <span className={`${textStyles.bodySmall}`}>LinkedIn</span>
                             </div>
                             {previewJob.publishedLinkedIn ? (
-                              <Badge className="text-xs bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated">Publicado</Badge>
+                              <Chip variant="neutral" muted className="text-xs bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated">Publicado</Chip>
                             ) : (
-                              <Badge className="text-xs bg-lia-bg-tertiary text-lia-text-primary">Não publicado</Badge>
+                              <Chip variant="neutral" muted className="text-xs bg-lia-bg-tertiary text-lia-text-primary">Não publicado</Chip>
                             )}
                           </div>
                           <div className="flex items-center justify-between">
@@ -373,9 +373,9 @@ export function JobPipelineSection({
                               <span className={`${textStyles.bodySmall}`}>Site</span>
                             </div>
                             {previewJob.publishedWebsite ? (
-                              <Badge className="text-xs bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated">Publicado</Badge>
+                              <Chip variant="neutral" muted className="text-xs bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated">Publicado</Chip>
                             ) : (
-                              <Badge className="text-xs bg-lia-bg-tertiary text-lia-text-primary">Não publicado</Badge>
+                              <Chip variant="neutral" muted className="text-xs bg-lia-bg-tertiary text-lia-text-primary">Não publicado</Chip>
                             )}
                           </div>
                           {previewJob.publishedIndeed !== undefined && (
@@ -385,9 +385,9 @@ export function JobPipelineSection({
                                 <span className={`${textStyles.bodySmall}`}>Indeed</span>
                               </div>
                               {previewJob.publishedIndeed ? (
-                                <Badge className="text-xs bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated">Publicado</Badge>
+                                <Chip variant="neutral" muted className="text-xs bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated">Publicado</Chip>
                               ) : (
-                                <Badge className="text-xs bg-lia-bg-tertiary text-lia-text-primary">Não publicado</Badge>
+                                <Chip variant="neutral" muted className="text-xs bg-lia-bg-tertiary text-lia-text-primary">Não publicado</Chip>
                               )}
                             </div>
                           )}

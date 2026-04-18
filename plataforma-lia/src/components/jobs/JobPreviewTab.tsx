@@ -15,7 +15,7 @@ import {
   MessageSquare,
   ChevronRight,
 } from"lucide-react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { BenefitBadgeList } from"@/components/benefits/BenefitBadgeList"
 import { toCompanyBenefit, type CompanyBenefit } from"@/types/benefits"
 
@@ -155,9 +155,9 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         {technicalItems.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {technicalItems.map((item: {competency?: string; name?: string; weight?: number} | string, idx: number) => (
-              <Badge key={`tech-${idx}`} className="bg-lia-bg-tertiary text-lia-text-secondary text-micro px-2 py-0.5 h-5 font-medium">
+              <Chip variant="neutral" muted key={`tech-${idx}`} className="bg-lia-bg-tertiary text-lia-text-secondary text-micro px-2 py-0.5 h-5 font-medium">
                 {getCompetencyName(item)}
-              </Badge>
+              </Chip>
             ))}
           </div>
         ) : (
@@ -175,9 +175,9 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         {behavioralItems.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {behavioralItems.map((item: {competency?: string; name?: string; weight?: number} | string, idx: number) => (
-              <Badge key={`behav-${idx}`} className="border border-wedo-purple/30 text-micro px-2 py-0.5 h-5 font-medium">
+              <Chip variant="neutral" muted key={`behav-${idx}`} className="border border-wedo-purple/30 text-micro px-2 py-0.5 h-5 font-medium">
                 {getCompetencyName(item)}
-              </Badge>
+              </Chip>
             ))}
           </div>
         ) : (
@@ -200,14 +200,14 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
                   {lang.language}
                 </span>
                 {lang.level && (
-                  <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
                     {lang.level}
-                  </Badge>
+                  </Chip>
                 )}
                 {lang.required && (
-                  <Badge className="text-micro px-1.5 py-0 h-4  border border-status-error/30">
+                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4  border border-status-error/30">
                     Obrigatorio
-                  </Badge>
+                  </Chip>
                 )}
               </div>
             ))}
@@ -276,9 +276,9 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
                     <span className="w-1.5 h-1.5 rounded-full bg-wedo-cyan flex-shrink-0" />
                   )}
                   <span className="text-micro font-medium text-lia-text-primary">{stage.name}</span>
-                  <Badge className="text-micro px-1 py-0 h-3.5 bg-lia-bg-tertiary text-lia-text-secondary">
+                  <Chip variant="neutral" muted className="text-micro px-1 py-0 h-3.5 bg-lia-bg-tertiary text-lia-text-secondary">
                     {stage.count}
-                  </Badge>
+                  </Chip>
                 </div>
               </React.Fragment>
             ))}
@@ -318,9 +318,9 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
             {job.affirmativeType && (
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="text-micro text-lia-text-secondary">Tipo:</span>
-                <Badge className="text-micro px-1.5 py-0 h-4  border border-wedo-purple/30">
+                <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4  border border-wedo-purple/30">
                   {job.affirmativeType}
-                </Badge>
+                </Chip>
               </div>
             )}
             {job.affirmativeCriteriaPrimary && (
@@ -346,11 +346,11 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
           <ClipboardList className="w-3.5 h-3.5 text-lia-text-secondary" />
           Fluxo de Triagem WSI
-          <Badge
+          <Chip variant="neutral" muted
             className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${screeningEnabled ?"bg-wedo-green-pastel" :"bg-lia-interactive-active"}`}
           >
             {screeningEnabled ?"Ativo" :"Pausado"}
-          </Badge>
+          </Chip>
         </h5>
         <div className="grid grid-cols-2 gap-2">
           <div className="text-center p-2 bg-lia-bg-secondary rounded-lg">
@@ -371,11 +371,11 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5 mb-2">
           <CalendarCheck className="w-3.5 h-3.5 text-lia-text-secondary" />
           Agendamento
-          <Badge
+          <Chip variant="neutral" muted
             className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${schedulingEnabled ?"bg-wedo-green-pastel" :"bg-lia-interactive-active"}`}
           >
             {schedulingEnabled ?"Ativo" :"Inativo"}
-          </Badge>
+          </Chip>
         </h5>
         <div className="grid grid-cols-2 gap-2">
           <div>
@@ -405,9 +405,9 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
         {channels.length > 0 ? (
           <div className="flex flex-wrap gap-1.5 mb-2">
             {channels.map((ch, idx) => (
-              <Badge key={`ch-${idx}`} className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
+              <Chip variant="neutral" muted key={`ch-${idx}`} className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
                 {ch}
-              </Badge>
+              </Chip>
             ))}
           </div>
         ) : (

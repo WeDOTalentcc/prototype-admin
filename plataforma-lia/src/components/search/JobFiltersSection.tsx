@@ -7,7 +7,7 @@ import { badgeStyles } from '@/lib/design-tokens'
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Label } from"@/components/ui/label"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Select,
   SelectContent,
@@ -376,9 +376,9 @@ const TagInput = ({
       {value.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {value.map((item) => (
-            <Badge
+            <Chip
               key={item}
-              variant="secondary"
+              variant="neutral" muted
               className={`${badgeStyles.default} pl-2 pr-1 py-1 flex items-center gap-1`}
             >
               {item}
@@ -388,7 +388,7 @@ const TagInput = ({
               >
                 <X className="w-3 h-3" />
               </button>
-            </Badge>
+            </Chip>
           ))}
         </div>
       )}

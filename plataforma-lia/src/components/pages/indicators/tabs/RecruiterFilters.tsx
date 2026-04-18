@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   Filter, ChevronDown, ChevronUp, Eye, AlertTriangle,
@@ -148,7 +148,7 @@ export function RecruiterFilters({
           {(selectedDepartments.length > 0 || selectedRecruiters.length > 0) && (
             <div className="flex flex-wrap gap-2 pt-4 border-t">
               {selectedDepartments.map((dept) => (
-                <Badge key={dept} variant="outline" className="gap-1">
+                <Chip key={dept} variant="neutral" className="gap-1">
                   {dept}
                   <button
                     onClick={() =>
@@ -158,10 +158,10 @@ export function RecruiterFilters({
                   >
                     ×
                   </button>
-                </Badge>
+                </Chip>
               ))}
               {selectedRecruiters.map((name) => (
-                <Badge key={name} variant="outline" className="gap-1">
+                <Chip key={name} variant="neutral" className="gap-1">
                   {name}
                   <button
                     onClick={() =>
@@ -171,7 +171,7 @@ export function RecruiterFilters({
                   >
                     ×
                   </button>
-                </Badge>
+                </Chip>
               ))}
             </div>
           )}

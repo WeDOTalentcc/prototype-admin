@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { 
   ArrowRight, 
@@ -297,9 +297,9 @@ export function BulkActionModal({
                 <Users className="w-3 h-3 text-lia-text-secondary" />
                 Candidatos Selecionados
               </Label>
-              <Badge variant="secondary" className="bg-lia-bg-tertiary text-lia-text-secondary">
+              <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-secondary">
                 {candidates.length}
-              </Badge>
+              </Chip>
             </div>
             
             <ScrollArea className="border rounded-xl p-2 max-h-card-lg">

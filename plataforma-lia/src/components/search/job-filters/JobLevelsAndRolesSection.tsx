@@ -5,7 +5,7 @@ import { X, Zap, Loader2, Info } from"lucide-react"
 import { cn } from"@/lib/utils"
 import { Input } from"@/components/ui/input"
 import { Label } from"@/components/ui/label"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Popover,
   PopoverContent,
@@ -175,9 +175,9 @@ export const JobLevelsAndRolesSection = ({
         {(filters.job?.roles?.filter(r => !jobRoles.find(jr => jr.value === r))?.length || 0) > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {filters.job?.roles?.filter(r => !jobRoles.find(jr => jr.value === r)).map(role => (
-              <Badge
+              <Chip
                 key={role}
-                variant="secondary"
+                variant="neutral" muted
                 className="bg-wedo-purple/10 border border-wedo-purple/30 text-wedo-purple pl-2 pr-1 py-0.5 flex items-center gap-1"
               >
                 <span className="text-xs">{role}</span>
@@ -187,7 +187,7 @@ export const JobLevelsAndRolesSection = ({
                 >
                   <X className="w-3 h-3" />
                 </button>
-              </Badge>
+              </Chip>
             ))}
           </div>
         )}

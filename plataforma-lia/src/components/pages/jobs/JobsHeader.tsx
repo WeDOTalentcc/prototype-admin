@@ -2,7 +2,7 @@
 
 import React, { memo } from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Tabs, TabsList, TabsTrigger } from"@/components/ui/tabs"
 import { ViewToggle } from"@/components/ui/view-toggle"
 import { Briefcase, Plus, LayoutGrid, List, Kanban } from"lucide-react"
@@ -41,15 +41,15 @@ const JobsHeader = memo(function JobsHeader({
 
           {metrics && (
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="border-lia-border-default dark:border-lia-border-default text-lia-text-secondary">
+              <Chip variant="neutral" className="border-lia-border-default dark:border-lia-border-default text-lia-text-secondary">
                 {tb('total', { count: metrics.totalJobs })}
-              </Badge>
-              <Badge variant="success" >
+              </Chip>
+              <Chip variant="success" >
                 {tb('active', { count: metrics.activeJobs })}
-              </Badge>
-              <Badge variant="warning" >
+              </Chip>
+              <Chip variant="warning" >
                 {tb('drafts', { count: metrics.draftJobs })}
-              </Badge>
+              </Chip>
             </div>
           )}
         </div>

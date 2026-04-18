@@ -3,7 +3,7 @@
 import React, { useState, useCallback, useEffect } from"react"
 import { useModalA11y } from"@/hooks/ui/use-modal-a11y"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Brain, RefreshCw, Eye, X, Mail, Phone, MapPin, Linkedin, Globe, CheckCircle, AlertCircle, Calendar, Heart, ChevronRight } from"lucide-react"
@@ -172,12 +172,12 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 {candidate.role} • {candidate.experience} • {candidate.location}
               </p>
               <div className="flex items-center gap-3 mt-2">
-                <Badge variant="outline" >
+                <Chip variant="neutral" >
                   {candidate.matchPercentage}% Match
-                </Badge>
-                <Badge variant="outline">
+                </Chip>
+                <Chip variant="neutral">
                   {candidate.status}
-                </Badge>
+                </Chip>
               </div>
             </div>
           </div>
@@ -240,13 +240,13 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-xs">
                             <span>Prioridade:</span>
-                            <Badge className={`text-xs ${
+                            <Chip variant="neutral" muted className={`text-xs ${
  liaInsights.candidateStatus?.priority === 'alta' ? '' :
                               liaInsights.candidateStatus?.priority === 'média' ? '' :
                               'bg-lia-bg-tertiary text-lia-text-primary'
                             }`}>
                               {liaInsights.candidateStatus?.priority?.toUpperCase()}
-                            </Badge>
+                            </Chip>
                           </div>
                           <div className="text-xs text-status-success">{liaInsights.candidateStatus?.readiness}</div>
                         </div>
@@ -270,13 +270,13 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                             <div className="flex-1">
                               <span className="text-xs text-status-success">{step.action}</span>
                               <div className="flex items-center gap-2 mt-1">
-                                <Badge className={`text-xs ${
+                                <Chip variant="neutral" muted className={`text-xs ${
  step.priority === 'alta' ? '' :
                                   step.priority === 'média' ? '' :
                                   'bg-lia-bg-tertiary text-lia-text-primary'
                                 }`}>
                                   {step.priority}
-                                </Badge>
+                                </Chip>
                                 <span className="text-xs text-status-success">{step.timeframe}</span>
                               </div>
                             </div>
@@ -427,8 +427,8 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-lia-text-secondary">Nível de Risco</span>
-                    <Badge
-                      variant="outline"
+                    <Chip
+                      variant="neutral"
                       className={
  candidate.riskLevel === 'Baixo' ? 'text-status-success border-status-success/30' :
                         candidate.riskLevel === 'Médio' ? 'text-status-warning border-status-warning/30' :
@@ -436,7 +436,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                       }
                     >
                       {candidate.riskLevel}
-                    </Badge>
+                    </Chip>
                   </div>
                 </CardContent>
               </Card>
@@ -448,14 +448,14 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 <CardContent>
                   <div className="flex flex-wrap gap-1">
                     {candidate.skills.slice(0, 8).map((skill) => (
-                      <Badge key={skill} variant="secondary" className="text-xs">
+                      <Chip key={skill} variant="neutral" muted className="text-xs">
                         {skill}
-                      </Badge>
+                      </Chip>
                     ))}
                     {candidate.skills.length > 8 && (
-                      <Badge variant="outline" className="text-xs">
+                      <Chip variant="neutral" className="text-xs">
                         +{candidate.skills.length - 8} mais
-                      </Badge>
+                      </Chip>
                     )}
                   </div>
                 </CardContent>

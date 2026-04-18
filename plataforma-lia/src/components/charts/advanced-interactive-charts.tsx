@@ -20,7 +20,7 @@ import {
 import { Line, Bar, Pie, Radar, Chart } from 'react-chartjs-2'
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Calendar, TrendingUp, TrendingDown, BarChart3, PieChart as PieIcon,
   Activity, Users, DollarSign, Clock, Target, AlertCircle, CheckCircle,
@@ -543,10 +543,10 @@ export function AdvancedInteractiveChart({
             Tooltip
           </label>
           {drillDownEnabled && (
-            <Badge variant="outline" className="gap-1">
+            <Chip variant="neutral" className="gap-1">
               <MousePointer className="w-3 h-3" />
               Drill-down ativo
-            </Badge>
+            </Chip>
           )}
         </div>
       </CardHeader>

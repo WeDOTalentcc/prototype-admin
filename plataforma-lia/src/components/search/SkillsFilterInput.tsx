@@ -3,7 +3,7 @@
 import { useState, useCallback } from"react"
 import { X, Pin, Brain, Loader2, Search, Zap } from"lucide-react"
 import { cn } from"@/lib/utils"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { useSemanticSearch, type SemanticSuggestion } from"@/hooks/search/useSemanticSearch"
@@ -273,7 +273,7 @@ export function SkillsFilterInput({
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">
             {pinnedSkills.map(skill => (
-              <Badge
+              <Chip variant="neutral" muted
                 key={skill.name}
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-lia-bg-inverse text-white border border-lia-border-strong"
               >
@@ -292,10 +292,10 @@ export function SkillsFilterInput({
                 >
                   <X className="w-3 h-3" />
                 </button>
-              </Badge>
+              </Chip>
             ))}
             {regularSkills.map(skill => (
-              <Badge
+              <Chip variant="neutral" muted
                 key={skill.name}
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-lia-bg-tertiary text-lia-text-primary border border-lia-border-subtle"
               >
@@ -314,7 +314,7 @@ export function SkillsFilterInput({
                 >
                   <X className="w-3 h-3" />
                 </button>
-              </Badge>
+              </Chip>
             ))}
           </div>
 

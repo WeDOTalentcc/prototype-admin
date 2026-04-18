@@ -4,7 +4,7 @@ import React from"react"
 import { CURRENCY_SYMBOL, formatBRLCompact } from"@/lib/pricing"
 import { SCREENING_STATUS_LABELS } from"@/types/screening"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Calendar, Clock, MapPin, DollarSign, Heart, Shield, Building, Lock, Globe,
   Expand, X, ChevronRight,
@@ -28,9 +28,9 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
               <h3 className="text-base-ui font-semibold text-lia-text-primary truncate">
                 {previewJob.title}
               </h3>
-              <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 flex-shrink-0 font-mono font-medium bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-default">
+              <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5 flex-shrink-0 font-mono font-medium bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-default">
                 {previewJob.jobId}
-              </Badge>
+              </Chip>
               {previewJob.isAffirmative && (
                 <span title="Vaga Afirmativa">
                   <Heart className="w-3 h-3 text-wedo-magenta" />
@@ -75,62 +75,62 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
 
             <div className="flex items-center gap-1 flex-wrap">
               {previewJob.department && (
-                <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">
+                <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">
                   {previewJob.department}
-                </Badge>
+                </Chip>
               )}
               {previewJob.level && (
-                <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5  border border-status-warning/30">
+                <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5  border border-status-warning/30">
                   {previewJob.level}
-                </Badge>
+                </Chip>
               )}
               {previewJob.location && (
-                <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 -dark border border-wedo-cyan/30 flex items-center gap-0.5">
+                <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5 -dark border border-wedo-cyan/30 flex items-center gap-0.5">
                   <MapPin className="w-2.5 h-2.5" />
                   {previewJob.location}
-                </Badge>
+                </Chip>
               )}
               {previewJob.workModel && (
-                <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">
+                <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">
                   {previewJob.workModel === 'remoto' ? 'Remoto' : previewJob.workModel === 'híbrido' ? 'Híbrido' : 'Presencial'}
-                </Badge>
+                </Chip>
               )}
               {previewJob.type && (
-                <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">
+                <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-subtle">
                   {previewJob.type}
-                </Badge>
+                </Chip>
               )}
               {(previewJob.visibility === 'confidential' || previewJob.isConfidential) && (
-                <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5  border-wedo-orange/30">
+                <Chip variant="neutral" className="text-[0.625rem] leading-none px-1.5 py-0.5  border-wedo-orange/30">
                   <Shield className="w-2.5 h-2.5 mr-0.5" />
                   Confidencial
-                </Badge>
+                </Chip>
               )}
               {previewJob.visibility === 'internal' && (
-                <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5 -dark border-wedo-cyan/30">
+                <Chip variant="neutral" className="text-[0.625rem] leading-none px-1.5 py-0.5 -dark border-wedo-cyan/30">
                   <Building className="w-2.5 h-2.5 mr-0.5" />
                   Interna
-                </Badge>
+                </Chip>
               )}
               {previewJob.visibility === 'hidden' && (
-                <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
+                <Chip variant="neutral" className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
                   <Lock className="w-2.5 h-2.5 mr-0.5" />
                   Oculta
-                </Badge>
+                </Chip>
               )}
               {(previewJob.publishedLinkedIn || previewJob.publishedWebsite) ? (
-                <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5  border-status-success/30 flex items-center gap-0.5">
+                <Chip variant="neutral" className="text-[0.625rem] leading-none px-1.5 py-0.5  border-status-success/30 flex items-center gap-0.5">
                   <Globe className="w-2.5 h-2.5" />
                   Publicada
-                </Badge>
+                </Chip>
               ) : (
-                <Badge variant="outline" className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-tertiary border-lia-border-subtle flex items-center gap-0.5">
+                <Chip variant="neutral" className="text-[0.625rem] leading-none px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-tertiary border-lia-border-subtle flex items-center gap-0.5">
                   <Globe className="w-2.5 h-2.5" />
                   Não publicada
-                </Badge>
+                </Chip>
               )}
               {(previewJob.salaryRange?.min || previewJob.salaryRange?.max || (previewJob as unknown as Record<string, number | undefined>).salaryMin || (previewJob as unknown as Record<string, number | undefined>).salaryMax) && (
-                <Badge className="text-[0.625rem] leading-none px-1.5 py-0.5  border border-status-success/30 flex items-center gap-0.5">
+                <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5  border border-status-success/30 flex items-center gap-0.5">
                   <DollarSign className="w-2.5 h-2.5" />
                   {(() => {
                     const min = previewJob.salaryRange?.min || (previewJob as unknown as Record<string, number | undefined>).salaryMin
@@ -140,14 +140,14 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
                     if (max) return `Até ${formatBRLCompact(max as number)}`
                     return ''
                   })()}
-                </Badge>
+                </Chip>
               )}
-              <Badge 
+              <Chip variant="neutral" muted 
                 className="text-[0.625rem] leading-none px-1.5 py-0.5 font-medium"
                 style={{backgroundColor: getStatusColor(previewJob.status as Job['status']), color: 'var(--white)'}}
               >
                 {previewJob.status}
-              </Badge>
+              </Chip>
               {(() => {
                 const scrStatus = previewJob.screeningStatus || 'not_configured'
                 const scrLabels = Object.fromEntries(
@@ -161,12 +161,12 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
                   completed: 'var(--lia-border-medium)',
                 }
                 return (
-                  <Badge 
+                  <Chip variant="neutral" muted 
                     className="text-[0.625rem] leading-none px-1.5 py-0.5 font-medium text-lia-text-primary"
                     style={{backgroundColor: scrColors[scrStatus] || 'var(--lia-border-subtle)'}}
                   >
                     {scrLabels[scrStatus] || 'Triagem: N/C'}
-                  </Badge>
+                  </Chip>
                 )
               })()}
             </div>

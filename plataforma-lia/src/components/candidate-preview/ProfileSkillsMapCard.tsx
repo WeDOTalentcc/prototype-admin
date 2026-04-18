@@ -2,7 +2,7 @@
 
 import { textStyles } from '@/lib/design-tokens'
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Brain, Code, Linkedin, Heart, Tag } from"lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from"@/components/ui/tooltip"
 
@@ -85,9 +85,9 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
           <CardTitle className="text-xs font-semibold text-lia-text-primary">
             Mapa de Skills
           </CardTitle>
-          <Badge className="text-micro px-1 py-0 h-4 bg-lia-interactive-active text-lia-text-primary">
+          <Chip variant="neutral" muted className="text-micro px-1 py-0 h-4 bg-lia-interactive-active text-lia-text-primary">
             {totalItems} itens
-          </Badge>
+          </Chip>
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="lia-text-secondary cursor-help text-micro">ⓘ</span>
@@ -121,12 +121,12 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
             </div>
             <div className="flex flex-wrap gap-1 ml-3.5">
               {category.skills.map((skill: string) => (
-                <Badge 
+                <Chip variant="neutral" muted 
                   key={skill} 
                   className="text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-primary border-0"
                 >
                   {skill}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>
@@ -148,12 +148,12 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
             </div>
             <div className="flex flex-wrap gap-1 ml-3.5">
               {softSkillsList.map((skill: string) => (
-                <Badge 
+                <Chip variant="neutral" muted 
                   key={skill} 
                   className="text-micro px-1.5 py-0 border-0 bg-wedo-cyan/15 text-lia-text-primary"
                 >
                   {skill}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>
@@ -175,12 +175,12 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
             </div>
             <div className="flex flex-wrap gap-1 ml-3.5">
               {expertiseList.map((item: string) => (
-                <Badge
+                <Chip variant="neutral" muted
                   key={item}
                   className="text-micro px-1.5 py-0 border-0 bg-lia-interactive-active/30 text-lia-text-primary"
                 >
                   {item}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>
@@ -202,12 +202,12 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
             </div>
             <div className="flex flex-wrap gap-1 ml-3.5">
               {interests.map((interest: string) => (
-                <Badge 
+                <Chip variant="neutral" muted 
                   key={interest} 
                   className="text-micro px-1.5 py-0 bg-wedo-magenta/10 text-wedo-magenta border-0"
                 >
                   {interest}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>
@@ -229,12 +229,12 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
             </div>
             <div className="flex flex-wrap gap-1 ml-3.5">
               {tags.map((tag: string) => (
-                <Badge
+                <Chip variant="neutral" muted
                   key={tag}
                   className="text-micro px-1.5 py-0 border-0 bg-lia-interactive-active/30 text-lia-text-primary"
                 >
                   {tag}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>

@@ -2,7 +2,7 @@
 
 import { formatBRL } from"@/lib/pricing";
 import { cn } from"@/lib/utils";
-import { Badge } from"@/components/ui/badge";
+import { Chip } from "@/components/ui/chip";
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card";
 import { Separator } from"@/components/ui/separator";
 import { Button } from"@/components/ui/button";
@@ -120,9 +120,9 @@ export function JobDescriptionFinal({
         </div>
         
         {data.is_affirmative && (
-          <Badge className="w-fit mt-2  border-wedo-purple/30/30">
+          <Chip variant="neutral" muted className="w-fit mt-2  border-wedo-purple/30/30">
             🏳️‍🌈 {data.affirmative_type ||"Vaga Afirmativa"}
-          </Badge>
+          </Chip>
         )}
       </CardHeader>
 

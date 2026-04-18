@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Globe, Zap, CheckCircle, AlertCircle, Info,
   DollarSign, Search, TrendingUp, Shield, Clock
@@ -49,7 +49,7 @@ export function GlobalSearchCostsTab({
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-medium text-lia-text-primary">{option.label}</span>
                         {settings.defaultLimit === option.value && (
-                          <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-micro px-1.5">Atual</Badge>
+                          <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-micro px-1.5">Atual</Chip>
                         )}
                       </div>
                     </td>
@@ -88,7 +88,7 @@ export function GlobalSearchCostsTab({
                 <Zap className="w-3.5 h-3.5 text-lia-text-secondary" />
                 <span className="font-medium text-xs">Custo Estimado</span>
               </div>
-              <Badge variant="outline" className="text-xs px-1.5 py-0.5 border-lia-border-default text-lia-text-primary dark:border-lia-border-default">Tempo Real</Badge>
+              <Chip variant="neutral" className="text-xs px-1.5 py-0.5 border-lia-border-default text-lia-text-primary dark:border-lia-border-default">Tempo Real</Chip>
             </div>
 
             <div className="flex items-end justify-between mb-3">
@@ -134,37 +134,37 @@ export function GlobalSearchCostsTab({
                 <tr className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary/50">
                   <td className="px-3 py-2"><div className="flex items-center gap-2"><Globe className="w-3.5 h-3.5 text-lia-text-secondary" /><span className="font-medium text-lia-text-primary">Busca Global / Híbrida</span></div></td>
                   <td className="px-3 py-2 text-lia-text-secondary">Origem da Busca</td>
-                  <td className="px-3 py-2 text-center"><Badge className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary text-micro">1 cred + $0.01 Apify</Badge></td>
+                  <td className="px-3 py-2 text-center"><Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary text-micro">1 cred + $0.01 Apify</Chip></td>
                 </tr>
                 <tr className="bg-lia-bg-primary dark:bg-lia-bg-primary">
                   <td className="px-3 py-2"><div className="flex items-center gap-2"><Clock className="w-3.5 h-3.5 text-lia-text-secondary" /><span className="font-medium text-lia-text-primary">Dados Atualizados (High Freshness)</span></div></td>
                   <td className="px-3 py-2 text-lia-text-secondary">Opções de Qualidade</td>
-                  <td className="px-3 py-2 text-center"><Badge className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary text-micro">+2 créditos</Badge></td>
+                  <td className="px-3 py-2 text-center"><Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary text-micro">+2 créditos</Chip></td>
                 </tr>
                 <tr className="bg-lia-bg-primary dark:bg-lia-bg-primary">
                   <td className="px-3 py-2"><div className="flex items-center gap-2"><Search className="w-3.5 h-3.5 text-lia-text-secondary" /><span className="font-medium text-lia-text-primary">Apenas com Email (filtro)</span></div></td>
                   <td className="px-3 py-2 text-lia-text-secondary">Informações de Contato</td>
-                  <td className="px-3 py-2 text-center"><Badge className="bg-lia-bg-tertiary text-lia-text-primary text-micro">incluso no Apify</Badge></td>
+                  <td className="px-3 py-2 text-center"><Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary text-micro">incluso no Apify</Chip></td>
                 </tr>
                 <tr className="bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/50">
                   <td className="px-3 py-2"><div className="flex items-center gap-2"><Shield className="w-3.5 h-3.5 text-status-success" /><span className="font-medium text-lia-text-primary">Mostrar Emails (revelar)</span></div></td>
                   <td className="px-3 py-2 text-lia-text-secondary">Informações de Contato</td>
-                  <td className="px-3 py-2 text-center"><Badge className="text-micro">incluso no Apify</Badge></td>
+                  <td className="px-3 py-2 text-center"><Chip variant="neutral" muted className="text-micro">incluso no Apify</Chip></td>
                 </tr>
                 <tr className="bg-lia-bg-primary dark:bg-lia-bg-primary">
                   <td className="px-3 py-2"><div className="flex items-center gap-2"><Search className="w-3.5 h-3.5 text-lia-text-secondary" /><span className="font-medium text-lia-text-primary">Apenas com Telefone (filtro)</span></div></td>
                   <td className="px-3 py-2 text-lia-text-secondary">Informações de Contato</td>
-                  <td className="px-3 py-2 text-center"><Badge className="bg-lia-bg-tertiary text-lia-text-primary text-micro">incluso no Apify</Badge></td>
+                  <td className="px-3 py-2 text-center"><Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary text-micro">incluso no Apify</Chip></td>
                 </tr>
                 <tr className="bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/50">
                   <td className="px-3 py-2"><div className="flex items-center gap-2"><AlertCircle className="w-3.5 h-3.5 text-status-warning" /><span className="font-medium text-lia-text-primary">Mostrar Telefones (revelar)</span></div></td>
                   <td className="px-3 py-2 text-lia-text-secondary">Informações de Contato</td>
-                  <td className="px-3 py-2 text-center"><Badge className="text-micro">incluso no Apify</Badge></td>
+                  <td className="px-3 py-2 text-center"><Chip variant="neutral" muted className="text-micro">incluso no Apify</Chip></td>
                 </tr>
                 <tr className="bg-lia-bg-primary dark:bg-lia-bg-primary">
                   <td className="px-3 py-2"><div className="flex items-center gap-2"><Search className="w-3.5 h-3.5 text-lia-text-secondary" /><span className="font-medium text-lia-text-primary">Email OU Telefone (filtro)</span></div></td>
                   <td className="px-3 py-2 text-lia-text-secondary">Informações de Contato</td>
-                  <td className="px-3 py-2 text-center"><Badge className="bg-lia-bg-tertiary text-lia-text-primary text-micro">incluso no Apify</Badge></td>
+                  <td className="px-3 py-2 text-center"><Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary text-micro">incluso no Apify</Chip></td>
                 </tr>
               </tbody>
             </table>

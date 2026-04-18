@@ -13,7 +13,7 @@ import {
 import { cn } from"@/lib/utils"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Tooltip,
   TooltipContent,
@@ -241,11 +241,11 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
               <Filter className="w-3.5 h-3.5" />
               Filtros
               {(activeFiltersCount > 0 || filledCount > 0) && (
-                <Badge 
+                <Chip variant="neutral" muted 
                   className="ml-1 h-4 min-w-4 px-1 flex items-center justify-center text-xs bg-lia-btn-primary-bg text-lia-btn-primary-text"
                 >
                   {Math.max(activeFiltersCount, filledCount)}
-                </Badge>
+                </Chip>
               )}
             </button>
           )}

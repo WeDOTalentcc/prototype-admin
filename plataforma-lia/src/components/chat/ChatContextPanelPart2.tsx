@@ -8,7 +8,7 @@ import {
 } from"lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { ContextPanelData } from"@/types/chat"
 
 interface Props {
@@ -49,10 +49,10 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                       <div key={candidate.name} className="p-4 rounded-xl bg-lia-bg-tertiary">
                         <div className="flex items-center justify-between mb-3">
                           <div><h5 className="font-medium text-lia-text-primary">{candidate.name}</h5><p className="text-sm text-lia-text-secondary">{candidate.current_role}</p></div>
-                          <Badge className="bg-status-warning/10 dark:bg-status-warning/20 text-lia-text-primary">Nota: {candidate.score}</Badge>
+                          <Chip variant="neutral" muted className="bg-status-warning/10 dark:bg-status-warning/20 text-lia-text-primary">Nota: {candidate.score}</Chip>
                         </div>
                         <div className="flex flex-wrap gap-2 mb-2">
-                          {candidate.highlights.map((highlight: string, i: number) => (<Badge key={`hl-${i}`} variant="outline" className="text-xs border-lia-border-subtle">{highlight}</Badge>))}
+                          {candidate.highlights.map((highlight: string, i: number) => (<Chip key={`hl-${i}`} variant="neutral" className="text-xs border-lia-border-subtle">{highlight}</Chip>))}
                         </div>
                         <p className="text-xs text-lia-text-tertiary">Status: {candidate.status}</p>
                       </div>
@@ -90,7 +90,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                           <p className="text-sm text-lia-text-secondary">{interview.date} • {interview.time}</p>
                           <p className="text-xs text-lia-text-secondary">{interview.interviewer}</p>
                         </div>
-                        <Badge variant="outline" className={`border-lia-border-subtle ${interview.status === 'Confirmed' ? 'bg-green-50' : 'bg-yellow-50'}`}>{interview.status}</Badge>
+                        <Chip variant="neutral" className={`border-lia-border-subtle ${interview.status === 'Confirmed' ? 'bg-green-50' : 'bg-yellow-50'}`}>{interview.status}</Chip>
                       </div>
                     ))}
                   </div>
@@ -134,9 +134,9 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                 <div>
                   <h4 className="text-sm font-medium text-lia-text-secondary mb-3">Processo de Finalização</h4>
                   <div className="space-y-3 font-open-sans">
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-tertiary"><span className="text-sm font-medium">Referências Profissionais</span><Badge className="bg-status-success/10 dark:bg-status-success/20 text-lia-text-primary">Concluído</Badge></div>
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-tertiary"><span className="text-sm font-medium">Background Check</span><Badge className="bg-status-success/10 dark:bg-status-success/20 text-lia-text-primary">Aprovado</Badge></div>
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-tertiary"><span className="text-sm font-medium">Proposta Salarial</span><Badge className="bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-lia-text-primary">Aceita</Badge></div>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-tertiary"><span className="text-sm font-medium">Referências Profissionais</span><Chip variant="neutral" muted className="bg-status-success/10 dark:bg-status-success/20 text-lia-text-primary">Concluído</Chip></div>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-tertiary"><span className="text-sm font-medium">Background Check</span><Chip variant="neutral" muted className="bg-status-success/10 dark:bg-status-success/20 text-lia-text-primary">Aprovado</Chip></div>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-tertiary"><span className="text-sm font-medium">Proposta Salarial</span><Chip variant="neutral" muted className="bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-lia-text-primary">Aceita</Chip></div>
                   </div>
                 </div>
                 <div>

@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Dialog,
@@ -438,9 +438,9 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge className={`${info.color} text-white text-micro px-1.5 py-0.5`}>
+                        <Chip variant="neutral" muted className={`${info.color} text-white text-micro px-1.5 py-0.5`}>
                           {score}
-                        </Badge>
+                        </Chip>
                         {getScoreIcon(score)}
                       </div>
                     </div>
@@ -485,22 +485,22 @@ export function BigFiveModal({ isOpen, onClose, candidate }: BigFiveModalProps) 
                           <h4 className="text-base-ui font-medium text-lia-text-primary">
                             {trait}
                           </h4>
-                          <Badge className={`${info.color} text-white text-micro px-1.5 py-0.5`}>
+                          <Chip variant="neutral" muted className={`${info.color} text-white text-micro px-1.5 py-0.5`}>
                             {score} - {details.label}
-                          </Badge>
+                          </Chip>
                         </div>
                         <p className="text-xs text-lia-text-secondary mb-3">
                           {details.description}
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {details.traits.map((t: string) => (
-                            <Badge
+                            <Chip
                               key={t}
-                              variant="outline"
+                              variant="neutral"
                               className="text-micro px-1.5 py-0.5 border-lia-border-subtle text-lia-text-secondary"
                             >
                               {t}
-                            </Badge>
+                            </Chip>
                           ))}
                         </div>
                       </div>

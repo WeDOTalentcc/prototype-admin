@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from"react"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { MapPin, Building, Mail, Linkedin, ExternalLink, Award, Calendar, ChevronDown, ChevronUp, MessageSquare, Check, AlertCircle, Clock, Send } from"lucide-react"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
@@ -152,9 +152,9 @@ export function CandidateCard({
               <h4 className="font-semibold text-base truncate text-lia-text-primary">
                 {name}
               </h4>
-              <Badge variant="secondary" className={`text-xs shrink-0 border-0 text-lia-text-secondary ${source_badge.includes("Banco Proprietário") ? 'bg-stone-50' : 'bg-wedo-cyan/10'}`}>
+              <Chip variant="neutral" muted className={`text-xs shrink-0 border-0 text-lia-text-secondary ${source_badge.includes("Banco Proprietário") ? 'bg-stone-50' : 'bg-wedo-cyan/10'}`}>
                 {source_badge}
-              </Badge>
+              </Chip>
             </div>
             
             {title && (
@@ -174,18 +174,18 @@ export function CandidateCard({
             {skills && skills.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-3">
                 {skills.slice(0, 6).map((skill) => (
-                  <Badge
+                  <Chip
                     key={`${name}-${skill}`}
-                    variant="outline"
+                    variant="neutral"
                     className="text-xs px-2 py-0.5 border-lia-border-subtle text-lia-text-secondary"
                   >
                     {skill}
-                  </Badge>
+                  </Chip>
                 ))}
                 {skills.length > 6 && (
-                  <Badge variant="outline" className="text-xs px-2 py-0.5 border-lia-border-subtle text-lia-text-secondary">
+                  <Chip variant="neutral" className="text-xs px-2 py-0.5 border-lia-border-subtle text-lia-text-secondary">
                     +{skills.length - 6}
-                  </Badge>
+                  </Chip>
                 )}
               </div>
             )}
@@ -253,9 +253,9 @@ export function CandidateCard({
                     <MessageSquare className="w-3.5 h-3.5" />
                     Histórico de Comunicações
                     {totalCommunications > 0 && (
-                      <Badge variant="secondary" className="text-micro px-1.5 py-0 ml-1">
+                      <Chip variant="neutral" muted className="text-micro px-1.5 py-0 ml-1">
                         {totalCommunications}
-                      </Badge>
+                      </Chip>
                     )}
                   </span>
                   {isHistoryExpanded ? (

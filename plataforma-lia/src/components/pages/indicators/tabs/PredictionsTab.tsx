@@ -2,7 +2,7 @@
 import { useEffect } from"react"
 import { formatBRL, CURRENCY_SYMBOL } from"@/lib/pricing"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { useMLPredictions } from"@/hooks/ai/use-ml-predictions"
 import { useAuthStore } from"@/stores/auth-store"
 import type { RecruiterData } from"../indicators.types"
@@ -135,12 +135,12 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                       </span>
                       <div className="flex items-center gap-2 text-sm">
                         <span className="text-lia-text-secondary">{factor.value}</span>
-                        <Badge className={
+                        <Chip variant="neutral" muted className={
                           factor.impact ==="high" ?" text-xs" :
                           factor.impact ==="medium" ?" text-xs" :" text-xs"
                         }>
                           {factor.impact ==="high" ?"Alto" : factor.impact ==="medium" ?"Médio" :"Baixo"}
-                        </Badge>
+                        </Chip>
                       </div>
                     </div>
                     <div className="flex-1 bg-lia-interactive-active rounded-full h-2">
@@ -181,12 +181,12 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                       </div>
                       <div className="text-sm text-status-success">{Math.round(item.success_rate * 100)}% taxa de sucesso</div>
                     </div>
-                    <Badge className={
+                    <Chip variant="neutral" muted className={
                       item.success_rate >= 0.8 ?"" :
                       item.success_rate >= 0.5 ?"" :""
                     }>
                       {item.count} contratações
-                    </Badge>
+                    </Chip>
                   </div>
                 ))
               ) : (
@@ -231,12 +231,12 @@ export function PredictionsTab({ recruiters }: PredictionsTabProps) {
                       </h4>
                       <p className="text-sm text-lia-text-secondary">{rec.impact}</p>
                     </div>
-                    <Badge className={
+                    <Chip variant="neutral" muted className={
                       rec.priority ==="high" ?"ml-4" :
                       rec.priority ==="medium" ?"ml-4" :"ml-4"
                     }>
                       {rec.priority ==="high" ?"Alta" : rec.priority ==="medium" ?"Média" :"Baixa"}
-                    </Badge>
+                    </Chip>
                   </div>
                 </div>
               ))

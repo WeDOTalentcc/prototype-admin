@@ -10,7 +10,7 @@ import {
   DialogFooter,
 } from"@/components/ui/dialog"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { ScrollArea } from"@/components/ui/scroll-area"
 import { Checkbox } from"@/components/ui/checkbox"
@@ -406,10 +406,10 @@ export function CloseVacancyModal({
                 <span className={cn(textStyles.titleLarge, 'text-status-success')}>
                   {hc.name}
                 </span>
-                <Badge className={cn(badgeStyles.success, 'gap-1')}>
+                <Chip variant="neutral" muted className={cn(badgeStyles.success, 'gap-1')}>
                   <PartyPopper className="h-3 w-3" />
                   Contratado
-                </Badge>
+                </Chip>
               </div>
               <p className={cn(textStyles.description, 'text-status-success')}>
                 {hc.email || hc.phone || 'Contato não informado'}
@@ -525,9 +525,9 @@ export function CloseVacancyModal({
                       {candidate.email || candidate.phone || candidate.stage}
                     </p>
                   </div>
-                  <Badge variant="outline" className="text-xs">
+                  <Chip variant="neutral" className="text-xs">
                     {candidate.stage}
-                  </Badge>
+                  </Chip>
                 </div>
               ))
             )}

@@ -8,7 +8,7 @@ import {
   MessageSquare, Globe, Phone, CheckCircle, CalendarCheck,
   ChevronUp, ChevronDown
 } from"lucide-react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 
 interface ScreeningQuestion {
   id: string | number
@@ -195,11 +195,11 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         <div className="flex items-center gap-2">
           <ClipboardList className="w-4 h-4 text-lia-text-secondary" />
           <h4 className="text-xs font-semibold text-lia-text-primary">Roteiro de Triagem Automática</h4>
-          <Badge 
+          <Chip variant="neutral" muted 
             className={`text-micro px-1.5 py-0 h-4 text-lia-text-primary ${(previewJob.screeningConfig?.status?.enabled ?? true) ? 'bg-wedo-green-pastel' : 'bg-lia-interactive-active'}`}
           >
             {(previewJob.screeningConfig?.status?.enabled ?? true) ? 'Ativo' : 'Pausado'}
-          </Badge>
+          </Chip>
         </div>
       </div>
 
@@ -286,9 +286,9 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             const defaultSkills = ['Comunicação', 'Resolução de Problemas', 'Adaptabilidade', 'Trabalho em Equipe']
             const finalSkills = skills.length > 0 ? skills : defaultSkills
             return finalSkills.slice(0, 6).map((skill: string, idx: number) => (
-              <Badge key={idx} className="bg-lia-bg-tertiary text-lia-text-secondary text-micro px-2 py-0.5 h-5 font-medium">
+              <Chip variant="neutral" muted key={idx} className="bg-lia-bg-tertiary text-lia-text-secondary text-micro px-2 py-0.5 h-5 font-medium">
                 {skill}
-              </Badge>
+              </Chip>
             ))
           })()}
         </div>
@@ -304,9 +304,9 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
           <h5 className="text-xs font-semibold text-lia-text-primary flex items-center gap-1.5">
             <Layers3 className="w-3.5 h-3.5 text-lia-text-secondary" />
             Fluxo de Triagem WSI
-            <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-interactive-active text-lia-text-primary">
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-interactive-active text-lia-text-primary">
               6 Blocos
-            </Badge>
+            </Chip>
           </h5>
         </div>
 
@@ -385,23 +385,23 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                       <span className="text-micro text-lia-text-secondary ml-1.5">({block.duration})</span>
                     </div>
                     {!block.editable && (
-                      <Badge className="text-micro px-1 py-0 h-3.5 bg-lia-interactive-active text-lia-text-secondary">
+                      <Chip variant="neutral" muted className="text-micro px-1 py-0 h-3.5 bg-lia-interactive-active text-lia-text-secondary">
                         Auto
-                      </Badge>
+                      </Chip>
                     )}
                   </div>
                   <div className="flex items-center gap-1.5">
                     {block.editable && blockQuestions.length > 0 && (
                       <>
                         {eliminatoryCount > 0 && (
-                          <Badge className="text-micro px-1.5 py-0  border border-status-error/30">
+                          <Chip variant="neutral" muted className="text-micro px-1.5 py-0  border border-status-error/30">
                             {eliminatoryCount} Elim.
-                          </Badge>
+                          </Chip>
                         )}
                         {informativeCount > 0 && (
-                          <Badge className="text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-secondary">
+                          <Chip variant="neutral" muted className="text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-secondary">
                             {informativeCount} Info.
-                          </Badge>
+                          </Chip>
                         )}
                       </>
                     )}
@@ -464,7 +464,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                               <div className="flex items-start gap-2">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                                    <Badge className={`text-micro px-1.5 py-0 h-4 ${
+                                    <Chip variant="neutral" muted className={`text-micro px-1.5 py-0 h-4 ${
  item.category === 'behavioral' || item.category === 'Comportamental'
                                         ? ' border border-wedo-purple/30'
                                         : item.category === 'technical' || item.category === 'Técnica'
@@ -475,11 +475,11 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                                         : item.category === 'technical' ? 'Técnica' 
                                         : item.category === 'cultural' ? 'Cultural'
                                         : item.category || 'Geral'}
-                                    </Badge>
+                                    </Chip>
                                     {(item.type === 'eliminatory' || item.required) && (
-                                      <Badge className="text-micro px-1.5 py-0 h-4  border border-status-error/30">
+                                      <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4  border border-status-error/30">
                                         Eliminatória
-                                      </Badge>
+                                      </Chip>
                                     )}
                                   </div>
                                   <p className="text-micro text-lia-text-primary leading-relaxed">
@@ -533,19 +533,19 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
         <div className="grid grid-cols-2 gap-2">
           <div className="flex items-center justify-between">
             <span className="text-micro text-lia-text-secondary">Score Mínimo</span>
-            <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-btn-primary-bg text-lia-btn-primary-text">{previewJob.screeningConfig?.settings?.min_score ?? 70}%</Badge>
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-btn-primary-bg text-lia-btn-primary-text">{previewJob.screeningConfig?.settings?.min_score ?? 70}%</Chip>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-micro text-lia-text-secondary">Timeout Resposta</span>
-            <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">{previewJob.screeningConfig?.settings?.response_timeout_hours ?? 48}h</Badge>
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">{previewJob.screeningConfig?.settings?.response_timeout_hours ?? 48}h</Chip>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-micro text-lia-text-secondary">Re-tentativas</span>
-            <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">{previewJob.screeningConfig?.settings?.max_retries ?? 2}x</Badge>
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">{previewJob.screeningConfig?.settings?.max_retries ?? 2}x</Chip>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-micro text-lia-text-secondary">Fallback</span>
-            <Badge className="text-micro px-1.5 py-0 h-4">Revisão Manual</Badge>
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4">Revisão Manual</Chip>
           </div>
         </div>
 
@@ -570,9 +570,9 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
             <CalendarCheck className="w-3.5 h-3.5 text-lia-text-secondary" />
             <h5 className="text-xs font-semibold text-lia-text-primary">Agendamento Automático</h5>
           </div>
-          <Badge className={`${(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text' : 'bg-lia-border-medium text-white'} text-micro px-1.5 py-0 h-4`}>
+          <Chip variant="neutral" muted className={`${(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true) ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text' : 'bg-lia-border-medium text-white'} text-micro px-1.5 py-0 h-4`}>
             {(previewJob.screeningConfig?.scheduling?.auto_enabled ?? true) ? 'Ativo' : 'Inativo'}
-          </Badge>
+          </Chip>
         </div>
         <p className="text-micro text-lia-text-secondary mb-2">Aprovados na triagem são agendados automaticamente para entrevista</p>
 

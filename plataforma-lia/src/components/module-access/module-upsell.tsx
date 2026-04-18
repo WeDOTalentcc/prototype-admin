@@ -3,7 +3,7 @@
 import { useState } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Lock, Star, Zap, Crown, Check, X, ArrowRight,
   Mail, Phone, CreditCard, Calendar, Users,
@@ -65,13 +65,13 @@ export function ModuleUpsell({ moduleId, title, description, onUpgrade }: Module
               </div>
 
               <div className="flex items-center gap-4">
-                <Badge variant="secondary" className="bg-lia-bg-primary/20 text-white">
+                <Chip variant="neutral" muted className="bg-lia-bg-primary/20 text-white">
                   <Crown className="w-4 h-4 mr-1" />
                   {moduleInfo.category === 'premium' ? 'Premium' : 'Enterprise'}
-                </Badge>
-                <Badge variant="secondary" className="bg-lia-bg-primary/20 text-white">
+                </Chip>
+                <Chip variant="neutral" muted className="bg-lia-bg-primary/20 text-white">
                   {moduleInfo.price}
-                </Badge>
+                </Chip>
               </div>
             </div>
 

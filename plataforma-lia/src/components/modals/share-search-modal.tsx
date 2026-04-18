@@ -5,7 +5,7 @@ import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Textarea } from"@/components/ui/textarea"
 import { Checkbox } from"@/components/ui/checkbox"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { ScrollArea } from"@/components/ui/scroll-area"
 import {
   Dialog,
@@ -321,10 +321,10 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                     <div className="flex-1 min-w-0">
                       <p className={`${textStyles.subtitle} truncate text-sm`}>{title}</p>
                       <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="secondary" className="gap-1 text-micro">
+                        <Chip variant="neutral" muted className="gap-1 text-micro">
                           <Users className="w-3 h-3" />
                           {candidateCount} candidato{candidateCount !== 1 ? 's' : ''}
-                        </Badge>
+                        </Chip>
                         {sourceQuery && (
                           <span className="text-micro text-lia-text-tertiary truncate max-w-[160px]">"{sourceQuery}"
                           </span>
@@ -579,9 +579,9 @@ const [currentShareType, setCurrentShareType] = useState<'search' | 'list'>(shar
                 <Eye className="w-3.5 h-3.5 text-lia-text-tertiary" />
                 Preview da Mensagem
               </h4>
-              <Badge variant="outline" className="text-micro h-5">
+              <Chip variant="neutral" className="text-micro h-5">
                 {channel === 'email' ? 'Email' : channel === 'whatsapp' ? 'WhatsApp' : 'Email + WhatsApp'}
-              </Badge>
+              </Chip>
             </div>
 
             <ScrollArea className="flex-1 px-5 pb-4">

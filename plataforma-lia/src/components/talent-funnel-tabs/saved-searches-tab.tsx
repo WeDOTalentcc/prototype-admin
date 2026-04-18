@@ -4,7 +4,7 @@ import { useState } from"react"
 import { formatRelativeTime } from"@/lib/format-utils"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Input } from"@/components/ui/input"
 import { Textarea } from"@/components/ui/textarea"
 import { LIAIcon } from"@/components/ui/lia-icon"
@@ -221,9 +221,9 @@ export function SavedSearchesTab({
               </div>
 
               <div className="flex items-center gap-4 text-xs text-lia-text-primary">
-                <Badge variant="outline" className="h-5 text-xs px-1.5">
+                <Chip variant="neutral" className="h-5 text-xs px-1.5">
                   {getModeLabel(search.mode)}
-                </Badge>
+                </Chip>
                 <span className="flex items-center gap-1">
                   <SourceIcon className={`w-3 h-3 ${search.source === 'hybrid' ? 'text-lia-text-secondary' : ''}`} />
                   {getSourceLabel(search.source)}

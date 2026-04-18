@@ -1,7 +1,7 @@
 "use client"
 
 import { textStyles } from"@/lib/design-tokens"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   FileText, Plus, Upload, Download, Eye, Play, Tag, X,
@@ -36,7 +36,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           <h4 className="text-xs font-medium text-lia-text-primary flex items-center gap-1.5">
             <FileText className="w-3.5 h-3.5 text-lia-text-primary" />
             Arquivos e Documentos
-            <Badge className="text-xs px-1 py-0">{candidateFiles.length}</Badge>
+            <Chip variant="neutral" muted className="text-xs px-1 py-0">{candidateFiles.length}</Chip>
             {isLoadingFiles && (
               <div className="animate-spin motion-reduce:animate-none rounded-full h-3 w-3 border border-lia-border-medium border-t-lia-border-medium"></div>
             )}
@@ -64,22 +64,22 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
 
         {/* Categorias automáticas da LIA */}
         <div className="flex gap-1 flex-wrap">
-          <Badge
-            variant="outline"
+          <Chip
+            variant="neutral"
             className={`text-xs px-1.5 py-0 cursor-pointer hover:bg-lia-interactive-hover ${!selectedCategory ? 'bg-lia-bg-tertiary' : ''}`}
             onClick={() => setSelectedCategory(null)}
           >
             📁 Todos ({candidateFiles.length})
-          </Badge>
+          </Chip>
           {fileCategories.filter(c => c.count > 0).map((cat) => (
-            <Badge
+            <Chip
               key={cat.category}
-              variant="outline"
+              variant="neutral"
               className={`text-xs px-1.5 py-0 cursor-pointer hover:bg-lia-interactive-hover ${selectedCategory === cat.category ? 'bg-lia-bg-tertiary' : ''}`}
               onClick={() => setSelectedCategory(selectedCategory === cat.category ? null : cat.category)}
             >
               {cat.icon} {cat.label} ({cat.count})
-            </Badge>
+            </Chip>
           ))}
         </div>
       </div>
@@ -179,7 +179,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                             <span className={textStyles.bodySmall}>
                               {formatRelativeTime(file.created_at)}
                             </span>
-                            <Badge
+                            <Chip variant="neutral" muted
                               className="text-xs px-1 py-0 h-3.5"
                               style={{backgroundColor: colors.bg, color: colors.text}}
                             >
@@ -190,7 +190,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                                file.file_type === 'certificate' ? 'Certificado' :
                                file.file_type === 'transcript' ? 'Transcrição' :
                                'Documento'}
-                            </Badge>
+                            </Chip>
                           </div>
                           {file.description && (
                             <p className={`${textStyles.bodySmall} mt-1 truncate`}>
@@ -260,10 +260,10 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         Enviado há 2 dias
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5 bg-status-error-bg text-status-error" >
+                      <Chip variant="neutral" muted className="text-xs px-1 py-0 h-3.5 bg-status-error-bg text-status-error" >
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Currículo
-                      </Badge>
+                      </Chip>
                     </div>
                     <p className={`${textStyles.bodySmall} mt-1`}>
                       Currículo atualizado • Categorizado pela LIA
@@ -356,10 +356,10 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         Enviado hoje
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5 bg-status-success-bg text-status-success" >
+                      <Chip variant="neutral" muted className="text-xs px-1 py-0 h-3.5 bg-status-success-bg text-status-success" >
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Foto
-                      </Badge>
+                      </Chip>
                     </div>
                   </div>
 
@@ -423,10 +423,10 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         25.4 MB • MP4 • 3:45
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
+                      <Chip variant="neutral" muted className="text-xs px-1 py-0 h-3.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Triagem
-                      </Badge>
+                      </Chip>
                     </div>
                     <p className={`${textStyles.bodySmall} mt-1`}>
                       Vídeo de apresentação pessoal • Prescreening
@@ -434,9 +434,9 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Badge className="text-xs px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
+                    <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
                       Analisado
-                    </Badge>
+                    </Chip>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -489,9 +489,9 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                     <span className="absolute bottom-1 right-1 text-xs text-white bg-black/70 px-1 rounded-full">
                       3:45
                     </span>
-                    <Badge className="absolute top-1 left-1 text-xs px-1.5 py-0.5">
+                    <Chip variant="neutral" muted className="absolute top-1 left-1 text-xs px-1.5 py-0.5">
                       Prescreening
-                    </Badge>
+                    </Chip>
                   </div>
                 </div>
 
@@ -547,10 +547,10 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         45.2 MB • MP4 • 8:20
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
+                      <Chip variant="neutral" muted className="text-xs px-1 py-0 h-3.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Entrevista
-                      </Badge>
+                      </Chip>
                     </div>
                     <p className={`${textStyles.bodySmall} mt-1`}>
                       Apresentação de case técnico • Entrevista gravada
@@ -558,9 +558,9 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Badge className="text-xs px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
+                    <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
                       Destaque
-                    </Badge>
+                    </Chip>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -603,10 +603,10 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         120.5 MB • MP4 • 30:15
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default">
+                      <Chip variant="neutral" muted className="text-xs px-1 py-0 h-3.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Entrevista
-                      </Badge>
+                      </Chip>
                     </div>
                     <p className={`${textStyles.bodySmall} mt-1`}>
                       Entrevista técnica com Carlos Mendes • Gravada via Meet
@@ -614,9 +614,9 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Badge className="text-xs px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
+                    <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
                       Completa
-                    </Badge>
+                    </Chip>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -659,10 +659,10 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         2.8 MB • MP3 • 4:32
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5">
+                      <Chip variant="neutral" muted className="text-xs px-1 py-0 h-3.5">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Triagem
-                      </Badge>
+                      </Chip>
                     </div>
                     <p className={`${textStyles.bodySmall} mt-1`}>
                       Resposta de triagem por voz • OpenMic.ai
@@ -670,9 +670,9 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Badge className="text-xs px-1.5 py-0 h-4">
+                    <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4">
                       Transcrito
-                    </Badge>
+                    </Chip>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -715,10 +715,10 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         18.5 MB • WAV • 15:20
                       </span>
-                      <Badge className="text-xs px-1 py-0 h-3.5 bg-lia-interactive-active">
+                      <Chip variant="neutral" muted className="text-xs px-1 py-0 h-3.5 bg-lia-interactive-active">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Entrevista
-                      </Badge>
+                      </Chip>
                     </div>
                     <p className={`${textStyles.bodySmall} mt-1`}>
                       Gravação de entrevista com RH • Teams
@@ -726,9 +726,9 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Badge className="text-xs px-1.5 py-0 h-4">
+                    <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4">
                       Pendente
-                    </Badge>
+                    </Chip>
                     <Button
                       size="sm"
                       variant="ghost"

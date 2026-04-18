@@ -3,7 +3,7 @@
 import React from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Plus, Users, CheckCircle, Clock, Search, Download,
@@ -153,9 +153,9 @@ export function OnboardingKanbanView({
               <div className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Badge className={stage.color}>
+                    <Chip variant="neutral" muted className={stage.color}>
                       {stage.name}
-                    </Badge>
+                    </Chip>
                     <span className="text-sm font-medium text-lia-text-secondary">
                       {filteredCandidates.filter(c => c.stage === stage.id).length}
                     </span>
@@ -251,9 +251,9 @@ function CandidateKanbanCard({ candidate, onDragStart, onClick }: CandidateKanba
           {daysUntilStart > 0 && (
             <div className="flex items-center justify-between text-xs">
               <span className="text-lia-text-secondary">Faltam:</span>
-              <Badge variant="outline" className="text-xs">
+              <Chip variant="neutral" className="text-xs">
                 {daysUntilStart} dias
-              </Badge>
+              </Chip>
             </div>
           )}
         </div>

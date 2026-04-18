@@ -2,7 +2,7 @@
 
 import React from"react"
 import Link from"next/link"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { LIAIcon } from"@/components/ui/lia-icon"
 import { ContextPill } from"@/components/ui/context-pill"
 import { QuickActionChips, type QuickAction } from"@/components/ui/quick-action-chips"
@@ -293,9 +293,9 @@ activeSearchTab === 'filtros' ? 'lia-pill-active' : 'lia-pill'
           <div className="flex items-center gap-2">
             <LIAIcon size="sm" />
             <span className="text-sm font-medium text-lia-text-primary">💡 Sugestões Inteligentes</span>
-            <Badge variant="outline" className="text-xs">
+            <Chip variant="neutral" className="text-xs">
               {suggestions.length} disponíveis
-            </Badge>
+            </Chip>
           </div>
 
           {commandHistory.length > 0 && (
@@ -349,9 +349,9 @@ isProcessing
                   {(suggestion.description as React.ReactNode)}
                 </div>
                 {!!(suggestion.category) && (
-                  <Badge className="mt-2 text-micro bg-lia-bg-tertiary text-lia-text-primary border-0">
+                  <Chip variant="neutral" muted className="mt-2 text-micro bg-lia-bg-tertiary text-lia-text-primary border-0">
                     {(suggestion.category as React.ReactNode)}
-                  </Badge>
+                  </Chip>
                 )}
               </div>
             </button>

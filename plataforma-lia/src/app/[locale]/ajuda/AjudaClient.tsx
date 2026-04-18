@@ -2,7 +2,7 @@
 
 import { Brain, BookOpen, Users, Code, FileText, Clock, ChevronLeft, HelpCircle, Lightbulb, Target, CheckCircle, Fingerprint, AlertTriangle, MessageSquare, TrendingUp, Shield } from"lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import Link from"next/link"
 
@@ -93,12 +93,12 @@ export default function AjudaPage() {
               <div className="space-y-3">
                 {seniorityLevels.map((item) => (
                   <div key={item.level} className="flex items-start gap-3 p-3 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
-                    <Badge 
+                    <Chip variant="neutral" muted 
                       className="mt-0.5 text-white font-medium px-3 py-1"
                       style={{backgroundColor: item.color}}
                     >
                       {item.level}
-                    </Badge>
+                    </Chip>
                     <span className="text-lia-text-secondary dark:text-lia-text-tertiary">{item.description}</span>
                   </div>
                 ))}
@@ -124,9 +124,9 @@ export default function AjudaPage() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {["Python","JavaScript","React","Node.js","PostgreSQL","Docker","AWS","Git"].map((skill) => (
-                    <Badge key={skill} variant="outline" className="text-xs border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
+                    <Chip key={skill} variant="neutral" className="text-xs border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
                       {skill}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -141,13 +141,13 @@ export default function AjudaPage() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {softSkillsList.map((skill) => (
-                    <Badge 
+                    <Chip 
                       key={skill} 
-                      variant="outline" 
+                      variant="neutral" 
                       className="text-xs border-status-error-border bg-status-error-bg text-status-error"
                     >
                       {skill}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -172,9 +172,9 @@ export default function AjudaPage() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {["Nome","Email","Telefone","Experiências profissionais","Educação","Certificações","Idiomas"].map((field) => (
-                    <Badge key={field} variant="outline" className="text-xs border-status-success/30">
+                    <Chip key={field} variant="neutral" className="text-xs border-status-success/30">
                       {field}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -189,13 +189,13 @@ export default function AjudaPage() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {["Senioridade (baseada em título + anos)","Classificação de skills","Interesses profissionais","Fit cultural","Potencial de crescimento"].map((field) => (
-                    <Badge 
+                    <Chip 
                       key={field} 
-                      variant="outline" 
+                      variant="neutral" 
                       className="text-xs text-wedo-cyan border-wedo-cyan/30"
                     >
                       {field}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -261,11 +261,11 @@ export default function AjudaPage() {
                 {bigFiveDimensions.map((dim) => (
                   <div key={dim.trait} className="p-3 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
                     <div className="flex items-start gap-3">
-                      <Badge 
+                      <Chip variant="neutral" muted 
                         className="mt-0.5 text-white font-bold px-2.5 py-1 text-sm bg-lia-btn-primary-bg"
                       >
                         {dim.trait}
-                      </Badge>
+                      </Chip>
                       <div className="flex-1">
                         <h4 className="font-semibold text-lia-text-primary dark:text-lia-text-primary">{dim.name}</h4>
                         <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary mb-1">{dim.description}</p>
@@ -356,12 +356,12 @@ export default function AjudaPage() {
                     style={{backgroundColor: `${archetype.color}10`}}
                   >
                     <div className="flex items-start gap-2 mb-2">
-                      <Badge 
+                      <Chip variant="neutral" muted 
                         className="text-white font-medium text-xs px-2 py-0.5"
                         style={{backgroundColor: archetype.color}}
                       >
                         {archetype.profile}
-                      </Badge>
+                      </Chip>
                     </div>
                     <h4 className="font-semibold text-lia-text-primary dark:text-lia-text-primary text-sm">{archetype.name}</h4>
                     <p className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary mb-1">{archetype.description}</p>

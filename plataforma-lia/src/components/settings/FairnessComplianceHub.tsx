@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
 import { Shield, AlertTriangle, TrendingDown, Download } from"lucide-react"
@@ -233,15 +233,15 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
                   {logs.map((log) => (
                     <tr key={log.id} className="border-lia-border/50 hover:bg-lia-bg-tertiary/50">
                       <td className="py-2.5 px-3">
-                        <Badge variant="outline" className="text-xs">
+                        <Chip variant="neutral" className="text-xs">
                           {translateCategory(log.category)}
-                        </Badge>
+                        </Chip>
                       </td>
                       <td className="py-2.5 px-3">
                         {log.is_blocked ? (
-                          <Badge className="bg-red-500/15 text-red-500 text-xs">Bloqueado</Badge>
+                          <Chip variant="neutral" muted className="bg-red-500/15 text-red-500 text-xs">Bloqueado</Chip>
                         ) : (
-                          <Badge className="bg-yellow-500/15 text-yellow-600 text-xs">Alerta</Badge>
+                          <Chip variant="neutral" muted className="bg-yellow-500/15 text-yellow-600 text-xs">Alerta</Chip>
                         )}
                       </td>
                       <td className="py-2.5 px-3 text-lia-text-secondary max-w-[200px] truncate">

@@ -3,7 +3,7 @@
 import React from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Bell, Edit, Trash2, AlertCircle, CheckCircle,
   Hash, Webhook, RefreshCw, PlayCircle, PauseCircle, Clock
@@ -63,10 +63,10 @@ export function IntegrationsList({
                       <h3 className="font-semibold text-lia-text-primary">
                         {integration.name}
                       </h3>
-                      <Badge className={`${getStatusColor(integration.status)} text-xs`}>
+                      <Chip variant="neutral" muted className={`${getStatusColor(integration.status)} text-xs`}>
                         {getStatusIcon(integration.status)}
                         <span className="ml-1 capitalize">{integration.status}</span>
-                      </Badge>
+                      </Chip>
                     </div>
 
                     <div className="space-y-2">

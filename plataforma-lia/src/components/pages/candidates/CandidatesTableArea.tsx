@@ -2,7 +2,6 @@
 
 import React from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
 import { Users, Loader2, Eye } from"lucide-react"
 import { UnifiedCandidateTable } from"@/components/tables"
 import type { TableCandidate } from"@/components/tables"

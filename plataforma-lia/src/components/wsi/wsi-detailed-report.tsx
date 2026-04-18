@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from"react"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   ChevronDown, ChevronUp, CheckCircle, AlertTriangle, XCircle,
@@ -72,13 +72,13 @@ function ReportHeader({ data, candidateName, candidateTitle }: { data: WSIResult
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Badge className={`${decision.badge} text-xs font-medium px-3 py-1 rounded-full`}>
+          <Chip variant="neutral" muted className={`${decision.badge} text-xs font-medium px-3 py-1 rounded-full`}>
             {scores.decision ==="approve" || scores.decision ==="approved" ? (
               <><CheckCircle className="w-3.5 h-3.5 mr-1" />{decision.label}</>
             ) : (
               <><Clock className="w-3.5 h-3.5 mr-1" />{decision.label}</>
             )}
-          </Badge>
+          </Chip>
           {decision.confidence && (
             <span className="text-[10px] font-medium text-lia-text-tertiary bg-lia-bg-secondary border border-lia-border-subtle px-2 py-0.5 rounded-full">
               {decision.confidence}

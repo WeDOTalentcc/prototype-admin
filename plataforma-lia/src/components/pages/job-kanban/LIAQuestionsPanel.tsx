@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { BarChart3, Brain, RefreshCw, Target, Wand2, X } from"lucide-react"
 import { useTranslations } from "next-intl"
 
@@ -62,8 +62,8 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                   {t('questionUX1')}
                 </h4>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">{t('recommendedBadge')}</Badge>
-                  <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-xs">2 min</Badge>
+                  <Chip variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">{t('recommendedBadge')}</Chip>
+                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary text-xs">2 min</Chip>
                 </div>
               </div>
               <div className="space-y-1 ml-2 text-xs text-lia-text-secondary">
@@ -100,8 +100,8 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                   {t('questionUX2')}
                 </h4>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-tertiary text-xs">{t('highRelevanceBadge')}</Badge>
-                  <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-xs">3 min</Badge>
+                  <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-tertiary text-xs">{t('highRelevanceBadge')}</Chip>
+                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary text-xs">3 min</Chip>
                 </div>
               </div>
               <div className="space-y-1 ml-2 text-xs text-lia-text-secondary">
@@ -138,8 +138,8 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                   {t('questionUX3')}
                 </h4>
                 <div className="flex items-center gap-2">
-                  <Badge className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">{t('conceptualBadge')}</Badge>
-                  <Badge className="bg-lia-bg-tertiary text-lia-text-primary text-xs">2 min</Badge>
+                  <Chip variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">{t('conceptualBadge')}</Chip>
+                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary text-xs">2 min</Chip>
                 </div>
               </div>
               <div className="space-y-1 ml-2 text-xs text-lia-text-secondary">

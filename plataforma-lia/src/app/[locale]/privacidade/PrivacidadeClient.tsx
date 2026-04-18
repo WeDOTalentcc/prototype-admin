@@ -5,7 +5,7 @@ import Link from"next/link"
 import { Shield, Eye, Edit, Trash2, ArrowRightLeft, XCircle, FileSearch, Send, Loader2, CheckCircle2, AlertCircle, Clock, Search, User, Mail, Phone, FileText, ChevronRight } from"lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Input } from"@/components/ui/input"
 import { Label } from"@/components/ui/label"
 import { Textarea } from"@/components/ui/textarea"
@@ -171,9 +171,9 @@ export default function PrivacidadePage() {
               <p className="text-xs text-lia-text-secondary">Seus dados, seus direitos</p>
             </div>
           </div>
-          <Badge className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
+          <Chip variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-default dark:border-lia-border-default">
             LGPD Art. 18
-          </Badge>
+          </Chip>
         </div>
       </header>
 
@@ -465,10 +465,10 @@ export default function PrivacidadePage() {
                         'gray': 'bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary',
                       }
                       return (
-                        <Badge className={colorClasses[status.color]}>
+                        <Chip variant="neutral" muted className={colorClasses[status.color]}>
                           <Icon className="w-3 h-3 mr-1" />
                           {status.label}
-                        </Badge>
+                        </Chip>
                       )
                     })()}
                   </div>

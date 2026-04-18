@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Progress } from"@/components/ui/progress"
 import {
@@ -144,9 +144,9 @@ export function WSIScorecard({
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-sm">{t('scorecard.scoreWSI')}</span>
-                  <Badge className={`${classificationBadge.bgColor} ${classificationBadge.color} text-xs`}>
+                  <Chip variant="neutral" muted className={`${classificationBadge.bgColor} ${classificationBadge.color} text-xs`}>
                     {latestResult.classification}
-                  </Badge>
+                  </Chip>
                 </div>
                 <p className="text-xs text-lia-text-tertiary">
                   {latestResult.screening_type === 'voice' ? t('scorecard.voiceScreening') : t('scorecard.textScreening')}
@@ -220,20 +220,20 @@ export function WSIScorecard({
         </div>
 
         <div className="flex items-center justify-between pt-2 border-t">
-          <Badge className={`${classificationBadge.bgColor} ${classificationBadge.color}`}>
+          <Chip variant="neutral" muted className={`${classificationBadge.bgColor} ${classificationBadge.color}`}>
             <Award className="w-3 h-3 mr-1" />
             {getClassificationConfig(latestResult.classification).label}
-          </Badge>
+          </Chip>
 
           <div className="flex items-center gap-2 text-xs text-lia-text-tertiary">
             {latestResult.screening_type === 'voice' ? (
-              <Badge variant="outline" className="text-xs">
+              <Chip variant="neutral" className="text-xs">
                 {t('scorecard.voice')}
-              </Badge>
+              </Chip>
             ) : (
-              <Badge variant="outline" className="text-xs">
+              <Chip variant="neutral" className="text-xs">
                 {t('scorecard.text')}
-              </Badge>
+              </Chip>
             )}
             {latestResult.percentile && (
               <span className="flex items-center gap-1">
@@ -264,9 +264,9 @@ export function WSIScorecard({
                       {new Date(result.created_at).toLocaleDateString(locale)}
                     </span>
                   </div>
-                  <Badge variant="outline" className="text-xs">
+                  <Chip variant="neutral" className="text-xs">
                     {result.classification}
-                  </Badge>
+                  </Chip>
                 </div>
               ))}
             </div>
@@ -318,9 +318,9 @@ export function WSIScoreBadge({ score, classification }: { score: number; classi
       <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${display.bgColor} ${display.color}`}>
         {score.toFixed(1)}
       </div>
-      <Badge className={`${badge.bgColor} ${badge.color} text-xs`}>
+      <Chip variant="neutral" muted className={`${badge.bgColor} ${badge.color} text-xs`}>
         {classification}
-      </Badge>
+      </Chip>
     </div>
   )
 }

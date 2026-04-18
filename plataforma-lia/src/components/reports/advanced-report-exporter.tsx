@@ -3,7 +3,7 @@
 import { useState } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Download, FileText, Table, Image, Mail, Calendar, Settings,
   CheckCircle, AlertCircle, Clock, Target, BarChart3, PieChart,
@@ -283,21 +283,21 @@ export function AdvancedReportExporter({
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <h4 className="font-medium text-lia-text-primary">{template.name}</h4>
-                            <Badge variant="outline" className="text-xs">
+                            <Chip variant="neutral" className="text-xs">
                               {template.format.toUpperCase()}
-                            </Badge>
+                            </Chip>
                           </div>
                           <p className="text-sm text-lia-text-secondary mb-2">{template.description}</p>
                           <div className="flex flex-wrap gap-1">
                             {template.sections.slice(0, 3).map((section, index) => (
-                              <Badge key={section} variant="secondary" className="text-xs">
+                              <Chip key={section} variant="neutral" muted className="text-xs">
                                 {section}
-                              </Badge>
+                              </Chip>
                             ))}
                             {template.sections.length > 3 && (
-                              <Badge variant="secondary" className="text-xs">
+                              <Chip variant="neutral" muted className="text-xs">
                                 +{template.sections.length - 3} mais
-                              </Badge>
+                              </Chip>
                             )}
                           </div>
                         </div>

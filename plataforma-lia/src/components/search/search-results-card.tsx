@@ -4,7 +4,7 @@ import React, { useState } from"react"
 import { getPercentageScoreColorClass } from"@/lib/score-utils"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Checkbox } from"@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from"@/components/ui/tooltip"
@@ -170,16 +170,16 @@ export function SearchResultsCard({
           </div>
           <div className="flex items-center gap-2 text-sm text-lia-text-primary">
             {localCount > 0 && (
-              <Badge variant="outline" className="border-lia-border-default bg-lia-bg-secondary">
+              <Chip variant="neutral" className="border-lia-border-default bg-lia-bg-secondary">
                 <Database className="h-3 w-3 mr-1" />
                 {localCount} local
-              </Badge>
+              </Chip>
             )}
             {pearchCount > 0 && (
-              <Badge variant="outline" className="border-lia-border-default bg-lia-bg-secondary text-lia-text-primary">
+              <Chip variant="neutral" className="border-lia-border-default bg-lia-bg-secondary text-lia-text-primary">
                 <Globe className="h-3 w-3 mr-1" />
                 {pearchCount} Pearch
-              </Badge>
+              </Chip>
             )}
           </div>
         </div>
@@ -295,8 +295,8 @@ export function SearchResultsCard({
                     )}
                     <Tooltip>
                       <TooltipTrigger>
-                        <Badge 
-                          variant="outline" 
+                        <Chip 
+                          variant="neutral" 
                           className={`text-xs ${
                             candidate.source ==="local" 
                               ?"border-lia-border-default bg-lia-bg-secondary text-lia-text-secondary" 
@@ -314,7 +314,7 @@ export function SearchResultsCard({
                               Global
                             </>
                           )}
-                        </Badge>
+                        </Chip>
                       </TooltipTrigger>
                       <TooltipContent>
                         {candidate.source ==="local" 
@@ -325,8 +325,8 @@ export function SearchResultsCard({
                     {candidate.enrichment_source && (
                       <Tooltip>
                         <TooltipTrigger>
-                          <Badge 
-                            variant="outline" 
+                          <Chip 
+                            variant="neutral" 
                             className={`text-xs ${
                               candidate.enrichment_source === "apify"
                                 ? "border-status-info/30 bg-status-info/10 text-status-info"
@@ -337,7 +337,7 @@ export function SearchResultsCard({
                           >
                             <Zap className="h-3 w-3 mr-1" />
                             {candidate.enrichment_source === "apify" ? "Apify" : candidate.enrichment_source === "pearch" ? "Pearch" : "Local"}
-                          </Badge>
+                          </Chip>
                         </TooltipTrigger>
                         <TooltipContent>
                           {candidate.enrichment_source === "apify" 
@@ -349,21 +349,21 @@ export function SearchResultsCard({
                       </Tooltip>
                     )}
                     {candidate.is_enriching && (
-                      <Badge variant="outline" className="text-xs border-status-info/30 bg-status-info/10 text-status-info">
+                      <Chip variant="neutral" className="text-xs border-status-info/30 bg-status-info/10 text-status-info">
                         <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                         Enriquecendo...
-                      </Badge>
+                      </Chip>
                     )}
                     {candidate.is_discovered && (
                       <Tooltip>
                         <TooltipTrigger>
-                          <Badge 
-                            variant="outline" 
+                          <Chip 
+                            variant="neutral" 
                             className="text-xs border-status-warning/30"
                           >
                             <Eye className="h-3 w-3 mr-1" />
                             Descoberto
-                          </Badge>
+                          </Chip>
                         </TooltipTrigger>
                         <TooltipContent>
                           Candidato descoberto ainda não salvo na sua base local
@@ -391,21 +391,21 @@ export function SearchResultsCard({
                   {candidate.skills.length > 0 && (
                     <div className="flex gap-1 mt-1.5 flex-wrap">
                       {candidate.skills.slice(0, 4).map((skill, idx) => (
-                        <Badge 
+                        <Chip 
                           key={idx} 
-                          variant="secondary" 
+                          variant="neutral" muted 
                           className="text-xs bg-lia-bg-tertiary text-lia-text-secondary font-normal"
                         >
                           {skill}
-                        </Badge>
+                        </Chip>
                       ))}
                       {candidate.skills.length > 4 && (
-                        <Badge 
-                          variant="secondary" 
+                        <Chip 
+                          variant="neutral" muted 
                           className="text-xs bg-lia-bg-tertiary text-lia-text-primary font-normal"
                         >
                           +{candidate.skills.length - 4}
-                        </Badge>
+                        </Chip>
                       )}
                     </div>
                   )}

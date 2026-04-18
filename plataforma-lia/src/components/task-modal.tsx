@@ -2,7 +2,7 @@
 
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { X, CheckCircle, Clock, Users, FileText } from"lucide-react"
 
 export interface TaskModalProps {
@@ -52,15 +52,15 @@ export function TaskModal({ task, isOpen, onClose, onComplete }: TaskModalProps)
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-2">
-            <Badge
-              variant="outline"
+            <Chip
+              variant="neutral"
               className={`text-xs ${getPriorityColor(task.priority)}`}
             >
               {task.priority ==="high" ?"Alta" : task.priority ==="medium" ?"Média" :"Baixa"}
-            </Badge>
-            <Badge variant="outline" className="text-xs">
+            </Chip>
+            <Chip variant="neutral" className="text-xs">
               {task.category}
-            </Badge>
+            </Chip>
           </div>
 
           <p className="text-sm text-lia-text-secondary">

@@ -2,7 +2,7 @@
 
 import NextImage from"next/image"
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Switch } from"@/components/ui/switch"
 import { Label } from"@/components/ui/label"
@@ -27,32 +27,32 @@ import type { DataField } from"@/hooks/company/use-data-request-config"
 
 const FieldBadges = ({ field }: { field: DataField }) => (
   <div className="flex items-center gap-1 flex-wrap">
-    <Badge variant="outline" className="text-micro px-1 py-0 h-4">
+    <Chip variant="neutral" className="text-micro px-1 py-0 h-4">
       {field.type}
-    </Badge>
+    </Chip>
     {field.isDefault && (
-      <Badge className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary text-micro px-1 py-0 h-4">
+      <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary text-micro px-1 py-0 h-4">
         <Database className="w-2.5 h-2.5 mr-0.5" />
         Banco
-      </Badge>
+      </Chip>
     )}
     {field.savesToProfile && (
-      <Badge className="dark:bg-status-success/30 dark:text-status-success text-micro px-1 py-0 h-4">
+      <Chip variant="neutral" muted className="dark:bg-status-success/30 dark:text-status-success text-micro px-1 py-0 h-4">
         <User className="w-2.5 h-2.5 mr-0.5" />
         Cadastro
-      </Badge>
+      </Chip>
     )}
     {field.type === 'file' && (
-      <Badge className="dark:bg-status-warning/30 dark:text-status-warning text-micro px-1 py-0 h-4">
+      <Chip variant="neutral" muted className="dark:bg-status-warning/30 dark:text-status-warning text-micro px-1 py-0 h-4">
         <File className="w-2.5 h-2.5 mr-0.5" />
         Documento
-      </Badge>
+      </Chip>
     )}
     {!field.isDefault && (
-      <Badge className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary text-micro px-1 py-0 h-4">
+      <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary text-micro px-1 py-0 h-4">
         <Brain className="w-2.5 h-2.5 mr-0.5 text-wedo-cyan" />
         Custom
-      </Badge>
+      </Chip>
     )}
   </div>
 )
@@ -176,9 +176,9 @@ export function DataRequestFieldsSection({
                       className="scale-75"
                     />
                   ) : (
-                    <Badge variant={field.enabled ?"default" :"secondary"} className="text-micro h-4">
+                    <Chip variant="neutral" muted className="text-micro h-4">
                       {field.enabled ? 'Ativo' : 'Inativo'}
-                    </Badge>
+                    </Chip>
                   )}
                 </div>
               </TooltipProvider>
@@ -220,9 +220,9 @@ export function DataRequestFieldsSection({
                       className="scale-75"
                     />
                   ) : (
-                    <Badge variant={field.enabled ?"default" :"secondary"} className="text-micro h-4">
+                    <Chip variant="neutral" muted className="text-micro h-4">
                       {field.enabled ? 'Ativo' : 'Inativo'}
-                    </Badge>
+                    </Chip>
                   )}
                 </div>
               </div>

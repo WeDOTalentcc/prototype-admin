@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from"react"
 import { formatRelativeTime } from"@/lib/format-utils"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Card } from"@/components/ui/card"
 import {
@@ -339,9 +339,9 @@ export function ActivityFeed({ candidateId, limit = 20, className ="", actorFilt
                   {activity.extra_data.recommendation && (
                     <div className="flex items-center gap-1.5">
                       <span className={textStyles.label}>Recomendação:</span>
-                      <Badge className={`${getRecommendationBadge(activity.extra_data.recommendation).className} border-0`}>
+                      <Chip variant="neutral" muted className={`${getRecommendationBadge(activity.extra_data.recommendation).className} border-0`}>
                         {getRecommendationBadge(activity.extra_data.recommendation).label}
-                      </Badge>
+                      </Chip>
                     </div>
                   )}
 
@@ -383,9 +383,9 @@ export function ActivityFeed({ candidateId, limit = 20, className ="", actorFilt
                     <div className="flex items-center gap-1 flex-wrap">
                       <span className={textStyles.label}>Pontos fortes:</span>
                       {activity.extra_data.key_strengths.slice(0, 3).map((strength: string, idx: number) => (
-                        <Badge key={idx} variant="secondary" className={`${badgeStyles.default} dark:bg-lia-bg-secondary`}>
+                        <Chip key={idx} variant="neutral" muted className={`${badgeStyles.default} dark:bg-lia-bg-secondary`}>
                           {strength}
-                        </Badge>
+                        </Chip>
                       ))}
                     </div>
                   )}
@@ -412,13 +412,13 @@ export function ActivityFeed({ candidateId, limit = 20, className ="", actorFilt
                     {(() => {
                       const score = Number(activity.extra_data.overall_score) || 0
                       return (
-                        <Badge className={`${
+                        <Chip variant="neutral" muted className={`${
  score >= 70 ? badgeStyles.success :
                           score >= 55 ? badgeStyles.warning :
                           badgeStyles.error
                         } border-0`}>
                           {activity.extra_data.score_label || 'Avaliado'} • {score}%
-                        </Badge>
+                        </Chip>
                       )
                     })()}
                     {activity.extra_data.analysis_type && (
@@ -441,9 +441,9 @@ export function ActivityFeed({ candidateId, limit = 20, className ="", actorFilt
                     <div className="flex items-center gap-1 flex-wrap">
                       <span className={`${textStyles.label} text-status-warning`}>Atenção:</span>
                       {activity.extra_data.red_flags.slice(0, 2).map((flag: string, idx: number) => (
-                        <Badge key={idx} variant="secondary" className="border-status-warning/30 text-micro">
+                        <Chip key={idx} variant="neutral" muted className="border-status-warning/30 text-micro">
                           {flag}
-                        </Badge>
+                        </Chip>
                       ))}
                       {activity.extra_data.red_flags.length > 2 && (
                         <span className={`${textStyles.label} text-status-warning`}>
@@ -458,9 +458,9 @@ export function ActivityFeed({ candidateId, limit = 20, className ="", actorFilt
                     <div className="flex items-center gap-1 flex-wrap">
                       <span className={`${textStyles.label} text-status-success`}>Pontos fortes:</span>
                       {activity.extra_data.green_flags.slice(0, 2).map((flag: string, idx: number) => (
-                        <Badge key={idx} variant="secondary" className="border-status-success/30 text-micro">
+                        <Chip key={idx} variant="neutral" muted className="border-status-success/30 text-micro">
                           {flag}
-                        </Badge>
+                        </Chip>
                       ))}
                       {activity.extra_data.green_flags.length > 2 && (
                         <span className={`${textStyles.label} text-status-success`}>

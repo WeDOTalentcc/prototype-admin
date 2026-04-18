@@ -1,6 +1,6 @@
 "use client"
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import {
@@ -23,7 +23,7 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
             <h5 className="text-xs font-semibold text-lia-text-primary mb-2 flex items-center gap-1">
               <FileText className="w-3 h-3 text-status-success" />
               Candidatura Recebida
-              <Badge className="ml-2 text-micro px-1.5 py-0">{activity.details.source}</Badge>
+              <Chip variant="neutral" muted className="ml-2 text-micro px-1.5 py-0">{activity.details.source}</Chip>
             </h5>
             <div className="grid grid-cols-2 gap-2 mb-3">
               <div className="bg-lia-bg-secondary p-2 rounded-xl">
@@ -63,9 +63,9 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
             <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
               <Code className="w-3 h-3 text-status-warning" />
               {activity.details.testName}
-              <Badge className={`ml-2 ${(activity.score ?? 0) >= 70 ? badgeStyles.success : badgeStyles.warning}`}>
+              <Chip variant="neutral" muted className={`ml-2 ${(activity.score ?? 0) >= 70 ? badgeStyles.success : badgeStyles.warning}`}>
                 {(activity.score ?? 0) >= 70 ? 'Aprovado' : 'Atenção'}
-              </Badge>
+              </Chip>
             </h5>
             <div className="grid grid-cols-3 gap-2 mb-3">
               <div className="text-center p-2 bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
@@ -113,9 +113,9 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
             <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
               <Gift className="w-3 h-3 text-lia-text-secondary" />
               Proposta Salarial
-              <Badge className={`ml-2 ${badgeStyles.primary}`}>
+              <Chip variant="neutral" muted className={`ml-2 ${badgeStyles.primary}`}>
                 {activity.statusLabel || 'Enviada'}
-              </Badge>
+              </Chip>
             </h5>
             <div className="text-center p-3 bg-gradient-to-r from-lia-bg-secondary to-lia-bg-tertiary rounded-xl border border-lia-border-subtle mb-3">
               <p className="text-2xl font-semibold text-lia-text-primary">{activity.details.salary}</p>
@@ -136,9 +136,9 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
             {activity.details.benefits && (
               <div className="flex flex-wrap gap-1">
                 {activity.details.benefits.map((b: Record<string, unknown> | string, i: number) => (
-                  <Badge key={`ben-${i}`} variant="outline" className="text-micro px-1.5 py-0">
+                  <Chip key={`ben-${i}`} variant="neutral" className="text-micro px-1.5 py-0">
                     {typeof b === 'object' ? String(b.name ?? '') : String(b)}
-                  </Badge>
+                  </Chip>
                 ))}
               </div>
             )}
@@ -207,9 +207,9 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
                 <p className={textStyles.bodySmall}>Documentos Verificados</p>
                 <div className="flex flex-wrap gap-1">
                   {activity.details.documentsVerified?.map((doc: string) => (
-                    <Badge key={doc} variant="outline" className="text-xs px-1.5 py-0">
+                    <Chip key={doc} variant="neutral" className="text-xs px-1.5 py-0">
                       {doc}
-                    </Badge>
+                    </Chip>
                   ))}
                 </div>
               </div>
@@ -309,7 +309,7 @@ export function ActivityMiscDetails({ activity }: ActivityMiscDetailsProps) {
                 {activity.details.technicalQuestions.map((q: Record<string, unknown>, i: number) => (
                   <div key={i} className="flex items-center justify-between">
                     <span className={textStyles.bodySmall}>{String(q.question ?? '')}</span>
-                    <Badge className="text-xs px-1 py-0">{String(q.score ?? 0)}/10</Badge>
+                    <Chip variant="neutral" muted className="text-xs px-1 py-0">{String(q.score ?? 0)}/10</Chip>
                   </div>
                 ))}
               </div>

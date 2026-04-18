@@ -1,6 +1,6 @@
 "use client"
 
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Tooltip, TooltipContent, TooltipTrigger } from"@/components/ui/tooltip"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import {
@@ -36,26 +36,26 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
     if (!rec) return null
     if (rec === 'approved') {
       return (
-        <Badge className={`${badgeStyles.success} flex items-center gap-0.5`}>
+        <Chip variant="neutral" muted className={`${badgeStyles.success} flex items-center gap-0.5`}>
           <CheckCircle className="w-2.5 h-2.5" />
           APROVADO
-        </Badge>
+        </Chip>
       )
     }
     if (rec === 'pending_review') {
       return (
-        <Badge className={`${badgeStyles.warning} flex items-center gap-0.5`}>
+        <Chip variant="neutral" muted className={`${badgeStyles.warning} flex items-center gap-0.5`}>
           <Clock className="w-2.5 h-2.5" />
           PENDENTE
-        </Badge>
+        </Chip>
       )
     }
     if (rec === 'not_approved') {
       return (
-        <Badge className={`${badgeStyles.error} flex items-center gap-0.5`}>
+        <Chip variant="neutral" muted className={`${badgeStyles.error} flex items-center gap-0.5`}>
           <X className="w-2.5 h-2.5" />
           NÃO APROVADO
-        </Badge>
+        </Chip>
       )
     }
     return null
@@ -95,19 +95,19 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                 {isWsiOpinion ? 'Parecer WSI' : (opinion.job_vacancy_id ? 'Parecer de Vaga' : 'Parecer Geral')}
               </span>
               {opinion.job_vacancy_id && opinion.job_vacancy_title ? (
-                <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle flex items-center gap-1">
+                <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle flex items-center gap-1">
                   <Briefcase className="w-2.5 h-2.5" />
                   #{String(opinion.job_vacancy_id).slice(0, 6)} - {String(opinion.job_vacancy_title)}
-                </Badge>
+                </Chip>
               ) : opinion.job_vacancy_title ? (
-                <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle flex items-center gap-1">
+                <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle flex items-center gap-1">
                   <Briefcase className="w-2.5 h-2.5" />
                   {String(opinion.job_vacancy_title)}
-                </Badge>
+                </Chip>
               ) : !opinion.job_vacancy_id ? (
-                <Badge className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle">
+                <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle">
                   Sem vaga vinculada
-                </Badge>
+                </Chip>
               ) : null}
             </div>
             <div className="flex items-center gap-2 mt-0.5">
@@ -243,9 +243,9 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                   <h5 className={`${textStyles.label} text-status-success mb-1`}>Skills Match</h5>
                   <div className="flex flex-wrap gap-1">
                     {(opinion.matched_skills as string[]).map((skill: string) => (
-                      <Badge key={skill} className={badgeStyles.success}>
+                      <Chip variant="neutral" muted key={skill} className={badgeStyles.success}>
                         {skill}
-                      </Badge>
+                      </Chip>
                     ))}
                   </div>
                 </div>
@@ -255,9 +255,9 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                   <h5 className={`${textStyles.label} text-status-error mb-1`}>Skills Faltantes</h5>
                   <div className="flex flex-wrap gap-1">
                     {(opinion.missing_skills as string[]).map((skill: string) => (
-                      <Badge key={skill} className={badgeStyles.error}>
+                      <Chip variant="neutral" muted key={skill} className={badgeStyles.error}>
                         {skill}
-                      </Badge>
+                      </Chip>
                     ))}
                   </div>
                 </div>

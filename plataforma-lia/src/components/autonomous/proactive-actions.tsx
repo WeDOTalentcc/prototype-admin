@@ -7,7 +7,7 @@ import {
 } from"lucide-react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { cn } from"@/lib/utils"
 import { getProactiveActions, acceptProactiveAction, rejectProactiveAction } from"@/services/lia-api"
 
@@ -205,7 +205,7 @@ export function ProactiveActions({
           <h3 className="text-sm font-semibold text-lia-text-primary">
             Sugestões da LIA
           </h3>
-          <Badge variant="secondary">{actions.length}</Badge>
+          <Chip variant="neutral" muted>{actions.length}</Chip>
         </div>
       </div>
 
@@ -243,9 +243,9 @@ export function ProactiveActions({
                           </span>
                         </div>
                       </div>
-                      <Badge className={cn("shrink-0 text-micro", priorityStyle.badge)}>
+                      <Chip variant="neutral" muted className={cn("shrink-0 text-micro", priorityStyle.badge)}>
                         {PRIORITY_LABELS[action.priority] || action.priority}
-                      </Badge>
+                      </Chip>
                     </div>
 
                     <p className="text-xs text-lia-text-secondary">

@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from"react"
 import { Button } from"@/components/ui/button"
 import { Label } from"@/components/ui/label"
 import { Checkbox } from"@/components/ui/checkbox"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Input } from"@/components/ui/input"
 import {
@@ -140,12 +140,12 @@ export function LanguagesPanel({
                           <span className="text-lg">{getFlag(lang.code)}</span>
                           <span className="text-sm font-medium text-lia-text-primary">{lang.name}</span>
                           {lang.required && (
-                            <Badge
-                              variant="secondary"
+                            <Chip
+                              variant="neutral" muted
                               className="text-xs border-0 bg-lia-bg-tertiary text-lia-text-secondary"
                             >
                               Obrigatório
-                            </Badge>
+                            </Chip>
                           )}
                         </div>
                       </td>
@@ -215,13 +215,13 @@ export function LanguagesPanel({
               </span>
             ) : (
               languages.map((lang) => (
-                <Badge
+                <Chip
                   key={lang.id}
-                  variant="outline"
+                  variant="neutral"
                   className={`text-xs dark:border-lia-border-default text-lia-text-secondary ${lang.required ? 'border-lia-border-default bg-lia-bg-secondary' : 'border-lia-border-subtle bg-transparent'}`}
                 >
                   {getFlag(lang.code)} {lang.name} ({lang.level.charAt(0)})
-                </Badge>
+                </Chip>
               ))
             )}
           </div>

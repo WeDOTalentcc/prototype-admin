@@ -8,7 +8,7 @@ import { useMLPredictions } from"@/hooks/ai/use-ml-predictions"
 import { useAuthStore } from"@/stores/auth-store"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Progress } from"@/components/ui/progress"
 import {
   X, Download, Share2, Printer, Mail, FileText, Users,
@@ -544,9 +544,9 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                     <div className="p-2 bg-wedo-purple/10 rounded-xl border border-wedo-purple/30">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-micro font-medium text-wedo-purple">Previsão Time-to-Fill</span>
-                        <Badge className="bg-wedo-purple/20 text-wedo-purple text-micro px-1 py-0">
+                        <Chip variant="neutral" muted className="bg-wedo-purple/20 text-wedo-purple text-micro px-1 py-0">
                           {Math.round(reportData.predictions.timeToFill.confidence * 100)}% confiança
-                        </Badge>
+                        </Chip>
                       </div>
                       <p className="text-sm font-bold text-wedo-purple">
                         {reportData.predictions.timeToFill.predictedDays} dias
@@ -574,9 +574,9 @@ export function JobReportModal({ job, isOpen, onClose }: JobReportModalProps) {
                     <div className="p-2 bg-status-success/10 rounded-xl border border-status-success/30">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-micro font-medium text-status-success">Faixa Salarial Ótima</span>
-                        <Badge className="bg-status-success/20 text-status-success text-micro px-1 py-0">
+                        <Chip variant="neutral" muted className="bg-status-success/20 text-status-success text-micro px-1 py-0">
                           P{reportData.predictions.salary.marketPercentile}
-                        </Badge>
+                        </Chip>
                       </div>
                       <p className="text-sm font-bold text-status-success">
                         {formatBRL(reportData.predictions.salary.suggestedMin)} — {formatBRL(reportData.predictions.salary.suggestedMax)}

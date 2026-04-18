@@ -3,7 +3,7 @@
 import React from"react"
 import { Card, CardContent } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Activity, FileText, GitBranch, List, PlusCircle, Plus, Loader2
 } from"lucide-react"
@@ -125,7 +125,7 @@ export function CandidatoActivitiesTab({
                 <h4 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
                   <Activity className="w-4 h-4 text-lia-text-primary" />
                   Feed de Atividades
-                  <Badge className="text-xs px-1.5 py-0">{activities.length}</Badge>
+                  <Chip variant="neutral" muted className="text-xs px-1.5 py-0">{activities.length}</Chip>
                 </h4>
                 <div className="flex items-center gap-2">
                   <select
@@ -263,9 +263,9 @@ export function CandidatoActivitiesTab({
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <span className="text-xs font-medium text-lia-text-primary">Nota Interna</span>
-                              <Badge className="text-xs px-1.5 py-0  border-status-warning/30">
+                              <Chip variant="neutral" muted className="text-xs px-1.5 py-0  border-status-warning/30">
                                 {getCategoryLabelLocal(item.category)}
-                              </Badge>
+                              </Chip>
                               <span className="text-xs text-lia-text-secondary">{formatRelativeTime(String(item.created_at ||""))}</span>
                             </div>
                             <p className="text-sm text-lia-text-secondary">{String(item.content ||"")}</p>

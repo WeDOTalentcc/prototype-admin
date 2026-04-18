@@ -13,7 +13,7 @@ import { Edit2 } from"lucide-react"
 import { AlertTriangle } from"lucide-react"
 import { Layers3 } from"lucide-react"
 import { Card } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { textStyles } from"@/lib/design-tokens"
 
@@ -238,9 +238,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {['Ativa', 'Rascunho', 'Paralisada', 'Aguardando aprovação', 'Fechada (preenchida)', 'Cancelada'].map(status => (
-                <Badge
+                <Chip
                   key={status}
-                  variant="outline"
+                  variant="neutral"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.status?.statuses?.includes(status)
                       ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
@@ -249,7 +249,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                   onClick={() => onToggleFilter('status', 'statuses', status)}
                 >
                   {statusLabels[status] || status}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>
@@ -262,9 +262,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {['Planejamento', 'Aprovação', 'Publicada', 'Triagem', 'Entrevistas', 'Finalização', 'Encerrada'].map(stage => (
-                <Badge
+                <Chip
                   key={stage}
-                  variant="outline"
+                  variant="neutral"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.status?.stages?.includes(stage)
                       ? 'bg-lia-bg-tertiary border-lia-border-subtle text-lia-text-secondary font-medium'
@@ -273,7 +273,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                   onClick={() => onToggleFilter('status', 'stages', stage)}
                 >
                   {stageLabels[stage] || stage}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>
@@ -290,9 +290,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 { value: 'média', label: tf('medium'), color: 'bg-status-warning/15 border-status-warning/30 text-status-warning' },
                 { value: 'baixa', label: tf('low'), color: 'bg-status-success/15 border-status-success/30 text-status-success' },
               ].map(priority => (
-                <Badge
+                <Chip
                   key={priority.value}
-                  variant="outline"
+                  variant="neutral"
                   className={`text-xs cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none ${
                     jobFilters.status?.priorities?.includes(priority.value)
                       ? priority.color + ' font-medium'
@@ -301,7 +301,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                   onClick={() => onToggleFilter('status', 'priorities', priority.value)}
                 >
                   {priority.label}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>
@@ -314,9 +314,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             </h4>
             <div className="flex gap-2">
               {['presencial', 'híbrido', 'remoto'].map(model => (
-                <Badge
+                <Chip
                   key={model}
-                  variant="outline"
+                  variant="neutral"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.position?.workModels?.includes(model)
                       ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
@@ -325,7 +325,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                   onClick={() => onToggleFilter('position', 'workModels', model)}
                 >
                   {workModelLabels[model] || model}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>
@@ -338,9 +338,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {['Estágio', 'Júnior', 'Pleno', 'Sênior', 'Especialista', 'Coordenador', 'Gerente', 'Diretor'].map(level => (
-                <Badge
+                <Chip
                   key={level}
-                  variant="outline"
+                  variant="neutral"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.position?.levels?.includes(level)
                       ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
@@ -349,7 +349,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                   onClick={() => onToggleFilter('position', 'levels', level)}
                 >
                   {seniorityLabels[level] || level}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>
@@ -362,9 +362,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {['São Paulo, SP', 'Rio de Janeiro, RJ', 'Belo Horizonte, MG', 'Curitiba, PR', 'Porto Alegre, RS', 'Brasília, DF', 'Remoto'].map(loc => (
-                <Badge
+                <Chip
                   key={loc}
-                  variant="outline"
+                  variant="neutral"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.position?.locations?.includes(loc)
                       ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
@@ -373,7 +373,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                   onClick={() => onToggleFilter('position', 'locations', loc)}
                 >
                   {locLabels[loc] || loc}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>
@@ -386,9 +386,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
             </h4>
             <div className="flex flex-wrap gap-1.5">
               {['Tecnologia', 'Design', 'Produto', 'Marketing', 'Vendas', 'RH', 'Financeiro', 'Operações'].map(dept => (
-                <Badge
+                <Chip
                   key={dept}
-                  variant="outline"
+                  variant="neutral"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                     jobFilters.team?.departments?.includes(dept)
                       ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
@@ -397,7 +397,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                   onClick={() => onToggleFilter('team', 'departments', dept)}
                 >
                   {deptLabels[dept] || dept}
-                </Badge>
+                </Chip>
               ))}
             </div>
           </div>
@@ -414,9 +414,9 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 { value: 'website', Icon: Globe },
                 { value: 'indeed', Icon: Briefcase },
               ].map(channel => (
-                <Badge
+                <Chip
                   key={channel.value}
-                  variant="outline"
+                  variant="neutral"
                   className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none flex items-center gap-1 ${
                     jobFilters.publishing?.channels?.includes(channel.value)
                       ? 'bg-lia-bg-tertiary border-lia-text-primary text-lia-text-primary font-medium dark:bg-lia-bg-secondary'
@@ -426,10 +426,10 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 >
                   <channel.Icon className="w-3 h-3" />
                   {pubLabels[channel.value] || channel.value}
-                </Badge>
+                </Chip>
               ))}
-              <Badge
-                variant="outline"
+              <Chip
+                variant="neutral"
                 className={`text-xs cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none ${
                   jobFilters.publishing?.unpublished
                     ? 'bg-lia-bg-tertiary border-lia-border-subtle text-lia-text-secondary font-medium'
@@ -438,7 +438,7 @@ const TableFiltersPanel = memo(function TableFiltersPanel({
                 onClick={() => onToggleFilter('publishing', 'unpublished', !jobFilters.publishing?.unpublished)}
               >
                 {tf('unpublished')}
-              </Badge>
+              </Chip>
             </div>
           </div>
 

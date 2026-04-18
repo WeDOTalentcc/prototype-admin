@@ -3,7 +3,7 @@
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { MessageCircle, UserCheck, Clock, CheckCircle, Users, FileText, Star } from"lucide-react"
 
 const liaActivities = [
@@ -102,8 +102,8 @@ export function TimelineSection() {
                   </p>
 
                   <div className="mt-2">
-                    <Badge
-                      variant="outline"
+                    <Chip
+                      variant="neutral"
                       className={`text-xs ${
  item.type === 'feedback' ? 'border-status-success/30 text-status-success' :
                         item.type === 'evaluation' ? 'border-lia-border-default dark:border-lia-border-default text-lia-text-secondary' :
@@ -119,7 +119,7 @@ export function TimelineSection() {
                        item.type === 'analysis' ? 'Análise' :
                        item.type === 'status_update' ? 'Atualização' :
                        'Pontuação'}
-                    </Badge>
+                    </Chip>
                   </div>
                 </div>
               </div>

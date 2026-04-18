@@ -5,7 +5,7 @@ import { X, Check, RotateCcw, Save, Zap, Brain, Loader2, List } from"lucide-reac
 import { cn } from"@/lib/utils"
 import { Input } from"@/components/ui/input"
 import { Label } from"@/components/ui/label"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Select,
   SelectContent,
@@ -247,9 +247,9 @@ export const JobTitlesSection = ({
           {filters.job?.titles?.map((title) => {
             const isAiSuggested = aiSuggestedTitles.includes(title)
             return (
-              <Badge
+              <Chip
                 key={title}
-                variant="secondary"
+                variant="neutral" muted
                 className={cn("pl-2 pr-1 py-1 flex items-center gap-1",
                   isAiSuggested
                     ?"bg-wedo-purple/10 border border-wedo-purple/30 text-wedo-purple"
@@ -264,7 +264,7 @@ export const JobTitlesSection = ({
                 >
                   <X className="w-3 h-3" />
                 </button>
-              </Badge>
+              </Chip>
             )
           })}
 

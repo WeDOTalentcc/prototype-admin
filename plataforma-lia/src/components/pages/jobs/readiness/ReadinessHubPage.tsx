@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   AlertTriangle,
   CheckCircle2,
@@ -144,9 +144,9 @@ function JobCardCell({
           <div className="flex items-center justify-between gap-2">
             <h3 className="text-sm font-medium text-lia-text-primary truncate">{card.title}</h3>
             {card.requires_human && (
-              <Badge variant="outline" className="text-[10px] border-amber-300 text-amber-600 dark:text-amber-400">
+              <Chip variant="neutral" className="text-[10px] border-amber-300 text-amber-600 dark:text-amber-400">
                 ação requerida
-              </Badge>
+              </Chip>
             )}
           </div>
           <div className="mt-1 flex items-center gap-2 flex-wrap text-[11px] text-lia-text-secondary">

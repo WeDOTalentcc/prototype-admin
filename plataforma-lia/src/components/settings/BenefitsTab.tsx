@@ -7,7 +7,7 @@ import { useCompanyId } from"@/hooks/company/useCompanyId"
 import { textStyles, cardStyles, badgeStyles, actionButtonStyles } from '@/lib/design-tokens'
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Switch } from"@/components/ui/switch"
 import {
   Gift,
@@ -624,9 +624,9 @@ export function BenefitsTab() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-micro">
+                  <Chip variant="neutral" className="text-micro">
                     {categoryBenefits.filter(b => b.is_active).length} ativos
-                  </Badge>
+                  </Chip>
                   {isExpanded ? (
                     <ChevronDown className="w-4 h-4 text-lia-text-secondary" />
                   ) : (

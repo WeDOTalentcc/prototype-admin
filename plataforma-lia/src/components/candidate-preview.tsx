@@ -1,7 +1,7 @@
 "use client"
 
 import { useCandidatePreviewCore } from"@/components/candidate-preview/useCandidatePreviewCore"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Activity, FileText, Brain, UserCheck } from"lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
 import { CandidatePreviewHeader } from"@/components/candidate-preview/CandidatePreviewHeader"
@@ -208,9 +208,9 @@ export function CandidatePreview({
               <tab.icon className="w-3 h-3" />
               {tab.label}
               {'badge' in tab && tab.badge! > 0 && (
-                <Badge className="text-micro px-1 py-0 h-4 ml-1 bg-wedo-cyan/15">
+                <Chip variant="neutral" muted className="text-micro px-1 py-0 h-4 ml-1 bg-wedo-cyan/15">
                   {tab.badge}
-                </Badge>
+                </Chip>
               )}
             </button>
           ))}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Bell, X, TrendingUp, AlertTriangle, UserMinus, UserPlus,
   Building, Target, Zap, Eye, Settings, Loader2, RefreshCw
@@ -320,9 +320,9 @@ export function IntelligenceNotifications({
                         <span className="text-sm font-medium text-lia-text-primary">
                           {notification.title}
                         </span>
-                        <Badge className={`text-xs ${getPriorityColor(notification.priority)}`}>
+                        <Chip variant="neutral" muted className={`text-xs ${getPriorityColor(notification.priority)}`}>
                           {notification.priority}
-                        </Badge>
+                        </Chip>
                       </div>
 
                       <p className="text-sm text-lia-text-secondary mb-2">

@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import { Webhook as WebhookIcon, Plus, Trash2, Send, Loader2, Copy, CheckCircle2, AlertCircle, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { textStyles, cardStyles, buttonStyles, badgeStyles } from "@/lib/design-tokens"
@@ -157,11 +157,11 @@ export function WebhooksManager() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-semibold text-lia-text-primary">{wh.name}</span>
-                    <Badge className={wh.is_active ? badgeStyles.success : badgeStyles.default}>
+                    <Chip variant="neutral" muted className={wh.is_active ? badgeStyles.success : badgeStyles.default}>
                       {wh.is_active ? "Ativo" : "Pausado"}
-                    </Badge>
+                    </Chip>
                     {wh.last_status_code && (
-                      <Badge
+                      <Chip variant="neutral" muted
                         className={
                           wh.last_status_code >= 200 && wh.last_status_code < 300
                             ? badgeStyles.success
@@ -169,7 +169,7 @@ export function WebhooksManager() {
                         }
                       >
                         Ultimo: {wh.last_status_code}
-                      </Badge>
+                      </Chip>
                     )}
                   </div>
                   <p className="text-xs text-lia-text-secondary truncate font-mono">{wh.url}</p>

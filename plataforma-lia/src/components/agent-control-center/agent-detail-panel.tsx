@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { 
   X, CheckCircle, Clock, XCircle, TrendingUp, TrendingDown, Minus,
   Activity, Settings, Target,
@@ -272,14 +272,14 @@ export function AgentDetailPanel({ agent, isOpen, onClose }: AgentDetailPanelPro
                         </span>
                       </div>
                     </div>
-                    <Badge 
+                    <Chip variant="neutral" muted 
                       className="mt-3"
                       style={{backgroundColor: getHealthTierBgColor(healthScore.tier),
                         color: getHealthTierColor(healthScore.tier),
                         border: `1px solid ${getHealthTierColor(healthScore.tier)}`}}
                     >
                       {getHealthTierLabel(healthScore.tier)}
-                    </Badge>
+                    </Chip>
                   </div>
 
                   {/* Score Drivers */}

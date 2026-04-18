@@ -1,7 +1,7 @@
 "use client"
 
 import { Activity, GitBranch, List, PlusCircle } from"lucide-react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 
 export type ActivityFilterType = 'all' | 'emails' | 'interviews' | 'lia' | 'applications' | 'tests' | 'offers' | 'evaluations'
@@ -35,7 +35,7 @@ export function ActivityFilters({
         <h4 className="text-xs font-medium text-lia-text-primary flex items-center gap-1.5">
           <Activity className="w-3.5 h-3.5 text-lia-text-primary" />
           Feed de Atividades
-          <Badge className="text-xs px-1 py-0">{totalCount}</Badge>
+          <Chip variant="neutral" muted className="text-xs px-1 py-0">{totalCount}</Chip>
         </h4>
         <div className="flex items-center gap-2">
           <select

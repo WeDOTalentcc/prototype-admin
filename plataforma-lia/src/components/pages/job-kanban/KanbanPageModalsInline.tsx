@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import {
   Select,
@@ -100,11 +100,11 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                     }`}
                     onClick={() => setSelectedSubStatus(getSuggestedSubStatus(pendingMove.toColumn))}
                   >
-                    <Badge 
+                    <Chip variant="neutral" muted 
                       className="text-sm px-3 py-1 font-medium border-0 text-lia-text-primary bg-lia-btn-primary-bg"
                     >
                       {getAvailableSubStatuses(pendingMove.toColumn).find(s => s.name === getSuggestedSubStatus(pendingMove.toColumn))?.displayName || getSuggestedSubStatus(pendingMove.toColumn)}
-                    </Badge>
+                    </Chip>
                   </div>
                 </div>
               )}

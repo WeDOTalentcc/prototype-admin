@@ -3,7 +3,7 @@
 import React, { memo } from"react"
 import { useTranslations } from "next-intl"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Users, Plus, Filter, ArrowUpDown } from"lucide-react"
 import { LIAIcon } from"@/components/ui/lia-icon"
 import { textStyles, buttonStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
@@ -32,14 +32,14 @@ const CandidatesHeader = memo(function CandidatesHeader({
           <h1 className="text-lg font-semibold text-lia-text-primary">{t('header.title')}</h1>
         </div>
         
-        <Badge data-testid="candidates-total-count" variant="outline" className="border-lia-border-default dark:border-lia-border-default text-lia-text-secondary">
+        <Chip data-testid="candidates-total-count" variant="neutral" className="border-lia-border-default dark:border-lia-border-default text-lia-text-secondary">
           {t('pageHeader.candidatesCount', { count: totalCount.toLocaleString() })}
-        </Badge>
+        </Chip>
         
         {selectedCount > 0 && (
-          <Badge data-testid="candidates-selected-count" className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
+          <Chip variant="neutral" muted data-testid="candidates-selected-count" className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
             {t('pageHeader.selectedCount', { count: selectedCount })}
-          </Badge>
+          </Chip>
         )}
       </div>
       

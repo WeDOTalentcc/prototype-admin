@@ -7,7 +7,7 @@ import {
 } from"lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { PipelineReport } from"@/components/ui/pipeline-report"
 import { ContextPanelData } from"@/types/chat"
 
@@ -53,7 +53,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                       <div key={prediction.category} className="p-4 rounded-xl">
                         <div className="flex items-center justify-between mb-3">
                           <h5 className="font-medium text-lia-text-primary">{prediction.category}</h5>
-                          <Badge variant="outline" className="text-xs">{prediction.confidence}% confiança</Badge>
+                          <Chip variant="neutral" className="text-xs">{prediction.confidence}% confiança</Chip>
                         </div>
                         <div className="grid grid-cols-2 gap-4 mb-3 text-sm">
                           <div><span className="text-lia-text-secondary">Atual:</span><p className="font-medium">{prediction.current_performance}</p></div>
@@ -143,7 +143,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                       <div key={candidate.name} className="p-4 rounded-xl border bg-lia-bg-tertiary border-lia-border-subtle">
                         <div className="flex justify-between items-start mb-2">
                           <div><h5 className="font-medium text-lia-text-primary">{candidate.name}</h5><p className="text-sm text-lia-text-secondary">Nota: {candidate.score}/100</p></div>
-                          <Badge className="bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-lia-text-primary">{candidate.interview_type}</Badge>
+                          <Chip variant="neutral" muted className="bg-wedo-cyan/15 dark:bg-wedo-cyan/20 text-lia-text-primary">{candidate.interview_type}</Chip>
                         </div>
                         <div className="flex gap-2 text-xs text-lia-text-secondary">
                           <span>Preferências:</span>

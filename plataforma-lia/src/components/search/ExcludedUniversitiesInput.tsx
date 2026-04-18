@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from"react"
 import { X, Brain, Loader2, Search } from"lucide-react"
 import { cn } from"@/lib/utils"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Input } from"@/components/ui/input"
 
 interface ExcludedUniversitiesInputProps {
@@ -231,7 +231,7 @@ export function ExcludedUniversitiesInput({
       {value.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {value.map(university => (
-            <Badge
+            <Chip variant="neutral" muted
               key={university}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium  border border-status-warning/30"
             >
@@ -243,7 +243,7 @@ export function ExcludedUniversitiesInput({
               >
                 <X className="w-3 h-3" />
               </button>
-            </Badge>
+            </Chip>
           ))}
         </div>
       )}

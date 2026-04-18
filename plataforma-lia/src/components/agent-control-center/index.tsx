@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Chip } from '@/components/ui/chip'
 import { 
   Activity, RefreshCcw, CheckCircle, Clock, XCircle, 
   AlertTriangle, ChevronRight,
@@ -565,12 +565,12 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                   className="flex items-center justify-between p-3 rounded-xl bg-lia-bg-primary"
                 >
                   <div className="flex items-center gap-3">
-                    <Badge
-                      variant="outline"
+                    <Chip
+                      variant="neutral"
                       className={`text-xs ${alert.severity === 'high' ? 'border-status-error text-status-error' : alert.severity === 'medium' ? 'border-status-warning text-status-warning' : 'border-lia-text-secondary text-lia-text-secondary'}`}
                     >
                       {alert.severity}
-                    </Badge>
+                    </Chip>
                     <div>
                       <p className="text-sm font-medium text-lia-text-primary">
                         {alert.title}
@@ -694,9 +694,9 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                 <h3 className="font-medium font-sans text-lia-text-primary">
                   Atividade Recente
                 </h3>
-                <Badge variant="outline" className="text-xs border-lia-border-default dark:border-lia-border-default">
+                <Chip variant="neutral" className="text-xs border-lia-border-default dark:border-lia-border-default">
                   {activities.length} eventos
-                </Badge>
+                </Chip>
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -798,9 +798,9 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                           {formatTimeAgo(activity.started_at)}
                         </span>
                         {activity.sla_breach && (
-                          <Badge variant="outline" className="text-xs px-1 py-0">
+                          <Chip variant="neutral" className="text-xs px-1 py-0">
                             SLA
-                          </Badge>
+                          </Chip>
                         )}
                       </div>
                       <p className="text-sm font-medium text-lia-text-primary">

@@ -4,7 +4,7 @@ import React from"react"
 import { X, Loader2, Users } from"lucide-react"
 import { Button } from"@/components/ui/button"
 import { Checkbox } from"@/components/ui/checkbox"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { cn } from"@/lib/utils"
 
 interface BulkActionItem {
@@ -97,10 +97,10 @@ export const BulkActionsBar = React.memo(function BulkActionsBar({
 
           <div className="flex items-center gap-2">
             {isFixed ? (
-              <Badge className="bg-lia-interactive-active text-lia-text-secondary border-lia-border-default hover:bg-lia-border-default dark:bg-lia-bg-elevated dark:border-lia-border-default">
+              <Chip variant="neutral" muted className="bg-lia-interactive-active text-lia-text-secondary border-lia-border-default hover:bg-lia-border-default dark:bg-lia-bg-elevated dark:border-lia-border-default">
                 {entityIcon || <Users className="w-3 h-3 mr-1" />}
                 {selectedCount}
-              </Badge>
+              </Chip>
             ) : (
               <div className="w-6 h-6 rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center flex-shrink-0">
                 {entityIcon || <Users className="w-3.5 h-3.5 text-lia-text-secondary" />}

@@ -14,7 +14,7 @@ import {
 } from"lucide-react"
 import { Card, CardHeader, CardContent } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { InterviewAnalysisStatus, InterviewAnalysisResult } from"@/types/interview-notes"
 import { cn } from"@/lib/utils"
 
@@ -190,10 +190,10 @@ export function TeamsAnalysisPanel({
           </div>
           <div className="flex items-center gap-2">
             {status && (
-              <Badge className={cn("gap-1", statusInfo?.color)}>
+              <Chip variant="neutral" muted className={cn("gap-1", statusInfo?.color)}>
                 <StatusIcon className="h-3 w-3" />
                 {statusInfo?.label}
-              </Badge>
+              </Chip>
             )}
             <Button
               variant="ghost"

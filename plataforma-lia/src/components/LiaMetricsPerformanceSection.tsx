@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   TrendingUp, Clock, Target, CheckCircle, Award, AlertCircle, Activity, Timer
 } from"lucide-react"
@@ -123,9 +123,9 @@ export function LiaMetricsPerformanceSection({ data }: LiaMetricsPerformanceSect
               <div className="p-3 bg-lia-bg-tertiary rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <Timer className="w-5 h-5 text-lia-text-secondary" />
-                  <Badge className="bg-status-success text-white text-xs">
+                  <Chip variant="neutral" muted className="bg-status-success text-white text-xs">
                     ✓ No Prazo
-                  </Badge>
+                  </Chip>
                 </div>
                 <div className="text-2xl font-semibold text-lia-text-primary">
                   {avgTimeContact.toFixed(1)}d
@@ -141,9 +141,9 @@ export function LiaMetricsPerformanceSection({ data }: LiaMetricsPerformanceSect
               <div className="p-3 bg-status-success/10 dark:bg-lia-bg-secondary rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <Timer className="w-5 h-5 text-status-success" />
-                  <Badge className="bg-status-success text-white text-xs">
+                  <Chip variant="neutral" muted className="bg-status-success text-white text-xs">
                     ✓ No Prazo
-                  </Badge>
+                  </Chip>
                 </div>
                 <div className="text-2xl font-semibold text-lia-text-primary">
                   {avgTimeTriage.toFixed(1)}d
@@ -159,9 +159,9 @@ export function LiaMetricsPerformanceSection({ data }: LiaMetricsPerformanceSect
               <div className="p-3 bg-status-warning/10 dark:bg-lia-bg-secondary rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <Timer className="w-5 h-5 text-status-warning" />
-                  <Badge className="bg-status-warning text-white text-xs">
+                  <Chip variant="neutral" muted className="bg-status-warning text-white text-xs">
                     ⚠ Atenção
-                  </Badge>
+                  </Chip>
                 </div>
                 <div className="text-2xl font-semibold text-lia-text-primary">
                   {avgTimeInterview.toFixed(1)}d
@@ -177,9 +177,9 @@ export function LiaMetricsPerformanceSection({ data }: LiaMetricsPerformanceSect
               <div className="p-3 bg-wedo-purple/10 dark:bg-lia-bg-secondary rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <Clock className="w-5 h-5 text-wedo-purple" />
-                  <Badge className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">
+                  <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">
                     Total
-                  </Badge>
+                  </Chip>
                 </div>
                 <div className="text-2xl font-semibold text-lia-text-primary">
                   {avgTimeTotal.toFixed(1)}d
@@ -215,10 +215,10 @@ export function LiaMetricsPerformanceSection({ data }: LiaMetricsPerformanceSect
                   <div className="text-2xl font-semibold text-lia-text-primary">
                     15 dias
                   </div>
-                  <Badge className="mt-2 bg-status-success text-white">
+                  <Chip variant="neutral" muted className="mt-2 bg-status-success text-white">
                     <TrendingUp className="w-3 h-3 mr-1" />
                     Dentro da Meta
-                  </Badge>
+                  </Chip>
                 </div>
               </div>
 

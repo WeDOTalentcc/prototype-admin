@@ -2,7 +2,7 @@
 
 import { textStyles, badgeStyles } from '@/lib/design-tokens'
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Brain, Clock } from"lucide-react"
 import type { OpinionsData } from './ProfileTabTypes'
@@ -115,7 +115,7 @@ export function ProfileLiaOpinionCard({
             {opinion.archetype && (
               <>
                 <span className="lia-text-muted">•</span>
-                <Badge className={badgeStyles.default}>{opinion.archetype}</Badge>
+                <Chip variant="neutral" muted className={badgeStyles.default}>{opinion.archetype}</Chip>
               </>
             )}
           </div>

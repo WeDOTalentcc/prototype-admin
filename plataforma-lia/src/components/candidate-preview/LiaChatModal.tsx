@@ -8,7 +8,7 @@ import React from"react"
 import { X, MessageSquare, UserPlus, ChevronRight, Mic, Send } from"lucide-react"
 import { Calendar as CalendarIcon } from"lucide-react"
 import { Avatar, AvatarFallback } from"@/components/ui/avatar"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { textStyles, formatScorePercent } from"@/lib/design-tokens"
 import { ThinkingDots } from"@/components/ui/thinking-dots"
@@ -173,9 +173,9 @@ export function LiaChatModal({
                   {candidate.position} • Nota: {formatScorePercent(candidate.score ?? 0)}
                 </div>
               </div>
-              <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle text-xs px-2 py-0.5">
+              <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle text-xs px-2 py-0.5">
                 Foco Individual
-              </Badge>
+              </Chip>
             </div>
           </div>
         </div>
@@ -184,9 +184,9 @@ export function LiaChatModal({
         <div className="px-4 py-2 bg-lia-bg-primary/50/50">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-lia-text-secondary">Ações rápidas sugeridas</span>
-            <Badge className="bg-status-success/15 text-lia-text-primary dark:bg-status-success text-xs px-1.5 py-0.5">
+            <Chip variant="neutral" muted className="bg-status-success/15 text-lia-text-primary dark:bg-status-success text-xs px-1.5 py-0.5">
               Score {formatScorePercent(candidate.score ?? 0)}
-            </Badge>
+            </Chip>
           </div>
           <div className="flex gap-1">
             <button

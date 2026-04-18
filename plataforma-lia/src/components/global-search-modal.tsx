@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Search, X, Filter, User, Briefcase, MessageSquare, BarChart3,
   FileText, Clock, Star, ChevronRight, Zap, Calendar, MapPin,
@@ -337,9 +337,9 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                               {result.title}
                             </h3>
                             {result.metadata?.score && (
-                              <Badge variant="outline" className="text-xs">
+                              <Chip variant="neutral" className="text-xs">
                                 {result.metadata.score}% match
-                              </Badge>
+                              </Chip>
                             )}
                           </div>
 
@@ -353,12 +353,12 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
 
                           <div className="flex items-center gap-2 flex-wrap">
                             {result.metadata?.status && (
-                              <Badge
-                                variant="secondary"
+                              <Chip
+                                variant="neutral" muted
                                 className={`text-xs ${getStatusColor(result.metadata.status, result.type)}`}
                               >
                                 {result.metadata.status}
-                              </Badge>
+                              </Chip>
                             )}
 
                             {result.metadata?.location && (

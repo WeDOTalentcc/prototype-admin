@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { Button } from"@/components/ui/button"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { AlertTriangle, Brain, Clock, BellOff, Loader2, CheckCircle, Info } from"lucide-react"
 import type { EmptyFieldNotification, FieldValueSuggestion } from"@/hooks/candidates/use-empty-field-notifications"
 
@@ -80,9 +80,9 @@ export function EmptyFieldNotificationMessage({
                     Campo vazio: {notification.field_label}
                   </span>
                   {notification.times_reminded > 0 && (
-                    <Badge variant="outline" className="text-xs">
+                    <Chip variant="neutral" className="text-xs">
                       Lembrete #{notification.times_reminded + 1}
-                    </Badge>
+                    </Chip>
                   )}
                 </div>
                 <p className="text-sm text-lia-text-tertiary">
@@ -162,9 +162,9 @@ export function EmptyFieldNotificationMessage({
                           <div className="flex items-center gap-2">
                             <span className="text-lg">{getSourceIcon(suggestion.source)}</span>
                             <span className="text-sm font-medium">Sugestão da LIA</span>
-                            <Badge variant="secondary" className="text-xs">
+                            <Chip variant="neutral" muted className="text-xs">
                               {Math.round(suggestion.confidence * 100)}% confiança
-                            </Badge>
+                            </Chip>
                           </div>
                           
                           <div className="p-2 bg-lia-bg-primary rounded-md border">

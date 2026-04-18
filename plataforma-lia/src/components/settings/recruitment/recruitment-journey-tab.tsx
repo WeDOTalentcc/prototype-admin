@@ -4,7 +4,7 @@ import { useState } from"react"
 import { cn } from"@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   RECRUITMENT_STAGES
 } from"@/lib/recruitment-stages"
@@ -110,10 +110,10 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
               <p className="text-sm text-lia-text-secondary mt-1">Pipeline e elegibilidade</p>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-status-success border-status-success/30 bg-status-success/10 dark:bg-status-success gap-1.5">
+              <Chip variant="neutral" className="text-status-success border-status-success/30 bg-status-success/10 dark:bg-status-success gap-1.5">
                 <CheckCircle className="w-3 h-3" />
                 Sincronizado
-              </Badge>
+              </Chip>
             </div>
           </div>
 
@@ -140,10 +140,10 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Badge variant="outline" className="text-status-error border-status-error/30 bg-status-error/10 dark:bg-status-error gap-1.5 cursor-pointer hover:bg-status-error/15">
+                  <Chip variant="neutral" className="text-status-error border-status-error/30 bg-status-error/10 dark:bg-status-error gap-1.5 cursor-pointer hover:bg-status-error/15">
                     <Trash2 className="w-3 h-3" />
                     Deletar Template
-                  </Badge>
+                  </Chip>
                   <Button
                     variant="outline"
                     size="sm"

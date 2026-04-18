@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { Checkbox } from"@/components/ui/checkbox"
 import { Button } from"@/components/ui/button"
 import { ChevronDown, ChevronUp, Lock, Plus, Trash2 } from"lucide-react"
@@ -54,13 +54,13 @@ function QuestionCard({ question, showDelete, onToggle }: { question: UnifiedScr
         <div className="flex-1 space-y-2">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-1">
-              <Badge variant="outline" className={cn("text-micro px-1.5 py-0 h-4 border", badge.color)}>
+              <Chip variant="neutral" className={cn("text-micro px-1.5 py-0 h-4 border", badge.color)}>
                 {badge.label}
-              </Badge>
+              </Chip>
               {isAffirmativeQuestion && (
-                <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 border  border-status-success/30">
+                <Chip variant="neutral" className="text-micro px-1.5 py-0 h-4 border  border-status-success/30">
                   Não eliminatória
-                </Badge>
+                </Chip>
               )}
             </div>
             {showDelete && (
@@ -130,9 +130,9 @@ export function ScreeningBlockSection({
             <div className="flex items-center gap-1.5">
               <span className="text-xs font-medium text-lia-text-primary">{block.name}</span>
               {block.id === 2 && isAffirmative && (
-                <Badge variant="outline" className="text-micro px-1.5 py-0 h-4 border  border-wedo-purple/30">
+                <Chip variant="neutral" className="text-micro px-1.5 py-0 h-4 border  border-wedo-purple/30">
                   Vaga Afirmativa
-                </Badge>
+                </Chip>
               )}
             </div>
             <span className="text-micro text-lia-text-secondary">{block.duration}</span>
@@ -140,21 +140,21 @@ export function ScreeningBlockSection({
         </div>
         <div className="flex items-center gap-2">
           {!block.editable && (
-            <Badge
-              variant="outline"
+            <Chip
+              variant="neutral"
               className="text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle"
             >
               <Lock className="h-2.5 w-2.5 mr-0.5" />
               Automático
-            </Badge>
+            </Chip>
           )}
           {block.editable && questions.length > 0 && (
-            <Badge
-              variant="outline"
+            <Chip
+              variant="neutral"
               className={`text-micro px-1.5 py-0 ${selectedInBlock > 0 ? 'bg-wedo-green-pastel text-status-success border-wedo-green-pastel' : 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-default'}`}
             >
               {selectedInBlock} {selectedInBlock === 1 ? 'Info.' : 'Infos.'}
-            </Badge>
+            </Chip>
           )}
           {isExpanded ? (
             <ChevronUp className="h-4 w-4 text-lia-text-secondary" />
@@ -260,9 +260,9 @@ export function SuggestionCard({ question, onAdd }: { question: UnifiedScreening
           </p>
           <div className="flex flex-wrap gap-1">
             {badges.map((badge, idx) => (
-              <Badge key={idx} variant="outline" className={cn("text-micro px-1.5 py-0 h-4 border", badge.color)}>
+              <Chip key={idx} variant="neutral" className={cn("text-micro px-1.5 py-0 h-4 border", badge.color)}>
                 {badge.label as React.ReactNode}
-              </Badge>
+              </Chip>
             ))}
           </div>
         </div>

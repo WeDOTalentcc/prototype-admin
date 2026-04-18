@@ -2,7 +2,7 @@
 
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   Plus, CheckCircle, Edit, Eye
 } from"lucide-react"
@@ -31,9 +31,9 @@ export function OnboardingTemplates() {
                   <CardTitle className="text-xs">{template.name}</CardTitle>
                   <p className="text-sm text-lia-text-primary mt-1">{template.description}</p>
                 </div>
-                <Badge variant={template.isActive ?"default" :"secondary"}>
+                <Chip variant="neutral" muted>
                   {template.isActive ? 'Ativo' : 'Inativo'}
-                </Badge>
+                </Chip>
               </div>
             </CardHeader>
             <CardContent>
@@ -56,13 +56,13 @@ export function OnboardingTemplates() {
                       <div key={task.id} className="flex items-center gap-2 text-sm">
                         <CheckCircle className={`w-4 h-4 ${task.isCompleted ? 'text-status-success' : 'text-lia-text-secondary'}`} />
                         <span className="text-lia-text-primary">{task.title}</span>
-                        <Badge variant="outline" className="text-xs">
+                        <Chip variant="neutral" className="text-xs">
                           {task.type === 'document' ? 'Doc' :
                            task.type === 'meeting' ? 'Reunião' :
                            task.type === 'training' ? 'Treinamento' :
                            task.type === 'system_access' ? 'Sistema' :
                            task.type === 'equipment' ? 'Equipamento' : 'Outro'}
-                        </Badge>
+                        </Chip>
                       </div>
                     ))}
                     {template.tasks.length > 3 && (

@@ -3,7 +3,7 @@
 import { useState } from"react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { CheckCircle2, ArrowRight, Plus, MoreHorizontal, Zap, Users, FileText, MessageSquare } from"lucide-react"
 import { TaskModal } from"@/components/task-modal"
 
@@ -141,12 +141,12 @@ export function TasksSection() {
                       </div>
 
                       <div className="flex items-center gap-1 ml-2">
-                        <Badge
-                          variant="outline"
+                        <Chip
+                          variant="neutral"
                           className={`text-xs h-3.5 px-1 ${getPriorityColor(task.priority)}`}
                         >
                           {task.priority ==="high" ?"Alta" : task.priority ==="medium" ?"Média" :"Baixa"}
-                        </Badge>
+                        </Chip>
                         <ArrowRight className="w-2.5 h-2.5 text-lia-text-secondary group-hover:text-lia-text-secondary transition-colors motion-reduce:transition-none" />
                       </div>
                     </div>

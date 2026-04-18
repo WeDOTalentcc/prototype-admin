@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import {
   AlertTriangle, CheckCircle, Clock, TrendingDown, TrendingUp,
   Bell, Eye, Users, Target,
@@ -77,12 +77,12 @@ export function KpiAlertCard({
               <h4 className={`font-medium ${alert.isRead ? 'text-lia-text-primary' : 'text-lia-text-primary'}`}>
                 {alert.title}
               </h4>
-              <Badge className={`text-xs ${getAlertBadgeColor(alert.type)}`}>
+              <Chip variant="neutral" muted className={`text-xs ${getAlertBadgeColor(alert.type)}`}>
                 {alert.type}
-              </Badge>
-              <Badge className={`text-xs ${getPriorityBadgeColor(alert.priority)}`}>
+              </Chip>
+              <Chip variant="neutral" muted className={`text-xs ${getPriorityBadgeColor(alert.priority)}`}>
                 {alert.priority}
-              </Badge>
+              </Chip>
             </div>
 
             <p className="text-sm text-lia-text-secondary mb-3">{alert.description}</p>

@@ -2,7 +2,7 @@
 
 import React, { memo } from"react"
 import { useTranslations } from "next-intl"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { cn } from"@/lib/utils"
 
 interface CandidateSkillsListProps {
@@ -29,15 +29,15 @@ const CandidateSkillsList = memo(function CandidateSkillsList({
   return (
     <div className={cn("flex flex-wrap gap-1", className)}>
       {visible.map((skill) => (
-        <Badge
+        <Chip
           key={skill}
-          variant="secondary"
+          variant="neutral" muted
           className={cn("border-0 bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary",
             size ==="sm" ?"text-micro px-1.5 py-0" :"text-xs px-2 py-0.5"
           )}
         >
           {skill}
-        </Badge>
+        </Chip>
       ))}
       {overflowCount > 0 && (
         <button
