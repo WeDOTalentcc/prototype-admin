@@ -1,6 +1,8 @@
 export { KanbanTableView } from "./KanbanTableView"
 export { KanbanColumnRenderer } from "./KanbanColumnRenderer"
 export { KanbanColumn } from "./KanbanColumn"
+export { KanbanColumnHeader } from "./KanbanColumnHeader"
+export type { KanbanColumnHeaderProps, KanbanColumnHeaderWidth } from "./KanbanColumnHeader"
 export { KanbanCard } from "./KanbanCard"
 export { MoveConfirmationModal } from "./MoveConfirmationModal"
 export { AddColumnPopover } from "./AddColumnPopover"

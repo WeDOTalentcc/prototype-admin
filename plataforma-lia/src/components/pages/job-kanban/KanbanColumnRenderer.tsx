@@ -70,6 +70,7 @@ import { getStageByName, isApplicationSource } from "@/lib/recruitment-stages"
 import { getSuggestionForCandidate } from "@/hooks/ai/useCandidateSuggestions"
 import { formatScorePercent } from "@/lib/design-tokens"
 import type { CandidateLocal } from "@/services/lia-api"
+import { KanbanColumnHeader } from "./KanbanColumnHeader"
 import { KanbanCardActions } from "./KanbanCardActions"
 import { KanbanCardScores } from "./KanbanCardScores"
 import { KanbanCardStatusBadges } from "./KanbanCardStatusBadges"
@@ -339,18 +340,14 @@ export function KanbanColumnRenderer({
       data-stage-id={stageId}
     >
       {/* Header da Coluna - Fixo */}
-      <div className="flex-shrink-0 p-2.5 pb-1.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 group">
-            <div
-              className={`w-2 h-2 rounded-full ${columnStyle.dot} transition-transform motion-reduce:transition-none duration-300 ${
-                isDropping ? "scale-150" : ""
-              }`}
-            ></div>
-            <h3 className={`font-medium text-xs ${columnStyle.header}`}>{displayTitle}</h3>
-            <span className="text-micro text-lia-text-primary bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full">
-              {filteredCandidates.length}
-            </span>
+      <KanbanColumnHeader
+        title={displayTitle}
+        count={filteredCandidates.length}
+        accentClass={columnStyle.dot}
+        width="sm"
+        isDropping={isDropping}
+        inlineExtras={
+          <>
             {stageId === "screening" && (currentJob.backendId || currentJob.id) && (
               <SaturationBadge jobId={String(currentJob.backendId || currentJob.id || '')} />
             )}
@@ -375,8 +372,10 @@ export function KanbanColumnRenderer({
                 }
               />
             )}
-          </div>
-          {filteredCandidates.length > 0 && (
+          </>
+        }
+        actions={
+          filteredCandidates.length > 0 ? (
             <Checkbox
               checked={filteredCandidates.every((c) => selectedCandidates.has(c.id))}
               onCheckedChange={(checked) => {
@@ -393,9 +392,9 @@ export function KanbanColumnRenderer({
               className="w-3.5 h-3.5 data-[state=checked]:bg-lia-btn-primary-bg data-[state=checked]:border-lia-btn-primary-bg"
               title={t('selectAllInStage', { stage: displayTitle })}
             />
-          )}
-        </div>
-      </div>
+          ) : null
+        }
+      />
 
       {/* Cards - Com scroll vertical */}
       <div className="flex-1 overflow-y-auto px-1.5 pb-1 space-y-1">

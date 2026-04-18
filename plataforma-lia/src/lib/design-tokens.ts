@@ -390,6 +390,39 @@ export const toolbarStyles = {
 } as const
 
 /**
+ * v4.2: Header de coluna do Kanban (vagas + candidatos)
+ * Usado por <KanbanColumnHeader /> em src/components/pages/job-kanban.
+ *
+ * Densidades:
+ * - `md`: kanban de vagas (página /jobs) — roomier.
+ * - `sm`: kanban de candidatos dentro de uma vaga — denser.
+ */
+export const kanbanColumnHeaderStyles = {
+  padding: {
+    sm: 'p-2.5 pb-1.5',
+    md: 'p-3',
+  },
+  titleGap: {
+    sm: 'gap-1.5',
+    md: 'gap-2',
+  },
+  dotSize: {
+    sm: 'w-2 h-2',
+    md: 'w-3 h-3',
+  },
+  title: {
+    sm: "font-['Open_Sans',sans-serif] font-medium text-xs text-lia-text-primary dark:text-lia-text-primary",
+    md: "font-['Open_Sans',sans-serif] font-medium text-sm text-lia-text-primary dark:text-lia-text-primary",
+  },
+  count: {
+    sm: 'inline-flex items-center text-micro text-lia-text-primary bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full',
+    md: 'inline-flex items-center text-xs text-lia-text-secondary bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-2 py-0.5 rounded-full ml-1',
+  },
+  subtitle:
+    "mt-1 font-['Open_Sans',sans-serif] text-micro font-normal text-lia-text-secondary dark:text-lia-text-secondary",
+} as const
+
+/**
  * v4: Classes utilitárias para Botões de Ação
  * Tamanhos padronizados para botões Editar, Salvar, Exportar, etc.
  */

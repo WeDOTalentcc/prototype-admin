@@ -1,13 +1,13 @@
 "use client"
 
 import React from "react"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Plus, MoreVertical } from "lucide-react"
 import { EmptyState } from "@/components/ui/empty-state"
 import type { KanbanItem } from "./types"
 import { KanbanCard } from "./KanbanCard"
+import { KanbanColumnHeader } from "./KanbanColumnHeader"
 
 interface KanbanColumnStage {
   id: string
@@ -41,41 +41,36 @@ export function KanbanColumn({
       data-testid="kanban-column"
       data-stage-id={stage.id}
     >
-      <div className="flex items-center justify-between p-3 dark:border-lia-border-subtle">
-        <div className="flex items-center gap-2">
-          <div
-            className={`w-3 h-3 rounded-full ${stage.accentClass ?? ""}`}
-            style={stage.accentClass ? undefined : { backgroundColor: stage.color }}
-          />
-          <span className="font-medium text-lia-text-primary">{stage.name}</span>
-          <Badge
-            variant="outline"
-            className="ml-1 border-lia-border-default dark:border-lia-border-default text-lia-text-secondary text-xs"
-          >
-            {items.length}
-          </Badge>
-        </div>
-
-        <div className="flex items-center gap-1">
-          {onAdd && (
+      <KanbanColumnHeader
+        title={stage.name}
+        count={items.length}
+        accentClass={stage.accentClass}
+        accentColor={stage.color}
+        width="md"
+        actions={
+          <>
+            {onAdd && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
+                onClick={onAdd}
+                aria-label="Adicionar"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
               className="h-7 w-7 text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
-              onClick={onAdd}
+              aria-label="Mais ações"
             >
-              <Plus className="h-4 w-4" />
+              <MoreVertical className="h-4 w-4" />
             </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
-          >
-            <MoreVertical className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <ScrollArea className="flex-1 p-2">
         <div
