@@ -139,69 +139,8 @@ const _LEGACY_WSI_BLOCKS_REMOVED: WSIBlock[] = [
 export const WSI_AUTOMATIC_MESSAGES: Record<number, WSIAutomaticMessage> =
   CANONICAL_WSI_AUTOMATIC_MESSAGES as Record<number, WSIAutomaticMessage>
 
-const _LEGACY_WSI_AUTOMATIC_MESSAGES_REMOVED: Record<number, WSIAutomaticMessage> = {
-  0: {
-    title: "Abordagem Inicial via WhatsApp",
-    message: `Olá {candidato.nome}! 👋
-
-Aqui é a LIA, assistente de recrutamento da {empresa.nome}.
-
-Vi que você se candidatou para a vaga de {vaga.titulo} e gostaria de conversar sobre a oportunidade.
-
-Podemos iniciar agora? Leva menos de 10 minutos! 🚀`,
-    note: "Template pré-aprovado • Enviado automaticamente ao candidato"
-  },
-  1: {
-    title: "Apresentação da Oportunidade",
-    message: `Que ótimo ter você aqui! Deixa eu te contar um pouco sobre a vaga:
-
-📋 **Posição:** {vaga.titulo}
-🏢 **Empresa:** {empresa.nome}
-📍 **Modelo:** {vaga.modelo_trabalho}
-💰 **Faixa Salarial:** {vaga.faixa_salarial}
-
-{vaga.descricao_resumida}
-
-Agora vou fazer algumas perguntas rápidas para entender melhor seu perfil. Responda naturalmente, como se estivéssemos conversando! 💬`,
-    note: "Pitch conversacional • Gerado a partir dos dados da vaga"
-  },
-  5: {
-    title: "Resultado e Encerramento",
-    message: `Muito obrigada pelas suas respostas, {candidato.nome}! 🙏
-
-Analisei todas as informações e já encaminhei seu perfil para nossa equipe de recrutamento.
-
-📊 **Próximos passos:**
-• Você receberá um feedback em até {prazo_feedback}
-• Se aprovado(a), entraremos em contato para agendar a entrevista
-
-Qualquer dúvida, estou por aqui! Boa sorte! 🍀`,
-    note: "Índice WSI calculado automaticamente • Feedback enviado conforme configuração"
-  }
-}
-
-function _LEGACY_formatMessageWithVariables_REMOVED(message: string): React.ReactNode[] {
-  const parts = message.split(/(\{[^}]+\})/g)
-  return parts.map((part, index) => {
-    if (part.match(/^\{[^}]+\}$/)) {
-      return (
-        <span key={`var-${index}`}>
-          {part}
-        </span>
-      )
-    }
-    if (part.includes('**')) {
-      const boldParts = part.split(/(\*\*[^*]+\*\*)/g)
-      return boldParts.map((bp, bpIndex) => {
-        if (bp.match(/^\*\*[^*]+\*\*$/)) {
-          return <strong key={`${index}-${bpIndex}`}>{bp.replace(/\*\*/g, '')}</strong>
-        }
-        return <span key={`${index}-${bpIndex}`}>{bp}</span>
-      })
-    }
-    return <span key={`part-${index}`}>{part}</span>
-  })
-}
+// P3-1 (rev. 17): código morto _LEGACY_* removido — fonte canônica em
+// `@/constants/wsi-blocks`. i18n via next-intl deferido para task dedicada.
 
 export const STATUS_ORDER = [
   'Ativa',

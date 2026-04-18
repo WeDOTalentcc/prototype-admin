@@ -102,10 +102,8 @@ class StrategicOpinionService:
             if bias_data.get("bias_detected"):
                 count = len(bias_data.get("findings", []))
                 score = bias_data.get("overall_fairness_score", "N/A")
-                # bias_detector_service ainda usa escala /5 (out-of-scope deste
-                # refactor — tracked em #525). NÃO converter aqui pra evitar
-                # mismatch com a fonte.
-                bias_summary = f"{count} indicador(es) de viés (equidade: {score}/5)"
+                # #525 fechado: bias_detector_service emite /10 nativamente.
+                bias_summary = f"{count} indicador(es) de viés (equidade: {score}/10)"
             else:
                 bias_summary = "Entrevista justa (sem viés detectado)"
 

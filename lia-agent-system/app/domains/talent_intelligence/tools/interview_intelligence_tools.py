@@ -210,7 +210,7 @@ async def detect_interview_bias(
         "message": (
             f"Detecção de viés concluída. "
             f"Viés detectado: {'Sim' if result.get('bias_detected') else 'Não'}. "
-            f"Score de equidade: {result.get('overall_fairness_score', 'N/A')}/5."
+            f"Score de equidade: {result.get('overall_fairness_score', 'N/A')}/10."
         ),
     }
 

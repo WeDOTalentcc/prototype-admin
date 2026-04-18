@@ -77,7 +77,7 @@ FALAS DO ENTREVISTADOR:
 Responda em JSON com a estrutura:
 {{
   "bias_detected": true/false,
-  "overall_fairness_score": 1-5 (5 = totalmente justo),
+  "overall_fairness_score": 1-10 (10 = totalmente justo),
   "findings": [
     {{
       "type": "tipo_do_viés",
@@ -333,12 +333,15 @@ class BiasDetectorService:
         fairness_from_llm = llm_result.get("overall_fairness_score", None)
 
         if fairness_from_llm is not None:
-            fairness_score = fairness_from_llm
+            fairness_value = float(fairness_from_llm)
+            if fairness_value <= 5.0:
+                fairness_value *= 2.0
+            fairness_score = int(round(max(1.0, min(10.0, fairness_value))))
         else:
             high_count = sum(1 for f in findings if f.get("severity") in ("alta", "high"))
             med_count = sum(1 for f in findings if f.get("severity") in ("média", "medium"))
-            penalty = high_count * 1.0 + med_count * 0.5
-            fairness_score = max(1, round(5 - penalty))
+            penalty = high_count * 2.0 + med_count * 1.0
+            fairness_score = max(1, round(10 - penalty))
 
         recommendations: list[str] = []
         if bias_detected:
@@ -371,7 +374,7 @@ class BiasDetectorService:
             if bias_detected:
                 summary = (
                     f"{len(findings)} indicador(es) de viés detectado(s) nas falas do entrevistador. "
-                    f"Score de equidade: {fairness_score}/5."
+                    f"Score de equidade: {fairness_score}/10."
                 )
             else:
                 summary = "Nenhum viés detectado nas falas do entrevistador. Entrevista conduzida de forma justa."

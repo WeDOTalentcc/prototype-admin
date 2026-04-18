@@ -171,8 +171,13 @@ class SilverMedalistService:
                 seen_candidates.add(cid)
 
                 days_ago = float(row["days_since_process"] or 0)
+                # #524 fechado: lia_score wire-format único = /100 (SSOT em
+                # app/domains/cv_screening/services/lia_score_service.py:139
+                # → return max(0.0, min(100.0, final))). Producers (analysis_service,
+                # seed_service) escrevem /100. Aqui normalizamos para [0, 1] sem
+                # sniff de magnitude — clamp defensivo cobre dados corrompidos.
                 raw_score = float(row["past_lia_score"] or 0)
-                lia_score = raw_score / 100.0 if raw_score > 1.0 else raw_score
+                lia_score = max(0.0, min(1.0, raw_score / 100.0))
                 stage = row["reached_stage"] or ""
 
                 # Composite relevance score [0..1]
