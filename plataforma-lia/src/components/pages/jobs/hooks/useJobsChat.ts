@@ -99,34 +99,12 @@ export function useJobsChat({
     }
   }, [pendingChatOpen, onChatOpened, openGlobalChat])
 
-  // Handle ?action=create query param (entry point from WorkflowRail "Criar vaga")
+  // ?action=create query-param handling is wired below, after openJobCreationChat
+  // is defined, to avoid mount-order issues (effect referencing an undefined ref).
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
   const handledActionRef = useRef<string | null>(null)
-  useEffect(() => {
-    if (!searchParams) return
-    const action = searchParams.get("action")
-    if (action !== "create") return
-    // dedupe: only act once per action token instance
-    const token = `${pathname}?action=create`
-    if (handledActionRef.current === token) return
-    handledActionRef.current = token
-
-    // Trigger the existing job-creation chat flow (same wizard hook used elsewhere)
-    openJobCreationChatRef.current?.("Criar nova vaga")
-
-    // Clean the URL so refresh doesn't re-trigger
-    const params = new URLSearchParams(searchParams.toString())
-    params.delete("action")
-    const qs = params.toString()
-    router.replace(qs ? `${pathname}?${qs}` : pathname || "/")
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams, pathname])
-
-  // Ref forwarder so the effect above can call the latest openJobCreationChat
-  // without re-running on every callback identity change.
-  const openJobCreationChatRef = useRef<((m?: string) => void) | null>(null)
 
   // -------------------------------------------------------------------------
   // Floating chat openers (delegate to LiaFloat unified chat)
@@ -157,10 +135,25 @@ export function useJobsChat({
     })
   }, [onAddRecentItem, openGlobalChat])
 
-  // Keep ref in sync so the ?action=create effect can call the latest version
+  // Handle ?action=create query param (entry point from WorkflowRail "Criar vaga").
+  // Defined here so it can call openJobCreationChat directly — avoids mount-order
+  // races where the effect runs before any ref forwarder is populated.
   useEffect(() => {
-    openJobCreationChatRef.current = openJobCreationChat
-  }, [openJobCreationChat])
+    if (!searchParams) return
+    const action = searchParams.get("action")
+    if (action !== "create") return
+    const token = `${pathname}?action=create`
+    if (handledActionRef.current === token) return
+    handledActionRef.current = token
+
+    openJobCreationChat("Criar nova vaga")
+
+    // Clean the URL so a refresh doesn't re-trigger
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete("action")
+    const qs = params.toString()
+    router.replace(qs ? `${pathname}?${qs}` : pathname || "/")
+  }, [searchParams, pathname, router, openJobCreationChat])
 
   // -------------------------------------------------------------------------
   // handleAICommand (multi-agent orchestrator)
