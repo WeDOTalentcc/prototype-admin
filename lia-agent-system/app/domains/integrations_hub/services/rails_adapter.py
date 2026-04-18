@@ -528,6 +528,77 @@ class RailsAdapter:
             return int(rails_id)
         return None
 
+    async def _resolve_rails_dual_id(
+        self,
+        entity_id: str,
+        client_method_name: str,
+        log_label: str,
+    ) -> int | None:
+        """Shared bigint-or-fork-uuid resolver used by jobs and applications.
+
+        Mirrors `_resolve_rails_candidate_id` for entities that also expose a
+        `fork_uuid` column on Rails (ADR 003 / Task #479). The corresponding
+        client helper (`find_job_by_fork_uuid` / `find_application_by_fork_uuid`)
+        is looked up via `getattr` so older client builds without the helper
+        degrade gracefully (returns None instead of raising).
+        """
+        direct = self._to_rails_id(entity_id)
+        if direct is not None:
+            return direct
+        if not self._looks_like_uuid(entity_id):
+            return None
+
+        client = await self._get_rails_client()
+        if not client:
+            return None
+
+        lookup = getattr(client, client_method_name, None)
+        if not callable(lookup):
+            logger.debug(
+                "[RailsAdapter] Rails client has no %s — falling back to None for %s UUID %s",
+                client_method_name, log_label, entity_id,
+            )
+            return None
+
+        try:
+            data = await lookup(entity_id)
+        except Exception as exc:
+            logger.warning(
+                "[RailsAdapter] %s fork_uuid lookup failed for %s: %s",
+                log_label, entity_id, exc,
+            )
+            return None
+
+        if not data:
+            return None
+        rails_id = data.get("id") if isinstance(data, dict) else None
+        if isinstance(rails_id, int):
+            return rails_id
+        if isinstance(rails_id, str) and rails_id.isdigit():
+            return int(rails_id)
+        return None
+
+    async def _resolve_rails_job_id(self, job_id: str) -> int | None:
+        """Resolve a job ID (bigint or fork UUID) to a Rails bigint ID.
+
+        ADR 003 / Task #479 — Rails carries `jobs.fork_uuid`. When the caller
+        hands us a UUID, we look it up via
+        `WeDOTalentATSClient.find_job_by_fork_uuid`. Returns None when the
+        UUID has no fork_uuid row yet on Rails or the client/endpoint is
+        unavailable, mirroring `_resolve_rails_candidate_id` semantics.
+        """
+        return await self._resolve_rails_dual_id(
+            job_id, "find_job_by_fork_uuid", "job"
+        )
+
+    async def _resolve_rails_application_id(self, application_id: str) -> int | None:
+        """Resolve an application/apply ID (bigint or fork UUID) to a Rails
+        bigint ID. ADR 003 / Task #479 — uses `applies.fork_uuid` via
+        `WeDOTalentATSClient.find_application_by_fork_uuid`."""
+        return await self._resolve_rails_dual_id(
+            application_id, "find_application_by_fork_uuid", "application"
+        )
+
     async def get_candidate_from_rails_only(self, candidate_id: str) -> dict | None:
         """Fetch candidate from Rails only — no local DB fallback.
 

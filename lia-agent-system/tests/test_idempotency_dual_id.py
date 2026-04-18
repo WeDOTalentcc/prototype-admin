@@ -27,18 +27,39 @@ from app.domains.integrations_hub.services.rails_adapter import RailsAdapter
 
 
 class _StubResolver:
-    """Minimal duck-typed adapter — only `_resolve_rails_candidate_id`
-    matters for the canonicalization map."""
+    """Minimal duck-typed adapter — exposes the dual-ID resolvers the
+    canonicalization map looks up (candidate / job / application)."""
 
-    def __init__(self, uuid_to_rails: dict[str, int]):
-        self._mapping = {k.lower(): v for k, v in uuid_to_rails.items()}
+    def __init__(
+        self,
+        uuid_to_rails: dict[str, int] | None = None,
+        job_uuid_to_rails: dict[str, int] | None = None,
+        application_uuid_to_rails: dict[str, int] | None = None,
+    ):
+        self._mapping = {k.lower(): v for k, v in (uuid_to_rails or {}).items()}
+        self._job_mapping = {
+            k.lower(): v for k, v in (job_uuid_to_rails or {}).items()
+        }
+        self._application_mapping = {
+            k.lower(): v for k, v in (application_uuid_to_rails or {}).items()
+        }
+
+    @staticmethod
+    def _resolve(value: str, mapping: dict[str, int]) -> int | None:
+        if value and value.isdigit():
+            return int(value)
+        if value and len(value) == 36:
+            return mapping.get(value.lower())
+        return None
 
     async def _resolve_rails_candidate_id(self, candidate_id: str) -> int | None:
-        if candidate_id and candidate_id.isdigit():
-            return int(candidate_id)
-        if candidate_id and len(candidate_id) == 36:
-            return self._mapping.get(candidate_id.lower())
-        return None
+        return self._resolve(candidate_id, self._mapping)
+
+    async def _resolve_rails_job_id(self, job_id: str) -> int | None:
+        return self._resolve(job_id, self._job_mapping)
+
+    async def _resolve_rails_application_id(self, application_id: str) -> int | None:
+        return self._resolve(application_id, self._application_mapping)
 
 
 @pytest.mark.asyncio
@@ -61,6 +82,38 @@ async def test_candidate_uuid_and_bigint_collapse_to_same_idempotency_key():
 
     assert key_uuid == key_bigint
     # And the second one is correctly detected as a duplicate.
+    assert ctx.check_idempotency(key_uuid) is True
+    assert ctx.check_idempotency(key_bigint) is False
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "param_key,kwarg_name",
+    [
+        ("job_id", "job_uuid_to_rails"),
+        ("vacancy_id", "job_uuid_to_rails"),
+        ("application_id", "application_uuid_to_rails"),
+        ("apply_id", "application_uuid_to_rails"),
+    ],
+)
+async def test_dual_id_uuid_and_bigint_collapse_for_jobs_and_applications(
+    param_key: str, kwarg_name: str
+):
+    """Task #479 — UUID retry and bigint retry of the same job/application
+    operation hash to the same idempotency key."""
+    rails_id = 7654
+    fork_uuid = "abcdef01-2345-6789-abcd-ef0123456789"
+    adapter = _StubResolver(**{kwarg_name: {fork_uuid: rails_id}})
+    ctx = ContextManager(session_id="sess-2", user_id="user-2")
+
+    key_uuid = await ctx.generate_idempotency_key_async(
+        "update_entity", {param_key: fork_uuid, "field": "stage"}, adapter
+    )
+    key_bigint = await ctx.generate_idempotency_key_async(
+        "update_entity", {param_key: str(rails_id), "field": "stage"}, adapter
+    )
+
+    assert key_uuid == key_bigint
     assert ctx.check_idempotency(key_uuid) is True
     assert ctx.check_idempotency(key_bigint) is False
 
@@ -186,5 +239,66 @@ async def test_real_rails_adapter_collapses_uuid_and_bigint(monkeypatch):
 
     # End-to-end safety: feeding both keys into the same context's
     # idempotency set means the second call is rejected as duplicate.
+    assert ctx.check_idempotency(key_from_uuid) is True
+    assert ctx.check_idempotency(key_from_bigint) is False
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "param_key,client_method,resolver_attr",
+    [
+        ("job_id", "find_job_by_fork_uuid", "_resolve_rails_job_id"),
+        ("vacancy_id", "find_job_by_fork_uuid", "_resolve_rails_job_id"),
+        (
+            "application_id",
+            "find_application_by_fork_uuid",
+            "_resolve_rails_application_id",
+        ),
+        (
+            "apply_id",
+            "find_application_by_fork_uuid",
+            "_resolve_rails_application_id",
+        ),
+    ],
+)
+async def test_real_rails_adapter_collapses_uuid_and_bigint_for_dual_id_entities(
+    monkeypatch, param_key: str, client_method: str, resolver_attr: str
+):
+    """Task #479 integration-style: drive the real `RailsAdapter` job and
+    application resolvers through `generate_idempotency_key_async`. Rails
+    HTTP is mocked but the adapter's UUID detection / fork_uuid lookup /
+    bigint passthrough runs for real."""
+    rails_id = 4242
+    fork_uuid = "feedface-1111-2222-3333-444455556666"
+
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+
+    fake_client = AsyncMock()
+    setattr(
+        fake_client,
+        client_method,
+        AsyncMock(return_value={"id": rails_id, "fork_uuid": fork_uuid}),
+    )
+
+    async def _fake_get_client():
+        return fake_client
+
+    monkeypatch.setattr(adapter, "_get_rails_client", _fake_get_client)
+
+    # Sanity-check the resolver is wired up on the real adapter.
+    assert callable(getattr(adapter, resolver_attr))
+
+    ctx = ContextManager(session_id="sess-int-2", user_id="user-int-2")
+
+    key_from_uuid = await ctx.generate_idempotency_key_async(
+        "update_entity", {param_key: fork_uuid, "field": "x"}, adapter
+    )
+    key_from_bigint = await ctx.generate_idempotency_key_async(
+        "update_entity", {param_key: str(rails_id), "field": "x"}, adapter
+    )
+
+    assert key_from_uuid == key_from_bigint
+    assert getattr(fake_client, client_method).await_count == 1
+
     assert ctx.check_idempotency(key_from_uuid) is True
     assert ctx.check_idempotency(key_from_bigint) is False

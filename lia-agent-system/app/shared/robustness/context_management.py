@@ -201,12 +201,16 @@ class ContextManager:
     #
     # Only entries whose resolver is actually implemented on `RailsAdapter`
     # are listed here — adding a key for which no resolver exists would be
-    # dead weight that gives a false sense of coverage. Today only candidates
-    # have `_resolve_rails_candidate_id` (which uses Rails' `candidates.fork_uuid`
-    # column). When job/application resolvers land, add their keys here.
+    # dead weight that gives a false sense of coverage. Candidates, jobs
+    # and applications all have `_resolve_rails_*_id` resolvers backed by
+    # Rails' `fork_uuid` columns (ADR 003 / Task #479).
     _DUAL_ID_PARAM_RESOLVERS: dict[str, str] = {
         "candidate_id": "_resolve_rails_candidate_id",
         "candidate": "_resolve_rails_candidate_id",
+        "job_id": "_resolve_rails_job_id",
+        "vacancy_id": "_resolve_rails_job_id",
+        "application_id": "_resolve_rails_application_id",
+        "apply_id": "_resolve_rails_application_id",
     }
 
     @classmethod
