@@ -94,9 +94,9 @@ class JobContext(BaseModel):
 
 class WSIEvaluationContext(BaseModel):
     """WSI evaluation results for personalization."""
-    overall_wsi: float = Field(ge=0, le=5)
-    technical_wsi: float | None = Field(default=None, ge=0, le=5)
-    behavioral_wsi: float | None = Field(default=None, ge=0, le=5)
+    overall_wsi: float = Field(ge=0, le=10)
+    technical_wsi: float | None = Field(default=None, ge=0, le=10)
+    behavioral_wsi: float | None = Field(default=None, ge=0, le=10)
     classification: Literal[
         "excepcional", "excelente", "alto", "medio", "abaixo_da_media", "regular"
     ] = "medio"
@@ -274,9 +274,9 @@ CONTEXT:
   - Seniority Level: {job_seniority}
 
 - Evaluation Results:
-  - Overall WSI Score: {wsi_score}/5.0 ({wsi_classification})
-  - Technical Score: {technical_wsi}/5.0
-  - Behavioral Score: {behavioral_wsi}/5.0
+  - Overall WSI Score: {wsi_score}/10.0 ({wsi_classification})
+  - Technical Score: {technical_wsi}/10.0
+  - Behavioral Score: {behavioral_wsi}/10.0
   
 - Strengths Identified:
 {strengths_list}
@@ -465,7 +465,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                     reasoning=[
                         "Personalized feedback generated",
                         f"WSI classification: {request.evaluation.classification}",
-                        f"WSI score: {request.evaluation.overall_wsi}/5.0",
+                        f"WSI score: {request.evaluation.overall_wsi}/10.0",
                         f"Decision: {request.decision_type}",
                         "AI-generated: True",
                         f"Auto-send: {getattr(request, 'auto_send', False)}",
@@ -518,7 +518,9 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         cand = request.candidate
         job = request.job
 
-        score_10 = round(eval_ctx.overall_wsi * 2, 1)
+        # Task #497 PR2: overall_wsi já vem em escala /10 (post-migration 090).
+        # A conversão *2 que existia aqui era da época em que a fonte era /5.
+        score_10 = round(eval_ctx.overall_wsi, 1)
         seniority_label = getattr(eval_ctx, "seniority_label", None) or job.seniority_level or "a vaga"
 
         _CLASS_LABEL = {
@@ -552,7 +554,8 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
 
         if comp_scores:
             for competency, raw_score in comp_scores.items():
-                score_comp = round(float(raw_score) * 2, 1)
+                # Task #497 PR2: comp_scores já em /10 (post-migration 090).
+                score_comp = round(float(raw_score), 1)
                 lines.append("─" * 60)
                 lines.append(f"Avaliação — {competency}")
                 lines.append("─" * 60)
@@ -560,23 +563,23 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                 lines.append(f"Sua resposta foi avaliada em {score_comp}/10 nesta competência.")
                 lines.append("")
 
-                if float(raw_score) >= 4.5:
+                if float(raw_score) >= 9.0:
                     lines.append("Pontos identificados como destaque:")
-                elif float(raw_score) >= 3.5:
+                elif float(raw_score) >= 7.0:
                     lines.append("Pontos identificados como fortes:")
-                elif float(raw_score) >= 2.5:
+                elif float(raw_score) >= 5.0:
                     lines.append("Pontos presentes na sua resposta:")
 
                 detected = [s for s in strengths if competency.lower() in s.lower()] or (
-                    strengths[:2] if float(raw_score) >= 2.5 else []
+                    strengths[:2] if float(raw_score) >= 5.0 else []
                 )
                 for sig in detected[:3]:
                     lines.append(f"• {sig}")
 
-                if float(raw_score) < 4.0 or dev_areas:
+                if float(raw_score) < 8.0 or dev_areas:
                     lines.append("")
                     absent = [d for d in dev_areas if competency.lower() in d.lower()] or (
-                        dev_areas[:2] if float(raw_score) < 3.5 else []
+                        dev_areas[:2] if float(raw_score) < 7.0 else []
                     )
                     if absent:
                         lines.append("Pontos que poderiam enriquecer a resposta:")
@@ -584,9 +587,9 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                             lines.append(f"• {sig}")
 
                 lines.append("")
-                if float(raw_score) >= 3.5:
+                if float(raw_score) >= 7.0:
                     lines.append(f"Nível de maturidade esperado para {seniority_label}: atingido ✓")
-                elif float(raw_score) >= 2.5:
+                elif float(raw_score) >= 5.0:
                     lines.append(
                         f"Nível esperado para {seniority_label}: a resposta demonstrou boa base — "
                         "aprofundar exemplos com processo próprio desenvolvido fortaleceria a avaliação."
@@ -605,10 +608,10 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             lines.append(f"Sua avaliação geral foi de {score_10}/10 ({classification_label}).")
             lines.append("")
 
-            if eval_ctx.overall_wsi >= 2.5 and strengths:
-                if eval_ctx.overall_wsi >= 4.5:
+            if eval_ctx.overall_wsi >= 5.0 and strengths:
+                if eval_ctx.overall_wsi >= 9.0:
                     lines.append("Pontos identificados como destaque:")
-                elif eval_ctx.overall_wsi >= 3.5:
+                elif eval_ctx.overall_wsi >= 7.0:
                     lines.append("Pontos identificados como fortes:")
                 else:
                     lines.append("Pontos presentes na sua candidatura:")
@@ -622,9 +625,9 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                     lines.append(f"• {d}")
                 lines.append("")
 
-            if eval_ctx.overall_wsi >= 3.5:
+            if eval_ctx.overall_wsi >= 7.0:
                 lines.append(f"Nível de maturidade esperado para {seniority_label}: atingido ✓")
-            elif eval_ctx.overall_wsi >= 2.5:
+            elif eval_ctx.overall_wsi >= 5.0:
                 lines.append(
                     f"Nível esperado para {seniority_label}: a resposta demonstrou boa base — "
                     "aprofundar exemplos com processo próprio desenvolvido fortaleceria a avaliação."

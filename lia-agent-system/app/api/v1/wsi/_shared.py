@@ -40,27 +40,36 @@ BIG_FIVE_TRAITS = {
     "neuroticism":       {"name": "Neuroticism",        "name_pt": "Estabilidade emocional",   "high": "Sensitive, anxious",        "low": "Calm, resilient"},
 }
 
+from app.domains.cv_screening.constants.wsi_scale import (
+    CLASSIFY_ABAIXO_MEDIA,
+    CLASSIFY_ALTO,
+    CLASSIFY_EXCELENTE,
+    CLASSIFY_EXCEPCIONAL,
+    CLASSIFY_MEDIO,
+    SCALE_MAX,
+)
+
 WSI_CLASSIFICATION_MAP = {
-    "excepcional":     {"label": "Excepcional",      "min_score": 4.5,  "color": "emerald-700"},
-    "excelente":       {"label": "Excelente",         "min_score": 4.0,  "color": "green-600"},
-    "alto":            {"label": "Alto",               "min_score": 3.5,  "color": "blue-600"},
-    "medio":           {"label": "Médio",              "min_score": 3.0,  "color": "amber-600"},
-    "abaixo_da_media": {"label": "Abaixo da média",   "min_score": 2.25, "color": "orange-600"},
-    "regular":         {"label": "Regular / Baixo",   "min_score": 0.0,  "color": "red-600"},
+    "excepcional":     {"label": "Excepcional",      "min_score": CLASSIFY_EXCEPCIONAL,  "color": "emerald-700"},
+    "excelente":       {"label": "Excelente",         "min_score": CLASSIFY_EXCELENTE,    "color": "green-600"},
+    "alto":            {"label": "Alto",               "min_score": CLASSIFY_ALTO,         "color": "blue-600"},
+    "medio":           {"label": "Médio",              "min_score": CLASSIFY_MEDIO,        "color": "amber-600"},
+    "abaixo_da_media": {"label": "Abaixo da média",   "min_score": CLASSIFY_ABAIXO_MEDIA, "color": "orange-600"},
+    "regular":         {"label": "Regular / Baixo",   "min_score": 0.0,                   "color": "red-600"},
 }
 
 
 def classify_wsi_score(score: float) -> str:
-    """Classifica o score WSI nos 6 níveis canônicos (spec Seção 9.5, escala /5)."""
-    if score >= 4.5:
+    """Classifica o score WSI nos 6 níveis canônicos (spec Seção 9.5, escala /10)."""
+    if score >= CLASSIFY_EXCEPCIONAL:
         return "excepcional"
-    if score >= 4.0:
+    if score >= CLASSIFY_EXCELENTE:
         return "excelente"
-    if score >= 3.5:
+    if score >= CLASSIFY_ALTO:
         return "alto"
-    if score >= 3.0:
+    if score >= CLASSIFY_MEDIO:
         return "medio"
-    if score >= 2.25:
+    if score >= CLASSIFY_ABAIXO_MEDIA:
         return "abaixo_da_media"
     return "regular"
 
@@ -129,8 +138,8 @@ class AnalyzeResponseOutput(BaseModel):
     dreyfus_level: int = Field(ge=1, le=5)
     dreyfus_level_name: str
     big_five_indicators: BigFiveIndicators
-    score: float = Field(ge=0, le=5)  # Escala 0.0 – 5.0
-    score_max: float = 5.0
+    score: float = Field(ge=0, le=10)  # Escala 0.0 – 10.0 (PR2 #497)
+    score_max: float = 10.0
     score_normalized: float = 0.0
     star_completeness: float | None = None
     feedback: str
@@ -160,7 +169,7 @@ class CompleteScreeningResponse(BaseModel):
     result_id: str
     candidate_id: str
     job_vacancy_id: str | None
-    overall_score: float = Field(ge=0, le=5)
+    overall_score: float = Field(ge=0, le=10)
     classification: str
     cognitive_level: dict[str, Any]
     proficiency_level: dict[str, Any]

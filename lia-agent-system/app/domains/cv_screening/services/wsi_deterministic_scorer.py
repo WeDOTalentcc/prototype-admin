@@ -248,9 +248,11 @@ def extract_autodeclaracao_score(text: str) -> float | None:
         if match:
             return extractor(match)
     
+    # Keywords também estão no vocabulário /5 do candidato (chaves 1.0-5.0).
+    # Aplicar mesma conversão para a escala interna do engine.
     for score, keywords in AUTODECLARATION_LEVEL_KEYWORDS.items():
         if any(kw in text_lower for kw in keywords):
-            return score
+            return score * legacy_to_engine
     
     return None
 

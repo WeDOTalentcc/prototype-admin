@@ -100,6 +100,11 @@ class ActionExecutorService:
             resolved_stage = resolve_stage(target_stage)
             if resolved_stage:
                 params["to_stage"] = resolved_stage
+        from_stage_raw = entities.get("from_stage")
+        if from_stage_raw and not params.get("from_stage"):
+            resolved_from = resolve_stage(from_stage_raw)
+            if resolved_from:
+                params["from_stage"] = resolved_from
 
         if entities.get("subject"):
             params["subject"] = entities["subject"]

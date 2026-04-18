@@ -38,7 +38,7 @@ class WSIReportGenerator:
         
         # Preparar contexto das respostas
         responses_summary = "\n".join([
-            f"- {r.competency} (Score: {r.final_score}/5): {r.justification}"
+            f"- {r.competency} (Score: {r.final_score}/10): {r.justification}"
             for r in responses
         ])
         
@@ -47,49 +47,49 @@ class WSIReportGenerator:
         )]
         behav_responses = [r for r in responses if r not in tech_responses]
         
-        tech_strong = [f"{r.competency} ({r.final_score}/5)" for r in tech_responses if r.final_score >= 4.0]
-        tech_gaps = [f"{r.competency} ({r.final_score}/5)" for r in tech_responses if r.final_score < 3.0]
-        behav_strong = [f"{r.competency} ({r.final_score}/5)" for r in behav_responses if r.final_score >= 4.0]
+        tech_strong = [f"{r.competency} ({r.final_score}/10)" for r in tech_responses if r.final_score >= 8.0]
+        tech_gaps = [f"{r.competency} ({r.final_score}/10)" for r in tech_responses if r.final_score < 6.0]
+        behav_strong = [f"{r.competency} ({r.final_score}/10)" for r in behav_responses if r.final_score >= 8.0]
         
         prompt = f"""Gere um parecer estruturado completo para recrutadores usando a metodologia WSI.
 
 CANDIDATO ID: {candidate_id}
 
 WSI RESULTADOS:
-- WSI Técnico: {wsi_result.technical_wsi}/5.0
-- WSI Comportamental: {wsi_result.behavioral_wsi}/5.0
-- WSI Geral: {wsi_result.overall_wsi}/5.0
+- WSI Técnico: {wsi_result.technical_wsi}/10.0
+- WSI Comportamental: {wsi_result.behavioral_wsi}/10.0
+- WSI Geral: {wsi_result.overall_wsi}/10.0
 - Classificação: {wsi_result.classification.upper()}
 
 ANÁLISES DAS RESPOSTAS:
 {responses_summary}
 
-PONTOS FORTES TÉCNICOS: {tech_strong or "Nenhum score >= 4.0"}
-GAPS TÉCNICOS: {tech_gaps or "Nenhum score < 3.0"}
-PONTOS FORTES COMPORTAMENTAIS: {behav_strong or "Nenhum score >= 4.0"}
+PONTOS FORTES TÉCNICOS: {tech_strong or "Nenhum score >= 8.0"}
+GAPS TÉCNICOS: {tech_gaps or "Nenhum score < 6.0"}
+PONTOS FORTES COMPORTAMENTAIS: {behav_strong or "Nenhum score >= 8.0"}
 
 TEMPLATES DE REFERÊNCIA (exemplos do RAG):
 {self.report_templates[:3000]}
 
 ---
 
-CRITÉRIOS OBJETIVOS PARA DECISÃO (OBRIGATÓRIO seguir — WSI_CUTOFFS canônicos):
-- WSI Geral >= 3.75 → decisao = "APROVADO" (= 7.5/10)
-- WSI Geral >= 3.0 e < 3.75 → decisao = "AGUARDANDO" / "EM_AVALIACAO" (= 6.0–7.4/10)
-- WSI Geral < 3.0 → decisao = "NÃO APROVADO" (= < 6.0/10)
-- EXCEÇÃO: Se WSI Geral >= 3.75 MAS há red_flags graves → rebaixa para "AGUARDANDO"
+CRITÉRIOS OBJETIVOS PARA DECISÃO (OBRIGATÓRIO seguir — WSI_CUTOFFS canônicos, escala /10):
+- WSI Geral >= 7.5 → decisao = "APROVADO"
+- WSI Geral >= 6.0 e < 7.5 → decisao = "AGUARDANDO" / "EM_AVALIACAO"
+- WSI Geral < 6.0 → decisao = "NÃO APROVADO"
+- EXCEÇÃO: Se WSI Geral >= 7.5 MAS há red_flags graves → rebaixa para "AGUARDANDO"
 
 REGRAS DE QUALIDADE DO PARECER:
 1. **Sumário Executivo** DEVE ter 2-3 frases completas (mínimo 100 caracteres), incluindo: perfil resumido, principal ponto forte e recomendação clara
 2. **Análise Técnica**: Citar ao menos 2 evidências concretas extraídas das respostas (projetos, métricas, tecnologias mencionadas)
-3. **Análise Comportamental**: Scores de 1.0 a 5.0 para cada dimensão, baseados nas respostas observadas
-4. **Fit Cultural**: Identificar ao menos 1 valor alinhado e 1 ponto de atenção quando WSI < 4.0
+3. **Análise Comportamental**: Scores de 1.0 a 10.0 para cada dimensão, baseados nas respostas observadas
+4. **Fit Cultural**: Identificar ao menos 1 valor alinhado e 1 ponto de atenção quando WSI < 8.0
 5. **Recomendação**: Justificativa DEVE referenciar dados do WSI (scores, classificação). Próximos passos DEVEM ser acionáveis
 
 Gere parecer estruturado incluindo:
 1. **Sumário Executivo** (2-3 frases): Resumo do perfil, pontos fortes, recomendação
 2. **Análise Técnica**: Pontos fortes (top 3), gaps (se houver), evidências concretas das respostas
-3. **Análise Comportamental**: Colaboração, inovação, organização, resiliência (scores 1.0-5.0)
+3. **Análise Comportamental**: Colaboração, inovação, organização, resiliência (scores 1.0-10.0)
 4. **Fit Cultural**: Score geral, valores alinhados, pontos de atenção
 5. **Recomendação**: Decisão (seguir critérios acima), justificativa com dados, próximos passos acionáveis
 
@@ -123,7 +123,7 @@ RETORNE APENAS JSON:
             _response = await self.llm.safe_invoke(prompt, provider="claude")
             response = type("R", (), {"content": _response})()
             data = safe_json_parse(response.content, fallback={
-                "executive_summary": f"Candidato com WSI {wsi_result.classification} ({wsi_result.overall_wsi}/5.0). Análise detalhada não disponível.",
+                "executive_summary": f"Candidato com WSI {wsi_result.classification} ({wsi_result.overall_wsi}/10.0). Análise detalhada não disponível.",
                 "technical_analysis": {
                     "pontos_fortes": ["Análise em processamento"],
                     "gaps": [],
@@ -150,7 +150,7 @@ RETORNE APENAS JSON:
             logger.error(f"Failed to generate report for candidate {candidate_id}: {e}")
             # Use fallback
             data = {
-                "executive_summary": f"Candidato com WSI {wsi_result.classification} ({wsi_result.overall_wsi}/5.0). Análise detalhada não disponível.",
+                "executive_summary": f"Candidato com WSI {wsi_result.classification} ({wsi_result.overall_wsi}/10.0). Análise detalhada não disponível.",
                 "technical_analysis": {
                     "pontos_fortes": ["Análise em processamento"],
                     "gaps": [],
@@ -207,13 +207,13 @@ RETORNE APENAS JSON:
           - Foco em comportamentos observáveis e desenvolvimento
         """
         
-        strong_responses = [r for r in responses if r.final_score >= 4.0]
-        development_responses = [r for r in responses if r.final_score < 3.5]
+        strong_responses = [r for r in responses if r.final_score >= 8.0]
+        development_responses = [r for r in responses if r.final_score < 7.0]
         
-        strong_competencies = [f"{r.competency} ({r.final_score}/5)" for r in strong_responses]
-        development_competencies = [f"{r.competency} ({r.final_score}/5)" for r in development_responses]
+        strong_competencies = [f"{r.competency} ({r.final_score}/10)" for r in strong_responses]
+        development_competencies = [f"{r.competency} ({r.final_score}/10)" for r in development_responses]
         
-        tech_strong = [r for r in responses if r.final_score >= 4.0 and r not in development_responses]
+        tech_strong = [r for r in responses if r.final_score >= 8.0 and r not in development_responses]
         behav_strong_list = [r.competency for r in tech_strong if r.competency and not any(
             kw in r.competency.lower() for kw in ["python", "react", "java", "sql", "aws", "node", "go", "rust", "docker", "kubernetes", "api", "backend", "frontend", "devops", "data", "machine", "deep", "cloud"]
         )]
@@ -221,7 +221,7 @@ RETORNE APENAS JSON:
         prompt = f"""Gere um feedback estruturado e construtivo para o candidato após a etapa de triagem.
 
 PONTOS FORTES TÉCNICOS: {strong_competencies}
-PONTOS FORTES COMPORTAMENTAIS: {behav_strong_list or "Nenhum identificado com score >= 4.0"}
+PONTOS FORTES COMPORTAMENTAIS: {behav_strong_list or "Nenhum identificado com score >= 8.0"}
 OPORTUNIDADES DE DESENVOLVIMENTO: {development_competencies}
 
 TEMPLATES DE REFERÊNCIA (exemplos do RAG):

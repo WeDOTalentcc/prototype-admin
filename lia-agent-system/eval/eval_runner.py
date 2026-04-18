@@ -27,7 +27,7 @@ import yaml
 
 BASE_DIR = Path(__file__).parent
 DEFAULT_URL = os.getenv("LIA_BACKEND_URL", "http://localhost:8001")
-DEFAULT_TOKEN = os.getenv("LIA_TEST_TOKEN", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxM2NmODJmYi1mMWY2LTQyMDUtOTM3Ny03NThlNTkwNDAxNDgiLCJlbWFpbCI6ImRlbW9Ad2Vkb3RhbGVudC5jYyIsImNvbXBhbnlfaWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtYTAwMC0wMDAwMDAwMDAwMDEiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzk4Njc1MjAwfQ.4WYQvm1Yhc-1rB6GkN6xo07tHWKTkGpJlJVlFummzKo")
+DEFAULT_TOKEN = os.getenv("LIA_TEST_TOKEN", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxM2NmODJmYi1mMWY2LTQyMDUtOTM3Ny03NThlNTkwNDAxNDgiLCJlbWFpbCI6ImRlbW9Ad2Vkb3RhbGVudC5jYyIsImNvbXBhbnlfaWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtYTAwMC0wMDAwMDAwMDAwMDEiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzk4Njc1MjAwfQ.pYFqeaO2CigvqLQwwPX19rufzOH44ZZSCwIer6MCcJA")
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────

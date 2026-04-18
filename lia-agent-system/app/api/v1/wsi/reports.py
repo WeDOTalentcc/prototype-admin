@@ -46,7 +46,7 @@ router = APIRouter()
 # ---------------------------------------------------------------------------
 
 _GATE_G3_THRESHOLD = _GATE_G3_THRESHOLD_CANONICAL
-_GATE_G4_THRESHOLD = 1.5   # /5 scale (= 3.0/10)
+_GATE_G4_THRESHOLD = 3.0   # PR2 #497 — escala /10 (era 1.5 em /5)
 _INJECTION_KEYWORDS = ["ignore", "esquece", "esqueça", "novo prompt", "sys:", "system:", "jailbreak", "prompt injection"]
 
 _SENIORITY_WEIGHTS = SENIORITY_WEIGHTS
@@ -138,7 +138,7 @@ def _build_attention_flags(analyses: list[dict], gates: GateStatus) -> list[str]
     low_star = sum(1 for a in analyses if sum(a.get("star", {}).values()) <= 1)
     if low_star >= 2:
         flags.append(f"{low_star} respostas com STAR incompleto")
-    critical_gaps = [a for a in analyses if a.get("is_critical") and a.get("final_score", 5) < 3.0]
+    critical_gaps = [a for a in analyses if a.get("is_critical") and a.get("final_score", 10) < 6.0]
     if critical_gaps:
         flags.append(f"{len(critical_gaps)} competência(s) crítica(s) abaixo do esperado")
     return flags
@@ -160,22 +160,22 @@ def _compute_decision_confidence(
     ):
         return "baixa", True
 
-    if overall_wsi >= 4.5 and not failed_gates:
+    if overall_wsi >= 9.0 and not failed_gates:
         return "alta", False
 
     if failed_gates and clear_reject_gates.intersection(failed_gates) and not ambiguous_gates.intersection(failed_gates):
         return "alta", False
 
-    if 3.0 <= overall_wsi < 3.75:
+    if 6.0 <= overall_wsi < 7.5:
         return "media", True
 
-    if 3.75 <= overall_wsi < 4.5 and not failed_gates:
+    if 7.5 <= overall_wsi < 9.0 and not failed_gates:
         return "media", False
 
     if failed_gates and ambiguous_gates.issuperset(failed_gates):
         return "media", True
 
-    return "media", overall_wsi < 3.75
+    return "media", overall_wsi < 7.5
 
 
 def _f11_fallback_questions(gaps: list[dict[str, Any]]) -> list[CBIQuestion]:
@@ -557,7 +557,7 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             g2_prompt_injection=not g2_failed,
             g2_detail=f"{injection_count} tentativa(s) de manipulação detectada(s)" if g2_failed else "Sem injeção de prompt detectada",
             g3_wsi_tecnico=not g3_failed,
-            g3_detail=f"WSI Técnico {tech_wsi:.2f}/5 {'< limiar 2.0 — reprovado' if g3_failed else '≥ limiar 2.0 — aprovado'}",
+            g3_detail=f"WSI Técnico {tech_wsi:.2f}/10 {'< limiar 4.0 — reprovado' if g3_failed else '≥ limiar 4.0 — aprovado'}",
             g4_skill_critica=not g4_failed,
             g4_detail="Skill crítica com score abaixo do mínimo absoluto" if g4_failed else "Nenhuma skill crítica abaixo do mínimo",
             g5_engajamento=not g5_failed,
@@ -584,15 +584,15 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             decision_result = "REPROVADO"
             gate_reasons = [gate_labels.get(g, g) for g in failed_gates]
             decision_reason = f"Gate(s) ativado(s): {', '.join(gate_reasons)}"
-        elif overall_wsi >= 3.75:
+        elif overall_wsi >= 7.5:
             decision_result = "APROVADO"
             decision_reason = None
-        elif overall_wsi >= 3.0:
+        elif overall_wsi >= 6.0:
             decision_result = "EM_AVALIACAO"
-            decision_reason = f"Score WSI {overall_wsi:.2f}/5 requer revisão humana (faixa 3.0–3.74)"
+            decision_reason = f"Score WSI {overall_wsi:.2f}/10 requer revisão humana (faixa 6.0–7.49)"
         else:
             decision_result = "REPROVADO"
-            decision_reason = f"Score WSI {overall_wsi:.2f}/5 abaixo do mínimo (< 3.0)"
+            decision_reason = f"Score WSI {overall_wsi:.2f}/10 abaixo do mínimo (< 6.0)"
 
         decision_confidence, human_review_required = _compute_decision_confidence(
             overall_wsi=overall_wsi,
@@ -603,19 +603,19 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
 
         sorted_analyses = sorted(analyses_list, key=lambda x: x["final_score"], reverse=True)
         strengths = [
-            f"{a['competency']} — {a['final_score']:.1f}/5"
+            f"{a['competency']} — {a['final_score']:.1f}/10"
             for a in sorted_analyses[:3]
-            if a["final_score"] >= 3.5
+            if a["final_score"] >= 7.0
         ]
 
         gap_items = [
-            a for a in sorted_analyses if a["final_score"] < 3.0 and a["final_score"] > 0.0
+            a for a in sorted_analyses if a["final_score"] < 6.0 and a["final_score"] > 0.0
         ]
         gap_items.sort(key=lambda x: x["final_score"])
         gaps = []
         for a in gap_items[:3]:
-            delta = 3.0 - a["final_score"]
-            severity = "ALTO" if delta >= 1.5 else ("MÉDIO" if delta >= 0.75 else "BAIXO")
+            delta = 6.0 - a["final_score"]
+            severity = "ALTO" if delta >= 3.0 else ("MÉDIO" if delta >= 1.5 else "BAIXO")
             gaps.append({
                 "competency": a["competency"],
                 "type": a["question_type"],
@@ -752,9 +752,9 @@ async def get_vacancy_ranking(
                 "candidate_id": str(row[1]),
                 "candidate_name": row[2],
                 "candidate_title": row[3],
-                "overall_wsi": round(score * 2, 2),        # /5 → /10
-                "technical_wsi": round(float(row[5]) * 2, 2),
-                "behavioral_wsi": round(float(row[6]) * 2, 2),
+                "overall_wsi": round(score, 2),        # PR2 #497 — DB já em /10
+                "technical_wsi": round(float(row[5]), 2),
+                "behavioral_wsi": round(float(row[6]), 2),
                 "classification": row[7] or "regular",
                 "percentile": percentile,
                 "screening_type": row[8] or "text",
@@ -765,9 +765,9 @@ async def get_vacancy_ranking(
             "job_vacancy_id": job_vacancy_id,
             "total_screened": total,
             "averages": {
-                "overall":    round(sum(overall_vals) / total * 2, 2),
-                "technical":  round(sum(tech_vals) / total * 2, 2),
-                "behavioral": round(sum(behav_vals) / total * 2, 2),
+                "overall":    round(sum(overall_vals) / total, 2),
+                "technical":  round(sum(tech_vals) / total, 2),
+                "behavioral": round(sum(behav_vals) / total, 2),
             },
             "ranking": ranking,
         }
@@ -817,7 +817,7 @@ async def get_candidate_ranking(
             "ranked": True,
             "rank": rank,
             "total": total,
-            "overall_wsi": round(cand_score * 2, 2),
+            "overall_wsi": round(cand_score, 2),
         }
     except Exception as e:
         logger.error(f"F11-6 candidate ranking failed for {candidate_id}/{job_vacancy_id}: {e}", exc_info=True)

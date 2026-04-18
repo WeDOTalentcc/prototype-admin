@@ -384,7 +384,7 @@ Return ONLY valid JSON:
             dreyfus_level=dreyfus_level,
             evidences=data.get("evidences", []),
             red_flags=data.get("red_flags", []),
-            final_score=data.get("score", 3.0),
+            final_score=data.get("score", 6.0),
             justification=data.get("feedback", ""),
         )
     except Exception as e:
@@ -401,7 +401,7 @@ Return ONLY valid JSON:
     _found = sum(1 for group in _star_keywords if any(kw in _resp_lower for kw in group))
     star_completeness = round(_found / 4.0, 2)
 
-    _score = data.get("score", 3.0)
+    _score = data.get("score", 6.0)
 
     return AnalyzeResponseOutput(
         question_id=request.question_id,
@@ -417,8 +417,8 @@ Return ONLY valid JSON:
             neuroticism=big_five.get("neuroticism", 50)
         ),
         score=_score,
-        score_max=5.0,
-        score_normalized=round(_score / 5.0 * 10.0, 1),
+        score_max=10.0,
+        score_normalized=round(_score, 1),  # PR2 #497: scores já em /10, sem conversão
         star_completeness=star_completeness,
         feedback=data.get("feedback", "Análise em processamento"),
         evidences=data.get("evidences", []),
@@ -458,7 +458,7 @@ async def complete_screening(
 
     avg_bloom = sum(a.bloom_score for a in response_analyses) / len(response_analyses) if response_analyses else 3
     avg_dreyfus = sum(a.dreyfus_level for a in response_analyses) / len(response_analyses) if response_analyses else 3
-    avg_score = sum(a.score for a in response_analyses) / len(response_analyses) if response_analyses else 3.0
+    avg_score = sum(a.score for a in response_analyses) / len(response_analyses) if response_analyses else 6.0
 
     avg_big_five = BigFiveIndicators(
         openness=int(sum(a.big_five_indicators.openness for a in response_analyses) / len(response_analyses)) if response_analyses else 50,
@@ -524,7 +524,7 @@ async def complete_screening(
 
     class_label = WSI_CLASSIFICATION_MAP.get(classification, {}).get("label", classification)
     summary = (
-        f"Candidato avaliado como {class_label} (Score: {avg_score:.1f}/5.0). "
+        f"Candidato avaliado como {class_label} (Score: {avg_score:.1f}/10.0). "
         f"Demonstra nível cognitivo {bloom_level_name['name_pt']} (Bloom {round(avg_bloom)}) "
         f"e proficiência {dreyfus_level_name['name_pt']} (Dreyfus {round(avg_dreyfus)}). "
         f"Arquétipo predominante: {archetypes[0].archetype}."
@@ -601,11 +601,14 @@ async def complete_screening(
         })
         new_version = version_result.scalar() or 1
 
-        # Determine recommendation per canonical WSI_CUTOFFS (Spec §10.3)
-        # approved_auto ≥ 3.75/5 (= 7.5/10), review_min ≥ 3.0/5 (= 6.0/10)
-        if avg_score >= 3.75:
+        # Determine recommendation per canonical WSI_CUTOFFS (Spec §10.3, escala /10)
+        from app.domains.cv_screening.constants.wsi_scale import (
+            CUTOFF_APPROVED_AUTO,
+            CUTOFF_REVIEW_MIN,
+        )
+        if avg_score >= CUTOFF_APPROVED_AUTO:
             recommendation = "approved"
-        elif avg_score >= 3.0:
+        elif avg_score >= CUTOFF_REVIEW_MIN:
             recommendation = "pending_review"
         else:
             recommendation = "not_approved"

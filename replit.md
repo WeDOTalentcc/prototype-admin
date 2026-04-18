@@ -1,5 +1,16 @@
 # Recent Changes
 
+- **Task #497 PR2 — Flip atômico escala WSI 0-5 → 0-10 (engine + DB + Pydantic)**:
+  - `wsi_scale.py` flipado integralmente: `SCALE_MAX 5→10`, `WSI_CUTOFFS 7.5/6.0`, `GATE_G3 4.0`, `CLASSIFY_*` ×2, indicadores de inflação ×2, todas as constantes Dreyfus/STAR/justificação ×2. Mantidas chaves `AUTODECLARATION_LEVEL_KEYWORDS` em 1.0–5.0 (input do candidato; engine reescala via fator `legacy_to_engine = SCALE_MAX/5.0`).
+  - **M04 endereçado** — penalidades alinhadas à spec §8.2: `−1.5/−1.0/−2.5` (não double linear). Bonuses ×2 (`1.0/0.6/2.0`).
+  - **Bug fix do scorer** (linha 253): keyword lookup em `extract_autodeclaracao_score` agora aplica `legacy_to_engine` (antes vazava valor /5 cru no engine /10).
+  - **Pydantic `le=5 → le=10`** em 5 schemas: `_shared.py`, `wsi_service/models.py`, `personalized_feedback_service.py`, `lia_opinion.py`, `input_validation.py`.
+  - **Alembic 090** (`090_widen_wsi_score_scale_to_10.py`) — reversível: `UPDATE wsi_results/wsi_response_analyses *2` + `DROP/ADD CHECK BETWEEN 0 AND 10`. Ordinalidade preservada (transformação linear monotônica). Downgrade `/2` + restaura CHECK 1-5.
+  - **17 services satélites auditados** (T4): `evaluation.py` (gates/decision_confidence /10), `reports.py` (severity 1.5/3.0, strengths ≥7.0, gaps <6.0), `report_generator.py` (RAG prompts /10.0, behavioral 1.0–10.0), `personalized_feedback_service.py` (templates /10.0, thresholds 9.0/7.0/5.0/8.0, removido `*2` espurio em score_10/score_comp).
+  - **Conversões `*2` órfãs removidas** (T5): `reports.py:755`, `evaluation.py:421`, `personalized_feedback_service.py:521+555`.
+  - **Architect review:** APPROVED_WITH_NITS (zero SEVERE/MAJOR). 2 nits aplicados antes do fechamento. Smoke test pós-flip: classify(9.5)=excepcional, classify(7.6)=alto, classify(4.5)=abaixo_da_media; backend HTTP 200 em /api/v1/health (1531 endpoints, 1654 schemas) sem regressão de imports.
+  - **Deferido:** PR3 (60 telas frontend `/5 → /10`) e PR4 (templates RAG + E2E + atualização de `database/wsi_schema*.sql`).
+
 - **Task #497 PR1 — Constantes canônicas WSI (refator puro, zero behavior change)**:
   - Novo `lia-agent-system/app/domains/cv_screening/constants/wsi_scale.py` consolida TODAS as magic numbers da escala WSI (cutoffs, gate G3, normalizações STAR/Bloom, thresholds de classificação 6 níveis, penalidades/bônus, indicadores de inflação/contexto).
   - `wsi_deterministic_scorer.py` refatorado para importar do `wsi_scale` — removidas duplicações inline de `WSI_CUTOFFS` e `GATE_G3_THRESHOLD` (que sombreavam o import e quebravam a futura troca de escala).

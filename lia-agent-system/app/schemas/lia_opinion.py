@@ -72,7 +72,7 @@ class LiaOpinionCreate(BaseModel):
     wsi_screening_id: UUID | None = None
     
     score: float | None = Field(None, ge=0, le=100)
-    wsi_score: float | None = Field(None, ge=0, le=5)
+    wsi_score: float | None = Field(None, ge=0, le=10)
     recommendation: RecommendationEnum | None = None
     
     summary: str | None = None
@@ -97,7 +97,7 @@ class LiaOpinionCreate(BaseModel):
 class LiaOpinionUpdate(BaseModel):
     """Schema for updating a LIA opinion."""
     score: float | None = Field(None, ge=0, le=100)
-    wsi_score: float | None = Field(None, ge=0, le=5)
+    wsi_score: float | None = Field(None, ge=0, le=10)
     recommendation: RecommendationEnum | None = None
     summary: str | None = None
     

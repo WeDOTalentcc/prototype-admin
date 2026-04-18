@@ -157,8 +157,8 @@ class ResponseAnalysis(BaseModel):
     competency: str
     response_text: str
     
-    autodeclaration_score: float | None = Field(None, ge=1, le=5)
-    context_score: float | None = Field(None, ge=1, le=5)
+    autodeclaration_score: float | None = Field(None, ge=1, le=10)
+    context_score: float | None = Field(None, ge=1, le=10)
     bloom_level: int | None = Field(None, ge=1, le=6)
     dreyfus_level: int | None = Field(None, ge=1, le=5)
     
@@ -166,7 +166,7 @@ class ResponseAnalysis(BaseModel):
     red_flags: list[str]
     consistency_penalty: float = 0.0
     
-    final_score: float = Field(ge=1, le=5)
+    final_score: float = Field(ge=1, le=10)
     justification: str
 
     # Audit task #498 — categoria explícita da competência avaliada nesta resposta
@@ -182,9 +182,9 @@ class WSIResult(BaseModel):
     candidate_id: str
     job_vacancy_id: str
     
-    technical_wsi: float = Field(ge=0, le=5)
-    behavioral_wsi: float = Field(ge=0, le=5)
-    overall_wsi: float = Field(ge=0, le=5)
+    technical_wsi: float = Field(ge=0, le=10)
+    behavioral_wsi: float = Field(ge=0, le=10)
+    overall_wsi: float = Field(ge=0, le=10)
     
     classification: Literal[
         "excepcional", "excelente", "alto", "medio",
