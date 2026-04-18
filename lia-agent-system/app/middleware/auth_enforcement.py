@@ -321,7 +321,7 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 return await call_next(request)
             logger.warning(f"[AuthEnforcement] Token validation EXCEPTION type={type(e).__name__} msg={e} for {path}")
             return JSONResponse(
-                {"detail": "Invalid or expired token"},
+                {"detail": f"Auth error: {type(e).__name__}: {str(e)[:80]}"},
                 status_code=401,
             )
 
