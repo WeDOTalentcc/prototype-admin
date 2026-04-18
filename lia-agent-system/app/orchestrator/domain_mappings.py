@@ -36,6 +36,7 @@ AGENT_TYPE_TO_DOMAIN: dict[str, str] = {
     "recruitment_campaign": "recruitment_campaign",
     "multi_strategy": "agent_studio",
     "voice_screening": "talent_pool",
+    "settings_config": "company_settings",  # frontend context_type alias
     "company_settings": "company_settings",
     "company_profile": "company_settings",
     "company_config": "company_settings",

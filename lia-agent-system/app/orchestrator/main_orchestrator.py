@@ -335,7 +335,7 @@ class MainOrchestrator:
                 return pending_response
 
             # Contexts with dedicated domain agents — skip generic phases (1, 1.5)
-            _DOMAIN_SPECIFIC_CONTEXTS = {"company_settings", "hiring_policy"}
+            _DOMAIN_SPECIFIC_CONTEXTS = {"company_settings", "settings_config", "hiring_policy"}
 
             # ── Phase 1: ActionExecutor ────────────────────────────────────
             action_response = None

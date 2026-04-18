@@ -152,10 +152,14 @@ async def resolve_tenant(
         client = await tenant_repo.get_client_account(resolved_client_id)
         profile = await tenant_repo.get_company_by_client_account(resolved_client_id)
 
+        # If no company_profile exists yet (new tenant), use client_account_id as fallback
+        # so the frontend loads an empty settings page instead of showing an error banner.
+        _profile_id = str(profile.id) if profile else (str(resolved_client_id) if resolved_client_id else None)
+        _company_name = (client.name if client else None) or (profile.name if profile else None)
         return TenantResolutionResponse(
             client_account_id=str(resolved_client_id) if resolved_client_id else None,
-            company_profile_id=str(profile.id) if profile else None,
-            company_name=client.name if client else (profile.name if profile else None),
+            company_profile_id=_profile_id,
+            company_name=_company_name,
             plan_id=str(client.plan_id) if client and client.plan_id else None,
             status=client.status if client else None,
         )
