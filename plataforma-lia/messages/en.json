@@ -3330,7 +3330,7 @@
           "conscientiousness": "Conscientiousness",
           "extraversion": "Extraversion",
           "agreeableness": "Agreeableness",
-          "neuroticism": "Stability"
+          "stability": "Emotional Stability"
         }
       },
       "voiceScreening": {

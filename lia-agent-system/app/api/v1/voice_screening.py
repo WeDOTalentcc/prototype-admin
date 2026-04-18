@@ -4,7 +4,11 @@ Voice Screening API — endpoints for managing voice interview sessions.
 Context: Talent Pool only. In jobs, the existing screening agent handles triagem.
 
 Apply to: lia-agent-system/app/api/v1/voice_screening.py
-Register: app.include_router(voice_screening_router)
+Register: app.include_router(voice_screening_router, prefix="/api/v1")
+NOTE: The router itself uses prefix="/voice-screening"; the global "/api/v1"
+is added at mount time in app/api/routes.py to avoid the double-prefix
+bug that surfaced as "/api/v1/api/v1/voice-screening/..." in the
+generated OpenAPI client (audit NEW-4).
 """
 
 import json
@@ -26,7 +30,7 @@ _DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1/voice-screening", tags=["Voice Screening"])
+router = APIRouter(prefix="/voice-screening", tags=["Voice Screening"])
 
 # In-memory session store (production: use Redis with TTL)
 _sessions: dict = {}

@@ -58,7 +58,13 @@ def feedback_generate_and_send_task(
             wsi_score = getattr(candidate, "wsi_score", 0.0) or 0.0
             eval_ctx = WSIEvaluationContext(
                 overall_wsi=wsi_score,
-                classification="abaixo_da_media" if wsi_score < 2.5 else "regular",
+                # Audit M14/code-review: usa scorer canônico (6 níveis) em vez do
+                # ternário hardcoded — alinha o feedback do candidato à classificação
+                # registrada em wsi_results pelo scorer (cutoff canônico = 2.25, não 2.5).
+                classification=__import__(
+                    "app.domains.cv_screening.services.wsi_deterministic_scorer",
+                    fromlist=["classify_wsi_score"],
+                ).classify_wsi_score(wsi_score),
                 strengths=[],
                 development_areas=[reason] if reason else [],
             )

@@ -8,7 +8,8 @@ import { CompanyBankQuestions } from './CompanyBankQuestions'
 import { CompanyDefaultQuestions } from './CompanyDefaultQuestions'
 import { CustomQuestions } from './CustomQuestions'
 import type { ScreeningQuestionItem } from './SCMScreeningTypes'
-import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables } from '@/components/jobs/jobsPageConstants'
+import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables } from '@/constants/wsi-blocks'
+import { normalizeTechnicalRequirement } from '@/lib/wsi/normalize-technical-requirement'
 import { toast } from 'sonner'
 import { useScreeningConfigManagerCore } from "./hooks/useScreeningConfigManagerCore"
 import { SCMSectionConfiguracoes } from './SCMSectionConfiguracoes'
@@ -62,7 +63,11 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               className="!mx-0 !mt-0"
               jobTitle={job.title as string}
               responsibilities={(job.requirements as string[]) || []}
-              technicalSkills={(job.technicalRequirements || []).map((r: Record<string, unknown>) => r.technology || r.skill || r.name || (typeof r === 'string' ? r : '')).filter(Boolean) as string[]}
+              technicalSkills={
+                ((job.technicalRequirements || []) as unknown[])
+                  .map((r) => normalizeTechnicalRequirement(r))
+                  .filter((s): s is string => Boolean(s))
+              }
               behavioralCompetencies={(job.behavioralCompetencies || []).map((c: Record<string, unknown>) => c.competency || c.name || (typeof c === 'string' ? c : '')).filter(Boolean) as string[]}
               seniority={(job.level || job.seniority) as string | undefined}
               department={job.department as string | undefined}

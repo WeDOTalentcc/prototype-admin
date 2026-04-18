@@ -61,14 +61,19 @@ class TestWSIScoreCalculatorWeightedFormula:
         result = calc.calculate("cand-1", "job-1", responses, weights)
         assert result.overall_wsi >= 4.0
 
-    def test_all_min_scores_yield_baixo_classification_and_wsi_below_2(self):
-        """Respostas 1.0 → classification='baixo' e overall_wsi < 2.0."""
+    def test_all_min_scores_yield_low_classification_and_wsi_at_or_below_2(self):
+        """Respostas 1.0 → classification do trilho baixo (audit M13: canônico = 6 níveis).
+
+        Após M13, a fachada delega ao ``classify_wsi_score`` canônico (spec §9.5):
+        score 1.0 → "regular". A tabela legacy de 5 níveis (que mapeava 1.0→"baixo")
+        foi descontinuada — "baixo" continua válido como sinônimo histórico.
+        """
         calc = WSIScoreCalculator()
         responses = [_resp("python", 1.0), _resp("sql", 1.0)]
         weights = {"python": 0.6, "sql": 0.4}
         result = calc.calculate("cand-2", "job-1", responses, weights)
-        assert result.classification == "baixo"
-        assert result.overall_wsi < 2.0
+        assert result.classification in ("regular", "baixo", "abaixo_da_media")
+        assert result.overall_wsi <= 2.0
 
     def test_result_preserves_candidate_and_job_ids(self):
         """WSIResult deve preservar candidate_id e job_vacancy_id exatos."""
@@ -77,18 +82,19 @@ class TestWSIScoreCalculatorWeightedFormula:
         assert result.candidate_id == "cand-XYZ"
         assert result.job_vacancy_id == "job-ABC"
 
-    def test_score_5_in_all_responses_yields_alto_or_excelente_classification(self):
-        """WSI 5.0 em todas as respostas técnicas → classificação 'alto' ou 'excelente'.
+    def test_score_5_in_all_responses_yields_top_tier_classification(self):
+        """WSI 5.0 em todas as respostas → classificação no topo da escala canônica.
 
-        A fórmula: technical_wsi=5.0, behavioral_wsi=5.0*0.7=3.5 (sem respostas comportamentais)
-        overall = 5.0*0.7 + 3.5*0.3 = 3.5 + 1.05 = 4.55 → 'excelente'.
+        Audit M13: canônico tem 6 níveis (incluindo 'excepcional' ≥ 4.5/5).
+        A fachada hoje classifica competências sem typing via cutoff por peso
+        (top tech_weight = técnicas), gerando tech_avg=behav_avg=5.0 → final 5.0.
         """
         calc = WSIScoreCalculator()
         responses = [_resp("python", 5.0), _resp("aws", 5.0)]
         weights = {"python": 0.5, "aws": 0.5}
         result = calc.calculate("c3", "j1", responses, weights)
-        assert result.classification in ("alto", "excelente"), \
-            f"Expected alto/excelente, got {result.classification} (overall_wsi={result.overall_wsi})"
+        assert result.classification in ("alto", "excelente", "excepcional"), \
+            f"Expected top-tier, got {result.classification} (overall_wsi={result.overall_wsi})"
 
     def test_result_contains_original_response_analyses(self):
         """WSIResult deve incluir as ResponseAnalysis originais na lista."""

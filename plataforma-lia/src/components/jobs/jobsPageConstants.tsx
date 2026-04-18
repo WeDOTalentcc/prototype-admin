@@ -1,5 +1,16 @@
 import React from 'react'
 import type { JobStatus, WSIBlock, WSIAutomaticMessage } from './jobsPageTypes'
+// Audit P2-1/NEW-3: WSI_BLOCKS / WSI_AUTOMATIC_MESSAGES / formatMessageWithVariables
+// agora vivem em @/constants/wsi-blocks (fonte canônica). Re-exportados aqui só
+// para preservar imports legados.
+import {
+  WSI_BLOCKS as CANONICAL_WSI_BLOCKS,
+  WSI_AUTOMATIC_MESSAGES as CANONICAL_WSI_AUTOMATIC_MESSAGES,
+  formatMessageWithVariables as canonicalFormatMessageWithVariables,
+} from '@/constants/wsi-blocks'
+
+/** @deprecated Importe de `@/constants/wsi-blocks` diretamente. */
+export const formatMessageWithVariables = canonicalFormatMessageWithVariables
 
 export function getBloomComplexity(bloomLevel: number): { label: string; color: string } {
   if (bloomLevel <= 2) return { label: 'Baixa', color: 'bg-status-success/10 text-status-success border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30' }
@@ -70,7 +81,10 @@ export const priorityColors = {
   "baixa": "bg-lia-bg-secondary text-lia-text-primary"
 }
 
-export const WSI_BLOCKS: WSIBlock[] = [
+/** @deprecated Importe de `@/constants/wsi-blocks` diretamente. */
+export const WSI_BLOCKS: WSIBlock[] = CANONICAL_WSI_BLOCKS as unknown as WSIBlock[]
+
+const _LEGACY_WSI_BLOCKS_REMOVED: WSIBlock[] = [
   { 
     id: 0, 
     name: 'Abordagem Inicial', 
@@ -121,7 +135,11 @@ export const WSI_BLOCKS: WSIBlock[] = [
   }
 ]
 
-export const WSI_AUTOMATIC_MESSAGES: Record<number, WSIAutomaticMessage> = {
+/** @deprecated Importe de `@/constants/wsi-blocks` diretamente. */
+export const WSI_AUTOMATIC_MESSAGES: Record<number, WSIAutomaticMessage> =
+  CANONICAL_WSI_AUTOMATIC_MESSAGES as Record<number, WSIAutomaticMessage>
+
+const _LEGACY_WSI_AUTOMATIC_MESSAGES_REMOVED: Record<number, WSIAutomaticMessage> = {
   0: {
     title: "Abordagem Inicial via WhatsApp",
     message: `Olá {candidato.nome}! 👋
@@ -162,7 +180,7 @@ Qualquer dúvida, estou por aqui! Boa sorte! 🍀`,
   }
 }
 
-export function formatMessageWithVariables(message: string): React.ReactNode[] {
+function _LEGACY_formatMessageWithVariables_REMOVED(message: string): React.ReactNode[] {
   const parts = message.split(/(\{[^}]+\})/g)
   return parts.map((part, index) => {
     if (part.match(/^\{[^}]+\}$/)) {

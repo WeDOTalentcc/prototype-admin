@@ -16,14 +16,28 @@ logger = logging.getLogger(__name__)
 class WSIResponseAnalyzer:
     """
     Analisador de respostas com scoring DETERMINÍSTICO baseado em Dreyfus + Bloom.
-    
-    IMPORTANTE: Os scores são calculados de forma 100% determinística.
-    O LLM NÃO participa do cálculo de scores - apenas da extração de informações.
+
+    IMPORTANTE — decisão arquitetural (audit M01, Phase 2 — 2026-04-18):
+    O scoring é 100% determinístico (`calculate_wsi_deterministic`). O LLM
+    NÃO participa do cálculo numérico — apenas (potencialmente) da extração
+    de informações no upstream `WSIQuestionGenerator`.
+
+    A spec WeDOTalent §F8.3 ("LLM Layer 2 reasoning") prevê uma camada futura
+    de re-análise por LLM para casos limítrofes (red flags ambíguas, evidências
+    qualitativas), mas isso ainda não foi implementado. Quando for, entrará
+    como ANALYZER SEPARADO (ex.: `WSIHybridResponseAnalyzer`) para preservar
+    o contrato determinístico desta classe.
+
+    Este construtor aceita ``llm`` apenas por compat de assinatura com o
+    container do `WSIService`; o argumento é IGNORADO. Uma vez que F8.3 vire
+    realidade, esta classe pode ganhar uma subclasse ou ser substituída no
+    container — sem precisar mudar o protocolo.
     """
-    
-    def __init__(self, llm):
-        self.llm = llm
-    
+
+    def __init__(self, llm: Any | None = None) -> None:  # noqa: ARG002
+        # Mantido por compat — WSIService passa self.llm. Vide docstring.
+        pass
+
     async def analyze(
         self,
         question: WSIQuestion,

@@ -55,7 +55,7 @@ interface BigFiveIndicators {
   conscientiousness: number
   extraversion: number
   agreeableness: number
-  neuroticism: number
+  stability: number
 }
 
 interface ArchetypeIndicator {
@@ -131,7 +131,7 @@ export function WSITextScreeningModal({
     conscientiousness: { label: t('textScreening.bigFiveLabels.conscientiousness') },
     extraversion: { label: t('textScreening.bigFiveLabels.extraversion'), color: 'var(--status-success)' },
     agreeableness: { label: t('textScreening.bigFiveLabels.agreeableness'), color: 'var(--wedo-orange)' },
-    neuroticism: { label: t('textScreening.bigFiveLabels.neuroticism'), color: 'var(--status-error)' }
+    stability: { label: t('textScreening.bigFiveLabels.stability'), color: 'var(--status-success)' }
   }
 
   const effectiveJobVacancy = jobVacancy || {
@@ -338,7 +338,7 @@ export function WSITextScreeningModal({
         <div className="space-y-2">
           {traitEntries.map(([key, value]) => {
             const trait = BIG_FIVE_LABELS[key]
-            const displayValue = key === 'neuroticism' ? 100 - value : value
+            const displayValue = value
             return (
               <div key={key} className="flex items-center gap-2">
                 <span className="text-xs w-28 text-lia-text-primary">{trait.label}</span>

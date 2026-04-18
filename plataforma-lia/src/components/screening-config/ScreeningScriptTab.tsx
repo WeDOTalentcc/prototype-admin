@@ -9,6 +9,8 @@ import {
   ChevronUp, ChevronDown
 } from"lucide-react"
 import { Chip } from "@/components/ui/chip"
+// Audit P2-1/NEW-3: cópia local removida — usa fonte canônica.
+import { WSI_BLOCKS } from "@/constants/wsi-blocks"
 
 interface ScreeningQuestion {
   id: string | number
@@ -62,57 +64,6 @@ interface PreviewJob {
   behavioralCompetencies?: Array<string | { competency?: string; name?: string }>
   [key: string]: unknown
 }
-
-const WSI_BLOCKS = [
-  { 
-    id: 0, 
-    name: 'Abordagem Inicial', 
-    description: 'Template WhatsApp pré-aprovado',
-    duration: '< 1 min', 
-    editable: false,
-    type: 'template'
-  },
-  { 
-    id: 1, 
-    name: 'Apresentação da Oportunidade', 
-    description: 'Pitch conversacional com detalhes da vaga',
-    duration: '3 min', 
-    editable: false,
-    type: 'presentation'
-  },
-  { 
-    id: 2, 
-    name: 'Perguntas Padrão da Empresa', 
-    description: 'Perguntas configuradas pela empresa (incluindo elegibilidade)',
-    duration: '3 min', 
-    editable: true,
-    type: 'company'
-  },
-  { 
-    id: 3, 
-    name: 'Avaliação Técnica', 
-    description: 'Skills com pesos e rubricas automáticas',
-    duration: '5 min', 
-    editable: true,
-    type: 'technical'
-  },
-  { 
-    id: 4, 
-    name: 'Análise Situacional e Fit', 
-    description: 'Perguntas situacionais com follow-ups',
-    duration: '4 min', 
-    editable: true,
-    type: 'situational'
-  },
-  { 
-    id: 5, 
-    name: 'Resultado e Encerramento', 
-    description: 'Índice WSI automático e feedback',
-    duration: '3 min', 
-    editable: false,
-    type: 'result'
-  }
-]
 
 const WSI_AUTOMATIC_MESSAGES: Record<number, { title: string; message: string; note: string }> = {
   0: {

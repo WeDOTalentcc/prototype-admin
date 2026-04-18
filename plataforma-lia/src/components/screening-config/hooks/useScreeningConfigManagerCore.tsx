@@ -13,7 +13,9 @@ import { useScreeningConfig, limitToApprovalPreset, approvalPresetToLimit, type 
 import { CompanyBankQuestions } from '../CompanyBankQuestions'
 import { CustomQuestions } from '../CustomQuestions'
 import type { CustomQuestion } from '../CustomQuestions'
-import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables, getBloomComplexity, getEstimatedTime, getBloomLabelPTBR, getDreyfusLabelPTBR } from '@/components/jobs/jobsPageConstants'
+import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables } from '@/constants/wsi-blocks'
+import { getBloomComplexity, getEstimatedTime, getBloomLabelPTBR, getDreyfusLabelPTBR } from '@/components/jobs/jobsPageConstants'
+import { normalizeTechnicalRequirement } from '@/lib/wsi/normalize-technical-requirement'
 import { JDEvaluationPanel } from '@/components/wsi'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -340,7 +342,9 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     setWsiSummaryExpanded(false)
 
     const techReqs = (job.technicalRequirements || []) as Record<string, unknown>[]
-    const techSkills = (techReqs.map((r) => r.technology || r.skill || r).filter(Boolean) as string[])
+    const techSkills = techReqs
+      .map((r) => normalizeTechnicalRequirement(r))
+      .filter((s): s is string => Boolean(s))
     const behavComps = (job.behavioralCompetencies || []) as Record<string, unknown>[]
     const behavComp = (behavComps.map((c) => c.competency || c.name || c).filter(Boolean) as string[])
     const reqs = (job.requirements || []) as Array<string | Record<string, unknown>>

@@ -13,7 +13,8 @@ import {
 } from"lucide-react"
 import { type Job } from"@/components/jobs"
 import { type ScreeningConfig } from"@/hooks/recruitment/useScreeningConfig"
-import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables } from"@/components/jobs/jobsPageConstants"
+import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables } from "@/constants/wsi-blocks"
+import { normalizeTechnicalRequirement } from "@/lib/wsi/normalize-technical-requirement"
 import {
   type TechnicalRequirement,
   type BehavioralCompetency,
@@ -131,7 +132,9 @@ export function JobScreeningSection({
                         </div>
                         {!collapsedPreviewSections.includes('competencias') && (<>
                         {(() => {
-                          const technicalSkills = ((previewJob.technicalRequirements || []) as TechnicalRequirement[]).map((tr: TechnicalRequirement) => typeof tr === 'string' ? tr : tr.technology || tr.name).filter(Boolean)
+                          const technicalSkills = ((previewJob.technicalRequirements || []) as unknown[])
+                            .map((tr) => normalizeTechnicalRequirement(tr))
+                            .filter((s): s is string => Boolean(s))
                           const behavioralSkills = ((previewJob.behavioralCompetencies || []) as BehavioralCompetency[]).map((bc: BehavioralCompetency) => typeof bc === 'string' ? bc : bc.competency || bc.name).filter(Boolean)
                           const responsibilitySkills = (previewJob.requirements || [] as Requirement[]).map((r: Requirement) => typeof r === 'string' ? r : r.requirement || r.text || r.name).filter(Boolean)
                           const hasData = technicalSkills.length > 0 || behavioralSkills.length > 0 || responsibilitySkills.length > 0

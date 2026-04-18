@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS wsi_response_analyses (
     response_audio_url VARCHAR(500),  -- Recording URL (Twilio MediaUrl ou Gemini Live transcript artifact)
     autodeclaration_score DECIMAL(3,2) CHECK (autodeclaration_score BETWEEN 1 AND 5),
     context_score DECIMAL(3,2) CHECK (context_score BETWEEN 1 AND 5),
-    bloom_level INT CHECK (bloom_level BETWEEN 1 AND 5),
+    bloom_level INT CHECK (bloom_level BETWEEN 1 AND 6),
     dreyfus_level INT CHECK (dreyfus_level BETWEEN 1 AND 5),
     evidences JSONB NOT NULL DEFAULT '[]'::jsonb,
     red_flags JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS wsi_results (
     technical_wsi DECIMAL(3,2) NOT NULL CHECK (technical_wsi BETWEEN 1 AND 5),
     behavioral_wsi DECIMAL(3,2) NOT NULL CHECK (behavioral_wsi BETWEEN 1 AND 5),
     overall_wsi DECIMAL(3,2) NOT NULL CHECK (overall_wsi BETWEEN 1 AND 5),
-    classification VARCHAR(20) NOT NULL CHECK (classification IN ('excelente', 'alto', 'medio', 'regular', 'baixo')),
+    classification VARCHAR(20) NOT NULL CHECK (classification IN ('excepcional', 'excelente', 'alto', 'medio', 'abaixo_da_media', 'regular', 'baixo')),
     percentile INT CHECK (percentile BETWEEN 0 AND 100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -183,6 +183,6 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 COMMENT ON TABLE wsi_sessions IS 'WSI screening sessions (voice, chat, hybrid) - one per candidate per job';
 COMMENT ON TABLE wsi_questions IS 'Generated WSI questions per session (6-8 questions per screening)';
 COMMENT ON TABLE wsi_response_analyses IS 'Analyzed candidate responses with scores 1-5 using 4 frameworks';
-COMMENT ON TABLE wsi_results IS 'Final WSI scores (technical 70% + behavioral 30% = overall)';
+COMMENT ON TABLE wsi_results IS 'Final WSI scores. Pesos technical/behavioral são DINÂMICOS por senioridade (SENIORITY_WEIGHTS, wsi_deterministic_scorer.py — spec §9.2), não fixos em 70/30.';
 COMMENT ON TABLE wsi_reports IS 'Structured reports for recruiters with recommendations';
 COMMENT ON TABLE wsi_feedbacks IS 'Constructive feedbacks for candidates with development plans';
