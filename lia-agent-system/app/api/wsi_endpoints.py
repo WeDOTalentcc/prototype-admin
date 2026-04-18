@@ -1196,7 +1196,8 @@ async def trigger_post_screening_feedback(
         job_vacancy_id = str(wsi_row[1])
         overall_wsi = float(wsi_row[2]) if wsi_row[2] is not None else 0.0
         classification = wsi_row[3] or "não_classificado"
-        score_percent = round((overall_wsi / 10) * 100, 1)  # B0 #523 — escala canônica /10
+        from app.domains.cv_screening.constants.wsi_scale import SCALE_MAX
+        score_percent = round((overall_wsi / SCALE_MAX) * 100, 1)  # B0 #523 — canônica /10
 
         if classification in ("alto", "excelente"):
             return {
@@ -1358,11 +1359,12 @@ async def get_candidates_wsi_scores(
             classification = row[4] or "não_classificado"
             percentile = row[5]
 
-            # B0 #523 — escala canônica /10 (era /5 *20→0-100; agora /10 *10→0-100)
+            # B0 #523 — escala canônica /10 (era /5 *20→0-100; agora /10 *SCALE_MAX→0-100)
+            from app.domains.cv_screening.constants.wsi_scale import SCALE_MAX
             candidates[candidate_id] = {
-                "overall_wsi": round(overall_raw * 10, 1),
-                "technical_wsi": round(technical_raw * 10, 1),
-                "behavioral_wsi": round(behavioral_raw * 10, 1),
+                "overall_wsi": round(overall_raw * SCALE_MAX, 1),
+                "technical_wsi": round(technical_raw * SCALE_MAX, 1),
+                "behavioral_wsi": round(behavioral_raw * SCALE_MAX, 1),
                 "classification": classification,
                 "percentile": percentile
             }
