@@ -22,16 +22,53 @@ interface SCMQuestionDetailProps {
   helpers: QuestionBadgeHelpers
 }
 
+type CategoryKind = 'behavioral' | 'technical' | 'cultural' | 'general'
+
+function getCategoryKind(raw?: string): CategoryKind {
+  switch (raw) {
+    case 'behavioral':
+    case 'Comportamental':
+    case 'comportamental':
+      return 'behavioral'
+    case 'technical':
+    case 'Técnica':
+    case 'técnica':
+      return 'technical'
+    case 'cultural':
+    case 'fit_cultural':
+      return 'cultural'
+    default:
+      return 'general'
+  }
+}
+
+const CATEGORY_CHIP_CLASSES: Record<CategoryKind, string> = {
+  behavioral: 'border border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30',
+  technical: '-dark border border-wedo-cyan/30 dark:border-wedo-cyan/30',
+  cultural: 'border border-wedo-cyan/30 dark:bg-wedo-cyan/20 dark:border-wedo-cyan/30',
+  general: 'dark:bg-status-success/20',
+}
+
+const CATEGORY_CHIP_LABELS: Record<CategoryKind, string> = {
+  behavioral: 'Comportamental',
+  technical: 'Técnica',
+  cultural: 'Fit Cultural',
+  general: 'Geral',
+}
+
 export function SCMQuestionDetailView({ item, isDetailsExpanded, onToggleDetails, helpers }: SCMQuestionDetailProps) {
   const { getBloomComplexity, getBloomLabelPTBR, getDreyfusLabelPTBR, getBigFiveLabelPTBR, getEstimatedTime } = helpers
   const complexity = getBloomComplexity(item.bloom_level || 3)
   const estTime = getEstimatedTime(item.question_type || 'open')
+  const categoryKind = getCategoryKind(item.category)
+  const categoryVariant = categoryKind === 'general' ? 'success' : 'neutral'
+  const categoryLabel = categoryKind === 'general' ? (item.category || CATEGORY_CHIP_LABELS.general) : CATEGORY_CHIP_LABELS[categoryKind]
 
   return (
     <div className="flex-1 min-w-0">
       <div className="flex items-center gap-1.5 mb-2 flex-wrap">
-        <Chip variant="neutral" muted className={`text-micro px-2 py-0.5 h-5 rounded-full ${item.category === 'behavioral' || item.category === 'Comportamental' || item.category === 'comportamental' ? ' border border-wedo-purple/30 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/30' : item.category === 'technical' || item.category === 'Técnica' || item.category === 'técnica' ? '-dark border border-wedo-cyan/30 dark:border-wedo-cyan/30' : item.category === 'cultural' || item.category === 'fit_cultural' ? ' border border-wedo-cyan/30 dark:bg-wedo-cyan/20 dark:border-wedo-cyan/30' : ' border border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30'}`}>
-          {item.category === 'behavioral' || item.category === 'comportamental' ? 'Comportamental' : item.category === 'technical' || item.category === 'técnica' ? 'Técnica' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'Fit Cultural' : item.category || 'Geral'}
+        <Chip variant={categoryVariant} muted className={`text-micro px-2 py-0.5 h-5 rounded-full ${CATEGORY_CHIP_CLASSES[categoryKind]}`}>
+          {categoryLabel}
         </Chip>
         {(item.type === 'eliminatory' || item.required || item.is_eliminatory) && (
           <Chip variant="danger" muted className="text-micro px-2 py-0.5 h-5 rounded-full dark:bg-status-error/20">Eliminatória</Chip>

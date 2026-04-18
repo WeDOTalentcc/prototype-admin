@@ -53,13 +53,8 @@ function FairnessBadge({ status }: { status: string }) {
   const passed = status === "passed"
   return (
     <Chip
-      variant="neutral"
-      className={cn(
-        "gap-1 text-xs",
-        passed
-          ? "border-status-success/30 text-status-success"
-          : "border-status-warning/30 text-status-warning"
-      )}
+      variant={passed ? "success" : "warning"}
+      className="gap-1 text-xs"
     >
       {passed ? (
         <ShieldCheck className="w-3 h-3" aria-hidden="true" />

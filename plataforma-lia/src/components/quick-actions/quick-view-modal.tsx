@@ -428,11 +428,10 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-lia-text-secondary">Nível de Risco</span>
                     <Chip
-                      variant="neutral"
-                      className={
- candidate.riskLevel === 'Baixo' ? 'text-status-success border-status-success/30' :
-                        candidate.riskLevel === 'Médio' ? 'text-status-warning border-status-warning/30' :
-                        'text-status-error border-status-error/30'
+                      variant={
+                        candidate.riskLevel === 'Baixo' ? 'success' :
+                        candidate.riskLevel === 'Médio' ? 'warning' :
+                        'danger'
                       }
                     >
                       {candidate.riskLevel}

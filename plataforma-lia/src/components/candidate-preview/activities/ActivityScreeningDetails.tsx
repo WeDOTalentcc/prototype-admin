@@ -97,7 +97,7 @@ export function ActivityVideoInterviewDetails({ activity, onSetScreeningModalDat
         <h5 className={`${textStyles.label} mb-2 flex items-center gap-1`}>
           <Video className="w-3 h-3 text-wedo-purple" />
           Entrevista em Vídeo
-          <Chip variant="neutral" muted className={`ml-2  border-status-success/30`}>
+          <Chip variant="success" muted className="ml-2">
             {activity.details.questionsAnswered}/{activity.details.totalQuestions} perguntas
           </Chip>
         </h5>

@@ -180,7 +180,7 @@ export function RecruitmentScreeningTab({
                       <Chip variant="neutral" muted className={`text-micro py-0 px-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text ${!isEditingQuestions ? 'opacity-60' : ''}`}>{t("recruitment.screening.required")}</Chip>
                     )}
                     {q.is_eliminatory && (
-                      <Chip variant="neutral" muted className={`text-micro py-0 px-1.5  border border-status-error/30 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
+                      <Chip variant="danger" muted className={`text-micro py-0 px-1.5 ${!isEditingQuestions ? 'opacity-60' : ''}`}>
                         {t("recruitment.screening.eliminatory")} {q.expected_answer && `(${q.expected_answer})`}
                       </Chip>
                     )}

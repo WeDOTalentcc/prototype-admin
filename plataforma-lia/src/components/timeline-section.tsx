@@ -103,14 +103,17 @@ export function TimelineSection() {
 
                   <div className="mt-2">
                     <Chip
-                      variant="neutral"
+                      variant={
+                        item.type === 'feedback' ? 'success' :
+                        item.type === 'screening' || item.type === 'analysis' ? 'neutral' :
+                        item.type === 'evaluation' || item.type === 'status_update' ? 'neutral' :
+                        'warning'
+                      }
                       className={`text-xs ${
- item.type === 'feedback' ? 'border-status-success/30 text-status-success' :
-                        item.type === 'evaluation' ? 'border-lia-border-default dark:border-lia-border-default text-lia-text-secondary' :
                         item.type === 'screening' ? 'border-wedo-purple/30 text-wedo-purple' :
                         item.type === 'analysis' ? 'border-wedo-orange/30 text-wedo-orange' :
                         item.type === 'status_update' ? 'border-lia-border-subtle text-lia-text-primary' :
-                        'border-status-warning/30 text-status-warning'
+                        ''
                       }`}
                     >
                       {item.type === 'feedback' ? 'Feedback' :

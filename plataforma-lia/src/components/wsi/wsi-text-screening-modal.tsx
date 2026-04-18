@@ -531,13 +531,17 @@ export function WSITextScreeningModal({
                     }`}>
                       {result.overall_score.toFixed(1)}
                     </div>
-                    <Chip variant="neutral" muted className={`mt-2 ${
- result.classification === 'excelente' || result.classification === 'alto' 
-                        ? ' border-status-success/30' :
-                      result.classification === 'medio' 
-                        ? ' border-status-warning/30' :
-                      ' border-status-error/30'
-                    }`}>
+                    <Chip
+                      variant={
+                        result.classification === 'excelente' || result.classification === 'alto'
+                          ? 'success'
+                          : result.classification === 'medio'
+                            ? 'warning'
+                            : 'danger'
+                      }
+                      muted
+                      className="mt-2"
+                    >
                       {result.classification.charAt(0).toUpperCase() + result.classification.slice(1)}
                     </Chip>
                   </div>

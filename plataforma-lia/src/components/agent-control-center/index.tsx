@@ -566,8 +566,8 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                 >
                   <div className="flex items-center gap-3">
                     <Chip
-                      variant="neutral"
-                      className={`text-xs ${alert.severity === 'high' ? 'border-status-error text-status-error' : alert.severity === 'medium' ? 'border-status-warning text-status-warning' : 'border-lia-text-secondary text-lia-text-secondary'}`}
+                      variant={alert.severity === 'high' ? 'danger' : alert.severity === 'medium' ? 'warning' : 'neutral'}
+                      className="text-xs"
                     >
                       {alert.severity}
                     </Chip>
