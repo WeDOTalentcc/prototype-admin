@@ -205,7 +205,6 @@ function getVacancyCta(
     case "aguardando_aprovacao":
       return { label: t("vacancyCard.openApproval"), href: jobUrl }
     case "publicada":
-      return { label: t("vacancyCard.openPublish"), href: jobUrl }
     case "ao_vivo":
       return { label: t("vacancyCard.openKanban"), href: kanbanUrl }
     case "encerrada":
