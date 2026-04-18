@@ -1,0 +1,36 @@
+[
+  {
+    "id": "CX-003",
+    "category": "CX",
+    "severity": "high",
+    "title": "Pronoun resolution",
+    "prompt": "e ela? tem os requisitos técnicos?",
+    "context": {
+      "scope": "Candidatos",
+      "page": "candidatos"
+    },
+    "expected_tools": [
+      "get_candidate_details"
+    ],
+    "canonical_files": [
+      "app/orchestrator/cascaded_router.py",
+      "app/domains/recruiter_assistant/services/conversation_memory.py"
+    ],
+    "success_criteria": [
+      "Resolves pronoun to specific candidate",
+      "Does not ask 'quem é ela?'"
+    ],
+    "anti_patterns": [
+      "Asks who 'ela' refers to",
+      "Ignores pronoun context"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 1790,
+    "response": "Para eu verificar se a candidata tem os requisitos técnicos, preciso que me informe o ID da candidata e o ID ou o título da vaga.",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-18T18:06:25.007614"
+  }
+]

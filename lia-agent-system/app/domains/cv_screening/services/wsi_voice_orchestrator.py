@@ -474,80 +474,15 @@ class WSIVoiceOrchestrator:
             response_text: str = qa["response"]
             logger.debug(f"Analyzing response for: {question.competency}")
 
+            # Round 3 (audit comment): isolamos a chamada à LLM em try/except
+            # — falhas de análise caem no fallback determinístico (audit
+            # #498). Mas as escritas de auditoria (wsi_responses +
+            # wsi_response_analyses) ficam FORA do try: depois que houve
+            # análise bem-sucedida, persistir o hash é OBRIGATÓRIO para
+            # compliance EU AI Act Art. 12. Falha de DB aborta a transação.
             try:
                 analysis = await self.wsi_service.analyze_response(
                     question=question, response=response_text
-                )
-                response_analyses.append(analysis)
-                weights[question.competency] = question.weight
-
-                # Task #511 — EU AI Act Art. 12 / LGPD Art. 20 audit trail.
-                # Hash determinístico calculado UMA vez e gravado em ambas
-                # tabelas (wsi_responses + wsi_response_analyses) para
-                # cross-reference sem expor texto bruto.
-                resp_hash = hash_response(
-                    analysis.response_text, session_id, question.id
-                )
-
-                # Round 3: popula candidate_id e company_id no audit trail
-                # para suportar relatórios DPO por candidato/tenant sem JOIN
-                # adicional.
-                await session.execute(
-                    text(
-                        """
-                        INSERT INTO wsi_responses (
-                            session_id, question_id, raw_text, response_hash,
-                            candidate_id, company_id
-                        )
-                        VALUES (:session_id, :question_id, :raw_text, :response_hash,
-                                :candidate_id, :company_id)
-                        """
-                    ),
-                    {
-                        "session_id": session_id,
-                        "question_id": question.id,
-                        "raw_text": analysis.response_text or "",
-                        "response_hash": resp_hash,
-                        "candidate_id": candidate_id,
-                        "company_id": company_id,
-                    },
-                )
-
-                await session.execute(
-                    text(
-                        """
-                        INSERT INTO wsi_response_analyses (
-                            id, session_id, question_id, competency, response_text,
-                            autodeclaration_score, context_score, bloom_level, dreyfus_level,
-                            evidences, red_flags, consistency_penalty, final_score, justification,
-                            response_hash
-                        )
-                        VALUES (:id, :session_id, :question_id, :competency, :response_text,
-                                :autodeclaration_score, :context_score, :bloom_level, :dreyfus_level,
-                                :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification,
-                                :response_hash)
-                        """
-                    ),
-                    {
-                        "id": str(uuid.uuid4()),
-                        "session_id": session_id,
-                        "question_id": question.id,
-                        "competency": analysis.competency,
-                        "response_text": analysis.response_text,
-                        "autodeclaration_score": analysis.autodeclaration_score,
-                        "context_score": analysis.context_score,
-                        "bloom_level": analysis.bloom_level,
-                        "dreyfus_level": analysis.dreyfus_level,
-                        "evidences": json.dumps(analysis.evidences),
-                        "red_flags": json.dumps(analysis.red_flags),
-                        "consistency_penalty": analysis.consistency_penalty,
-                        "final_score": analysis.final_score,
-                        "justification": analysis.justification,
-                        "response_hash": resp_hash,
-                    },
-                )
-                logger.info(
-                    f"✅ Analyzed {question.competency}: Score {analysis.final_score}/5"
                 )
             except Exception as e:
                 logger.error(
@@ -574,6 +509,79 @@ class WSIVoiceOrchestrator:
                     )
                 )
                 weights[question.competency] = question.weight
+                # Sem análise bem-sucedida não há response_text canônico
+                # para hashear — não persistimos audit trail neste caso
+                # (registros parciais corromperiam a base de auditoria).
+                continue
+
+            # Sucesso da análise — append + persistência FAIL-FAST.
+            response_analyses.append(analysis)
+            weights[question.competency] = question.weight
+
+            # Task #511 — EU AI Act Art. 12 / LGPD Art. 20 audit trail.
+            # Hash determinístico calculado UMA vez e gravado em ambas
+            # tabelas (wsi_responses + wsi_response_analyses). Falhas de
+            # DB aqui propagam (FAIL-FAST) — trilha de auditoria de IA de
+            # Alto Risco não pode ser silenciosamente perdida.
+            resp_hash = hash_response(
+                analysis.response_text, session_id, question.id
+            )
+            await session.execute(
+                text(
+                    """
+                    INSERT INTO wsi_responses (
+                        session_id, question_id, raw_text, response_hash,
+                        candidate_id, company_id
+                    )
+                    VALUES (:session_id, :question_id, :raw_text, :response_hash,
+                            :candidate_id, :company_id)
+                    """
+                ),
+                {
+                    "session_id": session_id,
+                    "question_id": question.id,
+                    "raw_text": analysis.response_text or "",
+                    "response_hash": resp_hash,
+                    "candidate_id": candidate_id,
+                    "company_id": company_id,
+                },
+            )
+            await session.execute(
+                text(
+                    """
+                    INSERT INTO wsi_response_analyses (
+                        id, session_id, question_id, competency, response_text,
+                        autodeclaration_score, context_score, bloom_level, dreyfus_level,
+                        evidences, red_flags, consistency_penalty, final_score, justification,
+                        response_hash
+                    )
+                    VALUES (:id, :session_id, :question_id, :competency, :response_text,
+                            :autodeclaration_score, :context_score, :bloom_level, :dreyfus_level,
+                            :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification,
+                            :response_hash)
+                    """
+                ),
+                {
+                    "id": str(uuid.uuid4()),
+                    "session_id": session_id,
+                    "question_id": question.id,
+                    "competency": analysis.competency,
+                    "response_text": analysis.response_text,
+                    "autodeclaration_score": analysis.autodeclaration_score,
+                    "context_score": analysis.context_score,
+                    "bloom_level": analysis.bloom_level,
+                    "dreyfus_level": analysis.dreyfus_level,
+                    "evidences": json.dumps(analysis.evidences),
+                    "red_flags": json.dumps(analysis.red_flags),
+                    "consistency_penalty": analysis.consistency_penalty,
+                    "final_score": analysis.final_score,
+                    "justification": analysis.justification,
+                    "response_hash": resp_hash,
+                },
+            )
+            logger.info(
+                f"✅ Analyzed {question.competency}: Score {analysis.final_score}/5"
+            )
 
         return response_analyses, weights
 
