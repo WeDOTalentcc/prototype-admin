@@ -286,7 +286,7 @@ def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
     if "job_id" not in entities and intent in (
         "rankear_candidatos", "comparar_candidatos", "listar_candidatos_por_etapa",
         "iniciar_triagem", "disparar_triagem", "health_check_vaga", "analisar_funil",
-        "exportar_candidatos", "sugerir_candidatos",
+        "exportar_candidatos", "sugerir_candidatos", "mover_candidatos_por_etapa",
     ):
         # Match patterns like "V0037", "V-0037", "vaga V0037", "vagas V0037"
         job_m = re.search(r"\b(V[-_]?\d{3,6})\b", msg, re.IGNORECASE)
