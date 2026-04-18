@@ -3,6 +3,7 @@
 import { Chip } from "@/components/ui/chip"
 import { Tooltip, TooltipContent, TooltipTrigger } from"@/components/ui/tooltip"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
+import { getWsiScoreColor } from '@/lib/wsi/visual'
 import {
   X, CheckCircle, AlertCircle, Clock, Brain, Target,
   TrendingUp, Edit, BarChart3, Briefcase, Copy, Check,
@@ -21,15 +22,10 @@ interface OpinionCardProps {
 export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId, onCopyOpinion }: OpinionCardProps) {
   const getScoreColor = (score: number | null, isWsi: boolean = false) => {
     if (score === null || score === undefined) return 'text-lia-text-secondary'
-    if (isWsi) {
-      if (score >= 8.0) return 'text-status-success'
-      if (score >= 6.0) return 'text-status-warning'
-      return 'text-status-error'
-    } else {
-      if (score >= 80) return 'text-status-success'
-      if (score >= 60) return 'text-status-warning'
-      return 'text-status-error'
-    }
+    if (isWsi) return getWsiScoreColor(score)
+    if (score >= 80) return 'text-status-success'
+    if (score >= 60) return 'text-status-warning'
+    return 'text-status-error'
   }
 
   const getRecommendationBadge = (rec: string | null) => {

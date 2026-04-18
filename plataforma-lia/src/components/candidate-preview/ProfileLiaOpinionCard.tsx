@@ -1,6 +1,7 @@
 "use client"
 
 import { textStyles, badgeStyles } from '@/lib/design-tokens'
+import { getWsiScoreColor } from '@/lib/wsi/visual'
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
@@ -55,9 +56,7 @@ export function ProfileLiaOpinionCard({
 
   const getScoreColor = (score: number | null, isWsi: boolean = false) => {
     if (score === null || score === undefined) return 'text-lia-text-secondary'
-    if (isWsi) {
-      return score >= 8.0 ? 'text-status-success' : score >= 6.0 ? 'text-status-warning' : 'text-status-error'
-    }
+    if (isWsi) return getWsiScoreColor(score)
     return score >= 80 ? 'text-status-success' : score >= 60 ? 'text-status-warning' : 'text-status-error'
   }
 

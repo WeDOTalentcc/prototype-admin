@@ -1,5 +1,6 @@
 "use client"
 
+import { getWsiScoreColor } from "@/lib/wsi/visual"
 import { Card, CardContent } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
@@ -62,15 +63,10 @@ export function CandidatePageOpinionsTab({
   handleDeleteAnalysis,
 }: CandidatePageOpinionsTabProps) {
   const getOpinionScoreColor = (score: number, isWsi: boolean) => {
-    if (isWsi) {
-      if (score >= 8) return"text-status-success"
-      if (score >= 6) return"text-status-warning"
-      return"text-status-error"
-    } else {
-      if (score >= 80) return"text-status-success"
-      if (score >= 60) return"text-status-warning"
-      return"text-status-error"
-    }
+    if (isWsi) return getWsiScoreColor(score)
+    if (score >= 80) return"text-status-success"
+    if (score >= 60) return"text-status-warning"
+    return"text-status-error"
   }
 
   const getRecommendationBadge = (rec: string | null) => {

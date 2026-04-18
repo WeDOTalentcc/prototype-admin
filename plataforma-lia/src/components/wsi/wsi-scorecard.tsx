@@ -299,9 +299,9 @@ export function WSIScoreBadge({ score, classification }: { score: number; classi
   const t = useTranslations('screening.wsi')
   const display = getWsiVisualState(score)
   const badge = getWsiVisualStateForClassification(classification)
-  const labelKey = `classification.${classification}` as const
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const label = (t as any).has?.(labelKey) ? t(labelKey as any) : classification
+  const i18nKey = wsiClassificationI18nKey(classification)
+  const labelKey = `classification.${i18nKey}` as never
+  const label = t.has(labelKey) ? t(labelKey) : classification
 
   return (
     <div className="inline-flex items-center gap-1.5">
@@ -318,9 +318,9 @@ export function WSIScoreBadge({ score, classification }: { score: number; classi
 export function WSIMiniScore({ score }: { score: number }) {
   const t = useTranslations('screening.wsi')
   const v = getWsiVisualState(score)
-  const labelKey = `classification.${v.classification}` as const
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const label = (t as any).has?.(labelKey) ? t(labelKey as any) : v.classification
+  const i18nKey = wsiClassificationI18nKey(v.classification)
+  const labelKey = `classification.${i18nKey}` as never
+  const label = t.has(labelKey) ? t(labelKey) : v.classification
 
   return (
     <div

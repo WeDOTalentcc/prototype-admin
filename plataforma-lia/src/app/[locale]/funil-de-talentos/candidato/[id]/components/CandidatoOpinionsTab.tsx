@@ -2,6 +2,7 @@
 
 import React from"react"
 import { getPercentageScoreColorClass } from"@/lib/score-utils"
+import { getWsiScoreColor } from "@/lib/wsi/visual"
 import { Card, CardContent } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
@@ -32,12 +33,9 @@ interface CandidatoOpinionsTabProps {
 
 function getScoreColor(score: number | null | undefined, isWsi: boolean = false): string {
   if (score === null || score === undefined) return"text-lia-text-secondary"
-  // Task #512 (PR3 #497) — WSI usa escala 0-10, non-WSI continua percentual 0-100
-  if (isWsi) {
-    if (score >= 8.0) return"text-status-success"
-    if (score >= 6.0) return"text-status-warning"
-    return"text-status-error"
-  }
+  // Task #512 (PR3 #497) — WSI usa escala 0-10 via helper canônico,
+  // non-WSI continua percentual 0-100.
+  if (isWsi) return getWsiScoreColor(score)
   return getPercentageScoreColorClass(score)
 }
 

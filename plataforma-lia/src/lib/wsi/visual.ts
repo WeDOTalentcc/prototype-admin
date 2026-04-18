@@ -15,10 +15,24 @@
 export const WSI_DISPLAY_SCALE = 10
 export const WSI_DISPLAY_FORMATTED = `${WSI_DISPLAY_SCALE}.0`
 
+/**
+ * Cutoffs visuais 3-tier (política de design WSI 0-10):
+ *   verde   >= 7.5
+ *   amarelo >= 6.0
+ *   vermelho < 6.0
+ * Cutoffs intermediários (excelente/alto) existem para classificação
+ * semântica/badges mas todos mapeiam para a MESMA cor (verde) no esquema
+ * 3-tier — nunca quebrar a invariante visual.
+ */
+export const WSI_VISUAL_3TIER = {
+  green: 7.5,
+  yellow: 6.0,
+} as const
+
 export const WSI_CUTOFFS = {
   excepcional: 9.0,
   excelente: 8.0,
-  alto: 7.0,
+  alto: 7.5,
   medio: 6.0,
   abaixo_da_media: 4.5,
 } as const
@@ -52,12 +66,14 @@ export function getWsiClassification(score: number): WsiClassification {
   return 'regular'
 }
 
+// Política 3-tier: success (>=7.5) / warning (>=6.0) / error (<6.0).
+// Classificações intermediárias (excelente/alto) compartilham success.
 const VISUAL_BY_CLASSIFICATION: Record<WsiClassification, Omit<WsiVisualState, 'classification'>> = {
   excepcional:     { text: 'text-status-success',  bg: 'bg-status-success/15',  border: 'border-status-success/30' },
   excelente:       { text: 'text-status-success',  bg: 'bg-status-success/15',  border: 'border-status-success/30' },
-  alto:            { text: 'text-wedo-cyan-dark',  bg: 'bg-wedo-cyan/15',       border: 'border-wedo-cyan/30' },
+  alto:            { text: 'text-status-success',  bg: 'bg-status-success/15',  border: 'border-status-success/30' },
   medio:           { text: 'text-status-warning',  bg: 'bg-status-warning/15',  border: 'border-status-warning/30' },
-  abaixo_da_media: { text: 'text-wedo-orange',     bg: 'bg-wedo-orange/15',     border: 'border-wedo-orange/30' },
+  abaixo_da_media: { text: 'text-status-error',    bg: 'bg-status-error/15',    border: 'border-status-error/30' },
   regular:         { text: 'text-status-error',    bg: 'bg-status-error/15',    border: 'border-status-error/30' },
 }
 
@@ -96,4 +112,15 @@ const I18N_KEY_BY_CLASSIFICATION: Record<WsiClassification, string> = {
 
 export function wsiClassificationI18nKey(classification: string): string {
   return I18N_KEY_BY_CLASSIFICATION[classification as WsiClassification] ?? 'medio'
+}
+
+/**
+ * Wrapper canônico para a cor do score WSI no esquema 3-tier.
+ * Substitui qualquer `getScoreColor(score, isWsi=true)` local.
+ */
+export function getWsiScoreColor(score: number | null | undefined): string {
+  if (score === null || score === undefined) return 'text-lia-text-secondary'
+  if (score >= WSI_VISUAL_3TIER.green) return 'text-status-success'
+  if (score >= WSI_VISUAL_3TIER.yellow) return 'text-status-warning'
+  return 'text-status-error'
 }
