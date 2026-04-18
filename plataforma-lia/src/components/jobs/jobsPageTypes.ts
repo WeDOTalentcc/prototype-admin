@@ -197,7 +197,11 @@ export interface Job {
   location: string
   workModel: JobWorkModel
   type: string
+  /** @deprecated use `seniority` (canônico SSOT em `lib/schemas/job.schema.ts`).
+   * Mantido por DTOs legacy ainda em uso em ~5 arquivos do monolito —
+   * remoção exige migration coordenada de DTO. */
   level: string
+  seniority?: string
   salary: string
   benefits: string[]
   status: JobStatus

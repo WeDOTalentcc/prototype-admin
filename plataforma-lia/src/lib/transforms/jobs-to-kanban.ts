@@ -44,7 +44,8 @@ export function jobToKanbanItem(job: Job, deps: JobToKanbanItemDeps): KanbanItem
 
   const chips: string[] = []
   if (job.workModel) chips.push(job.workModel)
-  if (job.level) chips.push(job.level)
+  const jobSeniority = (job as Job & { seniority?: string }).seniority || job.level
+  if (jobSeniority) chips.push(jobSeniority)
   chips.push(deps.labels.candidatesCount(candidates))
 
   let dateLabel: string | undefined

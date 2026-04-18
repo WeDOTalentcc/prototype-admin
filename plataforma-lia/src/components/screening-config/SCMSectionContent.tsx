@@ -22,8 +22,10 @@ interface JobFields {
   requirements: string[]
   technicalRequirements: Array<Record<string, unknown>>
   behavioralCompetencies: Array<Record<string, unknown>>
-  level: string
-  seniority: string
+  /** @deprecated use `seniority` (canônico SSOT em job.schema.ts). Mantido por
+   * DTOs legacy ainda em uso em ~5 arquivos do monolito. */
+  level?: string
+  seniority?: string
   department: string
   description: string
   screeningQuestions: ScreeningQuestionItem[]

@@ -378,7 +378,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     const responsibilities = (reqs.map((r) => typeof r === 'string' ? r : (r as Record<string, unknown>).requirement || (r as Record<string, unknown>).text || (r as Record<string, unknown>).name || r).filter(Boolean) as string[])
     setWsiGenerationContext({
       title: (job.title as string) || '',
-      seniority: (job.level as string) || (job.seniority as string) || null,
+      seniority: (job.seniority as string) || (job.level as string) || null,
       responsibilities: responsibilities.slice(0, 5),
       technicalSkills: techSkills.slice(0, 6),
       behavioralCompetencies: behavComp.slice(0, 6),
@@ -417,7 +417,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
           mode,
           technical_skills: techSkills,
           behavioral_competencies: behavComp,
-          seniority: job.level || (job as Record<string, unknown>).seniority || null,
+          seniority: (job as Record<string, unknown>).seniority || job.level || null,
           description: job.description || null
         })
       })
