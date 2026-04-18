@@ -209,6 +209,11 @@ class ContextManager:
         "candidate": "_resolve_rails_candidate_id",
         "job_id": "_resolve_rails_job_id",
         "vacancy_id": "_resolve_rails_job_id",
+        # Task #486 — `update_job_vacancy` (and other vacancy CRUD routes)
+        # spell the path param `job_vacancy_id`; without an entry here the
+        # canonicalization branch silently no-ops and a UUID/bigint retry
+        # hashes to two distinct keys.
+        "job_vacancy_id": "_resolve_rails_job_id",
         "application_id": "_resolve_rails_application_id",
         "apply_id": "_resolve_rails_application_id",
     }

@@ -13,8 +13,11 @@ from app.shared.services.plan_limits_service import check_active_jobs_limit_or_d
 CRUD routes: finalize, search, GET one, GET list, POST create, PUT update,
 DELETE (archive), PATCH status, duplicate, clone, find-by-identifier.
 """
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from ._shared import *
 from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
 from app.domains.job_management.dependencies import get_job_vacancy_crud_repo
@@ -823,7 +826,12 @@ async def create_job_vacancy(
 
 @router.put("/job-vacancies/{job_vacancy_id}", response_model=JobVacancyResponse)
 async def update_job_vacancy(
-    job_vacancy_id: UUID,
+    # Task #486 — accept both fork UUID and Rails bigint at the path so that
+    # a network-blip retry that switches ID format reaches the same dedup
+    # check the candidate endpoint already has. The handler still operates
+    # on the local UUID; bigint paths only exist as the canonical retry
+    # target and will collapse onto the original UUID's idempotency key.
+    job_vacancy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     job_data: JobVacancyUpdate,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo),
@@ -839,6 +847,8 @@ async def update_job_vacancy(
         update_data = job_data.model_dump(exclude_unset=True, exclude_none=True)
         # Task #478 / ADR 003 — drop duplicate update retries for the same
         # vacancy/payload before they execute audit + persistence twice.
+        # Task #486 — `job_vacancy_id` is now in `_DUAL_ID_PARAM_RESOLVERS`
+        # so a UUID retry followed by a bigint retry collapses here.
         await reject_duplicate_async(
             "update_job_vacancy",
             {"job_vacancy_id": str(job_vacancy_id), "payload": update_data},
@@ -846,7 +856,16 @@ async def update_job_vacancy(
             scope=f"company:{user_company}",
         )
 
-        job_vacancy = await repo.get_vacancy_by_id_and_company(job_vacancy_id, user_company)
+        # Local Postgres stores `JobVacancy.id` as UUID. A bigint-only first
+        # call (without a prior UUID call to register the key) can't be
+        # served by this Python shim — surface 404 instead of crashing on
+        # the UUID cast.
+        try:
+            job_vacancy_uuid = UUID(job_vacancy_id)
+        except (ValueError, AttributeError):
+            raise HTTPException(status_code=404, detail="Job vacancy not found")
+
+        job_vacancy = await repo.get_vacancy_by_id_and_company(job_vacancy_uuid, user_company)
 
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
