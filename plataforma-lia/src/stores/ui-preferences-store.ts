@@ -96,6 +96,7 @@ interface UIPreferencesState {
   liaRecentItems: LiaRecentItem[]
   liaFavorites: string[]
   liaPrompt: string | null
+  pipelineOverviewMode: 'vagas' | 'candidatos'
 }
 
 interface UIPreferencesActions {
@@ -133,6 +134,7 @@ interface UIPreferencesActions {
   setLiaFavorites: (favorites: string[]) => void
   toggleLiaFavorite: (id: string) => void
   setLiaPrompt: (prompt: string | null) => void
+  setPipelineOverviewMode: (mode: 'vagas' | 'candidatos') => void
   resetSessionData: () => void
 }
 
@@ -166,6 +168,7 @@ export const useUIPreferencesStore = create<UIPreferencesStore>()(
         liaRecentItems: [],
         liaFavorites: [],
         liaPrompt: null,
+        pipelineOverviewMode: 'candidatos',
 
         setCandidateTableColumns: (columns) =>
           set({ candidateTableColumns: columns }, false, 'uiPrefs/setCandidateTableColumns'),
@@ -340,6 +343,9 @@ export const useUIPreferencesStore = create<UIPreferencesStore>()(
 
         setLiaPrompt: (prompt) =>
           set({ liaPrompt: prompt }, false, 'uiPrefs/setLiaPrompt'),
+
+        setPipelineOverviewMode: (mode) =>
+          set({ pipelineOverviewMode: mode }, false, 'uiPrefs/setPipelineOverviewMode'),
 
         resetSessionData: () =>
           set(

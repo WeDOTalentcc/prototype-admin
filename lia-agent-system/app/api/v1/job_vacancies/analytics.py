@@ -1180,3 +1180,236 @@ async def get_pipeline_overview(
     stages.sort(key=lambda s: s.count, reverse=True)
 
     return PipelineOverviewResponse(stages=stages, total_candidates=total)
+
+
+# ─── Pipeline Overview — JOB LIFECYCLE (Task #430) ───────────────────────────
+#
+# Mirrors the candidate-side `/pipeline-overview` but groups *job vacancies*
+# by their lifecycle stage so the panoramic view can render a parallel
+# Vagas|Candidatos toggle without needing two separate consumers.
+#
+# Stage detection is priority-based (top wins). A job belongs to exactly one
+# bucket. The `imported_from_ats` flag is decorative metadata for badges.
+
+JOB_LIFECYCLE_ORDER = [
+    "ats_importada",
+    "rascunho",
+    "enriquecida",
+    "wsi_config",
+    "aguardando_aprovacao",
+    "publicada",
+    "ao_vivo",
+    "encerrada",
+]
+
+JOB_LIFECYCLE_DISPLAY = {
+    "ats_importada": "ATS Importada",
+    "rascunho": "Rascunho/JD",
+    "enriquecida": "Enriquecida",
+    "wsi_config": "WSI Config",
+    "aguardando_aprovacao": "Aguardando Aprovação",
+    "publicada": "Publicada",
+    "ao_vivo": "Ao Vivo",
+    "encerrada": "Encerrada",
+}
+
+JOB_LIFECYCLE_COLORS = {
+    "ats_importada": "#8A8F98",
+    "rascunho": "#60BED1",
+    "enriquecida": "#9860D1",
+    "wsi_config": "#5DA47A",
+    "aguardando_aprovacao": "#D19960",
+    "publicada": "#6078D1",
+    "ao_vivo": "#4DA67A",
+    "encerrada": "#8A8F98",
+}
+
+
+def _job_is_imported_from_ats(job: JobVacancy) -> bool:
+    """Detect whether a job was imported from an external ATS.
+
+    Best-effort: looks at additional_data.source / imported_from_ats /
+    external_system markers. Defaults to False when no marker is present.
+    """
+    extra = job.additional_data or {}
+    if not isinstance(extra, dict):
+        return False
+    if extra.get("imported_from_ats") is True:
+        return True
+    src = extra.get("source") or extra.get("origin") or extra.get("import_source")
+    if isinstance(src, str) and src.strip():
+        s = src.strip().lower()
+        if s.startswith("ats") or s in {"gupy", "kenoby", "solides", "abler", "pandape"}:
+            return True
+    if extra.get("external_system_id") or extra.get("ats_external_id"):
+        return True
+    return False
+
+
+def _classify_job_lifecycle_stage(job: JobVacancy) -> str:
+    """Classify a JobVacancy into one of the 8 lifecycle stages.
+
+    Priority order (top wins) — see Task #430:
+      1. encerrada           — status in {Concluída, Cancelada, Arquivada}
+      2. ao_vivo             — Ativa AND published to a board
+      3. publicada           — Ativa (approval done, not yet on a board)
+      4. aguardando_aprovacao — approval_status='pendente' AND approval_requested_at set
+      5. wsi_config          — screening_questions populated OR screening_config has wsi/settings
+      6. enriquecida         — enriched_jd populated
+      7. ats_importada       — imported_from_ats AND status=Rascunho
+      8. rascunho            — fallback
+    """
+    status = (job.status or "Rascunho").strip()
+
+    if status in {"Concluída", "Concluida", "Cancelada", "Arquivada"}:
+        return "encerrada"
+
+    if status == "Ativa":
+        on_board = bool(
+            job.published_linkedin
+            or job.published_website
+            or job.published_indeed
+            or job.linkedin_post_id
+            or job.indeed_job_id
+            or job.last_published_at
+        )
+        return "ao_vivo" if on_board else "publicada"
+
+    # status is Rascunho or Pausada from here on
+    if (job.approval_status or "").lower() == "pendente" and job.approval_requested_at:
+        return "aguardando_aprovacao"
+
+    sc = job.screening_config or {}
+    has_wsi = bool(
+        (job.screening_questions or [])
+        or (isinstance(sc, dict) and (sc.get("wsi_skills") or sc.get("settings")))
+    )
+    if has_wsi:
+        return "wsi_config"
+
+    if job.enriched_jd:
+        return "enriquecida"
+
+    if _job_is_imported_from_ats(job) and status == "Rascunho":
+        return "ats_importada"
+
+    return "rascunho"
+
+
+class JobLifecycleVacancyItem(BaseModel):
+    id: str
+    title: str
+    department: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    seniority_level: str | None = None
+    status: str
+    stage_entered_at: str | None = None
+    updated_at: str | None = None
+    created_at: str | None = None
+    manager: str | None = None
+    imported_from_ats: bool = False
+    approval_status: str | None = None
+    candidate_count: int = 0
+
+
+class JobLifecycleStageItem(BaseModel):
+    stage: str
+    display_name: str
+    color: str
+    stage_order: int
+    count: int
+    vacancies: list[JobLifecycleVacancyItem] = []
+
+
+class JobLifecycleOverviewResponse(BaseModel):
+    stages: list[JobLifecycleStageItem]
+    total_vacancies: int
+
+
+@router.get("/job-vacancies/lifecycle-overview", response_model=JobLifecycleOverviewResponse)
+async def get_job_lifecycle_overview(
+    vacancies_per_stage: int = Query(default=50, ge=1, le=500),
+    current_user=Depends(get_current_user_or_demo),
+    repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
+):
+    """Aggregate job vacancies by 8 lifecycle stages for the panoramic view.
+
+    Companion to `/pipeline-overview` (candidate side). Powers the
+    "Vagas|Candidatos" toggle in the Visão do Pipeline page.
+    """
+    company_id = (
+        str(current_user.company_id)
+        if hasattr(current_user, "company_id") and current_user.company_id
+        else None
+    )
+    if not company_id:
+        raise HTTPException(status_code=403, detail="Company not associated with user")
+
+    try:
+        jobs = await repo.get_all_company_jobs(company_id)
+    except Exception as e:
+        logger.error(f"Error fetching jobs for lifecycle overview: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+    buckets: dict[str, list[JobLifecycleVacancyItem]] = {k: [] for k in JOB_LIFECYCLE_ORDER}
+
+    for job in jobs:
+        stage_key = _classify_job_lifecycle_stage(job)
+        if stage_key not in buckets:
+            stage_key = "rascunho"
+
+        funnel = job.funnel_data or {}
+        cand_total = 0
+        if isinstance(funnel, dict):
+            try:
+                cand_total = int(funnel.get("total") or 0)
+            except (TypeError, ValueError):
+                cand_total = 0
+
+        def _iso(dt):
+            if not dt:
+                return None
+            try:
+                return dt.isoformat() if hasattr(dt, "isoformat") else str(dt)
+            except Exception:
+                return None
+
+        # stage_entered_at is best-effort — use updated_at as proxy since
+        # we don't track per-stage transitions on the JobVacancy itself.
+        item = JobLifecycleVacancyItem(
+            id=str(job.id),
+            title=job.title or "Sem título",
+            department=job.department,
+            location=job.location,
+            work_model=job.work_model,
+            seniority_level=job.seniority_level,
+            status=job.status or "Rascunho",
+            stage_entered_at=_iso(job.updated_at),
+            updated_at=_iso(job.updated_at),
+            created_at=_iso(job.created_at),
+            manager=job.manager,
+            imported_from_ats=_job_is_imported_from_ats(job),
+            approval_status=job.approval_status,
+            candidate_count=cand_total,
+        )
+        buckets[stage_key].append(item)
+
+    # Sort each bucket by most recently updated first, then truncate.
+    for key, items in buckets.items():
+        items.sort(key=lambda v: v.updated_at or "", reverse=True)
+        buckets[key] = items[:vacancies_per_stage]
+
+    stages: list[JobLifecycleStageItem] = []
+    for order_idx, key in enumerate(JOB_LIFECYCLE_ORDER):
+        items = buckets[key]
+        stages.append(JobLifecycleStageItem(
+            stage=key,
+            display_name=JOB_LIFECYCLE_DISPLAY[key],
+            color=JOB_LIFECYCLE_COLORS[key],
+            stage_order=order_idx,
+            count=len(items),
+            vacancies=items,
+        ))
+
+    return JobLifecycleOverviewResponse(stages=stages, total_vacancies=len(jobs))

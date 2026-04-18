@@ -21,12 +21,22 @@ import {
   Info,
   Calendar,
   User,
+  Briefcase,
+  FileText,
+  Sparkles,
+  ListChecks,
+  ShieldCheck,
+  Send,
+  Radio,
+  Archive,
+  Database,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { formatScorePercent } from "@/lib/design-tokens"
 import { getStageIcon, getStageColor, translateStatus } from "@/lib/pipeline-stage-maps"
+import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 import dynamic from "next/dynamic"
 
 const GeneralScoreModal = dynamic(
@@ -96,6 +106,49 @@ interface PipelineStageWithCount {
   action_behavior?: string
   count: number
   candidates: CandidateItem[]
+}
+
+// ─── Job Lifecycle (Vagas mode) — Task #430 ──────────────────────────────────
+
+interface JobLifecycleVacancy {
+  id: string
+  title: string
+  department?: string | null
+  location?: string | null
+  work_model?: string | null
+  seniority_level?: string | null
+  status: string
+  stage_entered_at?: string | null
+  updated_at?: string | null
+  created_at?: string | null
+  manager?: string | null
+  imported_from_ats: boolean
+  approval_status?: string | null
+  candidate_count?: number
+}
+
+interface JobLifecycleStage {
+  stage: string
+  display_name: string
+  color: string
+  stage_order: number
+  count: number
+  vacancies: JobLifecycleVacancy[]
+}
+
+const JOB_LIFECYCLE_STAGE_ICONS: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties; strokeWidth?: number }>> = {
+  ats_importada: Database,
+  rascunho: FileText,
+  enriquecida: Sparkles,
+  wsi_config: ListChecks,
+  aguardando_aprovacao: ShieldCheck,
+  publicada: Send,
+  ao_vivo: Radio,
+  encerrada: Archive,
+}
+
+function getJobLifecycleStageIcon(stageKey: string): React.ComponentType<{ className?: string; style?: React.CSSProperties; strokeWidth?: number }> {
+  return JOB_LIFECYCLE_STAGE_ICONS[stageKey] || Briefcase
 }
 
 function getVibrantColor(stageName: string, fallbackHex: string): string {
@@ -218,6 +271,9 @@ function calculateGeneralScore(candidate: CandidateItem): number | null {
 type ModalType = "geral" | "triagem" | "cv" | "tecnico" | "ingles" | "b5" | null
 
 export function PipelineOverviewPage() {
+  const mode = useUIPreferencesStore((s) => s.pipelineOverviewMode)
+  const setMode = useUIPreferencesStore((s) => s.setPipelineOverviewMode)
+
   const [stages, setStages] = useState<PipelineStageWithCount[]>([])
   const [selectedStage, setSelectedStage] = useState<string | null>(null)
   const [totalCandidates, setTotalCandidates] = useState(0)
@@ -231,9 +287,20 @@ export function PipelineOverviewPage() {
   const [activeModal, setActiveModal] = useState<ModalType>(null)
   const [modalCandidate, setModalCandidate] = useState<CandidateItem | null>(null)
 
+  // ─── Vagas mode state (Task #430) ──────────────────────────────────────────
+  const [lifecycleStages, setLifecycleStages] = useState<JobLifecycleStage[]>([])
+  const [selectedLifecycleStage, setSelectedLifecycleStage] = useState<string | null>(null)
+  const [totalVacancies, setTotalVacancies] = useState(0)
+  const [lifecycleLoading, setLifecycleLoading] = useState(false)
+  const [lifecycleError, setLifecycleError] = useState<string | null>(null)
+
   const stagesScrollRef = useRef<HTMLDivElement>(null)
   const stageNodeRefs = useRef<(HTMLElement | null)[]>([])
   const { handleMouseMove, handleMouseLeave, getScale } = usePipelineMagnifier(stagesScrollRef)
+
+  const lifecycleScrollRef = useRef<HTMLDivElement>(null)
+  const lifecycleNodeRefs = useRef<(HTMLElement | null)[]>([])
+  const lifecycleMagnifier = usePipelineMagnifier(lifecycleScrollRef)
 
   const fetchPipelineOverview = useCallback(async () => {
     setLoading(true)
@@ -256,9 +323,45 @@ export function PipelineOverviewPage() {
     }
   }, [])
 
+  const fetchLifecycleOverview = useCallback(async () => {
+    setLifecycleLoading(true)
+    setLifecycleError(null)
+    try {
+      const res = await fetch("/api/backend-proxy/jobs-lifecycle-overview")
+      if (!res.ok) throw new Error(`Erro ao carregar vagas (${res.status})`)
+      const data = await res.json()
+      const items: JobLifecycleStage[] = (data.stages || []).sort(
+        (a: JobLifecycleStage, b: JobLifecycleStage) => a.stage_order - b.stage_order
+      )
+      setLifecycleStages(items)
+      setTotalVacancies(data.total_vacancies || 0)
+    } catch (err) {
+      setLifecycleError(err instanceof Error ? err.message : "Erro desconhecido")
+    } finally {
+      setLifecycleLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
-    fetchPipelineOverview()
-  }, [fetchPipelineOverview])
+    if (mode === "candidatos") {
+      fetchPipelineOverview()
+    } else {
+      fetchLifecycleOverview()
+    }
+  }, [mode, fetchPipelineOverview, fetchLifecycleOverview])
+
+  const handleRefresh = useCallback(() => {
+    if (mode === "candidatos") fetchPipelineOverview()
+    else fetchLifecycleOverview()
+  }, [mode, fetchPipelineOverview, fetchLifecycleOverview])
+
+  const handleLifecycleStageClick = useCallback((stageKey: string) => {
+    setSelectedLifecycleStage((prev) => (prev === stageKey ? null : stageKey))
+  }, [])
+
+  const selectedLifecycleStageData = lifecycleStages.find(
+    (s) => s.stage === selectedLifecycleStage
+  )
 
   const handleStageClick = (stageName: string) => {
     if (selectedStage === stageName) {
@@ -311,27 +414,32 @@ export function PipelineOverviewPage() {
     }
   }, [])
 
-  if (loading) {
+  const activeLoading = mode === "candidatos" ? loading : lifecycleLoading
+  const activeError = mode === "candidatos" ? error : lifecycleError
+
+  if (activeLoading) {
     return (
       <div className="flex-1 flex items-center justify-center h-full bg-lia-bg-primary">
         <div className="flex flex-col items-center gap-3 text-lia-text-secondary">
           <Loader2 className="w-8 h-8 animate-spin" />
-          <span className="text-sm">Carregando funil...</span>
+          <span className="text-sm">
+            {mode === "candidatos" ? "Carregando funil..." : "Carregando vagas..."}
+          </span>
         </div>
       </div>
     )
   }
 
-  if (error) {
+  if (activeError) {
     return (
       <div className="flex-1 flex items-center justify-center h-full bg-lia-bg-primary">
         <div className="flex flex-col items-center gap-4 text-center max-w-sm">
           <AlertCircle className="w-10 h-10 text-red-400" />
-          <p className="text-lia-text-secondary text-sm">{error}</p>
+          <p className="text-lia-text-secondary text-sm">{activeError}</p>
           <Button
             variant="outline"
             size="sm"
-            onClick={fetchPipelineOverview}
+            onClick={handleRefresh}
             className="gap-2"
           >
             <RefreshCw className="w-4 h-4" />
@@ -350,16 +458,55 @@ export function PipelineOverviewPage() {
           showPreview && "mr-0"
         )}>
           <div className="px-6 py-5 flex-shrink-0">
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-4 min-w-0">
                 <h1 className="text-lg font-semibold text-lia-text-primary">
                   Visão do Pipeline
                 </h1>
+                <div
+                  role="tablist"
+                  aria-label="Modo de visualização do pipeline"
+                  className="inline-flex items-center rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-0.5"
+                >
+                  <button
+                    role="tab"
+                    aria-selected={mode === "candidatos"}
+                    onClick={() => setMode("candidatos")}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                      mode === "candidatos"
+                        ? "bg-lia-bg-primary text-lia-text-primary shadow-sm"
+                        : "text-lia-text-secondary hover:text-lia-text-primary"
+                    )}
+                  >
+                    <Users className="w-3.5 h-3.5" />
+                    Candidatos
+                  </button>
+                  <button
+                    role="tab"
+                    aria-selected={mode === "vagas"}
+                    onClick={() => setMode("vagas")}
+                    className={cn(
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
+                      mode === "vagas"
+                        ? "bg-lia-bg-primary text-lia-text-primary shadow-sm"
+                        : "text-lia-text-secondary hover:text-lia-text-primary"
+                    )}
+                  >
+                    <Briefcase className="w-3.5 h-3.5" />
+                    Vagas
+                  </button>
+                </div>
+                <span className="text-xs text-lia-text-disabled">
+                  {mode === "candidatos"
+                    ? `${totalCandidates} candidatos no funil`
+                    : `${totalVacancies} vagas no ciclo`}
+                </span>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={fetchPipelineOverview}
+                onClick={handleRefresh}
                 className="gap-2 text-lia-text-secondary hover:text-lia-text-primary"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -368,6 +515,8 @@ export function PipelineOverviewPage() {
             </div>
           </div>
 
+          {mode === "candidatos" && (
+          <>
           <div className="flex-shrink-0 px-6 py-6 relative" style={{ overflow: "visible" }}>
             {stages.length === 0 ? (
               <div className="flex items-center gap-2 text-lia-text-disabled text-sm">
@@ -604,6 +753,175 @@ export function PipelineOverviewPage() {
               </div>
             )}
           </div>
+          </>
+          )}
+
+          {mode === "vagas" && (
+          <>
+            <div className="flex-shrink-0 px-6 py-6 relative" style={{ overflow: "visible" }}>
+              {lifecycleStages.length === 0 || totalVacancies === 0 ? (
+                <div className="flex items-center gap-2 text-lia-text-disabled text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>Nenhuma vaga encontrada para sua empresa.</span>
+                </div>
+              ) : (
+                <div
+                  ref={lifecycleScrollRef}
+                  className="overflow-x-auto scrollbar-none"
+                  style={{
+                    scrollbarWidth: "none",
+                    msOverflowStyle: "none",
+                    clipPath: "inset(-30px 0 0 0)",
+                  }}
+                  onMouseMove={lifecycleMagnifier.handleMouseMove}
+                  onMouseLeave={lifecycleMagnifier.handleMouseLeave}
+                >
+                  <div className="flex items-end gap-0 min-w-max px-1 pt-8 pb-2">
+                    {lifecycleStages.map((stage, index) => {
+                      const isSelected = selectedLifecycleStage === stage.stage
+                      const isLast = index === lifecycleStages.length - 1
+                      const stageColor = stage.color || "#2D2D2D"
+                      const StageIcon = getJobLifecycleStageIcon(stage.stage)
+                      const scale = lifecycleMagnifier.getScale(index, lifecycleNodeRefs)
+                      return (
+                        <div key={stage.stage} className="flex items-center">
+                          <button
+                            ref={(el) => { lifecycleNodeRefs.current[index] = el }}
+                            onClick={() => handleLifecycleStageClick(stage.stage)}
+                            className="group flex flex-col items-center gap-1.5 px-3 cursor-pointer origin-bottom motion-reduce:!transition-none"
+                            style={{
+                              transform: scale !== 1 ? `scale(${scale})` : undefined,
+                              transition: "transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                              willChange: scale !== 1 ? "transform" : "auto",
+                            }}
+                          >
+                            <div
+                              className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 border-2"
+                              style={{
+                                backgroundColor: isSelected
+                                  ? stageColor
+                                  : stage.count > 0
+                                  ? hexToRgba(stageColor, 0.08)
+                                  : "var(--lia-bg-tertiary)",
+                                borderColor: isSelected
+                                  ? stageColor
+                                  : stage.count > 0
+                                  ? stageColor
+                                  : "var(--lia-border-subtle)",
+                                boxShadow: isSelected
+                                  ? `0 0 0 3px ${hexToRgba(stageColor, 0.08)}`
+                                  : undefined,
+                              }}
+                            >
+                              <StageIcon
+                                className="w-4 h-4 transition-colors"
+                                style={{
+                                  color: isSelected
+                                    ? "var(--lia-text-on-accent, #fff)"
+                                    : stage.count > 0
+                                    ? stageColor
+                                    : "var(--lia-text-disabled)",
+                                }}
+                              />
+                            </div>
+
+                            <span
+                              className="text-micro font-medium transition-colors whitespace-nowrap"
+                              style={{
+                                color: isSelected
+                                  ? stageColor
+                                  : stage.count > 0
+                                  ? "var(--lia-text-primary)"
+                                  : "var(--lia-text-disabled)",
+                              }}
+                            >
+                              {stage.display_name}
+                            </span>
+
+                            {stage.count > 0 ? (
+                              <span
+                                className="text-xs font-bold rounded-full px-1.5 py-0.5"
+                                style={{ backgroundColor: hexToRgba(stageColor, 0.08), color: stageColor }}
+                              >
+                                {stage.count}
+                              </span>
+                            ) : (
+                              <span
+                                className="w-1 h-1 rounded-full"
+                                style={{ backgroundColor: stageColor, opacity: 0.3 }}
+                              />
+                            )}
+                          </button>
+
+                          {!isLast && (
+                            <div
+                              className="h-px w-6 flex-shrink-0 self-center -mt-6"
+                              style={{ backgroundColor: "var(--lia-border-default)" }}
+                            />
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1 min-h-0 overflow-hidden">
+              {!selectedLifecycleStage ? (
+                <div className="h-full flex flex-col items-center justify-center gap-3 text-lia-text-disabled">
+                  <Briefcase className="w-10 h-10 opacity-30" />
+                  <p className="text-sm">Clique em uma etapa para ver as vagas naquela fase</p>
+                </div>
+              ) : (
+                <div className="h-full flex flex-col">
+                  <div className="px-6 py-3 bg-lia-bg-secondary flex-shrink-0 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {selectedLifecycleStageData && (
+                        <div
+                          className="w-2.5 h-2.5 rounded-full"
+                          style={{ backgroundColor: selectedLifecycleStageData.color || "#2D2D2D" }}
+                        />
+                      )}
+                      <span className="text-sm font-semibold text-lia-text-primary">
+                        {selectedLifecycleStageData?.display_name}
+                      </span>
+                      <span className="text-xs text-lia-text-disabled">
+                        {selectedLifecycleStageData?.count ?? 0} vaga
+                        {(selectedLifecycleStageData?.count ?? 0) !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setSelectedLifecycleStage(null)}
+                      className="text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors"
+                    >
+                      Fechar
+                    </button>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto px-6 py-3">
+                    {(selectedLifecycleStageData?.vacancies?.length ?? 0) === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-32 gap-2 text-lia-text-disabled">
+                        <Briefcase className="w-8 h-8 opacity-30" />
+                        <p className="text-sm">Nenhuma vaga nesta etapa</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        {selectedLifecycleStageData!.vacancies.map((vacancy) => (
+                          <PipelineVacancyCard
+                            key={vacancy.id}
+                            vacancy={vacancy}
+                            stageColor={selectedLifecycleStageData!.color || "#2D2D2D"}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+          )}
         </div>
 
         {showPreview && previewCandidate && (
@@ -955,6 +1273,194 @@ function PipelineCandidateCard({
               }}
               className="p-1.5 rounded-xl hover:bg-lia-bg-primary transition-colors text-lia-text-secondary hover:text-lia-text-primary"
               aria-label="Abrir no Kanban"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-xs">Abrir no Kanban</TooltipContent>
+        </Tooltip>
+      </div>
+    </div>
+  )
+}
+
+// ─── Pipeline Vacancy Card (Vagas mode — Task #430) ──────────────────────────
+
+interface PipelineVacancyCardProps {
+  vacancy: JobLifecycleVacancy
+  stageColor: string
+}
+
+function PipelineVacancyCard({ vacancy, stageColor }: PipelineVacancyCardProps) {
+  const timeInStage = getTimeInStage(vacancy.stage_entered_at)
+
+  const updatedLabel = vacancy.updated_at
+    ? (() => {
+        try {
+          const d = new Date(vacancy.updated_at as string)
+          if (isNaN(d.getTime())) return null
+          return d.toLocaleDateString("pt-BR", { day: "numeric", month: "short" })
+        } catch {
+          return null
+        }
+      })()
+    : null
+
+  const shortVacancyId = vacancy.id
+    ? `#${vacancy.id.replace(/-/g, "").slice(0, 7).toUpperCase()}`
+    : null
+
+  const metaBadges = [
+    vacancy.seniority_level ? { key: "level", label: vacancy.seniority_level } : null,
+    vacancy.work_model ? { key: "work_model", label: vacancy.work_model } : null,
+    vacancy.department ? { key: "department", label: vacancy.department } : null,
+  ].filter(Boolean) as { key: string; label: string }[]
+
+  const handleOpen = () => {
+    if (typeof window !== "undefined") {
+      window.open(`/funil-de-talentos?tab=kanban&vacancy=${vacancy.id}`, "_blank")
+    }
+  }
+
+  return (
+    <div
+      className="flex items-center gap-3 px-4 py-3 rounded-lg bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors border border-transparent hover:border-lia-border-subtle group cursor-pointer"
+      onClick={handleOpen}
+      role="button"
+      aria-label={`Abrir vaga ${vacancy.title}`}
+    >
+      <div
+        className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center"
+        style={{ backgroundColor: hexToRgba(stageColor, 0.12) }}
+      >
+        <Briefcase className="w-4 h-4" style={{ color: stageColor }} />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <p className="text-sm font-medium text-lia-text-primary truncate">
+            {vacancy.title}
+          </p>
+          {vacancy.imported_from_ats && (
+            <span
+              className="flex-shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border"
+              style={{
+                backgroundColor: hexToRgba("#8A8F98", 0.1),
+                borderColor: hexToRgba("#8A8F98", 0.4),
+                color: "var(--lia-text-secondary)",
+              }}
+              title="Vaga importada de ATS externo"
+            >
+              <Database className="w-2.5 h-2.5" />
+              ATS
+            </span>
+          )}
+          {vacancy.approval_status === "pendente" && (
+            <span
+              className="flex-shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium border"
+              style={{
+                backgroundColor: hexToRgba("#D19960", 0.12),
+                borderColor: hexToRgba("#D19960", 0.5),
+                color: "#D19960",
+              }}
+            >
+              <ShieldCheck className="w-2.5 h-2.5" />
+              Aprovação pendente
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
+          {vacancy.department && (
+            <span className="truncate max-w-[180px]">{vacancy.department}</span>
+          )}
+          {vacancy.location && (
+            <>
+              {vacancy.department && <span className="text-lia-text-disabled">·</span>}
+              <span className="truncate max-w-[160px]">{vacancy.location}</span>
+            </>
+          )}
+          {timeInStage && (
+            <>
+              {(vacancy.department || vacancy.location) && (
+                <span className="text-lia-text-disabled">·</span>
+              )}
+              <span className="flex items-center gap-0.5 text-lia-text-disabled flex-shrink-0">
+                <Clock className="w-3 h-3" />
+                {timeInStage}
+              </span>
+            </>
+          )}
+        </div>
+
+        {(shortVacancyId || vacancy.manager || updatedLabel) && (
+          <div className="flex items-center gap-2 text-[10px] text-lia-text-disabled mt-0.5">
+            {shortVacancyId && (
+              <span className="font-mono font-medium text-lia-text-secondary">
+                {shortVacancyId}
+              </span>
+            )}
+            {vacancy.manager && (
+              <>
+                {shortVacancyId && <span>·</span>}
+                <span className="flex items-center gap-0.5 truncate max-w-[120px]">
+                  <User className="w-2.5 h-2.5 flex-shrink-0" />
+                  {vacancy.manager}
+                </span>
+              </>
+            )}
+            {updatedLabel && (
+              <>
+                {(shortVacancyId || vacancy.manager) && <span>·</span>}
+                <span className="flex items-center gap-0.5 flex-shrink-0">
+                  <Calendar className="w-2.5 h-2.5" />
+                  {updatedLabel}
+                </span>
+              </>
+            )}
+          </div>
+        )}
+
+        {metaBadges.length > 0 && (
+          <div className="flex items-center gap-1 mt-1 flex-wrap">
+            {metaBadges.map((b) => (
+              <Badge
+                key={b.key}
+                className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-[10px] px-1.5 py-0 h-auto leading-4 rounded-sm"
+              >
+                {b.label}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex-shrink-0 border-l border-lia-border-subtle pl-3 flex items-center gap-1">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center gap-1 text-lia-text-secondary">
+              <Users className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-semibold">
+                {vacancy.candidate_count ?? 0}
+              </span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-xs">
+            {vacancy.candidate_count ?? 0} candidatos no funil
+          </TooltipContent>
+        </Tooltip>
+      </div>
+
+      <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                handleOpen()
+              }}
+              className="p-1.5 rounded-xl hover:bg-lia-bg-primary transition-colors text-lia-text-secondary hover:text-lia-text-primary"
+              aria-label="Abrir vaga"
             >
               <ExternalLink className="w-4 h-4" />
             </button>
