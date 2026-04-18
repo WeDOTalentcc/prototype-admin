@@ -1,6 +1,48 @@
 import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
 import type { Job, JobFilters } from "@/components/jobs"
 import type { JobVacancy } from "@/services/lia-api"
+import { READINESS_STAGES_ORDER, type ReadinessStage } from "@/services/lia-api/readiness-api"
+
+const READINESS_STAGE_RANK: Record<string, number> = READINESS_STAGES_ORDER.reduce(
+  (acc, stage, index) => {
+    acc[stage] = index
+    return acc
+  },
+  {} as Record<string, number>,
+)
+
+export function compareJobsByColumn(
+  a: Job,
+  b: Job,
+  column: string | null,
+  direction: "asc" | "desc",
+): number {
+  if (!column) return 0
+  if (column === "prontidao") {
+    const aStage = a.readinessStage as ReadinessStage | undefined
+    const bStage = b.readinessStage as ReadinessStage | undefined
+    const aRank = aStage && aStage in READINESS_STAGE_RANK
+      ? READINESS_STAGE_RANK[aStage]
+      : Number.POSITIVE_INFINITY
+    const bRank = bStage && bStage in READINESS_STAGE_RANK
+      ? READINESS_STAGE_RANK[bStage]
+      : Number.POSITIVE_INFINITY
+    if (aRank === bRank) return 0
+    if (aRank === Number.POSITIVE_INFINITY) return 1
+    if (bRank === Number.POSITIVE_INFINITY) return -1
+    return direction === "asc" ? aRank - bRank : bRank - aRank
+  }
+  return 0
+}
+
+export function sortJobsByColumn(
+  jobs: Job[],
+  column: string | null,
+  direction: "asc" | "desc",
+): Job[] {
+  if (!column) return jobs
+  return [...jobs].sort((a, b) => compareJobsByColumn(a, b, column, direction))
+}
 
 export interface DashboardStats {
   total: number

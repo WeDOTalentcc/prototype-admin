@@ -18,6 +18,7 @@ import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 import { JobsListContent } from "./JobsListContent"
 import type { Job } from "@/components/jobs"
 import { useTranslations } from 'next-intl'
+import { sortJobsByColumn } from "./jobs/utils/jobsPageUtils"
 
 const JobsModalsSection = dynamic(() => import("@/components/pages/jobs/JobsModalsSection").then(m => ({ default: m.JobsModalsSection })), { ssr: false, loading: () => null })
 
@@ -43,9 +44,10 @@ export function JobsPage(props: JobsPageProps) {
     ] as const
     const grouped: Record<string, Job[]> = {}
     order.forEach(s => { grouped[s] = [] })
-    ;(state.filteredJobs || []).forEach((job: Job) => { if (grouped[job.status]) grouped[job.status].push(job) })
+    const sorted = sortJobsByColumn(state.filteredJobs || [], state.jobsSortColumn, state.jobsSortDirection)
+    sorted.forEach((job: Job) => { if (grouped[job.status]) grouped[job.status].push(job) })
     return { statusOrder: order, groupedJobs: grouped }
-  }, [state.filteredJobs])
+  }, [state.filteredJobs, state.jobsSortColumn, state.jobsSortDirection])
 
   if (state.showKanban) {
     if (!state.selectedJob) {
