@@ -27,8 +27,8 @@ import sqlalchemy as sa
 from alembic import op
 
 
-revision = "087_index_job_vacancies_external_system_id"
-down_revision = "086_add_job_readiness_columns"
+revision = "088_index_job_vacancies_external_system_id"
+down_revision = "087_backfill_actor_user_id_audit_logs"
 branch_labels = None
 depends_on = None
 
