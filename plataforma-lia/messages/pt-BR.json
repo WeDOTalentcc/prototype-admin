@@ -1387,7 +1387,9 @@
     "toggle": {
       "candidates": "Candidatos",
       "vacancies": "Vagas",
-      "ariaLabel": "Alternar entre visão de Candidatos e Vagas"
+      "ariaLabel": "Alternar entre visão de Candidatos e Vagas",
+      "candidatesTotal": "{count} candidatos no funil",
+      "vacanciesTotal": "{count} vagas no ciclo"
     },
     "stages": {
       "ats_imported": "ATS Importada",
@@ -1415,7 +1417,8 @@
     "empty": {
       "noVacancies": "Nenhuma vaga neste estágio",
       "noVacanciesHint": "Vagas aparecerão aqui conforme avançam no ciclo de vida"
-    }
+    },
+    "close": "Fechar"
   },
   "agents": {
     "metadata": {

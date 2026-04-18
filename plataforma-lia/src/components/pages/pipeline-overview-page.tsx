@@ -490,8 +490,8 @@ export function PipelineOverviewPage() {
                 </div>
                 <span className="text-xs text-lia-text-disabled">
                   {mode === "candidatos"
-                    ? `${totalCandidates} candidatos no funil`
-                    : `${totalVacancies} vagas no ciclo`}
+                    ? tOverview("toggle.candidatesTotal", { count: totalCandidates })
+                    : tOverview("toggle.vacanciesTotal", { count: totalVacancies })}
                 </span>
               </div>
               <Button
@@ -696,18 +696,25 @@ export function PipelineOverviewPage() {
                         />
                       )}
                       <span className="text-sm font-semibold text-lia-text-primary">
-                        {selectedLifecycleStageData?.display_name}
+                        {selectedLifecycleStageData
+                          ? lifecycleStageLabel(
+                              tOverview,
+                              selectedLifecycleStageData.stage,
+                              selectedLifecycleStageData.display_name
+                            )
+                          : ""}
                       </span>
                       <span className="text-xs text-lia-text-disabled">
-                        {selectedLifecycleStageData?.count ?? 0} vaga
-                        {(selectedLifecycleStageData?.count ?? 0) !== 1 ? "s" : ""}
+                        {tOverview("vacancyCard.candidatesCount", {
+                          count: selectedLifecycleStageData?.count ?? 0,
+                        })}
                       </span>
                     </div>
                     <button
                       onClick={() => setSelectedLifecycleStage(null)}
                       className="text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors"
                     >
-                      Fechar
+                      {tOverview("close")}
                     </button>
                   </div>
 
@@ -715,7 +722,7 @@ export function PipelineOverviewPage() {
                     {(selectedLifecycleStageData?.vacancies?.length ?? 0) === 0 ? (
                       <div className="flex flex-col items-center justify-center h-32 gap-2 text-lia-text-disabled">
                         <Briefcase className="w-8 h-8 opacity-30" />
-                        <p className="text-sm">Nenhuma vaga nesta etapa</p>
+                        <p className="text-sm">{tOverview("empty.noVacancies")}</p>
                       </div>
                     ) : (
                       <div className="space-y-2">

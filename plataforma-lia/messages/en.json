@@ -1387,7 +1387,9 @@
     "toggle": {
       "candidates": "Candidates",
       "vacancies": "Jobs",
-      "ariaLabel": "Toggle between Candidates and Jobs view"
+      "ariaLabel": "Toggle between Candidates and Jobs view",
+      "candidatesTotal": "{count} candidates in funnel",
+      "vacanciesTotal": "{count} jobs in lifecycle"
     },
     "stages": {
       "ats_imported": "ATS Imported",
@@ -1415,7 +1417,8 @@
     "empty": {
       "noVacancies": "No jobs in this stage",
       "noVacanciesHint": "Jobs will appear here as they progress through the lifecycle"
-    }
+    },
+    "close": "Close"
   },
   "agents": {
     "metadata": {
