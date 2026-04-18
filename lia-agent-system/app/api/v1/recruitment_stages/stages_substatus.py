@@ -3,8 +3,11 @@ Sub-status CRUD endpoints.
 """
 import uuid
 import logging
+from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query
+
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 from ._shared import (
     SubStatusCreate,
@@ -26,7 +29,7 @@ router = APIRouter(tags=["Recruitment Stages - Sub-statuses"])
 
 @router.get("/stages/{stage_id}/sub-statuses", response_model=None)
 async def list_stage_sub_statuses(
-    stage_id: str,
+    stage_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     include_inactive: bool = Query(default=False, description="Include inactive sub-statuses (for settings view)"),
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
@@ -58,7 +61,7 @@ async def list_stage_sub_statuses(
 
 @router.post("/stages/{stage_id}/sub-statuses", response_model=None)
 async def create_sub_status(
-    stage_id: str,
+    stage_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     sub_status: SubStatusCreate,
     current_user: User = Depends(require_admin_or_recruiter),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
@@ -90,7 +93,7 @@ async def create_sub_status(
 
 @router.put("/sub-statuses/{sub_status_id}", response_model=None)
 async def update_sub_status(
-    sub_status_id: str,
+    sub_status_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     sub_status: SubStatusCreate,
     current_user: User = Depends(require_admin_or_recruiter),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
@@ -118,7 +121,7 @@ async def update_sub_status(
 
 @router.patch("/sub-statuses/{sub_status_id}", response_model=None)
 async def patch_sub_status(
-    sub_status_id: str,
+    sub_status_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payload: dict = Body(...),
     current_user: User = Depends(require_admin_or_recruiter),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
@@ -144,7 +147,7 @@ async def patch_sub_status(
 
 @router.delete("/sub-statuses/{sub_status_id}", response_model=None)
 async def delete_sub_status(
-    sub_status_id: str,
+    sub_status_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: User = Depends(require_admin_or_recruiter),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
 ):

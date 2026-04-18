@@ -3,8 +3,11 @@ Metadata endpoints: viewed, favorites, hidden, and screening-decision.
 """
 import uuid
 from datetime import datetime
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path
+
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from pydantic import BaseModel, Field
 
 from ._shared import (
@@ -50,7 +53,7 @@ class ViewedCandidateResponse(BaseModel):
 
 @router.post("/{candidate_id}/viewed", response_model=None)
 async def mark_candidate_viewed(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: ViewedCandidateCreate = None,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
@@ -109,7 +112,7 @@ async def list_viewed_candidates(
 
 @router.delete("/{candidate_id}/viewed", response_model=None)
 async def unmark_candidate_viewed(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
     """Remove viewed status from a candidate for the current user."""
@@ -143,7 +146,7 @@ class FavoriteUpdate(BaseModel):
 
 @router.post("/{candidate_id}/favorite", response_model=None)
 async def toggle_favorite(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: FavoriteCreate = None,
     current_user: User = Depends(get_current_user_or_demo),
     favorites_repo: CandidateFavoritesRepository = Depends(get_candidate_favorites_repo),
@@ -188,7 +191,7 @@ async def toggle_favorite(
 
 @router.put("/{candidate_id}/favorite", response_model=None)
 async def update_favorite(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: FavoriteUpdate,
     favorites_repo: CandidateFavoritesRepository = Depends(get_candidate_favorites_repo),
 ):
@@ -248,7 +251,7 @@ async def list_favorites(
 
 @router.delete("/{candidate_id}/favorite", response_model=None)
 async def remove_favorite(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     favorites_repo: CandidateFavoritesRepository = Depends(get_candidate_favorites_repo),
 ):
     """Remove a candidate from favorites."""
@@ -277,7 +280,7 @@ class HiddenCreate(BaseModel):
 
 @router.post("/{candidate_id}/hide", response_model=None)
 async def toggle_hidden(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     body: HiddenCreate = None,
     current_user: User = Depends(get_current_user_or_demo),
     hidden_repo: CandidateHiddenRepository = Depends(get_candidate_hidden_repo),
@@ -347,7 +350,7 @@ async def list_hidden(
 
 @router.delete("/{candidate_id}/hide", response_model=None)
 async def remove_hidden(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     hidden_repo: CandidateHiddenRepository = Depends(get_candidate_hidden_repo),
 ):
     """Remove a candidate from the hidden list (make visible)."""
@@ -371,7 +374,7 @@ async def remove_hidden(
 
 @router.post("/{candidate_id}/screening-decision", response_model=None)
 async def screening_decision(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: ScreeningDecisionRequest,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     vc_repo: VacancyCandidateRepository = Depends(get_vacancy_candidate_repo),

@@ -3,9 +3,11 @@ CRUD endpoints for candidates: list, get, create, update, stage-update, delete, 
 """
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path, Query, Request
+
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 from ._shared import (
     ActivityService,
@@ -363,7 +365,7 @@ def _assert_tenant_scope(candidate, current_user: User) -> None:
 
 @router.get("/{candidate_id}", response_model=None)
 async def get_candidate(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
@@ -515,7 +517,7 @@ async def create_candidate(
 
 @router.put("/{candidate_id}", response_model=None)
 async def update_candidate(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     candidate_data: CandidateUpdate,
     request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
@@ -555,7 +557,7 @@ async def update_candidate(
 
 @router.patch("/{candidate_id}/stage", response_model=None)
 async def update_candidate_stage(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     stage_data: CandidateStageUpdate,
     request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
@@ -742,7 +744,7 @@ async def update_candidate_stage(
 
 @router.delete("/{candidate_id}", response_model=None)
 async def delete_candidate(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
@@ -780,7 +782,7 @@ class EnrichmentRequest(BaseModel):
 
 @router.post("/{candidate_id}/enrich", response_model=None)
 async def enrich_candidate(
-    candidate_id: str,
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     enrichment_request: EnrichmentRequest = EnrichmentRequest(),
     http_request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),

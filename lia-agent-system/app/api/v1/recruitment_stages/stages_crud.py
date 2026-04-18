@@ -4,8 +4,11 @@ inline-edit, remove, reorder.
 """
 import uuid
 import logging
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
+
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 from ._shared import (
     VALID_ACTION_BEHAVIORS,
@@ -102,7 +105,7 @@ async def create_stage(
 
 @router.put("/stages/{stage_id}", response_model=None)
 async def update_stage(
-    stage_id: str,
+    stage_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     stage: StageUpdate,
     current_user: User = Depends(require_admin_or_recruiter),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
@@ -134,7 +137,7 @@ async def update_stage(
 
 @router.delete("/stages/{stage_id}", response_model=None)
 async def delete_stage(
-    stage_id: str,
+    stage_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     hard_delete: bool = Query(default=False),
     current_user: User = Depends(require_admin_or_recruiter),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
@@ -168,7 +171,7 @@ async def delete_stage(
 
 @router.put("/stages/{stage_id}/config", response_model=None)
 async def update_stage_config(
-    stage_id: str,
+    stage_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     config: StageConfigUpdate,
     current_user: User = Depends(require_admin_or_recruiter),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
@@ -259,7 +262,7 @@ async def get_defaults():
 
 @router.patch("/stages/{stage_id}/inline-edit", response_model=None)
 async def inline_edit_stage(
-    stage_id: str,
+    stage_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payload: InlineStageEdit,
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
@@ -307,7 +310,7 @@ async def inline_edit_stage(
 
 @router.delete("/stages/{stage_id}/remove", response_model=None)
 async def remove_custom_stage(
-    stage_id: str,
+    stage_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):

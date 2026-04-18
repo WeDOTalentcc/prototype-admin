@@ -13,9 +13,11 @@ import logging
 import uuid
 from datetime import datetime
 from enum import Enum as PyEnum
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Path, Query, UploadFile
+
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from pydantic import BaseModel, EmailStr, Field
 
 from app.auth.dependencies import get_current_user
@@ -142,7 +144,7 @@ class FeedbackAnalyticsDTO(BaseModel):
 
 @router.post("/apply/{vacancy_id}", response_model=ApplicationResponseDTO)
 async def apply_to_vacancy(
-    vacancy_id: str,
+    vacancy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     application: CandidateApplicationRequest,
     cv_file: UploadFile | None = File(None),
     repo: ApplicationRepository = Depends(get_application_repo),
@@ -508,7 +510,7 @@ async def apply_to_vacancy(
 
 @router.post("/resubmit/{vacancy_id}", response_model=ResubmitResponseDTO)
 async def resubmit_cv(
-    vacancy_id: str,
+    vacancy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     candidate_id: str = Query(..., description="ID do candidato"),
     token: str = Query(..., description="Token de reenvio"),
     cv_file: UploadFile = File(..., description="Curriculo atualizado"),
@@ -770,7 +772,7 @@ async def resubmit_cv(
 
 @router.get("/feedback/{vacancy_id}/analytics", response_model=FeedbackAnalyticsDTO)
 async def get_feedback_analytics(
-    vacancy_id: str,
+    vacancy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     days: int = Query(30, ge=1, le=365, description="Periodo em dias"),
     repo: ApplicationRepository = Depends(get_application_repo)
 ):
@@ -799,7 +801,7 @@ async def get_feedback_analytics(
 
 @router.post("/feedback/{feedback_id}/track-click", response_model=None)
 async def track_resubmit_click(
-    feedback_id: str,
+    feedback_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     repo: ApplicationRepository = Depends(get_application_repo)
 ):
     """Registra clique no link de reenvio de CV."""

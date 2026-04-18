@@ -9,8 +9,11 @@ Pipeline management endpoints:
 import uuid
 import logging
 from datetime import datetime
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
+
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 from ._shared import (
     CANONICAL_SUB_STATUSES,
@@ -253,7 +256,7 @@ async def update_company_pipeline(
 
 @router.get("/jobs/{job_id}/pipeline", response_model=None)
 async def get_job_pipeline(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: User = Depends(get_current_user_or_demo),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
@@ -315,7 +318,7 @@ async def get_job_pipeline(
 
 @router.put("/jobs/{job_id}/pipeline", response_model=None)
 async def update_job_pipeline(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     payload: JobPipelineUpdate,
     current_user: User = Depends(get_current_user_or_demo),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
@@ -384,7 +387,7 @@ async def update_job_pipeline(
 
 @router.get("/pipeline/job/{job_id}/inheritance-status", response_model=None)
 async def get_pipeline_inheritance_status(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
@@ -415,7 +418,7 @@ async def get_pipeline_inheritance_status(
 
 @router.post("/pipeline/job/{job_id}/copy-from-company", response_model=None)
 async def copy_company_pipeline_to_job(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
@@ -485,7 +488,7 @@ async def copy_company_pipeline_to_job(
 
 @router.post("/pipeline/job/{job_id}/mark-customized", response_model=None)
 async def mark_pipeline_customized(
-    job_id: str,
+    job_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):

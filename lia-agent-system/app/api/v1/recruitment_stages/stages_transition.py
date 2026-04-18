@@ -8,9 +8,11 @@ Candidate transition endpoints:
 """
 import uuid
 import logging
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
+
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 from ._shared import (
     ACTION_BEHAVIOR_LABELS,
@@ -84,7 +86,7 @@ async def transition_candidate(
 
 @router.get("/candidate/{vacancy_candidate_id}/info", response_model=None)
 async def get_candidate_stage_info(
-    vacancy_candidate_id: str,
+    vacancy_candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
@@ -112,7 +114,7 @@ async def get_candidate_stage_info(
 
 @router.get("/candidate/{vacancy_candidate_id}/history", response_model=None)
 async def get_candidate_history(
-    vacancy_candidate_id: str,
+    vacancy_candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     limit: int = Query(default=50, ge=1, le=200),
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),

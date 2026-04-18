@@ -57,7 +57,14 @@ VALID_SCREENING_STATUSES = {"not_configured", "not_started", "active", "paused",
 # Routes that already declare the parameter as `UUID` get this for free from
 # Pydantic, but `str`-typed parameters (kept that way to accept Rails bigints)
 # need this explicit contract.
-JOB_ID_PATH_PATTERN = r"^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|\d+)$"
+#
+# The canonical regex now lives in ``app.api.v1._path_patterns`` as
+# ``DUAL_ID_PATH_PATTERN`` (see ADR 003) so it can be reused by the candidate,
+# application, and interview-stage routers. ``JOB_ID_PATH_PATTERN`` is kept
+# as a backward-compatible alias so existing imports keep working.
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+
+JOB_ID_PATH_PATTERN = DUAL_ID_PATH_PATTERN
 
 # =============================================
 # HELPER FUNCTIONS

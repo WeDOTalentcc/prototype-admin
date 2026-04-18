@@ -3,8 +3,11 @@ ATS mapping CRUD endpoints.
 """
 import uuid
 import logging
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
+
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 from ._shared import (
     ATSMappingCreate,
@@ -77,7 +80,7 @@ async def create_ats_mapping(
 
 @router.delete("/ats-mappings/{mapping_id}", response_model=None)
 async def delete_ats_mapping(
-    mapping_id: str,
+    mapping_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: User = Depends(require_admin_or_recruiter),
     ats_repo: ATSMappingRepository = Depends(get_ats_mapping_repo),
 ):

@@ -9,8 +9,11 @@ with prefix="/api/v1".
 import uuid
 import logging
 from datetime import datetime
+from typing import Annotated
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException, Path
+
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 from ._shared import (
     ScreeningQuestion,
@@ -237,7 +240,7 @@ async def update_screening_questions(
 
 @router.put("/{question_id}")
 async def update_screening_question(
-    question_id: str,
+    question_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     question: ScreeningQuestionUpdate,
     current_user: User = Depends(require_admin_or_recruiter),
     sq_repo: ScreeningQuestionRepository = Depends(get_screening_question_repo),
@@ -277,7 +280,7 @@ async def update_screening_question(
 
 @router.delete("/{question_id}")
 async def delete_screening_question(
-    question_id: str,
+    question_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
     current_user: User = Depends(require_admin_or_recruiter),
     sq_repo: ScreeningQuestionRepository = Depends(get_screening_question_repo),
 ):
