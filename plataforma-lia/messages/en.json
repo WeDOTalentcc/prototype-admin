@@ -834,6 +834,21 @@
       "Cancelada": "Cancelled",
       "Concluída": "Completed",
       "Arquivada": "Archived"
+    },
+    "readinessStages": {
+      "importada": "Imported",
+      "sem_jd": "No JD",
+      "jd_rascunho": "JD Draft",
+      "jd_enriquecido": "JD Enriched",
+      "perguntas_triagem": "Screening Questions",
+      "pronta_disparo": "Ready to Dispatch",
+      "em_triagem": "Screening in Progress"
+    },
+    "readinessBlockers": {
+      "missing_jd": "No JD",
+      "missing_enrichment": "No enrichment",
+      "missing_competencies": "No competencies",
+      "missing_questions": "No questions"
     }
   },
   "kanban": {

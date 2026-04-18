@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useCallback, useEffect, useState } from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { CheckCircle2, Loader2, Play, XCircle } from "lucide-react"
 import { toast } from "sonner"
@@ -42,20 +43,21 @@ export const BLOCKER_LABEL: Record<string, string> = {
   missing_questions: "Sem perguntas",
 }
 
+const KNOWN_BLOCKERS = new Set(Object.keys(BLOCKER_LABEL))
+
 export function StageBadge({
   stage,
-  label,
   className = "",
 }: {
   stage: ReadinessStage
-  label?: string
   className?: string
 }) {
+  const tStages = useTranslations("jobs.readinessStages")
   return (
     <span
       className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${STAGE_COLOR[stage] || ""} ${className}`}
     >
-      {label ?? STAGE_LABEL_PT[stage] ?? stage}
+      {stage in STAGE_LABEL_PT ? tStages(stage) : stage}
     </span>
   )
 }
@@ -67,6 +69,8 @@ interface JobReadinessDrawerProps {
 }
 
 export function JobReadinessDrawer({ jobId, onClose, onChanged }: JobReadinessDrawerProps) {
+  const tBlockers = useTranslations("jobs.readinessBlockers")
+  const translateBlocker = (b: string) => (KNOWN_BLOCKERS.has(b) ? tBlockers(b) : b)
   const [detail, setDetail] = useState<ReadinessJobDetail | null>(null)
   const [loading, setLoading] = useState(false)
   const [pending, setPending] = useState(false)
@@ -162,7 +166,7 @@ export function JobReadinessDrawer({ jobId, onClose, onChanged }: JobReadinessDr
         ) : (
           <div className="p-4 space-y-4 text-sm">
             <div>
-              <StageBadge stage={detail.readiness_stage} label={detail.readiness_label} />
+              <StageBadge stage={detail.readiness_stage} />
               {detail.last_event_at && (
                 <span className="ml-2 text-[11px] text-lia-text-secondary">
                   último evento {new Date(detail.last_event_at).toLocaleString("pt-BR")}
@@ -177,7 +181,7 @@ export function JobReadinessDrawer({ jobId, onClose, onChanged }: JobReadinessDr
                     key={b}
                     className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
                   >
-                    {BLOCKER_LABEL[b] || b}
+                    {translateBlocker(b)}
                   </span>
                 ))}
               </div>
