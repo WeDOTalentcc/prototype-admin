@@ -50,6 +50,9 @@ class _FakeSession:
                 class _Scalars:
                     def all(self_inner2):
                         return list(store)
+
+                    def first(self_inner2):
+                        return store[0] if store else None
                 return _Scalars()
 
         return _Result()
@@ -319,6 +322,149 @@ async def test_webhook_job_event_upserts_for_pandape_payload():
     assert captured["ats_type"] == "pandape"
     assert captured["external_id"] == "12345"
     assert captured["title"] == "Vaga Pandapé"
+
+
+@pytest.mark.asyncio
+async def test_upsert_lookup_filters_by_external_id_in_sql_returning_single_row():
+    """Task #446: ``upsert_job_vacancy`` must push the
+    ``external_system_id`` filter down to SQL (not iterate every row of the
+    ``(company_id, source_system)`` window in Python) and only fetch a single
+    matching row per lookup.
+    """
+    from sqlalchemy.sql import Select
+
+    company_id = f"test-company-{uuid4().hex[:8]}"
+    service = ATSSyncService()
+
+    captured: list[Any] = []
+
+    class _CaptureSession(_FakeSession):
+        async def execute(self_inner, stmt):
+            captured.append(stmt)
+            return await _FakeSession.execute(self_inner, stmt)
+
+    db = _CaptureSession()
+    await service.upsert_job_vacancy(
+        db=db, company_id=company_id, ats_type="gupy", job=_gupy_job()
+    )
+
+    assert len(captured) == 1, "expected exactly one SELECT per upsert"
+    stmt = captured[0]
+    assert isinstance(stmt, Select)
+
+    # The SELECT must be limited to a single row — no more loading the whole
+    # (company_id, source_system) window into memory.
+    assert stmt._limit == 1, "lookup must request at most one row"
+
+    # And it must filter on additional_data->>'external_system_id' at the SQL
+    # layer so the new functional index can serve it in O(1).
+    from sqlalchemy.dialects import postgresql
+    compiled = str(stmt.compile(
+        dialect=postgresql.dialect(),
+        compile_kwargs={"literal_binds": True},
+    ))
+    assert "additional_data ->> 'external_system_id'" in compiled
+    assert "GP-1001" in compiled
+    assert "company_id" in compiled
+    assert "source_system" in compiled
+    assert "LIMIT 1" in compiled
+
+
+@pytest.mark.asyncio
+async def test_upsert_returns_only_matching_row_when_window_has_many():
+    """Task #446: even when the (company_id, source_system) window already
+    contains many imported rows, the lookup must return only the row whose
+    ``external_system_id`` matches — proving the filter happens at the SQL
+    layer (not by iterating every row in Python).
+    """
+    company_id = f"test-company-{uuid4().hex[:8]}"
+    service = ATSSyncService()
+
+    # A FakeSession that actually evaluates the SELECT's WHERE clause against
+    # its in-memory store, so a regression to "load everything and filter in
+    # Python" would surface as multiple matched rows / wrong row updated.
+    class _FilteringSession:
+        def __init__(self_inner) -> None:
+            self_inner.store: list[JobVacancy] = []
+            self_inner.executed_count = 0
+
+        async def execute(self_inner, stmt):
+            self_inner.executed_count += 1
+            # Pull literal-bound predicates from the compiled SQL so we don't
+            # have to walk SQLAlchemy's expression tree.
+            from sqlalchemy.dialects import postgresql
+            sql = str(stmt.compile(
+                dialect=postgresql.dialect(),
+                compile_kwargs={"literal_binds": True},
+            ))
+
+            def _matches(row: JobVacancy) -> bool:
+                if f"company_id = '{row.company_id}'" not in sql:
+                    return False
+                if f"source_system = '{row.source_system}'" not in sql:
+                    return False
+                ext = (row.additional_data or {}).get("external_system_id", "")
+                if f"= '{ext}'" not in sql:
+                    return False
+                return True
+
+            matched = [r for r in self_inner.store if _matches(r)]
+            limited = matched[:1]  # honour the LIMIT 1
+
+            class _Result:
+                def scalars(self_inner2):
+                    class _Scalars:
+                        def all(self_inner3):
+                            return list(limited)
+
+                        def first(self_inner3):
+                            return limited[0] if limited else None
+                    return _Scalars()
+
+            return _Result()
+
+        def add(self_inner, obj: JobVacancy) -> None:
+            self_inner.store.append(obj)
+
+        async def flush(self_inner) -> None:
+            return None
+
+    db = _FilteringSession()
+
+    # Pre-populate the window with several other gupy imports for the same
+    # tenant so a Python-side scan of the (company, source_system) bucket
+    # would have to iterate all of them.
+    for ext_id in ("GP-2000", "GP-2001", "GP-2002", "GP-2003"):
+        db.store.append(JobVacancy(
+            company_id=company_id,
+            source_system="gupy",
+            title=f"Other vaga {ext_id}",
+            additional_data={"external_system_id": ext_id},
+        ))
+
+    # Upsert the target row (GP-1001) — should create it, not match any of the
+    # pre-existing siblings.
+    action = await service.upsert_job_vacancy(
+        db=db, company_id=company_id, ats_type="gupy", job=_gupy_job()
+    )
+    assert action == "created"
+    assert db.executed_count == 1, "exactly one SELECT per upsert"
+    assert len(db.store) == 5
+
+    # Re-upsert the same job — must update the just-created row, not any of
+    # the unrelated GP-2000..GP-2003 siblings.
+    action = await service.upsert_job_vacancy(
+        db=db, company_id=company_id, ats_type="gupy", job=_gupy_job()
+    )
+    assert action == "updated"
+    assert len(db.store) == 5, "no duplicate row created on re-upsert"
+
+    # Sanity: the unrelated siblings are untouched.
+    siblings = [r for r in db.store if (r.additional_data or {}).get(
+        "external_system_id") in {"GP-2000", "GP-2001", "GP-2002", "GP-2003"}]
+    assert len(siblings) == 4
+    for s in siblings:
+        assert s.title.startswith("Other vaga ")
 
 
 @pytest.mark.asyncio

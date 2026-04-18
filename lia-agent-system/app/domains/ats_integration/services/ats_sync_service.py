@@ -739,17 +739,26 @@ class ATSSyncService:
             )
             return "skipped"
 
-        stmt = select(JobVacancy).where(
-            JobVacancy.company_id == company_id,
-            JobVacancy.source_system == source_system,
+        # Filter the lookup at the SQL layer so each upsert is O(1) — backed by
+        # the functional index on
+        # (company_id, source_system, (additional_data->>'external_system_id'))
+        # added in migration 087. Without this, importing N jobs for a tenant
+        # with M existing imported vacancies costs O(N*M) full table scans.
+        stmt = (
+            select(JobVacancy)
+            .where(
+                JobVacancy.company_id == company_id,
+                JobVacancy.source_system == source_system,
+                # Use the raw ``->>`` operator (works on both ``JSON`` and
+                # ``JSONB``) so the predicate matches the functional index
+                # exactly: ``(additional_data->>'external_system_id')``.
+                JobVacancy.additional_data.op("->>")("external_system_id")
+                == external_id,
+            )
+            .limit(1)
         )
         result = await db.execute(stmt)
-        existing: JobVacancy | None = None
-        for row in result.scalars().all():
-            extra = row.additional_data or {}
-            if str(extra.get("external_system_id") or "") == external_id:
-                existing = row
-                break
+        existing: JobVacancy | None = result.scalars().first()
 
         mapped = self._job_to_vacancy_fields(job, source_system, external_id)
 
