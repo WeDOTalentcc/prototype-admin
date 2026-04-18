@@ -147,9 +147,12 @@ class InterviewWSIService:
         if extraversion > 0.3 or agreeableness > 0.3:
             communication_score = min(SCALE_MAX, communication_score + 1.0)
 
-        # Bloom 1-6 → /10 via SCALE_MAX (Bloom é escala fixa, denominador literal).
-        BLOOM_MAX = 6.0
-        potential_score = min(SCALE_MAX, (analysis.bloom_average / BLOOM_MAX) * SCALE_MAX)
+        # `analysis.bloom_average` é o score Bloom já normalizado 0-5
+        # pelo analyzer (ver `_calculate_bloom_score` docstring — retorna
+        # tuple `(normalized_score 0-5, highest_level 1-6)`). O `bloom_level`
+        # é o highest level 1-6 — não usado aqui. Pra projetar em /10:
+        BLOOM_NORMALIZED_MAX = 5.0  # range de bloom_average vindo do analyzer
+        potential_score = min(SCALE_MAX, (analysis.bloom_average / BLOOM_NORMALIZED_MAX) * SCALE_MAX)
 
         return {
             "hard_skills": {
