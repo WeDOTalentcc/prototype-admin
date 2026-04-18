@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -43,12 +44,12 @@ const STAGE_COLOR: Record<ReadinessStage, string> = {
   em_triagem: "bg-cyan-50 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300",
 }
 
-const BLOCKER_LABEL: Record<string, string> = {
-  missing_jd: "Sem JD",
-  missing_enrichment: "Sem enriquecimento",
-  missing_competencies: "Sem competências",
-  missing_questions: "Sem perguntas",
-}
+const KNOWN_BLOCKERS = new Set([
+  "missing_jd",
+  "missing_enrichment",
+  "missing_competencies",
+  "missing_questions",
+])
 
 function StageBadge({ stage, label }: { stage: ReadinessStage; label: string }) {
   return (
@@ -121,6 +122,8 @@ function JobCardCell({
   onToggle: () => void
   onOpen: () => void
 }) {
+  const tBlockers = useTranslations("jobs.readinessBlockers")
+  const translateBlocker = (b: string) => (KNOWN_BLOCKERS.has(b) ? tBlockers(b) : b)
   return (
     <div
       className={`group p-2.5 rounded-lg border bg-lia-bg-elevated hover:border-lia-border-medium transition cursor-pointer ${
@@ -158,7 +161,7 @@ function JobCardCell({
                   key={b}
                   className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
                 >
-                  {BLOCKER_LABEL[b] || b}
+                  {translateBlocker(b)}
                 </span>
               ))}
             </div>
