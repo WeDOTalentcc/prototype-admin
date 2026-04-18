@@ -337,8 +337,6 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
     if "response contains" in c or "response is" in c:
         return n > 60 and not _re.search(r"não consigo|não posso", resp_lower)
 
-    if "does not fail" in c or "returns meaningful" in c:
-        return n > 20
 
     # ---- ANALYTICS KPI (Portuguese-aware) ----
     if _re.search(r"returns?.*(multiple|kpi|indicador)|multiple.*kpi|kpis?", c):
