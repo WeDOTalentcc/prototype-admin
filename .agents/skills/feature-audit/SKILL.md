@@ -990,3 +990,29 @@ Para mudanças menores (< 3 arquivos, sem novos endpoints):
 - DEPOIS de implementar qualquer feature, ajuste ou correção
 - ANTES de marcar qualquer tarefa como concluída
 - Para auditoria rápida de mudanças menores: D1 + D5 + D7 + D13
+
+---
+
+## Boy Scout Rule (addendum v2 — orchestrator-aware)
+
+> **Sempre deixe o codigo um pouco melhor do que voce achou.** Encontrou um `print()` na area que esta editando? Remova. Encontrou um `except: pass`? Substitua. Encontrou um `bg-blue-500`? Padronize. Pequenas correcoes oportunas evitam que divida tecnica vire bola de neve.
+
+Limites do Boy Scout em `feature-audit`:
+- Aplicar **apenas** em arquivos que voce ja esta tocando para a tarefa principal.
+- Limitar a 3-5 correcoes pequenas — se ha mais que isso, abrir task separada.
+- Nunca refatorar arquitetura "de passagem" — isso vira refactor real (modo REFACTOR + `canonical-fix`).
+
+## Cross-references com a cascata (orchestrator)
+
+Esta skill e ATIVADA sempre ao final de modo BUILD/REFACTOR/AUDIT pela `lia-orchestrator`. Quando uma dimensao falha, dispare a skill correspondente:
+
+| Dimensao falha | Skill a acionar |
+|---|---|
+| D1 Integracao, D7 Consistencia, D13 Seguranca/duplicatas | `canonical-fix` |
+| D3 UI/DS | `design-standardize` (+ `frontend-design` se for tela nova de entrada) |
+| D4 Backend | `backend-quality` |
+| D7 Tipos / contratos | `backend-quality` (Pydantic) ou `vue-migration-prep` (props) |
+| D9 Arquitetura de agentes, D10 Qualidade LLM, D12 Governanca IA | `ai-architecture` + `lia-compliance` PARTE 1 + PARTE 3 |
+| D11 Servicos IA / integracoes | `integration-patterns` |
+| D13 Seguranca/PII, D14 Performance | `lia-compliance` PARTE 4 + `backend-quality` PARTE 4 (N+1) |
+

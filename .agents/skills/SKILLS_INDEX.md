@@ -1,104 +1,136 @@
-# Skills da Plataforma LIA — Guia de Uso por Momento
+# Skills da Plataforma LIA — Cascade-Aware Index
 
-17 skills organizadas por QUANDO usar. Cada skill tem um gatilho claro.
+23 skills organizadas como sistema de auto-recrutamento (cascata). O ponto de entrada e SEMPRE `lia-orchestrator`.
 
----
-
-## FASE 1: ANTES DE CODIFICAR
-
-Usar quando vai iniciar trabalho novo (feature, refactor, bug fix).
-
-| Skill | Gatilho | O que faz |
-|-------|---------|-----------|
-| **lia-planning** | "vamos comecar", "novo sprint", "bug fix", "especificar feature", "brainstorming" | 4 modos (Bug Fix / Feature / Refactor / Sprint) + spec-driven (4 fases) + brainstorming estruturado |
-| **feature-impact** | "quero criar X", "vamos ajustar Y" | Analisa impacto em 13 dimensoes antes de escrever codigo |
-| **canonical-fix** | "corrige na raiz", "sem gambiarra", "sem workaround", antes de qualquer bug fix ou refactor com risco de duplicata | Identifica o arquivo canonico (fonte da verdade), mapeia consumidores, evita fix no consumidor / fallback silencioso / try-except mascarando / flag improvisada |
-
-
-**Fluxo recomendado:** `lia-planning` (define modo + spec) -> `feature-impact` (mapeia impacto) -> codificar
+> Contagem: 1 roteador + 2 planejamento + 3 qualidade por camada (NOVAS) + 5 UI/design + 1 compliance + 2 correcao/auditoria + 1 testes + 8 utilitarias = 23.
 
 ---
 
-## FASE 2: DURANTE O DESIGN / UI
+## REGRA #1 — Sempre comecar pelo orchestrator
 
-Usar quando vai criar ou modificar interface visual.
+> **`lia-orchestrator`** e a primeira skill a carregar em QUALQUER sessao de codigo. Ela decide quais outras skills voce precisa, em qual ordem, com base em modo (planning/build/bug fix/refactor/audit/deploy), dominio (backend/frontend/agente/integracao/compliance) e arquivo tocado.
 
-| Skill | Gatilho | O que faz |
-|-------|---------|-----------|
-| **frontend-design** | Criar tela nova, "quero algo bonito/marcante" | Direcao estetica, anti-patterns "AI slop", exemplos de codigo |
-| **design-standardize** | Criar qualquer componente de interface | Tokens DS v4.2.1, regra 90/10, tipografia, dark mode |
-| **design-patterns** | Componente complexo, muitas props, refatorar arquitetura | GoF patterns + React Composition Patterns (compound components, evitar boolean props) |
-
-**Fluxo recomendado:** `frontend-design` (PASSO 0 intencao) -> `design-standardize` (aplica tokens) -> `design-patterns` (se complexo)
+Pular o orchestrator e a causa #1 de retrabalho. Ele nao implementa — ele convoca.
 
 ---
 
-## FASE 3: DURANTE A IMPLEMENTACAO
+## Mapa rapido de cascata
 
-Usar enquanto escreve codigo.
+| Voce vai... | Cascata convocada pelo orchestrator |
+|---|---|
+| Criar/editar endpoint FastAPI | `canonical-fix` > `backend-quality` > `lia-compliance` PARTE 4 > `lia-testing` > `feature-audit` |
+| Criar/editar agente, node, tool, prompt | `canonical-fix` > `ai-architecture` > `lia-compliance` PARTE 1 + 3 > `lia-testing` > `feature-audit` |
+| Criar/editar cliente HTTP, fila, GCS, OAuth | `canonical-fix` > `integration-patterns` > `backend-quality` > `lia-testing` > `feature-audit` |
+| Criar/editar componente React (interface interna) | `design-standardize` > `vue-migration-prep` > `lia-testing` > `feature-audit` |
+| Criar tela de entrada / branding | `frontend-design` > `design-standardize` > `vue-migration-prep` > `feature-audit` |
+| Migrar/criar componente Vue/Vuetify | `vue-vuetify-standardize` > `vue-migration-prep` > `design-standardize` > `feature-audit` |
+| Bug fix em qualquer area | `lia-planning` (Diagnosticar) > **`canonical-fix`** > skill de dominio > `lia-testing` |
+| Refactor amplo | `lia-planning` (Refactor) > `feature-impact` > `canonical-fix` > skill de dominio > `lia-testing` > `feature-audit` |
+| Auditar feature pronta | `feature-audit` > skills das dimensoes que falharem |
+| Deploy producao | `lia-compliance` Production Readiness > `feature-audit` final |
 
-| Skill | Gatilho | O que faz |
-|-------|---------|-----------|
-| **lia-testing** | Criar feature, refatorar, criar agente IA, escrever testes | TDD (Red/Green/Refactor) + piramide 5 camadas + evals IA (golden dataset, LLM-as-judge) |
-| **vue-migration-prep** | Criar/refatorar componente React | Garante que o codigo sera portavel para Vue/Nuxt no futuro |
-
-**Fluxo recomendado:** `lia-testing` (teste primeiro) + `vue-migration-prep` (portabilidade) em paralelo
-
----
-
-## FASE 4: VALIDACAO E QUALIDADE
-
-Usar DEPOIS de implementar, antes de entregar.
-
-| Skill | Gatilho | O que faz |
-|-------|---------|-----------|
-| **feature-audit** | Feature pronta, antes de marcar como concluida | Auditoria em 14 dimensoes: integracao, dados, UI, backend, tipos, fluxo |
-| **browser-use** | Testar fluxo real no browser, preencher formularios, screenshots | Automacao de browser para validacao visual e funcional |
-
-**Fluxo recomendado:** `feature-audit` (checklist) -> `browser-use` (validar no browser)
+Detalhes completos: `.agents/skills/lia-orchestrator/SKILL.md` (Tabela 4).
 
 ---
 
-## FASE 5: COMPLIANCE E GOVERNANCA
+## Catalogo por categoria
 
-Usar quando a feature toca dados pessoais, avaliacao de candidatos ou agentes IA.
+### A — Roteador (sempre primeiro)
 
-| Skill | Gatilho | O que faz |
-|-------|---------|-----------|
-| **lia-compliance** | Feature nova, agente, screening, dados pessoais, deploy producao | Unifica: Governanca WeDO (13 Crencas, 18 Production Readiness), Screening/WSI, DEI/Fairness (FairnessGuard), LGPD (PII, DSR, EU AI Act) |
+| Skill | Descricao curta |
+|---|---|
+| **lia-orchestrator** | Decide a cascata de skills para a tarefa atual (modo + dominio + arquivo) |
 
-**Fluxo recomendado:** Carregar `lia-compliance` e navegar para a PARTE relevante (1-4)
+### B — Planejamento e impacto
+
+| Skill | Descricao curta |
+|---|---|
+| **lia-planning** | 4 modos (Bug Fix / Feature / Refactor / Sprint) + spec-driven 4 fases |
+| **feature-impact** | Mapeia impacto cross-modulo antes de implementar |
+
+### C — Qualidade por camada (NOVO)
+
+| Skill | Camada |
+|---|---|
+| **backend-quality** | FastAPI/Python: router fino, service stateless, multi-tenant, N+1, audit log |
+| **ai-architecture** | LangGraph/agentes: state tipado, tool isolada, prompt versionado, fallback chain |
+| **integration-patterns** | HTTP/fila/storage/OAuth: timeout, retry, circuit breaker, ContextVar, DLQ |
+
+### D — UI / Design
+
+| Skill | Quando |
+|---|---|
+| **frontend-design** | Tela nova de entrada/branding (PASSO 0 — Intencao Estetica) |
+| **design-standardize** | Qualquer componente React+Tailwind (DS v4.2.1, regra 90/10, a11y, perf) |
+| **design-patterns** | Refatorar arquitetura de componente (GoF + React patterns) |
+| **vue-vuetify-standardize** | Componente Vue 3 + Vuetify + Nuxt (10 passos) |
+| **vue-migration-prep** | Garantir portabilidade React -> Vue em todo componente novo |
+
+### E — Compliance e governanca
+
+| Skill | Cobertura |
+|---|---|
+| **lia-compliance** | PARTE 1 Governanca WeDO / PARTE 2 Screening WSI / PARTE 3 Fairness DEI / PARTE 4 LGPD PII |
+
+### F — Correcao e auditoria
+
+| Skill | Quando |
+|---|---|
+| **canonical-fix** | Antes de qualquer bug fix, refactor ou edicao com risco de duplicata |
+| **feature-audit** | DEPOIS de implementar, ANTES de marcar concluido (14 dimensoes) |
+
+### G — Testes
+
+| Skill | Quando |
+|---|---|
+| **lia-testing** | TDD (Red/Green/Refactor), piramide 5 camadas, evals IA (golden dataset) |
+
+### H — Utilitarias
+
+| Skill | Quando |
+|---|---|
+| **browser-use** | Validacao funcional via browser, screenshots |
+| **humanizer** | Texto soa "AI generated" |
+| **agent-tools** | Rodar 150+ apps IA via inference.sh |
+| **excalidraw-diagram** | Diagramas visuais de arquitetura/fluxo |
+| **pdf** | Operacoes com PDF |
+| **pptx** | Operacoes com apresentacoes |
+| **find-skills** | Descobrir skills disponiveis |
+| **skill-creator** | Criar/otimizar skills |
 
 ---
 
-## UTILITARIAS (sob demanda)
+## Cenarios de validacao (cascata em acao)
 
-Usar quando precisa de uma funcionalidade especifica.
+### Cenario A — "Crie POST /candidates/screening"
 
-| Skill | Gatilho | O que faz |
-|-------|---------|-----------|
-| **humanizer** | "texto parece IA", "melhorar escrita" | Remove sinais de escrita generada por IA |
-| **pdf** | Qualquer operacao com arquivos PDF | Ler, criar, combinar, dividir, OCR |
-| **pptx** | Qualquer operacao com apresentacoes PowerPoint | Criar, ler, editar slides |
-| **agent-tools** | "gerar imagem", "rodar modelo IA", "buscar na web" | 150+ apps IA via inference.sh |
-| **find-skills** | "existe skill para X?", "como faco Y?" | Descobre skills disponiveis |
-| **skill-creator** | "criar nova skill", "melhorar skill existente" | Meta-skill para criar/otimizar skills |
+`lia-orchestrator` -> Modo BUILD, Dominio BACKEND+MULTI_TENANT+SCREENING -> cascata:
+`canonical-fix` -> `backend-quality` -> `lia-compliance` PARTE 2 + 3 + 4 -> `lia-testing` -> `feature-audit` (D1, D4, D5, D11, D12, D13).
+
+### Cenario B — "Ajusta componente Vue de calibracao"
+
+`lia-orchestrator` -> Modo BUILD, Dominio VUE_MIGRATION+FRONTEND_UI+SCREENING -> cascata:
+`canonical-fix` -> `vue-vuetify-standardize` -> `vue-migration-prep` -> `design-standardize` -> `lia-compliance` PARTE 2 -> `lia-testing` -> `feature-audit` (D3, D5, D7).
+
+### Cenario C — "Cria agente novo que usa Pearch como tool externa"
+
+`lia-orchestrator` -> Modo BUILD, Dominio AI_AGENT+INTEGRATION+MULTI_TENANT -> cascata:
+`canonical-fix` -> `ai-architecture` -> `integration-patterns` -> `lia-compliance` PARTE 1 + 3 -> `backend-quality` -> `lia-testing` -> `feature-audit` (D9, D10, D11, D12, D13).
+
+Detalhes em `lia-orchestrator/SKILL.md`.
 
 ---
 
-## COMO PEDIR PARA USAR UMA SKILL
+## Como pedir
 
-Nao precisa lembrar os nomes. Basta descrever o que quer:
+Nao precisa lembrar nomes. O orchestrator decide. Mas se quiser sinalizar:
 
-| Voce diz | Skill que ativa |
-|----------|----------------|
-| "vamos comecar uma feature nova" | lia-planning + feature-impact |
-| "cria uma tela bonita de login" | frontend-design + design-standardize |
-| "refatora este componente" | design-patterns + vue-migration-prep |
-| "esta pronto, verifica" | feature-audit |
-| "toca dados de candidatos" | lia-compliance (PARTEs 3 e 4) |
-| "quero testar no browser" | browser-use |
-| "o texto ficou com cara de IA" | humanizer |
-| "preciso de um PDF" | pdf |
-| "vou fazer deploy" | lia-compliance (Production Readiness Gate) |
-| "escrever testes primeiro" | lia-testing (TDD) |
+| Voce diz | Orchestrator entende |
+|---|---|
+| "vamos planejar" | Modo PLANNING |
+| "cria endpoint X" | Modo BUILD + dominio BACKEND |
+| "novo agente para Y" | Modo BUILD + dominio AI_AGENT |
+| "esta quebrado em Z" | Modo BUG FIX |
+| "refatora todo o modulo" | Modo REFACTOR |
+| "esta pronto?" | Modo AUDIT |
+| "vou subir para producao" | Modo DEPLOY |
