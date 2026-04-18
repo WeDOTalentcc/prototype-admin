@@ -29,6 +29,14 @@ from app.schemas.shared_search import (
     RecipientSummary,
     ShareChannel,
 )
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -565,7 +573,7 @@ async def list_shared_searches(
 
 @router.get("/{search_id}", response_model=None)
 async def get_shared_search(
-    search_id: str,
+    search_id: _DualId,
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
@@ -671,7 +679,7 @@ async def get_shared_search(
 
 @router.post("/{search_id}/resend", response_model=None)
 async def resend_invite(
-    search_id: str,
+    search_id: _DualId,
     data: ResendInviteRequest,
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo)
@@ -723,7 +731,7 @@ async def resend_invite(
 
 @router.patch("/{search_id}", response_model=None)
 async def update_shared_search(
-    search_id: str,
+    search_id: _DualId,
     data: UpdateSharedSearchRequest,
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo)
@@ -775,7 +783,7 @@ async def update_shared_search(
 
 @router.delete("/{search_id}", response_model=None)
 async def delete_shared_search(
-    search_id: str,
+    search_id: _DualId,
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
@@ -808,7 +816,7 @@ async def delete_shared_search(
 
 @router.post("/{search_id}/add-to-job", response_model=None)
 async def add_approved_to_job(
-    search_id: str,
+    search_id: _DualId,
     data: AddToJobRequest,
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
     current_user: User = Depends(get_current_user_or_demo)
@@ -898,3 +906,10 @@ async def add_approved_to_job(
         logger.error(f"Error adding candidates to job: {e}", exc_info=True)
         await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

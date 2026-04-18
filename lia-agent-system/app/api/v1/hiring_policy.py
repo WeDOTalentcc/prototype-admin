@@ -39,6 +39,14 @@ from app.schemas.company_hiring_policy import (
 )
 from app.shared.policy_helper import get_company_policy, invalidate_policy_cache
 from app.shared.policy_sync_service import sync_policy_to_models
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +92,7 @@ def _blocks_completed(policy) -> dict[str, bool]:
 
 
 @router.get("/{company_id}", response_model=CompanyHiringPolicyResponse)
-async def get_policy(company_id: str, db: AsyncSession = Depends(get_db)):
+async def get_policy(company_id: _DualId, db: AsyncSession = Depends(get_db)):
     """Get hiring policy for a company. Returns defaults if none exists."""
     repo = HiringPolicyRepository(db)
     policy = await repo.get_by_company(company_id)
@@ -111,7 +119,7 @@ async def get_policy(company_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.put("/{company_id}", response_model=CompanyHiringPolicyResponse)
 async def upsert_policy(
-    company_id: str,
+    company_id: _DualId,
     payload: CompanyHiringPolicyUpdate,
     user_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
@@ -139,7 +147,7 @@ async def upsert_policy(
 
 @router.patch("/{company_id}", response_model=CompanyHiringPolicyResponse)
 async def update_policy_partial(
-    company_id: str,
+    company_id: _DualId,
     payload: CompanyHiringPolicyUpdate,
     user_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
@@ -176,7 +184,7 @@ async def update_policy_partial(
 
 @router.patch("/{company_id}/block", response_model=CompanyHiringPolicyResponse)
 async def update_policy_block(
-    company_id: str,
+    company_id: _DualId,
     payload: CompanyHiringPolicyBlockUpdate,
     user_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
@@ -215,7 +223,7 @@ async def update_policy_block(
 
 
 @router.get("/{company_id}/progress", response_model=PolicyProgressResponse)
-async def get_policy_progress(company_id: str, db: AsyncSession = Depends(get_db)):
+async def get_policy_progress(company_id: _DualId, db: AsyncSession = Depends(get_db)):
     """Get setup progress for a company's hiring policy."""
     repo = HiringPolicyRepository(db)
     policy = await repo.get_by_company(company_id)
@@ -236,7 +244,7 @@ async def get_policy_progress(company_id: str, db: AsyncSession = Depends(get_db
 
 @router.post("/{company_id}/chat", response_model=PolicyChatResponse)
 async def policy_chat(
-    company_id: str,
+    company_id: _DualId,
     payload: PolicyChatMessage,
     db: AsyncSession = Depends(get_db),
 ):
@@ -311,3 +319,10 @@ async def policy_chat(
         all_completed=result.get("all_completed", False),
         session_id=session_id,
     )
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

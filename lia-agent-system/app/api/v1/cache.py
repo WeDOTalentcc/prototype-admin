@@ -10,6 +10,14 @@ from fastapi import APIRouter, HTTPException
 
 from app.domains.job_management.services.jd_template_cache_service import jd_template_cache_service
 from app.shared.services.embedding_cache_service import embedding_cache
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +25,7 @@ router = APIRouter(prefix="/cache", tags=["cache"])
 
 
 @router.delete("/jd/{company_id}", response_model=None)
-async def invalidate_jd_cache(company_id: str):
+async def invalidate_jd_cache(company_id: _DualId):
     """
     Manually invalidate JD template cache for a company.
     
@@ -173,3 +181,10 @@ async def clear_embedding_cache():
             status_code=500,
             detail=f"Error clearing embedding cache: {str(e)}"
         )
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

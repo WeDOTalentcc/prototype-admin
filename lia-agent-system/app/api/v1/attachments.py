@@ -24,6 +24,14 @@ from app.schemas.attachment import (
     FileUploadResponse,
 )
 from app.shared.services.attachment_service import attachment_service
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path as _ApiPath
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, _ApiPath(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +159,7 @@ async def list_attachments(
 
 
 @router.get("/{attachment_id}", response_model=AttachmentResponse)
-async def get_attachment(attachment_id: str):
+async def get_attachment(attachment_id: _DualId):
     """
     Get a single attachment by ID.
     
@@ -181,7 +189,7 @@ async def get_attachment(attachment_id: str):
 
 
 @router.delete("/{attachment_id}", response_model=AttachmentResponse)
-async def delete_attachment(attachment_id: str):
+async def delete_attachment(attachment_id: _DualId):
     """
     Soft delete an attachment (deactivate).
     
@@ -478,3 +486,10 @@ async def delete_candidate_file(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete file: {str(e)}"
         )
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

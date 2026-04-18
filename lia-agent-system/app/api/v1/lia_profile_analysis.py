@@ -17,6 +17,14 @@ from app.schemas.lia_profile_analysis import (
     LiaProfileAnalysisCreate,
     LiaProfileAnalysisResponse,
 )
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +159,6 @@ async def generate_profile_analysis(
 
     try:
         from app.shared.providers.llm_factory import get_provider_for_tenant
-
         tenant_id = company_id or None
         container = get_provider_for_tenant(tenant_id=tenant_id)
         analysis_text = await container.generate_with_fallback(
@@ -238,7 +245,7 @@ async def save_profile_analysis(
 
 @router.get("/candidate/{candidate_id}", response_model=CandidateAnalysesSummary)
 async def get_candidate_analyses(
-    candidate_id: str,
+    candidate_id: _DualId,
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
     db: AsyncSession = Depends(get_db)
 ):
@@ -288,7 +295,7 @@ async def get_candidate_analyses(
 
 @router.delete("/candidate/{candidate_id}/{analysis_type}", response_model=None)
 async def delete_candidate_analysis(
-    candidate_id: str,
+    candidate_id: _DualId,
     analysis_type: str,
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
     db: AsyncSession = Depends(get_db)
@@ -308,3 +315,10 @@ async def delete_candidate_analysis(
     except Exception as e:
         logger.error(f"Error deleting analysis: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to delete analysis: {str(e)}")
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

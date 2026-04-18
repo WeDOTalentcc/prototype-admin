@@ -16,6 +16,14 @@ from app.schemas.screening import (
     ScreeningQuestionRequest,
     ScreeningQuestionResponse,
 )
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -251,7 +259,7 @@ async def auto_trigger_screening(
 
 @router.get("/tasks/{job_id}", response_model=None)
 async def list_screening_tasks(
-    job_id: str,
+    job_id: _DualId,
     repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     try:
@@ -264,7 +272,7 @@ async def list_screening_tasks(
 
 @router.post("/tasks/{task_id}/execute", response_model=None)
 async def execute_screening_task(
-    task_id: str,
+    task_id: _DualId,
     repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     try:
@@ -295,3 +303,10 @@ async def execute_screening_task(
         logger.error(f"Failed to execute screening task {task_id}: {e}")
         await repo.rollback()
         raise HTTPException(status_code=500, detail="Failed to execute screening task")
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

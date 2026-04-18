@@ -40,6 +40,14 @@ from app.shared.observability.token_tracking_service import (
 )
 from app.shared.observability.token_budget_service import get_plan_limit
 from app.shared.tenant_guard import get_verified_company_id
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -189,7 +197,7 @@ async def get_usage_summary(
 
 @router.get("/usage/{client_id}", response_model=UsageSummaryResponse, summary="Get client usage (admin)")
 async def get_client_usage(
-    client_id: str,
+    client_id: _DualId,
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
@@ -502,7 +510,7 @@ async def record_consumption(
 
 @router.put("/limits/{client_id}", response_model=BalanceResponse, summary="Update client limits (admin)")
 async def update_limits(
-    client_id: str,
+    client_id: _DualId,
     request: UpdateLimitsRequest,
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
@@ -780,3 +788,10 @@ async def get_real_time_usage(
     except Exception as e:
         logger.error(f"Error getting real-time usage: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

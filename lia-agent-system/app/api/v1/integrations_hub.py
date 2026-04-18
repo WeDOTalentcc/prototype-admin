@@ -12,6 +12,14 @@ from app.domains.integrations_hub.repositories.integrations_hub_repository impor
     IntegrationsHubRepository,
 )
 from lia_models.integration_hub import IntegrationCategory
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -246,7 +254,7 @@ async def create_connection(
 
 @router.put("/connections/{connection_id}", response_model=ConnectionResponse)
 async def update_connection(
-    connection_id: str,
+    connection_id: _DualId,
     request: ConnectionUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
@@ -282,7 +290,7 @@ async def update_connection(
 
 @router.delete("/connections/{connection_id}", response_model=None)
 async def delete_connection(
-    connection_id: str,
+    connection_id: _DualId,
     company_id: str = Query(..., description="Company ID"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
@@ -306,7 +314,7 @@ async def delete_connection(
 
 @router.post("/connections/{connection_id}/test", response_model=None)
 async def test_connection(
-    connection_id: str,
+    connection_id: _DualId,
     company_id: str = Query(..., description="Company ID"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
@@ -339,7 +347,7 @@ async def test_connection(
 
 @router.post("/connections/{connection_id}/sync", response_model=None)
 async def trigger_sync(
-    connection_id: str,
+    connection_id: _DualId,
     company_id: str = Query(..., description="Company ID"),
     sync_type: str = Query("full", description="full, incremental, or webhook"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
@@ -372,7 +380,7 @@ async def trigger_sync(
 
 @router.get("/connections/{connection_id}/logs", response_model=list[SyncLogResponse])
 async def get_sync_logs(
-    connection_id: str,
+    connection_id: _DualId,
     company_id: str = Query(..., description="Company ID"),
     limit: int = Query(20, ge=1, le=100),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
@@ -574,3 +582,10 @@ async def apify_health_check():
         "avg_response_time_ms": None,
         "cost_per_enrichment_usd": 0.01,
     }
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

@@ -16,6 +16,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.analytics.services.predictive_analytics_service import predictive_analytics_service
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/analytics/predictions", tags=["predictive-analytics"])
@@ -105,8 +113,8 @@ async def predict_hiring_probability(
 
 @router.get("/hiring-probability/{candidate_id}/{job_id}", response_model=None)
 async def get_hiring_probability(
-    candidate_id: str,
-    job_id: str,
+    candidate_id: _DualId,
+    job_id: _DualId,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -160,7 +168,7 @@ async def predict_time_to_fill(
 
 @router.get("/time-to-fill/{job_id}", response_model=None)
 async def get_time_to_fill(
-    job_id: str,
+    job_id: _DualId,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -213,8 +221,8 @@ async def predict_dropout_risk(
 
 @router.get("/dropout-risk/{candidate_id}/{job_id}", response_model=None)
 async def get_dropout_risk(
-    candidate_id: str,
-    job_id: str,
+    candidate_id: _DualId,
+    job_id: _DualId,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -268,7 +276,7 @@ async def generate_pipeline_forecast(
 
 @router.get("/pipeline-forecast/{job_id}", response_model=None)
 async def get_pipeline_forecast(
-    job_id: str,
+    job_id: _DualId,
     weeks_ahead: int = Query(4, ge=1, le=12, description="Weeks to forecast"),
     db: AsyncSession = Depends(get_db)
 ):
@@ -303,3 +311,10 @@ async def analytics_health():
             "pipeline_forecast"
         ]
     }
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

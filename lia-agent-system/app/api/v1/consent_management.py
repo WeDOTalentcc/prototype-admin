@@ -30,6 +30,14 @@ from app.schemas.consent_management import (
     ConsentVersionResponse,
 )
 from app.shared.tenant_guard import get_verified_company_id
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -178,7 +186,7 @@ async def get_current_consent_version(
     summary="Get consent version by ID",
 )
 async def get_consent_version(
-    version_id: str,
+    version_id: _DualId,
     company_id: str = Depends(get_verified_company_id),
     repo: ConsentRepository = Depends(get_consent_repo),
 ):
@@ -529,3 +537,10 @@ async def get_consent_stats(
     except Exception as e:
         logger.error(f"Error getting consent stats: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

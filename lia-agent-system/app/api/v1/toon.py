@@ -15,12 +15,18 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query, status
 
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN, reorder_collection_before_item
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.services.toon_service import TOONCard, toon_service
+from typing import Annotated
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +116,7 @@ def _get_company_id(
     ),
 )
 async def get_toon_card(
-    candidate_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
+    candidate_id: _DualId,
     job_id: str | None = Query(None, description="Job opening UUID for match scoring"),
     anonymize: bool = Query(False, description="When true, masks all PII (LGPD-safe)"),
     company_id: str = Depends(_get_company_id),
@@ -158,3 +164,8 @@ async def get_toon_card(
         )
 
     return TOONCardResponse.from_card(card)
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+reorder_collection_before_item(router)

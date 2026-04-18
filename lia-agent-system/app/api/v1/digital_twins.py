@@ -12,6 +12,14 @@ from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter(prefix="/api/v1/digital-twins", tags=["Digital Twins"])
 
@@ -121,7 +129,7 @@ async def list_twins(
 
 
 @router.get("/{twin_id}")
-async def get_twin(twin_id: str, db: AsyncSession = Depends(get_db)):
+async def get_twin(twin_id: _DualId, db: AsyncSession = Depends(get_db)):
     """Get details of a specific Digital Twin."""
     from lia_models.digital_twin import DigitalTwin
     from sqlalchemy import select
@@ -145,7 +153,7 @@ async def get_twin(twin_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.post("/{twin_id}/index-audio")
 async def index_audio(
-    twin_id: str,
+    twin_id: _DualId,
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
 ):
@@ -165,7 +173,7 @@ async def index_audio(
 
 @router.post("/{twin_id}/index-decision")
 async def index_manual_decision(
-    twin_id: str,
+    twin_id: _DualId,
     body: ManualDecisionRequest,
     db: AsyncSession = Depends(get_db),
 ):
@@ -184,7 +192,7 @@ async def index_manual_decision(
 
 @router.post("/{twin_id}/evaluate")
 async def evaluate_candidate(
-    twin_id: str,
+    twin_id: _DualId,
     body: EvaluateRequest,
     db: AsyncSession = Depends(get_db),
 ):
@@ -195,7 +203,6 @@ async def evaluate_candidate(
     plus the supporting examples that informed the evaluation.
     """
     from app.services.twin_inference_service import twin_inference_service
-
     evaluation = await twin_inference_service.evaluate(
         twin_id=twin_id,
         candidate_profile=body.candidate_profile,
@@ -220,3 +227,10 @@ async def evaluate_candidate(
             for ex in evaluation.supporting_examples
         ],
     }
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

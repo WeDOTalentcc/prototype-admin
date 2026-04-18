@@ -17,6 +17,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from app.domains.analytics.repositories.fairness_report_repository import FairnessReportRepository
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter(prefix="/fairness", tags=["fairness-reports"])
 
@@ -216,7 +224,7 @@ class JobFairnessBlocksResponse(BaseModel):
 
 @router.get("/jobs/{job_id}/blocks", response_model=JobFairnessBlocksResponse)
 async def get_job_fairness_blocks(
-    job_id: str,
+    job_id: _DualId,
     include_warnings: bool = Query(False, description="Also include soft-warning events"),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
@@ -357,3 +365,10 @@ async def export_fairness_report(
         media_type="text/csv",
         headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

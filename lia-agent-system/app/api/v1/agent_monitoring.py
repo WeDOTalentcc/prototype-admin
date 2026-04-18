@@ -9,6 +9,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.shared.observability.agent_monitoring_service import AgentMonitoringService
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter(prefix="/agent-monitoring", tags=["Agent Monitoring"])
 
@@ -111,7 +119,7 @@ async def get_all_agents_summary(db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/agents/{agent_id}", response_model=AgentSummaryResponse)
-async def get_agent_summary(agent_id: str, db: AsyncSession = Depends(get_db)):
+async def get_agent_summary(agent_id: _DualId, db: AsyncSession = Depends(get_db)):
     """Get summary for a specific agent."""
     service = AgentMonitoringService(db)
     summary = await service.get_agent_summary(agent_id)
@@ -121,7 +129,7 @@ async def get_agent_summary(agent_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/agents/{agent_id}/health", response_model=AgentHealthResponse)
-async def get_agent_health(agent_id: str, db: AsyncSession = Depends(get_db)):
+async def get_agent_health(agent_id: _DualId, db: AsyncSession = Depends(get_db)):
     """Get health score and details for a specific agent."""
     service = AgentMonitoringService(db)
     health = await service.get_agent_health(agent_id)
@@ -132,7 +140,7 @@ async def get_agent_health(agent_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.get("/agents/{agent_id}/activities", response_model=list[ActivityResponse])
 async def get_agent_activities(
-    agent_id: str,
+    agent_id: _DualId,
     status: str | None = Query(None, description="Filter by status"),
     limit: int = Query(50, le=100),
     offset: int = Query(0, ge=0),
@@ -180,7 +188,6 @@ async def get_proactive_alerts(db: AsyncSession = Depends(get_db)):
 async def log_activity(request: LogActivityRequest, db: AsyncSession = Depends(get_db)):
     """Log a new agent activity."""
     from lia_models.agent_activity import ActivityStatus
-    
     service = AgentMonitoringService(db)
     
     try:
@@ -259,3 +266,10 @@ async def seed_demo_data(db: AsyncSession = Depends(get_db)):
         "message": f"Created {result['activities_created']} demo activities",
         **result
     }
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

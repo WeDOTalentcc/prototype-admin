@@ -24,6 +24,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from lia_models.guardrail import Guardrail
 from app.shared.compliance.guardrail_repository import GuardrailCreate, GuardrailRepository
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +122,7 @@ async def create_guardrail(
 
 @router.get("/{guardrail_id}", response_model=GuardrailResponse)
 async def get_guardrail(
-    guardrail_id: str,
+    guardrail_id: _DualId,
     db: AsyncSession = Depends(get_db),
 ):
     """Retorna um guardrail pelo ID."""
@@ -130,7 +138,7 @@ async def get_guardrail(
 
 @router.put("/{guardrail_id}", response_model=GuardrailResponse)
 async def update_guardrail(
-    guardrail_id: str,
+    guardrail_id: _DualId,
     data: GuardrailUpdateRequest,
     db: AsyncSession = Depends(get_db),
 ):
@@ -156,7 +164,7 @@ async def update_guardrail(
 
 @router.patch("/{guardrail_id}/toggle", response_model=GuardrailResponse)
 async def toggle_guardrail(
-    guardrail_id: str,
+    guardrail_id: _DualId,
     db: AsyncSession = Depends(get_db),
 ):
     """Ativa ou desativa um guardrail sem deletá-lo."""
@@ -171,7 +179,7 @@ async def toggle_guardrail(
 
 @router.delete("/{guardrail_id}", status_code=204, response_model=None)
 async def delete_guardrail(
-    guardrail_id: str,
+    guardrail_id: _DualId,
     db: AsyncSession = Depends(get_db),
 ):
     """Soft delete: desativa o guardrail (is_active=False). Dados preservados para auditoria."""
@@ -286,3 +294,10 @@ async def seed_default_guardrails(
 
     logger.info(f"[guardrails] seed-defaults: criados={created} ignorados={skipped} company_id={company_id}")
     return SeedDefaultsResponse(created=created, skipped=skipped, total=len(all_defaults))
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

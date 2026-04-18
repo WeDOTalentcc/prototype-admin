@@ -28,6 +28,14 @@ from lia_models.ats_integration import (
 )
 from app.shared.encryption import encrypt_value, decrypt_value
 from app.domains.ats_integration.services.ats_sync_service import ATSSyncService, get_ats_sync_service
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -292,7 +300,7 @@ async def save_field_mappings(
 
 @router.get("/ats/field-mappings/{connection_id}", response_model=dict)
 async def get_field_mappings(
-    connection_id: str,
+    connection_id: _DualId,
     repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
 ):
@@ -321,7 +329,7 @@ async def get_field_mappings(
 
 @router.post("/ats/connections/{connection_id}/sync", response_model=dict)
 async def trigger_ats_sync(
-    connection_id: str,
+    connection_id: _DualId,
     request: TriggerSyncRequest,
     repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
@@ -1013,3 +1021,10 @@ async def list_webhook_logs(
     except Exception as e:
         logger.error(f"❌ Failed to list webhook logs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

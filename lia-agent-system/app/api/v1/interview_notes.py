@@ -42,6 +42,14 @@ from app.shared.services.interview_notes_service import (
 )
 from app.domains.ai.services.llm import llm_service
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 fairness_guard = FairnessGuard()
@@ -1093,7 +1101,7 @@ async def create_interview_note(
 
 @router.get("/{note_id}", response_model=InterviewNoteResponse)
 async def get_interview_note(
-    note_id: str,
+    note_id: _DualId,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
 ) -> InterviewNoteResponse:
@@ -1133,7 +1141,7 @@ async def get_interview_note(
 
 @router.get("/candidate/{candidate_id}", response_model=list[InterviewNoteSummary])
 async def list_notes_for_candidate(
-    candidate_id: str,
+    candidate_id: _DualId,
     job_id: str | None = Query(None),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
@@ -1173,7 +1181,7 @@ class InterviewNoteUpdateRequest(BaseModel):
 
 @router.patch("/{note_id}", response_model=InterviewNoteUpdateResponse)
 async def update_interview_note(
-    note_id: str,
+    note_id: _DualId,
     data: InterviewNoteUpdateRequest,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
@@ -1201,3 +1209,10 @@ async def update_interview_note(
         raise HTTPException(status_code=404, detail="Interview note not found")
 
     return {"id": str(note.id), "status": note.status, "updatedAt": note.updated_at.isoformat()}
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

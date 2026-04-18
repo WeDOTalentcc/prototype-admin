@@ -47,6 +47,14 @@ from app.domains.voice.services.voice_screening_orchestrator import (
     voice_screening_orchestrator,
 )
 from app.shared.pii_masking import mask_pii
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -545,7 +553,7 @@ async def audio_stream_websocket(
 # ── Management endpoints ───────────────────────────────────────────────────────
 
 @router.post("/twilio-voice/end-call/{session_id}", response_model=None)
-async def end_call(session_id: str):
+async def end_call(session_id: _DualId):
     """Programmatically end an active screening call."""
     from app.core.database import AsyncSessionLocal
 
@@ -569,7 +577,7 @@ async def end_call(session_id: str):
 
 
 @router.get("/twilio-voice/sessions/{session_id}", response_model=None)
-async def get_session_status(session_id: str):
+async def get_session_status(session_id: _DualId):
     """Get status and results of a voice screening session."""
     from app.core.database import AsyncSessionLocal
 
@@ -762,3 +770,10 @@ async def voice_health():
             "VoIP requires TWILIO_TWIML_APP_SID in addition to standard Twilio config."
         ),
     }
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

@@ -16,6 +16,14 @@ from app.auth.dependencies import get_current_user
 from app.auth.models import User
 from app.core.database import get_db
 from app.domains.cv_screening.services.hitl_service import hitl_service
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +56,7 @@ class ApprovalResponse(BaseModel):
 
 @router.post("/{thread_id}/approve", response_model=ApprovalResponse)
 async def approve_hitl_action(
-    thread_id: str,
+    thread_id: _DualId,
     body: ApprovalRequest,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -114,7 +122,7 @@ async def get_all_pending_approvals(
 
 @router.get("/{thread_id}/pending", response_model=None)
 async def get_pending_approval(
-    thread_id: str,
+    thread_id: _DualId,
     current_user: User = Depends(get_current_user),
 ):
     """Retorna a aprovação pendente mais recente para o thread, ou null."""
@@ -125,3 +133,10 @@ async def get_pending_approval(
         pending = None
 
     return {"thread_id": thread_id, "pending": pending}
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

@@ -14,6 +14,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.shared.policy_middleware import get_policy_for_company
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +31,7 @@ router = APIRouter(prefix="/pipeline-policy", tags=["pipeline-policy"])
 @router.get("/{company_id}/validate-transition", response_model=None)
 # TODO(phase2): extract to repository — pipeline policy management
 async def validate_transition(
-    company_id: str,
+    company_id: _DualId,
     candidate_id: str = Query(...),
     target_stage: str = Query(...),
     db: AsyncSession = Depends(get_db),
@@ -103,7 +111,7 @@ async def validate_transition(
 
 @router.get("/{company_id}/templates", response_model=None)
 async def get_pipeline_templates(
-    company_id: str,
+    company_id: _DualId,
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
     """
@@ -169,3 +177,10 @@ async def get_pipeline_templates(
         "system_templates": system_templates,
         "policy_applied": policy.get("id") is not None,
     }
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

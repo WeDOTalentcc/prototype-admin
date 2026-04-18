@@ -15,6 +15,14 @@ from app.domains.communication.services.email_service import EmailService, get_e
 from lia_models.approval import ApprovalRequest
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = get_masked_logger(__name__)
 
@@ -211,7 +219,7 @@ async def list_pending_approvals(
 
 @router.get("/{approval_id}", response_model=ApprovalRequestResponse)
 async def get_approval_request(
-    approval_id: str,
+    approval_id: _DualId,
     repo: ApprovalsRepository = Depends(get_approvals_repo)
 ):
     """Get a specific approval request by ID."""
@@ -232,7 +240,7 @@ async def get_approval_request(
 
 @router.put("/{approval_id}/approve", response_model=ApprovalRequestResponse)
 async def approve_request(
-    approval_id: str,
+    approval_id: _DualId,
     update: ApprovalRequestUpdate,
     company_id: str = Query(..., description="Company ID"),
     approved_by: str = Query(..., description="Email of the approver"),
@@ -309,7 +317,7 @@ async def approve_request(
 
 @router.put("/{approval_id}/reject", response_model=ApprovalRequestResponse)
 async def reject_request(
-    approval_id: str,
+    approval_id: _DualId,
     update: ApprovalRequestUpdate,
     company_id: str = Query(..., description="Company ID"),
     rejected_by: str = Query(..., description="Email of the rejector"),
@@ -386,7 +394,7 @@ async def reject_request(
 
 @router.put("/{approval_id}/cancel", response_model=ApprovalRequestResponse)
 async def cancel_request(
-    approval_id: str,
+    approval_id: _DualId,
     company_id: str = Query(..., description="Company ID"),
     cancelled_by: str = Query(..., description="Email of the canceller"),
     repo: ApprovalsRepository = Depends(get_approvals_repo)
@@ -515,3 +523,10 @@ async def send_approval_result_email(db, approval: ApprovalRequest, approved: bo
     except Exception as e:
         logger.error(f"Failed to send approval result email: {e}")
         raise
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

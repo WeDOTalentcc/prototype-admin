@@ -20,6 +20,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path as _ApiPath
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, _ApiPath(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +101,7 @@ async def list_templates():
 
 @router.get("/{agent_id}/quality-score", response_model=QualityScoreResponse)
 async def get_quality_score(
-    agent_id: str,
+    agent_id: _DualId,
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
@@ -101,7 +109,6 @@ async def get_quality_score(
     from uuid import UUID
     from lia_models.custom_agent import CustomAgent
     from app.services.agent_quality_gate import compute_quality_score
-
     company_id = str(current_user.company_id)
 
     result = await db.execute(
@@ -135,3 +142,10 @@ async def get_quality_score(
         ],
         suggestions=gate_result.suggestions,
     )
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

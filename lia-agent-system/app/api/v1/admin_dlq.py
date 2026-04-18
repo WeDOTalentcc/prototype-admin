@@ -17,6 +17,7 @@ from pydantic import BaseModel
 
 from app.auth.dependencies import require_admin
 from app.shared.resilience.dlq_service import KNOWN_QUEUES, dlq_service
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +104,7 @@ async def list_dlq_entries(
 @router.post("/{queue}/requeue/{entry_id}", response_model=RequeueResponse)
 async def requeue_entry(
     queue: str = Path(..., description="Nome da fila"),
-    entry_id: str = Path(..., description="ID da entry a re-enfileirar"),
+    entry_id: str = Path(..., description="ID da entry a re-enfileirar", pattern=DUAL_ID_PATH_PATTERN),
     _: None = Depends(require_admin),
 ):
     """
@@ -145,3 +146,10 @@ async def clear_dlq_queue(
 
     removed = await dlq_service.clear(queue)
     return ClearResponse(queue=queue, entries_removed=removed)
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

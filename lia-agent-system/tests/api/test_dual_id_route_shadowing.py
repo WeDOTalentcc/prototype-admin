@@ -116,6 +116,261 @@ def _param_pattern(param) -> str | None:
     return None
 
 
+
+# ---------------------------------------------------------------------------
+# Task #489 — Sweep of remaining single-file ``/api/v1`` routers.
+# Each module below previously had at least one ``{*_id}: str`` path
+# parameter without the dual-ID regex constraint, exposing it to the
+# Task #455-class shadowing bug. The blindagem is now applied at the
+# signature level — every dual-ID path parameter is annotated with
+# ``Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]`` and each module
+# calls ``reorder_collection_before_item(router)`` at its bottom. The
+# two parametrize tests above run against every router below.
+# ---------------------------------------------------------------------------
+from app.api.v1.activities import router as _t489_activities_router
+from app.api.v1.admin_audit_decisions import router as _t489_admin_audit_decisions_router
+from app.api.v1.admin_bias_audit import router as _t489_admin_bias_audit_router
+from app.api.v1.admin_dlq import router as _t489_admin_dlq_router
+from app.api.v1.admin_external import router as _t489_admin_external_router
+from app.api.v1.admin_settings import router as _t489_admin_settings_router
+from app.api.v1.admin_templates import router as _t489_admin_templates_router
+from app.api.v1.admin_token_budget import router as _t489_admin_token_budget_router
+from app.api.v1.affirmative import router as _t489_affirmative_router
+from app.api.v1.agent_chat_sse import router as _t489_agent_chat_sse_router
+from app.api.v1.agent_deployments import router as _t489_agent_deployments_router
+from app.api.v1.agent_explainability import router as _t489_agent_explainability_router
+from app.api.v1.agent_memory import router as _t489_agent_memory_router
+from app.api.v1.agent_monitoring import router as _t489_agent_monitoring_router
+from app.api.v1.agent_quality import router as _t489_agent_quality_router
+from app.api.v1.agent_studio_quality import router as _t489_agent_studio_quality_router
+from app.api.v1.agent_templates import router as _t489_agent_templates_router
+from app.api.v1.ai_consumption import router as _t489_ai_consumption_router
+from app.api.v1.alerts import router as _t489_alerts_router
+from app.api.v1.approvals import router as _t489_approvals_router
+from app.api.v1.async_endpoints import router as _t489_async_endpoints_router
+from app.api.v1.ats import router as _t489_ats_router
+from app.api.v1.attachments import router as _t489_attachments_router
+from app.api.v1.audit_logs import router as _t489_audit_logs_router
+from app.api.v1.audit_timeline import router as _t489_audit_timeline_router
+from app.api.v1.automation_rules import router as _t489_automation_rules_router
+from app.api.v1.automations import router as _t489_automations_router
+from app.api.v1.bias_audit import router as _t489_bias_audit_router
+from app.api.v1.big_five import router as _t489_big_five_router
+from app.api.v1.billing import router as _t489_billing_router
+from app.api.v1.cache import router as _t489_cache_router
+from app.api.v1.calibration import router as _t489_calibration_router
+from app.api.v1.candidate_lists import router as _t489_candidate_lists_router
+from app.api.v1.client_users import router as _t489_client_users_router
+from app.api.v1.communication_matrix import router as _t489_communication_matrix_router
+from app.api.v1.communications import router as _t489_communications_router
+from app.api.v1.company_users import router as _t489_company_users_router
+from app.api.v1.compliance_controls import router as _t489_compliance_controls_router
+from app.api.v1.consent_management import router as _t489_consent_management_router
+from app.api.v1.consumption import router as _t489_consumption_router
+from app.api.v1.conversations import router as _t489_conversations_router
+from app.api.v1.cultural_fit import router as _t489_cultural_fit_router
+from app.api.v1.custom_agents import router as _t489_custom_agents_router
+from app.api.v1.data_subject_requests import router as _t489_data_subject_requests_router
+from app.api.v1.decision_explanation import router as _t489_decision_explanation_router
+from app.api.v1.digital_twins import router as _t489_digital_twins_router
+from app.api.v1.email import router as _t489_email_router
+from app.api.v1.email_templates import router as _t489_email_templates_router
+from app.api.v1.email_tracking import router as _t489_email_tracking_router
+from app.api.v1.event_history import router as _t489_event_history_router
+from app.api.v1.experience_highlights import router as _t489_experience_highlights_router
+from app.api.v1.fairness_reports import router as _t489_fairness_reports_router
+from app.api.v1.finetuning_export import router as _t489_finetuning_export_router
+from app.api.v1.gemini_voice import router as _t489_gemini_voice_router
+from app.api.v1.global_policies import router as _t489_global_policies_router
+from app.api.v1.goals import router as _t489_goals_router
+from app.api.v1.granular_consent import router as _t489_granular_consent_router
+from app.api.v1.guardrails import router as _t489_guardrails_router
+from app.api.v1.health_check import router as _t489_health_check_router
+from app.api.v1.hiring_policy import router as _t489_hiring_policy_router
+from app.api.v1.hitl import router as _t489_hitl_router
+from app.api.v1.integrations_hub import router as _t489_integrations_hub_router
+from app.api.v1.interview_analysis import router as _t489_interview_analysis_router
+from app.api.v1.interview_notes import router as _t489_interview_notes_router
+from app.api.v1.interviews import router as _t489_interviews_router
+from app.api.v1.job_analytics import router as _t489_job_analytics_router
+from app.api.v1.job_embeddings import router as _t489_job_embeddings_router
+from app.api.v1.job_learning import router as _t489_job_learning_router
+from app.api.v1.job_qualification import router as _t489_job_qualification_router
+from app.api.v1.job_templates import router as _t489_job_templates_router
+from app.api.v1.learning_outcomes import router as _t489_learning_outcomes_router
+from app.api.v1.learning_patterns import router as _t489_learning_patterns_router
+from app.api.v1.lia_assistant_graph import router as _t489_lia_assistant_graph_router
+from app.api.v1.lia_field_toggles import router as _t489_lia_field_toggles_router
+from app.api.v1.lia_profile_analysis import router as _t489_lia_profile_analysis_router
+from app.api.v1.microsoft_graph import router as _t489_microsoft_graph_router
+from app.api.v1.ml_predictions import router as _t489_ml_predictions_router
+from app.api.v1.modules import router as _t489_modules_router
+from app.api.v1.multi_channel import router as _t489_multi_channel_router
+from app.api.v1.notifications import router as _t489_notifications_router
+from app.api.v1.observability import router as _t489_observability_router
+from app.api.v1.onboarding import router as _t489_onboarding_router
+from app.api.v1.organization_catalog import router as _t489_organization_catalog_router
+from app.api.v1.pipeline_policy import router as _t489_pipeline_policy_router
+from app.api.v1.pipeline_templates import router as _t489_pipeline_templates_router
+from app.api.v1.policies import router as _t489_policies_router
+from app.api.v1.predictive_analytics import router as _t489_predictive_analytics_router
+from app.api.v1.rails_sync import router as _t489_rails_sync_router
+from app.api.v1.recruiter_behavior import router as _t489_recruiter_behavior_router
+from app.api.v1.recruiter_metrics import router as _t489_recruiter_metrics_router
+from app.api.v1.recruitment_campaigns import router as _t489_recruitment_campaigns_router
+from app.api.v1.recruitment_email_templates import router as _t489_recruitment_email_templates_router
+from app.api.v1.recruitment_journey import router as _t489_recruitment_journey_router
+from app.api.v1.reports import router as _t489_reports_router
+from app.api.v1.saas_metrics import router as _t489_saas_metrics_router
+from app.api.v1.scheduling import router as _t489_scheduling_router
+from app.api.v1.screening import router as _t489_screening_router
+from app.api.v1.screening_questions import router as _t489_screening_questions_router
+from app.api.v1.search_feedback import router as _t489_search_feedback_router
+from app.api.v1.shared_searches import router as _t489_shared_searches_router
+from app.api.v1.short_lists import router as _t489_short_lists_router
+from app.api.v1.sourcing import router as _t489_sourcing_router
+from app.api.v1.sourcing_agents import router as _t489_sourcing_agents_router
+from app.api.v1.sourcing_pipeline import router as _t489_sourcing_pipeline_router
+from app.api.v1.suggestion_feedback import router as _t489_suggestion_feedback_router
+from app.api.v1.task_lifecycle import router as _t489_task_lifecycle_router
+from app.api.v1.task_monitoring import router as _t489_task_monitoring_router
+from app.api.v1.task_planner import router as _t489_task_planner_router
+from app.api.v1.tasks import router as _t489_tasks_router
+from app.api.v1.technical_tests import router as _t489_technical_tests_router
+from app.api.v1.toon import router as _t489_toon_router
+from app.api.v1.triagem import router as _t489_triagem_router
+from app.api.v1.twilio_voice import router as _t489_twilio_voice_router
+from app.api.v1.voice_screening import router as _t489_voice_screening_router
+from app.api.v1.webhooks import router as _t489_webhooks_router
+from app.api.v1.workforce_planning import router as _t489_workforce_planning_router
+from app.api.v1.workos import router as _t489_workos_router
+from app.api.v1.wsi_observability import router as _t489_wsi_observability_router
+
+_TASK_489_DUAL_ID_PARAMS = [
+    pytest.param(_t489_activities_router, "activities", id="activities"),
+    pytest.param(_t489_admin_audit_decisions_router, "admin-audit-decisions", id="admin-audit-decisions"),
+    pytest.param(_t489_admin_bias_audit_router, "admin-bias-audit", id="admin-bias-audit"),
+    pytest.param(_t489_admin_dlq_router, "admin-dlq", id="admin-dlq"),
+    pytest.param(_t489_admin_external_router, "admin-external", id="admin-external"),
+    pytest.param(_t489_admin_settings_router, "admin-settings", id="admin-settings"),
+    pytest.param(_t489_admin_templates_router, "admin-templates", id="admin-templates"),
+    pytest.param(_t489_admin_token_budget_router, "admin-token-budget", id="admin-token-budget"),
+    pytest.param(_t489_affirmative_router, "affirmative", id="affirmative"),
+    pytest.param(_t489_agent_chat_sse_router, "agent-chat-sse", id="agent-chat-sse"),
+    pytest.param(_t489_agent_deployments_router, "agent-deployments", id="agent-deployments"),
+    pytest.param(_t489_agent_explainability_router, "agent-explainability", id="agent-explainability"),
+    pytest.param(_t489_agent_memory_router, "agent-memory", id="agent-memory"),
+    pytest.param(_t489_agent_monitoring_router, "agent-monitoring", id="agent-monitoring"),
+    pytest.param(_t489_agent_quality_router, "agent-quality", id="agent-quality"),
+    pytest.param(_t489_agent_studio_quality_router, "agent-studio-quality", id="agent-studio-quality"),
+    pytest.param(_t489_agent_templates_router, "agent-templates", id="agent-templates"),
+    pytest.param(_t489_ai_consumption_router, "ai-consumption", id="ai-consumption"),
+    pytest.param(_t489_alerts_router, "alerts", id="alerts"),
+    pytest.param(_t489_approvals_router, "approvals", id="approvals"),
+    pytest.param(_t489_async_endpoints_router, "async-endpoints", id="async-endpoints"),
+    pytest.param(_t489_ats_router, "ats", id="ats"),
+    pytest.param(_t489_attachments_router, "attachments", id="attachments"),
+    pytest.param(_t489_audit_logs_router, "audit-logs", id="audit-logs"),
+    pytest.param(_t489_audit_timeline_router, "audit-timeline", id="audit-timeline"),
+    pytest.param(_t489_automation_rules_router, "automation-rules", id="automation-rules"),
+    pytest.param(_t489_automations_router, "automations", id="automations"),
+    pytest.param(_t489_bias_audit_router, "bias-audit", id="bias-audit"),
+    pytest.param(_t489_big_five_router, "big-five", id="big-five"),
+    pytest.param(_t489_billing_router, "billing", id="billing"),
+    pytest.param(_t489_cache_router, "cache", id="cache"),
+    pytest.param(_t489_calibration_router, "calibration", id="calibration"),
+    pytest.param(_t489_candidate_lists_router, "candidate-lists", id="candidate-lists"),
+    pytest.param(_t489_client_users_router, "client-users", id="client-users"),
+    pytest.param(_t489_communication_matrix_router, "communication-matrix", id="communication-matrix"),
+    pytest.param(_t489_communications_router, "communications", id="communications"),
+    pytest.param(_t489_company_users_router, "company-users", id="company-users"),
+    pytest.param(_t489_compliance_controls_router, "compliance-controls", id="compliance-controls"),
+    pytest.param(_t489_consent_management_router, "consent-management", id="consent-management"),
+    pytest.param(_t489_consumption_router, "consumption", id="consumption"),
+    pytest.param(_t489_conversations_router, "conversations", id="conversations"),
+    pytest.param(_t489_cultural_fit_router, "cultural-fit", id="cultural-fit"),
+    pytest.param(_t489_custom_agents_router, "custom-agents", id="custom-agents"),
+    pytest.param(_t489_data_subject_requests_router, "data-subject-requests", id="data-subject-requests"),
+    pytest.param(_t489_decision_explanation_router, "decision-explanation", id="decision-explanation"),
+    pytest.param(_t489_digital_twins_router, "digital-twins", id="digital-twins"),
+    pytest.param(_t489_email_router, "email", id="email"),
+    pytest.param(_t489_email_templates_router, "email-templates", id="email-templates"),
+    pytest.param(_t489_email_tracking_router, "email-tracking", id="email-tracking"),
+    pytest.param(_t489_event_history_router, "event-history", id="event-history"),
+    pytest.param(_t489_experience_highlights_router, "experience-highlights", id="experience-highlights"),
+    pytest.param(_t489_fairness_reports_router, "fairness-reports", id="fairness-reports"),
+    pytest.param(_t489_finetuning_export_router, "finetuning-export", id="finetuning-export"),
+    pytest.param(_t489_gemini_voice_router, "gemini-voice", id="gemini-voice"),
+    pytest.param(_t489_global_policies_router, "global-policies", id="global-policies"),
+    pytest.param(_t489_goals_router, "goals", id="goals"),
+    pytest.param(_t489_granular_consent_router, "granular-consent", id="granular-consent"),
+    pytest.param(_t489_guardrails_router, "guardrails", id="guardrails"),
+    pytest.param(_t489_health_check_router, "health-check", id="health-check"),
+    pytest.param(_t489_hiring_policy_router, "hiring-policy", id="hiring-policy"),
+    pytest.param(_t489_hitl_router, "hitl", id="hitl"),
+    pytest.param(_t489_integrations_hub_router, "integrations-hub", id="integrations-hub"),
+    pytest.param(_t489_interview_analysis_router, "interview-analysis", id="interview-analysis"),
+    pytest.param(_t489_interview_notes_router, "interview-notes", id="interview-notes"),
+    pytest.param(_t489_interviews_router, "interviews", id="interviews"),
+    pytest.param(_t489_job_analytics_router, "job-analytics", id="job-analytics"),
+    pytest.param(_t489_job_embeddings_router, "job-embeddings", id="job-embeddings"),
+    pytest.param(_t489_job_learning_router, "job-learning", id="job-learning"),
+    pytest.param(_t489_job_qualification_router, "job-qualification", id="job-qualification"),
+    pytest.param(_t489_job_templates_router, "job-templates", id="job-templates"),
+    pytest.param(_t489_learning_outcomes_router, "learning-outcomes", id="learning-outcomes"),
+    pytest.param(_t489_learning_patterns_router, "learning-patterns", id="learning-patterns"),
+    pytest.param(_t489_lia_assistant_graph_router, "lia-assistant-graph", id="lia-assistant-graph"),
+    pytest.param(_t489_lia_field_toggles_router, "lia-field-toggles", id="lia-field-toggles"),
+    pytest.param(_t489_lia_profile_analysis_router, "lia-profile-analysis", id="lia-profile-analysis"),
+    pytest.param(_t489_microsoft_graph_router, "microsoft-graph", id="microsoft-graph"),
+    pytest.param(_t489_ml_predictions_router, "ml-predictions", id="ml-predictions"),
+    pytest.param(_t489_modules_router, "modules", id="modules"),
+    pytest.param(_t489_multi_channel_router, "multi-channel", id="multi-channel"),
+    pytest.param(_t489_notifications_router, "notifications", id="notifications"),
+    pytest.param(_t489_observability_router, "observability", id="observability"),
+    pytest.param(_t489_onboarding_router, "onboarding", id="onboarding"),
+    pytest.param(_t489_organization_catalog_router, "organization-catalog", id="organization-catalog"),
+    pytest.param(_t489_pipeline_policy_router, "pipeline-policy", id="pipeline-policy"),
+    pytest.param(_t489_pipeline_templates_router, "pipeline-templates", id="pipeline-templates"),
+    pytest.param(_t489_policies_router, "policies", id="policies"),
+    pytest.param(_t489_predictive_analytics_router, "predictive-analytics", id="predictive-analytics"),
+    pytest.param(_t489_rails_sync_router, "rails-sync", id="rails-sync"),
+    pytest.param(_t489_recruiter_behavior_router, "recruiter-behavior", id="recruiter-behavior"),
+    pytest.param(_t489_recruiter_metrics_router, "recruiter-metrics", id="recruiter-metrics"),
+    pytest.param(_t489_recruitment_campaigns_router, "recruitment-campaigns", id="recruitment-campaigns"),
+    pytest.param(_t489_recruitment_email_templates_router, "recruitment-email-templates", id="recruitment-email-templates"),
+    pytest.param(_t489_recruitment_journey_router, "recruitment-journey", id="recruitment-journey"),
+    pytest.param(_t489_reports_router, "reports", id="reports"),
+    pytest.param(_t489_saas_metrics_router, "saas-metrics", id="saas-metrics"),
+    pytest.param(_t489_scheduling_router, "scheduling", id="scheduling"),
+    pytest.param(_t489_screening_router, "screening", id="screening"),
+    pytest.param(_t489_screening_questions_router, "screening-questions", id="screening-questions"),
+    pytest.param(_t489_search_feedback_router, "search-feedback", id="search-feedback"),
+    pytest.param(_t489_shared_searches_router, "shared-searches", id="shared-searches"),
+    pytest.param(_t489_short_lists_router, "short-lists", id="short-lists"),
+    pytest.param(_t489_sourcing_router, "sourcing", id="sourcing"),
+    pytest.param(_t489_sourcing_agents_router, "sourcing-agents", id="sourcing-agents"),
+    pytest.param(_t489_sourcing_pipeline_router, "sourcing-pipeline", id="sourcing-pipeline"),
+    pytest.param(_t489_suggestion_feedback_router, "suggestion-feedback", id="suggestion-feedback"),
+    pytest.param(_t489_task_lifecycle_router, "task-lifecycle", id="task-lifecycle"),
+    pytest.param(_t489_task_monitoring_router, "task-monitoring", id="task-monitoring"),
+    pytest.param(_t489_task_planner_router, "task-planner", id="task-planner"),
+    pytest.param(_t489_tasks_router, "tasks", id="tasks"),
+    pytest.param(_t489_technical_tests_router, "technical-tests", id="technical-tests"),
+    pytest.param(_t489_toon_router, "toon", id="toon"),
+    pytest.param(_t489_triagem_router, "triagem", id="triagem"),
+    pytest.param(_t489_twilio_voice_router, "twilio-voice", id="twilio-voice"),
+    pytest.param(_t489_voice_screening_router, "voice-screening", id="voice-screening"),
+    pytest.param(_t489_webhooks_router, "webhooks", id="webhooks"),
+    pytest.param(_t489_workforce_planning_router, "workforce-planning", id="workforce-planning"),
+    pytest.param(_t489_workos_router, "workos", id="workos"),
+    pytest.param(_t489_wsi_observability_router, "wsi-observability", id="wsi-observability"),
+]
+
+DUAL_ID_ROUTERS = DUAL_ID_ROUTERS + _TASK_489_DUAL_ID_PARAMS
+COLLECTION_BEFORE_ITEM_ROUTERS = COLLECTION_BEFORE_ITEM_ROUTERS + _TASK_489_DUAL_ID_PARAMS
+
+
 @pytest.mark.parametrize(("router", "scope_label"), DUAL_ID_ROUTERS)
 def test_dual_id_path_parameters_are_constrained(
     router, scope_label: str
@@ -146,6 +401,8 @@ def test_dual_id_path_parameters_are_constrained(
                 continue
             annotation = getattr(param, "type_", None)
             if annotation is UUID:
+                continue
+            if annotation is int:
                 continue
             pattern = _param_pattern(param)
             if not pattern:
@@ -326,6 +583,46 @@ def test_every_dual_id_route_constrains_id_path_params() -> None:
         "`app.api.v1._path_patterns`. See the ID Boundary Policy: "
         "`docs/architecture/id-boundary-policy.md` §3 and the checklist "
         "in §8."
+    )
+
+
+def test_dual_id_constraint_rejects_garbage_at_runtime() -> None:
+    """End-to-end behavioural check that the signature-level
+    ``Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]`` constraint
+    actually causes FastAPI to return a 422 for a non-UUID, non-digit
+    path segment — proving the structural test corresponds to real
+    routing behaviour and not a no-op metadata attribute.
+
+    Uses ``activities`` as a representative sweep router because it is
+    one of the simpler modules touched by Task #489 and has a
+    ``GET /{activity_id}`` item route.
+    """
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+
+    from app.api.v1.activities import router as activities_router
+
+    app = FastAPI()
+    app.include_router(activities_router, prefix="/api/v1")
+    client = TestClient(app, raise_server_exceptions=False)
+
+    # Garbage segment must be rejected by the path-param regex BEFORE
+    # any handler / dependency runs.
+    resp = client.get("/api/v1/activities/not-a-valid-id")
+    assert resp.status_code == 422, (
+        f"Expected 422 for non-UUID/non-digit activity_id, got "
+        f"{resp.status_code}: {resp.text[:200]}"
+    )
+
+    # And a real-shaped UUID must at least pass the regex (it can
+    # subsequently 4xx/5xx for downstream reasons — we only care that
+    # the constraint did not reject it).
+    resp_uuid = client.get(
+        "/api/v1/activities/00000000-0000-0000-0000-000000000000"
+    )
+    assert resp_uuid.status_code != 422, (
+        f"UUID activity_id should not be rejected by path-param "
+        f"regex; got 422: {resp_uuid.text[:200]}"
     )
 
 

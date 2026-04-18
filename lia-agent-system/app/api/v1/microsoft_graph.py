@@ -13,6 +13,14 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, EmailStr
 
 from app.shared.services.microsoft_graph_service import AttendeeType, MeetingAttendee, microsoft_graph_service
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -194,7 +202,7 @@ async def create_standalone_teams_meeting(
 
 @router.get("/calendar/events/{event_id}", response_model=None)
 async def get_calendar_event(
-    event_id: str,
+    event_id: _DualId,
     user_email: EmailStr = Query(..., description="Email of the calendar owner")
 ):
     """
@@ -227,7 +235,7 @@ async def get_calendar_event(
 
 @router.delete("/calendar/events/{event_id}", response_model=None)
 async def cancel_calendar_event(
-    event_id: str,
+    event_id: _DualId,
     user_email: EmailStr = Query(..., description="Email of the calendar owner"),
     cancellation_message: str | None = None
 ):
@@ -277,7 +285,7 @@ async def list_bookings_businesses():
 
 
 @router.get("/bookings/businesses/{business_id}/services", response_model=None)
-async def list_bookings_services(business_id: str):
+async def list_bookings_services(business_id: _DualId):
     """
     List services for a Bookings business.
     """
@@ -302,7 +310,7 @@ async def list_bookings_services(business_id: str):
 
 
 @router.get("/bookings/businesses/{business_id}/booking-page-url", response_model=None)
-async def get_booking_page_url(business_id: str):
+async def get_booking_page_url(business_id: _DualId):
     """
     Get the public booking page URL for a business.
     """
@@ -351,3 +359,10 @@ async def create_bookings_appointment(request: CreateBookingsAppointmentRequest)
     except Exception as e:
         logger.error(f"Failed to create Bookings appointment: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

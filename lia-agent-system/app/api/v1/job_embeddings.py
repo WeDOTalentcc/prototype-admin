@@ -13,6 +13,14 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.domains.job_management.services.job_embedding_service import job_embedding_service
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter(prefix="/job-embeddings", tags=["Job Embeddings"])
 logger = logging.getLogger(__name__)
@@ -223,7 +231,7 @@ async def batch_process_embeddings(request: BatchProcessRequest):
 
 
 @router.get("/stats/{company_id}", response_model=None)
-async def get_embedding_stats(company_id: str):
+async def get_embedding_stats(company_id: _DualId):
     """
     Get embedding statistics for a company.
     """
@@ -305,7 +313,7 @@ async def update_job_outcome(request: OutcomeUpdateRequest):
 
 
 @router.get("/fast-track/insights/{company_id}", response_model=None)
-async def get_fast_track_insights(company_id: str):
+async def get_fast_track_insights(company_id: _DualId):
     """
     Get Fast Track usage insights for a company.
     
@@ -323,3 +331,10 @@ async def get_fast_track_insights(company_id: str):
     except Exception as e:
         logger.error(f"Error getting Fast Track insights: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

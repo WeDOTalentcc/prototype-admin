@@ -18,6 +18,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
 from app.core.database import get_db
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +84,7 @@ class TimelineResponse(BaseModel):
 @router.get("/executions/{execution_id}/timeline", response_model=TimelineResponse)
 # TODO(phase2): extract to repository — audit timeline queries
 async def get_execution_timeline(
-    execution_id: str,
+    execution_id: _DualId,
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
@@ -163,7 +171,6 @@ async def list_executions(
     Filtros: domain, agent_type, success. Paginação: limit/offset.
     """
     from sqlalchemy import text
-
     company_id = current_user.get("company_id") or current_user.get("organization_id")
     if not company_id:
         raise HTTPException(status_code=401, detail="company_id não encontrado no token")
@@ -216,3 +223,10 @@ async def list_executions(
         )
         for row in rows
     ]
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

@@ -44,6 +44,14 @@ from libs.schemas.ats import (
     JobSaturationData,
     JobSourcingData,
 )
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +126,7 @@ def _now() -> datetime:
     response_model_exclude_none=True,
 )
 async def get_candidate_enrichment(
-    candidate_id: str,
+    candidate_id: _DualId,
     token: str = Depends(verify_rails_token),
     repo: RailsSyncRepository = Depends(get_rails_sync_repo),
 ) -> CandidateEnrichmentResponse:
@@ -159,7 +167,7 @@ async def get_candidate_enrichment(
     response_model_exclude_none=True,
 )
 async def get_job_intelligence(
-    job_id: str,
+    job_id: _DualId,
     token: str = Depends(verify_rails_token),
     repo: RailsSyncRepository = Depends(get_rails_sync_repo),
 ) -> JobIntelligenceResponse:
@@ -283,3 +291,10 @@ async def bulk_sync_candidates(
         missing_ids=missing_ids,
         synced_at=_now(),
     )
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

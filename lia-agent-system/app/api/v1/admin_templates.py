@@ -17,6 +17,14 @@ from app.domains.admin.repositories.admin_template_repository import (
 )
 from lia_models.email_template import EmailTemplate
 from app.schemas.email_template import EmailTemplateResponse
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +152,7 @@ async def create_system_template(
 
 
 @router.get("/{template_id}", response_model=SystemTemplateResponse)
-async def get_system_template(template_id: str, db: AsyncSession = Depends(get_db)):
+async def get_system_template(template_id: _DualId, db: AsyncSession = Depends(get_db)):
     """Get a specific system template by ID (admin only)."""
     try:
         repo = AdminTemplateRepository(db)
@@ -163,7 +171,7 @@ async def get_system_template(template_id: str, db: AsyncSession = Depends(get_d
 
 @router.put("/{template_id}", response_model=SystemTemplateResponse)
 async def update_system_template(
-    template_id: str,
+    template_id: _DualId,
     template_data: SystemTemplateUpdate,
     db: AsyncSession = Depends(get_db),
 ):
@@ -198,7 +206,7 @@ async def update_system_template(
 
 @router.delete("/{template_id}", response_model=None)
 async def delete_system_template(
-    template_id: str,
+    template_id: _DualId,
     hard_delete: bool = Query(False),
     db: AsyncSession = Depends(get_db),
 ):
@@ -223,7 +231,7 @@ async def delete_system_template(
 
 @router.post("/{template_id}/publish", response_model=PublishResult)
 async def publish_template_to_companies(
-    template_id: str,
+    template_id: _DualId,
     company_ids: list[str] | None = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
@@ -261,3 +269,10 @@ async def publish_template_to_companies(
         await db.rollback()
         logger.error(f"Error publishing template: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

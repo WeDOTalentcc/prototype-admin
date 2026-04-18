@@ -9,6 +9,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.modules.services.module_service import get_module_service, ModuleService
 from lia_models.billing import AVAILABLE_MODULES, MODULE_STATUS_OPTIONS, ModuleStatus, ModuleTier
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +83,7 @@ async def get_module_catalog():
 @router.get("/{company_id}")
 @router.get("/company/{company_id}")
 async def get_company_modules(
-    company_id: str,
+    company_id: _DualId,
     request: Request,
     include_catalog: bool = False,
     db: AsyncSession = Depends(get_db),
@@ -88,7 +96,7 @@ async def get_company_modules(
 
 @router.get("/company/{company_id}/check/{module_name}")
 async def check_module_active(
-    company_id: str,
+    company_id: _DualId,
     module_name: str,
     request: Request,
     db: AsyncSession = Depends(get_db),
@@ -109,7 +117,7 @@ async def check_module_active(
 
 @router.post("/company/{company_id}/activate")
 async def activate_module(
-    company_id: str,
+    company_id: _DualId,
     body: ModuleActivateRequest,
     request: Request,
     db: AsyncSession = Depends(get_db),
@@ -141,7 +149,7 @@ async def activate_module(
 
 @router.post("/company/{company_id}/deactivate/{module_name}")
 async def deactivate_module(
-    company_id: str,
+    company_id: _DualId,
     module_name: str,
     request: Request,
     db: AsyncSession = Depends(get_db),
@@ -156,7 +164,7 @@ async def deactivate_module(
 
 @router.patch("/company/{company_id}/{module_name}")
 async def update_module(
-    company_id: str,
+    company_id: _DualId,
     module_name: str,
     body: ModuleUpdateRequest,
     request: Request,
@@ -192,7 +200,7 @@ async def update_module(
 
 @router.post("/company/{company_id}/seed")
 async def seed_company_modules(
-    company_id: str,
+    company_id: _DualId,
     request: Request,
     db: AsyncSession = Depends(get_db),
     svc: ModuleService = Depends(get_module_service),
@@ -208,7 +216,7 @@ async def seed_company_modules(
 
 @router.patch("/{module_id}")
 async def update_module_by_id(
-    module_id: str,
+    module_id: _DualId,
     body: ModuleUpdateRequest,
     request: Request,
     db: AsyncSession = Depends(get_db),
@@ -245,7 +253,7 @@ async def update_module_by_id(
 
 @router.get("/company/{company_id}/billing/{module_name}")
 async def get_module_billing_context(
-    company_id: str,
+    company_id: _DualId,
     module_name: str,
     request: Request,
     db: AsyncSession = Depends(get_db),
@@ -256,3 +264,10 @@ async def get_module_billing_context(
     if not ctx:
         raise HTTPException(status_code=404, detail="Module not found")
     return ctx
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

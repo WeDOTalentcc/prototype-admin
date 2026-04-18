@@ -16,6 +16,14 @@ from app.core.database import get_db
 from app.domains.pipeline.repositories.pipeline_template_repository import (
     PipelineTemplateRepository,
 )
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +150,7 @@ async def create_pipeline_template(
 
 @router.get("/{template_id}", response_model=PipelineTemplateResponse)
 async def get_pipeline_template(
-    template_id: str,
+    template_id: _DualId,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
@@ -161,7 +169,7 @@ async def get_pipeline_template(
 
 @router.put("/{template_id}", response_model=PipelineTemplateResponse)
 async def update_pipeline_template(
-    template_id: str,
+    template_id: _DualId,
     data: PipelineTemplateUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
@@ -200,7 +208,7 @@ async def update_pipeline_template(
 
 @router.delete("/{template_id}", response_model=None)
 async def delete_pipeline_template(
-    template_id: str,
+    template_id: _DualId,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
@@ -222,7 +230,7 @@ async def delete_pipeline_template(
 
 @router.post("/{template_id}/clone", response_model=PipelineTemplateResponse)
 async def clone_pipeline_template(
-    template_id: str,
+    template_id: _DualId,
     new_name: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
@@ -274,7 +282,7 @@ async def seed_default_templates(
 
 @router.post("/{template_id}/increment-usage", response_model=None)
 async def increment_template_usage(
-    template_id: str,
+    template_id: _DualId,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
@@ -291,3 +299,10 @@ async def increment_template_usage(
 
     template = await repo.increment_usage(template)
     return {"success": True, "usage_count": template.usage_count}
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

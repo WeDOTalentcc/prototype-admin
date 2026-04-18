@@ -33,6 +33,14 @@ from app.schemas.billing import (
     SubscriptionUpdate,
 )
 from app.domains.billing.services.billing_service import BillingService
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -395,7 +403,7 @@ async def list_subscriptions(
 
 @router.get("/subscriptions/{client_id}", summary="Get client subscription", response_model=SubscriptionItemWrapper)
 async def get_client_subscription(
-    client_id: str,
+    client_id: _DualId,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo)
 ):
@@ -506,7 +514,7 @@ async def create_subscription(
 
 @router.put("/subscriptions/{subscription_id}", summary="Update subscription", response_model=SubscriptionItemWrapper)
 async def update_subscription(
-    subscription_id: str,
+    subscription_id: _DualId,
     data: SubscriptionUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo)
@@ -579,7 +587,7 @@ async def update_subscription(
 
 @router.delete("/subscriptions/{subscription_id}", summary="Cancel subscription", response_model=SubscriptionItemWrapper)
 async def cancel_subscription(
-    subscription_id: str,
+    subscription_id: _DualId,
     data: SubscriptionCancel | None = None,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo)
@@ -702,7 +710,7 @@ async def list_invoices(
 
 @router.get("/invoices/client/{client_id}", summary="Get client invoices", response_model=InvoiceListWrapper)
 async def get_client_invoices(
-    client_id: str,
+    client_id: _DualId,
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -756,7 +764,7 @@ async def get_client_invoices(
 
 @router.get("/invoices/{invoice_id}", summary="Get invoice details", response_model=InvoiceItemWrapper)
 async def get_invoice(
-    invoice_id: str,
+    invoice_id: _DualId,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo)
 ):
@@ -808,7 +816,7 @@ async def get_invoice(
 
 @router.post("/invoices/{invoice_id}/refund", summary="Refund invoice", response_model=InvoiceItemWrapper)
 async def refund_invoice(
-    invoice_id: str,
+    invoice_id: _DualId,
     data: RefundRequest | None = None,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo)
@@ -880,7 +888,7 @@ async def refund_invoice(
 
 @router.get("/payment-methods/{client_id}", summary="Get client payment methods", response_model=PaymentMethodListWrapper)
 async def get_client_payment_methods(
-    client_id: str,
+    client_id: _DualId,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo)
 ):
@@ -1018,7 +1026,7 @@ async def add_payment_method(
 
 @router.delete("/payment-methods/{payment_method_id}", summary="Remove payment method", response_model=PaymentMethodItemWrapper)
 async def remove_payment_method(
-    payment_method_id: str,
+    payment_method_id: _DualId,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo)
 ):
@@ -1251,7 +1259,7 @@ def get_billing_settings(client) -> dict[str, Any]:
 
 @router.get("/clients/{client_id}", summary="Get client billing data", response_model=ClientBillingWrapper)
 async def get_client_billing(
-    client_id: str,
+    client_id: _DualId,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo)
 ):
@@ -1426,7 +1434,7 @@ async def list_my_invoices(
 
 @router.get("/my-invoices/{invoice_id}", summary="Get invoice details", response_model=InvoiceItemWrapper)
 async def get_my_invoice(
-    invoice_id: str,
+    invoice_id: _DualId,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo)
 ):
@@ -1466,7 +1474,7 @@ async def get_my_invoice(
 
 @router.post("/my-invoices/{invoice_id}/pay", summary="Mark invoice as paid (simulation)", response_model=InvoiceItemWrapper)
 async def pay_my_invoice(
-    invoice_id: str,
+    invoice_id: _DualId,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo)
 ):
@@ -1617,7 +1625,7 @@ async def add_my_payment_method(
 
 @router.delete("/my-payment-methods/{method_id}", summary="Remove payment method", response_model=PaymentMethodItemWrapper)
 async def remove_my_payment_method(
-    method_id: str,
+    method_id: _DualId,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo)
 ):
@@ -1711,3 +1719,10 @@ async def get_usage(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get usage: {str(e)}"
         )
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

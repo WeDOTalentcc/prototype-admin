@@ -15,6 +15,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.shared.services.calibration_service import CalibrationService
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter(prefix="/calibration", tags=["Calibration"])
 
@@ -149,7 +157,6 @@ async def start_calibration_session(
     import uuid
 
     from lia_models.candidate import Candidate
-    
     session_id = str(uuid.uuid4())
     
     try:
@@ -367,7 +374,7 @@ async def generate_suggestions(
 
 @router.post("/suggestions/{suggestion_id}/approve", response_model=SuggestionActionResponse)
 async def approve_suggestion(
-    suggestion_id: str,
+    suggestion_id: _DualId,
     user_id: str = "system",
     db: AsyncSession = Depends(get_db)
 ):
@@ -388,7 +395,7 @@ async def approve_suggestion(
 
 @router.post("/suggestions/{suggestion_id}/reject", response_model=SuggestionActionResponse)
 async def reject_suggestion(
-    suggestion_id: str,
+    suggestion_id: _DualId,
     request: SuggestionActionRequest,
     user_id: str = "system",
     db: AsyncSession = Depends(get_db)
@@ -475,3 +482,10 @@ async def get_calibration_dashboard(
             "generated_at": datetime.utcnow().isoformat()
         }
     }
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

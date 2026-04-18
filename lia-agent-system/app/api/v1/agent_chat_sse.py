@@ -50,6 +50,14 @@ from app.shared.observability.token_budget_service import (
     get_plan_for_company,
     increment_usage,
 )
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -169,7 +177,7 @@ async def sse_chat_action(
 
 @router.post("/chat/{session_id}/stream", response_model=None)
 async def sse_chat_stream(
-    session_id: str,
+    session_id: _DualId,
     req: SSEChatRequest,
     request: Request,
     authorization: str = Header(default=""),
@@ -447,3 +455,10 @@ async def sse_chat_stream(
             "X-Transport": "sse",
         },
     )
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

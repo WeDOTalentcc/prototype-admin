@@ -34,6 +34,14 @@ from app.services.notification_service import (
     ProactiveNotificationType,
     notification_service,
 )
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -256,7 +264,7 @@ async def send_analysis_notification(
 
 @router.post("/analyze/{interview_id}", response_model=None)
 async def analyze_interview(
-    interview_id: str,
+    interview_id: _DualId,
     force_refresh: bool = Query(False, description="Force fetch new transcript from Teams"),
     company_id: str = Query(..., description="Company ID for tenant scoping"),
     db: AsyncSession = Depends(get_db)
@@ -459,7 +467,7 @@ async def teams_meeting_webhook(
 
 @router.get("/status/{interview_id}", response_model=None)
 async def get_analysis_status(
-    interview_id: str,
+    interview_id: _DualId,
     db: AsyncSession = Depends(get_db)
 ) -> AnalysisStatusResponse:
     """Get status of interview analysis."""
@@ -501,7 +509,7 @@ async def get_analysis_status(
 
 @router.get("/results/{interview_id}", response_model=None)
 async def get_analysis_results(
-    interview_id: str,
+    interview_id: _DualId,
     db: AsyncSession = Depends(get_db)
 ):
     """Get full analysis results for an interview."""
@@ -639,3 +647,10 @@ async def process_meeting_transcript(resource_data: dict, resource_path: str = "
 
     except Exception as e:
         logger.error(f"❌ Failed to process meeting transcript: {e}")
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

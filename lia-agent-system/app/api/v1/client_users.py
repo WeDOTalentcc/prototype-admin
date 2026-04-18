@@ -31,6 +31,14 @@ from app.schemas.client_user import (
     ClientUserRoleUpdate,
     ClientUserUpdate,
 )
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://app.wedotalent.com")
 
@@ -226,7 +234,7 @@ async def list_options():
 
 @router.get("", summary="List users for a client", response_model=None)
 async def list_client_users(
-    client_id: str,
+    client_id: _DualId,
     status: str | None = Query(None, description="Filter by status"),
     role: str | None = Query(None, description="Filter by role"),
     search: str | None = Query(None, description="Search by name or email"),
@@ -281,8 +289,8 @@ async def list_client_users(
 
 @router.get("/{user_id}", summary="Get user by ID", response_model=None)
 async def get_client_user(
-    client_id: str,
-    user_id: str,
+    client_id: _DualId,
+    user_id: _DualId,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
 ):
@@ -321,7 +329,7 @@ async def get_client_user(
 
 @router.post("", status_code=status.HTTP_201_CREATED, summary="Create/invite user", response_model=None)
 async def create_client_user(
-    client_id: str,
+    client_id: _DualId,
     data: ClientUserCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
@@ -424,8 +432,8 @@ async def create_client_user(
 
 @router.put("/{user_id}", summary="Update user", response_model=None)
 async def update_client_user(
-    client_id: str,
-    user_id: str,
+    client_id: _DualId,
+    user_id: _DualId,
     data: ClientUserUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
@@ -496,8 +504,8 @@ async def update_client_user(
 
 @router.delete("/{user_id}", summary="Delete user (soft delete)", response_model=None)
 async def delete_client_user(
-    client_id: str,
-    user_id: str,
+    client_id: _DualId,
+    user_id: _DualId,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
 ):
@@ -554,8 +562,8 @@ async def delete_client_user(
 
 @router.post("/{user_id}/resend-invite", summary="Resend invitation", response_model=None)
 async def resend_invite(
-    client_id: str,
-    user_id: str,
+    client_id: _DualId,
+    user_id: _DualId,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
     email_svc: EmailService = Depends(get_email_service),
@@ -642,8 +650,8 @@ async def resend_invite(
 
 @router.put("/{user_id}/role", summary="Update user role", response_model=None)
 async def update_user_role(
-    client_id: str,
-    user_id: str,
+    client_id: _DualId,
+    user_id: _DualId,
     data: ClientUserRoleUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
@@ -708,3 +716,10 @@ async def update_user_role(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update user role: {str(e)}",
         )
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

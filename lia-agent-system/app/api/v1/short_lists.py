@@ -22,6 +22,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.candidates.repositories.short_list_repository import ShortListRepository
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -178,7 +186,7 @@ async def add_candidate(
 @router.delete("/{list_id}/candidates/{candidate_id}", status_code=204, response_model=None)
 async def remove_candidate(
     list_id: UUID,
-    candidate_id: str,
+    candidate_id: _DualId,
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
 ):
@@ -193,3 +201,10 @@ async def remove_candidate(
         raise HTTPException(status_code=404, detail="Candidato não encontrado na short list")
 
     await repo.remove_member(member)
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

@@ -66,5 +66,7 @@ def reorder_collection_before_item(router) -> None:
             collection.append(route)
     router.routes = collection + item
 
-
-__all__ = ["DUAL_ID_PATH_PATTERN", "reorder_collection_before_item"]
+__all__ = [
+    "DUAL_ID_PATH_PATTERN",
+    "reorder_collection_before_item",
+]

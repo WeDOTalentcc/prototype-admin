@@ -24,6 +24,14 @@ from app.domains.sourcing.services.query_builders import (
 )
 from lia_models.candidate import Candidate
 from lia_models.job_vacancy import JobVacancy
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -355,7 +363,7 @@ async def match_candidates(
 
 @router.get("/suggestions/{job_id}", response_model=SuggestionResponse)
 async def get_suggested_candidates(
-    job_id: str,
+    job_id: _DualId,
     limit: int = Query(default=20, ge=1, le=100),
     min_score: float = Query(default=55.0, ge=0, le=100),
     db: AsyncSession = Depends(get_db)
@@ -561,3 +569,10 @@ async def sourcing_health_check():
         ],
         "timestamp": datetime.utcnow().isoformat()
     }
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

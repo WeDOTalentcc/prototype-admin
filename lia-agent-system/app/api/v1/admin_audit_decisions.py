@@ -21,6 +21,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.auth.dependencies import require_admin
 from app.shared.compliance.audit_service import audit_service
 from app.shared.tenant_guard import get_verified_company_id
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +43,7 @@ router = APIRouter(
     summary="List AI decisions triggered by a specific user",
 )
 async def list_decisions_by_user(
-    actor_user_id: str,
+    actor_user_id: _DualId,
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
     date_from: datetime | None = Query(None, alias="date_from"),
@@ -61,3 +69,10 @@ async def list_decisions_by_user(
         limit=limit,
         offset=offset,
     )
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

@@ -18,6 +18,14 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
 from app.domains.cv_screening.repositories.experience_highlight_repository import ExperienceHighlightRepository
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +118,6 @@ async def generate_highlight_with_ai(data: GenerateHighlightRequest) -> str:
     """Generate experience highlight using LLMProviderFactory (Task #93 migration)."""
     try:
         from app.shared.providers.llm_factory import get_provider_for_tenant
-
         container = get_provider_for_tenant()
         highlight_text = await container.generate_with_fallback(generate_highlight_prompt(data))
         highlight_text = highlight_text.strip()
@@ -154,7 +161,7 @@ def generate_fallback_highlight(data: GenerateHighlightRequest) -> str:
 
 @router.get("/{candidate_id}", response_model=None)
 async def get_experience_highlight(
-    candidate_id: str,
+    candidate_id: _DualId,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> ExperienceHighlightResponse:
@@ -237,7 +244,7 @@ async def generate_experience_highlight(
 
 @router.delete("/{candidate_id}", response_model=None)
 async def delete_experience_highlight(
-    candidate_id: str,
+    candidate_id: _DualId,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
@@ -288,3 +295,10 @@ async def batch_generate_highlights(
             ))
 
     return results
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

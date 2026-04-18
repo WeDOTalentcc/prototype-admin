@@ -11,6 +11,14 @@ from pydantic import BaseModel, Field
 
 from app.core.celery_app import celery_app
 from app.schemas.async_job import AsyncJobResponse, AsyncJobStatusResponse
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter(prefix="/async", tags=["async-jobs"])
 logger = logging.getLogger(__name__)
@@ -165,7 +173,7 @@ async def send_bulk_email(req: BulkEmailRequest):
 # ---------------------------------------------------------------------------
 
 @router.get("/jobs/{job_id}/status", response_model=AsyncJobStatusResponse, summary="Status de tarefa async")
-async def get_job_status(job_id: str):
+async def get_job_status(job_id: _DualId):
     """
     Polling fallback — retorna status atual de uma tarefa Celery.
     Preferir WebSocket /ws/jobs/{job_id} para atualizações em tempo real.
@@ -194,3 +202,10 @@ async def get_job_status(job_id: str):
     except Exception as exc:
         logger.error("Falha ao consultar status do job %s: %s", job_id, exc)
         raise HTTPException(status_code=404, detail="Tarefa não encontrada")
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

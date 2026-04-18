@@ -14,6 +14,14 @@ from app.domains.notifications.repositories.alert_repository import AlertReposit
 from app.domains.job_management.services.job_alert_service import job_alert_service
 from lia_models.alert import AlertConfig, AlertPreference, AlertSeverity
 from app.shared.tenant_guard import get_verified_company_id
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +116,7 @@ async def run_alert_checks(
 
 @router.post("/{alert_id}/acknowledge", response_model=AlertResponse)
 async def acknowledge_alert(
-    alert_id: str,
+    alert_id: _DualId,
     user_id: str = "system",
     db: AsyncSession = Depends(get_db)
 ):
@@ -125,7 +133,7 @@ async def acknowledge_alert(
 
 @router.post("/{alert_id}/resolve", response_model=AlertResponse)
 async def resolve_alert(
-    alert_id: str,
+    alert_id: _DualId,
     user_id: str = "system",
     resolution_note: str | None = None,
     db: AsyncSession = Depends(get_db)
@@ -382,3 +390,10 @@ async def update_alert_preferences(
 ):
     """Update users alert preferences. Requires X-Company-ID header for multi-tenant isolation."""
     return await create_alert_preferences(data, company_id, repo)
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

@@ -25,6 +25,14 @@ from app.shared.compliance.bias_audit_service import (
     bias_audit_service,
 )
 
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +116,7 @@ async def get_bias_audit(
 
 @router.get("/job/{job_id}/history", response_model=None)
 async def get_bias_audit_history(
-    job_id: str,
+    job_id: _DualId,
     company_id: str = Depends(get_verified_company_id),
     limit: int = Query(10, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -131,3 +139,10 @@ async def get_bias_audit_history(
     except Exception as exc:
         logger.error("bias_audit/job/%s/history erro: %s", job_id, exc)
         raise HTTPException(status_code=500, detail="Erro ao buscar histórico de auditoria")
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

@@ -21,6 +21,14 @@ from app.domains.job_management.services.job_template_service import (
     enrich_template_with_ai,
     validate_wsi_quality,
 )
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter(prefix="/job-templates", tags=["Job Templates"])
 
@@ -243,7 +251,7 @@ async def validate_template_data(
 
 @router.get("/{template_id}", response_model=TemplateResponse)
 async def get_template(
-    template_id: str,
+    template_id: _DualId,
     db: AsyncSession = Depends(get_db),
 ):
     """Get a specific template by ID."""
@@ -258,7 +266,7 @@ async def get_template(
 
 @router.post("/{template_id}/use", response_model=WizardDataResponse)
 async def use_template(
-    template_id: str,
+    template_id: _DualId,
     company_id: str = Query(...),
     user_id: str | None = None,
     db: AsyncSession = Depends(get_db),
@@ -283,7 +291,7 @@ async def use_template(
 
 @router.post("/{template_id}/clone", response_model=TemplateResponse)
 async def clone_template(
-    template_id: str,
+    template_id: _DualId,
     request: CloneTemplateRequest,
     db: AsyncSession = Depends(get_db),
 ):
@@ -303,7 +311,7 @@ async def clone_template(
 
 @router.post("/{template_id}/feedback", response_model=None)
 async def submit_feedback(
-    template_id: str,
+    template_id: _DualId,
     request: TemplateFeedbackRequest,
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
@@ -573,3 +581,10 @@ async def learn_from_job_creation(
             "template_created": False,
             "message": "Job recorded for future learning (need 3+ similar jobs to create template)"
         }
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

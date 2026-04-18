@@ -15,6 +15,14 @@ from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +96,7 @@ async def create_voice_session(
 
 @router.post("/sessions/{session_id}/audio", response_model=SessionResponse)
 async def submit_audio(
-    session_id: str,
+    session_id: _DualId,
     file: UploadFile = File(...),
 ):
     """
@@ -120,7 +128,7 @@ async def submit_audio(
 
 @router.post("/sessions/{session_id}/text", response_model=SessionResponse)
 async def submit_text(
-    session_id: str,
+    session_id: _DualId,
     body: dict,
 ):
     """
@@ -156,7 +164,7 @@ async def submit_text(
 
 
 @router.get("/sessions/{session_id}")
-async def get_session_status(session_id: str):
+async def get_session_status(session_id: _DualId):
     """Get current status of a voice screening session."""
     session = _sessions.get(session_id)
     if not session:
@@ -193,7 +201,6 @@ async def _persist_results(session) -> None:
     try:
         from app.core.database import get_db_session
         from sqlalchemy import text
-
         screening_data = {
             "type": "voice",
             "session_id": session.session_id,
@@ -231,3 +238,10 @@ async def _persist_results(session) -> None:
         )
     except Exception as e:
         logger.error("[VoiceScreening] Failed to persist results: %s", e)
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

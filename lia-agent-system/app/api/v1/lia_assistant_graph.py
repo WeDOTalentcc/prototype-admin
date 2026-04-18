@@ -31,6 +31,14 @@ from app.orchestrator.action_executor import is_confirmation, is_rejection
 from app.orchestrator.pending_action import PendingActionState, pending_action_store
 from app.shared.services.graph_runner import graph_runner_service
 from app.shared.tenant_session import create_session_id
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -341,7 +349,7 @@ async def graph_orchestrate_wizard_message(request: GraphOrchestratorRequest):
 
 
 @router.get("/job-wizard/session/{session_id}", response_model=SessionStateResponse)
-async def get_wizard_session_state(session_id: str):
+async def get_wizard_session_state(session_id: _DualId):
     """Get the current state of a wizard session."""
     try:
         state = await graph_runner_service.get_session_state(session_id)
@@ -364,7 +372,7 @@ async def get_wizard_session_state(session_id: str):
 
 
 @router.delete("/job-wizard/session/{session_id}", response_model=None)
-async def reset_wizard_session(session_id: str):
+async def reset_wizard_session(session_id: _DualId):
     """Reset a wizard session, clearing all state."""
     try:
         was_reset = await graph_runner_service.reset_session(session_id)
@@ -405,3 +413,10 @@ async def list_wizard_sessions():
     except Exception as exc:
         logger.error(f"Error listing sessions: {exc}")
         raise HTTPException(status_code=500, detail=f"Failed to list sessions: {exc}")
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

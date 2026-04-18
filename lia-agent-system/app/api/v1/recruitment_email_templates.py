@@ -21,6 +21,14 @@ from app.domains.job_management.services.recruitment_email_templates import (
     seed_default_templates,
 )
 from lia_models.recruitment_email_template import RecruitmentEmailTemplate, RecruitmentStageName, TemplateType
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -228,7 +236,7 @@ async def get_template_by_stage(
 
 @router.get("/{template_id}", response_model=TemplateResponse)
 async def get_template_by_id(
-    template_id: str,
+    template_id: _DualId,
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 ):
     """
@@ -250,7 +258,7 @@ async def get_template_by_id(
 
 @router.put("/{template_id}", response_model=TemplateResponse)
 async def update_template(
-    template_id: str,
+    template_id: _DualId,
     update_data: TemplateUpdateRequest,
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 ):
@@ -329,7 +337,7 @@ async def clone_system_templates(
 
 @router.post("/{template_id}/preview", response_model=TemplatePreviewResponse)
 async def preview_template_with_data(
-    template_id: str,
+    template_id: _DualId,
     preview_request: TemplatePreviewRequest,
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 ):
@@ -407,7 +415,7 @@ async def preview_stage_template(
 
 @router.delete("/{template_id}", response_model=None)
 async def delete_template(
-    template_id: str,
+    template_id: _DualId,
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 ):
     """
@@ -434,3 +442,10 @@ async def delete_template(
     except Exception as e:
         logger.error(f"Error deleting template {template_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

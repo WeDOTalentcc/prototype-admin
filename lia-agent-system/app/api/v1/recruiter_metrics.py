@@ -14,6 +14,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth import get_current_user_or_demo
 from app.core.database import get_db
 from app.shared.services.recruiter_metrics_service import recruiter_metrics_service
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +30,7 @@ router = APIRouter(prefix="/recruiter-metrics", tags=["recruiter-metrics"])
 
 @router.get("/{recruiter_id}", response_model=None)
 async def get_recruiter_summary(
-    recruiter_id: str,
+    recruiter_id: _DualId,
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
     period_days: int = Query(30, ge=1, le=90, description="Período em dias para avg response time"),
     current_user=Depends(get_current_user_or_demo),
@@ -47,7 +55,7 @@ async def get_recruiter_summary(
 
 @router.get("/{recruiter_id}/backlog", response_model=None)
 async def get_recruiter_backlog(
-    recruiter_id: str,
+    recruiter_id: _DualId,
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
@@ -77,7 +85,7 @@ async def get_recruiter_backlog(
 
 @router.get("/{recruiter_id}/benchmark", response_model=None)
 async def get_recruiter_benchmark(
-    recruiter_id: str,
+    recruiter_id: _DualId,
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
@@ -99,3 +107,10 @@ async def get_recruiter_benchmark(
     except Exception as e:
         logger.error(f"get_recruiter_benchmark failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Erro ao calcular benchmark do recrutador")
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

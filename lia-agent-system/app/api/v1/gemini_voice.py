@@ -40,6 +40,14 @@ from pydantic import BaseModel
 from app.shared.pii_masking import mask_pii
 from app.shared.resilience.circuit_breaker import GEMINI_LIVE_CIRCUIT
 
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 def _get_hmac_secret() -> str:
     secret = os.environ.get("SECRET_KEY") or os.environ.get("APP_SECRET_KEY")
@@ -691,7 +699,7 @@ async def gemini_live_stream_websocket(
 
 
 @router.get("/gemini-voice/session/{session_id}", response_model=None)
-async def get_gemini_session_status(session_id: str):
+async def get_gemini_session_status(session_id: _DualId):
     from app.shared.services.gemini_live_audio_service import get_gemini_live_service
 
     live_service = get_gemini_live_service()
@@ -741,3 +749,10 @@ async def gemini_voice_health():
         "cost_per_interview_usd": "~0.065 (15 min)",
         "target_latency_p95_ms": 500,
     }
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

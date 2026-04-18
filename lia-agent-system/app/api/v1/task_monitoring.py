@@ -10,6 +10,14 @@ from app.shared.async_processing.enhanced_task_manager import EnhancedTaskManage
 from app.shared.async_processing.task_persistence import TaskPersistenceService
 from app.shared.async_processing.task_queue import TaskPriority
 from app.shared.async_processing.task_scheduler import TaskScheduler
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +150,7 @@ async def create_schedule(request: ScheduleCreateRequest, current_user: User = D
 
 
 @router.delete("/schedules/{schedule_id}", response_model=None)
-async def remove_schedule(schedule_id: str, current_user: User = Depends(get_current_user_or_demo)):
+async def remove_schedule(schedule_id: _DualId, current_user: User = Depends(get_current_user_or_demo)):
     try:
         scheduler = TaskScheduler.get_instance()
         removed = await scheduler.remove_schedule(schedule_id)
@@ -176,7 +184,7 @@ async def list_dlq(
 
 
 @router.post("/dlq/{dlq_id}/retry", response_model=None)
-async def retry_dlq_entry(dlq_id: str, current_user: User = Depends(get_current_user_or_demo)):
+async def retry_dlq_entry(dlq_id: _DualId, current_user: User = Depends(get_current_user_or_demo)):
     try:
         persistence = TaskPersistenceService.get_instance()
         record = await persistence.get_dlq_record(dlq_id)
@@ -203,7 +211,7 @@ async def retry_dlq_entry(dlq_id: str, current_user: User = Depends(get_current_
 
 
 @router.get("/{task_id}", response_model=None)
-async def get_task_status(task_id: str, current_user: User = Depends(get_current_user_or_demo)):
+async def get_task_status(task_id: _DualId, current_user: User = Depends(get_current_user_or_demo)):
     try:
         manager = EnhancedTaskManager.get_instance()
         status = await manager.get_task_status_enhanced(task_id)
@@ -245,7 +253,7 @@ async def list_tasks(
 
 
 @router.delete("/{task_id}", response_model=None)
-async def cancel_task(task_id: str, current_user: User = Depends(get_current_user_or_demo)):
+async def cancel_task(task_id: _DualId, current_user: User = Depends(get_current_user_or_demo)):
     try:
         manager = EnhancedTaskManager.get_instance()
         cancelled = manager.cancel_task(task_id)
@@ -263,3 +271,10 @@ async def cancel_task(task_id: str, current_user: User = Depends(get_current_use
     except Exception as e:
         logger.error(f"Failed to cancel task: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

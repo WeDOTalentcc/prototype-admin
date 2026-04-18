@@ -40,6 +40,14 @@ from app.services.quota_enforcement import (
     get_current_count,
     get_effective_quotas,
 )
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -241,7 +249,7 @@ async def list_companies(
     summary="Consolidated tenant overview",
 )
 async def get_company_overview(
-    company_id: str,
+    company_id: _DualId,
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
@@ -352,7 +360,7 @@ async def get_company_overview(
     summary="List studio agents for a tenant",
 )
 async def list_studio_agents(
-    company_id: str,
+    company_id: _DualId,
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
@@ -467,7 +475,7 @@ async def list_studio_agents(
     summary="Core vs Studio consumption breakdown",
 )
 async def get_studio_consumption(
-    company_id: str,
+    company_id: _DualId,
     days: int = Query(30, ge=1, le=365),
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
@@ -552,7 +560,7 @@ async def get_studio_consumption(
     summary="Get agent quotas for a tenant",
 )
 async def get_agent_quota(
-    company_id: str,
+    company_id: _DualId,
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
@@ -608,7 +616,7 @@ async def get_agent_quota(
     summary="Adjust agent quotas for a tenant",
 )
 async def update_agent_quota(
-    company_id: str,
+    company_id: _DualId,
     body: AgentQuotaUpdateRequest,
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
@@ -642,3 +650,10 @@ async def update_agent_quota(
     await db.flush()
 
     return await get_agent_quota(company_id, _admin=_admin, db=db)
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

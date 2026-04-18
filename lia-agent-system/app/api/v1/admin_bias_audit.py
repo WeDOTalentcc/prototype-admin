@@ -8,13 +8,14 @@ Equivalente ao que Greenhouse e Workday oferecem como "compliance baseline check
 from fastapi import APIRouter, Depends, Path
 
 from app.auth.dependencies import require_admin
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 router = APIRouter(prefix="/bias-audit", tags=["Bias Audit - Admin"])
 
 
 @router.post("/job/{job_id}/run-baseline", response_model=None)
 async def run_bias_audit_baseline(
-    job_id: str = Path(..., description="ID da vaga"),
+    job_id: str = Path(..., description="ID da vaga", pattern=DUAL_ID_PATH_PATTERN),
     save_snapshot: bool = True,
     _user=Depends(require_admin),
 ):
@@ -46,3 +47,10 @@ async def run_bias_audit_baseline(
             else "ATENÇÃO: Baseline audit falhou — revisar algoritmo de seleção."
         ),
     }
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

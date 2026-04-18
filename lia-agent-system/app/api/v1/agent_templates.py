@@ -23,6 +23,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from lia_models.agent_template import AgentTemplate, AgentTemplateStatus
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter()
 
@@ -96,7 +104,6 @@ async def list_templates(
     - Templates próprios da empresa (qualquer status)
     """
     from sqlalchemy import or_
-
     # TODO(phase2): complex multi-tenant query with public/private logic — left as direct DB
     query = select(AgentTemplate).where(
         or_(
@@ -140,7 +147,7 @@ async def create_template(
 
 @router.get("/agent-templates/{template_id}", response_model=AgentTemplateResponse)
 async def get_template(
-    template_id: str,
+    template_id: _DualId,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -160,7 +167,7 @@ async def get_template(
 
 @router.patch("/agent-templates/{template_id}", response_model=AgentTemplateResponse)
 async def update_template(
-    template_id: str,
+    template_id: _DualId,
     body: AgentTemplateCreate,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -212,7 +219,7 @@ async def update_template(
 
 @router.post("/agent-templates/{template_id}/publish", response_model=AgentTemplateResponse)
 async def publish_template(
-    template_id: str,
+    template_id: _DualId,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -244,7 +251,7 @@ async def publish_template(
 
 @router.delete("/agent-templates/{template_id}", status_code=204, response_model=None)
 async def archive_template(
-    template_id: str,
+    template_id: _DualId,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -262,3 +269,10 @@ async def archive_template(
         "status": AgentTemplateStatus.ARCHIVED,
         "archived_at": datetime.now(UTC),
     })
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

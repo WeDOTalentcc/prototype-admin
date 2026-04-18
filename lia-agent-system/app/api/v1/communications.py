@@ -33,6 +33,15 @@ from app.schemas.communication import (
     CommunicationStatusUpdate,
 )
 
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/communications", tags=["communications"])
@@ -172,7 +181,7 @@ async def get_communication_history(
 
 
 @router.get("/{communication_id}", response_model=CommunicationResponse)
-async def get_communication(communication_id: str):
+async def get_communication(communication_id: _DualId):
     """
     Get a single communication by ID.
     
@@ -203,7 +212,7 @@ async def get_communication(communication_id: str):
 
 @router.put("/{communication_id}/status", response_model=CommunicationResponse)
 async def update_communication_status(
-    communication_id: str,
+    communication_id: _DualId,
     data: CommunicationStatusUpdate
 ):
     """
@@ -599,7 +608,6 @@ async def send_whatsapp_interactive(
 
 from pydantic import BaseModel
 
-
 class TransferCommunicationsRequest(BaseModel):
     """Request model for transferring communications between recruiters."""
     job_ids: list[str]
@@ -645,3 +653,10 @@ async def transfer_communications(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro ao transferir comunicações: {str(e)}"
         )
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

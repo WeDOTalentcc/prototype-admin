@@ -12,6 +12,14 @@ from app.shared.services.organization_catalog_service import (
     OrganizationCatalogService,
     get_organization_catalog_service,
 )
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter(prefix="/catalog", tags=["organization-catalog"])
 
@@ -30,7 +38,7 @@ async def get_areas(
 
 @router.get("/areas/{area_id}", response_model=None)
 async def get_area(
-    area_id: str,
+    area_id: _DualId,
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
     """Get a specific area by ID."""
@@ -85,7 +93,7 @@ async def get_roles(
 
 @router.get("/roles/{area_id}", response_model=None)
 async def get_roles_by_area(
-    area_id: str,
+    area_id: _DualId,
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
     """Get all roles for a specific area."""
@@ -131,7 +139,7 @@ async def get_technical_skills(
 
 @router.get("/skills/technical/{area_id}", response_model=None)
 async def get_technical_skills_by_area(
-    area_id: str,
+    area_id: _DualId,
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
     """Get all technical skills for a specific area."""
@@ -200,3 +208,10 @@ async def get_catalog_summary(
 ) -> dict[str, Any]:
     """Get a complete summary of the catalog for review."""
     return catalog_svc.get_catalog_summary()
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

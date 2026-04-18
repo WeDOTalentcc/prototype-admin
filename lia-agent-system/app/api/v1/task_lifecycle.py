@@ -9,6 +9,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.automation.services.task_service import task_service
 from lia_models.task import Task
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter(prefix="/task-lifecycle", tags=["task-lifecycle"])
 
@@ -94,7 +102,7 @@ class BulkOperationResponse(BaseModel):
 
 @router.post("/{task_id}/confirm", response_model=TaskLifecycleResponse)
 async def confirm_task(
-    task_id: str,
+    task_id: _DualId,
     request: TaskConfirmRequest,
     db: AsyncSession = Depends(get_db)
 ):
@@ -115,7 +123,7 @@ async def confirm_task(
 
 @router.post("/{task_id}/reject", response_model=TaskLifecycleResponse)
 async def reject_task(
-    task_id: str,
+    task_id: _DualId,
     request: TaskRejectRequest,
     db: AsyncSession = Depends(get_db)
 ):
@@ -137,7 +145,7 @@ async def reject_task(
 
 @router.post("/{task_id}/escalate", response_model=TaskLifecycleResponse)
 async def escalate_task(
-    task_id: str,
+    task_id: _DualId,
     request: TaskEscalateRequest,
     db: AsyncSession = Depends(get_db)
 ):
@@ -163,7 +171,7 @@ async def escalate_task(
 
 @router.post("/{task_id}/reminder", response_model=TaskLifecycleResponse)
 async def send_task_reminder(
-    task_id: str,
+    task_id: _DualId,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -262,3 +270,10 @@ async def get_escalatable_tasks(
         overdue_hours=overdue_hours
     )
     return [_task_to_lifecycle_response(task) for task in tasks]
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

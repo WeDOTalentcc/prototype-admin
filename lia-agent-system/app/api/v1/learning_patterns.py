@@ -10,7 +10,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.recruitment.repositories.learning_patterns_repository import LearningPatternsRepository
 from app.domains.automation.services.learning_automation import LearningAutomationService, get_learning_automation_service
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
 
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +29,7 @@ SKILL_PROMOTION_THRESHOLD = 5
 @router.get("/{company_id}/detected", response_model=None)
 # TODO(phase2): extract to repository — learning pattern storage
 async def get_detected_patterns(
-    company_id: str,
+    company_id: _DualId,
     field: str | None = None,
     seniority: str | None = None,
     db: AsyncSession = Depends(get_db),
@@ -64,7 +71,7 @@ async def get_detected_patterns(
 
 @router.get("/{company_id}/skills", response_model=None)
 async def get_promoted_skills(
-    company_id: str,
+    company_id: _DualId,
     job_title: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
@@ -109,7 +116,7 @@ async def get_promoted_skills(
 
 @router.get("/{company_id}/success-profiles", response_model=None)
 async def get_success_profiles(
-    company_id: str,
+    company_id: _DualId,
     role: str | None = None,
     seniority: str | None = None,
     db: AsyncSession = Depends(get_db),
@@ -150,7 +157,7 @@ async def get_success_profiles(
 
 @router.post("/{company_id}/trigger-detection", response_model=None)
 async def trigger_pattern_detection(
-    company_id: str,
+    company_id: _DualId,
     service: LearningAutomationService = Depends(get_learning_automation_service),
 ):
     """Manually trigger pattern detection for a company."""
@@ -168,3 +175,10 @@ async def trigger_pattern_detection(
     except Exception as e:
         logger.error(f"Error triggering pattern detection: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)

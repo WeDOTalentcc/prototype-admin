@@ -14,6 +14,14 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
 from app.domains.job_management.services.job_pattern_service import job_pattern_service
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from typing import Annotated
+from fastapi import Path
+
+# Task #489 — UUID-or-digit constraint for dual-ID path params,
+# preventing static sibling routes from being shadowed by
+# item handlers (Task #455-class bug).
+_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter(prefix="/learning", tags=["Job Learning"])
 logger = logging.getLogger(__name__)
@@ -300,7 +308,7 @@ async def record_job_outcome(request: JobOutcomeRequest):
 
 @router.get("/patterns/{company_id}", response_model=None)
 async def list_patterns(
-    company_id: str,
+    company_id: _DualId,
     pattern_type: str | None = Query(None),
     min_samples: int = Query(3),
     limit: int = Query(20),
@@ -346,3 +354,10 @@ async def list_patterns(
     except Exception as e:
         logger.error(f"Error listing patterns: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# Task #489 — Keep collection-scoped routes ahead of item-scoped
+# routes so a static sibling segment cannot be silently shadowed
+# by an {*_id} handler (the Task #455 routing-shadowing bug).
+from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
+
+_reorder_collection_before_item(router)
