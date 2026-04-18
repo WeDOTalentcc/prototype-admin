@@ -857,6 +857,10 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
         r"(gera[rn]?|cria[rn]?|mostra[rn]?)\s+(o?\s*)?(relatório|report)\s+(de\s+)?(kpi|indicadores?|métricas?|performance)",
         r"(kpis?|indicadores?|métricas?)\s+(de\s+|do\s+)?(recrutamento|vagas?|contratação)",
         r"(como\s+(estão|andam)|quais?\s+são)\s+(os?\s+)?(kpis?|indicadores?|métricas?|números?)",
+        r"(tempo\s+médio|ttf|time.to.hire|time_to_hire|prazo\s+médio)\s+(de\s+)?(contratação|preenchimento|fill)",
+        r"(qual|quanto)\s+(é\s+o|o\s+)?(tempo|prazo)\s+(médio|de)\s+(contratação|fill|preenchimento)",
+        r"(diversidade|índice\s+de\s+diversidade|paridade\s+de\s+gênero|distribuição\s+de\s+gênero)",
+        r"(overview|visão\s+geral|resumo)\s+(dos?\s+)?(kpis?|indicadores?|dados?|números?|recrutamento)",
     ]),
     # Enviar parecer de candidato ao gestor
     ("enviar_relatorio_candidato", [
