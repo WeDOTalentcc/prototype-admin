@@ -3,15 +3,7 @@
 import React from "react"
 import { useTranslations } from "next-intl"
 import { useLocale } from "next-intl"
-import {
-  StatusBadge,
-  ChannelBadge,
-  SourceBadge,
-  WarningBadge,
-  DateTimeBadge,
-  OriginBadge,
-  AwaitingBadge,
-} from "@/components/ui/status-badge"
+import { KanbanChip, type KanbanChipVariant } from "./KanbanChip"
 import { AISuggestionBadge } from "@/components/ai"
 import { OverrideApproveButton } from "@/components/kanban/components/OverrideApproveButton"
 import {
@@ -28,6 +20,17 @@ import {
   XCircle,
   Calendar,
   DollarSign,
+  AlertCircle,
+  Linkedin,
+  Globe,
+  Mail,
+  Phone,
+  MessageSquare,
+  Video,
+  Building,
+  Users,
+  Briefcase,
+  Search,
 } from "lucide-react"
 import { isApplicationSource } from "@/lib/recruitment-stages"
 import { getSuggestionForCandidate } from "@/hooks/ai/useCandidateSuggestions"
@@ -81,6 +84,103 @@ interface KanbanCardStatusBadgesProps {
   rejectSuggestion: (suggestionId: string) => void
 }
 
+const channelIcons: Record<string, React.ElementType> = {
+  whatsapp: MessageSquare,
+  email: Mail,
+  phone: Phone,
+  linkedin: Linkedin,
+  teams: Video,
+  presencial: Building,
+}
+
+const channelLabels: Record<string, string> = {
+  whatsapp: "WhatsApp",
+  email: "Email",
+  phone: "Telefone",
+  linkedin: "LinkedIn",
+  teams: "Teams",
+  presencial: "Presencial",
+}
+
+const sourceIcons: Record<string, React.ElementType> = {
+  linkedin: Linkedin,
+  indeed: Briefcase,
+  google_jobs: Search,
+  website: Globe,
+  referral: Users,
+  headhunting: Target,
+  internal: Building,
+  lia_database: BrainCircuit,
+  recruiter: User,
+}
+
+const sourceLabels: Record<string, string> = {
+  linkedin: "LinkedIn",
+  indeed: "Indeed",
+  google_jobs: "Google Jobs",
+  website: "Site",
+  referral: "Indicação",
+  headhunting: "Hunting",
+  internal: "Interno",
+  lia_database: "Banco LIA",
+  recruiter: "Manual",
+}
+
+const originIcons: Record<string, React.ElementType> = {
+  web: Globe,
+  whatsapp: MessageCircle,
+  sourcing: Search,
+  ats: Briefcase,
+}
+
+const originLabels: Record<string, string> = {
+  web: "Web",
+  whatsapp: "WhatsApp",
+  sourcing: "Busca",
+  ats: "ATS",
+}
+
+interface CandidateChipProps {
+  variant?: KanbanChipVariant
+  icon: React.ElementType
+  label: React.ReactNode
+  pulse?: boolean
+  onClick?: () => void
+  title?: string
+  className?: string
+}
+
+function CandidateChip({
+  variant = "neutral",
+  icon: Icon,
+  label,
+  pulse,
+  onClick,
+  title,
+  className,
+}: CandidateChipProps) {
+  return (
+    <KanbanChip
+      density="compact"
+      variant={variant}
+      title={title}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      aria-label={onClick ? title || (typeof label === "string" ? label : undefined) : undefined}
+      className={[
+        pulse ? "motion-safe:animate-pulse motion-reduce:animate-none" : "",
+        onClick ? "cursor-pointer hover:opacity-80" : "",
+        className ?? "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <Icon className="w-2 h-2 flex-shrink-0" aria-hidden="true" />
+      <span>{label}</span>
+    </KanbanChip>
+  )
+}
+
 export function KanbanCardStatusBadges({
   candidate,
   stageId,
@@ -93,307 +193,355 @@ export function KanbanCardStatusBadges({
 }: KanbanCardStatusBadgesProps) {
   const t = useTranslations('kanban')
   const locale = useLocale()
+
+  const channelKey = (candidate.contactChannelId || "whatsapp").toLowerCase()
+  const ChannelIcon = channelIcons[channelKey] || MessageSquare
+  const channelLabel = channelLabels[channelKey] || candidate.contactChannelId || "WhatsApp"
+
+  const interviewChannelKey = (candidate.typeOfInterview || "teams").toLowerCase()
+  const InterviewChannelIcon = channelIcons[interviewChannelKey] || MessageSquare
+  const interviewChannelLabel =
+    channelLabels[interviewChannelKey] || candidate.typeOfInterview || "Teams"
+
+  const sourceKey = (candidate.source || "website").toLowerCase()
+  const SourceIcon = sourceIcons[sourceKey] || User
+  const baseSourceLabel = sourceLabels[sourceKey] || candidate.source || "Site"
+  const isApplication = isApplicationSource(candidate.source || "website")
+  const sourceLabel = isApplication ? `Inscrito ${baseSourceLabel}` : baseSourceLabel
+  const sourceTitle = isApplication
+    ? `Inscrito via ${baseSourceLabel}`
+    : `Origem: ${baseSourceLabel}`
+
+  const originKey = (candidate.origin || "").toLowerCase()
+  const OriginIcon = originIcons[originKey] || Search
+  const originLabel = originLabels[originKey] || candidate.origin || "Busca"
+
+  const formatDateTime = (date: string) => {
+    const d = new Date(date)
+    const day = d.getDate().toString().padStart(2, "0")
+    const month = (d.getMonth() + 1).toString().padStart(2, "0")
+    const hours = d.getHours().toString().padStart(2, "0")
+    const minutes = d.getMinutes().toString().padStart(2, "0")
+    return `${day}/${month} às ${hours}:${minutes}`
+  }
+
   return (
     <>
-{/* Tags de Status Compactas */}
-<div className="mt-2 flex flex-wrap gap-1">
-  {/* AI Suggestion Badge */}
-  {(() => {
-    const suggestion = getSuggestionForCandidate(aiSuggestions as unknown as import("@/hooks/ai/useCandidateSuggestions").AISuggestion[], String(candidate.id))
-    if (suggestion) {
-      return (
-        <div onClick={(e) => e.stopPropagation()}>
-          <AISuggestionBadge
-            suggestion={suggestion}
-            onApprove={(id) => Promise.resolve(approveSuggestion(id))}
-            onReject={(id) => Promise.resolve(rejectSuggestion(id))}
-            compact
-          />
-        </div>
-      )
-    }
-    return null
-  })()}
-
-  {/* FUNIL - Candidatos sem triagem ainda */}
-  {stageId === "sourcing" && (
-    <>
-      <StatusBadge
-        stageId={stageId}
-        variant="standard"
-        icon={User}
-        label={
-          candidate.source === "linkedin"
-            ? t('appliedViaLinkedin')
-            : candidate.source === "website"
-            ? t('appliedOnWebsite')
-            : candidate.source === "lia_database"
-            ? t('mappedByLIA')
-            : t('addedManually')
-        }
-      />
-      <StatusBadge
-        stageId={stageId}
-        variant="accent"
-        icon={BrainCircuit}
-        label={t('liaWillStartScreening')}
-        pulse
-      />
-    </>
-  )}
-
-  {/* TRIAGEM - Candidatos em contato com LIA */}
-  {stageId === "screening" && (
-    <>
-      {candidate.needsAction || candidate.status === "triado_aprovado" ? (
-        <>
-          <StatusBadge
-            stageId={stageId}
-            variant="dark"
-            icon={CheckCircle}
-            label={t('screeningCompleted')}
-          />
-          <StatusBadge
-            stageId={stageId}
-            variant="accent"
-            icon={Target}
-            label={t('pendingDecision')}
-            pulse
-            onClick={() => onOpenAnalysis(candidate)}
-            title={t('clickToSeeFullAnalysis')}
-          />
-        </>
-      ) : (
-        <StatusBadge
-          stageId={stageId}
-          variant="outlined"
-          icon={MessageCircle}
-          label={
-            candidate.liatriagem === "respondendo"
-              ? t('respondingNow')
-              : t('conversationInProgress')
+      {/* Tags de Status Compactas */}
+      <div className="mt-2 flex flex-wrap gap-1">
+        {/* AI Suggestion Badge */}
+        {(() => {
+          const suggestion = getSuggestionForCandidate(
+            aiSuggestions as unknown as import("@/hooks/ai/useCandidateSuggestions").AISuggestion[],
+            String(candidate.id),
+          )
+          if (suggestion) {
+            return (
+              <div onClick={(e) => e.stopPropagation()}>
+                <AISuggestionBadge
+                  suggestion={suggestion}
+                  onApprove={(id) => Promise.resolve(approveSuggestion(id))}
+                  onReject={(id) => Promise.resolve(rejectSuggestion(id))}
+                  compact
+                />
+              </div>
+            )
           }
-        />
-      )}
-      <ChannelBadge channel={candidate.contactChannelId || "whatsapp"} />
-    </>
-  )}
+          return null
+        })()}
 
-  {/* ENTREVISTA */}
-  {(stageId === "interview_hr" ||
-    stageId === "interview_technical" ||
-    stageId === "interview_manager") && (
-    <>
-      {candidate.agendada ? (
-        <>
-          <StatusBadge
-            stageId={stageId}
-            variant="scheduled"
-            icon={CalendarCheck}
-            label={t('interviewConfirmed')}
-          />
-          {candidate.interviewDate && (
-            <DateTimeBadge date={candidate.interviewDate} />
-          )}
-          <ChannelBadge channel={candidate.typeOfInterview || "teams"} />
-        </>
-      ) : (
-        <StatusBadge
-          stageId={stageId}
-          variant="accent"
-          icon={Clock}
-          label={t('awaitingScheduling')}
-          pulse
-        />
-      )}
-      {candidate.interviewCompleted && !candidate.interviewFeedback && (
-        <StatusBadge
-          stageId={stageId}
-          variant="accent"
-          icon={Clock}
-          label={t('pendingFeedback')}
-          pulse
-        />
-      )}
-    </>
-  )}
-
-  {/* FINAL */}
-  {stageId === "offer" && (
-    <>
-      <StatusBadge stageId={stageId} variant="standard" icon={Star} label={t('finalist')} />
-      {candidate.proposal ? (
-        <>
-          <StatusBadge
-            stageId={stageId}
-            variant="dark"
-            icon={FileText}
-            label={t('proposalSent')}
-          />
-          {!candidate.proposalResponse && (
-            <StatusBadge
-              stageId={stageId}
-              variant="accent"
-              icon={Clock}
-              label={t('awaitingResponse')}
+        {/* FUNIL - Candidatos sem triagem ainda */}
+        {stageId === "sourcing" && (
+          <>
+            <CandidateChip
+              variant="neutral"
+              icon={User}
+              label={
+                candidate.source === "linkedin"
+                  ? t('appliedViaLinkedin')
+                  : candidate.source === "website"
+                  ? t('appliedOnWebsite')
+                  : candidate.source === "lia_database"
+                  ? t('mappedByLIA')
+                  : t('addedManually')
+              }
+            />
+            <CandidateChip
+              variant="info"
+              icon={BrainCircuit}
+              label={t('liaWillStartScreening')}
               pulse
             />
-          )}
-        </>
-      ) : (
-        <StatusBadge
-          stageId={stageId}
-          variant="accent"
-          icon={Clock}
-          label={t('awaitingApproval')}
-          pulse
+          </>
+        )}
+
+        {/* TRIAGEM - Candidatos em contato com LIA */}
+        {stageId === "screening" && (
+          <>
+            {candidate.needsAction || candidate.status === "triado_aprovado" ? (
+              <>
+                <CandidateChip
+                  variant="neutral"
+                  icon={CheckCircle}
+                  label={t('screeningCompleted')}
+                />
+                <CandidateChip
+                  variant="info"
+                  icon={Target}
+                  label={t('pendingDecision')}
+                  pulse
+                  onClick={() => onOpenAnalysis(candidate)}
+                  title={t('clickToSeeFullAnalysis')}
+                />
+              </>
+            ) : (
+              <CandidateChip
+                variant="neutral"
+                icon={MessageCircle}
+                label={
+                  candidate.liatriagem === "respondendo"
+                    ? t('respondingNow')
+                    : t('conversationInProgress')
+                }
+              />
+            )}
+            <CandidateChip variant="neutral" icon={ChannelIcon} label={channelLabel} />
+          </>
+        )}
+
+        {/* ENTREVISTA */}
+        {(stageId === "interview_hr" ||
+          stageId === "interview_technical" ||
+          stageId === "interview_manager") && (
+          <>
+            {candidate.agendada ? (
+              <>
+                <CandidateChip
+                  variant="success"
+                  icon={CalendarCheck}
+                  label={t('interviewConfirmed')}
+                />
+                {candidate.interviewDate && (
+                  <CandidateChip
+                    variant="neutral"
+                    icon={Calendar}
+                    label={formatDateTime(candidate.interviewDate)}
+                  />
+                )}
+                <CandidateChip
+                  variant="neutral"
+                  icon={InterviewChannelIcon}
+                  label={interviewChannelLabel}
+                />
+              </>
+            ) : (
+              <CandidateChip
+                variant="info"
+                icon={Clock}
+                label={t('awaitingScheduling')}
+                pulse
+              />
+            )}
+            {candidate.interviewCompleted && !candidate.interviewFeedback && (
+              <CandidateChip
+                variant="info"
+                icon={Clock}
+                label={t('pendingFeedback')}
+                pulse
+              />
+            )}
+          </>
+        )}
+
+        {/* FINAL */}
+        {stageId === "offer" && (
+          <>
+            <CandidateChip variant="neutral" icon={Star} label={t('finalist')} />
+            {candidate.proposal ? (
+              <>
+                <CandidateChip
+                  variant="neutral"
+                  icon={FileText}
+                  label={t('proposalSent')}
+                />
+                {!candidate.proposalResponse && (
+                  <CandidateChip
+                    variant="info"
+                    icon={Clock}
+                    label={t('awaitingResponse')}
+                    pulse
+                  />
+                )}
+              </>
+            ) : (
+              <CandidateChip
+                variant="info"
+                icon={Clock}
+                label={t('awaitingApproval')}
+                pulse
+              />
+            )}
+            {candidate.negotiating && (
+              <CandidateChip
+                variant="neutral"
+                icon={MessageCircle}
+                label={t('inNegotiation')}
+              />
+            )}
+          </>
+        )}
+
+        {/* CONTRATADOS */}
+        {stageId === "hired" && (
+          <>
+            <CandidateChip variant="success" icon={Trophy} label={t('hiredStatus')} />
+            {candidate.startDate && (
+              <CandidateChip
+                variant="neutral"
+                icon={Calendar}
+                label={t('startDateLabel', {
+                  date: new Date(candidate.startDate).toLocaleDateString(locale, {
+                    day: "2-digit",
+                    month: "2-digit",
+                  }),
+                })}
+              />
+            )}
+            {candidate.sub_status && (
+              <CandidateChip variant="neutral" icon={FileText} label={candidate.sub_status} />
+            )}
+          </>
+        )}
+
+        {/* REPROVADOS */}
+        {stageId === "rejected" && (
+          <>
+            <CandidateChip
+              variant="danger"
+              icon={XCircle}
+              label={
+                candidate.rejectionReason === "withdrew"
+                  ? t('withdrew')
+                  : candidate.rejectionStage === "screening"
+                  ? t('rejectedScreening')
+                  : candidate.rejectionStage === "interview"
+                  ? t('rejectedInterview')
+                  : t('rejectedStatus')
+              }
+            />
+            {candidate.feedbackSent && (
+              <CandidateChip
+                variant="neutral"
+                icon={CheckCircle}
+                label={t('feedbackSent')}
+              />
+            )}
+          </>
+        )}
+
+        {/* PROPOSTA RECUSADA */}
+        {stageId === "offer_declined" && (
+          <>
+            <CandidateChip
+              variant="danger"
+              icon={XCircle}
+              label={t('proposalDeclined')}
+            />
+            {candidate.feedbackSent && (
+              <CandidateChip
+                variant="neutral"
+                icon={CheckCircle}
+                label={t('feedbackSent')}
+              />
+            )}
+          </>
+        )}
+
+        {/* Badge de Warning - Dias parado */}
+        {(candidate.warning || candidate.warningDays) && (
+          <CandidateChip
+            variant="warning"
+            icon={AlertCircle}
+            label={
+              candidate.warningDays ||
+              (candidate.daysPaused ? `${candidate.daysPaused} dias parado` : "Atenção")
+            }
+          />
+        )}
+
+        {/* Badge de expectativa salarial */}
+        {candidate.expectativa && (
+          <CandidateChip
+            variant={
+              candidate.expectativa === "no budget"
+                ? "neutral"
+                : candidate.expectativa === "acima do budget"
+                ? "warning"
+                : "neutral"
+            }
+            icon={DollarSign}
+            label={candidate.expectativa}
+          />
+        )}
+
+        {/* Badge de Origem */}
+        {candidate.origin && (
+          <CandidateChip
+            variant="neutral"
+            icon={OriginIcon}
+            label={originLabel}
+            title={`Origem: ${originLabel}`}
+          />
+        )}
+
+        {/* Badge Aguardando (fila de saturação) + Override */}
+        {(candidate.status === "awaiting_screening" ||
+          candidate.sub_status === "awaiting_screening" ||
+          candidate.subStatus === "awaiting_screening") && (
+          <>
+            <CandidateChip
+              variant="warning"
+              icon={Clock}
+              label="Aguardando"
+              title="Aguardando na fila de saturação"
+            />
+            {(currentJob?.backendId || currentJob?.id) && (
+              <OverrideApproveButton
+                candidateId={candidate.id}
+                candidateName={candidate.name}
+                vacancyId={String(currentJob.backendId || currentJob.id)}
+                onApproved={(cId: string) => {
+                  setCandidatesData((prev) => {
+                    const updated = { ...prev }
+                    Object.keys(updated).forEach((key) => {
+                      updated[key] = updated[key].map((c) => {
+                        const cObj = c as Record<string, unknown>
+                        return String(cObj.id) === cId
+                          ? { ...cObj, status: "triado_aprovado" as const, sub_status: undefined, subStatus: undefined }
+                          : c
+                      })
+                    })
+                    return updated
+                  })
+                }}
+              />
+            )}
+          </>
+        )}
+
+        {/* Tag de Origem */}
+        <CandidateChip
+          variant="neutral"
+          icon={SourceIcon}
+          label={sourceLabel}
+          title={sourceTitle}
         />
-      )}
-      {candidate.negotiating && (
-        <StatusBadge
-          stageId={stageId}
-          variant="outlined"
-          icon={MessageCircle}
-          label={t('inNegotiation')}
-        />
-      )}
-    </>
-  )}
 
-  {/* CONTRATADOS */}
-  {stageId === "hired" && (
-    <>
-      <StatusBadge stageId={stageId} variant="hired" icon={Trophy} label={t('hiredStatus')} />
-      {candidate.startDate && (
-        <StatusBadge
-          stageId={stageId}
-          variant="standard"
-          icon={Calendar}
-          label={t('startDateLabel', { date: new Date(candidate.startDate).toLocaleDateString(locale, {
-            day: "2-digit",
-            month: "2-digit",
-          }) })}
-        />
-      )}
-      {candidate.sub_status && (
-        <StatusBadge stageId={stageId} subStatus={candidate.sub_status} />
-      )}
-    </>
-  )}
-
-  {/* REPROVADOS */}
-  {stageId === "rejected" && (
-    <>
-      <StatusBadge
-        stageId={stageId}
-        variant="rejected"
-        icon={XCircle}
-        label={
-          candidate.rejectionReason === "withdrew"
-            ? t('withdrew')
-            : candidate.rejectionStage === "screening"
-            ? t('rejectedScreening')
-            : candidate.rejectionStage === "interview"
-            ? t('rejectedInterview')
-            : t('rejectedStatus')
-        }
-      />
-      {candidate.feedbackSent && (
-        <StatusBadge
-          stageId={stageId}
-          variant="dark"
-          icon={CheckCircle}
-          label={t('feedbackSent')}
-        />
-      )}
-    </>
-  )}
-
-  {/* PROPOSTA RECUSADA */}
-  {stageId === "offer_declined" && (
-    <>
-      <StatusBadge
-        stageId={stageId}
-        variant="rejected"
-        icon={XCircle}
-        label={t('proposalDeclined')}
-      />
-      {candidate.feedbackSent && (
-        <StatusBadge
-          stageId={stageId}
-          variant="dark"
-          icon={CheckCircle}
-          label={t('feedbackSent')}
-        />
-      )}
-    </>
-  )}
-
-  {/* Badge de Warning - Dias parado */}
-  {(candidate.warning || candidate.warningDays) && (
-    <WarningBadge days={candidate.daysPaused} message={candidate.warningDays} />
-  )}
-
-  {/* Badge de expectativa salarial */}
-  {candidate.expectativa && (
-    <StatusBadge
-      stageId={stageId}
-      variant={
-        candidate.expectativa === "no budget"
-          ? "dark"
-          : candidate.expectativa === "acima do budget"
-          ? "outlined"
-          : "standard"
-      }
-      icon={DollarSign}
-      label={candidate.expectativa}
-    />
-  )}
-
-  {/* Badge de Origem */}
-  {candidate.origin && <OriginBadge origin={candidate.origin} />}
-
-  {/* Badge Aguardando (fila de saturação) + Override */}
-  {(candidate.status === "awaiting_screening" ||
-    candidate.sub_status === "awaiting_screening" ||
-    candidate.subStatus === "awaiting_screening") && (
-    <>
-      <AwaitingBadge />
-      {(currentJob?.backendId || currentJob?.id) && (
-        <OverrideApproveButton
-          candidateId={candidate.id}
-          candidateName={candidate.name}
-          vacancyId={String(currentJob.backendId || currentJob.id)}
-          onApproved={(cId: string) => {
-            setCandidatesData((prev) => {
-              const updated = { ...prev }
-              Object.keys(updated).forEach((key) => {
-                updated[key] = updated[key].map((c) => {
-                  const cObj = c as Record<string, unknown>
-                  return String(cObj.id) === cId
-                    ? { ...cObj, status: "triado_aprovado" as const, sub_status: undefined, subStatus: undefined }
-                    : c
-                })
-              })
-              return updated
-            })
-          }}
-        />
-      )}
-    </>
-  )}
-
-  {/* Tag de Origem */}
-  <SourceBadge
-    source={candidate.source || "website"}
-    isApplication={isApplicationSource(candidate.source || "website")}
-  />
-
-  {/* Sub-Status Badge */}
-  {candidate.sub_status && !["hired", "rejected", "offer_declined"].includes(stageId) && (
-    <StatusBadge stageId={stageId} subStatus={candidate.sub_status} />
-  )}
-</div>
+        {/* Sub-Status Badge */}
+        {candidate.sub_status && !["hired", "rejected", "offer_declined"].includes(stageId) && (
+          <CandidateChip variant="neutral" icon={FileText} label={candidate.sub_status} />
+        )}
+      </div>
     </>
   )
 }
