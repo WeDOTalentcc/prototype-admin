@@ -594,6 +594,414 @@ end
   puts "  job_vacancy_id = #{demo_job_vacancy_id}"
   puts "  wsi_result_id  = #{demo_result_id}"
   puts "  triagem token  = seed-triagem-maria-silva"
+
+  # -------------------------------------------------------------------------
+  # 10b. Additional demo screenings (varied scores for Kanban demo)
+  # -------------------------------------------------------------------------
+  # Adds two more (candidate, vaga) screenings so the Kanban shows variation
+  # in WSI score, classification and recommendation: one "medio" (Joao,
+  # frontend) and one "baixo" (Ana, full stack). Uses the same idempotent
+  # ON CONFLICT DO NOTHING pattern as Maria's block.
+  additional_screenings = [
+    {
+      candidate_id:        "11111111-1111-4111-8111-111111111112",
+      candidate_name:      "Joao Santos",
+      candidate_email:     "joao@example.com",
+      candidate_phone:     "+5511999990002",
+      candidate_title:     "Frontend Developer",
+      candidate_seniority: "mid",
+      job_vacancy_id:      "22222222-2222-4222-8222-222222222223",
+      job_title:           "Senior Frontend Engineer",
+      job_department:      "Product",
+      job_seniority:       "senior",
+      candidate_job_id:    "77777777-7777-4777-8777-777777777778",
+      session_id:          "33333333-3333-4333-8333-333333333334",
+      result_id:           "44444444-4444-4444-8444-444444444451",
+      report_id:           "44444444-4444-4444-8444-444444444452",
+      feedback_id:         "44444444-4444-4444-8444-444444444453",
+      triagem_id:          "55555555-5555-4555-8555-555555555556",
+      triagem_token:       "seed-triagem-joao-santos",
+      question_prefix:     "66666666-6666-4666-8676",
+      analysis_prefix:     "66666666-6666-4666-8677",
+      message_prefix:      "55555555-5555-4555-8557",
+      question_set_id:     "seed-frontend-v1",
+      technical_wsi:       3.2,
+      behavioral_wsi:      3.4,
+      overall_wsi:         3.3,
+      classification:      "medio",
+      percentile:          55,
+      recommendation: {
+        decisao:          "considerar",
+        nivel_recomendado: "pleno",
+        proximos_passos:  "Marcar entrevista comportamental para validar pontos de atencao em arquitetura."
+      },
+      executive_summary: "Joao apresenta perfil pleno aderente, com bom dominio de React e comunicacao, mas com gaps em TypeScript avancado e arquitetura de frontend. Recomendamos uma etapa adicional de avaliacao antes de avancar.",
+      technical_analysis: {
+        pontos_fortes: ["React solido", "Boas praticas de CSS", "Comunicacao tecnica clara"],
+        gaps:          ["Pouca exposicao a TypeScript avancado", "Arquitetura de componentes complexos"]
+      },
+      behavioral_analysis: {
+        colaboracao: 3.6, ownership: 3.2, comunicacao: 3.8,
+        destaques: ["Curiosidade tecnica", "Gosta de pareamento"]
+      },
+      cultural_fit: {
+        score: 3.5,
+        valores_alinhados: ["Aprendizado continuo"]
+      },
+      feedback_decision: "em_avaliacao",
+      feedback_main:     "Joao, sua triagem mostra um bom perfil intermediario. Vamos aprofundar em proximos passos.",
+      feedback_strengths:    ["React solido", "Boa comunicacao tecnica"],
+      feedback_dev:          ["Aprofundar TypeScript avancado", "Estudar arquitetura de frontend"],
+      feedback_behavioral:   ["Curiosidade", "Trabalho em time"],
+      feedback_next:         "Marcaremos uma conversa rapida com a tech lead de frontend.",
+      feedback_tip:          "Estude padroes de composicao no React e tipagens avancadas — voce vai se destacar.",
+      development_plan: {
+        foco_30_dias: ["Curso de TypeScript avancado"],
+        foco_90_dias: ["Refatorar um modulo do dia a dia aplicando padroes"]
+      },
+      recommended_resources: [
+        { title: "Effective TypeScript", type: "livro" },
+        { title: "Patterns.dev",        type: "site"  }
+      ],
+      questions: [
+        { competency: "React",        framework: "Bloom",   qtype: "contextual",
+          text: "Conte sobre um componente complexo que voce projetou. Como organizou estado e composicao?",
+          response: "Construi um wizard multi-step com contexto local e algumas chamadas a API. Separei em componentes pequenos e usei hooks customizados, embora algumas partes tenham acabado bem acopladas.",
+          auto: 3.5, ctx: 3.4, bloom: 3, dreyfus: 3, score: 3.4,
+          evidences: ["Hooks customizados", "Componentizacao"], red_flags: ["Acoplamento residual mencionado"],
+          justification: "Boa nocao de composicao, mas reconhece acoplamento que poderia evitar." },
+        { competency: "TypeScript",   framework: "Dreyfus", qtype: "microcase",
+          text: "Como voce tiparia uma funcao que recebe um payload variavel a partir de um discriminator?",
+          response: "Usaria union types com um campo 'kind' e narrowing por if/switch. Nunca usei mapped/conditional types em producao.",
+          auto: 3.0, ctx: 3.1, bloom: 3, dreyfus: 2, score: 3.0,
+          evidences: ["Cita union types", "Narrowing"], red_flags: ["Sem experiencia com tipos avancados"],
+          justification: "Conhecimento basico solido, mas sem profundidade em recursos avancados." },
+        { competency: "Acessibilidade", framework: "Bloom", qtype: "situational",
+          text: "Como voce garantiria que um modal seja acessivel?",
+          response: "Bloquearia o foco dentro do modal com um trap, fecharia no Escape e usaria role='dialog' com aria-labelledby.",
+          auto: 3.6, ctx: 3.5, bloom: 4, dreyfus: 3, score: 3.5,
+          evidences: ["Focus trap", "ARIA roles"], red_flags: [],
+          justification: "Resposta correta e direta para um caso classico." },
+        { competency: "Colaboracao",   framework: "BigFive", qtype: "autodeclaration",
+          text: "Conte uma situacao em que voce recebeu um code review duro. Como reagiu?",
+          response: "No comeco fiquei desconfortavel, mas pedi um pareamento e refiz a PR aceitando a maioria dos pontos.",
+          auto: 3.4, ctx: 3.5, bloom: 3, dreyfus: 3, score: 3.4,
+          evidences: ["Pareamento", "Abertura para revisao"], red_flags: [],
+          justification: "Postura saudavel, demonstra capacidade de absorver feedback." },
+        { competency: "Ownership",     framework: "CBI",     qtype: "contextual",
+          text: "Conte um bug em producao que voce ajudou a resolver. Qual foi seu papel?",
+          response: "Participei da investigacao mas quem coordenou foi outro dev. Ajudei a reproduzir o bug e abri o PR de correcao.",
+          auto: 3.0, ctx: 3.2, bloom: 3, dreyfus: 3, score: 3.1,
+          evidences: ["Reproducao do bug", "PR de correcao"], red_flags: ["Nao liderou o esforco"],
+          justification: "Contribuicao tecnica relevante, mas ainda nao lidera respostas a incidentes." }
+      ],
+      dialogue: [
+        { sender: "lia",       block: 0, content: "Oi, Joao! Eu sou a LIA. Vou te fazer algumas perguntas sobre a vaga de Senior Frontend Engineer. Tudo bem comecar?" },
+        { sender: "candidate", block: 0, content: "Tudo bem, pode mandar." },
+        { sender: "lia",       block: 1, content: "Conte sobre um componente complexo que voce projetou. Como organizou estado e composicao?" },
+        { sender: "candidate", block: 1, content: "Construi um wizard multi-step com contexto local e hooks, mas algumas partes ficaram acopladas." },
+        { sender: "lia",       block: 2, content: "Como voce tiparia uma funcao que recebe um payload variavel a partir de um discriminator em TypeScript?" },
+        { sender: "candidate", block: 2, content: "Union types com um campo 'kind' e narrowing por if/switch. Nunca usei mapped/conditional em producao." },
+        { sender: "lia",       block: 7, content: "Obrigada, Joao! Triagem concluida. Sua nota foi 3.3 (medio). Vamos te dar um retorno em breve." }
+      ]
+    },
+    {
+      candidate_id:        "11111111-1111-4111-8111-111111111113",
+      candidate_name:      "Ana Oliveira",
+      candidate_email:     "ana@example.com",
+      candidate_phone:     "+5511999990003",
+      candidate_title:     "Full Stack Developer",
+      candidate_seniority: "junior",
+      job_vacancy_id:      "22222222-2222-4222-8222-222222222224",
+      job_title:           "Senior Full Stack Engineer",
+      job_department:      "Engineering",
+      job_seniority:       "senior",
+      candidate_job_id:    "77777777-7777-4777-8777-777777777779",
+      session_id:          "33333333-3333-4333-8333-333333333335",
+      result_id:           "44444444-4444-4444-8444-444444444461",
+      report_id:           "44444444-4444-4444-8444-444444444462",
+      feedback_id:         "44444444-4444-4444-8444-444444444463",
+      triagem_id:          "55555555-5555-4555-8555-555555555557",
+      triagem_token:       "seed-triagem-ana-oliveira",
+      question_prefix:     "66666666-6666-4666-8686",
+      analysis_prefix:     "66666666-6666-4666-8687",
+      message_prefix:      "55555555-5555-4555-8558",
+      question_set_id:     "seed-fullstack-v1",
+      technical_wsi:       2.1,
+      behavioral_wsi:      2.4,
+      overall_wsi:         2.2,
+      classification:      "baixo",
+      percentile:          18,
+      recommendation: {
+        decisao:           "nao_avancar",
+        nivel_recomendado: "junior",
+        proximos_passos:   "Nao avancar para esta vaga senior. Manter no banco para oportunidades juniores."
+      },
+      executive_summary: "Ana demonstra perfil aderente a vagas juniores, mas com gaps tecnicos relevantes para uma posicao senior full stack (arquitetura, persistencia e ownership). Recomendamos nao avancar nesta vaga.",
+      technical_analysis: {
+        pontos_fortes: ["Vontade de aprender", "Conhece o basico de Rails e React"],
+        gaps:          ["Modelagem de dados", "Performance de queries", "Padroes de resiliencia"]
+      },
+      behavioral_analysis: {
+        colaboracao: 2.8, ownership: 2.0, comunicacao: 2.6,
+        destaques: ["Disposta a estudar"]
+      },
+      cultural_fit: {
+        score: 2.5,
+        valores_alinhados: ["Aprendizado continuo"]
+      },
+      feedback_decision: "reprovado",
+      feedback_main:     "Ana, agradecemos sua participacao. Para esta vaga senior, identificamos gaps importantes — mas seu perfil pode encaixar em oportunidades juniores futuras.",
+      feedback_strengths:    ["Energia para aprender", "Familiaridade basica com a stack"],
+      feedback_dev:          ["Modelagem relacional", "Performance de queries", "Padroes de arquitetura"],
+      feedback_behavioral:   ["Abertura para feedback"],
+      feedback_next:         "Vamos manter seu perfil em nosso banco para vagas juniores compativeis.",
+      feedback_tip:          "Aprofunde-se em SQL e padroes de design — vai abrir muitas portas.",
+      development_plan: {
+        foco_30_dias: ["Curso intensivo de SQL e modelagem"],
+        foco_90_dias: ["Construir um projeto completo aplicando padroes basicos"]
+      },
+      recommended_resources: [
+        { title: "SQL Antipatterns",            type: "livro" },
+        { title: "The Pragmatic Programmer",    type: "livro" }
+      ],
+      questions: [
+        { competency: "Ruby on Rails", framework: "Bloom",   qtype: "contextual",
+          text: "Conte sobre uma feature que voce desenvolveu em Rails. Como modelou os dados?",
+          response: "Fiz um CRUD de tarefas com scaffold. Usei o que o Rails gerou e nao mexi muito na modelagem.",
+          auto: 2.0, ctx: 2.1, bloom: 2, dreyfus: 1, score: 2.1,
+          evidences: ["Mencao a scaffold"], red_flags: ["Sem decisoes proprias de modelagem"],
+          justification: "Resposta superficial, indica pouca autonomia tecnica." },
+        { competency: "PostgreSQL",    framework: "Dreyfus", qtype: "microcase",
+          text: "Uma query simples ficou lenta. O que voce faria?",
+          response: "Talvez adicionar um indice. Sinceramente nunca precisei investigar performance ainda.",
+          auto: 1.8, ctx: 2.0, bloom: 2, dreyfus: 1, score: 1.9,
+          evidences: ["Cita indice"], red_flags: ["Nunca investigou performance"],
+          justification: "Conhecimento incipiente; ainda nao teve a experiencia esperada para o nivel." },
+        { competency: "Sistemas Distribuidos", framework: "Bloom", qtype: "situational",
+          text: "Como voce garantiria que um endpoint nao processe a mesma requisicao duas vezes?",
+          response: "Acho que daria pra checar antes se ja foi processado, mas nunca implementei algo assim.",
+          auto: 1.9, ctx: 2.0, bloom: 2, dreyfus: 1, score: 1.9,
+          evidences: [], red_flags: ["Sem familiaridade com idempotencia"],
+          justification: "Nao demonstra conhecimento de padroes basicos esperados." },
+        { competency: "Colaboracao",   framework: "BigFive", qtype: "autodeclaration",
+          text: "Conte uma situacao em que voce precisou pedir ajuda. Como agiu?",
+          response: "Travei numa task e demorei a pedir ajuda. Quando pedi, resolveram comigo em meia hora.",
+          auto: 2.7, ctx: 2.6, bloom: 3, dreyfus: 2, score: 2.6,
+          evidences: ["Reconhece atraso", "Pede ajuda"], red_flags: ["Demora em sinalizar bloqueio"],
+          justification: "Reconhece o ponto, mas ainda demora a sinalizar bloqueios." },
+        { competency: "Ownership",     framework: "CBI",     qtype: "contextual",
+          text: "Conte uma situacao em que voce assumiu a responsabilidade por algo que deu errado.",
+          response: "Quebrei a build uma vez e o senior corrigiu pra mim. Aprendi a rodar os testes localmente depois disso.",
+          auto: 2.0, ctx: 2.2, bloom: 2, dreyfus: 2, score: 2.1,
+          evidences: ["Aprendizado pos-erro"], red_flags: ["Nao corrigiu o proprio erro"],
+          justification: "Aprendizado positivo, mas ainda nao demonstra ownership ativo." }
+      ],
+      dialogue: [
+        { sender: "lia",       block: 0, content: "Oi, Ana! Eu sou a LIA. Vou te fazer algumas perguntas sobre a vaga de Senior Full Stack Engineer. Tudo bem comecar?" },
+        { sender: "candidate", block: 0, content: "Oi, sim, podemos comecar." },
+        { sender: "lia",       block: 1, content: "Conte sobre uma feature que voce desenvolveu em Rails. Como modelou os dados?" },
+        { sender: "candidate", block: 1, content: "Fiz um CRUD de tarefas com scaffold; nao mexi muito na modelagem." },
+        { sender: "lia",       block: 2, content: "Uma query simples ficou lenta. O que voce faria para investigar?" },
+        { sender: "candidate", block: 2, content: "Talvez adicionar um indice. Nunca precisei investigar performance ainda." },
+        { sender: "lia",       block: 7, content: "Obrigada, Ana! Triagem concluida. Sua nota foi 2.2. Daremos um retorno em breve." }
+      ]
+    }
+  ]
+
+  wsi_tables_ok =
+    conn.table_exists?("wsi_sessions") &&
+    conn.table_exists?("wsi_questions") &&
+    conn.table_exists?("wsi_response_analyses") &&
+    conn.table_exists?("wsi_results") &&
+    conn.table_exists?("wsi_reports") &&
+    conn.table_exists?("wsi_feedbacks")
+
+  triagem_tables_ok =
+    conn.table_exists?("triagem_sessions") &&
+    conn.table_exists?("triagem_messages") &&
+    conn.column_exists?("triagem_sessions", "token") &&
+    conn.column_exists?("triagem_messages", "wsi_block")
+
+  additional_screenings.each do |p|
+    # Reuse the Rails-side candidate UUID if it already exists for this email
+    existing_id = conn.select_value(
+      "SELECT id::text FROM candidates WHERE email = #{q.call(p[:candidate_email])} LIMIT 1"
+    )
+    cand_id = existing_id || p[:candidate_id]
+
+    conn.execute(<<~SQL)
+      INSERT INTO candidates (id, name, email, mobile_phone, current_title,
+                              seniority_level, source, company_id)
+      VALUES (#{q.call(cand_id)}, #{q.call(p[:candidate_name])},
+              #{q.call(p[:candidate_email])}, #{q.call(p[:candidate_phone])},
+              #{q.call(p[:candidate_title])}, #{q.call(p[:candidate_seniority])},
+              'seed', #{q.call(demo_company_id)})
+      ON CONFLICT (id) DO NOTHING
+    SQL
+
+    conn.execute(<<~SQL)
+      INSERT INTO job_vacancies (id, company_id, title, status, department,
+                                 seniority_level, employment_type,
+                                 created_at, updated_at)
+      VALUES (#{q.call(p[:job_vacancy_id])}, #{q.call(demo_company_id)},
+              #{q.call(p[:job_title])}, 'Ativa', #{q.call(p[:job_department])},
+              #{q.call(p[:job_seniority])}, 'clt', NOW(), NOW())
+      ON CONFLICT (id) DO NOTHING
+    SQL
+
+    conn.execute(<<~SQL)
+      INSERT INTO candidate_jobs (id, candidate_id, job_vacancy_id,
+                                  status, source, applied_at, created_at, updated_at)
+      VALUES (#{q.call(p[:candidate_job_id])}, #{q.call(cand_id)},
+              #{q.call(p[:job_vacancy_id])}, 'screening', 'seed',
+              NOW(), NOW(), NOW())
+      ON CONFLICT (id) DO NOTHING
+    SQL
+
+    if wsi_tables_ok
+      conn.execute(<<~SQL)
+        INSERT INTO wsi_sessions (id, candidate_id, job_vacancy_id, screening_type,
+                                  mode, status, question_set_version, question_set_id,
+                                  started_at, completed_at, created_at, updated_at)
+        VALUES (#{q.call(p[:session_id])}, #{q.call(cand_id)},
+                #{q.call(p[:job_vacancy_id])}, 'chat', 'compact', 'completed',
+                1, #{q.call(p[:question_set_id])},
+                NOW() - INTERVAL '25 minutes', NOW() - INTERVAL '8 minutes',
+                NOW() - INTERVAL '25 minutes', NOW())
+        ON CONFLICT (id) DO NOTHING
+      SQL
+
+      p[:questions].each_with_index do |qq, idx|
+        seq         = idx + 1
+        suffix      = (idx + 1).to_s.rjust(12, "0")
+        question_id = "#{p[:question_prefix]}-#{suffix}"
+        analysis_id = "#{p[:analysis_prefix]}-#{suffix}"
+
+        conn.execute(<<~SQL)
+          INSERT INTO wsi_questions (id, session_id, competency, framework,
+                                     question_type, question_text, weight,
+                                     expected_signals, scoring_criteria,
+                                     sequence_order, created_at)
+          VALUES (#{q.call(question_id)}, #{q.call(p[:session_id])},
+                  #{q.call(qq[:competency])}, #{q.call(qq[:framework])},
+                  #{q.call(qq[:qtype])}, #{q.call(qq[:text])},
+                  1.0, '[]'::jsonb, '{}'::jsonb,
+                  #{seq}, NOW())
+          ON CONFLICT (id) DO NOTHING
+        SQL
+
+        conn.execute(<<~SQL)
+          INSERT INTO wsi_response_analyses (id, session_id, question_id,
+                                             candidate_id, job_vacancy_id,
+                                             competency, response_text,
+                                             autodeclaration_score, context_score,
+                                             bloom_level, dreyfus_level,
+                                             evidences, red_flags,
+                                             consistency_penalty, final_score,
+                                             justification, created_at)
+          VALUES (#{q.call(analysis_id)}, #{q.call(p[:session_id])},
+                  #{q.call(question_id)},
+                  #{q.call(cand_id)}, #{q.call(p[:job_vacancy_id])},
+                  #{q.call(qq[:competency])}, #{q.call(qq[:response])},
+                  #{qq[:auto]}, #{qq[:ctx]}, #{qq[:bloom]}, #{qq[:dreyfus]},
+                  #{q.call(qq[:evidences].to_json)}::jsonb,
+                  #{q.call(qq[:red_flags].to_json)}::jsonb,
+                  0, #{qq[:score]}, #{q.call(qq[:justification])}, NOW())
+          ON CONFLICT (id) DO NOTHING
+        SQL
+      end
+
+      conn.execute(<<~SQL)
+        INSERT INTO wsi_results (id, session_id, candidate_id, job_vacancy_id,
+                                 technical_wsi, behavioral_wsi, overall_wsi,
+                                 classification, percentile, created_at)
+        VALUES (#{q.call(p[:result_id])}, #{q.call(p[:session_id])},
+                #{q.call(cand_id)}, #{q.call(p[:job_vacancy_id])},
+                #{p[:technical_wsi]}, #{p[:behavioral_wsi]}, #{p[:overall_wsi]},
+                #{q.call(p[:classification])}, #{p[:percentile]}, NOW())
+        ON CONFLICT (id) DO NOTHING
+      SQL
+
+      conn.execute(<<~SQL)
+        INSERT INTO wsi_reports (id, wsi_result_id, candidate_id, executive_summary,
+                                 technical_analysis, behavioral_analysis,
+                                 cultural_fit, recommendation, created_at)
+        VALUES (#{q.call(p[:report_id])}, #{q.call(p[:result_id])},
+                #{q.call(cand_id)},
+                #{q.call(p[:executive_summary])},
+                #{q.call(p[:technical_analysis].to_json)}::jsonb,
+                #{q.call(p[:behavioral_analysis].to_json)}::jsonb,
+                #{q.call(p[:cultural_fit].to_json)}::jsonb,
+                #{q.call(p[:recommendation].to_json)}::jsonb,
+                NOW())
+        ON CONFLICT (id) DO NOTHING
+      SQL
+
+      conn.execute(<<~SQL)
+        INSERT INTO wsi_feedbacks (id, wsi_result_id, candidate_id, decision,
+                                   main_message, technical_strengths,
+                                   development_opportunities, behavioral_strengths,
+                                   next_steps, personalized_tip,
+                                   development_plan, recommended_resources,
+                                   created_at)
+        VALUES (#{q.call(p[:feedback_id])}, #{q.call(p[:result_id])},
+                #{q.call(cand_id)}, #{q.call(p[:feedback_decision])},
+                #{q.call(p[:feedback_main])},
+                #{q.call(p[:feedback_strengths].to_json)}::jsonb,
+                #{q.call(p[:feedback_dev].to_json)}::jsonb,
+                #{q.call(p[:feedback_behavioral].to_json)}::jsonb,
+                #{q.call(p[:feedback_next])},
+                #{q.call(p[:feedback_tip])},
+                #{q.call(p[:development_plan].to_json)}::jsonb,
+                #{q.call(p[:recommended_resources].to_json)}::jsonb,
+                NOW())
+        ON CONFLICT (id) DO NOTHING
+      SQL
+    end
+
+    if triagem_tables_ok
+      conn.execute(<<~SQL)
+        INSERT INTO triagem_sessions (id, token, candidate_id, candidate_name,
+                                      candidate_email, job_id, job_title,
+                                      company_id, company_name, status,
+                                      current_block, total_blocks, wsi_final_score,
+                                      recommendation, invite_channel, voice_mode,
+                                      expires_at, started_at, completed_at,
+                                      created_at, updated_at, metadata_json)
+        VALUES (#{q.call(p[:triagem_id])},
+                #{q.call(p[:triagem_token])},
+                #{q.call(cand_id)}, #{q.call(p[:candidate_name])},
+                #{q.call(p[:candidate_email])},
+                #{q.call(p[:job_vacancy_id])}, #{q.call(p[:job_title])},
+                #{q.call(demo_company_id)}, 'WeDOTalent', 'completed',
+                7, 7, #{p[:overall_wsi]},
+                #{q.call(p[:recommendation][:decisao])}, 'email', false,
+                NOW() + INTERVAL '7 days',
+                NOW() - INTERVAL '25 minutes',
+                NOW() - INTERVAL '8 minutes',
+                NOW() - INTERVAL '25 minutes', NOW(),
+                #{q.call({ wsi_session_id: p[:session_id], wsi_result_id: p[:result_id], source: "seed" }.to_json)}::json)
+        ON CONFLICT (id) DO NOTHING
+      SQL
+
+      p[:dialogue].each_with_index do |msg, idx|
+        msg_id = "#{p[:message_prefix]}-#{idx.to_s.rjust(12, '0')}"
+        conn.execute(<<~SQL)
+          INSERT INTO triagem_messages (id, session_id, sender, content,
+                                        message_type, wsi_block, score,
+                                        metadata_json, created_at)
+          VALUES (#{q.call(msg_id)}, #{q.call(p[:triagem_id])},
+                  #{q.call(msg[:sender])}, #{q.call(msg[:content])},
+                  'text', #{msg[:block]}, NULL, '{}'::json,
+                  NOW() - INTERVAL '25 minutes' + (#{idx} * INTERVAL '90 seconds'))
+          ON CONFLICT (id) DO NOTHING
+        SQL
+      end
+    end
+
+    puts "Demo WSI screening seeded for #{p[:candidate_name]} on #{p[:job_title]} (#{p[:classification]})"
+  end
 else
   puts "Demo WSI screening: required Python lia-agent-system tables/columns " \
        "are not present in this database; skipping the demo block. " \
