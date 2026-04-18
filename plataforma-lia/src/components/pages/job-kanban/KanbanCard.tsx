@@ -1,186 +1,176 @@
 "use client"
 
-import React from"react"
-import { useTranslations } from"next-intl"
-import { useLocale } from"next-intl"
-import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
-import { Badge } from"@/components/ui/badge"
-import { Card, CardContent } from"@/components/ui/card"
-import { GripVertical, Star, MessageSquare, Clock, TrendingUp, AlertTriangle } from"lucide-react"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
-import { textStyles, buttonStyles, cardStyles, badgeStyles } from"@/lib/design-tokens"
-import type { KanbanCandidate } from"./types"
-import { getPercentageScoreColorClass } from"@/lib/score-utils"
+import React from "react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
+import { GripVertical, Star, MessageSquare, Clock, TrendingUp, AlertTriangle, AlertCircle } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { getPercentageScoreColorClass } from "@/lib/score-utils"
+import type { KanbanItem } from "./types"
 
 interface KanbanCardProps {
-  candidate: KanbanCandidate
+  item: KanbanItem
   index: number
   onClick: () => void
   isDragDisabled?: boolean
 }
 
 export const KanbanCard = React.memo(function KanbanCard({
-  candidate,
+  item,
   index,
   onClick,
   isDragDisabled = false,
 }: KanbanCardProps) {
-  const t = useTranslations('kanban')
-  const locale = useLocale()
-  const getScoreColor = (score?: number) => {
-    if (!score) return"text-lia-text-disabled"
-    return getPercentageScoreColorClass(score)
-  }
+  const scoreColor = item.scoreColorClass
+    ?? (item.score != null ? getPercentageScoreColorClass(item.score) : "text-lia-text-disabled")
 
-  const getInitials = (name: string) => {
-    return name
-      .split("")
-      .map((n) => n[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase()
-  }
-
-  const isStale = (candidate.days_in_stage ?? 0) > 7
-  const isHighScore = (candidate.lia_score ?? 0) >= 80
-  const isLowScore = (candidate.lia_score ?? 0) < 40 && (candidate.lia_score ?? 0) > 0
+  const chips = item.chips ?? []
 
   return (
     <Card
       className="bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-default dark:hover:border-lia-border-medium cursor-pointer transition-colors motion-reduce:transition-none hover:group rounded-xl"
       onClick={onClick}
-      data-testid="candidate-card"
-      data-candidate-id={candidate.id}
+      data-testid="kanban-item-card"
+      data-item-id={item.id}
       data-index={index}
     >
       <CardContent className="p-3">
         <div className="flex items-start gap-2">
           {!isDragDisabled && (
-            <div 
+            <div
               className="opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none cursor-grab"
               data-testid="drag-handle"
             >
               <GripVertical className="h-4 w-4 text-lia-text-disabled" />
             </div>
           )}
-          
+
           <Avatar className="h-8 w-8 flex-shrink-0">
-            <AvatarImage src={candidate.avatar_url} alt={candidate.name} />
+            {item.avatarUrl && <AvatarImage src={item.avatarUrl} alt={item.title} />}
             <AvatarFallback className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-secondary text-xs">
-              {getInitials(candidate.name)}
+              {item.avatarFallback ?? item.title.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
               <span className="font-medium text-lia-text-primary text-sm truncate">
-                {candidate.name}
+                {item.title}
               </span>
-              {candidate.lia_score && (
-                <span className={`text-sm font-bold ${getScoreColor(candidate.lia_score)}`}>
-                  {Math.round(candidate.lia_score)}
+              {item.score != null && (
+                <span className={`text-sm font-bold ${scoreColor}`}>
+                  {Math.round(item.score)}
                 </span>
               )}
             </div>
-            
-            {candidate.current_title && (
+
+            {item.subtitle && (
               <p className="text-xs text-lia-text-secondary truncate mt-0.5">
-                {candidate.current_title}
+                {item.subtitle}
               </p>
             )}
-            
-            {candidate.current_company && (
+
+            {item.tertiary && (
               <p className="text-xs text-lia-text-tertiary truncate">
-                {candidate.current_company}
+                {item.tertiary}
               </p>
             )}
           </div>
         </div>
-        
-        {candidate.substatus && (
-          <Badge 
-            variant="outline" 
+
+        {item.badge && (
+          <Badge
+            variant="outline"
             className="mt-2 text-xs border-lia-border-default dark:border-lia-border-default text-lia-text-secondary"
           >
-            {candidate.substatus}
+            {item.badge}
           </Badge>
         )}
-        
-        {candidate.skills && candidate.skills.length > 0 && (
+
+        {chips.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
-            {candidate.skills.slice(0, 3).map((skill) => (
-              <Badge 
-                key={skill} 
-                variant="outline" 
+            {chips.slice(0, 3).map((chip) => (
+              <Badge
+                key={chip}
+                variant="outline"
                 className="text-micro border-lia-border-default dark:border-lia-border-default text-lia-text-secondary py-0"
               >
-                {skill}
+                {chip}
               </Badge>
             ))}
-            {candidate.skills.length > 3 && (
-              <Badge 
-                variant="outline" 
+            {chips.length > 3 && (
+              <Badge
+                variant="outline"
                 className="text-micro border-lia-border-default dark:border-lia-border-default text-lia-text-tertiary py-0"
               >
-                +{candidate.skills.length - 3}
+                +{chips.length - 3}
               </Badge>
             )}
           </div>
         )}
-        
+
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-lia-border-subtle dark:border-lia-border-subtle">
           <TooltipProvider delayDuration={200}>
             <div className="flex items-center gap-2">
-              {candidate.tags?.includes("favorite") && (
+              {item.flagFavorite && (
                 <Star className="h-3 w-3 text-status-warning fill-amber-500" />
               )}
-              {candidate.notes && (
+              {item.flagNotes && (
                 <MessageSquare className="h-3 w-3 text-lia-text-disabled" />
               )}
-              {isStale && (
+              {item.flagStaleTooltip && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Clock className="h-3 w-3 text-status-warning" />
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
-                    {t('staleTooltip', { days: candidate.days_in_stage })}
+                    {item.flagStaleTooltip}
                   </TooltipContent>
                 </Tooltip>
               )}
-              {isHighScore && (
+              {item.flagHighScoreTooltip && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <TrendingUp className="h-3 w-3 text-status-success" />
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
-                    {t('highScoreTooltip', { score: Math.round(candidate.lia_score!) })}
+                    {item.flagHighScoreTooltip}
                   </TooltipContent>
                 </Tooltip>
               )}
-              {isLowScore && (
+              {item.flagLowScoreTooltip && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <AlertTriangle className="h-3 w-3 text-status-error" />
                   </TooltipTrigger>
                   <TooltipContent side="top" className="text-xs">
-                    {t('lowScoreTooltip', { score: Math.round(candidate.lia_score!) })}
+                    {item.flagLowScoreTooltip}
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              {item.flagAttention && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertCircle className="h-3 w-3 text-status-warning" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    {item.flagAttention.tooltip}
                   </TooltipContent>
                 </Tooltip>
               )}
             </div>
           </TooltipProvider>
-          
-          <span className="text-micro text-lia-text-tertiary">
-            {new Date(candidate.addedAt).toLocaleDateString(locale, {
-              day:"2-digit",
-              month:"short"
-            })}
-          </span>
+
+          {item.dateLabel && (
+            <span className="text-micro text-lia-text-tertiary">
+              {item.dateLabel}
+            </span>
+          )}
         </div>
       </CardContent>
     </Card>
   )
 })
 
-// Vue migration prep: displayName for DevTools compatibility
 KanbanCard.displayName = 'KanbanCard'

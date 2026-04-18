@@ -97,6 +97,7 @@ interface UIPreferencesState {
   liaFavorites: string[]
   liaPrompt: string | null
   pipelineOverviewMode: 'vagas' | 'candidatos'
+  jobsViewMode: 'table' | 'kanban'
 }
 
 interface UIPreferencesActions {
@@ -135,6 +136,7 @@ interface UIPreferencesActions {
   toggleLiaFavorite: (id: string) => void
   setLiaPrompt: (prompt: string | null) => void
   setPipelineOverviewMode: (mode: 'vagas' | 'candidatos') => void
+  setJobsViewMode: (mode: 'table' | 'kanban') => void
   resetSessionData: () => void
 }
 
@@ -169,6 +171,7 @@ export const useUIPreferencesStore = create<UIPreferencesStore>()(
         liaFavorites: [],
         liaPrompt: null,
         pipelineOverviewMode: 'candidatos',
+        jobsViewMode: 'table',
 
         setCandidateTableColumns: (columns) =>
           set({ candidateTableColumns: columns }, false, 'uiPrefs/setCandidateTableColumns'),
@@ -346,6 +349,9 @@ export const useUIPreferencesStore = create<UIPreferencesStore>()(
 
         setPipelineOverviewMode: (mode) =>
           set({ pipelineOverviewMode: mode }, false, 'uiPrefs/setPipelineOverviewMode'),
+
+        setJobsViewMode: (mode) =>
+          set({ jobsViewMode: mode }, false, 'uiPrefs/setJobsViewMode'),
 
         resetSessionData: () =>
           set(

@@ -1382,6 +1382,22 @@
       "senioritySpecialist": "Specialist"
     }
   },
+  "jobsView": {
+    "table": "Table",
+    "kanban": "Kanban",
+    "toggleAriaLabel": "Toggle between Table and Kanban view",
+    "emptyColumn": "No jobs in this stage",
+    "deadlineSoon": "Due in {days}d",
+    "deadlinePast": "Overdue {days}d",
+    "candidatesCount": "{count} candidates",
+    "columns": {
+      "rascunho": "Draft",
+      "aguardando": "Pending Approval",
+      "publicada": "Published",
+      "ao_vivo": "Live",
+      "encerrada": "Closed"
+    }
+  },
   "pipelineOverview": {
     "title": "Pipeline View",
     "toggle": {

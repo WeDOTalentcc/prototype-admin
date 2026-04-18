@@ -3,7 +3,8 @@
 import React from"react"
 import {
   Briefcase, CheckCircle, CheckCircle2, Target, ChevronsLeftRight,
-  Brain, Copy, Share2, UserCheck, X, ChevronRight, Loader2
+  Brain, Copy, Share2, UserCheck, X, ChevronRight, Loader2,
+  Table as TableIcon, LayoutGrid
 } from"lucide-react"
 import { Button } from"@/components/ui/button"
 import { Badge } from"@/components/ui/badge"
@@ -12,12 +13,14 @@ import { BulkActionsBar } from"@/components/ui/bulk-actions-bar"
 import { TableFiltersPanel } from"@/components/pages/jobs/TableFiltersPanel"
 import { JobPreviewPanel } from"@/components/pages/jobs/JobPreviewPanel"
 import { JobsCompactTableView } from"@/components/pages/jobs/JobsCompactTableView"
+import { JobsKanbanView } from"@/components/pages/jobs/JobsKanbanView"
 import { ColumnConfigPanel } from"@/components/pages/jobs/ColumnConfigPanel"
 import { toast } from"sonner"
 import type { Job } from"@/components/jobs"
 import type { ScreeningConfig } from"@/hooks/recruitment/useScreeningConfig"
 import type { JobVacancyMetrics } from"@/services/lia-api"
 import { useTranslations } from 'next-intl'
+import { useUIPreferencesStore } from"@/stores/ui-preferences-store"
 
 interface JobFiltersLocal {
   status?: { statuses?: string[]; stages?: string[]; priorities?: string[] }
@@ -118,6 +121,9 @@ export function JobsListContent(props: JobsListContentProps) {
   } = props
 
   const t = useTranslations('jobs')
+  const tView = useTranslations('jobsView')
+  const jobsViewMode = useUIPreferencesStore((s) => s.jobsViewMode)
+  const setJobsViewMode = useUIPreferencesStore((s) => s.setJobsViewMode)
 
   const bulkActions = [
     { id: 'publish', label: t('publish'), icon: <Share2 className="w-3.5 h-3.5 text-lia-text-secondary" />, onClick: handleJobPublish },
@@ -133,6 +139,32 @@ export function JobsListContent(props: JobsListContentProps) {
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
       <div className="flex-shrink-0 flex items-center justify-end gap-4 mt-3 mb-2">
           <div className="flex items-center gap-3">
+            <div
+              className="inline-flex items-center rounded-md border border-lia-border-default dark:border-lia-border-default bg-lia-bg-primary dark:bg-lia-bg-secondary p-0.5"
+              role="group"
+              aria-label={tView('toggleAriaLabel')}
+            >
+              <Button
+                variant={jobsViewMode === 'table' ? 'primary' : 'ghost'}
+                size="sm"
+                onClick={() => setJobsViewMode('table')}
+                className={`gap-1.5 text-xs h-7 px-2.5 ${jobsViewMode === 'table' ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white' : 'text-lia-text-secondary'}`}
+                aria-pressed={jobsViewMode === 'table'}
+                title={tView('table')}
+              >
+                <TableIcon className="w-3 h-3" /> {tView('table')}
+              </Button>
+              <Button
+                variant={jobsViewMode === 'kanban' ? 'primary' : 'ghost'}
+                size="sm"
+                onClick={() => setJobsViewMode('kanban')}
+                className={`gap-1.5 text-xs h-7 px-2.5 ${jobsViewMode === 'kanban' ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white' : 'text-lia-text-secondary'}`}
+                aria-pressed={jobsViewMode === 'kanban'}
+                title={tView('kanban')}
+              >
+                <LayoutGrid className="w-3 h-3" /> {tView('kanban')}
+              </Button>
+            </div>
             {selectedJobsForBatch.size > 0 && (
               <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default text-xs font-bold">
                 🎯 {selectedJobsForBatch.size}
@@ -191,9 +223,41 @@ export function JobsListContent(props: JobsListContentProps) {
         />
 
         <div className={`h-full bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl transition-[width,height] duration-300 min-w-0 overflow-hidden ${
-          isTableCollapsed ? 'w-14 flex-shrink-0' : 'flex-1'
+          isTableCollapsed && jobsViewMode === 'table' ? 'w-14 flex-shrink-0' : 'flex-1'
         }`}>
-          {isTableCollapsed ? (
+          {jobsViewMode === 'kanban' ? (
+            jobsError && !isLoadingJobs ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <p className="text-sm text-red-400 mb-3">{jobsError}</p>
+                  {loadBackendJobs && (
+                    <Button variant="outline" size="sm" onClick={() => loadBackendJobs()}>
+                      {t('tryAgain')}
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ) : isLoadingJobs ? (
+              <div className="flex items-center justify-center py-12" role="status" aria-live="polite" aria-label={t('loadingAriaLabel')}>
+                <div className="flex items-center gap-2 text-sm text-lia-text-tertiary">
+                  <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none" />
+                  <span>{t('loadingJobs')}</span>
+                </div>
+              </div>
+            ) : filteredJobs.length === 0 ? (
+              <EmptyState
+                icon={<Briefcase />}
+                title={t('emptyTitle')}
+                description={t('emptyDescription')}
+                action={{ label: t('emptyAction'), onClick: () => openJobCreationChat() }}
+                className="h-64"
+              />
+            ) : (
+              <div className="h-full p-2">
+                <JobsKanbanView jobs={filteredJobs} onJobClick={handleJobClick} />
+              </div>
+            )
+          ) : isTableCollapsed ? (
             <div className="h-full flex flex-col items-center py-4 gap-3">
               <Button variant="ghost" size="sm" onClick={toggleTableExpansion}
                 className="h-10 w-10 p-0 rounded-lg hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse" title={t('expandTable')}>

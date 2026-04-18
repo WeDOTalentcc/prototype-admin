@@ -77,6 +77,26 @@ export interface KanbanPageState {
   liaSuggestions: LIASuggestion[]
 }
 
+export interface KanbanItem {
+  id: string
+  title: string
+  subtitle?: string
+  tertiary?: string
+  avatarUrl?: string
+  avatarFallback?: string
+  score?: number
+  scoreColorClass?: string
+  badge?: string
+  chips?: string[]
+  flagFavorite?: boolean
+  flagNotes?: boolean
+  flagStaleTooltip?: string
+  flagHighScoreTooltip?: string
+  flagLowScoreTooltip?: string
+  flagAttention?: { tooltip: string }
+  dateLabel?: string
+}
+
 export interface DragResult {
   draggableId: string
   source: {

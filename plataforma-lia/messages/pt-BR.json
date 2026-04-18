@@ -1382,6 +1382,22 @@
       "senioritySpecialist": "Especialista"
     }
   },
+  "jobsView": {
+    "table": "Tabela",
+    "kanban": "Kanban",
+    "toggleAriaLabel": "Alternar entre visão Tabela e Kanban",
+    "emptyColumn": "Nenhuma vaga neste estágio",
+    "deadlineSoon": "Vence em {days}d",
+    "deadlinePast": "Atrasada {days}d",
+    "candidatesCount": "{count} candidatos",
+    "columns": {
+      "rascunho": "Rascunho",
+      "aguardando": "Aguardando Aprovação",
+      "publicada": "Publicada",
+      "ao_vivo": "Ao Vivo",
+      "encerrada": "Encerrada"
+    }
+  },
   "pipelineOverview": {
     "title": "Visão do Funil",
     "toggle": {
