@@ -94,6 +94,7 @@ class ActionExecutorService:
                     params["from_stage"] = resolved["stage"]
             elif candidate_name:
                 params["candidate_name_unresolved"] = candidate_name
+                params["candidate_name"] = candidate_name  # FIX: pass through for handler API name-lookup
 
         target_stage = entities.get("target_stage") or entities.get("to_stage") or entities.get("stage")
         if target_stage:
