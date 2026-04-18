@@ -339,11 +339,13 @@ async def whatsapp_initiate(
         raise HTTPException(status_code=409, detail="Triagem já foi concluída")
 
     # Server-side channel gating: master toggle + WhatsApp must be enabled.
-    config = await triagem_svc.get_session_config(repo.db, token)
-    if not config or not config.get("valid"):
+    # NOTE: get_session_config returns the flags/labels nested under
+    # response["config"] (not at the top level). Read from there.
+    cfg_response = await triagem_svc.get_session_config(repo.db, token)
+    if not cfg_response or not cfg_response.get("valid"):
         raise HTTPException(status_code=404, detail="Sessão não encontrada")
-    job_info = config.get("job") or {}
-    if not job_info.get("whatsappEnabled", False):
+    session_cfg = cfg_response.get("config") or {}
+    if not session_cfg.get("whatsappEnabled", False):
         raise HTTPException(
             status_code=403,
             detail="O canal WhatsApp não está habilitado para esta vaga. Escolha outro canal.",
@@ -353,7 +355,7 @@ async def whatsapp_initiate(
     #   'wa_link'        → return wa.me link only (legacy)
     #   'twilio_direct'  → send via Twilio WA Business only
     #   'both'           → return wa.me link AND attempt Twilio direct send
-    wa_mode = job_info.get("whatsappMode") or "wa_link"
+    wa_mode = session_cfg.get("whatsappMode") or "wa_link"
     if wa_mode not in ("wa_link", "twilio_direct", "both"):
         wa_mode = "wa_link"
 
@@ -363,11 +365,9 @@ async def whatsapp_initiate(
     if not raw.startswith("55"):
         raw = "55" + raw
 
-    job_title = job_info.get("title") or "a vaga"
-    company_info = config.get("company") or {}
-    company_name = company_info.get("name") or "a empresa"
-    candidate_info = config.get("candidate") or {}
-    candidate_name = candidate_info.get("name") or "candidato(a)"
+    job_title = session_cfg.get("jobTitle") or "a vaga"
+    company_name = session_cfg.get("companyName") or "a empresa"
+    candidate_name = session_cfg.get("candidateName") or "candidato(a)"
     from urllib.parse import quote as _urlquote
     message = (
         f"Olá! Sou a LIA, assistente da {company_name}. Vamos continuar a sua "
