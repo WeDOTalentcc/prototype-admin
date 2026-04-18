@@ -64,7 +64,6 @@ ALLOW_LIST: set[str] = {
     "app/domains/job_management/tools/query_tools.py",
     "app/domains/cv_screening/tools/cv_upload_tool.py",
     "app/domains/cv_screening/tools/candidate_tools.py",
-    "app/domains/cv_screening/tools/cv_match_tool.py",
     "app/domains/sourcing/tools/query_tools.py",
 }
 

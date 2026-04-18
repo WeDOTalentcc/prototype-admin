@@ -94,7 +94,7 @@ def initialize_tools() -> None:
     from app.domains.analytics.tools.query_tools import register_query_tools
     from app.domains.communication.tools.communication_tools import register_communication_tools
     from app.domains.cv_screening.tools.candidate_tools import register_candidate_tools
-    from app.domains.cv_screening.tools.cv_match_tool import register_cv_match_tool
+    from app.domains.cv_screening.tools.cv_match_tool import get_cv_match_tools
     from app.domains.cv_screening.tools.cv_upload_tool import register_cv_upload_tools
     from app.domains.job_management.tools.job_tools import register_job_tools
     from app.domains.job_management.tools.job_wizard_tools import register_job_wizard_tools
@@ -109,7 +109,8 @@ def initialize_tools() -> None:
     register_export_tools()
     register_query_tools()
     register_pipeline_tools()
-    register_cv_match_tool()
+    for _td in get_cv_match_tools():
+        tool_registry.register(_td)
     register_cv_upload_tools()
     register_talent_intelligence_tools()
     

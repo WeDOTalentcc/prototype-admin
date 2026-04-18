@@ -62,7 +62,7 @@ Escopo: apenas o que muda *além* do que já está pronto. Cada item é uma task
 
 1. **Documentar** (este ADR + parágrafo S7.4 em `ARCHITECTURE.md`). ← feito nesta task.
 2. **Docstring em `app/tools/registry.py`** marcando o arquivo como "execution router, not authoring surface" e apontando para `@tool_handler`.
-3. **Auditoria de chamadas diretas a `tool_registry.register`** fora de `app/tools/__init__.py` e fora de `app/tools/registry.py` em si. O grep inicial mostra os 12 módulos esperados; qualquer chamador fora de `initialize_tools()` precisa ser convertido para um `*_tool_registry.py` no domínio dele.
+3. **Auditoria de chamadas diretas a `tool_registry.register`** fora de `app/tools/__init__.py` e fora de `app/tools/registry.py` em si. O grep inicial mostrou 12 módulos grandfathered no `ALLOW_LIST` do guard S7.5; cada um precisa ser convertido para `@tool_handler` + `get_<domínio>_tools()` agregado em `initialize_tools()`. **Progresso:** `app/domains/cv_screening/tools/cv_match_tool.py` migrado (Task #417) — restam 11 entradas no allow list.
 4. **Migração da config LLM por tenant para DB:**
    - 4a. Garantir que `tenant_llm_config` cobre `llm_provider` + `llm_fallback_order` (parece já cobrir — confirmar schema).
    - 4b. Mudar `llm_factory._load_from_permissions` para ser apenas o fallback de sistema (sem `tenant_id`); o caminho normal vira `load_from_db(tenant_id)`.
