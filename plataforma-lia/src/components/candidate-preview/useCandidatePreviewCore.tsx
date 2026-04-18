@@ -73,10 +73,10 @@ export function useCandidatePreviewCore(candidate: Record<string, unknown> | nul
 const candidateId = candidate?.id as string | undefined
 
   const fetchOpinionsSummary = useCallback(async () => {
-    if (!candidateId) return
+    if (!candidateId || !companyId) return
     setIsLoadingOpinions(true)
     try {
-      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${companyId || ''}`)
+      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${encodeURIComponent(companyId)}`)
       if (response.ok) {
         const data = await response.json()
         setOpinionsData(data)
@@ -88,10 +88,10 @@ const candidateId = candidate?.id as string | undefined
   }, [candidateId, companyId])
 
   const fetchSavedAnalyses = useCallback(async () => {
-    if (!candidateId) return
+    if (!candidateId || !companyId) return
     setIsLoadingAnalyses(true)
     try {
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidateId}?company_id=${companyId || ''}`)
+      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidateId}?company_id=${encodeURIComponent(companyId)}`)
       if (response.ok) {
         const data = await response.json()
         setSavedAnalyses(data)
@@ -103,8 +103,9 @@ const candidateId = candidate?.id as string | undefined
   }, [candidateId, companyId])
 
   const saveAnalysisToBackend = async (analysis: { type: string; content: string; candidate_id: string }) => {
+    if (!companyId) return false
     try {
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/save?company_id=${companyId || ''}`, {
+      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/save?company_id=${encodeURIComponent(companyId)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -135,7 +136,7 @@ const candidateId = candidate?.id as string | undefined
   }
 
   const fetchOpinionsHistory = useCallback(async () => {
-    if (!candidateId) return
+    if (!candidateId || !companyId) return
 
     if (lastFetchedHistoryCandidateRef.current === candidateId && opinionsHistory.length > 0) {
       return
@@ -144,7 +145,7 @@ const candidateId = candidate?.id as string | undefined
     lastFetchedHistoryCandidateRef.current = candidateId
     setIsLoadingHistory(true)
     try {
-      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/history?company_id=${companyId || ''}`)
+      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/history?company_id=${encodeURIComponent(companyId)}`)
       if (response.ok) {
         const data = await response.json()
         setOpinionsHistory(data)
@@ -227,7 +228,7 @@ const candidateId = candidate?.id as string | undefined
   }
 
   const generateNewOpinion = async () => {
-    if (!candidate) return
+    if (!candidate || !companyId) return
     setShowUpdateOpinionAlert(false)
     setIsAnalyzingWithLia(true)
 
@@ -248,7 +249,7 @@ const candidateId = candidate?.id as string | undefined
         seniority_level: c.seniorityLevel || c.seniority_level || ''
       }
 
-      const analysisResponse = await fetch(`/api/backend-proxy/analysis/candidates?company_id=${companyId || ''}`, {
+      const analysisResponse = await fetch(`/api/backend-proxy/analysis/candidates?company_id=${encodeURIComponent(companyId)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -297,7 +298,7 @@ const candidateId = candidate?.id as string | undefined
         next_steps: result.potential_roles ? `Cargos potenciais: ${result.potential_roles.join(', ')}` : 'Validar perfil em entrevista'
       }
 
-      const opinionResponse = await fetch(`/api/backend-proxy/opinions?company_id=${companyId || ''}&user_id=system`, {
+      const opinionResponse = await fetch(`/api/backend-proxy/opinions?company_id=${encodeURIComponent(companyId)}&user_id=system`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(opinionPayload)
@@ -321,7 +322,7 @@ const candidateId = candidate?.id as string | undefined
   }
 
   const handleAnalyzeWithLia = async () => {
-    if (!candidateId || !candidate) return
+    if (!candidateId || !candidate || !companyId) return
 
     const validation = validateCandidateDataForOpinion(candidate)
 
@@ -338,7 +339,7 @@ const candidateId = candidate?.id as string | undefined
     }
 
     try {
-      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${companyId || ''}`)
+      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${encodeURIComponent(companyId)}`)
       if (summaryResponse.ok) {
         const data = await summaryResponse.json()
         if (data.current_general_opinion?.created_at) {
@@ -359,9 +360,10 @@ const candidateId = candidate?.id as string | undefined
 
   const handleProceedWithLimitedData = async () => {
     setShowInsufficientDataModal(false)
+    if (!companyId) return
 
     try {
-      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${companyId || ''}`)
+      const summaryResponse = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${encodeURIComponent(companyId)}`)
       if (summaryResponse.ok) {
         const data = await summaryResponse.json()
         if (data.current_general_opinion?.created_at) {
@@ -480,11 +482,12 @@ const candidateId = candidate?.id as string | undefined
   }
 
   const handleDeleteAnalysis = async (analysis: Record<string, unknown>) => {
+    if (!companyId) return
     setIsDeletingAnalysis(true)
     try {
       const c = candidate as Record<string, unknown>
       const cId = c.id || c.candidate_id
-      const response = await fetch(`/api/lia/profile-analysis/${cId}/${analysis.analysis_type}?company_id=${companyId || ''}`, {
+      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/${cId}/${analysis.analysis_type}?company_id=${encodeURIComponent(companyId)}`, {
         method: 'DELETE',
       })
 

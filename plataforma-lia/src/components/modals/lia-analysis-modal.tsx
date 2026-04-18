@@ -5,6 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button"
 import { Copy, Check, ArrowRight, Brain, X } from "lucide-react"
 import { toast } from "sonner"
+import { useCurrentCompany } from "@/hooks/company/use-current-company"
 type AnalysisType = 'bullet_points' | 'short_paragraph' | 'detailed_bullets'
 
 interface LiaAnalysis {
@@ -46,13 +47,16 @@ export function LiaAnalysisModal({
   const [loadingAnalysis, setLoadingAnalysis] = useState<AnalysisType | null>(null)
   const [copiedTab, setCopiedTab] = useState<AnalysisType | null>(null)
   const [savedMessage, setSavedMessage] = useState<string | null>(null)
+  const [analysisError, setAnalysisError] = useState<string | null>(null)
+  const { companyId, loading: loadingCompany } = useCurrentCompany()
 const generateAnalysis = useCallback(async (type: AnalysisType) => {
-    if (!candidate?.id) return
-    
+    if (!candidate?.id || !companyId) return
+
+    setAnalysisError(null)
     setLoadingAnalysis(type)
-    
+
     try {
-      const response = await fetch('/api/backend-proxy/lia/profile-analysis', {
+      const response = await fetch(`/api/backend-proxy/lia/profile-analysis?company_id=${encodeURIComponent(companyId)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -73,11 +77,27 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
       })
 
       if (!response.ok) {
-        throw new Error('Falha ao gerar análise')
+        let errMsg = "Não foi possível gerar a análise. Tente novamente."
+        if (response.status === 401) {
+          errMsg = "Sessão expirada, recarregue a página."
+        } else if (response.status === 413) {
+          errMsg = "Perfil muito extenso para gerar análise."
+        } else if (response.status === 400) {
+          errMsg = "Dados do candidato insuficientes para gerar análise."
+        }
+        try {
+          const body = await response.json()
+          if (body?.detail && typeof body.detail === 'string') {
+            errMsg = body.detail
+          }
+        } catch { /* ignore */ }
+        setAnalysisError(errMsg)
+        toast.error("Erro ao gerar análise", { description: errMsg })
+        return
       }
 
       const data = await response.json()
-      
+
       setAnalyses(prev => ({
         ...prev,
         [type]: {
@@ -88,17 +108,26 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
         }
       }))
     } catch (error) {
-      toast.error("Erro ao gerar análise", { description: "Não foi possível gerar a análise. Tente novamente." })
+      const msg = "Não foi possível conectar ao servidor. Tente novamente."
+      setAnalysisError(msg)
+      toast.error("Erro ao gerar análise", { description: msg })
     } finally {
       setLoadingAnalysis(null)
     }
-  }, [candidate])
+  }, [candidate, companyId])
 
   useEffect(() => {
-    if (isOpen && candidate?.id && !analyses[activeTab] && loadingAnalysis !== activeTab) {
+    if (
+      isOpen &&
+      candidate?.id &&
+      companyId &&
+      !analyses[activeTab] &&
+      loadingAnalysis !== activeTab &&
+      !analysisError
+    ) {
       generateAnalysis(activeTab)
     }
-  }, [isOpen, activeTab, candidate?.id, analyses, loadingAnalysis, generateAnalysis])
+  }, [isOpen, activeTab, candidate?.id, companyId, analyses, loadingAnalysis, analysisError, generateAnalysis])
 
   const handleCopy = async (type: AnalysisType) => {
     const analysis = analyses[type]
@@ -116,16 +145,17 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
 
   const handleTransport = async () => {
     const analysis = analyses[activeTab]
-    if (!analysis || !candidate?.id) return
+    if (!analysis || !candidate?.id || !companyId) return
 
     try {
-      const response = await fetch('/api/backend-proxy/lia/profile-analysis/save', {
+      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/save?company_id=${encodeURIComponent(companyId)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           candidate_id: candidate.id,
           analysis_type: activeTab,
           content: analysis.content,
+          candidate_name: candidate.name || candidate.nome,
           user_id: 'default_user'
         })
       })
@@ -148,7 +178,24 @@ const generateAnalysis = useCallback(async (type: AnalysisType) => {
 
   const renderAnalysisContent = (type: AnalysisType) => {
     const analysis = analyses[type]
-    const isLoading = loadingAnalysis === type
+    const isLoading = loadingAnalysis === type || (loadingCompany && !companyId)
+
+    if (analysisError && type === activeTab && !analysis?.content) {
+      return (
+        <div className="flex flex-col items-center justify-center py-6 space-y-2 text-center px-4">
+          <Brain className="w-6 h-6 text-status-error" />
+          <p className="text-micro text-status-error">{analysisError}</p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 px-2.5 text-xs"
+            onClick={() => { setAnalysisError(null); generateAnalysis(type) }}
+          >
+            Tentar novamente
+          </Button>
+        </div>
+      )
+    }
 
     if (isLoading) {
       return (

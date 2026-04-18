@@ -44,11 +44,11 @@ export function useCandidateFiles(candidate: Record<string, any>) {
   const [previewType, setPreviewType] = useState<'pdf' | 'image' | 'video' | 'audio' | null>(null)
   const [expandedActivity, setExpandedActivity] = useState<string | null>(null)
   const fetchCandidateFiles = useCallback(async () => {
-    if (!candidate?.id) return
+    if (!candidate?.id || !companyId) return
 
     setIsLoadingFiles(true)
     try {
-      const url = `/api/backend-proxy/candidates/${candidate.id}/files?company_id=${companyId || ''}`
+      const url = `/api/backend-proxy/candidates/${candidate.id}/files?company_id=${encodeURIComponent(companyId)}`
       const response = await fetch(url)
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({})) as { error?: string }
@@ -67,13 +67,13 @@ export function useCandidateFiles(candidate: Record<string, any>) {
   }, [candidate?.id, companyId])
 
   useEffect(() => {
-    if (candidate?.id) {
+    if (candidate?.id && companyId) {
       fetchCandidateFiles()
     }
-  }, [candidate?.id, fetchCandidateFiles])
+  }, [candidate?.id, companyId, fetchCandidateFiles])
 
   const handleFileUpload = async (files: File[]) => {
-    if (!candidate?.id || files.length === 0) return
+    if (!candidate?.id || !companyId || files.length === 0) return
 
     setIsUploading(true)
     setUploadProgress(0)
@@ -93,7 +93,7 @@ export function useCandidateFiles(candidate: Record<string, any>) {
       const formData = new FormData()
       formData.append('file', file)
       formData.append('candidate_name', String(candidate.name || 'Candidato'))
-      formData.append('company_id', companyId || '')
+      formData.append('company_id', companyId)
       formData.append('uploaded_by', 'user')
       formData.append('uploaded_by_name', 'Recrutador')
 

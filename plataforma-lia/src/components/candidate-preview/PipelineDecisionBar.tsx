@@ -72,10 +72,10 @@ export function PipelineDecisionBar({
   }, [effectiveJobId])
 
   const fetchHighlight = useCallback(async () => {
-    if (!candidateId) return
+    if (!candidateId || !companyId) return
     try {
       const response = await fetch(
-        `/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${companyId || ''}`
+        `/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${encodeURIComponent(companyId)}`
       )
       if (response.ok) {
         const data = await response.json()

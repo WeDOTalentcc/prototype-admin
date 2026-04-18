@@ -83,11 +83,13 @@ PLAN_REQUEST_LIMITS: dict[str, int] = {
 DEFAULT_REQUEST_LIMIT = 2_000
 
 AGENT_TYPE_REQUEST_OVERRIDES: dict[str, float] = {
-    "AutonomousReActAgent": 2.0,
-    "DeepAnalysisAgent":    2.0,
-    "RAGAgent":             1.5,
-    "ReportGeneratorAgent": 2.0,
-    "ScreeningAgent":       1.5,
+    "AutonomousReActAgent":  2.0,
+    "DeepAnalysisAgent":     2.0,
+    "RAGAgent":              1.5,
+    "ReportGeneratorAgent":  2.0,
+    "ScreeningAgent":        1.5,
+    "ProfileAnalysisAgent":  2.5,
+    "ExperienceHighlightAgent": 2.0,
 }
 
 # TTL da chave Redis: 25h para cobrir edge case de meia-noite

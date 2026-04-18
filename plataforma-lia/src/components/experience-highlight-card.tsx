@@ -45,6 +45,7 @@ interface HighlightData {
 export function ExperienceHighlightCard({ candidate, companyId: companyIdProp }: ExperienceHighlightCardProps) {
   const { companyId: currentCompanyId } = useCurrentCompany()
   const companyId = companyIdProp || currentCompanyId || ''
+  const hasCompany = Boolean(companyId)
   const [highlight, setHighlight] = useState<HighlightData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isRegenerating, setIsRegenerating] = useState(false)
@@ -72,7 +73,7 @@ export function ExperienceHighlightCard({ candidate, companyId: companyIdProp }:
     .join(", ")
 
   const fetchOrGenerateHighlight = useCallback(async (forceRegenerate = false) => {
-    if (!candidate?.id) return
+    if (!candidate?.id || !hasCompany) return
 
     if (!forceRegenerate && fetchedRef.current === candidate.id) return
 

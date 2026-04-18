@@ -133,36 +133,51 @@ Use hífen (-) para bullet points. Seja abrangente mas conciso."""
 
 
 @router.post("", response_model=ProfileAnalysisResponse)
-async def generate_profile_analysis(request: ProfileAnalysisRequest):
+async def generate_profile_analysis(
+    request: ProfileAnalysisRequest,
+    company_id: str | None = Query(None, description="Company ID for tenant resolution"),
+):
     """Generate an AI-powered profile analysis for a candidate."""
-    
+    from app.shared.observability.token_budget_service import RequestBudgetExceededError
+
     valid_types = ['bullet_points', 'short_paragraph', 'detailed_bullets']
     if request.analysis_type not in valid_types:
         raise HTTPException(status_code=400, detail=f"Invalid analysis_type. Must be one of: {valid_types}")
-    
+
     candidate_info = format_candidate_info(request.candidate_data)
-    
+
     if not candidate_info or len(candidate_info) < 20:
         raise HTTPException(status_code=400, detail="Insufficient candidate data to generate analysis")
-    
+
     try:
         from app.shared.providers.llm_factory import get_provider_for_tenant
 
-        container = get_provider_for_tenant()
+        tenant_id = company_id or None
+        container = get_provider_for_tenant(tenant_id=tenant_id)
         analysis_text = await container.generate_with_fallback(
             f"Generate a {request.analysis_type.replace('_', ' ')} profile summary for this candidate:\n\n{candidate_info}",
             system=get_system_prompt(request.analysis_type),
+            agent_type="ProfileAnalysisAgent",
+            company_id=tenant_id,
         )
         analysis_text = analysis_text.strip()
-        
+
         return ProfileAnalysisResponse(
             analysis=analysis_text,
             analysis_type=request.analysis_type,
             candidate_id=request.candidate_id
         )
-        
+
+    except RequestBudgetExceededError as exc:
+        logger.warning("Profile analysis exceeded request budget: %s", exc)
+        raise HTTPException(
+            status_code=413,
+            detail="Perfil muito extenso para gerar análise. Reduza os dados do candidato e tente novamente.",
+        )
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"Error generating profile analysis: {e}")
+        logger.error("Error generating profile analysis: %s", e)
         raise HTTPException(status_code=500, detail=f"Failed to generate analysis: {str(e)}")
 
 

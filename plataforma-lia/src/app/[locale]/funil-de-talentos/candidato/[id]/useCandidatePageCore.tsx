@@ -119,10 +119,10 @@ const candidateId = params.id as string
   }, [loadCandidate])
 
   const fetchOpinionsSummary = useCallback(async () => {
-    if (!candidateId) return
+    if (!candidateId || !companyId) return
     setIsLoadingOpinions(true)
     try {
-      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${companyId || ''}`)
+      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/summary?company_id=${encodeURIComponent(companyId)}`)
       if (response.ok) {
         const data = await response.json()
         setOpinionsData(data)
@@ -134,9 +134,9 @@ const candidateId = params.id as string
   }, [candidateId, companyId])
 
   const fetchOpinionsHistory = useCallback(async () => {
-    if (!candidateId) return
+    if (!candidateId || !companyId) return
     try {
-      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/history?company_id=${companyId || ''}`)
+      const response = await fetch(`/api/backend-proxy/opinions/candidate/${candidateId}/history?company_id=${encodeURIComponent(companyId)}`)
       if (response.ok) {
         const data = await response.json()
         setOpinionsHistory(data)
@@ -146,10 +146,10 @@ const candidateId = params.id as string
   }, [candidateId, companyId])
 
   const fetchSavedAnalyses = useCallback(async () => {
-    if (!candidateId) return
+    if (!candidateId || !companyId) return
     setIsLoadingAnalyses(true)
     try {
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidateId}?company_id=${companyId || ''}`)
+      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidateId}?company_id=${encodeURIComponent(companyId)}`)
       if (response.ok) {
         const data = await response.json()
         setSavedAnalyses({
@@ -164,11 +164,11 @@ const candidateId = params.id as string
   }, [candidateId, companyId])
 
   const fetchCandidateFiles = useCallback(async () => {
-    if (!candidateId) return
+    if (!candidateId || !companyId) return
     
     setIsLoadingFiles(true)
     try {
-      const url = `/api/backend-proxy/candidates/${candidateId}/files?company_id=${companyId || ''}`
+      const url = `/api/backend-proxy/candidates/${candidateId}/files?company_id=${encodeURIComponent(companyId)}`
       const response = await fetch(url)
       if (response.ok) {
         const data = await response.json()
@@ -289,11 +289,11 @@ const candidateId = params.id as string
 
   useEffect(() => {
     async function fetchActivities() {
-      if (activeTab !== 'activities' || !candidateId) return
-      
+      if (activeTab !== 'activities' || !candidateId || !companyId) return
+
       setIsLoadingActivities(true)
       try {
-        const response = await fetch(`/api/backend-proxy/candidates/${candidateId}/activities?company_id=${companyId || ''}`)
+        const response = await fetch(`/api/backend-proxy/candidates/${candidateId}/activities?company_id=${encodeURIComponent(companyId)}`)
         if (response.ok) {
           const data = await response.json()
           setActivities(Array.isArray(data) ? data : data?.activities || [])

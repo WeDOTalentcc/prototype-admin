@@ -1,26 +1,10 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { resolveCompanyId } from "@/lib/api/resolve-company-id"
 import { validateBody } from '@/lib/api/validate'
-import { cookies } from 'next/headers'
-import { verifyAndDecodeSession } from '@/lib/session-crypto'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
-const IS_DEVELOPMENT = process.env.NODE_ENV === 'development'
-const DEV_FALLBACK_COMPANY = 'dev_company'
-
-async function resolveCompanyId(request: NextRequest): Promise<string | null> {
-  const cookieStore = await cookies()
-  const session = cookieStore.get('workos_session')
-  if (session) {
-    const data = verifyAndDecodeSession(session.value)
-    if (data) return data.workosProfile.organizationId || data.workosProfile.id
-  }
-  const fromQuery = new URL(request.url).searchParams.get('company_id')
-  if (fromQuery) return fromQuery
-  if (IS_DEVELOPMENT) return DEV_FALLBACK_COMPANY
-  return null
-}
 
 const _bodySchema = z.record(z.string(), z.unknown())
 

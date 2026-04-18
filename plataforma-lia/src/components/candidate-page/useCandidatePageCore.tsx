@@ -353,7 +353,8 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
   const handleDeleteAnalysis = async () => {
     if (!analysisToDelete || !candidate) return
     try {
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/${candidate.id}/${analysisToDelete.analysis_type}?company_id=${companyId || ''}`, {
+      if (!companyId) return
+      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/${candidate.id}/${analysisToDelete.analysis_type}?company_id=${encodeURIComponent(companyId)}`, {
         method: 'DELETE'
       })
       if (response.ok) {
@@ -376,7 +377,8 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
   const handleAnalysisTransport = async () => {
     if (!candidate) return
     try {
-      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidate.id}?company_id=${companyId || ''}`)
+      if (!companyId) return
+      const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidate.id}?company_id=${encodeURIComponent(companyId)}`)
       if (response.ok) {
         const data = await response.json()
         setSavedAnalyses(data)
@@ -389,10 +391,10 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
 
   useEffect(() => {
     const fetchOpinionsHistory = async () => {
-      if (!candidate?.id) return
+      if (!candidate?.id || !companyId) return
       setIsLoadingHistory(true)
       try {
-        const response = await fetch(`/api/backend-proxy/opinions/history/${candidate.id}?company_id=${companyId || ''}`)
+        const response = await fetch(`/api/backend-proxy/opinions/history/${candidate.id}?company_id=${encodeURIComponent(companyId)}`)
         if (response.ok) {
           const data = await response.json()
           setOpinionsHistory(data.opinions || [])
@@ -404,10 +406,10 @@ export function useCandidatePageCore(candidate: Record<string, unknown> | null) 
     }
 
     const fetchSavedAnalyses = async () => {
-      if (!candidate?.id) return
+      if (!candidate?.id || !companyId) return
       setIsLoadingAnalyses(true)
       try {
-        const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidate.id}?company_id=${companyId || ''}`)
+        const response = await fetch(`/api/backend-proxy/lia/profile-analysis/candidate/${candidate.id}?company_id=${encodeURIComponent(companyId)}`)
         if (response.ok) {
           const data = await response.json()
           setSavedAnalyses(data)
