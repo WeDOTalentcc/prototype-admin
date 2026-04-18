@@ -970,9 +970,12 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
         r"(health\s*check|diagnóstico|diagnose|saúde)\s+(da\s+|do\s+)?(vaga|processo|pipeline)",
         r"(como\s+está|status|saúde)\s+(da\s+|do\s+|essa\s+|este\s+|esta\s+|o\s+|a\s+)?(vaga|processo|pipeline|funil)",
     ]),
-    # Análise de funil
+    # Análise de funil / KB-005: tempo por etapa
     ("analisar_funil", [
         r"(analisa[rn]?|análise)\s+(do\s+|o\s+)?(funil|pipeline|conversão|taxa)",
+        r"(tempo|média|médio)\s+(que|d[eo]s?)\s+(candidatos?|pessoas?)\s+(ficam?|permanecem?|passam?)\s+(em\s+cada|nas?)\s+(etapa|fase|estágio|stage)",
+        r"(quanto\s+tempo|tempo\s+médio)\s+(em\s+cada|por|nas?)\s+(etapa|fase|stage)",
+        r"(etapas?|fases?)\s+(do\s+)?(processo|pipeline)\s+(tempo|duração|média)",
         r"(funil|pipeline)\s+(de\s+)?(recrutamento|contratação|conversão|seleção)",
         r"(taxa|percentual|%)\s+(de\s+)?(conversão|aprovação|rejeição|desistência)\s+(do\s+|no\s+)?(funil|pipeline)",
     ]),

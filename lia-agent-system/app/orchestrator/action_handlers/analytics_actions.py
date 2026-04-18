@@ -343,7 +343,8 @@ async def _analyze_funnel(params: dict[str, Any], context: dict[str, Any]):
             if job_id:
                 funnel_sql = """
                     SELECT stage, COUNT(*) as cnt,
-                           COUNT(*) FILTER (WHERE status = 'active') as active_cnt
+                           COUNT(*) FILTER (WHERE status = 'active') as active_cnt,
+                           ROUND(AVG(EXTRACT(EPOCH FROM (NOW() - stage_entered_at)) / 86400)::numeric, 1) as avg_days_in_stage
                     FROM vacancy_candidates
                     WHERE vacancy_id = CAST(:jid AS uuid)
                 """
@@ -382,7 +383,7 @@ async def _analyze_funnel(params: dict[str, Any], context: dict[str, Any]):
             rows = result.fetchall()
 
         STAGE_ORDER = ["Novos", "Triagem", "Entrevista", "Proposta", "Contratado"]
-        stage_map = {r.stage: {"total": r.cnt, "active": r.active_cnt} for r in rows}
+        stage_map = {r.stage: {"total": r.cnt, "active": r.active_cnt, "avg_days": getattr(r, "avg_days_in_stage", None)} for r in rows}
         total_all = sum(r.cnt for r in rows)
 
         lines = [f"**Análise de Funil {scope_label}:**\n"]
@@ -395,7 +396,9 @@ async def _analyze_funnel(params: dict[str, Any], context: dict[str, Any]):
             if prev_count and prev_count > 0:
                 conv_rate = round((data["total"] / prev_count * 100), 1)
                 conv = f" (conversão: {conv_rate}%)"
-            lines.append(f"  {stage_name}: **{data['total']}** ({pct}%){conv}")
+            avg_days = stage_map.get(stage_name, {}).get("avg_days", None)
+            days_str = f" | ~{avg_days}d" if avg_days is not None else ""
+            lines.append(f"  {stage_name}: **{data['total']}** ({pct}%){conv}{days_str}")
             funnel_data.append({"stage": stage_name, "count": data["total"], "pct": pct})
             prev_count = data["total"]
 

@@ -96,3 +96,18 @@ intent_keywords:
   salary range: suggest_compensation
   sugerir salário: suggest_compensation
   remuneração: suggest_compensation
+  # EX-007: English + PT list jobs resilience
+  list jobs: list_jobs
+  show jobs: list_jobs
+  active jobs: list_jobs
+  show me jobs: list_jobs
+  show me the jobs: list_jobs
+  show me the active jobs: list_jobs
+  listar vagas: list_jobs
+  ver vagas: list_jobs
+  vagas ativas: list_jobs
+  vagas abertas: list_jobs
+  minhas vagas: list_jobs
+  mostra vagas: list_jobs
+  # WZ-004: duplica variant (duplicar already present)
+  duplica: duplicate_job
