@@ -182,7 +182,9 @@ async def create_client(
         # Auto-create company_profiles row so settings page loads without error
         try:
             profile_repo.db = repo.db
+            import uuid as _uuid
             await profile_repo.create({
+                "id": str(_uuid.uuid4()),
                 "name": client.name or "Minha Empresa",
                 "client_account_id": str(client.id),
                 "website": client.website or None,
