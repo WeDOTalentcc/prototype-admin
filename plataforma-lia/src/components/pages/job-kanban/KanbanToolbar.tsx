@@ -6,7 +6,6 @@ import {
   Layers3, ListChecks, Search,
   Target, X, ChevronsLeftRight, CheckCircle, XCircle
 } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ViewToggle } from "@/components/ui/view-toggle"
 import { ToolbarButton } from "@/components/ui/toolbar-button"

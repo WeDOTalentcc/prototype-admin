@@ -349,6 +349,47 @@ export const tabStyles = {
 } as const
 
 /**
+ * v4.2: Toolbar canônica (vagas + candidatos)
+ * Usado por <ViewToggle /> e <ToolbarButton /> em src/components/ui.
+ */
+export const toolbarStyles = {
+  // Container do toggle de visualização (pílula segmentada)
+  viewToggleContainer: 'inline-flex items-center bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-lg',
+  viewToggleContainerPad: {
+    sm: 'p-0.5 gap-0.5',
+    md: 'p-0.5 gap-0.5',
+  },
+  // Itens do toggle
+  viewToggleItemBase:
+    'inline-flex items-center justify-center rounded-md font-medium transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/20 dark:focus-visible:ring-lia-border-subtle/20',
+  viewToggleItemSize: {
+    sm: 'h-6 px-2 text-xs gap-1',
+    md: 'h-7 px-2.5 text-xs gap-1.5',
+    iconSm: 'h-7 w-7 text-xs',
+    iconMd: 'h-8 w-8 text-xs',
+  },
+  viewToggleItemActive: 'bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary shadow-sm',
+  viewToggleItemInactive:
+    'text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse',
+  viewToggleIcon: {
+    sm: 'w-3 h-3',
+    md: 'w-3.5 h-3.5',
+  },
+
+  // Botões de toolbar (pílula rounded-full)
+  toolbarBtnBase:
+    'inline-flex items-center justify-center font-medium rounded-full transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/20 dark:focus-visible:ring-lia-border-subtle/20 disabled:opacity-50 disabled:cursor-not-allowed',
+  toolbarBtnSize: {
+    sm: 'h-7 px-3 text-xs gap-1.5',
+    md: 'h-8 px-4 text-xs gap-2',
+  },
+  toolbarBtnActive:
+    'bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active',
+  toolbarBtnDefault:
+    'bg-lia-bg-primary text-lia-text-primary border border-lia-border-subtle dark:bg-lia-bg-secondary dark:border-lia-border-default hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse',
+} as const
+
+/**
  * v4: Classes utilitárias para Botões de Ação
  * Tamanhos padronizados para botões Editar, Salvar, Exportar, etc.
  */

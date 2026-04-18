@@ -4,6 +4,7 @@ import React, { memo } from"react"
 import { Button } from"@/components/ui/button"
 import { Badge } from"@/components/ui/badge"
 import { Tabs, TabsList, TabsTrigger } from"@/components/ui/tabs"
+import { ViewToggle } from"@/components/ui/view-toggle"
 import { Briefcase, Plus, LayoutGrid, List, Kanban } from"lucide-react"
 import { useTranslations } from 'next-intl'
 import type { JobMetrics } from"./types"
@@ -37,7 +38,7 @@ const JobsHeader = memo(function JobsHeader({
             <Briefcase className="h-5 w-5 text-lia-text-disabled" />
             <h1 className="text-lg font-semibold text-lia-text-primary">{t('pageTitle')}</h1>
           </div>
-          
+
           {metrics && (
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="border-lia-border-default dark:border-lia-border-default text-lia-text-secondary">
@@ -52,66 +53,53 @@ const JobsHeader = memo(function JobsHeader({
             </div>
           )}
         </div>
-        
+
         <div className="flex items-center gap-2">
-          <div className="flex items-center border border-lia-border-default dark:border-lia-border-default rounded-xl p-0.5">
-            <Button
-              variant="ghost"
-              size="icon"
- className={`h-8 w-8 ${viewMode === 'list' ? 'bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary' : 'text-lia-text-tertiary'}`}
-              onClick={() => onViewModeChange('list')}
-            >
-              <List className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
- className={`h-8 w-8 ${viewMode === 'cards' ? 'bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary' : 'text-lia-text-tertiary'}`}
-              onClick={() => onViewModeChange('cards')}
-            >
-              <LayoutGrid className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
- className={`h-8 w-8 ${viewMode === 'kanban' ? 'bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary' : 'text-lia-text-tertiary'}`}
-              onClick={() => onViewModeChange('kanban')}
-            >
-              <Kanban className="h-4 w-4" />
-            </Button>
-          </div>
-          
+          <ViewToggle
+            value={viewMode}
+            onChange={(v) => onViewModeChange(v as 'list' | 'cards' | 'kanban')}
+            ariaLabel={tt('all')}
+            size="md"
+            iconOnly
+            options={[
+              { value: 'list', label: tt('all'), icon: List },
+              { value: 'cards', label: tt('all'), icon: LayoutGrid },
+              { value: 'kanban', label: tt('all'), icon: Kanban },
+            ]}
+          />
+
           <Button
+            variant="primary"
+            size="sm"
             onClick={onCreateJob}
-            className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active"
           >
             <Plus className="h-4 w-4 mr-2" />
             {t('newJob')}
           </Button>
         </div>
       </div>
-      
+
       <Tabs value={currentTab} onValueChange={(v) => onTabChange(v as typeof currentTab)}>
         <TabsList className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
-          <TabsTrigger 
-            value="all" 
+          <TabsTrigger
+            value="all"
             className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
             {tt('all')}
           </TabsTrigger>
-          <TabsTrigger 
+          <TabsTrigger
             value="active"
             className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
             {tt('active')}
           </TabsTrigger>
-          <TabsTrigger 
+          <TabsTrigger
             value="drafts"
             className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
             {tt('drafts')}
           </TabsTrigger>
-          <TabsTrigger 
+          <TabsTrigger
             value="closed"
             className="data-[state=active]:bg-lia-bg-primary dark:data-[state=active]:bg-lia-bg-inverse data-[state=active]:text-lia-text-primary dark:data-[state=active]:text-lia-text-inverse"
           >
