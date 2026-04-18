@@ -13,7 +13,10 @@ O CÁLCULO FINAL é sempre determinístico.
 import logging
 import re
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from app.domains.cv_screening.services.wsi_service.models import Layer2Signals
 
 logger = logging.getLogger(__name__)
 
@@ -81,9 +84,13 @@ from app.domains.cv_screening.constants.wsi_constants import (
 # escala (ex: 0-5 → 0-10) é uma alteração isolada em wsi_scale.py.
 from app.domains.cv_screening.constants.wsi_scale import (
     AUTODECLARATION_LEVEL_KEYWORDS,
+    BONUS_BLOOM_EXCEEDS,
+    BONUS_DREYFUS_EXCEEDS,
     BONUS_EXCEPTIONAL_EVIDENCE,
     BONUS_HUMILITY,
     BONUS_MAX,
+    BONUS_QUANTIFICATION,
+    BONUS_TRAIT_SIGNALS_EXCEED,
     CLASSIFY_ABAIXO_MEDIA,
     CLASSIFY_ALTO,
     CLASSIFY_EXCELENTE,
@@ -116,10 +123,19 @@ from app.domains.cv_screening.constants.wsi_scale import (
     JUSTIFICATION_CONTEXT_STRONG,
     NON_ELIGIBILITY_WEIGHT,
     NORMALIZATION_FACTOR,
+    PENALTY_DREYFUS_BELOW,
     PENALTY_GENERIC,
     PENALTY_INFLATION,
+    PENALTY_LANGUAGE_MISMATCH,
+    PENALTY_MISSING_R_OUTCOME,
     PENALTY_NO_CONTEXT,
     PENALTY_NO_CONTEXT_MIN_WORDS,
+    PENALTY_NO_FIRST_PERSON,
+    PENALTY_NO_TRAIT_SIGNALS,
+    PENALTY_PARAPHRASE,
+    PENALTY_WORD_BAND_SHORT,
+    PENALTY_WORD_BAND_VERY_SHORT,
+    PROMPT_INJECTION_OVERRIDE_SCORE,
     SCALE_MAX,
     SCALE_MIN_VALID,
     WSI_CUTOFFS,
@@ -432,16 +448,31 @@ def extract_years_experience(text: str) -> float:
     return 2.0
 
 
-def detect_red_flags(text: str, autodeclaracao: float | None, context_score: float) -> list[str]:
+def detect_red_flags(
+    text: str,
+    autodeclaracao: float | None,
+    context_score: float,
+    layer2: "Layer2Signals | None" = None,
+) -> list[str]:
     """
     Detecta red flags na resposta.
-    
+
+    Audit M06 (rev. 19): quando ``layer2`` está disponível, a detecção de
+    inflação prioriza ``layer2.semantic_inflation`` (sinal LLM-validado) em
+    cima da heurística lexical autodeclaração×contexto. O fallback lexical
+    é mantido quando a Camada 2 não rodou ou retornou degradada.
+
     Returns: Lista de red flags detectados
     """
     red_flags = []
     text_lower = text.lower()
-    
-    if (
+
+    # M06 — inflação semântica (Camada 2) tem prioridade sobre lexical.
+    if layer2 is not None and layer2.semantic_inflation:
+        red_flags.append(
+            "Inflação semântica detectada: claims sem evidência concreta"
+        )
+    elif (
         autodeclaracao
         and autodeclaracao >= INFLATION_AUTODECLARATION_MIN
         and context_score < INFLATION_CONTEXT_MAX
@@ -450,58 +481,164 @@ def detect_red_flags(text: str, autodeclaracao: float | None, context_score: flo
 
     if len(text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"]:
         red_flags.append("Resposta muito curta, falta contexto")
-    
+
     generic_count = sum(1 for kw in PENALTY_TRIGGERS["generic"]["keywords"] if kw in text_lower)
     if generic_count >= 2 and len(text.split()) < 50:
         red_flags.append("Resposta genérica sem detalhes específicos")
-    
+
+    # M04 — red flags estruturais derivadas dos sinais semânticos
+    if layer2 is not None:
+        if layer2.is_paraphrase:
+            red_flags.append("Resposta apenas reformula a pergunta sem agregar conteúdo")
+        if not layer2.language_consistency:
+            red_flags.append("Resposta em idioma divergente da pergunta")
+        if layer2.prompt_injection_detected:
+            red_flags.append("Tentativa de prompt-injection detectada — score zerado")
+
     return red_flags
 
 
-def calculate_penalty(text: str, autodeclaracao: float | None, context_score: float) -> float:
+def calculate_penalty(
+    text: str,
+    autodeclaracao: float | None,
+    context_score: float,
+    layer2: "Layer2Signals | None" = None,
+    *,
+    expects_first_person: bool = False,
+) -> float:
     """
     Calcula penalidade determinística.
-    
+
+    Audit M04 (rev. 19): quando ``layer2`` está disponível, soma 6 penalidades
+    semânticas alinhadas à spec WeDOTalent §F8.3:
+
+    - paráfrase (``is_paraphrase``)               → ``PENALTY_PARAPHRASE``
+    - idioma divergente (``language_consistency=False``) → ``PENALTY_LANGUAGE_MISMATCH``
+    - STAR sem R (``has_R_outcome=False``)        → ``PENALTY_MISSING_R_OUTCOME``
+    - sem 1ª pessoa em comportamental             → ``PENALTY_NO_FIRST_PERSON``
+    - word-band ``"<30"``                         → ``PENALTY_WORD_BAND_VERY_SHORT``
+    - word-band ``"30-50"``                       → ``PENALTY_WORD_BAND_SHORT``
+
+    Prompt-injection NÃO entra como penalty — vira override absoluto do score
+    em ``calculate_wsi_deterministic`` (final_score = ``PROMPT_INJECTION_OVERRIDE_SCORE``).
+
+    Args:
+        text: texto bruto da resposta
+        autodeclaracao: score de autodeclaração (1-10) ou None
+        context_score: score de contexto (1-10)
+        layer2: sinais semânticos da Camada 2 (None = camada desligada/degradada)
+        expects_first_person: se True, pergunta espera 1ª pessoa (CBI/comportamental).
+            ``PENALTY_NO_FIRST_PERSON`` só se aplica quando este flag é True.
+
     Returns: Valor negativo da penalidade
     """
     penalty = 0.0
     text_lower = text.lower()
-    
+
     if (
         autodeclaracao
         and autodeclaracao >= INFLATION_AUTODECLARATION_MIN
         and context_score < INFLATION_CONTEXT_MAX
     ):
         penalty += PENALTY_TRIGGERS["inflation"]["penalty"]
-    
+
     generic_count = sum(1 for kw in PENALTY_TRIGGERS["generic"]["keywords"] if kw in text_lower)
     if generic_count >= 2:
         penalty += PENALTY_TRIGGERS["generic"]["penalty"]
-    
+
     if len(text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"]:
         penalty += PENALTY_TRIGGERS["no_context"]["penalty"]
-    
+
+    # M04 — penalidades semânticas (Camada 2)
+    if layer2 is not None:
+        if layer2.is_paraphrase:
+            penalty += PENALTY_PARAPHRASE
+        if not layer2.language_consistency:
+            penalty += PENALTY_LANGUAGE_MISMATCH
+        if not layer2.has_R_outcome:
+            penalty += PENALTY_MISSING_R_OUTCOME
+        if expects_first_person and not layer2.is_first_person:
+            penalty += PENALTY_NO_FIRST_PERSON
+        # Word bands — não acumulam com PENALTY_NO_CONTEXT (aquele já cobre <20).
+        # Aqui modelamos a granularidade adicional 20-50 (que escapa do gate <20).
+        if layer2.word_count_band == "<30":
+            # Só aplica se PENALTY_NO_CONTEXT não foi disparada (>=20 palavras
+            # mas <30): evita double-charging quando a resposta tem <20 palavras.
+            if len(text.split()) >= PENALTY_TRIGGERS["no_context"]["min_words"]:
+                penalty += PENALTY_WORD_BAND_VERY_SHORT
+        elif layer2.word_count_band == "30-50":
+            penalty += PENALTY_WORD_BAND_SHORT
+
     return round(penalty, 2)
 
 
-def calculate_bonus(text: str) -> float:
+def calculate_bonus(
+    text: str,
+    layer2: "Layer2Signals | None" = None,
+    *,
+    bloom_expected: int | None = None,
+    dreyfus_expected: int | None = None,
+    trait_signals_expected: int | None = None,
+    is_behavioral: bool = False,
+) -> float:
     """
-    Calcula bônus determinístico.
-    
-    Returns: Valor positivo do bônus
+    Calcula bônus determinístico (líquido — pode ser negativo se ajustes spec
+    pesarem mais que os bônus lexicais).
+
+    Audit M05 (rev. 19): quando ``layer2`` está disponível, aplica 6 ajustes
+    semânticos alinhados à spec WeDOTalent §F8.3:
+
+    - +``BONUS_QUANTIFICATION`` se ``has_quantification``
+    - +``BONUS_BLOOM_EXCEEDS`` se ``bloom_demonstrated > bloom_expected``
+    - +``BONUS_TRAIT_SIGNALS_EXCEED`` se ``trait_signals_count > expected``
+    - +``BONUS_DREYFUS_EXCEEDS`` se ``dreyfus_demonstrated > dreyfus_expected``
+    - −``PENALTY_NO_TRAIT_SIGNALS`` se comportamental e ``trait_signals_count == 0``
+    - −``PENALTY_DREYFUS_BELOW`` se ``dreyfus_demonstrated < dreyfus_expected - 1``
+
+    O resultado é clampado em ``[-BONUS_MAX, +BONUS_MAX]`` para preservar a
+    bound original do bônus (impede ajustes spec de viraram penalidade dominante).
+
+    Args:
+        text: texto bruto (bonus lexicais lêem daqui)
+        layer2: sinais semânticos da Camada 2
+        bloom_expected: nível Bloom esperado (1-6) — só usado para excede-comparação
+        dreyfus_expected: nível Dreyfus esperado (1-5)
+        trait_signals_expected: # de sinais de trait esperados na pergunta
+        is_behavioral: pergunta é comportamental (controla penalidade no_trait_signals)
+
+    Returns: Valor (assinado) do bônus líquido após os ajustes spec
     """
     bonus = 0.0
     text_lower = text.lower()
-    
+
     humility_count = sum(1 for kw in BONUS_TRIGGERS["humility"]["keywords"] if kw in text_lower)
     if humility_count >= 1:
         bonus += BONUS_TRIGGERS["humility"]["bonus"]
-    
+
     exceptional_count = sum(1 for kw in BONUS_TRIGGERS["exceptional_evidence"]["keywords"] if kw in text_lower)
     if exceptional_count >= 1:
         bonus += BONUS_TRIGGERS["exceptional_evidence"]["bonus"]
-    
-    return round(min(BONUS_MAX, bonus), 2)
+
+    # M05 — ajustes semânticos (Camada 2)
+    if layer2 is not None:
+        if layer2.has_quantification:
+            bonus += BONUS_QUANTIFICATION
+        if bloom_expected is not None and layer2.bloom_demonstrated > bloom_expected:
+            bonus += BONUS_BLOOM_EXCEEDS
+        if (
+            trait_signals_expected is not None
+            and layer2.trait_signals_count > trait_signals_expected
+        ):
+            bonus += BONUS_TRAIT_SIGNALS_EXCEED
+        if dreyfus_expected is not None:
+            if layer2.dreyfus_demonstrated > dreyfus_expected:
+                bonus += BONUS_DREYFUS_EXCEEDS
+            if layer2.dreyfus_demonstrated < (dreyfus_expected - 1):
+                bonus += PENALTY_DREYFUS_BELOW
+        if is_behavioral and layer2.trait_signals_count == 0:
+            bonus += PENALTY_NO_TRAIT_SIGNALS
+
+    return round(max(-BONUS_MAX, min(BONUS_MAX, bonus)), 2)
 
 
 def extract_evidences(text: str) -> list[str]:
@@ -588,6 +725,9 @@ def calculate_wsi_deterministic(
     question_type: str = "technical",   # "technical" | "behavioral"
     *,
     bloom_expected: int | None = None,  # keyword-only — nível Bloom esperado (None = degradado)
+    dreyfus_expected: int | None = None,
+    trait_signals_expected: int | None = None,
+    layer2_signals: "Layer2Signals | None" = None,
 ) -> DeterministicWSIResult:
     """
     Calcula WSI de forma 100% determinística — Spec F8 fórmula v2.
@@ -645,7 +785,7 @@ def calculate_wsi_deterministic(
         skill_type=question_type,
     )
 
-    red_flags = detect_red_flags(response_text, autodeclaracao, context_score)
+    red_flags = detect_red_flags(response_text, autodeclaracao, context_score, layer2=layer2_signals)
 
     # Flags estruturadas para G6 (spec F10)
     flags_structured: dict[str, bool] = {
@@ -657,9 +797,28 @@ def calculate_wsi_deterministic(
                          if kw in response_text.lower()) >= 2,
         "is_short": len(response_text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"],
     }
+    # M04 — flag estruturada de inflação semântica via Layer2.
+    if layer2_signals is not None:
+        flags_structured["is_semantic_inflation"] = bool(layer2_signals.semantic_inflation)
+        flags_structured["is_paraphrase"] = bool(layer2_signals.is_paraphrase)
+        flags_structured["is_prompt_injection"] = bool(layer2_signals.prompt_injection_detected)
 
-    penalty = calculate_penalty(response_text, autodeclaracao, context_score)
-    bonus = calculate_bonus(response_text)
+    is_behavioral = (question_type == "behavioral")
+    penalty = calculate_penalty(
+        response_text,
+        autodeclaracao,
+        context_score,
+        layer2=layer2_signals,
+        expects_first_person=is_behavioral,
+    )
+    bonus = calculate_bonus(
+        response_text,
+        layer2=layer2_signals,
+        bloom_expected=bloom_expected,
+        dreyfus_expected=dreyfus_expected,
+        trait_signals_expected=trait_signals_expected,
+        is_behavioral=is_behavioral,
+    )
 
     # Fórmula v2 — tri-componente por tipo (Spec F8)
     if question_type == "behavioral":
@@ -691,9 +850,20 @@ def calculate_wsi_deterministic(
             f"({weights['bloom_alinhamento']}×bloom{bloom_align:.2f}×{NORMALIZATION_FACTOR:g})"
         )
 
-    final_score = max(SCALE_MIN_VALID, min(SCALE_MAX, raw_score + penalty + bonus))
-    final_score = round(final_score, 2)
-    formula = f"{formula_desc} + penalty({penalty}) + bonus({bonus}) = {final_score:.2f}"
+    # M04 — override absoluto: prompt-injection zera o score (não soma).
+    # Spec WeDOTalent §F8.3 — tentativas de manipulação do avaliador são
+    # tratadas como falha de integridade, não apenas penalidade marginal.
+    if layer2_signals is not None and layer2_signals.prompt_injection_detected:
+        final_score = PROMPT_INJECTION_OVERRIDE_SCORE
+        formula = (
+            f"prompt_injection_override → score = "
+            f"{PROMPT_INJECTION_OVERRIDE_SCORE} "
+            f"(raw={raw_score:.2f}, penalty={penalty}, bonus={bonus} ignorados)"
+        )
+    else:
+        final_score = max(SCALE_MIN_VALID, min(SCALE_MAX, raw_score + penalty + bonus))
+        final_score = round(final_score, 2)
+        formula = f"{formula_desc} + penalty({penalty}) + bonus({bonus}) = {final_score:.2f}"
 
     justification_parts = []
     if context_score >= JUSTIFICATION_CONTEXT_STRONG:

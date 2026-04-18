@@ -104,12 +104,28 @@ class WSIResponseAnalyzer:
             # M11 fix (rev. 15) — propaga `bloom_expected` real da pergunta quando
             # disponível. Quando ausente, o scorer aplica default + flag degraded.
             bloom_expected = getattr(question, "bloom_expected", None)
+            # M05 (rev. 19) — extrai expecteds adicionais para os ajustes da Camada 2.
+            # Scoring_criteria pode trazer dreyfus_expected explicitamente; senão fica None.
+            criteria = getattr(question, "scoring_criteria", {}) or {}
+            dreyfus_expected = (
+                getattr(question, "dreyfus_expected", None)
+                or criteria.get("dreyfus_expected")
+            )
+            # trait_signals_expected — heurística canônica: a quantidade de
+            # `expected_signals` declarada na pergunta. Quando vazio, fica None
+            # e o scorer NÃO aplica o BONUS_TRAIT_SIGNALS_EXCEED (correto: sem
+            # baseline, não há "excesso" comparável).
+            expected_signals = getattr(question, "expected_signals", None) or []
+            trait_signals_expected = len(expected_signals) if expected_signals else None
             result: DeterministicWSIResult = calculate_wsi_deterministic(
                 response_text=response,
                 competency_name=question.competency,
                 question_framework=question.framework,
                 question_type=question_type,
                 bloom_expected=bloom_expected,
+                dreyfus_expected=dreyfus_expected,
+                trait_signals_expected=trait_signals_expected,
+                layer2_signals=layer2_signals,
             )
 
             # M11 fix — concatena selo de qualidade degradada na justificativa

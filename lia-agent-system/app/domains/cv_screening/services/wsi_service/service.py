@@ -37,10 +37,20 @@ class WSIService:
     6. Gerar feedbacks construtivos para candidatos
     """
     
-    def __init__(self):
+    def __init__(self, *, enable_layer2: bool = True):
+        """
+        Args:
+            enable_layer2: Ativa a Camada 2 LLM-extractor (default ON,
+                audit M01+M04+M05+M06 rev. 19, spec WeDOTalent §F8.3).
+                Pode ser desligada explicitamente para evitar custo LLM
+                em testes/cenários offline. Falha graciosa preserva
+                Camada 1 quando o LLM cai (degraded_quality=True).
+        """
         self.llm = llm_service
         self.question_generator = WSIQuestionGenerator(self.llm)
-        self.response_analyzer = WSIResponseAnalyzer(self.llm)
+        self.response_analyzer = WSIResponseAnalyzer(
+            self.llm, enable_layer2=enable_layer2
+        )
         self.score_calculator = WSIScoreCalculator()
         self.report_generator = WSIReportGenerator(self.llm)
     

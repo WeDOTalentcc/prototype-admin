@@ -134,6 +134,36 @@ BONUS_EXCEPTIONAL_EVIDENCE: float = 0.6
 BONUS_MAX: float = 2.0
 
 # ---------------------------------------------------------------------------
+# Camada 2 — penalidades semânticas (M04, audit rev. 19, spec §F8.3)
+# ---------------------------------------------------------------------------
+# Estas penalidades só se aplicam quando há `Layer2Signals` (Camada 2 LLM
+# ativa). Quando ausente o scorer mantém comportamento da rev. 18 — apenas
+# a heurística lexical de PENALTY_TRIGGERS é considerada.
+PENALTY_PARAPHRASE: float = -2.0          # repete pergunta sem agregar conteúdo
+PENALTY_LANGUAGE_MISMATCH: float = -1.0   # responde em idioma divergente
+PENALTY_MISSING_R_OUTCOME: float = -0.8   # STAR sem o R (resultado mensurável)
+PENALTY_NO_FIRST_PERSON: float = -1.5     # sem 1ª pessoa em pergunta CBI/comportamental
+PENALTY_WORD_BAND_VERY_SHORT: float = -2.5  # word_count_band == "<30"
+PENALTY_WORD_BAND_SHORT: float = -1.0     # word_count_band == "30-50"
+
+# Override absoluto: detecção de prompt-injection zera o score (não soma).
+# Aplicado em `calculate_wsi_deterministic` antes do clamp.
+PROMPT_INJECTION_OVERRIDE_SCORE: float = 0.0
+
+# ---------------------------------------------------------------------------
+# Camada 2 — ajustes de bonus/penalty alinhados à spec §F8.3 (M05)
+# ---------------------------------------------------------------------------
+# Penalidades adicionais por sinais comportamentais ausentes/abaixo
+PENALTY_NO_TRAIT_SIGNALS: float = -2.0    # trait_signals_count == 0 em comportamental
+PENALTY_DREYFUS_BELOW: float = -0.8       # dreyfus_demonstrated < dreyfus_expected - 1
+
+# Bônus por demonstração acima do esperado
+BONUS_QUANTIFICATION: float = 0.5         # has_quantification == True
+BONUS_BLOOM_EXCEEDS: float = 0.6          # bloom_demonstrated > bloom_expected
+BONUS_TRAIT_SIGNALS_EXCEED: float = 0.4   # trait_signals_count > expected
+BONUS_DREYFUS_EXCEEDS: float = 0.5        # dreyfus_demonstrated > dreyfus_expected
+
+# ---------------------------------------------------------------------------
 # Detecção de inflação (red flag e flag estruturada) em /10
 # ---------------------------------------------------------------------------
 # Inflation = autodeclaração alta + contexto fraco.
