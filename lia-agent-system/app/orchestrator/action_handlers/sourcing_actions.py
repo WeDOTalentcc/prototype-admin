@@ -248,7 +248,7 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]):
                 unresolved = [n for n in candidate_names]
                 return ActionResult(
                     status="error",
-                    message=f"Não encontrei todos os candidatos para comparação. Verifique os nomes: {", ".join(unresolved)}",
+                    message="Não encontrei todos os candidatos para comparação. Verifique os nomes: " + ", ".join(unresolved) + ".",
                     error_detail="Could not resolve all candidate names to IDs",
                     action_type="compare_candidates",
                 )
