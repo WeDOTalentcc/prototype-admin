@@ -56,6 +56,7 @@ import {
   AlertCircle,
   Video,
   X,
+  GitCompare,
 } from "lucide-react"
 import { getStageByName, isApplicationSource } from "@/lib/recruitment-stages"
 import { getSuggestionForCandidate } from "@/hooks/ai/useCandidateSuggestions"
@@ -494,30 +495,46 @@ export function KanbanColumnRenderer({
                   onChange={() => {}}
                 />
 
-                {/* D9 — Checkbox para comparação de candidatos */}
-                <input
-                  type="checkbox"
-                  className="w-3 h-3 rounded-xl cursor-pointer flex-shrink-0 border border-lia-border-default accent-lia-btn-primary-bg"
-                  checked={selectedForCompare.has(candidate.id)}
-                  onChange={(e) => {
-                    setSelectedForCompare((prev: Set<string>) => {
-                      const next = new Set(prev)
-                      if (e.target.checked) {
-                        if (next.size < 4) next.add(candidate.id)
-                      } else {
-                        next.delete(candidate.id)
+                {/* D9 — Toggle de comparação de candidatos (ícone distinto + tooltip permanente) */}
+                {(() => {
+                  const isCompareSelected = selectedForCompare.has(candidate.id)
+                  const isCompareLocked = selectedForCompare.size >= 4 && !isCompareSelected
+                  return (
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={isCompareSelected}
+                      aria-label={t('selectForComparison', { name: candidate.name })}
+                      title={
+                        isCompareLocked
+                          ? t('maxCandidatesComparison')
+                          : t('compareCandidate')
                       }
-                      return next
-                    })
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  aria-label={t('selectForComparison', { name: candidate.name })}
-                  title={
-                    selectedForCompare.size >= 4 && !selectedForCompare.has(candidate.id)
-                      ? t('maxCandidatesComparison')
-                      : t('compareCandidate')
-                  }
-                />
+                      disabled={isCompareLocked}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setSelectedForCompare((prev: Set<string>) => {
+                          const next = new Set(prev)
+                          if (next.has(candidate.id)) {
+                            next.delete(candidate.id)
+                          } else if (next.size < 4) {
+                            next.add(candidate.id)
+                          }
+                          return next
+                        })
+                      }}
+                      className={
+                        "inline-flex items-center justify-center w-4 h-4 rounded-full flex-shrink-0 border transition-colors motion-reduce:transition-none " +
+                        (isCompareSelected
+                          ? "bg-wedo-cyan/20 border-wedo-cyan text-wedo-cyan-dark dark:text-wedo-cyan"
+                          : "border-lia-border-default text-lia-text-tertiary hover:bg-lia-interactive-hover hover:text-lia-text-secondary") +
+                        (isCompareLocked ? " opacity-40 cursor-not-allowed" : " cursor-pointer")
+                      }
+                    >
+                      <GitCompare className="w-2.5 h-2.5" aria-hidden="true" />
+                    </button>
+                  )
+                })()}
 
                 {/* Avatar pequeno com foto */}
                 <div className="relative flex-shrink-0">

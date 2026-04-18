@@ -483,10 +483,10 @@ export const kanbanCardStyles = {
  */
 export const kanbanChipStyles = {
   base:
-    'inline-flex items-center gap-1 rounded-full border bg-transparent transition-colors motion-reduce:transition-none',
+    'inline-flex items-center gap-0.5 rounded-full border bg-transparent transition-colors motion-reduce:transition-none',
   size: {
-    comfortable: 'text-xs px-2 py-0.5',
-    compact: 'text-micro px-1.5 py-0',
+    comfortable: 'text-micro px-1.5 py-0',
+    compact: 'text-[10px] leading-[14px] px-1 py-0',
   },
   variant: {
     neutral:
@@ -517,7 +517,7 @@ export const kanbanChipStyles = {
  */
 export const kanbanColumnShellStyles = {
   base:
-    'flex flex-col bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300',
+    'flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300',
   width: {
     comfortable: 'w-panel-sm min-w-panel-sm',
     compact: 'flex-1 min-w-[275px] max-w-[368px]',
