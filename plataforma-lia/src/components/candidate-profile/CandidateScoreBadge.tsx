@@ -3,6 +3,7 @@
 import React, { memo } from "react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
+import { getWsiScoreColor } from "@/lib/wsi/visual"
 
 type ScoreFormat = "percent" | "decimal" | "wsi"
 
@@ -15,10 +16,11 @@ interface CandidateScoreBadgeProps {
 }
 
 function getScoreColor(score: number, format: ScoreFormat): string {
-  // WSI já é 0-10 (Task #512). `decimal` também é 0-10. `percent` é 0-100.
-  const normalized = format === "wsi" || format === "decimal" ? score * 10 : score
-  if (normalized >= 80) return "text-status-success"
-  if (normalized >= 60) return "text-wedo-orange"
+  // Task #512: WSI e decimal usam escala 0-10 via helper canônico
+  // (WSI_VISUAL_3TIER: verde >=7.5, amarelo >=6.0, vermelho <6.0).
+  if (format === "wsi" || format === "decimal") return getWsiScoreColor(score)
+  if (score >= 80) return "text-status-success"
+  if (score >= 60) return "text-wedo-orange"
   return "text-status-error"
 }
 

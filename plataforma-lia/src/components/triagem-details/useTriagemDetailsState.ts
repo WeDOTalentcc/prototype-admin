@@ -57,19 +57,10 @@ export const bloomLabel = (n: number) =>
 export const dreyfusLabel = (n: number) =>
   (["", "Iniciante", "Básico", "Intermediário", "Avançado", "Especialista"] as const)[n] ?? `Nível ${n}`
 
-// Escala WSI 0-10 (Task #512). Cutoffs canônicos em `lib/wsi/visual.ts`.
-export const getScoreColor = (score: number) =>
-  score >= 9.0 ? "text-status-success" :
-  score >= 8.0 ? "text-status-success" :
-  score >= 7.0 ? "text-wedo-cyan-dark" :
-  score >= 6.0 ? "text-status-warning" :
-  score >= 4.5 ? "text-wedo-orange" :
-  "text-status-error"
-
-export const getScoreColor3Tier = (score: number) =>
-  score >= 9.0 ? "text-status-success" :
-  score >= 7.0 ? "text-status-warning" :
-  "text-status-error"
+// Escala WSI 0-10 (Task #512) — política 3-tier visual: ver `lib/wsi/visual.ts`
+// (WSI_VISUAL_3TIER: verde >=7.5, amarelo >=6.0, vermelho <6.0).
+// Reexporta o helper canônico para evitar drift de cutoffs.
+export { getWsiScoreColor as getScoreColor, getWsiScoreColor as getScoreColor3Tier } from "@/lib/wsi/visual"
 
 export const gapConfig = {
   ok:    { label: "Alinhado",          icon: CheckCircle,   color: "text-status-success", bg: "bg-status-success/10", border: "border-status-success/30" },
