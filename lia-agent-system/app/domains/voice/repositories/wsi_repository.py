@@ -17,6 +17,8 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.shared.security.wsi_hashing import hash_response
+
 
 class WsiRepository:
     """Repository for WSI screening workflow data access."""
@@ -153,20 +155,46 @@ class WsiRepository:
         consistency_penalty: float | None,
         final_score: float,
         justification: str,
+        response_hash: str | None = None,
     ) -> None:
-        """Persist a response analysis record."""
+        """Persist a response analysis record.
+
+        Task #511 round 3: `response_hash` é obrigatório (NOT NULL na coluna
+        após migration 091). Se o caller não fornecer, calculamos aqui via
+        `hash_response` para garantir consistência — a coluna nunca pode
+        receber NULL após a migration.
+        """
+        if not response_hash:
+            response_hash = hash_response(response_text, session_id, question_id)
+        # Audit trail paralelo (wsi_responses) — mesmo hash, FAIL-FAST.
+        await self.db.execute(text("""
+            INSERT INTO wsi_responses (
+                session_id, question_id, raw_text, response_hash,
+                candidate_id
+            )
+            VALUES (:session_id, :question_id, :raw_text, :response_hash,
+                    :candidate_id)
+        """), {
+            "session_id": session_id,
+            "question_id": question_id,
+            "raw_text": response_text or "",
+            "response_hash": response_hash,
+            "candidate_id": candidate_id,
+        })
         await self.db.execute(text("""
             INSERT INTO wsi_response_analyses (
                 id, session_id, question_id, candidate_id, job_vacancy_id,
                 competency, response_text, response_audio_url,
                 autodeclaration_score, context_score, bloom_level, dreyfus_level,
-                evidences, red_flags, consistency_penalty, final_score, justification
+                evidences, red_flags, consistency_penalty, final_score, justification,
+                response_hash
             )
             VALUES (
                 :id, :session_id, :question_id, :candidate_id, :job_vacancy_id,
                 :competency, :response_text, :response_audio_url,
                 :autodeclaration_score, :context_score, :bloom_level, :dreyfus_level,
-                :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification
+                :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification,
+                :response_hash
             )
         """), {
             "id": analysis_id,
@@ -186,6 +214,7 @@ class WsiRepository:
             "consistency_penalty": consistency_penalty,
             "final_score": final_score,
             "justification": justification,
+            "response_hash": response_hash,
         })
 
     async def get_response_scores_for_session(self, session_id: str) -> list:
@@ -442,17 +471,27 @@ class WsiRepository:
         red_flags: list,
         final_score: float,
         justification: str,
+        response_hash: str | None = None,
     ) -> None:
-        """Persist a simplified response-analysis record (ON CONFLICT DO NOTHING)."""
+        """Persist a simplified response-analysis record (ON CONFLICT DO NOTHING).
+
+        Task #511 round 3: `response_hash` obrigatório na coluna após
+        migration 091. Calculado se não fornecido para garantir
+        compatibilidade com callers legados (eval pipeline).
+        """
+        if not response_hash:
+            response_hash = hash_response(response_text, session_id, question_id)
         await self.db.execute(text("""
             INSERT INTO wsi_response_analyses (
                 id, session_id, question_id, candidate_id, job_vacancy_id,
                 competency, response_text, bloom_level, dreyfus_level,
-                evidences, red_flags, final_score, justification
+                evidences, red_flags, final_score, justification,
+                response_hash
             )
             VALUES (:id, :session_id, :question_id, :candidate_id, :job_vacancy_id,
                     :competency, :response_text, :bloom_level, :dreyfus_level,
-                    :evidences::jsonb, :red_flags::jsonb, :final_score, :justification)
+                    :evidences::jsonb, :red_flags::jsonb, :final_score, :justification,
+                    :response_hash)
             ON CONFLICT (id) DO NOTHING
         """), {
             "id": analysis_id,
@@ -468,6 +507,7 @@ class WsiRepository:
             "red_flags": json.dumps(red_flags),
             "final_score": final_score,
             "justification": justification,
+            "response_hash": response_hash,
         })
 
     async def upsert_result(

@@ -71,7 +71,7 @@ async def call_lia(
     }
     import asyncio as _asyncio
     last_exc = None
-    for attempt in range(2):
+    for attempt in range(4):
         _client = client if attempt == 0 else httpx.AsyncClient()
         try:
             t0 = time.monotonic()
@@ -108,8 +108,9 @@ async def call_lia(
             return {"ok": False, "status_code": 0, "latency_ms": -1, "response": "", "error": "TIMEOUT"}
         except (httpx.ConnectError, httpx.RemoteProtocolError) as exc:
             last_exc = exc
-            if attempt == 0:
-                await _asyncio.sleep(5)  # wait for backend restart
+            wait = [5, 10, 15][attempt] if attempt < 3 else 0
+            if wait > 0:
+                await _asyncio.sleep(wait)  # wait for backend restart
                 continue
             return {"ok": False, "status_code": 0, "latency_ms": -1, "response": "", "error": str(exc)}
         except Exception as exc:
