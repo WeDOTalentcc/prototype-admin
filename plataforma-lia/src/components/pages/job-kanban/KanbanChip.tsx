@@ -5,11 +5,23 @@ import { kanbanChipStyles } from "@/lib/design-tokens"
 import { cn } from "@/lib/utils"
 import type { KanbanCardDensity } from "./KanbanCardShell"
 
+export type KanbanChipVariant =
+  | "neutral"
+  | "success"
+  | "warning"
+  | "danger"
+  | "info"
+
 export interface KanbanChipProps
   extends React.HTMLAttributes<HTMLSpanElement> {
   density: KanbanCardDensity
   /** Renders the chip with the muted text token. */
   muted?: boolean
+  /**
+   * Semantic color variant. Defaults to `neutral`. Variants apply border
+   * + text tokens that respect dark mode automatically.
+   */
+  variant?: KanbanChipVariant
 }
 
 /**
@@ -19,7 +31,7 @@ export interface KanbanChipProps
  */
 export const KanbanChip = React.forwardRef<HTMLSpanElement, KanbanChipProps>(
   function KanbanChip(
-    { density, muted = false, className, children, ...rest },
+    { density, muted = false, variant = "neutral", className, children, ...rest },
     ref,
   ) {
     return (
@@ -28,6 +40,7 @@ export const KanbanChip = React.forwardRef<HTMLSpanElement, KanbanChipProps>(
         className={cn(
           kanbanChipStyles.base,
           kanbanChipStyles.size[density],
+          kanbanChipStyles.variant[variant],
           muted && kanbanChipStyles.muted,
           className,
         )}

@@ -472,15 +472,61 @@ export const kanbanCardStyles = {
 
 /**
  * v4.2: Chip canônico do Kanban (tag/pílula em outline)
+ *
+ * Densidades:
+ * - `comfortable`: usado pelo cartão de vagas.
+ * - `compact`: usado pelo cartão de candidatos.
+ *
+ * Variantes semânticas adicionais ficam em `variant` para casos onde o
+ * chip carrega significado de estado (success/warning/danger/info).
+ * Quando `variant` é omitido, o chip usa a borda neutra padrão.
  */
 export const kanbanChipStyles = {
   base:
-    'inline-flex items-center rounded-full border border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-secondary bg-transparent',
+    'inline-flex items-center gap-1 rounded-full border bg-transparent transition-colors motion-reduce:transition-none',
   size: {
     comfortable: 'text-xs px-2 py-0.5',
     compact: 'text-micro px-1.5 py-0',
   },
+  variant: {
+    neutral:
+      'border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-secondary',
+    success:
+      'border-status-success/30 dark:border-status-success/30 text-status-success dark:text-status-success',
+    warning:
+      'border-status-warning/30 dark:border-status-warning/30 text-status-warning dark:text-status-warning',
+    danger:
+      'border-status-error/30 dark:border-status-error/30 text-status-error dark:text-status-error',
+    info:
+      'border-wedo-cyan/30 dark:border-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan',
+  },
   muted: 'text-lia-text-tertiary dark:text-lia-text-tertiary',
+} as const
+
+/**
+ * v4.2: Casca canônica da coluna do Kanban (vagas + candidatos)
+ * Usado por <KanbanColumnShell /> em src/components/pages/job-kanban.
+ *
+ * Densidades:
+ * - `comfortable`: kanban de vagas (página /jobs).
+ * - `compact`:    kanban de candidatos dentro de uma vaga.
+ *
+ * Centraliza largura, fundo (com variante dark consistente nas duas telas),
+ * borda, raio e altura preferencial. Estado `isDropping` adiciona ring/tint
+ * apenas no contexto de candidatos (que tem drag-and-drop ativo).
+ */
+export const kanbanColumnShellStyles = {
+  base:
+    'flex flex-col bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300',
+  width: {
+    comfortable: 'w-panel-sm min-w-panel-sm',
+    compact: 'flex-1 min-w-[275px] max-w-[368px]',
+  },
+  height: {
+    comfortable: '',
+    compact: 'h-[calc(100vh-16rem)]',
+  },
+  dropping: 'ring-2 ring-lia-border-medium bg-lia-bg-secondary/20',
 } as const
 
 /**

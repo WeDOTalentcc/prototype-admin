@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/ui/empty-state"
 import type { KanbanItem } from "./types"
 import { KanbanCard } from "./KanbanCard"
 import { KanbanColumnHeader } from "./KanbanColumnHeader"
+import { KanbanColumnShell } from "./KanbanColumnShell"
 
 interface KanbanColumnStage {
   id: string
@@ -36,42 +37,43 @@ export function KanbanColumn({
   emptyMessage,
 }: KanbanColumnProps) {
   return (
-    <div
-      className="flex flex-col w-panel-sm min-w-panel-sm bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle"
+    <KanbanColumnShell
+      density="comfortable"
       data-testid="kanban-column"
       data-stage-id={stage.id}
-    >
-      <KanbanColumnHeader
-        title={stage.name}
-        count={items.length}
-        accentClass={stage.accentClass}
-        accentColor={stage.color}
-        width="md"
-        actions={
-          <>
-            {onAdd && (
+      header={
+        <KanbanColumnHeader
+          title={stage.name}
+          count={items.length}
+          accentClass={stage.accentClass}
+          accentColor={stage.color}
+          width="md"
+          actions={
+            <>
+              {onAdd && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
+                  onClick={onAdd}
+                  aria-label="Adicionar"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7 text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
-                onClick={onAdd}
-                aria-label="Adicionar"
+                aria-label="Mais ações"
               >
-                <Plus className="h-4 w-4" />
+                <MoreVertical className="h-4 w-4" />
               </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 text-lia-text-tertiary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
-              aria-label="Mais ações"
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </>
-        }
-      />
-
+            </>
+          }
+        />
+      }
+    >
       <ScrollArea className="flex-1 p-2">
         <div
           className="space-y-2 min-h-[100px]"
@@ -95,6 +97,6 @@ export function KanbanColumn({
           )}
         </div>
       </ScrollArea>
-    </div>
+    </KanbanColumnShell>
   )
 }

@@ -71,6 +71,7 @@ import { getSuggestionForCandidate } from "@/hooks/ai/useCandidateSuggestions"
 import { formatScorePercent } from "@/lib/design-tokens"
 import type { CandidateLocal } from "@/services/lia-api"
 import { KanbanColumnHeader } from "./KanbanColumnHeader"
+import { KanbanColumnShell } from "./KanbanColumnShell"
 import { KanbanCardShell } from "./KanbanCardShell"
 import { KanbanCardActions } from "./KanbanCardActions"
 import { KanbanCardScores } from "./KanbanCardScores"
@@ -330,17 +331,15 @@ export function KanbanColumnRenderer({
   const isDropping = dragOverColumn === stageId
 
   return (
-    <div
-      className={`flex flex-col flex-1 bg-lia-bg-primary rounded-xl min-w-[275px] max-w-[368px] border border-lia-border-subtle transition-colors motion-reduce:transition-none duration-300 ${
-        isDropping ? "ring-2 ring-lia-border-medium bg-lia-bg-secondary/20" : ""
-      } h-[calc(100vh-16rem)]`}
+    <KanbanColumnShell
+      density="compact"
+      isDropping={isDropping}
       onDragOver={(e) => onDragOver(e, stageId)}
       onDragLeave={onDragLeave}
       onDrop={(e) => onDrop(e, stageId)}
       data-testid="kanban-column"
       data-stage-id={stageId}
-    >
-      {/* Header da Coluna - Fixo */}
+      header={
       <KanbanColumnHeader
         title={displayTitle}
         count={filteredCandidates.length}
@@ -396,7 +395,8 @@ export function KanbanColumnRenderer({
           ) : null
         }
       />
-
+      }
+    >
       {/* Cards - Com scroll vertical */}
       <div className="flex-1 overflow-y-auto px-1.5 pb-1 space-y-1">
         {filteredCandidates.map((candidate, index) => (
@@ -628,6 +628,6 @@ export function KanbanColumnRenderer({
           </KanbanCardShell>
         ))}
       </div>
-    </div>
+    </KanbanColumnShell>
   )
 }
