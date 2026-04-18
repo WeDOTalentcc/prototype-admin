@@ -897,9 +897,25 @@ async def get_wsi_audit_trail(
     # 2) Tenant scoping (Task #511 round 3) — bloqueia IDOR cross-tenant.
     # `admin` tem acesso global (User.can_access_company); demais perfis
     # autorizados pelo RBAC (dpo) só veem dados da própria company.
+    #
+    # Round 3 fix (deny-by-default): se a sessão não resolve company
+    # (job_vacancy ausente/órfão, dado legado, sessão sem job), apenas
+    # admin pode acessar. Para dpo retornamos 403 — sem company resolvível
+    # não há como provar pertencimento ao tenant.
     session_company_id = sess_row[6]
     if session_company_id is not None:
         validate_company_access(current_user, str(session_company_id))
+    else:
+        if current_user.role != UserRole.admin:
+            logger.warning(
+                "[WSI-AUDIT] deny: company unresolved for session=%s "
+                "(non-admin role=%s, user=%s)",
+                session_id, current_user.role, current_user.id,
+            )
+            raise HTTPException(
+                status_code=403,
+                detail="Cannot resolve session tenant; access denied",
+            )
 
     responses_rows = (await db.execute(text(
         "SELECT id, question_id, raw_text, response_hash, candidate_id, created_at "
