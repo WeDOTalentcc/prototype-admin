@@ -20,6 +20,11 @@ export interface ScreeningChannelConfig {
 export interface ChannelToggle {
   enabled: boolean
   label?: string
+  // Task #425 — WhatsApp delivery mode (only used by the `whatsapp` channel).
+  // 'wa_link' = wa.me link only (legacy);
+  // 'twilio_direct' = direct send via Twilio WA Business API;
+  // 'both' = link + Twilio direct send.
+  mode?: 'wa_link' | 'twilio_direct' | 'both'
 }
 
 export interface ScreeningConfig {
@@ -191,8 +196,14 @@ function normalizeChannels(
   const voiceWeb = r.voice_web ?? r.voip_web
   const phoneToggle = mergeToggle(d.phone_pstn, phonePstn, false, 'Ligação (PSTN)')
   const voiceToggle = mergeToggle(d.voice_web, voiceWeb, true, 'Voz no Navegador')
+  // Task #425 — preserve WhatsApp delivery mode (mergeToggle drops unknown fields).
+  const whatsappBase = mergeToggle(d.whatsapp, r.whatsapp, true, 'WhatsApp')
+  const waMode = r.whatsapp?.mode ?? d.whatsapp?.mode
+  const whatsapp: ChannelToggle = waMode
+    ? { ...whatsappBase, mode: waMode === 'twilio_direct' || waMode === 'both' ? waMode : 'wa_link' }
+    : whatsappBase
   return {
-    whatsapp: mergeToggle(d.whatsapp, r.whatsapp, true, 'WhatsApp'),
+    whatsapp,
     chat_web: mergeToggle(d.chat_web, r.chat_web, true, 'Chat Web'),
     phone_pstn: phoneToggle,
     voice_web: voiceToggle,

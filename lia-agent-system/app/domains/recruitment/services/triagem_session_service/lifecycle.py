@@ -51,11 +51,13 @@ async def validate_token(db: AsyncSession, token: str) -> dict[str, Any]:
     # limit applies whether the candidate hits /start or just resumes via
     # the token URL. The increment itself still happens on /start (state
     # transition); validate_token only blocks further access when capped.
+    # Strict comparison ( current > REOPEN_LIMIT ): allow exactly REOPEN_LIMIT
+    # reopens, block the (LIMIT+1)-th access. Increment happens in start_session.
     REOPEN_LIMIT = 2
     if session.status in ("started", "in_progress"):
         meta = session.metadata_json or {}
         current = int(meta.get("reopen_count", 0))
-        if current >= REOPEN_LIMIT:
+        if current > REOPEN_LIMIT:
             return {
                 "valid": False,
                 "error": "reopen_limit_exceeded",
@@ -125,6 +127,11 @@ async def get_session_config(db: AsyncSession, token: str) -> dict[str, Any] | N
                 master_enabled = sc.get("channels_master_enabled", True)
                 job_info["chatWebEnabled"] = bool(master_enabled) and bool(chat_ch.get("enabled", True))
                 job_info["whatsappEnabled"] = bool(master_enabled) and bool(whatsapp_ch.get("enabled", True))
+                # Task #425 — whatsapp delivery mode: 'wa_link' (default), 'twilio_direct', or 'both'.
+                wa_mode = (whatsapp_ch.get("mode") or "wa_link")
+                if wa_mode not in ("wa_link", "twilio_direct", "both"):
+                    wa_mode = "wa_link"
+                job_info["whatsappMode"] = wa_mode
                 job_info["phoneEnabled"] = bool(master_enabled) and bool(phone_ch.get("enabled", False))
                 job_info["voiceWebEnabled"] = bool(master_enabled) and bool(voice_ch.get("enabled", True))
         except Exception as e:
@@ -343,14 +350,18 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
     # Task #425 — session resumption: cap reopens to 2 (after the original
     # invited→started transition). reopen_count is persisted in
     # TriagemSession.metadata_json (JSON column, no migration required).
+    # Strict comparison ( current > REOPEN_LIMIT ) and a 30-min cooldown so
+    # accidental refreshes/double-loads inside the cooldown window do not
+    # consume attempts.
     REOPEN_LIMIT = 2
+    REOPEN_COOLDOWN_MIN = 30
     if session.status == "invited":
         session.status = "started"
         session.started_at = datetime.utcnow()
     elif session.status in ("started", "in_progress"):
         meta = dict(session.metadata_json or {})
         current = int(meta.get("reopen_count", 0))
-        if current >= REOPEN_LIMIT:
+        if current > REOPEN_LIMIT:
             return {
                 "error": "reopen_limit_exceeded",
                 "reopen_count": current,
@@ -360,9 +371,21 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
                     f"de {REOPEN_LIMIT} reaberturas. Procure o recrutador para liberar uma nova tentativa."
                 ),
             }
-        meta["reopen_count"] = current + 1
-        meta["last_reopened_at"] = datetime.utcnow().isoformat()
-        session.metadata_json = meta
+        # Cooldown: only count this as a new reopen if the last one was
+        # more than REOPEN_COOLDOWN_MIN minutes ago.
+        last_iso = meta.get("last_reopened_at")
+        within_cooldown = False
+        if last_iso:
+            try:
+                last_dt = datetime.fromisoformat(str(last_iso))
+                if (datetime.utcnow() - last_dt) < timedelta(minutes=REOPEN_COOLDOWN_MIN):
+                    within_cooldown = True
+            except (TypeError, ValueError):
+                within_cooldown = False
+        if not within_cooldown:
+            meta["reopen_count"] = current + 1
+            meta["last_reopened_at"] = datetime.utcnow().isoformat()
+            session.metadata_json = meta
     elif session.status == "completed":
         return {
             "error": "session_completed",

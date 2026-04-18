@@ -27,6 +27,7 @@ export function SCMSectionConfiguracoes({
   isEditingScreeningConfig,
   editChannels, setEditChannels,
   editChannelsMasterEnabled, setEditChannelsMasterEnabled,
+  editWhatsappMode, setEditWhatsappMode,
   editPrimaryChannel, setEditPrimaryChannel,
   editFallbackOrder, setEditFallbackOrder,
   editMinScorePreset, setEditMinScorePreset,
@@ -538,16 +539,44 @@ export function SCMSectionConfiguracoes({
                   const ChIcon = ch.icon
                   const enabled = editChannels[ch.key]
                   return (
-                    <div key={ch.key} className="flex items-center justify-between px-3 py-2">
-                      <div className="flex items-center gap-2">
-                        <ChIcon className="w-3.5 h-3.5 text-lia-text-secondary" />
-                        <span className="text-xs font-medium text-lia-text-primary">{ch.label}</span>
-                        {ch.key === 'phone_pstn' && !enabled && <span className="text-micro text-lia-text-disabled">(Integração pendente)</span>}
+                    <div key={ch.key} className="px-3 py-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <ChIcon className="w-3.5 h-3.5 text-lia-text-secondary" />
+                          <span className="text-xs font-medium text-lia-text-primary">{ch.label}</span>
+                          {ch.key === 'phone_pstn' && !enabled && <span className="text-micro text-lia-text-disabled">(Integração pendente)</span>}
+                        </div>
+                        <button onClick={() => setEditChannels(prev => ({ ...prev, [ch.key]: !prev[ch.key] }))}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none ${enabled ? 'bg-lia-btn-primary-bg' : 'bg-lia-border-default'}`}>
+                          <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-primary transition-transform motion-reduce:transition-none ${enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                        </button>
                       </div>
-                      <button onClick={() => setEditChannels(prev => ({ ...prev, [ch.key]: !prev[ch.key] }))}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors motion-reduce:transition-none ${enabled ? 'bg-lia-btn-primary-bg' : 'bg-lia-border-default'}`}>
-                        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-lia-bg-primary transition-transform motion-reduce:transition-none ${enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
-                      </button>
+                      {ch.key === 'whatsapp' && enabled && (
+                        <div className="mt-2 ml-5">
+                          <div className="text-micro text-lia-text-tertiary mb-1">Modo de envio</div>
+                          <div className="grid grid-cols-3 gap-1">
+                            {([
+                              { key: 'wa_link' as const, label: 'Link wa.me', desc: 'Candidato clica e abre conversa' },
+                              { key: 'twilio_direct' as const, label: 'Twilio WA Business', desc: 'Envio direto via API' },
+                              { key: 'both' as const, label: 'Ambos', desc: 'Link + envio Twilio' },
+                            ]).map(opt => {
+                              const sel = editWhatsappMode === opt.key
+                              return (
+                                <button
+                                  key={opt.key}
+                                  type="button"
+                                  onClick={() => setEditWhatsappMode(opt.key)}
+                                  className={`text-left rounded-md border px-2 py-1.5 transition-colors motion-reduce:transition-none ${sel ? 'border-lia-btn-primary-bg bg-lia-bg-secondary ring-1 ring-lia-btn-primary-bg/30' : 'border-lia-border-subtle bg-lia-bg-primary hover:border-lia-border-default'}`}
+                                  title={opt.desc}
+                                >
+                                  <div className={`text-micro font-semibold ${sel ? 'text-lia-text-primary' : 'text-lia-text-secondary'}`}>{opt.label}</div>
+                                  <div className="text-micro text-lia-text-disabled leading-tight">{opt.desc}</div>
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )
                 })}

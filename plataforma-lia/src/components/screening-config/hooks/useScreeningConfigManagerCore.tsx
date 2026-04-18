@@ -168,12 +168,16 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
   })
   // Task #425 — editable master toggle for channels (default ON for back-compat).
   const [editChannelsMasterEnabled, setEditChannelsMasterEnabled] = useState<boolean>(true)
-  // Sync master toggle with server value when config loads or changes outside edit mode.
+  // Task #425 — WhatsApp delivery mode picker: 'wa_link' (legacy), 'twilio_direct', or 'both'.
+  const [editWhatsappMode, setEditWhatsappMode] = useState<'wa_link' | 'twilio_direct' | 'both'>('wa_link')
+  // Sync master toggle + whatsapp mode with server value when config loads or changes outside edit mode.
   useEffect(() => {
     if (!isEditingScreeningConfig) {
       setEditChannelsMasterEnabled(screeningConfig?.channels_master_enabled !== false)
+      const m = (screeningConfig?.channels?.whatsapp as { mode?: string } | undefined)?.mode
+      setEditWhatsappMode(m === 'twilio_direct' || m === 'both' ? m : 'wa_link')
     }
-  }, [screeningConfig?.channels_master_enabled, isEditingScreeningConfig])
+  }, [screeningConfig?.channels_master_enabled, screeningConfig?.channels?.whatsapp, isEditingScreeningConfig])
   const [editPrimaryChannel, setEditPrimaryChannel] = useState<ScreeningChannelKey>('chat_web')
   const [editFallbackOrder, setEditFallbackOrder] = useState<ScreeningChannelKey[]>(['whatsapp'])
   const [editMinScorePreset, setEditMinScorePreset] = useState<'rigorous' | 'recommended' | 'flexible'>('recommended')
@@ -543,6 +547,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     editCalendarProvider,
     editChannels,
     editChannelsMasterEnabled,
+    editWhatsappMode,
     editFallbackOrder,
     editInterviewDuration,
     editMaxRetries,
@@ -578,6 +583,7 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     setEditCalendarProvider,
     setEditChannels,
     setEditChannelsMasterEnabled,
+    setEditWhatsappMode,
     setEditFallbackOrder,
     setEditInterviewDuration,
     setEditMaxRetries,

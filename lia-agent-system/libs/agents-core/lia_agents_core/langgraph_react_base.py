@@ -181,7 +181,7 @@ class LangGraphReActBase(LangGraphBase):
                 _cid = get_current_llm_tenant() or ""
             except Exception:
                 pass
-        _eid = str(input.context.get("entity_id") or input.context.get("job_vacancy_id") or "")
+        _eid = str(input.context.get("entity_id") or input.context.get("context_id") or input.context.get("job_vacancy_id") or "")
         if _cid:
             _entity_line = f"- ID da entidade atual (vaga/candidato em foco): {_eid}\n" if _eid else ""
             _auth_ctx = (

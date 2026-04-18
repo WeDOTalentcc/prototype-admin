@@ -349,6 +349,14 @@ async def whatsapp_initiate(
             detail="O canal WhatsApp não está habilitado para esta vaga. Escolha outro canal.",
         )
 
+    # Task #425 — delivery mode picked in screening config:
+    #   'wa_link'        → return wa.me link only (legacy)
+    #   'twilio_direct'  → send via Twilio WA Business only
+    #   'both'           → return wa.me link AND attempt Twilio direct send
+    wa_mode = job_info.get("whatsappMode") or "wa_link"
+    if wa_mode not in ("wa_link", "twilio_direct", "both"):
+        wa_mode = "wa_link"
+
     raw = re.sub(r"\D", "", request.phone_number or "")
     if len(raw) < 10:
         raise HTTPException(status_code=400, detail="Telefone inválido")
@@ -365,7 +373,46 @@ async def whatsapp_initiate(
         f"Olá! Sou a LIA, assistente da {company_name}. Vamos continuar a sua "
         f"triagem para a vaga de {job_title}, {candidate_name}."
     )
-    wa_url = f"https://wa.me/{raw}?text={_urlquote(message)}"
+    wa_url: str | None = (
+        f"https://wa.me/{raw}?text={_urlquote(message)}"
+        if wa_mode in ("wa_link", "both")
+        else None
+    )
+
+    # Twilio WA Business direct send (only when mode requests it).
+    twilio_result: dict[str, Any] | None = None
+    if wa_mode in ("twilio_direct", "both"):
+        try:
+            from app.domains.communication.services.whatsapp_service import (
+                get_whatsapp_service,
+            )
+            wa_svc = get_whatsapp_service()
+            send_res = await wa_svc.send_message(
+                to_phone=f"+{raw}",
+                message=message,
+                metadata={
+                    "source": "triagem.whatsapp_initiate",
+                    "session_token": token,
+                },
+            )
+            twilio_result = {
+                "success": bool(getattr(send_res, "success", False)),
+                "message_id": getattr(send_res, "message_id", None),
+                "status": getattr(send_res, "status", None),
+                "provider": getattr(send_res, "provider", None),
+                "error": getattr(send_res, "error", None),
+            }
+        except Exception as exc:
+            logger.warning(
+                f"[Triagem] whatsapp-initiate Twilio send failed (mode={wa_mode}): {exc}"
+            )
+            twilio_result = {"success": False, "error": str(exc)}
+            # In strict twilio_direct mode with no link fallback, surface the failure.
+            if wa_mode == "twilio_direct":
+                raise HTTPException(
+                    status_code=502,
+                    detail="Falha ao enviar WhatsApp via Twilio. Tente novamente em instantes.",
+                )
 
     # Persist channel selection on session metadata (best-effort).
     try:
@@ -377,6 +424,7 @@ async def whatsapp_initiate(
             meta = dict(sess.metadata_json or {})
             meta["candidate_selected_channel"] = "whatsapp"
             meta["candidate_selected_phone"] = f"+{raw}"
+            meta["whatsapp_delivery_mode"] = wa_mode
             sess.metadata_json = meta
             await repo.db.flush()
     except Exception as exc:  # pragma: no cover - best-effort persistence
@@ -384,14 +432,17 @@ async def whatsapp_initiate(
             f"[Triagem] whatsapp-initiate could not persist channel selection: {exc}"
         )
 
-    return JSONResponse(
-        content={
-            "success": True,
-            "channel": "whatsapp",
-            "phone": f"+{raw}",
-            "wa_url": wa_url,
-        }
-    )
+    payload: dict[str, Any] = {
+        "success": True,
+        "channel": "whatsapp",
+        "phone": f"+{raw}",
+        "mode": wa_mode,
+    }
+    if wa_url is not None:
+        payload["wa_url"] = wa_url
+    if twilio_result is not None:
+        payload["twilio"] = twilio_result
+    return JSONResponse(content=payload)
 
 
 @router.post("/{token}/audio", response_model=None)

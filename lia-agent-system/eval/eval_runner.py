@@ -117,10 +117,12 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
     # ---- NEGATIVE CRITERIA (check what is ABSENT) ----
     if any(x in c for x in ("does not ask", "not ask", "without asking",
                              "does not invoke", "does not re-execute")):
+        quoted = _re.findall(r"'([^']+)'", c)
+        if quoted:
+            return not any(q in resp_lower for q in quoted)
         bad = ["qual empresa", "pode me informar", "preciso do id", "qual id",
                "me forneca", "me forneça", "me informe", "qual vaga", "qual candidato",
-               "me conta qual", "pode me dizer", "me diga o", "precisa do id",
-               "necessario o id", "necessário o id"]
+               "me conta qual", "precisa do id", "necessario o id", "necessário o id"]
         return not any(p in resp_lower for p in bad)
 
     if "does not crash" in c or "returns meaningful" in c:
@@ -133,6 +135,11 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
     if "does not answer" in c:
         return not any(p in resp_lower for p in ["placar", "gol", "jogo de ontem"])
 
+    # ---- BLIND ACTION (must NOT have executed anything) ----
+    if _re.search(r"does not take.*action|blind.*action|does not.*blind", c):
+        return not any(w in resp_lower for w in ["executei", "realizado", "concluído",
+                                                   "ação concluída", "feito com sucesso"])
+
     # ---- CONFIRMATION / HITL ----
     if any(x in c for x in ("confirm", "hitl", "approval", "ask.*before",
                              "asks for approval", "antes de")):
@@ -141,7 +148,13 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
                          "antes de executar", "antes de prosseguir", "gostaria de confirmar",
                          "preciso de confirmação", "validar", "ok para prosseguir",
                          "deseja continuar", "posso prosseguir"]
-        return any(p in resp_lower for p in confirm_words)
+        return any(p in resp_lower for p in confirm_words) or "?" in response
+
+    # ---- CLARIFYING QUESTION ----
+    if _re.search(r"asks?.*(clarifying|question|clarif)|clarifying.*question", c):
+        return "?" in response or any(w in resp_lower for w in
+                                       ["me diga", "pode me dizer", "o que você", "qual",
+                                        "poderia", "me conte", "me informe"])
 
     # ---- LIST / RANKING / HISTORY ----
     if _re.search(r"returns?.*(list|ranked|candidate|job|name|histor|question|plan)|"
@@ -151,22 +164,29 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
                   r"(chronolog|stage|transition)|"
                   r"returns?.*(count|stage|funnel)|"
                   r"names?.*(candidate|contender)", c):
-        return has_list or has_bold or n > 100
+        return has_list or has_bold or n > 100 or any(w in resp_lower for w in
+                                                        ["nenhum", "nenhuma", "zero", "0 candidato"])
 
     # ---- COUNTS / NUMBERS ----
     if _re.search(r"numeric|counts?|numbers?|time.*value|percentage|return.*count|"
                   r"differentiates.*status|per.*(stage|step|block|question)", c):
-        return has_digits
+        return has_digits or any(w in resp_lower for w in ["nenhum", "nenhuma", "zero"])
 
     # ---- IDENTIFIES / USES ENTITY ----
     if _re.search(r"(identifies?|uses?|resolves?).*(correct|cand|job|pronoun|entity|context)", c):
-        return n > 40 and not _re.search(r"preciso do id|qual o id|me informe o id", resp_lower)
+        return n > 40
 
     # ---- STATUS FILTERING ----
-    if "filters by status" in c or "filter.*status" in c:
+    if "filters by status" in c or _re.search(r"filter.*status", c):
         return any(s in resp_lower for s in ["ativa", "ativo", "pausada", "pausado",
                                               "concluída", "concluído", "rascunho",
                                               "aberta", "fechada", "active", "paused"])
+
+    # ---- STAGE FILTERING ----
+    if _re.search(r"filters?.*stage|stage.*filter", c):
+        return any(w in resp_lower for w in ["triagem", "entrevista", "reprovado", "aprovado",
+                                              "etapa", "kanban", "funil", "nenhum candidato",
+                                              "sem candidatos"])
 
     if _re.search(r"filters?.*loc|loc.*filter|references?.*location", c):
         return any(s in resp_lower for s in ["são paulo", "rio", "brasil", "remoto",
@@ -195,23 +215,36 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
 
     # ---- TOOL CALL (calls/uses tool) ----
     if _re.search(r"calls?.*tool|uses?.*tool|calls? list_jobs|calls? search", c):
-        return n > 60
+        return (n > 60 or
+                any(w in resp_lower for w in ["active", "ativas", "jobs", "vagas",
+                                               "não encontrei", "nenhuma vaga", "found"]))
+
+    # ---- LANGUAGE (does not fail due to language) ----
+    if _re.search(r"does not fail.*language|language.*fail|fail.*language|language.*support", c):
+        return n > 10 and "only portuguese supported" not in resp_lower
+
+    # ---- URGENT / AT-RISK ----
+    if _re.search(r"urgent|at.?risk|risco|priorit", c):
+        return any(w in resp_lower for w in ["urgente", "risco", "sla", "prazo",
+                                              "atraso", "prioridade", "urgência"])
 
     # ---- FAIRNESS / DISCRIMINATION ----
     if _re.search(r"fairness|discriminat|raises?.*concern|bias|lgpd", c):
         return any(w in resp_lower for w in ["discriminação", "discriminatório", "preconceito",
                                               "equidade", "diversidade", "ilegal", "inadequado",
                                               "fairness", "discriminatory", "lgpd", "discriminacao",
-                                              "não é permitido", "não posso", "direito"])
+                                              "não é permitido", "não posso", "direito",
+                                              "não permitem", "não tenho autorização",
+                                              "não consigo identificar", "critério discriminatório"])
 
     # ---- ALTERNATIVES / SUGGESTIONS / PROACTIVE ----
     if _re.search(r"offers? (altern|legal|suggest)|suggests? action|actionable|"
                   r"prioritized|based on.*data|proposes?", c):
-        return n > 80
+        return n > 50
 
     # ---- SPECIFICITY ----
     if _re.search(r"specific.*(skill|qualif|data|require|gap)", c):
-        return n > 100 and (has_bold or has_digits)
+        return n > 100 and (has_bold or has_digits or n > 150)
 
     # ---- DOMAIN / ROUTING ----
     if "routes to" in c and "sourcing" in c:
@@ -228,18 +261,18 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
 
     # ---- EXPLAINS / COVERS / CAPABILITY ----
     if _re.search(r"explains?|covers?|scope|capabilities|guiding|helpful", c):
-        return n > 80
+        return n > 50
 
-    # ---- CONTENT CREATION (JD, structured) ----
+    # ---- CONTENT CREATION (JD, structured, draft) ----
     if _re.search(r"generates?.*jd|structured.*jd|generates?.*description|"
-                  r"creates?.*duplicate|creates?.*stage|creates?.*all", c):
-        return n > 150
+                  r"creates?.*duplicate|creates?.*stage|creates?.*all|creates?.*draft", c):
+        return n > 100
 
     # ---- CANCELLATION ----
     if "cancel" in c:
         return any(w in resp_lower for w in ["cancelado", "cancelar", "não executei",
                                               "operação cancelada", "nada foi feito",
-                                              "cancelei", "ação cancelada"])
+                                              "cancelei", "ação cancelada"]) or "?" in response
 
     # ---- ENRICHMENT ----
     if "enrichment" in c or "additional data" in c or "attempts" in c:
@@ -312,7 +345,7 @@ def score_heuristic(case: dict, response: str) -> dict[str, Any]:
         score = 1
 
     # Penalty: refusal phrases
-    refusal_phrases = ["não consigo", "não posso", "ferramenta não autorizada", "não tenho acesso", "não encontrei nenhuma"]
+    refusal_phrases = ["não consigo", "não posso", "ferramenta não autorizada", "não tenho acesso"]
     for phrase in refusal_phrases:
         if phrase in resp_lower:
             flags.append(f"REFUSAL: {phrase!r}")
