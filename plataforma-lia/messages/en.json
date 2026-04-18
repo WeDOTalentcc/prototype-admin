@@ -282,6 +282,15 @@
     "scrollRight": "Scroll right",
     "suggestionCount": "{label} — {count} suggestion",
     "pulseBadge": "{count} candidates — view pipeline",
+    "pipelineRailCard": {
+      "titleVacancies": "Job pipeline",
+      "titleCandidates": "Candidate pipeline",
+      "totalVacancies": "{count} jobs",
+      "totalCandidates": "{count} candidates",
+      "openFunnel": "Open pipeline view",
+      "continueWizard": "Continue wizard",
+      "empty": "No pipeline data to display."
+    },
     "stages": {
       "definir-vaga": {
         "label": "Define Job",
@@ -1400,6 +1409,7 @@
   },
   "pipelineOverview": {
     "title": "Pipeline View",
+    "metaDescription": "Consolidated pipeline view — candidates per stage and vacancy lifecycle.",
     "toggle": {
       "candidates": "Candidates",
       "vacancies": "Jobs",

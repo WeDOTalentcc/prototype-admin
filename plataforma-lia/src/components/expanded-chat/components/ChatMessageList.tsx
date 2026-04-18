@@ -17,6 +17,7 @@ import { ParecerLIACard } from "@/components/chat/parecer-lia-card"
 import { ActionResultCard } from "@/components/chat/action-result-card"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
 import { DetectedFieldsCard } from "@/components/chat/detected-fields-card"
+import { PipelineRailCard, type PipelineRailCardData } from "@/components/chat/pipeline-rail-card"
 import { CompetenciesChatMessage } from "@/components/job-creation/competencies-chat-message"
 import { VacancySearchResults } from "@/components/job-creation/vacancy-search-results"
 import { VacancyFullSummary } from "@/components/job-creation/vacancy-full-summary"
@@ -356,6 +357,18 @@ export function ChatMessageList({
                   Ignorar
                 </button>
               </div>
+            </ChatBubbleBase>
+          ) : (message.pipelineRail ?? (message.contextData?.pipeline_rail as PipelineRailCardData | undefined)) ? (
+            <ChatBubbleBase
+              sender="lia"
+              timestamp={formatTimestamp(message.timestamp)}
+              afterBubble={renderFeedback(message.id, message.content)}
+              bubbleClassName="bg-transparent p-0"
+            >
+              {message.content && (
+                <p className="text-xs text-lia-text-primary mb-2 leading-relaxed">{message.content}</p>
+              )}
+              <PipelineRailCard data={(message.pipelineRail ?? (message.contextData?.pipeline_rail as PipelineRailCardData))!} />
             </ChatBubbleBase>
           ) : message.messageType === 'detected-fields' && message.detectedFields && message.detectedFields.length > 0 ? (
             <ChatBubbleBase

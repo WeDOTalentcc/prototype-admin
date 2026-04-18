@@ -120,7 +120,8 @@ export interface Message {
   isTyping?: boolean
   isProcessing?: boolean
   processingState?: 'thinking' | 'analyzing' | 'searching' | 'generating' | 'completed'
-  messageType?: 'text' | 'compensation' | 'competencies' | 'vacancy-search' | 'vacancy-summary' | 'tool-confirmation' | 'tool-execution-feedback' | 'proactive' | 'action-result' | 'parecer-lia' | 'detected-fields'
+  messageType?: 'text' | 'compensation' | 'competencies' | 'vacancy-search' | 'vacancy-summary' | 'tool-confirmation' | 'tool-execution-feedback' | 'proactive' | 'action-result' | 'parecer-lia' | 'detected-fields' | 'pipeline-rail'
+  pipelineRail?: import('@/components/chat/pipeline-rail-card').PipelineRailCardData
   toolCall?: ToolCall
   toolExecutionResult?: ToolExecutionResult
   compensationAnalysis?: CompensationAnalysisResult

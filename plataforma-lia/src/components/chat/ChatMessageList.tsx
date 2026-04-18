@@ -15,6 +15,7 @@ import {
   CompletionMessage,
 } from"@/components/ui/chat-status-indicators"
 import { ActionResultCard } from"@/components/chat/action-result-card"
+import { PipelineRailCard, type PipelineRailCardData } from"@/components/chat/pipeline-rail-card"
 import { ChatBubbleBase } from"@/components/chat/chat-bubble-base"
 import { PlanProgressCard, type ExecutionPlanData } from"@/components/chat/plan-progress-card"
 import { TypingIndicator } from"@/components/chat/typing-indicator"
@@ -367,6 +368,13 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                 {message.chatCardType && message.chatCardData && (
                   <div className="mt-4">{onRenderChatCard(message)}</div>
                 )}
+
+                {isLia && (() => {
+                  const railFromField = message.pipelineRail
+                  const railFromData = (message.data as Record<string, unknown> | undefined)?.pipeline_rail as PipelineRailCardData | undefined
+                  const rail = railFromField ?? railFromData
+                  return rail ? <PipelineRailCard data={rail} /> : null
+                })()}
 
                 {message.type ==="completion" && message.completion && (
                   <>

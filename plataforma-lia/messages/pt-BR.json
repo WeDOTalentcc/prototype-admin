@@ -282,6 +282,15 @@
     "scrollRight": "Rolar para a direita",
     "suggestionCount": "{label} — {count} sugestão",
     "pulseBadge": "{count} candidatos — ver pipeline",
+    "pipelineRailCard": {
+      "titleVacancies": "Funil de vagas",
+      "titleCandidates": "Funil de candidatos",
+      "totalVacancies": "{count} vagas",
+      "totalCandidates": "{count} candidatos",
+      "openFunnel": "Abrir visão do funil",
+      "continueWizard": "Continuar wizard",
+      "empty": "Sem dados de funil para exibir."
+    },
     "stages": {
       "definir-vaga": {
         "label": "Definir Vaga",
@@ -1400,6 +1409,7 @@
   },
   "pipelineOverview": {
     "title": "Visão do Funil",
+    "metaDescription": "Visão consolidada do funil — candidatos por estágio e ciclo de vida das vagas.",
     "toggle": {
       "candidates": "Candidatos",
       "vacancies": "Vagas",

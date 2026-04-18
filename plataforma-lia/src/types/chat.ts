@@ -46,6 +46,7 @@ export interface Message {
     allowRating?: boolean
     allowFollowUp?: boolean
   }
+  pipelineRail?: import("@/components/chat/pipeline-rail-card").PipelineRailCardData
 }
 
 export interface ContextPanelData {

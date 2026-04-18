@@ -38,6 +38,7 @@ import { formatScorePercent } from "@/lib/design-tokens"
 import { getStageIcon, getStageColor, translateStatus } from "@/lib/pipeline-stage-maps"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 import { useTranslations } from "next-intl"
+import { useSearchParams } from "next/navigation"
 import { PipelineRail, type PipelineRailNode } from "@/components/pages/pipeline-overview/pipeline-rail"
 import dynamic from "next/dynamic"
 
@@ -272,6 +273,15 @@ export function PipelineOverviewPage() {
   const tOverview = useTranslations("pipelineOverview")
   const mode = useUIPreferencesStore((s) => s.pipelineOverviewMode)
   const setMode = useUIPreferencesStore((s) => s.setPipelineOverviewMode)
+
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    const view = searchParams?.get("view")
+    if (view === "vagas" || view === "candidatos") {
+      if (view !== mode) setMode(view)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams])
 
   const [stages, setStages] = useState<PipelineStageWithCount[]>([])
   const [selectedStage, setSelectedStage] = useState<string | null>(null)
