@@ -5,6 +5,8 @@ Tests for AUD audit fixes:
 - AUD-3: Audit trail in PolicySetupAgent
 - AUD-5: Security scan + load tests in CI, mock data removal
 """
+import re
+
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -320,6 +322,49 @@ class TestPolicyAgentAuditTrail:
         # Agent must still return a result even if audit fails
         assert result is not None
         assert "reply" in result
+
+
+# ---------------------------------------------------------------------------
+# Task #464 — Lint guard: no production caller may stuff actor_user_id into
+# the free-text reasoning array. The id lives in a structured column now
+# (Task #366 added it, Task #419 backfilled history). Anything that writes
+# a literal "actor_user_id=..." token back into reasoning re-introduces the
+# duplicate, soon-to-be-stale source we just retired.
+# ---------------------------------------------------------------------------
+
+class TestNoActorUserIdTokenInReasoning:
+    """Grep-style guard against re-introducing the legacy reasoning token."""
+
+    # Matches a string literal that begins with the legacy token, including
+    # plain strings, f-strings, byte strings, and raw strings. Kwarg usage
+    # (``actor_user_id=foo``) is intentionally NOT matched because that is
+    # the legitimate, structured way to pass the value.
+    _PATTERN = re.compile(r"""[fFrRbB]{0,2}["'`]actor_user_id=""")
+
+    def _iter_app_py_files(self):
+        import os
+        app_root = os.path.join(
+            os.path.dirname(__file__), "..", "..", "app"
+        )
+        app_root = os.path.abspath(app_root)
+        for dirpath, _dirnames, filenames in os.walk(app_root):
+            for name in filenames:
+                if name.endswith(".py"):
+                    yield os.path.join(dirpath, name)
+
+    def test_no_legacy_token_in_app_code(self):
+        offenders: list[str] = []
+        for path in self._iter_app_py_files():
+            with open(path, encoding="utf-8") as f:
+                for lineno, line in enumerate(f, start=1):
+                    if self._PATTERN.search(line):
+                        offenders.append(f"{path}:{lineno}: {line.rstrip()}")
+        assert not offenders, (
+            "Found legacy 'actor_user_id=' string-literal token in production "
+            "code. Pass the user id via the structured `actor_user_id=` kwarg "
+            "to audit_service.log_decision instead of stuffing it into the "
+            "reasoning array (Task #464):\n  " + "\n  ".join(offenders)
+        )
 
 
 # ---------------------------------------------------------------------------
