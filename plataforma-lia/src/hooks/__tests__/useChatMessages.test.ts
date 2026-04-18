@@ -153,6 +153,97 @@ describe("useChatMessages — REST fallback", () => {
     )
   })
 
+  it("WS aceito mas sem evento dentro do timeout → bolha de aviso + REST fallback (Task #383/F2)", async () => {
+    vi.useFakeTimers()
+    try {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve({ content: "Resposta tardia via REST" }),
+      })
+
+      const onMessageComplete = vi.fn()
+      const wsSend = vi.fn(() => true)
+      const wsEventTickRef = { current: 0 }
+      const opts = makeOptions({
+        isConnected: true,
+        transportMode: "ws",
+        wsSend,
+        wsEventTickRef,
+        onMessageComplete,
+      })
+
+      const { result } = renderHook(() => useChatMessages(opts))
+
+      await act(async () => {
+        await result.current.sendMessage("oi via ws")
+      })
+
+      // O send foi aceito pelo socket — nenhum fetch ainda, nenhum aviso ainda.
+      expect(wsSend).toHaveBeenCalledTimes(1)
+      expect(mockFetch).not.toHaveBeenCalled()
+      expect(onMessageComplete).not.toHaveBeenCalled()
+
+      // Tick permanece 0 (nenhum evento WS chegou). Avança o relógio além do
+      // timeout do watchdog (default 8000ms).
+      await act(async () => {
+        vi.advanceTimersByTime(8001)
+        await Promise.resolve()
+      })
+
+      // (a) bolha "Conexão instável" emitida via onMessageComplete.
+      expect(onMessageComplete).toHaveBeenCalledWith(
+        expect.stringMatching(/conex[aã]o inst[aá]vel/i),
+      )
+
+      // (b) REST POST disparado pelo fallback.
+      await act(async () => {
+        await Promise.resolve()
+        await Promise.resolve()
+      })
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/backend-proxy/chat/message",
+        expect.objectContaining({ method: "POST" }),
+      )
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("WS com evento chegando antes do timeout → não cai pra REST (sem bolha de aviso)", async () => {
+    vi.useFakeTimers()
+    try {
+      const onMessageComplete = vi.fn()
+      const wsSend = vi.fn(() => true)
+      const wsEventTickRef = { current: 0 }
+      const opts = makeOptions({
+        isConnected: true,
+        transportMode: "ws",
+        wsSend,
+        wsEventTickRef,
+        onMessageComplete,
+      })
+
+      const { result } = renderHook(() => useChatMessages(opts))
+
+      await act(async () => {
+        await result.current.sendMessage("oi via ws")
+      })
+
+      // Simula um evento WS chegando (thinking/message/...): incrementa o tick.
+      wsEventTickRef.current = 1
+
+      await act(async () => {
+        vi.advanceTimersByTime(8001)
+        await Promise.resolve()
+      })
+
+      expect(mockFetch).not.toHaveBeenCalled()
+      expect(onMessageComplete).not.toHaveBeenCalled()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it("2xx sem content e sem pending → fallback explícito (sem silent drop)", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
