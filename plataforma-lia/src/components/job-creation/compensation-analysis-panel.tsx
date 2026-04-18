@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from"@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Progress } from"@/components/ui/progress"
 import { cn } from"@/lib/utils"
@@ -162,10 +162,10 @@ const STATUS_CONFIG: Record<CompetitivenessStatus, {
 function DataSourceBadge({ source }: { source: DataSource }) {
   const config = DATA_SOURCE_CONFIG[source]
   return (
-    <Badge variant="outline" className={cn('gap-1 text-micro', config.className)}>
+    <Chip density="compact" variant="neutral" muted>
       <span>{config.icon}</span>
       <span>{config.label}</span>
-    </Badge>
+    </Chip>
   )
 }
 
@@ -474,13 +474,13 @@ export function CompensationAnalysisPanel({
                 <TooltipProvider key={benefit.id}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Badge variant="secondary" className="text-micro gap-1">
+                      <Chip density="compact" variant="neutral" muted>
                         <Check className="h-3 w-3" />
                         {benefit.name}
                         {benefit.isCompanyStandard && (
                           <span className="opacity-60">🏢</span>
                         )}
-                      </Badge>
+                      </Chip>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="text-xs">
@@ -501,14 +501,14 @@ export function CompensationAnalysisPanel({
               </p>
               <div className="flex flex-wrap gap-1">
                 {analysis.benefits.missingFromStandard.map((benefit) => (
-                  <Badge 
-                    key={benefit.id} 
-                    variant="outline" 
-                    className="text-micro gap-1 border-status-warning/30 text-status-warning dark:border-status-warning/30"
+                  <Chip
+                    key={benefit.id}
+                    density="compact"
+                    variant="warning"
                   >
                     <X className="h-3 w-3" />
                     {benefit.name}
-                  </Badge>
+                  </Chip>
                 ))}
               </div>
             </div>

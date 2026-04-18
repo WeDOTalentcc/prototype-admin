@@ -7,15 +7,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { ScoreIconButton } from "@/components/ui/score-icon-button"
 import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"
 import { AISuggestionBadge } from "@/components/ai"
-import {
-  StatusBadge,
-  ChannelBadge,
-  SourceBadge,
-  WarningBadge,
-  DateTimeBadge,
-  OriginBadge,
-  AwaitingBadge,
-} from "@/components/ui/status-badge"
 import { OverrideApproveButton } from "@/components/kanban/components/OverrideApproveButton"
 import { SaturationBadge } from "@/components/kanban/components/SaturationBadge"
 import { ColumnContextMenu } from "@/components/kanban/components/ColumnContextMenu"

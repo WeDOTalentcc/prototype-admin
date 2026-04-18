@@ -2,6 +2,7 @@
 
 import React from"react"
 import Link from"next/link"
+import { Chip } from"@/components/ui/chip"
 import { Award, BadgeCheck, Building2, Download, FileText, Shield, ArrowRight, CheckCircle2, ExternalLink, Mail, Clock, Globe, Server, Brain, MessageSquare, Users, Database, Lock } from"lucide-react"
 
 const certifications = [
@@ -84,25 +85,21 @@ function getStatusBadge(status: string) {
     case 'active':
     case 'compliant':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium">
+        <Chip variant="success">
           <CheckCircle2 className="w-3 h-3" />
           Ativo
-        </span>
+        </Chip>
       )
     case 'in_progress':
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
+        <Chip variant="neutral" muted>
           <Clock className="w-3 h-3" />
           Em Progresso
-        </span>
+        </Chip>
       )
     case 'planned':
     case 'monitoring':
-      return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary">
-          Planejado
-        </span>
-      )
+      return <Chip variant="neutral">Planejado</Chip>
     default:
       return null
   }

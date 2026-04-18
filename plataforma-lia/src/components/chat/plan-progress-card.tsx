@@ -19,6 +19,7 @@ import {
   Zap,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Chip, type ChipVariant } from "@/components/ui/chip"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -125,18 +126,18 @@ function StatusIcon({ status }: { status: PlanTask["status"] }) {
 // ─── Plan Status Badge ────────────────────────────────────────────────────────
 
 function PlanStatusBadge({ status }: { status: ExecutionPlanData["status"] }) {
-  const config: Record<string, { label: string; className: string }> = {
-    completed: { label: "Concluído", className: "bg-status-success/10 text-status-success border-status-success/20" },
-    partial: { label: "Parcial", className: "bg-status-warning/10 text-status-warning border-status-warning/20" },
-    failed: { label: "Falhou", className: "bg-status-error/10 text-status-error border-status-error/20" },
-    in_progress: { label: "Em progresso", className: "bg-lia-interactive-active/10 text-lia-interactive-active border-lia-interactive-active/20" },
-    pending: { label: "Aguardando", className: "bg-lia-border-subtle/20 text-lia-text-tertiary border-lia-border-subtle" },
+  const config: Record<string, { label: string; variant: ChipVariant; muted?: boolean }> = {
+    completed: { label: "Concluído", variant: "success" },
+    partial: { label: "Parcial", variant: "warning" },
+    failed: { label: "Falhou", variant: "danger" },
+    in_progress: { label: "Em progresso", variant: "info" },
+    pending: { label: "Aguardando", variant: "neutral", muted: true },
   }
-  const { label, className } = config[status] || config.pending
+  const { label, variant, muted } = config[status] || config.pending
   return (
-    <span className={cn("text-[10px] font-semibold px-1.5 py-0.5 rounded border", className)}>
+    <Chip density="compact" variant={variant} muted={muted} className="font-semibold">
       {label}
-    </span>
+    </Chip>
   )
 }
 

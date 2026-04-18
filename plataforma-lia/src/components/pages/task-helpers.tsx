@@ -4,7 +4,7 @@
 // Sem estado próprio — apenas funções e componentes de apresentação
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from"@/components/ui/chip"
 import { MessageSquare, Calendar, Search, AlertTriangle, AlertCircle, CheckCircle, Info } from"lucide-react"
 
 // --- Helpers de estilo ---
@@ -79,10 +79,10 @@ export const getAlertColor = (type: string) => {
 }
 
 export const getUrgencyBadge = (urgency: string, daysOpen: number) => {
-  if (urgency === 'critical') return <Badge variant="danger" className="text-xs font-medium">Crítico</Badge>
-  if (urgency === 'urgent') return <Badge variant="warning" className="text-xs font-semibold">Urgente</Badge>
-  if (daysOpen > 30) return <Badge variant="info" className="text-xs font-medium">Atenção</Badge>
-  return <Badge variant="success" className="text-xs">Normal</Badge>
+  if (urgency === 'critical') return <Chip variant="danger" className="font-medium">Crítico</Chip>
+  if (urgency === 'urgent') return <Chip variant="warning" className="font-semibold">Urgente</Chip>
+  if (daysOpen > 30) return <Chip variant="info" className="font-medium">Atenção</Chip>
+  return <Chip variant="success">Normal</Chip>
 }
 
 export const getConversionRate = (from: number, to: number) => {

@@ -1,9 +1,9 @@
 "use client"
 
-import React from"react"
-import { Badge } from"@/components/ui/badge"
-import { cn } from"@/lib/utils"
-import { Brain, Building2, PenLine, Lightbulb } from"lucide-react"
+import React from "react"
+import { Chip, type ChipVariant } from "@/components/ui/chip"
+import { cn } from "@/lib/utils"
+import { Brain, Building2, PenLine, Lightbulb } from "lucide-react"
 
 export type FieldOrigin = 'detected' | 'default' | 'manual' | 'suggested' | 'benchmark'
 // Keep FieldSource for backward compatibility
@@ -22,37 +22,39 @@ export interface FieldOriginBadgeProps {
 const ORIGIN_CONFIG: Record<FieldOrigin, {
   label: string
   icon: React.ElementType
-  className: string
+  variant: ChipVariant
+  muted?: boolean
   description: string
 }> = {
   detected: {
     label: 'Detectado',
     icon: Brain,
-    className: ' border-wedo-cyan/30 hover:bg-wedo-cyan/20 dark:bg-wedo-cyan/20 dark:border-wedo-cyan/40',
+    variant: 'info',
     description: 'Extraído automaticamente do texto'
   },
   default: {
     label: 'Default',
     icon: Building2,
-    className: ' border-wedo-green/30 hover:bg-wedo-green/20 dark:bg-wedo-green/20 dark:text-wedo-green dark:border-wedo-green/40',
+    variant: 'success',
     description: 'Configuração padrão da empresa'
   },
   manual: {
     label: 'Manual',
     icon: PenLine,
-    className: 'bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle hover:bg-lia-interactive-active',
+    variant: 'neutral',
+    muted: true,
     description: 'Editado manualmente'
   },
   suggested: {
     label: 'Sugerido',
     icon: Lightbulb,
-    className: ' border-wedo-orange/30 hover:bg-wedo-orange/20 dark:bg-wedo-orange/20 dark:text-wedo-orange dark:border-wedo-orange/40',
+    variant: 'warning',
     description: 'Sugestão baseada em vagas similares'
   },
   benchmark: {
     label: 'Benchmark',
     icon: Lightbulb,
-    className: ' border-wedo-purple/30 hover:bg-wedo-purple/20 dark:bg-wedo-purple/20 dark:text-wedo-purple dark:border-wedo-purple/40',
+    variant: 'info',
     description: 'Baseado em dados de mercado'
   }
 }
@@ -65,36 +67,32 @@ const SOURCE_TO_ORIGIN: Record<FieldSource, FieldOrigin> = {
   'manual': 'manual'
 }
 
-export function FieldOriginBadge({ 
+export function FieldOriginBadge({
   origin,
   source,
-  confidence, 
+  confidence,
   showConfidence = false,
   showLabel = true,
   size = 'sm',
-  className 
+  className
 }: FieldOriginBadgeProps) {
-  // Resolve which origin to use (new prop takes precedence)
   let resolvedOrigin: FieldOrigin = 'detected'
-  
+
   if (origin) {
     resolvedOrigin = origin
   } else if (source) {
     resolvedOrigin = SOURCE_TO_ORIGIN[source] || 'detected'
   }
-  
+
   const config = ORIGIN_CONFIG[resolvedOrigin]
   const Icon = config.icon
-  
+
   return (
-    <Badge 
-      variant="outline"
-      className={cn(
- 'gap-1 font-normal',
-        size === 'sm' ? 'text-xs px-1.5 py-0' : 'text-sm px-2 py-0.5',
-        config.className,
-        className
-      )}
+    <Chip
+      density={size === 'sm' ? 'compact' : 'comfortable'}
+      variant={config.variant}
+      muted={config.muted}
+      className={cn('font-normal', className)}
       title={config.description}
     >
       <Icon className={size === 'sm' ? 'h-3 w-3' : 'h-4 w-4'} />
@@ -106,7 +104,7 @@ export function FieldOriginBadge({
           )}
         </>
       )}
-    </Badge>
+    </Chip>
   )
 }
 

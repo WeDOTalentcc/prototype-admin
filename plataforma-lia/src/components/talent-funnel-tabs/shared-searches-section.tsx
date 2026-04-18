@@ -1,6 +1,6 @@
 "use client"
 
-import { Badge } from"@/components/ui/badge"
+import { Chip } from"@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   Link2, MoreHorizontal, ThumbsUp, ThumbsDown,
@@ -17,11 +17,11 @@ import { SharedSearchesSectionProps } from"./lists-tab-types"
 function getStatusBadge(status: 'active' | 'expired' | 'revoked') {
   switch (status) {
     case 'active':
-      return <Badge className="border-status-success/30 text-micro">Ativo</Badge>
+      return <Chip variant="success">Ativo</Chip>
     case 'expired':
-      return <Badge className="border-status-error/30 text-micro">Expirado</Badge>
+      return <Chip variant="danger">Expirado</Chip>
     case 'revoked':
-      return <Badge className="bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle text-micro">Revogado</Badge>
+      return <Chip variant="neutral" muted>Revogado</Chip>
   }
 }
 
@@ -41,9 +41,9 @@ export function SharedSearchesSection({
           <Link2 className="w-4 h-4 text-lia-text-secondary" />
           Compartilhados
           {totalNewFeedbacks > 0 && (
-            <Badge className="bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle text-micro ml-2">
+            <Chip variant="neutral" muted className="ml-2">
               {totalNewFeedbacks} {totalNewFeedbacks === 1 ? 'novo' : 'novos'} ●
-            </Badge>
+            </Chip>
           )}
         </h3>
       </div>
@@ -66,7 +66,7 @@ export function SharedSearchesSection({
                     <Link2 className="w-5 h-5 text-lia-text-secondary" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-medium text-lia-text-primary">
                         {shared.title}
                       </p>

@@ -7,7 +7,7 @@ import {
   Briefcase, Pause, Play, Archive
 } from"lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from"@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Progress } from"@/components/ui/progress"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from"@/components/ui/dialog"
@@ -218,9 +218,9 @@ export default function TalentPoolPage({
             )}
           </div>
           <div className="flex items-center gap-3">
-            <Badge className={pool.status ==="active" ? badgeStyles.success : badgeStyles.warning}>
+            <Chip variant={pool.status ==="active" ? "success" : "warning"}>
               {pool.status ==="active" ?"Ativo" : pool.status ==="paused" ?"Pausado" :"Arquivado"}
-            </Badge>
+            </Chip>
             {pool.ideal_profile_name && (
               <span className={textStyles.caption}>Arquétipo: {pool.ideal_profile_name}</span>
             )}
@@ -453,9 +453,9 @@ function CandidatesTab({
                     </td>
                     <td className="py-3 px-3">
                       {stage && (
-                        <Badge className={stage.color} title={stage.label}>
+                        <Chip variant="neutral" className={stage.color} title={stage.label}>
                           {stage.icon} {stage.label}
-                        </Badge>
+                        </Chip>
                       )}
                     </td>
                     <td className="py-3 px-3">
@@ -695,7 +695,7 @@ export function CreatePoolModal({ onClose, onCreated }: CreatePoolModalProps) {
                     />
                     <span className={textStyles.body}>{a.name}</span>
                     {a.seniority_level && (
-                      <Badge className={badgeStyles.success}>{a.seniority_level}</Badge>
+                      <Chip variant="success">{a.seniority_level}</Chip>
                     )}
                   </label>
                 ))}

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from"react"
 import { Button } from"@/components/ui/button"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from"@/components/ui/chip"
 import { Checkbox } from"@/components/ui/checkbox"
 import { Progress } from"@/components/ui/progress"
 import {
@@ -198,44 +198,44 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
   const getStatusBadge = (status: 'active' | 'expired' | 'revoked') => {
     switch (status) {
       case 'active':
-        return <Badge className="bg-status-success/20 text-status-success border-status-success/30/30 text-micro">Ativo</Badge>
+        return <Chip variant="success">Ativo</Chip>
       case 'expired':
-        return <Badge className="bg-status-error/20 text-status-error border-status-error/30/30 text-micro">Expirado</Badge>
+        return <Chip variant="danger">Expirado</Chip>
       case 'revoked':
-        return <Badge className="bg-lia-bg-tertiary/50 text-lia-text-tertiary border-lia-border-default/30 text-micro">Revogado</Badge>
+        return <Chip variant="neutral" muted>Revogado</Chip>
     }
   }
 
   const getDecisionBadge = (feedback?: CandidateFeedback) => {
     if (!feedback) {
       return (
-        <Badge className="bg-lia-bg-tertiary/50 text-lia-text-tertiary border-lia-border-default/30 text-micro gap-1">
+        <Chip variant="neutral" muted>
           <Clock className="w-3 h-3" />
           Pendente
-        </Badge>
+        </Chip>
       )
     }
     switch (feedback.decision) {
       case 'approved':
         return (
-          <Badge className="bg-status-success/20 text-status-success border-status-success/30/30 text-micro gap-1">
+          <Chip variant="success">
             <ThumbsUp className="w-3 h-3" />
             Interessado
-          </Badge>
+          </Chip>
         )
       case 'maybe':
         return (
-          <Badge className="bg-status-warning/20 text-status-warning border-status-warning/30/30 text-micro gap-1">
+          <Chip variant="warning">
             <HelpCircle className="w-3 h-3" />
             Talvez
-          </Badge>
+          </Chip>
         )
       case 'rejected':
         return (
-          <Badge className="bg-status-error/20 text-status-error border-status-error/30/30 text-micro gap-1">
+          <Chip variant="danger">
             <ThumbsDown className="w-3 h-3" />
             Não Interessado
-          </Badge>
+          </Chip>
         )
     }
   }
@@ -262,9 +262,9 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
               </DialogTitle>
               {sharedSearch && (
                 <>
-                  <Badge className="bg-lia-bg-tertiary text-lia-text-disabled border-lia-border-default text-micro">
+                  <Chip variant="neutral" muted density="compact">
                     {sharedSearch.share_type === 'search' ? 'Busca' : 'Lista'}
-                  </Badge>
+                  </Chip>
                   {getStatusBadge(sharedSearch.status)}
                 </>
               )}
@@ -361,45 +361,45 @@ const [sharedSearch, setSharedSearch] = useState<SharedSearchDetail | null>(null
                       className="text-xs px-3 py-1.5 data-[state=active]:bg-lia-bg-tertiary data-[state=active]:text-white"
                     >
                       Todos
-                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-disabled">
+                      <Chip variant="neutral" muted density="compact" className="ml-1.5">
                         {totalCandidates}
-                      </Badge>
+                      </Chip>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="approved" 
                       className="text-xs px-3 py-1.5 data-[state=active]:bg-lia-bg-tertiary data-[state=active]:text-white"
                     >
                       Interessados
-                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-status-success/20 text-status-success">
+                      <Chip variant="success" density="compact" className="ml-1.5">
                         {feedbackCounts.approved}
-                      </Badge>
+                      </Chip>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="maybe" 
                       className="text-xs px-3 py-1.5 data-[state=active]:bg-lia-bg-tertiary data-[state=active]:text-white"
                     >
                       Talvez
-                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-status-warning/20 text-status-warning">
+                      <Chip variant="warning" density="compact" className="ml-1.5">
                         {feedbackCounts.maybe}
-                      </Badge>
+                      </Chip>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="rejected" 
                       className="text-xs px-3 py-1.5 data-[state=active]:bg-lia-bg-tertiary data-[state=active]:text-white"
                     >
                       Não
-                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-status-error/20 text-status-error">
+                      <Chip variant="danger" density="compact" className="ml-1.5">
                         {feedbackCounts.rejected}
-                      </Badge>
+                      </Chip>
                     </TabsTrigger>
                     <TabsTrigger 
                       value="pending" 
                       className="text-xs px-3 py-1.5 data-[state=active]:bg-lia-bg-tertiary data-[state=active]:text-white"
                     >
                       Pendentes
-                      <Badge className="ml-1.5 text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-tertiary">
+                      <Chip variant="neutral" muted density="compact" className="ml-1.5">
                         {feedbackCounts.pending}
-                      </Badge>
+                      </Chip>
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>

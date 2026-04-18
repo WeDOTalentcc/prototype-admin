@@ -4,6 +4,7 @@ import NextImage from "next/image"
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Chip } from '@/components/ui/chip'
 import { AlertTriangle, Send, ArrowRight, X, FileText, User, Phone, Mail, Calendar, MapPin, CreditCard, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -86,24 +87,12 @@ export function DataBlockingModal({
   const getStatusBadge = (status?: PendingField['status']) => {
     switch (status) {
       case 'pending':
-        return (
-          <span className="text-micro bg-status-warning/15 text-status-warning px-1.5 py-0.5 rounded-full">
-            Aguardando
-          </span>
-        )
+        return <Chip density="compact" variant="warning">Aguardando</Chip>
       case 'expired':
-        return (
-          <span className="text-micro bg-status-error/15 text-status-error px-1.5 py-0.5 rounded-full">
-            Expirado
-          </span>
-        )
+        return <Chip density="compact" variant="danger">Expirado</Chip>
       case 'never_requested':
       default:
-        return (
-          <span className="text-micro bg-lia-bg-tertiary text-lia-text-tertiary px-1.5 py-0.5 rounded-full">
-            Não solicitado
-          </span>
-        )
+        return <Chip density="compact" variant="neutral" muted>Não solicitado</Chip>
     }
   }
 

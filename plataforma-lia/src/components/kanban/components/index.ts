@@ -1,6 +1,3 @@
-export { CandidateCard, type CandidateCardProps, type QuickActionType } from './CandidateCard'
-export { KanbanColumn, getColumnStyle, type KanbanColumnProps, type ColumnStyle } from './KanbanColumn'
-export { KanbanBoard, type KanbanBoardProps, type KanbanBoardFilters } from './KanbanBoard'
 export { CandidateTableRow, type CandidateTableRowProps, type CandidateTableRowAlert } from './CandidateTableRow'
 export { CandidateBadges } from './CandidateBadges'
 export { UniversalTransitionModal } from './UniversalTransitionModal'

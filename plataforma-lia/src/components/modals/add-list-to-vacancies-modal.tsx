@@ -14,7 +14,7 @@ import {
   DialogDescription
 } from"@/components/ui/dialog"
 import { Briefcase, Search, Loader2, Users, Check, Building2, MapPin } from"lucide-react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from"@/components/ui/chip"
 import { ScrollArea } from"@/components/ui/scroll-area"
 import { cn } from"@/lib/utils"
 import { toast } from"sonner"
@@ -125,22 +125,22 @@ const [vacancies, setVacancies] = useState<JobVacancy[]>([])
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'open':
-        return <Badge variant="success" className="text-xs">Aberta</Badge>
+        return <Chip variant="success">Aberta</Chip>
       case 'paused':
-        return <Badge variant="warning" className="text-xs">Pausada</Badge>
+        return <Chip variant="warning">Pausada</Chip>
       case 'closed':
-        return <Badge variant="default" className="text-xs">Fechada</Badge>
+        return <Chip variant="neutral" muted>Fechada</Chip>
       default:
-        return <Badge variant="outline" className="text-xs">{status}</Badge>
+        return <Chip variant="neutral">{status}</Chip>
     }
   }
 
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case 'urgent':
-        return <Badge variant="danger" className="text-xs">Urgente</Badge>
+        return <Chip variant="danger">Urgente</Chip>
       case 'high':
-        return <Badge variant="warning" className="text-xs">Alta</Badge>
+        return <Chip variant="warning">Alta</Chip>
       default:
         return null
     }

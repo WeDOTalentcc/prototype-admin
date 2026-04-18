@@ -9,7 +9,7 @@ import {
 } from"lucide-react"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip, type ChipVariant } from"@/components/ui/chip"
 import { Progress } from"@/components/ui/progress"
 import { Input } from"@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
@@ -99,15 +99,15 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
     setExecutingJobId(null)
   }
 
-  const getStatusBadge = (status: string) => {
-    const styles: Record<string, string> = {
-      pending: ' dark:text-status-warning',
-      running: '-dark dark:text-wedo-cyan-dark',
-      completed: ' dark:text-status-success',
-      failed: ' dark:text-status-error',
-      cancelled: 'bg-lia-bg-secondary/10 text-lia-text-secondary'
+  const getStatusVariant = (status: string): ChipVariant => {
+    const map: Record<string, ChipVariant> = {
+      pending: 'warning',
+      running: 'info',
+      completed: 'success',
+      failed: 'danger',
+      cancelled: 'neutral',
     }
-    return styles[status] || styles.pending
+    return map[status] || 'warning'
   }
 
   const getStatusIcon = (status: string) => {
@@ -255,12 +255,12 @@ export function JobsDashboard({ className, onJobSelect }: JobsDashboardProps) {
                         </CardDescription>
                       </div>
                     </div>
-                    <Badge className={cn("shrink-0", getStatusBadge(job.status))}>
-                      <StatusIcon className={cn("h-3 w-3 mr-1",
+                    <Chip variant={getStatusVariant(job.status)} className="shrink-0">
+                      <StatusIcon className={cn("h-3 w-3",
                         job.status === 'running' &&"animate-spin motion-reduce:animate-none"
                       )} />
                       {STATUS_LABELS[job.status] || job.status}
-                    </Badge>
+                    </Chip>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">

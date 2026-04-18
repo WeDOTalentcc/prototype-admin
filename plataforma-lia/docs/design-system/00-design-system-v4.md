@@ -82,7 +82,7 @@
 - [3.36 Chat Response (LiaResponse)](#336-chat-response-liaresponse) `[Draft]`
 - [3.37 Chat Welcome (LiaWelcome)](#337-chat-welcome-liawelcome) `[Draft]`
 - [3.38 Data Visualization](#338-data-visualization) `[Draft]`
-- [3.39 StatusBadge](#339-statusbadge) `[Stable]`
+- [3.39 Chip (ex-StatusBadge)](#339-chip-ex-statusbadge) `[Stable]`
 - [3.40 CandidateCard](#340-candidatecard) `[Stable]`
 - [3.41 PromptSuggestionsDock](#341-promptsuggestionsdock) `[Draft]`
 - [3.42 PremiumAutocomplete](#342-premiumautocomplete) `[Draft]`
@@ -4379,12 +4379,14 @@ Diretrizes para gráficos e visualizações de dados nos dashboards de KPI da pl
 
 ---
 
-## 3.39 StatusBadge `[Stable]`
+## 3.39 Chip (ex-StatusBadge) `[Stable]`
 
-Badge semântico compacto com ícone + cor + label, usado para representar sub-status de candidatos em cada etapa do pipeline de recrutamento. Utiliza cores pastel por estágio e lógica automática de variante baseada nos metadados do sub-status.
+> **⚠️ Migração concluída (Task #461):** O componente legacy `StatusBadge` (`src/components/ui/status-badge.tsx`) e seus subcomponentes (`ChannelBadge`, `SourceBadge`, `WarningBadge`, `DateTimeBadge`, `OriginBadge`, `AwaitingBadge`, `HiredBadge`, `OffLimitsBadge`) foram removidos. O Kanban moderno (`pages/job-kanban`) utiliza `KanbanChip` + `KanbanCardStatusBadges`, e os demais consumidores foram migrados para o componente canônico `Chip`.
 
-> **Arquivo:** `src/components/ui/status-badge.tsx` (541 linhas)  
-> **Subcomponentes:** `ChannelBadge`, `SourceBadge`, `WarningBadge`, `DateTimeBadge`
+Chip é o componente canônico de pill/badge da plataforma. Encapsula `kanbanChipStyles` (definido em `src/lib/design-tokens.ts`) garantindo paridade visual light/dark e consistência com o Kanban.
+
+> **Arquivo:** `src/components/ui/chip.tsx`
+> **Tokens:** `kanbanChipStyles` em `src/lib/design-tokens.ts`
 
 ### 3.39.1 Anatomia
 
@@ -4412,68 +4414,30 @@ Badge semântico compacto com ícone + cor + label, usado para representar sub-s
 
 | Prop | Type | Default | Descrição |
 |------|------|---------|-----------|
-| `stageId` | `string` | — (obrigatório) | ID do estágio atual (sourcing, screening, etc.) |
-| `subStatus` | `string` | `undefined` | Nome do sub-status (ex: `screening_in_progress`) |
-| `label` | `string` | `undefined` | Texto customizado (sobrescreve displayName) |
-| `variant` | `BadgeVariant` | auto | Variante forçada (`standard`, `dark`, `accent`, `outlined`, `channel`, `scheduled`, `hired`, `rejected`) |
-| `icon` | `React.ElementType` | auto | Ícone customizado (sobrescreve lógica automática) |
-| `pulse` | `boolean` | auto | Animação pulse (auto quando `isWaiting=true`) |
-| `onClick` | `() => void` | `undefined` | Callback de clique |
-| `className` | `string` | `undefined` | Classes adicionais |
-| `title` | `string` | auto | Tooltip text |
-
-**Variantes e mapeamento automático:**
-
-| Variante | Trigger | Background | Text | Font Weight |
-|----------|---------|------------|------|-------------|
-| `standard` | Default | `#F9FAFB` | `#4B5563` | 500 |
-| `dark` | `isApproval` | `#111827` | `#FFFFFF` | 700 |
-| `accent` | `isWaiting` | Pastel por etapa | `#111827` | 600 |
-| `outlined` | `in_progress` | `#F9FAFB` | `#374151` | 400 |
-| `scheduled` | `scheduled/confirmed` | `#1F2937` | `#FFFFFF` | 600 |
-| `hired` | `hired` + `isApproval` | `#111827` | `#FFFFFF` | 700 |
-| `rejected` | `isRejection` | `#F9FAFB` | `#4B5563` | 500 |
-
-**Cores pastel por etapa (variant=accent):**
-
-| Etapa | Light Mode | Dark Mode |
-|-------|------------|-----------|
-| sourcing | `#DCE4DB` (Verde Menta) | `#3D4A3C` |
-| screening | `#E3DADC` (Rosa Antigo) | `#4A3D40` |
-| interview_hr | `#DDE1E9` (Azul Acinzentado) | `#3D414A` |
-| offer | `#E5E0E2` (Lilás Acinzentado) | `#454043` |
-| hired | `#EAEAEA` (Cinza Gelo) | `#3A3A3A` |
+| `density` | `"comfortable" \| "compact"` | `comfortable` | `comfortable` para tabelas/modais; `compact` para listas densas |
+| `variant` | `"neutral" \| "success" \| "warning" \| "danger" \| "info"` | `neutral` | Paleta semântica |
+| `muted` | `boolean` | `false` | Reduz contraste (variantes secundárias) |
+| `className` | `string` | — | Classes adicionais |
+| Demais props | `HTMLAttributes<HTMLSpanElement>` | — | Forwarded para o `<span>` |
 
 ### 3.39.3 Implementação
 
 ```tsx
-import { StatusBadge, ChannelBadge, SourceBadge, WarningBadge } from '@/components/ui/status-badge'
+import { Chip } from '@/components/ui/chip'
 
-{/* Badge automático baseado em sub-status */}
-<StatusBadge stageId="screening" subStatus="screening_in_progress" />
-
-{/* Badge com variante forçada */}
-<StatusBadge stageId="hired" variant="hired" label="Contratado" />
-
-{/* Badge de canal de comunicação */}
-<ChannelBadge channel="whatsapp" />
-
-{/* Badge de origem */}
-<SourceBadge source="linkedin" isApplication={false} />
-
-{/* Badge de warning */}
-<WarningBadge days={15} />
+<Chip variant="success">Aprovado</Chip>
+<Chip variant="warning" density="compact">Pendente</Chip>
+<Chip variant="neutral" muted>Rascunho</Chip>
 ```
 
 ### 3.39.4 Do's & Don'ts
 
 | ✅ Do | ❌ Don't |
 |-------|----------|
-| Usar lógica automática de variante via `subStatus` | Forçar variante manualmente sem necessidade |
-| Confiar nas cores pastel por etapa para `accent` | Usar cores customizadas fora da paleta DS |
-| Manter font 9px e icon 8px para densidade máxima | Aumentar tamanho — o badge é micro by design |
-| Usar `ChannelBadge`/`SourceBadge` para contextos específicos | Recriar badges de canal com `StatusBadge` genérico |
-| Deixar `pulse` automático (ativado pelo `isWaiting`) | Ativar pulse em estados não-waiting |
+| Usar `Chip` para qualquer pill/badge novo | Recriar pills com `<Badge>` ou `<span>` ad-hoc |
+| Escolher a variante semântica adequada | Sobrescrever cores via `className` quando há variante |
+| Usar `density="compact"` em listas/tabs densas | Misturar densidades dentro do mesmo grupo |
+| Para o Kanban moderno, continuar usando `KanbanChip` | Reintroduzir o legacy `StatusBadge` |
 
 ---
 

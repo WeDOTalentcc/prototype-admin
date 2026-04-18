@@ -1,7 +1,7 @@
 "use client"
 
 import React from"react"
-import { Badge } from"@/components/ui/badge"
+import { Chip, type ChipVariant } from"@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
 import { 
@@ -38,26 +38,26 @@ export function JobsTable({
   }
 
   const getStatusBadge = (status: JobVacancy['status']) => {
-    const config = {
-      draft: { label:"Rascunho", className:"border-status-warning/30/30 text-status-warning" },
-      active: { label:"Ativa", className:"bg-status-success/20 text-status-success border-status-success/30/30" },
-      paused: { label:"Pausada", className:"border-wedo-orange/30/30 text-wedo-orange" },
-      closed: { label:"Encerrada", className:"border-lia-border-default dark:border-lia-border-default text-lia-text-tertiary" },
-      cancelled: { label:"Cancelada", className:"border-status-error/30/30 text-status-error" },
+    const config: Record<string, { label: string; variant: ChipVariant; muted?: boolean }> = {
+      draft: { label:"Rascunho", variant:"warning" },
+      active: { label:"Ativa", variant:"success" },
+      paused: { label:"Pausada", variant:"warning" },
+      closed: { label:"Encerrada", variant:"neutral", muted: true },
+      cancelled: { label:"Cancelada", variant:"danger" },
     }
-    const { label, className } = config[status] || config.draft
-    return <Badge variant="outline" className={className}>{label}</Badge>
+    const { label, variant, muted } = config[status] || config.draft
+    return <Chip variant={variant} muted={muted}>{label}</Chip>
   }
 
   const getPriorityBadge = (priority: JobVacancy['priority']) => {
-    const config = {
-      low: { label:"Baixa", className:"border-lia-border-default dark:border-lia-border-default text-lia-text-tertiary" },
-      medium: { label:"Média", className:"border-wedo-cyan/30/30 text-wedo-cyan-dark" },
-      high: { label:"Alta", className:"border-wedo-orange/30/30 text-wedo-orange" },
-      urgent: { label:"Urgente", className:"bg-status-error/20 text-status-error border-status-error/30/30" },
+    const config: Record<string, { label: string; variant: ChipVariant; muted?: boolean }> = {
+      low: { label:"Baixa", variant:"neutral", muted: true },
+      medium: { label:"Média", variant:"info" },
+      high: { label:"Alta", variant:"warning" },
+      urgent: { label:"Urgente", variant:"danger" },
     }
-    const { label, className } = config[priority] || config.medium
-    return <Badge variant="outline" className={`text-xs ${className}`}>{label}</Badge>
+    const { label, variant, muted } = config[priority] || config.medium
+    return <Chip variant={variant} muted={muted}>{label}</Chip>
   }
 
   if (isLoading) {

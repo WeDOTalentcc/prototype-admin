@@ -2,7 +2,7 @@
 
 import React from"react"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from"@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import {
   Building2,
@@ -67,38 +67,22 @@ export function JobSummaryCard({
     switch (status) {
       case"ativa":
         return (
-          <Badge
-            className="border border-lia-border-default bg-lia-bg-primary text-lia-text-primary"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-wedo-green mr-1.5" />
+          <Chip variant="success">
+            <span className="w-1.5 h-1.5 rounded-full bg-status-success" />
             Ativa
-          </Badge>
+          </Chip>
         )
       case"rascunho":
-        return (
-          <Badge
-            className="border border-lia-border-default bg-lia-bg-primary text-lia-text-secondary"
-          >
-            Rascunho
-          </Badge>
-        )
+        return <Chip variant="neutral" muted>Rascunho</Chip>
       case"pausada":
         return (
-          <Badge
-            className="border border-lia-border-default bg-lia-bg-primary text-lia-text-secondary"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-lia-btn-primary-bg mr-1.5" />
+          <Chip variant="warning">
+            <span className="w-1.5 h-1.5 rounded-full bg-status-warning" />
             Pausada
-          </Badge>
+          </Chip>
         )
       case"fechada":
-        return (
-          <Badge
-            className="border border-lia-border-default bg-lia-bg-primary text-lia-text-tertiary"
-          >
-            Fechada
-          </Badge>
-        )
+        return <Chip variant="neutral" muted>Fechada</Chip>
       default:
         return null
     }
@@ -206,21 +190,14 @@ export function JobSummaryCard({
             </div>
             <div className="flex flex-wrap gap-1.5">
               {data.required_skills.slice(0, compact ? 3 : 5).map((skill, index) => (
-                <Badge
-                  key={skill}
-                  variant="secondary"
-                  className="text-xs bg-lia-bg-tertiary text-lia-text-secondary"
-                >
+                <Chip key={skill} variant="neutral" muted density="compact">
                   {skill}
-                </Badge>
+                </Chip>
               ))}
               {data.required_skills.length > (compact ? 3 : 5) && (
-                <Badge
-                  variant="outline"
-                  className="text-xs border-lia-border-subtle text-lia-text-tertiary"
-                >
+                <Chip variant="neutral" density="compact">
                   +{data.required_skills.length - (compact ? 3 : 5)}
-                </Badge>
+                </Chip>
               )}
             </div>
           </div>

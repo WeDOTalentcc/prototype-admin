@@ -2,7 +2,7 @@
 
 import { Button } from"@/components/ui/button"
 import { Card, CardContent } from"@/components/ui/card"
-import { Badge } from"@/components/ui/badge"
+import { Chip, type ChipVariant } from"@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
 import { Play, Calendar, Clock, User, Mail, Phone, FileText, Star, CheckCircle, AlertCircle, XCircle, MessageSquare } from"lucide-react"
 
@@ -61,16 +61,12 @@ const getStatusIcon = (status: string) => {
   }
 }
 
-const getStatusBadge = (status: string) => {
+const getStatusVariant = (status: string): ChipVariant => {
   switch (status) {
-    case"Aprovado":
-      return" border-status-success/30"
-    case"Em análise":
-      return" border-wedo-orange/30"
-    case"Rejeitado":
-      return" border-status-error/30"
-    default:
-      return"bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle"
+    case"Aprovado": return "success"
+    case"Em análise": return "warning"
+    case"Rejeitado": return "danger"
+    default: return "neutral"
   }
 }
 
@@ -110,12 +106,9 @@ export function InterviewsSection() {
                   </div>
                   <p className="text-xs text-lia-text-secondary mb-2">{candidate.position}</p>
 
-                  <Badge
-                    variant="outline"
-                    className={`text-xs px-2 py-1 ${getStatusBadge(candidate.status)}`}
-                  >
+                  <Chip variant={getStatusVariant(candidate.status)}>
                     {candidate.status}
-                  </Badge>
+                  </Chip>
                 </div>
               </div>
 
