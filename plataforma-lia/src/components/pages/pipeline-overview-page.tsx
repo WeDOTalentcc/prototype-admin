@@ -37,6 +37,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { formatScorePercent } from "@/lib/design-tokens"
 import { getStageIcon, getStageColor, translateStatus } from "@/lib/pipeline-stage-maps"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
+import { useTranslations } from "next-intl"
+import { PipelineRail, type PipelineRailNode } from "@/components/pages/pipeline-overview/pipeline-rail"
 import dynamic from "next/dynamic"
 
 const GeneralScoreModal = dynamic(
@@ -151,6 +153,68 @@ function getJobLifecycleStageIcon(stageKey: string): React.ComponentType<{ class
   return JOB_LIFECYCLE_STAGE_ICONS[stageKey] || Briefcase
 }
 
+// Map backend stage keys to i18n keys under pipelineOverview.stages.*
+const JOB_LIFECYCLE_STAGE_I18N: Record<string, string> = {
+  ats_importada: "ats_imported",
+  rascunho: "draft",
+  enriquecida: "enriched",
+  wsi_config: "wsi_configured",
+  aguardando_aprovacao: "pending_approval",
+  publicada: "published",
+  ao_vivo: "live",
+  encerrada: "closed",
+}
+
+function lifecycleStageLabel(
+  t: (key: string) => string,
+  stageKey: string,
+  fallback: string
+): string {
+  const i18nKey = JOB_LIFECYCLE_STAGE_I18N[stageKey]
+  if (!i18nKey) return fallback
+  try {
+    return t(`stages.${i18nKey}`)
+  } catch {
+    return fallback
+  }
+}
+
+interface VacancyCta {
+  label: string
+  href: string
+}
+
+// Stage-aware "continuar" routing for vacancy cards.
+// Stages that still need work on the JD/wizard side land on the job detail
+// page, while published/live vacancies open the candidate kanban directly.
+function getVacancyCta(
+  stageKey: string,
+  vacancyId: string,
+  t: (key: string) => string
+): VacancyCta {
+  const jobUrl = `/jobs/${vacancyId}`
+  const kanbanUrl = `/funil-de-talentos?tab=kanban&vacancy=${vacancyId}`
+  switch (stageKey) {
+    case "ats_importada":
+    case "rascunho":
+      return { label: t("vacancyCard.openWizard"), href: jobUrl }
+    case "enriquecida":
+      return { label: t("vacancyCard.openEnrichment"), href: jobUrl }
+    case "wsi_config":
+      return { label: t("vacancyCard.openWsi"), href: jobUrl }
+    case "aguardando_aprovacao":
+      return { label: t("vacancyCard.openApproval"), href: jobUrl }
+    case "publicada":
+      return { label: t("vacancyCard.openPublish"), href: jobUrl }
+    case "ao_vivo":
+      return { label: t("vacancyCard.openKanban"), href: kanbanUrl }
+    case "encerrada":
+      return { label: t("vacancyCard.openClosed"), href: jobUrl }
+    default:
+      return { label: t("vacancyCard.openKanban"), href: kanbanUrl }
+  }
+}
+
 function getVibrantColor(stageName: string, fallbackHex: string): string {
   return getStageColor(stageName, fallbackHex)
 }
@@ -192,71 +256,6 @@ function hexToRgba(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-const DOCK_MAX_SCALE = 1.4
-const DOCK_NEIGHBOR_1_SCALE = 1.2
-const DOCK_NEIGHBOR_2_SCALE = 1.1
-const DOCK_INFLUENCE_RADIUS = 120
-
-function usePipelineMagnifier(containerRef: React.RefObject<HTMLDivElement | null>) {
-  const mouseXRef = useRef<number | null>(null)
-  const [mouseX, setMouseX] = useState<number | null>(null)
-  const rafId = useRef<number>(0)
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
-
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
-    setPrefersReducedMotion(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches)
-    mq.addEventListener("change", handler)
-    return () => mq.removeEventListener("change", handler)
-  }, [])
-
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (prefersReducedMotion) return
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (!rect) return
-    const x = e.clientX - rect.left + (containerRef.current?.scrollLeft ?? 0)
-    mouseXRef.current = x
-    if (!rafId.current) {
-      rafId.current = requestAnimationFrame(() => {
-        setMouseX(mouseXRef.current)
-        rafId.current = 0
-      })
-    }
-  }, [containerRef, prefersReducedMotion])
-
-  const handleMouseLeave = useCallback(() => {
-    mouseXRef.current = null
-    if (rafId.current) {
-      cancelAnimationFrame(rafId.current)
-      rafId.current = 0
-    }
-    setMouseX(null)
-  }, [])
-
-  const getScale = useCallback((nodeIndex: number, nodeRefs: React.RefObject<(HTMLElement | null)[]>) => {
-    if (mouseX === null || prefersReducedMotion) return 1
-    const nodeEl = nodeRefs.current?.[nodeIndex]
-    if (!nodeEl) return 1
-    const nodeCenter = nodeEl.offsetLeft + nodeEl.offsetWidth / 2
-    const distance = Math.abs(mouseX - nodeCenter)
-    if (distance > DOCK_INFLUENCE_RADIUS) return 1
-
-    const ratio = 1 - distance / DOCK_INFLUENCE_RADIUS
-    const eased = Math.cos((1 - ratio) * Math.PI / 2)
-
-    if (distance < DOCK_INFLUENCE_RADIUS * 0.33) {
-      return 1 + (DOCK_MAX_SCALE - 1) * eased
-    } else if (distance < DOCK_INFLUENCE_RADIUS * 0.66) {
-      return 1 + (DOCK_NEIGHBOR_1_SCALE - 1) * eased
-    } else {
-      return 1 + (DOCK_NEIGHBOR_2_SCALE - 1) * eased
-    }
-  }, [mouseX, prefersReducedMotion])
-
-  return { handleMouseMove, handleMouseLeave, getScale }
-}
-
 function calculateGeneralScore(candidate: CandidateItem): number | null {
   const scores: number[] = []
   if (candidate.lia_score != null) scores.push(candidate.lia_score)
@@ -271,6 +270,7 @@ function calculateGeneralScore(candidate: CandidateItem): number | null {
 type ModalType = "geral" | "triagem" | "cv" | "tecnico" | "ingles" | "b5" | null
 
 export function PipelineOverviewPage() {
+  const tOverview = useTranslations("pipelineOverview")
   const mode = useUIPreferencesStore((s) => s.pipelineOverviewMode)
   const setMode = useUIPreferencesStore((s) => s.setPipelineOverviewMode)
 
@@ -293,14 +293,6 @@ export function PipelineOverviewPage() {
   const [totalVacancies, setTotalVacancies] = useState(0)
   const [lifecycleLoading, setLifecycleLoading] = useState(false)
   const [lifecycleError, setLifecycleError] = useState<string | null>(null)
-
-  const stagesScrollRef = useRef<HTMLDivElement>(null)
-  const stageNodeRefs = useRef<(HTMLElement | null)[]>([])
-  const { handleMouseMove, handleMouseLeave, getScale } = usePipelineMagnifier(stagesScrollRef)
-
-  const lifecycleScrollRef = useRef<HTMLDivElement>(null)
-  const lifecycleNodeRefs = useRef<(HTMLElement | null)[]>([])
-  const lifecycleMagnifier = usePipelineMagnifier(lifecycleScrollRef)
 
   const fetchPipelineOverview = useCallback(async () => {
     setLoading(true)
@@ -480,7 +472,7 @@ export function PipelineOverviewPage() {
                     )}
                   >
                     <Users className="w-3.5 h-3.5" />
-                    Candidatos
+                    {tOverview("toggle.candidates")}
                   </button>
                   <button
                     role="tab"
@@ -494,7 +486,7 @@ export function PipelineOverviewPage() {
                     )}
                   >
                     <Briefcase className="w-3.5 h-3.5" />
-                    Vagas
+                    {tOverview("toggle.vacancies")}
                   </button>
                 </div>
                 <span className="text-xs text-lia-text-disabled">
@@ -518,116 +510,26 @@ export function PipelineOverviewPage() {
           {mode === "candidatos" && (
           <>
           <div className="flex-shrink-0 px-6 py-6 relative" style={{ overflow: "visible" }}>
-            {stages.length === 0 ? (
-              <div className="flex items-center gap-2 text-lia-text-disabled text-sm">
-                <AlertCircle className="w-4 h-4" />
-                <span>
-                  Nenhuma etapa encontrada. Configure o funil da empresa nas
-                  Configurações.
-                </span>
-              </div>
-            ) : (
-              <div
-                ref={stagesScrollRef}
-                className="overflow-x-auto scrollbar-none"
-                style={{
-                  scrollbarWidth: "none",
-                  msOverflowStyle: "none",
-                  clipPath: "inset(-30px 0 0 0)",
-                }}
-                onMouseMove={handleMouseMove}
-                onMouseLeave={handleMouseLeave}
-              >
-              <div className="flex items-end gap-0 min-w-max px-1 pt-8 pb-2">
-                {stages.map((stage, index) => {
-                  const isSelected = selectedStage === stage.name
-                  const isLast = index === stages.length - 1
-                  const stageColor = getVibrantColor(stage.name, stage.color || "#2D2D2D")
-                  const StageIcon = getStageIcon(stage.name, stage.action_behavior, stage.stage_category)
-                  const scale = getScale(index, stageNodeRefs)
-
-                  return (
-                    <div key={stage.name} className="flex items-center">
-                      <button
-                        ref={(el) => { stageNodeRefs.current[index] = el }}
-                        onClick={() => handleStageClick(stage.name)}
-                        className="group flex flex-col items-center gap-1.5 px-3 cursor-pointer origin-bottom motion-reduce:!transition-none"
-                        style={{
-                          transform: scale !== 1 ? `scale(${scale})` : undefined,
-                          transition: "transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-                          willChange: scale !== 1 ? "transform" : "auto",
-                        }}
-                      >
-                        <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 border-2"
-                          style={{
-                            backgroundColor: isSelected
-                              ? stageColor
-                              : stage.count > 0
-                              ? hexToRgba(stageColor, 0.08)
-                              : "var(--lia-bg-tertiary)",
-                            borderColor: isSelected
-                              ? stageColor
-                              : stage.count > 0
-                              ? stageColor
-                              : "var(--lia-border-subtle)",
-                            boxShadow: isSelected
-                              ? `0 0 0 3px ${hexToRgba(stageColor, 0.08)}`
-                              : undefined,
-                          }}
-                        >
-                          <StageIcon
-                            className="w-4 h-4 transition-colors"
-                            style={{
-                              color: isSelected
-                                ? "var(--lia-text-on-accent, #fff)"
-                                : stage.count > 0
-                                ? stageColor
-                                : "var(--lia-text-disabled)",
-                            }}
-                          />
-                        </div>
-
-                        <span
-                          className="text-micro font-medium transition-colors whitespace-nowrap"
-                          style={{
-                            color: isSelected
-                              ? stageColor
-                              : stage.count > 0
-                              ? "var(--lia-text-primary)"
-                              : "var(--lia-text-disabled)",
-                          }}
-                        >
-                          {stage.display_name}
-                        </span>
-
-                        {stage.count > 0 ? (
-                          <span
-                            className="text-xs font-bold rounded-full px-1.5 py-0.5"
-                            style={{ backgroundColor: hexToRgba(stageColor, 0.08), color: stageColor }}
-                          >
-                            {stage.count}
-                          </span>
-                        ) : (
-                          <span
-                            className="w-1 h-1 rounded-full"
-                            style={{ backgroundColor: stageColor, opacity: 0.3 }}
-                          />
-                        )}
-                      </button>
-
-                      {!isLast && (
-                        <div
-                          className="h-px w-6 flex-shrink-0 self-center -mt-6"
-                          style={{ backgroundColor: "var(--lia-border-default)" }}
-                        />
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-              </div>
-            )}
+            <PipelineRail
+              nodes={stages.map((stage): PipelineRailNode => ({
+                key: stage.name,
+                displayName: stage.display_name,
+                color: getVibrantColor(stage.name, stage.color || "#2D2D2D"),
+                count: stage.count,
+                Icon: getStageIcon(stage.name, stage.action_behavior, stage.stage_category),
+                isSelected: selectedStage === stage.name,
+                onClick: () => handleStageClick(stage.name),
+              }))}
+              emptyMessage={
+                <div className="flex items-center gap-2 text-lia-text-disabled text-sm">
+                  <AlertCircle className="w-4 h-4" />
+                  <span>
+                    Nenhuma etapa encontrada. Configure o funil da empresa nas
+                    Configurações.
+                  </span>
+                </div>
+              }
+            />
           </div>
 
           {stages.some((s) => s.count > 0) && (
@@ -759,112 +661,23 @@ export function PipelineOverviewPage() {
           {mode === "vagas" && (
           <>
             <div className="flex-shrink-0 px-6 py-6 relative" style={{ overflow: "visible" }}>
-              {lifecycleStages.length === 0 || totalVacancies === 0 ? (
-                <div className="flex items-center gap-2 text-lia-text-disabled text-sm">
-                  <AlertCircle className="w-4 h-4" />
-                  <span>Nenhuma vaga encontrada para sua empresa.</span>
-                </div>
-              ) : (
-                <div
-                  ref={lifecycleScrollRef}
-                  className="overflow-x-auto scrollbar-none"
-                  style={{
-                    scrollbarWidth: "none",
-                    msOverflowStyle: "none",
-                    clipPath: "inset(-30px 0 0 0)",
-                  }}
-                  onMouseMove={lifecycleMagnifier.handleMouseMove}
-                  onMouseLeave={lifecycleMagnifier.handleMouseLeave}
-                >
-                  <div className="flex items-end gap-0 min-w-max px-1 pt-8 pb-2">
-                    {lifecycleStages.map((stage, index) => {
-                      const isSelected = selectedLifecycleStage === stage.stage
-                      const isLast = index === lifecycleStages.length - 1
-                      const stageColor = stage.color || "#2D2D2D"
-                      const StageIcon = getJobLifecycleStageIcon(stage.stage)
-                      const scale = lifecycleMagnifier.getScale(index, lifecycleNodeRefs)
-                      return (
-                        <div key={stage.stage} className="flex items-center">
-                          <button
-                            ref={(el) => { lifecycleNodeRefs.current[index] = el }}
-                            onClick={() => handleLifecycleStageClick(stage.stage)}
-                            className="group flex flex-col items-center gap-1.5 px-3 cursor-pointer origin-bottom motion-reduce:!transition-none"
-                            style={{
-                              transform: scale !== 1 ? `scale(${scale})` : undefined,
-                              transition: "transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-                              willChange: scale !== 1 ? "transform" : "auto",
-                            }}
-                          >
-                            <div
-                              className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 border-2"
-                              style={{
-                                backgroundColor: isSelected
-                                  ? stageColor
-                                  : stage.count > 0
-                                  ? hexToRgba(stageColor, 0.08)
-                                  : "var(--lia-bg-tertiary)",
-                                borderColor: isSelected
-                                  ? stageColor
-                                  : stage.count > 0
-                                  ? stageColor
-                                  : "var(--lia-border-subtle)",
-                                boxShadow: isSelected
-                                  ? `0 0 0 3px ${hexToRgba(stageColor, 0.08)}`
-                                  : undefined,
-                              }}
-                            >
-                              <StageIcon
-                                className="w-4 h-4 transition-colors"
-                                style={{
-                                  color: isSelected
-                                    ? "var(--lia-text-on-accent, #fff)"
-                                    : stage.count > 0
-                                    ? stageColor
-                                    : "var(--lia-text-disabled)",
-                                }}
-                              />
-                            </div>
-
-                            <span
-                              className="text-micro font-medium transition-colors whitespace-nowrap"
-                              style={{
-                                color: isSelected
-                                  ? stageColor
-                                  : stage.count > 0
-                                  ? "var(--lia-text-primary)"
-                                  : "var(--lia-text-disabled)",
-                              }}
-                            >
-                              {stage.display_name}
-                            </span>
-
-                            {stage.count > 0 ? (
-                              <span
-                                className="text-xs font-bold rounded-full px-1.5 py-0.5"
-                                style={{ backgroundColor: hexToRgba(stageColor, 0.08), color: stageColor }}
-                              >
-                                {stage.count}
-                              </span>
-                            ) : (
-                              <span
-                                className="w-1 h-1 rounded-full"
-                                style={{ backgroundColor: stageColor, opacity: 0.3 }}
-                              />
-                            )}
-                          </button>
-
-                          {!isLast && (
-                            <div
-                              className="h-px w-6 flex-shrink-0 self-center -mt-6"
-                              style={{ backgroundColor: "var(--lia-border-default)" }}
-                            />
-                          )}
-                        </div>
-                      )
-                    })}
+              <PipelineRail
+                nodes={lifecycleStages.map((stage): PipelineRailNode => ({
+                  key: stage.stage,
+                  displayName: lifecycleStageLabel(tOverview, stage.stage, stage.display_name),
+                  color: stage.color || "#2D2D2D",
+                  count: stage.count,
+                  Icon: getJobLifecycleStageIcon(stage.stage),
+                  isSelected: selectedLifecycleStage === stage.stage,
+                  onClick: () => handleLifecycleStageClick(stage.stage),
+                }))}
+                emptyMessage={
+                  <div className="flex items-center gap-2 text-lia-text-disabled text-sm">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>{tOverview("empty.noVacanciesHint")}</span>
                   </div>
-                </div>
-              )}
+                }
+              />
             </div>
 
             <div className="flex-1 min-h-0 overflow-hidden">
@@ -911,6 +724,7 @@ export function PipelineOverviewPage() {
                           <PipelineVacancyCard
                             key={vacancy.id}
                             vacancy={vacancy}
+                            stageKey={selectedLifecycleStageData!.stage}
                             stageColor={selectedLifecycleStageData!.color || "#2D2D2D"}
                           />
                         ))}
@@ -1288,11 +1102,14 @@ function PipelineCandidateCard({
 
 interface PipelineVacancyCardProps {
   vacancy: JobLifecycleVacancy
+  stageKey: string
   stageColor: string
 }
 
-function PipelineVacancyCard({ vacancy, stageColor }: PipelineVacancyCardProps) {
+function PipelineVacancyCard({ vacancy, stageKey, stageColor }: PipelineVacancyCardProps) {
+  const tCard = useTranslations("pipelineOverview")
   const timeInStage = getTimeInStage(vacancy.stage_entered_at)
+  const cta = getVacancyCta(stageKey, vacancy.id, tCard)
 
   const updatedLabel = vacancy.updated_at
     ? (() => {
@@ -1318,7 +1135,7 @@ function PipelineVacancyCard({ vacancy, stageColor }: PipelineVacancyCardProps) 
 
   const handleOpen = () => {
     if (typeof window !== "undefined") {
-      window.open(`/funil-de-talentos?tab=kanban&vacancy=${vacancy.id}`, "_blank")
+      window.open(cta.href, "_blank")
     }
   }
 
@@ -1327,7 +1144,7 @@ function PipelineVacancyCard({ vacancy, stageColor }: PipelineVacancyCardProps) 
       className="flex items-center gap-3 px-4 py-3 rounded-lg bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors border border-transparent hover:border-lia-border-subtle group cursor-pointer"
       onClick={handleOpen}
       role="button"
-      aria-label={`Abrir vaga ${vacancy.title}`}
+      aria-label={`${cta.label}: ${vacancy.title}`}
     >
       <div
         className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center"
@@ -1349,10 +1166,10 @@ function PipelineVacancyCard({ vacancy, stageColor }: PipelineVacancyCardProps) 
                 borderColor: hexToRgba("#8A8F98", 0.4),
                 color: "var(--lia-text-secondary)",
               }}
-              title="Vaga importada de ATS externo"
+              title={tCard("vacancyCard.atsBadgeTitle")}
             >
               <Database className="w-2.5 h-2.5" />
-              ATS
+              {tCard("vacancyCard.atsBadge")}
             </span>
           )}
           {vacancy.approval_status === "pendente" && (
@@ -1365,7 +1182,7 @@ function PipelineVacancyCard({ vacancy, stageColor }: PipelineVacancyCardProps) 
               }}
             >
               <ShieldCheck className="w-2.5 h-2.5" />
-              Aprovação pendente
+              {tCard("vacancyCard.approvalPending")}
             </span>
           )}
         </div>
@@ -1446,7 +1263,7 @@ function PipelineVacancyCard({ vacancy, stageColor }: PipelineVacancyCardProps) 
             </div>
           </TooltipTrigger>
           <TooltipContent side="top" className="text-xs">
-            {vacancy.candidate_count ?? 0} candidatos no funil
+            {tCard("vacancyCard.candidatesCount", { count: vacancy.candidate_count ?? 0 })}
           </TooltipContent>
         </Tooltip>
       </div>
@@ -1460,12 +1277,12 @@ function PipelineVacancyCard({ vacancy, stageColor }: PipelineVacancyCardProps) 
                 handleOpen()
               }}
               className="p-1.5 rounded-xl hover:bg-lia-bg-primary transition-colors text-lia-text-secondary hover:text-lia-text-primary"
-              aria-label="Abrir vaga"
+              aria-label={cta.label}
             >
               <ExternalLink className="w-4 h-4" />
             </button>
           </TooltipTrigger>
-          <TooltipContent side="top" className="text-xs">Abrir no Kanban</TooltipContent>
+          <TooltipContent side="top" className="text-xs">{cta.label}</TooltipContent>
         </Tooltip>
       </div>
     </div>

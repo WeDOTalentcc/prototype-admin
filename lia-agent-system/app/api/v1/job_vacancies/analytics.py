@@ -1395,6 +1395,11 @@ async def get_job_lifecycle_overview(
         )
         buckets[stage_key].append(item)
 
+    # Capture full bucket sizes BEFORE truncation so the rail counts reflect
+    # the true number of vacancies in each stage (the `vacancies` array is
+    # only a UI sample bounded by `vacancies_per_stage`).
+    bucket_totals: dict[str, int] = {k: len(v) for k, v in buckets.items()}
+
     # Sort each bucket by most recently updated first, then truncate.
     for key, items in buckets.items():
         items.sort(key=lambda v: v.updated_at or "", reverse=True)
@@ -1408,7 +1413,7 @@ async def get_job_lifecycle_overview(
             display_name=JOB_LIFECYCLE_DISPLAY[key],
             color=JOB_LIFECYCLE_COLORS[key],
             stage_order=order_idx,
-            count=len(items),
+            count=bucket_totals[key],
             vacancies=items,
         ))
 

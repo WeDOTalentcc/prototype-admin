@@ -1382,6 +1382,41 @@
       "senioritySpecialist": "Specialist"
     }
   },
+  "pipelineOverview": {
+    "title": "Pipeline View",
+    "toggle": {
+      "candidates": "Candidates",
+      "vacancies": "Jobs",
+      "ariaLabel": "Toggle between Candidates and Jobs view"
+    },
+    "stages": {
+      "ats_imported": "ATS Imported",
+      "draft": "Draft",
+      "enriched": "Enriched",
+      "wsi_configured": "WSI Configured",
+      "pending_approval": "Pending Approval",
+      "published": "Published",
+      "live": "Live",
+      "closed": "Closed"
+    },
+    "vacancyCard": {
+      "atsBadge": "ATS",
+      "atsBadgeTitle": "Imported from external ATS",
+      "approvalPending": "Pending approval",
+      "candidatesCount": "{count} candidates",
+      "openWizard": "Continue JD",
+      "openEnrichment": "Continue enrichment",
+      "openWsi": "Configure WSI",
+      "openApproval": "Review approval",
+      "openPublish": "Publish job",
+      "openKanban": "Open kanban",
+      "openClosed": "View closure"
+    },
+    "empty": {
+      "noVacancies": "No jobs in this stage",
+      "noVacanciesHint": "Jobs will appear here as they progress through the lifecycle"
+    }
+  },
   "agents": {
     "metadata": {
       "title": "Agent Studio | LIA — WeDo Talent",

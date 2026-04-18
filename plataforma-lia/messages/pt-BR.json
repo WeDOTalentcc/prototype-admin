@@ -1382,6 +1382,41 @@
       "senioritySpecialist": "Especialista"
     }
   },
+  "pipelineOverview": {
+    "title": "Visão do Funil",
+    "toggle": {
+      "candidates": "Candidatos",
+      "vacancies": "Vagas",
+      "ariaLabel": "Alternar entre visão de Candidatos e Vagas"
+    },
+    "stages": {
+      "ats_imported": "ATS Importada",
+      "draft": "Rascunho",
+      "enriched": "Enriquecida",
+      "wsi_configured": "WSI Configurado",
+      "pending_approval": "Aguardando Aprovação",
+      "published": "Publicada",
+      "live": "Ao Vivo",
+      "closed": "Encerrada"
+    },
+    "vacancyCard": {
+      "atsBadge": "ATS",
+      "atsBadgeTitle": "Importada de ATS externo",
+      "approvalPending": "Aguardando aprovação",
+      "candidatesCount": "{count} candidatos",
+      "openWizard": "Continuar JD",
+      "openEnrichment": "Continuar enriquecimento",
+      "openWsi": "Configurar WSI",
+      "openApproval": "Revisar aprovação",
+      "openPublish": "Publicar vaga",
+      "openKanban": "Abrir kanban",
+      "openClosed": "Ver encerramento"
+    },
+    "empty": {
+      "noVacancies": "Nenhuma vaga neste estágio",
+      "noVacanciesHint": "Vagas aparecerão aqui conforme avançam no ciclo de vida"
+    }
+  },
   "agents": {
     "metadata": {
       "title": "Estúdio de Agentes | LIA — WeDo Talent",

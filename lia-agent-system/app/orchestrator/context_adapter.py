@@ -83,7 +83,7 @@ class UniversalContext:
         """Converte para o formato que Orchestrator.process_request_with_memory() espera."""
         ctx: dict[str, Any] = {
             "context_type": self.context_type,
-            "context_id": self.entity_id,
+            "entity_id": self.entity_id,
             "candidates": self.candidates,
             "selected_candidate_ids": self.selected_candidate_ids,
             "channel": self.channel,
