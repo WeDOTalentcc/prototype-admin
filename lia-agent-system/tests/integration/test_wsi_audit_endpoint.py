@@ -18,8 +18,11 @@ from httpx import AsyncClient
 pytestmark = pytest.mark.asyncio
 
 
+_BASE = "/api/v1/wsi/reports/audit"
+
+
 async def test_audit_endpoint_requires_auth(async_client: AsyncClient):
-    r = await async_client.get("/api/v1/wsi/audit/any-session")
+    r = await async_client.get(f"{_BASE}/any-session")
     assert r.status_code == 401
     assert "Authentication required" in r.text
 
@@ -30,7 +33,7 @@ async def test_audit_endpoint_forbids_non_admin_non_dpo(
 ):
     token = make_user_token(role=role)
     r = await async_client.get(
-        "/api/v1/wsi/audit/any-session",
+        f"{_BASE}/any-session",
         headers={"Authorization": f"Bearer {token}"},
     )
     assert r.status_code == 403
@@ -42,11 +45,37 @@ async def test_audit_endpoint_allows_admin_and_dpo(
 ):
     token = make_user_token(role=role)
     r = await async_client.get(
-        "/api/v1/wsi/audit/nonexistent-session",
+        f"{_BASE}/00000000-0000-0000-0000-000000000000",
         headers={"Authorization": f"Bearer {token}"},
     )
-    # Auth passou: 404 porque sessão não existe (não 401/403).
+    # Auth + RBAC passaram: 404 porque sessão não existe (não 401/403).
     assert r.status_code == 404
+
+
+async def test_audit_endpoint_blocks_cross_tenant_dpo(
+    async_client: AsyncClient, make_user_token, seed_wsi_session_other_company
+):
+    """DPO de company A não pode ler sessão de company B (IDOR)."""
+    sid = seed_wsi_session_other_company  # session pertence a 'company-b'
+    token = make_user_token(role="dpo", company_id="company-a")
+    r = await async_client.get(
+        f"{_BASE}/{sid}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert r.status_code == 403
+
+
+async def test_audit_endpoint_admin_can_cross_tenant(
+    async_client: AsyncClient, make_user_token, seed_wsi_session_other_company
+):
+    """Admin tem acesso global cross-tenant (can_access_company override)."""
+    sid = seed_wsi_session_other_company
+    token = make_user_token(role="admin", company_id="company-a")
+    r = await async_client.get(
+        f"{_BASE}/{sid}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert r.status_code == 200
 
 
 async def test_audit_endpoint_returns_compliance_metadata(
@@ -55,7 +84,7 @@ async def test_audit_endpoint_returns_compliance_metadata(
     sid = seed_wsi_session_with_responses
     token = make_user_token(role="admin")
     r = await async_client.get(
-        f"/api/v1/wsi/audit/{sid}",
+        f"{_BASE}/{sid}",
         headers={"Authorization": f"Bearer {token}"},
     )
     assert r.status_code == 200

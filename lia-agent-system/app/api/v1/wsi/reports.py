@@ -398,7 +398,6 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             report.already_generated = True
             # Task #511 — disclaimer EU AI Act/LGPD sempre presente, mesmo em
             # respostas cacheadas (cache pode ter sido gerado antes da feature).
-            from app.shared.security.wsi_hashing import EU_AI_ACT_DISCLAIMER
             report.compliance_disclaimer = EU_AI_ACT_DISCLAIMER
             return report
 
@@ -695,9 +694,7 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             attention_flags=_build_attention_flags(analyses_list, gates),
             generated_at=datetime.utcnow().isoformat() + "Z",
             # Task #511 — disclaimer EU AI Act/LGPD no payload do F11.
-            compliance_disclaimer=(
-                __import__("app.shared.security.wsi_hashing", fromlist=["EU_AI_ACT_DISCLAIMER"]).EU_AI_ACT_DISCLAIMER
-            ),
+            compliance_disclaimer=EU_AI_ACT_DISCLAIMER,
         )
 
         # F11-3 — persistir no cache para evitar re-geração
@@ -858,12 +855,14 @@ from app.auth.dependencies import (  # noqa: E402
     UserRole,
     get_current_user_strict,
     require_role,
+    validate_company_access,
 )
 from app.auth.models import User  # noqa: E402
+from app.shared.security.wsi_hashing import EU_AI_ACT_DISCLAIMER  # noqa: E402
 
 
 @router.get(
-    "/audit/{session_id}",
+    "/reports/audit/{session_id}",
     summary="Audit trail WSI — EU AI Act Art. 12 / LGPD Art. 20",
     response_model=None,
     dependencies=[Depends(require_role([UserRole.admin, UserRole.dpo]))],
@@ -875,7 +874,8 @@ async def get_wsi_audit_trail(
 ):
     """Retorna a trilha de auditoria imutável das respostas WSI da sessão.
 
-    Acesso restrito a `admin` (RBAC). Inclui:
+    Acesso: `admin` (cross-tenant) ou `dpo` (escopado à própria company via
+    `validate_company_access`). Inclui:
       - lista de respostas brutas + hash SHA-256 + timestamps (`wsi_responses`)
       - hashes correlatos da análise (`wsi_response_analyses.response_hash`)
       - metadados da sessão para correlação
@@ -883,13 +883,23 @@ async def get_wsi_audit_trail(
     O hash permite verificar integridade sem reprocessar o texto e detectar
     duplicatas / adulterações posteriores.
     """
-    # Sessão existe?
+    # 1) Sessão existe? (join com job_vacancies para obter company_id)
     sess_row = (await db.execute(text(
-        "SELECT id, status, candidate_id, job_vacancy_id, created_at, completed_at "
-        "FROM wsi_sessions WHERE id = :sid"
+        "SELECT s.id, s.status, s.candidate_id, s.job_vacancy_id, "
+        "       s.created_at, s.completed_at, jv.company_id "
+        "FROM wsi_sessions s "
+        "LEFT JOIN job_vacancies jv ON jv.id = s.job_vacancy_id "
+        "WHERE s.id = :sid"
     ), {"sid": session_id})).fetchone()
     if not sess_row:
         raise HTTPException(status_code=404, detail="WSI session not found")
+
+    # 2) Tenant scoping (Task #511 round 3) — bloqueia IDOR cross-tenant.
+    # `admin` tem acesso global (User.can_access_company); demais perfis
+    # autorizados pelo RBAC (dpo) só veem dados da própria company.
+    session_company_id = sess_row[6]
+    if session_company_id is not None:
+        validate_company_access(current_user, str(session_company_id))
 
     responses_rows = (await db.execute(text(
         "SELECT id, question_id, raw_text, response_hash, candidate_id, created_at "
