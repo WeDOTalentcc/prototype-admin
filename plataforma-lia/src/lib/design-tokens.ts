@@ -458,9 +458,15 @@ export const kanbanCardStyles = {
   },
   subtitle: {
     comfortable:
-      "font-['Open_Sans',sans-serif] text-xs text-lia-text-secondary dark:text-lia-text-secondary truncate",
+      "font-['Open_Sans',sans-serif] text-xs text-gray-700 dark:text-gray-300 truncate",
     compact:
-      "font-['Open_Sans',sans-serif] text-xs text-lia-text-secondary dark:text-lia-text-secondary truncate",
+      "font-['Open_Sans',sans-serif] text-xs text-gray-700 dark:text-gray-300 truncate",
+  },
+  tertiary: {
+    comfortable:
+      "font-['Open_Sans',sans-serif] text-xs text-gray-600 dark:text-gray-400 truncate",
+    compact:
+      "font-['Open_Sans',sans-serif] text-xs text-gray-600 dark:text-gray-400 truncate",
   },
   // Divisor inferior (footer)
   divider:
@@ -490,7 +496,7 @@ export const kanbanChipStyles = {
   },
   variant: {
     neutral:
-      'border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-secondary',
+      'border-transparent dark:border-transparent bg-lia-bg-tertiary dark:bg-lia-bg-tertiary text-lia-text-primary dark:text-lia-text-primary',
     success:
       'border-status-success/30 dark:border-status-success/30 text-status-success dark:text-status-success',
     warning:

@@ -137,7 +137,7 @@ export const KanbanCard = React.memo(function KanbanCard({
           )}
 
           {item.tertiary && (
-            <p className="text-xs text-lia-text-tertiary truncate">
+            <p className={kanbanCardStyles.tertiary[DENSITY]}>
               {item.tertiary}
             </p>
           )}
