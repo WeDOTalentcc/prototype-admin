@@ -26,6 +26,7 @@ from app.domains.cv_screening.services.wsi_service import (
     WSIResult,
     wsi_service,
 )
+from app.shared.security.wsi_hashing import hash_response
 
 logger = logging.getLogger(__name__)
 
@@ -463,17 +464,44 @@ class WSIVoiceOrchestrator:
                 response_analyses.append(analysis)
                 weights[question.competency] = question.weight
 
+                # Task #511 — EU AI Act Art. 12 / LGPD Art. 20 audit trail.
+                # Hash determinístico calculado UMA vez e gravado em ambas
+                # tabelas (wsi_responses + wsi_response_analyses) para
+                # cross-reference sem expor texto bruto.
+                resp_hash = hash_response(
+                    analysis.response_text, session_id, question.id
+                )
+
+                await session.execute(
+                    text(
+                        """
+                        INSERT INTO wsi_responses (
+                            session_id, question_id, raw_text, response_hash
+                        )
+                        VALUES (:session_id, :question_id, :raw_text, :response_hash)
+                        """
+                    ),
+                    {
+                        "session_id": session_id,
+                        "question_id": question.id,
+                        "raw_text": analysis.response_text or "",
+                        "response_hash": resp_hash,
+                    },
+                )
+
                 await session.execute(
                     text(
                         """
                         INSERT INTO wsi_response_analyses (
                             id, session_id, question_id, competency, response_text,
                             autodeclaration_score, context_score, bloom_level, dreyfus_level,
-                            evidences, red_flags, consistency_penalty, final_score, justification
+                            evidences, red_flags, consistency_penalty, final_score, justification,
+                            response_hash
                         )
                         VALUES (:id, :session_id, :question_id, :competency, :response_text,
                                 :autodeclaration_score, :context_score, :bloom_level, :dreyfus_level,
-                                :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification)
+                                :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification,
+                                :response_hash)
                         """
                     ),
                     {
@@ -491,6 +519,7 @@ class WSIVoiceOrchestrator:
                         "consistency_penalty": analysis.consistency_penalty,
                         "final_score": analysis.final_score,
                         "justification": analysis.justification,
+                        "response_hash": resp_hash,
                     },
                 )
                 logger.info(

@@ -10,6 +10,7 @@ from typing import Any
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.shared.security.wsi_hashing import hash_response
 from lia_models.triagem import TriagemMessage, TriagemSession
 
 from ._shared import _get_event_dispatcher, _get_screening_config
@@ -477,17 +478,39 @@ async def _persist_wsi_results(
                 behavioral_scores.append(score_1_5)
             continue
 
+        # Task #511 — EU AI Act Art. 12 / LGPD Art. 20 audit trail.
+        # Hash determinístico inserido em wsi_responses (trilha imutável) e
+        # replicado em wsi_response_analyses para cross-reference.
+        resp_hash = hash_response(response_text, wsi_session_id, question_id)
+        try:
+            await db.execute(text(
+                "INSERT INTO wsi_responses "
+                "    (session_id, question_id, raw_text, response_hash, candidate_id) "
+                "VALUES "
+                "    (:session_id, :question_id, :raw_text, :response_hash, :candidate_id)"
+            ), {
+                "session_id": wsi_session_id,
+                "question_id": question_id,
+                "raw_text": response_text or "",
+                "response_hash": resp_hash,
+                "candidate_id": session.candidate_id,
+            })
+        except Exception as exc:
+            logger.warning(f"[Triagem] wsi_responses insert failed (seq={seq}): {exc}")
+
         analysis_id = str(uuid.uuid4())
         try:
             await db.execute(text(
                 "INSERT INTO wsi_response_analyses "
                 "    (id, session_id, question_id, competency, response_text, "
                 "     autodeclaration_score, context_score, bloom_level, dreyfus_level, "
-                "     evidences, red_flags, consistency_penalty, final_score, justification) "
+                "     evidences, red_flags, consistency_penalty, final_score, justification, "
+                "     response_hash) "
                 "VALUES "
                 "    (:id, :session_id, :question_id, :competency, :response_text, "
                 "     :autodeclaration_score, :context_score, :bloom_level, :dreyfus_level, "
-                "     :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification)"
+                "     :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification, "
+                "     :response_hash)"
             ), {
                 "id": analysis_id,
                 "session_id": wsi_session_id,
@@ -503,6 +526,7 @@ async def _persist_wsi_results(
                 "consistency_penalty": 0.0,
                 "final_score": score_1_5,
                 "justification": rs.get("justification", "Score calculado a partir da resposta no chat web"),
+                "response_hash": resp_hash,
             })
         except Exception as exc:
             logger.warning(f"[Triagem] wsi_response_analyses insert failed (seq={seq}): {exc}")

@@ -836,3 +836,98 @@ async def get_candidate_ranking(
     except Exception as e:
         logger.error(f"F11-6 candidate ranking failed for {candidate_id}/{job_vacancy_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# Task #511 — EU AI Act Art. 12 (logging) / LGPD Art. 20 (revisão humana).
+# Endpoint de auditoria: expõe a trilha imutável de respostas WSI a perfis
+# autorizados (admin). Requer autenticação estrita — sem fallback demo.
+# ────────────────────────────────────────────────────────────────────────────
+from app.auth.dependencies import (  # noqa: E402
+    UserRole,
+    get_current_user_strict,
+    require_role,
+)
+from app.auth.models import User  # noqa: E402
+
+
+@router.get(
+    "/audit/{session_id}",
+    summary="Audit trail WSI — EU AI Act Art. 12 / LGPD Art. 20",
+    response_model=None,
+    dependencies=[Depends(require_role([UserRole.admin]))],
+)
+async def get_wsi_audit_trail(
+    session_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_strict),
+):
+    """Retorna a trilha de auditoria imutável das respostas WSI da sessão.
+
+    Acesso restrito a `admin` (RBAC). Inclui:
+      - lista de respostas brutas + hash SHA-256 + timestamps (`wsi_responses`)
+      - hashes correlatos da análise (`wsi_response_analyses.response_hash`)
+      - metadados da sessão para correlação
+
+    O hash permite verificar integridade sem reprocessar o texto e detectar
+    duplicatas / adulterações posteriores.
+    """
+    # Sessão existe?
+    sess_row = (await db.execute(text(
+        "SELECT id, status, candidate_id, job_vacancy_id, created_at, completed_at "
+        "FROM wsi_sessions WHERE id = :sid"
+    ), {"sid": session_id})).fetchone()
+    if not sess_row:
+        raise HTTPException(status_code=404, detail="WSI session not found")
+
+    responses_rows = (await db.execute(text(
+        "SELECT id, question_id, raw_text, response_hash, candidate_id, created_at "
+        "FROM wsi_responses WHERE session_id = :sid ORDER BY created_at ASC"
+    ), {"sid": session_id})).fetchall()
+
+    analyses_rows = (await db.execute(text(
+        "SELECT question_id, competency, response_hash, final_score "
+        "FROM wsi_response_analyses WHERE session_id = :sid"
+    ), {"sid": session_id})).fetchall()
+
+    logger.info(
+        "[WSI-AUDIT] session=%s requested_by=%s role=%s items=%d",
+        session_id, current_user.id, current_user.role, len(responses_rows),
+    )
+
+    return {
+        "session_id": session_id,
+        "session": {
+            "status": sess_row[1],
+            "candidate_id": sess_row[2],
+            "job_vacancy_id": sess_row[3],
+            "created_at": sess_row[4].isoformat() if sess_row[4] else None,
+            "completed_at": sess_row[5].isoformat() if sess_row[5] else None,
+        },
+        "responses": [
+            {
+                "id": str(r[0]),
+                "question_id": r[1],
+                "raw_text": r[2],
+                "response_hash": r[3],
+                "candidate_id": r[4],
+                "created_at": r[5].isoformat() if r[5] else None,
+            }
+            for r in responses_rows
+        ],
+        "analyses_hashes": [
+            {
+                "question_id": a[0],
+                "competency": a[1],
+                "response_hash": a[2],
+                "final_score": float(a[3]) if a[3] is not None else None,
+            }
+            for a in analyses_rows
+        ],
+        "compliance": {
+            "framework": "EU AI Act Art. 12 / LGPD Art. 20",
+            "hash_algorithm": "SHA-256",
+            "accessed_by": str(current_user.id),
+            "accessed_at": datetime.utcnow().isoformat() + "Z",
+        },
+    }

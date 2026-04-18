@@ -4,6 +4,8 @@ WSI Report Generator - Structured reports and candidate feedback.
 import logging
 from typing import Any, Literal
 
+from app.shared.security.wsi_hashing import EU_AI_ACT_DISCLAIMER
+
 from .models import (
     CandidateFeedback,
     ResponseAnalysis,
@@ -180,10 +182,20 @@ RETORNE APENAS JSON:
                 }
             }
         
+        # Task #511 — EU AI Act Art. 13 (transparência) / LGPD Art. 20.
+        # Disclaimer prefixado ao executive_summary para garantir que qualquer
+        # consumidor (recrutador humano, exportação PDF, JSON do F11) veja o
+        # aviso de IA de Alto Risco antes de qualquer score.
+        executive_summary = (
+            EU_AI_ACT_DISCLAIMER
+            + "\n\n"
+            + data.get("executive_summary", "Análise não disponível")
+        )
+
         return StructuredReport(
             candidate_id=candidate_id,
             wsi_result=wsi_result,
-            executive_summary=data.get("executive_summary", "Análise não disponível"),
+            executive_summary=executive_summary,
             technical_analysis=data.get("technical_analysis", {}),
             behavioral_analysis=data.get("behavioral_analysis", {}),
             cultural_fit=data.get("cultural_fit", {}),
