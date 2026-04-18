@@ -11,7 +11,6 @@ Orchestrates the complete voice screening workflow:
 
 import json
 import logging
-import re
 import uuid
 from typing import Any
 
@@ -571,149 +570,19 @@ class WSIVoiceOrchestrator:
         
         return context
     
+    # Audit task #496 (PR1) — funções de extração foram movidas para
+    # `wsi_service/transcript_extractor.py` (puras, testáveis isoladas).
+    # Mantemos shims de instância chamando as funções módulo-nível para
+    # preservar 100% da API interna usada por `process_call_completed`.
     def _extract_qa_pairs(
         self,
         transcript: str,
         transcript_object: list[dict[str, Any]] | None,
-        questions: list[WSIQuestion]
+        questions: list[WSIQuestion],
     ) -> list[dict[str, Any]]:
-        """
-        Extract Question/Answer pairs from transcript.
-        
-        Strategy:
-        1. If transcript_object available, use speaker labels
-        2. Otherwise, use fuzzy matching to find questions in transcript
-        3. Match each question with subsequent candidate response
-        
-        Returns:
-            List of dicts with 'question' and 'response' keys
-        """
-        qa_pairs = []
-        
-        if transcript_object and len(transcript_object) > 0:
-            qa_pairs = self._extract_from_structured_transcript(transcript_object, questions)
-        
-        if not qa_pairs:
-            qa_pairs = self._extract_from_raw_transcript(transcript, questions)
-        
-        return qa_pairs
-    
-    def _extract_from_structured_transcript(
-        self,
-        transcript_object: list[dict[str, Any]],
-        questions: list[WSIQuestion]
-    ) -> list[dict[str, Any]]:
-        """Extract Q/A pairs from structured transcript with speaker labels."""
-        qa_pairs = []
-        
-        agent_utterances = []
-        user_utterances = []
-        
-        for item in transcript_object:
-            speaker = item.get('speaker', item.get('role', '')).lower()
-            text_content = item.get('text', item.get('content', ''))
-            
-            if 'agent' in speaker or 'lia' in speaker or 'assistant' in speaker:
-                agent_utterances.append({
-                    'text': text_content,
-                    'index': len(agent_utterances)
-                })
-            elif 'user' in speaker or 'human' in speaker or 'candidato' in speaker:
-                user_utterances.append({
-                    'text': text_content,
-                    'agent_index': len(agent_utterances) - 1 if agent_utterances else -1
-                })
-        
-        for question in questions:
-            best_match_idx = -1
-            best_score = 0.3
-            
-            q_words = set(question.question_text.lower().split())
-            
-            for idx, utterance in enumerate(agent_utterances):
-                u_words = set(utterance['text'].lower().split())
-                
-                if len(q_words) > 0:
-                    overlap = len(q_words & u_words) / len(q_words)
-                    if overlap > best_score:
-                        best_score = overlap
-                        best_match_idx = idx
-            
-            if best_match_idx >= 0:
-                response_parts = []
-                for u in user_utterances:
-                    if u.get('agent_index') == best_match_idx:
-                        response_parts.append(u.get('text', ''))
-                
-                if response_parts:
-                    qa_pairs.append({
-                        'question': question,
-                        'response': ' '.join(response_parts)
-                    })
-        
-        return qa_pairs
-    
-    def _extract_from_raw_transcript(
-        self,
-        transcript: str,
-        questions: list[WSIQuestion]
-    ) -> list[dict[str, Any]]:
-        """Extract Q/A pairs from raw transcript using pattern matching."""
-        qa_pairs = []
-        
-        if not transcript or not transcript.strip():
-            return qa_pairs
-        
-        transcript_lower = transcript.lower()
-        
-        for question in questions:
-            q_text_lower = question.question_text.lower()
-            q_words = q_text_lower.split()[:6]
-            search_pattern = ' '.join(q_words)
-            
-            q_position = transcript_lower.find(search_pattern)
-            
-            if q_position == -1 and len(q_words) > 3:
-                search_pattern = ' '.join(q_words[:3])
-                q_position = transcript_lower.find(search_pattern)
-            
-            if q_position >= 0:
-                after_question = transcript[q_position:]
-                
-                response_match = re.search(
-                    r'(?:candidato|user|resposta)[:\s]+(.+?)(?:(?:agente|lia|pergunta)[:\s]|$)',
-                    after_question,
-                    re.IGNORECASE | re.DOTALL
-                )
-                
-                if response_match:
-                    response_text = response_match.group(1).strip()
-                else:
-                    paragraphs = after_question.split('\n\n')
-                    if len(paragraphs) > 1:
-                        response_text = paragraphs[1].strip()
-                    else:
-                        sentences = after_question.split('. ')
-                        if len(sentences) > 1:
-                            response_text = '. '.join(sentences[1:3]).strip()
-                        else:
-                            response_text = after_question[:500].strip()
-                
-                if response_text and len(response_text) > 10:
-                    qa_pairs.append({
-                        'question': question,
-                        'response': response_text[:2000]
-                    })
-        
-        if not qa_pairs and questions:
-            logger.warning("⚠️  Could not match questions to transcript. Using full transcript for first question.")
-            qa_pairs.append({
-                'question': questions[0],
-                'response': transcript[:3000]
-            })
-        
-        return qa_pairs
-    
+        from .wsi_service.transcript_extractor import extract_qa_pairs
+        return extract_qa_pairs(transcript, transcript_object, questions)
+
     async def get_session_status(
         self,
         session_id: str,
