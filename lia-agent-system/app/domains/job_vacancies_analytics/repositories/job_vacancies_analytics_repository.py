@@ -178,6 +178,27 @@ class JobVacanciesAnalyticsRepository:
         )
         return list(result.scalars().all())
 
+    async def get_candidate_counts_by_vacancy_for_company(
+        self, company_id: str
+    ) -> dict[str, int]:
+        """Return {vacancy_id: candidate_count} for every vacancy in the
+        company in a single aggregated query (no N+1).
+
+        Joins against job_vacancies to enforce tenant isolation. Vacancies
+        with no candidates are simply absent from the result; callers should
+        default to 0.
+        """
+        result = await self.db.execute(
+            select(
+                VacancyCandidate.vacancy_id,
+                func.count(VacancyCandidate.id).label("count"),
+            )
+            .join(JobVacancy, JobVacancy.id == VacancyCandidate.vacancy_id)
+            .where(JobVacancy.company_id == company_id)
+            .group_by(VacancyCandidate.vacancy_id)
+        )
+        return {str(row.vacancy_id): int(row.count) for row in result.all()}
+
     # ─── Job Report ──────────────────────────────────────────────────────────
 
     async def get_avg_time_to_hire(self, vacancy_id: UUID) -> float | None:

@@ -1348,6 +1348,7 @@ async def get_job_lifecycle_overview(
 
     try:
         jobs = await repo.get_all_company_jobs(company_id)
+        candidate_counts = await repo.get_candidate_counts_by_vacancy_for_company(company_id)
     except Exception as e:
         logger.error(f"Error fetching jobs for lifecycle overview: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -1359,13 +1360,7 @@ async def get_job_lifecycle_overview(
         if stage_key not in buckets:
             stage_key = "rascunho"
 
-        funnel = job.funnel_data or {}
-        cand_total = 0
-        if isinstance(funnel, dict):
-            try:
-                cand_total = int(funnel.get("total") or 0)
-            except (TypeError, ValueError):
-                cand_total = 0
+        cand_total = candidate_counts.get(str(job.id), 0)
 
         def _iso(dt):
             if not dt:
