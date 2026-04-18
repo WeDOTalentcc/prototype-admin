@@ -7,6 +7,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from app.domains.company.repositories.company_profile_repository import CompanyProfileRepository
+from app.domains.company.dependencies import get_company_profile_repo
 from ._shared import (
     CLIENT_STATUS_OPTIONS,
     COMPANY_SIZE_OPTIONS,
@@ -137,6 +139,7 @@ async def create_client(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
     email_svc: EmailService = Depends(get_email_service),
+    profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
 ):
     """Create a new client. Only admin users can create new clients."""
     try:
@@ -175,6 +178,22 @@ async def create_client(
             raise HTTPException(status_code=500, detail=str(e))
 
         logger.info(f"Created client: {client.name} (ID: {client.id})")
+
+        # Auto-create company_profiles row so settings page loads without error
+        try:
+            profile_repo.db = repo.db
+            await profile_repo.create({
+                "name": client.name or "Minha Empresa",
+                "client_account_id": str(client.id),
+                "website": client.website or None,
+                "industry": client.industry or None,
+                "company_size": client.company_size or None,
+                "logo_url": client.logo_url or None,
+                "is_active": True,
+            })
+            logger.info(f"Created company_profile for client {client.id}")
+        except Exception as profile_error:
+            logger.warning(f"Failed to create company_profile for client {client.id}: {profile_error}")
 
         organization_id = await provision_workos_organization(client, repo.db)
 
