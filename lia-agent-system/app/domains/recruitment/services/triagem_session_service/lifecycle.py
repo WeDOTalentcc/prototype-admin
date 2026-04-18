@@ -32,7 +32,21 @@ from .wsi_blocks import _load_or_generate_blocks
 logger = logging.getLogger(__name__)
 
 
-async def validate_token(db: AsyncSession, token: str) -> dict[str, Any]:
+async def validate_token(
+    db: AsyncSession,
+    token: str,
+    *,
+    count_as_resume: bool = False,
+) -> dict[str, Any]:
+    """Validate a triagem token.
+
+    Task #425 — when ``count_as_resume`` is True (only the candidate-facing
+    GET /triagem/{token} path passes it), this function increments the
+    reopen counter (subject to a 30-min cooldown) and blocks once the cap
+    of 2 retomadas is reached. All other callers (POST chat, whatsapp-
+    initiate, voice initiates, status checks, etc.) leave the counter
+    untouched so regular in-session traffic does not consume reopens.
+    """
     result = await db.execute(
         select(TriagemSession).where(TriagemSession.token == token)
     )
@@ -69,29 +83,37 @@ async def validate_token(db: AsyncSession, token: str) -> dict[str, Any]:
                 "retry_after_minutes": REOPEN_COOLDOWN_MIN,
                 "session": session.to_dict(),
             }
-        last_iso = meta.get("last_reopened_at")
-        within_cooldown = False
-        if last_iso:
-            try:
-                last_dt = datetime.fromisoformat(str(last_iso))
-                if (datetime.utcnow() - last_dt) < timedelta(minutes=REOPEN_COOLDOWN_MIN):
-                    within_cooldown = True
-            except (TypeError, ValueError):
-                within_cooldown = False
-        if not within_cooldown:
-            meta["reopen_count"] = current + 1
-            meta["last_reopened_at"] = datetime.utcnow().isoformat()
-            session.metadata_json = meta
-            try:
-                await db.flush()
-            except Exception as exc:  # pragma: no cover - best-effort persistence
-                logger.warning(f"[Triagem] validate_token reopen flush failed: {exc}")
+        # Only the candidate-entry GET path (get_session_config) requests
+        # increment. In-session traffic (chat POSTs, channel initiates,
+        # status checks) must NOT consume a reopen attempt.
+        if count_as_resume:
+            last_iso = meta.get("last_reopened_at")
+            within_cooldown = False
+            if last_iso:
+                try:
+                    last_dt = datetime.fromisoformat(str(last_iso))
+                    if (datetime.utcnow() - last_dt) < timedelta(minutes=REOPEN_COOLDOWN_MIN):
+                        within_cooldown = True
+                except (TypeError, ValueError):
+                    within_cooldown = False
+            if not within_cooldown:
+                meta["reopen_count"] = current + 1
+                meta["last_reopened_at"] = datetime.utcnow().isoformat()
+                session.metadata_json = meta
+                try:
+                    await db.flush()
+                except Exception as exc:  # pragma: no cover - best-effort persistence
+                    logger.warning(f"[Triagem] validate_token reopen flush failed: {exc}")
 
     return {"valid": True, "completed": False, "session": session.to_dict()}
 
 
 async def get_session_config(db: AsyncSession, token: str) -> dict[str, Any] | None:
-    validation = await validate_token(db, token)
+    # Task #425 — this is the candidate-entry GET path (called by GET
+    # /triagem/{token}); pass count_as_resume so the reopen counter is
+    # incremented exactly once per candidate session entry (subject to
+    # the 30-min cooldown).
+    validation = await validate_token(db, token, count_as_resume=True)
     if not validation["valid"]:
         return validation
 
