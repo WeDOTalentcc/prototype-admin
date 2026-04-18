@@ -58,13 +58,13 @@ const JobsHeader = memo(function JobsHeader({
           <ViewToggle
             value={viewMode}
             onChange={(v) => onViewModeChange(v as 'list' | 'cards' | 'kanban')}
-            ariaLabel={tt('all')}
+            ariaLabel="Modo de visualização"
             size="md"
             iconOnly
             options={[
-              { value: 'list', label: tt('all'), icon: List },
-              { value: 'cards', label: tt('all'), icon: LayoutGrid },
-              { value: 'kanban', label: tt('all'), icon: Kanban },
+              { value: 'list', label: 'Lista', icon: List },
+              { value: 'cards', label: 'Cards', icon: LayoutGrid },
+              { value: 'kanban', label: 'Kanban', icon: Kanban },
             ]}
           />
 
