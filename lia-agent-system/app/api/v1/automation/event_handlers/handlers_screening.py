@@ -64,6 +64,11 @@ def _build_screening_response_analyses(responses: list) -> list:
     from app.domains.cv_screening.services.wsi_service import ResponseAnalysis
     result = []
     for resp in responses:
+        # Audit task #498 — propaga `category` quando o emissor informa
+        # (event payload pode trazer 'category' explícita derivada do
+        # framework da pergunta a montante). Caso ausente, fica None e
+        # o scorer usa o `competencies` hint ou, em último caso, o
+        # heurístico de peso.
         result.append(ResponseAnalysis(
             question_id=resp.get("question_id", str(uuid.uuid4())),
             competency=resp.get("competency", "general"),
@@ -71,7 +76,8 @@ def _build_screening_response_analyses(responses: list) -> list:
             evidences=resp.get("evidences", []),
             red_flags=resp.get("red_flags", []),
             final_score=resp.get("score", 3.0),
-            justification=resp.get("justification", "Análise automática")
+            justification=resp.get("justification", "Análise automática"),
+            category=resp.get("category"),
         ))
     return result
 
@@ -280,6 +286,8 @@ def _parse_wsi_llm_response(content: str, transcript: str, ResponseAnalysis) -> 
                 red_flags=r.get("red_flags", []),
                 final_score=float(r.get("score", 3.0)),
                 justification=r.get("justification", "Análise automática"),
+                # Audit task #498 — quando o LLM emite 'category', confiamos.
+                category=r.get("category"),
             )
             for r in json.loads(content).get("responses", [])
         ]

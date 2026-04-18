@@ -429,6 +429,12 @@ class WSIVoiceOrchestrator:
                     
                 except Exception as e:
                     logger.error(f"⚠️  Failed to analyze response for {question.competency}: {e}")
+                    # Audit task #498 — mesmo no fallback de erro, derivamos a
+                    # categoria a partir do framework da pergunta para que o
+                    # split tech/behavioral permaneça determinístico.
+                    from app.domains.cv_screening.services.wsi_service.response_analyzer import (
+                        _category_from_framework,
+                    )
                     fallback_analysis = ResponseAnalysis(
                         question_id=question.id,
                         competency=question.competency,
@@ -436,7 +442,8 @@ class WSIVoiceOrchestrator:
                         final_score=2.5,
                         evidences=["Análise parcial - falha no processamento"],
                         red_flags=["Análise incompleta"],
-                        justification="Análise automatizada falhou. Requer revisão manual."
+                        justification="Análise automatizada falhou. Requer revisão manual.",
+                        category=_category_from_framework(question.framework),
                     )
                     response_analyses.append(fallback_analysis)
                     weights[question.competency] = question.weight

@@ -169,6 +169,13 @@ class ResponseAnalysis(BaseModel):
     final_score: float = Field(ge=1, le=5)
     justification: str
 
+    # Audit task #498 — categoria explícita da competência avaliada nesta resposta
+    # (derivada do `WSIQuestion.framework` pelo response_analyzer). Permite ao
+    # scorer dividir tech vs behav SEM cair no heurístico por peso quando os
+    # callers não passam `competencies` tipado. None = não informado, usar
+    # fallback existente (competencies map ou heurístico).
+    category: Literal["technical", "behavioral", "cultural"] | None = None
+
 
 class WSIResult(BaseModel):
     """Resultado final da avaliação WSI."""
@@ -179,7 +186,10 @@ class WSIResult(BaseModel):
     behavioral_wsi: float = Field(ge=0, le=5)
     overall_wsi: float = Field(ge=0, le=5)
     
-    classification: Literal["excepcional", "excelente", "alto", "medio", "regular", "baixo"]
+    classification: Literal[
+        "excepcional", "excelente", "alto", "medio",
+        "regular", "abaixo_da_media", "baixo"
+    ]
     percentile: int | None = None
     
     response_analyses: list[ResponseAnalysis]

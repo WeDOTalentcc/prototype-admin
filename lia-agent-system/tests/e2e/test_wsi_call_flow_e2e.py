@@ -117,6 +117,102 @@ class TestWSIScoreCalculatorWeightedFormula:
         result = calc.calculate("c3", "j3", [], {})
         assert isinstance(result, WSIResult)
 
+    def test_split_uses_explicit_category_over_weight_heuristic(self):
+        """Audit task #498 — quando ResponseAnalysis.category vem populado pelo
+        response_analyzer (a partir do framework da pergunta), o scorer deve
+        respeitá-lo e ignorar o heurístico por peso. Caso de regressão:
+        pesos iguais (default 0.75 do voice flow) levavam a split aleatório
+        — uma pergunta CBI ficava classificada como técnica só porque vinha
+        primeiro na ordenação estável.
+        """
+        calc = WSIScoreCalculator()
+        # 4 competências, todas com mesmo peso, mas categorias explícitas:
+        # 2 técnicas (Bloom/Dreyfus), 2 comportamentais (CBI/BigFive).
+        responses = [
+            _resp("python", 5.0).model_copy(update={"category": "technical"}),
+            _resp("aws", 5.0).model_copy(update={"category": "technical"}),
+            _resp("comunicacao", 1.0).model_copy(update={"category": "behavioral"}),
+            _resp("colaboracao", 1.0).model_copy(update={"category": "behavioral"}),
+        ]
+        weights = {"python": 0.25, "aws": 0.25, "comunicacao": 0.25, "colaboracao": 0.25}
+
+        result = calc.calculate("c-eq", "j-eq", responses, weights)
+
+        # Técnicas todas em 5.0 → technical_wsi = 5.0
+        # Comportamentais todas em 1.0 → behavioral_wsi = 1.0
+        # Se o heurístico tivesse sido usado (sort estável + cutoff por
+        # tech_weight 0.7 → 3 primeiras), as 3 primeiras viriam misturadas
+        # e os números bateriam diferente. Aqui exigimos split limpo.
+        assert result.technical_wsi == 5.0, (
+            f"Esperado technical_wsi=5.0 (categoria explícita), "
+            f"recebido {result.technical_wsi} — heurístico vazou."
+        )
+        assert result.behavioral_wsi == 1.0, (
+            f"Esperado behavioral_wsi=1.0 (categoria explícita), "
+            f"recebido {result.behavioral_wsi} — heurístico vazou."
+        )
+
+    def test_category_from_framework_mapping(self):
+        """Audit task #498 — mapping helper deve seguir taxonomia WSI:
+        Bloom/Dreyfus → technical; CBI/BigFive → behavioral; outros → None.
+        """
+        from app.domains.cv_screening.services.wsi_service.response_analyzer import (
+            _category_from_framework,
+        )
+        assert _category_from_framework("Bloom") == "technical"
+        assert _category_from_framework("Dreyfus") == "technical"
+        assert _category_from_framework("CBI") == "behavioral"
+        assert _category_from_framework("BigFive") == "behavioral"
+        assert _category_from_framework("STAR") is None
+        assert _category_from_framework("") is None
+
+    def test_fallback_chain_competencies_hint_when_category_absent(self):
+        """Audit task #498 — quando `category` ausente, scorer usa o hint
+        `competencies` antes de cair no heurístico por peso.
+        """
+        from app.domains.cv_screening.services.wsi_service.models import Competency
+
+        calc = WSIScoreCalculator()
+        # Sem category, mas com competencies hint dizendo "behavioral"
+        responses = [
+            _resp("aws", 5.0),  # category=None
+            _resp("comm", 1.0),  # category=None
+        ]
+        comps = [
+            Competency(name="aws", type="behavioral", weight=0.5, seniority_level="pleno"),
+            Competency(name="comm", type="behavioral", weight=0.5, seniority_level="pleno"),
+        ]
+        result = calc.calculate(
+            "c-h", "j-h", responses, {"aws": 0.5, "comm": 0.5}, competencies=comps
+        )
+        # Ambas viraram behavioral por causa do hint (sem cair no heurístico
+        # por peso, que classificaria pelo menos uma como técnica).
+        assert result.behavioral_wsi == 3.0
+        # Sem respostas técnicas, technical_wsi fica 0 (calculator atual
+        # não replica nessa direção; isso é o comportamento de produção).
+        assert result.technical_wsi == 0.0
+
+    def test_explicit_category_takes_precedence_over_competencies_hint(self):
+        """Audit task #498 — quando ambos `category` (em ResponseAnalysis) e
+        `competencies` (parâmetro tipado) estão presentes, vence o `category`
+        da resposta (mais próxima da fonte: o framework da pergunta avaliada).
+        """
+        from app.domains.cv_screening.services.wsi_service.models import Competency
+
+        calc = WSIScoreCalculator()
+        # category="technical" na resposta, mas competencies diz "behavioral":
+        # o scorer deve respeitar a categoria mais granular (a da resposta).
+        resp = _resp("aws", 5.0).model_copy(update={"category": "technical"})
+        comp_hint = [Competency(
+            name="aws", type="behavioral", weight=1.0, seniority_level="pleno"
+        )]
+
+        result = calc.calculate(
+            "c-prec", "j-prec", [resp], {"aws": 1.0}, competencies=comp_hint
+        )
+        assert result.technical_wsi == 5.0
+        assert result.behavioral_wsi == 5.0  # replicado quando vazio
+
 
 # ---------------------------------------------------------------------------
 # Seção 2 — WSIScoreCalculator.calculate_percentiles(): ranking

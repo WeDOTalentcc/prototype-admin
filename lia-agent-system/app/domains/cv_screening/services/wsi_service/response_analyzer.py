@@ -75,7 +75,8 @@ class WSIResponseAnalyzer:
                 red_flags=result.red_flags,
                 consistency_penalty=result.penalty,
                 final_score=result.final_score,
-                justification=f"{result.justification} | Fórmula: {result.formula_applied}"
+                justification=f"{result.justification} | Fórmula: {result.formula_applied}",
+                category=_category_from_framework(question.framework),
             )
         except Exception as e:
             logger.error(f"Deterministic analysis failed for {question.competency}: {e}")
@@ -91,7 +92,23 @@ class WSIResponseAnalyzer:
                 red_flags=["Erro no processamento determinístico"],
                 consistency_penalty=0.0,
                 final_score=3.0,
-                justification=f"Fallback aplicado devido a erro: {str(e)}"
+                justification=f"Fallback aplicado devido a erro: {str(e)}",
+                category=_category_from_framework(question.framework),
             )
+
+
+def _category_from_framework(framework: str) -> str | None:
+    """Audit task #498 — mapeia framework canônico WSI → categoria de competência.
+
+    Bloom (taxonomia cognitiva) e Dreyfus (níveis de maestria de skill)
+    são frameworks técnicos. CBI (Competency-Based Interview) e BigFive
+    (traços OCEAN) são comportamentais. Mantém o split determinístico no
+    scorer mesmo quando todos os pesos são iguais.
+    """
+    if framework in ("Bloom", "Dreyfus"):
+        return "technical"
+    if framework in ("CBI", "BigFive"):
+        return "behavioral"
+    return None
 
 

@@ -68,7 +68,14 @@ export interface CalculateWSIResponse {
   technical_wsi: number
   behavioral_wsi: number
   overall_wsi: number
-  classification: 'excelente' | 'alto' | 'medio' | 'regular' | 'baixo'
+  classification:
+    | 'excepcional'
+    | 'excelente'
+    | 'alto'
+    | 'medio'
+    | 'regular'
+    | 'abaixo_da_media'
+    | 'baixo'
   percentile?: number
 }
 

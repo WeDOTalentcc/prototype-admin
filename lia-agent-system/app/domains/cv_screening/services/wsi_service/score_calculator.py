@@ -89,7 +89,12 @@ class WSIScoreCalculator:
         unknown: list[ResponseAnalysis] = []
         for r in responses:
             weight = weights.get(r.competency, 0.10)
-            comp_type = type_by_name.get(r.competency)
+            # Audit task #498 — precedência de fonte da categoria:
+            # 1) `r.category` populado pelo response_analyzer (framework da
+            #    pergunta) — disponível em 100% dos fluxos via voz/chat;
+            # 2) `competencies[name].type` quando o caller passou hint tipado;
+            # 3) heurístico por peso (fallback histórico, último recurso).
+            comp_type = r.category or type_by_name.get(r.competency)
             if comp_type == "technical":
                 technical_scores.append((r.competency, r.final_score, weight))
             elif comp_type in ("behavioral", "cultural"):
