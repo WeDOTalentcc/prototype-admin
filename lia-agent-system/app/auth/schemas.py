@@ -13,6 +13,8 @@ class UserRole(StrEnum):
     admin = "admin"
     recruiter = "recruiter"
     viewer = "viewer"
+    # Task #511 — Data Protection Officer (LGPD Art. 41).
+    dpo = "dpo"
 
 
 class UserCreate(BaseModel):

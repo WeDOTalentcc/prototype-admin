@@ -107,6 +107,9 @@ class F11ReportResponse(BaseModel):
     decision_reason: str | None
     human_review_required: bool = False
     already_generated: bool = False
+    # Task #511 — EU AI Act Art. 13 (transparência) / LGPD Art. 20.
+    # Disclaimer obrigatório no payload do F11 (visível em UI, PDF e JSON).
+    compliance_disclaimer: str | None = None
     responses_hash: str
     response_analyses: list[dict[str, Any]]
     interview_questions: list[CBIQuestion]
@@ -393,6 +396,10 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
         if cached and cached[0]:
             report = F11ReportResponse(**cached[0])
             report.already_generated = True
+            # Task #511 — disclaimer EU AI Act/LGPD sempre presente, mesmo em
+            # respostas cacheadas (cache pode ter sido gerado antes da feature).
+            from app.shared.security.wsi_hashing import EU_AI_ACT_DISCLAIMER
+            report.compliance_disclaimer = EU_AI_ACT_DISCLAIMER
             return report
 
         sess_r = await db.execute(text("""
@@ -687,6 +694,10 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             seniority_weights=_get_seniority_weights(str(seniority) if seniority else None),
             attention_flags=_build_attention_flags(analyses_list, gates),
             generated_at=datetime.utcnow().isoformat() + "Z",
+            # Task #511 — disclaimer EU AI Act/LGPD no payload do F11.
+            compliance_disclaimer=(
+                __import__("app.shared.security.wsi_hashing", fromlist=["EU_AI_ACT_DISCLAIMER"]).EU_AI_ACT_DISCLAIMER
+            ),
         )
 
         # F11-3 — persistir no cache para evitar re-geração
@@ -855,7 +866,7 @@ from app.auth.models import User  # noqa: E402
     "/audit/{session_id}",
     summary="Audit trail WSI — EU AI Act Art. 12 / LGPD Art. 20",
     response_model=None,
-    dependencies=[Depends(require_role([UserRole.admin]))],
+    dependencies=[Depends(require_role([UserRole.admin, UserRole.dpo]))],
 )
 async def get_wsi_audit_trail(
     session_id: str,
