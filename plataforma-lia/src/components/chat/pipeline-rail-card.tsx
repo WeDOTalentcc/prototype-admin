@@ -268,7 +268,7 @@ export function PipelineRailCard({ data, className }: PipelineRailCardProps) {
           <ExternalLink className="w-3 h-3" />
           {t("openFunnel")}
         </Button>
-        {data.wizardHref ? (
+        {safeWizardHref ? (
           <Button
             size="sm"
             variant="ghost"

@@ -340,6 +340,14 @@ async def send_message(
         if context_data:
             _meta["context_data"] = context_data
 
+        # Task #432: forward pipeline_rail payload (rich response in chat)
+        _pipeline_rail = workflow_data.get("pipeline_rail") if isinstance(workflow_data, dict) else None
+        if _pipeline_rail and isinstance(_pipeline_rail, dict):
+            _meta["pipeline_rail"] = _pipeline_rail
+            _meta.setdefault("context_data", {})
+            if isinstance(_meta["context_data"], dict):
+                _meta["context_data"]["pipeline_rail"] = _pipeline_rail
+
         # Update snapshot with orchestrator results
         _conv_snapshot["title"] = _conv_snapshot["title"] or message_data.content[:100]
         _conv_snapshot["intent"] = detected_intent or _conv_snapshot["intent"]
@@ -498,6 +506,14 @@ async def send_message_with_attachments(
         }
         if context_data:
             _meta["context_data"] = context_data
+
+        # Task #432: forward pipeline_rail payload (rich response in chat)
+        _pipeline_rail2 = workflow_data.get("pipeline_rail") if isinstance(workflow_data, dict) else None
+        if _pipeline_rail2 and isinstance(_pipeline_rail2, dict):
+            _meta["pipeline_rail"] = _pipeline_rail2
+            _meta.setdefault("context_data", {})
+            if isinstance(_meta["context_data"], dict):
+                _meta["context_data"]["pipeline_rail"] = _pipeline_rail2
 
         if attachment_info:
             _conv_snapshot["title"] = _conv_snapshot["title"] or f"Analise de {len(attachment_info)} arquivo(s)"

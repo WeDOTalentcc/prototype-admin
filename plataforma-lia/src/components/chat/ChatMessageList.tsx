@@ -372,7 +372,8 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                 {isLia && (() => {
                   const railFromField = message.pipelineRail
                   const railFromData = (message.data as Record<string, unknown> | undefined)?.pipeline_rail as PipelineRailCardData | undefined
-                  const rail = railFromField ?? railFromData
+                  const railFromContext = (message.contextData as Record<string, unknown> | undefined)?.pipeline_rail as PipelineRailCardData | undefined
+                  const rail = railFromField ?? railFromData ?? railFromContext
                   return rail ? <PipelineRailCard data={rail} /> : null
                 })()}
 

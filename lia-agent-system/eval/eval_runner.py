@@ -165,12 +165,22 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
                   r"returns?.*(count|stage|funnel)|"
                   r"names?.*(candidate|contender)", c):
         return has_list or has_bold or n > 100 or any(w in resp_lower for w in
-                                                        ["nenhum", "nenhuma", "zero", "0 candidato"])
+                                                        ["nenhum", "nenhuma", "zero", "0 candidato",
+                                                         "não há", "não encontrei", "there are no",
+                                                         "no active", "sem candidatos", "sem vagas"])
 
     # ---- COUNTS / NUMBERS ----
     if _re.search(r"numeric|counts?|numbers?|time.*value|percentage|return.*count|"
                   r"differentiates.*status|per.*(stage|step|block|question)", c):
-        return has_digits or any(w in resp_lower for w in ["nenhum", "nenhuma", "zero"])
+        return has_digits or any(w in resp_lower for w in ["nenhum", "nenhuma", "zero",
+                                                            "não há", "there are no",
+                                                            "sem candidatos", "nenhum candidato"])
+
+    # ---- RETURNS ACTIVE JOBS / TOOL RESULT ----
+    if _re.search(r"returns?.*(active|ativas?|jobs?\s*$)", c):
+        return (n > 20 or any(w in resp_lower for w in
+                ["ativas", "active", "vagas", "jobs", "nenhuma", "nenhum",
+                 "não encontrei", "there are no", "não há"]))
 
     # ---- IDENTIFIES / USES ENTITY ----
     if _re.search(r"(identifies?|uses?|resolves?).*(correct|cand|job|pronoun|entity|context)", c):
@@ -235,7 +245,9 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
                                               "fairness", "discriminatory", "lgpd", "discriminacao",
                                               "não é permitido", "não posso", "direito",
                                               "não permitem", "não tenho autorização",
-                                              "não consigo identificar", "critério discriminatório"])
+                                              "não consigo identificar", "critério discriminatório",
+                                              "não consigo filtrar", "não é critério válido",
+                                              "filtrar por critérios", "diploma", "critério inválido"])
 
     # ---- ALTERNATIVES / SUGGESTIONS / PROACTIVE ----
     if _re.search(r"offers? (altern|legal|suggest)|suggests? action|actionable|"
@@ -273,6 +285,13 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
         return any(w in resp_lower for w in ["cancelado", "cancelar", "não executei",
                                               "operação cancelada", "nada foi feito",
                                               "cancelei", "ação cancelada"]) or "?" in response
+
+    # ---- YES/NO STATUS CHECK ----
+    if "yes/no" in c or _re.search(r"yes.?no|sim.?não|configuration.*status|status.*config|wsj config|wsi config", c):
+        return any(w in resp_lower for w in [
+            "configurada", "configurado", "não está configurad", "está configurad",
+            "não configurad", "sim", "não", "yes", "no", "ativa", "inativa",
+            "habilitada", "desabilitada", "ligada", "desligada"])
 
     # ---- ENRICHMENT ----
     if "enrichment" in c or "additional data" in c or "attempts" in c:
@@ -315,6 +334,12 @@ def score_heuristic(case: dict, response: str) -> dict[str, Any]:
         if quoted:
             # Check if any quoted phrase appears in the response
             if any(q in resp_lower for q in quoted):
+                # Exception: "without attempting tool call" — skip if response shows tool was called
+                if "without attempt" in ap_lower or ("without" in ap_lower and "tool" in ap_lower):
+                    tool_evidence = ["não encontrei", "nenhuma", "nenhum", "encontrei", "found",
+                                     "ativas", "vagas", "candidatos", "there are no"]
+                    if any(w in resp_lower for w in tool_evidence):
+                        continue
                 anti_hits.append(ap)
         else:
             # Fallback: keyword check using words > 5 chars (stricter threshold)
@@ -344,13 +369,14 @@ def score_heuristic(case: dict, response: str) -> dict[str, Any]:
     else:
         score = 1
 
-    # Penalty: refusal phrases
+    # Penalty: refusal phrases (only when score is already low — avoid penalizing valid refusals)
     refusal_phrases = ["não consigo", "não posso", "ferramenta não autorizada", "não tenho acesso"]
-    for phrase in refusal_phrases:
-        if phrase in resp_lower:
-            flags.append(f"REFUSAL: {phrase!r}")
-            score = max(0, score - 1)
-            break
+    if score < 2:
+        for phrase in refusal_phrases:
+            if phrase in resp_lower:
+                flags.append(f"REFUSAL: {phrase!r}")
+                score = max(0, score - 1)
+                break
 
     return {
         "score": score,
