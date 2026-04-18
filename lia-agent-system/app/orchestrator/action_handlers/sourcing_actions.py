@@ -123,20 +123,41 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
             )
 
         async with AsyncSessionLocal() as db:
-            sql = """
-                SELECT c.id, c.name, c.current_title, c.seniority_level,
-                       vc.stage, vc.score, vc.lia_score
-                FROM vacancy_candidates vc
-                JOIN candidates c ON c.id = vc.candidate_id
-                WHERE vc.vacancy_id = CAST(:job_id AS uuid)
-            """
-            bind: dict[str, Any] = {"job_id": str(job_id), "lim": limit}
+            from app.core.database import set_tenant_context
             if company_id:
-                sql += " AND vc.company_id = :co"
-                bind["co"] = str(company_id)
-            sql += " ORDER BY COALESCE(vc.lia_score, vc.score, 0) DESC LIMIT :lim"
-            result = await db.execute(text(sql), bind)
-            rows = result.fetchall()
+                await set_tenant_context(db, str(company_id))
+            rows = []
+            # Try UUID lookup first, fallback to short-id (e.g. "V0037") via job_vacancies.job_id
+            for attempt in range(2):
+                try:
+                    if attempt == 0:
+                        sql = """
+                            SELECT c.id, c.name, c.current_title, c.seniority_level,
+                                   vc.stage, vc.score, vc.lia_score
+                            FROM vacancy_candidates vc
+                            JOIN candidates c ON c.id = vc.candidate_id
+                            WHERE vc.vacancy_id = CAST(:job_id AS uuid)
+                        """
+                    else:
+                        sql = """
+                            SELECT c.id, c.name, c.current_title, c.seniority_level,
+                                   vc.stage, vc.score, vc.lia_score
+                            FROM vacancy_candidates vc
+                            JOIN candidates c ON c.id = vc.candidate_id
+                            JOIN job_vacancies jv ON jv.id = vc.vacancy_id
+                            WHERE jv.job_id = :job_id
+                        """
+                    bind: dict[str, Any] = {"job_id": str(job_id), "lim": limit}
+                    if company_id:
+                        sql += " AND vc.company_id = :co"
+                        bind["co"] = str(company_id)
+                    sql += " ORDER BY COALESCE(vc.lia_score, vc.score, 0) DESC LIMIT :lim"
+                    result = await db.execute(text(sql), bind)
+                    rows = result.fetchall()
+                    break
+                except Exception:
+                    rows = []
+                    continue
 
         if not rows:
             return ActionResult(

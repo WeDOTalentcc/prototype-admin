@@ -72,7 +72,7 @@ async def _generate_kpi_report(params: dict[str, Any], context: dict[str, Any]):
             """), {"co": str(company_id)})
             cands = cands_result.fetchone()
 
-        lines = ["**Relatório de KPIs de Recrutamento:**\n"]
+        lines = ["**Relatório de KPIs de Recrutamento — Este Mês (Abril 2026):**\n"]
         lines.append(f"**Vagas:** {jobs.active_jobs} ativas | {jobs.paused_jobs} pausadas | {jobs.closed_jobs} fechadas ({jobs.total_jobs} total)")
         lines.append(f"**Candidatos Únicos:** {cands.total_candidates}")
         lines.append("\n**Distribuição no Pipeline:**")
