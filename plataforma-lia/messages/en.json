@@ -689,6 +689,7 @@
       "screeningDeadline": "Screening Deadline",
       "shortlistDeadline": "Shortlist Deadline",
       "closingDeadline": "Closing Deadline",
+      "readiness": "Readiness",
       "actions": "Actions",
       "actionsScreenReader": "Actions"
     },

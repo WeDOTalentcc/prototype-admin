@@ -689,6 +689,7 @@
       "screeningDeadline": "Prazo Triagem",
       "shortlistDeadline": "Prazo Short List",
       "closingDeadline": "Prazo Encerramento",
+      "readiness": "Prontidão",
       "actions": "Ações",
       "actionsScreenReader": "Ações"
     },

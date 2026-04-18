@@ -88,6 +88,7 @@ const DEFAULT_COLUMNS: ColumnConfig[] = [
   { id: 'createdAt', label: 'Data de Criação', category: 'timestamps', visible: false, order: 61 },
   { id: 'updatedAt', label: 'Última Atualização', category: 'timestamps', visible: false, order: 62 },
   { id: 'closedAt', label: 'Data de Fechamento', category: 'timestamps', visible: false, order: 63 },
+  { id: 'readiness', label: 'Prontidão', category: 'principais', visible: true, order: 64 },
 ]
 
 export function useJobColumnConfig() {
