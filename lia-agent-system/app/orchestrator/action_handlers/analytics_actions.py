@@ -36,7 +36,7 @@ async def _generate_kpi_report(params: dict[str, Any], context: dict[str, Any]):
         from app.core.database import AsyncSessionLocal
 
         company_id = context.get("company_id") if context else None
-        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+        job_id = params.get("job_id") or (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
 
         if not company_id:
             return ActionResult(
@@ -202,7 +202,7 @@ async def _job_health_check(params: dict[str, Any], context: dict[str, Any]):
 
         from app.core.database import AsyncSessionLocal
 
-        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+        job_id = params.get("job_id") or (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
         company_id = context.get("company_id") if context else None
 
         if not job_id:
@@ -324,7 +324,7 @@ async def _analyze_funnel(params: dict[str, Any], context: dict[str, Any]):
 
         from app.core.database import AsyncSessionLocal
 
-        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+        job_id = params.get("job_id") or (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
         company_id = context.get("company_id") if context else None
 
         async with AsyncSessionLocal() as db:
@@ -560,7 +560,7 @@ async def _list_candidates_by_stage(params: dict[str, Any], context: dict[str, A
                     if stage:
                         bind["stage"] = stage
                     if company_id:
-                        sql += " AND vc.company_id = CAST(:co AS uuid)" if attempt == 0 else " AND vc.company_id = CAST(:co AS uuid)"
+                        sql += " AND vc.company_id = CAST(:co AS uuid)"
                         bind["co"] = str(company_id)
                     sql += " ORDER BY COALESCE(vc.lia_score, vc.score, 0) DESC LIMIT 50"
 

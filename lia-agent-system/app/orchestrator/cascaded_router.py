@@ -496,7 +496,7 @@ class CascadedRouter:
 
         # Tier 7 — Studio Agent Matcher (custom agents bound to current context)
         _ctx = context or {}
-        _ctx_job_id = _ctx.get("job_id") or _ctx.get("vacancy_id")
+        _ctx_job_id = _ctx.get("job_id") or _ctx.get("entity_id") or _ctx.get("vacancy_id")
         _ctx_pool_id = _ctx.get("talent_pool_id")
         _ctx_company_id = _ctx.get("company_id")
 

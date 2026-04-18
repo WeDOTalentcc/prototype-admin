@@ -110,7 +110,7 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
 
         from app.core.database import AsyncSessionLocal
 
-        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+        job_id = params.get("job_id") or (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
         company_id = context.get("company_id") if context else None
         limit = int(params.get("limit", 10))
 
@@ -402,7 +402,7 @@ async def _suggest_candidates(params: dict[str, Any], context: dict[str, Any]):
 
         from app.core.database import AsyncSessionLocal
 
-        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+        job_id = params.get("job_id") or (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
         company_id = context.get("company_id") if context else None
         limit = int(params.get("limit", 5))
 
@@ -490,7 +490,7 @@ async def _add_candidate(params: dict[str, Any], context: dict[str, Any]):
         phone = params.get("phone")
         current_title = params.get("current_title")
         current_company = params.get("current_company")
-        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+        job_id = params.get("job_id") or (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
         company_id = context.get("company_id") if context else None
 
         if not name or not email:
@@ -564,7 +564,7 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
 
         from app.core.database import AsyncSessionLocal
 
-        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+        job_id = params.get("job_id") or (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
         company_id = context.get("company_id") if context else None
 
         async with AsyncSessionLocal() as db:

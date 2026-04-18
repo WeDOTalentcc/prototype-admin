@@ -487,9 +487,19 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
 async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_type = kwargs.get("report_type", "summary")
     period = kwargs.get("period", "month")
+    # company_id must come from JWT context — never allow empty (cross-tenant leak)
     company_id = kwargs.get("company_id", "")
+    if not company_id:
+        try:
+            from app.shared.tenant_llm_context import get_current_llm_tenant
+            company_id = get_current_llm_tenant() or ""
+        except Exception:
+            pass
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
-    logger.info(f"[wizard_tools] generate_report called: type={report_type} period={period}")
+    logger.info(f"[wizard_tools] generate_report called: type={report_type} period={period} company_id={company_id!r}")
+    if not company_id:
+        logger.warning("[wizard_tools] generate_report: company_id missing — aborting to prevent cross-tenant data leak")
+        return {"success": False, "message": "Empresa não identificada. Não é possível gerar o relatório.", "data": {}}
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
     summary: dict[str, Any] = {}
     try:
@@ -499,7 +509,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
                     COUNT(*) FILTER (WHERE status = 'draft') AS drafts,
                     COUNT(*) FILTER (WHERE status = 'published') AS published
                 FROM job_vacancies
-                WHERE (:cid = '' OR company_id = :cid)
+                WHERE company_id = :cid
                   AND created_at > NOW() - MAKE_INTERVAL(days => :days)
             """), {"cid": company_id, "days": period_days})
             data = row.mappings().first() or {}
