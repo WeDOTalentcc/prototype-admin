@@ -65,8 +65,17 @@ plataforma-lia/public/images/candidates/
 # Audit logs (runtime generated)
 lia-agent-system/audit_logs/
 
-# Agent skills (Replit-managed)
-.agents/
+# Agent skills (Replit-managed) — exclude everything except LIA-authored skills below
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/SKILLS_INDEX.md
+!.agents/skills/canonical-fix/
+!.agents/skills/canonical-fix/**
+!.agents/skills/feature-audit/
+!.agents/skills/feature-audit/**
+!.agents/skills/lia-planning/
+!.agents/skills/lia-planning/**
 
 # Storybook assets (large PNGs)
 plataforma-lia/src/stories/assets/*.png
