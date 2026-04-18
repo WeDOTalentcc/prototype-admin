@@ -79,6 +79,17 @@ export const KanbanCard = React.memo(function KanbanCard({
           </div>
         </div>
 
+        {item.progressPercent != null && (
+          <div className="mt-2" role="progressbar" aria-valuenow={Math.round(item.progressPercent)} aria-valuemin={0} aria-valuemax={100} aria-label="Progresso da vaga">
+            <div className="h-1.5 w-full rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-elevated overflow-hidden">
+              <div
+                className="h-full bg-lia-interactive-active transition-[width] motion-reduce:transition-none"
+                style={{ width: `${Math.max(0, Math.min(100, item.progressPercent))}%` }}
+              />
+            </div>
+          </div>
+        )}
+
         {item.badge && (
           <Badge
             variant="outline"

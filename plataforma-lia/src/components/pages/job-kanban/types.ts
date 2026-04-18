@@ -95,6 +95,8 @@ export interface KanbanItem {
   flagLowScoreTooltip?: string
   flagAttention?: { tooltip: string }
   dateLabel?: string
+  /** Optional progress 0..100 — when present, renders a progress bar on the card */
+  progressPercent?: number
 }
 
 export interface DragResult {

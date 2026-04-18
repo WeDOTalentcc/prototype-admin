@@ -4,15 +4,16 @@ import type { KanbanItem } from "@/components/pages/job-kanban/types"
 export interface JobKanbanColumnDef {
   id: string
   statuses: JobStatus[]
-  colorVar: string
+  /** Tailwind class for the column accent dot (DS token) */
+  accentClass: string
 }
 
 export const JOB_KANBAN_COLUMNS: JobKanbanColumnDef[] = [
-  { id: "rascunho", statuses: ["Rascunho"], colorVar: "#94a3b8" },
-  { id: "aguardando", statuses: ["Aguardando aprovação"], colorVar: "#f59e0b" },
-  { id: "publicada", statuses: ["Aprovada"], colorVar: "#3b82f6" },
-  { id: "ao_vivo", statuses: ["Ativa", "Reaberta", "Interna"], colorVar: "#10b981" },
-  { id: "encerrada", statuses: ["Fechada (preenchida)", "Fechada (expirada)", "Cancelada", "Concluída", "Arquivada", "Paralisada"], colorVar: "#6b7280" },
+  { id: "rascunho",   statuses: ["Rascunho"],                       accentClass: "bg-lia-text-disabled" },
+  { id: "aguardando", statuses: ["Aguardando aprovação"],           accentClass: "bg-status-warning" },
+  { id: "publicada",  statuses: ["Aprovada"],                       accentClass: "bg-lia-interactive-active" },
+  { id: "ao_vivo",    statuses: ["Ativa", "Reaberta", "Interna"],   accentClass: "bg-status-success" },
+  { id: "encerrada",  statuses: ["Fechada (preenchida)", "Fechada (expirada)", "Cancelada", "Concluída", "Arquivada", "Paralisada"], accentClass: "bg-lia-text-tertiary" },
 ]
 
 interface JobToKanbanItemDeps {
@@ -38,13 +39,13 @@ function deptInitials(value?: string): string {
 }
 
 export function jobToKanbanItem(job: Job, deps: JobToKanbanItemDeps): KanbanItem {
-  const candidates = (job.candidates as number | undefined) ?? 0
+  const candidates = job.funnel?.total ?? 0
   const progress = computeProgress(job)
 
   const chips: string[] = []
   if (job.workModel) chips.push(job.workModel)
   if (job.level) chips.push(job.level)
-  if (job.priority === "alta") chips.push(deps.labels.candidatesCount(candidates))
+  chips.push(deps.labels.candidatesCount(candidates))
 
   let dateLabel: string | undefined
   if (job.deadline) {
@@ -68,7 +69,7 @@ export function jobToKanbanItem(job: Job, deps: JobToKanbanItemDeps): KanbanItem
     subtitle: job.department || undefined,
     tertiary: job.location || undefined,
     avatarFallback: deptInitials(job.department).toUpperCase(),
-    score: progress != null ? Math.round(progress * 100) : undefined,
+    progressPercent: progress != null ? Math.round(progress * 100) : undefined,
     chips,
     flagAttention: job.priority === "alta" ? { tooltip: deps.labels.candidatesCount(candidates) } : undefined,
     dateLabel,

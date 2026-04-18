@@ -12,7 +12,10 @@ import { KanbanCard } from "./KanbanCard"
 interface KanbanColumnStage {
   id: string
   name: string
-  color: string
+  /** Legacy: hex/rgb color for the dot. Prefer `accentClass`. */
+  color?: string
+  /** Tailwind class (DS token) for the column dot, e.g. `bg-status-success`. */
+  accentClass?: string
 }
 
 interface KanbanColumnProps {
@@ -41,8 +44,8 @@ export function KanbanColumn({
       <div className="flex items-center justify-between p-3 dark:border-lia-border-subtle">
         <div className="flex items-center gap-2">
           <div
-            className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: stage.color }}
+            className={`w-3 h-3 rounded-full ${stage.accentClass ?? ""}`}
+            style={stage.accentClass ? undefined : { backgroundColor: stage.color }}
           />
           <span className="font-medium text-lia-text-primary">{stage.name}</span>
           <Badge

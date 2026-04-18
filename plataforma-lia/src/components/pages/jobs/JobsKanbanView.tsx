@@ -40,7 +40,7 @@ export function JobsKanbanView({ jobs, onJobClick }: JobsKanbanViewProps) {
             return (
               <KanbanColumn
                 key={col.id}
-                stage={{ id: col.id, name: t(`columns.${col.id}`), color: col.colorVar }}
+                stage={{ id: col.id, name: t(`columns.${col.id}`), accentClass: col.accentClass }}
                 items={items}
                 onItemClick={(item) => {
                   const job = jobById.get(item.id)
