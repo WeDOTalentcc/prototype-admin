@@ -11,6 +11,78 @@ const READINESS_STAGE_RANK: Record<string, number> = READINESS_STAGES_ORDER.redu
   {} as Record<string, number>,
 )
 
+const STATUS_RANK: Record<string, number> = [
+  'Ativa', 'Aprovada', 'Aguardando aprovação', 'Reaberta',
+  'Paralisada', 'Interna', 'Rascunho',
+  'Fechada (preenchida)', 'Fechada (expirada)',
+  'Cancelada', 'Concluída', 'Arquivada',
+].reduce((acc, status, index) => {
+  acc[status] = index
+  return acc
+}, {} as Record<string, number>)
+
+const SCREENING_STATUS_RANK: Record<string, number> = {
+  active: 0,
+  paused: 1,
+  not_started: 2,
+  completed: 3,
+  not_configured: 4,
+}
+
+function compareNumbers(
+  a: number | null | undefined,
+  b: number | null | undefined,
+  direction: "asc" | "desc",
+): number {
+  const aMissing = a === null || a === undefined || Number.isNaN(a)
+  const bMissing = b === null || b === undefined || Number.isNaN(b)
+  if (aMissing && bMissing) return 0
+  if (aMissing) return 1
+  if (bMissing) return -1
+  if (a === b) return 0
+  return direction === "asc" ? (a as number) - (b as number) : (b as number) - (a as number)
+}
+
+function compareStrings(
+  a: string | null | undefined,
+  b: string | null | undefined,
+  direction: "asc" | "desc",
+): number {
+  const aVal = (a ?? "").trim()
+  const bVal = (b ?? "").trim()
+  if (!aVal && !bVal) return 0
+  if (!aVal) return 1
+  if (!bVal) return -1
+  const cmp = aVal.localeCompare(bVal, undefined, { sensitivity: "base", numeric: true })
+  return direction === "asc" ? cmp : -cmp
+}
+
+function compareDateStrings(
+  a: string | null | undefined,
+  b: string | null | undefined,
+  direction: "asc" | "desc",
+): number {
+  const aTime = a ? new Date(a).getTime() : NaN
+  const bTime = b ? new Date(b).getTime() : NaN
+  return compareNumbers(
+    Number.isNaN(aTime) ? null : aTime,
+    Number.isNaN(bTime) ? null : bTime,
+    direction,
+  )
+}
+
+function compareRanks(
+  aRank: number | undefined,
+  bRank: number | undefined,
+  direction: "asc" | "desc",
+): number {
+  return compareNumbers(
+    aRank === undefined ? null : aRank,
+    bRank === undefined ? null : bRank,
+    direction,
+  )
+}
+
 export function compareJobsByColumn(
   a: Job,
   b: Job,
@@ -18,21 +90,43 @@ export function compareJobsByColumn(
   direction: "asc" | "desc",
 ): number {
   if (!column) return 0
-  if (column === "prontidao") {
-    const aStage = a.readinessStage as ReadinessStage | undefined
-    const bStage = b.readinessStage as ReadinessStage | undefined
-    const aRank = aStage && aStage in READINESS_STAGE_RANK
-      ? READINESS_STAGE_RANK[aStage]
-      : Number.POSITIVE_INFINITY
-    const bRank = bStage && bStage in READINESS_STAGE_RANK
-      ? READINESS_STAGE_RANK[bStage]
-      : Number.POSITIVE_INFINITY
-    if (aRank === bRank) return 0
-    if (aRank === Number.POSITIVE_INFINITY) return 1
-    if (bRank === Number.POSITIVE_INFINITY) return -1
-    return direction === "asc" ? aRank - bRank : bRank - aRank
+  switch (column) {
+    case "prontidao": {
+      const aStage = a.readinessStage as ReadinessStage | undefined
+      const bStage = b.readinessStage as ReadinessStage | undefined
+      return compareRanks(
+        aStage ? READINESS_STAGE_RANK[aStage] : undefined,
+        bStage ? READINESS_STAGE_RANK[bStage] : undefined,
+        direction,
+      )
+    }
+    case "id":
+      return compareNumbers(a.id, b.id, direction)
+    case "vaga":
+      return compareStrings(a.title, b.title, direction)
+    case "candidatos":
+      return compareNumbers(a.funnel?.total ?? 0, b.funnel?.total ?? 0, direction)
+    case "status":
+      return compareRanks(STATUS_RANK[a.status], STATUS_RANK[b.status], direction)
+    case "screeningStatus":
+      return compareRanks(
+        a.screeningStatus ? SCREENING_STATUS_RANK[a.screeningStatus] : undefined,
+        b.screeningStatus ? SCREENING_STATUS_RANK[b.screeningStatus] : undefined,
+        direction,
+      )
+    case "recrutador":
+      return compareStrings(a.recruiter, b.recruiter, direction)
+    case "gestor":
+      return compareStrings(a.manager, b.manager, direction)
+    case "prazoTriagem":
+      return compareDateStrings(a.deadlineScreening, b.deadlineScreening, direction)
+    case "prazoShortlist":
+      return compareDateStrings(a.deadlineShortlist, b.deadlineShortlist, direction)
+    case "prazoEncerramento":
+      return compareDateStrings(a.deadlineClosing ?? a.deadline, b.deadlineClosing ?? b.deadline, direction)
+    default:
+      return 0
   }
-  return 0
 }
 
 export function sortJobsByColumn(
