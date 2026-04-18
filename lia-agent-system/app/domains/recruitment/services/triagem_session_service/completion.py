@@ -503,38 +503,40 @@ async def _persist_wsi_results(
             "company_id": session.company_id,
         })
 
+        # Round 3: insert em wsi_response_analyses também é FAIL-FAST. Como
+        # carrega o mesmo response_hash da trilha de auditoria, swallow de
+        # erro aqui causaria divergência entre as duas tabelas (audit OK +
+        # analysis ausente) — cenário de inconsistência inaceitável para
+        # IA de Alto Risco. Erro aborta a transação inteira.
         analysis_id = str(uuid.uuid4())
-        try:
-            await db.execute(text(
-                "INSERT INTO wsi_response_analyses "
-                "    (id, session_id, question_id, competency, response_text, "
-                "     autodeclaration_score, context_score, bloom_level, dreyfus_level, "
-                "     evidences, red_flags, consistency_penalty, final_score, justification, "
-                "     response_hash) "
-                "VALUES "
-                "    (:id, :session_id, :question_id, :competency, :response_text, "
-                "     :autodeclaration_score, :context_score, :bloom_level, :dreyfus_level, "
-                "     :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification, "
-                "     :response_hash)"
-            ), {
-                "id": analysis_id,
-                "session_id": wsi_session_id,
-                "question_id": question_id,
-                "competency": competency,
-                "response_text": response_text,
-                "autodeclaration_score": score_1_5,
-                "context_score": score_1_5,
-                "bloom_level": max(1, min(5, rs.get("bloom_level", 2))),
-                "dreyfus_level": max(1, min(5, rs.get("dreyfus_level", 2))),
-                "evidences": json.dumps(rs.get("evidences", [])),
-                "red_flags": json.dumps(rs.get("red_flags", [])),
-                "consistency_penalty": 0.0,
-                "final_score": score_1_5,
-                "justification": rs.get("justification", "Score calculado a partir da resposta no chat web"),
-                "response_hash": resp_hash,
-            })
-        except Exception as exc:
-            logger.warning(f"[Triagem] wsi_response_analyses insert failed (seq={seq}): {exc}")
+        await db.execute(text(
+            "INSERT INTO wsi_response_analyses "
+            "    (id, session_id, question_id, competency, response_text, "
+            "     autodeclaration_score, context_score, bloom_level, dreyfus_level, "
+            "     evidences, red_flags, consistency_penalty, final_score, justification, "
+            "     response_hash) "
+            "VALUES "
+            "    (:id, :session_id, :question_id, :competency, :response_text, "
+            "     :autodeclaration_score, :context_score, :bloom_level, :dreyfus_level, "
+            "     :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification, "
+            "     :response_hash)"
+        ), {
+            "id": analysis_id,
+            "session_id": wsi_session_id,
+            "question_id": question_id,
+            "competency": competency,
+            "response_text": response_text,
+            "autodeclaration_score": score_1_5,
+            "context_score": score_1_5,
+            "bloom_level": max(1, min(5, rs.get("bloom_level", 2))),
+            "dreyfus_level": max(1, min(5, rs.get("dreyfus_level", 2))),
+            "evidences": json.dumps(rs.get("evidences", [])),
+            "red_flags": json.dumps(rs.get("red_flags", [])),
+            "consistency_penalty": 0.0,
+            "final_score": score_1_5,
+            "justification": rs.get("justification", "Score calculado a partir da resposta no chat web"),
+            "response_hash": resp_hash,
+        })
 
         if block_type == "technical":
             technical_scores.append(score_1_5)
