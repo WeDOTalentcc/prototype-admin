@@ -181,17 +181,28 @@ class StrategicOpinionService:
         wsi_score = wsi_data.get("wsi_score", 0)
         red_flags = wsi_data.get("red_flags", [])
 
-        # B0 #523 — escala canônica /10 (WSI_CUTOFFS): >=7.5 aprovado, >=6.0 revisão.
-        if len(red_flags) >= 3 or wsi_score < 5.0:
+        # B0 #523 — thresholds importados do canônico wsi_scale (escala /10).
+        from app.domains.cv_screening.constants.wsi_scale import (
+            CLASSIFY_ALTO,
+            CLASSIFY_EXCELENTE,
+            CUTOFF_REVIEW_MIN,
+            GATE_G3_THRESHOLD,
+        )
+        # REJECT_BAND: 1.0 abaixo do cutoff de revisão = "não contratar".
+        # CONFIDENT_REJECT: <= GATE_G3_THRESHOLD (técnico crítico).
+        REJECT_BAND = CUTOFF_REVIEW_MIN - 1.0  # 5.0 em /10
+        CONFIDENT_REJECT = GATE_G3_THRESHOLD    # 4.0 em /10
+
+        if len(red_flags) >= 3 or wsi_score < REJECT_BAND:
             recommendation = "NÃO CONTRATAR"
-            confidence = "alto" if wsi_score < 4.0 else "médio"
-        elif wsi_score >= 8.0 and len(red_flags) == 0:
+            confidence = "alto" if wsi_score < CONFIDENT_REJECT else "médio"
+        elif wsi_score >= CLASSIFY_EXCELENTE and len(red_flags) == 0:
             recommendation = "CONTRATAR"
             confidence = "alto"
-        elif wsi_score >= 7.0:
+        elif wsi_score >= CLASSIFY_ALTO:
             recommendation = "CONTRATAR"
             confidence = "médio"
-        elif wsi_score >= 6.0:
+        elif wsi_score >= CUTOFF_REVIEW_MIN:
             recommendation = "AVALIAR MAIS"
             confidence = "médio"
         else:
