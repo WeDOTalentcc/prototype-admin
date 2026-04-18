@@ -1,14 +1,5 @@
 "use client"
 
-/**
- * PipelineRailCard — rich response inline no chat da LIA (Task #432).
- * Reusa o `PipelineRail` compartilhado do Pipeline Overview, com tamanho
- * compact + CTAs de deep-link para `/visao-do-funil?view=...` e
- * "Continuar wizard" (condicional, quando `wizardHref` é fornecido).
- *
- * Portabilidade Vue: props → defineProps; CTAs → emits ou <NuxtLink>.
- */
-
 import React, { useCallback, useMemo } from "react"
 import { useTranslations } from "next-intl"
 import {
@@ -35,6 +26,15 @@ import {
   type PipelineRailNode,
 } from "@/components/pages/pipeline-overview/pipeline-rail"
 
+export interface PipelineRailItemPreview {
+  id: string
+  label: string
+  /** Optional secondary text (e.g. cargo, score, badge). */
+  subtitle?: string
+  /** Optional internal href (validated against allowlist). */
+  href?: string
+}
+
 export interface PipelineRailStagePayload {
   key: string
   displayName: string
@@ -42,6 +42,8 @@ export interface PipelineRailStagePayload {
   count: number
   /** Lucide icon name (lowercased, e.g. "briefcase", "users"). */
   icon?: string
+  /** Up to 3 compact item previews shown beneath the rail. */
+  items?: PipelineRailItemPreview[]
 }
 
 export interface PipelineRailCardData {
@@ -112,11 +114,28 @@ export function PipelineRailCard({ data, className }: PipelineRailCardProps) {
 
   const safeStages: PipelineRailStagePayload[] = useMemo(() => {
     if (!Array.isArray(data?.stages)) return []
-    return data.stages.filter(
-      (s): s is PipelineRailStagePayload =>
-        !!s && typeof s.key === "string" && typeof s.displayName === "string"
-    )
+    return data.stages
+      .filter(
+        (s): s is PipelineRailStagePayload =>
+          !!s && typeof s.key === "string" && typeof s.displayName === "string"
+      )
+      .map((s) => ({
+        ...s,
+        items: Array.isArray(s.items)
+          ? s.items
+              .filter(
+                (it): it is PipelineRailItemPreview =>
+                  !!it && typeof it.id === "string" && typeof it.label === "string"
+              )
+              .slice(0, 3)
+          : undefined,
+      }))
   }, [data?.stages])
+
+  const stagesWithItems = useMemo(
+    () => safeStages.filter((s) => Array.isArray(s.items) && s.items!.length > 0),
+    [safeStages]
+  )
 
   const nodes = useMemo<PipelineRailNode[]>(() => {
     return safeStages.map((stage) => ({
@@ -188,6 +207,56 @@ export function PipelineRailCard({ data, className }: PipelineRailCardProps) {
           }
         />
       </div>
+
+      {stagesWithItems.length > 0 && (
+        <div className="mt-2 space-y-1.5">
+          {stagesWithItems.map((stage) => (
+            <div key={stage.key} className="flex flex-col gap-1">
+              <div className="flex items-center gap-1.5 px-1">
+                <span
+                  className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: stage.color || "#2D2D2D" }}
+                />
+                <span className="text-micro font-medium text-lia-text-secondary truncate">
+                  {stage.displayName}
+                </span>
+                <span className="text-micro text-lia-text-disabled">·</span>
+                <span className="text-micro text-lia-text-disabled">{stage.count}</span>
+              </div>
+              <ul className="flex flex-wrap gap-1 px-1">
+                {stage.items!.map((item) => {
+                  const itemHref = isSafeInternalHref(item.href) ? item.href : undefined
+                  const content = (
+                    <div className="flex items-center gap-1 max-w-[180px]">
+                      <span className="truncate">{item.label}</span>
+                      {item.subtitle ? (
+                        <span className="text-lia-text-disabled truncate">· {item.subtitle}</span>
+                      ) : null}
+                    </div>
+                  )
+                  return (
+                    <li key={item.id}>
+                      {itemHref ? (
+                        <button
+                          type="button"
+                          onClick={() => router.push(itemHref)}
+                          className="text-micro px-1.5 py-0.5 rounded border border-lia-border-subtle bg-lia-bg-tertiary hover:bg-lia-bg-hover text-lia-text-primary transition-colors"
+                        >
+                          {content}
+                        </button>
+                      ) : (
+                        <span className="text-micro px-1.5 py-0.5 rounded border border-lia-border-subtle bg-lia-bg-tertiary text-lia-text-primary">
+                          {content}
+                        </span>
+                      )}
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-2 mt-2 pt-2 border-t border-lia-border-subtle/50">
         <Button

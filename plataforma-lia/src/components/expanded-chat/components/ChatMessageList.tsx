@@ -358,19 +358,23 @@ export function ChatMessageList({
                 </button>
               </div>
             </ChatBubbleBase>
-          ) : (message.pipelineRail ?? (message.contextData?.pipeline_rail as PipelineRailCardData | undefined)) ? (
-            <ChatBubbleBase
-              sender="lia"
-              timestamp={formatTimestamp(message.timestamp)}
-              afterBubble={renderFeedback(message.id, message.content)}
-              bubbleClassName="bg-transparent p-0"
-            >
-              {message.content && (
-                <p className="text-xs text-lia-text-primary mb-2 leading-relaxed">{message.content}</p>
-              )}
-              <PipelineRailCard data={(message.pipelineRail ?? (message.contextData?.pipeline_rail as PipelineRailCardData))!} />
-            </ChatBubbleBase>
-          ) : message.messageType === 'detected-fields' && message.detectedFields && message.detectedFields.length > 0 ? (
+          ) : (message.messageType === 'pipeline-rail' || message.pipelineRail || message.contextData?.pipeline_rail) ? (() => {
+            const railData = (message.pipelineRail ?? (message.contextData?.pipeline_rail as PipelineRailCardData | undefined)) as PipelineRailCardData | undefined
+            if (!railData) return null
+            return (
+              <ChatBubbleBase
+                sender="lia"
+                timestamp={formatTimestamp(message.timestamp)}
+                afterBubble={renderFeedback(message.id, message.content)}
+                bubbleClassName="bg-transparent p-0"
+              >
+                {message.content && (
+                  <p className="text-xs text-lia-text-primary mb-2 leading-relaxed">{message.content}</p>
+                )}
+                <PipelineRailCard data={railData} />
+              </ChatBubbleBase>
+            )
+          })() : message.messageType === 'detected-fields' && message.detectedFields && message.detectedFields.length > 0 ? (
             <ChatBubbleBase
               sender="lia"
               hideTimestamp
