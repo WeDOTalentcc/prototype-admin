@@ -213,6 +213,119 @@ describe("useTriagemMessages — sendMessage REST + optimistic update", () => {
     expect(state.error).toBeNull()
   })
 
+  it("audio: lia_response com audio_base64 → mensagem mapeada com audioUrl (blob URL)", async () => {
+    // jsdom não implementa URL.createObjectURL — definimos um stub primeiro
+    // (vi.spyOn falharia se a propriedade não existisse) e depois espionamos.
+    if (typeof URL.createObjectURL !== "function") {
+      Object.defineProperty(URL, "createObjectURL", {
+        configurable: true,
+        writable: true,
+        value: () => "",
+      })
+    }
+    const createObjectURLSpy = vi
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValue("blob:mock-audio-url")
+    const atobSpy = vi.spyOn(globalThis, "atob")
+
+    // base64 de "hi" = "aGk="
+    mockFetchWithRetry.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          candidate_message: {
+            id: "m-cand-audio",
+            sender: "candidate",
+            content: "[áudio]",
+            message_type: "audio",
+          },
+          lia_response: {
+            id: "m-lia-audio",
+            sender: "lia",
+            content: "Resposta em áudio",
+            message_type: "audio",
+            audio_base64: "aGk=",
+          },
+        }),
+    })
+
+    const { options, state } = makeOptions()
+    const { result } = renderHook(() => useTriagemMessages(options))
+
+    await act(async () => {
+      await result.current.sendMessage({ type: "audio", content: "[áudio]", voiceMode: true })
+    })
+
+    // Backend foi chamado com message_type=audio e voice_mode=true
+    const [, init] = mockFetchWithRetry.mock.calls[0]
+    const body = JSON.parse((init as RequestInit).body as string)
+    expect(body.message_type).toBe("audio")
+    expect(body.voice_mode).toBe(true)
+
+    // Decoder rodou e blob URL foi criado
+    expect(atobSpy).toHaveBeenCalledWith("aGk=")
+    expect(createObjectURLSpy).toHaveBeenCalledTimes(1)
+    const blobArg = createObjectURLSpy.mock.calls[0][0] as Blob
+    expect(blobArg).toBeInstanceOf(Blob)
+    expect(blobArg.type).toBe("audio/mp3")
+    expect(blobArg.size).toBe(2) // "hi" = 2 bytes
+
+    // Estado final: optimistic removido, mensagens reais com áudio
+    const liaMsg = state.messages.find((m) => m.id === "m-lia-audio")
+    expect(liaMsg?.type).toBe("audio")
+    expect(liaMsg?.audioUrl).toBe("blob:mock-audio-url")
+    // Mensagem do candidato (sem audio_base64) não deve ter audioUrl
+    const candMsg = state.messages.find((m) => m.id === "m-cand-audio")
+    expect(candMsg?.audioUrl).toBeNull()
+
+    createObjectURLSpy.mockRestore()
+    atobSpy.mockRestore()
+  })
+
+  it("audio: base64 inválido → erro de decode é silenciado e audioUrl fica null", async () => {
+    if (typeof URL.createObjectURL !== "function") {
+      Object.defineProperty(URL, "createObjectURL", {
+        configurable: true,
+        writable: true,
+        value: () => "",
+      })
+    }
+    const createObjectURLSpy = vi.spyOn(URL, "createObjectURL")
+    // Força atob a falhar (simula payload corrompido).
+    const atobSpy = vi.spyOn(globalThis, "atob").mockImplementation(() => {
+      throw new Error("InvalidCharacterError")
+    })
+
+    mockFetchWithRetry.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          lia_response: {
+            id: "m-lia-bad",
+            sender: "lia",
+            content: "x",
+            message_type: "audio",
+            audio_base64: "@@@not-base64@@@",
+          },
+        }),
+    })
+
+    const { options, state } = makeOptions()
+    const { result } = renderHook(() => useTriagemMessages(options))
+
+    await act(async () => {
+      await result.current.sendMessage({ type: "audio", content: "[áudio]" })
+    })
+
+    const liaMsg = state.messages.find((m) => m.id === "m-lia-bad")
+    expect(liaMsg).toBeDefined()
+    expect(liaMsg?.audioUrl).toBeNull()
+    expect(createObjectURLSpy).not.toHaveBeenCalled()
+
+    atobSpy.mockRestore()
+    createObjectURLSpy.mockRestore()
+  })
+
   it("response.ok=false (HTTP 4xx) → optimistic removida, erro mapeado", async () => {
     mockFetchWithRetry.mockResolvedValueOnce({
       ok: false,
