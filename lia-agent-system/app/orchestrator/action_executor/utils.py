@@ -223,6 +223,51 @@ def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
         if val_m:
             entities["field_value"] = val_m.group(1).strip()
 
+    # Interview scheduling: extract candidate name and datetime
+    if intent in ("agendar_entrevista", "reagendar_entrevista", "cancelar_entrevista",
+                  "enviar_lembrete_entrevista") and not entities.get("candidate_name"):
+        # "convida o Marco Oliveira para entrevista" or "agendamento com Ana Costa"
+        name_m = re.search(
+            r"(?:convida[rn]?\s+o?\s*|com\s+|para\s+(?:o|a)\s+|d[oa]\s+)([A-ZÁÉÍÓÚÂÊÎÔÛÃÕ][a-záéíóúâêîôûãõ]+(?:\s+[A-ZÁÉÍÓÚÂÊÎÔÛÃÕ][a-záéíóúâêîôûãõ]+)+)",
+            msg
+        )
+        if name_m:
+            entities["candidate_name"] = name_m.group(1).strip()
+        # Extract datetime: "amanhã às 14h", "hoje às 9h30"
+        dt_m = re.search(
+            r"(amanhã|hoje|segunda|terça|quarta|quinta|sexta|sábado|domingo|\d{1,2}/\d{1,2}(?:/\d{2,4})?)(?:\s+às?\s+(\d{1,2})h?(?::?(\d{2}))?)?",
+            msg, re.IGNORECASE
+        )
+        if dt_m:
+            date_val = dt_m.group(1)
+            if dt_m.group(2):
+                hour = dt_m.group(2)
+                minute = dt_m.group(3) or "00"
+                date_val = f"{date_val} {hour}:{minute}"
+            entities["datetime"] = date_val
+        # Extract format
+        if re.search(r"videoconferência|video\s*call|zoom|teams|meet|online|remoto", msg, re.IGNORECASE):
+            entities["type"] = "video"
+        elif re.search(r"presencial|escritório|sede", msg, re.IGNORECASE):
+            entities["type"] = "presencial"
+
+    # WhatsApp / communication: extract candidate name and message body
+    if intent in ("enviar_whatsapp", "enviar_email", "enviar_feedback") and not entities.get("candidate_name"):
+        # "manda um WhatsApp para a Ana Costa" or "envia email para João Silva"
+        name_m = re.search(
+            r"(?:para\s+(?:o|a)\s+|ao\s+|à\s+)([A-ZÁÉÍÓÚÂÊÎÔÛÃÕ][a-záéíóúâêîôûãõ]+(?:\s+[A-ZÁÉÍÓÚÂÊÎÔÛÃÕ][a-záéíóúâêîôûãõ]+)+)",
+            msg
+        )
+        if name_m:
+            entities["candidate_name"] = name_m.group(1).strip()
+        # Extract message body
+        body_m = re.search(
+            r"(?:confirmando|dizendo|que|com\s+o\s+texto|mensagem[:]?\s*)(.{10,200})",
+            msg, re.IGNORECASE
+        )
+        if body_m:
+            entities["body"] = body_m.group(1).strip()
+
     # Sourcing: extract query from message when intent is a candidate search
     if intent in ("buscar_candidatos", "sugerir_candidatos") and "query" not in entities:
         # Extract everything after action verb + "candidatos"

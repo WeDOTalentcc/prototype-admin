@@ -542,8 +542,8 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
         "action_id": "generate_kpi_report",
         "required_params": [],
         "optional_params": ["period", "job_id", "metrics"],
-        "risk_level": "medium",
-        "requires_confirmation": True,
+        "risk_level": "low",
+        "requires_confirmation": False,
         "param_labels": {},
         "clarification_prompts": {},
     },
@@ -757,12 +757,18 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
         r"(bloquear?|reservar?)\s+(tempo|horário|slot)\s+(para|na|no)",
         r"(tenho|marcar?)\s+(reunião|meeting|call|compromisso)\s+(com|no|na|amanhã|hoje|semana)",
     ]),
+    # Agendar entrevista (must come before resumo_agenda to avoid false positives)
+    ("agendar_entrevista", [
+        r"(convida[rn]?)\s+.{2,40}(para|pra)\s+(entrevista|interview)(?!\s+wsi)",
+        r"(convida[rn]?)\s+.{2,40}entrevista\s+(amanhã|hoje|às|no\s+dia)",
+        r"(agenda[rn]?|marca[rn]?)\s+(uma?\s+)?(entrevista|interview)\s+(com|para|pra)\s+\w+",
+    ]),
     # Resumo da agenda / briefing diário
     ("resumo_agenda", [
         r"(minha|meus?)\s+(agenda|compromissos?|tarefas?|entrevistas?)\s+(de\s+)?(hoje|amanhã|esta semana|dessa? semana)",
         r"(o\s+que|quais?)\s+(tenho|tem|preciso\s+fazer|preciso\s+atender)\s+(hoje|amanhã|agora)",
         r"(resumo|sumário|briefing|overview)\s+(do\s+)?(dia|diário|de hoje|agenda)",
-        r"(agenda|entrevistas?|compromissos?)\s+(de\s+)?(hoje|amanhã|essa? semana|esta semana)",
+        r"(minha|meus?)\s+(agenda|entrevistas?|compromissos?)\s+(de\s+)?(hoje|amanhã|essa? semana|esta semana)",
         r"(o\s+que\s+tenho|minha\s+agenda)\s+(hoje|amanhã)",
         r"(mostre?|veja?|me\s+dê)\s+(minha|meus?)\s+(agenda|tarefas?|compromissos?)",
     ]),
@@ -901,7 +907,7 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
     # Health check da vaga
     ("health_check_vaga", [
         r"(health\s*check|diagnóstico|diagnose|saúde)\s+(da\s+|do\s+)?(vaga|processo|pipeline)",
-        r"(como\s+está|status|saúde)\s+(da\s+|do\s+)?(vaga|processo|pipeline|funil)",
+        r"(como\s+está|status|saúde)\s+(da\s+|do\s+|essa\s+|este\s+|esta\s+|o\s+|a\s+)?(vaga|processo|pipeline|funil)",
     ]),
     # Análise de funil
     ("analisar_funil", [

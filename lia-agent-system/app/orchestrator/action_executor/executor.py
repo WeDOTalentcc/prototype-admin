@@ -59,6 +59,20 @@ class ActionExecutorService:
         entities = entities or {}
         candidates_data = candidates_data or []
         context = context or {}
+
+        # Inject entity_id/entity_type from context if not already in entities
+        ctx_entity_id = context.get("entity_id") or context.get("context_entity_id")
+        ctx_entity_type = context.get("entity_type", "")
+        if ctx_entity_id:
+            if ctx_entity_type in ("job", "job_vacancy") or (
+                isinstance(ctx_entity_id, str) and ctx_entity_id.startswith("V")
+            ):
+                if not entities.get("job_id"):
+                    entities["job_id"] = ctx_entity_id
+            elif ctx_entity_type in ("candidate", "candidato"):
+                if not entities.get("candidate_id"):
+                    entities["candidate_id"] = ctx_entity_id
+
         if not self.is_actionable(intent):
             return ActionResult(status="not_actionable")
 

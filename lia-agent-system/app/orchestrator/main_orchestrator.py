@@ -624,6 +624,8 @@ class MainOrchestrator:
                     "user_id": ctx.user_id,
                     "company_id": ctx.company_id,
                     "conversation_history": ctx.extra.get("conversation_history", []),
+                    "entity_id": ctx.entity_id,
+                    "entity_type": getattr(ctx, "entity_type", "") or getattr(ctx, "context_type", ""),
                 },
             )
         except Exception as exc:
