@@ -236,10 +236,10 @@ end
 # wsi_results, wsi_reports, wsi_feedbacks). The candidate-side
 # conversation lives in `triagem_sessions` / `triagem_messages`. The live
 # schema for both groups is owned by lia-agent-system (see
-# `lia-agent-system/libs/models/lia_models/triagem.py` and
-# `lia-agent-system/database/wsi_schema_corrected.sql`); the Rails
-# migration 20250716000045 in this repo is a stale parallel definition
-# that should be reconciled separately (follow-up task).
+# `lia-agent-system/libs/models/lia_models/triagem.py`,
+# `lia-agent-system/database/wsi_schema_corrected.sql` and
+# `lia-agent-system/database/TRIAGEM_OWNERSHIP.md`). Rails must not
+# create or alter these tables.
 #
 # Because these tables are owned by the Python app:
 #   * we don't touch them through ActiveRecord models (none exist here);
@@ -525,15 +525,14 @@ else
 end
 
 # 5) Triagem session + dialogue (candidate-side conversation, RLS-scoped).
-#    Two schemas exist in the wild for these tables:
-#      (a) Python lia-agent-system live shape: `token`, `current_block`,
-#          `wsi_final_score`, `metadata_json`, `triagem_messages.session_id`,
-#          `triagem_messages.wsi_block`, etc.
-#      (b) Rails migration 20250716000045 shape: `progress`, `final_score`,
-#          `scores`, `session_data`, `triagem_messages.triagem_session_id`,
-#          `triagem_messages.metadata`.
-#    We detect which shape is live by probing column names and write to
-#    whichever exists, so the demo modal is filled in either deployment.
+#    These tables are owned by the Python lia-agent-system; the live shape
+#    matches the SQLAlchemy models in
+#    `lia-agent-system/libs/models/lia_models/triagem.py` (columns: `token`,
+#    `current_block`, `wsi_final_score`, `metadata_json`,
+#    `triagem_messages.session_id`, `triagem_messages.wsi_block`, ...).
+#    We still gate on `table_exists?` + a representative column probe so the
+#    seed safely no-ops on a Rails-only DB where the Python app has not yet
+#    created its tables. See `lia-agent-system/database/TRIAGEM_OWNERSHIP.md`.
 
 dialogue = [
   { sender: "lia",       block: 0, content: "Oi, Maria! Eu sou a LIA. Vou te fazer algumas perguntas rapidas sobre a vaga de Senior Backend Engineer. Tudo bem comecar?" },
@@ -586,52 +585,8 @@ if conn.table_exists?("triagem_sessions") &&
       ON CONFLICT (id) DO NOTHING
     SQL
   end
-elsif conn.table_exists?("triagem_sessions") &&
-      conn.table_exists?("triagem_messages") &&
-      conn.column_exists?("triagem_sessions", "progress") &&
-      conn.column_exists?("triagem_messages", "triagem_session_id")
-  # (b) Rails migration 20250716000045 shape
-  scores_json = { technical: 4.4, behavioral: 4.3, overall: 4.35,
-                  classification: "alto" }.to_json
-  session_data_json = { wsi_session_id: demo_session_id,
-                        wsi_result_id: demo_result_id,
-                        recommendation: "avancar",
-                        source: "seed" }.to_json
-  conn.execute(<<~SQL)
-    INSERT INTO triagem_sessions (id, company_id, candidate_id, job_id,
-                                  channel, status, current_question_idx,
-                                  total_questions, progress, final_score,
-                                  scores, session_data,
-                                  started_at, completed_at,
-                                  created_at, updated_at)
-    VALUES (#{q.call(demo_triagem_id)}, #{q.call(demo_company_id)},
-            #{q.call(demo_candidate_id)}, #{q.call(demo_job_vacancy_id)},
-            'web', 'completed', 5, 5, 1.0, 4.35,
-            #{q.call(scores_json)}::jsonb,
-            #{q.call(session_data_json)}::jsonb,
-            NOW() - INTERVAL '20 minutes',
-            NOW() - INTERVAL '5 minutes',
-            NOW() - INTERVAL '20 minutes', NOW())
-    ON CONFLICT (id) DO NOTHING
-  SQL
-
-  dialogue.each_with_index do |msg, idx|
-    msg_id = "55555555-5555-4555-8556-#{idx.to_s.rjust(12, '0')}"
-    conn.execute(<<~SQL)
-      INSERT INTO triagem_messages (id, triagem_session_id, sender, content,
-                                    message_type, metadata,
-                                    created_at, updated_at)
-      VALUES (#{q.call(msg_id)}, #{q.call(demo_triagem_id)},
-              #{q.call(msg[:sender])}, #{q.call(msg[:content])},
-              'text',
-              #{q.call({ wsi_block: msg[:block] }.to_json)}::jsonb,
-              NOW() - INTERVAL '20 minutes' + (#{idx} * INTERVAL '90 seconds'),
-              NOW())
-      ON CONFLICT (id) DO NOTHING
-    SQL
-  end
 else
-  puts "  [skip] triagem_sessions/triagem_messages tables not present in either known shape; skipping triagem demo block."
+  puts "  [skip] triagem_sessions/triagem_messages tables not present in the expected Python shape; skipping triagem demo block."
 end
 
   puts "Demo WSI screening seeded for #{demo_candidate_name} on #{demo_job_title}"
