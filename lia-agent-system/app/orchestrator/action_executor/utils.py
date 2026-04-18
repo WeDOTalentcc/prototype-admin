@@ -223,6 +223,19 @@ def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
         if val_m:
             entities["field_value"] = val_m.group(1).strip()
 
+    # Sourcing: extract query from message when intent is a candidate search
+    if intent in ("buscar_candidatos", "sugerir_candidatos") and "query" not in entities:
+        # Extract everything after action verb + "candidatos"
+        m = re.search(
+            r"(?:busca[rn]?|pesquisa[rn]?|encontra[rn]?|procura[rn]?|sugere|sugira[rn]?)\s+"
+            r"(?:candidatos?\s+)?(?:com\s+|para\s+|que\s+|de\s+)?(.{5,})",
+            msg, re.IGNORECASE
+        )
+        if m:
+            entities["query"] = m.group(1).strip()[:300]
+        elif len(msg) > 10:
+            entities["query"] = msg[:300]
+
     return entities
 
 
