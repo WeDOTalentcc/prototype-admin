@@ -37,4 +37,34 @@ DUAL_ID_PATH_PATTERN = (
     r"[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|\d+)$"
 )
 
-__all__ = ["DUAL_ID_PATH_PATTERN"]
+def reorder_collection_before_item(router) -> None:
+    """In-place reorder ``router.routes`` so every collection-scoped
+    APIRoute (no ``{`` in its path) comes before any item-scoped
+    APIRoute (at least one ``{`` in its path).
+
+    This is the lightweight, single-file equivalent of the partition that
+    ``app.api.v1.job_vacancies.__init__`` does across its sub-routers
+    (Task #455). Call it once at the bottom of a single-file router
+    module so source-order regressions cannot reintroduce the
+    routing-shadowing bug. Combined with
+    ``Path(pattern=DUAL_ID_PATH_PATTERN)`` on every ``{*_id}`` parameter,
+    this is the same blindagem applied to ``/job-vacancies`` (Task #458).
+
+    Non-APIRoute entries (websockets, mounts) are left in their original
+    relative position by being treated as collection-scoped — they never
+    capture path parameters anyway.
+    """
+    from fastapi.routing import APIRoute
+
+    collection = []
+    item = []
+    for route in router.routes:
+        path = getattr(route, "path", "")
+        if isinstance(route, APIRoute) and "{" in path:
+            item.append(route)
+        else:
+            collection.append(route)
+    router.routes = collection + item
+
+
+__all__ = ["DUAL_ID_PATH_PATTERN", "reorder_collection_before_item"]

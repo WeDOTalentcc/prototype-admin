@@ -32,10 +32,14 @@ from fastapi.routing import APIRoute
 from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from app.api.v1.applications import router as applications_router
 from app.api.v1.candidates import router as candidates_router
+from app.api.v1.lgpd_compliance import router as lgpd_compliance_router
+from app.api.v1.policy_engine import router as policy_engine_router
+from app.api.v1.proactive_actions import router as proactive_actions_router
 from app.api.v1.recruitment_stages import (
     router as recruitment_stages_router,
     screening_questions_router,
 )
+from app.api.v1.wizard_analytics import router as wizard_analytics_router
 
 
 # Each entry: (router, scope_label).
@@ -45,6 +49,10 @@ from app.api.v1.recruitment_stages import (
 # guard "generalised": a future ``{interview_id}`` or ``{note_id}`` added
 # to one of these routers is automatically protected without anyone
 # needing to remember to update this test.
+#
+# Task #458 extends the coverage to the remaining single-file ``/api/v1``
+# routers that previously had unconstrained ``{*_id}: str`` path
+# parameters: proactive-actions, wizard-analytics, lgpd, policy-engine.
 DUAL_ID_ROUTERS = [
     pytest.param(candidates_router, "candidates", id="candidates"),
     pytest.param(applications_router, "applications", id="applications"),
@@ -56,6 +64,31 @@ DUAL_ID_ROUTERS = [
         "screening-questions",
         id="screening-questions",
     ),
+    pytest.param(
+        proactive_actions_router, "proactive-actions", id="proactive-actions"
+    ),
+    pytest.param(
+        wizard_analytics_router, "wizard-analytics", id="wizard-analytics"
+    ),
+    pytest.param(lgpd_compliance_router, "lgpd", id="lgpd"),
+    pytest.param(policy_engine_router, "policy-engine", id="policy-engine"),
+]
+
+
+# Task #458 — Routers where collection-before-item ordering is enforced
+# in-module via ``reorder_collection_before_item``. The structural test
+# below asserts that within each router every collection-scoped APIRoute
+# (no ``{`` in path) is registered before any item-scoped APIRoute, so a
+# future static sibling cannot be silently shadowed.
+COLLECTION_BEFORE_ITEM_ROUTERS = [
+    pytest.param(
+        proactive_actions_router, "proactive-actions", id="proactive-actions"
+    ),
+    pytest.param(
+        wizard_analytics_router, "wizard-analytics", id="wizard-analytics"
+    ),
+    pytest.param(lgpd_compliance_router, "lgpd", id="lgpd"),
+    pytest.param(policy_engine_router, "policy-engine", id="policy-engine"),
 ]
 
 
@@ -126,6 +159,48 @@ def test_dual_id_path_parameters_are_constrained(
         + "\nConstrain them with "
         "`Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]` from "
         "`app.api.v1._path_patterns`."
+    )
+
+
+@pytest.mark.parametrize(
+    ("router", "scope_label"), COLLECTION_BEFORE_ITEM_ROUTERS
+)
+def test_collection_routes_precede_item_routes(router, scope_label: str) -> None:
+    """Within each single-file router that opted into the Task #458
+    blindagem, every collection-scoped ``APIRoute`` must be registered
+    before any item-scoped ``APIRoute``.
+
+    FastAPI uses first-match routing, so the position of a route in
+    ``router.routes`` is the source of truth. The
+    ``reorder_collection_before_item`` helper is invoked at the bottom
+    of each opted-in module to guarantee this; this test breaks the
+    build if either the helper call is removed or new routes are
+    appended after it without re-running it.
+    """
+    routes = _api_routes(router)
+    # Index of the LAST collection-scoped route, then the FIRST item-
+    # scoped route. The first must come before the second.
+    last_collection_idx = -1
+    first_item_idx = None
+    for idx, r in enumerate(routes):
+        if "{" in r.path:
+            if first_item_idx is None:
+                first_item_idx = idx
+        else:
+            last_collection_idx = idx
+
+    if first_item_idx is None or last_collection_idx == -1:
+        # Router has only one kind of route — invariant trivially holds.
+        return
+
+    assert last_collection_idx < first_item_idx, (
+        f"In the {scope_label!r} router, a collection-scoped route at "
+        f"index {last_collection_idx} is registered AFTER an item-scoped "
+        f"route at index {first_item_idx}. This reintroduces the Task "
+        f"#455 routing-shadowing bug — the static collection segment "
+        f"will be silently captured by the item handler. Make sure "
+        f"``reorder_collection_before_item(router)`` runs at the bottom "
+        f"of the module after all routes are declared."
     )
 
 
