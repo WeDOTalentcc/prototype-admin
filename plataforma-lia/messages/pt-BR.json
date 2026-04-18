@@ -4,6 +4,26 @@
       "label": "Criar vaga",
       "tooltip": "Iniciar wizard de criação de vaga",
       "ariaLabel": "Criar nova vaga"
+    },
+    "pill": {
+      "summaryAriaLabel": "Mostrar {count} fluxo(s) ativo(s)",
+      "moreAriaLabel": "Mais {count} fluxo(s)",
+      "pendingAriaLabel": "{count} ação(ões) pendente(s)"
+    },
+    "popover": {
+      "title": "Fluxos Ativos",
+      "close": "Fechar",
+      "disconnected": "Desconectado"
+    },
+    "types": {
+      "campaign": "Campanha",
+      "pool": "Pool",
+      "search": "Busca"
+    },
+    "entry": {
+      "dismiss": "Dispensar fluxo",
+      "go": "Ir",
+      "foundCount": "{count} encontrados"
     }
   },
   "sidebar": {

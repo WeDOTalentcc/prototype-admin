@@ -4,6 +4,26 @@
       "label": "Create job",
       "tooltip": "Start the job creation wizard",
       "ariaLabel": "Create new job"
+    },
+    "pill": {
+      "summaryAriaLabel": "Show {count} active workflow(s)",
+      "moreAriaLabel": "{count} more workflow(s)",
+      "pendingAriaLabel": "{count} pending action(s)"
+    },
+    "popover": {
+      "title": "Active Workflows",
+      "close": "Close",
+      "disconnected": "Disconnected"
+    },
+    "types": {
+      "campaign": "Campaign",
+      "pool": "Pool",
+      "search": "Search"
+    },
+    "entry": {
+      "dismiss": "Dismiss workflow",
+      "go": "Go",
+      "foundCount": "{count} found"
     }
   },
   "sidebar": {
