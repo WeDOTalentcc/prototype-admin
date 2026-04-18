@@ -58,7 +58,7 @@ function QuestionCard({ question, showDelete, onToggle }: { question: UnifiedScr
                 {badge.label}
               </Chip>
               {isAffirmativeQuestion && (
-                <Chip variant="neutral" className="text-micro px-1.5 py-0 h-4 border  border-status-success/30">
+                <Chip variant="success" className="text-micro px-1.5 py-0 h-4">
                   Não eliminatória
                 </Chip>
               )}

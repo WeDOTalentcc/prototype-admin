@@ -187,8 +187,8 @@ export function EventsSection() {
 
   const getPriorityBadge = (priority: string) => {
     const badges = {
-      high: <Chip variant="neutral" className="text-xs border-status-error/30 text-status-error dark:border-status-error/30 dark:text-status-error">Urgente</Chip>,
-      medium: <Chip variant="neutral" className="text-xs border-status-warning/30 text-status-warning dark:border-status-warning/30 dark:text-status-warning">Média</Chip>,
+      high: <Chip variant="danger" className="text-xs">Urgente</Chip>,
+      medium: <Chip variant="warning" className="text-xs">Média</Chip>,
       low: <Chip variant="neutral" className="text-xs border-lia-border-subtle text-lia-text-primary dark:border-lia-border-subtle">Baixa</Chip>
     }
     return badges[priority as keyof typeof badges]

@@ -116,7 +116,7 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
             <Chip variant="neutral" muted className="text-micro">Obrigatório</Chip>
           )}
           {benefit.is_discount && (
-            <Chip variant="neutral" className="text-micro text-status-error border-status-error/30">
+            <Chip variant="danger" className="text-micro">
               Desconto
             </Chip>
           )}

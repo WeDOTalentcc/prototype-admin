@@ -394,7 +394,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                     {block.editable && blockQuestions.length > 0 && (
                       <>
                         {eliminatoryCount > 0 && (
-                          <Chip variant="neutral" muted className="text-micro px-1.5 py-0  border border-status-error/30">
+                          <Chip variant="danger" muted className="text-micro px-1.5 py-0">
                             {eliminatoryCount} Elim.
                           </Chip>
                         )}
@@ -477,7 +477,7 @@ export function ScreeningScriptTab({ previewJob }: ScreeningScriptTabProps) {
                                         : item.category || 'Geral'}
                                     </Chip>
                                     {(item.type === 'eliminatory' || item.required) && (
-                                      <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4  border border-status-error/30">
+                                      <Chip variant="danger" muted className="text-micro px-1.5 py-0 h-4">
                                         Eliminatória
                                       </Chip>
                                     )}

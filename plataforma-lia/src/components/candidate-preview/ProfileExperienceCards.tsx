@@ -27,7 +27,7 @@ function ProfileIndicatorBadges({ candidate }: { candidate: Record<string, unkno
   return (
     <div className="flex flex-wrap gap-1.5 mb-2">
       {isOpenToWork === true && (
-        <Chip variant="neutral" className="text-micro px-2 py-0.5 h-5  border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30 flex items-center gap-1">
+        <Chip variant="success" className="text-micro px-2 py-0.5 h-5 dark:bg-status-success/20 flex items-center gap-1">
           <Globe className="w-3 h-3 text-status-success" />
           Open to Work
         </Chip>
@@ -45,7 +45,7 @@ function ProfileIndicatorBadges({ candidate }: { candidate: Record<string, unkno
       {isBlacklisted === true && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <Chip variant="neutral" className="text-micro px-2 py-0.5 h-5  border-status-error/30 flex items-center gap-1 cursor-help">
+            <Chip variant="danger" className="text-micro px-2 py-0.5 h-5 flex items-center gap-1 cursor-help">
               ⚠️ LCNU
             </Chip>
           </TooltipTrigger>

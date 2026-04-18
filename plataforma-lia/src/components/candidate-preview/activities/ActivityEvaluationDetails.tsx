@@ -72,7 +72,7 @@ export function ActivityEvaluationDetails({
                 <p className="text-xs font-semibold text-lia-text-primary mb-1">Pontos Fortes</p>
                 <div className="flex flex-wrap gap-1">
                   {activity.details.strengths.map((s: string, i: number) => (
-                    <Chip variant="neutral" muted key={`str-${i}`} className="text-micro px-1.5 py-0  border-status-success/30">
+                    <Chip variant="success" muted key={`str-${i}`} className="text-micro px-1.5 py-0">
                       ✓ {s}
                     </Chip>
                   ))}

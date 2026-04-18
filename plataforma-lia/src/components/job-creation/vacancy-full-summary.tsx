@@ -266,7 +266,7 @@ export function VacancyFullSummary({
                         <Wrench className="h-3 w-3 text-lia-text-secondary flex-shrink-0" />
                         <span className="text-xs font-medium truncate">{skill.name}</span>
                         {skill.required && (
-                          <Chip variant="neutral" className="text-micro h-3.5 px-1 border-status-error/30  dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
+                          <Chip variant="danger" className="text-micro h-3.5 px-1 dark:bg-status-error/30">
                             Req
                           </Chip>
                         )}

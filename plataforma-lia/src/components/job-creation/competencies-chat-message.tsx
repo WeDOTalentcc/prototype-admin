@@ -115,7 +115,7 @@ function TechnicalSkillCard({ skill }: { skill: TechnicalSkillSuggestion }) {
           <Code className="h-3.5 w-3.5 text-lia-text-secondary flex-shrink-0" />
           <span className="text-xs font-medium truncate">{skill.name}</span>
           {skill.required && (
-            <Chip variant="neutral" className="text-micro h-4 px-1.5 border-status-error/30  dark:border-status-error/30 dark:bg-status-error/30 dark:text-status-error">
+            <Chip variant="danger" className="text-micro h-4 px-1.5 dark:bg-status-error/30">
               Obrigatório
             </Chip>
           )}

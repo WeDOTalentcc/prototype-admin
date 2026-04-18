@@ -441,7 +441,7 @@ export function ActivityFeed({ candidateId, limit = 20, className ="", actorFilt
                     <div className="flex items-center gap-1 flex-wrap">
                       <span className={`${textStyles.label} text-status-warning`}>Atenção:</span>
                       {activity.extra_data.red_flags.slice(0, 2).map((flag: string, idx: number) => (
-                        <Chip key={idx} variant="neutral" muted className="border-status-warning/30 text-micro">
+                        <Chip key={idx} variant="warning" muted className="text-micro">
                           {flag}
                         </Chip>
                       ))}
@@ -458,7 +458,7 @@ export function ActivityFeed({ candidateId, limit = 20, className ="", actorFilt
                     <div className="flex items-center gap-1 flex-wrap">
                       <span className={`${textStyles.label} text-status-success`}>Pontos fortes:</span>
                       {activity.extra_data.green_flags.slice(0, 2).map((flag: string, idx: number) => (
-                        <Chip key={idx} variant="neutral" muted className="border-status-success/30 text-micro">
+                        <Chip key={idx} variant="success" muted className="text-micro">
                           {flag}
                         </Chip>
                       ))}

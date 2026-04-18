@@ -199,7 +199,7 @@ export function BenefitBadgeList({
                       <Chip variant="neutral" muted className="text-xs">Obrigatório</Chip>
                     )}
                     {benefit.is_discount && (
-                      <Chip variant="neutral" className="text-xs text-status-error border-status-error/30">Desconto</Chip>
+                      <Chip variant="danger" className="text-xs">Desconto</Chip>
                     )}
                     {benefit.provider && (
                       <Chip variant="neutral" className="text-xs">{benefit.provider}</Chip>

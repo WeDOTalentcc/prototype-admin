@@ -654,7 +654,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                              q.question_type === 'scale' ? 'Escala' : 'Texto'}
                           </Chip>
                           {q.is_required && (
-                            <Chip variant="neutral" className="text-micro  border-status-error/30">
+                            <Chip variant="danger" className="text-micro">
                               Obrigatória
                             </Chip>
                           )}

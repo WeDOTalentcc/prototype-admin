@@ -124,7 +124,7 @@ export function CandidateDetailSidebar({
                   {candidate.name}
                 </SheetTitle>
                 {candidate.is_open_to_work && (
-                  <Chip variant="neutral" muted className="bg-status-success/15 dark:bg-status-success/30 text-status-success dark:text-status-success border-status-success/30 dark:border-status-success/30">
+                  <Chip variant="success" muted className="bg-status-success/15 dark:bg-status-success/30">
                     <CheckCircle className="h-3 w-3 mr-1" />
                     Aberto
                   </Chip>
@@ -180,15 +180,15 @@ export function CandidateDetailSidebar({
                     </Chip>
                   )}
                   {candidate.is_enriching && (
-                    <Chip variant="neutral" className="border-status-info/30 bg-status-info/10 text-status-info">
+                    <Chip variant="info" className="bg-status-info/10">
                       <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                       Enriquecendo...
                     </Chip>
                   )}
                   {candidate.is_discovered && (
                     <Chip 
-                      variant="neutral" 
-                      className="border-status-warning/30 dark:border-status-warning/30 bg-status-warning/10 dark:bg-status-warning/30 text-status-warning dark:text-status-warning"
+                      variant="warning" 
+                      className="bg-status-warning/10 dark:bg-status-warning/30"
                     >
                       <Eye className="h-3 w-3 mr-1" />
                       Descoberto

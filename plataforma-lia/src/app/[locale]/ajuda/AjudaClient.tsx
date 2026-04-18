@@ -143,8 +143,8 @@ export default function AjudaPage() {
                   {softSkillsList.map((skill) => (
                     <Chip 
                       key={skill} 
-                      variant="neutral" 
-                      className="text-xs border-status-error-border bg-status-error-bg text-status-error"
+                      variant="danger" 
+                      className="text-xs bg-status-error-bg"
                     >
                       {skill}
                     </Chip>
@@ -172,7 +172,7 @@ export default function AjudaPage() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {["Nome","Email","Telefone","Experiências profissionais","Educação","Certificações","Idiomas"].map((field) => (
-                    <Chip key={field} variant="neutral" className="text-xs border-status-success/30">
+                    <Chip key={field} variant="success" className="text-xs">
                       {field}
                     </Chip>
                   ))}

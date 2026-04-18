@@ -111,7 +111,7 @@ export function ScreeningQuestionsPanel({
           <div className="flex items-center gap-2">
             <Brain className="h-4 w-4 text-wedo-cyan" />
             <CardTitle className="text-sm font-medium">Roteiro WSI de Triagem</CardTitle>
-            <Chip variant="neutral" className="text-micro px-1.5 py-0 rounded-full  border-status-success/30">
+            <Chip variant="success" className="text-micro px-1.5 py-0 rounded-full">
               Ativo
             </Chip>
             <AIDisclaimer />

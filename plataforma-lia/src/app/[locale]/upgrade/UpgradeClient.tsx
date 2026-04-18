@@ -15,7 +15,7 @@ export default function UpgradePage() {
       </div>
 
       <div className="text-center mb-10 max-w-xl">
-        <Chip variant="neutral" className="mb-4 border-status-warning/30 text-status-warning bg-status-warning/10">
+        <Chip variant="warning" className="mb-4 bg-status-warning/10">
           Período de trial encerrado
         </Chip>
         <h1 className="text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary mb-3">

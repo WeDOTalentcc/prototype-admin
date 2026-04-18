@@ -327,7 +327,7 @@ export function BranchesSection() {
                     <Chip variant="neutral" muted>
                       {branch.type}
                     </Chip>
-                    <Chip variant="neutral" className="text-status-success border-status-success/30">
+                    <Chip variant="success">
                       {branch.status}
                     </Chip>
                     <Button variant="ghost" size="sm">

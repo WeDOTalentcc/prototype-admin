@@ -150,7 +150,7 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-sm text-lia-text-primary">{exp.title}</p>
                         {exp.isPromotion && (
-                          <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5  border-status-success/30">
+                          <Chip variant="success" muted className="text-xs px-1.5 py-0.5">
                             Promotion
                           </Chip>
                         )}

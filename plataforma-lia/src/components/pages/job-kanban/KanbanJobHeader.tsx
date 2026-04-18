@@ -206,7 +206,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap mt-1">
                   {(currentJob.status as string) === 'Rascunho' && (
-                    <Chip variant="neutral" muted className="bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 text-status-warning dark:text-status-warning font-semibold whitespace-nowrap text-micro px-1.5 py-0">
+                    <Chip variant="warning" muted className="bg-status-warning/10 dark:bg-status-warning/20 font-semibold whitespace-nowrap text-micro px-1.5 py-0">
                       {t('draft')}
                     </Chip>
                   )}

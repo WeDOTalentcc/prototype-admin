@@ -285,9 +285,9 @@ export function ExcludedCompaniesInput({
       {value.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {value.map(company => (
-            <Chip variant="neutral" muted
+            <Chip variant="warning" muted
               key={company.name}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium  border border-status-warning/30"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
             >
               <span>{company.name}</span>
               {company.domain && (

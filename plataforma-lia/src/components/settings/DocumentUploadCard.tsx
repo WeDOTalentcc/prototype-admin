@@ -350,15 +350,15 @@ export function DocumentUploadCard() {
                         {uploaded.warnings.slice(0, 2).map((w, i) => (
                           <Chip
                             key={i}
-                            variant="neutral"
-                            className="text-micro bg-status-warning/10 text-status-warning border-status-warning/30 rounded-full px-1.5 py-0"
+                            variant="warning"
+                            className="text-micro bg-status-warning/10 rounded-full px-1.5 py-0"
                           >
                             <AlertTriangle className="w-2.5 h-2.5 mr-0.5" />
                             {w.length > 50 ? w.substring(0, 50) + "…" : w}
                           </Chip>
                         ))}
                         {uploaded.warnings.length > 2 && (
-                          <Chip variant="neutral" className="text-micro text-status-warning border-status-warning/30 rounded-full px-1.5 py-0">
+                          <Chip variant="warning" className="text-micro rounded-full px-1.5 py-0">
                             +{uploaded.warnings.length - 2}
                           </Chip>
                         )}
@@ -419,8 +419,8 @@ export function DocumentUploadCard() {
             {fairnessWarnings.map((warning, i) => (
               <Chip
                 key={i}
-                variant="neutral"
-                className="text-micro bg-status-warning/10 text-status-warning border-status-warning/30 rounded-full"
+                variant="warning"
+                className="text-micro bg-status-warning/10 rounded-full"
               >
                 {warning}
               </Chip>

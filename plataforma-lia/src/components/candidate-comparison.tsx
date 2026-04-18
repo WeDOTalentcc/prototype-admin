@@ -418,7 +418,7 @@ export function CandidateComparison({
                 {/* Winner Badge */}
                 {liaAnalysis && candidate.id === liaAnalysis.winner && (
                   <div className="absolute top-3 right-3 z-10">
-                    <Chip variant="neutral" muted className="border-status-warning/30 gap-1">
+                    <Chip variant="warning" muted className="gap-1">
                       <Crown className="w-3 h-3" />
                       LIA Recomenda
                     </Chip>

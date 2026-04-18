@@ -86,7 +86,7 @@ export function CandidatePreviewHeader({
               </Chip>
             )}
             {c.is_enriching && (
-              <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 bg-status-warning/15 text-status-warning border-status-warning/30 animate-pulse">
+              <Chip variant="warning" muted className="text-micro px-1.5 py-0 h-4 flex items-center gap-0.5 bg-status-warning/15 animate-pulse">
                 Enriquecendo...
               </Chip>
             )}

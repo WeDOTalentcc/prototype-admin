@@ -349,7 +349,7 @@ export function SearchResultsCard({
                       </Tooltip>
                     )}
                     {candidate.is_enriching && (
-                      <Chip variant="neutral" className="text-xs border-status-info/30 bg-status-info/10 text-status-info">
+                      <Chip variant="info" className="text-xs bg-status-info/10">
                         <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                         Enriquecendo...
                       </Chip>
@@ -358,8 +358,8 @@ export function SearchResultsCard({
                       <Tooltip>
                         <TooltipTrigger>
                           <Chip 
-                            variant="neutral" 
-                            className="text-xs border-status-warning/30"
+                            variant="warning" 
+                            className="text-xs"
                           >
                             <Eye className="h-3 w-3 mr-1" />
                             Descoberto

@@ -34,7 +34,7 @@ export function SCMQuestionDetailView({ item, isDetailsExpanded, onToggleDetails
           {item.category === 'behavioral' || item.category === 'comportamental' ? 'Comportamental' : item.category === 'technical' || item.category === 'técnica' ? 'Técnica' : item.category === 'cultural' || item.category === 'fit_cultural' ? 'Fit Cultural' : item.category || 'Geral'}
         </Chip>
         {(item.type === 'eliminatory' || item.required || item.is_eliminatory) && (
-          <Chip variant="neutral" muted className="text-micro px-2 py-0.5 h-5 rounded-full  border border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30">Eliminatória</Chip>
+          <Chip variant="danger" muted className="text-micro px-2 py-0.5 h-5 rounded-full dark:bg-status-error/20">Eliminatória</Chip>
         )}
         <Chip variant="neutral" muted className={`text-micro px-2 py-0.5 h-5 rounded-full border ${complexity.color}`}>
           <Gauge className="w-3 h-3 mr-0.5" />{complexity.label}
@@ -55,7 +55,7 @@ export function SCMQuestionDetailView({ item, isDetailsExpanded, onToggleDetails
           </Chip>
         )}
         {(item.weight || 0) >= 1.5 && (
-          <Chip variant="neutral" muted className="text-micro px-2 py-0.5 h-5 rounded-full border  border-status-error/30 dark:bg-status-error/20 dark:text-status-error dark:border-status-error/30">
+          <Chip variant="danger" muted className="text-micro px-2 py-0.5 h-5 rounded-full dark:bg-status-error/20">
             <ShieldAlert className="w-3 h-3 mr-0.5" />Crítica
           </Chip>
         )}

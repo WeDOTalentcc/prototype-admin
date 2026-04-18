@@ -152,7 +152,7 @@ export function CandidateProfileTab({
                 </h5>
                 <div className="flex flex-wrap gap-1.5">
                   {candidate.soft_skills.map((skill) => (
-                    <Chip key={skill} variant="neutral" className="text-xs px-2 py-0.5  border-status-warning/30">
+                    <Chip key={skill} variant="warning" className="text-xs px-2 py-0.5">
                       {skill}
                     </Chip>
                   ))}
@@ -312,7 +312,7 @@ export function CandidateProfileTab({
                 <Chip variant="neutral" className="text-xs bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default">Remoto</Chip>
               )}
               {candidate.willing_to_relocate && (
-                <Chip variant="neutral" className="text-xs  border-status-success/30">Aceita Relocação</Chip>
+                <Chip variant="success" className="text-xs">Aceita Relocação</Chip>
               )}
               {candidate.work_model_preference && (
                 <Chip variant="neutral" className="text-xs">{candidate.work_model_preference}</Chip>
@@ -433,7 +433,7 @@ export function CandidateProfileTab({
             {/* Badges de Status */}
             <div className="flex flex-wrap gap-1.5">
               {candidate.is_open_to_work && (
-                <Chip variant="neutral" muted className="text-xs  border-status-success/30">
+                <Chip variant="success" muted className="text-xs">
                   ✓ Open to Work
                 </Chip>
               )}
@@ -443,7 +443,7 @@ export function CandidateProfileTab({
                 </Chip>
               )}
               {candidate.is_top_universities && (
-                <Chip variant="neutral" muted className="text-xs  border-status-warning/30">
+                <Chip variant="warning" muted className="text-xs">
                   🎓 Top Universities
                 </Chip>
               )}

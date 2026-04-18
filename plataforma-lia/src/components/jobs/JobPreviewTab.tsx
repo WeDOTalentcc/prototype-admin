@@ -205,7 +205,7 @@ export function JobPreviewTab({ job, pipelineStages }: JobPreviewTabProps) {
                   </Chip>
                 )}
                 {lang.required && (
-                  <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4  border border-status-error/30">
+                  <Chip variant="danger" muted className="text-micro px-1.5 py-0 h-4">
                     Obrigatorio
                   </Chip>
                 )}

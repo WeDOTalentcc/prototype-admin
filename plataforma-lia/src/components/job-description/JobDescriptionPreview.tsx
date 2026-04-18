@@ -46,7 +46,7 @@ function SuggestionBadge({ isNew }: { isNew: boolean }) {
 function AlertBadge({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <Chip variant="neutral" className="ml-2  border-status-warning/30/30 text-xs">
+    <Chip variant="warning" className="ml-2 text-xs">
       <AlertTriangle className="w-3 h-3 mr-1" />
       {message}
     </Chip>

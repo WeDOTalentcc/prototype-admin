@@ -263,7 +263,7 @@ export function CandidatoActivitiesTab({
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
                               <span className="text-xs font-medium text-lia-text-primary">Nota Interna</span>
-                              <Chip variant="neutral" muted className="text-xs px-1.5 py-0  border-status-warning/30">
+                              <Chip variant="warning" muted className="text-xs px-1.5 py-0">
                                 {getCategoryLabelLocal(item.category)}
                               </Chip>
                               <span className="text-xs text-lia-text-secondary">{formatRelativeTime(String(item.created_at ||""))}</span>

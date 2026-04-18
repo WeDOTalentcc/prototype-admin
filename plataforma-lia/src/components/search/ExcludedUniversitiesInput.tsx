@@ -231,9 +231,9 @@ export function ExcludedUniversitiesInput({
       {value.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {value.map(university => (
-            <Chip variant="neutral" muted
+            <Chip variant="warning" muted
               key={university}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium  border border-status-warning/30"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
             >
               <span>{university}</span>
               <button

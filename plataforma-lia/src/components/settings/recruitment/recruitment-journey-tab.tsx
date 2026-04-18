@@ -110,7 +110,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
               <p className="text-sm text-lia-text-secondary mt-1">Pipeline e elegibilidade</p>
             </div>
             <div className="flex items-center gap-2">
-              <Chip variant="neutral" className="text-status-success border-status-success/30 bg-status-success/10 dark:bg-status-success gap-1.5">
+              <Chip variant="success" className="bg-status-success/10 dark:bg-status-success gap-1.5">
                 <CheckCircle className="w-3 h-3" />
                 Sincronizado
               </Chip>
@@ -140,7 +140,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Chip variant="neutral" className="text-status-error border-status-error/30 bg-status-error/10 dark:bg-status-error gap-1.5 cursor-pointer hover:bg-status-error/15">
+                  <Chip variant="danger" className="bg-status-error/10 dark:bg-status-error gap-1.5 cursor-pointer hover:bg-status-error/15">
                     <Trash2 className="w-3 h-3" />
                     Deletar Template
                   </Chip>

@@ -198,7 +198,7 @@ export function CandidatePageProfileTab({
             <CardContent className="p-4">
               <div className="flex flex-wrap gap-1.5">
                 {candidate.certifications.map((cert: string) => (
-                  <Chip key={cert} variant="neutral" className="text-xs px-2 py-0.5  border-status-success/30">
+                  <Chip key={cert} variant="success" className="text-xs px-2 py-0.5">
                     {cert}
                   </Chip>
                 ))}
@@ -272,7 +272,7 @@ export function CandidatePageProfileTab({
                   <Chip variant="neutral" className="text-xs bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary border-lia-border-subtle dark:border-lia-border-default">Remoto</Chip>
                 )}
                 {candidate.willing_to_relocate && (
-                  <Chip variant="neutral" className="text-xs  border-status-success/30">Aceita Relocação</Chip>
+                  <Chip variant="success" className="text-xs">Aceita Relocação</Chip>
                 )}
                 {candidate.work_model_preference && (
                   <Chip variant="neutral" className="text-xs">{candidate.work_model_preference}</Chip>
@@ -391,7 +391,7 @@ export function CandidatePageProfileTab({
               
               <div className="flex flex-wrap gap-1.5">
                 {(candidate.is_open_to_work as boolean | undefined) && (
-                  <Chip variant="neutral" muted className="text-xs  border-status-success/30">
+                  <Chip variant="success" muted className="text-xs">
                     ✓ Open to Work
                   </Chip>
                 )}
@@ -401,7 +401,7 @@ export function CandidatePageProfileTab({
                   </Chip>
                 )}
                 {candidate.is_top_universities && (
-                  <Chip variant="neutral" muted className="text-xs  border-status-warning/30">
+                  <Chip variant="warning" muted className="text-xs">
                     🎓 Top Universities
                   </Chip>
                 )}

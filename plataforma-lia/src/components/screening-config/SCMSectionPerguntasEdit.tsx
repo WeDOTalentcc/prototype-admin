@@ -403,7 +403,7 @@ export function SCMSectionPerguntasEdit({
                   <div className="flex items-center gap-2">
                     {block.editable && blockQuestions.length > 0 && (
                       <>
-                        {eliminatoryCount > 0 && <Chip variant="neutral" muted className="text-micro px-2 py-0.5  border border-status-error/30">{eliminatoryCount} Eliminatória{eliminatoryCount > 1 ? 's' : ''}</Chip>}
+                        {eliminatoryCount > 0 && <Chip variant="danger" muted className="text-micro px-2 py-0.5">{eliminatoryCount} Eliminatória{eliminatoryCount > 1 ? 's' : ''}</Chip>}
                         {informativeCount > 0 && <Chip variant="neutral" muted className="text-micro px-2 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">{informativeCount} Informativa{informativeCount > 1 ? 's' : ''}</Chip>}
                       </>
                     )}
@@ -471,7 +471,7 @@ export function SCMSectionPerguntasEdit({
                                       {isDeactivated ? (
                                         <Chip variant="neutral" muted className="text-micro px-2 py-0.5 h-5 rounded-full bg-lia-bg-tertiary text-lia-text-tertiary border border-lia-border-subtle">Inativa</Chip>
                                       ) : (
-                                        <Chip variant="neutral" muted className="text-micro px-2 py-0.5 h-5 rounded-full  border border-status-success/30 dark:bg-status-success/20 dark:border-status-success/30">
+                                        <Chip variant="success" muted className="text-micro px-2 py-0.5 h-5 rounded-full dark:bg-status-success/20">
                                           <CheckCircle className="w-3 h-3 mr-1" />Aceita
                                         </Chip>
                                       )}

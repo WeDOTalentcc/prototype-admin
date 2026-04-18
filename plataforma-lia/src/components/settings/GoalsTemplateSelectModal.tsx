@@ -219,13 +219,13 @@ export function GoalsTemplateSelectModal({
                     {template.category}
                   </Chip>
                   {isAppliedToAll && (
-                    <Chip variant="neutral" muted className="text-micro px-1.5 py-0.5  border-status-success/30">
+                    <Chip variant="success" muted className="text-micro px-1.5 py-0.5">
                       <CheckCircle className="w-2.5 h-2.5 mr-0.5" />
                       Aplicado a Todos
                     </Chip>
                   )}
                   {isPartiallyApplied && (
-                    <Chip variant="neutral" muted className="text-micro px-1.5 py-0.5  border-status-warning/30">
+                    <Chip variant="warning" muted className="text-micro px-1.5 py-0.5">
                       {appliedCount}/{users.length} usuários
                     </Chip>
                   )}

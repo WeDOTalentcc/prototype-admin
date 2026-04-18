@@ -386,7 +386,7 @@ export function CandidateModal({ candidate, isOpen, onClose, onUpdateCandidate, 
                     <label className="text-sm font-medium text-lia-text-primary mb-2 block">Tags</label>
                     <div className="flex flex-wrap gap-2">
                       {candidateData.tags.map((tag: string, index: number) => (
-                        <Chip key={tag} variant="neutral" className="text-xs border-status-success/30 text-status-success">
+                        <Chip key={tag} variant="success" className="text-xs">
                           {tag}
                         </Chip>
                       ))}

@@ -80,7 +80,7 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
                 </Chip>
               )}
               {previewJob.level && (
-                <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5  border border-status-warning/30">
+                <Chip variant="warning" muted className="text-[0.625rem] leading-none px-1.5 py-0.5">
                   {previewJob.level}
                 </Chip>
               )}
@@ -119,7 +119,7 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
                 </Chip>
               )}
               {(previewJob.publishedLinkedIn || previewJob.publishedWebsite) ? (
-                <Chip variant="neutral" className="text-[0.625rem] leading-none px-1.5 py-0.5  border-status-success/30 flex items-center gap-0.5">
+                <Chip variant="success" className="text-[0.625rem] leading-none px-1.5 py-0.5 flex items-center gap-0.5">
                   <Globe className="w-2.5 h-2.5" />
                   Publicada
                 </Chip>
@@ -130,7 +130,7 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
                 </Chip>
               )}
               {(previewJob.salaryRange?.min || previewJob.salaryRange?.max || (previewJob as unknown as Record<string, number | undefined>).salaryMin || (previewJob as unknown as Record<string, number | undefined>).salaryMax) && (
-                <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5  border border-status-success/30 flex items-center gap-0.5">
+                <Chip variant="success" muted className="text-[0.625rem] leading-none px-1.5 py-0.5 flex items-center gap-0.5">
                   <DollarSign className="w-2.5 h-2.5" />
                   {(() => {
                     const min = previewJob.salaryRange?.min || (previewJob as unknown as Record<string, number | undefined>).salaryMin

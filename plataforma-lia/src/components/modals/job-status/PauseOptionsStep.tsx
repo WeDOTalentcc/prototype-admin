@@ -141,7 +141,7 @@ export function PauseOptionsStep({
               </p>
               <div className="mt-2 space-y-1">
                 {candidatesInProposal.slice(0, 3).map(c => (
-                  <Chip key={c.id} variant="neutral" className="text-micro bg-lia-bg-primary border-status-error/30 text-status-error">{c.name}</Chip>
+                  <Chip key={c.id} variant="danger" className="text-micro bg-lia-bg-primary">{c.name}</Chip>
                 ))}
                 {candidatesInProposal.length > 3 && (
                   <span className="text-micro text-status-error">+{candidatesInProposal.length - 3} mais</span>

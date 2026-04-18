@@ -180,7 +180,7 @@ export function JobScreeningSection({
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Responsabilidades</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {(responsibilitySkills as string[]).slice(0, 8).map((skill: string) => (
-                                      <Chip variant="neutral" muted key={skill} className="bg-status-warning/10 dark:bg-status-warning/30 text-status-warning dark:text-status-warning text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-status-warning/30">
+                                      <Chip variant="warning" muted key={skill} className="bg-status-warning/10 dark:bg-status-warning/30 text-[0.625rem] leading-none px-1.5 py-0.5 font-medium">
                                         {skill}
                                       </Chip>
                                     ))}
@@ -223,7 +223,7 @@ export function JobScreeningSection({
                                     </Chip>
                                   )}
                                   {lang.required && (
-                                    <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5  border border-status-error/30">
+                                    <Chip variant="danger" muted className="text-[0.625rem] leading-none px-1.5 py-0.5">
                                       Obrigatório
                                     </Chip>
                                   )}
@@ -508,7 +508,7 @@ export function JobScreeningSection({
                                     {block.editable && blockQuestions.length > 0 && (
                                       <>
                                         {eliminatoryCount > 0 && (
-                                          <Chip variant="neutral" muted className="text-micro px-1.5 py-0  border border-status-error/30">
+                                          <Chip variant="danger" muted className="text-micro px-1.5 py-0">
                                             {eliminatoryCount} Elim.
                                           </Chip>
                                         )}
@@ -591,7 +591,7 @@ export function JobScreeningSection({
                                                     : item.category || 'Geral'}
                                                 </Chip>
                                                 {(item.type === 'eliminatory' || item.required) && (
-                                                  <Chip variant="neutral" muted className="text-[0.625rem] leading-none px-1.5 py-0.5 rounded-full  border border-status-error/30">
+                                                  <Chip variant="danger" muted className="text-[0.625rem] leading-none px-1.5 py-0.5 rounded-full">
                                                     Eliminatória
                                                   </Chip>
                                                 )}

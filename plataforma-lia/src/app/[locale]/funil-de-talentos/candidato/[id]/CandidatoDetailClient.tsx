@@ -128,7 +128,7 @@ export default function CandidateProfilePage() {
                     {!!candidate.communication_consent && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Chip variant="neutral" muted className="text-xs  border-status-success/30">
+                          <Chip variant="success" muted className="text-xs">
                             <Shield className="w-3 h-3 mr-1" />LGPD
                           </Chip>
                         </TooltipTrigger>
@@ -138,7 +138,7 @@ export default function CandidateProfilePage() {
                     {!!candidate.is_blacklisted && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Chip variant="neutral" muted className="text-xs  border-status-error/30">⚠️ LCNU</Chip>
+                          <Chip variant="danger" muted className="text-xs">⚠️ LCNU</Chip>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p className="font-medium">Lista de Candidatos Não Utilizáveis</p>
@@ -244,7 +244,7 @@ export default function CandidateProfilePage() {
                     {!!candidate.work_mode && <Chip variant="neutral" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.work_mode)}</Chip>}
                     {!!candidate.contract_type && <Chip variant="neutral" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.contract_type)}</Chip>}
                     {!!candidate.is_remote && <Chip variant="neutral" className="text-xs bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default">🌐 Remoto</Chip>}
-                    {!!candidate.willing_to_relocate && <Chip variant="neutral" className="text-xs  border-status-success/30">✈️ Aceita Mudança</Chip>}
+                    {!!candidate.willing_to_relocate && <Chip variant="success" className="text-xs">✈️ Aceita Mudança</Chip>}
                     {!!candidate.mobility && <Chip variant="neutral" className="text-xs  border-wedo-purple/30">🚗 Mobilidade</Chip>}
                     {!!candidate.availability && <Chip variant="neutral" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.availability)}</Chip>}
                   </div>
