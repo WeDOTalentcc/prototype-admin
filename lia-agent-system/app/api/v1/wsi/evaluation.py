@@ -372,6 +372,11 @@ Return ONLY valid JSON:
     analysis_id = str(uuid.uuid4())
     try:
         _repo = WsiRepository(db)
+        # Task #511 — response_hash explícito (mandatory no repositório).
+        from app.shared.security.wsi_hashing import hash_response
+        resp_hash = hash_response(
+            request.response_text, request.session_id, request.question_id
+        )
         await _repo.insert_response_analysis_simple(
             analysis_id=analysis_id,
             session_id=request.session_id,
@@ -386,6 +391,7 @@ Return ONLY valid JSON:
             red_flags=data.get("red_flags", []),
             final_score=data.get("score", 6.0),
             justification=data.get("feedback", ""),
+            response_hash=resp_hash,
         )
     except Exception as e:
         logger.warning(f"Failed to save analysis: {e}")

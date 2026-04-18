@@ -334,6 +334,12 @@ async def analyze_response(
         )
         
         analysis_id = str(uuid.uuid4())
+        # Task #511 — hash determinístico explícito (response_hash agora
+        # é argumento obrigatório no repositório).
+        from app.shared.security.wsi_hashing import hash_response
+        resp_hash = hash_response(
+            analysis.response_text, request.session_id, request.question_id
+        )
         await repo.insert_response_analysis(
             analysis_id=analysis_id,
             session_id=request.session_id,
@@ -352,6 +358,7 @@ async def analyze_response(
             consistency_penalty=analysis.consistency_penalty,
             final_score=analysis.final_score,
             justification=analysis.justification,
+            response_hash=resp_hash,
         )
         
         

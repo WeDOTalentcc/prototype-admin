@@ -155,17 +155,19 @@ class WsiRepository:
         consistency_penalty: float | None,
         final_score: float,
         justification: str,
-        response_hash: str | None = None,
+        response_hash: str,
     ) -> None:
         """Persist a response analysis record.
 
-        Task #511 round 3: `response_hash` é obrigatório (NOT NULL na coluna
-        após migration 091). Se o caller não fornecer, calculamos aqui via
-        `hash_response` para garantir consistência — a coluna nunca pode
-        receber NULL após a migration.
+        Task #511 round 3: `response_hash` é argumento obrigatório
+        (NOT NULL na coluna após migration 091). Callers DEVEM computar
+        via `app.shared.security.wsi_hashing.hash_response`. Mantemos
+        guard runtime — string vazia também é inválida.
         """
         if not response_hash:
-            response_hash = hash_response(response_text, session_id, question_id)
+            raise ValueError(
+                "response_hash is required (Task #511 EU AI Act audit trail)"
+            )
         # Audit trail paralelo (wsi_responses) — mesmo hash, FAIL-FAST.
         await self.db.execute(text("""
             INSERT INTO wsi_responses (
@@ -471,16 +473,18 @@ class WsiRepository:
         red_flags: list,
         final_score: float,
         justification: str,
-        response_hash: str | None = None,
+        response_hash: str,
     ) -> None:
         """Persist a simplified response-analysis record (ON CONFLICT DO NOTHING).
 
-        Task #511 round 3: `response_hash` obrigatório na coluna após
-        migration 091. Calculado se não fornecido para garantir
-        compatibilidade com callers legados (eval pipeline).
+        Task #511 round 3: `response_hash` é argumento obrigatório
+        (NOT NULL após migration 091). Callers DEVEM computar via
+        `hash_response`. Guard runtime contra string vazia.
         """
         if not response_hash:
-            response_hash = hash_response(response_text, session_id, question_id)
+            raise ValueError(
+                "response_hash is required (Task #511 EU AI Act audit trail)"
+            )
         await self.db.execute(text("""
             INSERT INTO wsi_response_analyses (
                 id, session_id, question_id, candidate_id, job_vacancy_id,
