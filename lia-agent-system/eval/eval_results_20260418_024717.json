@@ -1,0 +1,202 @@
+[
+  {
+    "id": "SO-001",
+    "category": "SO",
+    "severity": "critical",
+    "title": "Search candidates by skills",
+    "prompt": "busca candidatos com experiência em React e Node.js, disponíveis para São Paulo",
+    "context": {
+      "scope": "Sourcing",
+      "page": "sourcing"
+    },
+    "expected_tools": [
+      "search_candidates"
+    ],
+    "canonical_files": [
+      "app/domains/sourcing/agents/sourcing_tool_registry.py",
+      "app/domains/sourcing/agents/sourcing_react_agent.py"
+    ],
+    "success_criteria": [
+      "Filters by React AND Node.js",
+      "Filters by location",
+      "Returns candidate list"
+    ],
+    "anti_patterns": [
+      "Returns all candidates without filtering",
+      "Cannot search"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 70,
+    "response": "Quais critérios de busca deseja usar?",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-18T02:47:04.089136"
+  },
+  {
+    "id": "SO-002",
+    "category": "SO",
+    "severity": "high",
+    "title": "Match candidates to a job",
+    "prompt": "quais candidatos do pool são melhor match para a vaga de Tech Lead Backend?",
+    "context": {
+      "scope": "Sourcing",
+      "page": "sourcing"
+    },
+    "expected_tools": [
+      "match_candidates_to_job"
+    ],
+    "canonical_files": [
+      "app/domains/sourcing/agents/sourcing_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Returns ranked results",
+      "Includes match score or percentage"
+    ],
+    "anti_patterns": [
+      "Returns unranked list"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 5334,
+    "response": "Para encontrar os candidatos do pool que melhor correspondem à vaga de Tech Lead Backend, preciso primeiro entender os requisitos e detalhes específicos dessa vaga. Você poderia me fornecer o `job_id` da vaga de Tech Lead Backend?\n\nCom o ID da vaga, posso obter os detalhes completos, incluindo as skills e senioridade requeridas, e então usar essas informações para buscar no pool de candidatos.",
+    "error": "",
+    "score": 2,
+    "flags": [],
+    "scored_at": "2026-04-18T02:47:09.923268"
+  },
+  {
+    "id": "SO-003",
+    "category": "SO",
+    "severity": "high",
+    "title": "Semantic search for candidates",
+    "prompt": "encontra candidatos com perfil de liderança técnica e experiência em startups de alto crescimento",
+    "context": {
+      "scope": "Sourcing",
+      "page": "sourcing"
+    },
+    "expected_tools": [
+      "rag_semantic_search"
+    ],
+    "canonical_files": [
+      "app/domains/sourcing/agents/sourcing_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Uses semantic (not keyword) search",
+      "Returns semantically relevant candidates"
+    ],
+    "anti_patterns": [
+      "Uses exact keyword matching only"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 48,
+    "response": "Quais critérios de busca deseja usar?",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-18T02:47:10.471988"
+  },
+  {
+    "id": "SO-004",
+    "category": "SO",
+    "severity": "high",
+    "title": "Enrich candidate profile",
+    "prompt": "enriquece o perfil do candidato João Silva com dados do LinkedIn",
+    "context": {
+      "scope": "Candidatos",
+      "page": "candidatos"
+    },
+    "expected_tools": [
+      "analyze_candidate_profile"
+    ],
+    "canonical_files": [
+      "app/domains/sourcing/agents/sourcing_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Attempts profile enrichment",
+      "Returns additional data found"
+    ],
+    "anti_patterns": [
+      "Returns only existing profile data"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 2984,
+    "response": "Para enriquecer o perfil do João Silva com dados do LinkedIn, preciso que você me forneça o conteúdo do perfil dele (copiar e colar o texto). Não consigo acessar o LinkedIn diretamente.",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-18T02:47:13.956809"
+  },
+  {
+    "id": "SO-005",
+    "category": "SO",
+    "severity": "medium",
+    "title": "Search GitHub profiles",
+    "prompt": "busca desenvolvedores Python com contribuições open source no GitHub para a vaga de Backend",
+    "context": {
+      "scope": "Sourcing",
+      "page": "sourcing"
+    },
+    "expected_tools": [
+      "search_github_profile"
+    ],
+    "canonical_files": [
+      "app/domains/sourcing/registries/github_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Uses GitHub-specific search",
+      "Filters for open source contributions"
+    ],
+    "anti_patterns": [
+      "Uses generic search instead of GitHub"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 2392,
+    "response": "Não consigo buscar desenvolvedores com base em suas contribuições no GitHub. Consigo buscar por skills, senioridade, localização e tempo de experiência.\n\nSe você me informar as *skills* e a *senioridade* para a vaga de Desenvolvedor Backend, posso realizar a busca.",
+    "error": "",
+    "score": 0,
+    "flags": [
+      "REFUSAL: 'não consigo'"
+    ],
+    "scored_at": "2026-04-18T02:47:16.849791"
+  },
+  {
+    "id": "SO-006",
+    "category": "SO",
+    "severity": "medium",
+    "title": "Diversity sourcing",
+    "prompt": "busca candidatos priorizando diversidade de gênero e étnica para a vaga de liderança",
+    "context": {
+      "scope": "Sourcing",
+      "page": "sourcing"
+    },
+    "expected_tools": [
+      "source_by_diversity"
+    ],
+    "canonical_files": [
+      "app/domains/sourcing/registries/diversity_tool_registry.py",
+      "app/shared/compliance/fairness_guard.py"
+    ],
+    "success_criteria": [
+      "Uses diversity-specific sourcing",
+      "Applies fairness guidelines"
+    ],
+    "anti_patterns": [
+      "Uses generic search without diversity consideration"
+    ],
+    "api_ok": false,
+    "http_status": 400,
+    "latency_ms": 6,
+    "response": "",
+    "error": "{\"detail\":\"Não consigo processar esta solicitação. Por favor, reformule sua mensagem e tente novamente.\"}",
+    "score": 0,
+    "flags": [
+      "HTTP_400"
+    ],
+    "scored_at": "2026-04-18T02:47:17.356435"
+  }
+]

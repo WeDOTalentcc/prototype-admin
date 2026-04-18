@@ -76,7 +76,6 @@ import { KanbanCardActions } from "./KanbanCardActions"
 import { KanbanCardScores } from "./KanbanCardScores"
 import { KanbanCardStatusBadges } from "./KanbanCardStatusBadges"
 import { KanbanCardInterviewButtons } from "./KanbanCardInterviewButtons"
-import { kanbanCardStyles } from "@/lib/design-tokens"
 
 type KanbanCandidate = CandidateLocal & {
   score?: number

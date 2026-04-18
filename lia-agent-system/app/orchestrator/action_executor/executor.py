@@ -107,6 +107,16 @@ class ActionExecutorService:
         if entities.get("outcome"):
             params["outcome"] = entities["outcome"]
 
+        # Sourcing / generic search params
+        if entities.get("query"):
+            params["query"] = entities["query"]
+        if entities.get("filters"):
+            params["filters"] = entities["filters"]
+        if entities.get("limit"):
+            params["limit"] = entities["limit"]
+        if entities.get("job_vacancy_id"):
+            params["job_vacancy_id"] = entities["job_vacancy_id"]
+
         if entities.get("field_name"):
             params["field_name"] = entities["field_name"]
         if entities.get("field_value"):

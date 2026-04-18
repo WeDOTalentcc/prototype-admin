@@ -465,10 +465,6 @@ export const kanbanCardStyles = {
   // Divisor inferior (footer)
   divider:
     'border-t border-lia-border-subtle dark:border-lia-border-subtle',
-  footerPadding: {
-    comfortable: 'mt-2 pt-2',
-    compact: 'mt-2 pt-2',
-  },
   // Ribbon (faixa superior, tipo "Ação Necessária")
   ribbon:
     'px-2 py-1 bg-lia-bg-tertiary dark:bg-lia-bg-tertiary',
