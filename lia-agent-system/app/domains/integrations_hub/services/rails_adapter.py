@@ -791,9 +791,9 @@ class RailsAdapter:
         client = await self._get_rails_client()
         if not client:
             return None
-        rails_id = self._to_rails_id(job_id)
+        rails_id = await self._resolve_rails_job_id(job_id)
         if rails_id is None:
-            logger.debug("[RailsAdapter] get_job_from_rails_only: non-integer ID %r — skipping", job_id)
+            logger.debug("[RailsAdapter] get_job_from_rails_only: unresolvable ID %r — skipping", job_id)
             return None
         try:
             data = await client.get_job(rails_id)
@@ -840,7 +840,7 @@ class RailsAdapter:
         """Get job: Rails first, local DB fallback."""
         client = await self._get_rails_client()
         if client:
-            rails_id = self._to_rails_id(job_id)
+            rails_id = await self._resolve_rails_job_id(job_id)
             if rails_id is not None:
                 try:
                     data = await client.get_job(rails_id)
@@ -930,9 +930,9 @@ class RailsAdapter:
 
         client = await self._get_rails_client()
         if client:
-            rails_id = self._to_rails_id(job_id)
+            rails_id = await self._resolve_rails_job_id(job_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] update_job: non-integer ID %r — skipping Rails", job_id)
+                logger.warning("[RailsAdapter] update_job: unresolvable ID %r — skipping Rails", job_id)
                 return None
             try:
                 result = await client.update_job(rails_id, rails_data)
@@ -947,9 +947,9 @@ class RailsAdapter:
         """Delete job from Rails."""
         client = await self._get_rails_client()
         if client:
-            rails_id = self._to_rails_id(job_id)
+            rails_id = await self._resolve_rails_job_id(job_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] delete_job: non-integer ID %r — skipping Rails", job_id)
+                logger.warning("[RailsAdapter] delete_job: unresolvable ID %r — skipping Rails", job_id)
                 return False
             try:
                 return await client.delete_job(rails_id)
@@ -977,9 +977,9 @@ class RailsAdapter:
         """Get a single apply from Rails."""
         client = await self._get_rails_client()
         if client:
-            rails_id = self._to_rails_id(apply_id)
+            rails_id = await self._resolve_rails_application_id(apply_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] get_apply: non-integer ID %r — skipping Rails", apply_id)
+                logger.warning("[RailsAdapter] get_apply: unresolvable ID %r — skipping Rails", apply_id)
                 return None
             try:
                 data = await client.get_apply(rails_id)
@@ -993,11 +993,11 @@ class RailsAdapter:
         """Create an apply in Rails."""
         client = await self._get_rails_client()
         if client:
-            cand_rails_id = self._to_rails_id(candidate_id)
-            job_rails_id = self._to_rails_id(job_id)
+            cand_rails_id = await self._resolve_rails_candidate_id(candidate_id)
+            job_rails_id = await self._resolve_rails_job_id(job_id)
             if cand_rails_id is None or job_rails_id is None:
                 logger.warning(
-                    "[RailsAdapter] create_apply: non-integer IDs candidate=%r job=%r — skipping Rails",
+                    "[RailsAdapter] create_apply: unresolvable IDs candidate=%r job=%r — skipping Rails",
                     candidate_id, job_id,
                 )
                 return None
@@ -1013,9 +1013,9 @@ class RailsAdapter:
         """Update an apply in Rails."""
         client = await self._get_rails_client()
         if client:
-            rails_id = self._to_rails_id(apply_id)
+            rails_id = await self._resolve_rails_application_id(apply_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] update_apply: non-integer ID %r — skipping Rails", apply_id)
+                logger.warning("[RailsAdapter] update_apply: unresolvable ID %r — skipping Rails", apply_id)
                 return None
             try:
                 data = await client.update_apply(rails_id, apply_data)
@@ -1034,7 +1034,15 @@ class RailsAdapter:
         client = await self._get_rails_client()
         if client:
             try:
-                job_id_int = int(job_id) if job_id and job_id.isdigit() else None
+                job_id_int = (
+                    await self._resolve_rails_job_id(job_id) if job_id else None
+                )
+                if job_id and job_id_int is None:
+                    logger.warning(
+                        "[RailsAdapter] list_selective_processes: unresolvable job_id %r — skipping Rails",
+                        job_id,
+                    )
+                    return []
                 results = await client.list_selective_processes(job_id=job_id_int)
                 if results:
                     return [rails_selective_process_to_fork(r) for r in results]
@@ -1043,6 +1051,26 @@ class RailsAdapter:
         return []
 
     # ---- Messages ----
+
+    async def _resolve_reference_id(
+        self, reference_type: str | None, reference_id: str | None
+    ) -> int | None:
+        """Resolve a message reference_id (bigint or fork UUID) using the
+        resolver appropriate for ``reference_type``.
+
+        Falls back to bigint passthrough when the type is unknown so we
+        don't regress messages that already worked with raw integer IDs.
+        """
+        if not reference_id:
+            return None
+        normalized = (reference_type or "").strip().lower()
+        if normalized in ("job", "jobs", "vacancy", "job_vacancy"):
+            return await self._resolve_rails_job_id(reference_id)
+        if normalized in ("apply", "application", "applies", "applications"):
+            return await self._resolve_rails_application_id(reference_id)
+        if normalized in ("candidate", "candidates"):
+            return await self._resolve_rails_candidate_id(reference_id)
+        return self._to_rails_id(reference_id)
 
     async def list_messages(
         self,
@@ -1055,7 +1083,13 @@ class RailsAdapter:
         client = await self._get_rails_client()
         if client:
             try:
-                ref_id_int = int(reference_id) if reference_id and reference_id.isdigit() else None
+                ref_id_int = await self._resolve_reference_id(reference_type, reference_id)
+                if reference_id and ref_id_int is None:
+                    logger.warning(
+                        "[RailsAdapter] list_messages: unresolvable reference_id %r (type=%r) — skipping Rails",
+                        reference_id, reference_type,
+                    )
+                    return []
                 results = await client.list_messages(
                     page=page,
                     limit=limit,
@@ -1081,7 +1115,13 @@ class RailsAdapter:
         client = await self._get_rails_client()
         if client:
             try:
-                ref_id_int = int(reference_id) if reference_id and reference_id.isdigit() else None
+                ref_id_int = await self._resolve_reference_id(reference_type, reference_id)
+                if reference_id and ref_id_int is None:
+                    logger.warning(
+                        "[RailsAdapter] send_message: unresolvable reference_id %r (type=%r) — skipping Rails",
+                        reference_id, reference_type,
+                    )
+                    return None
                 parent_id_int = int(parent_message_id) if parent_message_id and parent_message_id.isdigit() else None
                 result = await client.send_message(
                     content=content,

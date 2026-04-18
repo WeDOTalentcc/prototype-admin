@@ -302,3 +302,309 @@ async def test_real_rails_adapter_collapses_uuid_and_bigint_for_dual_id_entities
 
     assert ctx.check_idempotency(key_from_uuid) is True
     assert ctx.check_idempotency(key_from_bigint) is False
+
+
+# ---------------------------------------------------------------- CRUD wiring
+#
+# Task #484 — RailsAdapter CRUD methods (get_job/update_job/delete_job/
+# get_apply/update_apply/create_apply/list_selective_processes/list_messages/
+# send_message) must route IDs through the new dual-ID resolvers so a fork
+# UUID is transparently translated to the Rails bigint instead of being
+# silently dropped as a "non-integer ID".
+
+
+def _fake_client_with_lookup(lookup_attr: str, rails_id: int) -> AsyncMock:
+    """Build an AsyncMock client with a fork_uuid lookup that returns a
+    Rails record. Other methods default to AsyncMock too."""
+    fake_client = AsyncMock()
+    setattr(
+        fake_client,
+        lookup_attr,
+        AsyncMock(return_value={"id": rails_id, "fork_uuid": "x"}),
+    )
+    return fake_client
+
+
+def _patch_client(monkeypatch, adapter: RailsAdapter, fake_client: AsyncMock) -> None:
+    async def _fake_get_client():
+        return fake_client
+
+    monkeypatch.setattr(adapter, "_get_rails_client", _fake_get_client)
+
+
+@pytest.mark.asyncio
+async def test_update_job_translates_fork_uuid_to_bigint(monkeypatch):
+    rails_id = 5150
+    fork_uuid = "deadbeef-aaaa-bbbb-cccc-1234567890ab"
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+    fake_client = _fake_client_with_lookup("find_job_by_fork_uuid", rails_id)
+    fake_client.update_job = AsyncMock(return_value={"id": rails_id, "title": "x"})
+    _patch_client(monkeypatch, adapter, fake_client)
+
+    result = await adapter.update_job(fork_uuid, {"title": "new"})
+
+    assert result is not None
+    assert result["rails_id"] == rails_id
+    fake_client.find_job_by_fork_uuid.assert_awaited_once_with(fork_uuid)
+    fake_client.update_job.assert_awaited_once()
+    sent_id, sent_payload = fake_client.update_job.await_args.args
+    assert sent_id == rails_id
+    assert sent_payload == {"title": "new"}
+
+
+@pytest.mark.asyncio
+async def test_update_job_with_bigint_skips_lookup(monkeypatch):
+    rails_id = 99
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+    fake_client = _fake_client_with_lookup("find_job_by_fork_uuid", rails_id)
+    fake_client.update_job = AsyncMock(return_value={"id": rails_id})
+    _patch_client(monkeypatch, adapter, fake_client)
+
+    result = await adapter.update_job(str(rails_id), {"title": "x"})
+
+    assert result is not None
+    fake_client.find_job_by_fork_uuid.assert_not_awaited()
+    fake_client.update_job.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_get_apply_translates_fork_uuid_to_bigint(monkeypatch):
+    rails_id = 321
+    fork_uuid = "feedface-1111-2222-3333-444455556666"
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+    fake_client = _fake_client_with_lookup("find_application_by_fork_uuid", rails_id)
+    fake_client.get_apply = AsyncMock(
+        return_value={"id": rails_id, "candidate_id": 1, "job_id": 2}
+    )
+    _patch_client(monkeypatch, adapter, fake_client)
+
+    result = await adapter.get_apply(fork_uuid)
+
+    assert result is not None
+    assert result["rails_id"] == rails_id
+    fake_client.find_application_by_fork_uuid.assert_awaited_once_with(fork_uuid)
+    fake_client.get_apply.assert_awaited_once_with(rails_id)
+
+
+@pytest.mark.asyncio
+async def test_update_apply_translates_fork_uuid_to_bigint(monkeypatch):
+    rails_id = 654
+    fork_uuid = "feedface-1111-2222-3333-444455556666"
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+    fake_client = _fake_client_with_lookup("find_application_by_fork_uuid", rails_id)
+    fake_client.update_apply = AsyncMock(
+        return_value={"id": rails_id, "candidate_id": 1, "job_id": 2}
+    )
+    _patch_client(monkeypatch, adapter, fake_client)
+
+    result = await adapter.update_apply(fork_uuid, {"selective_process_id": 3})
+
+    assert result is not None
+    assert result["rails_id"] == rails_id
+    fake_client.find_application_by_fork_uuid.assert_awaited_once_with(fork_uuid)
+    fake_client.update_apply.assert_awaited_once_with(
+        rails_id, {"selective_process_id": 3}
+    )
+
+
+@pytest.mark.asyncio
+async def test_unresolvable_fork_uuid_returns_none_without_calling_rails(monkeypatch):
+    """When the fork_uuid lookup yields nothing, the CRUD method must not
+    invoke the actual Rails write — it returns None like before."""
+    fork_uuid = "00000000-0000-0000-0000-000000000000"
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+    fake_client = AsyncMock()
+    fake_client.find_application_by_fork_uuid = AsyncMock(return_value=None)
+    fake_client.update_apply = AsyncMock()
+    _patch_client(monkeypatch, adapter, fake_client)
+
+    result = await adapter.update_apply(fork_uuid, {"x": 1})
+
+    assert result is None
+    fake_client.update_apply.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_delete_job_translates_fork_uuid_to_bigint(monkeypatch):
+    rails_id = 808
+    fork_uuid = "deadbeef-1010-2020-3030-404050506060"
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+    fake_client = _fake_client_with_lookup("find_job_by_fork_uuid", rails_id)
+    fake_client.delete_job = AsyncMock(return_value=True)
+    _patch_client(monkeypatch, adapter, fake_client)
+
+    assert await adapter.delete_job(fork_uuid) is True
+    fake_client.find_job_by_fork_uuid.assert_awaited_once_with(fork_uuid)
+    fake_client.delete_job.assert_awaited_once_with(rails_id)
+
+
+@pytest.mark.asyncio
+async def test_delete_job_unresolvable_uuid_returns_false(monkeypatch):
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+    fake_client = AsyncMock()
+    fake_client.find_job_by_fork_uuid = AsyncMock(return_value=None)
+    fake_client.delete_job = AsyncMock()
+    _patch_client(monkeypatch, adapter, fake_client)
+
+    assert await adapter.delete_job("11111111-2222-3333-4444-555555555555") is False
+    fake_client.delete_job.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_create_apply_translates_both_fork_uuids(monkeypatch):
+    cand_rails_id = 11
+    job_rails_id = 22
+    cand_uuid = "aaaaaaaa-1111-2222-3333-444444444444"
+    job_uuid = "bbbbbbbb-1111-2222-3333-444444444444"
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+    fake_client = AsyncMock()
+    fake_client.find_candidate_by_fork_uuid = AsyncMock(
+        return_value={"id": cand_rails_id}
+    )
+    fake_client.find_job_by_fork_uuid = AsyncMock(
+        return_value={"id": job_rails_id}
+    )
+    fake_client.create_apply = AsyncMock(
+        return_value={"id": 999, "candidate_id": cand_rails_id, "job_id": job_rails_id}
+    )
+    _patch_client(monkeypatch, adapter, fake_client)
+
+    result = await adapter.create_apply(cand_uuid, job_uuid)
+    assert result is not None
+    fake_client.create_apply.assert_awaited_once_with(cand_rails_id, job_rails_id)
+
+
+@pytest.mark.asyncio
+async def test_create_apply_skipped_when_either_id_unresolvable(monkeypatch):
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+    fake_client = AsyncMock()
+    fake_client.find_candidate_by_fork_uuid = AsyncMock(return_value=None)
+    fake_client.find_job_by_fork_uuid = AsyncMock(return_value={"id": 1})
+    fake_client.create_apply = AsyncMock()
+    _patch_client(monkeypatch, adapter, fake_client)
+
+    result = await adapter.create_apply(
+        "aaaaaaaa-1111-2222-3333-444444444444",
+        "bbbbbbbb-1111-2222-3333-444444444444",
+    )
+    assert result is None
+    fake_client.create_apply.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_list_selective_processes_translates_fork_uuid(monkeypatch):
+    rails_id = 7
+    fork_uuid = "ccccdddd-1111-2222-3333-444444444444"
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+    fake_client = _fake_client_with_lookup("find_job_by_fork_uuid", rails_id)
+    fake_client.list_selective_processes = AsyncMock(
+        return_value=[{"id": 100, "name": "Triagem", "job_id": rails_id}]
+    )
+    _patch_client(monkeypatch, adapter, fake_client)
+
+    out = await adapter.list_selective_processes(job_id=fork_uuid)
+    assert len(out) == 1
+    fake_client.list_selective_processes.assert_awaited_once_with(job_id=rails_id)
+
+
+@pytest.mark.asyncio
+async def test_list_selective_processes_unresolvable_uuid_returns_empty(monkeypatch):
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+    fake_client = AsyncMock()
+    fake_client.find_job_by_fork_uuid = AsyncMock(return_value=None)
+    fake_client.list_selective_processes = AsyncMock()
+    _patch_client(monkeypatch, adapter, fake_client)
+
+    out = await adapter.list_selective_processes(
+        job_id="11111111-2222-3333-4444-555555555555"
+    )
+    assert out == []
+    fake_client.list_selective_processes.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "reference_type,lookup_attr",
+    [
+        ("Job", "find_job_by_fork_uuid"),
+        ("Apply", "find_application_by_fork_uuid"),
+        ("Candidate", "find_candidate_by_fork_uuid"),
+    ],
+)
+async def test_list_messages_resolves_reference_id_by_type(
+    monkeypatch, reference_type: str, lookup_attr: str
+):
+    rails_id = 4242
+    fork_uuid = "feedbeef-1111-2222-3333-444444444444"
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+    fake_client = _fake_client_with_lookup(lookup_attr, rails_id)
+    fake_client.list_messages = AsyncMock(
+        return_value=[{"id": 1, "content": "hi", "reference_id": rails_id}]
+    )
+    _patch_client(monkeypatch, adapter, fake_client)
+
+    out = await adapter.list_messages(
+        reference_type=reference_type, reference_id=fork_uuid
+    )
+    assert len(out) == 1
+    getattr(fake_client, lookup_attr).assert_awaited_once_with(fork_uuid)
+    fake_client.list_messages.assert_awaited_once_with(
+        page=1, limit=30, reference_type=reference_type, reference_id=rails_id
+    )
+
+
+@pytest.mark.asyncio
+async def test_list_messages_unknown_reference_type_falls_back_to_bigint(monkeypatch):
+    """Unknown reference_type must keep the legacy bigint passthrough so
+    integer IDs continue to work and never trigger a fork_uuid lookup."""
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+    fake_client = AsyncMock()
+    fake_client.find_job_by_fork_uuid = AsyncMock()
+    fake_client.find_application_by_fork_uuid = AsyncMock()
+    fake_client.find_candidate_by_fork_uuid = AsyncMock()
+    fake_client.list_messages = AsyncMock(return_value=[])
+    _patch_client(monkeypatch, adapter, fake_client)
+
+    out = await adapter.list_messages(reference_type="SomethingElse", reference_id="42")
+    assert out == []
+    fake_client.find_job_by_fork_uuid.assert_not_awaited()
+    fake_client.find_application_by_fork_uuid.assert_not_awaited()
+    fake_client.find_candidate_by_fork_uuid.assert_not_awaited()
+    fake_client.list_messages.assert_awaited_once_with(
+        page=1, limit=30, reference_type="SomethingElse", reference_id=42
+    )
+
+
+@pytest.mark.asyncio
+async def test_send_message_resolves_apply_reference_uuid(monkeypatch):
+    rails_id = 555
+    fork_uuid = "feedface-9999-8888-7777-666655554444"
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+    fake_client = _fake_client_with_lookup("find_application_by_fork_uuid", rails_id)
+    fake_client.send_message = AsyncMock(
+        return_value={"id": 1, "content": "ok", "reference_id": rails_id}
+    )
+    _patch_client(monkeypatch, adapter, fake_client)
+
+    result = await adapter.send_message(
+        content="ok", reference_type="apply", reference_id=fork_uuid
+    )
+    assert result is not None
+    fake_client.find_application_by_fork_uuid.assert_awaited_once_with(fork_uuid)
+    sent_kwargs = fake_client.send_message.await_args.kwargs
+    assert sent_kwargs["reference_id"] == rails_id
+
+
+@pytest.mark.asyncio
+async def test_send_message_unknown_type_falls_back_to_bigint(monkeypatch):
+    adapter = RailsAdapter(db=None, rails_token="test-token")
+    fake_client = AsyncMock()
+    fake_client.send_message = AsyncMock(return_value={"id": 1})
+    _patch_client(monkeypatch, adapter, fake_client)
+
+    result = await adapter.send_message(
+        content="hi", reference_type="ChatRoom", reference_id="7"
+    )
+    assert result is not None
+    sent_kwargs = fake_client.send_message.await_args.kwargs
+    assert sent_kwargs["reference_id"] == 7
