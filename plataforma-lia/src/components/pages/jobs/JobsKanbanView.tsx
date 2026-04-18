@@ -2,7 +2,6 @@
 
 import React, { useMemo } from "react"
 import { useTranslations, useLocale } from "next-intl"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { KanbanColumn } from "@/components/pages/job-kanban/KanbanColumn"
 import { JOB_KANBAN_COLUMNS, groupJobsByKanbanColumn, jobToKanbanItem } from "@/lib/transforms/jobs-to-kanban"
 import type { Job } from "@/components/jobs"
@@ -31,28 +30,26 @@ export function JobsKanbanView({ jobs, onJobClick }: JobsKanbanViewProps) {
   }, [jobs])
 
   return (
-    <div className="flex-1 min-h-0 overflow-hidden">
-      <ScrollArea className="h-full">
-        <div className="flex gap-3 pb-2">
-          {JOB_KANBAN_COLUMNS.map((col) => {
-            const colJobs = grouped[col.id] ?? []
-            const items = colJobs.map((job) => jobToKanbanItem(job, { locale, labels }))
-            return (
-              <KanbanColumn
-                key={col.id}
-                stage={{ id: col.id, name: t(`columns.${col.id}`), accentClass: col.accentClass }}
-                items={items}
-                onItemClick={(item) => {
-                  const job = jobById.get(item.id)
-                  if (job) onJobClick(job)
-                }}
-                isDragDisabled
-                emptyMessage={t("emptyColumn")}
-              />
-            )
-          })}
-        </div>
-      </ScrollArea>
+    <div className="flex-1 min-h-0 overflow-x-auto overflow-y-hidden">
+      <div className="flex gap-3 pb-2 h-full min-w-max">
+        {JOB_KANBAN_COLUMNS.map((col) => {
+          const colJobs = grouped[col.id] ?? []
+          const items = colJobs.map((job) => jobToKanbanItem(job, { locale, labels }))
+          return (
+            <KanbanColumn
+              key={col.id}
+              stage={{ id: col.id, name: t(`columns.${col.id}`), accentClass: col.accentClass }}
+              items={items}
+              onItemClick={(item) => {
+                const job = jobById.get(item.id)
+                if (job) onJobClick(job)
+              }}
+              isDragDisabled
+              emptyMessage={t("emptyColumn")}
+            />
+          )
+        })}
+      </div>
     </div>
   )
 }
