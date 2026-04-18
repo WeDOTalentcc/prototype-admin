@@ -411,13 +411,11 @@ Responda em JSON:
         ETAPA 4: Calcula WSI final.
         
         Fórmula: WSI = Σ(peso_i × score_i) / 100
-        
-        Classificação:
-        - 4.5-5.0: Excelente
-        - 4.0-4.4: Alto
-        - 3.0-3.9: Médio
-        - 2.0-2.9: Regular
-        - < 2.0: Baixo
+
+        Classificação (escala canônica /10 — WSI_CUTOFFS):
+        - >= 7.5: Aprovado automático (Excelente/Alto)
+        - 6.0-7.4: Aguardando / revisão humana (Médio)
+        - < 6.0: Não aprovado (Regular/Baixo)
         
         Args:
             candidate_id: ID do candidato

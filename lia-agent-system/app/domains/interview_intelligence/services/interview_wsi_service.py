@@ -86,16 +86,21 @@ class InterviewWSIService:
 
         seven_blocks = self._map_to_seven_blocks(analysis, transcript)
 
+        # B0 #523 — Normalização /5→/10. O analyzer subjacente
+        # (interview_transcript_analysis_service) ainda produz scores em /5.
+        # Aqui promovemos para a escala canônica /10 antes de expor a consumidores
+        # (strategic_opinion, comparative_analysis, frontend). Bloom (1-6) e
+        # Dreyfus (1-5) seguem como escalas próprias — não multiplicar.
         return {
             "success": True,
             "interview_id": interview_id,
             "candidate_id": str(interview.candidate_id) if interview.candidate_id else None,
             "job_vacancy_id": str(interview.job_vacancy_id) if interview.job_vacancy_id else None,
             "interview_type": interview.interview_type,
-            "wsi_score": analysis.overall_wsi_score,
-            "technical_score": analysis.technical_score,
-            "behavioral_score": analysis.behavioral_score,
-            "cultural_score": analysis.cultural_score,
+            "wsi_score": round(analysis.overall_wsi_score * 2.0, 2),
+            "technical_score": round(analysis.technical_score * 2.0, 2),
+            "behavioral_score": round(analysis.behavioral_score * 2.0, 2),
+            "cultural_score": round(analysis.cultural_score * 2.0, 2),
             "bloom_level": analysis.bloom_average,
             "dreyfus_stage": analysis.dreyfus_average,
             "cbi_completeness": analysis.cbi_completeness,
@@ -118,35 +123,40 @@ class InterviewWSIService:
         }
 
     def _map_to_seven_blocks(self, analysis: Any, transcript: str) -> dict[str, Any]:
+        # B0 #523 — Todos os scores expostos em escala canônica /10.
+        # analysis.* (technical/behavioral/cultural) vem em /5 do analyzer
+        # legacy, então multiplicamos por 2 ao expor. Bloom (1-6) e
+        # Dreyfus (1-5) ficam como escalas próprias — sem conversão.
         text_lower = transcript.lower()
 
         leadership_hits = sum(1 for kw in LEADERSHIP_KEYWORDS if kw in text_lower)
-        leadership_score = min(5.0, 2.0 + leadership_hits * 0.5)
+        leadership_score = min(10.0, 4.0 + leadership_hits * 1.0)
 
         comm_hits = sum(1 for kw in COMMUNICATION_KEYWORDS if kw in text_lower)
-        communication_score = min(5.0, 2.0 + comm_hits * 0.5)
+        communication_score = min(10.0, 4.0 + comm_hits * 1.0)
 
         big_five = analysis.big_five_profile or {}
         extraversion = big_five.get("extraversion", 0)
         agreeableness = big_five.get("agreeableness", 0)
         if extraversion > 0.3 or agreeableness > 0.3:
-            communication_score = min(5.0, communication_score + 0.5)
+            communication_score = min(10.0, communication_score + 1.0)
 
-        potential_score = min(5.0, analysis.bloom_average)
+        # Bloom (1-6) → /10: bloom_average / 6 * 10
+        potential_score = min(10.0, (analysis.bloom_average / 6.0) * 10.0)
 
         return {
             "hard_skills": {
-                "score": round(analysis.technical_score, 2),
+                "score": round(analysis.technical_score * 2.0, 2),
                 "label": "Hard Skills / Técnico",
                 "description": "Competências técnicas demonstradas na entrevista",
             },
             "soft_skills": {
-                "score": round(analysis.behavioral_score, 2),
+                "score": round(analysis.behavioral_score * 2.0, 2),
                 "label": "Soft Skills / Comportamental",
                 "description": "Competências comportamentais e interpessoais",
             },
             "experience": {
-                "score": round(analysis.dreyfus_average, 2),
+                "score": round(analysis.dreyfus_average, 2),  # Dreyfus 1-5: escala própria
                 "label": "Experiência (Dreyfus)",
                 "description": f"Estágio de expertise: {self._dreyfus_label(analysis.dreyfus_average)}",
             },
@@ -161,7 +171,7 @@ class InterviewWSIService:
                 "description": f"{comm_hits} indicadores de comunicação identificados",
             },
             "cultural_fit": {
-                "score": round(analysis.cultural_score, 2),
+                "score": round(analysis.cultural_score * 2.0, 2),
                 "label": "Fit Cultural",
                 "description": "Compatibilidade cultural baseada em Big Five e evidências",
             },

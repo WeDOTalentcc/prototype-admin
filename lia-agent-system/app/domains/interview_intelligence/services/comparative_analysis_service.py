@@ -84,12 +84,12 @@ class ComparativeAnalysisService:
                 },
                 "hired_top_performers": {
                     "count": len(hired_scores),
-                    "provenance": "Candidatos contratados (status=hired) em vagas similares com lia_score >= 3.5",
+                    "provenance": "Candidatos contratados (status=hired) em vagas similares com lia_score >= 7.0 (escala /10)",
                     "scores": hired_scores[:5],
                 },
                 "triaged_high_scorers": {
                     "count": len(triaged_scores),
-                    "provenance": "Candidatos com alta pontuação na triagem (lia_score >= 3.5) para a mesma vaga",
+                    "provenance": "Candidatos com alta pontuação na triagem (lia_score >= 7.0, escala /10) para a mesma vaga",
                     "scores": triaged_scores[:5],
                 },
             },
@@ -205,7 +205,10 @@ class ComparativeAnalysisService:
                         VacancyCandidate.vacancy_id.in_(similar_ids),
                         VacancyCandidate.company_id == company_id,
                         VacancyCandidate.status == "hired",
-                        VacancyCandidate.lia_score >= 3.5,
+                        # B0 #523 — escala canônica /10 (era 3.5 em /5).
+                        # NOTA: existe inconsistência conhecida — alguns workflows
+                        # legados populam lia_score em 0-100. Tracking: rev. 14.
+                        VacancyCandidate.lia_score >= 7.0,
                     )
                 ).limit(10)
             )
@@ -247,7 +250,8 @@ class ComparativeAnalysisService:
                     and_(
                         VacancyCandidate.vacancy_id == interview.job_vacancy_id,
                         VacancyCandidate.company_id == company_id,
-                        VacancyCandidate.lia_score >= 3.5,
+                        # B0 #523 — escala canônica /10 (era 3.5 em /5).
+                        VacancyCandidate.lia_score >= 7.0,
                     )
                 ).limit(10)
             )

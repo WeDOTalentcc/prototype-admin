@@ -28,10 +28,10 @@ DADOS DA ENTREVISTA:
 - Candidato: {candidate_name}
 - Vaga: {job_title}
 - Tipo: {interview_type}
-- Score WSI: {wsi_score}/5.0
-- Score Técnico: {technical_score}/5.0
-- Score Comportamental: {behavioral_score}/5.0
-- Score Cultural: {cultural_score}/5.0
+- Score WSI: {wsi_score}/10.0
+- Score Técnico: {technical_score}/10.0
+- Score Comportamental: {behavioral_score}/10.0
+- Score Cultural: {cultural_score}/10.0
 - Nível Bloom: {bloom_level}
 - Estágio Dreyfus: {dreyfus_stage}
 - Completude CBI: {cbi_completeness}%
@@ -102,7 +102,7 @@ class StrategicOpinionService:
             if bias_data.get("bias_detected"):
                 count = len(bias_data.get("findings", []))
                 score = bias_data.get("overall_fairness_score", "N/A")
-                bias_summary = f"{count} indicador(es) de viés (equidade: {score}/5)"
+                bias_summary = f"{count} indicador(es) de viés (equidade: {score}/10)"
             else:
                 bias_summary = "Entrevista justa (sem viés detectado)"
 
@@ -181,16 +181,17 @@ class StrategicOpinionService:
         wsi_score = wsi_data.get("wsi_score", 0)
         red_flags = wsi_data.get("red_flags", [])
 
-        if len(red_flags) >= 3 or wsi_score < 2.5:
+        # B0 #523 — escala canônica /10 (WSI_CUTOFFS): >=7.5 aprovado, >=6.0 revisão.
+        if len(red_flags) >= 3 or wsi_score < 5.0:
             recommendation = "NÃO CONTRATAR"
-            confidence = "alto" if wsi_score < 2.0 else "médio"
-        elif wsi_score >= 4.0 and len(red_flags) == 0:
+            confidence = "alto" if wsi_score < 4.0 else "médio"
+        elif wsi_score >= 8.0 and len(red_flags) == 0:
             recommendation = "CONTRATAR"
             confidence = "alto"
-        elif wsi_score >= 3.5:
+        elif wsi_score >= 7.0:
             recommendation = "CONTRATAR"
             confidence = "médio"
-        elif wsi_score >= 3.0:
+        elif wsi_score >= 6.0:
             recommendation = "AVALIAR MAIS"
             confidence = "médio"
         else:
@@ -205,7 +206,7 @@ class StrategicOpinionService:
             "recommendation": recommendation,
             "confidence": confidence,
             "executive_summary": (
-                f"Score WSI: {wsi_score}/5.0. "
+                f"Score WSI: {wsi_score}/10.0. "
                 f"Recomendação: {recommendation} (confiança {confidence}). "
                 f"Parecer gerado por análise determinística (fallback)."
             ),

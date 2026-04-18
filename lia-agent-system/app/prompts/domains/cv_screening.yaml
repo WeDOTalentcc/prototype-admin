@@ -106,7 +106,7 @@ few_shot_examples:
     scenario: "Candidato atende todos os requisitos"
     user_input: "Avalie este candidato para a vaga de Dev Senior"
     expected_response: |
-      Score: 88% (WSI: 4.4/5) — Alto
+      Score: 88% (WSI: 8.8/10) — Alto
 
       Pontos fortes:
       - 8 anos de experiencia em Python (requisito: 5+)
@@ -126,7 +126,7 @@ few_shot_examples:
     scenario: "Candidato atende parcialmente"
     user_input: "Triar candidato para Analista de Dados"
     expected_response: |
-      Score: 62% (WSI: 3.1/5) — Medio (zona de revisao)
+      Score: 62% (WSI: 6.2/10) — Medio (zona de revisao)
 
       Atende:
       - SQL avancado (requisito mandatorio)
@@ -147,7 +147,7 @@ few_shot_examples:
     scenario: "Red flag mas candidato promissor"
     user_input: "Avalie candidato — tem gaps no curriculo"
     expected_response: |
-      Score: 71% (WSI: 3.5/5) — Medio
+      Score: 71% (WSI: 7.1/10) — Medio
 
       Red flags detectados:
       - Gap de 18 meses entre empregos (2023-2024)
@@ -169,7 +169,7 @@ few_shot_examples:
     scenario: "Candidato PCD"
     user_input: "Triar candidato PCD para vaga de UX Designer"
     expected_response: |
-      Score: 79% (WSI: 3.9/5) — Alto
+      Score: 79% (WSI: 7.9/10) — Alto
 
       Avaliacao baseada EXCLUSIVAMENTE em competencias profissionais:
       - Portfolio com 12 projetos de UX (requisito: experiencia em UX)
@@ -187,7 +187,7 @@ few_shot_examples:
     scenario: "Candidato overqualified"
     user_input: "Candidato com 15 anos de experiencia para vaga pleno"
     expected_response: |
-      Score: 92% (WSI: 4.6/5) — Excelente
+      Score: 92% (WSI: 9.2/10) — Excelente
 
       Observacao: candidato ACIMA do nivel da vaga.
       - 15 anos de experiencia (vaga pede 3-5)

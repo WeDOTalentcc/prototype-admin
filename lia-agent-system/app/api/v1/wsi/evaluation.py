@@ -323,7 +323,7 @@ Analyze and provide:
    - Agreeableness: Cooperation, empathy, teamwork
    - Neuroticism: Emotional sensitivity (low = stable/calm)
 
-4. **Score (0-5)**: Overall quality of response
+4. **Score (0-10)**: Overall quality of response (escala canônica WSI /10)
 5. **Feedback**: Brief constructive feedback in Portuguese
 6. **Evidences**: Key points that support the evaluation
 7. **Red Flags**: Any concerns or inconsistencies
@@ -339,7 +339,7 @@ Return ONLY valid JSON:
     "agreeableness": 60,
     "neuroticism": 35
   }},
-  "score": 3.5,
+  "score": 7.0,
   "feedback": "Resposta demonstra boa capacidade analítica...",
   "evidences": ["Exemplo concreto citado", "Métricas mencionadas"],
   "red_flags": []
@@ -441,7 +441,7 @@ async def complete_screening(
     Complete WSI screening by analyzing all responses and generating final report.
 
     Returns comprehensive assessment including:
-    - Overall score (0-5)
+    - Overall score (0-10) — escala canônica WSI
     - Cognitive level (Bloom average)
     - Proficiency level (Dreyfus average)
     - Big Five personality profile

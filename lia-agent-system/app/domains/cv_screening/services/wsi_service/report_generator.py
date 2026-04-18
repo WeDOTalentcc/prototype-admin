@@ -110,13 +110,13 @@ RETORNE APENAS JSON:
     "evidencias": ["Projeto X", "Métrica Y"]
   }},
   "behavioral_analysis": {{
-    "colaboracao": 4.0,
-    "inovacao": 4.5,
-    "organizacao": 4.0,
-    "resiliencia": 3.5
+    "colaboracao": 8.0,
+    "inovacao": 9.0,
+    "organizacao": 8.0,
+    "resiliencia": 7.0
   }},
   "cultural_fit": {{
-    "score": 4.0,
+    "score": 8.0,
     "valores_alinhados": ["Excelência técnica", "..."],
     "atencoes": ["..."]
   }},
@@ -138,13 +138,13 @@ RETORNE APENAS JSON:
                     "evidencias": []
                 },
                 "behavioral_analysis": {
-                    "colaboracao": 3.0,
-                    "inovacao": 3.0,
-                    "organizacao": 3.0,
-                    "resiliencia": 3.0
+                    "colaboracao": 6.0,
+                    "inovacao": 6.0,
+                    "organizacao": 6.0,
+                    "resiliencia": 6.0
                 },
                 "cultural_fit": {
-                    "score": 3.0,
+                    "score": 6.0,
                     "valores_alinhados": ["Em avaliação"],
                     "atencoes": []
                 },
@@ -165,13 +165,13 @@ RETORNE APENAS JSON:
                     "evidencias": []
                 },
                 "behavioral_analysis": {
-                    "colaboracao": 3.0,
-                    "inovacao": 3.0,
-                    "organizacao": 3.0,
-                    "resiliencia": 3.0
+                    "colaboracao": 6.0,
+                    "inovacao": 6.0,
+                    "organizacao": 6.0,
+                    "resiliencia": 6.0
                 },
                 "cultural_fit": {
-                    "score": 3.0,
+                    "score": 6.0,
                     "valores_alinhados": ["Em avaliação"],
                     "atencoes": []
                 },

@@ -249,7 +249,7 @@ async def _generate_cbi_questions_llm(
     from app.shared.providers.llm_factory import get_provider_for_tenant
 
     gaps_formatted = "\n".join(
-        f"[{g.get('severity','MÉDIO')}] {g.get('competency','')} ({g.get('type','técnico')}) — score {g.get('score',0):.1f}/5 — sinais ausentes: {g.get('missing_signals','n/a')}"
+        f"[{g.get('severity','MÉDIO')}] {g.get('competency','')} ({g.get('type','técnico')}) — score {g.get('score',0):.1f}/10 — sinais ausentes: {g.get('missing_signals','n/a')}"
         for g in gaps[:3]
     ) or "Nenhum gap crítico identificado — perguntas de aprofundamento"
 

@@ -57,13 +57,14 @@ class TestFormulaTriComponente:
         assert str(WSI_FORMULA_WEIGHTS_BEHAVIORAL["star_estrutura"]) in result.formula_applied
         assert str(WSI_FORMULA_WEIGHTS_BEHAVIORAL["sinais_trait"]) in result.formula_applied
 
-    def test_final_score_bounded_1_to_5(self):
+    def test_final_score_bounded_2_to_10(self):
+        # B0 #523 — escala canônica /10 (WSI_CUTOFFS, SCALE_MIN_VALID=2.0, SCALE_MAX=10.0)
         from app.domains.cv_screening.services.wsi_deterministic_scorer import (
             calculate_wsi_deterministic,
         )
         for qt in ("technical", "behavioral"):
             result = calculate_wsi_deterministic(TECHNICAL_RESPONSE, question_type=qt)
-            assert 1.0 <= result.final_score <= 5.0
+            assert 2.0 <= result.final_score <= 10.0
 
 
 # ---------------------------------------------------------------------------
@@ -155,11 +156,12 @@ class TestFlagsStructured:
         from app.domains.cv_screening.services.wsi_deterministic_scorer import (
             calculate_wsi_deterministic,
         )
-        # autodeclaração alta com contexto fraco
+        # B0 #523 — overrides em escala canônica /10
+        # autodeclaração alta (10/10) com contexto fraco (3/10) → inflação
         result = calculate_wsi_deterministic(
-            "expert nível máximo 5 de 5",
-            autodeclaracao_override=5.0,
-            contexto_override=1.5,
+            "expert nível máximo 10 de 10",
+            autodeclaracao_override=10.0,
+            contexto_override=3.0,
             question_type="technical",
         )
         assert result.flags_structured is not None

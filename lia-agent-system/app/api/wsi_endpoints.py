@@ -323,13 +323,13 @@ async def analyze_response(
             question_id=request.question_id,
             competency=request.competency,
             response_text=request.response_text,
-            autodeclaration_score=3.5,
-            context_score=3.5,
+            autodeclaration_score=7.0,
+            context_score=7.0,
             bloom_level=3,
             dreyfus_level=3,
             evidences=["Mock evidence"],
             red_flags=[],
-            final_score=3.5,
+            final_score=7.0,
             justification="Mock analysis - will be replaced with real WSI analysis"
         )
         
@@ -1196,7 +1196,7 @@ async def trigger_post_screening_feedback(
         job_vacancy_id = str(wsi_row[1])
         overall_wsi = float(wsi_row[2]) if wsi_row[2] is not None else 0.0
         classification = wsi_row[3] or "não_classificado"
-        score_percent = round((overall_wsi / 5) * 100, 1)
+        score_percent = round((overall_wsi / 10) * 100, 1)  # B0 #523 — escala canônica /10
 
         if classification in ("alto", "excelente"):
             return {
@@ -1358,10 +1358,11 @@ async def get_candidates_wsi_scores(
             classification = row[4] or "não_classificado"
             percentile = row[5]
 
+            # B0 #523 — escala canônica /10 (era /5 *20→0-100; agora /10 *10→0-100)
             candidates[candidate_id] = {
-                "overall_wsi": round(overall_raw * 20, 1),
-                "technical_wsi": round(technical_raw * 20, 1),
-                "behavioral_wsi": round(behavioral_raw * 20, 1),
+                "overall_wsi": round(overall_raw * 10, 1),
+                "technical_wsi": round(technical_raw * 10, 1),
+                "behavioral_wsi": round(behavioral_raw * 10, 1),
                 "classification": classification,
                 "percentile": percentile
             }
