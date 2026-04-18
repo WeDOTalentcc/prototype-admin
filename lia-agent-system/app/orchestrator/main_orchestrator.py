@@ -644,6 +644,15 @@ class MainOrchestrator:
                 conv_id=conv_id,
             )
 
+        if action_result.status == "error":
+            # Return error message directly — do not fall through to Phase 2
+            # Phase 2 would generate a misleading "preciso do ID" response
+            return ChatResponse.from_action_result(
+                action_result,
+                intent=action_result.action_type or "action",
+                conv_id=conv_id,
+            )
+
         if action_result.status == "executed":
             # LIA-A01: LLM interpretation of action results
             # Instead of returning raw action result, ask the LLM to generate a natural response

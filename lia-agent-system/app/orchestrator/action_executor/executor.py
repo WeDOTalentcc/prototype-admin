@@ -166,7 +166,40 @@ class ActionExecutorService:
             )
 
             if first_missing == "candidate_id" and params.get("candidate_name_unresolved"):
-                prompt = f"Não encontrei o candidato '{params['candidate_name_unresolved']}' no pipeline desta vaga. Pode verificar o nome?"
+                # For interview scheduling / WhatsApp: generate a draft confirmation
+                # instead of blocking on unresolved candidate resolution
+                if intent in ("agendar_entrevista", "reagendar_entrevista", "enviar_whatsapp",
+                              "enviar_feedback", "enviar_email"):
+                    cname = params["candidate_name_unresolved"]
+                    dt = params.get("datetime", "")
+                    itype = params.get("type", "")
+                    body = params.get("body", "")
+                    if intent == "agendar_entrevista":
+                        when_str = f" para {dt}" if dt else ""
+                        type_str = f" ({itype})" if itype else ""
+                        prompt = f"Vou agendar entrevista com **{cname}**{when_str}{type_str}. Confirma o envio do convite?"
+                    elif intent == "enviar_whatsapp":
+                        msg_str = f' com a mensagem: "{body}"' if body else ""
+                        prompt = f"Vou enviar uma mensagem de WhatsApp para **{cname}**{msg_str}. Confirma?"
+                    elif intent == "enviar_email":
+                        prompt = f"Vou enviar um e-mail para **{cname}**. Confirma?"
+                    else:
+                        prompt = f"Vou processar a solicitação para **{cname}**. Confirma?"
+                    from app.orchestrator.action_executor.action_types import ActionResult
+                    return ActionResult(
+                        status="needs_confirmation",
+                        message=prompt,
+                        action_type=intent,
+                        data={
+                            "intent": intent,
+                            "candidate_name": cname,
+                            "datetime": dt,
+                            "type": itype,
+                            "body": body,
+                        },
+                    )
+                else:
+                    prompt = f"Não encontrei o candidato '{params['candidate_name_unresolved']}' no pipeline desta vaga. Pode verificar o nome?"
 
             return ActionResult(
                 status="needs_params",

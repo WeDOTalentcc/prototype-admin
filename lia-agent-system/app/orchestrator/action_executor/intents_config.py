@@ -904,6 +904,12 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
         r"(move[rn]?|avança[rn]?)\s+(em\s+)?(lote|massa|batch|bulk)",
         r"(move[rn]?|mova)\s+todos?\s+(os\s+)?(candidatos?|selecionados?)\s+(para|pra)\s+",
     ]),
+    # Duplicar vaga
+    ("duplicar_vaga", [
+        r"(duplica[rn]?|clona[rn]?|copia[rn]?)\s+(a\s+|uma?\s+)?(vaga|posição|job)",
+        r"(abrir\s+)?(uma?\s+)?segunda\s+(posição|vaga|oportunidade)",
+        r"(cria[rn]?|adiciona[rn]?)\s+(mais\s+)?(uma?\s+)?(cópia|copia|versão)\s+(da\s+|do\s+)?(vaga|posição|job)",
+    ]),
     # Health check da vaga
     ("health_check_vaga", [
         r"(health\s*check|diagnóstico|diagnose|saúde)\s+(da\s+|do\s+)?(vaga|processo|pipeline)",
