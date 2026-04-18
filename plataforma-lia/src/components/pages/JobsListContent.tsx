@@ -8,6 +8,8 @@ import {
 } from"lucide-react"
 import { Button } from"@/components/ui/button"
 import { Badge } from"@/components/ui/badge"
+import { ViewToggle } from"@/components/ui/view-toggle"
+import { ToolbarButton } from"@/components/ui/toolbar-button"
 import { EmptyState } from"@/components/ui/empty-state"
 import { BulkActionsBar } from"@/components/ui/bulk-actions-bar"
 import { TableFiltersPanel } from"@/components/pages/jobs/TableFiltersPanel"
@@ -138,61 +140,57 @@ export function JobsListContent(props: JobsListContentProps) {
   return (
     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
       <div className="flex-shrink-0 flex items-center justify-end gap-4 mt-3 mb-2">
-          <div className="flex items-center gap-3">
-            <div
-              className="inline-flex items-center rounded-md border border-lia-border-default dark:border-lia-border-default bg-lia-bg-primary dark:bg-lia-bg-secondary p-0.5"
-              role="group"
-              aria-label={tView('toggleAriaLabel')}
-            >
-              <Button
-                variant={jobsViewMode === 'table' ? 'primary' : 'ghost'}
-                size="sm"
-                onClick={() => setJobsViewMode('table')}
-                className={`gap-1.5 text-xs h-7 px-2.5 ${jobsViewMode === 'table' ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white' : 'text-lia-text-secondary'}`}
-                aria-pressed={jobsViewMode === 'table'}
-                title={tView('table')}
-              >
-                <TableIcon className="w-3 h-3" /> {tView('table')}
-              </Button>
-              <Button
-                variant={jobsViewMode === 'kanban' ? 'primary' : 'ghost'}
-                size="sm"
-                onClick={() => setJobsViewMode('kanban')}
-                className={`gap-1.5 text-xs h-7 px-2.5 ${jobsViewMode === 'kanban' ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-white' : 'text-lia-text-secondary'}`}
-                aria-pressed={jobsViewMode === 'kanban'}
-                title={tView('kanban')}
-              >
-                <LayoutGrid className="w-3 h-3" /> {tView('kanban')}
-              </Button>
-            </div>
+          <div className="flex items-center gap-2">
+            <ViewToggle
+              value={jobsViewMode}
+              onChange={(v) => setJobsViewMode(v as 'table' | 'kanban')}
+              ariaLabel={tView('toggleAriaLabel')}
+              size="md"
+              options={[
+                { value: 'table', label: tView('table'), icon: TableIcon },
+                { value: 'kanban', label: tView('kanban'), icon: LayoutGrid },
+              ]}
+            />
             {selectedJobsForBatch.size > 0 && (
               <Badge className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default text-xs font-bold">
                 🎯 {selectedJobsForBatch.size}
               </Badge>
             )}
             {selectedJobsForBatch.size === 0 && filteredJobs.length > 0 && (
-              <Button variant="outline" size="sm" onClick={selectAllJobs} className="gap-2 text-xs h-8 px-3">
-                <CheckCircle className="w-3 h-3" /> {t('selectAll')}
-              </Button>
+              <ToolbarButton
+                size="md"
+                onClick={selectAllJobs}
+                icon={<CheckCircle />}
+              >
+                {t('selectAll')}
+              </ToolbarButton>
             )}
-            <Button
-              variant={showTableFiltersPanel ?"primary" :"outline"} size="sm"
-              className={`gap-2 text-xs h-8 px-3 ${showTableFiltersPanel ? 'bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white' : ''}`}
-              onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)} title={t('filterResults')}
+            <ToolbarButton
+              size="md"
+              active={showTableFiltersPanel}
+              onClick={() => setShowTableFiltersPanel(!showTableFiltersPanel)}
+              title={t('filterResults')}
+              icon={<Target />}
+              trailing={
+                getActiveJobFiltersCount() > 0 ? (
+                  <Badge variant="secondary" className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-btn-primary-bg ml-1 text-xs font-bold">{getActiveJobFiltersCount()}</Badge>
+                ) : null
+              }
             >
-              <Target className="w-3 h-3" /> {t('filters')}
-              {getActiveJobFiltersCount() > 0 && (
-                <Badge variant="secondary" className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-btn-primary-bg ml-1 text-xs font-bold">{getActiveJobFiltersCount()}</Badge>
-              )}
-            </Button>
-            <Button
-              variant={showColumnConfig ?"primary" :"outline"} size="sm"
-              className={`gap-2 text-xs h-8 px-3 ${showColumnConfig ? 'bg-lia-btn-primary-bg hover:bg-black dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover text-white' : ''}`}
-              onClick={handleToggleColumnConfig} title={t('configureColumns')}
+              {t('filters')}
+            </ToolbarButton>
+            <ToolbarButton
+              size="md"
+              active={showColumnConfig}
+              onClick={handleToggleColumnConfig}
+              title={t('configureColumns')}
+              icon={<ChevronsLeftRight />}
+              trailing={
+                <Badge variant="secondary" className={`ml-1 text-xs ${showColumnConfig ? 'bg-lia-btn-primary-hover text-white dark:bg-lia-bg-tertiary font-bold' : 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated'}`}>6</Badge>
+              }
             >
-              <ChevronsLeftRight className="w-3 h-3" /> {t('columns')}
-              <Badge variant="secondary" className={`ml-1 text-xs ${showColumnConfig ? 'bg-lia-btn-primary-hover text-white dark:bg-lia-bg-tertiary font-bold' : 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated'}`}>6</Badge>
-            </Button>
+              {t('columns')}
+            </ToolbarButton>
           </div>
         </div>
 

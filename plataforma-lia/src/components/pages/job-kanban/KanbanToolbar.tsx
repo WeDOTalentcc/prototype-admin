@@ -8,6 +8,8 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { ViewToggle } from "@/components/ui/view-toggle"
+import { ToolbarButton } from "@/components/ui/toolbar-button"
 
 interface KanbanToolbarProps {
   searchQuery: string
@@ -142,55 +144,36 @@ export function KanbanToolbar({
           </div>
 
           {/* Botões de Alternância de Visualização */}
-          <div className="bg-lia-bg-tertiary dark:bg-lia-bg-elevated rounded-xl p-0.5 flex">
-            <button
-              onClick={() => setViewMode("kanban")}
-              className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ${
-                viewMode === "kanban"
-                  ? "bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary font-bold"
-                  : "text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
-              }`}
-            >
-              <div className="flex items-center gap-1.5">
-                <Layers3 className="w-3.5 h-3.5" />
-                {t('kanbanView')}
-              </div>
-            </button>
-            <button
-              onClick={() => setViewMode("table")}
-              className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors motion-reduce:transition-none ${
-                viewMode === "table"
-                  ? "bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary font-bold"
-                  : "text-lia-text-secondary hover:text-lia-text-primary dark:hover:text-lia-text-inverse"
-              }`}
-            >
-              <div className="flex items-center gap-1.5">
-                <ListChecks className="w-3.5 h-3.5" />
-                {t('tableView')}
-              </div>
-            </button>
-          </div>
+          <ViewToggle
+            value={viewMode}
+            onChange={(v) => setViewMode(v)}
+            ariaLabel="Alternar visualização"
+            size="md"
+            options={[
+              { value: 'kanban', label: t('kanbanView'), icon: Layers3 },
+              { value: 'table', label: t('tableView'), icon: ListChecks },
+            ]}
+          />
 
           {/* Botão Selecionar Todos */}
-          <button
+          <ToolbarButton
+            size="md"
             onClick={handleSelectAll}
-            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-medium text-lia-text-primary bg-lia-bg-primary border border-lia-border-subtle rounded-full hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
+            icon={
+              allSelected ? (
+                <XCircle className="text-lia-text-tertiary" />
+              ) : (
+                <CheckCircle className="text-lia-text-tertiary" />
+              )
+            }
           >
-            {allSelected ? (
-              <>
-                <XCircle className="w-4 h-4 text-lia-text-tertiary" />
-                {t('deselectAll')}
-              </>
-            ) : (
-              <>
-                <CheckCircle className="w-4 h-4 text-lia-text-tertiary" />
-                {t('selectAllCount', { count: visibleCandidates.length })}
-              </>
-            )}
-          </button>
+            {allSelected ? t('deselectAll') : t('selectAllCount', { count: visibleCandidates.length })}
+          </ToolbarButton>
 
           {/* Botão Filtros */}
-          <button
+          <ToolbarButton
+            size="md"
+            active={viewMode === "kanban" ? showKanbanFiltersPanel : showTableFiltersPanel}
             onClick={() => {
               if (viewMode === "kanban") {
                 setShowKanbanFiltersPanel(!showKanbanFiltersPanel)
@@ -198,32 +181,30 @@ export function KanbanToolbar({
                 setShowTableFiltersPanel(!showTableFiltersPanel)
               }
             }}
-            className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${
-              (viewMode === "kanban" ? showKanbanFiltersPanel : showTableFiltersPanel)
-                ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active'
-                : 'text-lia-text-primary bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse'
-            }`}
+            icon={<Target />}
           >
-            <Target className="w-4 h-4" />
             {t('filters')}
-          </button>
+          </ToolbarButton>
 
           {viewMode === "table" && (
-            <button
+            <ToolbarButton
+              size="md"
+              active={showColumnConfig}
               onClick={() => setShowColumnConfig(!showColumnConfig)}
               title={t('configureTableColumns')}
-              className={`inline-flex items-center gap-2 px-4 py-2 text-xs font-medium rounded-full transition-colors motion-reduce:transition-none ${
-                showColumnConfig
-                  ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:bg-lia-bg-secondary dark:hover:bg-lia-interactive-active'
-                  : 'text-lia-text-primary bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-default hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse'
-              }`}
+              icon={<ChevronsLeftRight />}
+              trailing={
+                <span
+                  className={`text-xs font-medium ${showColumnConfig ? 'text-lia-text-disabled' : 'text-lia-text-tertiary'}`}
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  {tableColumns.filter(col => col.visible).length}
+                </span>
+              }
             >
-              <ChevronsLeftRight className="w-4 h-4" />
               {t('columns')}
-              <span className={`text-xs font-medium ${showColumnConfig ? 'text-lia-text-disabled' : 'text-lia-text-tertiary'}`} aria-live="polite" aria-atomic="true">
-                {tableColumns.filter(col => col.visible).length}
-              </span>
-            </button>
+            </ToolbarButton>
           )}
         </div>
       </div>
