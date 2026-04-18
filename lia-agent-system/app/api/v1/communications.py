@@ -8,7 +8,9 @@ Also provides direct email and WhatsApp sending via Mailgun and Twilio integrati
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query, status
+
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 from app.domains.communication.schemas.email_schemas import (
     SendBulkEmailRequest,
@@ -246,7 +248,7 @@ async def update_communication_status(
 
 @candidate_communications_router.get("/{candidate_id}/communications", response_model=CommunicationListResponse)
 async def get_candidate_communications(
-    candidate_id: str,
+    candidate_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     company_id: str = Query(..., description="Company ID (required)"),
     limit: int = Query(100, ge=1, le=500, description="Max results (default: 100, max: 500)"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),

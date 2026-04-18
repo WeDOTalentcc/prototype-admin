@@ -13,7 +13,9 @@ Cache: served from Redis (TTL=1h) when available.
 import logging
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query, status
+
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -108,7 +110,7 @@ def _get_company_id(
     ),
 )
 async def get_toon_card(
-    candidate_id: str,
+    candidate_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     job_id: str | None = Query(None, description="Job opening UUID for match scoring"),
     anonymize: bool = Query(False, description="When true, masks all PII (LGPD-safe)"),
     company_id: str = Depends(_get_company_id),

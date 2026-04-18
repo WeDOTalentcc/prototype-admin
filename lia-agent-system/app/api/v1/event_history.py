@@ -1,15 +1,16 @@
 """Event history endpoint for SOX audit replay."""
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from app.core.database import get_db
 
 router = APIRouter(tags=["audit"])
 
 @router.get("/candidates/{candidate_id}/event-history", response_model=None)
 async def get_candidate_event_history(
-    candidate_id: str,
+    candidate_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     from_sequence: int = 0,
     limit: int = 100,
     x_company_id: str | None = Header(None),

@@ -11,8 +11,10 @@ from datetime import datetime
 from pathlib import Path
 
 from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile, status
+from fastapi import Path as FPath
 from fastapi.responses import StreamingResponse
 
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from app.schemas.attachment import (
     AttachmentCreate,
     AttachmentListResponse,
@@ -210,7 +212,7 @@ async def delete_attachment(attachment_id: str):
 
 @candidate_attachments_router.get("/{candidate_id}/attachments", response_model=AttachmentListResponse)
 async def get_candidate_attachments(
-    candidate_id: str,
+    candidate_id: str = FPath(..., pattern=DUAL_ID_PATH_PATTERN),
     company_id: str = Query(..., description="Company ID (required)"),
     limit: int = Query(100, ge=1, le=500, description="Max results (default: 100, max: 500)"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
@@ -247,7 +249,7 @@ async def get_candidate_attachments(
 
 @candidate_attachments_router.post("/{candidate_id}/files", response_model=FileUploadResponse)
 async def upload_candidate_file(
-    candidate_id: str,
+    candidate_id: str = FPath(..., pattern=DUAL_ID_PATH_PATTERN),
     file: UploadFile = File(...),
     candidate_name: str = Form(default="Candidato"),
     category: str = Form(default=""),
@@ -339,7 +341,7 @@ async def upload_candidate_file(
 
 @candidate_attachments_router.get("/{candidate_id}/files", response_model=CandidateFilesResponse)
 async def get_candidate_files(
-    candidate_id: str,
+    candidate_id: str = FPath(..., pattern=DUAL_ID_PATH_PATTERN),
     company_id: str = Query(..., description="Company ID"),
     category: str | None = Query(None, description="Filter by category"),
 ):
@@ -396,8 +398,8 @@ async def get_candidate_files(
 
 @candidate_attachments_router.get("/{candidate_id}/files/download/{filename}")
 async def download_candidate_file(
-    candidate_id: str,
-    filename: str,
+    candidate_id: str = FPath(..., pattern=DUAL_ID_PATH_PATTERN),
+    filename: str = FPath(...),
 ):
     """
     Download a candidate file.
@@ -443,8 +445,8 @@ async def download_candidate_file(
 
 @candidate_attachments_router.delete("/{candidate_id}/files/{attachment_id}")
 async def delete_candidate_file(
-    candidate_id: str,
-    attachment_id: str,
+    candidate_id: str = FPath(..., pattern=DUAL_ID_PATH_PATTERN),
+    attachment_id: str = FPath(..., pattern=DUAL_ID_PATH_PATTERN),
 ):
     """
     Delete a candidate file.

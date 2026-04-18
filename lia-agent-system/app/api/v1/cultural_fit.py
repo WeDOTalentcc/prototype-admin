@@ -5,9 +5,10 @@ GET /api/v1/candidates/{candidate_id}/cultural-fit?job_id=
 """
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from app.core.database import get_db
 from app.shared.services.cultural_fit_integration_service import cultural_fit_service
 from app.shared.tenant_guard import get_verified_company_id
@@ -18,7 +19,7 @@ router = APIRouter(prefix="/candidates", tags=["cultural-fit"])
 
 @router.get("/{candidate_id}/cultural-fit", response_model=None)
 async def get_cultural_fit(
-    candidate_id: str,
+    candidate_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
     job_id: str = Query(..., description="ID da vaga"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),

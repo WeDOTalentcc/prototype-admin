@@ -227,6 +227,108 @@ def test_dual_id_path_pattern_accepts_uuid_and_bigint() -> None:
     assert not rx.match("")
 
 
+# =============================================
+# Task #476 — Whole-app structural guard
+# =============================================
+#
+# The router-by-router check above is precise but it relies on someone
+# remembering to add a new dual-ID router to ``DUAL_ID_ROUTERS`` whenever
+# one is created. That's exactly the human-memory step that burned us in
+# Tasks #455, #459, and #468 (a new endpoint shipped that skipped the ID
+# safety rule, and nobody noticed until production).
+#
+# The test below does NOT rely on that allow-list. It imports the real
+# FastAPI app, walks every registered route, and fails the build the
+# moment a route under one of the dual-ID URL spaces declared in ADR 003
+# (``/api/v1/job-vacancies``, ``/api/v1/public-vacancies``,
+# ``/api/v1/candidates``, ``/api/v1/applications``,
+# ``/api/v1/recruitment-stages``) carries an item-route path parameter
+# whose name ends in ``_id`` and is typed as bare ``str`` (no UUID
+# annotation, no ``pattern=DUAL_ID_PATH_PATTERN``).
+#
+# This is the "structural test that fails the build when somebody adds a
+# new ``{*_id}: str`` path parameter on a dual-ID resource without the
+# dual-ID regex" called for by the ID Boundary Policy
+# (`docs/architecture/id-boundary-policy.md`, §3 and §8).
+
+# Every URL-space that ADR 003 designates as dual-ID. Adding a new
+# dual-ID resource here is a one-line opt-in; the rest of the check is
+# automatic. The list intentionally lives next to the test rather than
+# next to the routers themselves so this file remains the single source
+# of truth — the policy check shouldn't be silently disabled by editing
+# the router being checked.
+DUAL_ID_URL_PREFIXES: tuple[str, ...] = (
+    "/api/v1/job-vacancies",
+    "/api/v1/public-vacancies",
+    "/api/v1/candidates",
+    "/api/v1/applications",
+    "/api/v1/recruitment-stages",
+)
+
+
+def test_every_dual_id_route_constrains_id_path_params() -> None:
+    """Walk every route registered on the real FastAPI app and fail if
+    any path parameter ending in ``_id`` on a dual-ID resource is typed
+    as bare ``str`` without the dual-ID regex.
+
+    This is the *generalised* version of
+    ``test_item_path_parameters_are_uuid_or_int_constrained`` (which
+    covers ``/job-vacancies`` only) and the per-router parametrised
+    check above (which covers a hand-maintained list of routers).
+
+    Why a third check? Because both of the existing checks rely on a
+    human remembering to extend an allow-list. This one does not — it
+    starts from the real ``app.routes`` and only asks whether each route
+    falls under a dual-ID URL space (per ADR 003, see
+    ``DUAL_ID_URL_PREFIXES`` above). A new endpoint added under any of
+    those spaces is policed automatically; if it skips the safety rule,
+    the build fails with a message that points at the policy.
+    """
+    from app.main import app  # noqa: PLC0415 — heavy import, kept lazy
+
+    offenders: list[str] = []
+
+    for route in app.routes:
+        if not isinstance(route, APIRoute):
+            continue
+        path = route.path
+        if not any(path.startswith(prefix) for prefix in DUAL_ID_URL_PREFIXES):
+            continue
+        if "{" not in path:
+            continue
+        for param in route.dependant.path_params:
+            if not param.name.endswith("_id"):
+                continue
+            annotation = getattr(param, "type_", None)
+            if annotation is UUID:
+                continue
+            pattern = _param_pattern(param)
+            # The contract is the dual-ID regex specifically — any other
+            # regex (e.g. a tighter UUID-only one, or a free-form match)
+            # would either be too narrow to accept Rails bigints or too
+            # loose to reject sibling static segments. Require equality
+            # so the policy can't be silently weakened.
+            if pattern == DUAL_ID_PATH_PATTERN:
+                continue
+            methods = ",".join(sorted(route.methods or {"?"}))
+            suffix = f" (current pattern: {pattern!r})" if pattern else ""
+            offenders.append(f"{methods} {path}:{param.name}{suffix}")
+
+    assert not offenders, (
+        "The following routes live under a dual-ID URL space (per ADR "
+        "003) but declare a `{*_id}` path parameter as unconstrained "
+        "`str`. This is a Task #455-class bug: a sibling static segment "
+        "(e.g. `/candidates/search`) can be silently captured by the "
+        "item handler and surface as a misleading 404.\n  - "
+        + "\n  - ".join(sorted(offenders))
+        + "\n\nFix: type the parameter as `UUID`, OR declare it as "
+        "`Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]` from "
+        "`app.api.v1._path_patterns`. See the ID Boundary Policy: "
+        "`docs/architecture/id-boundary-policy.md` §3 and the checklist "
+        "in §8."
+    )
+
+
 def test_job_id_path_pattern_alias_still_exported() -> None:
     """``JOB_ID_PATH_PATTERN`` is kept as an alias of
     ``DUAL_ID_PATH_PATTERN`` for backward compatibility with existing
