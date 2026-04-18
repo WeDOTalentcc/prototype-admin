@@ -1,0 +1,213 @@
+[
+  {
+    "id": "KB-001",
+    "category": "KB",
+    "severity": "critical",
+    "title": "Get pipeline summary for current job",
+    "prompt": "como está o pipeline dessa vaga?",
+    "context": {
+      "scope": "Kanban",
+      "page": "kanban",
+      "entity_id": "V0037",
+      "entity_type": "job"
+    },
+    "expected_tools": [
+      "get_pipeline_summary"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/kanban_tool_registry.py",
+      "app/domains/recruiter_assistant/agents/kanban_react_agent.py"
+    ],
+    "success_criteria": [
+      "Uses job V0037 from context without asking",
+      "Returns stage counts and status"
+    ],
+    "anti_patterns": [
+      "Asks which job",
+      "Returns empty pipeline"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 195,
+    "response": "Não encontrei informações de pipeline para a vaga **V0037**. A vaga pode estar inativa ou o ID não está no sistema.",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-18T17:07:48.172387"
+  },
+  {
+    "id": "KB-002",
+    "category": "KB",
+    "severity": "critical",
+    "title": "Move candidate stage in Kanban",
+    "prompt": "move o João Silva de Triagem para Entrevista",
+    "context": {
+      "scope": "Kanban",
+      "page": "kanban",
+      "entity_id": "V0037",
+      "entity_type": "job"
+    },
+    "expected_tools": [
+      "move_candidate"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/kanban_tool_registry.py",
+      "app/domains/cv_screening/agents/pipeline_react_agent.py"
+    ],
+    "success_criteria": [
+      "Confirms move before executing",
+      "Uses correct source and target stages"
+    ],
+    "anti_patterns": [
+      "Moves without confirmation",
+      "Asks which job when entity_id is in context"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 16429,
+    "response": "Não consegui localizar o João Silva pelo nome diretamente. Para garantir que vou mover a pessoa certa, você pode me informar o **ID do candidato** ou o **e-mail** dele? Assim evito qualquer movimentação equivocada.",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-18T17:08:05.103155"
+  },
+  {
+    "id": "KB-003",
+    "category": "KB",
+    "severity": "high",
+    "title": "Identify bottleneck in pipeline",
+    "prompt": "onde está travando o processo? qual etapa tem mais candidatos parados?",
+    "context": {
+      "scope": "Kanban",
+      "page": "kanban",
+      "entity_id": "V0037",
+      "entity_type": "job"
+    },
+    "expected_tools": [
+      "get_bottleneck_analysis",
+      "get_pipeline_velocity"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/kanban_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Names specific bottleneck stage",
+      "Provides time-in-stage data",
+      "Suggests action"
+    ],
+    "anti_patterns": [
+      "Generic answer without data"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 1900,
+    "response": "Para analisar onde o processo está travando e qual etapa tem mais candidatos parados, preciso saber o ID da vaga. Poderia me informar, por favor?",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-18T17:08:07.505921"
+  },
+  {
+    "id": "KB-004",
+    "category": "KB",
+    "severity": "high",
+    "title": "Move all candidates in a stage",
+    "prompt": "move todos os candidatos em Triagem para Reprovado — precisamos fechar esse processo",
+    "context": {
+      "scope": "Kanban",
+      "page": "kanban",
+      "entity_id": "V0037",
+      "entity_type": "job"
+    },
+    "expected_tools": [
+      "get_stage_candidates",
+      "move_candidate"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/kanban_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Asks confirmation before bulk action",
+      "Lists candidates affected",
+      "Applies fairness check"
+    ],
+    "anti_patterns": [
+      "Executes without confirmation",
+      "Does not list affected candidates"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 3811,
+    "response": "Compreendo! Para mover todos os candidatos da etapa \"Triagem\" para \"Reprovado\", preciso de algumas informações.\n\nPrimeiro, preciso do **ID da vaga** à qual esses candidatos estão associados. Se você não tiver o ID, pode me dizer o título da vaga.\n\nSegundo, preciso confirmar se você realmente deseja mover *todos* os candidatos nesta etapa, pois essa é uma ação irreversível.",
+    "error": "",
+    "score": 2,
+    "flags": [],
+    "scored_at": "2026-04-18T17:08:11.818491"
+  },
+  {
+    "id": "KB-005",
+    "category": "KB",
+    "severity": "medium",
+    "title": "Pipeline velocity report",
+    "prompt": "qual o tempo médio que candidatos ficam em cada etapa?",
+    "context": {
+      "scope": "Kanban",
+      "page": "kanban",
+      "entity_id": "V0037"
+    },
+    "expected_tools": [
+      "get_pipeline_velocity"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/kanban_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Returns time data per stage",
+      "Highlights slow stages"
+    ],
+    "anti_patterns": [
+      "Generic answer"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 1800,
+    "response": "Para te dar essa informação, preciso saber o ID da vaga. Você se refere a uma vaga específica ou a uma média geral? Se for uma vaga específica, por favor, me forneça o ID.",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-18T17:08:14.119546"
+  },
+  {
+    "id": "KB-006",
+    "category": "KB",
+    "severity": "medium",
+    "title": "Get candidates in specific stage",
+    "prompt": "quem está na etapa de entrevista agora?",
+    "context": {
+      "scope": "Kanban",
+      "page": "kanban",
+      "entity_id": "V0037"
+    },
+    "expected_tools": [
+      "get_stage_candidates"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/kanban_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Lists candidate names",
+      "Filters correctly by stage"
+    ],
+    "anti_patterns": [
+      "Returns all candidates"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 2137,
+    "response": "Nenhum candidato encontrado na etapa **Entrevista** para esta vaga.",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-18T17:08:16.757303"
+  }
+]

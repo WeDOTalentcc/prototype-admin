@@ -141,8 +141,8 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
     "analisar_perfil": {
         "domain_id": "cv_screening",
         "action_id": "analyze_profile",
-        "required_params": ["candidate_id"],
-        "optional_params": [],
+        "required_params": [],  # CM-001: candidate_id or candidate_name resolved in handler
+        "optional_params": ["candidate_id", "candidate_name", "vacancy_id", "job_vacancy_id"],
         "risk_level": "low",
         "requires_confirmation": False,
         "param_labels": {"candidate_id": "candidato"},
@@ -153,8 +153,8 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
     "analise_detalhada": {
         "domain_id": "cv_screening",
         "action_id": "analyze_profile",
-        "required_params": ["candidate_id"],
-        "optional_params": [],
+        "required_params": [],  # CM-001: candidate_id or candidate_name resolved in handler
+        "optional_params": ["candidate_id", "candidate_name", "vacancy_id", "job_vacancy_id"],
         "risk_level": "low",
         "requires_confirmation": False,
         "param_labels": {"candidate_id": "candidato"},
@@ -476,8 +476,8 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
     "comparar_candidatos": {
         "domain_id": "sourcing",
         "action_id": "compare_candidates",
-        "required_params": ["candidate_ids"],
-        "optional_params": ["job_id", "criteria"],
+        "required_params": [],  # CM-003: candidate_ids or candidate_names resolved in handler
+        "optional_params": ["candidate_ids", "candidate_names", "job_id", "criteria"],
         "risk_level": "low",
         "requires_confirmation": False,
         "param_labels": {

@@ -135,6 +135,11 @@ class ActionExecutorService:
             params["limit"] = entities["limit"]
         if entities.get("job_vacancy_id"):
             params["job_vacancy_id"] = entities["job_vacancy_id"]
+        # CM-003: Forward candidate_names list (used by compare_candidates for name resolution)
+        if entities.get("candidate_names"):
+            params["candidate_names"] = entities["candidate_names"]
+        if entities.get("candidate_ids"):
+            params["candidate_ids"] = entities["candidate_ids"]
 
         if entities.get("field_name"):
             params["field_name"] = entities["field_name"]
