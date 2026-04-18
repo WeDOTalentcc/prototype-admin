@@ -118,54 +118,57 @@ def _check_circuit_breakers() -> dict:
 
 
 def _check_voice_services() -> dict:
-    """Check Deepgram STT and OpenMic.ai configuration and circuit breaker status."""
+    """Check voice services (Twilio Programmable Voice + Gemini Live Audio) configuration and circuit breaker status."""
     try:
-        deepgram_configured = bool(os.getenv("DEEPGRAM_API_KEY"))
-        openmic_configured = bool(os.getenv("OPENMIC_API_KEY"))
-        openmic_webhook_secret = bool(os.getenv("OPENMIC_WEBHOOK_SECRET"))
+        twilio_configured = bool(
+            os.getenv("TWILIO_ACCOUNT_SID") and os.getenv("TWILIO_AUTH_TOKEN")
+        )
+        gemini_configured = bool(
+            os.getenv("GOOGLE_AI_API_KEY") or os.getenv("GEMINI_API_KEY")
+        )
 
         from app.shared.resilience.circuit_breaker import ALL_CIRCUITS
-        deepgram_circuit = ALL_CIRCUITS.get("deepgram")
-        openmic_circuit = ALL_CIRCUITS.get("openmic")
+        twilio_circuit = ALL_CIRCUITS.get("twilio_voice")
+        gemini_live_circuit = ALL_CIRCUITS.get("gemini_live")
 
-        deepgram_circuit_state = deepgram_circuit.state.value if deepgram_circuit else "unknown"
-        openmic_circuit_state = openmic_circuit.state.value if openmic_circuit else "unknown"
+        twilio_circuit_state = twilio_circuit.state.value if twilio_circuit else "unknown"
+        gemini_live_circuit_state = (
+            gemini_live_circuit.state.value if gemini_live_circuit else "unknown"
+        )
 
-        deepgram_status = (
-            "healthy" if (deepgram_configured and deepgram_circuit_state != "open")
-            else "degraded" if deepgram_configured
+        twilio_status = (
+            "healthy" if (twilio_configured and twilio_circuit_state != "open")
+            else "degraded" if twilio_configured
             else "not_configured"
         )
-        openmic_status = (
-            "healthy" if (openmic_configured and openmic_circuit_state != "open")
-            else "degraded" if openmic_configured
+        gemini_live_status = (
+            "healthy" if (gemini_configured and gemini_live_circuit_state != "open")
+            else "degraded" if gemini_configured
             else "not_configured"
         )
 
         any_circuit_open = (
-            deepgram_circuit_state == "open" or openmic_circuit_state == "open"
+            twilio_circuit_state == "open" or gemini_live_circuit_state == "open"
         )
         overall_status = (
             "healthy"
-            if (deepgram_configured and openmic_configured and not any_circuit_open)
+            if (twilio_configured and gemini_configured and not any_circuit_open)
             else "degraded"
         )
 
         return {
             "status": overall_status,
-            "deepgram": {
-                "configured": deepgram_configured,
-                "circuit_state": deepgram_circuit_state,
-                "status": deepgram_status,
-                "model": "nova-2",
-                "languages": ["pt-BR", "en-US"],
+            "twilio_voice": {
+                "configured": twilio_configured,
+                "circuit_state": twilio_circuit_state,
+                "status": twilio_status,
+                "channels": ["PSTN", "WhatsApp"],
             },
-            "openmic": {
-                "configured": openmic_configured,
-                "webhook_secret_configured": openmic_webhook_secret,
-                "circuit_state": openmic_circuit_state,
-                "status": openmic_status,
-                "webhook_endpoint": "/api/v1/openmic/webhook",
+            "gemini_live": {
+                "configured": gemini_configured,
+                "circuit_state": gemini_live_circuit_state,
+                "status": gemini_live_status,
+                "model": "gemini-live-audio",
             },
         }
     except Exception as exc:
@@ -380,14 +383,13 @@ async def system_health(db: AsyncSession = Depends(get_db)):
         "gemini": "configured" if (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")) else "not_configured",
         "workos": "configured" if os.getenv("WORKOS_API_KEY") else "not_configured",
         "mailgun": "configured" if (os.getenv("MAILGUN_API_KEY") and os.getenv("MAILGUN_DOMAIN")) else "not_configured",
-        "deepgram": "configured" if os.getenv("DEEPGRAM_API_KEY") else "not_configured",
-        "openmic": "configured" if os.getenv("OPENMIC_API_KEY") else "not_configured",
+        "twilio_voice": "configured" if (os.getenv("TWILIO_ACCOUNT_SID") and os.getenv("TWILIO_AUTH_TOKEN")) else "not_configured",
     }
 
     # --- External integrations health (WhatsApp, Calendar, LinkedIn/Indeed, Pearch, Slack) ---
     components["integrations"] = _check_external_integrations()
 
-    # --- Voice services (Deepgram STT + OpenMic) ---
+    # --- Voice services (Twilio Programmable Voice + Gemini Live Audio) ---
     components["voice_services"] = _check_voice_services()
 
     status_code = 200 if overall_healthy else 503

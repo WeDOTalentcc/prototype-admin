@@ -679,6 +679,48 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
         "param_labels": {},
         "clarification_prompts": {},
     },
+    "vagas_sem_candidatos": {
+        "domain_id": "analytics",
+        "action_id": "vacancies_without_candidates",
+        "required_params": [],
+        "optional_params": ["days"],
+        "risk_level": "read",
+        "requires_confirmation": False,
+        "param_labels": {"days": "dias"},
+    },
+    "mover_candidatos_por_etapa": {
+        "domain_id": "pipeline_transition",
+        "action_id": "bulk_move_by_stage",
+        "required_params": ["job_id", "from_stage", "to_stage"],
+        "optional_params": [],
+        "risk_level": "high",
+        "requires_confirmation": True,
+        "param_labels": {
+            "job_id": "vaga",
+            "from_stage": "etapa de origem",
+            "to_stage": "etapa destino",
+        },
+        "clarification_prompts": {
+            "job_id": "Qual vaga você quer usar?",
+            "from_stage": "De qual etapa quer mover os candidatos?",
+            "to_stage": "Para qual etapa quer movê-los?",
+        },
+    },
+    "listar_candidatos_por_etapa": {
+        "domain_id": "analytics",
+        "action_id": "list_candidates_by_stage",
+        "required_params": [],
+        "optional_params": ["job_id", "stage"],
+        "risk_level": "low",
+        "requires_confirmation": False,
+        "param_labels": {
+            "job_id": "vaga",
+            "stage": "etapa",
+        },
+        "clarification_prompts": {
+            "job_id": "Para qual vaga você quer listar os candidatos?",
+        },
+    },
 }
 
 CONFIRMATION_PATTERNS = [
@@ -924,5 +966,39 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
         r"(analisa[rn]?|análise)\s+(do\s+|o\s+)?(funil|pipeline|conversão|taxa)",
         r"(funil|pipeline)\s+(de\s+)?(recrutamento|contratação|conversão|seleção)",
         r"(taxa|percentual|%)\s+(de\s+)?(conversão|aprovação|rejeição|desistência)\s+(do\s+|no\s+)?(funil|pipeline)",
+    ]),
+    # Iniciar / disparar triagem WSI
+    ("iniciar_triagem", [
+        r"(inicia[rn]?|dispara[rn]?|comeca[rn]?|comecar?|iniciar?)\s+(a\s+)?triagem(\s+wsi)?",
+        r"triagem\s+wsi\s+(para|dos?|com)\s+",
+        r"(iniciar?|disparar?)\s+triagem\s+(dos?\s+)?(candidatos?|todos?)",
+        r"triagem\s+(para|dos?)\s+(os?\s+)?(candidatos?\s+)?(em\s+espera|aguardando|novos?)",
+    ]),
+    ("disparar_triagem", [
+        r"dispara[rn]?\s+(a?\s*)?triagem",
+        r"(envia[rn]?|manda[rn]?|dispara[rn]?)\s+(a\s+)?triagem\s+(wsi|automatica|para)",
+    ]),
+    # Listar candidatos por etapa
+    ("listar_candidatos_por_etapa", [
+        r"(quais?|quem|que|liste?|mostra[rn]?|veja?)\s+(os?\s+|são\s+os?\s+)?(candidatos?)\s+(que\s+)?(est[aã][o]?|est[aá]|tem|há|estão|ficaram)\s+(na|em|da|no)\s+(etapa|fase|stage)",
+        r"candidatos?\s+(est[aã][o]?|est[aá]|ficaram)\s+(na|em|da)\s+(etapa|fase|stage|entrevista|triagem|proposta|oferta)",
+        r"candidatos?\s+(na|em|da)\s+(etapa|fase|stage)\s+(de\s+)?(entrevista|triagem|proposta|oferta|shortlist)",
+        r"(quais?|quem)\s+(est[aã][o]?|est[aá])\s+na\s+etapa",
+        r"quem\s+(está|estão)\s+(na|em|da)\s+(etapa|fase|stage|entrevista|triagem|proposta|oferta)",
+        r"candidatos?\s+(na|em)\s+(entrevista|triagem|proposta|oferta|shortlist|análise)",
+        r"(listar?|mostrar?)\s+(os?\s+)?(candidatos?)\s+(por\s+)?etapa",
+        r"candidatos?.*?(etapa|fase)\s+(de\s+)?(entrevista|triagem|proposta|oferta)",
+    ]),
+    # Mover candidatos por etapa (bulk stage move without explicit candidate list)
+    ("mover_candidatos_por_etapa", [
+        r"(move[rn]?|transfere[rn]?|muda[rn]?)\s+(todos?\s+)?(os?\s+)?candidatos?.*?(para\s+)(reprovado|aprovado|triagem|entrevista|proposta|oferta)",
+        r"(limpa[rn]?|fecha[rn]?|arquiva[rn]?)\s+(a\s+)?(etapa|fase|fila)\s+(de\s+)?",
+        r"(move[rn]?|mova)\s+todos?\s+(os\s+)?candidatos?\s+(d[ae]\s+)?(etapa\s+d[ae]?\s+)?",
+    ]),
+    # Vagas sem candidatos
+    ("vagas_sem_candidatos", [
+        r"vaga(s)?\s+(sem|sem\s+nenhum)\s+candidato",
+        r"vaga(s)?\s+(aberta(s)?|ativa(s)?)\s+(sem|sem\s+nenhum|sem\s+qualquer)\s+candidato",
+        r"(alguma|quais?)\s+vaga(s)?\s+(sem\s+|não\s+tem\s+|sem\s+nenhum\s+)candidato",
     ]),
 ]

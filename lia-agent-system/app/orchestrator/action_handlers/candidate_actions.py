@@ -74,6 +74,8 @@ async def execute_candidate_action(
         return await _analyze_profile(params, context)
     elif action_id == "batch_move_candidates":
         return await _batch_move_candidates(params, context)
+    elif action_id == "bulk_move_by_stage":
+        return await _bulk_move_by_stage(params, context)
     return None
 
 
@@ -305,12 +307,53 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                 candidate_name = resolved["name"]
 
         if not candidate_ids:
-            return ActionResult(
-                status="error",
-                message="Nenhum candidato identificado para iniciar a triagem.",
-                error_detail="No candidate_ids or candidate_name provided",
-                action_type="start_screening",
-            )
+            # SC-001 fix: when job_id is provided (from context), auto-fetch candidates
+            # in "Novo" or "Triagem" (waiting) stage rather than asking for UUIDs
+            _auto_fetched = False
+            if job_vacancy_id and company_id:
+                try:
+                    from sqlalchemy import text as _text
+                    from app.core.database import AsyncSessionLocal as _ASL
+                    async with _ASL() as _db:
+                        _rows = await _db.execute(_text("""
+                            SELECT vc.candidate_id
+                            FROM vacancy_candidates vc
+                            WHERE vc.job_vacancy_id = CAST(:jid AS uuid)
+                              AND vc.company_id = CAST(:co AS uuid)
+                              AND vc.stage IN ('Novo', 'Triagem', 'Aguardando')
+                              AND (vc.status IS NULL OR vc.status NOT IN ('screening', 'screened'))
+                            LIMIT 50
+                        """), {"jid": str(job_vacancy_id), "co": str(company_id)})
+                        _found = [str(r[0]) for r in _rows.fetchall()]
+                    if _found:
+                        candidate_ids = _found
+                        _auto_fetched = True
+                        logger.info(
+                            "start_screening: auto-fetched %d waiting candidates for job %s",
+                            len(candidate_ids), job_vacancy_id,
+                        )
+                except Exception as _fe:
+                    logger.warning("start_screening: auto-fetch failed: %s", _fe)
+
+            if not candidate_ids:
+                # If job_id is known but no candidates found, give useful message
+                if job_vacancy_id:
+                    return ActionResult(
+                        status="executed",
+                        message=(
+                            "Não encontrei candidatos em espera (etapa Novo/Triagem) "
+                            "para esta vaga no momento. "
+                            "Verifique se há candidatos na etapa inicial do pipeline."
+                        ),
+                        data={"job_vacancy_id": str(job_vacancy_id), "candidates_found": 0},
+                        action_type="start_screening",
+                    )
+                return ActionResult(
+                    status="error",
+                    message="Nenhum candidato identificado para iniciar a triagem.",
+                    error_detail="No candidate_ids or candidate_name provided",
+                    action_type="start_screening",
+                )
 
         if not job_vacancy_id:
             return ActionResult(
@@ -673,4 +716,86 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
             message="Erro ao mover candidatos em lote.",
             error_detail=str(e),
             action_type="batch_move_candidates",
+        )
+
+
+async def _bulk_move_by_stage(params: dict, context: dict):
+    """Move ALL candidates in a given stage to another stage for a specific job."""
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        from sqlalchemy import text
+        from app.core.database import AsyncSessionLocal
+        from app.orchestrator.action_handlers._handler_hooks import log_action_audit
+
+        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+        from_stage = params.get("from_stage", "")
+        to_stage = params.get("to_stage", "")
+        company_id = (context or {}).get("company_id")
+
+        if not from_stage or not to_stage:
+            missing = []
+            if not from_stage:
+                missing.append("etapa de origem")
+            if not to_stage:
+                missing.append("etapa destino")
+            return ActionResult(
+                status="clarification_needed",
+                message=f"Para mover em bloco, preciso saber: {' e '.join(missing)}. "
+                        "Qual etapa de origem e qual etapa destino?",
+                action_type="bulk_move_by_stage",
+            )
+
+        if not job_id:
+            return ActionResult(
+                status="clarification_needed",
+                message="Para mover todos os candidatos de uma etapa, preciso saber qual é a vaga. "
+                        "Qual vaga você quer usar?",
+                action_type="bulk_move_by_stage",
+            )
+
+        async with AsyncSessionLocal() as db:
+            sql = """
+                UPDATE vacancy_candidates
+                SET stage = :to_stage, updated_at = NOW()
+                WHERE vacancy_id = CAST(:jid AS uuid)
+                  AND stage = :from_stage
+            """
+            bind: dict = {
+                "to_stage": to_stage,
+                "from_stage": from_stage,
+                "jid": str(job_id),
+            }
+            if company_id:
+                sql += " AND company_id = CAST(:co AS uuid)"
+                bind["co"] = str(company_id)
+
+            result = await db.execute(text(sql), bind)
+            moved = result.rowcount
+            await db.commit()
+
+        await log_action_audit(
+            "bulk_move_by_stage", company_id,
+            extra={"from_stage": from_stage, "to_stage": to_stage, "job_id": str(job_id)}
+        )
+
+        return ActionResult(
+            status="executed",
+            message=f"**{moved} candidato(s)** movido(s) de **{from_stage}** para **{to_stage}**.",
+            data={
+                "from_stage": from_stage,
+                "to_stage": to_stage,
+                "job_id": str(job_id),
+                "moved_count": moved,
+                "moved_at": datetime.utcnow().isoformat(),
+            },
+            action_type="bulk_move_by_stage",
+        )
+    except Exception as e:
+        logger.warning(f"bulk_move_by_stage failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao mover candidatos por etapa.",
+            error_detail=str(e),
+            action_type="bulk_move_by_stage",
         )

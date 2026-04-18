@@ -1171,7 +1171,7 @@ class RubricEvaluationService:
         # Fail-open: se serviço indisponível ou db=None, avaliação prossegue normalmente.
         if db is not None:
             try:
-                from app.shared.services.granular_consent_service import GranularConsentService
+                from app.domains.lgpd.services.granular_consent_service import GranularConsentService
                 _consent_svc = GranularConsentService(db)
                 _has_consent = await _consent_svc.check_purpose(
                     candidate_id, company_id, "ai_screening"

@@ -281,6 +281,46 @@ def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
         elif len(msg) > 10:
             entities["query"] = msg[:300]
 
+    # CM-007 / MT-002: Extract job_id from message text (e.g. "V0037", "vaga V0037")
+    # This is needed when context doesn't have entity_id (scope=Vagas without specific job)
+    if "job_id" not in entities and intent in (
+        "rankear_candidatos", "comparar_candidatos", "listar_candidatos_por_etapa",
+        "iniciar_triagem", "disparar_triagem", "health_check_vaga", "analisar_funil",
+        "exportar_candidatos", "sugerir_candidatos",
+    ):
+        # Match patterns like "V0037", "V-0037", "vaga V0037", "vagas V0037"
+        job_m = re.search(r"\b(V[-_]?\d{3,6})\b", msg, re.IGNORECASE)
+        if job_m:
+            entities["job_id"] = job_m.group(1).upper().replace("-", "").replace("_", "")
+            logger.debug("[extract_entities] Extracted job_id=%s from message text", entities["job_id"])
+
+    # KB-006: Extract stage from message for listar_candidatos_por_etapa
+    if intent == "listar_candidatos_por_etapa" and "stage" not in entities:
+        stage_map = [
+            ("entrevista técnica", "Entrevista Técnica"),
+            ("entrevista tecnica", "Entrevista Técnica"),
+            ("entrevista final", "Entrevista Final"),
+            ("entrevista rh", "Entrevista"),
+            ("entrevista", "Entrevista"),
+            ("triagem", "Triagem"),
+            ("proposta", "Proposta"),
+            ("oferta", "Oferta"),
+            ("shortlist", "Shortlist"),
+            ("análise", "Análise"),
+            ("analise", "Análise"),
+            ("teste técnico", "Teste Técnico"),
+            ("teste tecnico", "Teste Técnico"),
+            ("contratado", "Contratado"),
+            ("reprovado", "Reprovado"),
+            ("novo", "Novo"),
+        ]
+        msg_lower_s = msg.lower()
+        for keyword, stage_value in stage_map:
+            if keyword in msg_lower_s:
+                entities["stage"] = stage_value
+                logger.debug("[extract_entities] Extracted stage=%s from message", stage_value)
+                break
+
     return entities
 
 

@@ -300,7 +300,7 @@ class ActionExecutorService:
                 "send_feedback", "send_whatsapp", "send_screening_invite",
                 "send_candidate_report", "send_progress_report", "share_candidate_profile",
             }
-            _CANDIDATE_ACTIONS = {"move_candidate", "update_candidate_field", "start_screening", "analyze_profile", "batch_move_candidates"}
+            _CANDIDATE_ACTIONS = {"move_candidate", "update_candidate_field", "start_screening", "analyze_profile", "batch_move_candidates", "bulk_move_by_stage"}
             _JOB_ACTIONS = {"pause_job", "close_job", "duplicate_job", "reopen_job", "set_job_urgent"}
             _PIPELINE_ACTIONS = {"create_task", "create_note", "generate_daily_briefing", "create_automation", "check_proactive_alerts"}
             _SOURCING_ACTIONS = {
@@ -308,7 +308,7 @@ class ActionExecutorService:
                 "search_candidates", "suggest_candidates", "add_candidate",
                 "export_candidates", "favorite_candidate",
             }
-            _ANALYTICS_ACTIONS = {"generate_kpi_report", "job_health_check", "analyze_funnel"}
+            _ANALYTICS_ACTIONS = {"generate_kpi_report", "job_health_check", "analyze_funnel", "vacancies_without_candidates", "list_candidates_by_stage"}
             _INTERVIEW_ACTIONS = {
                 "reschedule_interview", "cancel_interview", "send_interview_reminder",
                 "list_today_interviews", "generate_self_scheduling_link",

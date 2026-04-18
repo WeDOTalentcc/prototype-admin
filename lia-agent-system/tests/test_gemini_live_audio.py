@@ -24,7 +24,7 @@ class TestGeminiLiveAudioService:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "test-key",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "https://test.example.com",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
             assert service.is_available is True
 
@@ -33,7 +33,7 @@ class TestGeminiLiveAudioService:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "https://test.example.com",
         }, clear=False):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
             assert service.is_available is False
 
@@ -42,7 +42,7 @@ class TestGeminiLiveAudioService:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "test-key",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "",
         }, clear=False):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
             assert service.is_available is False
 
@@ -51,7 +51,7 @@ class TestGeminiLiveAudioService:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "test-key",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "https://test.example.com",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -78,7 +78,7 @@ class TestGeminiLiveAudioService:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "test-key",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "https://test.example.com",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -94,7 +94,7 @@ class TestGeminiLiveAudioService:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "test-key",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "https://test.example.com",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
             assert service.get_session("nonexistent-id") is None
 
@@ -103,7 +103,7 @@ class TestGeminiLiveAudioService:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "test-key",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "https://test.example.com",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -118,7 +118,7 @@ class TestGeminiLiveAudioService:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "test-key",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "https://test.example.com",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
             service.remove_session("does-not-exist")
 
@@ -130,7 +130,7 @@ class TestSystemPrompt:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -147,7 +147,7 @@ class TestSystemPrompt:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -168,7 +168,7 @@ class TestSystemPrompt:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -184,7 +184,7 @@ class TestSystemPrompt:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -205,7 +205,7 @@ class TestSystemPrompt:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -226,7 +226,7 @@ class TestFairnessGuardIntegration:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -248,7 +248,7 @@ class TestFairnessGuardIntegration:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -273,7 +273,7 @@ class TestFairnessGuardIntegration:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -293,7 +293,7 @@ class TestCandidateTextProcessing:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -312,7 +312,7 @@ class TestCandidateTextProcessing:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -331,7 +331,7 @@ class TestSessionMetrics:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -350,7 +350,7 @@ class TestSessionMetrics:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -368,7 +368,7 @@ class TestSessionMetrics:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -382,7 +382,7 @@ class TestSessionMetrics:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -397,7 +397,7 @@ class TestSessionMetrics:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -420,7 +420,7 @@ class TestSessionMetrics:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -660,7 +660,7 @@ class TestConnectionConfig:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -867,7 +867,7 @@ class TestTokenTrackingIntegration:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
             session = service.create_session(
                 candidate_id="c1", candidate_name="Test",
@@ -888,7 +888,7 @@ class TestCandidateTranscriptCapture:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
             session = service.create_session(
                 candidate_id="c1", candidate_name="Test",
@@ -909,7 +909,7 @@ class TestCandidateTranscriptCapture:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
             session = service.create_session(
                 candidate_id="c1", candidate_name="Test",
@@ -933,7 +933,7 @@ class TestCandidateTranscriptCapture:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
             session = service.create_session(
                 candidate_id="c1", candidate_name="Test",
@@ -975,7 +975,7 @@ class TestWebSocketIntegration:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             svc = GeminiLiveAudioService()
             with patch("app.services.gemini_live_audio_service.get_gemini_live_service", return_value=svc):
                 with client.websocket_connect(
@@ -994,7 +994,7 @@ class TestWebSocketIntegration:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             svc = GeminiLiveAudioService()
             session = svc.create_session(
                 candidate_id="c1", candidate_name="Test",
@@ -1018,7 +1018,7 @@ class TestWebSocketIntegration:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             svc = GeminiLiveAudioService()
             session = svc.create_session(
                 candidate_id="c1", candidate_name="Test",
@@ -1045,7 +1045,7 @@ class TestWebSocketIntegration:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             svc = GeminiLiveAudioService()
             session = svc.create_session(
                 candidate_id="c1", candidate_name="Test",
@@ -1069,7 +1069,7 @@ class TestWebSocketIntegration:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             svc = GeminiLiveAudioService()
             session = svc.create_session(
                 candidate_id="c1", candidate_name="Test",
@@ -1094,7 +1094,7 @@ class TestTenantIsolation:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(
@@ -1109,7 +1109,7 @@ class TestTenantIsolation:
             "AI_INTEGRATIONS_GEMINI_API_KEY": "k",
             "AI_INTEGRATIONS_GEMINI_BASE_URL": "u",
         }):
-            from app.shared.services.gemini_live_audio_service import GeminiLiveAudioService
+            from app.domains.voice.services.gemini_live_audio_service import GeminiLiveAudioService
             service = GeminiLiveAudioService()
 
             session = service.create_session(

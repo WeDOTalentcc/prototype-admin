@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.shared.tenant_guard import get_verified_company_id
-from app.shared.services.granular_consent_service import (
+from app.domains.lgpd.services.granular_consent_service import (
     ALL_PURPOSES,
     GranularConsentService,
 )

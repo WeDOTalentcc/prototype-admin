@@ -189,7 +189,6 @@ from app.api.v1 import (
     test_activities,
     triagem,
     trust_center,
-    openmic_webhook,
     twilio_voice,
     voice,
     webhooks,
@@ -357,7 +356,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(twilio_voice.router, prefix="/api/v1", tags=["twilio-voice"])
     app.include_router(gemini_voice.router, prefix="/api/v1", tags=["gemini-voice"])
     app.include_router(voice_stream.router, prefix="/api/v1", tags=["voice-stream"])
-    app.include_router(openmic_webhook.router, prefix="/api/v1", tags=["openmic-voice"])
     app.include_router(whatsapp.router, prefix="/api/v1", tags=["whatsapp"])
     app.include_router(multi_channel.router, prefix="/api/v1", tags=["multi-channel"])
 

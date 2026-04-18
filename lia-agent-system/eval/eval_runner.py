@@ -304,6 +304,23 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
     if "does not fail" in c or "returns meaningful" in c:
         return n > 20
 
+    # ---- ANALYTICS KPI (Portuguese-aware) ----
+    if _re.search(r"returns?.*(multiple|kpi|indicador)|multiple.*kpi|kpis?", c):
+        # "Returns multiple KPIs" — true if response has 3+ bold sections or 3+ numeric metrics
+        bold_count = len(_re.findall(r"\*\*[^*]+\*\*", response))
+        return bold_count >= 3 or (has_digits and n > 150)
+
+    if _re.search(r"includes?.*time.*period|time.*period|period.*includ|inclui.*período|período.*inclui", c):
+        # "Includes time period" — check for Portuguese month/period words
+        months_pt = ["janeiro", "fevereiro", "março", "abril", "maio", "junho",
+                     "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+                     "mês", "mes", "período", "periodo", "semana", "trimestre", "2026", "2025"]
+        return any(m in resp_lower for m in months_pt) or bool(_re.search(r"\d{4}", response))
+
+    if _re.search(r"numerical.*data|numeric.*data|dados.*numericos|dados numéricos", c):
+        # "Numerical data" — true if response contains numbers
+        return has_digits
+
     # ---- DEFAULT: keyword presence ----
     keywords = [w for w in c.split() if len(w) > 5]
     if keywords:
@@ -333,7 +350,13 @@ def score_heuristic(case: dict, response: str) -> dict[str, Any]:
         quoted = _re.findall(r"'([^']+)'", ap_lower)
         if quoted:
             # Check if any quoted phrase appears in the response
-            if any(q in resp_lower for q in quoted):
+            # Use word-boundary matching for short words (pronouns) to avoid
+            # false positives where "ela" matches inside "dela", "tela", etc.
+            def _quoted_match(q: str, text: str) -> bool:
+                if len(q) <= 4:
+                    return bool(_re.search(r"(?<![a-záéíóúãõâêîôûàèìòùç])" + _re.escape(q) + r"(?![a-záéíóúãõâêîôûàèìòùç])", text))
+                return q in text
+            if any(_quoted_match(q, resp_lower) for q in quoted):
                 # Exception: "without attempting tool call" — skip if response shows tool was called
                 if "without attempt" in ap_lower or ("without" in ap_lower and "tool" in ap_lower):
                     tool_evidence = ["não encontrei", "nenhuma", "nenhum", "encontrei", "found",

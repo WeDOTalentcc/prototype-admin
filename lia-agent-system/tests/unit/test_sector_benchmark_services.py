@@ -568,11 +568,11 @@ class TestCandidateChannelSelectorLogic:
 
 class TestConsentCheckerServiceImport:
     def test_import_module(self):
-        from app.shared.services.consent_checker_service import ConsentCheckerService, ConsentCheckResult
+        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService, ConsentCheckResult
         assert ConsentCheckerService is not None
 
     def test_consent_check_result_defaults(self):
-        from app.shared.services.consent_checker_service import ConsentCheckResult
+        from app.domains.lgpd.services.consent_checker_service import ConsentCheckResult
         result = ConsentCheckResult(allowed=True)
         assert result.allowed is True
         assert result.soft_warning is False
@@ -580,12 +580,12 @@ class TestConsentCheckerServiceImport:
         assert result.consent_type is None
 
     def test_ai_purposes_list(self):
-        from app.shared.services.consent_checker_service import ConsentCheckerService
+        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
         assert "ai_screening" in ConsentCheckerService.AI_PURPOSES
         assert "ai_scoring" in ConsentCheckerService.AI_PURPOSES
 
     def test_purpose_to_consent_type_mapping(self):
-        from app.shared.services.consent_checker_service import ConsentCheckerService
+        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
         assert ConsentCheckerService.PURPOSE_TO_CONSENT_TYPE["ai_screening"] == "SCREENING"
         assert ConsentCheckerService.PURPOSE_TO_CONSENT_TYPE["ai_scoring"] == "SCREENING"
 
@@ -593,7 +593,7 @@ class TestConsentCheckerServiceImport:
 class TestConsentCheckerServiceRevokedConsent:
     @pytest.mark.asyncio
     async def test_revoked_consent_returns_blocked(self):
-        from app.shared.services.consent_checker_service import ConsentCheckerService
+        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
         from datetime import datetime
 
         mock_db = MagicMock()
@@ -620,7 +620,7 @@ class TestConsentCheckerServiceRevokedConsent:
 class TestConsentCheckerServiceAbsentConsent:
     @pytest.mark.asyncio
     async def test_absent_consent_hard_block_blocks(self):
-        from app.shared.services.consent_checker_service import ConsentCheckerService
+        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_result = MagicMock()
@@ -666,7 +666,7 @@ class TestConsentCheckerServiceAbsentConsent:
 
     @pytest.mark.asyncio
     async def test_absent_consent_soft_warning_continues(self):
-        from app.shared.services.consent_checker_service import ConsentCheckerService
+        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_result = MagicMock()
@@ -697,7 +697,7 @@ class TestConsentCheckerServiceAbsentConsent:
     @pytest.mark.asyncio
     async def test_absent_consent_with_config_hard_block_true(self):
         """Quando LGPD_CONSENT_ABSENT_HARD_BLOCK=True, ausência bloqueia."""
-        from app.shared.services.consent_checker_service import ConsentCheckerService
+        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_result = MagicMock()
@@ -734,7 +734,7 @@ class TestConsentCheckerServiceAbsentConsent:
 class TestConsentCheckerServicePresentConsent:
     @pytest.mark.asyncio
     async def test_present_valid_consent_allows(self):
-        from app.shared.services.consent_checker_service import ConsentCheckerService
+        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_consent = MagicMock()
@@ -758,7 +758,7 @@ class TestConsentCheckerServicePresentConsent:
 
     @pytest.mark.asyncio
     async def test_db_exception_returns_soft_warning(self):
-        from app.shared.services.consent_checker_service import ConsentCheckerService
+        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_db.execute = AsyncMock(side_effect=RuntimeError("db error"))
@@ -778,7 +778,7 @@ class TestConsentCheckerServicePresentConsent:
 class TestConsentCheckerServiceRegister:
     @pytest.mark.asyncio
     async def test_register_consent_creates_new(self):
-        from app.shared.services.consent_checker_service import ConsentCheckerService
+        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_result = MagicMock()
@@ -802,7 +802,7 @@ class TestConsentCheckerServiceRegister:
 
     @pytest.mark.asyncio
     async def test_register_consent_updates_existing(self):
-        from app.shared.services.consent_checker_service import ConsentCheckerService
+        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_existing = MagicMock()
@@ -824,7 +824,7 @@ class TestConsentCheckerServiceRegister:
 
     @pytest.mark.asyncio
     async def test_register_consent_revoke_sets_revoked_at(self):
-        from app.shared.services.consent_checker_service import ConsentCheckerService
+        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
 
         mock_db = MagicMock()
         mock_existing = MagicMock()
@@ -847,7 +847,7 @@ class TestConsentCheckerServiceRegister:
 
     @pytest.mark.asyncio
     async def test_get_candidate_consents_returns_list(self):
-        from app.shared.services.consent_checker_service import ConsentCheckerService
+        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
 
         mock_consent = MagicMock()
         mock_consent.to_dict = MagicMock(return_value={"consent_type": "SCREENING"})

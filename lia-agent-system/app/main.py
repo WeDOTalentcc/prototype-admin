@@ -121,31 +121,10 @@ async def lifespan(app: FastAPI):
                 "Set AI_INTEGRATIONS_ANTHROPIC_API_KEY (or another provider) before deploying."
             )
 
-    # Production safety guard: OPENMIC_ALLOW_UNSIGNED_WEBHOOK must never be true in prod
-    _allow_unsigned = os.getenv("OPENMIC_ALLOW_UNSIGNED_WEBHOOK", "false").lower()
-    _is_production = os.getenv("APP_ENV", "development").lower() in ("production", "prod", "staging")
-    if _allow_unsigned == "true" and _is_production:
-        logger.critical(
-            "🚨 SECURITY: OPENMIC_ALLOW_UNSIGNED_WEBHOOK=true is set in a production environment! "
-            "This disables webhook signature verification. Remove this env var immediately."
-        )
-        raise RuntimeError(
-            "OPENMIC_ALLOW_UNSIGNED_WEBHOOK=true is not permitted in production. "
-            "This bypasses webhook HMAC validation and must only be used in local development."
-        )
-    elif _allow_unsigned == "true":
-        logger.warning(
-            "⚠️  OPENMIC_ALLOW_UNSIGNED_WEBHOOK=true — webhook signature check bypassed "
-            "(dev mode only). Remove before deploying to production."
-        )
-    elif not os.getenv("OPENMIC_WEBHOOK_SECRET"):
-        logger.warning(
-            "⚠️  OPENMIC_WEBHOOK_SECRET not set — OpenMic webhook endpoint will return 503 "
-            "for all incoming requests. Set OPENMIC_WEBHOOK_SECRET to enable the endpoint."
-        )
-    else:
-        logger.info("✅ OpenMic webhook configured (HMAC-SHA256 signature validation enabled)")
-    
+    # OpenMic.ai webhook + Deepgram STT removed in 2026-04-18 (audit P0-4).
+    # Voice screening is now handled inline by Twilio + Gemini Live under
+    # ``app/domains/voice/services/``; no webhook signature guard required.
+
     # Initialize database
     try:
         await init_db()

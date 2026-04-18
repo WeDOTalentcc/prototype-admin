@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 async def _generate_tts_audio(text: str) -> str | None:
     try:
-        from app.shared.services.voice_service import voice_service
+        from app.domains.voice.services.voice_service import voice_service
         availability = voice_service.is_available()
         if not availability.get("any_synthesis"):
             logger.warning("[Triagem] TTS not available: no API key configured")

@@ -800,7 +800,7 @@ async def wsi_screening(
             screening_config = {
                 "bloom_levels": ["remember", "understand", "apply", "analyze", "evaluate", "create"],
                 "dreyfus_stages": ["novice", "advanced_beginner", "competent", "proficient", "expert"],
-                "big_five_traits": ["openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism"],
+                "big_five_traits": ["openness", "conscientiousness", "extraversion", "agreeableness", "stability"],
             }
             
             if screening_type == "technical":

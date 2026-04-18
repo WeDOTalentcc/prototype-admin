@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS wsi_response_analyses (
     question_id VARCHAR NOT NULL REFERENCES wsi_questions(id) ON DELETE CASCADE,
     competency VARCHAR NOT NULL,
     response_text TEXT NOT NULL,
-    response_audio_url VARCHAR,  -- OpenMic.ai recording URL
+    response_audio_url VARCHAR,  -- Recording URL (Twilio MediaUrl ou Gemini Live transcript artifact)
     autodeclaration_score DECIMAL(3,2) CHECK (autodeclaration_score BETWEEN 1 AND 5),
     context_score DECIMAL(3,2) CHECK (context_score BETWEEN 1 AND 5),
     bloom_level INT CHECK (bloom_level BETWEEN 1 AND 5),

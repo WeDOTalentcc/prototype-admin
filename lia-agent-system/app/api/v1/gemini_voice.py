@@ -133,7 +133,7 @@ async def start_gemini_voice_session(
     _session_creation_timestamps[client_ip] = timestamps
 
     try:
-        from app.shared.services.gemini_live_audio_service import get_gemini_live_service
+        from app.domains.voice.services.gemini_live_audio_service import get_gemini_live_service
         from app.domains.voice.services.voice_screening_orchestrator import (
             ConsentNotGrantedError,
             voice_screening_orchestrator,
@@ -269,7 +269,7 @@ async def gemini_live_stream_websocket(
       - Session timeout enforced (20 minutes)
       - company_id and candidate_id validated from session (tenant isolation)
     """
-    from app.shared.services.gemini_live_audio_service import get_gemini_live_service
+    from app.domains.voice.services.gemini_live_audio_service import get_gemini_live_service
 
     client_ip = "unknown"
     if websocket.client:
@@ -700,7 +700,7 @@ async def gemini_live_stream_websocket(
 
 @router.get("/gemini-voice/session/{session_id}", response_model=None)
 async def get_gemini_session_status(session_id: _DualId):
-    from app.shared.services.gemini_live_audio_service import get_gemini_live_service
+    from app.domains.voice.services.gemini_live_audio_service import get_gemini_live_service
 
     live_service = get_gemini_live_service()
     session = live_service.get_session(session_id)
@@ -732,7 +732,7 @@ async def get_gemini_session_status(session_id: _DualId):
 
 @router.get("/gemini-voice/health", response_model=None)
 async def gemini_voice_health():
-    from app.shared.services.gemini_live_audio_service import get_gemini_live_service
+    from app.domains.voice.services.gemini_live_audio_service import get_gemini_live_service
 
     live_service = get_gemini_live_service()
     circuit_stats = GEMINI_LIVE_CIRCUIT.get_stats()

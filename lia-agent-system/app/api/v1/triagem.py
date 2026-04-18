@@ -476,7 +476,7 @@ async def transcribe_audio(
     if not audio_data:
         raise HTTPException(status_code=400, detail="Arquivo de áudio vazio")
 
-    from app.shared.services.voice_service import voice_service
+    from app.domains.voice.services.voice_service import voice_service
 
     try:
         transcription = await voice_service.transcribe_audio(
@@ -579,7 +579,7 @@ async def voice_status(
         raise HTTPException(status_code=404, detail="Token inválido")
 
     from app.domains.cv_screening.services.voice_service import triagem_voice_service
-    from app.shared.services.voice_service import voice_service
+    from app.domains.voice.services.voice_service import voice_service
 
     availability = voice_service.is_available()
     return JSONResponse(content={

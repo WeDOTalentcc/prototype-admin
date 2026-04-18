@@ -39,7 +39,7 @@ from app.schemas.candidate import (
 )
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
 from app.shared.services.calibration_service import CalibrationService
-from app.shared.services.consent_checker_service import ConsentCheckerService
+from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard_middleware import check_rejection_reason
 from app.shared.pii_masking import get_masked_logger

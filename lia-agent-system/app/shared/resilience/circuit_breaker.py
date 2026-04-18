@@ -494,26 +494,6 @@ GEMINI_LIVE_CIRCUIT = CircuitBreaker(
     )
 )
 
-DEEPGRAM_CIRCUIT = CircuitBreaker(
-    "deepgram",
-    CircuitBreakerConfig(
-        failure_threshold=3,
-        recovery_timeout=30.0,
-        success_threshold=2,
-        timeout=30.0,
-    )
-)
-
-OPENMIC_CIRCUIT = CircuitBreaker(
-    "openmic",
-    CircuitBreakerConfig(
-        failure_threshold=3,
-        recovery_timeout=60.0,
-        success_threshold=2,
-        timeout=30.0,
-    )
-)
-
 RAILS_CIRCUIT = CircuitBreaker(
     "rails_api",
     CircuitBreakerConfig(
@@ -542,8 +522,6 @@ ALL_CIRCUITS: dict[str, CircuitBreaker] = {
     "vindi": VINDI_CIRCUIT,
     "twilio_voice": TWILIO_VOICE_CIRCUIT,
     "gemini_live": GEMINI_LIVE_CIRCUIT,
-    "deepgram": DEEPGRAM_CIRCUIT,
-    "openmic": OPENMIC_CIRCUIT,
     "rails_api": RAILS_CIRCUIT,
 }
 
@@ -668,20 +646,6 @@ CIRCUIT_BREAKER_SLOS: dict[str, dict[str, Any]] = {
         "error_budget_pct": 0.5,
         "tier": "critical",
         "description": "Screening por voz — Gemini Live Audio (VoIP)",
-    },
-    "deepgram": {
-        "availability_target": 0.999,
-        "latency_p95_ms": 5000,
-        "error_budget_pct": 0.1,
-        "tier": "high",
-        "description": "Transcrição de voz STT — Deepgram Nova-2",
-    },
-    "openmic": {
-        "availability_target": 0.99,
-        "latency_p95_ms": 10000,
-        "error_budget_pct": 1.0,
-        "tier": "high",
-        "description": "Triagem automatizada por voz — OpenMic.ai",
     },
     "rails_api": {
         "availability_target": 0.999,

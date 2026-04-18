@@ -255,7 +255,7 @@ class VoiceInterviewStateMachine:
         """Transcribe audio to text. Tries GeminiVoice → Whisper → fallback."""
         # Try GeminiVoiceService (Replit)
         try:
-            from app.shared.services.gemini_voice_service import GeminiVoiceService
+            from app.domains.voice.services.gemini_voice_service import GeminiVoiceService
             svc = GeminiVoiceService()
             result = await svc.transcribe_audio(audio_bytes, audio_format, language)
             return result.text
