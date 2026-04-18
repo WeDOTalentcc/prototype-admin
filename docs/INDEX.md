@@ -51,6 +51,7 @@ docs/
 | [architecture/services/CONFIG_SYNC_FEATURE_PROPOSAL.md](./architecture/services/CONFIG_SYNC_FEATURE_PROPOSAL.md) | Proposta de sync de config |
 | [architecture/c4-diagram.md](./architecture/c4-diagram.md) | Diagrama C4 |
 | [architecture/COMPLETE_SYSTEM_ARCHITECTURE.md](./architecture/COMPLETE_SYSTEM_ARCHITECTURE.md) | Arquitetura completa do sistema |
+| [architecture/id-boundary-policy.md](./architecture/id-boundary-policy.md) | ID Boundary Policy LIA × Rails (UUID vs bigint, naming, RailsAdapter) — derivado de [ADR 003](./adr/003-id-strategy-lia-vs-rails.md) |
 
 ### LIA / Inteligência Artificial (Não Alterar)
 

@@ -4,6 +4,7 @@
 - **Data:** 2026-04-18
 - **Autor:** Plataforma LIA / Task #468
 - **Decisão:** **Adiar refactor estrutural. Manter coexistência UUID + Rails bigint, formalizar as convenções já existentes em uma `ID Boundary Policy` documentada e adicionar guard‑rails preventivos (testes, lint, naming).**
+- **Política operacional derivada deste ADR:** [`docs/architecture/id-boundary-policy.md`](../architecture/id-boundary-policy.md) — leitura obrigatória para novos endpoints, colunas e payloads de evento que cruzem a fronteira LIA × Rails.
 - **Critério de revisão:** Reabrir este ADR se *qualquer* dos gatilhos da seção [Critério de revisão](#critério-de-revisão) for atingido.
 - **Issue de implementação:** Apenas as ações da seção [Plano imediato (baixo custo)](#plano-imediato-baixo-custo) — nenhum refactor de fronteira é encomendado por este ADR.
 
