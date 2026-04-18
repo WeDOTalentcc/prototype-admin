@@ -193,6 +193,54 @@ def test_static_collection_route_dispatches_to_static_handler(
     )
 
 
+def test_close_vacancy_route_lives_under_job_vacancies_prefix() -> None:
+    """Task #459 regression — ``POST /{vacancy_id}/close`` used to be
+    registered without the ``/job-vacancies`` prefix, which mounted it
+    as a top-level catch-all under ``/api/v1`` (any first segment would
+    be parsed as ``vacancy_id``). Ensure it stays inside the proper
+    namespace so future single-segment POSTs cannot be silently
+    shadowed.
+
+    Two assertions:
+    1. The canonical path is registered and dispatches to ``close_vacancy``.
+    2. The orphan top-level path ``/{vacancy_id}/close`` is NOT registered.
+    """
+    routes = _api_routes()
+
+    # 1) canonical path exists and routes to close_vacancy
+    canonical_scope = {
+        "type": "http",
+        "method": "POST",
+        "path": "/job-vacancies/550e8400-e29b-41d4-a716-446655440000/close",
+        "headers": [],
+        "query_string": b"",
+        "path_params": {},
+        "root_path": "",
+    }
+    matched = None
+    for route in routes:
+        match, _ = route.matches(canonical_scope)
+        if match.name == "FULL":
+            matched = route
+            break
+    assert matched is not None, (
+        "POST /job-vacancies/{uuid}/close did not match any registered route. "
+        "Task #459 expected the close endpoint under the /job-vacancies prefix."
+    )
+    handler_name = getattr(matched.endpoint, "__name__", "<unknown>")
+    assert handler_name == "close_vacancy", (
+        f"POST /job-vacancies/{{uuid}}/close dispatched to {handler_name!r} "
+        "instead of close_vacancy."
+    )
+
+    # 2) orphan top-level path must not exist as a registered route
+    paths = {r.path for r in routes}
+    assert "/{vacancy_id}/close" not in paths, (
+        "Orphan top-level route /{vacancy_id}/close is still registered. "
+        "Move it under the /job-vacancies prefix (Task #459)."
+    )
+
+
 def test_item_path_parameters_are_uuid_or_int_constrained() -> None:
     """Every ``{job_vacancy_id}`` / ``{job_id}`` / ``{vacancy_id}`` path
     parameter under ``/job-vacancies`` must reject non-UUID, non-digit
