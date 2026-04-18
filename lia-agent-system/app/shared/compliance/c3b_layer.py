@@ -79,11 +79,28 @@ async def pre_compliance(
     block_reason = ""
     fairness_flags: list[str] = []
 
-    if domain in _FAIRNESS_DOMAINS:
+    # Run FairnessGuard for known HR domains AND when domain is unknown/empty
+    # (empty domain = request came from a page that didn't specify a domain,
+    # e.g. Kanban — discriminatory filters can arrive from any page).
+    if not domain or domain in _FAIRNESS_DOMAINS:
         try:
             from app.shared.compliance.fairness_guard import FairnessGuard
             fg = FairnessGuard()
-            result = fg.check(clean)
+            # Check the ORIGINAL message first — PII stripping removes numeric
+            # age values (e.g. "50 anos" → "[IDADE REMOVIDA]") before the guard
+            # runs, causing age-discrimination patterns (\d+\s+anos) to miss.
+            # We must scan the pre-strip text so patterns like "mais de 50 anos"
+            # are detected even when PII masking has already been applied.
+            result = fg.check(message)
+            if not result.is_blocked and pii_stripped:
+                # Also check the cleaned version for any non-numeric bias terms
+                result_clean = fg.check(clean)
+                if result_clean.is_blocked:
+                    result = result_clean
+                elif result_clean.soft_warnings:
+                    result.soft_warnings = list(set(
+                        (result.soft_warnings or []) + list(result_clean.soft_warnings)
+                    ))
             if result.soft_warnings:
                 fairness_flags = list(result.soft_warnings)
             if result.is_blocked:

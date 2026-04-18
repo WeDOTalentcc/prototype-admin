@@ -237,7 +237,34 @@ async def send_message(
         page_context.get("domain", ""),
     )
     if _c3b_pre.fairness_blocked:
-        raise HTTPException(status_code=422, detail=_c3b_pre.block_reason or "Solicitação bloqueada por critérios de equidade.")
+        # Return a 200 response with the educational refusal message so the
+        # conversation UI displays it properly (instead of a silent 422 error).
+        import datetime as _dt
+        _block_msg = _c3b_pre.block_reason or "Solicitação bloqueada por critérios de equidade."
+        _now_block = _dt.datetime.utcnow()
+        return ChatResponse(
+            message=MessageResponse(
+                id=str(uuid.uuid4()),
+                conversation_id=conversation_id,
+                role="assistant",
+                content=_block_msg,
+                message_metadata={"fairness_blocked": True, "fairness_flags": _c3b_pre.fairness_flags},
+                created_at=_now_block,
+            ),
+            conversation=ConversationResponse(
+                id=_conv_snapshot["id"],
+                user_id=_conv_snapshot["user_id"],
+                user_role=_conv_snapshot["user_role"],
+                title=_conv_snapshot["title"] or message_data.content[:100],
+                intent=_conv_snapshot["intent"],
+                workflow_type=_conv_snapshot["workflow_type"],
+                workflow_step=_conv_snapshot["workflow_step"] or 0,
+                workflow_data=_conv_snapshot["workflow_data"],
+                status=_conv_snapshot["status"],
+                created_at=_conv_snapshot["created_at"],
+                updated_at=_now_block,
+            ),
+        )
 
     orch_result = await _get_chat_adapter().process_message(
         user_message=_c3b_pre.clean_message,

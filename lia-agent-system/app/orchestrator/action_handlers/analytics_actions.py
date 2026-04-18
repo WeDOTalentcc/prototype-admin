@@ -466,6 +466,10 @@ async def _vacancies_without_candidates(params, context):
                 "days_open": row.days_open,
             })
 
+        lines.append(
+            "\nGostaria que eu inicie a triagem ou busca por candidatos para essas vagas?"
+        )
+
         return ActionResult(
             status="executed",
             message="\n".join(lines),
