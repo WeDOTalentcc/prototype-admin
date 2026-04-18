@@ -19,6 +19,11 @@ domains:
     - "quais\\s+(\\w+\\s+)*vagas?"
     - "quantas\\s+vagas?"
     - "vagas?\\s+(abertas?|ativas?|em\\s+aberto|em\\s+andamento|pendentes?|fechadas?|pausadas?|canceladas?)"
+    # English patterns (EX-007 resilience)
+    - "show\\s+(me\\s+)?(the\\s+)?(active\\s+)?jobs?"
+    - "list\\s+(me\\s+)?(all\\s+)?(active\\s+)?jobs?"
+    - "get\\s+(me\\s+)?(the\\s+)?jobs?"
+    - "\\bactive\\s+jobs?\\b"
     - "ranking\\s+d[eo]?\\s+vagas?"
     - "\\bfunil\\s+d[ae]\\s+vaga"
     - "detalhes\\s+d[ae]\\s+vaga"
