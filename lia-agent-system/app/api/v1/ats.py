@@ -9,7 +9,10 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, Request
 from pydantic import BaseModel
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
+from app.core.database import get_db
 from app.domains.ats_integration.dependencies import get_ats_repo
 from app.domains.ats_integration.repositories.ats_repository import ATSRepository
 from app.domains.ats_integration.services.gupy_service import GupyService
@@ -323,6 +326,7 @@ async def trigger_ats_sync(
     repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
     sync_service: ATSSyncService = Depends(get_ats_sync_service),
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Manually trigger synchronization for an ATS connection.
@@ -409,9 +413,15 @@ async def trigger_ats_sync(
                     ats_type=provider_name,
                     source_agent="user_trigger",
                     limit=200,
+                    db=db,
+                    company_id=str(company_id) if company_id else None,
                 )
                 if jobs_result.get("success"):
-                    records_created += jobs_result.get("count", 0)
+                    if jobs_result.get("persisted"):
+                        records_created += jobs_result.get("created", 0)
+                        records_updated += jobs_result.get("updated", 0)
+                    else:
+                        records_created += jobs_result.get("count", 0)
                 else:
                     records_failed += 1
                     error_message = (error_message or "") + " " + jobs_result.get("message", "")

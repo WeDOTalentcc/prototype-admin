@@ -176,6 +176,16 @@ async def handle_ats_webhook(
             platform_lower,
             payload
         )
+    elif event_type in [
+        "job_created", "job.created", "vacancy_created", "vacancy.created",
+        "job_updated", "job.updated", "vacancy_updated", "vacancy.updated",
+    ]:
+        background_tasks.add_task(
+            process_ats_job_event,
+            platform_lower,
+            event_type,
+            payload,
+        )
     else:
         logger.warning(f"[WEBHOOK] Unknown ATS event type: {event_type}")
     
@@ -272,6 +282,94 @@ async def process_ats_candidate_hired(platform: str, payload: dict[str, Any]):
         )
     except Exception as e:
         logger.error(f"❌ Error processing ATS candidate hired: {e}", exc_info=True)
+
+
+async def process_ats_job_event(platform: str, event_type: str, payload: dict[str, Any]):
+    """
+    Persist a job created/updated in the ATS as a JobVacancy row.
+
+    Idempotency key: ``(company_id, source_system, external_system_id)``.
+    """
+    try:
+        from app.domains.ats_integration.services.ats_clients.base import ATSJob
+        from lia_config.database import get_tenant_aware_session
+
+        job_payload = (
+            payload.get("job")
+            or payload.get("vacancy")
+            or payload.get("data")
+            or payload
+        )
+        if isinstance(job_payload, list):
+            job_payload = job_payload[0] if job_payload else {}
+        if not isinstance(job_payload, dict):
+            logger.warning(f"[ATS SYNC] Unexpected job payload shape from {platform}")
+            return
+
+        external_id = (
+            job_payload.get("id")
+            or job_payload.get("ats_job_id")
+            or job_payload.get("external_id")
+            or job_payload.get("vacancy_id")
+            or job_payload.get("IdVacancy")
+            or job_payload.get("idVacancy")
+        )
+        if not external_id:
+            logger.warning(f"[ATS SYNC] Job payload from {platform} missing id; skipping")
+            return
+
+        company_id = (
+            payload.get("company_id")
+            or payload.get("tenant_id")
+            or job_payload.get("company_id")
+        )
+        if not company_id:
+            logger.warning(
+                f"[ATS SYNC] No company_id in {platform} job webhook payload; cannot persist"
+            )
+            return
+
+        def _pick(*keys: str) -> Any:
+            for k in keys:
+                v = job_payload.get(k)
+                if v not in (None, ""):
+                    return v
+            return None
+
+        title = _pick("title", "Title", "name", "Name", "titulo") or ""
+        location_value = _pick("location", "Location", "City", "cidade")
+        if not location_value:
+            city = _pick("City", "city", "cidade")
+            state = _pick("State", "state", "estado")
+            if city and state:
+                location_value = f"{city}, {state}"
+            elif city:
+                location_value = city
+        ats_job = ATSJob(
+            ats_id=str(external_id),
+            title=title,
+            description=_pick("description", "Description", "descricao"),
+            department=_pick("department", "Department", "departamento"),
+            location=location_value,
+            status=_pick("status", "Status", "situacao"),
+            requirements=_pick("requirements", "Requirements", "requisitos"),
+            employment_type=_pick("employment_type", "EmploymentType", "tipo_contrato"),
+            salary_range=_pick("salary_range", "SalaryRange", "faixa_salarial"),
+            raw_data=job_payload,
+        )
+
+        sync_service = get_ats_sync_service()
+        async with get_tenant_aware_session() as db:
+            action = await sync_service.upsert_job_vacancy(
+                db=db,
+                company_id=str(company_id),
+                ats_type=platform,
+                job=ats_job,
+            )
+            await db.flush()
+        logger.info(f"[ATS SYNC] Job {event_type} from {platform} -> {action}")
+    except Exception as e:
+        logger.error(f"❌ Error processing ATS job event: {e}", exc_info=True)
 
 
 async def process_ats_candidate_rejected(platform: str, payload: dict[str, Any]):
