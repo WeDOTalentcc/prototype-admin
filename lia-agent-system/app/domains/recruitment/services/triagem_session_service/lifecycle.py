@@ -47,16 +47,17 @@ async def validate_token(db: AsyncSession, token: str) -> dict[str, Any]:
     if session.status == "completed":
         return {"valid": True, "completed": True, "session": session.to_dict()}
 
-    # Task #425 — enforce reopen cap on the candidate-facing GET path so the
-    # limit applies whether the candidate hits /start or just resumes via
-    # the token URL. The increment itself still happens on /start (state
-    # transition); validate_token only blocks further access when capped.
-    # MVP requirement: até 2 retomadas; a 3ª bloqueia. Since start_session
-    # increments BEFORE checking, validate_token must use `>=` so that a
-    # session whose count is already at the cap cannot be re-validated.
+    # Task #425 — enforce reopen cap AND counting on the candidate-facing GET
+    # path. The frontend resume flow re-enters via GET /triagem/{token}
+    # without calling /start when the session is already started/in_progress,
+    # so the counter must be incremented here (with the same 30-min cooldown
+    # used in start_session to absorb refreshes/double-loads).
+    # MVP requirement: até 2 retomadas; a 3ª bloqueia. Block when the
+    # already-persisted count is at the cap, else increment outside cooldown.
     REOPEN_LIMIT = 2
+    REOPEN_COOLDOWN_MIN = 30
     if session.status in ("started", "in_progress"):
-        meta = session.metadata_json or {}
+        meta = dict(session.metadata_json or {})
         current = int(meta.get("reopen_count", 0))
         if current >= REOPEN_LIMIT:
             return {
@@ -65,8 +66,26 @@ async def validate_token(db: AsyncSession, token: str) -> dict[str, Any]:
                 "status_code": 410,
                 "reopen_count": current,
                 "limit": REOPEN_LIMIT,
+                "retry_after_minutes": REOPEN_COOLDOWN_MIN,
                 "session": session.to_dict(),
             }
+        last_iso = meta.get("last_reopened_at")
+        within_cooldown = False
+        if last_iso:
+            try:
+                last_dt = datetime.fromisoformat(str(last_iso))
+                if (datetime.utcnow() - last_dt) < timedelta(minutes=REOPEN_COOLDOWN_MIN):
+                    within_cooldown = True
+            except (TypeError, ValueError):
+                within_cooldown = False
+        if not within_cooldown:
+            meta["reopen_count"] = current + 1
+            meta["last_reopened_at"] = datetime.utcnow().isoformat()
+            session.metadata_json = meta
+            try:
+                await db.flush()
+            except Exception as exc:  # pragma: no cover - best-effort persistence
+                logger.warning(f"[Triagem] validate_token reopen flush failed: {exc}")
 
     return {"valid": True, "completed": False, "session": session.to_dict()}
 
@@ -348,20 +367,19 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
     if not session:
         return {"error": "not_found"}
 
-    # Task #425 — session resumption: até 2 retomadas; a 3ª bloqueia.
-    # Counting model: invited→started never increments. Each subsequent access
-    # while status is started/in_progress (and outside the 30-min cooldown)
-    # increments by 1. Block when count is already at LIMIT (so the next
-    # attempt — which would push it to LIMIT+1 — is rejected).
+    # Task #425 — reopen counting/blocking is now centralized in validate_token
+    # (called by GET /triagem/{token}, which the frontend ALWAYS hits before
+    # /start). start_session only handles the invited→started transition and
+    # blocks if the cap was already reached. The 30-min cooldown in
+    # validate_token absorbs the typical /token + /start chained call.
     REOPEN_LIMIT = 2
-    REOPEN_COOLDOWN_MIN = 30
     if session.status == "invited":
         session.status = "started"
         session.started_at = datetime.utcnow()
     elif session.status in ("started", "in_progress"):
         meta = dict(session.metadata_json or {})
         current = int(meta.get("reopen_count", 0))
-        if current >= REOPEN_LIMIT:
+        if current > REOPEN_LIMIT:
             return {
                 "error": "reopen_limit_exceeded",
                 "reopen_count": current,
@@ -371,21 +389,6 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
                     f"de {REOPEN_LIMIT} reaberturas. Procure o recrutador para liberar uma nova tentativa."
                 ),
             }
-        # Cooldown: only count this as a new reopen if the last one was
-        # more than REOPEN_COOLDOWN_MIN minutes ago.
-        last_iso = meta.get("last_reopened_at")
-        within_cooldown = False
-        if last_iso:
-            try:
-                last_dt = datetime.fromisoformat(str(last_iso))
-                if (datetime.utcnow() - last_dt) < timedelta(minutes=REOPEN_COOLDOWN_MIN):
-                    within_cooldown = True
-            except (TypeError, ValueError):
-                within_cooldown = False
-        if not within_cooldown:
-            meta["reopen_count"] = current + 1
-            meta["last_reopened_at"] = datetime.utcnow().isoformat()
-            session.metadata_json = meta
     elif session.status == "completed":
         return {
             "error": "session_completed",
