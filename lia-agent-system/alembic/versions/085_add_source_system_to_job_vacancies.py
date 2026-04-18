@@ -122,10 +122,10 @@ def upgrade() -> None:
          WHERE source_system IS NULL
            AND additional_data IS NOT NULL
            AND (
-                (additional_data ? 'imported_from_ats' AND
+                (additional_data::jsonb ? 'imported_from_ats' AND
                  (additional_data->>'imported_from_ats')::text IN ('true', 'True'))
-                OR additional_data ? 'external_system_id'
-                OR additional_data ? 'ats_external_id'
+                OR additional_data::jsonb ? 'external_system_id'
+                OR additional_data::jsonb ? 'ats_external_id'
            )
         """
     ))
