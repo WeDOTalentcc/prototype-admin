@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { callOrchestratedJobsManagement } from "@/lib/api/kanban-assistant"
 import { useLiaSuggestions, useJobInsights, useLiaExpandedPrompt } from "@/hooks/ai/use-lia-suggestions"
