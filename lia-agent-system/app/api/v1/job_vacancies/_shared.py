@@ -36,6 +36,30 @@ ADHERENCE_THRESHOLD = 55.0
 VALID_SCREENING_STATUSES = {"not_configured", "not_started", "active", "paused", "completed"}
 
 # =============================================
+# PATH PARAMETER CONTRACT (Task #455)
+# =============================================
+#
+# Job vacancy IDs in this API can be either:
+#   * UUIDs (local DB primary key)               — "550e8400-e29b-41d4-a716-446655440000"
+#   * Decimal integers (Rails bigint, when the
+#     RailsAdapter is enabled and the row was
+#     authored on the legacy Rails side)         — "12345"
+#
+# Constraining `{job_vacancy_id}` / `{job_id}` / `{vacancy_id}` path
+# parameters to this pattern serves two purposes:
+#   1. Collection-scoped sibling routes (e.g. `/job-vacancies/lifecycle-overview`,
+#      `/job-vacancies/bulk/pause`, `/job-vacancies/stats/overview`) can never
+#      be silently captured by an item handler if router ordering regresses.
+#   2. Garbage IDs receive a 422 from FastAPI before the handler runs, instead
+#      of a misleading 404 raised by a `UUID("garbage")` ValueError inside the
+#      handler.
+#
+# Routes that already declare the parameter as `UUID` get this for free from
+# Pydantic, but `str`-typed parameters (kept that way to accept Rails bigints)
+# need this explicit contract.
+JOB_ID_PATH_PATTERN = r"^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|\d+)$"
+
+# =============================================
 # HELPER FUNCTIONS
 # =============================================
 

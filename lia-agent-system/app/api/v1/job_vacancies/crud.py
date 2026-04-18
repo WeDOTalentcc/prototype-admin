@@ -13,7 +13,7 @@ from app.shared.services.plan_limits_service import check_active_jobs_limit_or_d
 CRUD routes: finalize, search, GET one, GET list, POST create, PUT update,
 DELETE (archive), PATCH status, duplicate, clone, find-by-identifier.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 
 from ._shared import *
 from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
@@ -391,7 +391,11 @@ async def find_job_by_identifier(
 
 @router.get("/job-vacancies/{job_vacancy_id}", response_model=JobVacancyDetailResponse)
 async def get_job_vacancy(
-    job_vacancy_id: str,
+    job_vacancy_id: str = Path(
+        ...,
+        pattern=JOB_ID_PATH_PATTERN,
+        description="UUID (local DB) or decimal integer (Rails bigint).",
+    ),
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
