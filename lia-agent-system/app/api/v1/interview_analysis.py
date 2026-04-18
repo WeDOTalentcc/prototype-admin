@@ -105,7 +105,9 @@ async def create_opinion_from_analysis(
             RecommendationEnum.PENDING_REVIEW
         )
 
-        normalized_score = (analysis_result.overall_wsi_score / 5.0) * 100.0
+        # B0 #523 — analyzer agora emite em /10; normalize via SCALE_MAX.
+        from app.domains.cv_screening.constants.wsi_scale import SCALE_MAX
+        normalized_score = (analysis_result.overall_wsi_score / SCALE_MAX) * 100.0
 
         new_opinion_type = OpinionTypeEnum.WSI if job_vacancy_id else OpinionTypeEnum.GENERAL
 

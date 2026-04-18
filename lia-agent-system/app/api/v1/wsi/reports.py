@@ -22,8 +22,14 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.cv_screening.services.wsi_deterministic_scorer import (
-    GATE_G3_THRESHOLD as _GATE_G3_THRESHOLD_CANONICAL,
+from app.domains.cv_screening.constants.wsi_scale import (
+    CLASSIFY_ALTO,
+    CLASSIFY_EXCEPCIONAL,
+    CLASSIFY_EXCELENTE,
+    CUTOFF_APPROVED_AUTO,
+    CUTOFF_REVIEW_MIN,
+    GATE_G3_THRESHOLD,
+    SCALE_MAX,
 )
 from app.domains.cv_screening.services.wsi_deterministic_scorer import (
     SENIORITY_WEIGHTS,
@@ -45,8 +51,10 @@ router = APIRouter()
 # F11 models, constants and helper functions
 # ---------------------------------------------------------------------------
 
-_GATE_G3_THRESHOLD = _GATE_G3_THRESHOLD_CANONICAL
-_GATE_G4_THRESHOLD = 3.0   # PR2 #497 — escala /10 (era 1.5 em /5)
+# B0 #523 — aliases locais que preservam compatibilidade com o nome do gate
+# (G3 = score técnico mínimo; G4 = curto-circuito de score crítico ~30% do max).
+_GATE_G3_THRESHOLD = GATE_G3_THRESHOLD
+_GATE_G4_THRESHOLD = SCALE_MAX * 0.3   # 3.0 em /10: corte severo (≤30% do teto)
 _INJECTION_KEYWORDS = ["ignore", "esquece", "esqueça", "novo prompt", "sys:", "system:", "jailbreak", "prompt injection"]
 
 _SENIORITY_WEIGHTS = SENIORITY_WEIGHTS
@@ -141,7 +149,7 @@ def _build_attention_flags(analyses: list[dict], gates: GateStatus) -> list[str]
     low_star = sum(1 for a in analyses if sum(a.get("star", {}).values()) <= 1)
     if low_star >= 2:
         flags.append(f"{low_star} respostas com STAR incompleto")
-    critical_gaps = [a for a in analyses if a.get("is_critical") and a.get("final_score", 10) < 6.0]
+    critical_gaps = [a for a in analyses if a.get("is_critical") and a.get("final_score", SCALE_MAX) < CUTOFF_REVIEW_MIN]
     if critical_gaps:
         flags.append(f"{len(critical_gaps)} competência(s) crítica(s) abaixo do esperado")
     return flags
@@ -183,16 +191,16 @@ def _compute_decision_confidence(
     if llm_fallback_count >= 2 or score_variance > 2.0:
         return "baixa", True
 
-    if overall_wsi >= 9.0:
+    if overall_wsi >= CLASSIFY_EXCEPCIONAL:
         return "alta", False
 
-    if 7.5 <= overall_wsi < 9.0:
+    if CUTOFF_APPROVED_AUTO <= overall_wsi < CLASSIFY_EXCEPCIONAL:
         return "media", False
 
-    if 6.0 <= overall_wsi < 7.5:
+    if CUTOFF_REVIEW_MIN <= overall_wsi < CUTOFF_APPROVED_AUTO:
         return "media", True
 
-    return "media", overall_wsi < 7.5
+    return "media", overall_wsi < CUTOFF_APPROVED_AUTO
 
 
 def _f11_fallback_questions(gaps: list[dict[str, Any]]) -> list[CBIQuestion]:
@@ -604,15 +612,21 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             decision_result = "REPROVADO"
             gate_reasons = [gate_labels.get(g, g) for g in failed_gates]
             decision_reason = f"Gate(s) ativado(s): {', '.join(gate_reasons)}"
-        elif overall_wsi >= 7.5:
+        elif overall_wsi >= CUTOFF_APPROVED_AUTO:
             decision_result = "APROVADO"
             decision_reason = None
-        elif overall_wsi >= 6.0:
+        elif overall_wsi >= CUTOFF_REVIEW_MIN:
             decision_result = "EM_AVALIACAO"
-            decision_reason = f"Score WSI {overall_wsi:.2f}/10 requer revisão humana (faixa 6.0–7.49)"
+            decision_reason = (
+                f"Score WSI {overall_wsi:.2f}/{SCALE_MAX:.0f} requer revisão humana "
+                f"(faixa {CUTOFF_REVIEW_MIN:.1f}–{CUTOFF_APPROVED_AUTO - 0.01:.2f})"
+            )
         else:
             decision_result = "REPROVADO"
-            decision_reason = f"Score WSI {overall_wsi:.2f}/10 abaixo do mínimo (< 6.0)"
+            decision_reason = (
+                f"Score WSI {overall_wsi:.2f}/{SCALE_MAX:.0f} abaixo do mínimo "
+                f"(< {CUTOFF_REVIEW_MIN:.1f})"
+            )
 
         decision_confidence, human_review_required = _compute_decision_confidence(
             overall_wsi=overall_wsi,
@@ -623,18 +637,21 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
 
         sorted_analyses = sorted(analyses_list, key=lambda x: x["final_score"], reverse=True)
         strengths = [
-            f"{a['competency']} — {a['final_score']:.1f}/10"
+            f"{a['competency']} — {a['final_score']:.1f}/{SCALE_MAX:.0f}"
             for a in sorted_analyses[:3]
-            if a["final_score"] >= 7.0
+            if a["final_score"] >= CLASSIFY_ALTO
         ]
 
         gap_items = [
-            a for a in sorted_analyses if a["final_score"] < 6.0 and a["final_score"] > 0.0
+            a for a in sorted_analyses if a["final_score"] < CUTOFF_REVIEW_MIN and a["final_score"] > 0.0
         ]
         gap_items.sort(key=lambda x: x["final_score"])
         gaps = []
         for a in gap_items[:3]:
-            delta = 6.0 - a["final_score"]
+            delta = CUTOFF_REVIEW_MIN - a["final_score"]
+            # Severidade derivada de bandas relativas ao cutoff: ≥ 3.0 = metade
+            # da escala de gap; ≥ 1.5 = quarto. Não há constante semântica
+            # para essas bandas — ficam locais e bem comentadas.
             severity = "ALTO" if delta >= 3.0 else ("MÉDIO" if delta >= 1.5 else "BAIXO")
             gaps.append({
                 "competency": a["competency"],

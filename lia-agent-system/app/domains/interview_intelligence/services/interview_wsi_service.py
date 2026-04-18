@@ -86,25 +86,20 @@ class InterviewWSIService:
 
         seven_blocks = self._map_to_seven_blocks(analysis, transcript)
 
-        # B0 #523 — Normalização /5→/10. O analyzer subjacente
-        # (interview_transcript_analysis_service) ainda produz scores em /5
-        # (legacy out-of-scope deste refactor). Aqui promovemos para a escala
-        # canônica /10 antes de expor a consumidores (strategic_opinion,
-        # comparative_analysis, frontend). Fator vem do canônico (SCALE_MAX/5)
-        # — não literal — pra colapsar automaticamente se a escala mudar.
-        # Bloom (1-6) e Dreyfus (1-5) seguem escalas próprias — não multiplicar.
-        from app.domains.cv_screening.constants.wsi_scale import SCALE_MAX
-        LEGACY_5_TO_10 = SCALE_MAX / 5.0  # = 2.0 enquanto SCALE_MAX=10.0
+        # B0 #523 — analyzer (interview_transcript_analysis_service) refatorado
+        # no source para emitir scores em escala canônica /10. Sem fatores de
+        # compatibilidade aqui. Bloom (1-6) e Dreyfus (1-5) ficam como escalas
+        # próprias (denominadores de framework, não convertidos).
         return {
             "success": True,
             "interview_id": interview_id,
             "candidate_id": str(interview.candidate_id) if interview.candidate_id else None,
             "job_vacancy_id": str(interview.job_vacancy_id) if interview.job_vacancy_id else None,
             "interview_type": interview.interview_type,
-            "wsi_score": round(analysis.overall_wsi_score * LEGACY_5_TO_10, 2),
-            "technical_score": round(analysis.technical_score * LEGACY_5_TO_10, 2),
-            "behavioral_score": round(analysis.behavioral_score * LEGACY_5_TO_10, 2),
-            "cultural_score": round(analysis.cultural_score * LEGACY_5_TO_10, 2),
+            "wsi_score": round(analysis.overall_wsi_score, 2),
+            "technical_score": round(analysis.technical_score, 2),
+            "behavioral_score": round(analysis.behavioral_score, 2),
+            "cultural_score": round(analysis.cultural_score, 2),
             "bloom_level": analysis.bloom_average,
             "dreyfus_stage": analysis.dreyfus_average,
             "cbi_completeness": analysis.cbi_completeness,
@@ -127,15 +122,13 @@ class InterviewWSIService:
         }
 
     def _map_to_seven_blocks(self, analysis: Any, transcript: str) -> dict[str, Any]:
-        # B0 #523 — Todos os scores expostos em escala canônica /10 via constantes
-        # do wsi_scale (zero literais). analysis.* vem em /5 do analyzer legacy,
-        # então multiplicamos por LEGACY_5_TO_10 ao expor. Bloom (1-6) e
-        # Dreyfus (1-5) ficam como escalas próprias — sem conversão.
+        # B0 #523 — Scores expostos em escala canônica /10. analyzer emite
+        # nativamente em /10 (sem fator de conversão). Bloom (1-6) e Dreyfus
+        # (1-5) ficam como escalas próprias — sem conversão.
         from app.domains.cv_screening.constants.wsi_scale import (
             GATE_G3_THRESHOLD,
             SCALE_MAX,
         )
-        LEGACY_5_TO_10 = SCALE_MAX / 5.0
         # Base inicial = GATE_G3_THRESHOLD (4.0 em /10): score técnico mínimo
         # aceitável. Cada evidência adiciona 1 ponto, capado em SCALE_MAX.
         BASE_KEYWORD_SCORE = GATE_G3_THRESHOLD
@@ -160,12 +153,12 @@ class InterviewWSIService:
 
         return {
             "hard_skills": {
-                "score": round(analysis.technical_score * LEGACY_5_TO_10, 2),
+                "score": round(analysis.technical_score, 2),
                 "label": "Hard Skills / Técnico",
                 "description": "Competências técnicas demonstradas na entrevista",
             },
             "soft_skills": {
-                "score": round(analysis.behavioral_score * LEGACY_5_TO_10, 2),
+                "score": round(analysis.behavioral_score, 2),
                 "label": "Soft Skills / Comportamental",
                 "description": "Competências comportamentais e interpessoais",
             },
@@ -185,7 +178,7 @@ class InterviewWSIService:
                 "description": f"{comm_hits} indicadores de comunicação identificados",
             },
             "cultural_fit": {
-                "score": round(analysis.cultural_score * LEGACY_5_TO_10, 2),
+                "score": round(analysis.cultural_score, 2),
                 "label": "Fit Cultural",
                 "description": "Compatibilidade cultural baseada em Big Five e evidências",
             },
