@@ -979,21 +979,19 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
         r"(envia[rn]?|manda[rn]?|dispara[rn]?)\s+(a\s+)?triagem\s+(wsi|automatica|para)",
     ]),
     # Listar candidatos por etapa
+    ("mover_candidatos_por_etapa", [
+        r"(move[rn]?|transfere[rn]?|muda[rn]?)\s+(todos?\s+)?(os?\s+)?candidatos?.*?(para\s+)(reprovado|aprovado|triagem|entrevista|proposta|oferta)",
+        r"(limpa[rn]?|fecha[rn]?|arquiva[rn]?)\s+(a\s+)?(etapa|fase|fila)\s+(de\s+)?",
+        r"(move[rn]?|mova)\s+todos?\s+(os\s+)?candidatos?\s+(d[ae]\s+)?(etapa\s+d[ae]?\s+)?",
+    ]),
+    # Mover candidatos por etapa (bulk stage move without explicit candidate list)
     ("listar_candidatos_por_etapa", [
         r"(quais?|quem|que|liste?|mostra[rn]?|veja?)\s+(os?\s+|são\s+os?\s+)?(candidatos?)\s+(que\s+)?(est[aã][o]?|est[aá]|tem|há|estão|ficaram)\s+(na|em|da|no)\s+(etapa|fase|stage)",
         r"candidatos?\s+(est[aã][o]?|est[aá]|ficaram)\s+(na|em|da)\s+(etapa|fase|stage|entrevista|triagem|proposta|oferta)",
         r"candidatos?\s+(na|em|da)\s+(etapa|fase|stage)\s+(de\s+)?(entrevista|triagem|proposta|oferta|shortlist)",
         r"(quais?|quem)\s+(est[aã][o]?|est[aá])\s+na\s+etapa",
         r"quem\s+(está|estão)\s+(na|em|da)\s+(etapa|fase|stage|entrevista|triagem|proposta|oferta)",
-        r"candidatos?\s+(na|em)\s+(entrevista|triagem|proposta|oferta|shortlist|análise)",
         r"(listar?|mostrar?)\s+(os?\s+)?(candidatos?)\s+(por\s+)?etapa",
-        r"candidatos?.*?(etapa|fase)\s+(de\s+)?(entrevista|triagem|proposta|oferta)",
-    ]),
-    # Mover candidatos por etapa (bulk stage move without explicit candidate list)
-    ("mover_candidatos_por_etapa", [
-        r"(move[rn]?|transfere[rn]?|muda[rn]?)\s+(todos?\s+)?(os?\s+)?candidatos?.*?(para\s+)(reprovado|aprovado|triagem|entrevista|proposta|oferta)",
-        r"(limpa[rn]?|fecha[rn]?|arquiva[rn]?)\s+(a\s+)?(etapa|fase|fila)\s+(de\s+)?",
-        r"(move[rn]?|mova)\s+todos?\s+(os\s+)?candidatos?\s+(d[ae]\s+)?(etapa\s+d[ae]?\s+)?",
     ]),
     # Vagas sem candidatos
     ("vagas_sem_candidatos", [

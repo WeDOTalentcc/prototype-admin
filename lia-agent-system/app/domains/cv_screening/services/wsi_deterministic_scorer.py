@@ -46,6 +46,54 @@ from app.domains.cv_screening.constants.wsi_constants import (
 from app.domains.cv_screening.constants.wsi_constants import (
     DREYFUS_STAGE_LABELS as DREYFUS_RECRUITER_LABELS,
 )
+# Audit task #497 (PR1) — escala WSI consolidada em wsi_scale. Nenhum
+# literal numérico de escala deve ficar inline neste módulo. Trocar a
+# escala (ex: 0-5 → 0-10) é uma alteração isolada em wsi_scale.py.
+from app.domains.cv_screening.constants.wsi_scale import (
+    AUTODECLARATION_LEVEL_KEYWORDS,
+    BONUS_EXCEPTIONAL_EVIDENCE,
+    BONUS_HUMILITY,
+    BONUS_MAX,
+    CLASSIFY_ABAIXO_MEDIA,
+    CLASSIFY_ALTO,
+    CLASSIFY_EXCELENTE,
+    CLASSIFY_EXCEPCIONAL,
+    CLASSIFY_MEDIO,
+    CONTEXT_EVIDENCE_BOOST_MAX,
+    CONTEXT_EVIDENCE_BOOST_PER,
+    CONTEXT_FLOOR_HEAVY,
+    CONTEXT_FLOOR_LIGHT,
+    CONTEXT_PENALTY_LOW_HEAVY,
+    CONTEXT_PENALTY_LOW_LIGHT,
+    CONTEXT_SCORE_BASE,
+    CONTEXT_SCORE_HIGH,
+    CONTEXT_SCORE_HIGH_BASE,
+    CONTEXT_SCORE_HIGH_STEP,
+    CONTEXT_SCORE_MAX,
+    CONTEXT_SCORE_MEDIUM_BASE,
+    CONTEXT_SCORE_MEDIUM_HIGH,
+    CONTEXT_SCORE_MEDIUM_STEP,
+    CONTEXT_SCORE_MIN,
+    DEFAULT_BEHAVIORAL_WEIGHT,
+    DEFAULT_TECHNICAL_WEIGHT,
+    DREYFUS_DEMOTE_CONTEXT_MAX,
+    DREYFUS_PROMOTE_CONTEXT_MIN,
+    ELIGIBILITY_WEIGHT,
+    GATE_G3_THRESHOLD,
+    INFLATION_AUTODECLARATION_MIN,
+    INFLATION_CONTEXT_MAX,
+    JUSTIFICATION_CONTEXT_ADEQUATE,
+    JUSTIFICATION_CONTEXT_STRONG,
+    NON_ELIGIBILITY_WEIGHT,
+    NORMALIZATION_FACTOR,
+    PENALTY_GENERIC,
+    PENALTY_INFLATION,
+    PENALTY_NO_CONTEXT,
+    PENALTY_NO_CONTEXT_MIN_WORDS,
+    SCALE_MAX,
+    SCALE_MIN_VALID,
+    WSI_CUTOFFS,
+)
 
 BIG_FIVE_RECRUITER_LABELS = {
     "openness":          "Abertura a mudanças",
@@ -99,14 +147,9 @@ STAR_INDICATORS = {
           "entregamos", "economizamos", "impacto foi", "ficou", "passou a", "hoje está"],
 }
 
-WSI_CUTOFFS = {
-    "approved_auto": 3.75,
-    "review_min":    3.00,
-    "rejected_below": 3.00,
-    "rejected_max": 3.00,
-}
-
-GATE_G3_THRESHOLD = 2.0
+# Audit task #497 (PR1): WSI_CUTOFFS e GATE_G3_THRESHOLD vivem em
+# wsi_scale.py (importados acima). NÃO redefinir aqui — caso contrário o
+# flip de escala do PR2 vira no-op silencioso.
 
 CONTEXT_INDICATORS = {
     "high_quality": [
@@ -127,27 +170,27 @@ CONTEXT_INDICATORS = {
 PENALTY_TRIGGERS = {
     "inflation": {
         "keywords": ["expert", "especialista", "domino completamente", "5 de 5", "nível máximo"],
-        "penalty": -1.0
+        "penalty": PENALTY_INFLATION,
     },
     "generic": {
         "keywords": ["trabalhei com isso", "tenho experiência", "já fiz", "sei fazer"],
-        "penalty": -0.5
+        "penalty": PENALTY_GENERIC,
     },
     "no_context": {
-        "min_words": 20,
-        "penalty": -0.3
-    }
+        "min_words": PENALTY_NO_CONTEXT_MIN_WORDS,
+        "penalty": PENALTY_NO_CONTEXT,
+    },
 }
 
 BONUS_TRIGGERS = {
     "humility": {
         "keywords": ["ainda estou aprendendo", "preciso melhorar", "3 de 5", "intermediário"],
-        "bonus": 0.5
+        "bonus": BONUS_HUMILITY,
     },
     "exceptional_evidence": {
         "keywords": ["open source", "contribuí", "palestrei", "publiquei", "patente", "prêmio"],
-        "bonus": 0.3
-    }
+        "bonus": BONUS_EXCEPTIONAL_EVIDENCE,
+    },
 }
 
 
@@ -178,19 +221,26 @@ class DeterministicWSIResult:
 def extract_autodeclaracao_score(text: str) -> float | None:
     """
     Extrai score de autodeclaração do texto.
-    
-    Patterns detectados:
-    - "4 de 5", "4/5", "nota 4"
+
+    Patterns detectados (legacy escala 0–5 falada pelo candidato):
+    - "4 de 5", "4/5", "nota 4", "nível 4"
     - "intermediário", "avançado", "básico"
     - "domino bem", "tenho facilidade"
+
+    Os patterns extraem o número FALADO pelo candidato na escala 0–5 e
+    convertem para a escala interna do engine via ``SCALE_MAX/5.0``. Em
+    escala 0–5 isso é identidade (×1.0); em escala 0–10 (PR2) vira ×2.0
+    automaticamente. Patterns adicionais para "/10" são introduzidos no
+    PR2 para reconhecer respostas novas em 0–10.
     """
     text_lower = text.lower()
-    
+    legacy_to_engine = SCALE_MAX / 5.0  # 1.0 em 0-5, 2.0 em 0-10
+
     patterns = [
-        (r"(\d)[/\s]?de[/\s]?5", lambda m: float(m.group(1))),
-        (r"nota\s*(\d)", lambda m: float(m.group(1))),
-        (r"(\d)/5", lambda m: float(m.group(1))),
-        (r"nível\s*(\d)", lambda m: float(m.group(1))),
+        (r"(\d)[/\s]?de[/\s]?5", lambda m: float(m.group(1)) * legacy_to_engine),
+        (r"nota\s*(\d)",         lambda m: float(m.group(1)) * legacy_to_engine),
+        (r"(\d)/5",              lambda m: float(m.group(1)) * legacy_to_engine),
+        (r"nível\s*(\d)",        lambda m: float(m.group(1)) * legacy_to_engine),
     ]
     
     for pattern, extractor in patterns:
@@ -198,15 +248,7 @@ def extract_autodeclaracao_score(text: str) -> float | None:
         if match:
             return extractor(match)
     
-    level_keywords = {
-        5.0: ["expert", "especialista", "domínio completo", "mestre", "5 de 5"],
-        4.0: ["avançado", "domino bem", "proficiente", "sólido", "4 de 5"],
-        3.0: ["intermediário", "razoável", "competente", "3 de 5"],
-        2.0: ["básico", "iniciante", "aprendendo", "2 de 5"],
-        1.0: ["muito básico", "nunca usei", "não tenho experiência", "1 de 5"]
-    }
-    
-    for score, keywords in level_keywords.items():
+    for score, keywords in AUTODECLARATION_LEVEL_KEYWORDS.items():
         if any(kw in text_lower for kw in keywords):
             return score
     
@@ -220,31 +262,33 @@ def calculate_context_score(text: str, evidences: list[str] | None = None) -> fl
     Returns: Score de 1.0 a 5.0
     """
     text_lower = text.lower()
-    score = 3.0
-    
+    score = CONTEXT_SCORE_BASE
+
     high_count = sum(1 for ind in CONTEXT_INDICATORS["high_quality"] if ind in text_lower)
     medium_count = sum(1 for ind in CONTEXT_INDICATORS["medium_quality"] if ind in text_lower)
     low_count = sum(1 for ind in CONTEXT_INDICATORS["low_quality"] if ind in text_lower)
-    
+
     if high_count >= 3:
-        score = 5.0
+        score = CONTEXT_SCORE_HIGH
     elif high_count >= 1:
-        score = 4.0 + (high_count * 0.2)
+        score = CONTEXT_SCORE_HIGH_BASE + (high_count * CONTEXT_SCORE_HIGH_STEP)
     elif medium_count >= 3:
-        score = 3.5
+        score = CONTEXT_SCORE_MEDIUM_HIGH
     elif medium_count >= 1:
-        score = 3.0 + (medium_count * 0.1)
-    
+        score = CONTEXT_SCORE_MEDIUM_BASE + (medium_count * CONTEXT_SCORE_MEDIUM_STEP)
+
     if low_count >= 2:
-        score = max(1.0, score - 1.0)
+        score = max(CONTEXT_FLOOR_HEAVY, score - CONTEXT_PENALTY_LOW_HEAVY)
     elif low_count >= 1:
-        score = max(1.5, score - 0.5)
-    
+        score = max(CONTEXT_FLOOR_LIGHT, score - CONTEXT_PENALTY_LOW_LIGHT)
+
     if evidences:
-        evidence_boost = min(0.5, len(evidences) * 0.1)
+        evidence_boost = min(
+            CONTEXT_EVIDENCE_BOOST_MAX, len(evidences) * CONTEXT_EVIDENCE_BOOST_PER
+        )
         score += evidence_boost
-    
-    return min(5.0, max(1.0, round(score, 2)))
+
+    return min(CONTEXT_SCORE_MAX, max(CONTEXT_SCORE_MIN, round(score, 2)))
 
 
 def calculate_bloom_level(text: str) -> tuple[int, str]:
@@ -310,9 +354,9 @@ def calculate_dreyfus_level(
                 base_level = level
                 break
     
-    if context_score >= 4.5:
+    if context_score >= DREYFUS_PROMOTE_CONTEXT_MIN:
         base_level = min(5, base_level + 1)
-    elif context_score < 2.5:
+    elif context_score < DREYFUS_DEMOTE_CONTEXT_MAX:
         base_level = max(1, base_level - 1)
     
     return base_level, DREYFUS_LEVELS[base_level]["name"]
@@ -350,9 +394,13 @@ def detect_red_flags(text: str, autodeclaracao: float | None, context_score: flo
     red_flags = []
     text_lower = text.lower()
     
-    if autodeclaracao and autodeclaracao >= 4.5 and context_score < 3.0:
+    if (
+        autodeclaracao
+        and autodeclaracao >= INFLATION_AUTODECLARATION_MIN
+        and context_score < INFLATION_CONTEXT_MAX
+    ):
         red_flags.append("Inflação de score: autodeclaração alta, contexto fraco")
-    
+
     if len(text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"]:
         red_flags.append("Resposta muito curta, falta contexto")
     
@@ -372,7 +420,11 @@ def calculate_penalty(text: str, autodeclaracao: float | None, context_score: fl
     penalty = 0.0
     text_lower = text.lower()
     
-    if autodeclaracao and autodeclaracao >= 4.5 and context_score < 3.0:
+    if (
+        autodeclaracao
+        and autodeclaracao >= INFLATION_AUTODECLARATION_MIN
+        and context_score < INFLATION_CONTEXT_MAX
+    ):
         penalty += PENALTY_TRIGGERS["inflation"]["penalty"]
     
     generic_count = sum(1 for kw in PENALTY_TRIGGERS["generic"]["keywords"] if kw in text_lower)
@@ -402,7 +454,7 @@ def calculate_bonus(text: str) -> float:
     if exceptional_count >= 1:
         bonus += BONUS_TRIGGERS["exceptional_evidence"]["bonus"]
     
-    return round(min(1.0, bonus), 2)
+    return round(min(BONUS_MAX, bonus), 2)
 
 
 def extract_evidences(text: str) -> list[str]:
@@ -527,7 +579,10 @@ def calculate_wsi_deterministic(
 
     # Flags estruturadas para G6 (spec F10)
     flags_structured: dict[str, bool] = {
-        "is_inflation": autodeclaracao >= 4.5 and context_score < 3.0,
+        "is_inflation": (
+            autodeclaracao >= INFLATION_AUTODECLARATION_MIN
+            and context_score < INFLATION_CONTEXT_MAX
+        ),
         "is_generic": sum(1 for kw in PENALTY_TRIGGERS["generic"]["keywords"]
                          if kw in response_text.lower()) >= 2,
         "is_short": len(response_text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"],
@@ -542,14 +597,14 @@ def calculate_wsi_deterministic(
         # sinais_trait ≈ context_score (qualidade do contexto comportamental)
         weights = WSI_FORMULA_WEIGHTS_BEHAVIORAL
         raw_score = (
-            weights["star_estrutura"]    * (star_score * 5.0) +  # normaliza 0–1 → 0–5
+            weights["star_estrutura"]    * (star_score * NORMALIZATION_FACTOR) +
             weights["sinais_trait"]      * context_score +
-            weights["bloom_alinhamento"] * (bloom_align * 5.0)   # normaliza 0–1 → 0–5
+            weights["bloom_alinhamento"] * (bloom_align * NORMALIZATION_FACTOR)
         )
         formula_desc = (
-            f"behavioral: ({weights['star_estrutura']}×STAR{star_score:.2f}×5) + "
+            f"behavioral: ({weights['star_estrutura']}×STAR{star_score:.2f}×{NORMALIZATION_FACTOR:g}) + "
             f"({weights['sinais_trait']}×ctx{context_score:.1f}) + "
-            f"({weights['bloom_alinhamento']}×bloom{bloom_align:.2f}×5)"
+            f"({weights['bloom_alinhamento']}×bloom{bloom_align:.2f}×{NORMALIZATION_FACTOR:g})"
         )
     else:
         star_components, star_score = {}, 0.0
@@ -558,25 +613,25 @@ def calculate_wsi_deterministic(
         raw_score = (
             weights["autodeclaracao"]      * autodeclaracao +
             weights["evidencias_tecnicas"] * context_score +
-            weights["bloom_alinhamento"]   * (bloom_align * 5.0)
+            weights["bloom_alinhamento"]   * (bloom_align * NORMALIZATION_FACTOR)
         )
         formula_desc = (
             f"technical: ({weights['autodeclaracao']}×auto{autodeclaracao:.1f}) + "
             f"({weights['evidencias_tecnicas']}×ctx{context_score:.1f}) + "
-            f"({weights['bloom_alinhamento']}×bloom{bloom_align:.2f}×5)"
+            f"({weights['bloom_alinhamento']}×bloom{bloom_align:.2f}×{NORMALIZATION_FACTOR:g})"
         )
 
-    final_score = max(1.0, min(5.0, raw_score + penalty + bonus))
+    final_score = max(SCALE_MIN_VALID, min(SCALE_MAX, raw_score + penalty + bonus))
     final_score = round(final_score, 2)
     formula = f"{formula_desc} + penalty({penalty}) + bonus({bonus}) = {final_score:.2f}"
 
     justification_parts = []
-    if context_score >= 4.0:
-        justification_parts.append(f"Contexto forte ({context_score:.1f}/5)")
-    elif context_score >= 3.0:
-        justification_parts.append(f"Contexto adequado ({context_score:.1f}/5)")
+    if context_score >= JUSTIFICATION_CONTEXT_STRONG:
+        justification_parts.append(f"Contexto forte ({context_score:.1f}/{SCALE_MAX:g})")
+    elif context_score >= JUSTIFICATION_CONTEXT_ADEQUATE:
+        justification_parts.append(f"Contexto adequado ({context_score:.1f}/{SCALE_MAX:g})")
     else:
-        justification_parts.append(f"Contexto fraco ({context_score:.1f}/5)")
+        justification_parts.append(f"Contexto fraco ({context_score:.1f}/{SCALE_MAX:g})")
 
     justification_parts.append(f"Bloom: {bloom_name} (esperado L{bloom_expected})")
     justification_parts.append(f"Dreyfus: {dreyfus_name}")
@@ -621,10 +676,11 @@ def get_seniority_weights(seniority: str | None) -> dict[str, float]:
     Returns:
         Dict com 'technical' e 'behavioral' (somam 1.0)
     """
+    default = {"technical": DEFAULT_TECHNICAL_WEIGHT, "behavioral": DEFAULT_BEHAVIORAL_WEIGHT}
     if not seniority:
-        return {"technical": 0.625, "behavioral": 0.375}
+        return default
     key = seniority.lower().strip()
-    return SENIORITY_WEIGHTS.get(key, {"technical": 0.625, "behavioral": 0.375})
+    return SENIORITY_WEIGHTS.get(key, default)
 
 
 def classify_wsi_score(score: float) -> str:
@@ -640,15 +696,15 @@ def classify_wsi_score(score: float) -> str:
         Abaixo da média ≥ 4.5/10 → ≥ 2.25/5
         Regular/Baixo < 4.5/10 → < 2.25/5
     """
-    if score >= 4.5:
+    if score >= CLASSIFY_EXCEPCIONAL:
         return "excepcional"
-    if score >= 4.0:
+    if score >= CLASSIFY_EXCELENTE:
         return "excelente"
-    if score >= 3.5:
+    if score >= CLASSIFY_ALTO:
         return "alto"
-    if score >= 3.0:
+    if score >= CLASSIFY_MEDIO:
         return "medio"
-    if score >= 2.25:
+    if score >= CLASSIFY_ABAIXO_MEDIA:
         return "abaixo_da_media"
     return "regular"
 
@@ -746,22 +802,22 @@ def calculate_final_wsi_score(
         t_weight = technical_weight
         b_weight = behavioral_weight
     else:
-        t_weight = 0.625
-        b_weight = 0.375
+        t_weight = DEFAULT_TECHNICAL_WEIGHT
+        b_weight = DEFAULT_BEHAVIORAL_WEIGHT
 
     tech_avg  = weighted_avg(technical_scores)
     behav_avg = weighted_avg(behavioral_scores)
 
     if eligibility_score is not None:
-        t_weight  = t_weight  * 0.80
-        b_weight  = b_weight  * 0.80
-        e_weight  = 0.20
+        t_weight  = t_weight  * NON_ELIGIBILITY_WEIGHT
+        b_weight  = b_weight  * NON_ELIGIBILITY_WEIGHT
+        e_weight  = ELIGIBILITY_WEIGHT
         final_score = (t_weight * tech_avg) + (b_weight * behav_avg) + (e_weight * eligibility_score)
     else:
         e_weight = 0.0
         final_score = (t_weight * tech_avg) + (b_weight * behav_avg)
 
-    final_score = round(max(1.0, min(5.0, final_score)), 2)
+    final_score = round(max(SCALE_MIN_VALID, min(SCALE_MAX, final_score)), 2)
 
     if final_score >= WSI_CUTOFFS["approved_auto"]:
         decision = "approved"

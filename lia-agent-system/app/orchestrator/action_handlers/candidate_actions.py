@@ -754,24 +754,46 @@ async def _bulk_move_by_stage(params: dict, context: dict):
             )
 
         async with AsyncSessionLocal() as db:
-            sql = """
-                UPDATE vacancy_candidates
-                SET stage = :to_stage, updated_at = NOW()
-                WHERE vacancy_id = CAST(:jid AS uuid)
-                  AND stage = :from_stage
-            """
-            bind: dict = {
-                "to_stage": to_stage,
-                "from_stage": from_stage,
-                "jid": str(job_id),
-            }
-            if company_id:
-                sql += " AND company_id = CAST(:co AS uuid)"
-                bind["co"] = str(company_id)
-
-            result = await db.execute(text(sql), bind)
-            moved = result.rowcount
-            await db.commit()
+            moved = 0
+            for attempt in range(2):
+                try:
+                    if attempt == 0:
+                        sql = """
+                            UPDATE vacancy_candidates
+                            SET stage = :to_stage, updated_at = NOW()
+                            WHERE vacancy_id = CAST(:jid AS uuid)
+                              AND stage = :from_stage
+                        """
+                    else:
+                        # Fallback: look up vacancy UUID from job_id short code
+                        sql = """
+                            UPDATE vacancy_candidates vc
+                            SET stage = :to_stage, updated_at = NOW()
+                            FROM job_vacancies jv
+                            WHERE jv.id = vc.vacancy_id
+                              AND jv.job_id = :jid
+                              AND vc.stage = :from_stage
+                        """
+                    bind: dict = {
+                        "to_stage": to_stage,
+                        "from_stage": from_stage,
+                        "jid": str(job_id),
+                    }
+                    if company_id and attempt == 0:
+                        sql += " AND company_id = CAST(:co AS uuid)"
+                        bind["co"] = str(company_id)
+                    elif company_id and attempt == 1:
+                        sql += " AND vc.company_id = :co"
+                        bind["co"] = str(company_id)
+                    result = await db.execute(text(sql), bind)
+                    moved = result.rowcount
+                    await db.commit()
+                    break
+                except Exception:
+                    await db.rollback()
+                    if attempt == 0:
+                        continue
+                    raise
 
         await log_action_audit(
             "bulk_move_by_stage", company_id,

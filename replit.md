@@ -1,5 +1,10 @@
 # Recent Changes
 
+- **Task #497 PR1 — Constantes canônicas WSI (refator puro, zero behavior change)**:
+  - Novo `lia-agent-system/app/domains/cv_screening/constants/wsi_scale.py` consolida TODAS as magic numbers da escala WSI (cutoffs, gate G3, normalizações STAR/Bloom, thresholds de classificação 6 níveis, penalidades/bônus, indicadores de inflação/contexto).
+  - `wsi_deterministic_scorer.py` refatorado para importar do `wsi_scale` — removidas duplicações inline de `WSI_CUTOFFS` e `GATE_G3_THRESHOLD` (que sombreavam o import e quebravam a futura troca de escala).
+  - Patterns de `extract_autodeclaracao_score` ("X de 5", "X/5", "nota X", "nível X") agora multiplicam por `SCALE_MAX/5.0` — em escala 0-5 isso é identidade (×1.0); na escala 0-10 do PR2 vira ×2.0 automaticamente sem editar o engine.
+  - PR1 isolado: nenhum valor numérico mudou. Smoke test confirma classify(4.6/3.8/2.0) e final WSI idênticos ao pré-refator. Habilita o PR2 (flip atômico engine ×2 + DB migration) editando apenas `wsi_scale.py`.
 - **Task #429 — Job Readiness Hub (MVP)**: Pipeline visual de 7 estágios para preparar vagas importadas do ATS antes da triagem.
   - Backend: novas colunas em `job_vacancies` (migration 086), `JobReadinessService` com classificador puro + HITL approval, REST API em `/api/v1/job-readiness/*`.
   - Frontend: cliente `readiness-api.ts`, página Hub em `/[locale]/jobs/readiness` (alias PT `/vagas/prontidao`) com kanban + drawer + ações em lote, banner CTA + botão "Prontidão" na página de Vagas.
