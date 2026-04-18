@@ -66,6 +66,8 @@ Execute as dimensões relevantes para cada feature/ajuste (ver "Quando NÃO Pula
 
 Verifica se todos os componentes criados estão CONECTADOS entre si no fluxo real.
 
+> **Skill complementar:** se ao verificar le o wiring você encontrar duplicatas (rota paralela, hook clonado `.ts`/`.tsx`, dois services com nome similar) ou suspeita de workaround (fix aplicado no consumidor em vez da fonte), pare e rode a skill **canonical-fix** antes de seguir.
+
 **Checklist:**
 
 1. **Hook → Componente**: Todo hook criado (`use-*.ts`) está sendo importado e chamado por pelo menos um componente?
@@ -403,6 +405,8 @@ FLUXO: Mover candidato de Triagem → Entrevista
 ### DIMENSÃO 7: Consistência com o Sistema Existente
 
 Verifica se a feature é consistente com padrões já estabelecidos na plataforma.
+
+> **Skill complementar:** quando esta dimensão revelar duplicação de lógica ou divergência entre constantes/códigos canônicos, use a skill **canonical-fix** para identificar a fonte da verdade e consolidar antes de seguir adiante (não copie a lógica para um novo lugar).
 
 **Checklist:**
 

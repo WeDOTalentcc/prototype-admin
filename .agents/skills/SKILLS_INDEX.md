@@ -1,6 +1,6 @@
 # Skills da Plataforma LIA — Guia de Uso por Momento
 
-16 skills organizadas por QUANDO usar. Cada skill tem um gatilho claro.
+17 skills organizadas por QUANDO usar. Cada skill tem um gatilho claro.
 
 ---
 
@@ -12,6 +12,8 @@ Usar quando vai iniciar trabalho novo (feature, refactor, bug fix).
 |-------|---------|-----------|
 | **lia-planning** | "vamos comecar", "novo sprint", "bug fix", "especificar feature", "brainstorming" | 4 modos (Bug Fix / Feature / Refactor / Sprint) + spec-driven (4 fases) + brainstorming estruturado |
 | **feature-impact** | "quero criar X", "vamos ajustar Y" | Analisa impacto em 13 dimensoes antes de escrever codigo |
+| **canonical-fix** | "corrige na raiz", "sem gambiarra", "sem workaround", antes de qualquer bug fix ou refactor com risco de duplicata | Identifica o arquivo canonico (fonte da verdade), mapeia consumidores, evita fix no consumidor / fallback silencioso / try-except mascarando / flag improvisada |
+
 
 **Fluxo recomendado:** `lia-planning` (define modo + spec) -> `feature-impact` (mapeia impacto) -> codificar
 

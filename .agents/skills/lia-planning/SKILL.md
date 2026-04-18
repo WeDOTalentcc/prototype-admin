@@ -45,6 +45,7 @@ DIAGNOSTICAR -> ISOLAR -> CORRIGIR -> VERIFICAR
    - Identificar arquivo e linha exatos
    - Determinar causa raiz (nao o sintoma)
    - Classificar: crash vs visual vs logica vs performance
+   - **Antes de propor o fix, rodar a skill `canonical-fix`** para confirmar qual arquivo e a fonte da verdade, mapear duplicatas/consumidores e evitar workaround no consumidor.
 
 2. **Isolar**
    - Verificar se eh pre-existente (lista de erros a ignorar no scratchpad)
