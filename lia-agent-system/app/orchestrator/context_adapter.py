@@ -73,6 +73,9 @@ class UniversalContext:
     target_job: dict[str, Any] | None = None
     extra: dict[str, Any] = field(default_factory=dict)
 
+    # In-session entity memory (populated by orchestrator after each action)
+    conversation_state: Any | None = None  # ConversationState — typed as Any to avoid circular import
+
     # Tenant context — preenchido pelo MainOrchestrator apos lookup no DB
     tenant_context_snippet: str = ""
 
