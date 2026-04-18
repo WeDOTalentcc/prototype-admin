@@ -151,6 +151,34 @@ class WSIQuestion(BaseModel):
     validation_flags: dict[str, Any] = Field(default_factory=dict)
 
 
+class Layer2Signals(BaseModel):
+    """M01 (audit rev. 18) — Sinais semânticos extraídos pela Camada 2 LLM
+    (spec WeDOTalent §F8.3). Consumidos por `calculate_penalty` (M04),
+    `calculate_bonus` (M05) e `detect_red_flags` (M06).
+
+    Quando ausente (Camada 2 desligada ou falhou), o scorer usa apenas a
+    Camada 1 determinística — comportamento idêntico à rev. 17.
+    """
+    # M04 — sinais para penalidades semânticas
+    is_paraphrase: bool = Field(description="Resposta repete a pergunta sem agregar conteúdo próprio")
+    is_first_person: bool = Field(description="Usa 1ª pessoa singular (eu/meu) — evidência de protagonismo individual")
+    has_R_outcome: bool = Field(description="STAR completo — contém Resultado mensurável, não só Situação/Ação")
+    language_consistency: bool = Field(description="Resposta na mesma língua da pergunta")
+    prompt_injection_detected: bool = Field(description="Tentativa de override de instrução do sistema (override → score=0)")
+    word_count_band: Literal["<30", "30-50", "50-150", ">150"]
+
+    # M05 + M06 — sinais semânticos
+    trait_signals_count: int = Field(ge=0, description="Quantos sinais comportamentais distintos detectados na resposta")
+    has_quantification: bool = Field(description="Contém números/métricas/%/R$/prazos concretos")
+    semantic_inflation: bool = Field(description="Claim sem evidência (ex: 'fui o melhor', 'sempre superei') — vs lexical apenas")
+    bloom_demonstrated: int = Field(ge=1, le=6, description="Nível Bloom efetivamente demonstrado pela resposta")
+    dreyfus_demonstrated: int = Field(ge=1, le=5, description="Nível Dreyfus efetivamente demonstrado pela resposta")
+
+    # Meta
+    confidence: float = Field(ge=0.0, le=1.0, description="Confiança do extrator no payload retornado")
+    extraction_warnings: list[str] = Field(default_factory=list)
+
+
 class ResponseAnalysis(BaseModel):
     """Análise de resposta do candidato."""
     question_id: str
@@ -175,6 +203,12 @@ class ResponseAnalysis(BaseModel):
     # callers não passam `competencies` tipado. None = não informado, usar
     # fallback existente (competencies map ou heurístico).
     category: Literal["technical", "behavioral", "cultural"] | None = None
+
+    # M01 (audit rev. 18) — sinais semânticos da Camada 2 LLM (spec §F8.3).
+    # None quando Camada 2 desligada ou falhou (fallback determinístico puro).
+    layer2_signals: Layer2Signals | None = None
+    # M01 — quando Camada 2 falhou, registrar motivo p/ EU AI Act / auditoria
+    layer2_degraded_reason: str | None = None
 
 
 class WSIResult(BaseModel):

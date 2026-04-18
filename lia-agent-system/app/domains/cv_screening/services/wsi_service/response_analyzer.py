@@ -1,5 +1,6 @@
 """
-WSI Response Analyzer - Deterministic response scoring.
+WSI Response Analyzer - Deterministic response scoring (Camada 1) + opcional
+Camada 2 LLM-extractor (spec §F8.3, audit M01 rev. 18).
 """
 import logging
 from typing import Any
@@ -9,53 +10,91 @@ from app.domains.cv_screening.services.wsi_deterministic_scorer import (
     calculate_wsi_deterministic,
 )
 
-from .models import ResponseAnalysis, WSIQuestion
+from .layer2_extractor import Layer2ExtractionError, WSILayer2Extractor
+from .models import Layer2Signals, ResponseAnalysis, WSIQuestion
 
 logger = logging.getLogger(__name__)
 
+
 class WSIResponseAnalyzer:
-    """
-    Analisador de respostas com scoring DETERMINÍSTICO baseado em Dreyfus + Bloom.
+    """Analisa respostas em duas camadas:
 
-    IMPORTANTE — decisão arquitetural (audit M01, Phase 2 — 2026-04-18):
-    O scoring é 100% determinístico (`calculate_wsi_deterministic`). O LLM
-    NÃO participa do cálculo numérico — apenas (potencialmente) da extração
-    de informações no upstream `WSIQuestionGenerator`.
+    - **Camada 1 (determinística)** — sempre ativa. `calculate_wsi_deterministic`
+      via Dreyfus + Bloom + STAR + heurísticas lexicais.
+    - **Camada 2 (LLM-extractor)** — opcional, ativada com `enable_layer2=True`.
+      Spec WeDOTalent §F8.3 — extrai sinais semânticos (paráfrase, 1ª pessoa,
+      R do STAR, idioma, prompt-injection, contagem de traits, quantificação,
+      inflação semântica, Bloom/Dreyfus demonstrados) consumidos pela Camada 1
+      em iterações futuras (M04 penalidades, M05 bônus, M06 inflação semântica).
 
-    A spec WeDOTalent §F8.3 ("LLM Layer 2 reasoning") prevê uma camada futura
-    de re-análise por LLM para casos limítrofes (red flags ambíguas, evidências
-    qualitativas), mas isso ainda não foi implementado. Quando for, entrará
-    como ANALYZER SEPARADO (ex.: `WSIHybridResponseAnalyzer`) para preservar
-    o contrato determinístico desta classe.
+    Camada 2 NUNCA pontua diretamente — apenas alimenta a Camada 1. Isso preserva
+    o contrato determinístico do scorer e a auditabilidade SOX/LGPD.
 
-    Este construtor aceita ``llm`` apenas por compat de assinatura com o
-    container do `WSIService`; o argumento é IGNORADO. Uma vez que F8.3 vire
-    realidade, esta classe pode ganhar uma subclasse ou ser substituída no
-    container — sem precisar mudar o protocolo.
+    Falha graciosa: se a Camada 2 falhar (LLM timeout, parse, schema), a análise
+    retorna o resultado determinístico puro com `layer2_degraded_reason` setado.
+    Nunca raise descontrolado, nunca payload fabricado (lição M12 rev. 15).
     """
 
-    def __init__(self, llm: Any | None = None) -> None:  # noqa: ARG002
-        # Mantido por compat — WSIService passa self.llm. Vide docstring.
-        pass
+    def __init__(
+        self,
+        llm: Any | None = None,
+        *,
+        enable_layer2: bool = False,
+        layer2_extractor: WSILayer2Extractor | None = None,
+    ) -> None:
+        """`llm` aceito por compat com o container do `WSIService`.
+
+        Args:
+            llm: legado — mantido por compat de assinatura. Ignorado pela
+                Camada 1. A Camada 2 usa `llm_service` (singleton) por padrão.
+            enable_layer2: ativa extração semântica via LLM (default OFF).
+            layer2_extractor: injeção opcional p/ teste (mock).
+        """
+        self._llm = llm  # noqa: F841 — preservado para futuras subclasses
+        self._enable_layer2 = enable_layer2
+        if enable_layer2:
+            self._layer2_extractor = layer2_extractor or WSILayer2Extractor()
+        else:
+            self._layer2_extractor = None
+
+    async def _try_extract_layer2(
+        self,
+        question: WSIQuestion,
+        response: str,
+    ) -> tuple[Layer2Signals | None, str | None]:
+        """Retorna (signals, degraded_reason). Apenas um deles é não-None."""
+        if not self._enable_layer2 or not self._layer2_extractor:
+            return None, None
+        try:
+            signals = await self._layer2_extractor.extract(question, response)
+            return signals, None
+        except Layer2ExtractionError as exc:
+            # Falha esperada — degrade graciosamente (EU AI Act §13).
+            logger.warning(
+                "Layer2 degraded for q=%s competency=%s: %s",
+                question.id, question.competency, exc,
+            )
+            return None, str(exc)
+        except Exception as exc:
+            # Falha INESPERADA — log com stack mas não derruba a análise.
+            logger.exception(
+                "Layer2 unexpected failure for q=%s competency=%s",
+                question.id, question.competency,
+            )
+            return None, f"Unexpected error: {exc}"
 
     async def analyze(
         self,
         question: WSIQuestion,
-        response: str
+        response: str,
     ) -> ResponseAnalysis:
-        """
-        Analisa resposta usando cálculos 100% DETERMINÍSTICOS.
-        
-        Metodologia WSI (scoring determinístico):
-        1. Extrai autodeclaração via regex
-        2. Calcula contexto via indicadores
-        3. Classifica Bloom via keywords
-        4. Classifica Dreyfus via anos + contexto
-        5. Detecta red flags via regras fixas
-        6. Aplica fórmula fixa: Score = (0.6 × Autodec) + (0.4 × Contexto) - Penalty + Bonus
-        
-        NENHUM LLM é usado para calcular scores.
-        """
+        """Analisa resposta. Camada 1 é sempre executada; Camada 2 opcional."""
+        # Camada 2 — extração semântica (opcional, falha graciosa).
+        layer2_signals, layer2_degraded_reason = await self._try_extract_layer2(
+            question, response
+        )
+
+        # Camada 1 — determinístico (sempre ativo).
         try:
             # Audit task #510 (M07) — deriva question_type do framework
             # canônico para que o scorer use o ladder Dreyfus correto
@@ -82,6 +121,10 @@ class WSIResponseAnalyzer:
                 justification += f" | ⚠️ Qualidade degradada: {reasons}"
                 red_flags.append(f"Qualidade degradada: {reasons}")
 
+            # M01 — anota Camada 2 degradada na justificativa (auditável).
+            if layer2_degraded_reason:
+                justification += f" | ⚠️ Camada 2 degradada: {layer2_degraded_reason}"
+
             return ResponseAnalysis(
                 question_id=question.id,
                 competency=question.competency,
@@ -96,6 +139,8 @@ class WSIResponseAnalyzer:
                 final_score=result.final_score,
                 justification=justification,
                 category=_category_from_framework(question.framework),
+                layer2_signals=layer2_signals,
+                layer2_degraded_reason=layer2_degraded_reason,
             )
         except Exception as e:
             logger.error(f"Deterministic analysis failed for {question.competency}: {e}")
@@ -113,6 +158,8 @@ class WSIResponseAnalyzer:
                 final_score=6.0,
                 justification=f"Fallback aplicado devido a erro: {str(e)}",
                 category=_category_from_framework(question.framework),
+                layer2_signals=layer2_signals,
+                layer2_degraded_reason=layer2_degraded_reason,
             )
 
 
@@ -129,5 +176,3 @@ def _category_from_framework(framework: str) -> str | None:
     if framework in ("CBI", "BigFive"):
         return "behavioral"
     return None
-
-
