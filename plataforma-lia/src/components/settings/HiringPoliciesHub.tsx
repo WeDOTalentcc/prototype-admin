@@ -4,7 +4,8 @@ import React, { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   ChevronDown, ChevronUp, Brain, Pencil, Check,
-  GitBranch, Calendar, MessageSquare, Filter, Zap, Loader2, X, Maximize2
+  GitBranch, Calendar, MessageSquare, Filter, Zap, Loader2, X, Maximize2,
+  AlertCircle, CheckCircle,
 } from "lucide-react"
 import { useHiringPolicies } from "@/hooks/company/use-hiring-policies"
 import { FIELD_LABELS, POLICY_BLOCKS, FIELD_CONFIGS, formatFieldValue } from "@/lib/hiring-policy-utils"
@@ -38,19 +39,44 @@ function InlineFieldEditor({
     if (currentValue === null || currentValue === undefined) return ''
     if (config?.type === 'boolean') return currentValue
     if (Array.isArray(currentValue)) return currentValue.join(', ')
+    if (typeof currentValue === 'object' && currentValue !== null) {
+      const obj = currentValue as { start?: string; end?: string }
+      if ('start' in obj || 'end' in obj) {
+        return `${obj.start || ''} - ${obj.end || ''}`
+      }
+      return ''
+    }
     return String(currentValue)
   })
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   const handleSave = () => {
+    setValidationError(null)
     let parsed: unknown = localValue
     if (config?.type === 'number') {
-      parsed = localValue === '' ? null : Number(localValue)
+      if (localValue === '' || localValue === null) {
+        parsed = null
+      } else {
+        const n = Number(localValue)
+        if (!Number.isFinite(n)) {
+          setValidationError('Numero invalido')
+          return
+        }
+        parsed = n
+      }
     } else if (config?.type === 'boolean') {
       parsed = localValue
-    } else if (field === 'default_screening_questions') {
+    } else if (field === 'default_screening_questions' || field === 'allowed_days') {
       parsed = typeof localValue === 'string'
         ? localValue.split(',').map((s: string) => s.trim()).filter(Boolean)
         : localValue
+    } else if (field === 'allowed_hours') {
+      const raw = String(localValue).trim()
+      if (raw && !/^\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}$/.test(raw)) {
+        setValidationError('Use HH:MM - HH:MM')
+        return
+      }
+      parsed = raw
     }
     onSave(parsed)
   }
@@ -125,19 +151,20 @@ function InlineFieldEditor({
   }
 
   return (
+    <div className="flex flex-col items-end gap-0.5">
     <div className="flex items-center gap-1">
       <input
         type={config?.type === 'number' ? 'number' : 'text'}
         value={String(localValue)}
-        onChange={(e) => setLocalValue(e.target.value)}
+        onChange={(e) => { setLocalValue(e.target.value); if (validationError) setValidationError(null) }}
         onKeyDown={handleKeyDown}
         autoFocus
         disabled={isSaving}
         min={config?.min}
         max={config?.max}
         placeholder={config?.placeholder || ''}
-        className="w-24 text-xs font-medium text-lia-text-primary bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-default rounded-md px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-lia-border-medium"
-       
+        aria-invalid={validationError ? true : undefined}
+        className={`w-24 text-xs font-medium text-lia-text-primary bg-lia-bg-primary dark:bg-lia-bg-secondary border rounded-md px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-lia-border-medium ${validationError ? 'border-status-error' : 'border-lia-border-default dark:border-lia-border-default'}`}
       />
       {config?.suffix && (
         <span className="text-micro text-lia-text-secondary">{config.suffix}</span>
@@ -159,6 +186,10 @@ function InlineFieldEditor({
       >
         <X className="w-3 h-3 text-lia-text-tertiary" />
       </button>
+    </div>
+      {validationError && (
+        <span className="text-micro text-status-error">{validationError}</span>
+      )}
     </div>
   )
 }
@@ -183,6 +214,8 @@ export function HiringPoliciesHub() {
     saveFieldValue,
     isSavingBlock,
     recentlyUpdated,
+    saveError,
+    saveSuccess,
   } = useHiringPolicies()
 
   if (isLoading) {
@@ -198,6 +231,16 @@ export function HiringPoliciesHub() {
 
   return (
     <div className="flex flex-col h-full">
+      {(saveError || saveSuccess) && (
+        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm mb-3 ${
+          saveError
+            ? "bg-status-error/10 text-status-error border border-status-error/30"
+            : "bg-status-success/10 text-status-success border border-status-success/30"
+        }`}>
+          {saveError ? <AlertCircle className="w-4 h-4 flex-shrink-0" /> : <CheckCircle className="w-4 h-4 flex-shrink-0" />}
+          <span>{saveError || saveSuccess}</span>
+        </div>
+      )}
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <h2 className={textStyles.h3}>Políticas de Contratação</h2>

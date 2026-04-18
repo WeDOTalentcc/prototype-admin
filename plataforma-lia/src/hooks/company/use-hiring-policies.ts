@@ -62,6 +62,8 @@ export function useHiringPolicies() {
   const [editingField, setEditingField] = useState<{ block: string; field: string } | null>(null)
   const [isSavingBlock, setIsSavingBlock] = useState(false)
   const [recentlyUpdated, setRecentlyUpdated] = useState<Set<string>>(new Set())
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null)
 
   const chatEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -206,24 +208,63 @@ export function useHiringPolicies() {
 
   const saveFieldValue = async (block: string, field: string, value: unknown) => {
     setIsSavingBlock(true)
+    setSaveError(null)
     try {
+      let parsedValue: unknown = value
+      if (field === 'allowed_hours' && typeof value === 'string') {
+        const trimmed = value.trim()
+        if (trimmed === '') {
+          parsedValue = null
+        } else {
+        const m = trimmed.match(/^\s*(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\s*$/)
+        if (!m) {
+          throw new Error('Horario invalido. Use o formato HH:MM - HH:MM (ex.: 09:00 - 18:00).')
+        }
+        parsedValue = { start: m[1], end: m[2] }
+        }
+      }
+      if (field === 'allowed_days' && typeof value === 'string') {
+        parsedValue = value.split(',').map(s => s.trim()).filter(Boolean)
+      }
+
       const res = await fetch(`${API_BASE}/block`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           block,
-          data: { [field]: value }
+          data: { [field]: parsedValue }
         })
       })
 
-      if (res.ok) {
-        const updated = await res.json()
-        setPolicy(updated)
-        setRecentlyUpdated(new Set([field]))
-        setTimeout(() => setRecentlyUpdated(new Set()), 2000)
-        await fetchProgress()
+      if (!res.ok) {
+        let detail = 'Falha ao salvar campo.'
+        try {
+          const data = await res.json()
+          if (data?.detail) {
+            detail = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail)
+          } else if (data?.error) {
+            detail = String(data.error)
+          }
+        } catch { /* ignore */ }
+        if (res.status === 401 || res.status === 403) {
+          detail = 'Sessao expirada ou sem permissao. Recarregue a pagina.'
+        } else if (res.status >= 500) {
+          detail = 'Backend indisponivel. Tente novamente em instantes.'
+        }
+        throw new Error(detail)
       }
+
+      const updated = await res.json()
+      setPolicy(updated)
+      setRecentlyUpdated(new Set([field]))
+      setTimeout(() => setRecentlyUpdated(new Set()), 2000)
+      await fetchProgress()
+      setSaveSuccess('Campo atualizado com sucesso!')
+      setTimeout(() => setSaveSuccess(null), 3000)
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erro ao salvar campo.'
+      setSaveError(message)
+      setTimeout(() => setSaveError(null), 5000)
     } finally {
       setIsSavingBlock(false)
       setEditingField(null)
@@ -253,5 +294,7 @@ export function useHiringPolicies() {
     saveFieldValue,
     isSavingBlock,
     recentlyUpdated,
+    saveError,
+    saveSuccess,
   }
 }

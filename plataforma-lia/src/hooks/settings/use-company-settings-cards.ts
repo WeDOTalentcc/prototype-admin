@@ -17,7 +17,7 @@ export interface CardField {
   key: string
   label: string
   value: unknown
-  type: "text" | "number" | "boolean" | "list" | "currency"
+  type: "text" | "number" | "boolean" | "list" | "currency" | "time-range"
   editable: boolean
   block: string
 }
@@ -85,6 +85,26 @@ interface HiringPolicyData {
 }
 
 const ACTION_FIELD_KEYS = new Set(["import_spreadsheet", "handbook", "org_chart"])
+
+const POLICY_FIELD_TO_BLOCK: Record<string, string> = {
+  min_interviews_before_offer: "pipeline_rules",
+  manager_approval_for_offer: "pipeline_rules",
+  allowed_days: "scheduling_rules",
+  allowed_hours: "scheduling_rules",
+  default_duration_minutes: "scheduling_rules",
+  self_scheduling_enabled: "scheduling_rules",
+  auto_rejection_feedback: "communication_rules",
+  rejection_feedback_deadline_hours: "communication_rules",
+  preferred_channel: "communication_rules",
+  lia_tone: "communication_rules",
+  salary_expectation_filter: "screening_rules",
+  salary_tolerance_percent: "screening_rules",
+  experience_policy: "screening_rules",
+  auto_screening: "automation_rules",
+  auto_scheduling: "automation_rules",
+  auto_stage_advance: "automation_rules",
+  autonomy_level: "automation_rules",
+}
 
 function computeBlockStatus(fields: CardField[]): "configured" | "partial" | "pending" {
   const dataFields = fields.filter(f => !ACTION_FIELD_KEYS.has(f.key))
@@ -160,44 +180,44 @@ function buildBlocks(
   const hours = sr?.allowed_hours as { start?: string; end?: string } | undefined
 
   const policyFields: CardField[] = [
-    { key: "min_interviews_before_offer", label: "Min. Entrevistas p/ Oferta", value: pr?.min_interviews_before_offer ?? null, type: "number", editable: false, block: "policy" },
-    { key: "manager_approval_for_offer", label: "Aprovacao Gestor", value: pr?.manager_approval_for_offer ?? null, type: "boolean", editable: false, block: "policy" },
+    { key: "min_interviews_before_offer", label: "Min. Entrevistas p/ Oferta", value: pr?.min_interviews_before_offer ?? null, type: "number", editable: true, block: "policy" },
+    { key: "manager_approval_for_offer", label: "Aprovacao Gestor", value: pr?.manager_approval_for_offer ?? null, type: "boolean", editable: true, block: "policy" },
     { key: "max_days_in_stage", label: "Max. Dias por Etapa", value: pr?.max_days_in_stage ?? null, type: "text", editable: false, block: "policy" },
-    { key: "allowed_days", label: "Dias Permitidos", value: sr?.allowed_days ?? null, type: "list", editable: false, block: "policy" },
-    { key: "allowed_hours", label: "Horario Permitido", value: hours ? `${hours.start || ""} - ${hours.end || ""}` : null, type: "text", editable: false, block: "policy" },
-    { key: "default_duration_minutes", label: "Duracao Padrao (min)", value: sr?.default_duration_minutes ?? null, type: "number", editable: false, block: "policy" },
-    { key: "self_scheduling_enabled", label: "Auto-agendamento", value: sr?.self_scheduling_enabled ?? null, type: "boolean", editable: false, block: "policy" },
-    { key: "auto_rejection_feedback", label: "Feedback Auto Rejeicao", value: cr?.auto_rejection_feedback ?? null, type: "boolean", editable: false, block: "policy" },
-    { key: "rejection_feedback_deadline_hours", label: "Prazo Feedback Rejeicao (h)", value: cr?.rejection_feedback_deadline_hours ?? null, type: "number", editable: false, block: "policy" },
-    { key: "preferred_channel", label: "Canal Preferido", value: cr?.preferred_channel ?? null, type: "text", editable: false, block: "policy" },
-    { key: "lia_tone", label: "Tom da LIA", value: cr?.lia_tone ?? null, type: "text", editable: false, block: "policy" },
-    { key: "salary_expectation_filter", label: "Filtro Pretensao Salarial", value: scr?.salary_expectation_filter ?? null, type: "boolean", editable: false, block: "policy" },
-    { key: "salary_tolerance_percent", label: "Tolerancia Salarial (%)", value: scr?.salary_tolerance_percent ?? null, type: "number", editable: false, block: "policy" },
-    { key: "experience_policy", label: "Politica de Experiencia", value: scr?.experience_policy ?? null, type: "text", editable: false, block: "policy" },
-    { key: "auto_screening", label: "Triagem Automatica", value: ar?.auto_screening ?? null, type: "boolean", editable: false, block: "policy" },
-    { key: "auto_scheduling", label: "Agendamento Automatico", value: ar?.auto_scheduling ?? null, type: "boolean", editable: false, block: "policy" },
-    { key: "auto_stage_advance", label: "Avanco Automatico Etapas", value: ar?.auto_stage_advance ?? null, type: "boolean", editable: false, block: "policy" },
-    { key: "autonomy_level", label: "Nivel de Autonomia LIA", value: ar?.autonomy_level ?? null, type: "text", editable: false, block: "policy" },
+    { key: "allowed_days", label: "Dias Permitidos", value: sr?.allowed_days ?? null, type: "list", editable: true, block: "policy" },
+    { key: "allowed_hours", label: "Horario Permitido", value: hours ? `${hours.start || ""} - ${hours.end || ""}` : null, type: "time-range", editable: true, block: "policy" },
+    { key: "default_duration_minutes", label: "Duracao Padrao (min)", value: sr?.default_duration_minutes ?? null, type: "number", editable: true, block: "policy" },
+    { key: "self_scheduling_enabled", label: "Auto-agendamento", value: sr?.self_scheduling_enabled ?? null, type: "boolean", editable: true, block: "policy" },
+    { key: "auto_rejection_feedback", label: "Feedback Auto Rejeicao", value: cr?.auto_rejection_feedback ?? null, type: "boolean", editable: true, block: "policy" },
+    { key: "rejection_feedback_deadline_hours", label: "Prazo Feedback Rejeicao (h)", value: cr?.rejection_feedback_deadline_hours ?? null, type: "number", editable: true, block: "policy" },
+    { key: "preferred_channel", label: "Canal Preferido", value: cr?.preferred_channel ?? null, type: "text", editable: true, block: "policy" },
+    { key: "lia_tone", label: "Tom da LIA", value: cr?.lia_tone ?? null, type: "text", editable: true, block: "policy" },
+    { key: "salary_expectation_filter", label: "Filtro Pretensao Salarial", value: scr?.salary_expectation_filter ?? null, type: "boolean", editable: true, block: "policy" },
+    { key: "salary_tolerance_percent", label: "Tolerancia Salarial (%)", value: scr?.salary_tolerance_percent ?? null, type: "number", editable: true, block: "policy" },
+    { key: "experience_policy", label: "Politica de Experiencia", value: scr?.experience_policy ?? null, type: "text", editable: true, block: "policy" },
+    { key: "auto_screening", label: "Triagem Automatica", value: ar?.auto_screening ?? null, type: "boolean", editable: true, block: "policy" },
+    { key: "auto_scheduling", label: "Agendamento Automatico", value: ar?.auto_scheduling ?? null, type: "boolean", editable: true, block: "policy" },
+    { key: "auto_stage_advance", label: "Avanco Automatico Etapas", value: ar?.auto_stage_advance ?? null, type: "boolean", editable: true, block: "policy" },
+    { key: "autonomy_level", label: "Nivel de Autonomia LIA", value: ar?.autonomy_level ?? null, type: "text", editable: true, block: "policy" },
     { key: "setup_progress", label: "Progresso Configuracao", value: hiringPolicy?.setup_progress ? `${hiringPolicy.setup_progress}%` : null, type: "text", editable: false, block: "policy" },
   ]
 
   const additionalData = company.additional_data
   const workforcePlan = (additionalData as Record<string, unknown> | undefined)?.workforce_plan as Record<string, unknown> | undefined
   const workforceFields: CardField[] = [
-    { key: "hiring_volume", label: "Volume de Contratacao", value: additionalData?.hiring_volume ?? workforcePlan?.hiring_volume, type: "number", editable: false, block: "workforce" },
-    { key: "job_types", label: "Tipos de Vaga", value: additionalData?.job_types ?? workforcePlan?.job_types, type: "list", editable: false, block: "workforce" },
-    { key: "current_ats", label: "ATS Atual", value: additionalData?.current_ats ?? workforcePlan?.current_ats, type: "text", editable: false, block: "workforce" },
-    { key: "main_challenges", label: "Principais Desafios", value: additionalData?.main_challenges ?? workforcePlan?.main_challenges, type: "list", editable: false, block: "workforce" },
-    { key: "main_priority", label: "Prioridade Principal", value: additionalData?.main_priority ?? workforcePlan?.main_priority, type: "text", editable: false, block: "workforce" },
-    { key: "communication_channels", label: "Canais de Comunicacao", value: additionalData?.communication_channels ?? workforcePlan?.communication_channels, type: "list", editable: false, block: "workforce" },
+    { key: "hiring_volume", label: "Volume de Contratacao", value: additionalData?.hiring_volume ?? workforcePlan?.hiring_volume, type: "number", editable: true, block: "workforce" },
+    { key: "job_types", label: "Tipos de Vaga", value: additionalData?.job_types ?? workforcePlan?.job_types, type: "list", editable: true, block: "workforce" },
+    { key: "current_ats", label: "ATS Atual", value: additionalData?.current_ats ?? workforcePlan?.current_ats, type: "text", editable: true, block: "workforce" },
+    { key: "main_challenges", label: "Principais Desafios", value: additionalData?.main_challenges ?? workforcePlan?.main_challenges, type: "list", editable: true, block: "workforce" },
+    { key: "main_priority", label: "Prioridade Principal", value: additionalData?.main_priority ?? workforcePlan?.main_priority, type: "text", editable: true, block: "workforce" },
+    { key: "communication_channels", label: "Canais de Comunicacao", value: additionalData?.communication_channels ?? workforcePlan?.communication_channels, type: "list", editable: true, block: "workforce" },
     { key: "import_spreadsheet", label: "Importar Planilha", value: null, type: "text", editable: false, block: "workforce" },
   ]
 
   const documentFields: CardField[] = [
     { key: "onboarding_completed", label: "Onboarding Concluido", value: additionalData?.onboarding_completed_at ? "Sim" : null, type: "text", editable: false, block: "documents" },
-    { key: "responsible_name", label: "Responsavel", value: additionalData?.responsible_name, type: "text", editable: false, block: "documents" },
-    { key: "responsible_position", label: "Cargo do Responsavel", value: additionalData?.responsible_position, type: "text", editable: false, block: "documents" },
-    { key: "additional_notes", label: "Notas Adicionais", value: additionalData?.additional_notes, type: "text", editable: false, block: "documents" },
+    { key: "responsible_name", label: "Responsavel", value: additionalData?.responsible_name, type: "text", editable: true, block: "documents" },
+    { key: "responsible_position", label: "Cargo do Responsavel", value: additionalData?.responsible_position, type: "text", editable: true, block: "documents" },
+    { key: "additional_notes", label: "Notas Adicionais", value: additionalData?.additional_notes, type: "text", editable: true, block: "documents" },
     { key: "handbook", label: "Manual / Handbook", value: null, type: "text", editable: false, block: "documents" },
     { key: "org_chart", label: "Organograma", value: null, type: "text", editable: false, block: "documents" },
     { key: "compensation_structure", label: "Estrutura de Remuneracao", value: company.default_salary_ranges && company.default_salary_ranges.length > 0 ? `${company.default_salary_ranges.length} faixa(s)` : null, type: "text", editable: false, block: "documents" },
@@ -224,6 +244,26 @@ function snapshotFieldValues(blocks: CardBlock[]): Map<string, string> {
     }
   }
   return snap
+}
+
+async function extractErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const data = await response.json()
+    if (data?.detail) {
+      return typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail)
+    }
+    if (data?.error) return String(data.error)
+    if (data?.message) return String(data.message)
+  } catch {
+    /* not JSON */
+  }
+  if (response.status === 401 || response.status === 403) {
+    return "Sessao expirada ou sem permissao. Recarregue a pagina."
+  }
+  if (response.status >= 500) {
+    return "Backend indisponivel. Tente novamente em instantes."
+  }
+  return fallback
 }
 
 export function useCompanySettingsCards() {
@@ -426,6 +466,7 @@ export function useCompanySettingsCards() {
   }, [])
 
   const startEditing = useCallback((block: string, field: string) => {
+    setError(null)
     setEditingField({ block, field })
   }, [])
 
@@ -433,12 +474,22 @@ export function useCompanySettingsCards() {
     setEditingField(null)
   }, [])
 
+  const showError = useCallback((msg: string) => {
+    setError(msg)
+    setTimeout(() => setError(null), 5000)
+  }, [])
+
   const saveField = useCallback(async (block: string, field: string, value: unknown) => {
-    if (!companyId) return
+    if (!companyId) {
+      showError("Nao foi possivel identificar a empresa. Recarregue a pagina e tente novamente.")
+      setEditingField(null)
+      return
+    }
     setIsSavingField(true)
     setError(null)
     try {
       let response: Response | null = null
+      let fallbackErr = "Falha ao salvar campo"
 
       if (block === "basic") {
         const fieldMap: Record<string, string> = {
@@ -457,9 +508,9 @@ export function useCompanySettingsCards() {
         }
         const apiField = fieldMap[field] || field
         let payload: Record<string, unknown> = { [apiField]: value }
-        if (field === "headquarters" && typeof value === "string" && value.includes(",")) {
+        if (field === "headquarters" && typeof value === "string") {
           const parts = value.split(",").map(s => s.trim())
-          payload = { headquarters_city: parts[0], headquarters_state: parts[1] || "" }
+          payload = { headquarters_city: parts[0] || "", headquarters_state: parts[1] || "" }
         }
         response = await fetch(`/api/backend-proxy/company/profile/${companyId}`, {
           method: "PUT",
@@ -488,24 +539,57 @@ export function useCompanySettingsCards() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ [apiField]: value }),
         })
+      } else if (block === "policy") {
+        const subBlock = POLICY_FIELD_TO_BLOCK[field]
+        if (!subBlock) {
+          throw new Error(`Campo de politica nao suportado para edicao manual: ${field}`)
+        }
+        let parsedValue: unknown = value
+        if (field === "allowed_hours") {
+          if (typeof value === "string") {
+            const m = value.match(/^\s*(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\s*$/)
+            if (!m) {
+              throw new Error("Horario invalido. Use o formato HH:MM - HH:MM (ex.: 09:00 - 18:00).")
+            }
+            parsedValue = { start: m[1], end: m[2] }
+          }
+        }
+        fallbackErr = "Falha ao salvar politica"
+        response = await fetch("/api/backend-proxy/hiring-policy/block", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ block: subBlock, data: { [field]: parsedValue } }),
+        })
+      } else if (block === "workforce" || block === "documents") {
+        const currentAdditional = (companyData?.additional_data || {}) as Record<string, unknown>
+        const nextAdditional = { ...currentAdditional, [field]: value }
+        fallbackErr = "Falha ao salvar campo do perfil"
+        response = await fetch(`/api/backend-proxy/company/profile/${companyId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ additional_data: nextAdditional }),
+        })
+      } else if (block === "benefits") {
+        throw new Error("Para gerenciar beneficios e departamentos, use o painel especifico.")
+      } else {
+        throw new Error(`Bloco desconhecido: ${block}`)
       }
 
       if (response && !response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.detail || errorData.error || "Falha ao salvar campo")
+        const message = await extractErrorMessage(response, fallbackErr)
+        throw new Error(message)
       }
 
       setSuccessMessage("Campo atualizado com sucesso!")
       setTimeout(() => setSuccessMessage(null), 3000)
       await loadAll()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao salvar campo")
-      setTimeout(() => setError(null), 3000)
+      showError(err instanceof Error ? err.message : "Erro ao salvar campo")
     } finally {
       setIsSavingField(false)
       setEditingField(null)
     }
-  }, [companyId, loadAll])
+  }, [companyId, companyData, loadAll, showError])
 
   const state: CompanySettingsCardsState = {
     blocks,

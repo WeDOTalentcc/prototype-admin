@@ -54,17 +54,38 @@ function InlineFieldEditor({
     if (Array.isArray(currentValue)) return currentValue.join(", ")
     return String(currentValue)
   })
+  const [validationError, setValidationError] = useState<string | null>(null)
 
   const handleSave = () => {
+    setValidationError(null)
     let parsed: unknown = localValue
     if (field.type === "number") {
-      parsed = localValue === "" ? null : Number(localValue)
+      if (localValue === "" || localValue === null) {
+        parsed = null
+      } else {
+        const n = Number(localValue)
+        if (!Number.isFinite(n)) {
+          setValidationError("Numero invalido")
+          return
+        }
+        parsed = n
+      }
     } else if (field.type === "boolean") {
       parsed = localValue
     } else if (field.type === "list") {
       parsed = typeof localValue === "string"
         ? localValue.split(",").map((s: string) => s.trim()).filter(Boolean)
         : localValue
+    } else if (field.type === "time-range") {
+      const raw = String(localValue).trim()
+      if (raw === "") {
+        parsed = ""
+      } else if (!/^\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}$/.test(raw)) {
+        setValidationError("Use HH:MM - HH:MM")
+        return
+      } else {
+        parsed = raw
+      }
     }
     onSave(parsed)
   }
@@ -104,17 +125,25 @@ function InlineFieldEditor({
     )
   }
 
+  const placeholder = field.type === "list"
+    ? "item1, item2, item3"
+    : field.type === "time-range"
+    ? "09:00 - 18:00"
+    : ""
+
   return (
+    <div className="flex flex-col items-end gap-0.5">
     <div className="flex items-center gap-1">
       <input
         type={field.type === "number" ? "number" : "text"}
         value={String(localValue)}
-        onChange={(e) => setLocalValue(e.target.value)}
+        onChange={(e) => { setLocalValue(e.target.value); if (validationError) setValidationError(null) }}
         onKeyDown={handleKeyDown}
         autoFocus
         disabled={isSaving}
-        placeholder={field.type === "list" ? "item1, item2, item3" : ""}
-        className="w-40 text-xs font-medium text-lia-text-primary bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-default rounded-md px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-lia-border-medium"
+        placeholder={placeholder}
+        aria-invalid={validationError ? true : undefined}
+        className={`w-40 text-xs font-medium text-lia-text-primary bg-lia-bg-primary dark:bg-lia-bg-secondary border rounded-md px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-lia-border-medium ${validationError ? "border-status-error" : "border-lia-border-default"}`}
       />
       <button
         onClick={handleSave}
@@ -133,6 +162,10 @@ function InlineFieldEditor({
       >
         <X className="w-3 h-3 text-lia-text-tertiary" />
       </button>
+    </div>
+      {validationError && (
+        <span className="text-micro text-status-error">{validationError}</span>
+      )}
     </div>
   )
 }
