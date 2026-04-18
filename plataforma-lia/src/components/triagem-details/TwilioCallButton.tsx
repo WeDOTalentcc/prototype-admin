@@ -15,7 +15,12 @@ interface TwilioCallButtonProps {
 interface InitiateState {
   loading: boolean
   error: string | null
-  success: { sessionId: string; callSid: string | null; status: string } | null
+  success: {
+    sessionId: string
+    callSid: string | null
+    status: string
+    fallbackChannel?: string | null
+  } | null
 }
 
 /**
@@ -57,20 +62,39 @@ export function TwilioCallButton({ candidate, jobTitle, jobId, companyId }: Twil
           data?.message ||
           data?.error ||
           `Falha ao iniciar ligação (HTTP ${res.status})`
+        const fallback = data?.fallback_channel || data?.detail?.fallback_channel
         setState({ loading: false, error: String(message), success: null })
-        toast.error(`Não foi possível iniciar a ligação: ${message}`)
+        if (fallback) {
+          toast.error(
+            `Não foi possível iniciar a ligação: ${message}. Canal alternativo sugerido: ${fallback}.`
+          )
+        } else {
+          toast.error(`Não foi possível iniciar a ligação: ${message}`)
+        }
         return
       }
+      const callSid: string | null = data.call_sid ?? null
+      const fallbackChannel: string | null = data.fallback_channel ?? null
       setState({
         loading: false,
         error: null,
         success: {
           sessionId: data.session_id,
-          callSid: data.call_sid ?? null,
+          callSid,
           status: data.status ?? "initiated",
+          fallbackChannel,
         },
       })
-      toast.success("Ligação iniciada — a LIA vai discar para o candidato em instantes.")
+      // Task #425 — surface call_sid explicitly so recruiter can correlate the
+      // dial in Twilio logs, and announce fallback_channel when backend
+      // suggests one (e.g., PSTN unavailable → recommend wa_link).
+      const sidPart = callSid ? ` (Call SID: ${callSid})` : ""
+      const fbPart = fallbackChannel
+        ? ` Canal alternativo disponível: ${fallbackChannel}.`
+        : ""
+      toast.success(
+        `Ligação iniciada${sidPart} — a LIA vai discar para o candidato em instantes.${fbPart}`
+      )
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e)
       setState({ loading: false, error: message, success: null })
@@ -168,6 +192,11 @@ export function TwilioCallButton({ candidate, jobTitle, jobId, companyId }: Twil
                 {state.success.callSid && (
                   <p className="font-['JetBrains_Mono',monospace] text-micro text-lia-text-tertiary">
                     Call SID: {state.success.callSid}
+                  </p>
+                )}
+                {state.success.fallbackChannel && (
+                  <p className="text-micro text-lia-text-tertiary">
+                    Canal alternativo sugerido: <strong>{state.success.fallbackChannel}</strong>
                   </p>
                 )}
                 <div className="flex justify-end pt-1">

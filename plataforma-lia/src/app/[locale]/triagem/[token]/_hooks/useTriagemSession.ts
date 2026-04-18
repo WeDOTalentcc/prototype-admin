@@ -54,8 +54,13 @@ export function useTriagemSession() {
   }, [messages, isLiaTyping])
 
   const handleStartChat = useCallback(
-    () => {
-      startChat(autoPlayVoice)
+    // Task #425 — when the candidate clicks "Voz no Navegador" inside WelcomeCard,
+    // WelcomeCard calls onStart(true). Honor that explicit voiceMode argument so
+    // the voice-web channel actually starts in voice mode regardless of the
+    // autoPlayVoice toggle. Falls back to autoPlayVoice for the chat CTA.
+    (voiceMode?: boolean) => {
+      const effective = typeof voiceMode === "boolean" ? voiceMode : autoPlayVoice
+      startChat(effective)
     },
     [startChat, autoPlayVoice]
   )

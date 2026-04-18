@@ -185,10 +185,10 @@ export function TriagemFlow({ hook }: TriagemFlowProps) {
 
   if (pageState === "welcome" && config) {
     // Task #425: voice-in-browser is now driven strictly by the recruiter's
-    // channel config — no more unconditional rendering. WelcomeCard handles
-    // the in-card "Voz no Navegador" CTA; the dedicated VoIPCallButton block
-    // below appears only as the secondary affordance after a phone call has
-    // been requested OR alongside the welcome card when explicitly enabled.
+    // channel config — no more unconditional rendering. WelcomeCard owns the
+    // primary "Voz no Navegador" CTA when channel is enabled; we only render
+    // the standalone VoIPCallButton as a secondary affordance after the
+    // candidate has already requested a phone call (post-call branch).
     const showVoipButton = !!config.voiceWebEnabled
 
     return (
@@ -231,27 +231,6 @@ export function TriagemFlow({ hook }: TriagemFlowProps) {
               onRequestWhatsapp={() => setWhatsappModalOpen(true)}
               isStarting={isSending}
             />
-            {showVoipButton && (
-              <div className="px-4 pb-4 flex justify-center">
-                <div className="w-full max-w-md">
-                  {!voipCallActive && (
-                    <div className="flex items-center gap-3 mb-3">
-                      <div className="flex-1 h-px bg-lia-border-subtle" />
-                      <span className="text-xs text-lia-text-tertiary whitespace-nowrap">
-                        ou ligue pelo navegador
-                      </span>
-                      <div className="flex-1 h-px bg-lia-border-subtle" />
-                    </div>
-                  )}
-                  <VoIPCallButton
-                    token={token}
-                    onCallStarted={() => setVoipCallActive(true)}
-                    onCallEnded={() => setVoipCallActive(false)}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-            )}
           </div>
         )}
         <PhoneConfirmModal
