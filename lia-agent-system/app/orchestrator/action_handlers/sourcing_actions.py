@@ -227,8 +227,31 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]):
         from app.core.database import AsyncSessionLocal
 
         candidate_ids = params.get("candidate_ids", [])
+        candidate_names = params.get("candidate_names", [])
         company_id = context.get("company_id") if context else None
+
+        # CM-003: resolve names to candidate UUIDs when candidate_ids not available
+        if not candidate_ids and candidate_names:
+            from app.orchestrator.action_handlers._handler_hooks import resolve_candidate_by_name as _rcbn
+            resolved_ids = []
+            for cname in candidate_names:
+                resolved = await _rcbn(cname, company_id)
+                if resolved:
+                    resolved_ids.append(resolved["id"])
+                    logger.info("[compare_candidates] Resolved name %r -> %s", cname, resolved["id"])
+                else:
+                    logger.warning("[compare_candidates] Could not resolve name: %r", cname)
+            candidate_ids = resolved_ids
+
         if len(candidate_ids) < 2:
+            if candidate_names and len(candidate_ids) < len(candidate_names):
+                unresolved = [n for n in candidate_names]
+                return ActionResult(
+                    status="error",
+                    message=f"Não encontrei todos os candidatos para comparação. Verifique os nomes: {", ".join(unresolved)}",
+                    error_detail="Could not resolve all candidate names to IDs",
+                    action_type="compare_candidates",
+                )
             return ActionResult(
                 status="error",
                 message="Selecione pelo menos 2 candidatos para comparar.",
