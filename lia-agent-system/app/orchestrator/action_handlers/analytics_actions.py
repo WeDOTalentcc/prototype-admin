@@ -192,23 +192,41 @@ async def _job_health_check(params: dict[str, Any], context: dict[str, Any]):
             )
 
         async with AsyncSessionLocal() as db:
-            job_sql = """
-                SELECT title, status, priority, created_at,
-                       EXTRACT(DAY FROM NOW() - created_at)::int as days_open
-                FROM job_vacancies WHERE id = CAST(:jid AS uuid)
-            """
-            job_bind: dict[str, Any] = {"jid": str(job_id)}
-            if company_id:
-                job_sql += " AND company_id = CAST(:co AS uuid)"
-                job_bind["co"] = str(company_id)
-            job_result = await db.execute(text(job_sql), job_bind)
-            job = job_result.fetchone()
+            # Try UUID cast first, then fallback to short-id lookup
+            job = None
+            try:
+                job_sql = """
+                    SELECT title, status, priority, created_at,
+                           EXTRACT(DAY FROM NOW() - created_at)::int as days_open
+                    FROM job_vacancies WHERE id = CAST(:jid AS uuid)
+                """
+                job_bind: dict[str, Any] = {"jid": str(job_id)}
+                if company_id:
+                    job_sql += " AND company_id = CAST(:co AS uuid)"
+                    job_bind["co"] = str(company_id)
+                job_result = await db.execute(text(job_sql), job_bind)
+                job = job_result.fetchone()
+            except Exception:
+                pass  # fallthrough to short-id lookup
+
+            if not job:
+                # Short ID lookup (e.g. "V0037" → job_id column or title match)
+                try:
+                    short_sql = "SELECT title, status, priority, created_at, EXTRACT(DAY FROM NOW() - created_at)::int as days_open FROM job_vacancies WHERE job_id = :jid"
+                    short_bind: dict[str, Any] = {"jid": str(job_id)}
+                    if company_id:
+                        short_sql += " AND company_id = CAST(:co AS uuid)"
+                        short_bind["co"] = str(company_id)
+                    short_result = await db.execute(text(short_sql), short_bind)
+                    job = short_result.fetchone()
+                except Exception:
+                    pass
 
             if not job:
                 return ActionResult(
-                    status="error",
-                    message="Vaga não encontrada.",
-                    error_detail="Job not found",
+                    status="executed",
+                    message=f"Não encontrei informações de pipeline para a vaga **{job_id}**. A vaga pode estar inativa ou o ID não está no sistema.",
+                    data={"job_id": job_id, "found": False},
                     action_type="job_health_check",
                 )
 
