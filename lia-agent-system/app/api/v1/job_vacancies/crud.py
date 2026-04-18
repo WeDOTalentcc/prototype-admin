@@ -21,6 +21,7 @@ from app.domains.job_management.dependencies import get_job_vacancy_crud_repo
 from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RAILS_ENABLED
 from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
 from app.shared.rails_migration.deprecation import enforce_job_vacancies_deprecation
+from app.shared.robustness.idempotency import reject_duplicate_async
 
 # MIGRATION_PLAN item 7.1 — Python CRUD deprecated in favor of Rails (ats-api-copia).
 #
@@ -703,6 +704,7 @@ async def create_job_vacancy(
     job_data: JobVacancyCreate,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo),
+    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
     _trial_check: None = Depends(require_active_subscription_or_demo),
     _plan_check: None = Depends(check_active_jobs_limit_or_demo),
 ):
@@ -710,6 +712,19 @@ async def create_job_vacancy(
     try:
         company_id = get_user_company_id(current_user)
         logger.info(f"Creating job vacancy: {job_data.title} for company: {company_id}")
+        # Task #478 / ADR 003 — same-key safeguard: drop double-click /
+        # axios-retry vacancy creates so we don't end up with twin rows.
+        await reject_duplicate_async(
+            "create_job_vacancy",
+            {
+                "company_id": str(company_id) if company_id else None,
+                "title": (job_data.title or "").strip().lower(),
+                "department": job_data.department,
+                "conversation_id": job_data.conversation_id,
+            },
+            rails_adapter,
+            scope=f"company:{company_id}",
+        )
 
         # Task #358: refuse to persist a discriminatory JD. Soft warnings
         # (implicit-bias) are surfaced on the response without blocking.
@@ -811,7 +826,8 @@ async def update_job_vacancy(
     job_vacancy_id: UUID,
     job_data: JobVacancyUpdate,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
-    current_user: User = Depends(get_current_user_or_demo)
+    current_user: User = Depends(get_current_user_or_demo),
+    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
     """Update an existing job vacancy."""
     try:
@@ -820,12 +836,20 @@ async def update_job_vacancy(
         user_company = get_user_company_id(current_user)
         db = repo.get_session()
 
+        update_data = job_data.model_dump(exclude_unset=True, exclude_none=True)
+        # Task #478 / ADR 003 — drop duplicate update retries for the same
+        # vacancy/payload before they execute audit + persistence twice.
+        await reject_duplicate_async(
+            "update_job_vacancy",
+            {"job_vacancy_id": str(job_vacancy_id), "payload": update_data},
+            rails_adapter,
+            scope=f"company:{user_company}",
+        )
+
         job_vacancy = await repo.get_vacancy_by_id_and_company(job_vacancy_id, user_company)
 
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
-
-        update_data = job_data.model_dump(exclude_unset=True, exclude_none=True)
 
         # Task #358: re-run FairnessGuard whenever any user-authored JD
         # field is being changed. Use the *post-update* value so a partial

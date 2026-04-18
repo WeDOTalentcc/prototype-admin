@@ -36,6 +36,7 @@ from pydantic import BaseModel
 from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RAILS_ENABLED
 from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
 from app.shared.rails_migration.deprecation import enforce_candidates_deprecation
+from app.shared.robustness.idempotency import reject_duplicate_async
 
 # MIGRATION_PLAN item 7.2 — Python CRUD deprecated in favor of Rails (ats-api-copia).
 #
@@ -435,6 +436,7 @@ async def create_candidate(
     request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
+    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
     """Create a new candidate. If auto_enrich=True and linkedin_url is provided, enrichment runs in background."""
     try:
@@ -445,6 +447,16 @@ async def create_candidate(
         company_id = str(current_user.company_id) if current_user.company_id else None
         if not company_id:
             raise HTTPException(status_code=400, detail="company_id obrigatório.")
+        # Task #478 / ADR 003 — drop double-submit retries before they hit
+        # the DB. `generate_idempotency_key_async` collapses dual-ID retries
+        # via `RailsAdapter`; here the params are email-keyed but we still
+        # route through the async variant for consistency.
+        await reject_duplicate_async(
+            "create_candidate",
+            {"email": (candidate_data.email or "").lower(), "company_id": company_id},
+            rails_adapter,
+            scope=f"company:{company_id}",
+        )
         candidate = Candidate(
             id=uuid.uuid4(),
             company_id=company_id,
@@ -522,14 +534,26 @@ async def update_candidate(
     request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
+    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
     """Update an existing candidate."""
     try:
+        # Task #478 / ADR 003 — collapse retries that switch between fork
+        # UUID and Rails bigint onto the same idempotency key so the update
+        # only runs once.
+        company_scope = str(getattr(current_user, "company_id", "") or "global")
+        update_payload = candidate_data.model_dump(exclude_unset=True)
+        await reject_duplicate_async(
+            "update_candidate",
+            {"candidate_id": candidate_id, "payload": update_payload},
+            rails_adapter,
+            scope=f"company:{company_scope}",
+        )
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
         _assert_tenant_scope(candidate, current_user)
-        update_data = candidate_data.model_dump(exclude_unset=True)
+        update_data = update_payload
         for field, value in update_data.items():
             if hasattr(candidate, field):
                 setattr(candidate, field, value)
@@ -565,9 +589,25 @@ async def update_candidate_stage(
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service),
     current_user: User = Depends(get_current_user_or_demo),
+    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
     """Update candidate pipeline stage (used when moving candidates in Kanban)."""
     try:
+        # Task #478 / ADR 003 — same-stage transitions retried with both ID
+        # formats must collapse so we don't double-write the Kanban move.
+        company_scope = str(getattr(current_user, "company_id", "") or "global")
+        await reject_duplicate_async(
+            "update_candidate_stage",
+            {
+                "candidate_id": candidate_id,
+                "job_vacancy_id": str(stage_data.job_vacancy_id) if stage_data.job_vacancy_id else None,
+                "stage": stage_data.stage,
+                "sub_status": stage_data.sub_status,
+                "user_id": stage_data.user_id,
+            },
+            rails_adapter,
+            scope=f"company:{company_scope}",
+        )
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
@@ -748,9 +788,17 @@ async def delete_candidate(
     request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
+    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
     """Soft delete (deactivate) a candidate."""
     try:
+        company_scope = str(getattr(current_user, "company_id", "") or "global")
+        await reject_duplicate_async(
+            "delete_candidate",
+            {"candidate_id": candidate_id},
+            rails_adapter,
+            scope=f"company:{company_scope}",
+        )
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")

@@ -68,6 +68,9 @@ from app.domains.cv_screening.services.lia_score_service import lia_score_servic
 from app.services.notification_service import NotificationType, notification_service
 from app.shared.compliance.audit_service import AuditService
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.shared.robustness.idempotency import reject_duplicate_async
+from app.domains.integrations_hub.services.rails_adapter import RailsAdapter
+from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
 
 audit_service = AuditService()
 
@@ -151,6 +154,7 @@ async def apply_to_vacancy(
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
     current_user: User = Depends(_require_auth_401),
+    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
     """
     Processa inscricao de candidato em uma vaga.
@@ -171,6 +175,16 @@ async def apply_to_vacancy(
                 status_code=400,
                 detail="Usuario autenticado nao possui empresa associada.",
             )
+
+        # Task #478 / ADR 003 — apply double-submits (browser refresh, axios
+        # retry, double-click) must not create duplicate `vacancy_candidate`
+        # rows or fire feedback emails twice.
+        await reject_duplicate_async(
+            "apply_to_vacancy",
+            {"vacancy_id": vacancy_id, "candidate_email": (application.email or "").lower()},
+            rails_adapter,
+            scope=f"company:{company_id}",
+        )
 
         vacancy = await repo.get_vacancy_by_id(vacancy_id)
 
