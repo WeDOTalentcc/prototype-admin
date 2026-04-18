@@ -294,6 +294,38 @@ def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
             entities["job_id"] = job_m.group(1).upper().replace("-", "").replace("_", "")
             logger.debug("[extract_entities] Extracted job_id=%s from message text", entities["job_id"])
 
+    # KB-004: Extract from_stage/to_stage for mover_candidatos_por_etapa
+    if intent == "mover_candidatos_por_etapa" and ("from_stage" not in entities or "to_stage" not in entities):
+        stage_names = [
+            "entrevista técnica", "entrevista tecnica", "entrevista final", "entrevista rh",
+            "entrevista", "triagem", "proposta", "oferta", "shortlist", "análise", "analise",
+            "teste técnico", "teste tecnico", "contratado", "reprovado", "aprovado", "novo",
+        ]
+        stage_canonical = {
+            "entrevista técnica": "Entrevista Técnica", "entrevista tecnica": "Entrevista Técnica",
+            "entrevista final": "Entrevista Final", "entrevista rh": "Entrevista",
+            "entrevista": "Entrevista", "triagem": "Triagem", "proposta": "Proposta",
+            "oferta": "Oferta", "shortlist": "Shortlist", "análise": "Análise",
+            "analise": "Análise", "teste técnico": "Teste Técnico", "teste tecnico": "Teste Técnico",
+            "contratado": "Contratado", "reprovado": "Reprovado", "aprovado": "Aprovado", "novo": "Novo",
+        }
+        msg_l = msg.lower()
+        # Pattern: "em/da/de <stage> para <stage>"
+        stage_pattern = "(?:" + "|".join(re.escape(s) for s in stage_names) + ")"
+        m_stages = re.search(
+            r"(?:em|da|de|na)\s+(" + stage_pattern + r")\s+para\s+(" + stage_pattern + r")",
+            msg_l, re.IGNORECASE
+        )
+        if m_stages and "from_stage" not in entities:
+            entities["from_stage"] = stage_canonical.get(m_stages.group(1).strip().lower(), m_stages.group(1).strip().title())
+        if m_stages and "to_stage" not in entities:
+            entities["to_stage"] = stage_canonical.get(m_stages.group(2).strip().lower(), m_stages.group(2).strip().title())
+        if not m_stages:
+            # Fallback: "move/mover <all candidates> para <stage>"
+            m_to = re.search(r"para\s+(" + stage_pattern + r")", msg_l, re.IGNORECASE)
+            if m_to and "to_stage" not in entities:
+                entities["to_stage"] = stage_canonical.get(m_to.group(1).strip().lower(), m_to.group(1).strip().title())
+
     # KB-006: Extract stage from message for listar_candidatos_por_etapa
     if intent == "listar_candidatos_por_etapa" and "stage" not in entities:
         stage_map = [
