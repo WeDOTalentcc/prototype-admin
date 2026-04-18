@@ -481,22 +481,22 @@ async def _persist_wsi_results(
         # Task #511 — EU AI Act Art. 12 / LGPD Art. 20 audit trail.
         # Hash determinístico inserido em wsi_responses (trilha imutável) e
         # replicado em wsi_response_analyses para cross-reference.
+        # Round 3: insert é FAIL-FAST (sem try/except) — trilha de auditoria
+        # de IA de Alto Risco não pode ser silenciosamente perdida. Qualquer
+        # falha aqui aborta a transação inteira do _persist_wsi_results.
         resp_hash = hash_response(response_text, wsi_session_id, question_id)
-        try:
-            await db.execute(text(
-                "INSERT INTO wsi_responses "
-                "    (session_id, question_id, raw_text, response_hash, candidate_id) "
-                "VALUES "
-                "    (:session_id, :question_id, :raw_text, :response_hash, :candidate_id)"
-            ), {
-                "session_id": wsi_session_id,
-                "question_id": question_id,
-                "raw_text": response_text or "",
-                "response_hash": resp_hash,
-                "candidate_id": session.candidate_id,
-            })
-        except Exception as exc:
-            logger.warning(f"[Triagem] wsi_responses insert failed (seq={seq}): {exc}")
+        await db.execute(text(
+            "INSERT INTO wsi_responses "
+            "    (session_id, question_id, raw_text, response_hash, candidate_id) "
+            "VALUES "
+            "    (:session_id, :question_id, :raw_text, :response_hash, :candidate_id)"
+        ), {
+            "session_id": wsi_session_id,
+            "question_id": question_id,
+            "raw_text": response_text or "",
+            "response_hash": resp_hash,
+            "candidate_id": session.candidate_id,
+        })
 
         analysis_id = str(uuid.uuid4())
         try:
