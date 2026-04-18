@@ -126,6 +126,8 @@ interface JobLifecycleVacancy {
   created_at?: string | null
   manager?: string | null
   imported_from_ats: boolean
+  source_system?: string | null
+  ats_source_label?: string | null
   approval_status?: string | null
   candidate_count?: number
 }
@@ -1182,7 +1184,11 @@ function PipelineVacancyCard({ vacancy, stageKey, stageColor }: PipelineVacancyC
                 borderColor: hexToRgba("#8A8F98", 0.4),
                 color: "var(--lia-text-secondary)",
               }}
-              title={tCard("vacancyCard.atsBadgeTitle")}
+              title={
+                vacancy.ats_source_label
+                  ? tCard("vacancyCard.atsBadgeTitleNamed", { source: vacancy.ats_source_label })
+                  : tCard("vacancyCard.atsBadgeTitle")
+              }
             >
               <Database className="w-2.5 h-2.5" />
               {tCard("vacancyCard.atsBadge")}

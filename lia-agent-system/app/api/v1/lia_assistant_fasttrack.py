@@ -243,6 +243,7 @@ async def fast_track_wizard_step(
                             eligibility_questions=vacancy_details.eligibility_questions or [],
                             status="Rascunho",
                             stage="Planejamento",
+                            source_system="lia_fast_track",
                             additional_data={"source": "fast_track", "base_vacancy_id": str(selected_id)}
                         )
                         db.add(new_job)

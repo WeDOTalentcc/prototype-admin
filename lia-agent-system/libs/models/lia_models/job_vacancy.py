@@ -197,6 +197,14 @@ class JobVacancy(Base):
     pipeline_config = Column(JSON, nullable=True)
     is_pipeline_customized = Column(Boolean, default=False, nullable=False)
 
+    # Source System (Task #435) — dedicated marker of where this vacancy originated.
+    # Replaces the heuristic over `additional_data` for ATS-imported flag.
+    # Known values: "lia" (created in-app), "lia_chat", "lia_wizard", "lia_fast_track",
+    # "lia_clone", "wedotalent_rails", and external ATS slugs:
+    # "gupy", "pandape", "merge", "kenoby", "solides", "abler", "greenhouse".
+    # NULL means legacy/unknown — fall back to the additional_data heuristic.
+    source_system = Column(String(50), nullable=True, index=True)
+
     # Additional data
     additional_data = Column(JSON, default={})  # Flexible field for future expansion
     

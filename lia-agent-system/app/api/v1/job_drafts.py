@@ -512,6 +512,7 @@ async def publish_job_draft(
         interview_stages=draft.pipeline_stages or [],
         status=publish_data.status,
         priority=publish_data.priority,
+        source_system="lia_draft",
         created_by=str(current_user.id)
     )
     

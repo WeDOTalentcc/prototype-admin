@@ -831,6 +831,7 @@ class RailsAdapter:
         if self.db:
             try:
                 from lia_models.job_vacancy import JobVacancy
+                job_data.setdefault("source_system", "wedotalent_rails")
                 job = JobVacancy(**job_data)
                 self.db.add(job)
                 await self.db.commit()

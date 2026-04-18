@@ -1225,12 +1225,45 @@ JOB_LIFECYCLE_COLORS = {
 }
 
 
+# Slug -> human-friendly label for the external ATS that originated a vacancy.
+# Add new entries here as integrations land. The slug must also appear in
+# KNOWN_ATS_SOURCES to be treated as an "imported from ATS" marker.
+ATS_SOURCE_LABELS: dict[str, str] = {
+    "gupy": "Gupy",
+    "pandape": "Pandapé",
+    "merge": "Merge",
+    "kenoby": "Kenoby",
+    "solides": "Sólides",
+    "abler": "Abler",
+    "greenhouse": "Greenhouse",
+    "ats_other": "ATS externo",
+}
+
+KNOWN_ATS_SOURCES: frozenset[str] = frozenset(ATS_SOURCE_LABELS.keys())
+
+
+def _job_source_system(job: JobVacancy) -> str | None:
+    """Return the structured source_system slug if set, else None.
+
+    Tolerates the column being absent (older shims/tests) by reading via
+    getattr, so this stays safe in pre-migration environments.
+    """
+    raw = getattr(job, "source_system", None)
+    if isinstance(raw, str) and raw.strip():
+        return raw.strip().lower()
+    return None
+
+
 def _job_is_imported_from_ats(job: JobVacancy) -> bool:
     """Detect whether a job was imported from an external ATS.
 
-    Best-effort: looks at additional_data.source / imported_from_ats /
-    external_system markers. Defaults to False when no marker is present.
+    Prefers the structured ``source_system`` column (Task #435). Falls back
+    to a heuristic over ``additional_data`` so legacy rows without the
+    column populated still light up the badge.
     """
+    slug = _job_source_system(job)
+    if slug and slug in KNOWN_ATS_SOURCES:
+        return True
     extra = job.additional_data or {}
     if not isinstance(extra, dict):
         return False
@@ -1239,11 +1272,32 @@ def _job_is_imported_from_ats(job: JobVacancy) -> bool:
     src = extra.get("source") or extra.get("origin") or extra.get("import_source")
     if isinstance(src, str) and src.strip():
         s = src.strip().lower()
-        if s.startswith("ats") or s in {"gupy", "kenoby", "solides", "abler", "pandape"}:
+        if s.startswith("ats") or s in KNOWN_ATS_SOURCES:
             return True
     if extra.get("external_system_id") or extra.get("ats_external_id"):
         return True
     return False
+
+
+def _job_ats_source_label(job: JobVacancy) -> str | None:
+    """Return a human-friendly ATS label (e.g. "Gupy") if known, else None.
+
+    Used by the frontend to render tooltips like "Importada via Gupy".
+    Returns None when the vacancy is not flagged as ATS-imported, and
+    "ATS externo" when it's flagged but the originating system is unknown.
+    """
+    if not _job_is_imported_from_ats(job):
+        return None
+    slug = _job_source_system(job)
+    if slug and slug in ATS_SOURCE_LABELS:
+        return ATS_SOURCE_LABELS[slug]
+    extra = job.additional_data or {}
+    if isinstance(extra, dict):
+        for key in ("source", "origin", "import_source"):
+            val = extra.get(key)
+            if isinstance(val, str) and val.strip().lower() in ATS_SOURCE_LABELS:
+                return ATS_SOURCE_LABELS[val.strip().lower()]
+    return ATS_SOURCE_LABELS["ats_other"]
 
 
 def _classify_job_lifecycle_stage(job: JobVacancy) -> str:
@@ -1309,6 +1363,8 @@ class JobLifecycleVacancyItem(BaseModel):
     created_at: str | None = None
     manager: str | None = None
     imported_from_ats: bool = False
+    source_system: str | None = None
+    ats_source_label: str | None = None
     approval_status: str | None = None
     candidate_count: int = 0
 
@@ -1385,6 +1441,8 @@ async def get_job_lifecycle_overview(
             created_at=_iso(job.created_at),
             manager=job.manager,
             imported_from_ats=_job_is_imported_from_ats(job),
+            source_system=_job_source_system(job),
+            ats_source_label=_job_ats_source_label(job),
             approval_status=job.approval_status,
             candidate_count=cand_total,
         )

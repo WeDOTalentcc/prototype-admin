@@ -1437,6 +1437,7 @@
     "vacancyCard": {
       "atsBadge": "ATS",
       "atsBadgeTitle": "Importada de ATS externo",
+      "atsBadgeTitleNamed": "Importada via {source}",
       "approvalPending": "Aguardando aprovação",
       "candidatesCount": "{count} candidatos",
       "openWizard": "Continuar JD",

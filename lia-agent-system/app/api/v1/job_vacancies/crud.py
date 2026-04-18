@@ -749,6 +749,7 @@ async def create_job_vacancy(
             disabled_eligibility_question_ids=job_data.disabled_eligibility_question_ids or [],
             conversation_id=uuid_lib.UUID(job_data.conversation_id) if job_data.conversation_id else None,
             company_id=company_id,
+            source_system="lia",
             created_by=str(current_user.id),
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow()

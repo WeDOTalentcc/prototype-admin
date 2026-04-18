@@ -97,6 +97,7 @@ async def create_job(
                 salary_range=salary_range,
                 status=status,
                 stage="Planejamento" if not publish else "Publicada",
+                source_system="lia_chat",
                 created_by=user_id,
                 recruiter=user_id,
                 created_at=datetime.utcnow(),
