@@ -96,6 +96,16 @@ def upgrade() -> None:
         # (espaços não colapsados aqui — o app aplicará normalização full em escritas
         # futuras; o backfill garante apenas que a coluna fique populada para
         # registros legados, sem violar NOT NULL).
+        #
+        # NOTA OPERACIONAL (round 3): hashes computados aqui NÃO são bit-a-bit
+        # comparáveis com hashes gerados em runtime pelo `hash_response()`
+        # (que normaliza whitespace via `\s+ -> " "`). Consequência: para
+        # detecção de duplicata cross-row em registros legados é necessário
+        # rehash explícito após normalização. Aceitável porque (a) a coluna
+        # serve primariamente a integridade NOT NULL e auditoria forense
+        # registro-a-registro, e (b) o universo legado é finito e migrável
+        # sob demanda. Se for necessária comparabilidade total, rodar script
+        # de re-hash one-shot consumindo `hash_response` do app.
         op.execute(sa.text("""
             UPDATE wsi_response_analyses
             SET response_hash = encode(

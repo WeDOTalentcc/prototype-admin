@@ -480,6 +480,17 @@ class WsiRepository:
         Task #511 round 3: `response_hash` é argumento obrigatório
         (NOT NULL após migration 091). Callers DEVEM computar via
         `hash_response`. Guard runtime contra string vazia.
+
+        IMPORTANTE — escopo de auditoria:
+        Este método grava APENAS em `wsi_response_analyses` (tabela de
+        análise) e NÃO em `wsi_responses` (tabela de trilha imutável).
+        É intencional: este path é usado pelo endpoint legado
+        `/api/wsi/analyze-response` e pelo `evaluation.py simple`, que são
+        rotas de teste/diagnóstico, NÃO ingestão de produção do candidato.
+        Os paths de produção (chat completion + voice orchestrator)
+        gravam em AMBAS as tabelas via `insert_response_analysis`.
+        Se este método passar a ser usado em produção no futuro,
+        adicionar INSERT em `wsi_responses` aqui também (EU AI Act Art. 12).
         """
         if not response_hash:
             raise ValueError(
