@@ -43,45 +43,44 @@ def _make_competency(name="Comunicação", ctype="behavioral", weight=1.0, is_cr
 # TestF25OceanExtraction
 # ---------------------------------------------------------------------------
 
+def _mock_llm_response(gen, content: str):
+    """Helper: mocka self.llm.safe_invoke retornando objeto com .content."""
+    mock_response = MagicMock()
+    mock_response.content = content
+    gen.llm.safe_invoke = AsyncMock(return_value=mock_response)
+
+
 class TestF25OceanExtraction:
     @pytest.mark.asyncio
     async def test_result_has_five_traits(self):
         """F2.5 deve retornar exatamente 5 traits OCEAN."""
-        from app.domains.cv_screening.services.wsi_service import WSIQuestionGenerator
-
         gen = _make_generator()
-        mock_response = MagicMock()
-        mock_response.content = """{
+        _mock_llm_response(gen, """{
             "big_five_jd": {
-                "openness":          {"score": 80, "evidence": ["liderança técnica"], "confidence": "high"},
-                "conscientiousness": {"score": 70, "evidence": ["entrega rigorosa"], "confidence": "high"},
-                "extraversion":      {"score": 60, "evidence": ["comunicação clara"], "confidence": "medium"},
+                "openness":          {"score": 80, "evidence": ["\\"liderança técnica\\""], "confidence": "high"},
+                "conscientiousness": {"score": 70, "evidence": ["\\"entrega rigorosa\\""], "confidence": "high"},
+                "extraversion":      {"score": 60, "evidence": ["\\"comunicação clara\\""], "confidence": "medium"},
                 "agreeableness":     {"score": 50, "evidence": [],                    "confidence": "medium"},
                 "stability":         {"score": 40, "evidence": [],                    "confidence": "low"}
             }
-        }"""
-        gen.llm.claude = MagicMock()
-        gen.llm.claude.bind.return_value.ainvoke = AsyncMock(return_value=mock_response)
+        }""")
 
         result = await gen._extract_ocean_scores("Vaga de engenheiro sênior")
         assert len(result) == 5
 
     @pytest.mark.asyncio
     async def test_scores_between_0_and_100(self):
-        """Todos os scores devem estar no intervalo 0-100."""
+        """Todos os scores devem estar no intervalo 0-100 (clamp)."""
         gen = _make_generator()
-        mock_response = MagicMock()
-        mock_response.content = """{
+        _mock_llm_response(gen, """{
             "big_five_jd": {
-                "openness":          {"score": 95,  "evidence": ["inovação contínua"], "confidence": "high"},
+                "openness":          {"score": 95,  "evidence": ["\\"inovação contínua\\""], "confidence": "high"},
                 "conscientiousness": {"score": 10,  "evidence": [],                    "confidence": "low"},
-                "extraversion":      {"score": 55,  "evidence": ["comunicação"],       "confidence": "medium"},
+                "extraversion":      {"score": 55,  "evidence": ["\\"comunicação\\""],       "confidence": "medium"},
                 "agreeableness":     {"score": 0,   "evidence": [],                    "confidence": "low"},
-                "stability":         {"score": 100, "evidence": ["alta pressão"],      "confidence": "high"}
+                "stability":         {"score": 100, "evidence": ["\\"alta pressão\\""],      "confidence": "high"}
             }
-        }"""
-        gen.llm.claude = MagicMock()
-        gen.llm.claude.bind.return_value.ainvoke = AsyncMock(return_value=mock_response)
+        }""")
 
         result = await gen._extract_ocean_scores("Vaga de analista")
         for trait_score in result:
@@ -91,29 +90,25 @@ class TestF25OceanExtraction:
     async def test_traits_sorted_descending(self):
         """Traits devem ser retornados ordenados por score decrescente."""
         gen = _make_generator()
-        mock_response = MagicMock()
-        mock_response.content = """{
+        _mock_llm_response(gen, """{
             "big_five_jd": {
                 "openness":          {"score": 30, "evidence": [],                   "confidence": "low"},
-                "conscientiousness": {"score": 90, "evidence": ["rigor em entregas"],"confidence": "high"},
-                "extraversion":      {"score": 50, "evidence": ["reuniões"],         "confidence": "medium"},
-                "agreeableness":     {"score": 70, "evidence": ["colaboração"],      "confidence": "high"},
+                "conscientiousness": {"score": 90, "evidence": ["\\"rigor em entregas\\""],"confidence": "high"},
+                "extraversion":      {"score": 50, "evidence": ["\\"reuniões\\""],         "confidence": "medium"},
+                "agreeableness":     {"score": 70, "evidence": ["\\"colaboração\\""],      "confidence": "high"},
                 "stability":         {"score": 10, "evidence": [],                   "confidence": "low"}
             }
-        }"""
-        gen.llm.claude = MagicMock()
-        gen.llm.claude.bind.return_value.ainvoke = AsyncMock(return_value=mock_response)
+        }""")
 
         result = await gen._extract_ocean_scores("Vaga de gerente")
         scores = [t.score for t in result]
         assert scores == sorted(scores, reverse=True)
 
     @pytest.mark.asyncio
-    async def test_uses_temperature_04(self):
-        """F2.5 deve chamar LLM com temperature=0.4."""
+    async def test_invokes_llm_with_low_temperature(self):
+        """F2.5 deve chamar safe_invoke com temperature baixa (determinístico)."""
         gen = _make_generator()
-        mock_response = MagicMock()
-        mock_response.content = """{
+        _mock_llm_response(gen, """{
             "big_five_jd": {
                 "openness":          {"score": 60, "evidence": [], "confidence": "medium"},
                 "conscientiousness": {"score": 60, "evidence": [], "confidence": "medium"},
@@ -121,26 +116,39 @@ class TestF25OceanExtraction:
                 "agreeableness":     {"score": 60, "evidence": [], "confidence": "medium"},
                 "stability":         {"score": 60, "evidence": [], "confidence": "medium"}
             }
-        }"""
-        bind_mock = MagicMock()
-        bind_mock.ainvoke = AsyncMock(return_value=mock_response)
-        gen.llm.claude = MagicMock()
-        gen.llm.claude.bind.return_value = bind_mock
+        }""")
 
         await gen._extract_ocean_scores("descrição da vaga")
 
-        gen.llm.claude.bind.assert_called_once_with(temperature=0.1, max_tokens=800)
+        gen.llm.safe_invoke.assert_called_once()
+        kwargs = gen.llm.safe_invoke.call_args.kwargs
+        assert kwargs.get("temperature") == 0.1
+        assert kwargs.get("max_tokens") == 800
 
     @pytest.mark.asyncio
-    async def test_fallback_on_llm_error(self):
-        """Deve retornar 5 traits com score=60 quando LLM falha."""
+    async def test_llm_error_raises_ocean_extraction_error(self):
+        """M12 fix (audit rev. 15): falha do LLM deve propagar OceanExtractionError em
+        vez de fallback silencioso `score=60` que mascarava o problema. Caller decide."""
+        from app.domains.cv_screening.services.wsi_service.question_generator import (
+            OceanExtractionError,
+        )
         gen = _make_generator()
-        gen.llm.claude = MagicMock()
-        gen.llm.claude.bind.return_value.ainvoke = AsyncMock(side_effect=Exception("LLM down"))
+        gen.llm.safe_invoke = AsyncMock(side_effect=Exception("LLM down"))
 
-        result = await gen._extract_ocean_scores("qualquer vaga")
-        assert len(result) == 5
-        assert all(t.score == 60 for t in result)
+        with pytest.raises(OceanExtractionError):
+            await gen._extract_ocean_scores("qualquer vaga")
+
+    @pytest.mark.asyncio
+    async def test_invalid_payload_raises_ocean_extraction_error(self):
+        """M12 fix: payload sem big_five_jd deve falhar explicitamente."""
+        from app.domains.cv_screening.services.wsi_service.question_generator import (
+            OceanExtractionError,
+        )
+        gen = _make_generator()
+        _mock_llm_response(gen, '{"foo": "bar"}')
+
+        with pytest.raises(OceanExtractionError):
+            await gen._extract_ocean_scores("vaga qualquer")
 
 
 # ---------------------------------------------------------------------------

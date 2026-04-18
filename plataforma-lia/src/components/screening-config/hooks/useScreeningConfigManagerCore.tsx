@@ -433,10 +433,8 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
         const totalCount = Object.values(grouped).reduce((sum, arr) => sum + arr.length, 0)
         setWsiGeneratedCount(totalCount)
 
-        const elapsed = Date.now() - startTime
-        if (elapsed < 14000) {
-          await new Promise(resolve => setTimeout(resolve, 14000 - elapsed))
-        }
+        // P3-3 (audit rev. 15) — sleep artificial de 14s removido. UX agora
+        // reflete o tempo real da geração WSI sem bloqueio cosmético.
 
         const breakdown: Record<number, number> = {}
         const methodBreakdown: Record<string, number> = {}

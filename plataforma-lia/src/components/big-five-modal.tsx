@@ -140,7 +140,10 @@ const getArchetype = (scores: Record<string, number>): { name: string; descripti
   const c = scores.conscientiousness || scores.Conscienciosidade || 50
   const e = scores.extraversion || scores.Extroversão || 50
   const a = scores.agreeableness || scores.Amabilidade || 50
-  const n = scores.neuroticism || scores.Neuroticismo || 50
+  // NEW-2 fix (audit rev. 15) — backend canonizou em `stability` (Big Five spec).
+  // Mantém leitura legacy `neuroticism` como fallback até PR de schema/types unificado.
+  const stab = scores.stability ?? scores.Estabilidade
+  const n = stab !== undefined ? (100 - stab) : (scores.neuroticism || scores.Neuroticismo || 50)
   
   if (o >= 70 && c >= 70) return { name:"Inovador Estratégico", description:"Combina criatividade com organização", icon:"🎯" }
   if (e >= 70 && a >= 70) return { name:"Líder Empático", description:"Liderança natural com foco em pessoas", icon:"🌟" }

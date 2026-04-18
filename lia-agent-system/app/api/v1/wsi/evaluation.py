@@ -609,8 +609,10 @@ async def complete_screening(
 
         # Determine recommendation per canonical WSI_CUTOFFS (Spec §10.3, escala /10)
         from app.domains.cv_screening.constants.wsi_scale import (
+            BLOOM_MAX,
             CUTOFF_APPROVED_AUTO,
             CUTOFF_REVIEW_MIN,
+            DREYFUS_MAX,
         )
         if avg_score >= CUTOFF_APPROVED_AUTO:
             recommendation = "approved"
@@ -651,8 +653,8 @@ async def complete_screening(
             "score_breakdown": json.dumps({
                 "bloom_level": round(avg_bloom),
                 "dreyfus_level": round(avg_dreyfus),
-                "cognitive_score": round(avg_bloom / 6 * 100),
-                "proficiency_score": round(avg_dreyfus / 5 * 100)
+                "cognitive_score": round(avg_bloom / BLOOM_MAX * 100),
+                "proficiency_score": round(avg_dreyfus / DREYFUS_MAX * 100)
             }),
             "strengths": json.dumps(strengths),
             "concerns": json.dumps(concerns),

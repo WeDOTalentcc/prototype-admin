@@ -443,7 +443,10 @@ def register_all_routes(app: FastAPI) -> None:
     # ── WSI / Triagem ─────────────────────────────────────────────────────────
     app.include_router(wsi_endpoints.router, tags=["wsi"])
     app.include_router(wsi_router, tags=["wsi-v1"])
-    app.include_router(wsi_async_v1.router, prefix="/api/v1", tags=["wsi-async"])
+    # P1-5 (audit rev. 15) — endpoint duplicado `POST /wsi-async/invite` removido.
+    # Frontend usa só `/api/backend-proxy/communication/send-screening-invite`.
+    # Mantemos o import acima desativado para evitar regressão silenciosa.
+    # app.include_router(wsi_async_v1.router, prefix="/api/v1", tags=["wsi-async"])
     # NOTE: `wsi_questions` and `wsi_question_adjust` standalone routers were
     # merged into `app/api/v1/wsi/questions.py` (registered above via
     # `wsi_router`) in Task #244. Do not re-add them here.

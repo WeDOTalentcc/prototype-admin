@@ -14,7 +14,7 @@ from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
 
-router = APIRouter(prefix="/api/v1/sourcing", tags=["Multi-Strategy Search"])
+router = APIRouter(prefix="/sourcing", tags=["Multi-Strategy Search"])
 
 
 class MultiStrategyRequest(BaseModel):

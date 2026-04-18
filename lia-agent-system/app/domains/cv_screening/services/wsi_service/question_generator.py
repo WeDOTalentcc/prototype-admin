@@ -16,9 +16,15 @@ from .models import (
     OceanTraitScore,
     SENIORITY_BIGFIVE_TOP_N,
     WSIQuestion,
+    safe_json_parse,
 )
 
 logger = logging.getLogger(__name__)
+
+class OceanExtractionError(RuntimeError):
+    """M12 fix (rev. 15) — exceção propagada quando a extração OCEAN do JD via LLM
+    falha ou produz payload inválido. Substitui o fallback silencioso `score=60`."""
+
 
 class WSIQuestionGenerator:
     """Gerador de perguntas científicas baseado em frameworks e RAG."""
@@ -92,7 +98,10 @@ Traits: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism
         Retorna lista ordenada por score decrescente (F3 — ranking).
         """
         _FIVE_TRAITS = ["openness", "conscientiousness", "extraversion", "agreeableness", "stability"]
-        _FALLBACK = {t: {"score": 60, "evidence": [], "confidence": "low"} for t in _FIVE_TRAITS}
+        # M12 fix (rev. 15) — Eliminado fallback silencioso `score=60` que mascarava falha
+        # do LLM. Spec NEO-PI-R requer extração de evidências do JD; sem LLM, não há
+        # base válida. Fallback silencioso é substituído por exceção propagada;
+        # caller decide entre re-tentativa ou abort consciente da geração.
 
         behav_context = (
             f"Competências comportamentais declaradas: {', '.join(behavioral_competencies)}"
@@ -146,27 +155,46 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
     "stability":         {{ "score": 0, "evidence": ["\"trecho literal do JD\""], "confidence": "high|medium|low" }}
   }}
 }}"""
+        # M12 fix (rev. 15) — falha LLM/parse propaga exceção em vez de retornar
+        # score=60 silencioso. OceanExtractionError é tratado pelo caller que
+        # decide entre re-tentativa, modo degradado explícito (com flag UI) ou
+        # abort consciente da geração WSI.
         try:
             response = await self.llm.safe_invoke(prompt, temperature=0.1, max_tokens=800)
-            parsed = safe_json_parse(response.content, fallback={"big_five_jd": _FALLBACK})
-            data = parsed.get("big_five_jd") or _FALLBACK
-            if not isinstance(data, dict) or not any(t in data for t in _FIVE_TRAITS):
-                data = _FALLBACK
         except Exception as e:
-            logger.error(f"F2.5 OCEAN extraction failed: {e} — using fallback")
-            data = _FALLBACK
+            logger.error(f"F2.5 OCEAN extraction LLM call failed: {e}")
+            raise OceanExtractionError(f"LLM call failed: {e}") from e
+
+        parsed = safe_json_parse(response.content, fallback=None)
+        data = (parsed or {}).get("big_five_jd") if isinstance(parsed, dict) else None
+        if not isinstance(data, dict) or not any(t in data for t in _FIVE_TRAITS):
+            logger.error(
+                "F2.5 OCEAN extraction returned invalid payload — refusing silent fallback"
+            )
+            raise OceanExtractionError(
+                "OCEAN extractor produced no valid trait payload; spec NEO-PI-R "
+                "requires evidence-based scores."
+            )
 
         result = []
         for t in _FIVE_TRAITS:
             if t not in data:
                 continue
             entry = data[t]
+            score_raw = entry.get("score")
+            if score_raw is None:
+                # Sem score explícito → entry inválida; descarta em vez de chutar 60
+                continue
             result.append(OceanTraitScore(
                 trait=t,
-                score=max(0, min(100, int(entry.get("score", 60)))),
+                score=max(0, min(100, int(score_raw))),
                 confidence=entry.get("confidence", "medium"),
                 evidence=entry.get("evidence", []),
             ))
+        if not result:
+            raise OceanExtractionError(
+                "OCEAN extractor produced 0 valid trait entries after filtering."
+            )
         return sorted(result, key=lambda x: x.score, reverse=True)
 
     def _select_traits_by_seniority(

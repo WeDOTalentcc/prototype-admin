@@ -34,6 +34,12 @@ SCALE_MIN_VALID: float = 2.0
 # Máximo válido — acima disso o engine clampa pra baixo. É o teto da escala.
 SCALE_MAX: float = 10.0
 
+# Dreyfus tem ladder próprio 1-5 (Novato → Especialista). É CATEGORIAL,
+# não é escala WSI. Usado em normalizações de proficiência.
+DREYFUS_MAX: int = 5
+# Bloom tem ladder próprio 1-6 (Lembrar → Criar). Também CATEGORIAL.
+BLOOM_MAX: int = 6
+
 # ---------------------------------------------------------------------------
 # Fator de normalização para componentes 0-1 → escala WSI
 # ---------------------------------------------------------------------------

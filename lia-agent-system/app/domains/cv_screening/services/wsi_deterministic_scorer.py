@@ -246,6 +246,11 @@ class DeterministicWSIResult:
     star_score: float = 0.0                             # score ponderado STAR
     bloom_alignment: float = 1.0                        # alinhamento bloom demonstrado vs esperado
     flags_structured: dict[str, bool] | None = None  # is_inflation/is_generic/is_short
+    # M11 fix (rev. 15) — sinaliza que o cálculo usou um valor padrão silencioso
+    # (ex.: bloom_expected default, autodeclaração inferida por contexto). UI/auditor
+    # pode mostrar selo "qualidade degradada" e EU AI Act Art. 13 fica auditável.
+    degraded_quality: bool = False
+    degraded_reasons: list[str] | None = None
 
 
 def extract_autodeclaracao_score(text: str) -> float | None:
@@ -554,13 +559,21 @@ def calculate_star_score(text: str) -> tuple[dict[str, bool], float]:
 def calculate_bloom_alignment(bloom_demonstrated: int, bloom_expected: int) -> float:
     """
     Calcula alinhamento entre nível Bloom demonstrado e esperado (0.0–1.0).
-    Spec F8 — componente bloom_alinhamento.
+    Spec F8.4 — componente bloom_alinhamento (ASSIMÉTRICO).
 
-    alignment = 1.0 - |demonstrated - expected| / max_distance
-    max_distance = 5 (range 1–6)
+    Regra (rev. 15, M03 fix):
+      • demonstrated >= expected  → alignment = 1.0  (não punir excesso de qualificação)
+      • demonstrated <  expected  → alignment = 1.0 - (expected - demonstrated) / max_distance
+        max_distance = 5 (Bloom range 1–6)
+
+    Antes da correção a fórmula era simétrica (`abs(d - e) / 5`), o que punia
+    candidatos que demonstravam Bloom acima do esperado — viola a spec §8.4
+    que trata Bloom como ladder cognitivo (ir além é positivo).
     """
+    if bloom_demonstrated >= bloom_expected:
+        return 1.0
     max_distance = 5
-    alignment = 1.0 - abs(bloom_demonstrated - bloom_expected) / max_distance
+    alignment = 1.0 - (bloom_expected - bloom_demonstrated) / max_distance
     return round(max(0.0, alignment), 3)
 
 
@@ -573,7 +586,8 @@ def calculate_wsi_deterministic(
     years_experience: float | None = None,
     years_reference: dict[str, tuple[float, float]] | None = None,
     question_type: str = "technical",   # "technical" | "behavioral"
-    bloom_expected: int = 3,            # nível Bloom esperado pela pergunta
+    *,
+    bloom_expected: int | None = None,  # keyword-only — nível Bloom esperado (None = degradado)
 ) -> DeterministicWSIResult:
     """
     Calcula WSI de forma 100% determinística — Spec F8 fórmula v2.
@@ -596,6 +610,9 @@ def calculate_wsi_deterministic(
     Returns:
         DeterministicWSIResult com todos os componentes do cálculo
     """
+    # M11 fix (rev. 15) — rastreia razões de qualidade degradada
+    degraded_reasons: list[str] = []
+
     if autodeclaracao_override is not None:
         autodeclaracao = autodeclaracao_override
     else:
@@ -610,6 +627,11 @@ def calculate_wsi_deterministic(
 
     if autodeclaracao is None:
         autodeclaracao = context_score
+        degraded_reasons.append("autodeclaracao_inferida_por_contexto")
+
+    if bloom_expected is None:
+        bloom_expected = 3
+        degraded_reasons.append("bloom_expected_default_aplicado")
 
     bloom_level, bloom_name = calculate_bloom_level(response_text)
     bloom_align = calculate_bloom_alignment(bloom_level, bloom_expected)
@@ -710,6 +732,8 @@ def calculate_wsi_deterministic(
         star_score=star_score,
         bloom_alignment=bloom_align,
         flags_structured=flags_structured,
+        degraded_quality=bool(degraded_reasons),
+        degraded_reasons=degraded_reasons or None,
     )
 
 

@@ -14,12 +14,15 @@ import {
   Eye, BookOpen, Shield, Lightbulb, CheckCircle, AlertTriangle
 } from"lucide-react"
 
+// NEW-2 fix (audit rev. 15) — backend canonizou em `stability` (Big Five spec).
+// Aceita ambos durante transição; o renderer interno converte stability→(100-neuroticism).
 interface BigFiveScore {
   openness: number
   conscientiousness: number
   extraversion: number
   agreeableness: number
-  neuroticism: number
+  neuroticism?: number
+  stability?: number
 }
 
 interface BigFiveProfileProps {
@@ -28,8 +31,18 @@ interface BigFiveProfileProps {
   showInsights?: boolean
 }
 
-export function BigFiveProfile({ scores, compact = false, showInsights = true }: BigFiveProfileProps) {
+export function BigFiveProfile({ scores: rawScores, compact = false, showInsights = true }: BigFiveProfileProps) {
   const [expandedInsight, setExpandedInsight] = useState<string | null>(null)
+  // NEW-2 fix — normaliza para `neuroticism` (chave usada na UI legada). Quando
+  // backend manda `stability`, converte para o complemento; quando manda `neuroticism`
+  // direto, preserva. Garantimos um número válido em ambos os casos.
+  const scores: Required<Pick<BigFiveScore, "openness" | "conscientiousness" | "extraversion" | "agreeableness" | "neuroticism">> = {
+    openness: rawScores.openness,
+    conscientiousness: rawScores.conscientiousness,
+    extraversion: rawScores.extraversion,
+    agreeableness: rawScores.agreeableness,
+    neuroticism: rawScores.neuroticism ?? (rawScores.stability !== undefined ? 100 - rawScores.stability : 50),
+  }
 
   // Definições detalhadas de cada dimensão - Cores WeDo Talent
   const dimensions = [

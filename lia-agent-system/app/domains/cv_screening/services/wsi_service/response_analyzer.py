@@ -62,13 +62,26 @@ class WSIResponseAnalyzer:
             # (técnico vs comportamental) e a fórmula tri-componente certa.
             derived_category = _category_from_framework(question.framework)
             question_type = derived_category if derived_category in ("technical", "behavioral") else "technical"
+            # M11 fix (rev. 15) — propaga `bloom_expected` real da pergunta quando
+            # disponível. Quando ausente, o scorer aplica default + flag degraded.
+            bloom_expected = getattr(question, "bloom_expected", None)
             result: DeterministicWSIResult = calculate_wsi_deterministic(
                 response_text=response,
                 competency_name=question.competency,
                 question_framework=question.framework,
                 question_type=question_type,
+                bloom_expected=bloom_expected,
             )
-            
+
+            # M11 fix — concatena selo de qualidade degradada na justificativa
+            # (auditável; UI pode renderizar badge "qualidade degradada").
+            justification = f"{result.justification} | Fórmula: {result.formula_applied}"
+            red_flags = list(result.red_flags)
+            if result.degraded_quality:
+                reasons = ", ".join(result.degraded_reasons or [])
+                justification += f" | ⚠️ Qualidade degradada: {reasons}"
+                red_flags.append(f"Qualidade degradada: {reasons}")
+
             return ResponseAnalysis(
                 question_id=question.id,
                 competency=question.competency,
@@ -78,10 +91,10 @@ class WSIResponseAnalyzer:
                 bloom_level=result.bloom_level,
                 dreyfus_level=result.dreyfus_level,
                 evidences=result.evidences,
-                red_flags=result.red_flags,
+                red_flags=red_flags,
                 consistency_penalty=result.penalty,
                 final_score=result.final_score,
-                justification=f"{result.justification} | Fórmula: {result.formula_applied}",
+                justification=justification,
                 category=_category_from_framework(question.framework),
             )
         except Exception as e:

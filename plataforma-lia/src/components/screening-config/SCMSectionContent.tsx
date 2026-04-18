@@ -69,7 +69,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                   .filter((s): s is string => Boolean(s))
               }
               behavioralCompetencies={(job.behavioralCompetencies || []).map((c: Record<string, unknown>) => c.competency || c.name || (typeof c === 'string' ? c : '')).filter(Boolean) as string[]}
-              seniority={(job.level || job.seniority) as string | undefined}
+              seniority={(job.seniority || job.level) as string | undefined}
               department={job.department as string | undefined}
               description={job.description as string | undefined}
               hasQuestions={((job.screeningQuestions as unknown[])?.length || 0) > 0}
@@ -99,7 +99,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               isGenerating={props.isGeneratingWSI}
               companyId={(job as Record<string, unknown>).companyId as string || ''}
               companyName={(job as Record<string, unknown>).companyName as string || undefined}
-              companyDescription={undefined}
+              companyDescription={(job as Record<string, unknown>).companyDescription as string | undefined}
               companyIndustry={(job as Record<string, unknown>).industry as string || undefined}
               benefits={(job.benefits as string[]) || []}
               interviewStages={((job as Record<string, unknown>).interviewStages as Array<Record<string, unknown>> || []).map((s: Record<string, unknown>) => typeof s === 'string' ? s : (s.stageName || s.name || '') as string)}

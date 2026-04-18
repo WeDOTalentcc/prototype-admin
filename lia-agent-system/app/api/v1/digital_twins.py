@@ -21,7 +21,7 @@ from fastapi import Path
 # item handlers (Task #455-class bug).
 _DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
-router = APIRouter(prefix="/api/v1/digital-twins", tags=["Digital Twins"])
+router = APIRouter(prefix="/digital-twins", tags=["Digital Twins"])
 
 
 class CreateTwinRequest(BaseModel):

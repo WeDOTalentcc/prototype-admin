@@ -123,19 +123,36 @@ class TestBloomAlignment:
         )
         assert calculate_bloom_alignment(3, 3) == pytest.approx(1.0)
 
-    def test_one_level_off(self):
+    def test_one_level_above_is_full_alignment(self):
+        # M03 fix (audit rev. 15) — fórmula assimétrica: demonstrar Bloom acima
+        # do esperado é POSITIVO (não punir excesso de qualificação).
         from app.domains.cv_screening.services.wsi_deterministic_scorer import (
             calculate_bloom_alignment,
         )
         alignment = calculate_bloom_alignment(4, 3)
+        assert alignment == pytest.approx(1.0, abs=0.01)
+
+    def test_one_level_below_penalizes(self):
+        # M03 fix — abaixo do esperado pune linearmente.
+        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+            calculate_bloom_alignment,
+        )
+        alignment = calculate_bloom_alignment(2, 3)
         assert alignment == pytest.approx(0.8, abs=0.01)
 
-    def test_max_distance(self):
+    def test_max_distance_below_clamps_to_zero(self):
         from app.domains.cv_screening.services.wsi_deterministic_scorer import (
             calculate_bloom_alignment,
         )
         alignment = calculate_bloom_alignment(1, 6)
         assert alignment == pytest.approx(0.0, abs=0.01)
+
+    def test_max_distance_above_is_full(self):
+        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+            calculate_bloom_alignment,
+        )
+        alignment = calculate_bloom_alignment(6, 1)
+        assert alignment == pytest.approx(1.0, abs=0.01)
 
     def test_result_has_bloom_alignment_field(self):
         from app.domains.cv_screening.services.wsi_deterministic_scorer import (
