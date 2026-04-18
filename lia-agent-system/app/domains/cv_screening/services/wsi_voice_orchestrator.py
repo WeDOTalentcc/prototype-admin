@@ -311,6 +311,8 @@ class WSIVoiceOrchestrator:
                 questions=questions,
                 transcript=transcript,
                 transcript_object=transcript_object,
+                candidate_id=candidate_id,
+                job_vacancy_id=job_vacancy_id,
             )
             if not response_analyses:
                 await self._mark_session_cancelled(session, session_id)
@@ -432,6 +434,8 @@ class WSIVoiceOrchestrator:
         questions: list[WSIQuestion],
         transcript: str,
         transcript_object: list[dict[str, Any]] | None,
+        candidate_id: str | None = None,
+        job_vacancy_id: str | None = None,
     ) -> tuple[list[ResponseAnalysis], dict[str, float]]:
         """Para cada Q/A extraído do transcript, invoca o `wsi_service.analyze_response`,
         persiste a análise em `wsi_response_analyses` e devolve a lista
@@ -451,6 +455,19 @@ class WSIVoiceOrchestrator:
 
         response_analyses: list[ResponseAnalysis] = []
         weights: dict[str, float] = {}
+
+        # Task #511 round 3 — resolve company_id uma única vez via FK do job
+        # vacancy para enriquecer o audit trail (wsi_responses.company_id).
+        # Mantemos opcional: se faltar job_vacancy_id (call site legado),
+        # gravamos NULL ao invés de quebrar.
+        company_id: str | None = None
+        if job_vacancy_id:
+            row = (await session.execute(
+                text("SELECT company_id FROM job_vacancies WHERE id = :jv"),
+                {"jv": job_vacancy_id},
+            )).first()
+            if row:
+                company_id = str(row[0])
 
         for qa in qa_pairs:
             question: WSIQuestion = qa["question"]
@@ -472,13 +489,18 @@ class WSIVoiceOrchestrator:
                     analysis.response_text, session_id, question.id
                 )
 
+                # Round 3: popula candidate_id e company_id no audit trail
+                # para suportar relatórios DPO por candidato/tenant sem JOIN
+                # adicional.
                 await session.execute(
                     text(
                         """
                         INSERT INTO wsi_responses (
-                            session_id, question_id, raw_text, response_hash
+                            session_id, question_id, raw_text, response_hash,
+                            candidate_id, company_id
                         )
-                        VALUES (:session_id, :question_id, :raw_text, :response_hash)
+                        VALUES (:session_id, :question_id, :raw_text, :response_hash,
+                                :candidate_id, :company_id)
                         """
                     ),
                     {
@@ -486,6 +508,8 @@ class WSIVoiceOrchestrator:
                         "question_id": question.id,
                         "raw_text": analysis.response_text or "",
                         "response_hash": resp_hash,
+                        "candidate_id": candidate_id,
+                        "company_id": company_id,
                     },
                 )
 

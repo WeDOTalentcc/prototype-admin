@@ -484,18 +484,23 @@ async def _persist_wsi_results(
         # Round 3: insert é FAIL-FAST (sem try/except) — trilha de auditoria
         # de IA de Alto Risco não pode ser silenciosamente perdida. Qualquer
         # falha aqui aborta a transação inteira do _persist_wsi_results.
+        # Round 3: popula candidate_id e company_id para enriquecer o
+        # audit trail (consultas DPO por tenant/candidato sem JOIN extra).
         resp_hash = hash_response(response_text, wsi_session_id, question_id)
         await db.execute(text(
             "INSERT INTO wsi_responses "
-            "    (session_id, question_id, raw_text, response_hash, candidate_id) "
+            "    (session_id, question_id, raw_text, response_hash, "
+            "     candidate_id, company_id) "
             "VALUES "
-            "    (:session_id, :question_id, :raw_text, :response_hash, :candidate_id)"
+            "    (:session_id, :question_id, :raw_text, :response_hash, "
+            "     :candidate_id, :company_id)"
         ), {
             "session_id": wsi_session_id,
             "question_id": question_id,
             "raw_text": response_text or "",
             "response_hash": resp_hash,
             "candidate_id": session.candidate_id,
+            "company_id": session.company_id,
         })
 
         analysis_id = str(uuid.uuid4())
