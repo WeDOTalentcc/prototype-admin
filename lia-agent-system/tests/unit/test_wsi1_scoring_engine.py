@@ -272,11 +272,6 @@ class TestSeniorityWeightsIntegration:
         # t=0.625×4 + b=0.375×2 = 2.5 + 0.75 = 3.25
         assert result["final_score"] == pytest.approx(3.25, abs=0.05)
 
-    def test_state_serialization_includes_counts_marker(self):
-        # placeholder ancora — preserva nome original abaixo
-        pass
-
-
 # ---------------------------------------------------------------------------
 # Audit task #510 — Regressões metodológicas (M02 Bloom, M07 Dreyfus, M08 Gates)
 # ---------------------------------------------------------------------------
@@ -358,6 +353,42 @@ class TestDreyfusBehavioral:
 
 class TestGatesAbsolutePrecedence:
     """M08 — Qualquer gate falhado é rejeição clara, não 'ambíguo'."""
+
+    def test_g1_failed_alone_returns_alta_no_review(self):
+        """G1 (eligibility) é hard-block clássico — confidence alta, sem review."""
+        from app.api.v1.wsi.reports import _compute_decision_confidence
+        conf, review = _compute_decision_confidence(
+            overall_wsi=8.0,
+            failed_gates=["G1"],
+            llm_fallback_count=0,
+            score_variance=0.5,
+        )
+        assert conf == "alta"
+        assert review is False
+
+    def test_g3_failed_alone_returns_alta_no_review(self):
+        """G3 (technical floor) é hard-block clássico — confidence alta, sem review."""
+        from app.api.v1.wsi.reports import _compute_decision_confidence
+        conf, review = _compute_decision_confidence(
+            overall_wsi=8.0,
+            failed_gates=["G3"],
+            llm_fallback_count=0,
+            score_variance=0.5,
+        )
+        assert conf == "alta"
+        assert review is False
+
+    def test_g4_failed_alone_returns_alta_no_review(self):
+        """G4 (critical competency) é hard-block clássico — confidence alta, sem review."""
+        from app.api.v1.wsi.reports import _compute_decision_confidence
+        conf, review = _compute_decision_confidence(
+            overall_wsi=8.0,
+            failed_gates=["G4"],
+            llm_fallback_count=0,
+            score_variance=0.5,
+        )
+        assert conf == "alta"
+        assert review is False
 
     def test_g2_failed_alone_returns_alta_no_review(self):
         from app.api.v1.wsi.reports import _compute_decision_confidence

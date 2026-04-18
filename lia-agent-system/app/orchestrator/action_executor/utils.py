@@ -281,7 +281,47 @@ def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
         elif len(msg) > 10:
             entities["query"] = msg[:300]
 
-    # CM-007 / MT-002: Extract job_id from message text (e.g. "V0037", "vaga V0037")
+    # CM-001: Extract candidate_name for profile analysis intent
+    if intent == "analisar_perfil" and "candidate_name" not in entities:
+        # "avalia o curriculo do Joao Silva para a vaga de Tech Lead"
+        name_m = re.search(
+            r'(?:d[eo]\\s+|do?\\s+candidato\\s+|avali[ae]r?\\s+)([A-Z\u00c0-\u00ff][a-z\u00c0-\u00ff]+(?:\\s+[A-Z\u00c0-\u00ff][a-z\u00c0-\u00ff]+)+)',
+            msg
+        )
+        if not name_m:
+            name_m = re.search(
+                r'(?:d[eo]\\s+|do?\\s+candidato\\s+)([a-z][a-z]+(?:\\s+[a-z][a-z]+)+)(?:\\s+para|\\s+pra|$)',
+                msg, re.IGNORECASE
+            )
+        if name_m:
+            entities["candidate_name"] = name_m.group(1).strip().title()
+        if "job_id" not in entities:
+            job_m = re.search(r'para\\s+a\\s+vaga\\s+de\\s+(.{3,50}?)(?:\\s*$|,|\\.|!)', msg, re.IGNORECASE)
+            if job_m:
+                entities["job_title"] = job_m.group(1).strip()
+
+    # CM-003: Extract candidate_names list for compare intent
+    if intent == "comparar_candidatos" and "candidate_ids" not in entities and "candidate_names" not in entities:
+        names_m = re.search(
+            r'compara[rn]?\\s+([A-Z\u00c0-\u00ff][a-z\u00c0-\u00ff]+(?:\\s+[A-Z\u00c0-\u00ff][a-z\u00c0-\u00ff]+)*)\\s+e\\s+([A-Z\u00c0-\u00ff][a-z\u00c0-\u00ff]+(?:\\s+[A-Z\u00c0-\u00ff][a-z\u00c0-\u00ff]+)*)',
+            msg
+        )
+        if not names_m:
+            names_m = re.search(
+                r'compara[rn]?\\s+([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)\\s+e\\s+([a-z][a-z]+(?:\\s+[a-z][a-z]+)*)',
+                msg, re.IGNORECASE
+            )
+        if names_m:
+            entities["candidate_names"] = [
+                names_m.group(1).strip().title(),
+                names_m.group(2).strip().title(),
+            ]
+        if "job_id" not in entities:
+            job_m = re.search(r'para\\s+a\\s+vaga\\s+de\\s+(.{3,50}?)(?:\\s*$|,|\\.|!)', msg, re.IGNORECASE)
+            if job_m:
+                entities["job_title"] = job_m.group(1).strip()
+
+        # CM-007 / MT-002: Extract job_id from message text (e.g. "V0037", "vaga V0037")
     # This is needed when context doesn't have entity_id (scope=Vagas without specific job)
     if "job_id" not in entities and intent in (
         "rankear_candidatos", "comparar_candidatos", "listar_candidatos_por_etapa",
