@@ -27,6 +27,36 @@ from app.domains.job_management.agents.wizard_tool_registry import (
 
 logger = logging.getLogger(__name__)
 
+
+from contextlib import contextmanager
+
+
+@contextmanager
+def _wizard_tenant_scope(company_id: str | None):
+    """Set _current_company_id contextvar for LangGraph ReAct execution.
+
+    Mirrors _wsi_tenant_scope from wsi_interview_graph.py — ensures that
+    get_current_llm_tenant() resolves correctly inside wizard tool calls
+    without asking the user for company_id.
+    """
+    token = None
+    try:
+        from app.middleware.auth_enforcement import _current_company_id
+        cid = str(company_id or "")
+        if cid and not _current_company_id.get(""):
+            token = _current_company_id.set(cid)
+    except Exception as _exc:
+        logger.debug("[WizardReActAgent] tenant_scope skipped: %s", _exc)
+    try:
+        yield
+    finally:
+        if token is not None:
+            try:
+                from app.middleware.auth_enforcement import _current_company_id
+                _current_company_id.reset(token)
+            except Exception:
+                pass
+
 _CONFIRMATION_WORDS = {
     "sim", "pode", "vamos", "avanca", "ok", "beleza", "perfeito",
     "vamos la", "proximo", "seguir", "continuar", "ta bom", "pode ser",
@@ -154,7 +184,8 @@ class WizardReActAgent(LangGraphReActBase, EnhancedAgentMixin):
             logger.warning("[WizardReActAgent] wizard_state load failed (fail-safe): %s", exc)
             self._current_wizard_state = None
 
-        output = await self._process_langgraph(input)
+        with _wizard_tenant_scope(str(input.company_id or "")):
+            output = await self._process_langgraph(input)
 
         # --- WizardState: extract collected fields from tool calls and persist ---
         if self._current_wizard_state is not None:

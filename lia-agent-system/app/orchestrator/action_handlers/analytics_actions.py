@@ -37,6 +37,10 @@ async def _generate_kpi_report(params: dict[str, Any], context: dict[str, Any]):
 
         company_id = context.get("company_id") if context else None
         job_id = params.get("job_id") or (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
+        if not job_id:
+            _cstate = (context or {}).get("conversation_state")
+            if _cstate and getattr(_cstate, "last_job_id", None):
+                job_id = _cstate.last_job_id
 
         if not company_id:
             return ActionResult(
@@ -203,6 +207,10 @@ async def _job_health_check(params: dict[str, Any], context: dict[str, Any]):
         from app.core.database import AsyncSessionLocal
 
         job_id = params.get("job_id") or (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
+        if not job_id:
+            _cstate = (context or {}).get("conversation_state")
+            if _cstate and getattr(_cstate, "last_job_id", None):
+                job_id = _cstate.last_job_id
         company_id = context.get("company_id") if context else None
 
         if not job_id:
@@ -325,6 +333,10 @@ async def _analyze_funnel(params: dict[str, Any], context: dict[str, Any]):
         from app.core.database import AsyncSessionLocal
 
         job_id = params.get("job_id") or (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
+        if not job_id:
+            _cstate = (context or {}).get("conversation_state")
+            if _cstate and getattr(_cstate, "last_job_id", None):
+                job_id = _cstate.last_job_id
         company_id = context.get("company_id") if context else None
 
         async with AsyncSessionLocal() as db:

@@ -259,6 +259,14 @@ async def _send_feedback(params: dict[str, Any], context: dict[str, Any]):
         feedback_type = params.get("feedback_type", "parcial")
         message = params.get("message", "")
         candidate_email = params.get("email", params.get("candidate_email", ""))
+        company_id = context.get("company_id") if context else None
+
+        if not candidate_id and candidate_name and candidate_name != "o candidato":
+            from app.orchestrator.action_handlers._handler_hooks import resolve_candidate_by_name as _rcbn
+            _resolved = await _rcbn(candidate_name, company_id)
+            if _resolved:
+                candidate_id = _resolved["id"]
+                candidate_name = _resolved["name"]
 
         if not candidate_email:
             from sqlalchemy import text
@@ -330,6 +338,14 @@ async def _send_whatsapp(params: dict[str, Any], context: dict[str, Any]):
         candidate_name = params.get("candidate_name", "o candidato")
         message = params.get("message", "")
         phone = params.get("phone", "")
+        _wa_company_id = context.get("company_id") if context else None
+
+        if not candidate_id and candidate_name and candidate_name != "o candidato":
+            from app.orchestrator.action_handlers._handler_hooks import resolve_candidate_by_name as _rcbn_wa
+            _resolved_wa = await _rcbn_wa(candidate_name, _wa_company_id)
+            if _resolved_wa:
+                candidate_id = _resolved_wa["id"]
+                candidate_name = _resolved_wa["name"]
 
         if not phone:
             from sqlalchemy import text
@@ -629,6 +645,14 @@ async def _share_candidate_profile(params: dict[str, Any], context: dict[str, An
         recipient_email = params.get("recipient_email", "")
         recipient_name = params.get("recipient_name", "")
         custom_message = params.get("message", "")
+        _share_company_id = context.get("company_id") if context else None
+
+        if not candidate_id and candidate_name and candidate_name != "o candidato":
+            from app.orchestrator.action_handlers._handler_hooks import resolve_candidate_by_name as _rcbn_sh
+            _resolved_sh = await _rcbn_sh(candidate_name, _share_company_id)
+            if _resolved_sh:
+                candidate_id = _resolved_sh["id"]
+                candidate_name = _resolved_sh["name"]
 
         if not candidate_id:
             return ActionResult(

@@ -789,6 +789,10 @@ async def _bulk_move_by_stage(params: dict, context: dict):
         from app.orchestrator.action_handlers._handler_hooks import log_action_audit
 
         job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
+        if not job_id:
+            _cstate = (context or {}).get("conversation_state")
+            if _cstate and getattr(_cstate, "last_job_id", None):
+                job_id = _cstate.last_job_id
         from_stage = params.get("from_stage", "")
         to_stage = params.get("to_stage", "")
         company_id = (context or {}).get("company_id")
