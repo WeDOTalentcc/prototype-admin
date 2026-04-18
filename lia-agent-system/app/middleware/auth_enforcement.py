@@ -319,9 +319,9 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 request.state.user_role = "admin"
                 logger.debug(f"[AuthEnforcement] DEV MODE: synthetic user after token error on {path}: {e}")
                 return await call_next(request)
-            logger.warning(f"[AuthEnforcement] Token validation EXCEPTION type={type(e).__name__} msg={e} for {path}")
+            logger.warning(f"[AuthEnforcement] Token validation failed for {path}: {e}")
             return JSONResponse(
-                {"detail": f"Auth error: {type(e).__name__}: {str(e)[:80]}"},
+                {"detail": "Invalid or expired token"},
                 status_code=401,
             )
 

@@ -219,36 +219,13 @@ class VoiceScreeningStatusResponse(BaseModel):
 # Note: analyze_jd endpoint removed for MVP - will be implemented in Job Intake Agent
 
 
-# TODO(phase2): extract to WsiRepository — WSI endpoint DB calls
-def _convert_snapshot_to_wsi_questions(snapshot: list) -> list:
-    converted = []
-    for idx, q in enumerate(snapshot):
-        text = q.get("text", q.get("question", q.get("question_text", "")))
-        if not text:
-            continue
-        category = q.get("category", "technical")
-        framework_map = {
-            "eligibility": "CBI",
-            "technical": "Bloom",
-            "behavioral": "BigFive",
-        }
-        type_map = {
-            "eligibility": "contextual",
-            "technical": "autodeclaration",
-            "behavioral": "situational",
-        }
-        question = WSIQuestion(
-            id=q.get("id", f"qs_{idx}"),
-            competency=q.get("skill_targeted", q.get("competency_validated", category)),
-            framework=framework_map.get(category, "Bloom"),
-            question_type=type_map.get(category, "contextual"),
-            question_text=text,
-            weight=float(q.get("weight", 0.75)),
-            expected_signals=q.get("expected_signals", []),
-            scoring_criteria=q.get("scoring_criteria", {}),
-        )
-        converted.append(question)
-    return converted
+# Audit task #496 (PR2) — duplicata local consolidada em
+# `wsi_service/question_builder.convert_snapshot_to_wsi_questions`.
+# Esta versão agora cobre as 4 categorias (eligibility/technical/behavioral/company)
+# em uma única fonte de verdade compartilhada com o orquestrador de voz.
+from app.domains.cv_screening.services.wsi_service.question_builder import (
+    convert_snapshot_to_wsi_questions as _convert_snapshot_to_wsi_questions,
+)
 
 
 @router.post("/generate-questions", response_model=GenerateQuestionsResponse)

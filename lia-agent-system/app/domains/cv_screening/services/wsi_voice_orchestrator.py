@@ -77,35 +77,13 @@ class WSIVoiceOrchestrator:
         self.wsi_service = wsi_service
         logger.info("✅ WSI Voice Orchestrator initialized")
     
+    # Audit task #496 (PR2) — função canônica movida para
+    # `wsi_service/question_builder.py`. Shim mantém a API interna estável
+    # para `start_voice_screening` (e qualquer subclasse de teste).
     def _convert_snapshot_to_wsi_questions(self, snapshot: list) -> list[WSIQuestion]:
-        converted = []
-        for idx, q in enumerate(snapshot):
-            text = q.get("text", q.get("question", q.get("question_text", "")))
-            if not text:
-                continue
-            category = q.get("category", "technical")
-            framework_map = {
-                "technical": "Bloom",
-                "behavioral": "BigFive",
-                "company": "CBI",
-            }
-            type_map = {
-                "technical": "autodeclaration",
-                "behavioral": "situational",
-                "company": "contextual",
-            }
-            question = WSIQuestion(
-                id=q.get("id", f"qs_{idx}"),
-                competency=q.get("skill_targeted", q.get("competency_validated", category)),
-                framework=framework_map.get(category, "Bloom"),
-                question_type=type_map.get(category, "contextual"),
-                question_text=text,
-                weight=float(q.get("weight", 0.75)),
-                expected_signals=q.get("expected_signals", []),
-                scoring_criteria=q.get("scoring_criteria", {}),
-            )
-            converted.append(question)
-        return converted
+        from .wsi_service.question_builder import convert_snapshot_to_wsi_questions
+        return convert_snapshot_to_wsi_questions(snapshot)
+
     
     async def start_voice_screening(
         self,
@@ -312,52 +290,127 @@ class WSIVoiceOrchestrator:
         """
         logger.info(f"🔄 Processing completed call: {call_id}")
         
+        # Audit task #496 (PR4) — pipeline linear. Cada etapa é um helper
+        # privado isolado, mantendo `process_call_completed` legível como
+        # uma sequência de passos de negócio (Load → Analyze → Score →
+        # Persist → Dispatch).
         async def _execute_with_db(session: AsyncSession) -> WSIResult | None:
-            result = await session.execute(text("""
-                SELECT id, candidate_id, job_vacancy_id, mode
-                FROM wsi_sessions
-                WHERE call_id = :call_id
-            """), {"call_id": call_id})
-            
-            row = result.fetchone()
-            
-            if not row:
-                logger.warning(f"⚠️  No WSI session found for call_id: {call_id}")
+            session_meta = await self._load_session_for_call(session, call_id)
+            if session_meta is None:
                 return None
-            
-            session_id, candidate_id, job_vacancy_id, mode = row
-            
-            logger.info(f"📋 Found WSI session: {session_id} for candidate: {candidate_id}")
-            
-            questions_result = await session.execute(text("""
-                SELECT id, competency, framework, question_type, question_text, weight, 
+            session_id, candidate_id, job_vacancy_id, _mode = session_meta
+
+            questions = await self._load_questions_for_session(session, session_id)
+            if not questions:
+                return None
+
+            response_analyses, weights = await self._analyze_and_persist_responses(
+                session=session,
+                session_id=session_id,
+                questions=questions,
+                transcript=transcript,
+                transcript_object=transcript_object,
+            )
+            if not response_analyses:
+                await self._mark_session_cancelled(session, session_id)
+                return None
+
+            wsi_result = await self._persist_wsi_result(
+                session=session,
+                session_id=session_id,
+                candidate_id=candidate_id,
+                job_vacancy_id=job_vacancy_id,
+                response_analyses=response_analyses,
+                weights=weights,
+            )
+
+            await self._dispatch_screening_completed_event(
+                session=session,
+                session_id=session_id,
+                candidate_id=candidate_id,
+                job_vacancy_id=job_vacancy_id,
+                wsi_result=wsi_result,
+            )
+            return wsi_result
+
+        if db is not None:
+            return await _execute_with_db(db)
+        else:
+            async with AsyncSessionLocal() as session:
+                return await _execute_with_db(session)
+
+    # ------------------------------------------------------------------
+    # Audit task #496 (PR4) — helpers privados do pipeline de
+    # `process_call_completed`. Cada um tem responsabilidade única e pode
+    # ser testado isoladamente com uma `AsyncSession` mockada.
+    # ------------------------------------------------------------------
+
+    async def _load_session_for_call(
+        self, session: AsyncSession, call_id: str
+    ) -> tuple[str, str, str, str] | None:
+        """SELECT da sessão WSI vinculada ao `call_id`. Retorna a tupla
+        (session_id, candidate_id, job_vacancy_id, mode) ou `None` se
+        não existir."""
+        result = await session.execute(
+            text(
+                "SELECT id, candidate_id, job_vacancy_id, mode "
+                "FROM wsi_sessions WHERE call_id = :call_id"
+            ),
+            {"call_id": call_id},
+        )
+        row = result.fetchone()
+        if not row:
+            logger.warning(f"⚠️  No WSI session found for call_id: {call_id}")
+            return None
+        session_id, candidate_id, job_vacancy_id, mode = row
+        logger.info(
+            f"📋 Found WSI session: {session_id} for candidate: {candidate_id}"
+        )
+        return session_id, candidate_id, job_vacancy_id, mode
+
+    async def _load_questions_for_session(
+        self, session: AsyncSession, session_id: str
+    ) -> list[WSIQuestion]:
+        """SELECT das perguntas persistidas + parsing dos campos JSON
+        (`expected_signals`, `scoring_criteria`) que podem chegar como
+        string crua dependendo do driver."""
+        questions_result = await session.execute(
+            text(
+                """
+                SELECT id, competency, framework, question_type, question_text, weight,
                        expected_signals, scoring_criteria, sequence_order
                 FROM wsi_questions
                 WHERE session_id = :session_id
                 ORDER BY sequence_order
-            """), {"session_id": session_id})
-            
-            questions_rows = questions_result.fetchall()
-            
-            if not questions_rows:
-                logger.error(f"❌ No questions found for session: {session_id}")
-                return None
-            
-            questions = []
-            for row in questions_rows:
-                expected_signals = row[6]
-                if isinstance(expected_signals, str):
-                    expected_signals = json.loads(expected_signals) if expected_signals else []
-                elif not isinstance(expected_signals, list):
-                    expected_signals = []
-                    
-                scoring_criteria = row[7]
-                if isinstance(scoring_criteria, str):
-                    scoring_criteria = json.loads(scoring_criteria) if scoring_criteria else {}
-                elif not isinstance(scoring_criteria, dict):
-                    scoring_criteria = {}
-                
-                q = WSIQuestion(
+                """
+            ),
+            {"session_id": session_id},
+        )
+        rows = questions_result.fetchall()
+        if not rows:
+            logger.error(f"❌ No questions found for session: {session_id}")
+            return []
+
+        questions: list[WSIQuestion] = []
+        for row in rows:
+            expected_signals = row[6]
+            if isinstance(expected_signals, str):
+                expected_signals = (
+                    json.loads(expected_signals) if expected_signals else []
+                )
+            elif not isinstance(expected_signals, list):
+                expected_signals = []
+
+            scoring_criteria = row[7]
+            if isinstance(scoring_criteria, str):
+                scoring_criteria = (
+                    json.loads(scoring_criteria) if scoring_criteria else {}
+                )
+            elif not isinstance(scoring_criteria, dict):
+                scoring_criteria = {}
+
+            questions.append(
+                WSIQuestion(
                     id=row[0],
                     competency=row[1],
                     framework=row[2],
@@ -365,40 +418,54 @@ class WSIVoiceOrchestrator:
                     question_text=row[4],
                     weight=float(row[5]),
                     expected_signals=expected_signals,
-                    scoring_criteria=scoring_criteria
+                    scoring_criteria=scoring_criteria,
                 )
-                questions.append(q)
-            
-            logger.info(f"📝 Loaded {len(questions)} questions for analysis")
-            
-            qa_pairs = self._extract_qa_pairs(
-                transcript=transcript,
-                transcript_object=transcript_object,
-                questions=questions
             )
-            
-            logger.info(f"🔍 Extracted {len(qa_pairs)} Q/A pairs from transcript")
-            
-            response_analyses = []
-            weights = {}
-            
-            for qa in qa_pairs:
-                question = qa['question']
-                response_text = qa['response']
-                
-                logger.debug(f"Analyzing response for: {question.competency}")
-                
-                try:
-                    analysis = await self.wsi_service.analyze_response(
-                        question=question,
-                        response=response_text
-                    )
-                    
-                    response_analyses.append(analysis)
-                    weights[question.competency] = question.weight
-                    
-                    analysis_id = str(uuid.uuid4())
-                    await session.execute(text("""
+        logger.info(f"📝 Loaded {len(questions)} questions for analysis")
+        return questions
+
+    async def _analyze_and_persist_responses(
+        self,
+        session: AsyncSession,
+        session_id: str,
+        questions: list[WSIQuestion],
+        transcript: str,
+        transcript_object: list[dict[str, Any]] | None,
+    ) -> tuple[list[ResponseAnalysis], dict[str, float]]:
+        """Para cada Q/A extraído do transcript, invoca o `wsi_service.analyze_response`,
+        persiste a análise em `wsi_response_analyses` e devolve a lista
+        agregada + mapa de pesos.
+
+        Falhas individuais não derrubam o pipeline: cai num
+        `ResponseAnalysis` de fallback com `category` derivada do framework
+        (audit #498) para preservar o split técnico/comportamental
+        determinístico no scoring.
+        """
+        qa_pairs = self._extract_qa_pairs(
+            transcript=transcript,
+            transcript_object=transcript_object,
+            questions=questions,
+        )
+        logger.info(f"🔍 Extracted {len(qa_pairs)} Q/A pairs from transcript")
+
+        response_analyses: list[ResponseAnalysis] = []
+        weights: dict[str, float] = {}
+
+        for qa in qa_pairs:
+            question: WSIQuestion = qa["question"]
+            response_text: str = qa["response"]
+            logger.debug(f"Analyzing response for: {question.competency}")
+
+            try:
+                analysis = await self.wsi_service.analyze_response(
+                    question=question, response=response_text
+                )
+                response_analyses.append(analysis)
+                weights[question.competency] = question.weight
+
+                await session.execute(
+                    text(
+                        """
                         INSERT INTO wsi_response_analyses (
                             id, session_id, question_id, competency, response_text,
                             autodeclaration_score, context_score, bloom_level, dreyfus_level,
@@ -407,8 +474,10 @@ class WSIVoiceOrchestrator:
                         VALUES (:id, :session_id, :question_id, :competency, :response_text,
                                 :autodeclaration_score, :context_score, :bloom_level, :dreyfus_level,
                                 :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification)
-                    """), {
-                        "id": analysis_id,
+                        """
+                    ),
+                    {
+                        "id": str(uuid.uuid4()),
                         "session_id": session_id,
                         "question_id": question.id,
                         "competency": analysis.competency,
@@ -421,61 +490,92 @@ class WSIVoiceOrchestrator:
                         "red_flags": json.dumps(analysis.red_flags),
                         "consistency_penalty": analysis.consistency_penalty,
                         "final_score": analysis.final_score,
-                        "justification": analysis.justification
-                    })
-                    
-                    logger.info(f"✅ Analyzed {question.competency}: Score {analysis.final_score}/5")
-                    
-                except Exception as e:
-                    logger.error(f"⚠️  Failed to analyze response for {question.competency}: {e}")
-                    # Audit task #498 — mesmo no fallback de erro, derivamos a
-                    # categoria a partir do framework da pergunta para que o
-                    # split tech/behavioral permaneça determinístico.
-                    from app.domains.cv_screening.services.wsi_service.response_analyzer import (
-                        _category_from_framework,
-                    )
-                    fallback_analysis = ResponseAnalysis(
+                        "justification": analysis.justification,
+                    },
+                )
+                logger.info(
+                    f"✅ Analyzed {question.competency}: Score {analysis.final_score}/5"
+                )
+            except Exception as e:
+                logger.error(
+                    f"⚠️  Failed to analyze response for {question.competency}: {e}"
+                )
+                # Audit task #498 — mesmo no fallback de erro, derivamos a
+                # categoria a partir do framework da pergunta para que o
+                # split tech/behavioral permaneça determinístico.
+                from app.domains.cv_screening.services.wsi_service.response_analyzer import (
+                    _category_from_framework,
+                )
+                response_analyses.append(
+                    ResponseAnalysis(
                         question_id=question.id,
                         competency=question.competency,
                         response_text=response_text,
                         final_score=2.5,
                         evidences=["Análise parcial - falha no processamento"],
                         red_flags=["Análise incompleta"],
-                        justification="Análise automatizada falhou. Requer revisão manual.",
+                        justification=(
+                            "Análise automatizada falhou. Requer revisão manual."
+                        ),
                         category=_category_from_framework(question.framework),
                     )
-                    response_analyses.append(fallback_analysis)
-                    weights[question.competency] = question.weight
-            
-            if not response_analyses:
-                logger.error(f"❌ No response analyses generated for session: {session_id}")
-                await session.execute(text("""
-                    UPDATE wsi_sessions SET status = 'cancelled'
-                    WHERE id = :session_id
-                """), {"session_id": session_id})
-                await session.commit()
-                return None
-            
-            wsi_result = self.wsi_service.calculate_wsi(
-                candidate_id=candidate_id,
-                job_vacancy_id=job_vacancy_id,
-                responses=response_analyses,
-                weights=weights
-            )
-            
-            logger.info(f"🎯 WSI Calculated - Technical: {wsi_result.technical_wsi}, "
-                       f"Behavioral: {wsi_result.behavioral_wsi}, Overall: {wsi_result.overall_wsi}")
-            
-            result_id = str(uuid.uuid4())
-            await session.execute(text("""
+                )
+                weights[question.competency] = question.weight
+
+        return response_analyses, weights
+
+    async def _mark_session_cancelled(
+        self, session: AsyncSession, session_id: str
+    ) -> None:
+        """Marca a sessão como `cancelled` quando não foi possível gerar
+        nenhuma análise — evita deixar a sessão presa em `in_progress`."""
+        logger.error(
+            f"❌ No response analyses generated for session: {session_id}"
+        )
+        await session.execute(
+            text(
+                "UPDATE wsi_sessions SET status = 'cancelled' WHERE id = :session_id"
+            ),
+            {"session_id": session_id},
+        )
+        await session.commit()
+
+    async def _persist_wsi_result(
+        self,
+        session: AsyncSession,
+        session_id: str,
+        candidate_id: str,
+        job_vacancy_id: str,
+        response_analyses: list[ResponseAnalysis],
+        weights: dict[str, float],
+    ) -> WSIResult:
+        """Calcula o WSI agregado, persiste em `wsi_results`, marca a
+        sessão como `completed` e devolve o resultado."""
+        wsi_result = self.wsi_service.calculate_wsi(
+            candidate_id=candidate_id,
+            job_vacancy_id=job_vacancy_id,
+            responses=response_analyses,
+            weights=weights,
+        )
+
+        logger.info(
+            f"🎯 WSI Calculated - Technical: {wsi_result.technical_wsi}, "
+            f"Behavioral: {wsi_result.behavioral_wsi}, Overall: {wsi_result.overall_wsi}"
+        )
+
+        await session.execute(
+            text(
+                """
                 INSERT INTO wsi_results (
                     id, session_id, candidate_id, job_vacancy_id,
                     technical_wsi, behavioral_wsi, overall_wsi, classification, percentile
                 )
                 VALUES (:id, :session_id, :candidate_id, :job_vacancy_id,
                         :technical_wsi, :behavioral_wsi, :overall_wsi, :classification, :percentile)
-            """), {
-                "id": result_id,
+                """
+            ),
+            {
+                "id": str(uuid.uuid4()),
                 "session_id": session_id,
                 "candidate_id": candidate_id,
                 "job_vacancy_id": job_vacancy_id,
@@ -483,92 +583,68 @@ class WSIVoiceOrchestrator:
                 "behavioral_wsi": wsi_result.behavioral_wsi,
                 "overall_wsi": wsi_result.overall_wsi,
                 "classification": wsi_result.classification,
-                "percentile": wsi_result.percentile
-            })
-            
-            await session.execute(text("""
-                UPDATE wsi_sessions
-                SET status = 'completed', completed_at = CURRENT_TIMESTAMP
-                WHERE id = :session_id
-            """), {"session_id": session_id})
-            
-            await session.commit()
-            
-            logger.info(f"✅ WSI Voice Screening completed for session {session_id}")
-            logger.info(f"   Classification: {wsi_result.classification.upper()}")
-            logger.info(f"   Overall WSI: {wsi_result.overall_wsi}/5.0")
-            
-            try:
-                company_id = await self._get_company_id_for_vacancy(session, job_vacancy_id)
-                
-                dispatcher = get_event_dispatcher()
-                await dispatcher.on_screening_completed(
-                    candidate_id=candidate_id,
-                    vacancy_id=job_vacancy_id,
-                    company_id=company_id,
-                    wsi_scores={
-                        "technical_wsi": wsi_result.technical_wsi,
-                        "behavioral_wsi": wsi_result.behavioral_wsi,
-                        "overall_wsi": wsi_result.overall_wsi
-                    },
-                    screening_type="voice_wsi",
-                    passed=wsi_result.classification in ["strong", "recommended"],
-                    classification=wsi_result.classification,
-                    session_id=str(session_id)
-                )
-            except Exception as e:
-                logger.warning(f"⚠️ Failed to dispatch screening-completed event: {e}")
-            
-            return wsi_result
-        
-        if db is not None:
-            return await _execute_with_db(db)
-        else:
-            async with AsyncSessionLocal() as session:
-                return await _execute_with_db(session)
-    
-    async def _get_company_id_for_vacancy(self, session: AsyncSession, job_vacancy_id: str) -> str:
-        """
-        Get the company_id for a vacancy from the database.
-        
-        Args:
-            session: Database session
-            job_vacancy_id: Job vacancy ID
-            
-        Returns:
-            Company ID as string, or "unknown" if not found
-        """
+                "percentile": wsi_result.percentile,
+            },
+        )
+
+        await session.execute(
+            text(
+                "UPDATE wsi_sessions "
+                "SET status = 'completed', completed_at = CURRENT_TIMESTAMP "
+                "WHERE id = :session_id"
+            ),
+            {"session_id": session_id},
+        )
+        await session.commit()
+
+        logger.info(f"✅ WSI Voice Screening completed for session {session_id}")
+        logger.info(f"   Classification: {wsi_result.classification.upper()}")
+        logger.info(f"   Overall WSI: {wsi_result.overall_wsi}/5.0")
+        return wsi_result
+
+    async def _dispatch_screening_completed_event(
+        self,
+        session: AsyncSession,
+        session_id: str,
+        candidate_id: str,
+        job_vacancy_id: str,
+        wsi_result: WSIResult,
+    ) -> None:
+        """Publica `screening-completed` para os consumidores downstream
+        (automation handlers, recommendation engine etc). Falha no
+        dispatch é absorvida — a triagem em si já foi persistida com
+        sucesso e não pode ser revertida por um event broker indisponível."""
         try:
-            result = await session.execute(text("""
-                SELECT company_id FROM job_vacancies WHERE id = :vacancy_id
-            """), {"vacancy_id": job_vacancy_id})
-            
-            row = result.fetchone()
-            if row and row[0]:
-                return str(row[0])
-            
-            logger.warning(f"⚠️ No company_id found for vacancy {job_vacancy_id}")
-            return "unknown"
+            company_id = await self._get_company_id_for_vacancy(
+                session, job_vacancy_id
+            )
+            dispatcher = get_event_dispatcher()
+            await dispatcher.on_screening_completed(
+                candidate_id=candidate_id,
+                vacancy_id=job_vacancy_id,
+                company_id=company_id,
+                wsi_scores={
+                    "technical_wsi": wsi_result.technical_wsi,
+                    "behavioral_wsi": wsi_result.behavioral_wsi,
+                    "overall_wsi": wsi_result.overall_wsi,
+                },
+                screening_type="voice_wsi",
+                passed=wsi_result.classification in ["strong", "recommended"],
+                classification=wsi_result.classification,
+                session_id=str(session_id),
+            )
         except Exception as e:
-            logger.warning(f"⚠️ Error fetching company_id for vacancy {job_vacancy_id}: {e}")
-            return "unknown"
+            logger.warning(
+                f"⚠️ Failed to dispatch screening-completed event: {e}"
+            )
     
-    def _build_job_context_from_competencies(self, competencies: list[Competency]) -> str:
-        """Build job context string from competencies for voice screening."""
-        technical = [c.name for c in competencies if c.type == "technical"]
-        behavioral = [c.name for c in competencies if c.type == "behavioral"]
-        cultural = [c.name for c in competencies if c.type == "cultural"]
-        
-        context = "Competências avaliadas:\n"
-        
-        if technical:
-            context += f"\nTécnicas: {', '.join(technical)}"
-        if behavioral:
-            context += f"\nComportamentais: {', '.join(behavioral)}"
-        if cultural:
-            context += f"\nCulturais: {', '.join(cultural)}"
-        
-        return context
+    # Audit task #496 (PR3) — acesso a dados extraído para
+    # `wsi_service/session_repository.py`. Shim mantém a API interna
+    # estável para `process_call_completed`.
+    async def _get_company_id_for_vacancy(self, session: AsyncSession, job_vacancy_id: str) -> str:
+        from .wsi_service.session_repository import get_company_id_for_vacancy
+        return await get_company_id_for_vacancy(session, job_vacancy_id)
+
     
     # Audit task #496 (PR1) — funções de extração foram movidas para
     # `wsi_service/transcript_extractor.py` (puras, testáveis isoladas).
@@ -583,77 +659,35 @@ class WSIVoiceOrchestrator:
         from .wsi_service.transcript_extractor import extract_qa_pairs
         return extract_qa_pairs(transcript, transcript_object, questions)
 
+    # Audit task #496 (PR3) — leitura de sessão extraída para
+    # `wsi_service/session_repository.py`. A API pública (`db` opcional)
+    # é preservada: o orquestrador continua sendo o único ponto que
+    # decide entre usar a sessão recebida ou abrir uma própria.
     async def get_session_status(
         self,
         session_id: str,
         db: AsyncSession | None = None
     ) -> dict[str, Any] | None:
         """Get current status of a voice screening session."""
-        
-        async def _execute_with_db(session: AsyncSession) -> dict[str, Any] | None:
-            result = await session.execute(text("""
-                SELECT s.id, s.candidate_id, s.job_vacancy_id, s.screening_type, s.mode,
-                       s.status, s.call_id, s.agent_id, s.started_at, s.completed_at,
-                       r.overall_wsi, r.technical_wsi, r.behavioral_wsi, r.classification
-                FROM wsi_sessions s
-                LEFT JOIN wsi_results r ON r.session_id = s.id
-                WHERE s.id = :session_id
-            """), {"session_id": session_id})
-            
-            row = result.fetchone()
-            
-            if not row:
-                return None
-            
-            return {
-                "session_id": row[0],
-                "candidate_id": row[1],
-                "job_vacancy_id": row[2],
-                "screening_type": row[3],
-                "mode": row[4],
-                "status": row[5],
-                "call_id": row[6],
-                "agent_id": row[7],
-                "started_at": row[8].isoformat() if row[8] else None,
-                "completed_at": row[9].isoformat() if row[9] else None,
-                "result": {
-                    "overall_wsi": float(row[10]) if row[10] else None,
-                    "technical_wsi": float(row[11]) if row[11] else None,
-                    "behavioral_wsi": float(row[12]) if row[12] else None,
-                    "classification": row[13]
-                } if row[10] else None
-            }
-        
+        from .wsi_service.session_repository import get_session_status as _repo_get_status
+
         if db is not None:
-            return await _execute_with_db(db)
-        else:
-            async with AsyncSessionLocal() as session:
-                return await _execute_with_db(session)
-    
+            return await _repo_get_status(db, session_id)
+        async with AsyncSessionLocal() as session:
+            return await _repo_get_status(session, session_id)
+
     async def get_session_by_call_id(
         self,
         call_id: str,
         db: AsyncSession | None = None
     ) -> dict[str, Any] | None:
         """Get session by voice call ID."""
-        
-        async def _execute_with_db(session: AsyncSession) -> dict[str, Any] | None:
-            result = await session.execute(text("""
-                SELECT id FROM wsi_sessions WHERE call_id = :call_id
-            """), {"call_id": call_id})
-            
-            row = result.fetchone()
-            
-            if row:
-                return await self.get_session_status(row[0], db=session)
-            
-            return None
-        
+        from .wsi_service.session_repository import get_session_by_call_id as _repo_get_by_call
+
         if db is not None:
-            return await _execute_with_db(db)
-        else:
-            async with AsyncSessionLocal() as session:
-                return await _execute_with_db(session)
+            return await _repo_get_by_call(db, call_id)
+        async with AsyncSessionLocal() as session:
+            return await _repo_get_by_call(session, call_id)
 
 
 wsi_voice_orchestrator = WSIVoiceOrchestrator()

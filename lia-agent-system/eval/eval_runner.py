@@ -69,41 +69,51 @@ async def call_lia(
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
     }
-    try:
-        t0 = time.monotonic()
-        resp = await client.post(
-            f"{base_url}/api/v1/chat",
-            json=body,
-            headers=headers,
-            timeout=timeout,
-        )
-        latency_ms = round((time.monotonic() - t0) * 1000)
-        if resp.status_code == 200:
-            data = resp.json()
+    import asyncio as _asyncio
+    last_exc = None
+    for attempt in range(2):
+        _client = client if attempt == 0 else httpx.AsyncClient()
+        try:
+            t0 = time.monotonic()
+            resp = await _client.post(
+                f"{base_url}/api/v1/chat",
+                json=body,
+                headers=headers,
+                timeout=timeout,
+            )
+            latency_ms = round((time.monotonic() - t0) * 1000)
+            if resp.status_code == 200:
+                data = resp.json()
+                return {
+                    "ok": True,
+                    "status_code": 200,
+                    "latency_ms": latency_ms,
+                    "response": (
+                        data.get("response")
+                        or data.get("content")
+                        or (data.get("data") or {}).get("message", {}).get("content", "")
+                        or str(data)[:500]
+                    ),
+                    "raw": data,
+                }
             return {
-                "ok": True,
-                "status_code": 200,
+                "ok": False,
+                "status_code": resp.status_code,
                 "latency_ms": latency_ms,
-                "response": (
-                    data.get("response")
-                    or data.get("content")
-                    or (data.get("data") or {}).get("message", {}).get("content", "")
-                    or str(data)[:500]
-                ),
-                "raw": data,
+                "response": "",
+                "error": resp.text[:500],
             }
-        return {
-            "ok": False,
-            "status_code": resp.status_code,
-            "latency_ms": latency_ms,
-            "response": "",
-            "error": resp.text[:500],
-        }
-    except httpx.TimeoutException:
-        return {"ok": False, "status_code": 0, "latency_ms": -1, "response": "", "error": "TIMEOUT"}
-    except Exception as exc:
-        return {"ok": False, "status_code": 0, "latency_ms": -1, "response": "", "error": str(exc)}
-
+        except httpx.TimeoutException:
+            return {"ok": False, "status_code": 0, "latency_ms": -1, "response": "", "error": "TIMEOUT"}
+        except (httpx.ConnectError, httpx.RemoteProtocolError) as exc:
+            last_exc = exc
+            if attempt == 0:
+                await _asyncio.sleep(5)  # wait for backend restart
+                continue
+            return {"ok": False, "status_code": 0, "latency_ms": -1, "response": "", "error": str(exc)}
+        except Exception as exc:
+            return {"ok": False, "status_code": 0, "latency_ms": -1, "response": "", "error": str(exc)}
+    return {"ok": False, "status_code": 0, "latency_ms": -1, "response": "", "error": str(last_exc)}
 
 def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
     """Check if a single success criterion is met - Portuguese-aware."""
