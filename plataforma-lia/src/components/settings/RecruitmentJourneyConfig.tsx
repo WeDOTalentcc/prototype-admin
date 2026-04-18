@@ -11,8 +11,9 @@ import {
 } from "@dnd-kit/sortable"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Plus, Lock, Shield, Settings } from "lucide-react"
+import { Plus, Lock, Shield, Settings, AlertTriangle, Loader2 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
+import { fetchWithRetry, HttpError } from "@/services/lia-api"
 import {
   SortableStageCard, ReadOnlyStageCard,
   getActionBehaviorShort,
@@ -84,6 +85,9 @@ export function RecruitmentJourneyConfig({
   const [newlyAddedStageId, setNewlyAddedStageId] = useState<string | null>(null)
   const [catalogStages, setCatalogStages] = useState<CatalogStage[]>([])
   const [catalogOpen, setCatalogOpen] = useState(false)
+  const [catalogLoading, setCatalogLoading] = useState(false)
+  const [catalogError, setCatalogError] = useState<string | null>(null)
+  const [catalogReloadKey, setCatalogReloadKey] = useState(0)
   const stageRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
   const sensors = useSensors(
@@ -92,14 +96,36 @@ export function RecruitmentJourneyConfig({
   )
 
   useEffect(() => {
-    fetch('/api/backend-proxy/stage-catalog')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
+    const controller = new AbortController()
+    let cancelled = false
+    setCatalogLoading(true)
+    setCatalogError(null)
+    fetchWithRetry('/api/backend-proxy/stage-catalog', { signal: controller.signal }, { attempts: 2, timeoutMs: 15000 })
+      .then(async (r) => {
+        if (!r.ok) throw new HttpError(r.status, `HTTP ${r.status}`)
+        return r.json()
+      })
+      .then((data) => {
+        if (cancelled) return
         if (!data) return
         setCatalogStages(data.catalog ?? (Array.isArray(data) ? data : []))
       })
-      .catch((err) => { console.error('[RecruitmentJourneyConfig] stage-catalog fetch failed', err) })
-  }, [])
+      .catch((err) => {
+        if (cancelled) return
+        if (err?.name === 'AbortError') return
+        // Use console.warn — Next dev overlay only intercepts uncaught errors
+        // and unhandled rejections; warn keeps the noise out of the overlay.
+        console.warn('[RecruitmentJourneyConfig] stage-catalog fetch failed', err)
+        setCatalogError('Não foi possível carregar o catálogo de etapas.')
+      })
+      .finally(() => {
+        if (!cancelled) setCatalogLoading(false)
+      })
+    return () => {
+      cancelled = true
+      controller.abort()
+    }
+  }, [catalogReloadKey])
 
   useEffect(() => {
     if (!newlyAddedStageId) return
@@ -220,7 +246,27 @@ export function RecruitmentJourneyConfig({
                   </h4>
                 </div>
                 <div className="max-h-64 overflow-y-auto p-2">
-                  {availableCatalogStages.length > 0 ? (
+                  {catalogLoading && catalogStages.length === 0 ? (
+                    <div className="flex items-center gap-2 px-3 py-4 text-lia-text-tertiary">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span className={textStyles.description}>Carregando catálogo de etapas...</span>
+                    </div>
+                  ) : catalogError && catalogStages.length === 0 ? (
+                    <div className="px-3 py-4 space-y-2">
+                      <div className="flex items-start gap-2 text-status-warning">
+                        <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
+                        <p className={`${textStyles.description} text-status-warning`}>{catalogError}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setCatalogReloadKey((k) => k + 1)}
+                        className="w-full"
+                      >
+                        Tentar novamente
+                      </Button>
+                    </div>
+                  ) : availableCatalogStages.length > 0 ? (
                     availableCatalogStages.map(cs => (
                       <button
                         key={cs.id}

@@ -36,7 +36,8 @@ function getBigFiveLabelPTBR(trait: string): string {
 export function SCMSectionPerguntasEdit({
   job, onJobUpdate,
   acceptedQuestions, setAcceptedQuestions,
-  companyQuestions, disabledCompanyQIds,
+  companyQuestions, companyQuestionsLoading, companyQuestionsError, retryCompanyQuestions,
+  disabledCompanyQIds,
   selectedBankQuestions, bankQuestionOverrides,
   customQuestions,
   deactivatedQuestions, setDeactivatedQuestions,
@@ -442,7 +443,24 @@ export function SCMSectionPerguntasEdit({
                       <>
                         {block.id === 2 && (
                           <div className="space-y-4 mb-3">
-                            <CompanyDefaultQuestions questions={companyQuestions} disabledIds={disabledCompanyQIds} isEditing={true} onToggle={handleToggleCompanyDefault} />
+                            {companyQuestionsError ? (
+                              <div className="border border-status-warning/30 bg-status-warning/10 rounded-xl px-4 py-3 flex items-start gap-3">
+                                <AlertTriangle className="w-4 h-4 text-status-warning mt-0.5 shrink-0" />
+                                <div className="flex-1">
+                                  <p className="text-xs text-status-warning leading-relaxed">{companyQuestionsError}</p>
+                                  <button
+                                    type="button"
+                                    onClick={retryCompanyQuestions}
+                                    disabled={companyQuestionsLoading}
+                                    className="mt-1 text-xs font-semibold text-status-warning hover:underline disabled:opacity-50"
+                                  >
+                                    {companyQuestionsLoading ? 'Carregando...' : 'Tentar novamente'}
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <CompanyDefaultQuestions questions={companyQuestions} disabledIds={disabledCompanyQIds} isEditing={true} onToggle={handleToggleCompanyDefault} />
+                            )}
                             <div className="border-t border-lia-border-subtle" />
                             <CompanyBankQuestions isEditing={true} selectedQuestions={selectedBankQuestions} questionOverrides={bankQuestionOverrides} onToggleQuestion={handleToggleBankQuestion} onUpdateSelectedQuestion={handleUpdateBankQuestion} excludeIds={companyQuestions.map(q => q.id)} />
                             <div className="border-t border-lia-border-subtle" />

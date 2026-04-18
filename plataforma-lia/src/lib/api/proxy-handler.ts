@@ -181,7 +181,23 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
           // Pass the backend response through verbatim — preserve status, body
           // and content-type. The UI needs the original payload (request_id,
           // code, errors, warning_message, etc.) to react correctly to 4xx/5xx.
-          const errText = await response.text().catch(() => "")
+          let errText = ""
+          try {
+            errText = await response.text()
+          } catch (readErr) {
+            // Backend closed the socket mid-response (UND_ERR_SOCKET / stream
+            // aborted). Treat as a structured 502 instead of letting the
+            // exception bubble up and abort the Next response stream.
+            return NextResponse.json(
+              {
+                error: "Backend disconnected",
+                detail: "Backend closed the connection while streaming the error body",
+                path: backendPath,
+                method,
+              },
+              { status: 502 }
+            )
+          }
           const errCt = response.headers.get("content-type") || ""
           if (!errText) {
             return new NextResponse(null, { status: response.status })
@@ -203,7 +219,23 @@ export function createProxyHandlers<M extends HttpMethod = "GET">(
           return new NextResponse(null, { status: response.status })
         }
 
-        const rawText = await response.text()
+        let rawText = ""
+        try {
+          rawText = await response.text()
+        } catch (readErr) {
+          // Backend closed the socket mid-response. Map to 502 so the UI can
+          // render an empty-state instead of seeing a network error in the
+          // browser.
+          return NextResponse.json(
+            {
+              error: "Backend disconnected",
+              detail: "Backend closed the connection while streaming the response body",
+              path: backendPath,
+              method,
+            },
+            { status: 502 }
+          )
+        }
         if (!rawText) {
           return new NextResponse(null, { status: response.status })
         }

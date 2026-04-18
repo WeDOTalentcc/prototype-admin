@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { textStyles } from '@/lib/design-tokens'
+import { fetchWithRetry, HttpError } from '@/services/lia-api'
 
 const BIG_FIVE_PT_BR: Record<string, string> = {
   openness: 'Abertura a mudanças',
@@ -194,6 +195,10 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
   const [showScreeningToggleConfirm, setShowScreeningToggleConfirm] = useState<'activate' | 'pause' | null>(null)
 
   const [companyQuestions, setCompanyQuestions] = useState<Array<{ id: string; question: string; is_eliminatory: boolean; expected_answer?: string }>>([])
+  const [companyQuestionsLoading, setCompanyQuestionsLoading] = useState(false)
+  const [companyQuestionsError, setCompanyQuestionsError] = useState<string | null>(null)
+  const [companyQuestionsReloadKey, setCompanyQuestionsReloadKey] = useState(0)
+  const retryCompanyQuestions = React.useCallback(() => setCompanyQuestionsReloadKey((k) => k + 1), [])
   const [disabledCompanyQIds, setDisabledCompanyQIds] = useState<Set<string>>(new Set())
   const [selectedBankQuestions, setSelectedBankQuestions] = useState<string[]>([])
   const [bankQuestionOverrides, setBankQuestionOverrides] = useState<Record<string, { character?: 'eliminatoria' | 'classificatoria', expectedAnswer?: string }>>({})
@@ -201,9 +206,17 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
 
   // Load company default questions
   useEffect(() => {
-    fetch('/api/backend-proxy/company/screening-questions')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
+    const controller = new AbortController()
+    let cancelled = false
+    setCompanyQuestionsLoading(true)
+    setCompanyQuestionsError(null)
+    fetchWithRetry('/api/backend-proxy/company/screening-questions', { signal: controller.signal }, { attempts: 2, timeoutMs: 15000 })
+      .then(async (r) => {
+        if (!r.ok) throw new HttpError(r.status, `HTTP ${r.status}`)
+        return r.json()
+      })
+      .then((data) => {
+        if (cancelled) return
         const items: Array<Record<string, unknown>> = data?.items ?? (Array.isArray(data) ? data : [])
         setCompanyQuestions(items.map((q) => ({
           id: q.id as string,
@@ -212,8 +225,22 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
           expected_answer: (q.expected_answer || undefined) as string | undefined,
         })))
       })
-      .catch((err) => { console.error('[useScreeningConfigManagerCore] eligibility questions fetch failed', err) })
-  }, [])
+      .catch((err) => {
+        if (cancelled) return
+        if (err?.name === 'AbortError') return
+        // console.warn keeps the noise out of the Next dev red overlay (which
+        // intercepts only uncaught errors / unhandled rejections).
+        console.warn('[useScreeningConfigManagerCore] eligibility questions fetch failed', err)
+        setCompanyQuestionsError('Não foi possível carregar as perguntas padrão da empresa.')
+      })
+      .finally(() => {
+        if (!cancelled) setCompanyQuestionsLoading(false)
+      })
+    return () => {
+      cancelled = true
+      controller.abort()
+    }
+  }, [companyQuestionsReloadKey])
 
   useEffect(() => {
     const ids: string[] = (job?.disabled_eligibility_question_ids as string[] | undefined) || []
@@ -534,6 +561,9 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     activeSection,
     bankQuestionOverrides,
     companyQuestions,
+    companyQuestionsLoading,
+    companyQuestionsError,
+    retryCompanyQuestions,
     screeningConfig,
     updateScreeningConfig,
     isLoadingScreeningConfig,
