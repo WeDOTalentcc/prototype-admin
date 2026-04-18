@@ -423,6 +423,71 @@ export const kanbanColumnHeaderStyles = {
 } as const
 
 /**
+ * v4.2: Card canônico do Kanban (vagas + candidatos)
+ * Usado por <KanbanCardShell /> e <KanbanChip /> em src/components/pages/job-kanban.
+ *
+ * Densidades:
+ * - `comfortable`: kanban de vagas (página /jobs).
+ * - `compact`:    kanban de candidatos dentro de uma vaga.
+ *
+ * Tokens fixos garantem que ambos os contextos compartilhem fundo,
+ * borda, raio, hover e tipografia, variando apenas a escala.
+ */
+export const kanbanCardStyles = {
+  shell:
+    'group relative overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl transition-colors motion-reduce:transition-none',
+  shellInteractive:
+    'hover:border-lia-border-default dark:hover:border-lia-border-medium',
+  body: {
+    comfortable: 'p-3',
+    compact: 'p-2',
+  },
+  bodyGap: {
+    comfortable: 'gap-2',
+    compact: 'gap-1.5',
+  },
+  avatar: {
+    comfortable: 'h-8 w-8',
+    compact: 'w-7 h-7',
+  },
+  title: {
+    comfortable:
+      "font-['Open_Sans',sans-serif] font-medium text-sm text-lia-text-primary dark:text-lia-text-primary truncate",
+    compact:
+      "font-['Open_Sans',sans-serif] font-medium text-xs text-lia-text-primary dark:text-lia-text-primary truncate",
+  },
+  subtitle: {
+    comfortable:
+      "font-['Open_Sans',sans-serif] text-xs text-lia-text-secondary dark:text-lia-text-secondary truncate",
+    compact:
+      "font-['Open_Sans',sans-serif] text-xs text-lia-text-secondary dark:text-lia-text-secondary truncate",
+  },
+  // Divisor inferior (footer)
+  divider:
+    'border-t border-lia-border-subtle dark:border-lia-border-subtle',
+  footerPadding: {
+    comfortable: 'mt-2 pt-2',
+    compact: 'mt-2 pt-2',
+  },
+  // Ribbon (faixa superior, tipo "Ação Necessária")
+  ribbon:
+    'px-2 py-1 bg-lia-bg-tertiary dark:bg-lia-bg-tertiary',
+} as const
+
+/**
+ * v4.2: Chip canônico do Kanban (tag/pílula em outline)
+ */
+export const kanbanChipStyles = {
+  base:
+    'inline-flex items-center rounded-full border border-lia-border-default dark:border-lia-border-default text-lia-text-secondary dark:text-lia-text-secondary bg-transparent',
+  size: {
+    comfortable: 'text-xs px-2 py-0.5',
+    compact: 'text-micro px-1.5 py-0',
+  },
+  muted: 'text-lia-text-tertiary dark:text-lia-text-tertiary',
+} as const
+
+/**
  * v4: Classes utilitárias para Botões de Ação
  * Tamanhos padronizados para botões Editar, Salvar, Exportar, etc.
  */

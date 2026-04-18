@@ -71,10 +71,12 @@ import { getSuggestionForCandidate } from "@/hooks/ai/useCandidateSuggestions"
 import { formatScorePercent } from "@/lib/design-tokens"
 import type { CandidateLocal } from "@/services/lia-api"
 import { KanbanColumnHeader } from "./KanbanColumnHeader"
+import { KanbanCardShell } from "./KanbanCardShell"
 import { KanbanCardActions } from "./KanbanCardActions"
 import { KanbanCardScores } from "./KanbanCardScores"
 import { KanbanCardStatusBadges } from "./KanbanCardStatusBadges"
 import { KanbanCardInterviewButtons } from "./KanbanCardInterviewButtons"
+import { kanbanCardStyles } from "@/lib/design-tokens"
 
 type KanbanCandidate = CandidateLocal & {
   score?: number
@@ -399,51 +401,73 @@ export function KanbanColumnRenderer({
       {/* Cards - Com scroll vertical */}
       <div className="flex-1 overflow-y-auto px-1.5 pb-1 space-y-1">
         {filteredCandidates.map((candidate, index) => (
-          <div
+          <KanbanCardShell
             key={candidate.id}
+            density="compact"
             data-testid="candidate-card"
             data-candidate-id={candidate.id}
             data-index={index}
             draggable
             onDragStart={(e) => onDragStart(e, candidate, stageId)}
             onDragEnd={onDragEnd}
-            className={`bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border relative overflow-hidden ${
+            accentLeftClass={
               candidate.needsAction
-                ? "border-l-4 border-l-lia-btn-primary-hover border-lia-border-subtle dark:border-lia-border-subtle"
+                ? "border-l-lia-btn-primary-hover"
                 : (candidate.status === "triado_aprovado" || candidate.status === "triado") &&
                   stageId === "screening"
-                ? "border-l-4 border-l-green-500 border-lia-border-subtle dark:border-lia-border-subtle bg-status-success/10/30 dark:bg-status-success/20"
-                : "border-lia-border-subtle dark:border-lia-border-subtle"
-            } transition-colors duration-300 cursor-move group`}
-            style={{animationDelay: `${index * 50}ms`,
+                ? "border-l-green-500"
+                : undefined
+            }
+            isDropping={isDropping}
+            className={`cursor-move duration-300 ${
+              (candidate.status === "triado_aprovado" || candidate.status === "triado") &&
+              stageId === "screening"
+                ? "bg-status-success/10/30 dark:bg-status-success/20"
+                : ""
+            }`}
+            style={{
+              animationDelay: `${index * 50}ms`,
               minHeight: "110px",
               transition: "all 0.3s ease",
-              animation: isDropping ? "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite" : undefined}}
+            }}
             onMouseEnter={(e) => {
               if (!draggedCandidate) {
                 e.currentTarget.style.transform = "translateY(-1px)"
-                
               }
             }}
             onMouseLeave={(e) => {
               if (!draggedCandidate) {
                 e.currentTarget.style.transform = "translateY(0)"
-                
               }
             }}
             onClick={() => !draggedCandidate && onOpenPreview(candidate)}
-          >
-            {/* Tarja de Ação Necessária - Cinza puro */}
-            {candidate.needsAction && (
-              <div className="px-2 py-1 bg-lia-bg-tertiary">
+            ribbon={
+              candidate.needsAction ? (
                 <div className="flex items-center gap-1">
                   <Flag className="w-3 h-3 text-status-warning" />
                   <span className="text-micro font-bold text-lia-text-tertiary">{t('actionRequired')}</span>
                 </div>
-              </div>
-            )}
-
-            <div className="p-2 relative">
+              ) : null
+            }
+            footer={
+              <KanbanCardInterviewButtons
+                candidate={candidate}
+                stageId={stageId}
+                setTransitionInitialPrompt={setTransitionInitialPrompt}
+                setTransitionInterviewAlert={setTransitionInterviewAlert}
+                setTransitionAllowStageSelection={setTransitionAllowStageSelection}
+                setDecisionFlowCandidate={setDecisionFlowCandidate as (c: unknown) => void}
+                setDecisionFlowType={setDecisionFlowType}
+                setShowDecisionFlowModal={setShowDecisionFlowModal}
+                onOpenDecisionFlowModal={onOpenDecisionFlowModal as (c: unknown, action: "approve" | "reject") => void}
+                onApproveFromScreening={onApproveFromScreening as (c: unknown) => void}
+                onRejectFromScreening={onRejectFromScreening as (c: unknown) => void}
+                openTransition={openTransition as (candidates: unknown[], fromStage: string, toStage: string) => void}
+              />
+            }
+            footerDivider={false}
+          >
+            <div className="relative">
               {/* Ações rápidas - Posicionadas no canto direito */}
               <KanbanCardActions
                 candidate={candidate}
@@ -602,23 +626,7 @@ export function KanbanColumnRenderer({
                 rejectSuggestion={rejectSuggestion}
               />
             </div>
-
-            {/* Container de Ações */}
-            <KanbanCardInterviewButtons
-              candidate={candidate}
-              stageId={stageId}
-              setTransitionInitialPrompt={setTransitionInitialPrompt}
-              setTransitionInterviewAlert={setTransitionInterviewAlert}
-              setTransitionAllowStageSelection={setTransitionAllowStageSelection}
-              setDecisionFlowCandidate={setDecisionFlowCandidate as (c: unknown) => void}
-              setDecisionFlowType={setDecisionFlowType}
-              setShowDecisionFlowModal={setShowDecisionFlowModal}
-              onOpenDecisionFlowModal={onOpenDecisionFlowModal as (c: unknown, action: "approve" | "reject") => void}
-              onApproveFromScreening={onApproveFromScreening as (c: unknown) => void}
-              onRejectFromScreening={onRejectFromScreening as (c: unknown) => void}
-              openTransition={openTransition as (candidates: unknown[], fromStage: string, toStage: string) => void}
-            />
-          </div>
+          </KanbanCardShell>
         ))}
       </div>
     </div>
