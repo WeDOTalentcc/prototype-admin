@@ -43,6 +43,9 @@ async def _generate_kpi_report(params: dict[str, Any], context: dict[str, Any]):
             )
 
         async with AsyncSessionLocal() as db:
+            from app.core.database import set_tenant_context
+            if company_id:
+                await set_tenant_context(db, str(company_id))
             jobs_result = await db.execute(text("""
                 SELECT
                     COUNT(*) FILTER (WHERE status = 'Ativa') as active_jobs,
