@@ -51,13 +51,14 @@ async def validate_token(db: AsyncSession, token: str) -> dict[str, Any]:
     # limit applies whether the candidate hits /start or just resumes via
     # the token URL. The increment itself still happens on /start (state
     # transition); validate_token only blocks further access when capped.
-    # Strict comparison ( current > REOPEN_LIMIT ): allow exactly REOPEN_LIMIT
-    # reopens, block the (LIMIT+1)-th access. Increment happens in start_session.
+    # MVP requirement: até 2 retomadas; a 3ª bloqueia. Since start_session
+    # increments BEFORE checking, validate_token must use `>=` so that a
+    # session whose count is already at the cap cannot be re-validated.
     REOPEN_LIMIT = 2
     if session.status in ("started", "in_progress"):
         meta = session.metadata_json or {}
         current = int(meta.get("reopen_count", 0))
-        if current > REOPEN_LIMIT:
+        if current >= REOPEN_LIMIT:
             return {
                 "valid": False,
                 "error": "reopen_limit_exceeded",
@@ -347,12 +348,11 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
     if not session:
         return {"error": "not_found"}
 
-    # Task #425 — session resumption: cap reopens to 2 (after the original
-    # invited→started transition). reopen_count is persisted in
-    # TriagemSession.metadata_json (JSON column, no migration required).
-    # Strict comparison ( current > REOPEN_LIMIT ) and a 30-min cooldown so
-    # accidental refreshes/double-loads inside the cooldown window do not
-    # consume attempts.
+    # Task #425 — session resumption: até 2 retomadas; a 3ª bloqueia.
+    # Counting model: invited→started never increments. Each subsequent access
+    # while status is started/in_progress (and outside the 30-min cooldown)
+    # increments by 1. Block when count is already at LIMIT (so the next
+    # attempt — which would push it to LIMIT+1 — is rejected).
     REOPEN_LIMIT = 2
     REOPEN_COOLDOWN_MIN = 30
     if session.status == "invited":
@@ -361,7 +361,7 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
     elif session.status in ("started", "in_progress"):
         meta = dict(session.metadata_json or {})
         current = int(meta.get("reopen_count", 0))
-        if current > REOPEN_LIMIT:
+        if current >= REOPEN_LIMIT:
             return {
                 "error": "reopen_limit_exceeded",
                 "reopen_count": current,

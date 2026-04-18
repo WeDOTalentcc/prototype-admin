@@ -852,7 +852,11 @@ useEffect(() => {
                 const needsPhone = channel === 'whatsapp' || channel === 'telefone' || channel === 'both'
                 if (needsEmail && !candidate.email) return true
                 if (needsPhone && !candidate.phone) return true
-                if (!message.trim()) return true
+                // Task #425 — only channels that actually compose text require a
+                // message body. Direct phone (Twilio PSTN) initiates a call
+                // without any composer, so message must NOT gate the CTA.
+                const requiresMessage = channel === 'email' || channel === 'whatsapp' || channel === 'voz_web' || channel === 'both'
+                if (requiresMessage && !message.trim()) return true
                 return false
               })()}
               className="h-9 px-4 text-xs font-medium bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text"

@@ -256,11 +256,20 @@ export function TriagemFlow({ hook }: TriagemFlowProps) {
                 }
               )
               const data = await resp.json().catch(() => ({}))
-              if (!resp.ok || !data?.wa_url) {
+              // Task #425 — backend returns one of three shapes depending on the
+              // recruiter-configured WhatsApp delivery mode:
+              //   wa_link      → { success: true, wa_url }
+              //   twilio_direct → { success: true, twilio: {...} } (no wa_url)
+              //   both         → { success: true, wa_url, twilio: {...} }
+              // Treat the response as success whenever HTTP is OK and the
+              // payload reports success, even if no wa_url is present.
+              if (!resp.ok || data?.success === false) {
                 console.error("[Triagem] whatsapp-initiate failed", data)
                 return
               }
-              window.open(data.wa_url, "_blank", "noopener,noreferrer")
+              if (data?.wa_url) {
+                window.open(data.wa_url, "_blank", "noopener,noreferrer")
+              }
               setWhatsappModalOpen(false)
             } catch (err) {
               console.error("[Triagem] whatsapp-initiate error", err)
