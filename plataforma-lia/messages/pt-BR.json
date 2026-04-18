@@ -1,4 +1,11 @@
 {
+  "workflowRail": {
+    "createJob": {
+      "label": "Criar vaga",
+      "tooltip": "Iniciar wizard de criação de vaga",
+      "ariaLabel": "Criar nova vaga"
+    }
+  },
   "sidebar": {
     "sections": {
       "operational": "Operacional",

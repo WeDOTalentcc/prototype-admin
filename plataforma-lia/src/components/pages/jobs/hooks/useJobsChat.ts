@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
+import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { callOrchestratedJobsManagement } from "@/lib/api/kanban-assistant"
 import { useLiaSuggestions, useJobInsights, useLiaExpandedPrompt } from "@/hooks/ai/use-lia-suggestions"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
@@ -98,6 +99,35 @@ export function useJobsChat({
     }
   }, [pendingChatOpen, onChatOpened, openGlobalChat])
 
+  // Handle ?action=create query param (entry point from WorkflowRail "Criar vaga")
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
+  const handledActionRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (!searchParams) return
+    const action = searchParams.get("action")
+    if (action !== "create") return
+    // dedupe: only act once per action token instance
+    const token = `${pathname}?action=create`
+    if (handledActionRef.current === token) return
+    handledActionRef.current = token
+
+    // Trigger the existing job-creation chat flow (same wizard hook used elsewhere)
+    openJobCreationChatRef.current?.("Criar nova vaga")
+
+    // Clean the URL so refresh doesn't re-trigger
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete("action")
+    const qs = params.toString()
+    router.replace(qs ? `${pathname}?${qs}` : pathname || "/")
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, pathname])
+
+  // Ref forwarder so the effect above can call the latest openJobCreationChat
+  // without re-running on every callback identity change.
+  const openJobCreationChatRef = useRef<((m?: string) => void) | null>(null)
+
   // -------------------------------------------------------------------------
   // Floating chat openers (delegate to LiaFloat unified chat)
   // -------------------------------------------------------------------------
@@ -126,6 +156,11 @@ export function useJobsChat({
       meta: { conversationId: wizardId },
     })
   }, [onAddRecentItem, openGlobalChat])
+
+  // Keep ref in sync so the ?action=create effect can call the latest version
+  useEffect(() => {
+    openJobCreationChatRef.current = openJobCreationChat
+  }, [openJobCreationChat])
 
   // -------------------------------------------------------------------------
   // handleAICommand (multi-agent orchestrator)

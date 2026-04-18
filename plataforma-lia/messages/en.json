@@ -1,4 +1,11 @@
 {
+  "workflowRail": {
+    "createJob": {
+      "label": "Create job",
+      "tooltip": "Start the job creation wizard",
+      "ariaLabel": "Create new job"
+    }
+  },
   "sidebar": {
     "sections": {
       "operational": "Operational",

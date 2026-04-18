@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from"react"
+import { useTranslations } from "next-intl"
 import {
   ChevronUp, ChevronDown, X, Briefcase, Database,
   Search, ArrowRight, Plus, Zap
@@ -29,14 +30,18 @@ import { useWorkflowRail, WorkflowEntry, WorkflowStage } from"./useWorkflowRail"
 interface WorkflowRailProps {
   userId: string
   onNavigate: (path: string) => void
+  onCreateJob?: () => void
 }
 
-export default function WorkflowRail({ userId, onNavigate }: WorkflowRailProps) {
+export default function WorkflowRail({ userId, onNavigate, onCreateJob }: WorkflowRailProps) {
   const { entries, isConnected, dismissEntry } = useWorkflowRail(userId)
   const [isExpanded, setIsExpanded] = useState(false)
+  const t = useTranslations("workflowRail.createJob")
 
-  // Don't render if no entries
-  if (entries.length === 0) return null
+  const hasEntries = entries.length > 0
+
+  // Don't render if no entries AND no create-job action available
+  if (!hasEntries && !onCreateJob) return null
 
   // Count pending actions across all entries
   const pendingCount = entries.filter(e => e.pendingAction).length
@@ -44,28 +49,55 @@ export default function WorkflowRail({ userId, onNavigate }: WorkflowRailProps) 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 transition-all duration-300">
       {/* Collapsed bar */}
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-4 py-2 bg-lia-bg-inverse text-white hover:bg-lia-bg-inverse transition-colors"
-      >
-        <div className="flex items-center gap-3 overflow-x-auto">
-          {entries.slice(0, 3).map(entry => (
-            <CollapsedEntry key={entry.id} entry={entry} />
-          ))}
-          {entries.length > 3 && (
-            <span className="text-xs text-lia-text-tertiary">+{entries.length - 3} mais</span>
-          )}
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0 ml-3">
-          {pendingCount > 0 && (
-            <Badge className="bg-yellow-500 text-yellow-900 text-xs">{pendingCount} pendente{pendingCount > 1 ?"s" :""}</Badge>
-          )}
-          {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-        </div>
-      </button>
+      <div className="w-full flex items-stretch bg-lia-bg-inverse text-white">
+        <button
+          onClick={() => hasEntries && setIsExpanded(!isExpanded)}
+          disabled={!hasEntries}
+          aria-expanded={isExpanded}
+          className="flex-1 flex items-center justify-between px-4 py-2 hover:bg-lia-bg-inverse transition-colors disabled:cursor-default text-left"
+        >
+          <div className="flex items-center gap-3 overflow-x-auto">
+            {hasEntries ? (
+              <>
+                {entries.slice(0, 3).map(entry => (
+                  <CollapsedEntry key={entry.id} entry={entry} />
+                ))}
+                {entries.length > 3 && (
+                  <span className="text-xs text-lia-text-tertiary">+{entries.length - 3} mais</span>
+                )}
+              </>
+            ) : (
+              <span className="text-xs text-lia-text-tertiary">Pronto para começar um novo fluxo</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+            {pendingCount > 0 && (
+              <Badge className="bg-yellow-500 text-yellow-900 text-xs">{pendingCount} pendente{pendingCount > 1 ?"s" :""}</Badge>
+            )}
+            {hasEntries && (isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />)}
+          </div>
+        </button>
+
+        {/* Footer action: Create job */}
+        {onCreateJob && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onCreateJob() }}
+            aria-label={t("ariaLabel")}
+            title={t("tooltip")}
+            className="flex items-center gap-1.5 px-3 py-2 border-l border-white/10 text-white/90 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 transition-colors text-xs font-medium whitespace-nowrap"
+          >
+            <span className="relative inline-flex items-center">
+              <Briefcase className="w-4 h-4" aria-hidden="true" />
+              <Plus className="w-2.5 h-2.5 absolute -top-0.5 -right-1 bg-lia-bg-inverse rounded-full" aria-hidden="true" />
+            </span>
+            <span>{t("label")}</span>
+          </button>
+        )}
+      </div>
 
       {/* Expanded panel */}
-      {isExpanded && (
+      {isExpanded && hasEntries && (
         <div className="bg-white border-t border-lia-border-subtle shadow-2xl max-h-80 overflow-y-auto">
           <div className="px-4 py-3 flex items-center justify-between">
             <h3 className={textStyles.subtitle}>Fluxos Ativos</h3>
