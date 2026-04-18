@@ -562,6 +562,10 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(settings_progress.router, prefix="/api/v1", tags=["settings-progress"])
     app.include_router(briefing.router, prefix="/api/v1", tags=["briefing"])
 
+    # ── Job Readiness Hub (Task #429) ─────────────────────────────────────────
+    from app.api.v1 import job_readiness as _job_readiness
+    app.include_router(_job_readiness.router, prefix="/api/v1", tags=["job-readiness"])
+
     # ── Billing, Modules & SaaS ──────────────────────────────────────────────
     app.include_router(billing.router, prefix="/api/v1", tags=["billing"])
     app.include_router(modules.router, prefix="/api/v1", tags=["modules"])

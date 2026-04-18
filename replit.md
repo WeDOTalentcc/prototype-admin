@@ -1,3 +1,10 @@
+# Recent Changes
+
+- **Task #429 — Job Readiness Hub (MVP)**: Pipeline visual de 7 estágios para preparar vagas importadas do ATS antes da triagem.
+  - Backend: novas colunas em `job_vacancies` (migration 086), `JobReadinessService` com classificador puro + HITL approval, REST API em `/api/v1/job-readiness/*`.
+  - Frontend: cliente `readiness-api.ts`, página Hub em `/[locale]/jobs/readiness` (alias PT `/vagas/prontidao`) com kanban + drawer + ações em lote, banner CTA + botão "Prontidão" na página de Vagas.
+  - Tests: 16 unit tests do classifier + integration test de isolamento multi-tenant.
+
 # Overview
 Plataforma LIA (Learning Intelligence Assistant) is an AI-powered recruitment and selection system designed to optimize hiring processes. It leverages a multi-agent AI architecture and the WSI (WeDoTalent Skill Index) methodology to provide comprehensive candidate assessment (technical, behavioral, cultural fit). LIA aims to revolutionize recruitment by offering advanced AI capabilities, robust authentication, candidate comparison, specialized testing, KPI dashboards, real-time notifications, and predictive analytics, ensuring an efficient, compliant, and intelligent solution that improves hiring quality and reduces time-to-hire.
 
