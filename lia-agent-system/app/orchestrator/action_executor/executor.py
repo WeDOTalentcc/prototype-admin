@@ -160,6 +160,17 @@ class ActionExecutorService:
         if entities.get("duration_minutes"):
             params["duration_minutes"] = entities["duration_minutes"]
 
+        # Auto-inject JWT context params — never ask the user for these
+        _all_tool_params = list(config.get("required_params", [])) + list(config.get("optional_params", []))
+        if "company_id" in _all_tool_params and not params.get("company_id"):
+            _cid = context.get("company_id") if context else None
+            if _cid:
+                params["company_id"] = str(_cid)
+        if "recruiter_id" in _all_tool_params and not params.get("recruiter_id"):
+            _uid = context.get("user_id") if context else None
+            if _uid:
+                params["recruiter_id"] = str(_uid)
+
         missing = []
         for req_param in config["required_params"]:
             if req_param not in params or not params[req_param]:
