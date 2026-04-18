@@ -215,7 +215,7 @@ async def _job_health_check(params: dict[str, Any], context: dict[str, Any]):
                     short_sql = "SELECT title, status, priority, created_at, EXTRACT(DAY FROM NOW() - created_at)::int as days_open FROM job_vacancies WHERE job_id = :jid"
                     short_bind: dict[str, Any] = {"jid": str(job_id)}
                     if company_id:
-                        short_sql += " AND company_id = CAST(:co AS uuid)"
+                        short_sql += " AND company_id = :co"
                         short_bind["co"] = str(company_id)
                     short_result = await db.execute(text(short_sql), short_bind)
                     job = short_result.fetchone()
