@@ -3073,7 +3073,7 @@
         "textScreening": "Triagem por Texto",
         "technical": "Técnico",
         "behavioral": "Comportamental",
-        "of5": "de 5.0",
+        "of5": "de 10.0",
         "voice": "🎤 Voz",
         "text": "💬 Texto",
         "history": "Histórico ({count} triagens)",
@@ -4045,7 +4045,7 @@
         "selectByCategory": "Selecione perguntas pré-definidas organizadas por categoria",
         "freeText": "Texto livre",
         "yesNo": "Sim/Não",
-        "scale15": "Escala 1-5",
+        "scale15": "Escala 0-10",
         "requiredCheckbox": "Obrigatória",
         "eliminatoryCheckbox": "Eliminatória"
       },

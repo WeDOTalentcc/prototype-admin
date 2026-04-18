@@ -128,7 +128,7 @@ const DEFAULT_CONFIG: ScreeningConfig = {
   },
   scheduling: {
     auto_enabled: true,
-    min_score_for_auto: 3.8,
+    min_score_for_auto: 7.6,
     min_score_for_auto_preset: 'recommended',
     calendar_provider: 'Microsoft',
     available_hours: '9h-18h',
@@ -139,9 +139,10 @@ const DEFAULT_CONFIG: ScreeningConfig = {
 }
 
 export function scoreToPreset(score: number | undefined): 'rigorous' | 'recommended' | 'flexible' {
+  // Escala WSI 0-10 (Task #512). Cutoffs canônicos em `lib/wsi/visual.ts`.
   if (score === undefined) return 'recommended'
-  if (score >= 4.2) return 'rigorous'
-  if (score >= 3.8) return 'recommended'
+  if (score >= 8.4) return 'rigorous'
+  if (score >= 7.6) return 'recommended'
   return 'flexible'
 }
 

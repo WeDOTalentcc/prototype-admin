@@ -63,8 +63,8 @@ export function CandidatePageOpinionsTab({
 }: CandidatePageOpinionsTabProps) {
   const getOpinionScoreColor = (score: number, isWsi: boolean) => {
     if (isWsi) {
-      if (score >= 4) return"text-status-success"
-      if (score >= 3) return"text-status-warning"
+      if (score >= 8) return"text-status-success"
+      if (score >= 6) return"text-status-warning"
       return"text-status-error"
     } else {
       if (score >= 80) return"text-status-success"
@@ -224,7 +224,7 @@ export function CandidatePageOpinionsTab({
                             <div className="flex items-center gap-2 mt-0.5">
                               {displayScore !== null && displayScore !== undefined && (
                                 <span className={`text-micro font-semibold ${getOpinionScoreColor(displayScore, isWsiOpinion)}`}>
-                                  {isWsiOpinion ? `WSI: ${(displayScore as number).toFixed(1)}/5` : `Nota: ${Math.round(displayScore as number)}/100`}
+                                  {isWsiOpinion ? `WSI: ${(displayScore as number).toFixed(1)}/10` : `Nota: ${Math.round(displayScore as number)}/100`}
                                 </span>
                               )}
                               {!!opinion.archetype && (

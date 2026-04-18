@@ -349,8 +349,9 @@ export function WSIVoiceScreeningStatus({
                   <div className="w-full space-y-3 pt-2">
                     <div className="text-center">
                       <div className={`text-3xl font-semibold ${
- result.overall_wsi >= 4 ? 'text-status-success' :
-                        result.overall_wsi >= 3 ? 'text-status-warning' :
+ // Escala WSI 0-10 (Task #512). Cutoffs canônicos em `lib/wsi/visual.ts`.
+                        result.overall_wsi >= 8.0 ? 'text-status-success' :
+                        result.overall_wsi >= 6.0 ? 'text-status-warning' :
                         'text-status-error'
                       }`}>
                         {result.overall_wsi.toFixed(1)}

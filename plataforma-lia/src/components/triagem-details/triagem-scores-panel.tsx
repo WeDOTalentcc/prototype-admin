@@ -19,7 +19,8 @@ interface TriagemScoresPanelProps {
   details: WSIResultDetails
 }
 
-const wsiToPercent = (score: number) => Math.round((score / 5) * 100)
+// Escala WSI 0-10 (Task #512).
+const wsiToPercent = (score: number) => Math.round((score / 10) * 100)
 
 export function TriagemScoresPanel({ scores, sessionInfo, f11Report, details }: TriagemScoresPanelProps) {
   return (

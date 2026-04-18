@@ -13,6 +13,13 @@ import {
 import { liaApi, WSIResultsResponse } from"@/services/lia-api"
 import { useTranslations } from "next-intl"
 import { useLocale } from "next-intl"
+import {
+  WSI_DISPLAY_SCALE,
+  getWsiVisualState,
+  getWsiVisualStateForClassification,
+  wsiPercent,
+  wsiClassificationI18nKey,
+} from "@/lib/wsi/visual"
 
 interface WSIScorecardProps {
   candidateId: string
@@ -43,30 +50,29 @@ export function WSIScorecard({
   const [results, setResults] = useState<WSIResultsResponse | null>(null)
   const [expanded, setExpanded] = useState(!compact)
 
-  const WSI_CLASSIFICATION_CONFIG: Record<string, { label: string; color: string; bgColor: string; textColor: string }> = {
-    excepcional:    { label: t('classification.excepcional'),      color: 'text-status-success', bgColor: 'bg-status-success/15', textColor: 'var(--status-success)' },
-    excelente:      { label: t('classification.excelente'),         color: 'text-status-success',   bgColor: 'bg-status-success/15',   textColor: 'var(--status-success)' },
-    alto:           { label: t('classification.alto'),               color: 'text-wedo-cyan-dark',   bgColor: 'bg-wedo-cyan/15',    textColor: 'var(--lia-text-secondary)' },
-    medio:          { label: t('classification.medio'),              color: 'text-status-warning',  bgColor: 'bg-status-warning/15',   textColor: 'var(--status-warning)' },
-    abaixo_da_media:{ label: t('classification.abaixoDaMedia'),   color: 'text-wedo-orange', bgColor: 'bg-wedo-orange/15',  textColor: 'var(--status-warning)' },
-    regular:        { label: t('classification.regular'),   color: 'text-status-error',    bgColor: 'bg-status-error/15',     textColor: 'var(--status-error)' },
+  // Escala WSI 0-10 (Task #512). Cores e cutoffs vêm do helper canônico
+  // `lib/wsi/visual.ts` — não duplicar thresholds aqui.
+  const getClassificationLabel = (classification: string) => {
+    const key = wsiClassificationI18nKey(classification)
+    if (t.has(`classification.${key}` as never)) {
+      return t(`classification.${key}` as never)
+    }
+    return t('classification.medio')
   }
 
-  const getClassificationConfig = (classification: string) =>
-    WSI_CLASSIFICATION_CONFIG[classification] ?? WSI_CLASSIFICATION_CONFIG.medio
-
   const getScoreDisplay = (score: number): ScoreDisplay => {
-    if (score >= 4.5) return { value: score, label: t('classification.excepcional'),    color: 'text-status-success', bgColor: 'bg-status-success/15' }
-    if (score >= 4.0) return { value: score, label: t('classification.excelente'),      color: 'text-status-success',   bgColor: 'bg-status-success/15' }
-    if (score >= 3.5) return { value: score, label: t('classification.alto'),            color: 'text-wedo-cyan-dark',    bgColor: 'bg-wedo-cyan/15' }
-    if (score >= 3.0) return { value: score, label: t('classification.medio'),           color: 'text-status-warning',  bgColor: 'bg-status-warning/15' }
-    if (score >= 2.25) return { value: score, label: t('classification.abaixoDaMedia'),color: 'text-wedo-orange', bgColor: 'bg-wedo-orange/15' }
-    return { value: score, label: t('classification.regular'), color: 'text-status-error', bgColor: 'bg-status-error/15' }
+    const v = getWsiVisualState(score)
+    return { value: score, label: getClassificationLabel(v.classification), color: v.text, bgColor: v.bg }
   }
 
   const getClassificationBadge = (classification: string) => {
-    const cfg = getClassificationConfig(classification)
-    return { color: cfg.color, bgColor: cfg.bgColor }
+    const v = getWsiVisualStateForClassification(classification)
+    return { color: v.text, bgColor: v.bg }
+  }
+
+  const getClassificationConfig = (classification: string) => {
+    const v = getWsiVisualStateForClassification(classification)
+    return { label: getClassificationLabel(classification), color: v.text, bgColor: v.bg }
   }
 
    
@@ -201,7 +207,7 @@ export function WSIScorecard({
               <span className="font-medium">{latestResult.technical_wsi.toFixed(1)}</span>
             </div>
             <Progress 
-              value={(latestResult.technical_wsi / 5) * 100} 
+              value={wsiPercent(latestResult.technical_wsi)} 
               className="h-1.5"
             />
 
@@ -213,7 +219,7 @@ export function WSIScorecard({
               <span className="font-medium">{latestResult.behavioral_wsi.toFixed(1)}</span>
             </div>
             <Progress 
-              value={(latestResult.behavioral_wsi / 5) * 100} 
+              value={wsiPercent(latestResult.behavioral_wsi)} 
               className="h-1.5"
             />
           </div>
@@ -291,35 +297,19 @@ export function WSIScorecard({
 
 export function WSIScoreBadge({ score, classification }: { score: number; classification: string }) {
   const t = useTranslations('screening.wsi')
-
-  const WSI_CLASSIFICATION_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
-    excepcional:    { label: t('classification.excepcional'),      color: 'text-status-success', bgColor: 'bg-status-success/15' },
-    excelente:      { label: t('classification.excelente'),         color: 'text-status-success',   bgColor: 'bg-status-success/15' },
-    alto:           { label: t('classification.alto'),               color: 'text-wedo-cyan-dark',   bgColor: 'bg-wedo-cyan/15' },
-    medio:          { label: t('classification.medio'),              color: 'text-status-warning',  bgColor: 'bg-status-warning/15' },
-    abaixo_da_media:{ label: t('classification.abaixoDaMedia'),   color: 'text-wedo-orange', bgColor: 'bg-wedo-orange/15' },
-    regular:        { label: t('classification.regular'),   color: 'text-status-error',    bgColor: 'bg-status-error/15' },
-  }
-
-  const getScoreDisplay = (s: number) => {
-    if (s >= 4.5) return { color: 'text-status-success', bgColor: 'bg-status-success/15' }
-    if (s >= 4.0) return { color: 'text-status-success', bgColor: 'bg-status-success/15' }
-    if (s >= 3.5) return { color: 'text-wedo-cyan-dark', bgColor: 'bg-wedo-cyan/15' }
-    if (s >= 3.0) return { color: 'text-status-warning', bgColor: 'bg-status-warning/15' }
-    if (s >= 2.25) return { color: 'text-wedo-orange', bgColor: 'bg-wedo-orange/15' }
-    return { color: 'text-status-error', bgColor: 'bg-status-error/15' }
-  }
-
-  const display = getScoreDisplay(score)
-  const badge = WSI_CLASSIFICATION_CONFIG[classification] ?? WSI_CLASSIFICATION_CONFIG.medio
+  const display = getWsiVisualState(score)
+  const badge = getWsiVisualStateForClassification(classification)
+  const labelKey = `classification.${classification}` as const
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const label = (t as any).has?.(labelKey) ? t(labelKey as any) : classification
 
   return (
     <div className="inline-flex items-center gap-1.5">
-      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${display.bgColor} ${display.color}`}>
+      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${display.bg} ${display.text}`}>
         {score.toFixed(1)}
       </div>
-      <Chip variant="neutral" muted className={`${badge.bgColor} ${badge.color} text-xs`}>
-        {classification}
+      <Chip variant="neutral" muted className={`${badge.bg} ${badge.text} text-xs`}>
+        {label}
       </Chip>
     </div>
   )
@@ -327,22 +317,15 @@ export function WSIScoreBadge({ score, classification }: { score: number; classi
 
 export function WSIMiniScore({ score }: { score: number }) {
   const t = useTranslations('screening.wsi')
-
-  const getScoreDisplay = (s: number) => {
-    if (s >= 4.5) return { label: t('classification.excepcional'), color: 'text-status-success', bgColor: 'bg-status-success/15' }
-    if (s >= 4.0) return { label: t('classification.excelente'), color: 'text-status-success', bgColor: 'bg-status-success/15' }
-    if (s >= 3.5) return { label: t('classification.alto'), color: 'text-wedo-cyan-dark', bgColor: 'bg-wedo-cyan/15' }
-    if (s >= 3.0) return { label: t('classification.medio'), color: 'text-status-warning', bgColor: 'bg-status-warning/15' }
-    if (s >= 2.25) return { label: t('classification.abaixoDaMedia'), color: 'text-wedo-orange', bgColor: 'bg-wedo-orange/15' }
-    return { label: t('classification.regular'), color: 'text-status-error', bgColor: 'bg-status-error/15' }
-  }
-
-  const display = getScoreDisplay(score)
+  const v = getWsiVisualState(score)
+  const labelKey = `classification.${v.classification}` as const
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const label = (t as any).has?.(labelKey) ? t(labelKey as any) : v.classification
 
   return (
-    <div 
-      className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold ${display.bgColor} ${display.color}`}
-      title={`WSI: ${score.toFixed(1)} - ${display.label}`}
+    <div
+      className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold ${v.bg} ${v.text}`}
+      title={`WSI: ${score.toFixed(1)}/${WSI_DISPLAY_SCALE.toFixed(1)} - ${label}`}
     >
       {score.toFixed(1)}
     </div>

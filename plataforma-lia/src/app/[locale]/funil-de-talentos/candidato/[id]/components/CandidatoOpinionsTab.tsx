@@ -30,8 +30,14 @@ interface CandidatoOpinionsTabProps {
   cleanMarkdown: (text: string) => string
 }
 
-function getScoreColor(score: number | null | undefined): string {
+function getScoreColor(score: number | null | undefined, isWsi: boolean = false): string {
   if (score === null || score === undefined) return"text-lia-text-secondary"
+  // Task #512 (PR3 #497) — WSI usa escala 0-10, non-WSI continua percentual 0-100
+  if (isWsi) {
+    if (score >= 8.0) return"text-status-success"
+    if (score >= 6.0) return"text-status-warning"
+    return"text-status-error"
+  }
   return getPercentageScoreColorClass(score)
 }
 
@@ -178,9 +184,9 @@ export function CandidatoOpinionsTab({
                                 </div>
                                 <div className="flex items-center gap-2 mt-0.5">
                                   {displayScore !== null && displayScore !== undefined && (
-                                    <span className={`text-xs font-semibold ${getScoreColor(displayScore as number)}`}>
+                                    <span className={`text-xs font-semibold ${getScoreColor(displayScore as number, isWsi)}`}>
                                       {isWsi
-                                        ? `WSI: ${(displayScore as number).toFixed(1)}/5`
+                                        ? `WSI: ${(displayScore as number).toFixed(1)}/10`
                                         : `Score: ${Math.round(displayScore as number)}/100`}
                                     </span>
                                   )}

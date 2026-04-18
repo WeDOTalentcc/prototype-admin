@@ -189,11 +189,12 @@ function ScreeningConfigManager({ job, onJobUpdate, onFormUpdate, _externalActiv
                       </Button>
                       <Button size="sm" className="gap-1.5 text-xs rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover" onClick={async () => {
                         try {
+                          // Task #512 (PR3 #497) — escala WSI 0-10
                           const presetToScore = (preset: string) => {
                             switch(preset) {
-                              case 'rigorous': return 4.2
-                              case 'flexible': return 3.0
-                              default: return 3.8
+                              case 'rigorous': return 8.4
+                              case 'flexible': return 6.0
+                              default: return 7.6
                             }
                           }
                           const success = await updateScreeningConfig({

@@ -37,7 +37,7 @@ export function TriagemSummaryBar({
               <Brain className="w-4 h-4 text-wedo-cyan" />
               <div>
                 <p className="text-micro text-lia-text-secondary">Score WSI</p>
-                <p className={`text-base font-bold ${getScoreColor(scores.overall_wsi)}`}>{scores.overall_wsi.toFixed(1)}<span className="lia-text-secondary font-normal">/5.0</span></p>
+                <p className={`text-base font-bold ${getScoreColor(scores.overall_wsi)}`}>{scores.overall_wsi.toFixed(1)}<span className="lia-text-secondary font-normal">/10.0</span></p>
               </div>
             </div>
 

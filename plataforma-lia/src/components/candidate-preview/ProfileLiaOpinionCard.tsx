@@ -56,7 +56,7 @@ export function ProfileLiaOpinionCard({
   const getScoreColor = (score: number | null, isWsi: boolean = false) => {
     if (score === null || score === undefined) return 'text-lia-text-secondary'
     if (isWsi) {
-      return score >= 4.0 ? 'text-status-success' : score >= 3.0 ? 'text-status-warning' : 'text-status-error'
+      return score >= 8.0 ? 'text-status-success' : score >= 6.0 ? 'text-status-warning' : 'text-status-error'
     }
     return score >= 80 ? 'text-status-success' : score >= 60 ? 'text-status-warning' : 'text-status-error'
   }
@@ -109,7 +109,7 @@ export function ProfileLiaOpinionCard({
           <div className="flex items-center gap-2 flex-wrap">
             {displayScore !== null && displayScore !== undefined && (
               <span className={`${textStyles.label} ${getScoreColor(displayScore, isWsiOpinion)}`}>
-                {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/5` : `Nota: ${Math.round(displayScore)}/100`}
+                {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/10` : `Nota: ${Math.round(displayScore)}/100`}
               </span>
             )}
             {opinion.archetype && (

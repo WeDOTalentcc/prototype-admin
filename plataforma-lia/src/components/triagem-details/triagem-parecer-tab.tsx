@@ -65,7 +65,8 @@ export function TriagemParecerTab({
 }: TriagemParecerTabProps) {
   return (
     <div className="space-y-3">
-      {(scores.overall_wsi >= 3.0 && scores.overall_wsi < 3.75) && (
+      {/* Faixa "média baixa" (revisão humana recomendada) — escala WSI 0-10. */}
+      {(scores.overall_wsi >= 6.0 && scores.overall_wsi < 7.5) && (
         <div className="rounded-xl border border-status-warning/30 bg-status-warning/10 p-4">
           <div className="flex items-center gap-2 mb-3">
             <AlertCircle className="w-4 h-4 text-status-warning" />

@@ -431,7 +431,7 @@ const candidateId = candidate?.id as string | undefined
       textToCopy += `Vaga: ${opinion.job_vacancy_title}\n`
     }
     if (displayScore !== null && displayScore !== undefined) {
-      textToCopy += `Nota: ${isWsiOpinion ? `${(displayScore as number).toFixed(1)}/5` : `${Math.round(displayScore as number)}/100`}\n`
+      textToCopy += `Nota: ${isWsiOpinion ? `${(displayScore as number).toFixed(1)}/10` : `${Math.round(displayScore as number)}/100`}\n`
     }
     textToCopy += `\n`
 

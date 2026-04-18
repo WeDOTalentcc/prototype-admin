@@ -67,7 +67,7 @@ export function TriagemResponsesSection({
                   </div>
                   <div className="flex items-center gap-3">
                     <span className={`text-sm font-bold ${getScoreColor3Tier(finalScore)}`}>
-                      {finalScore.toFixed(1)}/5.0
+                      {finalScore.toFixed(1)}/10.0
                     </span>
                     {isOpen ? <ChevronUp className="w-4 h-4 text-lia-text-secondary" /> : <ChevronDown className="w-4 h-4 text-lia-text-secondary" />}
                   </div>

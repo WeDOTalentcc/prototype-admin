@@ -22,8 +22,8 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
   const getScoreColor = (score: number | null, isWsi: boolean = false) => {
     if (score === null || score === undefined) return 'text-lia-text-secondary'
     if (isWsi) {
-      if (score >= 4.0) return 'text-status-success'
-      if (score >= 3.0) return 'text-status-warning'
+      if (score >= 8.0) return 'text-status-success'
+      if (score >= 6.0) return 'text-status-warning'
       return 'text-status-error'
     } else {
       if (score >= 80) return 'text-status-success'
@@ -113,7 +113,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
             <div className="flex items-center gap-2 mt-0.5">
               {displayScore !== null && displayScore !== undefined && (
                 <span className={`text-micro font-semibold ${getScoreColor(displayScore, isWsiOpinion)}`}>
-                  {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/5` : `Nota: ${Math.round(displayScore)}/100`}
+                  {isWsiOpinion ? `WSI: ${displayScore.toFixed(1)}/10` : `Nota: ${Math.round(displayScore)}/100`}
                 </span>
               )}
               {!!opinion.archetype && (

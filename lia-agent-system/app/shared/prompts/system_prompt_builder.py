@@ -72,6 +72,7 @@ class SystemPromptBuilder:
         intent: str = "",
         entities: dict[str, Any] | None = None,
         extra_instructions: str = "",
+        conversation_state: Any | None = None,
     ) -> str:
         sections: list[str] = []
 
@@ -114,6 +115,23 @@ class SystemPromptBuilder:
 
         if conversation_summary:
             context_parts.append(f"### Resumo da Conversa Anterior\n{conversation_summary}")
+
+        if conversation_state:
+            try:
+                mem_lines = []
+                if conversation_state.last_entity:
+                    e = conversation_state.last_entity
+                    mem_lines.append(f"- Última entidade: {e.get('type','?')} **{e.get('name') or e.get('id','?')}** (ID: {e.get('id','?')})")
+                if conversation_state.mentioned_candidates:
+                    recent = list(conversation_state.mentioned_candidates.items())[-3:]
+                    names = ", ".join(f"{n} (ID: {cid})" for n, cid in recent)
+                    mem_lines.append(f"- Candidatos mencionados: {names}")
+                if conversation_state.last_job_id:
+                    mem_lines.append(f"- Última vaga: ID {conversation_state.last_job_id}")
+                if mem_lines:
+                    context_parts.append("### Memória da Conversa\n" + "\n".join(mem_lines))
+            except Exception:
+                pass
 
         if context_parts:
             sections.append("\n## Contexto Atual\n" + "\n\n".join(context_parts))

@@ -3073,7 +3073,7 @@
         "textScreening": "Text Screening",
         "technical": "Technical",
         "behavioral": "Behavioral",
-        "of5": "of 5.0",
+        "of5": "of 10.0",
         "voice": "🎤 Voice",
         "text": "💬 Text",
         "history": "History ({count} screenings)",
@@ -4045,7 +4045,7 @@
         "selectByCategory": "Select pre-defined questions organized by category",
         "freeText": "Free text",
         "yesNo": "Yes/No",
-        "scale15": "Scale 1-5",
+        "scale15": "Scale 0-10",
         "requiredCheckbox": "Required",
         "eliminatoryCheckbox": "Eliminatory"
       },

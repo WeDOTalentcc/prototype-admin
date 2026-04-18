@@ -15,7 +15,8 @@ interface CandidateScoreBadgeProps {
 }
 
 function getScoreColor(score: number, format: ScoreFormat): string {
-  const normalized = format === "wsi" ? (score / 5) * 100 : format === "decimal" ? score * 10 : score
+  // WSI já é 0-10 (Task #512). `decimal` também é 0-10. `percent` é 0-100.
+  const normalized = format === "wsi" || format === "decimal" ? score * 10 : score
   if (normalized >= 80) return "text-status-success"
   if (normalized >= 60) return "text-wedo-orange"
   return "text-status-error"
@@ -24,7 +25,7 @@ function getScoreColor(score: number, format: ScoreFormat): string {
 function formatScore(score: number, format: ScoreFormat): string {
   switch (format) {
     case "wsi":
-      return `${score.toFixed(1)}/5`
+      return `${score.toFixed(1)}/10`
     case "decimal":
       return `${score.toFixed(1)}/10`
     case "percent":

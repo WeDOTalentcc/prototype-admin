@@ -180,9 +180,9 @@ export function SCMSectionConfiguracoes({
                   <label className="text-xs font-medium text-lia-text-primary block mb-2">Score Mínimo Aprovação (WSI)</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                      { key: 'rigorous', label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
-                      { key: 'recommended', label: 'Recomendado', score: '≥ 3.8/5.0', desc: 'Inclui revisão manual' },
-                      { key: 'flexible', label: 'Flexível', score: '≥ 3.0/5.0', desc: 'Todos acima do corte' },
+                      { key: 'rigorous', label: 'Rigoroso', score: '≥ 8.4/10', desc: 'Só aprovados automaticamente' },
+                      { key: 'recommended', label: 'Recomendado', score: '≥ 7.6/10', desc: 'Inclui revisão manual' },
+                      { key: 'flexible', label: 'Flexível', score: '≥ 6.0/10', desc: 'Todos acima do corte' },
                     ].map((preset) => {
                       const isSelected = (screeningConfig?.settings?.min_score_preset ?? 'recommended') === preset.key
                       return (
@@ -309,9 +309,9 @@ export function SCMSectionConfiguracoes({
                     <label className="text-xs font-medium text-lia-text-primary block mb-2">Score Mínimo para Agendamento (WSI)</label>
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        { key: 'rigorous', label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
-                        { key: 'recommended', label: 'Recomendado', score: '≥ 3.8/5.0', desc: 'Inclui revisão manual' },
-                        { key: 'flexible', label: 'Flexível', score: '≥ 3.0/5.0', desc: 'Todos acima do corte' },
+                        { key: 'rigorous', label: 'Rigoroso', score: '≥ 8.4/10', desc: 'Só aprovados automaticamente' },
+                        { key: 'recommended', label: 'Recomendado', score: '≥ 7.6/10', desc: 'Inclui revisão manual' },
+                        { key: 'flexible', label: 'Flexível', score: '≥ 6.0/10', desc: 'Todos acima do corte' },
                       ].map((preset) => {
                         const isSelected = (screeningConfig?.scheduling?.min_score_for_auto_preset ?? 'recommended') === preset.key
                         return (
@@ -591,9 +591,9 @@ export function SCMSectionConfiguracoes({
                   <label className="text-xs font-medium text-lia-text-primary block mb-2">Score Mínimo Aprovação (WSI)</label>
                   <div className="grid grid-cols-3 gap-2">
                     {([
-                      { key: 'rigorous' as const, label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
-                      { key: 'recommended' as const, label: 'Recomendado', score: '≥ 3.8/5.0', desc: 'Inclui revisão manual' },
-                      { key: 'flexible' as const, label: 'Flexível', score: '≥ 3.0/5.0', desc: 'Todos acima do corte' },
+                      { key: 'rigorous' as const, label: 'Rigoroso', score: '≥ 8.4/10', desc: 'Só aprovados automaticamente' },
+                      { key: 'recommended' as const, label: 'Recomendado', score: '≥ 7.6/10', desc: 'Inclui revisão manual' },
+                      { key: 'flexible' as const, label: 'Flexível', score: '≥ 6.0/10', desc: 'Todos acima do corte' },
                     ] as const).map((preset) => {
                       const isSelected = editMinScorePreset === preset.key
                       return (
@@ -718,9 +718,9 @@ export function SCMSectionConfiguracoes({
                     <label className="text-xs font-medium text-lia-text-primary block mb-2">Score Mínimo para Agendamento (WSI)</label>
                     <div className="grid grid-cols-3 gap-2">
                       {([
-                        { key: 'rigorous' as const, label: 'Rigoroso', score: '≥ 4.2/5.0', desc: 'Só aprovados automaticamente' },
-                        { key: 'recommended' as const, label: 'Recomendado', score: '≥ 3.8/5.0', desc: 'Inclui revisão manual' },
-                        { key: 'flexible' as const, label: 'Flexível', score: '≥ 3.0/5.0', desc: 'Todos acima do corte' },
+                        { key: 'rigorous' as const, label: 'Rigoroso', score: '≥ 8.4/10', desc: 'Só aprovados automaticamente' },
+                        { key: 'recommended' as const, label: 'Recomendado', score: '≥ 7.6/10', desc: 'Inclui revisão manual' },
+                        { key: 'flexible' as const, label: 'Flexível', score: '≥ 6.0/10', desc: 'Todos acima do corte' },
                       ] as const).map((preset) => {
                         const isSelected = editSchedulingMinScorePreset === preset.key
                         return (

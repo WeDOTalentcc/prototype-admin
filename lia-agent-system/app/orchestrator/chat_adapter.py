@@ -53,12 +53,29 @@ class ChatAdapter:
             page_context=page_context,
         )
 
+        # Load conversation state for entity memory
+        try:
+            from app.shared.memory.conversation_state import conversation_state_store, ConversationState
+            _cstate = conversation_state_store.get(conversation_id or "") or ConversationState()
+            _cstate.company_id = company_id  # Ensure tenant isolation
+            ctx.conversation_state = _cstate
+        except Exception:
+            pass  # Fail-safe
+
         # ── Step 2: Call MainOrchestrator ──
         try:
             orch_response = await self._orch.process(ctx, db)
         except Exception as exc:
             logger.error(f"[ChatAdapter] MainOrchestrator failed: {exc}", exc_info=True)
             return self._error_response(str(exc))
+
+        # Save updated conversation state back to store
+        try:
+            if ctx.conversation_state and conversation_id:
+                from app.shared.memory.conversation_state import conversation_state_store
+                conversation_state_store.set(conversation_id, ctx.conversation_state)
+        except Exception:
+            pass
 
         # ── Step 3: Convert ChatResponse → dict ──
         return self._convert_response(orch_response)

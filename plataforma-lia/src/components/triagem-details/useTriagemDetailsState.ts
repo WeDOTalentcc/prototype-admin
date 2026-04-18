@@ -48,7 +48,8 @@ export const getDecisionDisplay = (decision?: string) => {
   }
 }
 
-export const wsiToPercent = (score: number) => Math.round((score / 5) * 100)
+// Escala WSI 0-10 (Task #512). Helper canônico em `lib/wsi/visual.ts`.
+export const wsiToPercent = (score: number) => Math.round((score / 10) * 100)
 
 export const bloomLabel = (n: number) =>
   (["", "Recordar", "Compreender", "Aplicar", "Analisar", "Avaliar", "Criar"] as const)[n] ?? `Nível ${n}`
@@ -56,17 +57,18 @@ export const bloomLabel = (n: number) =>
 export const dreyfusLabel = (n: number) =>
   (["", "Iniciante", "Básico", "Intermediário", "Avançado", "Especialista"] as const)[n] ?? `Nível ${n}`
 
+// Escala WSI 0-10 (Task #512). Cutoffs canônicos em `lib/wsi/visual.ts`.
 export const getScoreColor = (score: number) =>
-  score >= 4.5 ? "text-status-success" :
-  score >= 4.0 ? "text-status-success" :
-  score >= 3.5 ? "text-wedo-cyan-dark" :
-  score >= 3.0 ? "text-status-warning" :
-  score >= 2.25 ? "text-wedo-orange" :
+  score >= 9.0 ? "text-status-success" :
+  score >= 8.0 ? "text-status-success" :
+  score >= 7.0 ? "text-wedo-cyan-dark" :
+  score >= 6.0 ? "text-status-warning" :
+  score >= 4.5 ? "text-wedo-orange" :
   "text-status-error"
 
 export const getScoreColor3Tier = (score: number) =>
-  score >= 4.5 ? "text-status-success" :
-  score >= 3.5 ? "text-status-warning" :
+  score >= 9.0 ? "text-status-success" :
+  score >= 7.0 ? "text-status-warning" :
   "text-status-error"
 
 export const gapConfig = {

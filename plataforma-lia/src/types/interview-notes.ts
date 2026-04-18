@@ -179,11 +179,15 @@ export const BLOCK_WEIGHTS: Record<QuestionBlockType, number> = {
 };
 
 /**
- * Limiares de decisão para score WSI
- * Score é em escala de 1 a 5
- * - approved: >= 4.2 (acima de 4.2)
- * - human_review: 3.8 a < 4.2 (análise humana)
- * - rejected: < 3.8 (rejeitado)
+ * Limiares de decisão para WSI agregado a partir de notas STAR de entrevista
+ * presencial (componente `<ScoreCardWSI />` em interview-notes).
+ *
+ * IMPORTANTE — escopo distinto do WSI engine de screening:
+ *   - Aqui: starRating 1-5 do recrutador → média ponderada → max 5.
+ *   - Em `lib/wsi/visual.ts`: scorer determinístico do screening, escala 0-10.
+ *
+ * Não migrar para 0-10 sem antes mapear `starRating` para a nova escala. Ver
+ * Task #512 (PR3 do #497) para histórico.
  */
 export const WSI_THRESHOLDS = {
   approved: 4.2,

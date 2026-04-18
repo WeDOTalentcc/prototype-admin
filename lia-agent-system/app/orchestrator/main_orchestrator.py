@@ -421,6 +421,16 @@ class MainOrchestrator:
 
             # ── Phase 2: Orchestrator completo ─────────────────────────────
             _phase2_response = await self._process_via_orchestrator(ctx, conv_id, db, streaming_callback, conv=conv)
+            # Update ConversationState with entity data from Phase 2 result
+            if ctx.conversation_state and _phase2_response.structured_data and isinstance(_phase2_response.structured_data, dict):
+                try:
+                    ctx.conversation_state.update_after_action(
+                        _phase2_response.intent_detected or "",
+                        _phase2_response.agent_used or "",
+                        _phase2_response.structured_data,
+                    )
+                except Exception:
+                    pass
             if _soft_warnings and not _phase2_response.fairness_warnings:
                 _phase2_response.fairness_warnings = _soft_warnings
 
@@ -675,6 +685,17 @@ class MainOrchestrator:
                     )
             except Exception as e:
                 logger.debug("[LIA-A01] LLM interpretation skipped (fail-open): %s", e)
+
+            # Update ConversationState with entity data from action result
+            if ctx.conversation_state and action_result.data and isinstance(action_result.data, dict):
+                try:
+                    ctx.conversation_state.update_after_action(
+                        action_result.action_type or "",
+                        ctx.context_type or "",
+                        action_result.data,
+                    )
+                except Exception:
+                    pass
 
             return ChatResponse.from_action_result(
                 action_result,

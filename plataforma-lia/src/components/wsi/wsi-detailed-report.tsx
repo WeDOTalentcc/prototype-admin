@@ -13,6 +13,13 @@ import { liaApi } from"@/services/lia-api"
 import type { WSIResultDetails } from"@/services/lia-api/types/wsi.types"
 import { useTranslations } from "next-intl"
 import { useLocale } from "next-intl"
+import {
+  WSI_DISPLAY_SCALE,
+  WSI_DISPLAY_FORMATTED,
+  getWsiVisualState,
+  wsiPercent,
+  wsiClassificationI18nKey,
+} from "@/lib/wsi/visual"
 
 interface WSIDetailedReportProps {
   resultId: string
@@ -30,13 +37,10 @@ function ReportHeader({ data, candidateName, candidateTitle }: { data: WSIResult
   const scores = data.scores
   const session = data.session
 
+  // Escala WSI 0-10 (Task #512). Cutoffs canônicos em `lib/wsi/visual.ts`.
   const getClassificacao = (score: number): { label: string; color: string } => {
-    if (score >= 4.5) return { label: t('classification.excepcional'), color:"text-status-success" }
-    if (score >= 4.0) return { label: t('classification.excelente'), color:"text-status-success" }
-    if (score >= 3.5) return { label: t('classification.alto'), color:"text-wedo-cyan-dark" }
-    if (score >= 3.0) return { label: t('classification.medio'), color:"text-status-warning" }
-    if (score >= 2.25) return { label: t('classification.abaixoDaMedia'), color:"text-wedo-orange" }
-    return { label: t('classification.regular'), color:"text-status-error" }
+    const v = getWsiVisualState(score)
+    return { label: t(`classification.${wsiClassificationI18nKey(v.classification)}` as never), color: v.text }
   }
 
   const getDecisionConfig = (decision?: string) => {
@@ -91,7 +95,7 @@ function ReportHeader({ data, candidateName, candidateTitle }: { data: WSIResult
           <p className="text-xs text-lia-text-tertiary">{t('report.scoreWSI')}</p>
           <p className="font-bold text-lia-text-primary">
             {scores.overall_wsi.toFixed(1)}
-            <span className="text-lia-text-tertiary font-normal">/5.0</span>
+            <span className="text-lia-text-tertiary font-normal">/{WSI_DISPLAY_FORMATTED}</span>
           </p>
         </div>
         {scores.percentile != null && (
@@ -133,9 +137,9 @@ function ScoresByDimension({ data }: { data: WSIResultDetails }) {
   const scores = data.scores
   const session = data.session
   const dims = [
-    { label: t('report.general'), value: scores.overall_wsi, pct: Math.round((scores.overall_wsi / 5) * 100) },
-    { label: t('report.technicalComp'), value: scores.technical_wsi, pct: Math.round((scores.technical_wsi / 5) * 100) },
-    { label: t('report.behavioralComp'), value: scores.behavioral_wsi, pct: Math.round((scores.behavioral_wsi / 5) * 100) },
+    { label: t('report.general'), value: scores.overall_wsi, pct: wsiPercent(scores.overall_wsi) },
+    { label: t('report.technicalComp'), value: scores.technical_wsi, pct: wsiPercent(scores.technical_wsi) },
+    { label: t('report.behavioralComp'), value: scores.behavioral_wsi, pct: wsiPercent(scores.behavioral_wsi) },
   ]
 
   return (
@@ -229,7 +233,8 @@ function ResponseCard({ response, index, isOpen, onToggle }: {
   const gap = gapConfigMap[gapKey] || gapConfigMap.ok
   const GapIcon = gap.icon
   const starData = (response.star || response.scores.star || {}) as Record<string, boolean>
-  const scoreColor = response.scores.final_score >= 4.5 ? "text-status-success" : response.scores.final_score >= 3.5 ? "text-status-warning" : "text-status-error"
+  // Escala WSI 0-10 (Task #512).
+  const scoreColor = getWsiVisualState(response.scores.final_score).text
 
   return (
     <div>
@@ -250,7 +255,7 @@ function ResponseCard({ response, index, isOpen, onToggle }: {
         </div>
         <div className="flex items-center gap-3">
           <span className={`text-sm font-bold ${scoreColor}`}>
-            {response.scores.final_score.toFixed(1)}/5.0
+            {response.scores.final_score.toFixed(1)}/{WSI_DISPLAY_FORMATTED}
           </span>
           {isOpen ? <ChevronUp className="w-4 h-4 text-lia-text-tertiary" /> : <ChevronDown className="w-4 h-4 text-lia-text-tertiary" />}
         </div>

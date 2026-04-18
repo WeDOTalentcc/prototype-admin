@@ -744,8 +744,11 @@ export function getScoreColor(score: number, type: 'lia' | 'wsi' = 'lia'): {
   border: string
 } {
   if (type === 'wsi') {
-    if (score >= 4.0) return { text: 'text-status-success', bg: 'bg-status-success/10', border: 'border-status-success/30' }
-    if (score >= 3.0) return { text: 'text-status-warning', bg: 'bg-status-warning/10', border: 'border-status-warning/30' }
+    // WSI escala 0-10 (Task #512 / PR3 do #497). Cutoffs canônicos em
+    // `lib/wsi/visual.ts` — aqui mantemos a versão simplificada de 3 níveis
+    // só para compat com call-sites legados que usam `getScoreColor(_, 'wsi')`.
+    if (score >= 8.0) return { text: 'text-status-success', bg: 'bg-status-success/10', border: 'border-status-success/30' }
+    if (score >= 6.0) return { text: 'text-status-warning', bg: 'bg-status-warning/10', border: 'border-status-warning/30' }
     return { text: 'text-status-error', bg: 'bg-status-error/10', border: 'border-status-error/30' }
   }
   
