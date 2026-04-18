@@ -76,8 +76,6 @@ class UniversalContext:
     # In-session entity memory (populated by orchestrator after each action)
     conversation_state: Any | None = None  # ConversationState — typed as Any to avoid circular import
 
-    # Tenant context — preenchido pelo MainOrchestrator apos lookup no DB
-    tenant_context_snippet: str = ""
 
     # Flag: skip memory persistence (Passo 2 Path A — ChatRepository remains owner until M2)
     skip_memory_persist: bool = False
@@ -105,8 +103,6 @@ class UniversalContext:
             ctx["search_context"] = self.search_context
         if self.target_job:
             ctx["target_job"] = self.target_job
-        if self.tenant_context_snippet:
-            ctx["tenant_context_snippet"] = self.tenant_context_snippet
         ctx.update(self.extra)
         return ctx
 

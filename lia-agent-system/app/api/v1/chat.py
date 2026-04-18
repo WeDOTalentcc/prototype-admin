@@ -133,8 +133,6 @@ async def _invoke_orchestrator_legacy(
             orch_context["job_context"] = page_context["job_context"]
         if page_context.get("entity_id"):
             orch_context["entity_id"] = page_context["entity_id"]
-            if not orch_context.get("job_vacancy_id"):
-                orch_context["job_vacancy_id"] = page_context["entity_id"]
         if page_context.get("scope"):
             orch_context["scope"] = page_context["scope"]
 
