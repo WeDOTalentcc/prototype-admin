@@ -49,9 +49,17 @@ def _table_exists(conn, table: str) -> bool:
 
 
 def _constraint_name(conn, table: str, column: str, contype: str = "c") -> str | None:
-    """Find a CHECK constraint name on (table, column). Postgres auto-names them."""
+    """Find a CHECK constraint name on (table, column). Postgres auto-names them.
+
+    NOTE: pg_constraint.contype is PostgreSQL's internal `"char"` type (1-byte).
+    asyncpg refuses to bind Python str to it ("a bytes-like object is required").
+    Como `contype` aqui é constante ('c' = CHECK), inlineamos o literal no SQL
+    em vez de bindar como parâmetro para manter compat asyncpg + psycopg2.
+    """
+    if contype not in {"c", "p", "f", "u", "x"}:
+        raise ValueError(f"invalid pg contype literal: {contype!r}")
     row = conn.execute(sa.text(
-        """
+        f"""
         SELECT con.conname
           FROM pg_constraint con
           JOIN pg_class rel ON rel.oid = con.conrelid
@@ -60,10 +68,10 @@ def _constraint_name(conn, table: str, column: str, contype: str = "c") -> str |
          WHERE nsp.nspname = 'public'
            AND rel.relname = :t
            AND att.attname = :c
-           AND con.contype = :contype
+           AND con.contype = '{contype}'
          LIMIT 1
         """
-    ), {"t": table, "c": column, "contype": contype}).fetchone()
+    ), {"t": table, "c": column}).fetchone()
     return row[0] if row else None
 
 
