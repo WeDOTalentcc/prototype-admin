@@ -1,0 +1,18 @@
+"""Tool registry for CandidateSelfServiceAgent — whitelist of 3 read-only tools ONLY."""
+from lia_agents_core.react_loop import ToolDefinition
+
+from app.domains.candidate_self_service.tools.get_application_status import get_application_status
+from app.domains.candidate_self_service.tools.get_interview_info import get_interview_info
+from app.domains.candidate_self_service.tools.get_wsi_feedback import get_wsi_feedback
+
+# WHITELIST: exactly 3 tools. Any tool not here is inaccessible from this domain.
+_CANDIDATE_TOOLS: list[ToolDefinition] = [
+    get_application_status,
+    get_interview_info,
+    get_wsi_feedback,
+]
+
+
+def get_candidate_tools() -> list[ToolDefinition]:
+    """Return the immutable whitelist of candidate self-service tools."""
+    return list(_CANDIDATE_TOOLS)

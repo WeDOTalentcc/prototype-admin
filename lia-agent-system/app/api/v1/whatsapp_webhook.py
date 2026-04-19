@@ -116,6 +116,72 @@ async def _get_orchestrator():
     return OnboardingOrchestrator(db=db, llm=llm, whatsapp_client=wa_client), wa_client
 
 
+
+async def _find_candidate_by_phone(phone: str) -> dict | None:
+    """Look up active candidate by phone number for self-service routing.
+
+    ADR-006: log candidate_id only, never phone number.
+    Returns: {candidate_id, vacancy_id, company_id} or None.
+    """
+    try:
+        from app.shared.rails_client import rails_get
+        result = await rails_get(
+            "/v1/candidate-portal/lookup-by-phone",
+            params={"phone": phone},
+            company_id=None,  # lookup is cross-tenant by phone, rails scopes internally
+        )
+        if result and result.get("found"):
+            logger.info(
+                "[WhatsApp] candidate match candidate_id=%s",
+                result.get("candidate_id"),
+            )
+            return result
+    except Exception as exc:
+        logger.debug("[WhatsApp] candidate phone lookup failed: %s", exc)
+    return None
+
+
+async def _route_candidate_message(candidate: dict, message: str) -> str:
+    """Route candidate WhatsApp message to CandidateSelfServiceAgent.
+
+    Returns the agent response text to send back via Twilio.
+    """
+    try:
+        from lia_agents_core.agent_interface import AgentInput
+        from app.domains.candidate_self_service.agents.candidate_react_agent import (
+            CandidateSelfServiceAgent,
+        )
+        from app.domains.candidate_self_service.services.candidate_status_service import (
+            CandidateStatusService,
+        )
+
+        candidate_id = candidate["candidate_id"]
+        service = CandidateStatusService()
+        rate = await service.check_rate_limit(candidate_id)
+        if not rate["allowed"]:
+            return (
+                "Você atingiu o limite de mensagens por hoje. "
+                "Tente novamente amanhã ou acesse o link do seu portal."
+            )
+
+        agent = CandidateSelfServiceAgent()
+        agent_input = AgentInput(
+            message=message,
+            company_id=candidate["company_id"],
+            session_id=f"css_wa_{candidate_id}_{candidate.get('vacancy_id', '')}",
+            context={
+                "candidate_id": candidate_id,
+                "vacancy_id": candidate.get("vacancy_id", ""),
+                "domain": "candidate_self_service",
+                "channel": "whatsapp",
+            },
+        )
+        output = await agent.process(agent_input)
+        return output.message
+    except Exception as exc:
+        logger.error("[WhatsApp] candidate routing error: %s", exc)
+        return "Não consegui processar sua mensagem agora. Tente novamente em instantes."
+
 @router.post("/webhook")
 async def whatsapp_message_webhook(request: Request):
     """Twilio webhook for incoming WhatsApp messages."""
@@ -137,6 +203,19 @@ async def whatsapp_message_webhook(request: Request):
 
     if not from_number or not message_body:
         return Response(status_code=200)
+
+    # Check if sender is a candidate (before recruiter session lookup)
+    candidate = await _find_candidate_by_phone(from_number)
+    if candidate:
+        reply = await _route_candidate_message(candidate, message_body)
+        try:
+            from app.services.whatsapp_client import WhatsAppClient
+            wa = WhatsAppClient()
+            await wa.send_message(to=f"whatsapp:{from_number}", body=reply)
+        except Exception as exc:
+            logger.error("[WhatsApp] failed to send candidate reply: %s", exc)
+        return Response(status_code=200)
+
 
     # Find session
     session = await _find_session_by_phone(from_number)
