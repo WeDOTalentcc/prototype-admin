@@ -194,16 +194,34 @@ async def get_job_details(
         from lia_models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                select(JobVacancy).where(
-                    and_(
-                        JobVacancy.id == UUID(job_id),
-                        JobVacancy.company_id == company_id
+            job = None
+            # First attempt: treat job_id as UUID
+            try:
+                result = await db.execute(
+                    select(JobVacancy).where(
+                        and_(
+                            JobVacancy.id == UUID(job_id),
+                            JobVacancy.company_id == company_id
+                        )
                     )
                 )
-            )
-            job = result.scalar_one_or_none()
-            
+                job = result.scalar_one_or_none()
+            except Exception:
+                pass
+            # Fallback: job_id is a short code (e.g. "V0039")
+            if job is None:
+                from sqlalchemy import text as _text
+                _row = await db.execute(
+                    _text("SELECT id FROM job_vacancies WHERE job_id = :jid AND company_id = :co LIMIT 1"),
+                    {"jid": job_id, "co": str(company_id) if company_id else ""},
+                )
+                _found = _row.fetchone()
+                if _found:
+                    result2 = await db.execute(
+                        select(JobVacancy).where(JobVacancy.id == _found[0])
+                    )
+                    job = result2.scalar_one_or_none()
+
             if not job:
                 return {
                     "success": False,

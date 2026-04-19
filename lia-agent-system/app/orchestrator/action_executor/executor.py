@@ -215,7 +215,6 @@ class ActionExecutorService:
                         prompt = f"Vou enviar um e-mail para **{cname}**. Confirma?"
                     else:
                         prompt = f"Vou processar a solicitação para **{cname}**. Confirma?"
-                    from app.orchestrator.action_executor.action_types import ActionResult
                     return ActionResult(
                         status="needs_confirmation",
                         message=prompt,
