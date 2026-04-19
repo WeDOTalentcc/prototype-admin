@@ -84,6 +84,7 @@ Estas regras valem para toda sessão de trabalho — humana ou IA — antes de q
 - `docs/policies/shim_sla.md` — SLA dos 14 shims `RAILS-DEPRECATED` (data alvo de remoção + responsável). Adicionar shim sem SLA = violar a política.
 - `.local/audit/wsi-screening-e2e-report.md` (rev. 3) — auditoria E2E WSI com selo por achado (17 itens). Consultar antes de mexer em rotas de triagem/voz/convite.
 - `docs/audits/AUDIT_STATUS_REPORT_2026-04-FINAL.md` §0.1 — reconciliação 2026-04-19 das pendências F4/F5/F8/F10/F11/F12 + #544 + #545.
+- `docs/audits/chat-message-actions-and-feedback-loop-audit.md` (Task #569, 2026-04-19) — auditoria das ações por mensagem do chat unificado (copy/thumbs/chips) e do loop de aprendizado. **Achado P0:** endpoints `/api/v1/lia/feedback/{thumbs,rating,correction,metrics}` chamados pelo frontend não existem no backend; `feedback-api.ts` mascara o 404 → loop `interaction_feedback → learning_patterns → prompt` está morto na origem. Hardening na Task #570.
 
 **Skills relacionadas:**
 - `feature-audit` — auditoria obrigatória de 14 dimensões antes de marcar qualquer task como concluída.
