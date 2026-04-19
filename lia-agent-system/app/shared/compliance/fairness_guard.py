@@ -31,6 +31,7 @@ IMPLICIT_BIAS_TERMS: dict[str, str] = {
     # Chaves sem acentuação — _normalize_text() normaliza antes da busca
     "boa aparencia": "O termo 'boa aparência' pode configurar discriminação estética (Lei 12.984/14). Use critérios objetivos de apresentação profissional.",
     "bairros nobres": "Filtrar por 'bairros nobres' pode configurar discriminação socioeconômica. Considere critérios de disponibilidade ou mobilidade.",
+    "bairros pobres": "Filtrar por 'bairros pobres' configura discriminação socioeconômica (Lei 9.029/95). Considere critérios de disponibilidade, transporte ou trabalho remoto.",
     "regiao nobre": "Filtrar por 'região nobre' pode configurar discriminação socioeconômica. Considere critérios de disponibilidade ou mobilidade.",
     "universidades de primeira linha": "Filtrar por 'universidades de primeira linha' pode configurar elitismo acadêmico. Avalie competências e resultados.",
     "faculdade de ponta": "Filtrar por 'faculdade de ponta' pode configurar elitismo acadêmico. Avalie competências e resultados.",
@@ -147,7 +148,8 @@ DISCRIMINATORY_CATEGORIES = {
             "A LIA não pode filtrar candidatos por gênero. "
             "A legislação trabalhista brasileira (Art. 5º, CLT) e a LGPD proíbem "
             "discriminação por gênero em processos seletivos. "
-            "Posso ajudar você a definir critérios baseados em competências e experiência?"
+            "Se o objetivo é diversidade de gênero, posso configurar um programa afirmativo "
+            "com critérios objetivos e transparentes. Deseja explorar essa opção?"
         ),
     },
     "raca_etnia": {
@@ -227,8 +229,8 @@ DISCRIMINATORY_CATEGORIES = {
         ],
         "message": (
             "A LIA não pode filtrar candidatos por religião. "
-            "A Constituição Federal garante liberdade religiosa (Art. 5º, VI) "
-            "e proíbe discriminação por credo. "
+            "A Constituição Federal garante liberdade religiosa (Art. 5º, VI — CF/88) "
+            "e proíbe discriminação por credo em qualquer processo seletivo. "
             "Posso ajudar a definir critérios baseados em disponibilidade e competências?"
         ),
     },
@@ -271,13 +273,17 @@ DISCRIMINATORY_CATEGORIES = {
         ],
         "message": (
             "A LIA não pode excluir candidatos com deficiência. "
-            "A Lei 8.213/91 (Lei de Cotas) e o Estatuto da Pessoa com Deficiência "
-            "(Lei 13.146/15) protegem os direitos de PCDs. "
-            "Posso ajudar a buscar candidatos com as competências necessárias?"
+            "A Lei 8.213/91 (Lei de Cotas) exige reserva de vagas para PCDs em empresas com 100+ funcionários — "
+            "posso ajudar a estruturar esse processo corretamente. "
+            "O Estatuto da Pessoa com Deficiência (Lei 13.146/15) protege os direitos de PCDs. "
+            "Posso ajudar a buscar candidatos PCDs com as competências necessárias?"
         ),
     },
     "maternidade_paternidade": {
         "terms": [
+            r"\bmã?es?\s+solo\b",
+            r"\bpai\s+solo\b",
+            r"\bpais?\s+solo\b",
             r"\bengravidar\b",
             r"\bgravidez\b",
             r"\bgrávid[ao]s?\b",
@@ -297,7 +303,8 @@ DISCRIMINATORY_CATEGORIES = {
             "A LIA não pode questionar candidatos sobre planos de maternidade/paternidade "
             "ou existência de filhos. A CLT (Art. 373-A) e a Lei 9.029/95 proíbem "
             "discriminação por gestação ou maternidade em processos seletivos. "
-            "Posso ajudar a definir critérios baseados em disponibilidade e competências?"
+            "Se a preocupação é disponibilidade ou flexibilidade de horário, posso ajudar "
+            "a estruturar perguntas objetivas sobre isso. Deseja?"
         ),
     },
     "nacionalidade": {
@@ -394,6 +401,23 @@ DISCRIMINATORY_CATEGORIES = {
             "proíbem discriminação estética em processos seletivos, salvo funções com "
             "requisito funcional objetivo comprovado (ex: atleta profissional). "
             "Posso ajudar a definir critérios baseados em capacidade técnica e experiência?"
+        ),
+    },
+
+    "socioeconomico": {
+        "terms": [
+            r"\bbairros?\s+pobres?\b",
+            r"\btirar?\s+\S+\s+.*\bperiferia\b",
+            r"\bexcluir?\s+\S+\s+.*\bperiferia\b",
+            r"\bremov[ae]r?\s+\S+\s+.*\bperiferia\b",
+            r"\bn[\xc3\xa3a]o\s+quero\s+.*\bperiferia\b",
+            r"\bsem\s+.*\bfavela\b",
+            r"\bexcluir?\s+.*\bfavela\b",
+        ],
+        "message": (
+            "A LIA n\u00e3o pode filtrar candidatos por localiza\u00e7\u00e3o socioecon\u00f4mica como 'bairros pobres' ou 'periferia'. "
+            "Este crit\u00e9rio configura discrimina\u00e7\u00e3o socioecon\u00f4mica indireta vedada pela CLT e Lei 9.029/95. "
+            "Posso ajudar a definir crit\u00e9rios de mobilidade, disponibilidade ou trabalho remoto?"
         ),
     },
 
@@ -530,7 +554,7 @@ _COMPILED_PATTERNS: dict[str, list[re.Pattern]] = {}
 #                 "young and dynamic", "young blood", "energetic", etc.) from
 #                 Layer-2 educational warnings (IMPLICIT_BIAS_TERMS_EN) to
 #                 Layer-1 hard blocks under appearance_en / age_en categories.
-_PATTERNS_VERSION = 7
+_PATTERNS_VERSION = 8  # v8: FASE 2 — mae solo hard block + socioeconomico category + message improvements
 
 # ---------------------------------------------------------------------------
 # Interview transcript bias indicators (consolidated from 3 ex-detectors)
