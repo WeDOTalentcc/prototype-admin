@@ -666,7 +666,10 @@ class MainOrchestrator:
         if action_result.status == "executed":
             # LIA-A01: LLM interpretation of action results
             # Instead of returning raw action result, ask the LLM to generate a natural response
+            # Skip LLM interpretation for direct-response actions (identity, etc.) to prevent Gemini override
+            _skip_llm_interp = action_result.action_type in ("respond_identity",)
             try:
+             if _skip_llm_interp: raise Exception("skip_direct_response")
                 # FIX-2: Build minimal context for interpretation (full orchestrator_context
                 # is only available in Phase 2; here we extract what we can from ctx)
                 _phase1_context = {

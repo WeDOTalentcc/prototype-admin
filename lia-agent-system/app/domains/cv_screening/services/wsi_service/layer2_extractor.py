@@ -15,6 +15,7 @@ Padrão canônico do projeto:
 """
 import hashlib
 import logging
+import threading
 from collections import OrderedDict
 from typing import Any
 
@@ -26,12 +27,25 @@ from .models import Layer2Signals, WSIQuestion, safe_json_parse
 logger = logging.getLogger(__name__)
 
 # Cache LRU in-process compartilhado entre instâncias do extractor
-# (módulo-level dict — singleton de fato). Audit rev. 21 follow-up.
+# (módulo-level dict — singleton de fato). Audit rev. 22 follow-up.
 # Key: sha256(question_id + response_text). Value: Layer2Signals.
-# Cap N=500 entradas (~ esquece menos usadas). TTL implícito via processo.
+# Cap N=500 entradas (esquece menos usadas). TTL implícito via processo.
+#
+# Thread-safety (audit rev. 22, achado architect): operações compostas
+# get/move_to_end/popitem/set NÃO são atômicas no OrderedDict. Em ambiente
+# multi-thread (FastAPI workers async + threadpools, gunicorn --threads,
+# background tasks), corridas podem corromper a ordem LRU ou causar
+# KeyError. Lock módulo-level garante atomicidade das seções críticas.
+#
+# Limitação conhecida (não resolvida nesta task): a key não inclui escopo
+# de tenant. Hoje `question_id` é UUID gerado por `question_generator`
+# (collision-resistant), então o risco prático é baixo, mas registrar:
+# se no futuro ids passarem a ser determinísticos (slug, hash de prompt),
+# adicionar tenant_id à composição da key para evitar cross-tenant hit.
 _LAYER2_CACHE: OrderedDict[str, Layer2Signals] = OrderedDict()
 _LAYER2_CACHE_MAX = 500
 _LAYER2_CACHE_STATS = {"hits": 0, "misses": 0}
+_LAYER2_CACHE_LOCK = threading.Lock()
 
 
 def _layer2_cache_key(question_id: str, response_text: str) -> str:
@@ -44,7 +58,8 @@ def _layer2_cache_key(question_id: str, response_text: str) -> str:
 
 def get_layer2_cache_stats() -> dict[str, int]:
     """Telemetria do cache (hits/misses/size). Útil para observabilidade."""
-    return {**_LAYER2_CACHE_STATS, "size": len(_LAYER2_CACHE)}
+    with _LAYER2_CACHE_LOCK:
+        return {**_LAYER2_CACHE_STATS, "size": len(_LAYER2_CACHE)}
 
 
 class Layer2ExtractionError(RuntimeError):
@@ -103,17 +118,22 @@ class WSILayer2Extractor:
         # Cache lookup — evita re-chamar LLM para mesmo (question, response).
         # Custo típico ~$0.005/call; cache salva quando há retry/idempotência.
         cache_key = _layer2_cache_key(question.id, response_text)
-        cached = _LAYER2_CACHE.get(cache_key)
-        if cached is not None:
-            _LAYER2_CACHE.move_to_end(cache_key)  # LRU touch
-            _LAYER2_CACHE_STATS["hits"] += 1
-            logger.debug(
-                "Layer2 cache HIT for q=%s (size=%d, hits=%d, misses=%d)",
-                question.id, len(_LAYER2_CACHE),
-                _LAYER2_CACHE_STATS["hits"], _LAYER2_CACHE_STATS["misses"],
-            )
-            return cached
-        _LAYER2_CACHE_STATS["misses"] += 1
+        with _LAYER2_CACHE_LOCK:
+            cached = _LAYER2_CACHE.get(cache_key)
+            if cached is not None:
+                _LAYER2_CACHE.move_to_end(cache_key)  # LRU touch
+                _LAYER2_CACHE_STATS["hits"] += 1
+                hits, misses, size = (
+                    _LAYER2_CACHE_STATS["hits"],
+                    _LAYER2_CACHE_STATS["misses"],
+                    len(_LAYER2_CACHE),
+                )
+                logger.debug(
+                    "Layer2 cache HIT for q=%s (size=%d, hits=%d, misses=%d)",
+                    question.id, size, hits, misses,
+                )
+                return cached
+            _LAYER2_CACHE_STATS["misses"] += 1
 
         prompt = self._render_prompt(question, response_text)
 
@@ -164,8 +184,10 @@ class WSILayer2Extractor:
         )
 
         # Cache write + LRU eviction (FIFO da menor entrada).
-        _LAYER2_CACHE[cache_key] = signals
-        if len(_LAYER2_CACHE) > _LAYER2_CACHE_MAX:
-            _LAYER2_CACHE.popitem(last=False)
+        with _LAYER2_CACHE_LOCK:
+            _LAYER2_CACHE[cache_key] = signals
+            _LAYER2_CACHE.move_to_end(cache_key)  # garante MRU mesmo em re-write
+            while len(_LAYER2_CACHE) > _LAYER2_CACHE_MAX:
+                _LAYER2_CACHE.popitem(last=False)
 
         return signals
