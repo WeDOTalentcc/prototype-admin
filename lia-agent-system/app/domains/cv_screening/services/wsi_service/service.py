@@ -389,7 +389,9 @@ Responda em JSON:
     async def analyze_response(
         self,
         question: WSIQuestion,
-        response: str
+        response: str,
+        *,
+        tracking_context: dict | None = None,
     ) -> ResponseAnalysis:
         """
         ETAPA 3: Analisa resposta e atribui score 1-5.
@@ -408,7 +410,12 @@ Responda em JSON:
         Returns:
             ResponseAnalysis com scores e justificativas
         """
-        return await self.response_analyzer.analyze(question, response)
+        # Audit task #532 (G23-04) — `tracking_context` opcional propagado
+        # à Camada 2 para gravar consumo em `AiConsumption`. Quando None,
+        # comportamento idêntico ao anterior.
+        return await self.response_analyzer.analyze(
+            question, response, tracking_context=tracking_context
+        )
     
     def calculate_wsi(
         self,

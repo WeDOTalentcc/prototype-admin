@@ -186,8 +186,21 @@ class WSILayer2Extractor:
         self,
         question: WSIQuestion,
         response_text: str,
+        *,
+        tracking_context: dict[str, Any] | None = None,
     ) -> Layer2Signals:
         """Invoca o LLM e retorna `Layer2Signals` validado.
+
+        Args:
+            question: pergunta WSI sendo avaliada.
+            response_text: resposta bruta do candidato.
+            tracking_context: opcional. Quando provido, as chaves
+                `company_id` (UUID str, obrigatória), `user_id`,
+                `candidate_id`, `vacancy_id` e `operation` são usadas para
+                gravar o consumo de tokens em `AiConsumption` (via
+                `TokenTrackingService.record_usage`). Audit task #532
+                (G23-04). Quando ausente, nenhuma escrita de tracking
+                acontece (preserva comportamento anterior).
 
         Raises:
             Layer2ExtractionError: LLM call failure, JSON parse failure,
@@ -223,12 +236,25 @@ class WSILayer2Extractor:
 
         prompt = self._render_prompt(question, response_text)
 
+        # Audit task #532 (G23-04) — token tracking opcional via callback.
+        # Construímos o callback aqui (closure sobre `tracking_context` +
+        # `question.id`) e o passamos para `safe_invoke`. O callback é
+        # síncrono e fire-and-forget: se houver `tracking_context`,
+        # agenda uma task assíncrona que abre uma `AsyncSessionLocal`
+        # própria (NÃO compartilha a sessão do orquestrador para evitar
+        # commits cruzados) e grava em `AiConsumption`. Falhas do
+        # tracking nunca afetam a extração — apenas log.
+        on_usage_cb = _build_layer2_usage_callback(
+            tracking_context, question_id=question.id
+        ) if tracking_context else None
+
         # PII masking acontece automaticamente dentro de safe_invoke.
         try:
             response = await self._llm.safe_invoke(
                 prompt,
                 temperature=self.DEFAULT_TEMPERATURE,
                 max_tokens=self.DEFAULT_MAX_TOKENS,
+                on_usage=on_usage_cb,
             )
         except Exception as exc:
             logger.error(
@@ -317,3 +343,107 @@ class WSILayer2Extractor:
                 _LAYER2_CACHE.popitem(last=False)
 
         return signals
+
+
+# ---------------------------------------------------------------------------
+# Audit task #532 (G23-04) — token tracking helper
+# ---------------------------------------------------------------------------
+#
+# A Camada 2 é hoje a etapa mais cara em tokens da plataforma. O scorer
+# determinístico (Camada 1) não consome LLM. Este helper produz um
+# callback síncrono compatível com `safe_invoke(on_usage=...)` que
+# agenda gravação fire-and-forget em `AiConsumption` numa sessão de DB
+# própria (não compartilha a transação do orquestrador).
+
+
+def _build_layer2_usage_callback(
+    tracking_context: dict[str, Any],
+    *,
+    question_id: Any,
+):
+    """Cria um callback `on_usage(usage_dict)` para `safe_invoke`.
+
+    Requer pelo menos `company_id` no contexto. Outros campos
+    (`user_id`, `candidate_id`, `vacancy_id`, `operation`) são opcionais.
+    Falhas no agendamento ou na escrita NUNCA propagam — apenas log.
+    """
+    company_id = tracking_context.get("company_id")
+    if not company_id:
+        # Sem company_id, AiConsumption não pode ser gravado (FK NOT NULL).
+        # Devolve um no-op para manter a chamada ao LLM funcional.
+        return lambda _usage: None
+
+    user_id = tracking_context.get("user_id")
+    candidate_id = tracking_context.get("candidate_id")
+    vacancy_id = tracking_context.get("vacancy_id")
+    operation = tracking_context.get("operation") or "wsi_layer2_extract"
+
+    def _on_usage(usage: dict[str, Any]) -> None:
+        try:
+            import asyncio
+
+            from app.core.database import AsyncSessionLocal
+            from app.shared.observability.token_tracking_service import (
+                TokenTrackingService,
+            )
+
+            async def _persist() -> None:
+                try:
+                    async with AsyncSessionLocal() as db:
+                        svc = TokenTrackingService(db)
+                        await svc.record_usage(
+                            user_id=str(user_id) if user_id else "",
+                            company_id=str(company_id),
+                            agent_type="wsi_layer2",
+                            intent=str(operation),
+                            input_tokens=int(usage.get("input_tokens") or 0),
+                            output_tokens=int(usage.get("output_tokens") or 0),
+                            model=str(usage.get("model") or "unknown"),
+                            latency_ms=float(usage.get("latency_ms") or 0.0),
+                            candidate_id=str(candidate_id) if candidate_id else None,
+                            vacancy_id=str(vacancy_id) if vacancy_id else None,
+                            extra_data={
+                                "question_id": str(question_id),
+                                "provider": usage.get("provider"),
+                                "source": "layer2_extractor",
+                            },
+                        )
+                except asyncio.CancelledError:
+                    # Worker shutdown / reload pode cancelar antes do commit.
+                    # Loga explicitamente para auditoria de perda (G23-04).
+                    logger.warning(
+                        "Layer2 token tracking cancelled before persist",
+                        extra={
+                            "event": "layer2_tracking_cancelled",
+                            "question_id": str(question_id),
+                        },
+                    )
+                    raise
+                except Exception as persist_err:
+                    logger.warning(
+                        "Layer2 token tracking persist failed",
+                        extra={
+                            "event": "layer2_tracking_persist_failed",
+                            "question_id": str(question_id),
+                            "error": str(persist_err),
+                        },
+                    )
+
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                # Sem loop ativo (ex.: chamada sync) — roda direto.
+                asyncio.run(_persist())
+                return
+            loop.create_task(_persist())
+        except Exception as cb_err:  # pragma: no cover - defensive
+            logger.warning(
+                "Layer2 token tracking schedule failed",
+                extra={
+                    "event": "layer2_tracking_schedule_failed",
+                    "question_id": str(question_id),
+                    "error": str(cb_err),
+                },
+            )
+
+    return _on_usage

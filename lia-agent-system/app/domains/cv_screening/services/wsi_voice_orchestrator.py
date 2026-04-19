@@ -481,8 +481,19 @@ class WSIVoiceOrchestrator:
             # análise bem-sucedida, persistir o hash é OBRIGATÓRIO para
             # compliance EU AI Act Art. 12. Falha de DB aborta a transação.
             try:
+                # Audit task #532 (G23-04) — propaga contexto para que a
+                # Camada 2 grave consumo em `AiConsumption` (chave de
+                # cobrança por uso). Sem company_id, o tracking vira no-op.
+                tracking_ctx = {
+                    "company_id": company_id,
+                    "candidate_id": candidate_id,
+                    "vacancy_id": job_vacancy_id,
+                    "operation": "wsi_layer2_extract",
+                } if company_id else None
                 analysis = await self.wsi_service.analyze_response(
-                    question=question, response=response_text
+                    question=question,
+                    response=response_text,
+                    tracking_context=tracking_ctx,
                 )
             except Exception as e:
                 logger.error(

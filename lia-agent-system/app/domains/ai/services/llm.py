@@ -8,6 +8,7 @@ import logging
 import os
 import time as _time
 from dataclasses import dataclass, field
+from collections.abc import Callable
 from typing import Any, Literal, TypeVar
 
 from langchain_anthropic import ChatAnthropic
@@ -845,11 +846,28 @@ class LLMService:
 
         return ChatAnthropic(**kwargs)  # type: ignore[arg-type]
 
-    async def safe_invoke(self, prompt: str, provider: str = "claude", **kwargs) -> str:
+    async def safe_invoke(
+        self,
+        prompt: str,
+        provider: str = "claude",
+        *,
+        on_usage: "Callable[[dict[str, Any]], None] | None" = None,
+        **kwargs,
+    ) -> str:
         """Wrapper for direct .claude.ainvoke() calls — adds PII stripping + audit.
 
         Use this instead of llm_service.claude.ainvoke(prompt) directly.
         Gradually migrate direct .ainvoke() calls to this method.
+
+        Audit task #532 (G23-04) — token tracking opcional via callback:
+            Quando o consumidor passa `on_usage`, este wrapper extrai os
+            metadados de uso (`response.usage_metadata` da LangChain) e
+            chama o callback com `{input_tokens, output_tokens, total_tokens,
+            model, provider, latency_ms}`. Permite domínios específicos (ex.:
+            triagem WSI Camada 2) gravarem em `AiConsumption` sem refatorar
+            os ~50 outros callsites. Falha do callback NUNCA derruba o
+            invoke — log + segue. Quando `on_usage=None`, comportamento é
+            idêntico ao anterior (zero overhead).
         """
         # E6: PII stripping
         prompt = strip_pii_for_llm_prompt(prompt)
@@ -867,9 +885,37 @@ class LLMService:
         elif provider == "openai":
             response = await self.openai.ainvoke(prompt, **kwargs)
         else:
+            # Gemini path bypassa este wrapper — sem suporte a on_usage aqui.
             return await self.generate_with_gemini(prompt)
 
         _latency = (_time.time() - _start) * 1000
+
+        # Audit task #532 (G23-04) — emite usage para o callback opcional.
+        if on_usage is not None:
+            try:
+                usage_meta = getattr(response, "usage_metadata", None) or {}
+                resp_meta = getattr(response, "response_metadata", None) or {}
+                model_name = (
+                    resp_meta.get("model_name")
+                    or resp_meta.get("model")
+                    or (
+                        settings.LLM_PRIMARY_MODEL
+                        if provider == "claude"
+                        else getattr(settings, "OPENAI_MODEL", None)
+                        or "openai-unknown"
+                    )
+                )
+                on_usage({
+                    "input_tokens": int(usage_meta.get("input_tokens", 0) or 0),
+                    "output_tokens": int(usage_meta.get("output_tokens", 0) or 0),
+                    "total_tokens": int(usage_meta.get("total_tokens", 0) or 0),
+                    "model": model_name,
+                    "provider": provider,
+                    "latency_ms": _latency,
+                })
+            except Exception as cb_err:  # pragma: no cover - defensive
+                logger.warning("safe_invoke on_usage callback failed: %s", cb_err)
+
         content = response.content
         if isinstance(content, list):
             text_parts = []

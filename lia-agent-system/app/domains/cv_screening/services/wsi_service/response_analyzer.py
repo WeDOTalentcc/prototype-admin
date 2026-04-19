@@ -61,12 +61,19 @@ class WSIResponseAnalyzer:
         self,
         question: WSIQuestion,
         response: str,
+        tracking_context: dict[str, Any] | None = None,
     ) -> tuple[Layer2Signals | None, str | None]:
-        """Retorna (signals, degraded_reason). Apenas um deles é não-None."""
+        """Retorna (signals, degraded_reason). Apenas um deles é não-None.
+
+        `tracking_context` (audit task #532, G23-04) é repassado ao extractor
+        para gravar consumo da Camada 2 em `AiConsumption`. Pode ser None.
+        """
         if not self._enable_layer2 or not self._layer2_extractor:
             return None, None
         try:
-            signals = await self._layer2_extractor.extract(question, response)
+            signals = await self._layer2_extractor.extract(
+                question, response, tracking_context=tracking_context
+            )
             return signals, None
         except Layer2ExtractionError as exc:
             # Falha esperada — degrade graciosamente (EU AI Act §13).
@@ -87,11 +94,17 @@ class WSIResponseAnalyzer:
         self,
         question: WSIQuestion,
         response: str,
+        *,
+        tracking_context: dict[str, Any] | None = None,
     ) -> ResponseAnalysis:
-        """Analisa resposta. Camada 1 é sempre executada; Camada 2 opcional."""
+        """Analisa resposta. Camada 1 é sempre executada; Camada 2 opcional.
+
+        `tracking_context` (audit task #532, G23-04) é opcional e propagado
+        à Camada 2 para gravação de consumo em `AiConsumption`.
+        """
         # Camada 2 — extração semântica (opcional, falha graciosa).
         layer2_signals, layer2_degraded_reason = await self._try_extract_layer2(
-            question, response
+            question, response, tracking_context=tracking_context
         )
 
         # Camada 1 — determinístico (sempre ativo).
