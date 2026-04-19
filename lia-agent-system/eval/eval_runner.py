@@ -355,6 +355,16 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
         # "Numerical data" — true if response contains numbers
         return has_digits
 
+    # ---- INCLUDES TECH/SKILL (Portuguese-aware) ----
+    if _re.search(r"includes?.*(?:agile|methodolog|scrum|kanban|ágeis?|framework)", c):
+        return any(w in resp_lower for w in ["agile", "scrum", "kanban", "ágil", "ágeis", "metodolog", "sprint", "backlog"])
+    if _re.search(r"includes?.*(?:data.*experi|experi.*data|experi.*require|data.*require|requisit)", c):
+        return any(w in resp_lower for w in ["dados", "data", "sql", "analise", "análise", "experiência", "experiencia", "requisit", "anos de"])
+
+    # ---- REFERENCES LOCATION/MARKET (Portuguese-aware) ----
+    if _re.search(r"references?.*(?:market|location|paulo|city|cidade|mercado)", c):
+        return any(w in resp_lower for w in ["são paulo", "sp", "mercado", "market", "brasil", "local", "cidade"])
+
     # ---- DEFAULT: keyword presence ----
     keywords = [w for w in c.split() if len(w) > 5]
     if keywords:
