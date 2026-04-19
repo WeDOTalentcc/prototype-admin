@@ -19,6 +19,9 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
+from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+    build_transparency_extras_payload,
+)
 from app.domains.cv_screening.services.wsi_service import (
     Competency,
     ResponseAnalysis,
@@ -614,16 +617,14 @@ class WSIVoiceOrchestrator:
                     "justification": analysis.justification,
                     "response_hash": resp_hash,
                     # Audit task #528 (G23-02 / G23-03) — transparência LGPD/EU AI Act.
-                    # Coluna idempotente garantida no endpoint F11; writers que ainda
-                    # não populam deixam NULL e a API serve defaults (compat retro).
-                    "transparency_extras": json.dumps({
-                        "flags_structured": analysis.flags_structured or {},
-                        "penalty_breakdown": analysis.penalty_breakdown or {},
-                        "bonus_breakdown": analysis.bonus_breakdown or {},
-                        "degraded_quality": bool(analysis.degraded_quality),
-                        "degraded_reasons": analysis.degraded_reasons or [],
-                        "layer2_degraded_reason": analysis.layer2_degraded_reason,
-                    }),
+                    # Audit task #534 — payload construído via helper canônico para
+                    # manter o formato em sincronia com o backfill histórico.
+                    "transparency_extras": json.dumps(
+                        build_transparency_extras_payload(
+                            analysis,
+                            layer2_degraded_reason=analysis.layer2_degraded_reason,
+                        )
+                    ),
                 },
             )
             logger.info(

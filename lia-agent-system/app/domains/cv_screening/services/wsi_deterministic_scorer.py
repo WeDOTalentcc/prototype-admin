@@ -13,10 +13,25 @@ O CÁLCULO FINAL é sempre determinístico.
 import logging
 import re
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     from app.domains.cv_screening.services.wsi_service.models import Layer2Signals
+
+
+@runtime_checkable
+class TransparencyExtrasSource(Protocol):
+    """Audit task #534 — interface mínima consumida por
+    ``build_transparency_extras_payload``. Implementada tanto pela
+    dataclass ``DeterministicWSIResult`` (saída crua do scorer) quanto pelo
+    pydantic ``ResponseAnalysis`` (envelope do analyzer), evitando a
+    necessidade de ``# type: ignore`` nos call-sites."""
+
+    flags_structured: dict[str, bool] | None
+    penalty_breakdown: dict[str, float] | None
+    bonus_breakdown: dict[str, float] | None
+    degraded_quality: bool
+    degraded_reasons: list[str] | None
 
 logger = logging.getLogger(__name__)
 
@@ -1191,6 +1206,59 @@ def calculate_final_wsi_score(
             + f" = {final_score:.2f}"
         ),
         "cutoffs_applied": WSI_CUTOFFS,
+    }
+
+
+def build_transparency_extras_payload(
+    result: TransparencyExtrasSource,
+    *,
+    layer2_degraded_reason: str | None = None,
+    extra_degraded_reasons: list[str] | None = None,
+    force_llm_fallback: bool = False,
+) -> dict[str, Any]:
+    """Audit task #534 — fonte única do payload `transparency_extras`.
+
+    Tanto o writer ao vivo (``wsi_voice_orchestrator``) quanto o backfill
+    histórico (``scripts/backfill_wsi_transparency_extras.py``) precisam
+    serializar o mesmo dicionário JSONB para a coluna
+    ``wsi_response_analyses.transparency_extras``. Centralizar aqui evita
+    que o formato divirja entre os dois caminhos (LGPD Art. 20 / EU AI Act
+    §13 — a UI consome chaves estáveis).
+
+    Args:
+        result: ``DeterministicWSIResult`` (saída crua do scorer) ou
+            ``ResponseAnalysis`` (envelope do analyzer); o helper lê apenas
+            os atributos comuns: ``flags_structured``, ``penalty_breakdown``,
+            ``bonus_breakdown``, ``degraded_quality``, ``degraded_reasons``.
+        layer2_degraded_reason: motivo registrado pelo analyzer quando a
+            Camada 2 (LLM) falhou ou não rodou. ``None`` em runtime
+            saudável; string descritiva no backfill.
+        extra_degraded_reasons: razões adicionais (ex.: "backfill_recalculated")
+            mescladas às já presentes em ``result.degraded_reasons``,
+            preservando ordem e sem duplicar.
+        force_llm_fallback: marca ``flags_structured.is_llm_fallback=True``
+            mesmo quando o scorer não setou — usado pelo backfill, que
+            nunca re-executa a Camada 2.
+    """
+    flags_structured = dict(result.flags_structured or {})
+    if force_llm_fallback:
+        flags_structured["is_llm_fallback"] = True
+
+    degraded_reasons = list(result.degraded_reasons or [])
+    if extra_degraded_reasons:
+        for reason in extra_degraded_reasons:
+            if reason not in degraded_reasons:
+                degraded_reasons.append(reason)
+
+    degraded_quality = bool(result.degraded_quality) or bool(extra_degraded_reasons)
+
+    return {
+        "flags_structured": flags_structured,
+        "penalty_breakdown": result.penalty_breakdown or {},
+        "bonus_breakdown": result.bonus_breakdown or {},
+        "degraded_quality": degraded_quality,
+        "degraded_reasons": degraded_reasons,
+        "layer2_degraded_reason": layer2_degraded_reason,
     }
 
 

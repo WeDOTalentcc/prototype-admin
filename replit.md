@@ -161,3 +161,18 @@ The platform uses Next.js, React, and TypeScript for the frontend, styled with R
 - **next.config.js**: Uses createNextIntlPlugin wrapping withBundleAnalyzer
 - **Locale detection**: Disabled (`localeDetection: false` in routing.ts) — forces Portuguese regardless of browser language
 - **Translation status**: All namespaces fully translated (sidebar, chat, jobs, candidates, screening, kanban, agents, settings). ~785 keys translated from English to Portuguese. Remaining ~195 untranslated keys are brand/proper names (WhatsApp, LinkedIn, Score WSI, etc.) intentionally identical in both languages
+
+## WSI Transparency Backfill (task #534)
+
+Legacy `wsi_response_analyses` rows written before task #528 have `transparency_extras` NULL. Run the idempotent backfill once after deploy to populate breakdowns and the degraded-quality banner for historical F11 reports:
+
+```bash
+cd lia-agent-system
+python scripts/backfill_wsi_transparency_extras.py
+# preview only — inspects the first batch and exits (sample, not full count):
+BACKFILL_DRY_RUN=1 python scripts/backfill_wsi_transparency_extras.py
+```
+
+The select also restricts to completed sessions (`wsi_sessions.status='completed'` or `completed_at IS NOT NULL`) so in-flight sessions are not touched.
+
+The script recomputes the JSONB via `calculate_wsi_deterministic` (Camada 1 only — Camada 2 LLM is not re-run). Backfilled rows are flagged `is_llm_fallback=true`, `degraded_quality=true`, `degraded_reasons=[..., "backfill_recalculated"]` and `layer2_degraded_reason="backfill_legacy_record_layer2_unavailable"` so auditors can tell rebuilt rows from rows produced by the live writer.
