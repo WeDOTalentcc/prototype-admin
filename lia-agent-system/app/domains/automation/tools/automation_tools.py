@@ -164,3 +164,102 @@ async def get_automation_logs(
         "logs": logs,
         "count": len(logs),
     }
+
+
+def register_automation_tools() -> None:
+    from app.tools.registry import ToolDefinition, tool_registry
+
+    tool_registry.register(ToolDefinition(
+        name="trigger_workflow",
+        description="Disparar um workflow automatizado com parâmetros fornecidos. Usar para iniciar automações de recrutamento.",
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "workflow_id": {"type": "string", "description": "ID do workflow a disparar"},
+                "trigger_data": {"type": "string", "description": "JSON string com parâmetros de entrada do workflow"},
+            },
+            "required": ["workflow_id"],
+        },
+        handler=trigger_workflow,
+        allowed_agents=["orchestrator", "recruiter_assistant", "automation"],
+    ))
+
+    tool_registry.register(ToolDefinition(
+        name="send_automated_email",
+        description="Enviar email automatizado usando template pré-definido para um destinatário.",
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "template_id": {"type": "string", "description": "ID do template de email"},
+                "recipient_email": {"type": "string", "description": "Email do destinatário"},
+                "template_vars": {"type": "string", "description": "JSON string com variáveis para o template"},
+            },
+            "required": ["template_id", "recipient_email"],
+        },
+        handler=send_automated_email,
+        allowed_agents=["orchestrator", "recruiter_assistant", "communication", "automation"],
+    ))
+
+    tool_registry.register(ToolDefinition(
+        name="update_candidate_status",
+        description="Atualizar automaticamente o status de um candidato no pipeline de recrutamento.",
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "candidate_id": {"type": "string", "description": "UUID do candidato"},
+                "new_status": {"type": "string", "description": "Novo status: active, on_hold, rejected, hired"},
+                "pipeline_stage": {"type": "string", "description": "Etapa do pipeline (opcional)"},
+            },
+            "required": ["candidate_id", "new_status"],
+        },
+        handler=update_candidate_status,
+        allowed_agents=["orchestrator", "recruiter_assistant", "automation"],
+    ))
+
+    tool_registry.register(ToolDefinition(
+        name="bulk_send_notifications",
+        description="Enviar notificações em massa para múltiplos destinatários via template.",
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "recipient_ids": {"type": "string", "description": "IDs separados por vírgula"},
+                "notification_type": {"type": "string", "description": "Tipo da notificação"},
+                "message_template": {"type": "string", "description": "Template da mensagem"},
+            },
+            "required": ["recipient_ids", "notification_type"],
+        },
+        handler=bulk_send_notifications,
+        allowed_agents=["orchestrator", "recruiter_assistant", "automation"],
+    ))
+
+    tool_registry.register(ToolDefinition(
+        name="schedule_reminder",
+        description="Agendar um lembrete futuro para candidato, entrevistador, vaga ou aplicação.",
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "entity_id": {"type": "string", "description": "ID da entidade"},
+                "entity_type": {"type": "string", "description": "Tipo: candidate, interviewer, job, application"},
+                "reminder_datetime": {"type": "string", "description": "Data/hora ISO 8601 do lembrete"},
+                "reminder_message": {"type": "string", "description": "Mensagem do lembrete"},
+            },
+            "required": ["entity_id", "entity_type", "reminder_datetime"],
+        },
+        handler=schedule_reminder,
+        allowed_agents=["orchestrator", "recruiter_assistant", "automation"],
+    ))
+
+    tool_registry.register(ToolDefinition(
+        name="get_automation_logs",
+        description="Obter logs de execução recentes de um workflow automatizado.",
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "workflow_id": {"type": "string", "description": "ID do workflow"},
+                "limit": {"type": "integer", "description": "Máximo de logs a retornar (padrão 10)"},
+            },
+            "required": ["workflow_id"],
+        },
+        handler=get_automation_logs,
+        allowed_agents=["orchestrator", "recruiter_assistant", "automation"],
+    ))

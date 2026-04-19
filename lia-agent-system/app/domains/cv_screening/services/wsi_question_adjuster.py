@@ -244,20 +244,10 @@ Gere uma avaliação curta (2-3 frases) em português do Brasil:
 
 Responda APENAS com o texto da avaliação, sem formatação especial."""
 
-            from app.shared.tenant_llm_context import (
-                get_gemini_client_for_tenant,
-                get_tenant_llm_config,
-            )
-            if company_id:
-                # Warm cache so synchronous client picks up tenant key
-                await get_tenant_llm_config(company_id)
-            _gemini = get_gemini_client_for_tenant(company_id)
-            _jd_response = _gemini.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=[{"role": "user", "parts": [{"text": eval_prompt}]}],
-                config={"temperature": 0.5, "max_output_tokens": 500},
-            )
-            lia_suggestion = (_jd_response.text or "").strip()
+            from app.shared.providers.llm_factory import get_provider_for_tenant
+            _container = get_provider_for_tenant()
+            _raw = await _container.generate_with_fallback(eval_prompt, task_type="wsi")
+            lia_suggestion = (_raw or "").strip()
         except Exception as e:
             logger.error(f"Failed to generate LIA JD evaluation: {e}")
             suggestions = []
