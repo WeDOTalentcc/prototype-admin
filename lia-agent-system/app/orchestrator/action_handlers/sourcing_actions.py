@@ -283,10 +283,14 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]):
             rows = result.fetchall()
 
         if len(rows) < 2:
-            return ActionResult(
-                status="error",
-                message="Candidatos não encontrados para comparação.",
-                error_detail="Less than 2 candidates found",
+            # CM-003: Fall through to Phase 1.5 (agentic loop) so it can 
+            # re-resolve candidate names and retry via tool calling
+            logger.warning("[compare_candidates] SQL returned %d rows, returning not_actionable for Phase 1.5 fallback", len(rows))
+            from app.orchestrator.action_executor import ActionResult as _AR
+            return _AR(
+                status="not_actionable",
+                message="",
+                error_detail="Less than 2 candidates found, deferring to agentic loop",
                 action_type="compare_candidates",
             )
 
