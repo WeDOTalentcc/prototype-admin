@@ -133,6 +133,24 @@ async def lifespan(app: FastAPI):
         logger.error(f"❌ Database initialization failed: {e}")
         raise
 
+    # Audit task #528 (G23-02 / G23-03) — garante coluna de transparência
+    # granular antes que qualquer writer (orchestrator, repository, completion)
+    # tente persistir `transparency_extras`. Idempotente; falha não-bloqueante.
+    try:
+        from sqlalchemy import text as _sql_text
+        async with AsyncSessionLocal() as _db:
+            await _db.execute(_sql_text(
+                "ALTER TABLE wsi_response_analyses "
+                "ADD COLUMN IF NOT EXISTS transparency_extras JSONB"
+            ))
+            await _db.commit()
+        logger.info("✅ wsi_response_analyses.transparency_extras ensured")
+    except Exception as _exc:
+        logger.warning(
+            "⚠️  Failed to ensure wsi_response_analyses.transparency_extras "
+            "(write path may degrade until column is present): %s", _exc
+        )
+
     # Seed dev demo user (idempotent) so dev auto-login can succeed on first request
     try:
         if os.getenv("APP_ENV", "development").lower() in ("development", "dev", "local"):
