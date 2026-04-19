@@ -33,6 +33,8 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
+import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
+import type { PageTab } from "@/components/ui/page-tab-navigation"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { formatScorePercent } from "@/lib/design-tokens"
 import { getStageIcon, getStageColor, translateStatus } from "@/lib/pipeline-stage-maps"
@@ -460,61 +462,51 @@ export function PipelineOverviewPage() {
           "flex flex-col flex-1 min-w-0 overflow-hidden transition-all duration-300",
           showPreview && "mr-0"
         )}>
-          <div className="px-6 py-5 flex-shrink-0">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-4 min-w-0">
-                <h1 className="text-lg font-semibold text-lia-text-primary">
-                  Visão do Pipeline
-                </h1>
-                <div
-                  role="tablist"
-                  aria-label="Modo de visualização do pipeline"
-                  className="inline-flex items-center rounded-lg border border-lia-border-subtle bg-lia-bg-secondary p-0.5"
-                >
-                  <button
-                    role="tab"
-                    aria-selected={mode === "candidatos"}
-                    onClick={() => setMode("candidatos")}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                      mode === "candidatos"
-                        ? "bg-lia-bg-primary text-lia-text-primary shadow-sm"
-                        : "text-lia-text-secondary hover:text-lia-text-primary"
-                    )}
-                  >
-                    <Users className="w-3.5 h-3.5" />
-                    {tOverview("toggle.candidates")}
-                  </button>
-                  <button
-                    role="tab"
-                    aria-selected={mode === "vagas"}
-                    onClick={() => setMode("vagas")}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                      mode === "vagas"
-                        ? "bg-lia-bg-primary text-lia-text-primary shadow-sm"
-                        : "text-lia-text-secondary hover:text-lia-text-primary"
-                    )}
-                  >
-                    <Briefcase className="w-3.5 h-3.5" />
-                    {tOverview("toggle.vacancies")}
-                  </button>
-                </div>
-                <span className="text-xs text-lia-text-disabled">
-                  {mode === "candidatos"
-                    ? tOverview("toggle.candidatesTotal", { count: totalCandidates })
-                    : tOverview("toggle.vacanciesTotal", { count: totalVacancies })}
-                </span>
-              </div>
+          <div className="px-4 pt-3 pb-0 flex-shrink-0 border-b border-lia-border-subtle">
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-lg font-semibold text-lia-text-primary">
+                Visão do Pipeline
+              </h1>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={handleRefresh}
-                className="gap-2 text-lia-text-secondary hover:text-lia-text-primary"
+                className="gap-2 h-8 px-3"
               >
                 <RefreshCw className="w-4 h-4" />
                 Atualizar
               </Button>
+            </div>
+
+            <PageTabNavigation
+              tabs={[
+                {
+                  id: "candidatos",
+                  label: tOverview("toggle.candidates"),
+                  icon: Users,
+                  count: totalCandidates > 0 ? totalCandidates : null,
+                } satisfies PageTab,
+                {
+                  id: "vagas",
+                  label: tOverview("toggle.vacancies"),
+                  icon: Briefcase,
+                  count: totalVacancies > 0 ? totalVacancies : null,
+                } satisfies PageTab,
+              ]}
+              activeTab={mode}
+              onTabChange={(id) => setMode(id as "candidatos" | "vagas")}
+            />
+
+            <div className="flex items-center gap-2 mt-2 mb-1">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs text-lia-text-secondary">
+                <span className="font-semibold text-lia-text-primary">
+                  {mode === "candidatos" ? totalCandidates : totalVacancies}
+                </span>{" "}
+                {mode === "candidatos"
+                  ? tOverview("toggle.candidatesLabel")
+                  : tOverview("toggle.vacanciesLabel")}
+              </span>
             </div>
           </div>
 

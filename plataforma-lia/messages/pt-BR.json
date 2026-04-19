@@ -1638,7 +1638,9 @@
       "vacancies": "Vagas",
       "ariaLabel": "Alternar entre visão de Candidatos e Vagas",
       "candidatesTotal": "{count} candidatos no funil",
-      "vacanciesTotal": "{count} vagas no ciclo"
+      "vacanciesTotal": "{count} vagas no ciclo",
+      "candidatesLabel": "candidatos no funil",
+      "vacanciesLabel": "vagas no ciclo"
     },
     "stages": {
       "ats_imported": "ATS Importada",
