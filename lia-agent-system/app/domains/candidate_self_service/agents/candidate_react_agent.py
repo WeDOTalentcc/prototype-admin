@@ -167,7 +167,45 @@ class CandidateSelfServiceAgent(LangGraphReActBase, EnhancedAgentMixin):
         if getattr(output, "state_updates", None):
             await self._request_hitl_if_needed(output)
 
+        # LGPD Art. 20: log explanation request if candidate triggered it (fire-and-forget)
+        try:
+            await self._log_lgpd_request_if_triggered(output, context if isinstance(context, dict) else {})
+        except Exception:
+            pass
+
         return output
+
+    async def _log_lgpd_request_if_triggered(self, output, context: dict) -> None:
+        """Fire-and-forget: log LGPD Art. 20 request to Rails when candidate asks for explanation."""
+        if not output.message:
+            return
+        # Detect LGPD explanation trigger phrases in response
+        lgpd_triggers = ["quero mais detalhes", "direito a solicitar", "solicitar revisão", "art. 20", "art 20"]
+        msg_lower = output.message.lower()
+        if not any(trigger in msg_lower for trigger in lgpd_triggers):
+            return
+        try:
+            candidate_id = context.get("candidate_id", "")
+            vacancy_id = context.get("vacancy_id", "")
+            company_id = context.get("company_id", "")
+            if not (candidate_id and company_id):
+                return
+            from app.shared.rails_client import rails_post
+            await rails_post(
+                f"/v1/companies/{company_id}/candidate-portal/lgpd-requests",
+                data={
+                    "candidate_id": candidate_id,
+                    "vacancy_id": vacancy_id,
+                    "request_type": "art20",
+                    "source": "candidate_self_service_agent",
+                },
+            )
+            logger.info(
+                "[CSS Agent] LGPD Art. 20 request logged candidate_id=%s vacancy_id=%s",
+                candidate_id, vacancy_id,
+            )
+        except Exception as exc:
+            logger.debug("[CSS Agent] LGPD request log skipped: %s", exc)
 
     async def get_status(self) -> dict:
         return {

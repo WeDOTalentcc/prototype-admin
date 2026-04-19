@@ -32,3 +32,9 @@ intent_keywords:
   validar: validate_compliance
   progresso: get_progress
   progress: get_progress
+  portal: configure_candidate_portal
+  portal candidato: configure_candidate_portal
+  candidato portal: configure_candidate_portal
+  ativar portal: configure_candidate_portal
+  desativar portal: configure_candidate_portal
+  portal do candidato: configure_candidate_portal

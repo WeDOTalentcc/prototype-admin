@@ -27,6 +27,7 @@ const SECTION_ICON_COLORS: Record<string, string> = {
   'comunicacao-alertas': 'text-rose-400',
   'usuarios-departamentos': 'text-sky-500',
   'integrations': 'text-emerald-500',
+  'fairness-compliance': 'text-violet-400',
 }
 
 
@@ -39,6 +40,7 @@ const CommunicationHub = dynamic(() => import("@/components/settings/Communicati
 const IntegrationsHub = dynamic(() => import("@/components/settings/IntegrationsHub").then(m => ({ default: m.IntegrationsHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando integrações..." /> })
 const TemplatesAssinaturaHub = dynamic(() => import("@/components/settings/TemplatesAssinaturaHub").then(m => ({ default: m.TemplatesAssinaturaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando templates..." /> })
 const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando usuários..." /> })
+const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
@@ -159,6 +161,21 @@ const getDefaultSections = (): SettingsSection[] => [
     category: 'integrations',
     estimatedTime: 10,
   },
+  {
+    id: 'fairness-compliance',
+    title: 'Fairness & LGPD',
+    description: 'Equidade da IA e pedidos LGPD de candidatos',
+    icon: Shield,
+    status: 'incomplete',
+    priority: 'low',
+    category: 'advanced',
+    estimatedTime: 0,
+    subsections: [
+      { id: 'fairness', title: 'Fairness & Compliance', description: 'Eventos de equidade e auditoria da IA', fields: [] },
+      { id: 'lgpd-candidatos', title: 'LGPD Candidatos', description: 'Pedidos Art. 20 de candidatos (prazo 15 dias úteis)', fields: [] },
+      { id: 'studio', title: 'Agent Studio', description: 'Compliance do Agent Studio', fields: [] },
+    ],
+  },
 ]
 
 const settingsSections: SettingsSection[] = getDefaultSections()
@@ -196,6 +213,7 @@ export default function SettingsPageEnhanced() {
     'comunicacao-alertas': 0,
     'usuarios-departamentos': 0,
     'integrations': 0,
+    'fairness-compliance': 0,
   })
 
   const [subsectionCompletion, setSubsectionCompletion] = useState<Record<string, boolean>>({})
@@ -376,6 +394,12 @@ export default function SettingsPageEnhanced() {
         return (
           <ErrorBoundarySection>
             <IntegrationsHub activeSubsection={activeSubsection} />
+          </ErrorBoundarySection>
+        )
+      case 'fairness-compliance':
+        return (
+          <ErrorBoundarySection>
+            <FairnessComplianceHub activeSubsection={activeSubsection || 'fairness'} />
           </ErrorBoundarySection>
         )
       default:

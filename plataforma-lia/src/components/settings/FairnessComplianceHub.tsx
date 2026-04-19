@@ -1,11 +1,11 @@
 "use client"
 
-import React, { useEffect, useState } from"react"
+import React, { useEffect, useState, useCallback } from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from"@/components/ui/select"
-import { Shield, AlertTriangle, TrendingDown, Download } from"lucide-react"
+import { Shield, AlertTriangle, TrendingDown, Download, FileText, Clock, CheckCircle } from"lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from"recharts"
 import { textStyles, cardStyles } from"@/lib/design-tokens"
 import { StudioComplianceView } from"./StudioComplianceView"
@@ -33,6 +33,154 @@ interface AuditLogEntry {
   created_at: string
 }
 
+interface LGPDRequestItem {
+  id: string
+  candidate_id_masked: string
+  vacancy_title: string
+  vacancy_id: string
+  requested_at: string
+  deadline: string
+  status: "pending" | "responded" | "closed"
+}
+
+function LGPDCandidatosView() {
+  const [items, setItems] = React.useState<LGPDRequestItem[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState<string | null>(null)
+  const [pendingCount, setPendingCount] = React.useState(0)
+  const [responding, setResponding] = React.useState<string | null>(null)
+
+  async function fetchData() {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch("/api/backend-proxy/rh/lgpd-requests", { credentials: "include" })
+      if (!res.ok) throw new Error("Erro ao carregar pedidos")
+      const data = await res.json()
+      const payload = data.data || data
+      setItems(payload.items || [])
+      setPendingCount(payload.pending_count || 0)
+    } catch (err: any) {
+      setError(err.message || "Erro desconhecido")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchData() }, [])
+
+  async function handleRespond(id: string) {
+    setResponding(id)
+    try {
+      const res = await fetch(`/api/backend-proxy/rh/lgpd-requests/${id}/respond`, {
+        method: "PATCH",
+        credentials: "include",
+      })
+      if (!res.ok) throw new Error("Falha ao atualizar")
+      setItems(prev => prev.map(i => i.id === id ? { ...i, status: "responded" } : i))
+      setPendingCount(prev => Math.max(0, prev - 1))
+    } catch (err: any) {
+      alert(err.message)
+    } finally {
+      setResponding(null)
+    }
+  }
+
+  const statusConfig: Record<string, { label: string; cls: string }> = {
+    pending: { label: "Pendente", cls: "bg-amber-500/15 text-amber-600" },
+    responded: { label: "Respondido", cls: "bg-green-500/15 text-green-600" },
+    closed: { label: "Encerrado", cls: "bg-lia-bg-tertiary text-lia-text-secondary" },
+  }
+
+  const isOverdue = (deadline: string) => new Date(deadline) < new Date()
+
+  if (error) return (
+    <div className="text-center py-12">
+      <AlertTriangle className="w-10 h-10 text-status-error mx-auto mb-3" />
+      <p className="text-lia-text-secondary">{error}</p>
+    </div>
+  )
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-base font-semibold text-lia-text-primary">LGPD Art. 20 — Pedidos de Candidatos</h2>
+          <p className="text-sm text-lia-text-secondary mt-0.5">Direito à explicação sobre avaliações. Prazo legal: 15 dias úteis.</p>
+        </div>
+        {pendingCount > 0 && (
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+            <Clock className="w-4 h-4 text-amber-500" />
+            <span className="text-sm font-medium text-amber-600">{pendingCount} pendente{pendingCount > 1 ? "s" : ""}</span>
+          </div>
+        )}
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-14 bg-lia-bg-tertiary rounded-lg animate-pulse" />
+          ))}
+        </div>
+      ) : items.length === 0 ? (
+        <div className="text-center py-12">
+          <CheckCircle className="w-10 h-10 text-green-500 mx-auto mb-3" />
+          <p className="text-sm font-medium text-lia-text-primary">Nenhum pedido registrado</p>
+          <p className="text-sm text-lia-text-secondary">Candidatos ainda não solicitaram explicação sobre suas avaliações.</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-lia-border">
+                <th className="text-left py-2 px-3 font-medium text-lia-text-secondary">Candidato</th>
+                <th className="text-left py-2 px-3 font-medium text-lia-text-secondary">Vaga</th>
+                <th className="text-left py-2 px-3 font-medium text-lia-text-secondary">Solicitado em</th>
+                <th className="text-left py-2 px-3 font-medium text-lia-text-secondary">Prazo</th>
+                <th className="text-left py-2 px-3 font-medium text-lia-text-secondary">Status</th>
+                <th className="text-left py-2 px-3 font-medium text-lia-text-secondary">Ação</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map(item => {
+                const cfg = statusConfig[item.status] || statusConfig.pending
+                const overdue = item.status === "pending" && isOverdue(item.deadline)
+                return (
+                  <tr key={item.id} className={`border-b border-lia-border/30 hover:bg-lia-bg-tertiary/40 ${overdue ? "bg-red-500/5" : ""}`}>
+                    <td className="py-2.5 px-3 font-mono text-xs text-lia-text-secondary">{item.candidate_id_masked}</td>
+                    <td className="py-2.5 px-3 text-lia-text-primary max-w-[180px] truncate">{item.vacancy_title}</td>
+                    <td className="py-2.5 px-3 text-lia-text-secondary whitespace-nowrap">
+                      {new Date(item.requested_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+                    </td>
+                    <td className={`py-2.5 px-3 whitespace-nowrap ${overdue ? "text-red-500 font-medium" : "text-lia-text-secondary"}`}>
+                      {overdue && <AlertTriangle className="inline w-3 h-3 mr-1" />}
+                      {new Date(item.deadline).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${cfg.cls}`}>{cfg.label}</span>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      {item.status === "pending" && (
+                        <button
+                          onClick={() => handleRespond(item.id)}
+                          disabled={responding === item.id}
+                          className="text-xs px-2.5 py-1 rounded-md bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20 disabled:opacity-50 transition-colors"
+                        >
+                          {responding === item.id ? "..." : "Marcar respondido"}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
 const categoryLabels: Record<string, string> = {
   gender:"Genero",
   age:"Idade",
@@ -57,6 +205,10 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
   // P2.3: Studio subsection has its own dedicated view
   if (activeSubsection === "studio") {
     return <StudioComplianceView />
+  }
+  // LGPD Art. 20 candidate requests tab
+  if (activeSubsection === "lgpd-candidatos") {
+    return <LGPDCandidatosView />
   }
 
   const [period, setPeriod] = useState("30")
