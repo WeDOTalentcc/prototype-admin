@@ -1299,3 +1299,36 @@ def get_email_service() -> "EmailService":
 def get_mailgun_email_service() -> "MailgunEmailService":
     """Returns the MailgunEmailService singleton."""
     return mailgun_email_service
+
+
+def _strip_meta(params: dict) -> dict:
+    return {k: v for k, v in params.items() if not k.startswith("_")}
+
+
+async def send_email(**params):
+    """Module-level wrapper for the chat tool executor."""
+    return await email_service.send_email(**_strip_meta(params))
+
+
+async def send_bulk_email(**params):
+    return await email_service.send_bulk_email(**_strip_meta(params))
+
+
+async def create_template(**params):
+    return await email_service.create_template(**_strip_meta(params))
+
+
+async def list_templates(**params):
+    """Listar templates de e-mail. Implementação pendente — usa data_request_service como referência futura."""
+    raise NotImplementedError(
+        "list_templates ainda não está implementado em EmailService. "
+        "Backlog: expor query DB de templates ativos por tenant."
+    )
+
+
+async def preview_template(**params):
+    """Preview de template renderizado. Delega para preview_email do singleton."""
+    p = _strip_meta(params)
+    if hasattr(email_service, "preview_email"):
+        return await email_service.preview_email(**p) if callable(getattr(email_service, "preview_email")) else email_service.preview_email(**p)
+    raise NotImplementedError("preview_template ainda não disponível.")

@@ -331,9 +331,19 @@ class CancellationHandler:
     
     @staticmethod
     def is_cancellation_request(message: str) -> bool:
-        """Check if a message is a cancellation request."""
+        """Check if a message is a cancellation request.
+
+        Uses word boundaries to prevent false positives like matching
+        'pare' inside 'parecer'. Each keyword must appear as a
+        complete word, not embedded in a longer word.
+        """
+        import re as _re
         message_lower = message.lower().strip()
-        return any(keyword in message_lower for keyword in CANCELLATION_KEYWORDS)
+        for keyword in CANCELLATION_KEYWORDS:
+            pattern = r"\b" + _re.escape(keyword) + r"\b"
+            if _re.search(pattern, message_lower):
+                return True
+        return False
     
     @staticmethod
     def is_restart_request(message: str) -> bool:

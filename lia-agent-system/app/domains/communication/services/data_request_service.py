@@ -732,3 +732,12 @@ class DataRequestService:
 
 
 data_request_service = DataRequestService()
+
+
+def _strip_meta(p: dict) -> dict:
+    return {k: v for k, v in p.items() if not k.startswith("_")}
+
+
+async def handle_request(**params):
+    """Wrapper para o chat. Cria solicitação LGPD via DataRequestService.create_data_request."""
+    return await data_request_service.create_data_request(**_strip_meta(params))

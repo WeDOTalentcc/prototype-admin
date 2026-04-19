@@ -480,3 +480,12 @@ teams_service = TeamsService()
 
 def get_teams_service() -> "TeamsService":
     return teams_service
+
+
+def _strip_meta(p: dict) -> dict:
+    return {k: v for k, v in p.items() if not k.startswith("_")}
+
+
+async def send_teams_message(**params):
+    """Wrapper para o chat. Delega para TeamsService.send_message."""
+    return await teams_service.send_message(**_strip_meta(params))

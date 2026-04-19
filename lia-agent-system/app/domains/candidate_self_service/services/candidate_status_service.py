@@ -35,7 +35,7 @@ class CandidateStatusService:
         Returns: {allowed: bool, remaining_hour: int, remaining_day: int}
         """
         try:
-            from app.shared.cache.redis_client import get_redis
+            from app.core.redis_client import get_redis
             redis = await get_redis()
 
             key_hour = f"css_rate:{candidate_id}:hour"

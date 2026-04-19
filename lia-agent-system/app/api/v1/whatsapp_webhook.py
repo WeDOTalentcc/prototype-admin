@@ -131,6 +131,13 @@ async def _find_candidate_by_phone(phone: str) -> dict | None:
             company_id=None,  # lookup is cross-tenant by phone, rails scopes internally
         )
         if result and result.get("found"):
+            # LGPD + WABA compliance: only route if candidate gave WhatsApp consent
+            if not result.get("whatsapp_consent_at"):
+                logger.info(
+                    "[WhatsApp] candidate_id=%s skipped — no whatsapp_consent_at",
+                    result.get("candidate_id"),
+                )
+                return None
             logger.info(
                 "[WhatsApp] candidate match candidate_id=%s",
                 result.get("candidate_id"),

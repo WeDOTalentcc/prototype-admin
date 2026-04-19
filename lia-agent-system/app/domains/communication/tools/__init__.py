@@ -8,13 +8,13 @@ COMMUNICATION_TOOLS = [
         "tool_id": "communication_send_email",
         "name": "Enviar Email",
         "description": "Envia email individual usando template ou conteúdo customizado",
-        "handler": "app.domains.communication.services.email_service.email_service.send_email",
+        "handler": "app.domains.communication.services.email_service.send_email",
     },
     {
         "tool_id": "communication_send_bulk",
         "name": "Enviar Email em Massa",
         "description": "Envia emails para múltiplos destinatários",
-        "handler": "app.domains.communication.services.email_service.email_service.send_bulk_email",
+        "handler": "app.domains.communication.services.email_service.send_bulk_email",
     },
     {
         "tool_id": "communication_send_whatsapp",
@@ -32,19 +32,19 @@ COMMUNICATION_TOOLS = [
         "tool_id": "communication_create_template",
         "name": "Criar Template de Email",
         "description": "Cria novo template de email/comunicação",
-        "handler": "app.domains.communication.services.email_service.email_service.create_template",
+        "handler": "app.domains.communication.services.email_service.create_template",
     },
     {
         "tool_id": "communication_list_templates",
         "name": "Listar Templates",
         "description": "Lista templates de comunicação disponíveis",
-        "handler": "app.domains.communication.services.email_service.email_service.list_templates",
+        "handler": "app.domains.communication.services.email_service.list_templates",
     },
     {
         "tool_id": "communication_preview_template",
         "name": "Preview de Template",
         "description": "Visualiza template renderizado com dados do candidato",
-        "handler": "app.domains.communication.services.email_service.email_service.preview_template",
+        "handler": "app.domains.communication.services.email_service.preview_template",
     },
     {
         "tool_id": "communication_get_history",

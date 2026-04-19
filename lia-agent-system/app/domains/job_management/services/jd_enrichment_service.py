@@ -693,3 +693,12 @@ class EnrichedJDResult:
 
 
 jd_enrichment_service = JdEnrichmentService()
+
+
+def _strip_meta(p: dict) -> dict:
+    return {k: v for k, v in p.items() if not k.startswith("_")}
+
+
+async def enrich_job_description(**params):
+    """Wrapper para o chat. Delega para JdEnrichmentService.enrich_job_description."""
+    return await jd_enrichment_service.enrich_job_description(**_strip_meta(params))

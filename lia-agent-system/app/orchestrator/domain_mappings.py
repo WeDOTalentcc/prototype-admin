@@ -20,16 +20,21 @@ AGENT_TYPE_TO_DOMAIN: dict[str, str] = {
     "ats_integrator": "ats_integration",
     "recruiter_assistant": "recruiter_assistant",
     "task_planner": "automation",
-    "kanban_search": "kanban_search",
-    "kanban_insight": "kanban_insight",
-    "kanban_action": "kanban_action",
-    "pipeline_context": "pipeline_context",
-    "pipeline_decision": "pipeline_decision",
-    "pipeline_action": "pipeline_action",
-    "sourcing_planner": "sourcing_planner",
-    "sourcing_search": "sourcing_search",
-    "sourcing_enrich": "sourcing_enrich",
-    "sourcing_engagement": "sourcing_engagement",
+    # Kanban sub-types redirecionados ao único domínio kanban registrado
+    # (pipeline_transition cobre movimentos de cards). Antes apontavam para
+    # domínios fantasmas: kanban_search/kanban_insight/kanban_action.
+    "kanban_search": "pipeline_transition",
+    "kanban_insight": "pipeline_transition",
+    "kanban_action": "pipeline_transition",
+    # Pipeline sub-types redirecionados a pipeline_transition (único registrado)
+    "pipeline_context": "pipeline_transition",
+    "pipeline_decision": "pipeline_transition",
+    "pipeline_action": "pipeline_transition",
+    # Sourcing sub-types colapsados no domínio sourcing canônico
+    "sourcing_planner": "sourcing",
+    "sourcing_search": "sourcing",
+    "sourcing_enrich": "sourcing",
+    "sourcing_engagement": "sourcing",
     "talent_pool": "talent_pool",
     "agent_studio": "agent_studio",
     "digital_twin": "digital_twin",

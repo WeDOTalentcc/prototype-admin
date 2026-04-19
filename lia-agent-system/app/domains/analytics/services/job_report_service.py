@@ -792,3 +792,18 @@ class JobReportService:
 
 
 job_report_service = JobReportService()
+
+
+def _strip_meta(p: dict) -> dict:
+    return {k: v for k, v in p.items() if not k.startswith("_")}
+
+
+async def generate_report(**params):
+    """Wrapper para o chat. Roteia entre os tipos de relatório existentes via 'report_type'."""
+    p = _strip_meta(params)
+    report_type = (p.pop("report_type", "analytics") or "analytics").lower()
+    if report_type == "funnel":
+        return await job_report_service.generate_funnel_report(**p)
+    if report_type in ("candidates", "candidate_list", "export"):
+        return await job_report_service.generate_candidate_list_export(**p)
+    return await job_report_service.generate_analytics_report(**p)

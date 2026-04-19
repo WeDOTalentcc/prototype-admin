@@ -986,3 +986,20 @@ job_insights_service = JobInsightsService()
 
 def get_job_insights_service() -> "JobInsightsService":
     return job_insights_service
+
+
+def _strip_meta(p: dict) -> dict:
+    return {k: v for k, v in p.items() if not k.startswith("_")}
+
+
+async def get_job_insights(**params):
+    """Wrapper para o chat. Delega para get_all_insights."""
+    return await job_insights_service.get_all_insights(**_strip_meta(params))
+
+
+async def get_job_health(**params):
+    """Wrapper de health-check da vaga. Combina success_metrics + time_to_fill."""
+    p = _strip_meta(params)
+    metrics = await job_insights_service.get_success_metrics(**p)
+    ttf = await job_insights_service.get_time_to_fill(**p)
+    return {"status": "ok", "success_metrics": metrics, "time_to_fill": ttf}

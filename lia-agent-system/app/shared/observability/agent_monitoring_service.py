@@ -578,3 +578,15 @@ class AgentMonitoringService:
         await self.db.commit()
         
         return {"activities_created": created_count}
+
+
+def _strip_meta(p: dict) -> dict:
+    return {k: v for k, v in p.items() if not k.startswith("_")}
+
+
+async def get_monitoring_data(**params):
+    """Wrapper para o chat. Requer instância DB-backed; delega para get_global_metrics."""
+    raise NotImplementedError(
+        "get_monitoring_data requer instância de AgentMonitoringService com sessão ativa "
+        "(não há singleton módulo-level). Backlog: criar factory async com get_async_session."
+    )

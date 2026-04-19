@@ -326,3 +326,26 @@ class WizardOrchestratorService:
 
 
 wizard_orchestrator_service = WizardOrchestratorService()
+
+
+def _strip_meta(p: dict) -> dict:
+    return {k: v for k, v in p.items() if not k.startswith("_")}
+
+
+async def get_wizard_step(**params):
+    """Wrapper para o chat. Devolve a próxima etapa sugerida pelo wizard."""
+    p = _strip_meta(params)
+    raise NotImplementedError(
+        "get_wizard_step ainda não está implementado em WizardOrchestratorService. "
+        "Backlog: expor estado da sessão via process_wizard_message."
+    )
+
+
+async def advance_wizard(**params):
+    """Wrapper para o chat. Avança o wizard via process_wizard_message."""
+    p = _strip_meta(params)
+    if "message" not in p:
+        p["message"] = "next"
+    if hasattr(wizard_orchestrator_service, "process_wizard_message_with_memory"):
+        return await wizard_orchestrator_service.process_wizard_message_with_memory(**p)
+    return wizard_orchestrator_service.process_wizard_message(**p)

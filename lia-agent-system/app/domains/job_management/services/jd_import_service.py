@@ -590,3 +590,12 @@ jd_import_service = JDImportService()
 
 def get_jd_import_service() -> "JDImportService":
     return jd_import_service
+
+
+def _strip_meta(p: dict) -> dict:
+    return {k: v for k, v in p.items() if not k.startswith("_")}
+
+
+async def import_job_description(**params):
+    """Wrapper para o chat. Delega para JDImportService.import_jd."""
+    return await jd_import_service.import_jd(**_strip_meta(params))
