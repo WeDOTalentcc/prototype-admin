@@ -1,0 +1,34 @@
+[
+  {
+    "id": "SC-006",
+    "category": "SC",
+    "severity": "low",
+    "title": "Check WSI configuration status",
+    "prompt": "a triagem automática está configurada para a vaga V0039?",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "get_job_details"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Returns yes/no on WSI configuration",
+      "Shows configured questions if applicable"
+    ],
+    "anti_patterns": [
+      "Cannot determine status"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 2573,
+    "response": "O job ID \"V0039\" parece estar malformado. Poderia verificar e me fornecer o Job ID correto, por favor?",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-19T12:45:59.216648"
+  }
+]
