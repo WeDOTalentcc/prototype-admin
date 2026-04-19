@@ -9,6 +9,7 @@ Dead code (inline fallback blocks L931-L1660 in the original monolith)
 has been removed — handlers always succeed for known action_ids.
 """
 import logging
+import re
 import uuid
 from datetime import datetime
 from typing import Any
@@ -25,6 +26,9 @@ from app.orchestrator.action_executor.utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+_UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
+_JOB_ID_RE = re.compile(r"^[A-Z][A-Z0-9]{2,9}$", re.I)
 
 
 class ActionExecutorService:
@@ -63,10 +67,6 @@ class ActionExecutorService:
         # Inject entity_id/entity_type from context if not already in entities
         ctx_entity_id = context.get("entity_id") or context.get("context_entity_id")
         ctx_entity_type = context.get("entity_type", "")
-        import re as _re
-        _UUID_RE = _re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", _re.I)
-        # Also accept short job IDs like V0037, JOB-123 (not just full UUIDs)
-        _JOB_ID_RE = _re.compile(r"^[A-Z][A-Z0-9]{2,9}$", _re.I)
         _is_uuid = bool(ctx_entity_id and _UUID_RE.match(str(ctx_entity_id)))
         _is_job_ref = bool(ctx_entity_id and _JOB_ID_RE.match(str(ctx_entity_id)))
         if ctx_entity_id and (_is_uuid or _is_job_ref):

@@ -8,6 +8,8 @@ from datetime import datetime
 from typing import Any
 
 from app.orchestrator.action_handlers._handler_hooks import log_action_audit, sync_to_rails
+from app.orchestrator.action_executor import ActionResult
+from app.domains.job_management.agents.wizard_tool_registry import _fetch_market_range
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +38,6 @@ async def execute_job_action(
 
 
 async def _pause_job(params: dict[str, Any], context: dict[str, Any]):
-    from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
 
@@ -82,7 +83,6 @@ async def _pause_job(params: dict[str, Any], context: dict[str, Any]):
         )
     except Exception as e:
         logger.warning(f"pause_job failed: {e}")
-        from app.orchestrator.action_executor import ActionResult
         return ActionResult(
             status="error",
             message="Erro ao pausar a vaga.",
@@ -92,7 +92,6 @@ async def _pause_job(params: dict[str, Any], context: dict[str, Any]):
 
 
 async def _close_job(params: dict[str, Any], context: dict[str, Any]):
-    from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
 
@@ -138,7 +137,6 @@ async def _close_job(params: dict[str, Any], context: dict[str, Any]):
         )
     except Exception as e:
         logger.warning(f"close_job failed: {e}")
-        from app.orchestrator.action_executor import ActionResult
         return ActionResult(
             status="error",
             message="Erro ao fechar a vaga.",
@@ -148,7 +146,6 @@ async def _close_job(params: dict[str, Any], context: dict[str, Any]):
 
 
 async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
-    from app.orchestrator.action_executor import ActionResult
     try:
         import uuid as uuid_mod
 
@@ -233,7 +230,6 @@ async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
         )
     except Exception as e:
         logger.warning(f"duplicate_job failed: {e}")
-        from app.orchestrator.action_executor import ActionResult
         return ActionResult(
             status="error",
             message="Erro ao duplicar a vaga.",
@@ -243,7 +239,6 @@ async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
 
 
 async def _reopen_job(params: dict[str, Any], context: dict[str, Any]):
-    from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
 
@@ -289,7 +284,6 @@ async def _reopen_job(params: dict[str, Any], context: dict[str, Any]):
         )
     except Exception as e:
         logger.warning(f"reopen_job failed: {e}")
-        from app.orchestrator.action_executor import ActionResult
         return ActionResult(
             status="error",
             message="Erro ao reabrir a vaga.",
@@ -299,7 +293,6 @@ async def _reopen_job(params: dict[str, Any], context: dict[str, Any]):
 
 
 async def _set_job_urgent(params: dict[str, Any], context: dict[str, Any]):
-    from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
 
@@ -353,7 +346,6 @@ async def _set_job_urgent(params: dict[str, Any], context: dict[str, Any]):
         )
     except Exception as e:
         logger.warning(f"set_job_urgent failed: {e}")
-        from app.orchestrator.action_executor import ActionResult
         return ActionResult(
             status="error",
             message="Erro ao classificar vaga como urgente.",
@@ -364,7 +356,6 @@ async def _set_job_urgent(params: dict[str, Any], context: dict[str, Any]):
 
 async def _suggest_salary(params: dict, context: dict):
     """WZ-003: Return salary benchmark for a job title/seniority/location."""
-    from app.orchestrator.action_executor import ActionResult
     try:
         job_title = params.get("job_title") or params.get("title", "")
         location = params.get("location", "Brasil")
@@ -377,7 +368,6 @@ async def _suggest_salary(params: dict, context: dict):
                 action_type="suggest_salary",
             )
 
-        from app.domains.job_management.agents.wizard_tool_registry import _fetch_market_range
         market = await _fetch_market_range(job_title, seniority, location)
         min_sal = market.get("min")
         max_sal = market.get("max")
@@ -413,7 +403,6 @@ async def _suggest_salary(params: dict, context: dict):
         )
     except Exception as exc:
         logger.warning(f"_suggest_salary failed: {exc}")
-        from app.orchestrator.action_executor import ActionResult
         return ActionResult(
             status="error",
             message="Erro ao consultar benchmark salarial. Tente novamente.",
@@ -424,7 +413,6 @@ async def _suggest_salary(params: dict, context: dict):
 
 async def _generate_jd_direct(params: dict, context: dict):
     """WZ-002: Generate a structured job description directly from extracted params."""
-    from app.orchestrator.action_executor import ActionResult
     try:
         title = params.get("job_title") or params.get("title", "")
         skills = params.get("skills") or []
@@ -521,7 +509,6 @@ Buscamos um(a) {title} ({seniority}) para impulsionar nossa estratégia de produ
         )
     except Exception as exc:
         logger.warning(f"_generate_jd_direct failed: {exc}")
-        from app.orchestrator.action_executor import ActionResult
         return ActionResult(
             status="error",
             message="Erro ao gerar a descrição de vaga. Tente novamente.",
