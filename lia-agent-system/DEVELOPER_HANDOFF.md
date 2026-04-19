@@ -1202,3 +1202,52 @@ record_consent(candidate_id, company_id, user_id)    # audit trail, cost=0
 ---
 
 *Atualizado em: 2026-04-19 | Cobre PARTES A-F completas*
+
+
+---
+
+## 14. Como Usar Este Doc com Claude Code
+
+**Repositório canônico**: Replit `/home/runner/workspace/` (backend `lia-agent-system/`, frontend `plataforma-lia/`)
+**GitHub**: branch `replit-sync` em `WeDOTalentcc/wedotalent02202026` — atualizado manualmente pelo Paulo via Replit IDE após cada ciclo de entrega.
+
+### Instruções para o dev
+
+1. Abra o Replit workspace (canônico) ou clone `wedotalent02202026` branch `replit-sync`
+2. Inicie o Claude Code na raiz do repo:
+   ```bash
+   claude
+   ```
+3. No início da sessão, oriente o Claude a ler este documento:
+   ```
+   Leia o arquivo lia-agent-system/DEVELOPER_HANDOFF.md completo antes de começar.
+   Ele contém o contexto técnico de todas as entregas do ciclo 2026-04-19.
+   ```
+4. Para implementar um item específico:
+   ```
+   Com base na seção X do DEVELOPER_HANDOFF.md, implemente Y.
+   Siga os padrões de multi-tenancy e LGPD descritos no documento.
+   ```
+5. Para reproduzir um fix:
+   ```
+   O commit SHA abc1234 (seção Z do handoff) corrigiu o bug W.
+   Reproduza a mesma correção no arquivo A aplicando o mesmo padrão.
+   ```
+
+### Paths canônicos (Replit = GitHub replit-sync)
+
+| Camada | Path |
+|--------|------|
+| Backend Python FastAPI | `lia-agent-system/app/` |
+| Frontend Next.js/React | `plataforma-lia/src/` |
+| Orchestrator | `lia-agent-system/app/orchestrator/` |
+| Tools LIA | `lia-agent-system/app/domains/*/tools/` |
+| Prompts/Persona | `lia-agent-system/app/shared/prompts/` |
+| Compliance/Fairness | `lia-agent-system/app/shared/compliance/` |
+| LLM Factory | `lia-agent-system/app/shared/providers/` |
+| Apify Gateway | `lia-agent-system/app/domains/sourcing/services/apify_service.py` |
+| Platform Manifest | `lia-agent-system/app/config/platform_manifest.yaml` |
+| Proactive Hints (frontend) | `plataforma-lia/src/components/chat/proactive-hints-list.tsx` |
+| Action Router (frontend) | `plataforma-lia/src/hooks/chat/use-proactive-action-router.ts` |
+
+*Last updated: 2026-04-19 | Seção 14 adicionada — Claude Code usage guide*
