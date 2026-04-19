@@ -7,7 +7,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 
 from app.api.deps import get_current_company_id
-from app.shared.response import APIResponse
+from app.schemas.api_envelope import APIResponse
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
