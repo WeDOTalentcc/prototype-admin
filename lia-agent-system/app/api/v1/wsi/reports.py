@@ -452,12 +452,13 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             # geradas antes desta feature continuariam servindo um payload sem
             # `degraded_quality` agregado e sem `flags_structured` por resposta,
             # quebrando o banner LGPD/EU AI Act na UI.
-            cached_responses = cached_payload.get("responses") or []
+            # Chave correta no payload F11 é `response_analyses` (não `responses`).
+            cached_analyses = cached_payload.get("response_analyses") or []
             cache_has_transparency = (
                 "degraded_count" in cached_payload
                 and (
-                    not cached_responses
-                    or "flags_structured" in (cached_responses[0] or {})
+                    not cached_analyses
+                    or "flags_structured" in (cached_analyses[0] or {})
                 )
             )
             if cache_has_transparency:
