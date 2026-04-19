@@ -71,13 +71,16 @@ export function jobToKanbanItem(job: Job, deps: JobToKanbanItemDeps): KanbanItem
   const candidates = job.funnel?.total ?? 0
   const progress = computeProgress(job)
 
-  const chips: string[] = []
-  if (job.workModel) chips.push(job.workModel)
+  // Task #562 — Chips com ícone semântico para paridade com card de
+  // candidato (Briefcase/Star/Users). Fallback para string quando não há
+  // ícone associado.
+  const chips: KanbanItem["chips"] = []
+  if (job.workModel) chips.push({ icon: "briefcase", label: job.workModel })
   // Audit task #531 (G23-01) — leitura via helper canônico (precedência
   // `seniority` → `level` legacy). Mantém shape para evitar regressão.
   const jobSeniority = getJobSeniority(job as Job & { seniority?: string })
-  if (jobSeniority) chips.push(jobSeniority)
-  chips.push(deps.labels.candidatesCount(candidates))
+  if (jobSeniority) chips.push({ icon: "star", label: jobSeniority })
+  chips.push({ icon: "users", label: deps.labels.candidatesCount(candidates) })
 
   let dateLabel: string | undefined
   let deadlineStatus: KanbanItem["deadlineStatus"]

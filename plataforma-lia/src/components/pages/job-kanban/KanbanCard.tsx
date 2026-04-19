@@ -14,7 +14,10 @@ import {
   MapPin,
   CalendarClock,
   Flag,
+  Briefcase,
+  Users,
 } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { getPercentageScoreColorClass } from "@/lib/score-utils"
 import { kanbanCardStyles } from "@/lib/design-tokens"
@@ -56,6 +59,14 @@ const DEADLINE_CHIP_VARIANT = {
   warning: "warning",
   danger: "danger",
 } as const
+
+// Task #562 — Mapa de ícone semântico para chips (paridade com card de
+// candidato). Mapper emite a chave; card resolve o componente.
+const CHIP_ICON_MAP: Record<"briefcase" | "users" | "star", LucideIcon> = {
+  briefcase: Briefcase,
+  users: Users,
+  star: Star,
+}
 
 export const KanbanCard = React.memo(function KanbanCard({
   item,
@@ -261,11 +272,19 @@ export const KanbanCard = React.memo(function KanbanCard({
               {infoLabels.ageDays(item.ageDays)}
             </KanbanChip>
           )}
-          {chips.slice(0, 3).map((chip) => (
-            <KanbanChip key={chip} density={DENSITY}>
-              {chip}
-            </KanbanChip>
-          ))}
+          {chips.slice(0, 3).map((chip, i) => {
+            const isObj = typeof chip !== "string"
+            const label = isObj ? chip.label : chip
+            const Icon: LucideIcon | null = isObj && chip.icon
+              ? CHIP_ICON_MAP[chip.icon]
+              : null
+            return (
+              <KanbanChip key={`${label}-${i}`} density={DENSITY} className={Icon ? "gap-0.5" : undefined}>
+                {Icon && <Icon className="w-2.5 h-2.5" />}
+                {label}
+              </KanbanChip>
+            )
+          })}
           {chips.length > 3 && (
             <KanbanChip density={DENSITY} muted>
               +{chips.length - 3}

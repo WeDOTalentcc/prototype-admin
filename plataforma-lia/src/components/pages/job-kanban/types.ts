@@ -87,7 +87,14 @@ export interface KanbanItem {
   score?: number
   scoreColorClass?: string
   badge?: string
-  chips?: string[]
+  /**
+   * Task #562 — Chips podem ser strings simples (compat) OU objetos com
+   * ícone semântico (`briefcase` para work model, `star` para senioridade,
+   * `users` para contagem de candidatos). O card resolve o componente
+   * Lucide a partir do nome.
+   */
+  chips?: Array<string | { icon?: "briefcase" | "users" | "star"; label: string }>
+
   flagFavorite?: boolean
   flagNotes?: boolean
   flagStaleTooltip?: string

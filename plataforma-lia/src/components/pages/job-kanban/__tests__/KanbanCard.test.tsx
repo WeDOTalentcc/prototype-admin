@@ -9,7 +9,11 @@ const baseItem: KanbanItem = {
   subtitle: "Tecnologia",
   tertiary: "São Paulo, BR",
   avatarFallback: "TE",
-  chips: ["remoto", "Pleno", "10 candidatos"],
+  chips: [
+    { icon: "briefcase", label: "remoto" },
+    { icon: "star", label: "Pleno" },
+    { icon: "users", label: "10 candidatos" },
+  ],
 }
 
 const funnelLabels = {
