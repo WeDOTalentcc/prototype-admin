@@ -460,7 +460,7 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                     text("""
                         SELECT c.id, c.name, c.email
                         FROM candidates c
-                        JOIN vacancy_candidates vc ON vc.candidate_id = c.id::text
+                        JOIN vacancy_candidates vc ON CAST(vc.candidate_id AS uuid) = c.id
                         WHERE c.id = CAST(:cid AS uuid)
                           AND vc.company_id = :co
                           AND vc.job_vacancy_id = CAST(:jid AS uuid)

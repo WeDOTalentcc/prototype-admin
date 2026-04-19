@@ -136,7 +136,7 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
                         _sql = "SELECT id FROM job_vacancies WHERE title ILIKE :t"
                         _bind: dict[str, Any] = {"t": f"%{job_title_hint}%"}
                         if company_id:
-                            _sql += " AND company_id = CAST(:co AS uuid)"
+                            _sql += " AND company_id = :co"
                             _bind["co"] = str(company_id)
                         _sql += " ORDER BY created_at DESC LIMIT 1"
                         _row = (await _db.execute(_text(_sql), _bind)).fetchone()
@@ -167,7 +167,7 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
                             SELECT c.id, c.name, c.current_title, c.seniority_level,
                                    vc.stage, vc.score, vc.lia_score
                             FROM vacancy_candidates vc
-                            JOIN candidates c ON c.id = vc.candidate_id
+                            JOIN candidates c ON c.id = CAST(vc.candidate_id AS uuid)
                             WHERE vc.vacancy_id = CAST(:job_id AS uuid)
                         """
                     else:
@@ -175,7 +175,7 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
                             SELECT c.id, c.name, c.current_title, c.seniority_level,
                                    vc.stage, vc.score, vc.lia_score
                             FROM vacancy_candidates vc
-                            JOIN candidates c ON c.id = vc.candidate_id
+                            JOIN candidates c ON c.id = CAST(vc.candidate_id AS uuid)
                             JOIN job_vacancies jv ON jv.id = vc.vacancy_id
                             WHERE jv.job_id = :job_id
                         """
@@ -277,7 +277,7 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]):
                 WHERE c.id IN ({placeholders})
             """
             if company_id:
-                sql += " AND EXISTS (SELECT 1 FROM vacancy_candidates vc WHERE vc.candidate_id = c.id AND vc.company_id = CAST(:co AS uuid))"
+                sql += " AND EXISTS (SELECT 1 FROM vacancy_candidates vc WHERE CAST(vc.candidate_id AS uuid) = c.id AND vc.company_id = :co)"
                 bind_params["co"] = str(company_id)
             result = await db.execute(text(sql), bind_params)
             rows = result.fetchall()
@@ -350,7 +350,7 @@ async def _search_candidates(params: dict[str, Any], context: dict[str, Any]):
                 SELECT DISTINCT c.id, c.name, c.current_title, c.current_company,
                        c.location_city, c.seniority_level
                 FROM candidates c
-                LEFT JOIN vacancy_candidates vc ON vc.candidate_id = c.id
+                LEFT JOIN vacancy_candidates vc ON CAST(vc.candidate_id AS uuid) = c.id
                 WHERE (
                     c.name ILIKE :q OR c.current_title ILIKE :q
                     OR c.current_company ILIKE :q
@@ -425,7 +425,7 @@ async def _suggest_candidates(params: dict[str, Any], context: dict[str, Any]):
             job_sql = "SELECT title, requirements, seniority_level, tags FROM job_vacancies WHERE id = CAST(:jid AS uuid)"
             job_bind: dict[str, Any] = {"jid": str(job_id)}
             if company_id:
-                job_sql += " AND company_id = CAST(:co AS uuid)"
+                job_sql += " AND company_id = :co"
                 job_bind["co"] = str(company_id)
             job_row = await db.execute(text(job_sql), job_bind)
             job = job_row.fetchone()
@@ -580,7 +580,7 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
                     SELECT c.name, c.email, c.phone, c.current_title, c.current_company,
                            vc.stage, vc.score, vc.lia_score
                     FROM vacancy_candidates vc
-                    JOIN candidates c ON c.id = vc.candidate_id
+                    JOIN candidates c ON c.id = CAST(vc.candidate_id AS uuid)
                     WHERE vc.vacancy_id = CAST(:jid AS uuid)
                 """
                 export_bind: dict[str, Any] = {"jid": str(job_id)}
@@ -594,8 +594,8 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
                     SELECT DISTINCT c.name, c.email, c.phone, c.current_title, c.current_company,
                            vc.stage, vc.score, vc.lia_score
                     FROM vacancy_candidates vc
-                    JOIN candidates c ON c.id = vc.candidate_id
-                    WHERE vc.company_id = CAST(:co AS uuid)
+                    JOIN candidates c ON c.id = CAST(vc.candidate_id AS uuid)
+                    WHERE vc.company_id = :co
                     ORDER BY c.name
                     LIMIT 100
                 """), {"co": str(company_id)})

@@ -46,7 +46,7 @@ async def resolve_candidate_by_name(
 
         if company_id:
             sql += """
-                JOIN vacancy_candidates vc ON vc.candidate_id = c.id::text
+                JOIN vacancy_candidates vc ON CAST(vc.candidate_id AS uuid) = c.id
                 WHERE vc.company_id = :co
                   AND c.name ILIKE :q
             """
