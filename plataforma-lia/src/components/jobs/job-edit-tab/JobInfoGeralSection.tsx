@@ -193,15 +193,13 @@ export function JobInfoGeralSection({
               </div>
               <div>
                 <label className={labelClass}>Nível<ScreeningBadge /></label>
-                {/* Audit task #531 (G23-01) — write-both: persistir senioridade
-                    em `seniority` (canônico) E `level` (legacy) durante a janela
-                    de migração; leitura sempre via helper `getJobSeniority`. */}
+                {/* Task #539 — `level` legacy removido; persistir e ler via
+                    `seniority` (canônico). Helper `getJobSeniority` mantido
+                    como tolerância a payloads parciais. */}
                 <select
-                  value={getJobSeniority(jobEditForm as { seniority?: string | null; level?: string | null })}
+                  value={getJobSeniority(jobEditForm as { seniority?: string | null })}
                   onChange={(e) => {
-                    const value = e.target.value
-                    updateField("seniority", value)
-                    updateField("level", value)
+                    updateField("seniority", e.target.value)
                   }}
                   disabled={!isEditing}
                   className={selectClass(!isEditing)}

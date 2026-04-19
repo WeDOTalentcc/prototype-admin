@@ -42,7 +42,7 @@ export function useKanbanPublishing({
       // Auto-salva o formulário antes de publicar
       const fieldMapping: Record<string, string> = {
         title: 'title', department: 'department', location: 'location',
-        workModel: 'work_model', type: 'employment_type', level: 'seniority_level',
+        workModel: 'work_model', type: 'employment_type', seniority: 'seniority_level',
         urgencyLevel: 'urgency_level', priority: 'priority',
         recruiter: 'recruiter', recruiterEmail: 'recruiter_email',
         manager: 'hiring_manager', managerEmail: 'hiring_manager_email',

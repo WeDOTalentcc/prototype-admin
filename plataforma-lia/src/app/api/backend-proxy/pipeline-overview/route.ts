@@ -115,10 +115,11 @@ export async function GET(request: NextRequest) {
               id: vid,
               manager: (v.manager || v.responsible_manager) as string | null,
               open_date: (v.open_date || v.created_at || v.openDate) as string | null,
-              // Audit task #531 (G23-01) — precedência canônica: `seniority`
-              // primeiro, `level` legacy como fallback (antes a ordem estava
-              // invertida e fazia o painel ignorar o canônico).
-              level: (v.seniority || v.level) as string | null,
+              // Task #539 — `level` legacy removido do DTO; o backend devolve
+              // `seniority_level` (snake_case canônico em `JobVacancy`), com
+              // fallback para `seniority` caso algum mapper já tenha
+              // normalizado para camelCase.
+              level: (v.seniority_level || v.seniority) as string | null,
               work_model: (v.work_model || v.workModel) as string | null,
               employment_type: (v.employment_type || v.type || v.contract_type) as string | null,
               department: v.department as string | null,

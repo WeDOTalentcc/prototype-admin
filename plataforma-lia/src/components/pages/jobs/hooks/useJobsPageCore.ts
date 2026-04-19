@@ -192,7 +192,7 @@ export function useJobsPageCore(props: JobsPageProps) {
                   location: (jv.location as string) || 'Não especificado',
                   workModel: ((jv.work_model as Job['workModel']) || 'híbrido'),
                   type: (jv.employment_type as string) || 'CLT',
-                  level: (jv.seniority_level as string) || 'Pleno',
+                  seniority: (jv.seniority_level as string) || (jv.seniority as string) || 'Pleno',
                   salary: jv.salary_range ? `${formatBRL(Number((jv.salary_range as Record<string, number>).min ?? 0))} - ${formatBRL(Number((jv.salary_range as Record<string, number>).max ?? 0))}` : 'A combinar',
                   status: ((jv.status as Job['status']) || 'Rascunho'),
                   stage: stageMapping[(jv.stage as string) || ''] || 'Triagem',

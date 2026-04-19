@@ -92,7 +92,7 @@ export function JobPreviewAnalytics({ previewJob, jobMetrics, isLoadingJobMetric
               {previewJob.funnel.total < 10 && (
                 <li>• Pipeline baixo: Ampliar divulgação ou revisar requisitos</li>
               )}
-              {previewJob.level === 'Sênior' && (
+              {previewJob.seniority === 'Sênior' && (
                 <li>• Alto risco de recusa: Prepare margem de negociação de 15-20%</li>
               )}
               {previewJob.funnel.screening > previewJob.funnel.interview * 3 && (
@@ -149,7 +149,7 @@ export function JobPreviewAnalytics({ previewJob, jobMetrics, isLoadingJobMetric
                 <div
                   key={i}
                   className={`w-1.5 h-2.5 rounded-full ${
-                    i < (previewJob.level === 'Sênior' ? 4 : 2) ? 'bg-status-error' : 'bg-lia-border-default'
+                    i < (previewJob.seniority === 'Sênior' ? 4 : 2) ? 'bg-status-error' : 'bg-lia-border-default'
                   }`}
                 />
               ))}
@@ -162,7 +162,7 @@ export function JobPreviewAnalytics({ previewJob, jobMetrics, isLoadingJobMetric
                 <div
                   key={i}
                   className={`w-1.5 h-2.5 rounded-full ${
-                    i < (previewJob.level === 'Sênior' ? 3 : 1) ? 'bg-wedo-orange' : 'bg-lia-border-default'
+                    i < (previewJob.seniority === 'Sênior' ? 3 : 1) ? 'bg-wedo-orange' : 'bg-lia-border-default'
                   }`}
                 />
               ))}

@@ -79,9 +79,9 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
                   {previewJob.department}
                 </Chip>
               )}
-              {previewJob.level && (
+              {previewJob.seniority && (
                 <Chip variant="warning" muted className="text-[0.625rem] leading-none px-1.5 py-0.5">
-                  {previewJob.level}
+                  {previewJob.seniority}
                 </Chip>
               )}
               {previewJob.location && (

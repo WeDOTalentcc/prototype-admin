@@ -6,6 +6,7 @@ import { useState, useEffect, useRef, useMemo } from "react"
 import { useJobFiltersPersistence, type JobSavedSearch as SavedSearch } from "@/hooks/jobs/useJobFiltersPersistence"
 import { toast } from "sonner"
 import type { Job, JobFilters } from "@/components/jobs"
+import { getJobSeniority } from "@/lib/jobs/seniority"
 
 // ---------------------------------------------------------------------------
 // useJobsFilters
@@ -216,7 +217,7 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
         job.department.toLowerCase().includes(searchLower) ||
         job.location.toLowerCase().includes(searchLower) ||
         job.type.toLowerCase().includes(searchLower) ||
-        job.level.toLowerCase().includes(searchLower) ||
+        getJobSeniority(job).toLowerCase().includes(searchLower) ||
         job.salary.toLowerCase().includes(searchLower) ||
         job.description.toLowerCase().includes(searchLower) ||
         job.manager.toLowerCase().includes(searchLower) ||
@@ -246,7 +247,7 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
       if (booleanSearch.trim()) {
         const booleanLower = booleanSearch.toLowerCase()
         const jobText = [
-          job.title, job.department, job.location, job.type, job.level,
+          job.title, job.department, job.location, job.type, getJobSeniority(job),
           job.description, job.manager, ...job.requirements, ...job.benefits,
         ].join(' ').toLowerCase()
 
@@ -274,7 +275,7 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
       if (advancedFilters.job_types.length > 0)
         matchesAdvancedFilters = matchesAdvancedFilters && advancedFilters.job_types.some(t => job.type.toLowerCase().includes(t.toLowerCase()))
       if (advancedFilters.seniority_levels.length > 0)
-        matchesAdvancedFilters = matchesAdvancedFilters && advancedFilters.seniority_levels.some(l => job.level.toLowerCase().includes(l.toLowerCase()))
+        matchesAdvancedFilters = matchesAdvancedFilters && advancedFilters.seniority_levels.some(l => getJobSeniority(job).toLowerCase().includes(l.toLowerCase()))
       if (advancedFilters.status.length > 0)
         matchesAdvancedFilters = matchesAdvancedFilters && advancedFilters.status.some(s => job.status.toLowerCase().includes(s.toLowerCase()))
       if (advancedFilters.stages.length > 0)
@@ -312,7 +313,7 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
       if (jobFilters.position?.workModels?.length)
         matchesInlineFilters = matchesInlineFilters && jobFilters.position.workModels.includes(job.workModel)
       if (jobFilters.position?.levels?.length)
-        matchesInlineFilters = matchesInlineFilters && jobFilters.position.levels.some(l => job.level.toLowerCase().includes(l.toLowerCase()))
+        matchesInlineFilters = matchesInlineFilters && jobFilters.position.levels.some(l => getJobSeniority(job).toLowerCase().includes(l.toLowerCase()))
       if (jobFilters.team?.departments?.length)
         matchesInlineFilters = matchesInlineFilters && jobFilters.team.departments.some(d => job.department.toLowerCase().includes(d.toLowerCase()))
       if (jobFilters.team?.recruiters?.length)

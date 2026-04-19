@@ -130,7 +130,7 @@ export function EditJobModalBasicInfo({
             </div>
             <div>
               <Label className="text-xs font-medium text-lia-text-primary mb-1 block">Senioridade</Label>
-              <Select value={formData.level} onValueChange={(v) => updateField('level', v)}>
+              <Select value={formData.seniority} onValueChange={(v) => updateField('seniority', v)}>
                 <SelectTrigger className={selectTriggerStyle}>
                   <SelectValue />
                 </SelectTrigger>

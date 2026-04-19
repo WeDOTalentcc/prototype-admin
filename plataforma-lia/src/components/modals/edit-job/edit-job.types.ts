@@ -44,7 +44,7 @@ export interface Job {
   location: string
   workModel: "presencial" | "híbrido" | "remoto"
   type: string
-  level: string
+  seniority: string
   salary: string
   benefits: string[]
   status: string

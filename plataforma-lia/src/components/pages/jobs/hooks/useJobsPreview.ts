@@ -232,7 +232,7 @@ export function useJobsPreview({ setBackendJobs }: UseJobsPreviewOptions): UseJo
         location: previewJob.location || '',
         workModel: previewJob.workModel || 'presencial',
         type: previewJob.type || 'CLT',
-        level: previewJob.level || '',
+        seniority: previewJob.seniority || '',
         status: previewJob.status || 'Ativa',
         urgencyLevel: previewJob.urgencyLevel || 3,
         recruiter: previewJob.recruiter || '',
@@ -295,7 +295,7 @@ export function useJobsPreview({ setBackendJobs }: UseJobsPreviewOptions): UseJo
     try {
       const fieldMapping: Record<string, string> = {
         title: 'title', department: 'department', location: 'location',
-        workModel: 'work_model', type: 'employment_type', level: 'seniority_level',
+        workModel: 'work_model', type: 'employment_type', seniority: 'seniority_level',
         status: 'status', urgencyLevel: 'urgency_level', recruiter: 'recruiter',
         recruiterEmail: 'recruiter_email', manager: 'hiring_manager',
         managerEmail: 'hiring_manager_email', openDate: 'open_date', deadline: 'deadline',

@@ -76,10 +76,10 @@ export function JobPipelineSection({
                             <AlertCircle className="w-3 h-3 text-status-error" />
                           </div>
                           <div className="text-base-ui font-semibold text-status-error dark:text-status-error">
-                            {previewJob.level === 'Sênior' ? '45%' : previewJob.level === 'Pleno' ? '25%' : '15%'}
+                            {previewJob.seniority === 'Sênior' ? '45%' : previewJob.seniority === 'Pleno' ? '25%' : '15%'}
                           </div>
                           <div className="mt-0.5 text-xs text-status-error dark:text-status-error">
-                            Gap salarial: {previewJob.level === 'Sênior' ? '±18%' : '±8%'}
+                            Gap salarial: {previewJob.seniority === 'Sênior' ? '±18%' : '±8%'}
                           </div>
                         </div>
                       </div>
@@ -216,7 +216,7 @@ export function JobPipelineSection({
                               {previewJob.funnel.total < 10 && (
                                 <li>• Pipeline baixo: Ampliar divulgação ou revisar requisitos</li>
                               )}
-                              {previewJob.level === 'Sênior' && (
+                              {previewJob.seniority === 'Sênior' && (
                                 <li>• Alto risco de recusa: Prepare margem de negociação de 15-20%</li>
                               )}
                               {previewJob.funnel.screening > previewJob.funnel.interview * 3 && (
@@ -314,7 +314,7 @@ export function JobPipelineSection({
                                 <div
                                   key={i}
                                   className={`w-1.5 h-2.5 rounded-full ${
-                                    i < (previewJob.level === 'Sênior' ? 4 : 2) ? 'bg-status-error' : 'bg-lia-border-default'
+                                    i < (previewJob.seniority === 'Sênior' ? 4 : 2) ? 'bg-status-error' : 'bg-lia-border-default'
                                   }`}
                                 />
                               ))}
@@ -327,7 +327,7 @@ export function JobPipelineSection({
                                 <div
                                   key={i}
                                   className={`w-1.5 h-2.5 rounded-full ${
-                                    i < (previewJob.level === 'Sênior' ? 3 : 1) ? 'bg-wedo-orange' : 'bg-lia-border-default'
+                                    i < (previewJob.seniority === 'Sênior' ? 3 : 1) ? 'bg-wedo-orange' : 'bg-lia-border-default'
                                   }`}
                                 />
                               ))}
