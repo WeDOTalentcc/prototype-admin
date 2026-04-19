@@ -377,9 +377,19 @@ class MainOrchestrator:
                         except Exception:
                             pass  # Fail-open: use gemini default
 
+                    from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+                    _system_prompt = SystemPromptBuilder.build(
+                        agent_type="orchestrator",
+                        tenant_context_snippet=getattr(ctx, "tenant_context_snippet", "") or ctx.extra.get("tenant_context", ""),
+                        user_name=getattr(ctx, "user_name", ""),
+                        user_role=getattr(ctx, "user_role", ""),
+                        conversation_history=ctx.extra.get("conversation_history", []),
+                        conversation_state=ctx.conversation_state,
+                        context_page=getattr(ctx, "context_page", "general") or "general",
+                    )
                     _agentic_result = await agentic_loop.run(
                         user_message=ctx.message,
-                        system_prompt="",
+                        system_prompt=_system_prompt,
                         conversation_history=ctx.extra.get("conversation_history", []),
                         company_id=_loop_company_id,
                         user_id=getattr(ctx, "user_id", None),
