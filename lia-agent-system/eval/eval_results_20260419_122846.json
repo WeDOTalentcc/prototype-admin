@@ -1,0 +1,279 @@
+[
+  {
+    "id": "CM-001",
+    "category": "CM",
+    "severity": "critical",
+    "title": "Evaluate candidate CV",
+    "prompt": "avalia o currículo do João Silva para a vaga de Tech Lead",
+    "context": {
+      "scope": "Candidatos",
+      "page": "candidatos",
+      "entity_type": "candidate"
+    },
+    "expected_tools": [
+      "get_candidate_details",
+      "score_candidate_for_job"
+    ],
+    "canonical_files": [
+      "app/domains/sourcing/agents/sourcing_tool_registry.py",
+      "app/domains/cv_screening/services/cv_screening_service.py"
+    ],
+    "success_criteria": [
+      "Returns score or fit assessment",
+      "References specific qualifications or gaps",
+      "Structured response (pros/cons or percentage)"
+    ],
+    "anti_patterns": [
+      "Generic response without candidate data",
+      "Says candidate not found"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 84,
+    "response": "Erro ao analisar perfil de **João Silva**: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.UndefinedFuncti",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-19T12:28:26.135442"
+  },
+  {
+    "id": "CM-002",
+    "category": "CM",
+    "severity": "critical",
+    "title": "Move candidate to next stage",
+    "prompt": "avança o candidato Marco Oliveira para a etapa de entrevista",
+    "context": {
+      "scope": "Candidatos",
+      "page": "candidatos",
+      "entity_type": "candidate"
+    },
+    "expected_tools": [
+      "move_candidate"
+    ],
+    "canonical_files": [
+      "app/domains/cv_screening/agents/pipeline_react_agent.py",
+      "app/domains/recruiter_assistant/agents/kanban_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Identifies correct candidate",
+      "Requests confirmation (HITL)",
+      "Confirms stage change"
+    ],
+    "anti_patterns": [
+      "Moves without confirmation",
+      "Cannot find candidate"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 1608,
+    "response": "Para avançar o candidato \"Marco Oliveira\" para a etapa de entrevista, preciso de mais algumas informações:\n\n1.  **Qual é o ID do candidato Marco Oliveira?** (Um código como `b1a2c3d4-e5f6-7890-1234-567890abcdef`)\n2.  **Para qual vaga ele deve ser avançado?** Por favor, forneça o ID da vaga ou o título.\n\nCom essas informações, consigo movê-lo para a etapa correta.",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-19T12:28:28.244638"
+  },
+  {
+    "id": "CM-003",
+    "category": "CM",
+    "severity": "high",
+    "title": "Compare two candidates",
+    "prompt": "compara João Silva e Ana Costa para a vaga de Product Manager",
+    "context": {
+      "scope": "Candidatos",
+      "page": "candidatos"
+    },
+    "expected_tools": [
+      "get_candidate_details",
+      "compare_candidates"
+    ],
+    "canonical_files": [
+      "app/domains/sourcing/agents/sourcing_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Compares both candidates",
+      "Provides a recommendation",
+      "References specific skills or experience"
+    ],
+    "anti_patterns": [
+      "Returns only one candidate",
+      "Generic comparison"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 40,
+    "response": "Erro ao comparar candidatos.",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-19T12:28:28.787925"
+  },
+  {
+    "id": "CM-004",
+    "category": "CM",
+    "severity": "high",
+    "title": "Reject candidate with reason",
+    "prompt": "rejeita o candidato Pedro Santos — perfil não atende aos requisitos técnicos",
+    "context": {
+      "scope": "Candidatos",
+      "page": "candidatos",
+      "entity_type": "candidate"
+    },
+    "expected_tools": [
+      "reject_candidate"
+    ],
+    "canonical_files": [
+      "app/domains/cv_screening/agents/pipeline_react_agent.py"
+    ],
+    "success_criteria": [
+      "Asks for confirmation before rejecting",
+      "Records the reason",
+      "Applies fairness check"
+    ],
+    "anti_patterns": [
+      "Rejects without confirmation",
+      "Does not record reason"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 1943,
+    "response": "Para rejeitar o candidato Pedro Santos, preciso de mais algumas informações:\n\n*   **ID do Candidato:** O nome \"Pedro Santos\" pode não ser único. Você poderia me fornecer o ID exclusivo do Pedro Santos?\n*   **ID da Vaga:** Para qual vaga você deseja rejeitá-lo?\n\nAssim que tiver essas informações, posso prosseguir com a rejeição.",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-19T12:28:31.231599"
+  },
+  {
+    "id": "CM-005",
+    "category": "CM",
+    "severity": "high",
+    "title": "List problems with a candidate profile",
+    "prompt": "quais são os pontos fracos do candidato Lucas Ferreira para a vaga de DevOps?",
+    "context": {
+      "scope": "Candidatos",
+      "page": "candidatos"
+    },
+    "expected_tools": [
+      "get_candidate_details",
+      "score_candidate_for_job"
+    ],
+    "canonical_files": [
+      "app/domains/sourcing/agents/sourcing_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Lists specific skill gaps",
+      "References job requirements"
+    ],
+    "anti_patterns": [
+      "Generic weakness list",
+      "Only lists strengths"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 2945,
+    "response": "Não foi possível encontrar a vaga de DevOps. Poderia me confirmar o nome exato da vaga ou o ID da vaga, por favor?",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-19T12:28:34.677918"
+  },
+  {
+    "id": "CM-006",
+    "category": "CM",
+    "severity": "medium",
+    "title": "Get candidate history",
+    "prompt": "me mostra o histórico do processo seletivo da Ana Costa",
+    "context": {
+      "scope": "Candidatos",
+      "page": "candidatos"
+    },
+    "expected_tools": [
+      "get_candidate_history",
+      "get_candidate_details"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/kanban_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Returns chronological history",
+      "Includes stage transitions"
+    ],
+    "anti_patterns": [
+      "Returns only current status"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 1845,
+    "response": "Por favor, me informe o ID da candidata Ana Costa para que eu possa buscar o histórico do processo seletivo dela.",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-19T12:28:37.023700"
+  },
+  {
+    "id": "CM-007",
+    "category": "CM",
+    "severity": "medium",
+    "title": "Shortlist candidates for a job",
+    "prompt": "cria uma shortlist dos melhores candidatos para a vaga V0037",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs",
+      "search_candidates",
+      "score_candidate_for_job"
+    ],
+    "canonical_files": [
+      "app/domains/sourcing/agents/sourcing_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Returns ranked list of candidates",
+      "Includes scores or fit percentages"
+    ],
+    "anti_patterns": [
+      "Returns unranked list",
+      "Cannot create shortlist"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 1296,
+    "response": "Nenhum candidato encontrado nesta vaga para rankear.",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-19T12:28:38.820607"
+  },
+  {
+    "id": "CM-008",
+    "category": "CM",
+    "severity": "low",
+    "title": "Count candidates in pipeline",
+    "prompt": "quantos candidatos tenho em cada etapa do processo da vaga Tech Lead?",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "get_pipeline_summary"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/kanban_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Returns counts per stage",
+      "Identifies the correct job"
+    ],
+    "anti_patterns": [
+      "Returns only total count"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 6461,
+    "response": "Não consegui encontrar uma vaga com o título exato \"Tech Lead\" na minha busca. Os resultados são vagas com títulos como \"E2E Duplicado\", \"E2E Ação & Inovação\", \"E2E Lifecycle\", etc., e todas estão em rascunho.\n\nVocê gostaria de buscar por outro título ou fornecer o ID da vaga específica de Tech Lead?",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-19T12:28:45.781851"
+  }
+]
