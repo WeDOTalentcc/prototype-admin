@@ -104,6 +104,30 @@ describe("UnifiedMessageList — message actions (Task #570)", () => {
     expect(screen.getByPlaceholderText("thumbsDownPlaceholder")).toBeTruthy()
   })
 
+  it("hydrates pre-existing thumbs state from message.thumbs (audit gap F3)", () => {
+    // The chat-history loader populates `thumbs` on each LiaChatMessage from
+    // the GET /lia/feedback/by-conversation hydration call. The action row
+    // must reflect that on first render so a refresh doesn't blank out the
+    // user's prior rating.
+    const messages = makeMessages()
+    messages[1] = { ...messages[1], thumbs: "up" }
+
+    render(
+      <UnifiedMessageList
+        mode="sidebar"
+        messages={messages}
+        isStreaming={false}
+        streamingContent=""
+        isThinking={false}
+        thinkingSteps={[]}
+        userName="Test"
+        conversationId="conv-1"
+      />,
+    )
+    // When the thumbs-up is active the button switches to the active aria-label.
+    expect(screen.getByRole("button", { name: "helpfulActiveAriaLabel" })).toBeTruthy()
+  })
+
   it("invokes onRegenerate with the assistant message id when the regenerate button is clicked", () => {
     const onRegenerate = vi.fn()
     render(

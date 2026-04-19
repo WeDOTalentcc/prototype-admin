@@ -87,6 +87,11 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const [inputText, setInputText] = useState("")
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
   const [showSwitchTask, setShowSwitchTask] = useState(false)
+  // Task #570 (review fix #2): assistant message ids the user has just
+  // regenerated. We hide them from the rendered list so the thread does
+  // NOT inflate by one bubble per retry. The set is in-memory only —
+  // backend metadata.regenerated=true is the durable record.
+  const [supersededMessageIds, setSupersededMessageIds] = useState<Set<string>>(() => new Set())
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [sidebarWidthPx, setSidebarWidthPx] = useState(getStoredWidth)
   const [isResizing, setIsResizing] = useState(false)
@@ -456,7 +461,12 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
         {hasMessages ? (
           <UnifiedMessageList
             mode={effectiveMode}
-            messages={chatMessages}
+            // Task #570 (review fix #2): hide assistant bubbles that the
+            // user superseded via Regenerate so the thread doesn't grow
+            // by one extra question/answer pair on every retry. The IDs
+            // are tracked in `supersededMessageIds` and unioned with the
+            // also-orphaned user prompt that triggered the supersede.
+            messages={chatMessages.filter((m) => !supersededMessageIds.has(m.id))}
             isStreaming={chatIsStreaming}
             streamingContent={chatStreamingContent}
             isThinking={chatIsThinking}
@@ -467,15 +477,25 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
             onRegenerate={async (assistantMessageId) => {
               // Task #570 (review fix): server-side regeneration handshake.
               // Backend verifies ownership, marks the old assistant row as
-              // superseded, and returns the prior user message text. Falling
-              // back to a client-side scan keeps the action usable when the
-              // message id is not a server-side UUID (e.g. optimistic local
-              // turns) or when the endpoint isn't reachable.
+              // superseded, returns the prior user message text. We then
+              // (a) hide the old assistant bubble locally and (b) re-invoke
+              // the pipeline. Fallback to a pure client-side scan when the
+              // endpoint isn't reachable or the message id isn't a UUID
+              // (optimistic local-only turns).
+              const supersedeLocally = () => {
+                setSupersededMessageIds((prev) => {
+                  const next = new Set(prev)
+                  next.add(assistantMessageId)
+                  return next
+                })
+              }
+
               const fallback = () => {
                 const idx = chatMessages.findIndex((m) => m.id === assistantMessageId)
                 if (idx <= 0) return false
                 for (let i = idx - 1; i >= 0; i--) {
                   if (chatMessages[i].sender === "user") {
+                    supersedeLocally()
                     sendChatMessage(chatMessages[i].content)
                     return true
                   }
@@ -490,6 +510,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
               try {
                 const res = await requestRegeneration(chatConversationId, assistantMessageId)
                 if (res?.user_message) {
+                  supersedeLocally()
                   sendChatMessage(res.user_message)
                   return
                 }
