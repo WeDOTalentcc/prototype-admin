@@ -381,16 +381,17 @@ class LLMService:
             if _cid and _audit_svc:
                 await _audit_svc.log_decision(
                     company_id=_cid,
-                    action="llm_call",
-                    resource_type="llm_provider",
-                    resource_id=f"{provider}:{model or 'default'}",
-                    details={
-                        "provider": provider,
-                        "model": model or "default",
-                        "prompt_length": len(prompt),
-                        "pii_stripped": _stripped,
-                    },
-                    user_id="system",
+                    agent_name="llm_service",
+                    decision_type="llm_usage",
+                    action=f"generate/{provider}",
+                    decision="executed",
+                    reasoning=[
+                        f"provider={provider}",
+                        f"model={model or 'default'}",
+                        f"prompt_len={len(prompt)}",
+                        f"pii_stripped={_stripped}",
+                    ],
+                    criteria_used=["byok_key_source"],
                 )
         except Exception:
             pass  # Audit is non-blocking

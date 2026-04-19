@@ -248,20 +248,24 @@ class ProviderContainer:
             """Non-blocking audit log for every LLM call (G14 / LIA-BYOK)."""
             try:
                 from app.shared.compliance.audit_service import audit_service as _fa
+                _model = self._provider_models.get(pname, "default")
+                _reasons = [
+                    f"task_type={task_type}",
+                    f"provider={pname}",
+                    f"model={_model}",
+                    f"key_source={key_src}",
+                    f"quality_tier_override={_force_system_model}",
+                ]
+                if reason:
+                    _reasons.append(reason)
                 await _fa.log_decision(
                     company_id=str(company_id or ""),
-                    action="llm_usage",
-                    resource_type="llm_provider",
-                    resource_id=f"{pname}:{self._provider_models.get(pname, 'default')}",
-                    details={
-                        "provider": pname,
-                        "model": self._provider_models.get(pname, "default"),
-                        "key_source": key_src,
-                        "task_type": task_type,
-                        "quality_override": _force_system_model,
-                        "reason": reason,
-                    },
-                    user_id=str(user_id or "system"),
+                    agent_name="llm_factory",
+                    decision_type="llm_usage",
+                    action=f"generate/{pname}",
+                    decision="executed",
+                    reasoning=_reasons,
+                    criteria_used=["byok_key_source", "quality_tier_guard"],
                 )
             except Exception:
                 pass  # audit is always non-blocking

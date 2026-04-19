@@ -1069,9 +1069,11 @@ class VoiceScreeningOrchestrator:
                 )
             )
 
-            response = self._llm_service.generate_native_gemini_sync(
-                contents=conversation_history,
+            from app.shared.tenant_llm_context import get_gemini_client_for_tenant
+            _voice_client = get_gemini_client_for_tenant(session.company_id)
+            _voice_resp = _voice_client.models.generate_content(
                 model="gemini-2.5-flash",
+                contents=conversation_history,
                 config=types.GenerateContentConfig(
                     system_instruction=system_prompt,
                     temperature=0.7,
@@ -1079,7 +1081,7 @@ class VoiceScreeningOrchestrator:
                 ),
             )
 
-            lia_text = response.text.strip() if response.text else ""
+            lia_text = (_voice_resp.text or "").strip()
 
             if lia_text:
                 fairness_result = check_fairness(

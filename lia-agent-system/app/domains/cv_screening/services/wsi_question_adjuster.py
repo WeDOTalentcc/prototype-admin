@@ -172,7 +172,8 @@ Responda APENAS com JSON válido, sem markdown."""
         behavioral_competencies: list[str],
         seniority: str | None = None,
         department: str | None = None,
-        description: str | None = None
+        description: str | None = None,
+        company_id: str | None = None,
     ) -> dict[str, Any]:
         """
         Evaluate a Job Description for WSI question generation readiness.
@@ -243,12 +244,20 @@ Gere uma avaliação curta (2-3 frases) em português do Brasil:
 
 Responda APENAS com o texto da avaliação, sem formatação especial."""
 
-            response = llm_service.generate_native_gemini_sync(
-                contents=[{"role": "user", "parts": [{"text": eval_prompt}]}],
-                model="gemini-2.5-flash",
-                generation_config={"temperature": 0.5, "max_output_tokens": 500},
+            from app.shared.tenant_llm_context import (
+                get_gemini_client_for_tenant,
+                get_tenant_llm_config,
             )
-            lia_suggestion = response.text.strip()
+            if company_id:
+                # Warm cache so synchronous client picks up tenant key
+                await get_tenant_llm_config(company_id)
+            _gemini = get_gemini_client_for_tenant(company_id)
+            _jd_response = _gemini.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=[{"role": "user", "parts": [{"text": eval_prompt}]}],
+                config={"temperature": 0.5, "max_output_tokens": 500},
+            )
+            lia_suggestion = (_jd_response.text or "").strip()
         except Exception as e:
             logger.error(f"Failed to generate LIA JD evaluation: {e}")
             suggestions = []
