@@ -1,5 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 import { execSync } from 'child_process';
+import * as path from 'path';
 
 function getSystemChromiumPath(): string | undefined {
   try {
@@ -10,6 +11,7 @@ function getSystemChromiumPath(): string | undefined {
 }
 
 const systemChromium = process.env.PLAYWRIGHT_CHROMIUM_PATH || getSystemChromiumPath();
+const REPORT_DIR = path.join(process.cwd(), 'playwright-report', 'diagnostic');
 
 export default defineConfig({
   testDir: '.',
@@ -17,13 +19,16 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: 0,
-  reporter: [['list']],
+  reporter: [
+    ['list'],
+    ['json', { outputFile: path.join(REPORT_DIR, 'persona-results.json') }],
+  ],
   timeout: 180_000,
 
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5000',
-    trace: 'off',
-    screenshot: 'off',
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
     video: 'off',
     viewport: { width: 1366, height: 900 },
     ignoreHTTPSErrors: true,

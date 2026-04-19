@@ -15,27 +15,27 @@ const REPORT_DIR = path.join(process.cwd(), 'playwright-report', 'diagnostic');
 
 export default defineConfig({
   testDir: '.',
-  testMatch: /agentic-eval\.spec\.ts$/,
+  testMatch: /smoke\.spec\.ts$/,
   fullyParallel: false,
   workers: 1,
-  retries: 0,
+  retries: 1,
   reporter: [
     ['list'],
-    ['json', { outputFile: path.join(REPORT_DIR, 'agentic-results.json') }],
+    ['json', { outputFile: path.join(REPORT_DIR, 'smoke-results.json') }],
   ],
-  timeout: 240_000,
+  timeout: 60_000,
 
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5000',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
-    video: 'off',
+    video: 'retain-on-failure',
     viewport: { width: 1366, height: 900 },
     ignoreHTTPSErrors: true,
     ...(systemChromium ? { launchOptions: { executablePath: systemChromium } } : {}),
   },
 
   projects: [
-    { name: 'agentic-eval', use: { ...devices['Desktop Chrome'] } },
+    { name: 'smoke', use: { ...devices['Desktop Chrome'] } },
   ],
 });

@@ -2,8 +2,28 @@
 
 > This is the operational guide. For the *what* and the *why* see
 > [`AGENTIC_EVAL_FRAMEWORK.md`](./AGENTIC_EVAL_FRAMEWORK.md).
+> For a complete guide to the **unified diagnostic battery** (the recommended
+> way to run everything at once) see [`README.md`](./README.md).
 
-## TL;DR
+## TL;DR — Unified battery (recommended)
+
+```bash
+# Full battery: preflight → smoke → critical → agentic D1-D10 → pass^k → persona → golden
+cd plataforma-lia && npm run diagnostic
+
+# Quick smoke only (~2 min)
+cd plataforma-lia && npm run diagnostic:smoke
+
+# One dimension
+cd plataforma-lia && npm run diagnostic -- --grep @d4
+
+# Custom k
+cd plataforma-lia && npm run diagnostic -- --k 3
+```
+
+Report lands at `plataforma-lia/playwright-report/diagnostic/index.html`.
+
+## TL;DR — Agentic-only run (manual)
 
 ```bash
 # 1. start backend + frontend in dev (workflows already configured)
