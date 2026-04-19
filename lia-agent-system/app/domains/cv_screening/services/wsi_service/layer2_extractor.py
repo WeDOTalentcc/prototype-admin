@@ -12,9 +12,20 @@ Padrão canônico do projeto:
 - Validação de schema via Pydantic `Layer2Signals`.
 - Falhas explícitas via `Layer2ExtractionError` (NUNCA fallback silencioso —
   ver lição M12/rev. 15 em `question_generator.py::OceanExtractionError`).
+
+Audit rev. 23 — gaps fechados nesta versão:
+- G23-06: pós-processamento determinístico de `word_count_band` (Python
+  conta palavras e sobrescreve o valor reportado pelo LLM).
+- G23-07: helpers `purge_layer2_cache_entry` e `purge_layer2_cache_all`
+  para atender DSR (LGPD Art. 18) sem aguardar evicção LRU natural.
+- G23-08: integração com LangSmith via `@traceable("layer2_extraction")`
+  para nomeação explícita do span em traces aninhados.
+- G23-09: logs estruturados via `extra={...}` para facilitar query no
+  Cloud Logging (campos: question_id, competency, confidence, hits, etc).
 """
 import hashlib
 import logging
+import re
 import threading
 from collections import OrderedDict
 from typing import Any
@@ -23,6 +34,16 @@ from app.domains.ai.services.llm import llm_service
 from app.shared.prompts.loader import PromptLoader
 
 from .models import Layer2Signals, WSIQuestion, safe_json_parse
+
+# G23-08: LangSmith trace nomeado. Try-import como nos demais módulos
+# (ver `app/shared/providers/llm_claude.py:13`).
+try:
+    from langsmith import traceable as _traceable  # type: ignore[import-untyped]
+except ImportError:  # pragma: no cover - langsmith é opcional em dev
+    def _traceable(**_kwargs):  # type: ignore[misc]
+        def _decorator(fn):
+            return fn
+        return _decorator
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +65,7 @@ logger = logging.getLogger(__name__)
 # adicionar tenant_id à composição da key para evitar cross-tenant hit.
 _LAYER2_CACHE: OrderedDict[str, Layer2Signals] = OrderedDict()
 _LAYER2_CACHE_MAX = 500
-_LAYER2_CACHE_STATS = {"hits": 0, "misses": 0}
+_LAYER2_CACHE_STATS = {"hits": 0, "misses": 0, "purges": 0}
 _LAYER2_CACHE_LOCK = threading.Lock()
 
 
@@ -57,9 +78,69 @@ def _layer2_cache_key(question_id: str, response_text: str) -> str:
 
 
 def get_layer2_cache_stats() -> dict[str, int]:
-    """Telemetria do cache (hits/misses/size). Útil para observabilidade."""
+    """Telemetria do cache (hits/misses/size/purges). Útil para
+    observabilidade. Exposto via endpoint admin (G23-05)."""
     with _LAYER2_CACHE_LOCK:
-        return {**_LAYER2_CACHE_STATS, "size": len(_LAYER2_CACHE)}
+        return {**_LAYER2_CACHE_STATS, "size": len(_LAYER2_CACHE), "max": _LAYER2_CACHE_MAX}
+
+
+def purge_layer2_cache_entry(question_id: str, response_text: str) -> bool:
+    """G23-07 — DSR (LGPD Art. 18): remove uma entrada específica do
+    cache antes da evicção LRU natural. Retorna True se a entrada existia.
+
+    Use case: candidato exerce direito ao esquecimento; chamar este helper
+    para cada (question_id, response_text) associado ao candidato."""
+    key = _layer2_cache_key(question_id, response_text)
+    with _LAYER2_CACHE_LOCK:
+        existed = key in _LAYER2_CACHE
+        if existed:
+            del _LAYER2_CACHE[key]
+            _LAYER2_CACHE_STATS["purges"] += 1
+            logger.info(
+                "Layer2 cache PURGE entry",
+                extra={"event": "layer2_cache_purge_entry", "question_id": str(question_id)},
+            )
+        return existed
+
+
+def purge_layer2_cache_all() -> int:
+    """G23-07 — DSR/manutenção: limpa o cache inteiro. Retorna número
+    de entradas removidas. Útil para deploys, testes e DSR amplo."""
+    with _LAYER2_CACHE_LOCK:
+        n = len(_LAYER2_CACHE)
+        _LAYER2_CACHE.clear()
+        _LAYER2_CACHE_STATS["purges"] += n
+        logger.info(
+            "Layer2 cache PURGE all",
+            extra={"event": "layer2_cache_purge_all", "removed": n},
+        )
+        return n
+
+
+# G23-06 — Word_count_band determinístico. O LLM erra contagem em ~12%
+# dos casos (golden L2-002). Função pura; usa mesmo critério do prompt
+# YAML (`split por espaços → descartar pontuação → contar`).
+_WORD_BAND_BUCKETS = (
+    (30, "<30"),
+    (50, "30-50"),
+    (150, "50-150"),
+)
+
+
+def compute_word_count_band(response_text: str) -> str:
+    """Conta palavras de forma determinística e devolve o bucket canônico.
+
+    Regra (mesma do prompt YAML): split por espaços, descarta tokens
+    compostos só de pontuação. Retorna um dos 4 valores do enum
+    `Layer2Signals.word_count_band`."""
+    if not response_text:
+        return "<30"
+    tokens = [t for t in re.split(r"\s+", response_text.strip()) if re.search(r"\w", t)]
+    n = len(tokens)
+    for limit, label in _WORD_BAND_BUCKETS:
+        if n < limit:
+            return label
+    return ">150"
 
 
 class Layer2ExtractionError(RuntimeError):
@@ -100,6 +181,7 @@ class WSILayer2Extractor:
             response_text=response_text,
         )
 
+    @_traceable(name="layer2_extraction", run_type="chain")
     async def extract(
         self,
         question: WSIQuestion,
@@ -129,8 +211,12 @@ class WSILayer2Extractor:
                     len(_LAYER2_CACHE),
                 )
                 logger.debug(
-                    "Layer2 cache HIT for q=%s (size=%d, hits=%d, misses=%d)",
-                    question.id, size, hits, misses,
+                    "Layer2 cache HIT",
+                    extra={
+                        "event": "layer2_cache_hit",
+                        "question_id": str(question.id),
+                        "size": size, "hits": hits, "misses": misses,
+                    },
                 )
                 return cached
             _LAYER2_CACHE_STATS["misses"] += 1
@@ -146,8 +232,13 @@ class WSILayer2Extractor:
             )
         except Exception as exc:
             logger.error(
-                "Layer2 extraction LLM call failed for q=%s competency=%s: %s",
-                question.id, question.competency, exc,
+                "Layer2 extraction LLM call failed",
+                extra={
+                    "event": "layer2_llm_failed",
+                    "question_id": str(question.id),
+                    "competency": question.competency,
+                    "error": str(exc),
+                },
             )
             raise Layer2ExtractionError(f"LLM call failed: {exc}") from exc
 
@@ -158,8 +249,12 @@ class WSILayer2Extractor:
             parsed = safe_json_parse(content, fallback=None)
         except Exception as exc:
             logger.error(
-                "Layer2 extraction JSON parse failed for q=%s: %s",
-                question.id, exc,
+                "Layer2 extraction JSON parse failed",
+                extra={
+                    "event": "layer2_parse_failed",
+                    "question_id": str(question.id),
+                    "error": str(exc),
+                },
             )
             raise Layer2ExtractionError(f"JSON parse failed: {exc}") from exc
 
@@ -168,19 +263,50 @@ class WSILayer2Extractor:
                 f"LLM returned non-dict payload (got {type(parsed).__name__})"
             )
 
+        # G23-06 — pós-processamento determinístico de word_count_band.
+        # O LLM mis-counta em respostas curtas (golden L2-002, ~12% dos
+        # casos). Sobrescrevemos com a contagem Python ANTES da validação
+        # do schema para garantir consistência com `response_word_count`
+        # usado no scorer determinístico (Camada 1).
+        deterministic_band = compute_word_count_band(response_text)
+        llm_band = parsed.get("word_count_band")
+        if llm_band != deterministic_band:
+            logger.info(
+                "Layer2 word_count_band overridden (deterministic)",
+                extra={
+                    "event": "layer2_word_band_override",
+                    "question_id": str(question.id),
+                    "llm_band": llm_band,
+                    "python_band": deterministic_band,
+                },
+            )
+            parsed["word_count_band"] = deterministic_band
+
         try:
             signals = Layer2Signals(**parsed)
         except Exception as exc:
             logger.error(
-                "Layer2 schema validation failed for q=%s: %s | payload=%s",
-                question.id, exc, parsed,
+                "Layer2 schema validation failed",
+                extra={
+                    "event": "layer2_schema_failed",
+                    "question_id": str(question.id),
+                    "error": str(exc),
+                    "payload": parsed,
+                },
             )
             raise Layer2ExtractionError(f"Schema validation failed: {exc}") from exc
 
         logger.info(
-            "Layer2 extracted for q=%s competency=%s confidence=%.2f traits=%d",
-            question.id, question.competency,
-            signals.confidence, signals.trait_signals_count,
+            "Layer2 extracted",
+            extra={
+                "event": "layer2_extracted",
+                "question_id": str(question.id),
+                "competency": question.competency,
+                "confidence": signals.confidence,
+                "trait_signals_count": signals.trait_signals_count,
+                "semantic_inflation": signals.semantic_inflation,
+                "prompt_injection_detected": signals.prompt_injection_detected,
+            },
         )
 
         # Cache write + LRU eviction (FIFO da menor entrada).

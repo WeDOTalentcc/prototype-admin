@@ -1037,17 +1037,20 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
     ]),
     # Identidade da LIA -- respondida localmente, nunca pelo LLM
     ("sugerir_salario", [
-        r"qual\s+(é\s+o\s+)?(salário|remuneração|faixa\s+salarial)\s+(para|de|do?|ao?)",
-        r"(quanto|qual)\s+(pagar|oferecer|remunerar|salário)\s+(para|a)\s+(um[a]?\s+)?\w+",
+        r"qual\s+(é\s+o\s+)?salário\s+sugerir",
+        r"qual\s+(é\s+o\s+)?(salário|remuneração|faixa\s+salarial)\s+(para|de|do?|ao?|sugerir)",
+        r"(quanto|qual)\s+(pagar|oferecer|remunerar|salário)\s+(para|a|sugerir)\s+(um[a]?\s+)?\w+",
         r"(sugerir?|recomendar?|indicar?)\s+(salário|remuneração|faixa)\s+(para|de|ao?)",
         r"benchmark\s+salarial\s+(para|de)",
         r"(salário|remuneração)\s+(de\s+mercado|ideal|sugerido)\s+(para|de)",
+        r"qual\s+salário\s+(?:eu\s+)?(?:devo\s+|posso\s+|deveria\s+)?(?:sugerir|pagar|oferecer)",
     ]),
     ("gerar_jd", [
-        r"(gerar?|gera|cria[rn]?|produz[ir]*)\s+(um[a]?\s+)?(descrição\s+d[ae]\s+vaga|job\s+description|jd)\s+(para|de)",
+        r"(gerar?s?|gera[rs]?|cria[rn]?|produz[ir]*)\s+(um[a]?\s+)?(descrição\s+d[ae]\s+vaga|job\s+description|jd)\s+(para|de)",
         r"(escreve[rn]?|elabora[rn]?|monta[rn]?)\s+(um[a]?\s+)?(descrição|job\s+description|jd)\s+(para|de|ao?)",
         r"(me\s+)?ajuda\s+(a\s+)?(criar|escrever|montar)\s+(um[a]?\s+)?(descrição|jd|job\s+description)",
         r"(descrição|job\s+description)\s+(para\s+o\s+cargo|para\s+a\s+vaga)\s+de\s+",
+        r"gera\s+(?:uma?\s+)?descrição\s+d[ae]\s+vaga",
     ]),
     ("lia_identidade", [
         r"quem\s+(é\s+)?(você|vc|a\s+lia)",
