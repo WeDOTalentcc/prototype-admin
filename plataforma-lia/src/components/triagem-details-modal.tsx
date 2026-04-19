@@ -1,6 +1,6 @@
 "use client"
 
-import { Loader2, AlertCircle } from "lucide-react"
+import { Loader2, AlertCircle, AlertTriangle } from "lucide-react"
 import type { Candidate } from "@/components/pages/candidates/types"
 import {
   TriagemScoresPanel,
@@ -83,6 +83,38 @@ export function TriagemDetailsModal({
           ranking={state.ranking}
           onClose={onClose}
         />
+
+        {/* Audit task #529 (G23-02 frontend) — Banner LGPD/EU AI Act:
+            transparência sobre análise semântica indisponível em N respostas. */}
+        {state.details.degraded_quality && (() => {
+          // Fallback: se backend não populou degraded_count, derivamos das respostas.
+          const degradedCount = state.details.degraded_count
+            ?? state.details.responses.filter(r => r.degraded_quality).length
+          return (
+          <div
+            role="status"
+            aria-live="polite"
+            className="mx-4 mt-3 flex items-start gap-2 rounded-lg border border-status-warning/30 bg-status-warning/10 px-3 py-2"
+          >
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-status-warning" />
+            <div className="flex-1 text-xs leading-relaxed">
+              <p className="font-semibold text-status-warning">
+                Análise semântica não disponível para {degradedCount} resposta{degradedCount === 1 ? '' : 's'}
+              </p>
+              <p className="mt-0.5 text-lia-text-secondary">
+                Resultado calculado por regras determinísticas (Camada 1). Pontuação válida, com transparência reduzida na análise contextual.
+              </p>
+              {state.details.degraded_reasons && state.details.degraded_reasons.length > 0 && (
+                <ul className="mt-1.5 list-disc space-y-0.5 pl-4 text-lia-text-secondary">
+                  {state.details.degraded_reasons.slice(0, 5).map((reason, i) => (
+                    <li key={`deg-${i}`}>{reason}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+          )
+        })()}
 
         <TriagemSummaryBar
           scores={scores}

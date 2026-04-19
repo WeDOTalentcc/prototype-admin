@@ -1,7 +1,7 @@
 "use client"
 
 import {
-  MessageSquare, CheckCircle, ChevronDown, ChevronUp, ShieldAlert, AlertTriangle, Star
+  MessageSquare, CheckCircle, ChevronDown, ChevronUp, ShieldAlert, AlertTriangle, Star, Calculator, Info
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { WSIResultDetails } from "@/services/lia-api"
@@ -15,6 +15,41 @@ interface TriagemResponsesSectionProps {
   f11Report: F11ReportData | null
   expandedSections: Set<string>
   toggleSection: (section: string) => void
+}
+
+// Audit task #529 (G23-03 frontend) — Mapeamento de chaves técnicas para
+// rótulos legíveis em PT-BR no breakdown "Como cheguei nesta nota".
+const PENALTY_LABELS: Record<string, string> = {
+  superficial: "Resposta superficial",
+  incoherent: "Incoerência detectada",
+  inconsistent: "Inconsistência entre respostas",
+  red_flag: "Sinal de alerta (red flag)",
+  red_flags: "Sinais de alerta (red flags)",
+  contradiction: "Contradição",
+  low_dreyfus: "Nível Dreyfus abaixo do esperado",
+  low_bloom: "Nível Bloom abaixo do esperado",
+  off_topic: "Resposta fora do tema",
+  too_short: "Resposta muito curta",
+  generic: "Resposta genérica",
+  consistency_penalty: "Penalidade de consistência",
+}
+
+const BONUS_LABELS: Record<string, string> = {
+  specificity: "Especificidade (exemplos concretos)",
+  star_complete: "STAR completo (S+T+A+R)",
+  high_dreyfus: "Nível Dreyfus acima do esperado",
+  high_bloom: "Nível Bloom acima do esperado",
+  measurable_result: "Resultado mensurável",
+  evidence_rich: "Múltiplas evidências",
+  consistency_bonus: "Bônus de consistência",
+}
+
+const humanizeKey = (key: string) =>
+  key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+
+const formatDelta = (value: number, sign: "+" | "-") => {
+  const abs = Math.abs(value)
+  return `${sign}${abs.toFixed(2)}`
 }
 
 export function TriagemResponsesSection({
@@ -62,6 +97,15 @@ export function TriagemResponsesSection({
                     {isCritical && (
                       <span className="flex items-center gap-0.5 text-micro font-bold text-status-error bg-status-error/10 border border-status-error/30 px-1.5 py-0.5 rounded-full">
                         <ShieldAlert className="w-2.5 h-2.5" /> Crítica
+                      </span>
+                    )}
+                    {/* Audit task #529 (G23-02 frontend) — sinaliza resposta sem Camada 2. */}
+                    {resp.degraded_quality && (
+                      <span
+                        className="flex items-center gap-0.5 text-micro font-semibold text-status-warning bg-status-warning/10 border border-status-warning/30 px-1.5 py-0.5 rounded-full"
+                        title={resp.layer2_degraded_reason || "Análise semântica indisponível"}
+                      >
+                        <AlertTriangle className="w-2.5 h-2.5" /> Sem Camada 2
                       </span>
                     )}
                   </div>
@@ -164,6 +208,85 @@ present
                         <p className="text-xs text-lia-text-secondary italic mt-2">{resp.justification || f11.justification}</p>
                       </div>
                     )}
+
+                    {/* Audit task #529 (G23-03 frontend) — "Como cheguei nesta nota":
+                        breakdown granular de penalidades/bônus para LGPD Art. 20. */}
+                    {(() => {
+                      const penalties = Object.entries(resp.penalty_breakdown || {}).filter(([, v]) => Number(v) > 0)
+                      const bonuses = Object.entries(resp.bonus_breakdown || {}).filter(([, v]) => Number(v) > 0)
+                      if (penalties.length === 0 && bonuses.length === 0) return null
+                      const totalPenalty = penalties.reduce((acc, [, v]) => acc + Number(v), 0)
+                      const totalBonus = bonuses.reduce((acc, [, v]) => acc + Number(v), 0)
+                      const baseScore = finalScore + totalPenalty - totalBonus
+                      const breakdownKey = `breakdown-${idx}`
+                      const isBreakdownOpen = expandedSections.has(breakdownKey)
+                      return (
+                        <div className="border border-lia-border-subtle rounded-lg overflow-hidden">
+                          <button
+                            type="button"
+                            className="w-full flex items-center justify-between px-3 py-2 bg-lia-bg-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none text-left"
+                            onClick={() => toggleSection(breakdownKey)}
+                            aria-expanded={isBreakdownOpen}
+                          >
+                            <span className="flex items-center gap-2 text-xs font-medium text-lia-text-primary">
+                              <Calculator className="w-3.5 h-3.5 text-lia-text-secondary" />
+                              Como cheguei nesta nota
+                            </span>
+                            {isBreakdownOpen
+                              ? <ChevronUp className="w-3.5 h-3.5 text-lia-text-secondary" />
+                              : <ChevronDown className="w-3.5 h-3.5 text-lia-text-secondary" />}
+                          </button>
+                          {isBreakdownOpen && (
+                            <div className="px-3 py-3 bg-lia-bg-primary border-t border-lia-border-subtle space-y-2">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-lia-text-secondary">Score base</span>
+                                <span className="font-medium text-lia-text-primary">{baseScore.toFixed(2)}</span>
+                              </div>
+
+                              {penalties.length > 0 && (
+                                <div className="space-y-1">
+                                  <p className="text-micro text-lia-text-secondary uppercase tracking-wide">Penalidades aplicadas</p>
+                                  {penalties.map(([key, value]) => (
+                                    <div key={`pen-${key}`} className="flex items-center justify-between text-xs">
+                                      <span className="text-lia-text-primary">{PENALTY_LABELS[key] || humanizeKey(key)}</span>
+                                      <span className="font-mono font-medium text-status-error">{formatDelta(Number(value), "-")}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {bonuses.length > 0 && (
+                                <div className="space-y-1">
+                                  <p className="text-micro text-lia-text-secondary uppercase tracking-wide">Bônus aplicados</p>
+                                  {bonuses.map(([key, value]) => (
+                                    <div key={`bon-${key}`} className="flex items-center justify-between text-xs">
+                                      <span className="text-lia-text-primary">{BONUS_LABELS[key] || humanizeKey(key)}</span>
+                                      <span className="font-mono font-medium text-status-success">{formatDelta(Number(value), "+")}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              <div className="flex items-center justify-between text-xs pt-2 border-t border-lia-border-subtle">
+                                <span className="font-semibold text-lia-text-primary">Score final</span>
+                                <span className={`font-bold ${getScoreColor3Tier(finalScore)}`}>{finalScore.toFixed(2)}</span>
+                              </div>
+
+                              {resp.degraded_quality && (
+                                <div className="flex items-start gap-1.5 pt-2 border-t border-lia-border-subtle text-micro text-lia-text-secondary">
+                                  <Info className="w-3 h-3 mt-0.5 shrink-0 text-status-warning" />
+                                  <span>
+                                    Análise semântica (Camada 2) não disponível para esta resposta.
+                                    Pontuação calculada por regras determinísticas.
+                                    {resp.layer2_degraded_reason ? ` Motivo: ${resp.layer2_degraded_reason}.` : ""}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })()}
                   </div>
                 )}
               </div>
