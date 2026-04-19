@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef } from "react"
 import { useRecentItemsStore } from "@/stores/recent-items-store"
 
 export interface FloatMessage {
@@ -84,13 +84,20 @@ export function useFloatConversation(
     }
   }, [recentItemsStore])
 
+  // Stale-request guard (Task #570 review fix): protect setMessages from being
+  // overwritten by an older fetch when the user switches conversations
+  // before the previous load finishes.
+  const loadHistoryTokenRef = useRef(0)
+
   const loadHistory = useCallback(async (id: string): Promise<void> => {
+    const myToken = ++loadHistoryTokenRef.current
     setIsFetchingHistory(true)
     try {
       const res = await fetch(
         `/api/backend-proxy/conversations/${id}?include_messages=true&message_limit=50`
       )
       if (!res.ok) return
+      if (loadHistoryTokenRef.current !== myToken) return
       const data = await res.json() as {
         messages?: Array<{ id: string; role: string; content: string; created_at?: string }>
       }
@@ -100,10 +107,13 @@ export function useFloatConversation(
         content: m.content,
         timestamp: formatMessageTime(m.created_at),
       }))
+      if (loadHistoryTokenRef.current !== myToken) return
       setMessages(restored)
     } catch {
     } finally {
-      setIsFetchingHistory(false)
+      if (loadHistoryTokenRef.current === myToken) {
+        setIsFetchingHistory(false)
+      }
     }
   }, [setMessages])
 

@@ -149,7 +149,19 @@
       "notHelpfulAriaLabel": "Marcar como não útil",
       "notHelpfulActiveTitle": "Marcado como não útil",
       "notHelpfulActiveAriaLabel": "Marcado como não útil. Clique para desfazer",
-      "feedbackErrorToast": "Não foi possível registrar seu feedback"
+      "feedbackErrorToast": "Não foi possível registrar seu feedback",
+      "feedbackThanksToast": "Obrigado pelo feedback",
+      "thumbsDownReasonTitle": "O que poderia ter sido melhor?",
+      "thumbsDownPlaceholder": "Conte o que faltou ou estava errado (opcional)",
+      "thumbsDownSubmit": "Enviar",
+      "thumbsDownCancel": "Pular",
+      "thumbsDownCategory": {
+        "inaccurate": "Impreciso",
+        "wrong_tone": "Tom errado",
+        "hallucinated": "Inventou algo"
+      },
+      "regenerateTitle": "Gerar novamente",
+      "regenerateAriaLabel": "Gerar a resposta novamente"
     },
     "workflowReels": {
       "scrollLeft": "Rolar para esquerda",

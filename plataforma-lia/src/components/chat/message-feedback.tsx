@@ -2,6 +2,7 @@
 
 import React, { useState } from "react"
 import { ThumbsUp, ThumbsDown, Star, MessageSquare, Check, Loader2, Edit3 } from "lucide-react"
+import { toast } from "@/lib/toast"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Textarea } from "@/components/ui/textarea"
@@ -35,22 +36,30 @@ export function MessageFeedback({
 
   const handleThumbs = async (value: 'up' | 'down') => {
     if (thumbsState === value) return
+    const previous = thumbsState
     setThumbsState(value)
     try {
       await submitThumbsFeedback(sessionId, messageId, value)
       onFeedbackSubmitted?.('thumbs')
-    } catch (error) {
+    } catch {
+      // Audit #569 F2: feedback-api now throws on non-2xx. Revert optimistic
+      // state and surface a toast so the user knows the click did not stick.
+      setThumbsState(previous)
+      toast.error("Não foi possível registrar seu feedback")
     }
   }
 
   const handleRating = async (stars: number) => {
     if (rating === stars) return
+    const previous = rating
     setRating(stars)
     try {
       await submitRatingFeedback(sessionId, messageId, stars)
       onFeedbackSubmitted?.('rating')
       setTimeout(() => setRatingPopoverOpen(false), 500)
-    } catch (error) {
+    } catch {
+      setRating(previous)
+      toast.error("Não foi possível registrar seu feedback")
     }
   }
 
@@ -62,7 +71,9 @@ export function MessageFeedback({
       setCorrectionSubmitted(true)
       onFeedbackSubmitted?.('correction')
       setTimeout(() => setCorrectionPopoverOpen(false), 1000)
-    } catch (error) {
+    } catch {
+      // Keep popover open so the user can retry; surface error explicitly.
+      toast.error("Não foi possível enviar sua correção")
     } finally {
       setIsSubmitting(false)
     }

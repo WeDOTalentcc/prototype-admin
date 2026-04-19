@@ -149,7 +149,19 @@
       "notHelpfulAriaLabel": "Mark as not helpful",
       "notHelpfulActiveTitle": "Marked as not helpful",
       "notHelpfulActiveAriaLabel": "Marked as not helpful. Click to undo",
-      "feedbackErrorToast": "Could not save your feedback"
+      "feedbackErrorToast": "Could not save your feedback",
+      "feedbackThanksToast": "Thanks for the feedback",
+      "thumbsDownReasonTitle": "What could be better?",
+      "thumbsDownPlaceholder": "Tell us what was missing or wrong (optional)",
+      "thumbsDownSubmit": "Send",
+      "thumbsDownCancel": "Skip",
+      "thumbsDownCategory": {
+        "inaccurate": "Inaccurate",
+        "wrong_tone": "Wrong tone",
+        "hallucinated": "Made things up"
+      },
+      "regenerateTitle": "Regenerate",
+      "regenerateAriaLabel": "Regenerate the response"
     },
     "workflowReels": {
       "scrollLeft": "Scroll left",

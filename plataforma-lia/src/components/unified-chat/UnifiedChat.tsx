@@ -460,7 +460,21 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
             isThinking={chatIsThinking}
             thinkingSteps={chatThinkingSteps}
             userName={userName}
+            conversationId={chatConversationId}
             onChipClick={(value) => sendChatMessage(value)}
+            onRegenerate={(assistantMessageId) => {
+              // Task #570: regenerate by re-sending the user message that
+              // immediately preceded this LIA response. Pure client-side —
+              // backend produces a fresh response with current context.
+              const idx = chatMessages.findIndex((m) => m.id === assistantMessageId)
+              if (idx <= 0) return
+              for (let i = idx - 1; i >= 0; i--) {
+                if (chatMessages[i].sender === "user") {
+                  sendChatMessage(chatMessages[i].content)
+                  return
+                }
+              }
+            }}
           />
         ) : (
           <UnifiedChatEmptyState

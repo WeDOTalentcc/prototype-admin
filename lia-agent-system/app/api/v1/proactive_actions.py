@@ -338,3 +338,109 @@ async def get_proactive_insights(
 from app.api.v1._path_patterns import reorder_collection_before_item as _reorder
 
 _reorder(router)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# E.4 — Accept Hint from ProactiveHintsList (PARTE D/E)
+# ═══════════════════════════════════════════════════════════════════════
+# Distinct from /accept/{action_id} (which accepts a stored DB action):
+# this endpoint executes a hint action dispatched by the frontend card
+# click with server-side tool invocation + dry-run preview.
+
+from app.shared.tenant_guard import get_verified_company_id
+
+
+class AcceptHintRequest(BaseModel):
+    action: str  # e.g. "request_website_and_scrape"
+    hint_type: str  # e.g. "company_website_missing"
+    metadata: dict[str, Any] = {}
+
+
+class AcceptHintResponse(BaseModel):
+    success: bool
+    action: str
+    data: dict[str, Any] = {}
+    message: str = ""
+    next_step: str | None = None
+
+
+@router.post("/accept-hint", response_model=AcceptHintResponse)
+async def accept_hint(
+    payload: AcceptHintRequest,
+    company_id: str = Depends(get_verified_company_id),
+) -> AcceptHintResponse:
+    """
+    Execute a proactive hint action dispatched from ProactiveHintsList card.
+
+    Supports:
+      - request_website_and_scrape → calls company_scraper_service.scrape_website
+        (tracked via D0 gateway) and returns preview of fields to save.
+
+    Multi-tenancy enforced via get_verified_company_id (company_id from JWT).
+    Tool calls use ConsumptionTrackingService for budget + tracking.
+    """
+    action = payload.action
+    hint_type = payload.hint_type
+    metadata = payload.metadata or {}
+
+    try:
+        if action == "request_website_and_scrape":
+            url = (metadata.get("url") or "").strip()
+            if not url:
+                raise HTTPException(
+                    status_code=400,
+                    detail="metadata.url is required for request_website_and_scrape",
+                )
+            # Basic URL sanity check
+            if not (url.startswith("http://") or url.startswith("https://")):
+                url = f"https://{url}"
+
+            try:
+                from app.domains.company.services.company_scraper_service import (
+                    company_scraper_service,
+                )
+            except ImportError as _imp_exc:
+                logger.error("[accept-hint] company_scraper import failed: %s", _imp_exc)
+                raise HTTPException(
+                    status_code=503,
+                    detail="Company scraper service unavailable",
+                )
+
+            scrape_result = await company_scraper_service.scrape_website(
+                url=url,
+                company_id=company_id,
+            )
+            preview_fields = (scrape_result or {}).get("data") or {}
+            if not preview_fields:
+                return AcceptHintResponse(
+                    success=False,
+                    action=action,
+                    message="Não consegui extrair dados úteis do site. Que tal informar manualmente?",
+                    next_step="manual_fill",
+                )
+            return AcceptHintResponse(
+                success=True,
+                action=action,
+                data={"preview": preview_fields, "source_url": url},
+                message=(
+                    f"Extraí dados do site {url}. Vou te mostrar um preview do que "
+                    f"posso preencher. Confirma salvar?"
+                ),
+                next_step="confirm_save",
+            )
+
+        # Unknown action — frontend should handle via chat delegation instead
+        raise HTTPException(
+            status_code=400,
+            detail=f"Action '{action}' not supported by accept-hint endpoint. "
+            f"Route via chat message instead.",
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error(
+            "[accept-hint] action=%s type=%s failed: %s",
+            action, hint_type, exc, exc_info=True,
+        )
+        raise HTTPException(status_code=500, detail="Internal error processing hint action")
+

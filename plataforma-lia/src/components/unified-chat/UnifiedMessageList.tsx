@@ -2,9 +2,12 @@
 
 import React, { useRef, useEffect, useState } from "react"
 import { useTranslations } from "next-intl"
-import { Check, Copy, ThumbsUp, ThumbsDown } from "lucide-react"
+import { Check, Copy, RotateCcw, Send, ThumbsUp, ThumbsDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "@/lib/toast"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
 import { TypingIndicator } from "@/components/chat/typing-indicator"
 import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
@@ -37,21 +40,39 @@ interface Props {
    * The handler typically forwards the chip's `value` to sendChatMessage.
    */
   onChipClick?: (value: string) => void
+  /**
+   * Task #570: regenerate the LIA response for a given assistant message id.
+   * The parent finds the user message that triggered it and re-sends it.
+   */
+  onRegenerate?: (assistantMessageId: string) => void
 }
+
+const REASON_CATEGORIES = ["inaccurate", "wrong_tone", "hallucinated"] as const
+type ReasonCategory = (typeof REASON_CATEGORIES)[number]
 
 function MessageActions({
   messageId,
   content,
   conversationId,
+  initialThumbs,
+  initialFeedbackText,
+  onRegenerate,
 }: {
   messageId: string
   content: string
   conversationId?: string | null
+  initialThumbs?: "up" | "down" | null
+  initialFeedbackText?: string | null
+  onRegenerate?: (assistantMessageId: string) => void
 }) {
   const t = useTranslations('chat.messageActions')
   const [copied, setCopied] = useState(false)
-  const [thumbs, setThumbs] = useState<'up' | 'down' | null>(null)
+  const [thumbs, setThumbs] = useState<'up' | 'down' | null>(initialThumbs ?? null)
   const [pending, setPending] = useState(false)
+  const [downOpen, setDownOpen] = useState(false)
+  const [reasonText, setReasonText] = useState(initialFeedbackText ?? "")
+  const [reasonCategory, setReasonCategory] = useState<ReasonCategory | null>(null)
+  const [reasonSending, setReasonSending] = useState(false)
 
   async function handleCopy() {
     try {
@@ -73,19 +94,68 @@ function MessageActions({
       // No backend "undo" endpoint — keep visual revert only.
       return
     }
+    if (next === 'down') {
+      // For thumbs-down, defer the POST until the user either submits or
+      // skips the reason popover. This avoids creating a duplicate
+      // InteractionFeedback row when the user adds a reason a moment later.
+      setDownOpen(true)
+      return
+    }
     setPending(true)
     try {
-      const res = await submitThumbsFeedback(conversationId, messageId, next)
-      if (res.status === 'error') {
-        setThumbs(previous)
-        toast.error(t('feedbackErrorToast'))
-      }
+      await submitThumbsFeedback(conversationId, messageId, next)
+      toast.success(t('feedbackThanksToast'))
     } catch {
       setThumbs(previous)
       toast.error(t('feedbackErrorToast'))
     } finally {
       setPending(false)
     }
+  }
+
+  async function persistThumbsDown(opts: { feedbackText?: string; category?: ReasonCategory | null }) {
+    if (!conversationId) return
+    try {
+      await submitThumbsFeedback(conversationId, messageId, 'down', {
+        feedbackText: opts.feedbackText,
+        category: opts.category ?? undefined,
+      })
+      toast.success(t('feedbackThanksToast'))
+    } catch {
+      // Revert visual state — the thumbs-down was never persisted.
+      setThumbs(null)
+      toast.error(t('feedbackErrorToast'))
+    }
+  }
+
+  async function handleSendReason() {
+    if (reasonSending) return
+    setReasonSending(true)
+    try {
+      await persistThumbsDown({
+        feedbackText: reasonText.trim() || undefined,
+        category: reasonCategory,
+      })
+      setDownOpen(false)
+    } finally {
+      setReasonSending(false)
+    }
+  }
+
+  async function handleSkipReason() {
+    // User dismissed the popover without a reason — still record the down vote.
+    setDownOpen(false)
+    await persistThumbsDown({})
+  }
+
+  function onPopoverOpenChange(open: boolean) {
+    if (!open && downOpen) {
+      // Closing without explicit submit = treat as skip (record bare thumbs-down).
+      setDownOpen(false)
+      void persistThumbsDown({})
+      return
+    }
+    setDownOpen(open)
   }
 
   const upActive = thumbs === 'up'
@@ -125,24 +195,95 @@ function MessageActions({
           className={cn("w-3.5 h-3.5", upActive && "fill-current")}
         />
       </button>
-      <button
-        type="button"
-        className={cn(
-          "p-1 rounded hover:bg-lia-interactive-hover",
-          downActive
-            ? "text-lia-text-primary"
-            : "text-lia-text-disabled hover:text-lia-text-secondary"
-        )}
-        title={downActive ? t('notHelpfulActiveTitle') : t('notHelpfulTitle')}
-        aria-label={downActive ? t('notHelpfulActiveAriaLabel') : t('notHelpfulAriaLabel')}
-        aria-pressed={downActive}
-        disabled={!conversationId}
-        onClick={() => handleThumbs('down')}
-      >
-        <ThumbsDown
-          className={cn("w-3.5 h-3.5", downActive && "fill-current")}
-        />
-      </button>
+
+      <Popover open={downOpen} onOpenChange={onPopoverOpenChange}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            className={cn(
+              "p-1 rounded hover:bg-lia-interactive-hover",
+              downActive
+                ? "text-lia-text-primary"
+                : "text-lia-text-disabled hover:text-lia-text-secondary"
+            )}
+            title={downActive ? t('notHelpfulActiveTitle') : t('notHelpfulTitle')}
+            aria-label={downActive ? t('notHelpfulActiveAriaLabel') : t('notHelpfulAriaLabel')}
+            aria-pressed={downActive}
+            disabled={!conversationId}
+            onClick={() => handleThumbs('down')}
+          >
+            <ThumbsDown
+              className={cn("w-3.5 h-3.5", downActive && "fill-current")}
+            />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80 p-3" align="start" sideOffset={8}>
+          <div className="flex flex-col gap-2">
+            <span className="text-xs font-medium text-lia-text-primary">
+              {t('thumbsDownReasonTitle')}
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {REASON_CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() =>
+                    setReasonCategory((current) => (current === cat ? null : cat))
+                  }
+                  className={cn(
+                    "px-2 py-0.5 text-[11px] rounded-full border transition-colors",
+                    reasonCategory === cat
+                      ? "border-lia-text-primary bg-lia-interactive-hover text-lia-text-primary"
+                      : "border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover"
+                  )}
+                  aria-pressed={reasonCategory === cat}
+                >
+                  {t(`thumbsDownCategory.${cat}`)}
+                </button>
+              ))}
+            </div>
+            <Textarea
+              value={reasonText}
+              onChange={(e) => setReasonText(e.target.value)}
+              placeholder={t('thumbsDownPlaceholder')}
+              className="min-h-16 text-xs"
+              maxLength={2000}
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSkipReason}
+                className="h-7 text-xs"
+              >
+                {t('thumbsDownCancel')}
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleSendReason}
+                disabled={reasonSending}
+                className="h-7 text-xs"
+              >
+                <Send className="w-3 h-3 mr-1" />
+                {t('thumbsDownSubmit')}
+              </Button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+
+      {onRegenerate && (
+        <button
+          type="button"
+          className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
+          title={t('regenerateTitle')}
+          aria-label={t('regenerateAriaLabel')}
+          onClick={() => onRegenerate(messageId)}
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+        </button>
+      )}
     </div>
   )
 }
@@ -157,6 +298,7 @@ export function UnifiedMessageList({
   userName,
   conversationId,
   onChipClick,
+  onRegenerate,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -261,6 +403,9 @@ export function UnifiedMessageList({
                   messageId={message.id}
                   content={message.content}
                   conversationId={conversationId}
+                  initialThumbs={message.thumbs ?? null}
+                  initialFeedbackText={message.feedbackText ?? null}
+                  onRegenerate={onRegenerate}
                 />
               </div>
             ) : (

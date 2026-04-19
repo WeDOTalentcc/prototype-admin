@@ -4,6 +4,7 @@ import { useState, Suspense, useEffect, useRef } from "react"
 import React from "react"
 import { useRouter } from "next/navigation"
 import { useKeyboardShortcuts } from "@/hooks/shared/use-keyboard-shortcuts"
+import { useProactiveActionRouter } from "@/hooks/chat/use-proactive-action-router"
 
 import { Sidebar } from "@/components/sidebar"
 import { CandidatesPage } from "@/components/pages/candidates-page"
@@ -120,6 +121,9 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
     window.addEventListener("lia:navigation-hint", handler)
     return () => window.removeEventListener("lia:navigation-hint", handler)
   }, [openFloat])
+
+  // E.1 — Proactive action routing (maps hint card clicks to navigation / chat / REST)
+  useProactiveActionRouter()
 
   const handleNavigate = (page: string) => {
     if (page === "Ajuda") {

@@ -23,6 +23,13 @@ export interface LiaChatMessage {
    */
   isClarification?: boolean
   options?: LiaChatClarificationOption[]
+  /**
+   * Persisted feedback state for this LIA message (Task #570).
+   * Hydrated from `/lia/feedback/by-conversation/{id}` on history load so
+   * thumbs survive a refresh. `null` means "no feedback yet".
+   */
+  thumbs?: "up" | "down" | null
+  feedbackText?: string | null
 }
 
 export interface HITLPending {

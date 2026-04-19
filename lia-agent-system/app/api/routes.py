@@ -465,6 +465,11 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(lia_assistant_fasttrack.router, prefix="/api/v1", tags=["lia-fasttrack"])
     app.include_router(lia_assistant_graph.router, prefix="/api/v1/lia-assistant", tags=["lia-graph"])
 
+    # Task #570 — canonical chat-feedback router (closes audit #569 P0).
+    # Mounts /api/v1/lia/feedback/{thumbs,rating,correction,metrics,by-conversation}.
+    from app.api.v1 import lia_feedback
+    app.include_router(lia_feedback.router, prefix="/api/v1", tags=["lia-feedback"])
+
     # ── Wizard ────────────────────────────────────────────────────────────────
     app.include_router(wizard_suggestions.router, prefix="/api/v1/wizard", tags=["wizard-suggestions"])
     app.include_router(wizard_smart_orchestrator.router, prefix="/api/v1/wizard", tags=["wizard-smart-orchestrator"])

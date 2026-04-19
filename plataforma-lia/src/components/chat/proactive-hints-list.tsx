@@ -8,12 +8,15 @@
  *     { type, message, severity, action, metadata }
  *   ]
  *
- * Clicking a hint dispatches a `lia:proactive-action` event with the hint's
- * `action` string + metadata, so parent hooks can route to the right tool/page.
+ * UX (E.2):
+ *   - Click action button → dispatches `lia:proactive-action` event
+ *     (handled by useProactiveActionRouter — click = authorization, no dialog)
+ *   - Click X button → dismiss card locally + persist in sessionStorage
+ *     so same hint type does not reappear in next turn.
  */
 
-import React from "react"
-import { AlertTriangle, Info, AlertCircle, ArrowRight, Sparkles } from "lucide-react"
+import React, { useCallback, useEffect, useState } from "react"
+import { AlertTriangle, Info, AlertCircle, ArrowRight, Sparkles, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export interface ProactiveHint {
@@ -51,8 +54,30 @@ const ACTION_LABELS: Record<string, string> = {
   suggest_screening_questions: "Sugerir perguntas",
 }
 
+const DISMISS_STORAGE_KEY = "lia:dismissed_hint_types"
+
+function getDismissedTypes(): Set<string> {
+  if (typeof window === "undefined") return new Set()
+  try {
+    const raw = window.sessionStorage.getItem(DISMISS_STORAGE_KEY)
+    if (!raw) return new Set()
+    const parsed = JSON.parse(raw)
+    return new Set(Array.isArray(parsed) ? parsed : [])
+  } catch {
+    return new Set()
+  }
+}
+
+function persistDismissed(types: Set<string>): void {
+  if (typeof window === "undefined") return
+  try {
+    window.sessionStorage.setItem(DISMISS_STORAGE_KEY, JSON.stringify(Array.from(types)))
+  } catch {
+    // sessionStorage may be blocked (private mode); fail silently
+  }
+}
+
 function handleAction(hint: ProactiveHint) {
-  // Dispatch a CustomEvent — parent listener decides routing.
   window.dispatchEvent(
     new CustomEvent("lia:proactive-action", {
       detail: {
@@ -65,21 +90,51 @@ function handleAction(hint: ProactiveHint) {
 }
 
 export function ProactiveHintsList({ hints, className }: Props) {
-  if (!hints || hints.length === 0) return null
+  const [dismissedTypes, setDismissedTypes] = useState<Set<string>>(() => getDismissedTypes())
+
+  // Re-read sessionStorage when the component mounts (cross-tab sync not required)
+  useEffect(() => {
+    setDismissedTypes(getDismissedTypes())
+  }, [])
+
+  const dismiss = useCallback((type: string) => {
+    setDismissedTypes((prev) => {
+      const next = new Set(prev)
+      next.add(type)
+      persistDismissed(next)
+      return next
+    })
+  }, [])
+
+  const visibleHints = hints.filter((h) => !dismissedTypes.has(h.type))
+  if (!visibleHints || visibleHints.length === 0) return null
 
   return (
     <div className={cn("flex flex-col gap-2 mt-3", className)}>
-      {hints.map((hint, idx) => {
+      {visibleHints.map((hint, idx) => {
         const actionLabel = hint.action ? ACTION_LABELS[hint.action] : null
         return (
           <div
             key={`${hint.type}-${idx}`}
             className={cn(
-              "rounded-md border px-3 py-2.5",
+              "relative rounded-md border px-3 py-2.5 pr-8",
               "flex items-start gap-2.5",
               SEVERITY_STYLES[hint.severity] ?? SEVERITY_STYLES.info,
             )}
           >
+            <button
+              type="button"
+              onClick={() => dismiss(hint.type)}
+              aria-label="Dispensar sugestão"
+              className={cn(
+                "absolute top-1.5 right-1.5 p-1 rounded-md",
+                "text-lia-text-tertiary hover:text-lia-text-secondary",
+                "hover:bg-black/5 dark:hover:bg-white/5",
+                "transition-colors motion-reduce:transition-none",
+              )}
+            >
+              <X className="w-3 h-3" />
+            </button>
             <Sparkles className="w-3.5 h-3.5 text-wedo-cyan mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="flex items-start gap-2">

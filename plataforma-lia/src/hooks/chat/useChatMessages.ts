@@ -7,7 +7,7 @@
  * and HITL approval flow. Uses either WebSocket or fetch fallback.
  */
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { useRecentItemsStore } from "@/stores/recent-items-store"
 import type {
   LiaChatMessage,
@@ -358,26 +358,76 @@ export function useChatMessages({
     }
   }, [recentItemsStore])
 
+  // Stale-request guard: when the user switches conversations rapidly, only
+  // the latest loadHistory call should be allowed to win. Each call captures
+  // its token; if a newer call started before this one finished we drop the
+  // result instead of returning a stale snapshot to the caller.
+  const loadHistoryTokenRef = useRef(0)
+
   const loadHistory = useCallback(async (id: string): Promise<LiaChatMessage[]> => {
+    const myToken = ++loadHistoryTokenRef.current
     setIsFetchingHistory(true)
     try {
       const res = await fetch(
         `/api/backend-proxy/conversations/${id}?include_messages=true&message_limit=50`
       )
       if (!res.ok) return []
+      if (loadHistoryTokenRef.current !== myToken) return []
       const data = await res.json() as {
         messages?: Array<{ id: string; role: string; content: string; created_at?: string }>
       }
-      return (data.messages ?? []).map(m => ({
+      const messages: LiaChatMessage[] = (data.messages ?? []).map(m => ({
         id: m.id,
         sender: m.role === "assistant" ? "lia" : "user",
         content: m.content,
         timestamp: formatMessageTime(m.created_at),
       }))
+
+      // Task #570 (audit gap F3): hydrate persisted thumbs/feedback so the
+      // UI restores per-message state across refreshes. Best-effort — if the
+      // feedback endpoint is unreachable we still return the messages.
+      try {
+        const fbRes = await fetch(
+          `/api/backend-proxy/lia/feedback/by-conversation/${encodeURIComponent(id)}`,
+          { credentials: "include" },
+        )
+        if (fbRes.ok && loadHistoryTokenRef.current === myToken) {
+          const fbData = await fbRes.json() as {
+            items?: Array<{
+              message_id: string
+              thumbs?: "up" | "down" | null
+              feedback_text?: string | null
+            }>
+          }
+          const byId = new Map<string, { thumbs?: "up" | "down" | null; feedback_text?: string | null }>()
+          for (const item of fbData.items ?? []) {
+            byId.set(item.message_id, {
+              thumbs: item.thumbs ?? null,
+              feedback_text: item.feedback_text ?? null,
+            })
+          }
+          for (const msg of messages) {
+            const fb = byId.get(msg.id)
+            if (fb) {
+              msg.thumbs = fb.thumbs ?? null
+              msg.feedbackText = fb.feedback_text ?? null
+            }
+          }
+        }
+      } catch {
+        // hydration is non-critical; the user can still re-rate the message
+      }
+
+      // Final stale check before returning — caller mustn't apply a result
+      // from a conversation the user has already navigated away from.
+      if (loadHistoryTokenRef.current !== myToken) return []
+      return messages
     } catch {
       return []
     } finally {
-      setIsFetchingHistory(false)
+      if (loadHistoryTokenRef.current === myToken) {
+        setIsFetchingHistory(false)
+      }
     }
   }, [])
 
