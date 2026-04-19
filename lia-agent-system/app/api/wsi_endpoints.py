@@ -538,6 +538,89 @@ async def get_candidate_results(
         raise HTTPException(status_code=500, detail=f"Failed to get candidate results: {str(e)}")
 
 
+def _parse_transparency_extras(raw: Any) -> dict[str, Any]:
+    """Audit task #528 — normaliza coluna JSONB ``transparency_extras``.
+
+    Driver pode devolver dict, string JSON, ou ``None`` (registros legados
+    anteriores à coluna). Sempre devolve dict (vazio em fallback).
+    """
+    if not raw:
+        return {}
+    if isinstance(raw, dict):
+        return raw
+    try:
+        return json.loads(raw)
+    except (TypeError, ValueError):
+        return {}
+
+
+def _build_response_item(r: Any) -> dict[str, Any]:
+    """Audit task #528 — serializa uma análise de resposta com transparência.
+
+    Mantém shape original (consumido pelo recruiter view) e adiciona campos
+    granulares (``flags_structured``, ``penalty_breakdown``, ``bonus_breakdown``,
+    ``degraded_quality``, ``degraded_reasons``, ``layer2_degraded_reason``)
+    com defaults seguros para registros legados sem ``transparency_extras``.
+    Índice [18] é a coluna nova adicionada em ``get_responses_for_session``.
+    """
+    extras = _parse_transparency_extras(r[18] if len(r) > 18 else None)
+    return {
+        "competency": r[0],
+        "response_text": r[1],
+        "scores": {
+            "autodeclaration": float(r[2]) if r[2] else None,
+            "context": float(r[3]) if r[3] else None,
+            "bloom_level": r[4],
+            "dreyfus_level": r[5],
+            "final_score": float(r[9]),
+        },
+        "evidences": r[6] if r[6] else [],
+        "red_flags": r[7] if r[7] else [],
+        "consistency_penalty": float(r[8]) if r[8] else 0,
+        "justification": r[10],
+        "question": {
+            "text": r[12],
+            "framework": r[13],
+            "type": r[14],
+            "weight": float(r[15]) if r[15] else 0,
+            "expected_signals": r[16] if r[16] else [],
+            "sequence": r[17],
+        },
+        "flags_structured": extras.get("flags_structured") or {},
+        "penalty_breakdown": extras.get("penalty_breakdown") or {},
+        "bonus_breakdown": extras.get("bonus_breakdown") or {},
+        "degraded_quality": bool(extras.get("degraded_quality", False)),
+        "degraded_reasons": extras.get("degraded_reasons") or [],
+        "layer2_degraded_reason": extras.get("layer2_degraded_reason"),
+    }
+
+
+def _aggregate_response_degraded(responses: list[Any]) -> dict[str, Any]:
+    """Audit task #528 (G23-02) — agrega selo degradado de N respostas.
+
+    Reúne ``degraded_quality`` / ``degraded_reasons`` / ``layer2_degraded_reason``
+    cross-respostas para o root do detalhe; UI exibe banner global.
+    """
+    reasons_set: set[str] = set()
+    degraded_count = 0
+    for r in responses:
+        extras = _parse_transparency_extras(r[18] if len(r) > 18 else None)
+        is_deg = bool(extras.get("degraded_quality")) or bool(extras.get("layer2_degraded_reason"))
+        if is_deg:
+            degraded_count += 1
+        for reason in (extras.get("degraded_reasons") or []):
+            if reason:
+                reasons_set.add(str(reason))
+        l2 = extras.get("layer2_degraded_reason")
+        if l2:
+            reasons_set.add(f"layer2:{l2}")
+    return {
+        "degraded_quality": degraded_count > 0,
+        "degraded_reasons": sorted(reasons_set),
+        "degraded_count": degraded_count,
+    }
+
+
 @router.get("/results/{result_id}/details", response_model=None)
 async def get_result_details(
     result_id: str,
@@ -582,31 +665,12 @@ async def get_result_details(
                 "duration_minutes": duration_minutes
             },
             "responses": [
-                {
-                    "competency": r[0],
-                    "response_text": r[1],
-                    "scores": {
-                        "autodeclaration": float(r[2]) if r[2] else None,
-                        "context": float(r[3]) if r[3] else None,
-                        "bloom_level": r[4],
-                        "dreyfus_level": r[5],
-                        "final_score": float(r[9])
-                    },
-                    "evidences": r[6] if r[6] else [],
-                    "red_flags": r[7] if r[7] else [],
-                    "consistency_penalty": float(r[8]) if r[8] else 0,
-                    "justification": r[10],
-                    "question": {
-                        "text": r[12],
-                        "framework": r[13],
-                        "type": r[14],
-                        "weight": float(r[15]) if r[15] else 0,
-                        "expected_signals": r[16] if r[16] else [],
-                        "sequence": r[17]
-                    }
-                }
+                _build_response_item(r)
                 for r in responses
             ],
+            # Audit task #528 (G23-02) — agregação root do selo degradado
+            # consumida pelo banner LGPD/EU AI Act do recruiter view.
+            **_aggregate_response_degraded(responses),
             "report": {
                 "executive_summary": report_row[0] if report_row else None,
                 "technical_analysis": report_row[1] if report_row else {},

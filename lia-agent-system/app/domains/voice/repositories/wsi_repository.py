@@ -229,12 +229,15 @@ class WsiRepository:
 
     async def get_responses_for_session(self, session_id: str) -> list:
         """Return full response-analysis rows joined with question details."""
+        # Audit task #528 (G23-02 / G23-03) — inclui transparency_extras (JSONB)
+        # como índice [18] para que o endpoint /results/{id}/details exponha
+        # flags estruturadas, breakdown de penalidades/bônus e selo degradado.
         result = await self.db.execute(text("""
             SELECT ra.competency, ra.response_text, ra.autodeclaration_score, ra.context_score,
                    ra.bloom_level, ra.dreyfus_level, ra.evidences, ra.red_flags,
                    ra.consistency_penalty, ra.final_score, ra.justification, ra.created_at,
                    q.question_text, q.framework, q.question_type, q.weight, q.expected_signals,
-                   q.sequence_order
+                   q.sequence_order, ra.transparency_extras
             FROM wsi_response_analyses ra
             JOIN wsi_questions q ON ra.question_id = q.id
             WHERE ra.session_id = :session_id
