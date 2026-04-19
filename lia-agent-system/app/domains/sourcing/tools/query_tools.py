@@ -1180,6 +1180,93 @@ async def get_market_benchmarks(
         }
 
 
+
+
+async def compare_candidates(
+    candidate_names: list[str] | None = None,
+    candidate_ids: list[str] | None = None,
+    company_id: str | None = None,
+    **kwargs
+) -> dict:
+    """
+    Compare multiple candidate profiles side-by-side.
+    Accepts candidate names (will resolve to IDs) or UUIDs directly.
+    """
+    from app.core.database import AsyncSessionLocal
+    from sqlalchemy import text
+    
+    context = kwargs.get("_context")
+    if context and not company_id:
+        company_id = getattr(context, "company_id", None) or str(context) if hasattr(context, "company_id") else None
+    
+    # Resolve names to UUIDs if needed
+    if not candidate_ids and candidate_names:
+        from app.orchestrator.action_handlers._handler_hooks import resolve_candidate_by_name as _rcbn
+        resolved = []
+        for name in candidate_names:
+            r = await _rcbn(name, company_id or None)
+            if r:
+                resolved.append(r["id"])
+        candidate_ids = resolved
+    
+    if not candidate_ids or len(candidate_ids) < 2:
+        return {
+            "success": False,
+            "message": "Informe ao menos 2 nomes ou IDs de candidatos para comparar.",
+            "candidates": []
+        }
+    
+    placeholders = ", ".join([f":id_{i}" for i in range(len(candidate_ids))])
+    params = {f"id_{i}": cid for i, cid in enumerate(candidate_ids)}
+    
+    async with AsyncSessionLocal() as db:
+        result = await db.execute(
+            text(f"""
+                SELECT id, name, current_title, current_company, seniority_level,
+                       years_of_experience, technical_skills, soft_skills,
+                       location_city, location_state, lia_score
+                FROM candidates
+                WHERE id IN ({placeholders})
+            """),
+            params,
+        )
+        rows = result.mappings().all()
+    
+    if not rows:
+        return {"success": False, "message": "Candidatos nao encontrados.", "candidates": []}
+    
+    comparison = []
+    for row in rows:
+        comparison.append({
+            "name": row["name"],
+            "title": row["current_title"] or "N/A",
+            "company": row["current_company"] or "N/A",
+            "seniority": row["seniority_level"] or "N/A",
+            "experience_years": row["years_of_experience"] or 0,
+            "skills": (row["technical_skills"] or [])[:6],
+            "location": f"{row['location_city'] or ''}/{row['location_state'] or ''}".strip("/"),
+            "lia_score": row["lia_score"] or 0.0,
+        })
+    
+    comparison.sort(key=lambda x: (x["lia_score"], x["experience_years"] or 0), reverse=True)
+    for i, c in enumerate(comparison):
+        c["rank"] = i + 1
+    
+    lines = ["**Comparação de Candidatos:**\n"]
+    for c in comparison:
+        skills_str = ", ".join(c["skills"]) if c["skills"] else "N/A"
+        lines.append(
+            f"- **{c['name']}** (#{c['rank']}): {c['title']} @ {c['company']} | "
+            f"{c['seniority']} | {c['experience_years']} anos | "
+            f"Score: {c['lia_score']:.1f} | Skills: {skills_str}"
+        )
+    
+    return {
+        "success": True,
+        "message": "\n".join(lines),
+        "candidates": comparison,
+    }
+
 def register_sourcing_query_tools() -> None:
     """Register sourcing-domain query tools in the tool registry."""
     
@@ -1315,4 +1402,26 @@ def register_sourcing_query_tools() -> None:
         allowed_agents=["recruiter_assistant", "analyst_feedback", "orchestrator"]
     ))
     
-    logger.info("✅ Registered 9 sourcing query tools")
+    tool_registry.register(ToolDefinition(
+        name="compare_candidates",
+        description="Compara dois ou mais candidatos lado a lado. Aceita nomes dos candidatos diretamente — nao precisa de IDs. Use quando solicitado a comparar perfis.",
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "candidate_names": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Nomes dos candidatos para comparar (use quando tiver nomes, nao IDs)"
+                },
+                "candidate_ids": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "UUIDs dos candidatos (use quando souber os IDs)"
+                },
+            }
+        },
+        handler=compare_candidates,
+        allowed_agents=["recruiter_assistant", "sourcing", "orchestrator"]
+    ))
+    
+    logger.info("\u2705 Registered 10 sourcing query tools")
