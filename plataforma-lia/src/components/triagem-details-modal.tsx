@@ -77,15 +77,9 @@ export function TriagemDetailsModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-lia-overlay">
       <div className="w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col rounded-xl border border-lia-border-subtle bg-lia-bg-secondary">
-        <TriagemDetailsHeader
-          candidate={candidate}
-          details={state.details}
-          ranking={state.ranking}
-          onClose={onClose}
-        />
-
         {/* Audit task #529 (G23-02 frontend) — Banner LGPD/EU AI Act:
-            transparência sobre análise semântica indisponível em N respostas. */}
+            renderizado ACIMA do header (conforme spec) para máxima visibilidade
+            quando a Camada 2 (análise semântica) não está disponível. */}
         {state.details.degraded_quality && (() => {
           // Fallback: se backend não populou degraded_count, derivamos das respostas.
           const degradedCount = state.details.degraded_count
@@ -115,6 +109,13 @@ export function TriagemDetailsModal({
           </div>
           )
         })()}
+
+        <TriagemDetailsHeader
+          candidate={candidate}
+          details={state.details}
+          ranking={state.ranking}
+          onClose={onClose}
+        />
 
         <TriagemSummaryBar
           scores={scores}

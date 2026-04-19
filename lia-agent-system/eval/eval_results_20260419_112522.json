@@ -1,0 +1,35 @@
+[
+  {
+    "id": "AN-003",
+    "category": "AN",
+    "severity": "high",
+    "title": "Salary benchmark",
+    "prompt": "qual a faixa de mercado para Product Manager sênior em São Paulo?",
+    "context": {
+      "scope": "Analytics",
+      "page": "analytics"
+    },
+    "expected_tools": [
+      "get_salary_benchmark"
+    ],
+    "canonical_files": [
+      "app/domains/analytics/agents/analytics_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Returns salary range",
+      "References location",
+      "Includes percentiles or min/max"
+    ],
+    "anti_patterns": [
+      "Generic answer without numbers"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 10929,
+    "response": "Não foi possível obter dados de faixa salarial para Product Manager Sênior em São Paulo no momento. Minhas fontes retornaram apenas uma estimativa geral sem valores específicos.",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-19T11:25:21.798338"
+  }
+]
