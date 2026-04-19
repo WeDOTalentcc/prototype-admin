@@ -58,3 +58,14 @@ intent_keywords:
   taguear: tag_candidates
   engagement: engagement_pipeline
   agendar: schedule_outreach
+  mover candidato: update_candidate_stage
+  mover etapa: update_candidate_stage
+  mudar etapa: update_candidate_stage
+  rejeitar: reject_candidate
+  reprovar: reject_candidate
+  shortlist: shortlist_candidate
+  favoritar: shortlist_candidate
+  favorito: shortlist_candidate
+  adicionar à vaga: add_candidate_to_vacancy
+  adicionar a vaga: add_candidate_to_vacancy
+  vincular vaga: add_candidate_to_vacancy

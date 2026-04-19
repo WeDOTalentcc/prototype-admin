@@ -24,12 +24,12 @@ _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id=
 
 
 _ACTION_TOOL_MAP: dict[str, str] = {
-    "search_candidates": "search_candidates",
-    "global_search": "pearch_search",
-    "rank_candidates": "candidate_match",
-    "filter_candidates": "boolean_search",
-    "compare_candidates": "search_candidates",
-    "assess_market": "search_analytics",
+    "search_candidates": "sourcing_search_candidates",
+    "rank_candidates": "sourcing_rank_candidates",
+    "update_candidate_stage": "sourcing_update_candidate_stage",
+    "reject_candidate": "sourcing_reject_candidate",
+    "shortlist_candidate": "sourcing_shortlist_candidate",
+    "add_candidate_to_vacancy": "sourcing_add_candidate_to_vacancy",
 }
 
 
@@ -121,6 +121,7 @@ class SourcingDomain(ComplianceDomainPrompt):
                 mapped_tool,
                 params,
                 context.tenant_id,
+                user_id=context.user_id,
             )
             return DomainResponse.success_response(
                 message=f"Ferramenta '{mapped_tool}' executada para ação '{action.name}'.",

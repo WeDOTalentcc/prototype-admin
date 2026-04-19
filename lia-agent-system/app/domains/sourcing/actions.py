@@ -33,4 +33,8 @@ SOURCING_ACTIONS: list[DomainAction] = [
     DomainAction(action_id="tag_candidates", name="Taguear candidatos", description="Adiciona tags aos candidatos"),
     DomainAction(action_id="engagement_pipeline", name="Pipeline engagement", description="Fluxo de engajamento"),
     DomainAction(action_id="schedule_outreach", name="Agendar outreach", description="Agenda contato futuro"),
+    DomainAction(action_id="update_candidate_stage", name="Mover candidato de etapa", description="Move candidato para outra etapa do pipeline"),
+    DomainAction(action_id="reject_candidate", name="Rejeitar candidato", description="Rejeita candidato no processo seletivo"),
+    DomainAction(action_id="shortlist_candidate", name="Favoritar candidato", description="Adiciona candidato à shortlist/favoritos"),
+    DomainAction(action_id="add_candidate_to_vacancy", name="Adicionar candidato à vaga", description="Vincula candidato a uma vaga de emprego"),
 ]

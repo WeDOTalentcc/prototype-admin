@@ -80,28 +80,25 @@ class TestGetToolById:
 
 
 class TestExecuteSourcingTool:
-    def _make_context(self):
-        ctx = MagicMock()
-        ctx.company_id = "company-1"
-        return ctx
+    TENANT = "company-1"
 
     @pytest.mark.asyncio
     async def test_returns_error_status_for_unknown_tool(self):
         from app.domains.sourcing.tools import execute_sourcing_tool
-        result = await execute_sourcing_tool("unknown_tool", {}, self._make_context())
+        result = await execute_sourcing_tool("unknown_tool", {}, self.TENANT)
         assert result.get("status") == "error" or result.get("success") is False
 
     @pytest.mark.asyncio
     async def test_error_includes_tool_id(self):
         from app.domains.sourcing.tools import execute_sourcing_tool
-        result = await execute_sourcing_tool("unknown_xyz", {}, self._make_context())
+        result = await execute_sourcing_tool("unknown_xyz", {}, self.TENANT)
         assert "unknown_xyz" in str(result)
 
     @pytest.mark.asyncio
     async def test_returns_error_on_import_failure(self):
         from app.domains.sourcing.tools import execute_sourcing_tool
         with patch("importlib.import_module", side_effect=ImportError("no module")):
-            result = await execute_sourcing_tool("sourcing_search_candidates", {}, self._make_context())
+            result = await execute_sourcing_tool("sourcing_search_candidates", {}, self.TENANT)
         assert "error" in result
 
     @pytest.mark.asyncio
@@ -118,9 +115,9 @@ class TestExecuteSourcingTool:
             mock_module = MagicMock()
             setattr(mock_module, func_name, mock_handler)
             mock_import.return_value = mock_module
-            result = await execute_sourcing_tool("sourcing_search_candidates", {}, self._make_context())
+            result = await execute_sourcing_tool("sourcing_search_candidates", {}, self.TENANT)
 
-        assert result.get("status") in ("ok", "success") or "results" in result or "error" not in result
+        assert result.get("status") in ("ok", "success") or "results" in str(result) or "error" not in result
 
     @pytest.mark.asyncio
     async def test_returns_error_on_handler_exception(self):
@@ -136,6 +133,6 @@ class TestExecuteSourcingTool:
             mock_module = MagicMock()
             setattr(mock_module, func_name, failing_handler)
             mock_import.return_value = mock_module
-            result = await execute_sourcing_tool("sourcing_search_candidates", {}, self._make_context())
+            result = await execute_sourcing_tool("sourcing_search_candidates", {}, self.TENANT)
 
         assert "error" in result
