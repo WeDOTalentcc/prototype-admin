@@ -164,6 +164,8 @@ async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
         if job_title_lookup and company_id:
             from sqlalchemy import text as _sql_text
             async with AsyncSessionLocal() as _db:
+                # RLS: set company context before job_vacancies query
+                await _db.execute(_sql_text("SELECT set_config('app.company_id', :co, true)"), {"co": str(company_id)})
                 _r = await _db.execute(
                     _sql_text(
                         "SELECT id, title FROM job_vacancies "

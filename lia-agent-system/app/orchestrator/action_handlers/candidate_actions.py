@@ -321,6 +321,8 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                 for _attempt in range(2):
                     try:
                         async with _ASL() as _db:
+                            # RLS: set company context
+                            await _db.execute(_text("SELECT set_config('app.company_id', :co, true)"), {"co": str(company_id)})
                             if _attempt == 0:
                                 _sql = _text("""
                                     SELECT vc.candidate_id
@@ -412,6 +414,8 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
             )
 
         async with AsyncSessionLocal() as db:
+            # RLS: set company context before job_vacancies/vacancy_candidates queries
+            await db.execute(text("SELECT set_config('app.company_id', :co, true)"), {"co": str(company_id)})
             # SC-001: resolve short job_id (e.g. "V0037") to UUID if not already done
             try:
                 job_row = await db.execute(
@@ -602,6 +606,9 @@ async def _analyze_profile(params: dict[str, Any], context: dict[str, Any]):
             )
 
         async with AsyncSessionLocal() as db:
+            # RLS: set company context before any vacancy_candidates query
+            if company_id:
+                await db.execute(sql_text("SELECT set_config('app.company_id', :co, true)"), {"co": str(company_id)})
             if company_id:
                 authz = await db.execute(
                     sql_text(
@@ -943,6 +950,9 @@ async def _reject_candidate(params: dict[str, Any], context: dict[str, Any]):
         # vacancy when possible; otherwise stop and ask the user.
         if not vacancy_id:
             async with AsyncSessionLocal() as db:
+                # RLS: set company context before vacancy_candidates query
+                if company_id:
+                    await db.execute(sql_text("SELECT set_config('app.company_id', :co, true)"), {"co": str(company_id)})
                 row = await db.execute(
                     sql_text(
                         "SELECT vacancy_id FROM vacancy_candidates "
@@ -982,6 +992,9 @@ async def _reject_candidate(params: dict[str, Any], context: dict[str, Any]):
 
         # Authz: verify candidate belongs to company
         async with AsyncSessionLocal() as db:
+            # RLS: set company context before vacancy_candidates query
+            if company_id:
+                await db.execute(sql_text("SELECT set_config('app.company_id', :co, true)"), {"co": str(company_id)})
             authz_row = await db.execute(
                 sql_text(
                     "SELECT 1 FROM vacancy_candidates "
@@ -1038,6 +1051,9 @@ async def _reject_candidate(params: dict[str, Any], context: dict[str, Any]):
         # Apply rejection — always scoped to a single vacancy now (the
         # disambiguation block above guarantees vacancy_id is set).
         async with AsyncSessionLocal() as db:
+            # RLS: set company context before UPDATE on vacancy_candidates
+            if company_id:
+                await db.execute(sql_text("SELECT set_config('app.company_id', :co, true)"), {"co": str(company_id)})
             result = await db.execute(
                 sql_text(
                     "UPDATE vacancy_candidates "
