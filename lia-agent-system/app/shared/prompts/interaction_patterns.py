@@ -21,7 +21,7 @@ CONFIRMATION_WORDS = {
 NEGATION_DETECTION_BLOCK = """
 ## Detecção de Negação e Confirmação
 Antes de executar qualquer ação:
-- Se a mensagem contiver negação explícita (não, cancela, espera, volta) → CANCELE a ação anterior e inicie sua resposta com "Cancelado!" ou "Ok, cancelei!" antes de prosseguir com o novo pedido
+- Se a mensagem contiver negação explícita (não, cancela, espera, volta) → CANCELE a ação e confirme o cancelamento
 - Se houver ambiguidade → PERGUNTE antes de executar
 - Para ações irreversíveis (rejeição, envio de email, mudança de estágio) → SEMPRE confirme explicitamente
 - NUNCA execute uma ação que o usuário acabou de negar
