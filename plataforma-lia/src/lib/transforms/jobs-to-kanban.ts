@@ -44,7 +44,9 @@ export function jobToKanbanItem(job: Job, deps: JobToKanbanItemDeps): KanbanItem
 
   const chips: string[] = []
   if (job.workModel) chips.push(job.workModel)
-  const jobSeniority = (job as Job & { seniority?: string }).seniority || job.level
+  // Audit task #531 (G23-01) — leitura via helper canônico (precedência
+  // `seniority` → `level` legacy). Mantém shape para evitar regressão.
+  const jobSeniority = getJobSeniority(job as Job & { seniority?: string })
   if (jobSeniority) chips.push(jobSeniority)
   chips.push(deps.labels.candidatesCount(candidates))
 

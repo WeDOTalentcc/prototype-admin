@@ -71,12 +71,10 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                   .filter((s): s is string => Boolean(s))
               }
               behavioralCompetencies={(job.behavioralCompetencies || []).map((c: Record<string, unknown>) => c.competency || c.name || (typeof c === 'string' ? c : '')).filter(Boolean) as string[]}
-              // P1-3 (audit rev. 20): precedência canônica explícita — `seniority` é o
-              // campo SSOT (Zod `job.schema.ts` enum). `job.level` é fallback legacy
-              // de DTOs antigos que ainda transitam pelo monolito (~20 arquivos);
-              // remover quebraria telas em produção sem migration coordenada de DTO.
-              // Decisão: manter fallback defensivo, com seniority sempre tendo precedência.
-              seniority={(job.seniority || job.level) as string | undefined}
+              // Audit task #531 (G23-01) — leitura unificada via helper canônico
+              // `getJobSeniority` (precedência `seniority` → `level` legacy);
+              // substitui o fallback inline da rev. 20 sem mudar comportamento.
+              seniority={getJobSeniority(job as { seniority?: string | null; level?: string | null }) || undefined}
               department={job.department as string | undefined}
               description={job.description as string | undefined}
               hasQuestions={((job.screeningQuestions as unknown[])?.length || 0) > 0}

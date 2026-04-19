@@ -23,6 +23,7 @@ import {
 import { ScreeningBadge } from "./ScreeningBadge"
 import { LiaEditor } from "@/components/ui/lia-editor"
 import { sanitizeHtml } from "@/lib/sanitize"
+import { getJobSeniority } from "@/lib/jobs/seniority"
 
 interface JobInfoGeralSectionProps {
   jobEditForm: Record<string, unknown>
@@ -192,7 +193,19 @@ export function JobInfoGeralSection({
               </div>
               <div>
                 <label className={labelClass}>Nível<ScreeningBadge /></label>
-                <select value={(jobEditForm.level as string) || ""} onChange={(e) => updateField("level", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
+                {/* Audit task #531 (G23-01) — write-both: persistir senioridade
+                    em `seniority` (canônico) E `level` (legacy) durante a janela
+                    de migração; leitura sempre via helper `getJobSeniority`. */}
+                <select
+                  value={getJobSeniority(jobEditForm as { seniority?: string | null; level?: string | null })}
+                  onChange={(e) => {
+                    const value = e.target.value
+                    updateField("seniority", value)
+                    updateField("level", value)
+                  }}
+                  disabled={!isEditing}
+                  className={selectClass(!isEditing)}
+                >
                   <option value="">Selecione...</option>
                   <option value="Estágio">Estágio</option>
                   <option value="Júnior">Júnior</option>
