@@ -377,28 +377,25 @@ async def _suggest_salary(params: dict, context: dict):
                 action_type="suggest_salary",
             )
 
-        from app.domains.job_management.agents.wizard_tool_registry import _wrap_get_salary_benchmarks
-        result = await _wrap_get_salary_benchmarks(
-            job_title=job_title,
-            seniority=seniority,
-            location=location,
-        )
-
-        market = result.get("market_range", {})
+        from app.domains.job_management.agents.wizard_tool_registry import _fetch_market_range
+        market = await _fetch_market_range(job_title, seniority, location)
         min_sal = market.get("min")
         max_sal = market.get("max")
-        rec = result.get("recommendation", "")
         confidence = market.get("confidence", "low")
+        rec = (
+            f"Sem histórico interno. Benchmark de mercado para {seniority}: "
+            f"R$ {min_sal:,.0f}–R$ {max_sal:,.0f}."
+        ) if min_sal and max_sal else ""
+        result = {"market_range": market}
 
         if min_sal and max_sal:
             lines = [
                 f"**Benchmark salarial — {job_title} ({seniority.title()})**\n",
                 f"📍 Mercado: **{location}**",
-                f"💰 Faixa: **R$ {min_sal:,.0f}** – **R$ {max_sal:,.0f}**",
+                f"💰 Faixa sugerida: **R$ {min_sal:,.0f}** – **R$ {max_sal:,.0f}**",
+                f"📊 Baseado em dados do mercado brasileiro de tecnologia",
             ]
-            if confidence == "high":
-                lines.append("📊 Baseado em dados de mercado atualizados")
-            if rec:
+            if rec and "Sem histórico" not in rec:
                 lines.append(f"\n{rec}")
             message = "\n".join(lines)
         else:

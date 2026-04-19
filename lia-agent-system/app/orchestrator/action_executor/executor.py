@@ -160,6 +160,10 @@ class ActionExecutorService:
             params["priority"] = entities["priority"]
         if entities.get("location"):
             params["location"] = entities["location"]
+        if entities.get("seniority"):
+            params["seniority"] = entities["seniority"]
+        if entities.get("skills"):
+            params["skills"] = entities["skills"]
         if entities.get("duration_minutes"):
             params["duration_minutes"] = entities["duration_minutes"]
 

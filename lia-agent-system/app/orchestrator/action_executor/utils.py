@@ -366,8 +366,8 @@ def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
     if intent == "sugerir_salario":
         # Extract job title: "para um Tech Lead Frontend", "de Product Manager"
         _title_m = re.search(
-            r"(?:para\s+(?:um[a]?\s+)?|de\s+)([A-Za-záéíóúâêîôûãõÁÉÍÓÚÂÊÎÔÛÃÕ][a-zA-Záéíóúâêîôûãõ]+(?:\s+[A-Za-záéíóúâêîôûãõ]+){0,4})",
-            msg, re.IGNORECASE
+            r"(?:para\s+(?:um[a]?\s+)?|de\s+)([A-ZÁÉÍÓÚ][a-záéíóúâêîôûãõ]+(?:\s+[A-ZÁÉÍÓÚ][a-záéíóúâêîôûãõ]+){0,4})",
+            msg
         )
         if _title_m and not entities.get("job_title"):
             entities["job_title"] = _title_m.group(1).strip()
@@ -390,8 +390,8 @@ def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
     if intent == "gerar_jd":
         # Extract job title: "para Product Manager", "de Tech Lead"
         _jd_title_m = re.search(
-            r"(?:para\s+(?:um[a]?\s+)?|de\s+|vaga\s+de\s+)([A-Za-záéíóúâêîôûãõÁÉÍÓÚÂÊÎÔÛÃÕ][a-zA-Záéíóúâêîôûãõ]+(?:\s+[A-Za-záéíóúâêîôûãõ]+){0,4})",
-            msg, re.IGNORECASE
+            r"(?:vaga\s+(?:de|para)\s+(?:um[a]?\s+)?|para\s+(?:um[a]?\s+)?)([A-ZÁÉÍÓÚ][a-záéíóúâêîôûãõ]+(?:\s+[A-ZÁÉÍÓÚ][a-záéíóúâêîôûãõ]+){0,4})",
+            msg
         )
         if _jd_title_m and not entities.get("job_title"):
             entities["job_title"] = _jd_title_m.group(1).strip()
