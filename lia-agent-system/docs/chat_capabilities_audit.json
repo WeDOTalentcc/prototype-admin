@@ -647,7 +647,7 @@
     },
     "hiring_policy": {
       "class": "HiringPolicyDomain",
-      "action_count": 8,
+      "action_count": 9,
       "tool_count": 0,
       "actions": [
         "configure_policy",
@@ -657,7 +657,8 @@
         "configure_screening",
         "configure_automation",
         "validate_compliance",
-        "get_progress"
+        "get_progress",
+        "configure_candidate_portal"
       ],
       "tools": [],
       "action_tool_map": {},
@@ -1270,7 +1271,7 @@
   "gaps_by_domain": {},
   "global_summary": {
     "total_registered": 17,
-    "total_actions": 263,
+    "total_actions": 264,
     "total_tools": 93,
     "domains_with_gaps": 13,
     "broken_mappings": 6,
