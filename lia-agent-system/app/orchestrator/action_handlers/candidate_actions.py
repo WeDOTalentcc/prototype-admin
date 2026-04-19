@@ -417,20 +417,21 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
             # RLS: set company context before job_vacancies/vacancy_candidates queries
             await db.execute(text("SELECT set_config('app.company_id', :co, true)"), {"co": str(company_id)})
             # SC-001: resolve short job_id (e.g. "V0037") to UUID if not already done
-            try:
-                job_row = await db.execute(
-                    text("""
-                        SELECT id, title FROM job_vacancies
-                        WHERE id = CAST(:jid AS uuid) AND company_id = :co
-                        LIMIT 1
-                    """),
+            import re as _re
+            _UUID_RE_SC = _re.compile(
+                r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+                _re.IGNORECASE
+            )
+            job_info = None
+            if _UUID_RE_SC.match(str(job_vacancy_id)):
+                # job_vacancy_id looks like a UUID — try direct id lookup
+                _jr = await db.execute(
+                    text("SELECT id, title FROM job_vacancies WHERE id = :jid AND company_id = :co LIMIT 1"),
                     {"jid": str(job_vacancy_id), "co": str(company_id)},
                 )
-                job_info = job_row.fetchone()
-            except Exception:
-                job_info = None
+                job_info = _jr.fetchone()
             if not job_info:
-                # Fallback: lookup by short job_id code
+                # Fallback: lookup by short job_id code (e.g. "V0037")
                 job_row2 = await db.execute(
                     text("""
                         SELECT id, title FROM job_vacancies
@@ -468,7 +469,7 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                         JOIN vacancy_candidates vc ON CAST(vc.candidate_id AS uuid) = c.id
                         WHERE c.id = CAST(:cid AS uuid)
                           AND vc.company_id = :co
-                          AND vc.job_vacancy_id = CAST(:jid AS uuid)
+                          AND vc.vacancy_id = CAST(:jid AS uuid)
                         LIMIT 1
                     """),
                     {"cid": cid_str, "co": str(company_id), "jid": str(job_vacancy_id)},
@@ -484,7 +485,7 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                         UPDATE vacancy_candidates
                         SET stage = 'Triagem', status = 'screening', updated_at = NOW()
                         WHERE candidate_id = :cid
-                          AND job_vacancy_id = CAST(:jid AS uuid)
+                          AND vacancy_id = CAST(:jid AS uuid)
                           AND company_id = :co
                     """),
                     {"cid": cid_str, "jid": str(job_vacancy_id), "co": str(company_id)},

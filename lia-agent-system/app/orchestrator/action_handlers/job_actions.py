@@ -170,11 +170,16 @@ async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
                     _sql_text(
                         "SELECT id, title FROM job_vacancies "
                         "WHERE company_id = :co AND title ILIKE :q "
-                        "ORDER BY created_at DESC LIMIT 2"
+                        "ORDER BY created_at DESC LIMIT 5"
                     ),
                     {"co": str(company_id), "q": f"%{job_title_lookup}%"},
                 )
                 _rows = _r.fetchall()
+            # Filter out [DEMO] jobs so they don't cause false disambiguation
+            _real_rows = [r for r in _rows if not r[1].startswith("[DEMO]")]
+            if not _real_rows and _rows:
+                _real_rows = list(_rows)  # fall back to all if all are DEMO
+            _rows = _real_rows
             if len(_rows) == 1:
                 job_id = str(_rows[0][0])
                 job_title = _rows[0][1]
@@ -221,6 +226,9 @@ async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
 
     try:
         async with AsyncSessionLocal() as db:
+            from sqlalchemy import text as _sql_text2
+            if company_id:
+                await db.execute(_sql_text2("SELECT set_config('app.company_id', :co, true)"), {"co": str(company_id)})
             result = await job_clone_service.duplicate_job(
                 db=db,
                 source_job_id=source_uuid,

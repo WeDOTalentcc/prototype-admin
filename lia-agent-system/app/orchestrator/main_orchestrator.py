@@ -679,7 +679,7 @@ class MainOrchestrator:
         if action_result.status == "not_actionable":
             return None
 
-        if action_result.status in ("needs_params", "needs_confirmation"):
+        if action_result.status in ("needs_params", "needs_confirmation", "pending"):
             if action_result.pending_action_id:
                 pass  # PendingActionStore já foi atualizado pelo ActionExecutor
             return ChatResponse.from_action_result(
