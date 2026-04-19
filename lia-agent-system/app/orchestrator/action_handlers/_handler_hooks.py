@@ -61,7 +61,10 @@ async def resolve_candidate_by_name(
         if row:
             return {"id": str(row.id), "name": row.name, "email": row.email}
 
-        # Fallback: try unaccented search (handles "Joao" matching "João")
+        # Fallback: unaccented comparison (handles "Joao" <-> "João" in either direction)
+        # Strategy: PostgreSQL ILIKE is NOT accent-aware, so we search by each word
+        # of the name (starting with the last/surname which is usually ASCII),
+        # then compare full names with accents stripped in Python.
         import unicodedata
 
         def _strip_accents(s: str) -> str:
@@ -70,33 +73,39 @@ async def resolve_candidate_by_name(
                 if unicodedata.category(c) != "Mn"
             )
 
-        unaccented_q = _strip_accents(candidate_name)
-        if unaccented_q != candidate_name:
-            # Search by unaccented name — fetch candidates and filter in Python
-            bind2: dict = {"q2": f"%{unaccented_q}%"}
-            sql2 = """
-                SELECT c.id, c.name, c.email
-                FROM candidates c
-            """
+        target_unaccented = _strip_accents(candidate_name).lower()
+        parts = candidate_name.strip().split()
+        # Try last name first (usually ASCII), then first name
+        search_parts = (parts[-1:] + parts[:-1]) if len(parts) > 1 else parts
+        rows_fb: list = []
+
+        for part in search_parts:
+            if len(part) < 3:
+                continue
+            bind_fb: dict = {"qfb": f"%{part}%"}
+            sql_fb = "SELECT c.id, c.name, c.email FROM candidates c"
             if company_id:
-                sql2 += """
-                JOIN vacancy_candidates vc ON CAST(vc.candidate_id AS uuid) = c.id
-                WHERE vc.company_id = :co2
-                  AND c.name ILIKE :q2
-                """
-                bind2["co2"] = str(company_id)
+                sql_fb += (
+                    " JOIN vacancy_candidates vc ON CAST(vc.candidate_id AS uuid) = c.id"
+                    " WHERE vc.company_id = :cofb AND c.name ILIKE :qfb"
+                )
+                bind_fb["cofb"] = str(company_id)
             else:
-                sql2 += " WHERE c.name ILIKE :q2"
-            sql2 += " ORDER BY c.name LIMIT 10"
-            async with AsyncSessionLocal() as db2:
-                result2 = await db2.execute(text(sql2), bind2)
-                rows2 = result2.fetchall()
-            for r in rows2:
-                if _strip_accents(r.name).lower() == unaccented_q.lower():
-                    return {"id": str(r.id), "name": r.name, "email": r.email}
-            # Partial match — return closest
-            if rows2:
-                r = rows2[0]
+                sql_fb += " WHERE c.name ILIKE :qfb"
+            sql_fb += " ORDER BY c.name LIMIT 20"
+            async with AsyncSessionLocal() as db_fb:
+                res_fb = await db_fb.execute(text(sql_fb), bind_fb)
+                rows_fb = res_fb.fetchall()
+            if rows_fb:
+                break
+
+        # Exact unaccented match
+        for r in rows_fb:
+            if _strip_accents(r.name).lower() == target_unaccented:
+                return {"id": str(r.id), "name": r.name, "email": r.email}
+        # Partial unaccented match (first candidate whose stripped name starts with stripped input)
+        for r in rows_fb:
+            if _strip_accents(r.name).lower().startswith(target_unaccented.split()[0]):
                 return {"id": str(r.id), "name": r.name, "email": r.email}
     return None
 
