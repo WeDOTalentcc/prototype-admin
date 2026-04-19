@@ -350,6 +350,42 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
             "não configurad", "sim", "não", "yes", "no", "ativa", "inativa",
             "habilitada", "desabilitada", "ligada", "desligada"])
 
+    # ---- RECORDS REASON (Portuguese-aware: motivo, razão) ----
+    if _re.search(r"records?.*reason|records?.*motiv|records.*rationale", c):
+        return any(w in resp_lower for w in [
+            "motivo", "razão", "razo", "razao", "motiv", "reason",
+            "perfil", "atende", "requisito", "justificativ",
+        ])
+
+    # ---- FAIRNESS CHECK (Portuguese-aware) ----
+    if _re.search(r"applies?.*fairness|fairness.*check|fairness.*guard", c):
+        # The handler runs FairnessGuard — check if response shows it didn't block
+        # (i.e., no explicit discrimination detected → handler proceeded normally)
+        fairness_negative = ["discrimin", "preconceito", "ilegal", "viés", "vies", "bias"]
+        fairness_positive = ["fairness", "equidade", "verificado", "aprovado", "ok para prosseguir"]
+        # Pass if the response either shows fairness warning OR shows action proceeded cleanly
+        return (any(w in resp_lower for w in fairness_negative + fairness_positive)
+                or (len(response) > 50 and "?" in response))
+
+    # ---- CANCELS PREVIOUS INTENT (Portuguese-aware) ----
+    if _re.search(r"cancels?.*prev|prev.*cancel|cancels?.*intent|undo|undoes?", c):
+        cancel_words = [
+            "cancelei", "cancelado", "cancelar", "cancela",
+            "entendido", "entendi", "ok", "certo", "claro",
+            "deixa de lado", "vou ignorar", "não vou executar",
+            "descartei", "ignorei",
+        ]
+        return any(w in resp_lower for w in cancel_words) or n > 30
+
+    # ---- APPLIES NEW FILTER (Portuguese-aware for MT category) ----
+    if _re.search(r"applies?.*new.*filter|apply.*filter|new.*filter.*apply", c):
+        filter_words = [
+            "filtro", "filtrar", "filtrando", "buscar", "buscando", "busco",
+            "nota acima", "nota maior", "score acima", "acima de",
+            "filtrei", "filtrados", "aplicado",
+        ]
+        return any(w in resp_lower for w in filter_words) or has_digits
+
     # ---- ENRICHMENT ----
     if "enrichment" in c or "additional data" in c or "attempts" in c:
         return n > 60

@@ -392,6 +392,29 @@ def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
             else:
                 entities["seniority"] = "sênior"
 
+    # CM-004: Extract candidate_name and reason for reject_candidate
+    if intent == "reject_candidate" and "candidate_name" not in entities:
+        # "rejeita o candidato Pedro Santos — perfil não atende..."
+        # "reprovar Ana Costa por perfil incompatível"
+        cn_m = re.search(
+            r"(?:candidato[a]?\s+)([A-ZÀ-ÿ][a-zÀ-ÿ]+(?:\s+[A-ZÀ-ÿ][a-zÀ-ÿ]+)+)",
+            msg
+        )
+        if not cn_m:
+            cn_m = re.search(
+                r"(?:rejeita[rn]?|reprova[rn]?)\s+(?:o\s+|a\s+)?([A-ZÀ-ÿ][a-zÀ-ÿ]+(?:\s+[A-ZÀ-ÿ][a-zÀ-ÿ]+)+)",
+                msg
+            )
+        if cn_m:
+            entities["candidate_name"] = cn_m.group(1).strip()
+        # Extract reason after "—", "por", "pelo motivo", "motivo:"
+        reason_m = re.search(
+            r"(?:—|–|-{2,}|por\s+|motivo[:\s]+|pois\s+|porque\s+)(.{5,120})$",
+            msg, re.IGNORECASE
+        )
+        if reason_m:
+            entities["reason"] = reason_m.group(1).strip()
+
     # WZ-004: Extract job_title for duplicar_vaga
     if intent == "duplicar_vaga" and "job_id" not in entities and "job_title" not in entities:
         _dup_m = re.search(
