@@ -337,6 +337,11 @@ async def _analyze_funnel(params: dict[str, Any], context: dict[str, Any]):
             _cstate = (context or {}).get("conversation_state")
             if _cstate and getattr(_cstate, "last_job_id", None):
                 job_id = _cstate.last_job_id
+        # Only use job_id if it's a valid UUID — short IDs like V0037 cause CAST errors
+        import re as _uuid_af
+        _UUID_AF = _uuid_af.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$', _uuid_af.I)
+        if job_id and not _UUID_AF.match(str(job_id)):
+            job_id = None  # Fall through to company-wide funnel analysis
         company_id = context.get("company_id") if context else None
 
         async with AsyncSessionLocal() as db:

@@ -1,0 +1,35 @@
+[
+  {
+    "id": "EX-001",
+    "category": "EX",
+    "severity": "critical",
+    "title": "Ambiguous request clarification",
+    "prompt": "avança",
+    "context": {
+      "scope": "Kanban",
+      "page": "kanban"
+    },
+    "expected_tools": [],
+    "canonical_files": [
+      "app/orchestrator/main_orchestrator.py"
+    ],
+    "success_criteria": [
+      "Asks clarifying question",
+      "Does not take blind action"
+    ],
+    "anti_patterns": [
+      "Takes action without knowing the target",
+      "Returns error"
+    ],
+    "api_ok": false,
+    "http_status": 401,
+    "latency_ms": 10,
+    "response": "",
+    "error": "{\"detail\":\"Invalid or expired token\"}",
+    "score": 0,
+    "flags": [
+      "HTTP_401"
+    ],
+    "scored_at": "2026-04-19T00:54:10.976724"
+  }
+]

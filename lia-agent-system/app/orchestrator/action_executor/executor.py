@@ -309,15 +309,6 @@ class ActionExecutorService:
         domain_id = config["domain_id"]
         action_id = config["action_id"]
 
-        # Strip non-UUID entity_id from context so handlers don't use short IDs as UUIDs
-        import re as _re
-        _UUID_PAT = _re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", _re.I)
-        context = dict(context)  # copy to avoid mutating caller's dict
-        for _ek in ("entity_id", "job_vacancy_id"):
-            _ev = context.get(_ek)
-            if _ev and not _UUID_PAT.match(str(_ev)):
-                context.pop(_ek, None)
-
         # Delegate to specialized action handler modules
         try:
             from app.orchestrator.action_handlers.analytics_actions import execute_analytics_action

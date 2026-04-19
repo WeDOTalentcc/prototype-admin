@@ -119,6 +119,14 @@ def _detect_intent_from_message(message: str, conversation_history: list | None 
         return None
     msg_lower = message.lower().strip()
 
+    # NEGATION_BYPASS: Correction and multi-step messages go to Phase 2
+    _NEGATION_STARTS = ("não, não", "nao, nao", "não era isso", "nao era isso", "cancela isso", "na verdade,")
+    _MULTI_STEP_MARKERS = (" e avança", " e manda ", " e envia ", " e depois manda", ", avança ", ", manda ", ", move para ")
+    if msg_lower.startswith(_NEGATION_STARTS):
+        return None  # correction — let Phase 2 handle context-aware cancellation
+    if any(m in msg_lower for m in _MULTI_STEP_MARKERS):
+        return None  # multi-step workflow — Phase 2 handles sequential tool calls
+
     # LIA-M04: Loop detection — if the same intent was just executed, skip
     if conversation_history:
         try:
@@ -342,7 +350,67 @@ def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
             entities["job_id"] = job_m.group(1).upper().replace("-", "").replace("_", "")
             logger.debug("[extract_entities] Extracted job_id=%s from message text", entities["job_id"])
 
-    # KB-004: Extract from_stage/to_stage for mover_candidatos_por_etapa
+    # KB-002: Extract candidate_name for mover_candidato intent
+    if intent == "mover_candidato" and not entities.get("candidate_name"):
+        # "move o João Silva de Triagem para Entrevista"
+        # "mover_candidato_name_extract": handles "move <name> de <stage> para <stage>"
+        _mv_m = re.search(
+            r"(?:move[rn]?\s+(?:o|a|os|as)?\s*|mova\s+(?:o|a)?\s*)([A-ZÁÉÍÓÚ][a-záéíóúâêîôûãõ]+(?:\s+[A-ZÁÉÍÓÚ][a-záéíóúâêîôûãõ]+)+)",
+            msg, re.IGNORECASE
+        )
+        if _mv_m:
+            entities["candidate_name"] = _mv_m.group(1).strip()
+            # candidate_id will be resolved by _move_candidate via resolve_candidate_by_name
+
+    # WZ-003: Extract job_title, location, seniority for salary suggestion
+    if intent == "sugerir_salario":
+        # Extract job title: "para um Tech Lead Frontend", "de Product Manager"
+        _title_m = re.search(
+            r"(?:para\s+(?:um[a]?\s+)?|de\s+)([A-Za-záéíóúâêîôûãõÁÉÍÓÚÂÊÎÔÛÃÕ][a-zA-Záéíóúâêîôûãõ]+(?:\s+[A-Za-záéíóúâêîôûãõ]+){0,4})",
+            msg, re.IGNORECASE
+        )
+        if _title_m and not entities.get("job_title"):
+            entities["job_title"] = _title_m.group(1).strip()
+        # Extract location: "em São Paulo", "no Rio de Janeiro"
+        _loc_m = re.search(r"\bem\s+([A-ZÁÉÍÓÚ][a-záéíóúâêîôûãõ]+(?:\s+[A-ZÁÉÍÓÚ]?[a-záéíóúâêîôûãõ]+)?)", msg)
+        if _loc_m and not entities.get("location"):
+            entities["location"] = _loc_m.group(1).strip()
+        # Infer seniority from years: "5 anos de experiência"
+        _years_m = re.search(r"(\d+)\s+anos?\s+de\s+experiência", msg, re.IGNORECASE)
+        if _years_m and not entities.get("seniority"):
+            _yrs = int(_years_m.group(1))
+            if _yrs <= 2:
+                entities["seniority"] = "junior"
+            elif _yrs <= 5:
+                entities["seniority"] = "pleno"
+            else:
+                entities["seniority"] = "sênior"
+
+    # WZ-002: Extract job_title and skills for JD generation
+    if intent == "gerar_jd":
+        # Extract job title: "para Product Manager", "de Tech Lead"
+        _jd_title_m = re.search(
+            r"(?:para\s+(?:um[a]?\s+)?|de\s+|vaga\s+de\s+)([A-Za-záéíóúâêîôûãõÁÉÍÓÚÂÊÎÔÛÃÕ][a-zA-Záéíóúâêîôûãõ]+(?:\s+[A-Za-záéíóúâêîôûãõ]+){0,4})",
+            msg, re.IGNORECASE
+        )
+        if _jd_title_m and not entities.get("job_title"):
+            entities["job_title"] = _jd_title_m.group(1).strip()
+        # Extract skills from "com X e Y"
+        _skills = []
+        if re.search(r"(metodologias?\s+[áa]geis?|agile|scrum|kanban|sprint)", msg, re.IGNORECASE):
+            _skills.extend(["Metodologias Ágeis", "Scrum", "Kanban"])
+        if re.search(r"(dados?|data|analytics?|sql|bi|business\s+intelligence)", msg, re.IGNORECASE):
+            _skills.extend(["Análise de Dados", "SQL"])
+        if re.search(r"(python|java|javascript|typescript|react|node|backend|frontend)", msg, re.IGNORECASE):
+            _match = re.search(r"(python|java|javascript|typescript|react|node)", msg, re.IGNORECASE)
+            if _match:
+                _skills.append(_match.group(1).title())
+        if re.search(r"(cloud|aws|azure|gcp|kubernetes|docker)", msg, re.IGNORECASE):
+            _skills.append("Cloud")
+        if _skills and not entities.get("skills"):
+            entities["skills"] = _skills
+
+        # KB-004: Extract from_stage/to_stage for mover_candidatos_por_etapa
     if intent == "mover_candidatos_por_etapa" and ("from_stage" not in entities or "to_stage" not in entities):
         stage_names = [
             "entrevista técnica", "entrevista tecnica", "entrevista final", "entrevista rh",

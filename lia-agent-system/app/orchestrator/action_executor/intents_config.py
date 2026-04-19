@@ -721,6 +721,22 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
             "job_id": "Para qual vaga você quer listar os candidatos?",
         },
     },
+    "sugerir_salario": {
+        "domain_id": "job_management",
+        "action_id": "suggest_salary",
+        "required_params": ["job_title"],
+        "optional_params": ["location", "seniority", "years_experience"],
+        "risk_level": "read",
+        "requires_confirmation": False,
+    },
+    "gerar_jd": {
+        "domain_id": "job_management",
+        "action_id": "generate_jd_direct",
+        "required_params": ["job_title"],
+        "optional_params": ["skills", "requirements", "seniority"],
+        "risk_level": "read",
+        "requires_confirmation": False,
+    },
     "lia_identidade": {
         "domain_id": "direct_response",
         "action_id": "respond_identity",
@@ -875,7 +891,7 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
     ("rankear_candidatos", [
         r"(rankea[rn]?|ordena[rn]?|classifica[rn]?)\s+(os?\s+)?(candidatos?)\s+(por|segundo|conforme)",
         r"(ranking|rank)\s+(d[eo]s?\s+)?(candidatos?)",
-        r"(quais?\s+)?(melhores?|top|piores?)\s+(candidatos?)",
+        r"(?!.*(?:avança|manda|envia|move|agenda).*)(?:quais?\s+)?(melhores?|top|piores?)\s+(candidatos?)",
     ]),
     # Analisar perfil de candidato (CM-001)
     ("analisar_perfil", [
@@ -1020,6 +1036,19 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
         r"(alguma|quais?)\s+vaga(s)?\s+(sem\s+|não\s+tem\s+|sem\s+nenhum\s+)candidato",
     ]),
     # Identidade da LIA -- respondida localmente, nunca pelo LLM
+    ("sugerir_salario", [
+        r"qual\s+(é\s+o\s+)?(salário|remuneração|faixa\s+salarial)\s+(para|de|do?|ao?)",
+        r"(quanto|qual)\s+(pagar|oferecer|remunerar|salário)\s+(para|a)\s+(um[a]?\s+)?\w+",
+        r"(sugerir?|recomendar?|indicar?)\s+(salário|remuneração|faixa)\s+(para|de|ao?)",
+        r"benchmark\s+salarial\s+(para|de)",
+        r"(salário|remuneração)\s+(de\s+mercado|ideal|sugerido)\s+(para|de)",
+    ]),
+    ("gerar_jd", [
+        r"(gerar?|gera|cria[rn]?|produz[ir]*)\s+(um[a]?\s+)?(descrição\s+d[ae]\s+vaga|job\s+description|jd)\s+(para|de)",
+        r"(escreve[rn]?|elabora[rn]?|monta[rn]?)\s+(um[a]?\s+)?(descrição|job\s+description|jd)\s+(para|de|ao?)",
+        r"(me\s+)?ajuda\s+(a\s+)?(criar|escrever|montar)\s+(um[a]?\s+)?(descrição|jd|job\s+description)",
+        r"(descrição|job\s+description)\s+(para\s+o\s+cargo|para\s+a\s+vaga)\s+de\s+",
+    ]),
     ("lia_identidade", [
         r"quem\s+(é\s+)?(você|vc|a\s+lia)",
         r"quem\s+(e\s+)?(voce|vc|a\s+lia)",

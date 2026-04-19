@@ -22,6 +22,10 @@ async def execute_job_action(
         return await _pause_job(params, context)
     elif action_id == "close_job":
         return await _close_job(params, context)
+    elif action_id == "suggest_salary":
+        return await _suggest_salary(params, context)
+    elif action_id == "generate_jd_direct":
+        return await _generate_jd_direct(params, context)
     elif action_id == "duplicate_job":
         return await _duplicate_job(params, context)
     elif action_id == "reopen_job":
@@ -355,4 +359,163 @@ async def _set_job_urgent(params: dict[str, Any], context: dict[str, Any]):
             message="Erro ao classificar vaga como urgente.",
             error_detail=str(e),
             action_type="set_job_urgent",
+        )
+
+
+async def _suggest_salary(params: dict, context: dict):
+    """WZ-003: Return salary benchmark for a job title/seniority/location."""
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        job_title = params.get("job_title") or params.get("title", "")
+        location = params.get("location", "Brasil")
+        seniority = params.get("seniority", "pleno")
+
+        if not job_title:
+            return ActionResult(
+                status="error",
+                message="Qual cargo você quer pesquisar o salário?",
+                action_type="suggest_salary",
+            )
+
+        from app.domains.job_management.agents.wizard_tool_registry import _wrap_get_salary_benchmarks
+        result = await _wrap_get_salary_benchmarks(
+            job_title=job_title,
+            seniority=seniority,
+            location=location,
+        )
+
+        market = result.get("market_range", {})
+        min_sal = market.get("min")
+        max_sal = market.get("max")
+        rec = result.get("recommendation", "")
+        confidence = market.get("confidence", "low")
+
+        if min_sal and max_sal:
+            lines = [
+                f"**Benchmark salarial — {job_title} ({seniority.title()})**\n",
+                f"📍 Mercado: **{location}**",
+                f"💰 Faixa: **R$ {min_sal:,.0f}** – **R$ {max_sal:,.0f}**",
+            ]
+            if confidence == "high":
+                lines.append("📊 Baseado em dados de mercado atualizados")
+            if rec:
+                lines.append(f"\n{rec}")
+            message = "\n".join(lines)
+        else:
+            message = (
+                f"Não encontrei benchmark de mercado específico para **{job_title}**. "
+                f"Para {seniority} em {location}, recomendo consultar Glassdoor, "
+                f"LinkedIn Salaries ou pesquisas salariais do setor."
+            )
+
+        return ActionResult(
+            status="executed",
+            message=message,
+            data=result,
+            action_type="suggest_salary",
+        )
+    except Exception as exc:
+        logger.warning(f"_suggest_salary failed: {exc}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao consultar benchmark salarial. Tente novamente.",
+            error_detail=str(exc),
+            action_type="suggest_salary",
+        )
+
+
+async def _generate_jd_direct(params: dict, context: dict):
+    """WZ-002: Generate a structured job description directly from extracted params."""
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        title = params.get("job_title") or params.get("title", "")
+        skills = params.get("skills") or []
+        seniority = params.get("seniority", "Pleno")
+
+        if not title:
+            return ActionResult(
+                status="error",
+                message="Qual é o cargo para a descrição de vaga?",
+                action_type="generate_jd_direct",
+            )
+
+        # Try to call the enrichment service first
+        company_id = context.get("company_id") if context else None
+        try:
+            from app.domains.job_management.agents.wizard_tool_registry import _wrap_generate_enriched_jd
+            enriched = await _wrap_generate_enriched_jd(
+                title=title,
+                seniority=seniority,
+                detected_skills=skills,
+                company_id=str(company_id) if company_id else None,
+            )
+            # If enrichment succeeded, build message from sections
+            sections_data = enriched.get("sections", [])
+            if sections_data:
+                jd_lines = [f"**Descrição de Vaga — {title}**\n"]
+                for sec in sections_data[:5]:  # up to 5 sections
+                    sec_name = sec.get("section", "")
+                    suggestions = sec.get("suggestions", [])
+                    if sec_name and suggestions:
+                        jd_lines.append(f"\n**{sec_name}**")
+                        for s in suggestions[:3]:
+                            val = s.get("value", "")
+                            if val:
+                                jd_lines.append(f"- {val}")
+                if len(jd_lines) > 2:
+                    return ActionResult(
+                        status="executed",
+                        message="\n".join(jd_lines),
+                        data=enriched,
+                        action_type="generate_jd_direct",
+                    )
+        except Exception:
+            pass  # Fall through to template
+
+        # Template-based fallback
+        skills_text = "\n".join(f"- {s}" for s in skills[:6]) if skills else "- Habilidades técnicas relevantes para o cargo"
+        jd = f"""**{title} — Descrição de Vaga**
+
+**Sobre a Vaga**
+Buscamos um(a) profissional para atuar como **{title}** ({seniority}), contribuindo diretamente para os objetivos estratégicos da empresa.
+
+**Responsabilidades**
+- Liderar e executar projetos relacionados a {title}
+- Colaborar com equipes multifuncionais
+- Propor melhorias de processos e boas práticas
+- Apresentar resultados e métricas para stakeholders
+
+**Requisitos Técnicos**
+{skills_text}
+- Experiência prévia em funções similares
+- Inglês intermediário (desejável)
+
+**Competências Comportamentais**
+- Comunicação clara e objetiva
+- Autonomia e proatividade
+- Visão analítica e orientação a dados
+- Trabalho em equipe e colaboração
+
+**Benefícios**
+- Salário competitivo com benchmark de mercado
+- Vale Refeição / Alimentação
+- Plano de Saúde e Odontológico
+- Possibilidade de trabalho híbrido
+- Ambiente de crescimento e aprendizado contínuo"""
+
+        return ActionResult(
+            status="executed",
+            message=jd.strip(),
+            data={"title": title, "skills": skills, "seniority": seniority},
+            action_type="generate_jd_direct",
+        )
+    except Exception as exc:
+        logger.warning(f"_generate_jd_direct failed: {exc}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao gerar a descrição de vaga. Tente novamente.",
+            error_detail=str(exc),
+            action_type="generate_jd_direct",
         )
