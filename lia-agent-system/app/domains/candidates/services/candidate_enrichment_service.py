@@ -51,7 +51,10 @@ class CandidateEnrichmentService:
         linkedin_url: str | None = None,
         include_experiences: bool = True,
         include_education: bool = True,
-        include_email_discovery: bool = True
+        include_email_discovery: bool = True,
+        *,
+        company_id: str | None = None,
+        user_id: str | None = None,
     ) -> dict[str, Any]:
         """
         Enrich a candidate's data from their LinkedIn profile.
@@ -95,12 +98,12 @@ class CandidateEnrichmentService:
         try:
             actor_id = LINKEDIN_PROFILE_ACTOR if include_email_discovery else LINKEDIN_PROFILE_ACTOR_ALT
             
-            profile_data = await self._scrape_linkedin_profile(profile_url, actor_id)
+            profile_data = await self._scrape_linkedin_profile(profile_url, actor_id, company_id=company_id, user_id=user_id, candidate_id=str(candidate_id) if candidate_id else None)
             
             if not profile_data or profile_data.get("error"):
                 if actor_id == LINKEDIN_PROFILE_ACTOR:
                     logger.warning(f"Primary scraper failed, trying alternative: {profile_data.get('error')}")
-                    profile_data = await self._scrape_linkedin_profile(profile_url, LINKEDIN_PROFILE_ACTOR_ALT)
+                    profile_data = await self._scrape_linkedin_profile(profile_url, LINKEDIN_PROFILE_ACTOR_ALT, company_id=company_id, user_id=user_id, candidate_id=str(candidate_id) if candidate_id else None)
                 
                 if not profile_data or profile_data.get("error"):
                     return {
@@ -138,7 +141,10 @@ class CandidateEnrichmentService:
                 "fields_updated": []
             }
     
-    async def _scrape_linkedin_profile(self, linkedin_url: str, actor_id: str) -> dict[str, Any]:
+    async def _scrape_linkedin_profile(
+        self, linkedin_url: str, actor_id: str,
+        *, company_id: str | None = None, user_id: str | None = None, candidate_id: str | None = None,
+    ) -> dict[str, Any]:
         """
         Scrape a LinkedIn profile using Apify actor.
         
@@ -159,12 +165,42 @@ class CandidateEnrichmentService:
             if "dev_fusion" in actor_id:
                 input_data["includeEmailDiscovery"] = True
             
-            result = await self.mcp_client.call_actor(
-                actor_id,
-                input_data,
-                wait_for_finish=True,
-                timeout_secs=180
-            )
+            import time as _time
+            _start = _time.monotonic()
+            _success = False
+            _err: str | None = None
+            try:
+                result = await self.mcp_client.call_actor(
+                    actor_id,
+                    input_data,
+                    wait_for_finish=True,
+                    timeout_secs=180
+                )
+                if not (isinstance(result, dict) and result.get("error")):
+                    _success = True
+                else:
+                    _err = str(result.get("error"))
+            except Exception as _mcp_exc:
+                _err = f"{type(_mcp_exc).__name__}: {_mcp_exc}"
+                raise
+            finally:
+                if company_id:
+                    try:
+                        from app.core.database import AsyncSessionLocal
+                        from app.domains.billing.services.consumption_tracking_service import ConsumptionTrackingService
+                        _cost = ConsumptionTrackingService.get_operation_price("apify", "mcp_profile_scrape") or 0.010
+                        async with AsyncSessionLocal() as _db:
+                            await ConsumptionTrackingService.record_apify_call(
+                                db=_db, company_id=company_id, user_id=user_id, candidate_id=candidate_id,
+                                linkedin_url=linkedin_url, operation="mcp_profile_scrape",
+                                cost_usd=_cost, success=_success,
+                                result_status="success" if _success else "fail",
+                                response_time_ms=int((_time.monotonic()-_start)*1000),
+                                error_message=_err, actor_id=actor_id,
+                            )
+                            await _db.commit()
+                    except Exception as _tr_exc:
+                        logger.debug(f"[candidate_enrichment] tracking failed: {_tr_exc}")
             
             if isinstance(result, dict) and result.get("error"):
                 return result

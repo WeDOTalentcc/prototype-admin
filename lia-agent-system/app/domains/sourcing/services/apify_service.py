@@ -648,12 +648,18 @@ class ApifyService:
         self,
         job_title: str,
         location: str,
+        *,
+        company_id: str | None = None,
+        user_id: str | None = None,
     ) -> dict:
         """
         Scrapes salary data via Apify actors.
         Strategy: Google Jobs -> Indeed -> fallback empty.
         Returns dict with salaries list (BRL values).
         """
+        # Propagate tenant context for downstream run_apify_actor calls
+        self._current_company_id = company_id
+        self._current_user_id = user_id
         import re as _re
 
         actors = [

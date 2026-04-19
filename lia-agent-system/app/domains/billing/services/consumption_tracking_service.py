@@ -18,12 +18,20 @@ PEARCH_MONTHLY_BUDGET_CREDITS = int(os.environ.get("PEARCH_MONTHLY_BUDGET_CREDIT
 
 PRICING_TABLE = {
     "apify": {
+        # Legacy operation names (kept for backward compatibility)
         "enrich": 0.01,
         "apify_search": 0.02,
         "profile_scrape": 0.01,
         "email_finder": 0.01,
         "reveal_email": 0.01,
         "reveal_phone": 0.01,
+        # D0.2 — specific actor pricing (aligned with run_apify_actor operation derivation)
+        "company_scrape": 0.012,       # voyager/linkedin-company-profile-scraper
+        "glassdoor_scrape": 0.015,     # bebity/glassdoor-scraper
+        "salary_benchmark": 0.008,     # custom salary actors
+        "apify_call": 0.01,            # fallback when operation unknown
+        "mcp_profile_scrape": 0.010,   # candidate_enrichment via MCP (dev_fusion, curious_coder)
+        "mcp_company_scrape": 0.012,   # company_scraper via MCP (website-content-crawler)
     },
     "pearch": {
         "search": 1,

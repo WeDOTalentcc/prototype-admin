@@ -116,7 +116,7 @@ class SalaryBenchmarkService:
 
         # 2. Apify scraping
         try:
-            benchmark = await self._fetch_from_apify(job_title, seniority, location)
+            benchmark = await self._fetch_from_apify(job_title, seniority, location, company_id=company_id, user_id=user_id)
             if benchmark:
                 await self._cache_result(benchmark)
                 return benchmark
@@ -128,7 +128,8 @@ class SalaryBenchmarkService:
         return self._fallback_benchmark(job_title, seniority, location)
 
     async def _fetch_from_apify(
-        self, job_title: str, seniority: str, location: str
+        self, job_title: str, seniority: str, location: str,
+        *, company_id: str | None = None, user_id: str | None = None,
     ) -> SalaryBenchmark | None:
         """Scrapes salary data via Apify Glassdoor actor."""
         try:
@@ -137,6 +138,8 @@ class SalaryBenchmarkService:
             result = await apify.scrape_salary_data(
                 job_title=f"{seniority} {job_title}",
                 location=location,
+                company_id=company_id,
+                user_id=user_id,
             )
             if not result or not result.get("salaries"):
                 return None
