@@ -721,6 +721,14 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
             "job_id": "Para qual vaga você quer listar os candidatos?",
         },
     },
+    "lia_identidade": {
+        "domain_id": "direct_response",
+        "action_id": "respond_identity",
+        "required_params": [],
+        "optional_params": [],
+        "risk_level": "read",
+        "requires_confirmation": False,
+    },
 }
 
 CONFIRMATION_PATTERNS = [
@@ -745,6 +753,14 @@ VALID_PIPELINE_STAGES = [
     "Entrevista Final", "Teste Técnico", "Proposta",
     "Contratado", "Reprovado", "Desistente",
     "Análise", "Shortlist", "Oferta",
+    # Identidade da LIA -- respondida localmente, nunca pelo LLM
+    ("lia_identidade", [
+        r"quem\s+(e\s+)?(voce|vc|a\s+lia)",
+        r"(o\s+que|quem)\s+(e|es?)\s+(voce|vc|a\s+lia)",
+        r"(quem|o\s+que)\s+(e\s+)?a\s+lia",
+        r"(voce|vc)\s+e\s+(gemini|claude|gpt|google|openai|anthropic)",
+        r"^(quem\s+e\s+voce|who\s+are\s+you|what\s+are\s+you)[\?\!]?$",
+    ]),
 ]
 
 STAGE_ALIASES = {
