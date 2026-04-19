@@ -29,6 +29,7 @@ class TalentPoolDomain(ComplianceDomainPrompt):
     domain_id = "talent_pool"
     domain_name = "Talent Pool Management"
     description = "Gestão de bancos de talentos vivos — criar, listar, adicionar candidatos, migrar para vagas"
+    agent_aliases = ("voice_screening",)
     _compliance_config = {"high_impact": True, "fairness_action_type": "sourcing"}
 
     def get_allowed_actions(self):

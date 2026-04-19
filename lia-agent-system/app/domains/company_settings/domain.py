@@ -94,6 +94,7 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
     domain_id = "company_settings"
     domain_name = "Company Settings"
     description = "Configuracao conversacional de dados da empresa: perfil, cultura, tech stack, beneficios e planejamento"
+    agent_aliases = ("settings_config", "company_profile", "company_config")
 
     def get_allowed_actions(self) -> list[DomainAction]:
         return COMPANY_SETTINGS_ACTIONS

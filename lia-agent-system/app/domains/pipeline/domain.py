@@ -99,6 +99,14 @@ class PipelineTransitionDomain(ComplianceDomainPrompt):
     domain_name = "Pipeline Transition"
     description = DOMAIN_DESCRIPTION
     version = "1.0.0"
+    agent_aliases = (
+        "kanban_search",
+        "kanban_insight",
+        "kanban_action",
+        "pipeline_context",
+        "pipeline_decision",
+        "pipeline_action",
+    )
 
     def get_allowed_actions(self) -> list[DomainAction]:
         return [

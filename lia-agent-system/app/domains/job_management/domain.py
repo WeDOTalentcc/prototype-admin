@@ -68,6 +68,7 @@ class JobManagementDomain(ComplianceDomainPrompt):
     domain_id = "job_management"
     domain_name = "Job Management & Wizard"
     description = "Criação, gestão e otimização de vagas de emprego"
+    agent_aliases = ("job_planner", "job_intake")
 
     def get_allowed_actions(self) -> list[DomainAction]:
         from app.domains.job_management.actions import JOB_MANAGEMENT_ACTIONS

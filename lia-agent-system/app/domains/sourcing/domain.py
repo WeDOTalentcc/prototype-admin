@@ -46,6 +46,12 @@ class SourcingDomain(ComplianceDomainPrompt):
     domain_id = "sourcing"
     domain_name = "Sourcing & Talent Search"
     description = "Busca, identificação e gestão de candidatos em múltiplas fontes"
+    agent_aliases = (
+        "sourcing_planner",
+        "sourcing_search",
+        "sourcing_enrich",
+        "sourcing_engagement",
+    )
 
     def get_allowed_actions(self) -> list[DomainAction]:
         from app.domains.sourcing.actions import SOURCING_ACTIONS

@@ -23,6 +23,7 @@ class AgentStudioDomain(ComplianceDomainPrompt):
     domain_id = "agent_studio"
     domain_name = "Agent Studio"
     description = "Criação e gestão de agentes customizados, sourcing, calibração, marketplace de agentes"
+    agent_aliases = ("multi_strategy",)
     _compliance_config = {"high_impact": False, "fairness_action_type": "sourcing"}
 
     def get_allowed_actions(self):

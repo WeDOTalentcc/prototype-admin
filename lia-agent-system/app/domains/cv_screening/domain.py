@@ -49,6 +49,7 @@ class CVScreeningDomain(ComplianceDomainPrompt):
     domain_id = "cv_screening"
     domain_name = "CV Screening & WSI Assessment"
     description = "Triagem curricular, avaliação WSI e scoring de candidatos"
+    agent_aliases = ("screening", "wsi_evaluator")
 
     def get_allowed_actions(self) -> list[DomainAction]:
         from app.domains.cv_screening.actions import CV_SCREENING_ACTIONS

@@ -53,6 +53,7 @@ class ATSIntegrationDomain(ComplianceDomainPrompt):
     _compliance_config = {'high_impact': False}
     domain_id = "ats_integration"
     domain_name = "ATS Integration"
+    agent_aliases = ("ats_integrator",)
 
     def __init__(self):
         from app.domains.ats_integration.actions import ATS_INTEGRATION_ACTIONS

@@ -54,6 +54,7 @@ class InterviewSchedulingDomain(ComplianceDomainPrompt):
     _compliance_config = {'high_impact': False}
     domain_id = "interview_scheduling"
     domain_name = "Interview & Scheduling"
+    agent_aliases = ("interviewer", "scheduling")
 
     def __init__(self):
         from app.domains.interview_scheduling.actions import INTERVIEW_SCHEDULING_ACTIONS

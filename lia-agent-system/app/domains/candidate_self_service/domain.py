@@ -66,6 +66,7 @@ class CandidateSelfServiceDomain(ComplianceDomainPrompt):
     domain_id = "candidate_self_service"
     domain_name = "Candidate Self-Service"
     description = "Portal de autoatendimento: candidato consulta status do próprio processo seletivo"
+    agent_aliases = ("candidate_status", "candidate_portal")
 
     def get_allowed_actions(self) -> list[DomainAction]:
         return CANDIDATE_SELF_SERVICE_ACTIONS

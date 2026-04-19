@@ -52,6 +52,7 @@ class AnalyticsDomain(ComplianceDomainPrompt):
     _compliance_config = {'high_impact': False}
     domain_id = "analytics"
     domain_name = "Analytics & Reporting"
+    agent_aliases = ("analyst_feedback",)
 
     def __init__(self):
         from app.domains.analytics.actions import ANALYTICS_ACTIONS

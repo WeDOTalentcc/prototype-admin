@@ -141,6 +141,26 @@ class DomainPrompt(ABC):
     description: str = ""
     version: str = "1.0.0"
 
+    # Extra agent-type strings that should resolve to this domain in addition
+    # to ``domain_id`` itself. Used by the orchestrator to build
+    # ``AGENT_TYPE_TO_DOMAIN`` via auto-discovery instead of a hand-maintained
+    # dict (avoids drift — see ``app/orchestrator/domain_mappings.py``).
+    agent_aliases: tuple[str, ...] = ()
+
+    @classmethod
+    def get_agent_aliases(cls) -> list[str]:
+        """Return all agent-type strings that should resolve to this domain.
+
+        Always includes ``domain_id``. Subclasses can extend by setting the
+        class-level ``agent_aliases`` tuple or by overriding this method.
+        """
+        seen: dict[str, None] = {}
+        if cls.domain_id:
+            seen[cls.domain_id] = None
+        for alias in cls.agent_aliases:
+            seen[alias] = None
+        return list(seen.keys())
+
     @abstractmethod
     def get_allowed_actions(self) -> list[DomainAction]:
         """Return list of actions this domain can perform."""

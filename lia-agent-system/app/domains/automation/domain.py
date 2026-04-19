@@ -55,6 +55,7 @@ class AutomationDomain(ComplianceDomainPrompt):
     _compliance_config = {'high_impact': False}
     domain_id = "automation"
     domain_name = "Automation & Tasks"
+    agent_aliases = ("task_planner",)
 
     def __init__(self):
         from app.domains.automation.actions import AUTOMATION_ACTIONS

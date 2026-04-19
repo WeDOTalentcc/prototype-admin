@@ -34,8 +34,30 @@ def register_domain(cls: type[DomainPrompt]) -> type[DomainPrompt]:
     """
     if not hasattr(cls, 'domain_id') or not cls.domain_id:
         raise ValueError(f"Domain class {cls.__name__} must define 'domain_id'")
-    
-    if cls.domain_id in _DOMAIN_REGISTRY:
+
+    # Some domains expose ``domain_id`` as a @property — the class attribute
+    # is then a descriptor, not a string. Instantiate to obtain the real id
+    # so the registry is keyed by the canonical string.
+    _resolved_id = cls.domain_id
+    if not isinstance(_resolved_id, str):
+        try:
+            _resolved_id = cls().domain_id
+        except Exception as _exc:
+            raise ValueError(
+                f"Domain class {cls.__name__} exposes domain_id as a "
+                f"non-string descriptor and could not be instantiated to "
+                f"resolve it: {_exc}"
+            ) from _exc
+        if not isinstance(_resolved_id, str) or not _resolved_id:
+            raise ValueError(
+                f"Domain class {cls.__name__} resolved domain_id is not a "
+                f"non-empty string: {_resolved_id!r}"
+            )
+        # Cache the resolved value as a class attribute so subsequent
+        # ``cls.domain_id`` reads return the string instead of the property.
+        cls.domain_id = _resolved_id  # type: ignore[assignment]
+
+    if _resolved_id in _DOMAIN_REGISTRY:
         logger.warning(
             f"Domain '{cls.domain_id}' already registered by {_DOMAIN_REGISTRY[cls.domain_id].__name__}. "
             f"Overwriting with {cls.__name__}."
