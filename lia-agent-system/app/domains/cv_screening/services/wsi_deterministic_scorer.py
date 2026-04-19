@@ -882,6 +882,10 @@ def calculate_wsi_deterministic(
         flags_structured["is_semantic_inflation"] = bool(layer2_signals.semantic_inflation)
         flags_structured["is_paraphrase"] = bool(layer2_signals.is_paraphrase)
         flags_structured["is_prompt_injection"] = bool(layer2_signals.prompt_injection_detected)
+    # Audit task #528 (G23-02 / G23-03) — flag explícita de fallback LLM da
+    # Camada 2. UI usa este booleano (junto com `degraded_quality`) para exibir
+    # selo "análise semântica indisponível" sem precisar parsear strings.
+    flags_structured["is_llm_fallback"] = bool(getattr(layer2_signals, "degraded", False)) if layer2_signals is not None else False
 
     is_behavioral = (question_type == "behavioral")
     penalty, penalty_breakdown = calculate_penalty_detailed(
