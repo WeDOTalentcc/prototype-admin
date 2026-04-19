@@ -296,6 +296,7 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
             or params.get("vacancy_id")
             or params.get("job_id")
             or (context or {}).get("job_vacancy_id")
+            or (context or {}).get("entity_id")  # SC-001: Kanban page passes entity_id
         )
         company_id = (context or {}).get("company_id")
 

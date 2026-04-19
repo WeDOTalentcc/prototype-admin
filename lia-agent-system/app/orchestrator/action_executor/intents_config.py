@@ -53,6 +53,16 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
             "candidate_id": "Qual candidato você quer reprovar?",
         },
     },
+    "reject_candidate": {
+        "domain_id": "pipeline_transition",
+        "action_id": "reject_candidate",
+        "required_params": [],
+        "optional_params": ["candidate_id", "candidate_name", "vacancy_id", "reason", "confirmed"],
+        "risk_level": "high",
+        "requires_confirmation": False,  # handler manages its own confirmation gate
+        "param_labels": {"candidate_name": "candidato", "reason": "motivo"},
+        "clarification_prompts": {},
+    },
     "aprovar_candidato": {
         "domain_id": "pipeline_transition",
         "action_id": "move_candidate",
@@ -199,8 +209,8 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
     "duplicar_vaga": {
         "domain_id": "job_management",
         "action_id": "duplicate_job",
-        "required_params": ["job_id"],
-        "optional_params": ["new_title"],
+        "required_params": [],
+        "optional_params": ["job_id", "job_title", "new_title"],
         "risk_level": "low",
         "requires_confirmation": False,
         "param_labels": {
@@ -984,6 +994,11 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
         r"(move[rn]?|mova)\s+todos?\s+(os\s+)?(candidatos?|selecionados?)\s+(para|pra)\s+",
     ]),
     # Duplicar vaga
+    ("reject_candidate", [
+        r"(rejeita[rn]?|reprova[rn]?)\s+(o\s+|a\s+)?(candidato|candidata)\s+\w",
+        r"(reprovar?|rejeitar?)\s+(o\s+)?(candidato|candidata)",
+        r"rejeita[rn]?\s+\w+\s+\w+",
+    ]),
     ("duplicar_vaga", [
         r"(duplica[rn]?|clona[rn]?|copia[rn]?)\s+(a\s+|uma?\s+)?(vaga|posição|job)",
         r"(abrir\s+)?(uma?\s+)?segunda\s+(posição|vaga|oportunidade)",

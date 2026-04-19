@@ -209,10 +209,35 @@ class PlanDetector:
         self._detection_count = 0
         self._match_count = 0
 
+    # Domain keyword → action mapping for semantic fallback detection.
+    # Order matters: first match wins.
+    _DOMAIN_KEYWORDS: dict[str, tuple[str, str]] = {
+        r"buscar?|pesquisar?|encontrar?|procur": ("sourcing", "search_candidates"),
+        r"rankear?|ranquear?|ordenar?": ("sourcing", "rank_candidates"),
+        r"comparar?": ("sourcing", "compare_candidates"),
+        r"tri(?:ar|agem)|screen": ("cv_screening", "screen_candidates"),
+        r"avali(?:ar|a[cç][aã]o)": ("cv_screening", "evaluate_candidate"),
+        r"adicionar?|incluir?|inserir?": ("cv_screening", "add_candidate_to_vacancy"),
+        r"cri(?:ar|e)\s+(?:a\s+)?(?:vaga|jd)|gerar?\s+(?:a\s+)?jd|abrir?\s+vaga": ("job_management", "create_job"),
+        r"editar?\s+(?:a\s+)?vaga|atualizar?\s+(?:a\s+)?vaga": ("job_management", "update_job"),
+        r"agendar?|marcar?\s+entrevista|scheduling": ("interview_scheduling", "schedule_interview"),
+        r"notific|avis|comunic|enviar?\s+mensag": ("communication", "send_message"),
+        r"feedback|parecer|relat[oó]rio": ("analyst_feedback", "generate_report"),
+        r"entrevistar?|conduzir?\s+entrevista": ("interviewer", "run_interview"),
+        r"wsi|bloom|dreyfus": ("cv_screening", "run_wsi_screening"),
+    }
+
+    # Multi-step connectors — signals that the user wants 2+ actions.
+    _STEP_CONNECTORS = re.compile(
+        r"\s+(?:e|ent[aã]o|depois|em\s+seguida|ap[oó]s|logo\s+ap[oó]s|a\s+seguir)\s+",
+        re.IGNORECASE,
+    )
+
     def detect(self, query: str) -> ExecutionPlan | None:
         self._detection_count += 1
         normalized = query.lower().strip()
 
+        # 1. Try hardcoded patterns first (precise, well-tested pipelines)
         for pattern in self._patterns:
             for regex in pattern.patterns:
                 try:
@@ -227,7 +252,60 @@ class PlanDetector:
                 except re.error as e:
                     logger.warning(f"Regex error in pattern '{pattern.name}': {e}")
 
+        # 2. Semantic fallback — detect N actions separated by connectors
+        semantic_plan = self._try_semantic_detection(query, normalized)
+        if semantic_plan:
+            self._match_count += 1
+            logger.info(
+                f"PlanDetector matched via semantic fallback with "
+                f"{len(semantic_plan.tasks)} tasks"
+            )
+            return semantic_plan
+
         return None
+
+    def _try_semantic_detection(self, original_query: str, normalized: str) -> ExecutionPlan | None:
+        """
+        Fallback detection: split on step connectors ("e", "depois", ...),
+        identify domain/action per segment, build plan if ≥2 actions found.
+        """
+        segments = self._STEP_CONNECTORS.split(normalized)
+        if len(segments) < 2:
+            return None
+
+        detected_steps: list[tuple[str, str]] = []
+        for segment in segments:
+            segment = segment.strip()
+            if not segment:
+                continue
+            for kw_regex, (domain_id, action_id) in self._DOMAIN_KEYWORDS.items():
+                if re.search(kw_regex, segment, re.IGNORECASE):
+                    detected_steps.append((domain_id, action_id))
+                    break
+
+        # Need at least 2 distinct actions to count as a multi-step plan
+        if len(detected_steps) < 2:
+            return None
+        unique = set(detected_steps)
+        if len(unique) < 2:
+            return None
+
+        # Build a plan with sequential dependencies
+        plan = ExecutionPlan()
+        plan.original_query = original_query
+        plan.detected_pattern = "semantic_fallback"
+        for i, (domain_id, action_id) in enumerate(detected_steps):
+            task_id = f"task_{i}"
+            depends_on = [f"task_{i-1}"] if i > 0 else []
+            task = AgentTask(
+                task_id=task_id,
+                domain_id=domain_id,
+                action_id=action_id,
+                depends_on=depends_on,
+                context_mappings={},
+            )
+            plan.add_task(task)
+        return plan
 
     def _build_plan(self, pattern: PlanPattern, original_query: str) -> ExecutionPlan:
         plan = ExecutionPlan()

@@ -159,12 +159,44 @@ async def _duplicate_job(params: dict[str, Any], context: dict[str, Any]):
     created_by = (context or {}).get("user_id") or (context or {}).get("user_email")
 
     if not job_id:
-        return ActionResult(
-            status="error",
-            message="ID da vaga é obrigatório para duplicar.",
-            error_detail="missing job_id",
-            action_type="duplicate_job",
-        )
+        # Try to resolve by title (WZ-004: "duplica a vaga de Product Manager")
+        job_title_lookup = params.get("job_title", "").strip()
+        if job_title_lookup and company_id:
+            from sqlalchemy import text as _sql_text
+            async with AsyncSessionLocal() as _db:
+                _r = await _db.execute(
+                    _sql_text(
+                        "SELECT id, title FROM job_vacancies "
+                        "WHERE company_id = :co AND title ILIKE :q "
+                        "ORDER BY created_at DESC LIMIT 2"
+                    ),
+                    {"co": str(company_id), "q": f"%{job_title_lookup}%"},
+                )
+                _rows = _r.fetchall()
+            if len(_rows) == 1:
+                job_id = str(_rows[0][0])
+                job_title = _rows[0][1]
+            elif len(_rows) > 1:
+                names = ", ".join(r[1] for r in _rows[:3])
+                return ActionResult(
+                    status="pending",
+                    message=f"Encontrei {len(_rows)} vagas com '{job_title_lookup}': {names}. Qual delas deseja duplicar?",
+                    action_type="duplicate_job",
+                )
+            else:
+                return ActionResult(
+                    status="error",
+                    message=f"Não encontrei vaga com título '{job_title_lookup}'. Verifique o título.",
+                    error_detail=f"no job found for title: {job_title_lookup}",
+                    action_type="duplicate_job",
+                )
+        else:
+            return ActionResult(
+                status="error",
+                message="ID ou título da vaga é obrigatório para duplicar.",
+                error_detail="missing job_id and job_title",
+                action_type="duplicate_job",
+            )
     if not company_id:
         return ActionResult(
             status="error",

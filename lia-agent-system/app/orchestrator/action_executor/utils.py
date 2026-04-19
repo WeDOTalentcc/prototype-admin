@@ -392,6 +392,15 @@ def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
             else:
                 entities["seniority"] = "sênior"
 
+    # WZ-004: Extract job_title for duplicar_vaga
+    if intent == "duplicar_vaga" and "job_id" not in entities and "job_title" not in entities:
+        _dup_m = re.search(
+            r"(?:vaga\s+de\s+|vaga\s+do\s+|job\s+de\s+|cargo\s+de\s+)(.{3,50}?)(?:\s+para\s+|\s*$|,|\.|!)",
+            msg, re.IGNORECASE
+        )
+        if _dup_m:
+            entities["job_title"] = _dup_m.group(1).strip().title()
+
     # Extract job_title and skills for JD generation.
     if intent == "gerar_jd":
         # Extract job title: "para Product Manager", "de Tech Lead"

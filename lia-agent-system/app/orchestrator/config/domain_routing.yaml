@@ -63,6 +63,8 @@ domains:
     - "ranking\\s+d[eo]"
     - "top\\s+\\d+\\s+candidato"
     - "filtrar?\\s+\\w*\\s*candidato"
+    - "melhor\\s+match\\s+para\\s+(?:a\\s+)?vaga"
+    - "match.*candidatos.*vaga"
   sourcing_planner:
     - "crit[eé]rios\\s+de\\s+busca"
     - "definir?\\s+\\w*\\s*crit[eé]rios"
