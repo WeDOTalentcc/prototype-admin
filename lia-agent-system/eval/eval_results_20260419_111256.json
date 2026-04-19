@@ -1,0 +1,39 @@
+[
+  {
+    "id": "WZ-001",
+    "category": "WZ",
+    "severity": "critical",
+    "title": "Create new job via Wizard",
+    "prompt": "cria uma nova vaga de DevOps Senior com foco em Kubernetes, AWS e CI/CD, modalidade remota",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "create_job_draft",
+      "extract_job_requirements"
+    ],
+    "canonical_files": [
+      "app/domains/job_management/agents/wizard_react_agent.py",
+      "app/domains/job_management/agents/wizard_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Extracts DevOps/Kubernetes/AWS/CI-CD as requirements",
+      "Sets modality as remote",
+      "Creates draft (not published directly)",
+      "Shows draft for approval"
+    ],
+    "anti_patterns": [
+      "Publishes without review",
+      "Cannot create job"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 1982,
+    "response": "Certo! Para criar a vaga, preciso de algumas informações adicionais:\n\nQual o **ID da empresa** para a qual a vaga será criada?\n\nCom a informação do ID da empresa, criarei a vaga de **DevOps Sênior** com as skills de **Kubernetes, AWS e CI/CD** e modalidade **remota**.",
+    "error": "",
+    "score": 2,
+    "flags": [],
+    "scored_at": "2026-04-19T11:12:56.167343"
+  }
+]
