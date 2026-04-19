@@ -1,18 +1,18 @@
-use client
+'use client'
 
-import React from react
-import { Card } from @/components/ui/card
-import { Badge } from @/components/ui/badge
-import { ArrowRight, Briefcase } from lucide-react
+import React from 'react'
+import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { ArrowRight, Briefcase } from 'lucide-react'
 
 const STAGE_LABELS: Record<string, string> = {
-  applied:             Candidatura Recebida,
-  screening:           Em Triagem,
-  interview_scheduled: Entrevista Agendada,
-  interview_done:      Entrevista Realizada,
-  offer_sent:          Proposta Enviada,
-  hired:               Contratado(a),
-  rejected:            Processo Encerrado,
+  applied:             'Candidatura Recebida',
+  screening:           'Em Triagem',
+  interview_scheduled: 'Entrevista Agendada',
+  interview_done:      'Entrevista Realizada',
+  offer_sent:          'Proposta Enviada',
+  hired:               'Contratado(a)',
+  rejected:            'Processo Encerrado',
 }
 
 export interface ApplicationSummary {
@@ -53,8 +53,8 @@ export function CandidateJobSelector({
         <div className="space-y-3">
           {applications.map((app) => {
             const stageLabel = app.stage_label ?? STAGE_LABELS[app.stage] ?? app.stage
-            const appliedDate = new Date(app.applied_at).toLocaleDateString(pt-BR, {
-              day: 2-digit, month: long, year: numeric
+            const appliedDate = new Date(app.applied_at).toLocaleDateString('pt-BR', {
+              day: '2-digit', month: 'long', year: 'numeric',
             })
 
             return (

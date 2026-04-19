@@ -1,15 +1,15 @@
-use client
+'use client'
 
-import React, { useState, useCallback, useEffect, useRef } from react
-import { Send, Loader2 } from lucide-react
-import { Button } from @/components/ui/button
-import { Textarea } from @/components/ui/textarea
-import { cn } from @/lib/utils
-import { CandidateChatHeader } from ./CandidateChatHeader
+import React, { useState, useCallback, useEffect, useRef } from 'react'
+import { Send, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
+import { CandidateChatHeader } from './CandidateChatHeader'
 
 interface Message {
   id: string
-  role: user | assistant
+  role: 'user' | 'assistant'
   content: string
   createdAt: Date
 }
@@ -30,19 +30,19 @@ interface CandidateChatPageProps {
 export function CandidateChatPage({ token, vacancyId, context }: CandidateChatPageProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: welcome,
-      role: assistant,
-      content: Olá! Sou a LIA, assistente de recrutamento. Posso te ajudar a acompanhar seu processo seletivo. O que gostaria de saber?,
+      id: 'welcome',
+      role: 'assistant',
+      content: 'Olá! Sou a LIA, assistente de recrutamento. Posso te ajudar a acompanhar seu processo seletivo. O que gostaria de saber?',
       createdAt: new Date(),
     },
   ])
-  const [input, setInput] = useState()
+  const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: smooth })
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
   const sendMessage = useCallback(async () => {
@@ -50,21 +50,21 @@ export function CandidateChatPage({ token, vacancyId, context }: CandidateChatPa
     if (!text || loading) return
 
     const userMsg: Message = {
-      id: ,
-      role: user,
+      id: `u-${Date.now()}`,
+      role: 'user',
       content: text,
       createdAt: new Date(),
     }
 
     setMessages((prev) => [...prev, userMsg])
-    setInput()
+    setInput('')
     setLoading(true)
     setError(null)
 
     try {
-      const res = await fetch(/api/backend-proxy/candidate/chat, {
-        method: POST,
-        headers: { Content-Type: application/json },
+      const res = await fetch('/api/backend-proxy/candidate/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, token, vacancy_id: vacancyId }),
       })
 
@@ -72,21 +72,21 @@ export function CandidateChatPage({ token, vacancyId, context }: CandidateChatPa
 
       if (!res.ok) {
         if (res.status === 429) {
-          setError(Você enviou muitas mensagens. Aguarde alguns minutos e tente novamente.)
+          setError('Você enviou muitas mensagens. Aguarde alguns minutos e tente novamente.')
         } else {
-          setError(Não consegui processar sua mensagem. Tente novamente.)
+          setError('Não consegui processar sua mensagem. Tente novamente.')
         }
         return
       }
 
-      const reply = data?.data?.response ?? data?.response ?? Desculpe, não entendi. Pode repetir?
+      const reply = (data?.data?.response ?? data?.response ?? 'Desculpe, não entendi. Pode repetir?') as string
 
       setMessages((prev) => [
         ...prev,
-        { id: , role: assistant, content: reply, createdAt: new Date() },
+        { id: `a-${Date.now()}`, role: 'assistant', content: reply, createdAt: new Date() },
       ])
     } catch {
-      setError(Erro de conexão. Verifique sua internet e tente novamente.)
+      setError('Erro de conexão. Verifique sua internet e tente novamente.')
     } finally {
       setLoading(false)
     }
@@ -94,7 +94,7 @@ export function CandidateChatPage({ token, vacancyId, context }: CandidateChatPa
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === Enter && !e.shiftKey) {
+      if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault()
         sendMessage()
       }
@@ -117,16 +117,16 @@ export function CandidateChatPage({ token, vacancyId, context }: CandidateChatPa
           <div
             key={msg.id}
             className={cn(
-              flex,
-              msg.role === user ? justify-end : justify-start
+              'flex',
+              msg.role === 'user' ? 'justify-end' : 'justify-start'
             )}
           >
             <div
               className={cn(
-                max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed,
-                msg.role === user
-                  ? bg-lia-primary text-white rounded-br-sm
-                  : bg-muted text-foreground rounded-bl-sm
+                'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
+                msg.role === 'user'
+                  ? 'bg-lia-primary text-white rounded-br-sm'
+                  : 'bg-muted text-foreground rounded-bl-sm'
               )}
             >
               {msg.content}

@@ -1,22 +1,22 @@
-use client
+'use client'
 
-import React, { useState, useEffect, useCallback } from react
-import { useSearchParams } from next/navigation
-import { Loader2, AlertCircle } from lucide-react
-import { CandidateChatPage } from @/components/candidate/CandidateChatPage
-import { CandidateJobSelector, type ApplicationSummary } from @/components/candidate/CandidateJobSelector
+import React, { useState, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { Loader2, AlertCircle } from 'lucide-react'
+import { CandidateChatPage } from '@/components/candidate/CandidateChatPage'
+import { CandidateJobSelector, type ApplicationSummary } from '@/components/candidate/CandidateJobSelector'
 
 type PageState =
-  | { type: loading }
-  | { type: error; message: string }
-  | { type: selector; applications: ApplicationSummary[] }
-  | { type: chat; vacancyId: string; context: Record<string, string> }
+  | { type: 'loading' }
+  | { type: 'error'; message: string }
+  | { type: 'selector'; applications: ApplicationSummary[] }
+  | { type: 'chat'; vacancyId: string; context: Record<string, string> }
 
 function parseJwtPayload(token: string): Record<string, unknown> | null {
   try {
-    const parts = token.split(.)
+    const parts = token.split('.')
     if (parts.length !== 3) return null
-    const payload = JSON.parse(atob(parts[1].replace(/-/g, +).replace(/_/g, /)))
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')))
     return payload
   } catch {
     return null
@@ -25,22 +25,22 @@ function parseJwtPayload(token: string): Record<string, unknown> | null {
 
 export default function CandidateStatusPage() {
   const searchParams = useSearchParams()
-  const token = searchParams.get(token) ?? 
-  const [state, setState] = useState<PageState>({ type: loading })
+  const token = searchParams.get('token') ?? ''
+  const [state, setState] = useState<PageState>({ type: 'loading' })
 
   const loadApplications = useCallback(async (tok: string, payload: Record<string, unknown>) => {
     try {
-      const res = await fetch(/api/backend-proxy/candidate/applications, {
-        headers: { Authorization:  },
+      const res = await fetch('/api/backend-proxy/candidate/applications', {
+        headers: { Authorization: `Bearer ${tok}` },
       })
 
       if (res.status === 401) {
-        setState({ type: error, message: Seu link expirou. Solicite um novo link ao RH. })
+        setState({ type: 'error', message: 'Seu link expirou. Solicite um novo link ao RH.' })
         return
       }
 
       if (!res.ok) {
-        setState({ type: error, message: Não foi possível carregar suas candidaturas. Tente novamente. })
+        setState({ type: 'error', message: 'Não foi possível carregar suas candidaturas. Tente novamente.' })
         return
       }
 
@@ -48,9 +48,8 @@ export default function CandidateStatusPage() {
       const applications: ApplicationSummary[] = data?.data ?? []
 
       if (applications.length === 0) {
-        // Single vacancy from token — go straight to chat
         setState({
-          type: chat,
+          type: 'chat',
           vacancyId: payload.vacancy_id as string,
           context: {},
         })
@@ -60,7 +59,7 @@ export default function CandidateStatusPage() {
       if (applications.length === 1) {
         const app = applications[0]
         setState({
-          type: chat,
+          type: 'chat',
           vacancyId: app.vacancy_id,
           context: {
             vacancy_title: app.vacancy_title,
@@ -70,27 +69,27 @@ export default function CandidateStatusPage() {
         return
       }
 
-      setState({ type: selector, applications })
+      setState({ type: 'selector', applications })
     } catch {
-      setState({ type: error, message: Erro de conexão. Verifique sua internet. })
+      setState({ type: 'error', message: 'Erro de conexão. Verifique sua internet.' })
     }
   }, [])
 
   useEffect(() => {
     if (!token) {
-      setState({ type: error, message: Link inválido. Verifique o link recebido por e-mail ou WhatsApp. })
+      setState({ type: 'error', message: 'Link inválido. Verifique o link recebido por e-mail ou WhatsApp.' })
       return
     }
 
     const payload = parseJwtPayload(token)
     if (!payload) {
-      setState({ type: error, message: Link inválido. Solicite um novo link ao RH. })
+      setState({ type: 'error', message: 'Link inválido. Solicite um novo link ao RH.' })
       return
     }
 
     const exp = payload.exp as number | undefined
     if (exp && exp * 1000 < Date.now()) {
-      setState({ type: error, message: Seu link expirou. Solicite um novo link ao RH. })
+      setState({ type: 'error', message: 'Seu link expirou. Solicite um novo link ao RH.' })
       return
     }
 
@@ -99,7 +98,7 @@ export default function CandidateStatusPage() {
 
   const handleSelectApplication = useCallback((app: ApplicationSummary) => {
     setState({
-      type: chat,
+      type: 'chat',
       vacancyId: app.vacancy_id,
       context: {
         vacancy_title: app.vacancy_title,
@@ -108,7 +107,7 @@ export default function CandidateStatusPage() {
     })
   }, [])
 
-  if (state.type === loading) {
+  if (state.type === 'loading') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3 text-center">
@@ -119,7 +118,7 @@ export default function CandidateStatusPage() {
     )
   }
 
-  if (state.type === error) {
+  if (state.type === 'error') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background px-4">
         <div className="flex max-w-sm flex-col items-center gap-4 text-center">
@@ -138,7 +137,7 @@ export default function CandidateStatusPage() {
     )
   }
 
-  if (state.type === selector) {
+  if (state.type === 'selector') {
     return (
       <CandidateJobSelector
         applications={state.applications}

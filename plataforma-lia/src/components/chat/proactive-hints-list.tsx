@@ -55,14 +55,30 @@ const ACTION_LABELS: Record<string, string> = {
 }
 
 const DISMISS_STORAGE_KEY = "lia:dismissed_hint_types"
+const _DISMISS_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
+
+interface DismissedPayload {
+  types: string[]
+  timestamp: number
+}
 
 function getDismissedTypes(): Set<string> {
   if (typeof window === "undefined") return new Set()
   try {
     const raw = window.sessionStorage.getItem(DISMISS_STORAGE_KEY)
     if (!raw) return new Set()
-    const parsed = JSON.parse(raw)
-    return new Set(Array.isArray(parsed) ? parsed : [])
+    const parsed = JSON.parse(raw) as DismissedPayload | string[]
+    // Legacy format (plain array) — upgrade silently by treating as expired
+    if (Array.isArray(parsed)) {
+      window.sessionStorage.removeItem(DISMISS_STORAGE_KEY)
+      return new Set()
+    }
+    // TTL check: if older than 24h, clear and start fresh
+    if (!parsed.timestamp || Date.now() - parsed.timestamp > _DISMISS_TTL_MS) {
+      window.sessionStorage.removeItem(DISMISS_STORAGE_KEY)
+      return new Set()
+    }
+    return new Set(Array.isArray(parsed.types) ? parsed.types : [])
   } catch {
     return new Set()
   }
@@ -71,7 +87,11 @@ function getDismissedTypes(): Set<string> {
 function persistDismissed(types: Set<string>): void {
   if (typeof window === "undefined") return
   try {
-    window.sessionStorage.setItem(DISMISS_STORAGE_KEY, JSON.stringify(Array.from(types)))
+    const payload: DismissedPayload = {
+      types: Array.from(types),
+      timestamp: Date.now(),
+    }
+    window.sessionStorage.setItem(DISMISS_STORAGE_KEY, JSON.stringify(payload))
   } catch {
     // sessionStorage may be blocked (private mode); fail silently
   }

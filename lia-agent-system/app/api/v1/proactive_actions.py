@@ -1,6 +1,7 @@
 """
 Proactive Actions API - Endpoints for proactive LIA suggestions.
 """
+import asyncio
 import logging
 from typing import Annotated, Any
 
@@ -406,10 +407,19 @@ async def accept_hint(
                     detail="Company scraper service unavailable",
                 )
 
-            scrape_result = await company_scraper_service.scrape_website(
-                url=url,
-                company_id=company_id,
-            )
+            try:
+                scrape_result = await asyncio.wait_for(
+                    company_scraper_service.scrape_website(url=url, company_id=company_id),
+                    timeout=30.0,
+                )
+            except asyncio.TimeoutError:
+                raise HTTPException(
+                    status_code=504,
+                    detail=(
+                        "A análise do site demorou mais que 30 segundos. "
+                        "Tente novamente ou preencha os campos manualmente em Configurações."
+                    ),
+                )
             preview_fields = (scrape_result or {}).get("data") or {}
             if not preview_fields:
                 return AcceptHintResponse(

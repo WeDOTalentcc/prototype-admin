@@ -399,11 +399,16 @@ class MainOrchestrator:
                                 + "\n".join(f"- [{h.severity}] {h.message}" for h in _hints)
                             )
                             # Gap 4: delegate to company_settings agent when onboarding hints emitted
-                            if any(h.type in _ONBOARDING_HINT_TYPES for h in _hints):
+                            _onboarding_hints_detected = [h.type for h in _hints if h.type in _ONBOARDING_HINT_TYPES]
+                            if _onboarding_hints_detected:
                                 _agent_type = "company_settings"
                                 logger.info(
-                                    "[PreConditionChecker] Delegating to company_settings agent (onboarding hints: %s)",
-                                    [h.type for h in _hints if h.type in _ONBOARDING_HINT_TYPES],
+                                    "[PreConditionChecker] Delegating to company_settings agent",
+                                    extra={
+                                        "company_id": _loop_company_id,
+                                        "onboarding_hints": _onboarding_hints_detected,
+                                        "total_hints": len(_hints),
+                                    },
                                 )
                             # Structured payload for frontend rendering (NavigationHintCard / proactive-insight-card)
                             _proactive_hints_payload = [
@@ -443,6 +448,30 @@ class MainOrchestrator:
                     )
 
                     if _agentic_result and _agentic_result.get("response"):
+                        # P2#7 — Onboarding enforcement telemetry
+                        if _agent_type == "company_settings":
+                            _expected_tools = {
+                                "check_company_completeness",
+                                "analyze_company_website",
+                                "suggest_recruiting_policy",
+                                "import_benefits_from_data",
+                                "save_company_field",
+                                "save_company_section",
+                            }
+                            _tools_called = {
+                                tc.get("name") for tc in (_agentic_result.get("tool_calls_made") or [])
+                                if isinstance(tc, dict) and tc.get("name")
+                            }
+                            if not (_tools_called & _expected_tools):
+                                logger.warning(
+                                    "[Onboarding] LLM did NOT call any onboarding tool despite delegate",
+                                    extra={
+                                        "company_id": _loop_company_id,
+                                        "tools_called": list(_tools_called),
+                                        "expected_any_of": list(_expected_tools),
+                                        "onboarding_hints": _onboarding_hints_detected if "_onboarding_hints_detected" in dir() else [],
+                                    },
+                                )
                         logger.info(
                             "[LIA-A04] Agentic loop resolved in %d iterations with %d tool calls",
                             _agentic_result.get("iterations", 0),

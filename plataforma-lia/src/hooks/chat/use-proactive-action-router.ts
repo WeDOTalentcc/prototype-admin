@@ -4,13 +4,16 @@
  * useProactiveActionRouter — Listens to `lia:proactive-action` events dispatched
  * by ProactiveHintsList and routes each action to the appropriate handler.
  *
- * Design (PARTE E decisions):
- *   - Navigation actions → re-dispatch `lia:navigation-hint` (reuses existing listener)
- *   - Data-modifying actions → POST /api/v1/proactive-actions/accept (E.4)
- *   - Chat-delegating actions → send a proactive message into the active chat
+ * Design (PARTE F — fully conversational):
+ *   - Navigation actions → dispatch `lia:navigation-hint` (reuses existing listener)
+ *   - All data-modifying actions → chat-delegate (LIA asks follow-up questions inline;
+ *     zero modals, zero window.prompt, zero new REST endpoints). Backend uses
+ *     `awaitingStageConfirmation` pattern + `messageType: 'detected-fields'` for
+ *     preview cards rendered inline in chat.
+ *   - Import actions → navigate to existing Settings tabs that already have
+ *     SmartImportZone / DocumentUploadCard infrastructure.
  *
  * Click on the card button IS the authorization — no second confirmation dialog.
- * Destructive actions use dry-run preview (handled server-side by E.4 endpoint).
  */
 import { useEffect } from "react"
 
@@ -24,16 +27,20 @@ export interface ProactiveActionRouterOptions {
   /** Callback that sends a proactive message as if the user typed it.
    *  Wire to the active chat's send function (useChatSocket or expanded-chat). */
   sendChatMessage?: (message: string) => void
-  /** Optional company_id for REST action calls; falls back to JWT if omitted. */
-  companyId?: string
 }
 
-const NAVIGATION_ACTIONS = new Set<string>([
-  "navigate_to_settings",
-])
+const NAVIGATION_ACTIONS: Record<string, { page: string; subsection?: string }> = {
+  navigate_to_settings: { page: "Configurações" },
+  navigate_to_benefits_import: { page: "Configurações", subsection: "benefits-import" },
+  navigate_to_company_data: { page: "Configurações", subsection: "company-data" },
+}
 
-// Actions that are best handled via a chat message (LIA's agent loop picks up the tool)
+// Actions handled via conversational chat — LIA asks follow-up questions inline,
+// backend uses awaitingStageConfirmation + detected-fields messageType for previews.
+// No modals, no window.prompt.
 const CHAT_DELEGATE_PROMPTS: Record<string, (meta: Record<string, unknown>) => string> = {
+  request_website_and_scrape: () =>
+    "Quero analisar o site da minha empresa para preencher o perfil automaticamente.",
   suggest_recruiting_policy: () =>
     "Sim, por favor sugira uma política de recrutamento baseline para nossa empresa.",
   culture_onboarding: () =>
@@ -46,35 +53,6 @@ const CHAT_DELEGATE_PROMPTS: Record<string, (meta: Record<string, unknown>) => s
   },
   suggest_screening_questions: () =>
     "Sim, sugira um conjunto de perguntas de triagem para esta vaga.",
-  import_benefits: () =>
-    "Sim, quero importar benefícios. Pode me guiar ou aceitar uma lista.",
-}
-
-// Actions that go straight to REST endpoint (E.4) for server-side execution with preview
-const REST_ACTIONS = new Set<string>([
-  "request_website_and_scrape",
-])
-
-async function acceptViaRest(
-  action: string,
-  type: string,
-  metadata: Record<string, unknown>,
-): Promise<{ success: boolean; message?: string; data?: unknown } | null> {
-  try {
-    const res = await fetch("/api/backend-proxy/proactive-actions?path=accept-hint", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, hint_type: type, metadata }),
-    })
-    if (!res.ok) {
-      console.error("[ProactiveActionRouter] REST accept failed:", res.status)
-      return null
-    }
-    return await res.json()
-  } catch (err) {
-    console.error("[ProactiveActionRouter] REST accept error:", err)
-    return null
-  }
 }
 
 export function useProactiveActionRouter(opts: ProactiveActionRouterOptions = {}): void {
@@ -85,23 +63,29 @@ export function useProactiveActionRouter(opts: ProactiveActionRouterOptions = {}
       const detail = (ev as CustomEvent<ProactiveActionDetail>).detail
       if (!detail || !detail.action) return
 
-      const { type, action, metadata = {} } = detail
+      const { action, metadata = {} } = detail
 
       // 1. Navigation actions — reuse existing lia:navigation-hint listener
-      if (NAVIGATION_ACTIONS.has(action)) {
-        const target =
+      if (action in NAVIGATION_ACTIONS) {
+        const nav = NAVIGATION_ACTIONS[action]
+        const targetPage =
           (metadata as { target_page?: string }).target_page === "settings"
             ? "Configurações"
-            : (metadata as { page?: string }).page || "Configurações"
+            : (metadata as { page?: string }).page || nav.page
         window.dispatchEvent(
           new CustomEvent("lia:navigation-hint", {
-            detail: { page: target, hint: null },
+            detail: {
+              page: targetPage,
+              subsection: nav.subsection ?? (metadata as { subsection?: string }).subsection,
+              hint: null,
+            },
           }),
         )
         return
       }
 
       // 2. Chat-delegating actions — push a proactive message into the chat
+      //    Backend responds via awaitingStageConfirmation + detected-fields patterns
       if (action in CHAT_DELEGATE_PROMPTS) {
         const msg = CHAT_DELEGATE_PROMPTS[action](metadata)
         if (sendChatMessage) {
@@ -115,28 +99,7 @@ export function useProactiveActionRouter(opts: ProactiveActionRouterOptions = {}
         return
       }
 
-      // 3. REST actions — delegate to backend endpoint (E.4)
-      if (REST_ACTIONS.has(action)) {
-        // For request_website_and_scrape: prompt user for URL first
-        let enrichedMeta = metadata
-        if (action === "request_website_and_scrape") {
-          const url = window.prompt(
-            "Informe o site da sua empresa para eu preencher automaticamente " +
-              "(nome, setor, cultura, benefícios):",
-            "",
-          )
-          if (!url || !url.trim()) return
-          enrichedMeta = { ...metadata, url: url.trim() }
-        }
-        const result = await acceptViaRest(action, type, enrichedMeta)
-        if (result?.success && sendChatMessage && result.message) {
-          // Surface backend's response in the chat so user sees what happened
-          sendChatMessage(result.message)
-        }
-        return
-      }
-
-      // 4. Unknown action — log for future coverage
+      // 3. Unknown action — log for future coverage
       console.warn("[ProactiveActionRouter] no handler for action:", action, detail)
     }
 

@@ -28,6 +28,21 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+# P3#9 — in-memory cache with 5-minute TTL to reduce DB load
+# Keyed by (company_id, intent). Avoid running 7 queries per chat message.
+import time as _time_mod
+_CHECKER_CACHE: dict[str, tuple[list, float]] = {}
+_CHECKER_TTL = 300.0  # 5 minutes
+
+
+def _cache_key(ctx) -> str:
+    return f"{getattr(ctx, 'company_id', '') or ''}:{(getattr(ctx, 'intent', '') or '').lower()}"
+
+
+def clear_precondition_cache() -> None:
+    """Manual eviction (useful for tests + admin triggers)."""
+    _CHECKER_CACHE.clear()
+
 
 @dataclass
 class ProactiveHint:
@@ -47,7 +62,16 @@ class PreConditionChecker:
         """
         Run all checks against the orchestration context. Always returns a
         list; individual failures are logged and do not propagate.
+
+        P3#9 — Results cached 5 min per (company_id, intent) to reduce DB load
+        (7 queries → 1 query amortized).
         """
+        _key = _cache_key(ctx)
+        _now = _time_mod.monotonic()
+        _cached = _CHECKER_CACHE.get(_key)
+        if _cached and (_now - _cached[1]) < _CHECKER_TTL:
+            return list(_cached[0])
+
         hints: list[ProactiveHint] = []
 
         # --- Check 1: company_id empty/missing ---
@@ -156,9 +180,9 @@ class PreConditionChecker:
                         "de candidatos. Posso importar de uma lista que voce tem ou te guiar na "
                         "criacao. Categorias sugeridas: Saude, Alimentacao, Transporte, Educacao."
                     ),
-                    action="import_benefits",
+                    action="navigate_to_benefits_import",
                     severity="info",
-                    metadata={"next_tool": "import_benefits_from_data"},
+                    metadata={"next_tool": "import_benefits_from_data", "target_page": "settings", "subsection": "benefits-import"},
                 ))
         except Exception as exc:
             logger.debug("[PreConditionChecker] benefits check failed: %s", exc)
@@ -202,6 +226,8 @@ class PreConditionChecker:
         except Exception as exc:
             logger.debug("[PreConditionChecker] candidates contact check failed: %s", exc)
 
+        # P3#9 cache result
+        _CHECKER_CACHE[_key] = (list(hints), _now)
         return hints
 
     # ═══════════════════════════════════════════════════════════════

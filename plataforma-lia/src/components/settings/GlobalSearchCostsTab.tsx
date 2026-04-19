@@ -8,6 +8,7 @@ import {
   DollarSign, Search, TrendingUp, Shield, Clock
 } from"lucide-react"
 import { limitOptions, type GlobalSearchSettings } from"./useGlobalSearchSettings"
+import { ApifyConsumptionWidget } from"./integrations/ApifyConsumptionWidget"
 
 interface GlobalSearchCostsTabProps {
   settings: GlobalSearchSettings
@@ -19,6 +20,8 @@ export function GlobalSearchCostsTab({
 }: GlobalSearchCostsTabProps) {
   return (
     <div className="space-y-3">
+      <ApifyConsumptionWidget />
+
       <Card className="border-lia-border-subtle/50 dark:border-lia-border-subtle/50">
         <CardHeader className="pb-2">
           <CardTitle className="text-base-ui font-semibold flex items-center gap-2 text-lia-text-primary">

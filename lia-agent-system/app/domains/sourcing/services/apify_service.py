@@ -99,8 +99,13 @@ class ApifyService:
                     limit = ConsumptionTrackingService.get_tenant_budget(company_id, "apify")
                     if current >= limit:
                         logger.warning(
-                            "[ApifyGateway] BUDGET EXCEEDED tenant=%s actor=%s current=$%.2f limit=$%.2f",
-                            company_id, actor_id, current, limit,
+                            "[ApifyGateway] BUDGET EXCEEDED",
+                            extra={
+                                "tenant_id": company_id,
+                                "actor_id": actor_id,
+                                "current_usd": current,
+                                "limit_usd": limit,
+                            },
                         )
                         return {"_error": "budget_exceeded", "current_usd": current, "limit_usd": limit}
             except Exception as _budget_exc:
