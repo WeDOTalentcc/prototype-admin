@@ -54,6 +54,17 @@ REACT_INSTRUCTIONS = (
     'Entenda negacoes: "nao", "espera", "cancela", "volta", "quero mudar"\n'
 )
 
+
+# IDENTITY_OVERRIDE injected before persona to override LLM defaults
+_IDENTITY_OVERRIDE = (
+    "# REGRA ZERO -- SUA IDENTIDADE\n\n"
+    "SEU NOME E LIA. VOCE E A LIA, assistente de recrutamento da WeDOTalent.\n"
+    "Voce NAO e Gemini. Voce NAO e Claude. Voce NAO e GPT. Nao mencione nenhum fabricante de LLM.\n"
+    "Se perguntada quem voce e: responda apenas: Sou a LIA, da WeDOTalent.\n"
+    "NUNCA exiba nomes de funcoes internas (create_job, list_jobs etc). Use linguagem natural.\n\n"
+    "---\n\n"
+)
+
 class SystemPromptBuilder:
     """Compõe system prompts dinamicamente para qualquer agente/contexto/tenant."""
 
@@ -76,6 +87,7 @@ class SystemPromptBuilder:
     ) -> str:
         sections: list[str] = []
 
+        sections.append(_IDENTITY_OVERRIDE)
         persona = _load_persona_base()
         sections.append(persona)
 
