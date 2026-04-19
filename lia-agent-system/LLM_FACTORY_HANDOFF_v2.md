@@ -542,3 +542,308 @@ async def log_decision(
 **Parâmetros que NÃO existem** (não use): `resource_type`, `resource_id`, `details`, `user_id`.
 
 *Last updated: 2026-04-19 | Deep audit + BUG-01/01b/02/03 corrigidos*
+
+
+---
+
+## 12. Guia do Desenvolvedor — Checklist + Mapa de Consumidores LLM
+
+> **Propósito**: Este guia garante que todo desenvolvedor que toca código LLM aplique os contratos
+> corretos de BYOK, Quality Tier Guard e audit trail. Baseado na auditoria de 2026-04-19.
+
+---
+
+### 12.1 — Checklist de Implementação (novos consumidores LLM)
+
+Use este checklist ao criar ou modificar qualquer serviço, rota ou agente que chama LLM.
+
+#### A — Escolha do padrão de chamada
+
+```
+[ ] Rota FastAPI (endpoint REST):
+    → usar generate_with_fallback(prompt, task_type=...) via get_provider_for_tenant_from_db(company_id)
+    → company_id vem do JWT via AuthEnforcementMiddleware, NUNCA do request body
+
+[ ] Agente LangGraph / ReAct:
+    → usar generate_with_fallback() via ProviderContainer (já injetado pelo orchestrator)
+    → verificar: _get_model() em langgraph_react_base.py usa get_current_llm_tenant()
+
+[ ] Serviço Python assíncrono:
+    → usar get_provider_for_tenant_from_db(company_id) → container.generate_with_fallback()
+    → SE for síncrono: get_provider_for_tenant(company_id) + asyncio.run() ou rodar async
+
+[ ] Chamada Gemini direta (sem Claude/OpenAI):
+    → usar get_gemini_client_for_tenant(company_id) de tenant_llm_context.py
+    → NÃO instanciar genai.Client() diretamente — viola BYOK
+
+[ ] LLMService.generate() (legado):
+    → verificar que self._current_tenant está setado antes da chamada
+    → preferir migrar para generate_with_fallback()
+```
+
+#### B — task_type correto (Quality Tier Guard)
+
+```
+[ ] Triagem WSI, Bloom/Dreyfus, avaliação de candidato:
+    → task_type="wsi" ou task_type="screening"
+    → PROIBIDO Tier 2 (haiku, gemini-2.0-flash, gpt-4o-mini) nessas tasks
+    → O Quality Tier Guard bloqueia automaticamente e usa modelo Tier 1 da plataforma
+
+[ ] Chat, geração de texto genérico, perguntas de entrevista:
+    → task_type="chat" (aceita Tier 2)
+
+[ ] Embedding:
+    → usar EmbeddingProviderFactory.embed_with_fallback()
+    → NÃO misturar providers (Gemini 768 dims ≠ OpenAI 1536 dims no pgvector)
+    → se ambiente tem EMBEDDING_LOCK_PROVIDER, respeitar
+```
+
+#### C — Audit trail obrigatório
+
+```
+[ ] Toda chamada LLM passa pelo factory → audit automático em generate_with_fallback()
+
+[ ] Se chamar audit_service.log_decision() DIRETAMENTE, usar APENAS estes kwargs:
+    company_id, agent_name, decision_type, action, decision, reasoning, criteria_used
+    + opcionais: candidate_id, job_vacancy_id, score, confidence, human_review_required
+
+[ ] PROIBIDO: resource_type, resource_id, details, user_id
+    (não existem na assinatura — geram TypeError silenciado pelo except:pass)
+
+[ ] Não envolver log_decision() em try/except: pass se for chamada direta
+    (o factory já faz isso — mas código próprio deve falhar explicitamente)
+```
+
+#### D — Isolamento multi-tenant
+
+```
+[ ] company_id NUNCA vem do payload/body do request
+    → usar: get_current_llm_tenant() ou JWT via Depends(get_current_user)
+    → o middleware já seta _current_company_id contextvar para todos os requests
+
+[ ] Serviços de background (Celery, webhooks):
+    → NÃO têm contextvar automaticamente
+    → passar company_id explicitamente: get_provider_for_tenant_from_db(company_id)
+
+[ ] Cache de config de tenant:
+    → prime_tenant_llm_cache(company_id) para aquecimento assíncrono
+    → TTL: 5 minutos — mudanças de config levam até 5 min para propagar
+    → forçar refresh: clear_tenant_config_cache(company_id)
+```
+
+#### E — Code review de PRs com LLM
+
+```
+[ ] Não há genai.Client() ou AsyncAnthropic() instanciados diretamente (exceto llm_config.py)
+[ ] Não há model="gemini-*" ou model="claude-*" hardcoded em rotas de screening
+[ ] task_type está explícito em chamadas de screening/WSI
+[ ] audit_service.log_decision() usa os kwargs corretos (ver seção 12.1.C)
+[ ] company_id vem de contextvar ou JWT, nunca do body
+[ ] Não há try/except: pass envolvendo chamadas LLM críticas
+```
+
+---
+
+### 12.2 — Checklist de Verificação (bugs já corrigidos — regressão)
+
+Execute este checklist após qualquer refactor que toque os arquivos listados na seção 12.3.
+
+| # | Arquivo | O que verificar | Como testar |
+|---|---------|----------------|-------------|
+| V-01 | `llm_factory.py` | `_audit_llm_usage()` usa kwargs corretos (agent_name, decision_type, reasoning, criteria_used) | grep "resource_type\|resource_id\|details.*provider\|user_id.*system" — deve retornar vazio |
+| V-02 | `llm.py` | `LLMService.generate()` audit usa kwargs corretos | mesmo grep acima |
+| V-03 | `wsi_question_adjuster.py` | `evaluate_job_description()` tem param `company_id` e usa `get_gemini_client_for_tenant` | grep "company_id" — deve aparecer na assinatura |
+| V-04 | `voice_screening_orchestrator.py:1072` | usa `get_gemini_client_for_tenant(session.company_id)` | grep "get_gemini_client_for_tenant" — deve aparecer nessa linha |
+| V-05 | `wsi/_shared.py` | `get_anthropic_client()` usa `get_current_llm_tenant()` + `get_provider_for_tenant_from_db` | grep "get_current_llm_tenant" — deve aparecer |
+| V-06 | `wsi/_shared.py` | `_run_anthropic_sync()` tem param `task_type` e passa para `generate_with_fallback` | grep "task_type" — deve aparecer na assinatura e na chamada |
+| V-07 | `wsi/evaluation.py` | `analyze_response` passa `task_type="wsi"` | grep "task_type.*wsi" — deve aparecer |
+
+**Script de smoke test rápido** (rodar após deploy):
+```bash
+# V-01/V-02: sem kwargs errados
+grep -rn "resource_type.*llm_provider\|resource_id.*provider.*model" \
+  app/shared/providers/llm_factory.py app/domains/ai/services/llm.py
+
+# V-03: company_id na assinatura
+grep -n "company_id" app/domains/cv_screening/services/wsi_question_adjuster.py
+
+# V-04: tenant-aware em voice orchestrator
+grep -n "get_gemini_client_for_tenant" \
+  app/domains/voice/services/voice_screening_orchestrator.py
+
+# V-05/V-06: BYOK + task_type no helper WSI
+grep -n "get_current_llm_tenant\|task_type" app/api/v1/wsi/_shared.py
+
+# V-07: task_type=wsi no endpoint de análise
+grep -n "task_type" app/api/v1/wsi/evaluation.py
+```
+
+---
+
+### 12.3 — Mapa Completo de Consumidores LLM
+
+**Total**: 54 arquivos | 38 BYOK-aware | 15 legado (LLMService) | 1 parcial
+
+#### Legenda
+
+| Ícone | Significado |
+|-------|------------|
+| ✅ | BYOK-aware — usa factory ou contextvar corretamente |
+| ⚠️ | Legado — usa LLMService global; BYOK depende de _current_tenant setado pelo orchestrator |
+| 🔧 | Corrigido nesta sprint (2026-04-19) |
+| 📌 | By design — hardcoded aceitável (voz, embedding, config endpoint) |
+
+---
+
+#### CAMADA API (`app/api/v1/`)
+
+| Status | Arquivo | Padrão de chamada | task_type |
+|--------|---------|-------------------|-----------|
+| ✅ | `candidate_search/archetypes.py` | `generate_with_fallback` | chat |
+| ✅ | `email_templates.py` | `generate_with_fallback` | chat |
+| ✅ | `experience_highlights.py` | `generate_with_fallback` | chat |
+| ✅ 📌 | `gemini_voice.py` | `get_gemini_client_for_tenant` + `genai.Client` | voz (by design) |
+| ✅ | `internal_llm.py` | `generate_with_fallback` | chat |
+| ✅ | `interviews.py` | `generate_with_fallback` | chat |
+| ⚠️ | `lia_assistant/conversational.py` | `LLMService` global | — |
+| ⚠️ | `lia_assistant/insights.py` | `LLMService` global | — |
+| ⚠️ | `lia_assistant/_shared.py` | `LLMService` global | — |
+| ⚠️ | `lia_assistant/wizard.py` | `LLMService` + `generate_native_gemini` | — |
+| ✅ | `lia_profile_analysis.py` | `generate_with_fallback` | chat |
+| ✅ 📌 | `llm_config.py` | `genai.Client` + `AsyncAnthropic` (key do tenant) | config endpoint |
+| ✅ 🔧 | `wsi/_shared.py` | `get_anthropic_client` (contextvar) + `generate_with_fallback` | wsi via task_type |
+| ✅ 🔧 | `wsi/evaluation.py` | `get_anthropic_client` → `_run_anthropic_sync(task_type="wsi")` | wsi |
+| ✅ | `wsi/questions.py` | `get_anthropic_client` + `_run_anthropic_sync` | wsi |
+| ✅ | `wsi/reports.py` | `generate_with_fallback` | wsi |
+| ⚠️ | `orchestrator_routes.py` | `LLMService` global | — |
+
+---
+
+#### CAMADA ORQUESTRADOR (`app/orchestrator/`)
+
+| Status | Arquivo | Padrão de chamada | Observação |
+|--------|---------|-------------------|------------|
+| ⚠️ | `agentic_loop.py` | `LLMService` global | `_current_tenant` setado pelo main_orchestrator antes da chamada |
+| ✅ | `main_orchestrator.py` | `LLMService` com contextvar | seta `_current_tenant` por request |
+| ✅ | `tenant_budget.py` | `generate_with_fallback` | budget check antes do LLM |
+| ✅ | `vector_semantic_cache.py` | `EmbeddingProviderFactory` | cache semântico |
+
+---
+
+#### DOMÍNIO: CV SCREENING (`app/domains/cv_screening/`)
+
+| Status | Arquivo | Padrão de chamada | task_type |
+|--------|---------|-------------------|-----------|
+| ✅ | `services/cv_parser.py` | `LLMService` (tenant-aware) | chat |
+| ⚠️ | `services/rubric_evaluation_service.py` | `LLMService` padrão | — |
+| ✅ 🔧 | `services/wsi_question_adjuster.py` | `generate_with_fallback` + `get_gemini_client_for_tenant(company_id)` | screening / jd eval |
+
+---
+
+#### DOMÍNIO: VOICE (`app/domains/voice/`)
+
+| Status | Arquivo | Padrão de chamada | Observação |
+|--------|---------|-------------------|------------|
+| ✅ 📌 | `services/gemini_voice_service.py` | `get_gemini_client_for_tenant` + `generate_native_gemini_sync` | Gemini Live — voz exclusiva |
+| ✅ 🔧 | `services/voice_screening_orchestrator.py` | `get_gemini_client_for_tenant(session.company_id)` | Entrevista voz + screening |
+
+---
+
+#### DOMÍNIO: SOURCING (`app/domains/sourcing/`)
+
+| Status | Arquivo | Padrão de chamada | Observação |
+|--------|---------|-------------------|------------|
+| ✅ | `services/llm_job_classification_service.py` | `generate_with_fallback` | classificação de vagas |
+| ✅ | `services/search_analytics.py` | `generate_with_fallback` | analytics de busca |
+| ⚠️ | `services/vacancy_search.py` | `generate_native_gemini` via `LLMService` | `_current_tenant` depende do contexto do chamador |
+
+---
+
+#### DOMÍNIO: JOB MANAGEMENT (`app/domains/job_management/`)
+
+| Status | Arquivo | Padrão de chamada | Observação |
+|--------|---------|-------------------|------------|
+| ✅ | `services/job_qualification_service.py` | `generate_with_fallback` | qualificação de vaga |
+| ✅ | `services/job_template_service.py` | `generate_with_fallback` | templates |
+| ⚠️ | `services/wizard_step_service.py` | `LLMService` global | wizard de criação de vaga |
+| ⚠️ | `services/wizard_step_service/service.py` | `LLMService` global | idem |
+| ⚠️ | `services/wizard_step_service/stage_description.py` | `LLMService` global | geração de descritivo |
+
+---
+
+#### DOMÍNIO: INTERVIEW INTELLIGENCE (`app/domains/interview_intelligence/`)
+
+| Status | Arquivo | Padrão de chamada | Observação |
+|--------|---------|-------------------|------------|
+| ⚠️ | `services/bias_detector_service.py` | `LLMService` lazy | detector de viés nas entrevistas |
+| ⚠️ | `services/feedback_generator_service.py` | `LLMService` lazy | geração de feedback |
+| ⚠️ | `services/strategic_opinion_service.py` | `LLMService` lazy | análise estratégica |
+| ✅ 📌 | `services/transcription_service.py` | `get_gemini_client_for_tenant` | STT/transcrição de áudio |
+| ✅ | `../interview_scheduling/agents/interview_scheduling_nodes.py` | `generate_with_fallback` | agendamento via agente |
+
+---
+
+#### DOMÍNIO: AUTOMATION (`app/domains/automation/`)
+
+| Status | Arquivo | Padrão de chamada | Observação |
+|--------|---------|-------------------|------------|
+| ⚠️ | `agents/automation_tool_registry.py` | `LLMService` global | registry de tools automáticas |
+| ⚠️ | `services/stage_transition_automation.py` | `generate_with_fallback` sem company_id | automação de etapas |
+
+---
+
+#### DOMÍNIO: RECRUITER ASSISTANT (`app/domains/recruiter_assistant/`)
+
+| Status | Arquivo | Padrão de chamada | task_type |
+|--------|---------|-------------------|-----------|
+| ✅ | `services/jobs_management_assistant_service.py` | `generate_with_fallback` | chat |
+| ✅ | `services/kanban_assistant_service.py` | `generate_with_fallback` | chat |
+
+---
+
+#### DOMÍNIO: POLICY (`app/domains/policy/`)
+
+| Status | Arquivo | Padrão de chamada | Observação |
+|--------|---------|-------------------|------------|
+| ✅ | `agents/agent.py` | `LLMService` com lazy singleton | PolicyEngine — contextvar ativo |
+
+---
+
+#### SHARED SERVICES (`app/shared/`)
+
+| Status | Arquivo | Padrão de chamada | Observação |
+|--------|---------|-------------------|------------|
+| ✅ | `intelligence/embedding_service.py` | `EmbeddingProviderFactory` | multi-provider embeddings (pgvector) |
+| ✅ | `intelligence/semantic_search_service.py` | `generate_with_fallback` | busca semântica |
+| ✅ | `providers/llm_client.py` | `get_anthropic_client` + `generate_with_fallback` | wrapper sync |
+| ✅ | `providers/voice_composite.py` | `generate_with_fallback` + `get_gemini_client_for_tenant` | composição voz |
+| ✅ 📌 | `providers/voice_gemini_live.py` | `get_gemini_client_for_tenant` | Gemini Live streaming |
+| ✅ | `services/analysis_service.py` | `generate_with_fallback` | análise genérica |
+| ✅ | `services/wsi_compact_pipeline.py` | `generate_with_fallback(task_type="screening")` | pipeline principal de triagem WSI |
+
+---
+
+### 12.4 — Resumo por Prioridade de Migração
+
+Os 15 arquivos com status ⚠️ (LLMService legado) funcionam quando chamados dentro do contexto do `MainOrchestrator` (que seta `_current_tenant`). O risco é quando são chamados de contextos sem middleware (jobs Celery, webhooks externos, testes unitários).
+
+| Prioridade | Arquivos | Risco |
+|-----------|----------|-------|
+| 🔴 P1 — Migrar este sprint | `lia_assistant/conversational.py`, `lia_assistant/wizard.py`, `lia_assistant/insights.py`, `orchestrator_routes.py` | Chamados diretamente por usuários — sem garantia de contextvar |
+| 🟡 P2 — Migrar próximo sprint | `wizard_step_service/` (3 arquivos), `interview_intelligence/` (3 arquivos), `automation/` (2 arquivos) | Chamados por fluxos internos — contextvar geralmente ativo |
+| 🟢 P3 — Monitorar | `agentic_loop.py`, `vacancy_search.py`, `rubric_evaluation_service.py` | Contextvar sempre ativo pelo orchestrator; risco baixo |
+
+---
+
+### 12.5 — Env Vars de Controle LLM
+
+| Variável | Efeito | Padrão |
+|----------|--------|--------|
+| `AI_INTEGRATIONS_GEMINI_API_KEY` | Key global da plataforma Gemini | obrigatório |
+| `AI_INTEGRATIONS_ANTHROPIC_API_KEY` | Key global da plataforma Claude | obrigatório |
+| `AI_INTEGRATIONS_OPENAI_API_KEY` | Key global da plataforma OpenAI | opcional |
+| `EMBEDDING_LOCK_PROVIDER` | Bloqueia fallback cross-provider em embeddings | vazio (desbloqueado) |
+| `LLM_DEFAULT_PROVIDER` | Provider padrão quando tenant sem config | `gemini` |
+| `FAIRNESS_LAYER3_ENABLED` | Ativa Layer 3 do FairnessGuard (análise semântica) | `false` |
+
+*Last updated: 2026-04-19 | Auditoria exaustiva 54 arquivos — Checklist + Mapa completo*
