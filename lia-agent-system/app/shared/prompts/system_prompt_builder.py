@@ -58,7 +58,7 @@ REACT_INSTRUCTIONS = (
 # IDENTITY_OVERRIDE injected before persona to override LLM defaults
 
 
-_PLATFORM_KNOWLEDGE = (
+_PLATFORM_KNOWLEDGE_FALLBACK = (
     "## Conhecimento da Plataforma WeDOTalent\n\n"
     "Voce conhece TODAS as funcionalidades, paginas e metodologias da plataforma:\n\n"
     "**Paginas principais** (voce pode navegar o recrutador ate elas):\n"
@@ -90,6 +90,24 @@ _PLATFORM_KNOWLEDGE = (
     "vaga sem perguntas de triagem, candidato sem score WSI), OFERECA ajuda imediatamente — "
     "nao espere o recrutador perceber.\n"
 )
+
+
+@lru_cache(maxsize=1)
+def _get_platform_knowledge() -> str:
+    """Load PLATFORM_KNOWLEDGE text from platform_manifest.yaml (D4).
+    Falls back to the static _PLATFORM_KNOWLEDGE_FALLBACK if manifest unavailable.
+    """
+    try:
+        from app.shared.platform_manifest import render_platform_knowledge_snippet
+        text = render_platform_knowledge_snippet()
+        if text and len(text) > 100:
+            return text
+    except Exception as exc:
+        logger.debug("[PlatformKnowledge] Manifest load failed, using fallback: %s", exc)
+    return _PLATFORM_KNOWLEDGE_FALLBACK
+
+
+_PLATFORM_KNOWLEDGE = _get_platform_knowledge()
 
 _IDENTITY_OVERRIDE = (
     "# REGRA ZERO -- SUA IDENTIDADE\n\n"
