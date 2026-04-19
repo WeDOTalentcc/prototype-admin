@@ -441,3 +441,104 @@ P1 (sprint seguinte):
   → vacancy_search_service.py — tenant-aware
   → Testes de integração cobrindo tenant isolation por serviço
 ```
+
+
+---
+
+## 11. Auditoria Profunda de Hardcoded Bypasses (2026-04-19)
+
+### Resumo Executivo
+
+Auditoria exaustiva encontrou **18 instâncias em 15 arquivos** que bypassam o LLM Factory.
+Achado crítico: o audit trail (G14) foi implementado com kwargs errados — cada chamada ao
+`log_decision()` falhava silenciosamente desde o commit de implementação.
+
+---
+
+### Bugs Corrigidos (commit b4218eace)
+
+#### BUG-01: `llm_factory._audit_llm_usage()` — kwargs errados (assinatura real ignorada)
+
+**Arquivo**: `app/shared/providers/llm_factory.py:251`
+**Impacto**: Audit trail 100% não-funcional — `TypeError` silenciado pelo `except Exception: pass`
+
+```
+# ANTES (quebrado):
+await _fa.log_decision(action="llm_usage", resource_type="llm_provider",
+    resource_id=..., details={...}, user_id=...)
+# resource_type/resource_id/details/user_id NÃO existem na assinatura
+
+# DEPOIS (correto):
+await _fa.log_decision(
+    company_id=..., agent_name="llm_factory", decision_type="llm_usage",
+    action=f"generate/{pname}", decision="executed",
+    reasoning=[f"task_type={task_type}", ...], criteria_used=["byok_key_source", ...])
+```
+
+#### BUG-01b: `LLMService.generate()` — mesmo padrão de kwargs errados
+
+**Arquivo**: `app/domains/ai/services/llm.py:382`
+Cópia do mesmo padrão. Corrigido com a assinatura real.
+
+#### BUG-02: `wsi_question_adjuster.evaluate_job_description()` — BYOK ignorado
+
+**Arquivo**: `app/domains/cv_screening/services/wsi_question_adjuster.py:246`
+Usava `llm_service.generate_native_gemini_sync(model="gemini-2.5-flash")` com key da plataforma.
+Fix: `company_id: str | None = None` adicionado à assinatura + `get_gemini_client_for_tenant()`.
+
+#### BUG-03: `voice_screening_orchestrator.py:1072` — BYOK ignorado em entrevista de voz
+
+**Arquivo**: `app/domains/voice/services/voice_screening_orchestrator.py:1072`
+`session.company_id` estava disponível mas não era passado ao cliente Gemini.
+Fix: `get_gemini_client_for_tenant(session.company_id)` substituiu `self._llm_service.generate_native_gemini_sync()`.
+
+---
+
+### Inventário Completo de Hardcoded Model References
+
+| Status | Arquivo | Linha | Problema | Tipo |
+|--------|---------|-------|----------|------|
+| ✅ Corrigido | `app/shared/providers/llm_factory.py` | 251 | audit kwargs errados | BUG-01 |
+| ✅ Corrigido | `app/domains/ai/services/llm.py` | 382 | audit kwargs errados | BUG-01b |
+| ✅ Corrigido | `app/domains/cv_screening/services/wsi_question_adjuster.py` | 246 | BYOK bypass | BUG-02 |
+| ✅ Corrigido | `app/domains/voice/services/voice_screening_orchestrator.py` | 1072 | BYOK bypass | BUG-03 |
+| ⚠️ By design | `app/domains/voice/services/gemini_voice_service.py` | 118,208,288 | Gemini Live API exclusiva para voz | P2 |
+| ⚠️ By design | `app/domains/voice/services/voice_screening_orchestrator.py` | 933 | Transcrição de áudio | P2 |
+| ℹ️ Via contextvar | `app/domains/sourcing/services/vacancy_search.py` | 127,376 | Usa `llm_service._current_tenant` — BYOK OK quando chamado pelo orchestrator | P2 |
+| ℹ️ Falso positivo | `app/shared/compliance/fairness_guard.py` | — | Não usa LLM diretamente | N/A |
+
+### generate_native_gemini vs factory
+
+`LLMService.generate_native_gemini()` em `llm.py:217` **já é BYOK-aware** — usa
+`get_gemini_client_for_tenant(self._current_tenant)` internamente quando `_current_tenant` está setado.
+`_current_tenant` é injetado pelo `MainOrchestrator` por request, então serviços chamados
+via orchestrator têm BYOK ativo automaticamente.
+
+Serviços chamados fora do contexto do orchestrator (batch jobs, webhooks) precisam setar
+`llm_service._current_tenant = company_id` explicitamente antes de chamar `generate_native_gemini`.
+
+### Assinatura Canônica de `audit_service.log_decision()`
+
+```python
+async def log_decision(
+    self,
+    company_id: str,           # OBRIGATÓRIO
+    agent_name: str,           # OBRIGATÓRIO — ex: "llm_factory", "cv_screening_agent"
+    decision_type: str,        # OBRIGATÓRIO — ex: "llm_usage", "candidate_screening"
+    action: str,               # OBRIGATÓRIO — ex: "generate/gemini"
+    decision: str,             # OBRIGATÓRIO — ex: "executed", "approved", "rejected"
+    reasoning: list[str],      # OBRIGATÓRIO — lista de razões
+    criteria_used: list[str],  # OBRIGATÓRIO — lista de critérios avaliados
+    candidate_id: str | None = None,
+    job_vacancy_id: str | None = None,
+    score: float | None = None,
+    confidence: float | None = None,
+    human_review_required: bool = False,
+    criteria_ignored: list[str] | None = None,
+    actor_user_id: str | None = None,
+) -> AuditLog:
+```
+
+**Parâmetros que NÃO existem** (não use): `resource_type`, `resource_id`, `details`, `user_id`.
+
+*Last updated: 2026-04-19 | Deep audit + BUG-01/01b/02/03 corrigidos*
