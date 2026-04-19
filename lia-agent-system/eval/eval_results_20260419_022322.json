@@ -1,0 +1,38 @@
+[
+  {
+    "id": "WZ-003",
+    "category": "WZ",
+    "severity": "high",
+    "title": "Salary suggestion for new job",
+    "prompt": "qual salário sugerir para um Tech Lead Frontend em São Paulo com 5 anos de experiência?",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "suggest_salary_range"
+    ],
+    "canonical_files": [
+      "app/domains/job_management/agents/wizard_tool_registry.py",
+      "app/domains/analytics/services/salary_benchmark_service.py"
+    ],
+    "success_criteria": [
+      "Returns salary range with min/max",
+      "References São Paulo market",
+      "Considers seniority (5 years)"
+    ],
+    "anti_patterns": [
+      "Generic range without market data"
+    ],
+    "api_ok": false,
+    "http_status": 401,
+    "latency_ms": 10,
+    "response": "",
+    "error": "{\"detail\":\"Invalid or expired token\"}",
+    "score": 0,
+    "flags": [
+      "HTTP_401"
+    ],
+    "scored_at": "2026-04-19T02:23:21.806967"
+  }
+]
