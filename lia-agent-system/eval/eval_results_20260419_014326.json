@@ -28,12 +28,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 8095,
-    "response": "Encontrei 20 vagas:\n* Vaga: E2E Duplicado 1776375444672 - B (ID: 65a8b319-e7c2-4995-8b69-8cc3f6794107)\n* Vaga: E2E Duplicado 1776375444672 - A (ID: 1cff657e-7d0b-4e45-9055-da7184553fab)\n* Vaga: E2E Ação & Inovação – Développeur «Senior» 1776375421970 (ID: 6fd1e2d0-35c1-422e-af0a-4c61ee54ce88)\n* Vaga: E2E SemTriagem 1776375376720 (ID: 2233601a-ce48-44b0-b27a-f86abd38fa5c)\n* Vaga: E2E Lifecycle 1776375329544 (ID: 04d3ba97-6609-4405-a7ea-f68f8db34c36)\n* Vaga: E2E Rascunho 1776375289474 (ID: 030018db-33ac-4517-bc91-e6f461968b61)\n* Vaga: E2E Full 1776375245793 (ID: ca173485-b413-44c5-89e5-fdb081bdd14e)\n* Vaga: E2E Edit 1776374438042 (ID: 314a1b20-fc27-44dc-a4a3-e098d1651197)\n* Vaga: E2E Completa 1776374416501 (ID: 9141d8bc-6e6c-4ae1-ab2b-487fef82a272)\n* Vaga: E2E Minima 1776374395090 (ID: 49379e14-1f45-449f-a928-79d5f49b0399)\n* Vaga: E2E Duplicado 1776374052443 - B (ID: 60ada801-7f9f-43d0-9995-3b45e7656d8a)\n* Vaga: E2E Duplicado 1776374052443 - A (ID: d3192526-9ddf-4174-8c57-d933da535f2a)\n* Vaga: E2E Ação & Inovação – Développeur «Senior» 1776374029594 (ID: 7a83d939-7926-48dc-94ee-37ecff4fefb3)\n* Vaga: E2E SemTriagem 1776373984984 (ID: 00082409-98fe-4d6e-8e15-7ef8dc9bcb7a)\n* Vaga: E2E Lifecycle 1776373940012 (ID: 5f34dc9e-59f8-4022-9bfe-80e24409f59b)\n* Vaga: E2E Rascunho 1776373898820 (ID: 0beb9074-083a-4445-824d-4a9db68d91a3)\n* Vaga: E2E Full 1776373854793 (ID: 689d21db-7b23-4f8c-832c-94216a8ad0ef)\n* Vaga: E2E Edit 1776373052020 (ID: c424f63f-5ffa-42b2-9d38-dd56dae89cca)\n* Vaga: E2E Completa 1776373030213 (ID: d2b52ff7-4d93-4b12-af91-b557a7e2b31c)\n* Vaga: E2E Minima 1776373008873 (ID: c4a680db-7588-47a8-ae84-6fbaa4b657d6)\n\nPosso filtrar por status, departamento, senioridade, ou qualquer outro critério.",
+    "latency_ms": 251,
+    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
-    "score": 3,
+    "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:37:50.115174"
+    "scored_at": "2026-04-18T23:44:59.724277"
   },
   {
     "id": "JM-002",
@@ -61,12 +61,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 3572,
-    "response": "Atualmente existem 20 vagas ativas: Product Manager, Tech Lead — Backend, Engenheiro Senior teste, Engenheiro Senior teste, DevOps Engineer, UX/UI Designer Pleno, Advogado(a) Trabalhista, Analista de RH Pleno, Engenheiro(a) de Software Sênior, Analista de Dados Sênior, Engenheiro(a) de Machine Learning, [DEMO] UX/UI Designer Sênior, [DEMO] Product Manager Pleno, [DEMO] Desenvolvedor(a) Backend Júnior, [DEMO] Tech Lead Mobile, [DEMO] Executivo(a) de Contas Enterprise, [DEMO] Desenvolvedor(a) Full Stack Sênior, Gerente De P, [DEMO] DevOps Engineer Sênior, [DEMO] Analista de Dados Pleno.",
+    "latency_ms": 4368,
+    "response": "No momento, há 20 vagas ativas. As vagas são:\n\n*   **Product Manager** (Product, São Paulo, SP, Pleno)\n*   **Tech Lead — Backend** (Engineering, São Paulo, SP, Especialista)\n*   **Engenheiro Senior teste** (Tecnologia, Não especificado, Pleno)\n*   **Engenheiro Senior teste** (Tecnologia)\n*   **DevOps Engineer** (Engineering, Remoto, Sênior)\n*   **UX/UI Designer Pleno** (Design, Remoto, Pleno)\n*   **Advogado(a) Trabalhista** (Legal, São Paulo, SP, Sênior)\n*   **Analista de RH Pleno** (Hr, São Paulo, SP, Pleno)\n*   **Engenheiro(a) de Software Sênior** (Engineering, São Paulo, SP, Sênior)\n*   **Analista de Dados Sênior** (Data, São Paulo, SP, Sênior)\n*   **Engenheiro(a) de Machine Learning** (Data, Remoto, Sênior)\n*   **[DEMO] UX/UI Designer Sênior** (Design, Rio de Janeiro, RJ, Sênior)\n*   **[DEMO] Product Manager Pleno** (Produto, São Paulo, SP, Pleno)\n*   **[DEMO] Desenvolvedor(a) Backend Júnior** (Tecnologia, Campinas, SP, Júnior)\n*   **[DEMO] Tech Lead Mobile** (Tecnologia, Florianópolis, SC, Especialista)\n*   **[DEMO] Executivo(a) de Contas Enterprise** (Comercial, São Paulo, SP, Sênior)\n*   **[DEMO] Desenvolvedor(a) Full Stack Sênior** (Tecnologia, São Paulo, SP, Sênior)\n*   **Gerente De P** (Tecnologia/TI, São Paulo, SP, Pleno)\n*   **[DEMO] DevOps Engineer Sênior** (Infraestrutura, São Paulo, SP, Sênior)\n*   **[DEMO] Analista de Dados Pleno** (Dados, São Paulo, SP, Pleno)",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:37:54.187504"
+    "scored_at": "2026-04-18T23:45:04.592636"
   },
   {
     "id": "JM-003",
@@ -96,12 +96,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 1355,
-    "response": "Para eu pausar a vaga de Product Manager, preciso do Job ID. Você pode me informar o ID ou o nome completo da vaga? Se houver mais de uma vaga com esse nome, qual delas devo pausar?",
+    "latency_ms": 837,
+    "response": "Para eu pausar a vaga de Product Manager, preciso do ID da vaga. Você poderia me informar?",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:37:56.042835"
+    "scored_at": "2026-04-18T23:45:05.930662"
   },
   {
     "id": "JM-004",
@@ -129,12 +129,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 1972,
-    "response": "Poderia me confirmar o ID da vaga? O formato esperado para o ID da vaga são 32 caracteres alphanuméricos, geralmente separados por hífens.",
+    "latency_ms": 1897,
+    "response": "Não consegui encontrar detalhes para a vaga \"V0037\" pois o ID fornecido parece estar incorreto. Poderia verificar se o identificador da vaga está certo?",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:37:58.516012"
+    "scored_at": "2026-04-18T23:45:08.327993"
   },
   {
     "id": "JM-005",
@@ -161,12 +161,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 4358,
-    "response": "Não foram encontrados alertas críticos para vagas em risco no momento.\n\nForam encontradas 20 vagas marcadas como \"urgente\", porém, todas estão no status de \"Rascunho\" e os títulos sugerem que são vagas de teste (ex: \"E2E Duplicado\", \"E2E Lifecycle\"). Portanto, é provável que não sejam vagas urgentemente precisando de atenção real.",
+    "latency_ms": 97,
+    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
-    "score": 3,
+    "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:38:03.374578"
+    "scored_at": "2026-04-18T23:45:08.927109"
   },
   {
     "id": "JM-006",
@@ -196,12 +196,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 1708,
-    "response": "Ótimo! Para fechar a vaga \"Tech Lead Backend\" e registrar que ela foi preenchida, preciso de mais algumas informações:\n\n1.  **Qual é o Job ID** da vaga \"Tech Lead Backend\"?\n2.  **Qual é o Candidate ID** do profissional contratado para essa vaga?\n\nCom essas informações, consigo fechar a vaga no sistema.",
+    "latency_ms": 110,
+    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:38:05.583755"
+    "scored_at": "2026-04-18T23:45:09.538626"
   },
   {
     "id": "JM-007",
@@ -230,12 +230,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 2333,
-    "response": "Para atualizar o salário da vaga de Marketing Digital preciso que me informe o ID da vaga. Caso não saiba o ID, posso pesquisar as vagas com o título \"Marketing Digital\", mas se houver mais de uma, precisarei de mais detalhes para identificar a vaga correta.",
+    "latency_ms": 96,
+    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:38:08.417897"
+    "scored_at": "2026-04-18T23:45:10.135175"
   },
   {
     "id": "JM-008",
@@ -260,14 +260,16 @@
     "anti_patterns": [
       "Lists all jobs instead of counts"
     ],
-    "api_ok": true,
-    "http_status": 200,
-    "latency_ms": 4262,
-    "response": "Você tem 28 vagas abertas, 0 vagas pausadas e 0 vagas concluídas.",
-    "error": "",
-    "score": 2,
-    "flags": [],
-    "scored_at": "2026-04-19T01:38:13.179964"
+    "api_ok": false,
+    "http_status": 0,
+    "latency_ms": -1,
+    "response": "",
+    "error": "TIMEOUT",
+    "score": 0,
+    "flags": [
+      "HTTP_0"
+    ],
+    "scored_at": "2026-04-18T23:45:40.667468"
   },
   {
     "id": "CM-001",
@@ -299,12 +301,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 60,
+    "latency_ms": 82,
     "response": "Erro ao analisar perfil de **João Silva**: (sqlalchemy.dialects.postgresql.asyncpg.ProgrammingError) <class 'asyncpg.exceptions.UndefinedFuncti",
     "error": "",
     "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:38:13.740476"
+    "scored_at": "2026-04-18T23:45:41.250155"
   },
   {
     "id": "CM-002",
@@ -335,12 +337,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 1287,
-    "response": "Para avançar o candidato Marco Oliveira para a etapa de entrevista, preciso do ID exclusivo do candidato. Você pode me fornecer o ID do candidato?",
+    "latency_ms": 20873,
+    "response": "estou com dificuldade para processar essa solicitação no momento. Pode tentar novamente em alguns segundos? Se persistir, me avise que busco outra forma de ajudar.",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:38:15.528409"
+    "scored_at": "2026-04-18T23:46:02.623467"
   },
   {
     "id": "CM-003",
@@ -370,12 +372,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 42,
+    "latency_ms": 45,
     "response": "Erro ao comparar candidatos.",
     "error": "",
     "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:38:16.071778"
+    "scored_at": "2026-04-18T23:46:03.169177"
   },
   {
     "id": "CM-004",
@@ -405,12 +407,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 3096,
-    "response": "Para rejeitar o candidato **Pedro Santos**, preciso de algumas informações adicionais:\n\n*   **ID do Candidato** (UUID)\n*   **ID da Vaga** (UUID) para a qual ele está sendo rejeitado.\n\nAlém disso, esta é uma ação sensível. Por favor, confirme se deseja prosseguir com a rejeição.",
+    "latency_ms": 1634,
+    "response": "Para rejeitar o candidato Pedro Santos, preciso do ID do candidato e do ID da vaga.\n\nPoderia me fornecer essas informações, por favor?\nE para confirmar, o motivo da rejeição é \"perfil não atende aos requisitos técnicos\"?",
     "error": "",
     "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:38:19.668077"
+    "scored_at": "2026-04-18T23:46:05.303592"
   },
   {
     "id": "CM-005",
@@ -439,12 +441,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 2748,
-    "response": "Não foi possível analisar os pontos fracos do candidato Lucas Ferreira para a vaga de DevOps porque não encontrei os requisitos para a vaga de DevOps. Por favor, forneça os requisitos da vaga ou o ID da vaga para que eu possa fazer a análise.",
+    "latency_ms": 3003,
+    "response": "Pelo que vejo, não encontrei a vaga de DevOps. Poderia me confirmar o nome da vaga ou o ID?",
     "error": "",
-    "score": 2,
+    "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:38:22.917180"
+    "scored_at": "2026-04-18T23:46:08.807307"
   },
   {
     "id": "CM-006",
@@ -470,14 +472,16 @@
     "anti_patterns": [
       "Returns only current status"
     ],
-    "api_ok": true,
-    "http_status": 200,
-    "latency_ms": 2195,
-    "response": "Para te mostrar o histórico de processo seletivo da Ana Costa, preciso do ID dela. Você pode me informar o ID da candidata?",
-    "error": "",
-    "score": 3,
-    "flags": [],
-    "scored_at": "2026-04-19T01:38:25.612628"
+    "api_ok": false,
+    "http_status": 0,
+    "latency_ms": -1,
+    "response": "",
+    "error": "TIMEOUT",
+    "score": 0,
+    "flags": [
+      "HTTP_0"
+    ],
+    "scored_at": "2026-04-18T23:46:39.334201"
   },
   {
     "id": "CM-007",
@@ -507,12 +511,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 84,
+    "latency_ms": 83,
     "response": "Nenhum candidato encontrado nesta vaga para rankear.",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:38:26.196444"
+    "scored_at": "2026-04-18T23:46:39.917555"
   },
   {
     "id": "CM-008",
@@ -539,12 +543,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 254,
-    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?\n\n---\n🧪 **[BETA]** Temos dados de mercado em tempo real para esta posição, incluindo faixas salariais e tendências.\n_Para benchmarks salariais completos e tendências de mercado, ative **Talent Intelligence Pro**._\n🧪 **[BETA]** Podemos buscar colaboradores internos com perfil compatível para esta posição.\n_Para matching interno completo com readiness scoring, ative **Internal Mobility Suite**._",
+    "latency_ms": 76,
+    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
-    "score": 3,
+    "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:38:26.951650"
+    "scored_at": "2026-04-18T23:46:40.494497"
   },
   {
     "id": "KB-001",
@@ -575,12 +579,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 36,
-    "response": "Informe a vaga para o diagnóstico.",
+    "latency_ms": 93,
+    "response": "Não encontrei informações de pipeline para a vaga **V0037**. A vaga pode estar inativa ou o ID não está no sistema.",
     "error": "",
-    "score": 2,
+    "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:38:27.487588"
+    "scored_at": "2026-04-18T23:46:41.088199"
   },
   {
     "id": "KB-002",
@@ -609,16 +613,14 @@
       "Moves without confirmation",
       "Asks which job when entity_id is in context"
     ],
-    "api_ok": false,
-    "http_status": 0,
-    "latency_ms": -1,
-    "response": "",
-    "error": "TIMEOUT",
-    "score": 0,
-    "flags": [
-      "HTTP_0"
-    ],
-    "scored_at": "2026-04-19T01:38:58.001616"
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 23365,
+    "response": "Tive um problema ao buscar pelo nome. Você tem o ID do João Silva ou consegue me informar mais algum dado dele, como o e-mail? Assim consigo localizá-lo corretamente no pipeline da vaga V0037 para fazer a movimentação com segurança.",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-18T23:47:04.954454"
   },
   {
     "id": "KB-003",
@@ -649,12 +651,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 5105,
-    "response": "Demo User, estou com dificuldade para processar essa solicitação no momento. Pode tentar novamente em alguns segundos? Se persistir, me avise que busco outra forma de ajudar.",
+    "latency_ms": 2809,
+    "response": "Para te ajudar a identificar onde o processo está travando e qual etapa tem mais candidatos parados, preciso do **ID da vaga**.\n\nSe você não souber o ID da vaga, posso listar as vagas ativas para você escolher.",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:39:03.607182"
+    "scored_at": "2026-04-18T23:47:08.264593"
   },
   {
     "id": "KB-004",
@@ -686,12 +688,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 1897,
-    "response": "Para mover os candidatos de \"Triagem\" para \"Reprovado\", preciso dos IDs dos candidatos. Não consigo filtrar diretamente todos os candidatos em uma etapa específica para essa ação em massa.\n\nVocê pode me fornecer os IDs dos candidatos que deseja mover?",
+    "latency_ms": 83,
+    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
-    "score": 3,
+    "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:39:06.004972"
+    "scored_at": "2026-04-18T23:47:08.848294"
   },
   {
     "id": "KB-005",
@@ -719,12 +721,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 1544,
-    "response": "**Análise de Funil geral da empresa:**\n\n  Novos: **0** (0.0%)\n  Triagem: **87** (14.7%)\n  Entrevista: **4** (0.7%) (conversão: 4.6%)\n  Proposta: **45** (7.6%) (conversão: 1125.0%)\n  Contratado: **40** (6.7%) (conversão: 88.9%)",
+    "latency_ms": 44,
+    "response": "Erro ao analisar funil.",
     "error": "",
-    "score": 3,
+    "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:39:08.050105"
+    "scored_at": "2026-04-18T23:47:09.393244"
   },
   {
     "id": "KB-006",
@@ -752,12 +754,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 63,
-    "response": "Vaga não identificada. Informe a vaga para listar candidatos por etapa.",
+    "latency_ms": 83,
+    "response": "Nenhum candidato encontrado na etapa **Entrevista** para esta vaga.",
     "error": "",
-    "score": 1,
+    "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:39:08.613455"
+    "scored_at": "2026-04-18T23:47:09.976608"
   },
   {
     "id": "SC-001",
@@ -789,12 +791,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 1484,
+    "latency_ms": 102,
     "response": "Não encontrei candidatos em espera (etapa Novo/Triagem) para esta vaga no momento. Verifique se há candidatos na etapa inicial do pipeline.",
     "error": "",
     "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:39:10.598781"
+    "scored_at": "2026-04-18T23:47:10.579115"
   },
   {
     "id": "SC-002",
@@ -821,14 +823,16 @@
     "anti_patterns": [
       "Returns all candidates without filtering"
     ],
-    "api_ok": true,
-    "http_status": 200,
-    "latency_ms": 2163,
-    "response": "Não consigo buscar candidatos por \"nota da triagem\". Poderia me dizer se você se refere ao score LIA ou WSI? Eu consigo buscar candidatos com pontuação mínima (LIA ou WSI).",
-    "error": "",
-    "score": 2,
-    "flags": [],
-    "scored_at": "2026-04-19T01:39:13.262503"
+    "api_ok": false,
+    "http_status": 0,
+    "latency_ms": -1,
+    "response": "",
+    "error": "TIMEOUT",
+    "score": 0,
+    "flags": [
+      "HTTP_0"
+    ],
+    "scored_at": "2026-04-18T23:47:41.110582"
   },
   {
     "id": "SC-003",
@@ -856,12 +860,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 2061,
-    "response": "Para te mostrar o resultado da triagem da Ana Costa, preciso do ID dela. Além disso, você se refere à triagem WSI (Work Style Interview)? E essa triagem está relacionada a alguma vaga específica? Se sim, qual o ID da vaga?",
+    "latency_ms": 24933,
+    "response": "Não consegui localizar a Ana Costa com essa busca — parece que preciso do identificador dela no sistema para trazer os resultados corretamente.\n\nVocê consegue me dizer em qual vaga ela está candidatada? Com o nome da vaga consigo encontrá-la e trazer o detalhamento completo da triagem.",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:39:15.824699"
+    "scored_at": "2026-04-18T23:48:06.544614"
   },
   {
     "id": "SC-004",
@@ -890,12 +894,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 2783,
-    "response": "Para que eu possa configurar as perguntas de triagem mais relevantes, preciso de algumas informações adicionais:\n\n1.  **ID da Empresa:** Para personalizar as perguntas com base nas configurações e necessidades específicas da sua empresa.\n2.  **Senioridade:** Qual o nível de senioridade para essa vaga de DevOps (Ex: Júnior, Pleno, Sênior, Especialista)?\n3.  **Departamento:** A qual departamento essa vaga pertencerá?\n\nCom essas informações, poderei gerar sugestões de perguntas de triagem focadas em Kubernetes e CI/CD.",
+    "latency_ms": 2167,
+    "response": "Para que eu possa configurar as perguntas de triagem, preciso de algumas informações adicionais:\n\n1.  **Qual é o ID da empresa (company\\_id)?** Este é um dado obrigatório para personalizar as sugestões.\n2.  Poderia confirmar o **título exato da vaga**? (ex: Engenheiro de DevOps, Analista de DevOps Sênior, etc.)\n3.  Qual é o **departamento** ao qual esta vaga pertence? (ex: Engenharia, TI, Desenvolvimento de Software)",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:39:19.108247"
+    "scored_at": "2026-04-18T23:48:09.212867"
   },
   {
     "id": "SC-005",
@@ -926,12 +930,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 3564,
-    "response": "Não consigo realizar essa ação diretamente. Não tenho a capacidade de filtrar candidatos com base na existência de diploma universitário na fase de triagem. Para fazer isso, eu precisaria de uma ferramenta que pudesse:\n\n1.  Listar todos os candidatos na fase de \"Triagem\".\n2.  Verificar o currículo ou os dados de cada candidato para identificar se possuem diploma universitário.\n3.  Rejeitar individualmente os candidatos que não atendem a esse critério.\n\nMinhas ferramentas atuais não permitem essa combinação de filtragem e ação em massa com base em conteúdo de currículo.",
+    "latency_ms": 3891,
+    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
-    "score": 3,
+    "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:39:23.173319"
+    "scored_at": "2026-04-18T23:48:13.603866"
   },
   {
     "id": "SC-006",
@@ -965,7 +969,7 @@
     "flags": [
       "HTTP_0"
     ],
-    "scored_at": "2026-04-19T01:39:53.703557"
+    "scored_at": "2026-04-18T23:48:44.135621"
   },
   {
     "id": "CO-001",
@@ -997,12 +1001,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 214,
+    "latency_ms": 150,
     "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:39:54.418635"
+    "scored_at": "2026-04-18T23:48:44.786712"
   },
   {
     "id": "CO-002",
@@ -1032,12 +1036,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 12834,
-    "response": "Olá! Adoraria ajudar com a proposta de emprego para a Ana Costa, mas essa funcionalidade — geração e envio de propostas/ofertas formais — ainda não está disponível na plataforma WeDOTalent.\n\nO que posso fazer por você agora:\n\n**Alternativas imediatas:**\n\n1. **Rascunho em texto** — Posso redigir agora mesmo o texto completo da proposta (carta oferta) com todos os dados que você forneceu, para você enviar pelo canal que preferir (e-mail, WhatsApp, etc.)\n\n2. **Registrar a oferta no pipeline** — Se a Ana está em alguma vaga ativa, posso verificar o status dela no processo e orientar os próximos passos.\n\n3. **Checklist de onboarding** — Posso listar o que normalmente precisa ser preparado antes da data de início (segunda-feira).\n\n---\n\nQuer que eu redija o texto da proposta agora? Se sim, me passa mais um detalhe: **qual é o cargo/vaga** para o qual a Ana foi selecionada? Assim deixo o documento completo e profissional.",
+    "latency_ms": 23772,
+    "response": "Essa funcionalidade de geração de propostas de emprego ainda não está disponível na minha versão atual — não tenho como criar e enviar documentos formais de oferta diretamente pela plataforma.\n\nO que posso fazer para ajudar nesse processo:\n\n**Para montar a proposta manualmente**, você vai precisar de:\n- **Cargo e vaga** à qual a Ana Costa está vinculada (para incluir no documento)\n- **Benefícios padrão da empresa** — você mencionou \"padrão\", mas vale confirmar quais são (VT, VR, plano de saúde, etc.) para não deixar nada de fora\n- **Data de início** — segunda-feira, dia **14 de julho de 2025**\n\n**O que posso fazer agora:**\n1. Verificar o pipeline da Ana Costa para confirmar em qual etapa ela está e se já passou por todas as fases antes do envio da proposta\n2. Checar se há alguma pendência no processo antes de formalizar a oferta\n3. Monitorar se a proposta ficou pendente de resposta por mais de 72h (risco de desistência)\n\nQuer que eu verifique o status dela no pipeline antes de você enviar a proposta?",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:40:07.753657"
+    "scored_at": "2026-04-18T23:49:09.059807"
   },
   {
     "id": "CO-003",
@@ -1064,12 +1068,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 34,
+    "latency_ms": 4108,
     "response": "Vou agendar entrevista com **Marco Oliveira** para amanhã 14:00. Confirma o envio do convite?",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:40:08.288765"
+    "scored_at": "2026-04-18T23:49:13.668354"
   },
   {
     "id": "CO-004",
@@ -1096,14 +1100,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 1597,
-    "response": "Não consigo ver o histórico de e-mails enviados a um candidato específico, apenas consigo enviar.",
+    "latency_ms": 1595,
+    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
-    "score": 0,
-    "flags": [
-      "REFUSAL: 'não consigo'"
-    ],
-    "scored_at": "2026-04-19T01:40:10.386057"
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-18T23:49:15.764596"
   },
   {
     "id": "CO-005",
@@ -1132,12 +1134,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 35,
+    "latency_ms": 172,
     "response": "Vou enviar uma mensagem de WhatsApp para **Ana Costa** com a mensagem: \"a entrevista de amanhã\". Confirma?",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:40:10.921631"
+    "scored_at": "2026-04-18T23:49:16.436877"
   },
   {
     "id": "AN-001",
@@ -1167,12 +1169,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 2273,
+    "latency_ms": 94,
     "response": "**Relatório de KPIs de Recrutamento — Este Mês (Abril 2026):**\n\n**Vagas:** 28 ativas | 0 pausadas | 0 fechadas (153 total)\n**Candidatos Únicos:** 145\n\n**Distribuição no Pipeline:**\n  - Novos: 0\n  - Triagem: 87\n  - Entrevista: 4\n  - Proposta: 45\n  - Contratados: 40\n  - Rejeitados: 0\n\n**Tempo Médio no Pipeline:** 11 dias\n**Taxa de Contratação:** 27.6%\n**Tempo Médio de Contratação (TTH):** 11 dias\n**Eficiência do Funil:** 40 contratados de 145 candidatos | 136 em andamento\n\n**Insight:** Taxa de contratação acima de 20% — funil saudável para o período.\n\n**Predições ML:**\n  - Previsão Time-to-Fill: **36 dias** (27-45d, 30% confiança)\n  - dentro da média do mercado\n  - Faixa Salarial Sugerida: **R$ 6,800 — R$ 9,200** (P50)\n  - Na média do mercado - competitivo",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:40:13.695193"
+    "scored_at": "2026-04-18T23:49:17.031535"
   },
   {
     "id": "AN-002",
@@ -1199,12 +1201,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 2650,
-    "response": "Para te dar a taxa de conversão da vaga de Product Manager, preciso do **ID da vaga**. Você pode me fornecer, por favor?",
+    "latency_ms": 81,
+    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
-    "score": 3,
+    "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:40:16.845922"
+    "scored_at": "2026-04-18T23:49:17.612857"
   },
   {
     "id": "AN-003",
@@ -1232,12 +1234,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 13171,
-    "response": "Não encontrei dados de valores mínimo, máximo e mediano para a faixa salarial de Product Manager Sênior em São Paulo. A busca retornou apenas que a confiança da estimativa é média, com um disclaimer de que os valores podem variar e as fontes são Glassdoor e LinkedIn.",
+    "latency_ms": 76,
+    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
-    "score": 3,
+    "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:40:30.518251"
+    "scored_at": "2026-04-18T23:49:18.189000"
   },
   {
     "id": "AN-004",
@@ -1269,12 +1271,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 4715,
-    "response": "O ID de vaga \"V0039\" não é um formato válido. Por favor, forneça um ID de vaga no formato UUID (ex: \"a1b2c3d4-e5f6-7890-1234-567890abcdef\").",
+    "latency_ms": 132,
+    "response": "Ok, operação cancelada. Como posso ajudar?",
     "error": "",
-    "score": 2,
+    "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:40:35.733735"
+    "scored_at": "2026-04-18T23:49:18.821694"
   },
   {
     "id": "AN-005",
@@ -1301,12 +1303,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 1274,
+    "latency_ms": 90,
     "response": "**Relatório de KPIs de Recrutamento — Este Mês (Abril 2026):**\n\n**Vagas:** 28 ativas | 0 pausadas | 0 fechadas (153 total)\n**Candidatos Únicos:** 145\n\n**Distribuição no Pipeline:**\n  - Novos: 0\n  - Triagem: 87\n  - Entrevista: 4\n  - Proposta: 45\n  - Contratados: 40\n  - Rejeitados: 0\n\n**Tempo Médio no Pipeline:** 11 dias\n**Taxa de Contratação:** 27.6%\n**Tempo Médio de Contratação (TTH):** 11 dias\n**Eficiência do Funil:** 40 contratados de 145 candidatos | 136 em andamento\n\n**Insight:** Taxa de contratação acima de 20% — funil saudável para o período.\n\n**Predições ML:**\n  - Previsão Time-to-Fill: **36 dias** (27-45d, 30% confiança)\n  - dentro da média do mercado\n  - Faixa Salarial Sugerida: **R$ 6,800 — R$ 9,200** (P50)\n  - Na média do mercado - competitivo",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:40:37.508262"
+    "scored_at": "2026-04-18T23:49:19.412102"
   },
   {
     "id": "AN-006",
@@ -1333,12 +1335,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 1342,
+    "latency_ms": 89,
     "response": "**Relatório de KPIs de Recrutamento — Este Mês (Abril 2026):**\n\n**Vagas:** 28 ativas | 0 pausadas | 0 fechadas (153 total)\n**Candidatos Únicos:** 145\n\n**Distribuição no Pipeline:**\n  - Novos: 0\n  - Triagem: 87\n  - Entrevista: 4\n  - Proposta: 45\n  - Contratados: 40\n  - Rejeitados: 0\n\n**Tempo Médio no Pipeline:** 11 dias\n**Taxa de Contratação:** 27.6%\n**Tempo Médio de Contratação (TTH):** 11 dias\n**Eficiência do Funil:** 40 contratados de 145 candidatos | 136 em andamento\n\n**Insight:** Taxa de contratação acima de 20% — funil saudável para o período.\n\n**Predições ML:**\n  - Previsão Time-to-Fill: **36 dias** (27-45d, 30% confiança)\n  - dentro da média do mercado\n  - Faixa Salarial Sugerida: **R$ 6,800 — R$ 9,200** (P50)\n  - Na média do mercado - competitivo",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:40:39.350753"
+    "scored_at": "2026-04-18T23:49:20.001855"
   },
   {
     "id": "SO-001",
@@ -1368,12 +1370,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 818,
+    "latency_ms": 113,
     "response": "Nenhum candidato encontrado para \"experiência em React e Node.js, disponíveis para São Paulo\".",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:40:40.669798"
+    "scored_at": "2026-04-18T23:49:20.615768"
   },
   {
     "id": "SO-002",
@@ -1400,12 +1402,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 10355,
-    "response": "Para encontrar os candidatos mais adequados para a vaga de Tech Lead Backend, preciso do ID da sua empresa. Com essa informação, posso buscar as skills mais relevantes para essa posição e então pesquisar candidatos no seu banco de dados que possuam essas qualificações.\n\nQual é o ID da sua empresa?",
+    "latency_ms": 82,
+    "response": "De qual banco de talentos você quer ver os candidatos?",
     "error": "",
-    "score": 2,
+    "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:40:51.525384"
+    "scored_at": "2026-04-18T23:49:21.197878"
   },
   {
     "id": "SO-003",
@@ -1432,12 +1434,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 170,
+    "latency_ms": 84,
     "response": "Nenhum candidato encontrado para \"perfil de liderança técnica e experiência em startups de alto crescimento\".",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:40:52.196503"
+    "scored_at": "2026-04-18T23:49:21.782072"
   },
   {
     "id": "SO-004",
@@ -1464,12 +1466,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 12444,
-    "response": "Para enriquecer o perfil do João Silva com dados do LinkedIn, vou precisar de algumas informações:\n\n1. **URL do perfil LinkedIn** do João Silva — você tem o link do perfil dele?\n2. **Qual vaga** ele está concorrendo (se aplicável)?\n\nAlternativamente, se você tiver o **texto/conteúdo do perfil LinkedIn** dele copiado, posso parsear e atualizar o cadastro diretamente.\n\n> ⚠️ **Importante:** A integração direta com o LinkedIn para enriquecimento automático de perfil não está disponível no seu plano atual. O que posso fazer é processar o conteúdo do perfil que você colar aqui e atualizar o cadastro do João no sistema.\n\nComo prefere prosseguir?",
+    "latency_ms": 91,
+    "response": "Para enriquecer o perfil de João Silva com dados do LinkedIn, vou precisar de algumas informações:\n\n1. **URL do perfil LinkedIn** do João Silva — ou o texto/dados que você quer importar do perfil dele\n2. **Qual vaga** ele está concorrendo (opcional, mas ajuda a contextualizar a análise)\n\nVocê tem o link do perfil ou quer colar as informações diretamente aqui?",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:41:05.140960"
+    "scored_at": "2026-04-18T23:49:22.374216"
   },
   {
     "id": "SO-005",
@@ -1496,12 +1498,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 2644,
-    "response": "Não consigo filtrar candidatos diretamente por contribuições em open source no GitHub. No entanto, posso buscar desenvolvedores Python com base em suas habilidades. Você gostaria de procurar por desenvolvedores Python com alguma outra habilidade específica?",
+    "latency_ms": 90,
+    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:41:08.284964"
+    "scored_at": "2026-04-18T23:49:22.964898"
   },
   {
     "id": "SO-006",
@@ -1529,12 +1531,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 1158,
+    "latency_ms": 101,
     "response": "Nenhum candidato encontrado para \"priorizando diversidade de gênero e étnica para a vaga de liderança\".",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:41:09.943520"
+    "scored_at": "2026-04-18T23:49:23.566190"
   },
   {
     "id": "WZ-001",
@@ -1564,14 +1566,16 @@
       "Publishes without review",
       "Cannot create job"
     ],
-    "api_ok": true,
-    "http_status": 200,
-    "latency_ms": 1714,
-    "response": "Para criar a vaga preciso de mais algumas informações:\n\nQual o ID da empresa?\nVocê gostaria de adicionar uma descrição detalhada, requisitos ou faixa salarial neste momento?",
-    "error": "",
-    "score": 2,
-    "flags": [],
-    "scored_at": "2026-04-19T01:41:12.157910"
+    "api_ok": false,
+    "http_status": 0,
+    "latency_ms": -1,
+    "response": "",
+    "error": "TIMEOUT",
+    "score": 0,
+    "flags": [
+      "HTTP_0"
+    ],
+    "scored_at": "2026-04-18T23:49:54.097597"
   },
   {
     "id": "WZ-002",
@@ -1599,12 +1603,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 2653,
-    "response": "Com certeza! Para gerar uma descrição de vaga mais completa e alinhada às suas necessidades, preciso de mais algumas informações:\n\n*   **Qual é o ID da sua empresa?** (É um código UUID, exemplo: \"a1b2c3d4-e5f6-7890-1234-567890abcdef\")\n*   Existe algum outro detalhe importante que você gostaria de incluir na descrição, como:\n    *   **Responsabilidades específicas** que o Product Manager terá?\n    *   **Skills adicionais** (ferramentas, linguagens, etc.) além de metodologias ágeis e experiência em dados?\n    *   **Nível de senioridade** (Júnior, Pleno, Sênior, Coordenador, Gerente)?\n    *   **Localização** da vaga ou **modelo de trabalho** (Remoto, Híbrido, Presencial)?\n\nCom esses dados, consigo gerar uma descrição bem mais rica!",
+    "latency_ms": 92,
+    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
     "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:41:15.311577"
+    "scored_at": "2026-04-18T23:49:54.690247"
   },
   {
     "id": "WZ-003",
@@ -1633,12 +1637,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 3000,
-    "response": "Para sugerir um salário mais preciso, preciso de mais algumas informações. Poderia me informar o ID da empresa para a qual você busca essa informação?\n\nCom o ID da empresa, consigo usar a ferramenta de \"Salário Inteligente\" que considera:\n*   Padrões de aprendizado da empresa\n*   Configurações salariais da empresa\n*   Histórico de contratações (ATS)\n*   Benchmarks de mercado\n\nSe preferir, posso buscar apenas o benchmark de mercado, mas a sugestão será menos personalizada.",
+    "latency_ms": 82,
+    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
     "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:41:18.812328"
+    "scored_at": "2026-04-18T23:49:55.272367"
   },
   {
     "id": "WZ-004",
@@ -1667,12 +1671,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 3470,
-    "response": "Para duplicar a vaga de Product Manager, preciso de algumas informações.\n\nPrimeiro, qual é o **ID da empresa** para a qual a vaga será duplicada?\n\nSegundo, você quer que eu duplique a vaga de Product Manager com **as mesmas informações** (descrição, requisitos, salário, etc.)? Se sim, preciso do **ID da vaga** de Product Manager original, ou de todos os detalhes que você gostaria de copiar para a nova vaga (descrição, requisitos, salário_min, salário_max, senioridade, modelo de trabalho, departamento, etc.).\n\nAlternativamente, posso criar uma **nova vaga** de Product Manager do zero se você me fornecer os detalhes.",
+    "latency_ms": 16414,
+    "response": "Encontrei a vaga. Antes de prosseguir, quero confirmar qual delas você quer duplicar, pois há duas com o título \"Product Manager\":\n\n| # | Título | Status | Departamento | Local | Candidatos | Aberta há |\n|---|--------|--------|--------------|-------|-----------|-----------|\n| 1 | **Product Manager** | Ativa | Product | São Paulo, SP | 42 | 21 dias |\n| 2 | [DEMO] Product Manager Pleno | Ativa | Produto | São Paulo, SP | 14 | 63 dias |\n\nPresumo que você queira duplicar a **#1 — Product Manager** (departamento Product, 42 candidatos), que parece ser a vaga principal. Confirma, ou é a outra?\n\nTambém vale saber: a segunda posição terá as mesmas configurações (local, requisitos, prioridade), ou quer ajustar algo na cópia?",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:41:22.783692"
+    "scored_at": "2026-04-18T23:50:12.186648"
   },
   {
     "id": "WZ-005",
@@ -1698,14 +1702,16 @@
       "Creates only some stages",
       "Uses default template instead"
     ],
-    "api_ok": true,
-    "http_status": 200,
-    "latency_ms": 1210,
-    "response": "Para configurar as etapas do processo seletivo, preciso do seu `company_id`. Você pode me fornecer essa informação?\n\nCom o `company_id`, configurarei as seguintes etapas: Triagem, Teste Técnico, Entrevista RH, Entrevista Técnica e Proposta.",
-    "error": "",
-    "score": 3,
-    "flags": [],
-    "scored_at": "2026-04-19T01:41:24.494739"
+    "api_ok": false,
+    "http_status": 0,
+    "latency_ms": -1,
+    "response": "",
+    "error": "TIMEOUT",
+    "score": 0,
+    "flags": [
+      "HTTP_0"
+    ],
+    "scored_at": "2026-04-18T23:50:42.717558"
   },
   {
     "id": "PR-001",
@@ -1736,12 +1742,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 7138,
-    "response": "As seguintes vagas correm o risco de não fechar este mês, com base nos alertas de alto risco:\n\n**Com prazo de SLA expirado:**\n*   [DEMO] Tech Lead Mobile (Prazo expirado há 106 dias)\n*   [DEMO] Product Manager Pleno (Prazo expirado há 91 dias)\n*   [DEMO] DevOps Engineer Sênior (Prazo expirado há 136 dias)\n*   [DEMO] UX/UI Designer Sênior (Prazo expirado há 93 dias)\n*   [DEMO] Analista de Dados Pleno (Prazo expirado há 110 dias)\n*   [DEMO] Desenvolvedor(a) Full Stack Sênior (Prazo expirado há 98 dias)\n*   [DEMO] Executivo(a) de Contas Enterprise (Prazo expirado há 85 dias)\n*   [DEMO] Desenvolvedor(a) Backend Júnior (Prazo expirado há 125 dias)\n*   [DEMO] Product Manager Pleno (Prazo expirado há 31 dias)\n\n**Com prazo de SLA se aproximando:**\n*   [DEMO] UX/UI Designer Sênior (Prazo em 2 dias)\n\n**Vagas abertas há muito tempo (podem indicar gargalos):**\n*   [DEMO] Tech Lead Mobile (aberta há 136 dias)\n*   Gerente De P (aberta há 90 dias)\n*   [DEMO] Product Manager Pleno (aberta há 156 dias)\n*   [DEMO] DevOps Engineer Sênior (aberta há 173 dias)\n*   [DEMO] UX/UI Designer Sênior (aberta há 145 dias)\n*   [DEMO] Analista de Dados Pleno (aberta há 156 dias)\n*   [DEMO] Desenvolvedor(a) Full Stack Sênior (aberta há 166 dias)\n*   [DEMO] Executivo(a) de Contas Enterprise (aberta há 165 dias)\n*   [DEMO] Desenvolvedor(a) Backend Júnior (aberta há 162 dias)\n*   [DEMO] Product Manager Pleno (aberta há 63 dias)\n\nRecomendo focar nestas vagas para evitar que fiquem abertas por mais tempo.",
+    "latency_ms": 73,
+    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
-    "score": 3,
+    "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:41:32.133709"
+    "scored_at": "2026-04-18T23:50:43.291705"
   },
   {
     "id": "PR-002",
@@ -1770,12 +1776,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 86,
+    "latency_ms": 81,
     "response": "**2 vaga(s) sem candidatos há mais de 7 dias:**\n\n- Gerente De P (90 dias aberta)\n- Engenheiro Senior teste (38 dias aberta)\n\nGostaria que eu inicie a triagem ou busca por candidatos para essas vagas?",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:41:32.720241"
+    "scored_at": "2026-04-18T23:50:43.873555"
   },
   {
     "id": "PR-003",
@@ -1801,16 +1807,14 @@
     "anti_patterns": [
       "Cannot calculate time in stage"
     ],
-    "api_ok": false,
-    "http_status": 0,
-    "latency_ms": -1,
-    "response": "",
-    "error": "TIMEOUT",
-    "score": 0,
-    "flags": [
-      "HTTP_0"
-    ],
-    "scored_at": "2026-04-19T01:42:03.251722"
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 18072,
+    "response": "estou com dificuldade para processar essa solicitação no momento. Pode tentar novamente em alguns segundos? Se persistir, me avise que busco outra forma de ajudar.",
+    "error": "",
+    "score": 2,
+    "flags": [],
+    "scored_at": "2026-04-18T23:51:02.445858"
   },
   {
     "id": "PR-004",
@@ -1840,12 +1844,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 1583,
-    "response": "Para que eu possa estimar o fechamento da vaga de Tech Lead, preciso do **ID da vaga**. Se você não tiver o ID, posso tentar pesquisar a vaga se você me fornecer o título exato.",
+    "latency_ms": 1690,
+    "response": "Para te dar uma estimativa mais precisa, preciso do ID da vaga de Tech Lead. Você pode me fornecer essa informação?",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:42:05.335522"
+    "scored_at": "2026-04-18T23:51:04.636531"
   },
   {
     "id": "PR-005",
@@ -1875,12 +1879,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 2904,
-    "response": "Para te ajudar com recomendações para o dia, preciso de mais informações.\n\nGostaria de ver um resumo das atividades de recrutamento de hoje ou da semana? Além disso, quer saber quais são as ações pendentes, como feedbacks atrasados ou candidatos aguardando avaliação?",
+    "latency_ms": 3300,
+    "response": "Para te ajudar com recomendações para o seu dia, preciso entender um pouco melhor suas prioridades. Você gostaria de:\n\n1.  Verificar as **ações pendentes** e o que precisa da sua atenção hoje (feedbacks, candidatos em espera, etc.)?\n2.  Analisar o **status das suas vagas** ou pipeline de recrutamento?\n3.  Focar em **candidatos**, talvez buscando novos talentos ou engajando candidatos inativos?\n4.  Ou você tem alguma **vaga ou candidato específico** em mente que gostaria de analisar?",
     "error": "",
-    "score": 2,
+    "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:42:08.740405"
+    "scored_at": "2026-04-18T23:51:08.437447"
   },
   {
     "id": "MT-001",
@@ -1913,12 +1917,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 5286,
-    "response": "Ocorreu um erro ao pausar a vaga. O ID \"V0037\" não parece ser um ID de vaga válido. Você poderia me fornecer o ID correto da vaga para que eu possa prosseguir?",
+    "latency_ms": 8100,
+    "response": "Não consegui encontrar a vaga V0037, o ID parece estar incorreto. Por favor, me forneça um ID de vaga válido para que eu possa pausá-la e mover os candidatos.",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:42:14.526798"
+    "scored_at": "2026-04-18T23:51:17.038596"
   },
   {
     "id": "MT-002",
@@ -1951,12 +1955,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 49,
+    "latency_ms": 36,
     "response": "Informe a vaga para rankear os candidatos (ID ou título).",
     "error": "",
     "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:42:15.076117"
+    "scored_at": "2026-04-18T23:51:17.574948"
   },
   {
     "id": "MT-003",
@@ -1984,12 +1988,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 8621,
+    "latency_ms": 89,
     "response": "Nenhum candidato encontrado para \"não, não era isso — cancela e filtra só os candidatos com nota acima de 8\".",
     "error": "",
     "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:42:24.198109"
+    "scored_at": "2026-04-18T23:51:18.164163"
   },
   {
     "id": "MT-004",
@@ -2019,12 +2023,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 1811,
+    "latency_ms": 76,
     "response": "Nenhum candidato encontrado para \"no pool\".",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:42:26.510338"
+    "scored_at": "2026-04-18T23:51:18.740127"
   },
   {
     "id": "MT-005",
@@ -2056,14 +2060,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 3896,
-    "response": "Não consigo gerar um \"relatório de vagas em risco\" diretamente e tomar ações automaticamente para cada uma.\n\nNo entanto, posso te ajudar a identificar vagas com alertas e gargalos. Para isso, preciso que você me diga o ID da vaga que você quer analisar.\n\nCom relação às ações, você pode me dizer qual ação você gostaria de tomar, por exemplo:\n* Mover um candidato de etapa\n* Rejeitar um candidato\n* Agendar uma entrevista\n* Pausar uma vaga\n* Enviar um e-mail para um candidato",
+    "latency_ms": 84,
+    "response": "Não tenho certeza do que você precisa. Pode reformular sua solicitação?",
     "error": "",
-    "score": 0,
-    "flags": [
-      "REFUSAL: 'não consigo'"
-    ],
-    "scored_at": "2026-04-19T01:42:30.906972"
+    "score": 2,
+    "flags": [],
+    "scored_at": "2026-04-18T23:51:19.325186"
   },
   {
     "id": "CX-001",
@@ -2094,12 +2096,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 43,
-    "response": "Informe a vaga para o diagnóstico.",
+    "latency_ms": 85,
+    "response": "Não encontrei informações de pipeline para a vaga **V0037**. A vaga pode estar inativa ou o ID não está no sistema.",
     "error": "",
-    "score": 1,
+    "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:42:31.450888"
+    "scored_at": "2026-04-18T23:51:19.911409"
   },
   {
     "id": "CX-002",
@@ -2128,12 +2130,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 2204,
-    "response": "Claro! Posso te ajudar com o sourcing de diversas formas. Para que eu possa te auxiliar melhor, poderia me dizer o que você gostaria de fazer?\n\nPor exemplo, você quer:\n*   **Buscar candidatos** com base em habilidades, localização ou experiência?\n*   Obter **estatísticas** sobre a qualidade ou disponibilidade de talentos?\n*   **Exportar** uma lista de candidatos?\n*   Encontrar **candidatos internos**?\n*   Ou algo mais específico?",
+    "latency_ms": 67,
+    "response": "Claro! Para te ajudar da melhor forma com sourcing, me conta um pouco mais:\n\n**Qual é o perfil que você está buscando?** Por exemplo:\n- Cargo / área de atuação\n- Nível de senioridade (júnior, pleno, sênior, liderança)\n- Skills ou tecnologias específicas\n- Localização ou preferência por remoto/híbrido/presencial\n\nCom essas informações, consigo buscar candidatos no pool de talentos, analisar o fit com a vaga e te dar uma visão real do que temos disponível — além de sugerir estratégias caso o pool esteja escasso para esse perfil.",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:42:34.155409"
+    "scored_at": "2026-04-18T23:51:20.479225"
   },
   {
     "id": "CX-003",
@@ -2160,14 +2162,16 @@
       "Asks who 'ela' refers to",
       "Ignores pronoun context"
     ],
-    "api_ok": true,
-    "http_status": 200,
-    "latency_ms": 1644,
-    "response": "Para que eu possa verificar os requisitos técnicos, preciso saber:\n1.  **De qual candidata você está falando?** Por favor, me forneça o ID dela.\n2.  **Para qual vaga você gostaria de verificar os requisitos técnicos?** Por favor, me forneça o ID ou o título da vaga.\n\nCom essas informações, posso analisar a compatibilidade do currículo dela com a vaga.",
-    "error": "",
-    "score": 3,
-    "flags": [],
-    "scored_at": "2026-04-19T01:42:36.300505"
+    "api_ok": false,
+    "http_status": 0,
+    "latency_ms": -1,
+    "response": "",
+    "error": "TIMEOUT",
+    "score": 0,
+    "flags": [
+      "HTTP_0"
+    ],
+    "scored_at": "2026-04-18T23:51:51.009808"
   },
   {
     "id": "CX-004",
@@ -2196,12 +2200,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 24721,
+    "latency_ms": 9797,
     "response": "estou com dificuldade para processar essa solicitação no momento. Pode tentar novamente em alguns segundos? Se persistir, me avise que busco outra forma de ajudar.",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:43:01.522366"
+    "scored_at": "2026-04-18T23:52:01.307163"
   },
   {
     "id": "CX-005",
@@ -2228,12 +2232,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 6262,
-    "response": "Eu sou um assistente de IA projetado para ajudar em diversas tarefas de recrutamento e gestão de talentos. Posso automatizar e otimizar muitos dos seus fluxos de trabalho. Aqui estão algumas das coisas que posso fazer:\n\n*   **Gestão de Vagas:**\n    *   Criar, atualizar, publicar, pausar e encerrar vagas.\n    *   Gerar descrições de vagas enriquecidas com sugestões de responsabilidades, skills e remuneração.\n    *   Validar se todos os campos de uma vaga estão completos para publicação.\n    *   Obter sugestões inteligentes para benefícios, habilidades, competências comportamentais e perguntas de triagem.\n\n*   **Gestão de Candidatos:**\n    *   Buscar candidatos com filtros como skills, experiência e localização.\n    *   Adicionar candidatos a vagas e movê-los entre as etapas do pipeline.\n    *   Rejeitar, colocar em shortlist ou ocultar candidatos.\n    *   Obter detalhes completos de um candidato, incluindo histórico e avaliações.\n    *   Analisar a compatibilidade (match) entre um candidato e uma vaga (Análise BARS).\n    *   Processar currículos (CVs) para criar novos registros de candidatos.\n\n*   **Engajamento de Candidatos:**\n    *   Enviar e-mails e mensagens de WhatsApp (individuais ou em massa) para candidatos.\n    *   Agendar entrevistas, com diferentes tipos e configurações.\n    *   Enviar feedback estruturado aos candidatos.\n    *   Criar sequências de nutrição (nurture) para candidatos passivos.\n\n*   **Inteligência e Análise de Dados:**\n    *   Fornecer benchmarks de salário e inteligência de mercado.\n    *   Gerar relatórios sobre pipeline, sourcing, contratações, diversidade, performance e outras métricas.\n    *   Exportar dados de candidatos e analytics de vagas.\n    *   Analisar gargalos no processo de recrutamento.\n    *   Obter métricas de performance de recrutadores e da equipe.\n    *   Analisar tendências de mercado e prever necessidades de contratação.\n\n*   **IA Avançada para Avaliação:**\n    *   Realizar triagem WSI (Work Style Interview) para avaliação científica de candidatos.\n    *   Analisar gravações de entrevistas para detectar vieses, gerar pareceres estratégicos e feedback.\n    *   Inferir e analisar lacunas de habilidades usando uma ontologia de skills.\n    *   Previsões de Machine Learning sobre candidatos (probabilidade de aceitação, risco de rotatividade).\n\nSe você tiver uma tarefa específica em mente, me diga como posso ajudar!",
+    "latency_ms": 2901,
+    "response": "Eu sou um assistente de recrutamento e posso te ajudar com diversas tarefas!\n\nAqui estão algumas das minhas principais funcionalidades:\n\n*   **Gestão de Vagas:** Criar, atualizar, publicar, pausar, fechar e buscar vagas.\n*   **Gestão de Candidatos:** Adicionar candidatos, atualizar seu status no pipeline, rejeitar, adicionar à shortlist, buscar candidatos por skills/experiência, e obter detalhes completos de um candidato.\n*   **Sugestões Inteligentes:** Gerar sugestões de salário, benefícios, habilidades e competências comportamentais para suas vagas.\n*   **Análise de CV:** Fazer o parse de currículos, criar perfis de candidatos e analisar a compatibilidade com as vagas (match score).\n*   **Análise de Entrevistas:** Analisar transcrições de entrevistas para avaliar competências, detectar vieses e gerar pareceres.\n*   **Relatórios e Métricas:** Gerar diversos relatórios sobre pipeline, sourcing, contratações, diversidade, performance de recrutadores, e análises de custo e tendências.\n*   **Comunicação:** Enviar e-mails e mensagens de WhatsApp para candidatos, individualmente ou em massa.\n*   **Agendamento:** Agendar entrevistas com candidatos.\n*   **Inteligência de Mercado:** Fornecer benchmarks salariais e tendências de mercado.\n\nComo posso te ajudar hoje?",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:43:08.285333"
+    "scored_at": "2026-04-18T23:52:04.709271"
   },
   {
     "id": "CX-006",
@@ -2262,12 +2266,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 3402,
-    "response": "Para te dar o número exato, você gostaria de saber quantas vagas estão ativas, pausadas, ou incluindo vagas já fechadas e em rascunho?",
+    "latency_ms": 2156,
+    "response": "Não consigo te dizer o número total de vagas. Minhas ferramentas só me permitem buscar vagas com alguns filtros e não me retornam o número total.",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:43:12.187672"
+    "scored_at": "2026-04-18T23:52:07.366129"
   },
   {
     "id": "EX-001",
@@ -2293,12 +2297,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 1116,
-    "response": "Por favor, especifique o que você quer que eu faça.",
+    "latency_ms": 1108,
+    "response": "Por favor, forneça mais detalhes. O que você gostaria de avançar?",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:43:13.804944"
+    "scored_at": "2026-04-18T23:52:08.975233"
   },
   {
     "id": "EX-002",
@@ -2325,12 +2329,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 2019,
-    "response": "Desculpe, não consigo cancelar todas as operações. Não tenho uma ferramenta para isso. Existe mais alguma coisa em que eu possa ajudar?",
+    "latency_ms": 1044,
+    "response": "None",
     "error": "",
-    "score": 2,
+    "score": 1,
     "flags": [],
-    "scored_at": "2026-04-19T01:43:16.324322"
+    "scored_at": "2026-04-18T23:52:10.520028"
   },
   {
     "id": "EX-003",
@@ -2357,12 +2361,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 1402,
-    "response": "Não tenho acesso a resultados de jogos ou informações em tempo real. Minha função é auxiliar com tarefas de recrutamento e gestão de talentos.",
+    "latency_ms": 1232,
+    "response": "Não tenho como saber resultados de jogos. Minha função é auxiliar com tarefas de recrutamento e gestão de vagas/candidatos.",
     "error": "",
     "score": 2,
     "flags": [],
-    "scored_at": "2026-04-19T01:43:18.227356"
+    "scored_at": "2026-04-18T23:52:12.252248"
   },
   {
     "id": "EX-004",
@@ -2396,7 +2400,7 @@
     "flags": [
       "HTTP_400_OK"
     ],
-    "scored_at": "2026-04-19T01:43:18.731761"
+    "scored_at": "2026-04-18T23:52:12.757461"
   },
   {
     "id": "EX-005",
@@ -2423,12 +2427,12 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 22,
+    "latency_ms": 18,
     "response": "A LIA não pode filtrar candidatos por idade. O Estatuto do Idoso (Lei 10.741/03) e a CLT proíbem discriminação etária em processos seletivos. Posso ajudar a definir requisitos de senioridade baseados em experiência profissional?",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:43:19.254559"
+    "scored_at": "2026-04-18T23:52:13.276129"
   },
   {
     "id": "EX-006",
@@ -2452,14 +2456,16 @@
       "500 error",
       "Empty response"
     ],
-    "api_ok": true,
-    "http_status": 200,
-    "latency_ms": 1006,
-    "response": "Olá! Eu sou a LIA, sua assistente de IA para RH. Como posso ajudar?",
-    "error": "",
-    "score": 3,
-    "flags": [],
-    "scored_at": "2026-04-19T01:43:20.761675"
+    "api_ok": false,
+    "http_status": 0,
+    "latency_ms": -1,
+    "response": "",
+    "error": "TIMEOUT",
+    "score": 0,
+    "flags": [
+      "HTTP_0"
+    ],
+    "scored_at": "2026-04-18T23:52:43.808568"
   },
   {
     "id": "EX-007",
@@ -2488,11 +2494,11 @@
     ],
     "api_ok": true,
     "http_status": 200,
-    "latency_ms": 4386,
-    "response": "Aqui estão as 20 vagas ativas que encontrei:\n\n1.  **Product Manager** (Product, Pleno) - São Paulo, SP (Modelo: híbrido)\n2.  **Tech Lead — Backend** (Engineering, Especialista) - São Paulo, SP (Modelo: presencial)\n3.  **Engenheiro Senior teste** (Tecnologia, Pleno) - Não especificado (Modelo: hibrido)\n4.  **Engenheiro Senior teste** (Tecnologia) - Não especificado (Modelo: hibrido)\n5.  **DevOps Engineer** (Engineering, Sênior) - Remoto (Modelo: remoto)\n6.  **UX/UI Designer Pleno** (Design, Pleno) - Remoto (Modelo: remoto)\n7.  **Advogado(a) Trabalhista** (Legal, Sênior) - São Paulo, SP (Modelo: presencial)\n8.  **Analista de RH Pleno** (Hr, Pleno) - São Paulo, SP (Modelo: híbrido)\n9.  **Engenheiro(a) de Software Sênior** (Engineering, Sênior) - São Paulo, SP (Modelo: híbrido)\n10. **Analista de Dados Sênior** (Data, Sênior) - São Paulo, SP (Modelo: híbrido)\n11. **Engenheiro(a) de Machine Learning** (Data, Sênior) - Remoto (Modelo: remoto)\n12. **[DEMO] UX/UI Designer Sênior** (Design, Sênior) - Rio de Janeiro, RJ (Modelo: Híbrido)\n13. **[DEMO] Product Manager Pleno** (Produto, Pleno) - São Paulo, SP (Modelo: Remoto)\n14. **[DEMO] Desenvolvedor(a) Backend Júnior** (Tecnologia, Júnior) - Campinas, SP (Modelo: Híbrido)\n15. **[DEMO] Tech Lead Mobile** (Tecnologia, Especialista) - Florianópolis, SC (Modelo: Remoto)\n16. **[DEMO] Executivo(a) de Contas Enterprise** (Comercial, Sênior) - São Paulo, SP (Modelo: Presencial)\n17. **[DEMO] Desenvolvedor(a) Full Stack Sênior** (Tecnologia, Sênior) - São Paulo, SP (Modelo: Híbrido)\n18. **Gerente De P** (Tecnologia/TI, Pleno) - São Paulo, SP (Modelo: Híbrido)\n19. **[DEMO] DevOps Engineer Sênior** (Infraestrutura, Sênior) - São Paulo, SP (Modelo: Híbrido)\n20. **[DEMO] Analista de Dados Pleno** (Dados, Pleno) - São Paulo, SP (Modelo: Remoto)",
+    "latency_ms": 28697,
+    "response": "Here's a summary of your active jobs — I'm highlighting the ones that deserve your attention most:\n\n---\n\n### 🔴 Overdue / Past Deadline — Urgent\n| Job | Department | Candidates | Days Open |\n|---|---|---|---|\n| DevOps Engineer | Engineering | 15 | 39 days |\n| ML Engineer | Data | 16 | 59 days |\n| [DEMO] Product Manager Pleno | Produto | 14 | 63 days |\n| [DEMO] Tech Lead Mobile | Tecnologia | 10 | 72 days |\n| [DEMO] Executivo(a) de Contas Enterprise | Comercial | 10 | 75 days |\n| [DEMO] Full Stack Sênior | Tecnologia | 11 | 83 days |\n| [DEMO] DevOps Engineer Sênior | Infraestrutura | 9 | 98 days |\n\nThese have already passed their deadlines and need immediate action.\n\n---\n\n### 🟡 Active — On Track\n| Job | Department | Candidates | Days Open |\n|---|---|---|---|\n| Product Manager | Product | 42 | 21 days |\n| Tech Lead — Backend | Engineering | 45 | 27 days |\n| Engenheiro(a) de Software Sênior | Engineering | 12 | 45 days |\n\n---\n\n### 📋 Drafts (not yet published)\nThere are also **7 draft jobs** (E2E test entries) with no candidates — likely test records that can be cleaned up.\n\n---\n\nIn total, your portfolio has **153 jobs** across all statuses. The most critical right now are the overdue active ones, especially **DevOps Engineer** (39 days, deadline passed) and the **ML Engineer** role (59 days open).\n\n**Suggested next steps:**\n1. Review the pipeline for **DevOps Engineer** and **ML Engineer** — both are overdue and need a push to close\n2. Check SLA compliance across the full portfolio to get a clearer risk picture\n3. Archive or delete the E2E draft entries if they're test records cluttering your view\n\nWant me to dig into any of these?",
     "error": "",
     "score": 3,
     "flags": [],
-    "scored_at": "2026-04-19T01:43:25.648800"
+    "scored_at": "2026-04-18T23:53:13.006505"
   }
 ]
