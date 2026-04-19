@@ -333,7 +333,16 @@ class Orchestrator:
                     role="assistant", content=result.get("message", ""), intent=result.get("intent"))
                 if conv.message_count and conv.message_count % settings.ROUTER_SUMMARY_EVERY_N_MESSAGES == 0:
                     try:
-                        await self.conversation_memory.update_summary(db=db, conversation_id=conversation_id, llm_service=self.llm_service)
+                        # Audit task #545 — billing por empresa para
+                        # sumarização de conversas do recruiter.
+                        _company_id = (context or {}).get("company_id") if context else None
+                        await self.conversation_memory.update_summary(
+                            db=db, conversation_id=conversation_id,
+                            tracking_context={
+                                "company_id": _company_id,
+                                "user_id": user_id,
+                            } if _company_id else None,
+                        )
                     except Exception:
                         pass
             await db.commit()

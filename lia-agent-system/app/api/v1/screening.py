@@ -119,6 +119,11 @@ async def generate_screening_questions(
         logger.info(f"Generating screening questions for: {request.title} ({request.seniority}) - company: {company_id}, user: {current_user.id}")
 
         mode = "full" if request.question_count > 10 else "compact"
+        # Audit task #545 — propaga billing context para WSI question gen.
+        _qg_tracking = {
+            "company_id": company_id,
+            "user_id": str(getattr(current_user, "id", "")) or None,
+        }
         wsi_questions = await wsi_svc.generate_from_simple_inputs(
             skills=request.skills or [],
             behavioral=[],
@@ -126,6 +131,7 @@ async def generate_screening_questions(
             job_description=request.job_description,
             mode=mode,
             max_questions=request.question_count,
+            tracking_context=_qg_tracking,
         )
 
         response = _wsi_questions_to_screening_response(wsi_questions, request)
@@ -155,12 +161,18 @@ async def regenerate_questions(
         company_id = get_user_company_id(current_user)
         logger.info(f"Regenerating questions for: {request.context.title} - company: {company_id}, user: {current_user.id}")
 
+        # Audit task #545 — propaga billing context para regenerate.
+        _qg_tracking = {
+            "company_id": company_id,
+            "user_id": str(getattr(current_user, "id", "")) or None,
+        }
         wsi_questions = await wsi_svc.generate_from_simple_inputs(
             skills=request.context.skills or [],
             behavioral=[],
             seniority=request.context.seniority or "pleno",
             job_description=request.context.job_description,
             mode="compact",
+            tracking_context=_qg_tracking,
         )
 
         response = _wsi_questions_to_screening_response(wsi_questions, request.context)

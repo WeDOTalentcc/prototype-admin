@@ -87,7 +87,15 @@ async def fast_track_wizard_step(
         created_job = None
 
         if current_state == FastTrackState.PRE_WIZARD:
-            classification = await intent_classifier_service.classify(user_input)
+            # Audit task #545 — billing por empresa para classificação de intenção.
+            classification = await intent_classifier_service.classify(
+                user_input,
+                tracking_context={
+                    "company_id": company_id,
+                    "user_id": str(getattr(current_user, "id", "")) or None,
+                    "session_id": conversation_id,
+                } if company_id else None,
+            )
 
             if classification.intent_type == IntentType.REUSE_VACANCY:
                 criteria = await vacancy_search_service.extract_search_criteria(user_input)

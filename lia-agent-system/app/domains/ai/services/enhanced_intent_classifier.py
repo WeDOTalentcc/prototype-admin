@@ -316,7 +316,8 @@ class EnhancedIntentClassifierService:
         user_input: str,
         stage: int = 1,
         filled_fields: dict[str, Any] | None = None,
-        context: dict[str, Any] | None = None
+        context: dict[str, Any] | None = None,
+        tracking_context: dict[str, Any] | None = None,
     ) -> EnhancedClassificationResult:
         """
         Classifica a intenção do usuário e extrai todas as entidades.
@@ -352,10 +353,21 @@ class EnhancedIntentClassifierService:
                 user_input=user_input
             )
             
+            # Audit task #545 — captura tokens da classificação enhanced.
+            from app.shared.observability.usage_tracking_callback import (
+                build_usage_callback,
+            )
+            _on_usage = build_usage_callback(
+                tracking_context,
+                agent_type="intent_classifier",
+                default_operation="enhanced_intent_classification",
+                extra={"stage": stage, "classifier": "enhanced"},
+            )
             response = await self._llm_service.generate(
                 prompt=prompt,
                 max_tokens=1000,
-                temperature=0.1
+                temperature=0.1,
+                on_usage=_on_usage,
             )
             
             json_match = re.search(r'\{[\s\S]*\}', response)

@@ -52,6 +52,40 @@ class ToolCallResponse:
     raw_response: Any | None = None
 
 
+def _emit_usage_callback(
+    on_usage: "Callable[[dict[str, Any]], None]",
+    response: Any,
+    provider: str,
+    start_time: float,
+) -> None:
+    """Audit task #545 — extrai usage_metadata da resposta LangChain e
+    chama o callback do consumidor. Reusado por `LLMService.generate` e
+    `LLMService.safe_invoke` para garantir consistência."""
+    try:
+        usage_meta = getattr(response, "usage_metadata", None) or {}
+        resp_meta = getattr(response, "response_metadata", None) or {}
+        model_name = (
+            resp_meta.get("model_name")
+            or resp_meta.get("model")
+            or (
+                settings.LLM_PRIMARY_MODEL
+                if provider == "claude"
+                else getattr(settings, "OPENAI_MODEL", None)
+                or "openai-unknown"
+            )
+        )
+        on_usage({
+            "input_tokens": int(usage_meta.get("input_tokens", 0) or 0),
+            "output_tokens": int(usage_meta.get("output_tokens", 0) or 0),
+            "total_tokens": int(usage_meta.get("total_tokens", 0) or 0),
+            "model": model_name,
+            "provider": provider,
+            "latency_ms": (_time.time() - start_time) * 1000,
+        })
+    except Exception as cb_err:  # pragma: no cover - defensive
+        logger.warning("LLM on_usage callback failed: %s", cb_err)
+
+
 class LLMService:
     """
     Service for managing multiple LLM providers.
@@ -312,6 +346,8 @@ class LLMService:
         prompt: str,
         provider: LLMProvider = "gemini",
         model: str | None = None,
+        *,
+        on_usage: "Callable[[dict[str, Any]], None] | None" = None,
         **kwargs
     ) -> str:
         """
@@ -366,10 +402,24 @@ class LLMService:
         if self._tenant_container is not None:
             try:
                 tenant_provider = self._tenant_container.get(provider)
+                _tenant_start = _time.time()
                 if system_prompt := kwargs.pop("system", None):
                     result = await tenant_provider.generate_with_system(system_prompt, prompt, **kwargs)
                 else:
                     result = await tenant_provider.generate(prompt, **kwargs)
+                # Audit task #545 — emite on_usage para o caminho tenant.
+                if on_usage is not None:
+                    try:
+                        _usage = getattr(result, "usage", {}) or {}
+                        on_usage({
+                            "input_tokens": int(_usage.get("input_tokens") or 0),
+                            "output_tokens": int(_usage.get("output_tokens") or 0),
+                            "model": getattr(result, "model", None) or model or "unknown",
+                            "latency_ms": (_time.time() - _tenant_start) * 1000,
+                            "provider": getattr(result, "provider", provider),
+                        })
+                    except Exception as _cb_err:  # pragma: no cover - defensive
+                        logger.warning("LLM tenant on_usage callback failed: %s", _cb_err)
                 return result.text
             except Exception as _tenant_exc:
                 logger.warning(
@@ -379,13 +429,21 @@ class LLMService:
                 # Fall through to global provider
 
         if provider == "gemini":
+            # Audit task #545 — gemini path ainda não suporta on_usage
+            # (mesmo comportamento de safe_invoke).
             return await self.generate_with_gemini(prompt, model=model)
-        elif provider == "claude":
+
+        # Audit task #545 — captura usage para claude/openai quando o
+        # consumidor passa on_usage. Espelha a lógica de safe_invoke.
+        _gen_start = _time.time()
+        if provider == "claude":
             llm = self.claude
             if kwargs:
                 llm = llm.bind(**kwargs)
             response = await llm.ainvoke(prompt)
             content = response.content
+            if on_usage is not None:
+                _emit_usage_callback(on_usage, response, provider, _gen_start)
             if isinstance(content, list):
                 text_parts: list[str] = []
                 for block in content:
@@ -403,6 +461,8 @@ class LLMService:
                 llm = llm.bind(**kwargs)
             response = await llm.ainvoke(prompt)
             content = response.content
+            if on_usage is not None:
+                _emit_usage_callback(on_usage, response, provider, _gen_start)
             return str(content) if content else ""
         else:
             raise ValueError(f"Unknown provider: {provider}")
@@ -888,33 +948,11 @@ class LLMService:
             # Gemini path bypassa este wrapper — sem suporte a on_usage aqui.
             return await self.generate_with_gemini(prompt)
 
-        _latency = (_time.time() - _start) * 1000
-
         # Audit task #532 (G23-04) — emite usage para o callback opcional.
+        # Compartilha a extração de usage_metadata com `LLMService.generate`
+        # via `_emit_usage_callback` (audit task #545).
         if on_usage is not None:
-            try:
-                usage_meta = getattr(response, "usage_metadata", None) or {}
-                resp_meta = getattr(response, "response_metadata", None) or {}
-                model_name = (
-                    resp_meta.get("model_name")
-                    or resp_meta.get("model")
-                    or (
-                        settings.LLM_PRIMARY_MODEL
-                        if provider == "claude"
-                        else getattr(settings, "OPENAI_MODEL", None)
-                        or "openai-unknown"
-                    )
-                )
-                on_usage({
-                    "input_tokens": int(usage_meta.get("input_tokens", 0) or 0),
-                    "output_tokens": int(usage_meta.get("output_tokens", 0) or 0),
-                    "total_tokens": int(usage_meta.get("total_tokens", 0) or 0),
-                    "model": model_name,
-                    "provider": provider,
-                    "latency_ms": _latency,
-                })
-            except Exception as cb_err:  # pragma: no cover - defensive
-                logger.warning("safe_invoke on_usage callback failed: %s", cb_err)
+            _emit_usage_callback(on_usage, response, provider, _start)
 
         content = response.content
         if isinstance(content, list):

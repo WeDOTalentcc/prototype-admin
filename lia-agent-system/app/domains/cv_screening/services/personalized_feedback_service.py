@@ -400,7 +400,16 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
 
             whatsapp_message = None
             if request.channel in [FeedbackChannel.WHATSAPP, FeedbackChannel.BOTH]:
-                whatsapp_message = await self._generate_whatsapp_version(body_text)
+                # Audit task #545 — encaminha contexto para tracking de IA por
+                # empresa/candidato/vaga no AiConsumption.
+                _wpp_tracking = {
+                    "company_id": request.company_id,
+                    "candidate_id": request.candidate.candidate_id,
+                    "vacancy_id": request.job.job_id,
+                }
+                whatsapp_message = await self._generate_whatsapp_version(
+                    body_text, tracking_context=_wpp_tracking,
+                )
 
             feedback_id = str(uuid.uuid4())
 
@@ -937,11 +946,26 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         
         return html
     
-    async def _generate_whatsapp_version(self, email_body: str) -> str:
+    async def _generate_whatsapp_version(
+        self,
+        email_body: str,
+        tracking_context: dict[str, Any] | None = None,
+    ) -> str:
         """Generate a shorter WhatsApp-appropriate version of the feedback."""
         try:
+            from app.shared.observability.usage_tracking_callback import (
+                build_usage_callback,
+            )
+
             prompt = self.WHATSAPP_PROMPT_TEMPLATE.format(email_body=email_body)
-            _response = await self.llm.safe_invoke(prompt, provider="claude")
+            on_usage = build_usage_callback(
+                tracking_context,
+                agent_type="personalized_feedback_whatsapp",
+                default_operation="personalized_feedback_whatsapp",
+            )
+            _response = await self.llm.safe_invoke(
+                prompt, provider="claude", on_usage=on_usage,
+            )
             response = type("R", (), {"content": _response})()
             content = response.content if isinstance(response.content, str) else str(response.content)
             

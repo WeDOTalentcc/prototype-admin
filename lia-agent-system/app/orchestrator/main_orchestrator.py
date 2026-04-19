@@ -1070,8 +1070,15 @@ class MainOrchestrator:
                     and conv.message_count % settings.ROUTER_SUMMARY_EVERY_N_MESSAGES == 0
                 ):
                     try:
+                        # Audit task #545 — billing por empresa para
+                        # sumarização de conversas do orchestrator.
+                        _company_for_summary = getattr(ctx, "company_id", None)
                         await conversation_memory.update_summary(
-                            db=db, conversation_id=conv_id, llm_service=self._orchestrator.llm_service,
+                            db=db, conversation_id=conv_id,
+                            tracking_context={
+                                "company_id": str(_company_for_summary),
+                                "user_id": getattr(ctx, "user_id", None),
+                            } if _company_for_summary else None,
                         )
                     except Exception:
                         pass

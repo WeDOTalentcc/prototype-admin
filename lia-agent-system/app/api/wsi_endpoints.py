@@ -257,12 +257,20 @@ async def generate_questions(
                 comp = Competency(**comp_dict)
                 competencies_list.append(comp)
             
+            # Audit task #545 — billing context para WSI chat-screening.
+            _qg_tracking = {
+                "company_id": getattr(request, "company_id", None),
+                "candidate_id": getattr(request, "candidate_id", None),
+                "vacancy_id": getattr(request, "job_vacancy_id", None),
+                "session_id": getattr(request, "session_id", None),
+            }
             questions = await wsi_svc.generate_screening_questions(
                 competencies=competencies_list,
                 mode=request.mode,
                 job_description=request.job_description,
                 seniority=request.seniority,
                 enriched_jd=request.enriched_jd,
+                tracking_context=_qg_tracking,
             )
             qs_version = None
             qs_id = None

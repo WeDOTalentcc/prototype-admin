@@ -387,7 +387,23 @@ Responda em JSON:
     "confidence": 0.85
 }}"""
 
-                content = await llm_service.safe_invoke(analysis_prompt, provider="claude")
+                # Audit task #545 — registra custo da análise pós-entrevista
+                # por empresa/candidato/vaga no dashboard de billing.
+                from app.shared.observability.usage_tracking_callback import (
+                    build_usage_callback,
+                )
+                on_usage = build_usage_callback(
+                    {
+                        "company_id": getattr(request, "company_id", None),
+                        "candidate_id": getattr(request, "candidate_id", None),
+                        "vacancy_id": getattr(request, "vacancy_id", None),
+                    },
+                    agent_type="interview_analysis",
+                    default_operation="interview_post_analysis",
+                )
+                content = await llm_service.safe_invoke(
+                    analysis_prompt, provider="claude", on_usage=on_usage,
+                )
 
                 import json
                 if "```json" in content:

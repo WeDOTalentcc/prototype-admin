@@ -70,10 +70,19 @@ async def interpret_user_message(
         f"Stage: {STAGE_NAMES.get(request.current_stage, request.current_stage)}"
         filled_fields = request.context.get('filled_fields', []) if request.context else []
 
+        # Audit task #545 — billing context para enhanced classifier.
+        _ec_tracking = None
+        _ec_company = (request.context or {}).get("company_id") if request.context else None
+        if _ec_company:
+            _ec_tracking = {
+                "company_id": _ec_company,
+                "session_id": (request.context or {}).get("conversation_id"),
+            }
         classification = await enhanced_intent_classifier.classify(
             user_input=request.message,
             stage=STAGE_MAP.get(request.current_stage, 1),
-            filled_fields=filled_fields
+            filled_fields=filled_fields,
+            tracking_context=_ec_tracking,
         )
 
         logger.info(f"Message interpreted: '{request.message[:50]}...' -> {classification.intent_type} (confidence: {classification.confidence})")

@@ -201,7 +201,11 @@ class WizardStepService:
                         user_input=request.user_input,
                         stage=current_stage,
                         filled_fields=job_draft,
-                        context={"company": aggregated_context.company.name if aggregated_context else None}
+                        context={"company": aggregated_context.company.name if aggregated_context else None},
+                        tracking_context={
+                            "company_id": company_id,
+                            "session_id": conversation_id,
+                        } if company_id else None,
                     )
 
                     entities_dict = enhanced_classification.entities.to_dict()
@@ -219,10 +223,15 @@ class WizardStepService:
                     logger.warning(f"Enhanced classifier failed, falling back: {e}")
                     enhanced_classification = None
 
+            # Audit task #545 — billing por empresa para classificação.
             classification = await intent_classifier_service.classify(
                 user_input=request.user_input,
                 stage_context=stage_context,
-                use_llm=True
+                use_llm=True,
+                tracking_context={
+                    "company_id": company_id,
+                    "session_id": conversation_id,
+                } if company_id else None,
             )
 
             if not enhanced_classification:

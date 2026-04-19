@@ -336,6 +336,7 @@ class ConversationMemory:
         db: AsyncSession,
         conversation_id: str,
         force: bool = False,
+        tracking_context: dict[str, Any] | None = None,
     ) -> str | None:
         """
         Generate and update conversation summary using LLM.
@@ -363,7 +364,15 @@ class ConversationMemory:
         if len(messages) < 3:
             return None
         
-        summary_text = await self._generate_summary(messages)
+        # Audit task #545 — herda user_id da própria conversa quando o caller
+        # não preencheu, mantendo o billing por empresa quando company_id é
+        # fornecido externamente.
+        _resolved_tracking = dict(tracking_context or {})
+        if "user_id" not in _resolved_tracking and getattr(conversation, "user_id", None):
+            _resolved_tracking["user_id"] = conversation.user_id
+        summary_text = await self._generate_summary(
+            messages, tracking_context=_resolved_tracking or None,
+        )
         
         if summary_text:
             summary = ConversationSummary(
@@ -562,14 +571,21 @@ class ConversationMemory:
         self,
         db: AsyncSession,
         conversation: Conversation,
+        tracking_context: dict[str, Any] | None = None,
     ) -> None:
         """Trigger async summary generation."""
         try:
-            await self.update_summary(db, str(conversation.id))
+            await self.update_summary(
+                db, str(conversation.id), tracking_context=tracking_context,
+            )
         except Exception as e:
             logger.warning(f"Summary generation failed: {e}")
     
-    async def _generate_summary(self, messages: list[Message]) -> str | None:
+    async def _generate_summary(
+        self,
+        messages: list[Message],
+        tracking_context: dict[str, Any] | None = None,
+    ) -> str | None:
         """
         Generate a summary of messages using LLM.
         
@@ -599,7 +615,19 @@ Conversa:
 
 Resumo (máximo 200 palavras):"""
 
-            return await self.llm_service.safe_invoke(prompt, provider="claude")
+            # Audit task #545 — tracking opcional do uso de IA na sumarização
+            # de conversas do recruiter assistant.
+            from app.shared.observability.usage_tracking_callback import (
+                build_usage_callback,
+            )
+            on_usage = build_usage_callback(
+                tracking_context,
+                agent_type="recruiter_conversation_summary",
+                default_operation="conversation_summary_messages",
+            )
+            return await self.llm_service.safe_invoke(
+                prompt, provider="claude", on_usage=on_usage,
+            )
             
         except Exception as e:
             logger.error(f"LLM summary generation failed: {e}")
@@ -628,7 +656,8 @@ Resumo (máximo 200 palavras):"""
     async def summarize_history(
         self,
         messages: list[dict],
-        max_messages: int = None
+        max_messages: int = None,
+        tracking_context: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
         Summariza histórico longo mantendo últimas N mensagens.
@@ -662,7 +691,9 @@ Resumo (máximo 200 palavras):"""
         recent_messages = messages[-max_messages:]
         summarized_count = len(messages_to_summarize)
         
-        summary = await self._generate_summary_from_dicts(messages_to_summarize)
+        summary = await self._generate_summary_from_dicts(
+            messages_to_summarize, tracking_context=tracking_context,
+        )
         
         return {
             "summary": summary,
@@ -671,7 +702,11 @@ Resumo (máximo 200 palavras):"""
             "summarized_count": summarized_count
         }
     
-    async def _generate_summary_from_dicts(self, messages: list[dict]) -> str:
+    async def _generate_summary_from_dicts(
+        self,
+        messages: list[dict],
+        tracking_context: dict[str, Any] | None = None,
+    ) -> str:
         """
         Generate summary from dict-format messages.
         
@@ -707,7 +742,19 @@ Conversa:
 
 Resumo conciso:"""
 
-            return await self.llm_service.safe_invoke(prompt, provider="claude")
+            # Audit task #545 — tracking opcional do uso de IA na compressão
+            # de histórico longo do recruiter assistant.
+            from app.shared.observability.usage_tracking_callback import (
+                build_usage_callback,
+            )
+            on_usage = build_usage_callback(
+                tracking_context,
+                agent_type="recruiter_conversation_summary",
+                default_operation="conversation_summary_dicts",
+            )
+            return await self.llm_service.safe_invoke(
+                prompt, provider="claude", on_usage=on_usage,
+            )
             
         except Exception as e:
             logger.error(f"LLM summary generation from dicts failed: {e}")

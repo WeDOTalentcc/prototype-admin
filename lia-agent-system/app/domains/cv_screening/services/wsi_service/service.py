@@ -21,6 +21,8 @@ from .score_calculator import WSIScoreCalculator
 from .report_generator import WSIReportGenerator
 
 from app.domains.ai.services.llm import llm_service
+# Audit task #545 — tracking de IA estendido para os principais fluxos WSI.
+from app.shared.observability.usage_tracking_callback import build_usage_callback
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +60,8 @@ class WSIService:
         self,
         job_description: str,
         company_culture: dict | None = None,
-        seniority: Literal["junior", "pleno", "senior", "lead", "executive"] = "pleno"
+        seniority: Literal["junior", "pleno", "senior", "lead", "executive"] = "pleno",
+        tracking_context: dict[str, Any] | None = None,
     ) -> CompetencySuggestion:
         """
         ETAPA 1: Analisa JD e sugere competências automaticamente.
@@ -119,7 +122,14 @@ Responda em JSON:
   "confidence_score": 0.95
 }}"""
 
-        content_str = await self.llm.safe_invoke(prompt, provider="claude")
+        on_usage = build_usage_callback(
+            tracking_context,
+            agent_type="wsi_competency_suggestion",
+            default_operation="wsi_jd_competency_suggest",
+        )
+        content_str = await self.llm.safe_invoke(
+            prompt, provider="claude", on_usage=on_usage,
+        )
         data = json.loads(content_str)
         
         # Converter para Competency objects
@@ -171,6 +181,7 @@ Responda em JSON:
         job_description: str | None = None,
         seniority: str | None = None,
         enriched_jd: dict | None = None,
+        tracking_context: dict[str, Any] | None = None,
     ) -> list[WSIQuestion]:
         """
         ETAPA 2: Gera perguntas científicas baseadas em competências.
@@ -209,6 +220,7 @@ Responda em JSON:
             mode,
             job_description=job_description,
             seniority=seniority,
+            tracking_context=tracking_context,
         )
 
     async def generate_from_simple_inputs(
@@ -219,6 +231,7 @@ Responda em JSON:
         job_description: str | None = None,
         mode: Literal["compact", "full"] = "compact",
         max_questions: int | None = None,
+        tracking_context: dict[str, Any] | None = None,
     ) -> list[WSIQuestion]:
         """Convenience wrapper: converts string skill/behavioral lists into Competency
         objects and delegates to ``generate_screening_questions()``.
@@ -271,6 +284,7 @@ Responda em JSON:
             mode=mode,
             job_description=job_description,
             seniority=_seniority_level if _seniority_level in ("junior", "pleno", "senior", "lead", "executive") else "pleno",
+            tracking_context=tracking_context,
         )
         if max_questions is not None and len(questions) > max_questions:
             questions = questions[:max_questions]
@@ -457,7 +471,8 @@ Responda em JSON:
         self,
         candidate_id: str,
         wsi_result: WSIResult,
-        responses: list[ResponseAnalysis]
+        responses: list[ResponseAnalysis],
+        tracking_context: dict[str, Any] | None = None,
     ) -> StructuredReport:
         """
         ETAPA 5: Gera parecer estruturado.
@@ -478,14 +493,15 @@ Responda em JSON:
             StructuredReport com parecer completo
         """
         return await self.report_generator.generate_report(
-            candidate_id, wsi_result, responses
+            candidate_id, wsi_result, responses, tracking_context=tracking_context,
         )
     
     async def generate_candidate_feedback(
         self,
         wsi_result: WSIResult,
         responses: list[ResponseAnalysis],
-        decision: Literal["aprovado", "aguardando", "nao_aprovado"]
+        decision: Literal["aprovado", "aguardando", "nao_aprovado"],
+        tracking_context: dict[str, Any] | None = None,
     ) -> CandidateFeedback:
         """
         ETAPA 6: Gera feedback estruturado para candidato.
@@ -506,7 +522,7 @@ Responda em JSON:
             CandidateFeedback estruturado e construtivo
         """
         return await self.report_generator.generate_feedback(
-            wsi_result, responses, decision
+            wsi_result, responses, decision, tracking_context=tracking_context,
         )
 
 

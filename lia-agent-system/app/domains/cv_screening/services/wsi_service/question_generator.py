@@ -10,6 +10,10 @@ from typing import Any, Literal
 
 from app.domains.cv_screening.constants.wsi_constants import SENIORITY_DISTRIBUTIONS
 from app.domains.ai.services.llm import llm_service
+# Audit task #545 — tracking de IA estendido para geração de perguntas WSI.
+from app.shared.observability.usage_tracking_callback import build_usage_callback
+
+_WSI_QGEN_AGENT = "wsi_question_generator"
 
 from .models import (
     Competency,
@@ -91,6 +95,7 @@ Traits: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism
         self,
         job_description: str,
         behavioral_competencies: list[str] | None = None,
+        tracking_context: dict[str, Any] | None = None,
     ) -> list[OceanTraitScore]:
         """F2.5 — Extrai perfil Big Five do JD com rubric NEO-PI-R (Abordagem C).
 
@@ -159,8 +164,15 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
         # score=60 silencioso. OceanExtractionError é tratado pelo caller que
         # decide entre re-tentativa, modo degradado explícito (com flag UI) ou
         # abort consciente da geração WSI.
+        on_usage = build_usage_callback(
+            tracking_context,
+            agent_type=_WSI_QGEN_AGENT,
+            default_operation="wsi_ocean_extraction",
+        )
         try:
-            response = await self.llm.safe_invoke(prompt, temperature=0.1, max_tokens=800)
+            response = await self.llm.safe_invoke(
+                prompt, temperature=0.1, max_tokens=800, on_usage=on_usage,
+            )
         except Exception as e:
             logger.error(f"F2.5 OCEAN extraction LLM call failed: {e}")
             raise OceanExtractionError(f"LLM call failed: {e}") from e
@@ -213,6 +225,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
         mode: Literal["compact", "full"] = "compact",
         job_description: str | None = None,
         seniority: str | None = None,
+        tracking_context: dict[str, Any] | None = None,
     ) -> list[WSIQuestion]:
         """
         Gera todas as perguntas para as competências selecionadas.
@@ -277,7 +290,9 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
         selected_traits: list[OceanTraitScore] = []
         if job_description:
             behav_names = [c.name for c in behavioral]
-            ranked = await self._extract_ocean_scores(job_description, behav_names)
+            ranked = await self._extract_ocean_scores(
+                job_description, behav_names, tracking_context=tracking_context,
+            )
             selected_traits = self._select_traits_by_seniority(ranked, seniority or "pleno")
             logger.info(f"WSI F2.5 OCEAN ranked: {[(t.trait, t.score) for t in ranked]}")
             logger.info(f"WSI F5 selected ({len(selected_traits)} for '{seniority}'): {[t.trait for t in selected_traits]}")
@@ -318,6 +333,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
             questions.append(await self._generate_with_validation(
                 self._generate_cbi_question, comp,
                 jd_text=jd, skill_or_trait=comp.name, question_category="technical",
+                tracking_context=tracking_context,
             ))
 
         # --- CBI comportamental ---
@@ -325,6 +341,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
             questions.append(await self._generate_with_validation(
                 self._generate_cbi_question, comp,
                 jd_text=jd, skill_or_trait=comp.name, question_category="behavioral",
+                tracking_context=tracking_context,
             ))
 
         # --- Dreyfus (autodeclaração de proficiência) ---
@@ -334,6 +351,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
             questions.append(await self._generate_with_validation(
                 self._generate_dreyfus_question, comp,
                 jd_text=jd, skill_or_trait=comp.name, question_category="technical",
+                tracking_context=tracking_context,
             ))
 
         # --- Bloom (microcase situacional) ---
@@ -343,6 +361,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
             questions.append(await self._generate_with_validation(
                 self._generate_bloom_question, comp,
                 jd_text=jd, skill_or_trait=comp.name, question_category="technical",
+                tracking_context=tracking_context,
             ))
 
         # --- Big Five: F6.6 — seleção por afinidade de trait (fallback: posicional) ---
@@ -361,6 +380,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
                 self._generate_bigfive_question, bf_comp,
                 jd_text=jd, skill_or_trait=trait or bf_comp.name, question_category="behavioral",
                 ocean_trait=trait,
+                tracking_context=tracking_context,
             ))
 
         target_count = _dist["total"]
@@ -413,6 +433,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
         jd_text: str,
         skill_or_trait: str,
         question_category: str = "technical",
+        tracking_context: dict[str, Any] | None = None,
     ) -> dict:
         """F6.8.1 — Validação de ancoragem no JD via LLM (temperature=0.0).
 
@@ -452,8 +473,16 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
             "}"
         )
         full_prompt = f"SYSTEM:\n{system_prompt}\n\nUSER:\n{user_prompt}"
+        on_usage = build_usage_callback(
+            tracking_context,
+            agent_type=_WSI_QGEN_AGENT,
+            default_operation="wsi_jd_anchor_validation",
+            extra={"question_category": question_category},
+        )
         try:
-            response = await self.llm.safe_invoke(full_prompt, temperature=0.0, max_tokens=300)
+            response = await self.llm.safe_invoke(
+                full_prompt, temperature=0.0, max_tokens=300, on_usage=on_usage,
+            )
             result = safe_json_parse(response.content, fallback=None)
             if result and isinstance(result, dict) and "is_anchored" in result:
                 return result
@@ -476,6 +505,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
         jd_text: str | None = None,
         skill_or_trait: str | None = None,
         question_category: str = "technical",
+        tracking_context: dict[str, Any] | None = None,
         **gen_kwargs,
     ) -> "WSIQuestion":
         """F6.8 wrapper — gera pergunta com até 3 tentativas de validação.
@@ -494,7 +524,9 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
             if improvement_hint:
                 gen_kwargs["improvement_hint"] = improvement_hint
 
-            question = await gen_fn(competency, **gen_kwargs)
+            question = await gen_fn(
+                competency, tracking_context=tracking_context, **gen_kwargs
+            )
             last_question = question
 
             # Estágio 1 — determinístico
@@ -526,6 +558,7 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
                     jd_text=jd_text,
                     skill_or_trait=skill_or_trait,
                     question_category=question_category,
+                    tracking_context=tracking_context,
                 )
                 if not anchor.get("is_anchored", True):
                     logger.warning(
@@ -567,7 +600,10 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
         return last_question  # type: ignore[return-value]
 
     async def _generate_cbi_question(
-        self, competency: Competency, improvement_hint: str | None = None
+        self,
+        competency: Competency,
+        improvement_hint: str | None = None,
+        tracking_context: dict[str, Any] | None = None,
     ) -> WSIQuestion:
         """Gera pergunta CBI (contextual) para competência."""
         hint_block = (
@@ -599,8 +635,14 @@ Responda APENAS em JSON:
   }}
 }}"""
 
+        on_usage = build_usage_callback(
+            tracking_context,
+            agent_type=_WSI_QGEN_AGENT,
+            default_operation="wsi_question_cbi",
+            extra={"competency": competency.name, "competency_type": competency.type},
+        )
         try:
-            response = await self.llm.safe_invoke(prompt, temperature=0.7)
+            response = await self.llm.safe_invoke(prompt, temperature=0.7, on_usage=on_usage)
             data = safe_json_parse(response.content, fallback={
                 "framework": "CBI",
                 "question_type": "contextual",
@@ -640,7 +682,10 @@ Responda APENAS em JSON:
         )
     
     async def _generate_dreyfus_question(
-        self, competency: Competency, improvement_hint: str | None = None
+        self,
+        competency: Competency,
+        improvement_hint: str | None = None,
+        tracking_context: dict[str, Any] | None = None,
     ) -> WSIQuestion:
         """Gera pergunta Dreyfus (autodeclaração) para competência."""
         hint_block = (
@@ -657,8 +702,14 @@ Combina:
 {hint_block}
 Responda APENAS em JSON com mesma estrutura anterior."""
 
+        on_usage = build_usage_callback(
+            tracking_context,
+            agent_type=_WSI_QGEN_AGENT,
+            default_operation="wsi_question_dreyfus",
+            extra={"competency": competency.name},
+        )
         try:
-            response = await self.llm.safe_invoke(prompt, temperature=0.75)
+            response = await self.llm.safe_invoke(prompt, temperature=0.75, on_usage=on_usage)
             data = safe_json_parse(response.content, fallback={
                 "framework": "Dreyfus",
                 "question_type": "autodeclaration",
@@ -697,7 +748,10 @@ Responda APENAS em JSON com mesma estrutura anterior."""
         )
     
     async def _generate_bloom_question(
-        self, competency: Competency, improvement_hint: str | None = None
+        self,
+        competency: Competency,
+        improvement_hint: str | None = None,
+        tracking_context: dict[str, Any] | None = None,
     ) -> WSIQuestion:
         """Gera microcase Bloom para competência."""
         seniority_level_map = {
@@ -725,8 +779,14 @@ Responda APENAS em JSON."""
 
         cognitive_level = "APLICAR" if bloom_level == 3 else "ANALISAR" if bloom_level == 4 else "CRIAR"
         
+        on_usage = build_usage_callback(
+            tracking_context,
+            agent_type=_WSI_QGEN_AGENT,
+            default_operation="wsi_question_bloom",
+            extra={"competency": competency.name, "bloom_level": bloom_level},
+        )
         try:
-            response = await self.llm.safe_invoke(prompt, temperature=0.75)
+            response = await self.llm.safe_invoke(prompt, temperature=0.75, on_usage=on_usage)
             data = safe_json_parse(response.content, fallback={
                 "framework": "Bloom",
                 "question_type": "microcase",
@@ -804,6 +864,7 @@ Responda APENAS em JSON."""
         competency: Competency,
         ocean_trait: str | None = None,
         improvement_hint: str | None = None,
+        tracking_context: dict[str, Any] | None = None,
     ) -> WSIQuestion:
         """Gera pergunta Big Five (situacional) para competência.
 
@@ -845,8 +906,14 @@ Foco em traços OCEAN:
 {trait_context}{hint_block}
 Responda APENAS em JSON."""
 
+        on_usage = build_usage_callback(
+            tracking_context,
+            agent_type=_WSI_QGEN_AGENT,
+            default_operation="wsi_question_bigfive",
+            extra={"competency": competency.name, "ocean_trait": ocean_trait},
+        )
         try:
-            response = await self.llm.safe_invoke(prompt, temperature=0.8)
+            response = await self.llm.safe_invoke(prompt, temperature=0.8, on_usage=on_usage)
             data = safe_json_parse(response.content, fallback={
                 "framework": "BigFive",
                 "question_type": "situational",

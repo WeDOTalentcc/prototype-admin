@@ -300,12 +300,27 @@ def _parse_wsi_llm_response(content: str, transcript: str, ResponseAnalysis) -> 
         )]
 
 
-async def _analyze_transcript_for_wsi(transcript: str, vacancy_title: str, wsi_service) -> list:
+async def _analyze_transcript_for_wsi(
+    transcript: str,
+    vacancy_title: str,
+    wsi_service,
+    tracking_context: dict | None = None,
+) -> list:
     """Analyze a conversation transcript and extract structured ResponseAnalysis objects via LLM."""
     from app.domains.cv_screening.services.wsi_service import ResponseAnalysis
     from app.domains.ai.services.llm import llm_service
+    from app.shared.observability.usage_tracking_callback import build_usage_callback
     try:
-        content = await llm_service.safe_invoke(_build_wsi_prompt(transcript, vacancy_title), provider="claude")
+        on_usage = build_usage_callback(
+            tracking_context,
+            agent_type="wsi_transcript_analysis",
+            default_operation="wsi_transcript_analysis",
+        )
+        content = await llm_service.safe_invoke(
+            _build_wsi_prompt(transcript, vacancy_title),
+            provider="claude",
+            on_usage=on_usage,
+        )
         return _parse_wsi_llm_response(content, transcript, ResponseAnalysis)
     except Exception as e:
         logger.error(f"Failed to analyze transcript: {e}")
@@ -322,8 +337,16 @@ async def _calculate_wsi(request, vacancy, wsi_service) -> tuple:
     if request.responses:
         response_analyses = _build_screening_response_analyses(request.responses)
     else:
+        # Audit task #545 — propaga contexto de billing por empresa/candidato/vaga
+        # para a chamada de análise de transcript do screening.
+        tracking_context = {
+            "company_id": getattr(request, "company_id", None),
+            "candidate_id": getattr(request, "candidate_id", None),
+            "vacancy_id": getattr(request, "vacancy_id", None),
+        }
         response_analyses = await _analyze_transcript_for_wsi(
-            transcript=request.transcript, vacancy_title=vacancy.title, wsi_service=wsi_service
+            transcript=request.transcript, vacancy_title=vacancy.title,
+            wsi_service=wsi_service, tracking_context=tracking_context,
         )
     weights = _normalize_weights(request.competency_weights or {}, response_analyses)
     wsi_result = wsi_service.calculate_wsi(
@@ -399,8 +422,16 @@ async def _process_screening_completed(request, db, audit_svc, activity_svc, com
     wsi_result, response_analyses, weights, overall_wsi, passed, recommendation, decision, suggested_next_stage = \
         await _score_and_decide(request, vacancy, wsi_service)
 
+    # Audit task #545 — propaga billing context (empresa/candidato/vaga)
+    # também para a geração de feedback ao candidato pós-screening.
+    _feedback_tracking = {
+        "company_id": getattr(request, "company_id", None),
+        "candidate_id": getattr(request, "candidate_id", None),
+        "vacancy_id": getattr(request, "vacancy_id", None),
+    }
     candidate_feedback = await wsi_service.generate_candidate_feedback(
-        wsi_result=wsi_result, responses=response_analyses, decision=decision
+        wsi_result=wsi_result, responses=response_analyses, decision=decision,
+        tracking_context=_feedback_tracking,
     )
     communication_sent = await _send_screening_communication(
         comm_svc, db, request, passed, overall_wsi, candidate, vacancy, candidate_feedback

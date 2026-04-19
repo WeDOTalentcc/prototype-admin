@@ -5,6 +5,8 @@ import logging
 from typing import Any, Literal
 
 from app.shared.security.wsi_hashing import EU_AI_ACT_DISCLAIMER
+# Audit task #545 — tracking de IA estendido para o gerador de pareceres / feedback WSI.
+from app.shared.observability.usage_tracking_callback import build_usage_callback
 
 from .models import (
     CandidateFeedback,
@@ -34,7 +36,8 @@ class WSIReportGenerator:
         self,
         candidate_id: str,
         wsi_result: WSIResult,
-        responses: list[ResponseAnalysis]
+        responses: list[ResponseAnalysis],
+        tracking_context: dict[str, Any] | None = None,
     ) -> StructuredReport:
         """Gera parecer estruturado para recrutadores."""
         
@@ -127,8 +130,14 @@ RETORNE APENAS JSON:
   }}
 }}"""
 
+        on_usage = build_usage_callback(
+            tracking_context,
+            agent_type="wsi_report_generator",
+            default_operation="wsi_structured_report",
+            extra={"candidate_id": str(candidate_id)},
+        )
         try:
-            _response = await self.llm.safe_invoke(prompt, provider="claude")
+            _response = await self.llm.safe_invoke(prompt, provider="claude", on_usage=on_usage)
             response = type("R", (), {"content": _response})()
             data = safe_json_parse(response.content, fallback={
                 "executive_summary": f"Candidato com WSI {wsi_result.classification} ({wsi_result.overall_wsi}/10.0). Análise detalhada não disponível.",
@@ -206,7 +215,8 @@ RETORNE APENAS JSON:
         self,
         wsi_result: WSIResult,
         responses: list[ResponseAnalysis],
-        decision: Literal["aprovado", "aguardando", "nao_aprovado"]
+        decision: Literal["aprovado", "aguardando", "nao_aprovado"],
+        tracking_context: dict[str, Any] | None = None,
     ) -> CandidateFeedback:
         """Gera feedback construtivo para candidato.
         
@@ -289,8 +299,17 @@ RETORNE APENAS JSON:
             "recommended_resources": []
         }
 
+        on_usage = build_usage_callback(
+            tracking_context,
+            agent_type="wsi_candidate_feedback",
+            default_operation="wsi_candidate_feedback",
+            extra={
+                "candidate_id": str(wsi_result.candidate_id),
+                "decision": decision,
+            },
+        )
         try:
-            _response = await self.llm.safe_invoke(prompt, provider="claude")
+            _response = await self.llm.safe_invoke(prompt, provider="claude", on_usage=on_usage)
             response = type("R", (), {"content": _response})()
             data = safe_json_parse(response.content, fallback=_fallback)
         except Exception as e:

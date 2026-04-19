@@ -236,6 +236,11 @@ async def generate_questions(
 
     requested_count = request.max_questions or request.num_questions
     mode = "full" if requested_count > 10 else "compact"
+    # Audit task #545 — billing context para a geração principal de WSI.
+    _qg_tracking = {
+        "company_id": getattr(request, "company_id", None),
+        "vacancy_id": getattr(request, "vacancy_id", None) or getattr(request, "job_id", None),
+    }
     wsi_questions = await wsi_svc.generate_from_simple_inputs(
         skills=all_skills,
         behavioral=behavioral,
@@ -243,6 +248,7 @@ async def generate_questions(
         job_description=job_description,
         mode=mode,
         max_questions=requested_count,
+        tracking_context=_qg_tracking,
     )
 
     company_id_for_audit = request.company_id or ""
@@ -653,12 +659,18 @@ async def regenerate_wsi_questions(
         behav_to_generate = new_behav[:max(behav_needed, 1)]
 
         if tech_to_generate or behav_to_generate:
+            # Audit task #545 — billing context para a regeneração WSI.
+            _qg_tracking = {
+                "company_id": getattr(request, "company_id", None),
+                "vacancy_id": getattr(request, "vacancy_id", None) or getattr(request, "job_id", None),
+            }
             _raw = await wsi_svc.generate_from_simple_inputs(
                 skills=tech_to_generate,
                 behavioral=behav_to_generate,
                 seniority=request.seniority or "pleno",
                 job_description=request.job_title,
                 mode="compact",
+                tracking_context=_qg_tracking,
             )
             for wq in _raw:
                 if len(retained_questions) >= request.max_questions:
