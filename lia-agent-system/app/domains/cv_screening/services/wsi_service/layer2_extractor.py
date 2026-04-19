@@ -376,6 +376,7 @@ def _build_layer2_usage_callback(
     user_id = tracking_context.get("user_id")
     candidate_id = tracking_context.get("candidate_id")
     vacancy_id = tracking_context.get("vacancy_id")
+    session_id = tracking_context.get("session_id")
     operation = tracking_context.get("operation") or "wsi_layer2_extract"
 
     def _on_usage(usage: dict[str, Any]) -> None:
@@ -406,6 +407,13 @@ def _build_layer2_usage_callback(
                                 "question_id": str(question_id),
                                 "provider": usage.get("provider"),
                                 "source": "layer2_extractor",
+                                # Audit task #532 (G23-04) — session_id no
+                                # extra_data permite reconciliação fim-a-fim
+                                # entre wsi_sessions e AiConsumption sem
+                                # alterar o schema de billing.
+                                "session_id": (
+                                    str(session_id) if session_id else None
+                                ),
                             },
                         )
                 except asyncio.CancelledError:

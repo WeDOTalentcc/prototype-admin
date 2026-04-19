@@ -488,6 +488,7 @@ class WSIVoiceOrchestrator:
                     "company_id": company_id,
                     "candidate_id": candidate_id,
                     "vacancy_id": job_vacancy_id,
+                    "session_id": session_id,
                     "operation": "wsi_layer2_extract",
                 } if company_id else None
                 analysis = await self.wsi_service.analyze_response(
