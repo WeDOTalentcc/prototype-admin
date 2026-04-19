@@ -79,9 +79,18 @@ export function JobPreviewHeader({ previewJob, onClose, onJobClick }: JobPreview
                   {previewJob.department}
                 </Chip>
               )}
-              {previewJob.seniority && (
+              {previewJob.seniority ? (
                 <Chip variant="warning" muted className="text-[0.625rem] leading-none px-1.5 py-0.5">
                   {previewJob.seniority}
+                </Chip>
+              ) : (
+                <Chip
+                  variant="neutral"
+                  muted
+                  className="text-[0.625rem] leading-none px-1.5 py-0.5 italic bg-lia-bg-tertiary text-lia-text-tertiary border border-lia-border-subtle"
+                  title="O backend não devolveu o nível de senioridade desta vaga"
+                >
+                  Senioridade não informada
                 </Chip>
               )}
               {previewJob.location && (

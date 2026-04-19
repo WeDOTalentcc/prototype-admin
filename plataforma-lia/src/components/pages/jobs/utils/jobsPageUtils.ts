@@ -193,7 +193,7 @@ export function convertBackendJobToFrontend(jv: JobVacancy, index: number): Job 
     location: jv.location || 'Não especificado',
     workModel: (raw.work_model as Job['workModel']) || 'híbrido',
     type: (raw.employment_type as string) || 'CLT',
-    seniority: (raw.seniority_level as string) || (raw.seniority as string) || 'Pleno',
+    seniority: (raw.seniority_level as string) || (raw.seniority as string) || undefined,
     salary: salaryRange ? `${formatBRL(Number(salaryRange.min ?? 0))} - ${formatBRL(Number(salaryRange.max ?? 0))}` : 'A combinar',
     benefits: (raw.benefits as string[]) || [],
     status: (jv.status as Job['status']) || 'Rascunho',
@@ -283,7 +283,7 @@ export function convertBackendJobSimple(jv: Record<string, unknown>, index: numb
     location: (jv.location as string) || 'Não especificado',
     workModel: (jv.work_model as Job['workModel']) || 'híbrido',
     type: (jv.employment_type as string) || 'CLT',
-    seniority: (jv.seniority_level as string) || (jv.seniority as string) || 'Pleno',
+    seniority: (jv.seniority_level as string) || (jv.seniority as string) || undefined,
     salary: jv.salary_range ? `${formatBRL(Number((jv.salary_range as Record<string, number>).min ?? 0))} - ${formatBRL(Number((jv.salary_range as Record<string, number>).max ?? 0))}` : 'A combinar',
     status: (jv.status as Job['status']) || 'Rascunho',
     stage: stageMapping[(jv.stage as string) || ''] || 'Triagem',
@@ -412,7 +412,7 @@ export function filterJobs(
       job.department.toLowerCase().includes(searchLower) ||
       job.location.toLowerCase().includes(searchLower) ||
       job.type.toLowerCase().includes(searchLower) ||
-      getJobSeniority(job).toLowerCase().includes(searchLower) ||
+      (getJobSeniority(job)?.toLowerCase().includes(searchLower) ?? false) ||
       job.salary.toLowerCase().includes(searchLower) ||
       job.description.toLowerCase().includes(searchLower) ||
       job.manager.toLowerCase().includes(searchLower) ||
@@ -442,7 +442,7 @@ export function filterJobs(
       const booleanLower = booleanSearch.toLowerCase()
       const jobText = [
         job.title, job.department, job.location, job.type,
-        getJobSeniority(job), job.description, job.manager,
+        getJobSeniority(job) ?? '', job.description, job.manager,
         ...job.requirements, ...job.benefits
       ].join(' ').toLowerCase()
 
@@ -469,7 +469,7 @@ export function filterJobs(
     if (advancedFilters.job_types.length > 0)
       matchesAdvancedFilters = matchesAdvancedFilters && advancedFilters.job_types.some(t => job.type.toLowerCase().includes(t.toLowerCase()))
     if (advancedFilters.seniority_levels.length > 0)
-      matchesAdvancedFilters = matchesAdvancedFilters && advancedFilters.seniority_levels.some(l => getJobSeniority(job).toLowerCase().includes(l.toLowerCase()))
+      matchesAdvancedFilters = matchesAdvancedFilters && advancedFilters.seniority_levels.some(l => getJobSeniority(job)?.toLowerCase().includes(l.toLowerCase()) ?? false)
     if (advancedFilters.status.length > 0)
       matchesAdvancedFilters = matchesAdvancedFilters && advancedFilters.status.some(s => job.status.toLowerCase().includes(s.toLowerCase()))
     if (advancedFilters.stages.length > 0)
@@ -502,7 +502,7 @@ export function filterJobs(
     if (jobFilters.status?.priorities?.length) matchesInlineFilters = matchesInlineFilters && jobFilters.status.priorities.includes(job.priority)
     if (jobFilters.status?.stages?.length) matchesInlineFilters = matchesInlineFilters && jobFilters.status.stages.includes(job.stage)
     if (jobFilters.position?.workModels?.length) matchesInlineFilters = matchesInlineFilters && jobFilters.position.workModels.includes(job.workModel)
-    if (jobFilters.position?.levels?.length) matchesInlineFilters = matchesInlineFilters && jobFilters.position.levels.some(l => getJobSeniority(job).toLowerCase().includes(l.toLowerCase()))
+    if (jobFilters.position?.levels?.length) matchesInlineFilters = matchesInlineFilters && jobFilters.position.levels.some(l => getJobSeniority(job)?.toLowerCase().includes(l.toLowerCase()) ?? false)
     if (jobFilters.team?.departments?.length) matchesInlineFilters = matchesInlineFilters && jobFilters.team.departments.some(d => job.department.toLowerCase().includes(d.toLowerCase()))
     if (jobFilters.team?.recruiters?.length) matchesInlineFilters = matchesInlineFilters && jobFilters.team.recruiters.some(r => job.recruiter.toLowerCase().includes(r.toLowerCase()))
     if (jobFilters.team?.managers?.length) matchesInlineFilters = matchesInlineFilters && jobFilters.team.managers.some(m => job.manager.toLowerCase().includes(m.toLowerCase()))

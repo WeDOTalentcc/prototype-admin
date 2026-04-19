@@ -17,15 +17,20 @@ export interface JobSeniorityShape {
 }
 
 /**
- * Retorna a senioridade canônica da vaga.
+ * Retorna a senioridade canônica da vaga, ou `undefined` quando ausente.
  *
- * Nunca retorna `null`/`undefined` — escolha intencional para consumidores
- * que filtram/buscam (ex: `.toLowerCase().includes(...)`).
+ * Task #559 — antes devolvia `""` para tolerar `.toLowerCase().includes(...)`,
+ * mas isso mascarava vagas sem `seniority` (combinado com defaults `'Pleno'`
+ * em mappers). Agora preserva a ausência: callers devem usar `?.toLowerCase()`
+ * + `?? false` (filtros) ou `?? ""` (busca textual concatenada).
  */
-export function getJobSeniority(job: JobSeniorityShape | null | undefined): string {
-  if (!job) return ""
-  const v = job.seniority ?? ""
-  return typeof v === "string" ? v : ""
+export function getJobSeniority(job: JobSeniorityShape | null | undefined): string | undefined {
+  if (!job) return undefined
+  const v = job.seniority
+  if (v === null || v === undefined) return undefined
+  if (typeof v !== "string") return undefined
+  const trimmed = v.trim()
+  return trimmed.length > 0 ? trimmed : undefined
 }
 
 /**
@@ -50,6 +55,7 @@ export function jobSeniorityMatches(
   job: JobSeniorityShape | null | undefined,
   needle: string,
 ): boolean {
-  const value = getJobSeniority(job).toLowerCase()
-  return value.includes(needle.toLowerCase())
+  const value = getJobSeniority(job)
+  if (!value) return false
+  return value.toLowerCase().includes(needle.toLowerCase())
 }

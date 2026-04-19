@@ -75,7 +75,7 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               // Audit task #531 (G23-01) — leitura unificada via helper canônico
               // `getJobSeniority` (precedência `seniority` → `level` legacy);
               // substitui o fallback inline da rev. 20 sem mudar comportamento.
-              seniority={getJobSeniority(job as { seniority?: string | null; level?: string | null }) || undefined}
+              seniority={getJobSeniority(job as { seniority?: string | null; level?: string | null })}
               department={job.department as string | undefined}
               description={job.description as string | undefined}
               hasQuestions={((job.screeningQuestions as unknown[])?.length || 0) > 0}

@@ -197,7 +197,7 @@ export function JobInfoGeralSection({
                     `seniority` (canônico). Helper `getJobSeniority` mantido
                     como tolerância a payloads parciais. */}
                 <select
-                  value={getJobSeniority(jobEditForm as { seniority?: string | null })}
+                  value={getJobSeniority(jobEditForm as { seniority?: string | null }) ?? ""}
                   onChange={(e) => {
                     updateField("seniority", e.target.value)
                   }}

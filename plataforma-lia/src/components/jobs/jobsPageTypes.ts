@@ -199,8 +199,10 @@ export interface Job {
   type: string
   /** Senioridade canônica da vaga (SSOT em `lib/schemas/job.schema.ts`).
    * O campo legacy `level` foi removido na Task #539 — sempre leia via
-   * `getJobSeniority(job)` para tolerar fontes parcialmente preenchidas. */
-  seniority: string
+   * `getJobSeniority(job)` para tolerar fontes parcialmente preenchidas.
+   * Task #559 — opcional: mappers propagam `undefined` quando o backend
+   * não devolve `seniority_level`/`seniority` em vez de chutar `'Pleno'`. */
+  seniority?: string
   salary: string
   benefits: string[]
   status: JobStatus
