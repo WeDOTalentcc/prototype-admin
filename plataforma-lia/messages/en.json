@@ -24,6 +24,148 @@
       "dismiss": "Dismiss workflow",
       "go": "Go",
       "foundCount": "{count} found"
+    },
+    "bar": {
+      "expandAriaLabel": "Expand workflow bar and see next steps",
+      "collapseAriaLabel": "Collapse workflow bar",
+      "noActiveFlow": "No active workflow"
+    },
+    "panel": {
+      "ariaLabel": "Possible next steps",
+      "nextStepsLabel": "Next steps",
+      "nextInFunnel": "Next",
+      "close": "Close panel"
+    },
+    "funnel": {
+      "createJob": "Job",
+      "sourcing": "Sourcing",
+      "screening": "Screening",
+      "interview": "Interview",
+      "offer": "Offer",
+      "hired": "Hired",
+      "analytics": "Analytics"
+    },
+    "nextSteps": {
+      "initial": {
+        "createJob": {
+          "title": "Create a job",
+          "desc": "Start the wizard to open a new position"
+        },
+        "searchCandidates": {
+          "title": "Search candidates",
+          "desc": "Search the available talent pool"
+        },
+        "openFunnel": {
+          "title": "Open funnel",
+          "desc": "View the full recruitment pipeline"
+        }
+      },
+      "createJob": {
+        "publishJob": {
+          "title": "Publish job",
+          "desc": "Make the job visible to candidates"
+        },
+        "startSourcing": {
+          "title": "Start active sourcing",
+          "desc": "Proactively search for candidates"
+        },
+        "generateJD": {
+          "title": "Generate JD with AI",
+          "desc": "LIA writes the job description automatically"
+        },
+        "divulgeChannels": {
+          "title": "Share on channels",
+          "desc": "Post the job across distribution channels"
+        }
+      },
+      "sourcing": {
+        "addToList": {
+          "title": "Add to list",
+          "desc": "Include candidates in this job pipeline"
+        },
+        "searchCandidates": {
+          "title": "Search more candidates",
+          "desc": "Expand the sourced talent pool"
+        },
+        "sendWSI": {
+          "title": "Send WSI screening",
+          "desc": "Start the structured candidate assessment"
+        },
+        "linkToJob": {
+          "title": "Link to existing job",
+          "desc": "Associate candidates with an open position"
+        }
+      },
+      "screening": {
+        "sendWSI": {
+          "title": "Send WSI",
+          "desc": "Apply AI-powered structured screening"
+        },
+        "scheduleInterview": {
+          "title": "Schedule interview",
+          "desc": "Advance approved candidates to interview"
+        },
+        "moveRejected": {
+          "title": "Move to rejected",
+          "desc": "Discard candidates outside the profile"
+        },
+        "liaOpinion": {
+          "title": "Ask LIA for opinion",
+          "desc": "Get a comparative analysis of candidates"
+        }
+      },
+      "interview": {
+        "moveToOffer": {
+          "title": "Move to offer",
+          "desc": "Advance the approved candidate to offer"
+        },
+        "requestFeedback": {
+          "title": "Request manager feedback",
+          "desc": "Ask the responsible manager for evaluation"
+        },
+        "moveRejected": {
+          "title": "Reject candidate",
+          "desc": "Close the process for this candidate"
+        }
+      },
+      "offer": {
+        "approveOffer": {
+          "title": "Approve offer",
+          "desc": "Confirm the offer and advance to hiring"
+        },
+        "negotiate": {
+          "title": "Negotiate terms",
+          "desc": "Adjust compensation or benefits"
+        },
+        "moveRejected": {
+          "title": "Offer declined",
+          "desc": "Record the refusal and close the process"
+        }
+      },
+      "hired": {
+        "startOnboarding": {
+          "title": "Start onboarding",
+          "desc": "Prepare for the new team member arrival"
+        },
+        "viewAnalytics": {
+          "title": "View analytics",
+          "desc": "Check hiring process metrics"
+        },
+        "createNewJob": {
+          "title": "Open new job",
+          "desc": "Start a new recruitment process"
+        }
+      },
+      "analytics": {
+        "viewReport": {
+          "title": "View full report",
+          "desc": "Access all metrics and KPIs"
+        },
+        "createNewJob": {
+          "title": "Open new job",
+          "desc": "Start a new recruitment cycle"
+        }
+      }
     }
   },
   "sidebar": {

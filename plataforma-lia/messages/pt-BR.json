@@ -24,6 +24,148 @@
       "dismiss": "Dispensar fluxo",
       "go": "Ir",
       "foundCount": "{count} encontrados"
+    },
+    "bar": {
+      "expandAriaLabel": "Expandir barra de fluxo e ver próximos passos",
+      "collapseAriaLabel": "Recolher barra de fluxo",
+      "noActiveFlow": "Nenhum fluxo ativo"
+    },
+    "panel": {
+      "ariaLabel": "Próximos passos possíveis",
+      "nextStepsLabel": "Próximos passos",
+      "nextInFunnel": "Próximo",
+      "close": "Fechar painel"
+    },
+    "funnel": {
+      "createJob": "Vaga",
+      "sourcing": "Captação",
+      "screening": "Triagem",
+      "interview": "Entrevista",
+      "offer": "Oferta",
+      "hired": "Contratação",
+      "analytics": "Análises"
+    },
+    "nextSteps": {
+      "initial": {
+        "createJob": {
+          "title": "Criar vaga",
+          "desc": "Inicie o wizard para abrir uma nova posição"
+        },
+        "searchCandidates": {
+          "title": "Buscar candidatos",
+          "desc": "Pesquise no pool de talentos disponível"
+        },
+        "openFunnel": {
+          "title": "Abrir funil",
+          "desc": "Visualize o funil completo de recrutamento"
+        }
+      },
+      "createJob": {
+        "publishJob": {
+          "title": "Publicar vaga",
+          "desc": "Torne a vaga visível para candidatos"
+        },
+        "startSourcing": {
+          "title": "Iniciar captação ativa",
+          "desc": "Busque candidatos proativamente"
+        },
+        "generateJD": {
+          "title": "Gerar JD com IA",
+          "desc": "LIA cria a descrição da vaga automaticamente"
+        },
+        "divulgeChannels": {
+          "title": "Divulgar em canais",
+          "desc": "Compartilhe a vaga nos canais de divulgação"
+        }
+      },
+      "sourcing": {
+        "addToList": {
+          "title": "Adicionar à lista",
+          "desc": "Inclua candidatos no pipeline desta vaga"
+        },
+        "searchCandidates": {
+          "title": "Pesquisar mais candidatos",
+          "desc": "Amplie o pool de talentos prospectados"
+        },
+        "sendWSI": {
+          "title": "Enviar triagem WSI",
+          "desc": "Inicie a avaliação estruturada dos candidatos"
+        },
+        "linkToJob": {
+          "title": "Vincular a vaga existente",
+          "desc": "Associe candidatos a uma vaga já aberta"
+        }
+      },
+      "screening": {
+        "sendWSI": {
+          "title": "Enviar WSI",
+          "desc": "Aplique triagem estruturada com IA"
+        },
+        "scheduleInterview": {
+          "title": "Agendar entrevista",
+          "desc": "Avance candidatos aprovados para entrevista"
+        },
+        "moveRejected": {
+          "title": "Mover para reprovados",
+          "desc": "Descarte candidatos fora do perfil"
+        },
+        "liaOpinion": {
+          "title": "Pedir parecer da LIA",
+          "desc": "Obtenha análise comparativa dos candidatos"
+        }
+      },
+      "interview": {
+        "moveToOffer": {
+          "title": "Mover para proposta",
+          "desc": "Avance o candidato aprovado para oferta"
+        },
+        "requestFeedback": {
+          "title": "Pedir feedback do gestor",
+          "desc": "Solicite avaliação do gestor responsável"
+        },
+        "moveRejected": {
+          "title": "Reprovar candidato",
+          "desc": "Encerre o processo para este candidato"
+        }
+      },
+      "offer": {
+        "approveOffer": {
+          "title": "Aprovar proposta",
+          "desc": "Confirme a proposta e avance para contratação"
+        },
+        "negotiate": {
+          "title": "Negociar condições",
+          "desc": "Ajuste valores ou benefícios da proposta"
+        },
+        "moveRejected": {
+          "title": "Proposta recusada",
+          "desc": "Registre a recusa e encerre o processo"
+        }
+      },
+      "hired": {
+        "startOnboarding": {
+          "title": "Iniciar onboarding",
+          "desc": "Prepare a chegada do novo colaborador"
+        },
+        "viewAnalytics": {
+          "title": "Ver análises",
+          "desc": "Confira métricas do processo de contratação"
+        },
+        "createNewJob": {
+          "title": "Abrir nova vaga",
+          "desc": "Inicie um novo processo de recrutamento"
+        }
+      },
+      "analytics": {
+        "viewReport": {
+          "title": "Ver relatório completo",
+          "desc": "Acesse todas as métricas e indicadores"
+        },
+        "createNewJob": {
+          "title": "Abrir nova vaga",
+          "desc": "Inicie um novo ciclo de recrutamento"
+        }
+      }
     }
   },
   "sidebar": {

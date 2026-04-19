@@ -27,12 +27,19 @@ export default function WorkflowRailWrapper() {
     }
   }, [router, pathname, locale])
 
+  const handleNavigate = useCallback((path: string) => {
+    // Paths from catalog are locale-relative (e.g. /jobs); prefix with current locale
+    const localePrefix = `/${locale}`
+    const target = path.startsWith(localePrefix) ? path : `${localePrefix}${path}`
+    router.push(target)
+  }, [router, locale])
+
   if (!isAuthenticated || !user?.id) return null
 
   return (
     <WorkflowRail
       userId={user.id}
-      onNavigate={(path) => router.push(path)}
+      onNavigate={handleNavigate}
       onCreateJob={handleCreateJob}
     />
   )
