@@ -280,7 +280,7 @@ async def suggest_recruiting_policy(
             + " ".join(policy.get("principles", []))
         )
         fairness_result = _fairness_guard.check(policy_text)
-        passed = not fairness_result.is_biased()
+        passed = not fairness_result.is_biased
         issues = (fairness_result.blocked_terms + fairness_result.soft_warnings) if not passed else []
     except Exception as e:
         logger.debug("Fairness check skipped: %s", e)

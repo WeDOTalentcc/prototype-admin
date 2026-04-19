@@ -32,6 +32,7 @@ const PUBLIC_PATHS = [
   '/aceitar-convite',
   '/accept-invitation',
   '/access',
+  '/candidate',  // Candidate self-service portal — public JWT-auth
 ]
 
 const PUBLIC_API_PATHS = [

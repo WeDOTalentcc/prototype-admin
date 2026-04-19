@@ -148,6 +148,25 @@ class CandidateSelfServiceAgent(LangGraphReActBase, EnhancedAgentMixin):
             except Exception:
                 pass  # Observability must never break the agent flow
 
+        # FairnessGuard: post-process agent response for bias in rejection language
+        if output.message:
+            try:
+                checked = self._fairness_guard.check(output.message)
+                if isinstance(checked, dict):
+                    output = output.__class__(
+                        message=checked.get("text", output.message),
+                        actions=output.actions,
+                        confidence=output.confidence,
+                        metadata={**(output.metadata or {}), "fairness_triggered": checked.get("triggered", False)},
+                        state_updates=output.state_updates,
+                    )
+            except Exception as fg_exc:
+                logger.debug("[CSS Agent] FairnessGuard skipped: %s", fg_exc)
+
+        # HITL: request human review when feedback state_updates are present
+        if getattr(output, "state_updates", None):
+            await self._request_hitl_if_needed(output)
+
         return output
 
     async def get_status(self) -> dict:
