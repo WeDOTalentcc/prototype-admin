@@ -1445,6 +1445,17 @@
     "deadlineSoon": "Due in {days}d",
     "deadlinePast": "Overdue {days}d",
     "candidatesCount": "{count} candidates",
+    "ageDays": "Open {days}d",
+    "ownerLabel": "Owner",
+    "ribbon": {
+      "urgent": "Attention"
+    },
+    "funnel": {
+      "screening": "Screening",
+      "interview": "Interview",
+      "final": "Final",
+      "hired": "Hired"
+    },
     "columns": {
       "rascunho": "Draft",
       "aguardando": "Pending Approval",

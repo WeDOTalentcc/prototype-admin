@@ -1445,6 +1445,17 @@
     "deadlineSoon": "Vence em {days}d",
     "deadlinePast": "Atrasada {days}d",
     "candidatesCount": "{count} candidatos",
+    "ageDays": "Aberta há {days}d",
+    "ownerLabel": "Responsável",
+    "ribbon": {
+      "urgent": "Atenção"
+    },
+    "funnel": {
+      "screening": "Triagem",
+      "interview": "Entrevista",
+      "final": "Final",
+      "hired": "Contratado"
+    },
     "columns": {
       "rascunho": "Rascunho",
       "aguardando": "Aguardando Aprovação",

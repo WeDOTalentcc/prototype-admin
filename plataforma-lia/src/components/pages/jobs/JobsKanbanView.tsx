@@ -21,6 +21,22 @@ export function JobsKanbanView({ jobs, onJobClick }: JobsKanbanViewProps) {
     deadlineSoon: (days: number) => t("deadlineSoon", { days }),
     deadlinePast: (days: number) => t("deadlinePast", { days }),
     candidatesCount: (count: number) => t("candidatesCount", { count }),
+    ageDays: (days: number) => t("ageDays", { days }),
+    ribbonUrgent: () => t("ribbon.urgent"),
+  }), [t])
+
+  // Task #562 — Labels separados (mini funil + info chips) repassados às
+  // colunas para evitar que o KanbanCard precise importar next-intl.
+  const funnelLabels = useMemo(() => ({
+    screening: t("funnel.screening"),
+    interview: t("funnel.interview"),
+    final: t("funnel.final"),
+    hired: t("funnel.hired"),
+  }), [t])
+
+  const infoLabels = useMemo(() => ({
+    ageDays: (days: number) => t("ageDays", { days }),
+    ownerLabel: t("ownerLabel"),
   }), [t])
 
   const jobById = useMemo(() => {
@@ -46,6 +62,8 @@ export function JobsKanbanView({ jobs, onJobClick }: JobsKanbanViewProps) {
               }}
               isDragDisabled
               emptyMessage={t("emptyColumn")}
+              funnelLabels={funnelLabels}
+              infoLabels={infoLabels}
             />
           )
         })}

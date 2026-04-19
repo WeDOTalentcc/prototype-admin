@@ -23,6 +23,11 @@ interface JobToKanbanItemDeps {
     deadlineSoon: (days: number) => string
     deadlinePast: (days: number) => string
     candidatesCount: (count: number) => string
+    /** Task #562 — Labels novos. Mapper só pede o que o caller fornece. */
+    ageDays?: (days: number) => string
+    deadlineDays?: (days: number) => string
+    deadlineOverdue?: (days: number) => string
+    ribbonUrgent?: () => string
   }
 }
 
@@ -33,10 +38,25 @@ function daysBetween(target: string): number | null {
   return Math.floor((t - Date.now()) / (1000 * 60 * 60 * 24))
 }
 
+function daysSince(start: string): number | null {
+  if (!start) return null
+  const t = new Date(start).getTime()
+  if (Number.isNaN(t)) return null
+  return Math.floor((Date.now() - t) / (1000 * 60 * 60 * 24))
+}
+
 function deptInitials(value?: string): string {
   if (!value) return "VG"
   const parts = value.split(/\s+/).filter(Boolean)
   return (parts[0]?.[0] ?? "V") + (parts[1]?.[0] ?? parts[0]?.[1] ?? "G")
+}
+
+function personInitials(name?: string): string | null {
+  if (!name) return null
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return null
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
 export function jobToKanbanItem(job: Job, deps: JobToKanbanItemDeps): KanbanItem {
@@ -52,20 +72,64 @@ export function jobToKanbanItem(job: Job, deps: JobToKanbanItemDeps): KanbanItem
   chips.push(deps.labels.candidatesCount(candidates))
 
   let dateLabel: string | undefined
+  let deadlineStatus: KanbanItem["deadlineStatus"]
   if (job.deadline) {
     const days = daysBetween(job.deadline)
     if (days != null && days >= 0 && days <= 7) {
       dateLabel = deps.labels.deadlineSoon(days)
+      deadlineStatus = "warning"
     } else if (days != null && days < 0) {
       dateLabel = deps.labels.deadlinePast(Math.abs(days))
-    } else if (deps.locale) {
+      deadlineStatus = "danger"
+    } else if (days != null && deps.locale) {
       try {
         dateLabel = new Date(job.deadline).toLocaleDateString(deps.locale, { day: "2-digit", month: "short" })
-      } catch {
-        dateLabel = undefined
+        deadlineStatus = "ok"
+      } catch (e) {
+        if (e instanceof RangeError) {
+          dateLabel = undefined
+        } else {
+          throw e
+        }
       }
     }
   }
+
+  // Task #562 — Idade da vaga (desde openDate). Sem default: se openDate
+  // ausente/inválido, o campo simplesmente não aparece no card.
+  const ageDays = job.openDate ? (daysSince(job.openDate) ?? undefined) : undefined
+
+  // Task #562 — Mini funil. Só inclui se houver ao menos 1 candidato no
+  // total — evita pintar 4 zeros no card.
+  const funnel = job.funnel && job.funnel.total > 0
+    ? {
+        total: job.funnel.total,
+        screening: job.funnel.screening ?? 0,
+        interview: job.funnel.interview ?? 0,
+        final: job.funnel.final ?? 0,
+        hired: job.funnel.hired ?? 0,
+      }
+    : undefined
+
+  // Task #562 — Owner. Sem placeholder; só renderiza se o backend forneceu
+  // o nome do manager.
+  const ownerInitials = personInitials(job.manager)
+  const owner = job.manager && ownerInitials
+    ? { name: job.manager, initials: ownerInitials }
+    : undefined
+
+  // Task #562 — Ribbon de atenção. Disparado por urgência, deadline
+  // vencido ou prioridade alta. Texto via i18n (caller).
+  const isUrgent = (job.urgencyLevel ?? 0) >= 4
+  const isOverdue = deadlineStatus === "danger"
+  const isHighPriority = job.priority === "alta"
+  const shouldRibbon = (isUrgent || isOverdue || isHighPriority) && !!deps.labels.ribbonUrgent
+  const ribbon: KanbanItem["ribbon"] | undefined = shouldRibbon
+    ? {
+        label: deps.labels.ribbonUrgent!(),
+        variant: isOverdue ? "danger" : isUrgent ? "warning" : "info",
+      }
+    : undefined
 
   return {
     id: String(job.id),
@@ -77,6 +141,11 @@ export function jobToKanbanItem(job: Job, deps: JobToKanbanItemDeps): KanbanItem
     chips,
     flagAttention: job.priority === "alta" ? { tooltip: deps.labels.candidatesCount(candidates) } : undefined,
     dateLabel,
+    funnel,
+    ribbon,
+    owner,
+    ageDays,
+    deadlineStatus,
   }
 }
 

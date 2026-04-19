@@ -26,6 +26,18 @@ interface KanbanColumnProps {
   onAdd?: () => void
   isDragDisabled?: boolean
   emptyMessage: string
+  /** Task #562 — Repassado ao card para renderizar mini funil. */
+  funnelLabels?: {
+    screening: string
+    interview: string
+    final: string
+    hired: string
+  }
+  /** Task #562 — Repassado ao card para chips de idade/owner. */
+  infoLabels?: {
+    ageDays: (days: number) => string
+    ownerLabel?: string
+  }
 }
 
 export function KanbanColumn({
@@ -35,6 +47,8 @@ export function KanbanColumn({
   onAdd,
   isDragDisabled = false,
   emptyMessage,
+  funnelLabels,
+  infoLabels,
 }: KanbanColumnProps) {
   return (
     <KanbanColumnShell
@@ -92,6 +106,8 @@ export function KanbanColumn({
                 index={index}
                 onClick={() => onItemClick(item)}
                 isDragDisabled={isDragDisabled}
+                funnelLabels={funnelLabels}
+                infoLabels={infoLabels}
               />
             ))
           )}
