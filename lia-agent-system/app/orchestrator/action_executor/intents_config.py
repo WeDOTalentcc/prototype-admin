@@ -755,11 +755,13 @@ VALID_PIPELINE_STAGES = [
     "Análise", "Shortlist", "Oferta",
     # Identidade da LIA -- respondida localmente, nunca pelo LLM
     ("lia_identidade", [
+        r"quem\s+(é\s+)?(você|vc|a\s+lia)",
         r"quem\s+(e\s+)?(voce|vc|a\s+lia)",
+        r"(o\s+que|quem)\s+(é|es?)\s+(você|vc|a\s+lia)",
         r"(o\s+que|quem)\s+(e|es?)\s+(voce|vc|a\s+lia)",
-        r"(quem|o\s+que)\s+(e\s+)?a\s+lia",
-        r"(voce|vc)\s+e\s+(gemini|claude|gpt|google|openai|anthropic)",
-        r"^(quem\s+e\s+voce|who\s+are\s+you|what\s+are\s+you)[\?\!]?$",
+        r"(quem|o\s+que)\s+(é\s+)?a\s+lia",
+        r"(você|vc)\s+é\s+(gemini|claude|gpt|google|openai|anthropic)",
+        r"^(quem\s+é\s+você|who\s+are\s+you|what\s+are\s+you)[\?\!]?$",
     ]),
 ]
 
