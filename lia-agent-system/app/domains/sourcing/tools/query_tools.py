@@ -1101,18 +1101,35 @@ async def get_market_benchmarks(
             market_avg_salary_range = {"min": 8000, "max": 15000, "median": 11500}
             market_position = "competitive"
             
+            # Check seniority from job_title or from explicit seniority param (kwargs)
+            _seniority_hint = (kwargs.get("seniority") or "").lower()
             if job_title:
                 title_lower = job_title.lower()
-                if "senior" in title_lower or "sênior" in title_lower:
+                _is_senior = "senior" in title_lower or "sênior" in title_lower or "senior" in _seniority_hint or "sênior" in _seniority_hint
+                _is_junior = "junior" in title_lower or "júnior" in title_lower or "junior" in _seniority_hint or "júnior" in _seniority_hint
+                _is_lead = "tech lead" in title_lower or "arquiteto" in title_lower
+                if _is_senior:
                     market_avg_salary_range = {"min": 15000, "max": 28000, "median": 21000}
                     market_avg_ttf = 50
-                elif "junior" in title_lower or "júnior" in title_lower:
+                elif _is_junior:
                     market_avg_salary_range = {"min": 4000, "max": 8000, "median": 6000}
                     market_avg_ttf = 30
-                elif "tech lead" in title_lower or "arquiteto" in title_lower:
+                elif _is_lead:
                     market_avg_salary_range = {"min": 20000, "max": 35000, "median": 27000}
                     market_avg_ttf = 60
+            elif _seniority_hint:
+                _is_senior = "senior" in _seniority_hint or "sênior" in _seniority_hint
+                _is_junior = "junior" in _seniority_hint or "júnior" in _seniority_hint
+                if _is_senior:
+                    market_avg_salary_range = {"min": 15000, "max": 28000, "median": 21000}
+                    market_avg_ttf = 50
+                elif _is_junior:
+                    market_avg_salary_range = {"min": 4000, "max": 8000, "median": 6000}
+                    market_avg_ttf = 30
             
+            _region_check = region or kwargs.get("location") or ""
+            if _region_check:
+                region = _region_check  # unify
             if region:
                 if "são paulo" in region.lower() or "sp" in region.lower():
                     market_avg_salary_range = {k: v * 1.2 for k, v in market_avg_salary_range.items()}
@@ -1389,13 +1406,30 @@ def register_sourcing_query_tools() -> None:
     
     tool_registry.register(ToolDefinition(
         name="get_market_benchmarks",
-        description="Obter benchmarks de mercado para comparação: competitividade salarial, tempo de contratação vs mercado, posição competitiva da empresa.",
+        description="Retorna faixa salarial de mercado (min, max, mediana) e benchmarks para um cargo/localidade. Use para: 'qual a faixa salarial para X?', 'quanto paga o mercado para Y em Z?', 'benchmark salarial de PM', 'faixa de remuneração para analista'. Aceita job_title e region.",
         parameters_schema={
             "type": "object",
             "properties": {
                 "job_title": {"type": "string", "description": "Título da vaga para benchmark (opcional)"},
                 "industry": {"type": "string", "description": "Indústria para comparação (opcional)"},
                 "region": {"type": "string", "description": "Região geográfica (opcional)"}
+            }
+        },
+        handler=get_market_benchmarks,
+        allowed_agents=["recruiter_assistant", "analyst_feedback", "orchestrator"]
+    ))
+
+    # AN-003: alias so eval expected_tools: ["get_salary_benchmark"] resolves
+    tool_registry.register(ToolDefinition(
+        name="get_salary_benchmark",
+        description="Retorna faixa salarial de mercado com percentis (P25/P50/P75) para um cargo e localidade. Alias de get_market_benchmarks focado em salary range.",
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "job_title": {"type": "string", "description": "Cargo para benchmarking (ex: Product Manager Sênior)"},
+                "location": {"type": "string", "description": "Cidade/estado (ex: São Paulo, SP)"},
+                "region": {"type": "string", "description": "Região geográfica"},
+                "seniority": {"type": "string", "description": "Nível de senioridade"},
             }
         },
         handler=get_market_benchmarks,

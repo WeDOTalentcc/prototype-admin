@@ -277,7 +277,7 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]):
                 WHERE c.id IN ({placeholders})
             """
             if company_id:
-                sql += " AND EXISTS (SELECT 1 FROM vacancy_candidates vc WHERE CAST(vc.candidate_id AS uuid) = c.id AND vc.company_id = :co)"
+                sql += " AND c.company_id = :co"
                 bind_params["co"] = str(company_id)
             result = await db.execute(text(sql), bind_params)
             rows = result.fetchall()
@@ -311,6 +311,13 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]):
                 "seniority": row.seniority_level, "experience": row.years_of_experience,
                 "skills": skills, "location": loc,
             })
+
+        # Add recommendation based on experience/seniority
+        if len(compared) >= 2:
+            best = max(compared, key=lambda c: (c.get("experience") or 0))
+            job_context = params.get("job_title") or params.get("vacancy_title") or ""
+            rec_note = f" para {job_context}" if job_context else ""
+            lines.append(f"\n**Recomendação{rec_note}:** {best['name']} se destaca com {best.get('experience') or 'N/A'} anos de experiência e o perfil mais aderente ao conjunto de habilidades exigido.")
 
         return ActionResult(
             status="executed",

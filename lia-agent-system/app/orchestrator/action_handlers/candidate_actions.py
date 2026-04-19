@@ -401,6 +401,26 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                 action_type="start_screening",
             )
 
+        # SC-001: Confirmation gate — ask before starting WSI for multiple candidates
+        _confirmed = params.get("confirmed") or params.get("confirmado") or False
+        if not _confirmed and len(candidate_ids) > 1:
+            job_label = str(job_vacancy_id)
+            return ActionResult(
+                status="pending",
+                message=(
+                    f"Vou iniciar a triagem WSI para **{len(candidate_ids)} candidatos** "
+                    f"na vaga **{job_label}**. Confirma?"
+                ),
+                data={
+                    "candidate_ids": candidate_ids,
+                    "job_vacancy_id": str(job_vacancy_id),
+                    "candidates_count": len(candidate_ids),
+                    "requires_confirmation": True,
+                    "action": "start_screening",
+                },
+                action_type="start_screening",
+            )
+
         triagem_service = TriagemSessionService()
         sessions_created = []
         candidates_updated = 0
