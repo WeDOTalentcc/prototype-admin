@@ -84,7 +84,7 @@ class WSICompactPipeline:
         context = self._build_context(name, description, seniority, tech_reqs, behav_reqs, exp_reqs, skills)
 
         # Generate questions via LLM
-        questions = await self._generate_questions(context, language)
+        questions = await self._generate_questions(context, language, company_id)
 
         # Extract traits/competencies for metadata
         traits = self._extract_traits(tech_reqs, behav_reqs)
@@ -105,12 +105,14 @@ class WSICompactPipeline:
         return config
 
     async def _generate_questions(
-        self, context: str, language: str
+        self, context: str, language: str, company_id: Optional[str] = None
     ) -> list[ScreeningQuestion]:
         """Generate screening questions using LLM."""
         try:
-            from app.shared.providers.llm_factory import get_llm
-            llm = get_llm(tier="fast")
+            from app.shared.providers.llm_factory import (
+                get_provider_for_tenant,
+                get_provider_for_tenant_from_db,
+            )
 
             prompt = f"""
 Você é um especialista em recrutamento usando a metodologia WSI (Work Sample Interview).
@@ -138,8 +140,19 @@ Responda APENAS com JSON:
   ]
 }}
 """
-            response = await llm.ainvoke(prompt)
-            data = json.loads(response.content)
+            if company_id:
+                container = await get_provider_for_tenant_from_db(str(company_id))
+            else:
+                container = get_provider_for_tenant(tenant_id=None)
+            response_text = await container.generate_with_fallback(prompt)
+
+            # Strip markdown code fences if present
+            cleaned = response_text.strip()
+            if "```json" in cleaned:
+                cleaned = cleaned.split("```json", 1)[1].split("```", 1)[0]
+            elif "```" in cleaned:
+                cleaned = cleaned.split("```", 1)[1].split("```", 1)[0]
+            data = json.loads(cleaned.strip())
 
             questions = []
             for q in data.get("questions", [])[:COMPACT_MODE_MAX_QUESTIONS]:
