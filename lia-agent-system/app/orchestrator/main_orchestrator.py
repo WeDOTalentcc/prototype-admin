@@ -379,6 +379,16 @@ class MainOrchestrator:
 
                     # D10 — Pre-condition check for proactive assistance
                     _proactive_hints_text = ""
+                    _proactive_hints_payload: list[dict] = []
+                    _agent_type = "orchestrator"
+                    _ONBOARDING_HINT_TYPES = {
+                        "missing_company_id",
+                        "incomplete_company_profile",
+                        "company_website_missing",
+                        "culture_profile_missing",
+                        "benefits_catalog_empty",
+                        "hiring_policy_missing",
+                    }
                     try:
                         from app.orchestrator.precondition_checker import precondition_checker
                         _hints = await precondition_checker.check(ctx)
@@ -388,13 +398,33 @@ class MainOrchestrator:
                                 "Voce DEVE mencionar estas proativamente se relevantes ao que o recrutador pediu:\n\n"
                                 + "\n".join(f"- [{h.severity}] {h.message}" for h in _hints)
                             )
+                            # Gap 4: delegate to company_settings agent when onboarding hints emitted
+                            if any(h.type in _ONBOARDING_HINT_TYPES for h in _hints):
+                                _agent_type = "company_settings"
+                                logger.info(
+                                    "[PreConditionChecker] Delegating to company_settings agent (onboarding hints: %s)",
+                                    [h.type for h in _hints if h.type in _ONBOARDING_HINT_TYPES],
+                                )
+                            # Structured payload for frontend rendering (NavigationHintCard / proactive-insight-card)
+                            _proactive_hints_payload = [
+                                {
+                                    "type": h.type,
+                                    "message": h.message,
+                                    "severity": h.severity,
+                                    "action": h.action,
+                                    "metadata": h.metadata,
+                                }
+                                for h in _hints
+                            ]
+                            # Save for downstream WebSocket emitter
+                            ctx.extra["proactive_hints"] = _proactive_hints_payload
                             logger.info("[PreConditionChecker] %d proactive hint(s) generated", len(_hints))
                     except Exception as _pc_exc:
                         logger.debug("[PreConditionChecker] check skipped: %s", _pc_exc)
 
                     from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
                     _system_prompt = SystemPromptBuilder.build(
-                        agent_type="orchestrator",
+                        agent_type=_agent_type,
                         tenant_context_snippet=getattr(ctx, "tenant_context_snippet", "") or ctx.extra.get("tenant_context", ""),
                         user_name=getattr(ctx, "user_name", ""),
                         user_role=getattr(ctx, "user_role", ""),

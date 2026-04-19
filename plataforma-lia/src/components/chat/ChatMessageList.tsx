@@ -22,6 +22,7 @@ import { TypingIndicator } from"@/components/chat/typing-indicator"
 import { Message } from"@/types/chat"
 import FlowStepMessage from"@/components/workflow-rail/FlowStepMessage"
 import { renderMarkdown } from"@/lib/render-markdown"
+import { ProactiveHintsList, type ProactiveHint } from "./proactive-hints-list"
 
 interface Props {
   messages: Message[]
@@ -128,6 +129,14 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                   (message.data as Record<string, any>)?.execution_plan && (
                     <PlanProgressCard
                       plan={(message.data as Record<string, any>).execution_plan as ExecutionPlanData}
+                    />
+                  )}
+
+                {isLia &&
+                  Array.isArray((message.data as Record<string, any>)?.proactive_hints) &&
+                  ((message.data as Record<string, any>).proactive_hints as ProactiveHint[]).length > 0 && (
+                    <ProactiveHintsList
+                      hints={(message.data as Record<string, any>).proactive_hints as ProactiveHint[]}
                     />
                   )}
 

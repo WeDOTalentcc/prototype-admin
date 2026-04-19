@@ -16,6 +16,7 @@ import { MessageFeedback } from "@/components/chat/message-feedback"
 import { ParecerLIACard } from "@/components/chat/parecer-lia-card"
 import { ActionResultCard } from "@/components/chat/action-result-card"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
+import { ProactiveHintsList, type ProactiveHint } from "@/components/chat/proactive-hints-list"
 import { DetectedFieldsCard } from "@/components/chat/detected-fields-card"
 import { PipelineRailCard, type PipelineRailCardData } from "@/components/chat/pipeline-rail-card"
 import { CompetenciesChatMessage } from "@/components/job-creation/competencies-chat-message"
@@ -435,6 +436,9 @@ export function ChatMessageList({
               )}
               {message.execution_plan && (
                 <PlanProgressCard plan={message.execution_plan} />
+              )}
+              {Array.isArray(message.proactive_hints) && message.proactive_hints.length > 0 && (
+                <ProactiveHintsList hints={message.proactive_hints} />
               )}
               {message.detectedFieldsData && message.detectedFieldsData.length > 0 && (
                 <DetectedFieldsCard

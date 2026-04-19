@@ -973,6 +973,38 @@ async def agent_chat_ws(
                     )
 
                 _fairness_warnings = (output.metadata or {}).get("fairness_warnings", [])
+
+                # Gap 4 — run PreConditionChecker for proactive hints (fail-open)
+                _proactive_hints: list[dict] | None = None
+                try:
+                    from app.orchestrator.precondition_checker import precondition_checker
+
+                    class _HintCtx:
+                        pass
+                    _hctx = _HintCtx()
+                    _hctx.company_id = company_id or ""
+                    _hctx.intent = active_domain or ""
+                    _hctx.vacancy_id = (context or {}).get("vacancy_id") or (context or {}).get("job_id")
+
+                    _hints = await precondition_checker.check(_hctx)
+                    if _hints:
+                        _proactive_hints = [
+                            {
+                                "type": h.type,
+                                "message": h.message,
+                                "severity": h.severity,
+                                "action": h.action,
+                                "metadata": h.metadata,
+                            }
+                            for h in _hints
+                        ]
+                        logger.info(
+                            "[AgentChatWS] %d proactive hints attached to session=%s",
+                            len(_proactive_hints), session_id,
+                        )
+                except Exception as _ph_exc:
+                    logger.debug("[AgentChatWS] proactive hints skipped: %s", _ph_exc)
+
                 await ws_mgr.send_to_session(session_id, serialize_message(
                     content=clean_message,
                     confidence=output.confidence,
@@ -982,6 +1014,7 @@ async def agent_chat_ws(
                     navigation=output.navigation.dict() if output.navigation else None,
                     state_updates=output.state_updates or None,
                     fairness_warnings=_fairness_warnings or None,
+                    proactive_hints=_proactive_hints,
                 ))
 
             except TimeoutError:

@@ -146,6 +146,7 @@ export interface Message {
   parecerData?: ParecerLIAData
   executionPlan?: import('@/components/chat/plan-progress-card').ExecutionPlanData
   execution_plan?: import('@/components/chat/plan-progress-card').ExecutionPlanData
+  proactive_hints?: import('@/components/chat/proactive-hints-list').ProactiveHint[]
 }
 
 // Fast Track wizard mode types
