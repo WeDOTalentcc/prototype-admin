@@ -890,3 +890,134 @@ def get_jobs_mgmt_tools(stage: str = "") -> list[ToolDefinition]:
     tools = [_TOOL_MAP[name] for name in tool_names if name in _TOOL_MAP]
     logger.debug(f"[jobs_mgmt_tools] Stage '{stage}' tools: {[t.name for t in tools]}")
     return tools
+
+
+# ─── duplicate_job — NEW TOOL (eval fix: WZ-004) ──────────────────────────
+@tool_handler("jobs_mgmt")
+async def _wrap_duplicate_job(**kwargs: Any) -> dict[str, Any]:
+    """Duplicate an existing job vacancy as a new draft."""
+    job_id_or_title: str = (
+        kwargs.get("job_id") or kwargs.get("vacancy_id") or kwargs.get("job_title") or ""
+    )
+    company_id: str = kwargs.get("company_id", "") or ""
+    new_title: str = kwargs.get("new_title", "") or ""
+
+    if not company_id:
+        return {"success": False, "error": "company_id obrigatorio para duplicar vaga."}
+    if not job_id_or_title:
+        return {"success": False, "error": "Informe o ID ou titulo da vaga a duplicar."}
+
+    logger.info(f"[jobs_mgmt] duplicate_job: identifier={job_id_or_title!r} company={company_id!r}")
+    try:
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                text("""
+                    SELECT id, title, department, location, work_model, employment_type,
+                           seniority_level, salary_range, requirements,
+                           technical_requirements, behavioral_competencies, description
+                    FROM job_vacancies
+                    WHERE company_id = :cid
+                      AND (job_id = :jid OR title ILIKE :title_pat)
+                    LIMIT 2
+                """),
+                {
+                    "cid": company_id,
+                    "jid": job_id_or_title,
+                    "title_pat": f"%{job_id_or_title}%",
+                },
+            )
+            rows = result.fetchall()
+
+        if not rows:
+            return {
+                "success": False,
+                "error": f"Vaga '{job_id_or_title}' nao encontrada para esta empresa.",
+            }
+        if len(rows) > 1:
+            titles = [r[1] for r in rows]
+            return {
+                "success": False,
+                "error": f"Titulo ambiguo — {len(rows)} vagas encontradas: {titles}. Especifique melhor.",
+            }
+
+        source = rows[0]
+        original_title = source[1]
+        dup_title = new_title or f"{original_title} - Segunda Posicao"
+        new_job_id = f"DUP-{uuid.uuid4().hex[:8].upper()}"
+        new_uuid = uuid.uuid4()
+
+        async with AsyncSessionLocal() as db:
+            await db.execute(
+                text("""
+                    INSERT INTO job_vacancies (
+                        id, company_id, job_id, title, department, location, work_model,
+                        employment_type, seniority_level, description, salary_range,
+                        status, stage, priority, urgency_level,
+                        open_date, deadline, requirements, technical_requirements,
+                        behavioral_competencies, visibility,
+                        created_by, recruiter_email,
+                        created_at, updated_at, is_pipeline_customized
+                    )
+                    SELECT
+                        :new_id, company_id, :new_job_id, :new_title, department, location, work_model,
+                        employment_type, seniority_level, description, salary_range,
+                        'Rascunho', 'Planejamento', priority, urgency_level,
+                        NOW(), NOW() + INTERVAL '60 days',
+                        requirements, technical_requirements,
+                        behavioral_competencies, visibility,
+                        created_by, recruiter_email,
+                        NOW(), NOW(), false
+                    FROM job_vacancies
+                    WHERE id = :source_id AND company_id = :cid
+                """),
+                {
+                    "new_id": new_uuid,
+                    "new_job_id": new_job_id,
+                    "new_title": dup_title,
+                    "source_id": source[0],
+                    "cid": company_id,
+                },
+            )
+            await db.commit()
+
+        return {
+            "success": True,
+            "original_title": original_title,
+            "new_title": dup_title,
+            "new_job_id": new_job_id,
+            "new_vacancy_id": str(new_uuid),
+            "status": "Rascunho",
+            "message": (
+                f"Vaga duplicada com sucesso! "
+                f"Nova vaga '{dup_title}' criada como rascunho (ID: {new_job_id}). "
+                f"Revise e publique quando estiver pronta."
+            ),
+        }
+    except Exception as exc:
+        logger.error(f"[jobs_mgmt] duplicate_job error: {exc}", exc_info=True)
+        return {"success": False, "error": f"Erro ao duplicar vaga: {str(exc)[:200]}"}
+
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="duplicate_job",
+        description=(
+            "Duplica uma vaga existente como novo rascunho. "
+            "Use quando o usuario quiser criar uma segunda posicao ou copia de vaga. "
+            "A copia e criada com status Rascunho — nao publicada diretamente. "
+            "Busca por job_id exato ou titulo parcial."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "job_id": {"type": "string", "description": "ID da vaga a duplicar"},
+                "job_title": {"type": "string", "description": "Titulo da vaga a duplicar"},
+                "new_title": {"type": "string", "description": "Titulo para a nova vaga (opcional)"},
+                "company_id": {"type": "string", "description": "ID da empresa (obrigatorio, multi-tenant)"},
+            },
+            "required": ["company_id"],
+        },
+        function=_wrap_duplicate_job,
+    )
+)
+_TOOL_MAP["duplicate_job"] = TOOL_DEFINITIONS[-1]

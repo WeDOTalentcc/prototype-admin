@@ -86,6 +86,12 @@ async def search_candidates(
                 conditions.append(Candidate.seniority_level == seniority)
             
             if location:
+                if not hasattr(Candidate, 'location'):
+                    return {
+                        "success": False,
+                        "message": "Filtro por localização não disponível — campo 'location' não existe no modelo Candidate.",
+                        "error": "location_filter_unavailable",
+                    }
                 conditions.append(Candidate.location.ilike(f"%{location}%"))
             
             if min_score is not None and hasattr(Candidate, 'lia_score'):

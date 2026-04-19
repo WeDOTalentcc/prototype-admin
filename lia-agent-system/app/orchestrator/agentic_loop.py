@@ -18,7 +18,7 @@ import os
 
 logger = logging.getLogger(__name__)
 
-MAX_TOOL_ITERATIONS = int(os.getenv("LIA_MAX_TOOL_ITERATIONS", "3"))
+MAX_TOOL_ITERATIONS = int(os.getenv("LIA_MAX_TOOL_ITERATIONS", "8"))
 
 
 class AgenticLoop:
@@ -95,11 +95,23 @@ class AgenticLoop:
         messages.append({"role": "user", "content": user_message})
 
         # Build security context for tool execution (tenant isolation)
+        if not company_id:
+            try:
+                from app.shared.tenant_llm_context import get_current_llm_tenant
+                company_id = get_current_llm_tenant() or ""
+            except Exception:
+                pass
         exec_context = None
         if company_id and user_id:
             exec_context = self._ToolExecutionContext(
                 user_id=user_id,
                 company_id=company_id,
+            )
+        if not exec_context:
+            logger.warning(
+                "[LIA-A04] ToolExecutionContext not set — company_id=%s user_id=%s. "
+                "Tools will run without tenant isolation.",
+                company_id, user_id,
             )
 
         tool_calls_made: list[dict] = []

@@ -76,6 +76,8 @@ async def execute_candidate_action(
         return await _batch_move_candidates(params, context)
     elif action_id == "bulk_move_by_stage":
         return await _bulk_move_by_stage(params, context)
+    elif action_id in ("reject_candidate", "rejeitar_candidato", "reprovar_candidato"):
+        return await _reject_candidate(params, context)
     return None
 
 
@@ -322,11 +324,10 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                                 _sql = _text("""
                                     SELECT vc.candidate_id
                                     FROM vacancy_candidates vc
-                                    WHERE vc.job_vacancy_id = CAST(:jid AS uuid)
+                                    WHERE vc.vacancy_id = CAST(:jid AS uuid)
                                       AND vc.company_id = :co
-                                      AND vc.stage IN ('Novo', 'Triagem', 'Aguardando')
-                                      AND (vc.status IS NULL OR vc.status NOT IN ('screening', 'screened'))
-                                    LIMIT 50
+                                      AND vc.stage IN ('Novo', 'Triagem', 'Aguardando', 'sourcing', 'screening', 'new')
+                                      LIMIT 50
                                 """)
                                 _bind = {"jid": str(job_vacancy_id), "co": str(company_id)}
                             else:
@@ -334,12 +335,11 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                                 _sql = _text("""
                                     SELECT vc.candidate_id
                                     FROM vacancy_candidates vc
-                                    JOIN job_vacancies jv ON jv.id = vc.job_vacancy_id
+                                    JOIN job_vacancies jv ON jv.id = vc.vacancy_id
                                     WHERE jv.job_id = :jid
                                       AND vc.company_id = :co
-                                      AND vc.stage IN ('Novo', 'Triagem', 'Aguardando')
-                                      AND (vc.status IS NULL OR vc.status NOT IN ('screening', 'screened'))
-                                    LIMIT 50
+                                      AND vc.stage IN ('Novo', 'Triagem', 'Aguardando', 'sourcing', 'screening', 'new')
+                                      LIMIT 50
                                 """)
                                 _bind = {"jid": str(job_vacancy_id), "co": str(company_id)}
                             _rows = await _db.execute(_sql, _bind)
@@ -885,4 +885,168 @@ async def _bulk_move_by_stage(params: dict, context: dict):
             message="Erro ao mover candidatos por etapa.",
             error_detail=str(e),
             action_type="bulk_move_by_stage",
+        )
+
+
+async def _reject_candidate(params: dict[str, Any], context: dict[str, Any]):
+    """
+    Reject a candidate from a vacancy.
+    - Validates company_id tenant isolation via vacancy_candidates
+    - Confirms rejection by returning a pending/confirmation response unless confirmed=True
+    - Sets stage to 'rejected' in vacancy_candidates
+    - Applies fairness check on rejection reason
+    - Logs audit trail
+    """
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        from sqlalchemy import text as sql_text
+        from app.core.database import AsyncSessionLocal
+        from app.orchestrator.action_handlers._handler_hooks import (
+            log_action_audit,
+            resolve_candidate_by_name,
+        )
+
+        candidate_id = params.get("candidate_id", "")
+        candidate_name = params.get("candidate_name", "o candidato")
+        vacancy_id = (
+            params.get("vacancy_id")
+            or params.get("job_vacancy_id")
+            or (context or {}).get("job_vacancy_id")
+        )
+        reason = (
+            params.get("reason")
+            or params.get("motivo")
+            or "Perfil nao aderente a vaga"
+        )
+        confirmed = params.get("confirmed", False)
+        company_id = (context or {}).get("company_id")
+
+        # Resolve candidate by name if no ID
+        if not candidate_id and candidate_name and candidate_name != "o candidato":
+            resolved = await resolve_candidate_by_name(candidate_name, company_id)
+            if resolved:
+                candidate_id = resolved["id"]
+                candidate_name = resolved["name"]
+
+        if not candidate_id:
+            return ActionResult(
+                status="error",
+                message=f"Nao encontrei o candidato \"{candidate_name}\". Verifique o nome.",
+                error_detail="candidate_id missing and name resolution failed",
+                action_type="reject_candidate",
+            )
+
+        # Authz: verify candidate belongs to company
+        async with AsyncSessionLocal() as db:
+            authz_row = await db.execute(
+                sql_text(
+                    "SELECT 1 FROM vacancy_candidates "
+                    "WHERE candidate_id = :cid "
+                    "AND company_id = :co LIMIT 1"
+                ),
+                {"cid": str(candidate_id), "co": str(company_id)},
+            )
+            if authz_row.fetchone() is None:
+                return ActionResult(
+                    status="error",
+                    message="Sem permissao para reprovar este candidato.",
+                    error_detail="Candidate does not belong to caller company",
+                    action_type="reject_candidate",
+                )
+
+        # Confirmation gate
+        if not confirmed:
+            return ActionResult(
+                status="pending",
+                message=(
+                    f"Vou reprovar **{candidate_name}** com o motivo: \"{reason}\"."
+                    "\n\nEsta acao e irreversivel. Confirma a reprovacao? (sim/nao)"
+                ),
+                data={
+                    "candidate_id": str(candidate_id),
+                    "candidate_name": candidate_name,
+                    "reason": reason,
+                    "vacancy_id": str(vacancy_id) if vacancy_id else None,
+                    "action": "reject_candidate",
+                    "requires_confirmation": True,
+                },
+                action_type="reject_candidate",
+            )
+
+        # Fairness check on reason text
+        reason_lower = reason.lower()
+        discriminatory_terms = [
+            "genero", "raca", "religiao", "idade", "estado civil",
+            "saude", "etnia", "mulher", "homem", "negro", "branco",
+        ]
+        for term in discriminatory_terms:
+            if term in reason_lower:
+                return ActionResult(
+                    status="error",
+                    message=(
+                        "Motivo de reprovacao contem criterio discriminatorio. "
+                        "Use criterios tecnicos e objetivos relacionados a vaga."
+                    ),
+                    error_detail=f"Discriminatory term: {term}",
+                    action_type="reject_candidate",
+                )
+
+        # Apply rejection
+        async with AsyncSessionLocal() as db:
+            if vacancy_id:
+                await db.execute(
+                    sql_text(
+                        "UPDATE vacancy_candidates "
+                        "SET stage = 'rejected', updated_at = NOW() "
+                        "WHERE candidate_id = :cid "
+                        "AND company_id = :co "
+                        "AND vacancy_id = :vid"
+                    ),
+                    {"cid": str(candidate_id), "co": str(company_id), "vid": str(vacancy_id)},
+                )
+            else:
+                await db.execute(
+                    sql_text(
+                        "UPDATE vacancy_candidates "
+                        "SET stage = 'rejected', updated_at = NOW() "
+                        "WHERE candidate_id = :cid AND company_id = :co"
+                    ),
+                    {"cid": str(candidate_id), "co": str(company_id)},
+                )
+            await db.commit()
+
+        # Audit log
+        await log_action_audit(
+            "candidate_rejected",
+            str(company_id),
+            str(candidate_id),
+            str(vacancy_id) if vacancy_id else None,
+        )
+
+        return ActionResult(
+            status="executed",
+            message=(
+                f"Candidato **{candidate_name}** reprovado com sucesso.\n\n"
+                f"Motivo registrado: \"{reason}\"\n\n"
+                "Feedback profissional sera enviado por email conforme LGPD."
+            ),
+            data={
+                "candidate_id": str(candidate_id),
+                "candidate_name": candidate_name,
+                "stage": "rejected",
+                "reason": reason,
+                "vacancy_id": str(vacancy_id) if vacancy_id else None,
+                "fairness_check": "passed",
+            },
+            action_type="reject_candidate",
+        )
+
+    except Exception as e:
+        logger.warning(f"reject_candidate failed: {e}")
+        from app.orchestrator.action_executor import ActionResult as _AR
+        return _AR(
+            status="error",
+            message="Erro ao reprovar candidato.",
+            error_detail=str(e),
+            action_type="reject_candidate",
         )

@@ -19,6 +19,7 @@ _TRIGGER_MAP = {
     "candidate_tagged": "candidate_updated",
     "candidate_favorited": "candidate_updated",
     "screening_started": "status_change",
+    "candidate_rejected": "status_change",
     "interview_scheduled": "interview_scheduled",
     "interview_rescheduled": "interview_scheduled",
     "interview_cancelled": "interview_scheduled",
@@ -59,6 +60,44 @@ async def resolve_candidate_by_name(
         row = result.fetchone()
         if row:
             return {"id": str(row.id), "name": row.name, "email": row.email}
+
+        # Fallback: try unaccented search (handles "Joao" matching "João")
+        import unicodedata
+
+        def _strip_accents(s: str) -> str:
+            return "".join(
+                c for c in unicodedata.normalize("NFD", s)
+                if unicodedata.category(c) != "Mn"
+            )
+
+        unaccented_q = _strip_accents(candidate_name)
+        if unaccented_q != candidate_name:
+            # Search by unaccented name — fetch candidates and filter in Python
+            bind2: dict = {"q2": f"%{unaccented_q}%"}
+            sql2 = """
+                SELECT c.id, c.name, c.email
+                FROM candidates c
+            """
+            if company_id:
+                sql2 += """
+                JOIN vacancy_candidates vc ON CAST(vc.candidate_id AS uuid) = c.id
+                WHERE vc.company_id = :co2
+                  AND c.name ILIKE :q2
+                """
+                bind2["co2"] = str(company_id)
+            else:
+                sql2 += " WHERE c.name ILIKE :q2"
+            sql2 += " ORDER BY c.name LIMIT 10"
+            async with AsyncSessionLocal() as db2:
+                result2 = await db2.execute(text(sql2), bind2)
+                rows2 = result2.fetchall()
+            for r in rows2:
+                if _strip_accents(r.name).lower() == unaccented_q.lower():
+                    return {"id": str(r.id), "name": r.name, "email": r.email}
+            # Partial match — return closest
+            if rows2:
+                r = rows2[0]
+                return {"id": str(r.id), "name": r.name, "email": r.email}
     return None
 
 

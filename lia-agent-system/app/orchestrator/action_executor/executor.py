@@ -329,7 +329,7 @@ class ActionExecutorService:
                 "send_feedback", "send_whatsapp", "send_screening_invite",
                 "send_candidate_report", "send_progress_report", "share_candidate_profile",
             }
-            _CANDIDATE_ACTIONS = {"move_candidate", "update_candidate_field", "start_screening", "analyze_profile", "batch_move_candidates", "bulk_move_by_stage"}
+            _CANDIDATE_ACTIONS = {"move_candidate", "update_candidate_field", "start_screening", "analyze_profile", "batch_move_candidates", "bulk_move_by_stage", "reject_candidate", "rejeitar_candidato", "reprovar_candidato"}
             _JOB_ACTIONS = {"pause_job", "close_job", "duplicate_job", "reopen_job", "set_job_urgent", "suggest_salary", "generate_jd_direct"}
             _PIPELINE_ACTIONS = {"create_task", "create_note", "generate_daily_briefing", "create_automation", "check_proactive_alerts"}
             _SOURCING_ACTIONS = {

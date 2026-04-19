@@ -56,6 +56,27 @@ REACT_INSTRUCTIONS = (
 
 
 # IDENTITY_OVERRIDE injected before persona to override LLM defaults
+
+
+_PLATFORM_KNOWLEDGE = (
+    "## Conhecimento da Plataforma WeDOTalent\n\n"
+    "Voce conhece TODAS as funcionalidades e paginas da plataforma:\n\n"
+    "**Paginas principais** (voce pode navegar o recrutador ate elas):\n"
+    "- Dashboard: visao geral, metricas e atividade recente\n"
+    "- Vagas: lista e gestao de vagas/posicoes abertas\n"
+    "- Pipeline / Kanban: gestao visual de candidatos por etapa do processo\n"
+    "- Candidatos: banco de talentos com historico e scores\n"
+    "- Sourcing: busca inteligente de candidatos por skills, experiencia, localizacao\n"
+    "- Analytics: relatorios, metricas de recrutamento e insights\n"
+    "- Configuracoes: perfil da empresa, integracoes (HubSpot, WhatsApp, LLM/IA), politicas\n\n"
+    "**Configuracoes da empresa** (caminho: Menu lateral → Configuracoes):\n"
+    "  Dados Basicos, Localizacao, Cultura, Beneficios, Processos Seletivos, Integracoes\n"
+    "  Se o perfil estiver incompleto, PROATIVAMENTE sugira completar para melhores resultados.\n\n"
+    "**Regra de Proatividade**: Se detectar pre-condicao faltando (empresa sem perfil, "
+    "vaga sem perguntas de triagem, candidato sem score WSI), OFERECA ajuda imediatamente — "
+    "nao espere o recrutador perceber.\n"
+)
+
 _IDENTITY_OVERRIDE = (
     "# REGRA ZERO -- SUA IDENTIDADE\n\n"
     "SEU NOME E LIA. VOCE E A LIA, assistente de recrutamento da WeDOTalent.\n"
@@ -93,6 +114,7 @@ class SystemPromptBuilder:
         sections.append(_IDENTITY_OVERRIDE)
         persona = _load_persona_base()
         sections.append(persona)
+        sections.append(_PLATFORM_KNOWLEDGE)
 
         domain_additions = _load_domain_additions(agent_type)
         if domain_additions:
@@ -124,6 +146,22 @@ class SystemPromptBuilder:
                 "vacancies": "O usuário está na página de vagas.",
                 "wizard": "O usuário está criando/editando uma vaga pelo wizard.",
                 "analytics": "O usuário está na página de relatórios e analytics.",
+                "settings": (
+                    "O usuário está na página de Configurações da empresa. "
+                    "Aqui ele pode configurar: nome/CNPJ/setor/tamanho (Dados Básicos), "
+                    "endereço (Localização), cultura/valores (Cultura), benefícios, "
+                    "processos seletivos e integrações (HubSpot, WhatsApp, LLM). "
+                    "Caminho: Menu lateral → Configurações."
+                ),
+                "company_settings": (
+                    "O usuário está nas Configurações da empresa. "
+                    "Pode completar perfil, configurar integrações e políticas de recrutamento."
+                ),
+                "company_profile": (
+                    "O usuário está no Perfil da empresa. "
+                    "Se o perfil estiver incompleto, sugerir navegar para Configurações. "
+                    "Sem perfil completo, buscas e triagens podem ser menos precisas."
+                ),
             }
             page_desc = page_descriptions.get(context_page, f"O usuário está na página: {context_page}.")
             context_parts.append(f"### Localização\n{page_desc}")

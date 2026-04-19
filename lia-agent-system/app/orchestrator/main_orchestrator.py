@@ -952,7 +952,7 @@ class MainOrchestrator:
             })
             return conv, conv_id
         except Exception as _mem_exc:
-            logger.debug("[MainOrchestrator] ConversationMemory setup skipped: %s", _mem_exc)
+            logger.warning("[MainOrchestrator] ConversationMemory setup failed — conversation history lost: %s", _mem_exc)
             return None, conv_id
 
     async def _route_with_tenant_llm(
