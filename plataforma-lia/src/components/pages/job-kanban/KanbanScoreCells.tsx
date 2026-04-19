@@ -69,7 +69,7 @@ export function renderScoreCell(
       // Audit task #530 (G23-02 frontend) — selo de modo degradado também na
       // tabela (paridade com KanbanCardScores).
       const isDegraded = hasTriagem && candidate.triagemDegraded === true
-      const degradedTooltip = 'Análise em modo degradado — abra o relatório para ver detalhes'
+      const degradedTooltip = t('degradedModeTooltip')
       return (
         <div
           className={`flex items-center gap-1 justify-center cursor-pointer group ${hasTriagem ? '' : 'opacity-40'}`}

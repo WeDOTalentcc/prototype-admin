@@ -98,14 +98,14 @@ export function KanbanCardScores({
                   <TooltipTrigger asChild>
                     <span
                       role="img"
-                      aria-label="Triagem em modo degradado — abra o relatório para ver detalhes"
+                      aria-label={t('degradedModeTooltip')}
                       className="inline-flex"
                     >
                       <AlertTriangle className="h-3 w-3 text-status-warning" strokeWidth={2.5} />
                     </span>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Análise em modo degradado — abra o relatório para ver detalhes</p>
+                    <p>{t('degradedModeTooltip')}</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>

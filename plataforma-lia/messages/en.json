@@ -1104,6 +1104,7 @@
     "clickDetails": "Click to see details",
     "notEvaluated": "Not evaluated",
     "clickLIAScreening": "Click to see LIA Screening",
+    "degradedModeTooltip": "Degraded analysis mode — open the report for details",
     "clickCVAnalysis": "Click to see CV vs Job Analysis",
     "notCompleted": "Not completed",
     "clickBigFiveReport": "Click to see full Big Five report",

@@ -1104,6 +1104,7 @@
     "clickDetails": "Clique para ver detalhes",
     "notEvaluated": "Não avaliado",
     "clickLIAScreening": "Clique para ver Triagem LIA",
+    "degradedModeTooltip": "Análise em modo degradado — abra o relatório para ver detalhes",
     "clickCVAnalysis": "Clique para ver Análise CV vs Vaga",
     "notCompleted": "Não realizado",
     "clickBigFiveReport": "Clique para ver relatório Big Five completo",
