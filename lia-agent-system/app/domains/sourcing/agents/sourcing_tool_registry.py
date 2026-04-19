@@ -398,8 +398,21 @@ async def _wrap_analyze_profile(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
     """Compare multiple candidate profiles."""
     candidate_ids = kwargs.get("candidate_ids", [])
+    candidate_names = kwargs.get("candidate_names", [])
+    company_id = kwargs.get("company_id", "") or kwargs.get("_company_id", "")
+
+    # Resolve names to UUIDs if candidate_ids not provided
+    if not candidate_ids and candidate_names:
+        from app.orchestrator.action_handlers._handler_hooks import resolve_candidate_by_name as _rcbn
+        resolved = []
+        for name in candidate_names:
+            r = await _rcbn(name, company_id or None)
+            if r:
+                resolved.append(r["id"])
+        candidate_ids = resolved
+
     if not candidate_ids or not isinstance(candidate_ids, list):
-        return {"success": False, "data": {}, "message": "Parametro 'candidate_ids' (lista) e obrigatorio."}
+        return {"success": False, "data": {}, "message": "Informe os nomes ou IDs dos candidatos para comparar."}
 
     placeholders = ", ".join([f":id_{i}" for i in range(len(candidate_ids))])
     params = {f"id_{i}": cid for i, cid in enumerate(candidate_ids)}
@@ -1068,13 +1081,14 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
     ),
     ToolDefinition(
         name="compare_candidates",
-        description="Compara multiplos candidatos lado a lado, gerando ranking e analise comparativa.",
+        description="Compara multiplos candidatos lado a lado, gerando ranking e analise comparativa. Aceita nomes ou IDs.",
         parameters={
             "type": "object",
             "properties": {
-                "candidate_ids": {"type": "array", "items": {"type": "string"}, "description": "Lista de IDs dos candidatos a comparar"},
+                "candidate_ids": {"type": "array", "items": {"type": "string"}, "description": "Lista de UUIDs dos candidatos (use se souber os IDs)"},
+                "candidate_names": {"type": "array", "items": {"type": "string"}, "description": "Lista de nomes dos candidatos (use quando tiver nomes, nao IDs)"},
             },
-            "required": ["candidate_ids"],
+            "required": [],
         },
         function=_wrap_compare_candidates,
     ),

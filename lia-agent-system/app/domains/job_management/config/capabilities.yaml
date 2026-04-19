@@ -121,3 +121,19 @@ intent_keywords:
   salary for: suggest_compensation
   # `duplicar` is already mapped above; this covers the `duplica` variant.
   duplica: duplicate_job
+  # JM-005: urgency/risk queries — eval fix
+  vagas urgentes: list_jobs
+  urgentes: list_jobs
+  em risco: list_jobs
+  risco: list_jobs
+  vaga urgente: list_jobs
+  urgência: list_jobs
+  quais vagas estão: list_jobs
+  quais vagas: list_jobs
+  # JM-008: count by status — eval fix
+  quantas vagas: count_jobs
+  quantas vagas tenho: count_jobs
+  contar vagas: count_jobs
+  vagas pausadas: list_jobs
+  vagas concluídas: list_jobs
+  vagas abertas: list_jobs

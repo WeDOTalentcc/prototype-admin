@@ -1,63 +1,100 @@
-"""Facade module exposing job-vacancy lifecycle tools to the chat executor.
+"""Wrappers do executor de chat para o ciclo de vida de vagas.
 
-Estes wrappers existem para que o `execute_job_management_tool` consiga importar e
-resolver os handlers sem `ModuleNotFoundError`. A implementação canônica das
-operações de CRUD está nas rotas FastAPI em `app/api/v1/job_vacancies/crud.py`,
-que dependem do `JobVacancyCRUDRepository` e de injeção via `Depends(...)` —
-não são chamáveis diretamente com `**kwargs`.
+Cada wrapper:
+- Extrai `_tenant_id` (injetado pelo executor) → `company_id`.
+- Remove chaves prefixadas com `_` antes de delegar ao service.
+- Delega para `JobVacancyLifecycleService` (fonte da verdade canônica).
 
-Onde possível, delegamos para o repositório acquirindo uma sessão; caso
-contrário, levantamos `NotImplementedError` explícito (sem mock silencioso),
-para que o chat retorne uma mensagem honesta ao recrutador e o backlog fique
-visível.
+Erros conhecidos (`ValueError`, `LookupError`) viram resposta estruturada com
+`success=False`; erros inesperados sobem para o executor logar com stack.
 """
 from __future__ import annotations
 
 import logging
 from typing import Any
 
+from app.domains.job_management.services.job_vacancy_lifecycle_service import (
+    job_vacancy_lifecycle_service,
+)
+
 logger = logging.getLogger(__name__)
 
 
-def _strip_meta(p: dict) -> dict:
-    return {k: v for k, v in p.items() if not k.startswith("_")}
+def _split_meta(params: dict[str, Any]) -> tuple[str | None, dict[str, Any]]:
+    tenant_id = params.get("_tenant_id")
+    cleaned = {k: v for k, v in params.items() if not k.startswith("_")}
+    return (str(tenant_id) if tenant_id else None), cleaned
+
+
+def _resolve_company_id(payload: dict[str, Any], tenant_id: str | None) -> str:
+    company_id = payload.pop("company_id", None) or tenant_id
+    if not company_id:
+        raise ValueError(
+            "company_id/tenant_id ausente — chat tool não pode operar sem contexto multi-tenant."
+        )
+    return str(company_id)
+
+
+def _structured_error(operation: str, exc: Exception) -> dict[str, Any]:
+    code = "validation_error" if isinstance(exc, ValueError) else (
+        "not_found" if isinstance(exc, LookupError) else "internal_error"
+    )
+    return {
+        "success": False,
+        "operation": operation,
+        "error": code,
+        "message": str(exc),
+    }
 
 
 async def create_job_vacancy(**params: Any) -> dict[str, Any]:
-    """Cria uma vaga de emprego.
-
-    Backlog: extrair a lógica de transformação payload→ORM da rota FastAPI
-    (`app.api.v1.job_vacancies.crud.create_job_vacancy`) para um service layer
-    reutilizável (`JobVacancyLifecycleService`). Enquanto isso, o chat deve
-    orientar o recrutador a usar o wizard ou a API.
-    """
-    raise NotImplementedError(
-        "create_job_vacancy via chat ainda não está conectado ao service layer. "
-        "Use o wizard de criação de vaga (rota `/job-vacancies` ou comando `/job`) "
-        "ou aguarde implementação de JobVacancyLifecycleService."
-    )
+    tenant_id, payload = _split_meta(params)
+    try:
+        company_id = _resolve_company_id(payload, tenant_id)
+        return await job_vacancy_lifecycle_service.create(company_id=company_id, **payload)
+    except (ValueError, LookupError) as exc:
+        return _structured_error("create_job_vacancy", exc)
 
 
 async def update_job_vacancy(**params: Any) -> dict[str, Any]:
-    """Atualiza uma vaga existente. Vide create_job_vacancy."""
-    raise NotImplementedError(
-        "update_job_vacancy via chat ainda não está conectado ao service layer. "
-        "Backlog: extrair lógica da rota PATCH /job-vacancies/{id} para service."
-    )
+    tenant_id, payload = _split_meta(params)
+    try:
+        company_id = _resolve_company_id(payload, tenant_id)
+        job_id = payload.pop("job_id", None)
+        if not job_id:
+            raise ValueError("job_id é obrigatório para atualizar vaga")
+        return await job_vacancy_lifecycle_service.update(
+            company_id=company_id, job_id=str(job_id), **payload
+        )
+    except (ValueError, LookupError) as exc:
+        return _structured_error("update_job_vacancy", exc)
 
 
 async def close_job_vacancy(**params: Any) -> dict[str, Any]:
-    """Fecha (concluída) uma vaga. Backlog: wire para JobVacancyCRUDRepository
-    + update_job_vacancy_status (status='Concluída')."""
-    raise NotImplementedError(
-        "close_job_vacancy via chat ainda não está conectado. "
-        "Use a API: PATCH /job-vacancies/{id}/status com status='Concluída'."
-    )
+    tenant_id, payload = _split_meta(params)
+    try:
+        company_id = _resolve_company_id(payload, tenant_id)
+        job_id = payload.pop("job_id", None)
+        if not job_id:
+            raise ValueError("job_id é obrigatório para fechar vaga")
+        reason = payload.get("reason")
+        return await job_vacancy_lifecycle_service.set_status(
+            company_id=company_id, job_id=str(job_id), status="Concluída", reason=reason
+        )
+    except (ValueError, LookupError) as exc:
+        return _structured_error("close_job_vacancy", exc)
 
 
 async def pause_job(**params: Any) -> dict[str, Any]:
-    """Pausa uma vaga. Backlog: wire para update_job_vacancy_status (status='Pausada')."""
-    raise NotImplementedError(
-        "pause_job via chat ainda não está conectado. "
-        "Use a API: PATCH /job-vacancies/{id}/status com status='Pausada'."
-    )
+    tenant_id, payload = _split_meta(params)
+    try:
+        company_id = _resolve_company_id(payload, tenant_id)
+        job_id = payload.pop("job_id", None)
+        if not job_id:
+            raise ValueError("job_id é obrigatório para pausar vaga")
+        reason = payload.get("reason")
+        return await job_vacancy_lifecycle_service.set_status(
+            company_id=company_id, job_id=str(job_id), status="Pausada", reason=reason
+        )
+    except (ValueError, LookupError) as exc:
+        return _structured_error("pause_job", exc)
