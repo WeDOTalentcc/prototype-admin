@@ -248,3 +248,196 @@ Bloquear por padrão quebraria deployments existentes onde o Gemini embedding fa
 | `app/domains/ai/services/llm.py` | generate() usa get_audited_model() → tenant-aware |
 | `app/api/v1/llm_config.py` | Sanitizar erro test endpoint, quality warnings no save, dependency map em /providers |
 | `app/services/wsi_compact_pipeline.py` | task_type="screening" em generate_with_fallback() |
+
+
+---
+
+## 9. Interface do Cliente — Choose Your AI (Frontend)
+
+**Atualizado em**: 2026-04-19
+**Localização no produto**: Configurações → Integrações → categoria "Modelos de IA"
+
+### Fluxo de Configuração (UX)
+
+```
+Admin abre Configurações → Integrações
+      │
+      ▼
+IntegrationsHub carrega:
+  - GET /api/backend-proxy/llm-config         ← config atual do tenant
+  - GET /api/backend-proxy/llm-config/providers  ← catálogo de modelos + tiers
+      │
+      ▼
+Cards de provider (Gemini, Claude, OpenAI) exibem:
+  - Badge "Provedor ativo" se for o primary_provider
+  - Badge "Chave própria" se tenant tem API key salva
+  - Badge "Chave do sistema" se usa key da plataforma
+      │
+      ▼ (clique no card)
+IntegrationDetailDrawer abre com:
+  1. Status badges (Conectado / Não configurado)
+  2. Recursos & Capacidades (do integration-data.ts)
+  3. [se provider ≠ configurado] Banner amber: aviso de voz (OpenAI) ou companion
+  4. ApiKeyConfigForm → testa key → salva via PUT /admin/llm-config
+  5. [se PUT retorna warnings] Banner status-warning com mensagens do Quality Guard
+  6. ModelSelector → dropdown com badge Tier 1 / Tier 2 por modelo
+  7. [se Tier 2 selecionado] Banner status-warning: "não recomendado para triagem WSI"
+  8. [se requires_companion_for] Banner info com companion_recommendation do backend
+```
+
+### Arquivos Frontend
+
+| Arquivo | Responsabilidade |
+|---------|-----------------|
+| `plataforma-lia/src/components/settings/IntegrationsHub.tsx` | Hub principal; fetcha llmConfig + providersCatalog; renderiza cards |
+| `plataforma-lia/src/components/settings/integrations/IntegrationDetailDrawer.tsx` | Drawer de configuração; save key + model; captura PUT warnings |
+| `plataforma-lia/src/components/settings/integrations/ModelSelector.tsx` | Seletor de modelo com badges Tier 1/Tier 2; save model separado |
+| `plataforma-lia/src/components/settings/integrations/ApiKeyConfigForm.tsx` | Form de API key; valida via /test; salva |
+| `plataforma-lia/src/components/settings/integrations/integration-data.ts` | Dados estáticos dos providers (nome, ícone, capabilities) |
+| `plataforma-lia/src/app/api/backend-proxy/llm-config/route.ts` | Proxy GET/PUT → FastAPI /api/v1/admin/llm-config |
+| `plataforma-lia/src/app/api/backend-proxy/llm-config/providers/route.ts` | Proxy GET → FastAPI /api/v1/admin/llm-config/providers |
+| `plataforma-lia/src/app/api/backend-proxy/llm-config/test/route.ts` | Proxy POST → FastAPI /api/v1/admin/llm-config/test |
+
+### Contrato de Dados (Frontend ↔ Backend)
+
+**GET /admin/llm-config** — resposta lida pelo frontend:
+```json
+{
+  "company_id": "...",
+  "primary_provider": "gemini",
+  "fallback_order": ["gemini", "claude", "openai"],
+  "providers": {
+    "gemini": { "api_key": "AIza***MASKED***", "model": "gemini-2.5-flash", "is_active": true }
+  },
+  "routing": { "chat": "gemini", "screening": "gemini", "embedding": "gemini", "voice": "gemini" }
+}
+```
+
+**PUT /admin/llm-config** — payload enviado pelo frontend:
+```json
+{
+  "primary_provider": "gemini",
+  "fallback_order": ["gemini", "claude", "openai"],
+  "providers": {
+    "gemini": { "provider": "gemini", "api_key": "AIza...", "model": "gemini-2.5-flash", "is_active": true }
+  },
+  "routing": { "chat": "gemini", "screening": "gemini" }
+}
+```
+
+**PUT /admin/llm-config** — resposta com Quality Guard warnings:
+```json
+{
+  "status": "updated",
+  "company_id": "...",
+  "warnings": [
+    "Modelo 'claude-haiku-3-5' (Tier 2) configurado para 'screening' — qualidade da triagem WSI pode ser reduzida."
+  ]
+}
+```
+
+**GET /admin/llm-config/providers** — catálogo lido pelo ModelSelector:
+```json
+{
+  "providers": [
+    {
+      "id": "claude",
+      "models": ["claude-sonnet-4-6", "claude-opus-4-7", "claude-haiku-3-5"],
+      "model_tiers": { "claude-sonnet-4-6": "tier1", "claude-haiku-3-5": "tier2" },
+      "requires_companion_for": ["embedding", "voice"],
+      "companion_recommendation": "Claude não suporta embedding nem voz nativas...",
+      "default_model": "claude-sonnet-4-6"
+    }
+  ],
+  "tier_definitions": { "tier1": "...", "tier2": "..." }
+}
+```
+
+---
+
+## 10. Auditoria E2E — Estado Real do Sistema (2026-04-19)
+
+### Status por Camada
+
+| Camada | Componente | Status | Notas |
+|--------|-----------|--------|-------|
+| Frontend proxy routes | `/api/backend-proxy/llm-config/*` | ✅ OK | company_id via JWT; proxy correto |
+| Backend endpoints | `app/api/v1/llm_config.py` | ✅ OK | GET/PUT/test/providers funcionando |
+| Repository/DB | `llm_config_repository.py` | ✅ OK | model persiste e retorna na resposta |
+| Tenant LLM context | `tenant_llm_context.py` + `llm_factory.py` | ✅ OK | `provider_models` carregado corretamente |
+| Auth / tenant isolation | JWT → `company_id` via middleware | ✅ OK | Sem vazamento entre tenants |
+| Frontend UI | IntegrationsHub + Drawer + ModelSelector | ✅ OK | Fluxo completo funcional |
+| **Serviços hardcoded** | `wsi_question_adjuster`, `vacancy_search`, `voice` | ❌ **CRÍTICO** | Ver abaixo |
+
+### Gaps Críticos — Serviços que Ignoram BYOK
+
+Os seguintes serviços hardcodam `model="gemini-2.5-flash"` e ignoram completamente a configuração do tenant:
+
+| Serviço | Arquivo | Operação | Impacto BYOK |
+|---------|---------|----------|-------------|
+| WSI Question Adjuster | `app/domains/cv_screening/services/wsi_question_adjuster.py:248` | Avaliação de qualidade da JD | ❌ Sempre Gemini |
+| Vacancy Search | `app/domains/sourcing/services/vacancy_search.py` | Busca e ranking de vagas | ❌ Sempre Gemini |
+| Vacancy Search Service | `app/domains/job_management/services/vacancy_search_service.py` | Indexação de vagas | ❌ Sempre Gemini |
+| Gemini Voice Service | `app/domains/voice/services/gemini_voice_service.py` | Voz da LIA (TTS/STT) | ❌ Hardcoded por design (OK para voz) |
+
+**Consequência**: Tenants que configuram Claude BYOK ou OpenAI BYOK como primary provider ainda têm suas triagens WSI e buscas de vagas processadas com a key da plataforma (Gemini). Isso viola o contrato "Choose Your AI" para essas operações críticas.
+
+### Plano de Correção dos Gaps
+
+**Utilitário a criar** (antes de corrigir os serviços):
+
+```python
+# app/shared/providers/tenant_model_resolver.py
+from app.shared.providers.llm_factory import get_provider_for_tenant_from_db
+
+async def get_tenant_model(
+    company_id: str,
+    provider: str | None = None,
+    fallback: str = "gemini-2.5-flash",
+) -> str:
+    """Resolve o modelo configurado pelo tenant para um provider."""
+    try:
+        container = await get_provider_for_tenant_from_db(company_id)
+        prov = provider or container.primary_provider
+        return container._provider_models.get(prov, fallback)
+    except Exception:
+        return fallback
+```
+
+**Correção em `wsi_question_adjuster.py:248`**:
+```python
+# ANTES (hardcoded — viola BYOK):
+response = llm_service.generate_native_gemini_sync(model="gemini-2.5-flash", ...)
+
+# DEPOIS (tenant-aware):
+from app.shared.providers.tenant_model_resolver import get_tenant_model
+model = await get_tenant_model(company_id, provider="gemini", fallback="gemini-2.5-flash")
+response = llm_service.generate_native_gemini_sync(model=model, ...)
+```
+
+**Nota sobre Voice Services**: `gemini_voice_service.py` está hardcoded por design — voz usa Gemini Live API que não tem equivalente em outros providers. Esse comportamento é correto e documentado no `requires_companion_for: ["voice"]` do catálogo.
+
+### O Que Funciona Hoje (pós-2026-04-19)
+
+| Funcionalidade | BYOK Respeitado? |
+|----------------|-----------------|
+| Chat / Orchestrator (AgenticLoop) | ✅ Sim |
+| Triagem WSI via `wsi_compact_pipeline` | ✅ Sim (task_type="screening" ativo) |
+| LangGraph agents (entrevistas, sourcing) | ✅ Sim (budget check ativo) |
+| Embedding | ✅ Sim (com EMBEDDING_LOCK_PROVIDER) |
+| Avaliação de JD (wsi_question_adjuster) | ❌ Não — hardcoded Gemini |
+| Busca de vagas (vacancy_search) | ❌ Não — hardcoded Gemini |
+| Voz LIA (TTS/STT) | ⚠️ Por design usa Gemini Live |
+
+### Prioridade de Correção dos Gaps Restantes
+
+```
+P0 (antes do release BYOK para enterprise):
+  → Criar tenant_model_resolver.py
+  → wsi_question_adjuster.py:248 — tenant-aware
+  → vacancy_search.py — tenant-aware
+
+P1 (sprint seguinte):
+  → vacancy_search_service.py — tenant-aware
+  → Testes de integração cobrindo tenant isolation por serviço
+```
