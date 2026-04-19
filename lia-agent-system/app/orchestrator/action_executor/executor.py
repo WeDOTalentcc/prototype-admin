@@ -63,11 +63,13 @@ class ActionExecutorService:
         # Inject entity_id/entity_type from context if not already in entities
         ctx_entity_id = context.get("entity_id") or context.get("context_entity_id")
         ctx_entity_type = context.get("entity_type", "")
-        # Only inject as job_id/candidate_id if it looks like a real UUID
         import re as _re
         _UUID_RE = _re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", _re.I)
+        # Also accept short job IDs like V0037, JOB-123 (not just full UUIDs)
+        _JOB_ID_RE = _re.compile(r"^[A-Z][A-Z0-9]{2,9}$", _re.I)
         _is_uuid = bool(ctx_entity_id and _UUID_RE.match(str(ctx_entity_id)))
-        if ctx_entity_id and _is_uuid:
+        _is_job_ref = bool(ctx_entity_id and _JOB_ID_RE.match(str(ctx_entity_id)))
+        if ctx_entity_id and (_is_uuid or _is_job_ref):
             if ctx_entity_type in ("job", "job_vacancy"):
                 if not entities.get("job_id"):
                     entities["job_id"] = ctx_entity_id

@@ -158,7 +158,16 @@ class WSIResponseAnalyzer:
                 layer2_signals=layer2_signals,
                 layer2_degraded_reason=layer2_degraded_reason,
                 # Audit task #528 — transparência (G23-02 + G23-03)
-                flags_structured=result.flags_structured,
+                # Reforça `is_llm_fallback` aqui porque o scorer não conhece
+                # `layer2_degraded_reason` (apenas analyzer sabe se a Camada 2
+                # foi degradada por timeout, falta de chave ou erro do LLM).
+                flags_structured={
+                    **(result.flags_structured or {}),
+                    "is_llm_fallback": (
+                        bool((result.flags_structured or {}).get("is_llm_fallback"))
+                        or (layer2_degraded_reason is not None)
+                    ),
+                },
                 degraded_quality=result.degraded_quality,
                 degraded_reasons=result.degraded_reasons,
                 penalty_breakdown=result.penalty_breakdown,
