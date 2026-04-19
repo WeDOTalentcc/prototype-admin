@@ -144,7 +144,7 @@ Responda APENAS com JSON:
                 container = await get_provider_for_tenant_from_db(str(company_id))
             else:
                 container = get_provider_for_tenant(tenant_id=None)
-            response_text = await container.generate_with_fallback(prompt)
+            response_text = await container.generate_with_fallback(prompt, task_type="screening")
 
             # Strip markdown code fences if present
             cleaned = response_text.strip()

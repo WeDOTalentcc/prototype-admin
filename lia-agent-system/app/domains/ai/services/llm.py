@@ -437,7 +437,12 @@ class LLMService:
         # consumidor passa on_usage. Espelha a lógica de safe_invoke.
         _gen_start = _time.time()
         if provider == "claude":
-            llm = self.claude
+            # B5 LIA-BYOK: use tenant-aware model when _tenant_container is not set.
+            # get_audited_model() resolves the tenant key from _tenant_configs cache,
+            # applies PII strip + audit callbacks, and falls back to global key if
+            # no tenant config exists. Preserves existing behaviour for callers that
+            # already wire _tenant_container via MainOrchestrator.
+            llm = self.get_audited_model(company_id=_cid or None)
             if kwargs:
                 llm = llm.bind(**kwargs)
             response = await llm.ainvoke(prompt)

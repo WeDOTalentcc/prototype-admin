@@ -22,7 +22,14 @@ export function JobsKanbanView({ jobs, onJobClick }: JobsKanbanViewProps) {
     deadlinePast: (days: number) => t("deadlinePast", { days }),
     candidatesCount: (count: number) => t("candidatesCount", { count }),
     ageDays: (days: number) => t("ageDays", { days }),
-    ribbonUrgent: () => t("ribbon.urgent"),
+    ribbon: {
+      label: () => t("ribbon.label"),
+      deadlineOverdue: (days: number) => t("ribbon.deadlineOverdue", { days }),
+      deadlineSoon: (days: number) => t("ribbon.deadlineSoon", { days }),
+      urgent: () => t("ribbon.urgent"),
+      pendingApproval: () => t("ribbon.pendingApproval"),
+      noCandidates: () => t("ribbon.noCandidates"),
+    },
   }), [t])
 
   // Task #562 — Labels separados (mini funil + info chips) repassados às

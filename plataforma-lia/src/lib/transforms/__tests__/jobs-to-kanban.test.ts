@@ -7,7 +7,14 @@ const labels = {
   deadlinePast: (d: number) => `Atrasada ${d}d`,
   candidatesCount: (c: number) => `${c} candidatos`,
   ageDays: (d: number) => `Aberta há ${d}d`,
-  ribbonUrgent: () => "Atenção",
+  ribbon: {
+    label: () => "Ação Necessária",
+    deadlineOverdue: (d: number) => `Deadline vencido há ${d}d`,
+    deadlineSoon: (d: number) => `Deadline em ${d}d`,
+    urgent: () => "Vaga marcada como urgente",
+    pendingApproval: () => "Aguardando aprovação",
+    noCandidates: () => "Sem candidatos no funil",
+  },
 }
 
 function baseJob(overrides: Partial<Job> = {}): Job {
@@ -82,25 +89,74 @@ describe("jobToKanbanItem (Task #562)", () => {
     expect(noAge.ageDays).toBeUndefined()
   })
 
-  it("dispara ribbon=danger quando deadline está vencido", () => {
+  it("dispara ribbon=danger com reason de deadline vencido", () => {
     const overdue = jobToKanbanItem(
       baseJob({ deadline: new Date(Date.now() - 5 * 86400000).toISOString() }),
       { labels },
     )
     expect(overdue.deadlineStatus).toBe("danger")
-    expect(overdue.ribbon).toEqual({ label: "Atenção", variant: "danger" })
+    expect(overdue.ribbon).toEqual({
+      label: "Ação Necessária",
+      variant: "danger",
+      reason: "Deadline vencido há 5d",
+    })
   })
 
-  it("dispara ribbon=warning quando urgencyLevel >= 4 sem deadline vencido", () => {
+  it("dispara ribbon=warning com reason de deadline próximo (≤ 7d)", () => {
+    const soon = jobToKanbanItem(
+      baseJob({ deadline: new Date(Date.now() + 3 * 86400000).toISOString() }),
+      { labels },
+    )
+    expect(soon.ribbon).toEqual({
+      label: "Ação Necessária",
+      variant: "warning",
+      reason: "Deadline em 3d",
+    })
+  })
+
+  it("dispara ribbon=warning com reason de urgência quando urgencyLevel >= 4 e sem deadline próximo", () => {
     const urgent = jobToKanbanItem(
       baseJob({ urgencyLevel: 5, deadline: new Date(Date.now() + 30 * 86400000).toISOString() }),
       { labels },
     )
-    expect(urgent.ribbon).toEqual({ label: "Atenção", variant: "warning" })
+    expect(urgent.ribbon).toEqual({
+      label: "Ação Necessária",
+      variant: "warning",
+      reason: "Vaga marcada como urgente",
+    })
   })
 
-  it("não emite ribbon quando ribbonUrgent não é fornecido (caller controla)", () => {
-    const labelsNoRibbon = { ...labels, ribbonUrgent: undefined }
+  it("dispara ribbon=info quando vaga está aguardando aprovação", () => {
+    const pending = jobToKanbanItem(
+      baseJob({ status: "Aguardando aprovação", urgencyLevel: 1, priority: "média" }),
+      { labels },
+    )
+    expect(pending.ribbon).toEqual({
+      label: "Ação Necessária",
+      variant: "info",
+      reason: "Aguardando aprovação",
+    })
+  })
+
+  it("dispara ribbon=info quando vaga está aberta há mais de 14d sem candidatos", () => {
+    const stale = jobToKanbanItem(
+      baseJob({
+        openDate: new Date(Date.now() - 20 * 86400000).toISOString(),
+        urgencyLevel: 1,
+        priority: "média",
+        funnel: { total: 0, screening: 0, interview: 0, final: 0, hired: 0 },
+      }),
+      { labels },
+    )
+    expect(stale.ribbon).toEqual({
+      label: "Ação Necessária",
+      variant: "info",
+      reason: "Sem candidatos no funil",
+    })
+  })
+
+  it("não emite ribbon quando labels.ribbon não é fornecido (caller controla)", () => {
+    const labelsNoRibbon = { ...labels, ribbon: undefined }
     const item = jobToKanbanItem(
       baseJob({ urgencyLevel: 5 }),
       { labels: labelsNoRibbon },
@@ -108,7 +164,19 @@ describe("jobToKanbanItem (Task #562)", () => {
     expect(item.ribbon).toBeUndefined()
   })
 
-  it("classifica deadline ≤ 7d como warning", () => {
+  it("não emite ribbon para vaga 'saudável' (sem deadline próximo, urgência baixa, com candidatos)", () => {
+    const healthy = jobToKanbanItem(
+      baseJob({
+        urgencyLevel: 2,
+        priority: "média",
+        deadline: new Date(Date.now() + 60 * 86400000).toISOString(),
+      }),
+      { labels },
+    )
+    expect(healthy.ribbon).toBeUndefined()
+  })
+
+  it("classifica deadlineStatus ≤ 7d como warning", () => {
     const soon = jobToKanbanItem(
       baseJob({ deadline: new Date(Date.now() + 3 * 86400000).toISOString() }),
       { labels },

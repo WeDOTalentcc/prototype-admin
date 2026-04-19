@@ -27,7 +27,15 @@ interface JobToKanbanItemDeps {
     ageDays?: (days: number) => string
     deadlineDays?: (days: number) => string
     deadlineOverdue?: (days: number) => string
-    ribbonUrgent?: () => string
+    /** Task #562 — Labels de ribbon por motivo (caller controla i18n). */
+    ribbon?: {
+      deadlineOverdue: (days: number) => string
+      deadlineSoon: (days: number) => string
+      urgent: () => string
+      pendingApproval: () => string
+      noCandidates: () => string
+      label: () => string
+    }
   }
 }
 
@@ -118,18 +126,52 @@ export function jobToKanbanItem(job: Job, deps: JobToKanbanItemDeps): KanbanItem
     ? { name: job.manager, initials: ownerInitials }
     : undefined
 
-  // Task #562 — Ribbon de atenção. Disparado por urgência, deadline
-  // vencido ou prioridade alta. Texto via i18n (caller).
-  const isUrgent = (job.urgencyLevel ?? 0) >= 4
-  const isOverdue = deadlineStatus === "danger"
-  const isHighPriority = job.priority === "alta"
-  const shouldRibbon = (isUrgent || isOverdue || isHighPriority) && !!deps.labels.ribbonUrgent
-  const ribbon: KanbanItem["ribbon"] | undefined = shouldRibbon
-    ? {
-        label: deps.labels.ribbonUrgent!(),
-        variant: isOverdue ? "danger" : isUrgent ? "warning" : "info",
-      }
-    : undefined
+  // Task #562 — Ribbon de atenção acionável. Cobre estados que o
+  // recrutador precisa ver no card sem abrir o detalhe:
+  //  • deadline vencido     → danger
+  //  • deadline ≤ 7 dias    → warning
+  //  • urgencyLevel >= 4    → warning
+  //  • aguardando aprovação → info
+  //  • vaga ativa há > 14d sem candidatos → info
+  //  • prioridade alta      → warning (fallback)
+  // Cada condição define um `reason` (string já localizada pelo caller)
+  // e o ribbon escala pela primeira correspondência na ordem acima.
+  const ribbonLabels = deps.labels.ribbon
+  let ribbon: KanbanItem["ribbon"] | undefined
+  if (ribbonLabels) {
+    const deadlineDays = job.deadline ? daysBetween(job.deadline) : null
+    const stale = ageDays != null && ageDays > 14 && (job.funnel?.total ?? 0) === 0
+    const isUrgent = (job.urgencyLevel ?? 0) >= 4
+    const isPendingApproval = job.status === "Aguardando aprovação"
+    const isHighPriority = job.priority === "alta"
+
+    let variant: "warning" | "danger" | "info" | null = null
+    let reason: string | null = null
+
+    if (deadlineDays != null && deadlineDays < 0) {
+      variant = "danger"
+      reason = ribbonLabels.deadlineOverdue(Math.abs(deadlineDays))
+    } else if (deadlineDays != null && deadlineDays >= 0 && deadlineDays <= 7) {
+      variant = "warning"
+      reason = ribbonLabels.deadlineSoon(deadlineDays)
+    } else if (isUrgent) {
+      variant = "warning"
+      reason = ribbonLabels.urgent()
+    } else if (isPendingApproval) {
+      variant = "info"
+      reason = ribbonLabels.pendingApproval()
+    } else if (stale) {
+      variant = "info"
+      reason = ribbonLabels.noCandidates()
+    } else if (isHighPriority) {
+      variant = "warning"
+      reason = ribbonLabels.urgent()
+    }
+
+    if (variant && reason) {
+      ribbon = { label: ribbonLabels.label(), variant, reason }
+    }
+  }
 
   return {
     id: String(job.id),

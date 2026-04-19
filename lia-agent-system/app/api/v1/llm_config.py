@@ -9,6 +9,7 @@ Allows tenant admins to:
 - List available providers
 """
 import logging
+import re
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -174,6 +175,28 @@ async def update_llm_config(
                 }
             changed_providers.append(name)
 
+        # B7: Quality Tier Guard — warn if tenant selects Tier 2 for critical tasks
+        _QUALITY_TIERS = {
+            "claude-sonnet-4-6": "tier1", "claude-opus-4-7": "tier1",
+            "gemini-2.5-pro": "tier1", "gemini-2.5-flash": "tier1",
+            "gpt-4o": "tier1", "gpt-4-turbo": "tier1",
+            "claude-haiku-3-5": "tier2", "gemini-2.0-flash": "tier2",
+            "gpt-4o-mini": "tier2",
+        }
+        _CRITICAL_ROUTING_KEYS = {"screening", "wsi"}
+        quality_warnings: list[str] = []
+        routing_dict = request.routing.dict()
+        for route_key in _CRITICAL_ROUTING_KEYS:
+            route_provider = routing_dict.get(route_key, "")
+            if route_provider and route_provider in request.providers:
+                prov_model = request.providers[route_provider].model or ""
+                if _QUALITY_TIERS.get(prov_model) == "tier2":
+                    quality_warnings.append(
+                        f"Modelo '{prov_model}' (Tier 2) configurado para '{route_key}' — "
+                        f"qualidade da triagem WSI pode ser reduzida. "
+                        f"Recomendamos Tier 1 (ex: claude-sonnet-4-6, gpt-4o, gemini-2.5-flash)."
+                    )
+
         await repo.upsert(
             company_id=company_id,
             primary_provider=request.primary_provider,
@@ -233,7 +256,14 @@ async def update_llm_config(
         except Exception as audit_err:
             logger.warning("[LLMConfig] Audit log write failed (non-blocking): %s", audit_err)
 
-        return {"status": "updated", "company_id": company_id}
+        response_body: dict = {"status": "updated", "company_id": company_id}
+        if quality_warnings:
+            response_body["warnings"] = quality_warnings
+            logger.warning(
+                "[LIA-QUALITY] tenant=%s quality warnings on config save: %s",
+                company_id, quality_warnings,
+            )
+        return response_body
     except Exception as e:
         logger.error("[LLMConfig] Update error: %s", e)
         raise HTTPException(500, f"Failed to update config: {e}")
@@ -296,36 +326,72 @@ async def test_llm_provider(
             provider=request.provider,
             model=request.model or "default",
             latency_ms=round(latency, 1),
-            message=f"Provider failed: {str(e)[:200]}"
+            message="Provider failed: " + re.sub(
+                r"(sk-|AIza|sk-ant-)[A-Za-z0-9_\-]{8,}",
+                "***REDACTED***",
+                str(e)[:200],
+            )
         )
 
 
 @router.get("/providers", response_model=None)
 async def list_available_providers():
     """List all available LLM providers with their capabilities."""
+    # B8: dependency map — tells the frontend which providers need companions
+    # and which model tiers are available.
     return {
         "providers": [
             {
                 "id": "gemini",
                 "name": "Google Gemini",
                 "models": ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash"],
+                "model_tiers": {
+                    "gemini-2.5-flash": "tier1",
+                    "gemini-2.5-pro":   "tier1",
+                    "gemini-2.0-flash": "tier2",
+                },
                 "capabilities": ["chat", "embedding", "voice", "screening"],
+                "requires_companion_for": [],
                 "default_model": "gemini-2.5-flash",
             },
             {
                 "id": "claude",
                 "name": "Anthropic Claude",
-                "models": ["claude-sonnet-4-6", "claude-haiku-3-5"],
+                "models": ["claude-sonnet-4-6", "claude-opus-4-7", "claude-haiku-3-5"],
+                "model_tiers": {
+                    "claude-sonnet-4-6": "tier1",
+                    "claude-opus-4-7":   "tier1",
+                    "claude-haiku-3-5":  "tier2",
+                },
                 "capabilities": ["chat", "screening"],
+                "requires_companion_for": ["embedding", "voice"],
+                "companion_recommendation": (
+                    "Claude não suporta embedding nem voz nativas. "
+                    "Configure Gemini ou OpenAI como provider secundário para essas funcionalidades."
+                ),
                 "default_model": "claude-sonnet-4-6",
             },
             {
                 "id": "openai",
                 "name": "OpenAI",
                 "models": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"],
+                "model_tiers": {
+                    "gpt-4o":      "tier1",
+                    "gpt-4-turbo": "tier1",
+                    "gpt-4o-mini": "tier2",
+                },
                 "capabilities": ["chat", "embedding", "screening"],
+                "requires_companion_for": ["voice"],
+                "companion_recommendation": (
+                    "OpenAI Realtime API suporta voz, mas requer configuração separada. "
+                    "Para voz nativa, considere Gemini como provider de voz."
+                ),
                 "default_model": "gpt-4o",
             },
         ],
         "routing_types": ["chat", "embedding", "screening", "voice"],
+        "tier_definitions": {
+            "tier1": "Raciocínio complexo — adequado para WSI/Bloom/Dreyfus e triagem avançada.",
+            "tier2": "Optimizado para velocidade/custo — não recomendado para tarefas críticas de triagem.",
+        },
     }

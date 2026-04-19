@@ -1448,7 +1448,12 @@
     "ageDays": "Open {days}d",
     "ownerLabel": "Owner",
     "ribbon": {
-      "urgent": "Attention"
+      "label": "Action Required",
+      "urgent": "Job marked as urgent",
+      "deadlineOverdue": "Deadline overdue by {days}d",
+      "deadlineSoon": "Deadline in {days}d",
+      "pendingApproval": "Pending approval",
+      "noCandidates": "No candidates in funnel"
     },
     "funnel": {
       "screening": "Screening",

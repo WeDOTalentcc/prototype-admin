@@ -119,6 +119,12 @@ export interface KanbanItem {
   ribbon?: {
     label: string
     variant: "warning" | "danger" | "info"
+    /**
+     * Task #562 — Motivo acionável (renderizado no tooltip e como subline).
+     * Obrigatório para que o ribbon seja útil ao recrutador (decisão do
+     * code review: ribbons sem reason violam a expectativa de ação).
+     */
+    reason: string
   }
   /**
    * Task #562 — Owner/responsável da vaga (manager). Backend devolve

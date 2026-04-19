@@ -118,16 +118,37 @@ class EmbeddingProviderFactory:
         Raises:
             Exception: If all providers fail.
         """
+        # LIA-BYOK B4: if EMBEDDING_LOCK_PROVIDER is set, never fall back to
+        # a different provider — dimension mismatch would silently corrupt the
+        # pgvector index.
+        _lock_provider = os.environ.get("EMBEDDING_LOCK_PROVIDER", "")
+
         order = cls._build_fallback_order(preferred_provider)
+        _primary_provider = order[0] if order else ""
 
         errors: list[str] = []
         for provider_name in order:
             try:
                 provider = cls._get_tenant_provider(provider_name, company_id)
                 result = await provider.embed_text(text)
-                if provider_name != order[0]:
-                    logger.warning(
-                        "[EmbeddingFactory] Used fallback provider '%s'", provider_name
+                if provider_name != _primary_provider:
+                    if _lock_provider:
+                        from app.shared.errors import LIALLMError
+                        raise LIALLMError(
+                            message=(
+                                f"EMBEDDING_LOCK_PROVIDER={_lock_provider} está activo — "
+                                f"fallback para '{provider_name}' bloqueado para evitar "
+                                f"corrupção silenciosa do índice pgvector."
+                            ),
+                            code="EMBEDDING_FALLBACK_LOCKED",
+                            details={"locked_provider": _lock_provider, "attempted": provider_name},
+                        )
+                    logger.critical(
+                        "[EmbeddingFactory] ATENÇÃO: provider primário '%s' falhou — "
+                        "usando '%s' com dimensão de embedding DIFERENTE. "
+                        "O índice pgvector pode ser invalidado silenciosamente. "
+                        "Defina EMBEDDING_LOCK_PROVIDER para bloquear este fallback.",
+                        _primary_provider, provider_name,
                     )
                 return result.vector, result.provider, result.model
             except Exception as exc:
@@ -176,7 +197,10 @@ class EmbeddingProviderFactory:
         Raises:
             Exception: If all providers fail.
         """
+        _lock_provider_b = os.environ.get("EMBEDDING_LOCK_PROVIDER", "")
+
         order = cls._build_fallback_order(preferred_provider)
+        _primary_provider_b = order[0] if order else ""
 
         errors: list[str] = []
         for provider_name in order:
@@ -190,9 +214,21 @@ class EmbeddingProviderFactory:
                 else:
                     pname = provider_name
                     model = provider.default_model
-                if provider_name != order[0]:
-                    logger.warning(
-                        "[EmbeddingFactory] Batch used fallback provider '%s'", provider_name
+                if provider_name != _primary_provider_b:
+                    if _lock_provider_b:
+                        from app.shared.errors import LIALLMError
+                        raise LIALLMError(
+                            message=(
+                                f"EMBEDDING_LOCK_PROVIDER={_lock_provider_b} activo — "
+                                f"fallback batch para '{provider_name}' bloqueado."
+                            ),
+                            code="EMBEDDING_FALLBACK_LOCKED",
+                            details={"locked_provider": _lock_provider_b, "attempted": provider_name},
+                        )
+                    logger.critical(
+                        "[EmbeddingFactory] ATENÇÃO batch: provider '%s' falhou — "
+                        "usando '%s' com dimensão diferente. Índice pgvector pode ser corrompido.",
+                        _primary_provider_b, provider_name,
                     )
                 return vectors, pname, model
             except Exception as exc:

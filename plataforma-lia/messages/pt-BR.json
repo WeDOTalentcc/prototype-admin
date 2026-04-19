@@ -1448,7 +1448,12 @@
     "ageDays": "Aberta há {days}d",
     "ownerLabel": "Responsável",
     "ribbon": {
-      "urgent": "Atenção"
+      "label": "Ação Necessária",
+      "urgent": "Vaga marcada como urgente",
+      "deadlineOverdue": "Deadline vencido há {days}d",
+      "deadlineSoon": "Deadline em {days}d",
+      "pendingApproval": "Aguardando aprovação",
+      "noCandidates": "Sem candidatos no funil"
     },
     "funnel": {
       "screening": "Triagem",

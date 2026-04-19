@@ -292,6 +292,22 @@ class LangGraphReActBase(LangGraphBase):
         except Exception as e:
             logger.debug("[LIA-C05] FairnessGuard check skipped (fail-open): %s", e)
 
+        # LIA-BYOK B2: budget check before LLM invocation (fail-open)
+        try:
+            from app.shared.providers.llm_factory import get_provider_for_tenant
+            _budget_cid = str(input.company_id or "")
+            if _budget_cid:
+                _budget_container = get_provider_for_tenant(tenant_id=_budget_cid)
+                from app.shared.observability.token_budget_service import check_request_budget_before_llm
+                check_request_budget_before_llm(
+                    input.message or "",
+                    None,
+                    company_id=_budget_cid,
+                    user_id=str(input.user_id or ""),
+                )
+        except Exception as _budget_exc:
+            logger.debug("[LIA-BYOK] budget check skipped (fail-open): %s", _budget_exc)
+
         import time as _time
         _t0 = _time.monotonic()
         try:
@@ -413,9 +429,18 @@ class LangGraphReActBase(LangGraphBase):
                             if prov_config.get("model"):
                                 model_name = prov_config["model"]
                             provider = tenant_provider
+                    else:
+                        logger.warning(
+                            "[LIA-BYOK] tenant=%s: sem config LLM no DB — "
+                            "usando key da plataforma em _get_model().",
+                            company_id,
+                        )
                 except Exception as e:
                     import logging
-                    logging.getLogger(__name__).debug("[_get_model] Tenant config error: %s", e)
+                    logging.getLogger(__name__).warning(
+                        "[LIA-BYOK] tenant=%s _get_model config error — usando plataforma: %s",
+                        company_id, e,
+                    )
 
             # Build the appropriate ChatModel
             if provider == "claude":

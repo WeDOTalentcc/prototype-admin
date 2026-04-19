@@ -71,12 +71,28 @@ export const KanbanCard = React.memo(function KanbanCard({
   const chips = item.chips ?? []
 
   const ribbon = item.ribbon ? (
-    <div className="flex items-center gap-1">
-      <Flag className={`w-3 h-3 ${RIBBON_VARIANT_CLS[item.ribbon.variant]}`} />
-      <span className="text-micro font-bold text-lia-text-tertiary">
-        {item.ribbon.label}
-      </span>
-    </div>
+    <TooltipProvider delayDuration={200}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            className="flex items-center gap-1.5 min-w-0"
+            data-testid="job-card-ribbon"
+            data-variant={item.ribbon.variant}
+          >
+            <Flag className={`w-3 h-3 flex-shrink-0 ${RIBBON_VARIANT_CLS[item.ribbon.variant]}`} />
+            <span className="text-micro font-bold text-lia-text-tertiary flex-shrink-0">
+              {item.ribbon.label}
+            </span>
+            <span className="text-micro text-lia-text-secondary truncate">
+              · {item.ribbon.reason}
+            </span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">
+          {item.ribbon.label}: {item.ribbon.reason}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   ) : null
 
   const footer = (
