@@ -159,7 +159,7 @@ class ApifySearchService:
                     company_id=company_id,
                     user_id=user_id,
                     operation="apify_search",
-                    metadata={"pipeline_id": pipeline_id},
+                    metadata={"pipeline_id": pipeline_id, "search_session_id": search_session_id},
                 ),
                 timeout=APIFY_SEARCH_TIMEOUT,
             )

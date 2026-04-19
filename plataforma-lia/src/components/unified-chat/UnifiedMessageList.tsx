@@ -1,9 +1,10 @@
 "use client"
 
-import React, { useRef, useEffect } from "react"
+import React, { useRef, useEffect, useState } from "react"
 import { useTranslations } from "next-intl"
-import { Copy, Plus, ThumbsUp, ThumbsDown, Loader2 } from "lucide-react"
+import { Check, Copy, ThumbsUp, ThumbsDown } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { toast } from "@/lib/toast"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
 import { TypingIndicator } from "@/components/chat/typing-indicator"
 import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
@@ -48,55 +49,99 @@ function MessageActions({
   conversationId?: string | null
 }) {
   const t = useTranslations('chat.messageActions')
+  const [copied, setCopied] = useState(false)
+  const [thumbs, setThumbs] = useState<'up' | 'down' | null>(null)
+  const [pending, setPending] = useState(false)
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(content)
+      setCopied(true)
+      toast.success(t('copiedToast'))
+      window.setTimeout(() => setCopied(false), 1500)
+    } catch {
+      toast.error(t('copyErrorToast'))
+    }
+  }
+
+  async function handleThumbs(next: 'up' | 'down') {
+    if (!conversationId || pending) return
+    const previous = thumbs
+    const optimistic = previous === next ? null : next
+    setThumbs(optimistic)
+    if (optimistic === null) {
+      // No backend "undo" endpoint — keep visual revert only.
+      return
+    }
+    setPending(true)
+    try {
+      const res = await submitThumbsFeedback(conversationId, messageId, next)
+      if (res.status === 'error') {
+        setThumbs(previous)
+        toast.error(t('feedbackErrorToast'))
+      }
+    } catch {
+      setThumbs(previous)
+      toast.error(t('feedbackErrorToast'))
+    } finally {
+      setPending(false)
+    }
+  }
+
+  const upActive = thumbs === 'up'
+  const downActive = thumbs === 'down'
+
   return (
     <div className="flex items-center gap-0.5 mt-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
       <button
+        type="button"
         className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
-        title={t('copyTitle')}
-        aria-label={t('copyAriaLabel')}
-        onClick={() => {
-          navigator.clipboard.writeText(content)
-        }}
+        title={copied ? t('copiedTitle') : t('copyTitle')}
+        aria-label={copied ? t('copiedAriaLabel') : t('copyAriaLabel')}
+        aria-pressed={copied}
+        onClick={handleCopy}
       >
-        <Copy className="w-3.5 h-3.5" />
+        {copied ? (
+          <Check className="w-3.5 h-3.5 text-status-success" />
+        ) : (
+          <Copy className="w-3.5 h-3.5" />
+        )}
       </button>
       <button
-        className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
-        title={t('insertTitle')}
-        aria-label={t('insertAriaLabel')}
-        onClick={() => {
-          window.dispatchEvent(
-            new CustomEvent("lia:prefill-message", {
-              detail: { message: content },
-            })
-          )
-        }}
+        type="button"
+        className={cn(
+          "p-1 rounded hover:bg-lia-interactive-hover",
+          upActive
+            ? "text-lia-text-primary"
+            : "text-lia-text-disabled hover:text-lia-text-secondary"
+        )}
+        title={upActive ? t('helpfulActiveTitle') : t('helpfulTitle')}
+        aria-label={upActive ? t('helpfulActiveAriaLabel') : t('helpfulAriaLabel')}
+        aria-pressed={upActive}
+        disabled={!conversationId}
+        onClick={() => handleThumbs('up')}
       >
-        <Plus className="w-3.5 h-3.5" />
+        <ThumbsUp
+          className={cn("w-3.5 h-3.5", upActive && "fill-current")}
+        />
       </button>
       <button
-        className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
-        title={t('helpfulTitle')}
-        aria-label={t('helpfulAriaLabel')}
-        onClick={() => {
-          if (conversationId) {
-            submitThumbsFeedback(conversationId, messageId, "up")
-          }
-        }}
+        type="button"
+        className={cn(
+          "p-1 rounded hover:bg-lia-interactive-hover",
+          downActive
+            ? "text-lia-text-primary"
+            : "text-lia-text-disabled hover:text-lia-text-secondary"
+        )}
+        title={downActive ? t('notHelpfulActiveTitle') : t('notHelpfulTitle')}
+        aria-label={downActive ? t('notHelpfulActiveAriaLabel') : t('notHelpfulAriaLabel')}
+        aria-pressed={downActive}
+        disabled={!conversationId}
+        onClick={() => handleThumbs('down')}
       >
-        <ThumbsUp className="w-3.5 h-3.5" />
-      </button>
-      <button
-        className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
-        title={t('notHelpfulTitle')}
-        aria-label={t('notHelpfulAriaLabel')}
-        onClick={() => {
-          if (conversationId) {
-            submitThumbsFeedback(conversationId, messageId, "down")
-          }
-        }}
-      >
-        <ThumbsDown className="w-3.5 h-3.5" />
+        <ThumbsDown
+          className={cn("w-3.5 h-3.5", downActive && "fill-current")}
+        />
       </button>
     </div>
   )

@@ -137,12 +137,19 @@
     "messageActions": {
       "copyTitle": "Copiar",
       "copyAriaLabel": "Copiar resposta",
-      "insertTitle": "Inserir",
-      "insertAriaLabel": "Inserir na conversa",
+      "copiedTitle": "Copiado",
+      "copiedAriaLabel": "Resposta copiada",
+      "copiedToast": "Copiado",
+      "copyErrorToast": "Não foi possível copiar a resposta",
       "helpfulTitle": "Útil",
       "helpfulAriaLabel": "Marcar como útil",
+      "helpfulActiveTitle": "Marcado como útil",
+      "helpfulActiveAriaLabel": "Marcado como útil. Clique para desfazer",
       "notHelpfulTitle": "Não útil",
-      "notHelpfulAriaLabel": "Marcar como não útil"
+      "notHelpfulAriaLabel": "Marcar como não útil",
+      "notHelpfulActiveTitle": "Marcado como não útil",
+      "notHelpfulActiveAriaLabel": "Marcado como não útil. Clique para desfazer",
+      "feedbackErrorToast": "Não foi possível registrar seu feedback"
     },
     "workflowReels": {
       "scrollLeft": "Rolar para esquerda",

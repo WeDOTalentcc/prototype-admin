@@ -137,12 +137,19 @@
     "messageActions": {
       "copyTitle": "Copy",
       "copyAriaLabel": "Copy response",
-      "insertTitle": "Insert",
-      "insertAriaLabel": "Insert into conversation",
+      "copiedTitle": "Copied",
+      "copiedAriaLabel": "Response copied",
+      "copiedToast": "Copied",
+      "copyErrorToast": "Could not copy the response",
       "helpfulTitle": "Helpful",
       "helpfulAriaLabel": "Mark as helpful",
+      "helpfulActiveTitle": "Marked as helpful",
+      "helpfulActiveAriaLabel": "Marked as helpful. Click to undo",
       "notHelpfulTitle": "Not helpful",
-      "notHelpfulAriaLabel": "Mark as not helpful"
+      "notHelpfulAriaLabel": "Mark as not helpful",
+      "notHelpfulActiveTitle": "Marked as not helpful",
+      "notHelpfulActiveAriaLabel": "Marked as not helpful. Click to undo",
+      "feedbackErrorToast": "Could not save your feedback"
     },
     "workflowReels": {
       "scrollLeft": "Scroll left",
