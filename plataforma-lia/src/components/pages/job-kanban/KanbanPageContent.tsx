@@ -29,6 +29,7 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
     showTableFiltersPanel, setShowTableFiltersPanel,
     showColumnConfig, setShowColumnConfig,
     kanbanScoreMin, kanbanStatusFilter, kanbanWorkModelFilter, kanbanOriginFilter,
+    kanbanShowDegradedOnly, setKanbanShowDegradedOnly,
     selectedCandidates, setSelectedCandidates,
     allTableCandidates, candidatesData,
     viewMode: _vm,
@@ -214,6 +215,8 @@ export function KanbanPageContent({ state }: KanbanPageContentProps) {
         kanbanStatusFilter={kanbanStatusFilter}
         kanbanWorkModelFilter={kanbanWorkModelFilter}
         kanbanOriginFilter={kanbanOriginFilter}
+        kanbanShowDegradedOnly={kanbanShowDegradedOnly}
+        setKanbanShowDegradedOnly={setKanbanShowDegradedOnly}
       />
 
       <div className="flex-1 flex gap-2 overflow-hidden bg-lia-bg-primary dark:bg-lia-bg-primary min-w-0">

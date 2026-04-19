@@ -29,6 +29,7 @@ export function useKanbanTableView({
   const [kanbanStatusFilter, setKanbanStatusFilter] = useState<string[]>([])
   const [kanbanWorkModelFilter, setKanbanWorkModelFilter] = useState<string[]>([])
   const [kanbanOriginFilter, setKanbanOriginFilter] = useState<string[]>([])
+  const [kanbanShowDegradedOnly, setKanbanShowDegradedOnly] = useState(false)
 
   // Table sort
   const [tableSortColumn, setTableSortColumn] = useState<string>('notaLiaGeral')
@@ -209,6 +210,9 @@ export function useKanbanTableView({
     if (tableStageFilter.length > 0) {
       candidates = candidates.filter((c: Record<string, unknown>) => tableStageFilter.includes(c.stage as string))
     }
+    if (kanbanShowDegradedOnly) {
+      candidates = candidates.filter((c: Record<string, unknown>) => c.triagemDegraded === true)
+    }
     candidates.sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
       let aVal: string | number, bVal: string | number
       switch (tableSortColumn) {
@@ -284,6 +288,7 @@ export function useKanbanTableView({
       showColumnConfig, tableColumns, columnSearchTerm,
       showTableFiltersPanel, showKanbanFiltersPanel,
       kanbanScoreMin, kanbanStatusFilter, kanbanWorkModelFilter, kanbanOriginFilter,
+      kanbanShowDegradedOnly,
       tableSortColumn, tableSortDirection, tableStageFilter, currentPage, itemsPerPage,
       tableColumnWidths, draggedTableColumnId, dragOverTableColumnId, tableColumnOrder,
       pipelineStages, kanbanColumns,
@@ -292,6 +297,7 @@ export function useKanbanTableView({
       setShowColumnConfig, setTableColumns, setColumnSearchTerm,
       setShowTableFiltersPanel, setShowKanbanFiltersPanel,
       setKanbanScoreMin, setKanbanStatusFilter, setKanbanWorkModelFilter, setKanbanOriginFilter,
+      setKanbanShowDegradedOnly,
       setTableSortColumn, setTableSortDirection, setTableStageFilter, setCurrentPage,
       setTableColumnWidths, setDraggedTableColumnId, setDragOverTableColumnId, setTableColumnOrder,
       handleTableColumnResize, handleTableSort, startTableColumnResize,
