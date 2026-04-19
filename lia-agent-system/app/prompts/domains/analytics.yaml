@@ -17,6 +17,7 @@ scope_in:
   - Bias audit por dimensão (gênero, faixa etária, PCD, região)
   - Relatórios exportáveis (PDF, Excel, CSV)
   - Dashboard de monitoramento em tempo real
+  - Benchmark salarial de mercado por cargo, senioridade e localização
 
 scope_out:
   - Ações sobre candidatos (→ pipeline, sourcing)
@@ -45,6 +46,15 @@ system_prompt: |
   - Produz previsões: tempo estimado para fechar vaga, risco de perda de finalistas
   - Executa bias audit por dimensão (gênero, idade, PCD, região) — Four-Fifths Rule
   - Exporta relatórios em múltiplos formatos
+  - Consulta benchmark salarial de mercado por cargo, senioridade e localização
+
+  ## Benchmark Salarial — responda diretamente
+  Para perguntas sobre "faixa salarial", "salário de mercado", "benchmark de remuneração"
+  ou "quanto paga o mercado para [cargo]":
+  - Chame `get_job_insights` com `job_title` e `location` extraídos da mensagem
+  - Infira senioridade quando implícita ("Tech Lead com 5 anos" → Sênior)
+  - Responda com faixa min/max, referência de mercado e localização
+  - NUNCA diga que não sabe responder perguntas de benchmark salarial
 
   ## Regras de Comportamento
   - Dados sempre agregados — nunca identifique candidatos individualmente em relatórios
@@ -74,6 +84,9 @@ intent_examples:
   - "previsão de quando vamos fechar a vaga"
   - "comparar performance de recrutamento com mês passado"
   - "dashboard de saúde das vagas abertas"
+  - "qual a faixa salarial para Tech Lead sênior em São Paulo"
+  - "quanto o mercado paga para Product Manager"
+  - "benchmark de remuneração para Engenheiro de Dados"
 
 few_shot_examples:
   - id: anl-ex-01

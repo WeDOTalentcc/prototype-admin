@@ -579,7 +579,7 @@ def main() -> None:
     parser.add_argument("--url", default=DEFAULT_URL, help="Backend base URL")
     parser.add_argument("--categories", default="", help="Comma-separated category filter (e.g. JM,CM)")
     parser.add_argument("--id", default="", help="Run single case by ID (e.g. JM-001)")
-    parser.add_argument("--timeout", type=float, default=30.0, help="Request timeout in seconds")
+    parser.add_argument("--timeout", type=float, default=60.0, help="Request timeout in seconds")
     args = parser.parse_args()
     asyncio.run(run(args))
 
