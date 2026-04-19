@@ -30,6 +30,16 @@ export interface MessageFeedbackEntry {
   thumbs: 'up' | 'down' | null
   rating: number | null
   feedback_text: string | null
+  /** Audit #570 fix: thumbs-down free text is persisted to `correction`
+   *  to drive the learning-pattern signal. Hydration must read both. */
+  correction: string | null
+}
+
+export interface RegenerateResponseDTO {
+  user_message: string
+  prior_message_id: string | null
+  regenerate_of: string
+  status: string
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
@@ -120,6 +130,24 @@ export async function submitCorrectionFeedback(
     message_id: messageId,
     original_response: originalResponse,
     correction,
+  })
+}
+
+/**
+ * Audit #570 P1: ask the backend to mark an assistant message as superseded
+ * and return the prior user message text so the chat can re-invoke the
+ * pipeline with `regenerate_of=<oldId>`. Centralizing this on the server
+ * (instead of the client guessing the prior message) keeps the ownership
+ * check in one place and keeps analytics able to distinguish a regenerated
+ * turn from an organic one.
+ */
+export async function requestRegeneration(
+  sessionId: string,
+  messageId: string,
+): Promise<RegenerateResponseDTO> {
+  return postJson<RegenerateResponseDTO>('/lia/feedback/regenerate', {
+    session_id: sessionId,
+    message_id: messageId,
   })
 }
 

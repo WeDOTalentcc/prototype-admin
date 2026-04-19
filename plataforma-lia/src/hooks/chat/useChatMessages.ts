@@ -397,20 +397,23 @@ export function useChatMessages({
               message_id: string
               thumbs?: "up" | "down" | null
               feedback_text?: string | null
+              correction?: string | null
             }>
           }
-          const byId = new Map<string, { thumbs?: "up" | "down" | null; feedback_text?: string | null }>()
+          const byId = new Map<string, { thumbs?: "up" | "down" | null; text?: string | null }>()
           for (const item of fbData.items ?? []) {
+            // Prefer `correction` (where thumbs-down free text now lives —
+            // audit #570 fix) and fall back to legacy `feedback_text`.
             byId.set(item.message_id, {
               thumbs: item.thumbs ?? null,
-              feedback_text: item.feedback_text ?? null,
+              text: item.correction ?? item.feedback_text ?? null,
             })
           }
           for (const msg of messages) {
             const fb = byId.get(msg.id)
             if (fb) {
               msg.thumbs = fb.thumbs ?? null
-              msg.feedbackText = fb.feedback_text ?? null
+              msg.feedbackText = fb.text ?? null
             }
           }
         }

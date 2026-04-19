@@ -17,6 +17,8 @@ import { UnifiedChatInput } from "./UnifiedChatInput"
 import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState"
 import { UnifiedMessageList } from "./UnifiedMessageList"
 import type { ChatMode } from "./unified-chat-types"
+import { requestRegeneration } from "@/services/lia-api/feedback-api"
+import { toast } from "@/lib/toast"
 
 import {
   FLOATING_POSITION_STORAGE_KEY,
@@ -462,16 +464,39 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
             userName={userName}
             conversationId={chatConversationId}
             onChipClick={(value) => sendChatMessage(value)}
-            onRegenerate={(assistantMessageId) => {
-              // Task #570: regenerate by re-sending the user message that
-              // immediately preceded this LIA response. Pure client-side —
-              // backend produces a fresh response with current context.
-              const idx = chatMessages.findIndex((m) => m.id === assistantMessageId)
-              if (idx <= 0) return
-              for (let i = idx - 1; i >= 0; i--) {
-                if (chatMessages[i].sender === "user") {
-                  sendChatMessage(chatMessages[i].content)
+            onRegenerate={async (assistantMessageId) => {
+              // Task #570 (review fix): server-side regeneration handshake.
+              // Backend verifies ownership, marks the old assistant row as
+              // superseded, and returns the prior user message text. Falling
+              // back to a client-side scan keeps the action usable when the
+              // message id is not a server-side UUID (e.g. optimistic local
+              // turns) or when the endpoint isn't reachable.
+              const fallback = () => {
+                const idx = chatMessages.findIndex((m) => m.id === assistantMessageId)
+                if (idx <= 0) return false
+                for (let i = idx - 1; i >= 0; i--) {
+                  if (chatMessages[i].sender === "user") {
+                    sendChatMessage(chatMessages[i].content)
+                    return true
+                  }
+                }
+                return false
+              }
+
+              if (!chatConversationId) {
+                fallback()
+                return
+              }
+              try {
+                const res = await requestRegeneration(chatConversationId, assistantMessageId)
+                if (res?.user_message) {
+                  sendChatMessage(res.user_message)
                   return
+                }
+                fallback()
+              } catch {
+                if (!fallback()) {
+                  toast.error("Não foi possível regenerar a resposta")
                 }
               }
             }}

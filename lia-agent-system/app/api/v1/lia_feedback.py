@@ -15,6 +15,7 @@ Contract:
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -27,6 +28,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.domains.analytics.services.feedback_service import FeedbackService
 from lia_models.feedback import InteractionFeedback
+from lia_models.memory import ConversationMemory
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +86,19 @@ class MessageFeedbackEntry(BaseModel):
     thumbs: str | None = None
     rating: int | None = None
     feedback_text: str | None = None
+    correction: str | None = None
+
+
+class RegenerateRequest(BaseModel):
+    session_id: str = Field(..., min_length=1)
+    message_id: str = Field(..., min_length=1, description="Assistant message_id to regenerate")
+
+
+class RegenerateResponse(BaseModel):
+    user_message: str = Field(..., description="Prior user message text to re-process")
+    prior_message_id: str | None = None
+    regenerate_of: str
+    status: str = "ready"
 
 
 class ConversationFeedbackResponse(BaseModel):
@@ -132,12 +147,24 @@ async def submit_thumbs(
             message_context=_build_context(body.message_id, body.message_context),
             db=db,
         )
-        # Attach optional comment in the same row (avoids creating two records).
+        # Audit #570 review fix: when the user attaches a free-text reason to a
+        # thumbs-down, persist it to `InteractionFeedback.correction` (NOT
+        # `feedback_text`) so it lights up the qualitative-signal branch in
+        # `_update_patterns_from_feedback` (feedback_service.py L152). The UI
+        # category ("inaccurate" / "wrong_tone" / "hallucinated") still goes
+        # to `feedback_category` for analytics buckets.
         if body.feedback_text or body.category:
-            feedback.feedback_text = body.feedback_text
+            if body.feedback_text:
+                feedback.correction = body.feedback_text
             feedback.feedback_category = body.category
             await db.commit()
             await db.refresh(feedback)
+            # Re-trigger the pattern update now that `correction` is set —
+            # the first record_feedback call ran before we wrote the field.
+            try:
+                await _feedback_service._update_patterns_from_feedback(feedback, db)
+            except Exception:
+                logger.exception("pattern update after thumbs-down comment failed")
         return FeedbackAck(feedback_id=str(feedback.id))
     except HTTPException:
         raise
@@ -269,6 +296,7 @@ async def get_feedback_by_conversation(
                 thumbs=fb.thumbs,
                 rating=fb.rating,
                 feedback_text=fb.feedback_text,
+                correction=fb.correction,
             )
             for mid, fb in latest.items()
         ]
@@ -278,3 +306,98 @@ async def get_feedback_by_conversation(
     except Exception as e:
         logger.exception("Failed to load conversation feedback")
         raise HTTPException(status_code=500, detail=f"Failed to load feedback: {e}")
+
+
+@router.post("/regenerate", response_model=RegenerateResponse, status_code=200)
+async def regenerate_response(
+    body: RegenerateRequest,
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
+) -> RegenerateResponse:
+    """
+    Audit #570 P1: backend-side regeneration handshake.
+
+    The client requests regeneration of an assistant message. We:
+      1. Verify the assistant message belongs to the caller's company
+         (multi-tenant isolation, IDOR-safe).
+      2. Locate the immediately prior `user` message in the same session.
+      3. Mark the original assistant row as `regenerated=true` in metadata
+         so analytics + UI can hide/version-stamp the superseded bubble.
+      4. Return the user message text + a `regenerate_of` correlation id
+         the client uses when re-invoking the chat pipeline; the new
+         assistant response will carry `regenerated_from=<old_id>`.
+
+    Why this is a separate endpoint instead of just resending: it gives
+    us a single auditable spot for the supersede-mark + ownership check,
+    avoids inflating the conversation thread with duplicate bubbles, and
+    lets the learning loop distinguish organic turns from regenerations.
+    """
+    company_id = _require_company_id(current_user)
+    from uuid import UUID as _UUID
+    try:
+        company_uuid = _UUID(company_id)
+        assistant_uuid = _UUID(body.message_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid company_id or message_id (expected UUIDs).",
+        )
+
+    assistant_row = (
+        await db.execute(
+            select(ConversationMemory).where(
+                and_(
+                    ConversationMemory.id == assistant_uuid,
+                    ConversationMemory.company_id == company_uuid,
+                    ConversationMemory.session_id == body.session_id,
+                    ConversationMemory.role == "assistant",
+                )
+            )
+        )
+    ).scalar_one_or_none()
+
+    if assistant_row is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Assistant message not found in this conversation.",
+        )
+
+    prior = (
+        await db.execute(
+            select(ConversationMemory)
+            .where(
+                and_(
+                    ConversationMemory.session_id == body.session_id,
+                    ConversationMemory.company_id == company_uuid,
+                    ConversationMemory.role == "user",
+                    ConversationMemory.created_at < assistant_row.created_at,
+                )
+            )
+            .order_by(ConversationMemory.created_at.desc())
+            .limit(1)
+        )
+    ).scalar_one_or_none()
+
+    if prior is None:
+        raise HTTPException(
+            status_code=409,
+            detail="No prior user message found to regenerate from.",
+        )
+
+    # Stamp the superseded assistant message so the UI/analytics can hide it.
+    md = dict(assistant_row.extra_data or {})
+    md["regenerated"] = True
+    md["regenerated_at"] = datetime.utcnow().isoformat()
+    assistant_row.extra_data = md
+    try:
+        await db.commit()
+    except Exception:
+        await db.rollback()
+        logger.exception("Failed to stamp regenerated metadata")
+        raise HTTPException(status_code=500, detail="Could not mark message regenerated")
+
+    return RegenerateResponse(
+        user_message=prior.content,
+        prior_message_id=str(prior.id),
+        regenerate_of=str(assistant_row.id),
+    )
