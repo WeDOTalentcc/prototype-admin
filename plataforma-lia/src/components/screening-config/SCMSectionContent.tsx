@@ -10,6 +10,7 @@ import { CustomQuestions } from './CustomQuestions'
 import type { ScreeningQuestionItem } from './SCMScreeningTypes'
 import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables } from '@/constants/wsi-blocks'
 import { normalizeTechnicalRequirement } from '@/lib/wsi/normalize-technical-requirement'
+import { getJobSeniority } from '@/lib/jobs/seniority'
 import { toast } from 'sonner'
 import { useScreeningConfigManagerCore } from "./hooks/useScreeningConfigManagerCore"
 import { SCMSectionConfiguracoes } from './SCMSectionConfiguracoes'

@@ -1,5 +1,6 @@
 import type { Job, JobStatus } from "@/components/jobs"
 import type { KanbanItem } from "@/components/pages/job-kanban/types"
+import { getJobSeniority } from "@/lib/jobs/seniority"
 
 export interface JobKanbanColumnDef {
   id: string
