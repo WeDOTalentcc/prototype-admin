@@ -453,7 +453,7 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
             job_title = job_info.title
 
             company_row = await db.execute(
-                text("SELECT name FROM companies WHERE id = CAST(:cid AS uuid) LIMIT 1"),
+                text("SELECT name FROM companies WHERE id = :cid LIMIT 1"),
                 {"cid": str(company_id)},
             )
             company_name_db = company_row.fetchone()
