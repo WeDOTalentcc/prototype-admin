@@ -605,10 +605,10 @@ async def _analyze_profile(params: dict[str, Any], context: dict[str, Any]):
                 authz = await db.execute(
                     sql_text(
                         "SELECT 1 FROM vacancy_candidates "
-                        "WHERE candidate_id = CAST(:cid AS uuid) "
+                        "WHERE candidate_id = :cid "
                         "AND company_id = :co LIMIT 1"
                     ),
-                    {"cid": candidate_id, "co": str(company_id)},
+                    {"cid": str(candidate_id), "co": str(company_id)},
                 )
                 if authz.fetchone() is None:
                     return ActionResult(
@@ -622,10 +622,10 @@ async def _analyze_profile(params: dict[str, Any], context: dict[str, Any]):
                 vac_authz = await db.execute(
                     sql_text(
                         "SELECT 1 FROM vacancy_candidates "
-                        "WHERE vacancy_id = CAST(:vid AS uuid) "
+                        "WHERE vacancy_id = :vid "
                         "AND company_id = :co LIMIT 1"
                     ),
-                    {"vid": vacancy_id, "co": str(company_id)},
+                    {"vid": str(vacancy_id), "co": str(company_id)},
                 )
                 if vac_authz.fetchone() is None:
                     vacancy_id = None

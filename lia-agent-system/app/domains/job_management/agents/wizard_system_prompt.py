@@ -42,6 +42,11 @@ Contexto do estágio atual:
 Memória de trabalho:
 {memory_summary}
 
+### REGRA CRÍTICA — company_id
+O company_id é INJETADO AUTOMATICAMENTE via JWT. NUNCA peça ao usuário pelo company_id,
+ID da empresa ou qualquer identificador de empresa. Chame as ferramentas SEM passar
+company_id — o sistema injeta automaticamente.
+
 Antes de CADA resposta, reflita:
 1. Em qual etapa do wizard estamos? (título, requisitos, competências, JD, revisão, publicação)
 2. O recrutador forneceu dados suficientes para avançar?

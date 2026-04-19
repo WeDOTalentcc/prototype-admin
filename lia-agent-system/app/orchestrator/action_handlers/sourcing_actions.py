@@ -60,7 +60,7 @@ async def _tag_candidates(params: dict[str, Any], context: dict[str, Any]):
             for cid in candidate_ids:
                 if company_id:
                     authz = await db.execute(text(
-                        "SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = CAST(:co AS uuid) LIMIT 1"
+                        "SELECT 1 FROM vacancy_candidates WHERE candidate_id = :cid AND company_id = :co LIMIT 1"
                     ), {"cid": str(cid), "co": str(company_id)})
                     if authz.fetchone() is None:
                         continue
@@ -112,8 +112,11 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
         from app.core.database import AsyncSessionLocal
 
         _UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
+        _JOB_ID_RE = re.compile(r"^[A-Z][A-Z0-9]{2,9}$", re.I)
         _ctx_eid = (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
-        _ctx_eid_valid = _ctx_eid and bool(_UUID_RE.match(str(_ctx_eid)))
+        _ctx_eid_valid = _ctx_eid and (
+            bool(_UUID_RE.match(str(_ctx_eid))) or bool(_JOB_ID_RE.match(str(_ctx_eid)))
+        )
         job_id = params.get("job_id") or (_ctx_eid if _ctx_eid_valid else None)
         company_id = context.get("company_id") if context else None
         limit = int(params.get("limit", 10))
@@ -669,8 +672,8 @@ async def _favorite_candidate(params: dict[str, Any], context: dict[str, Any]):
         async with AsyncSessionLocal() as db:
             if company_id:
                 authz = await db.execute(text(
-                    "SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = CAST(:co AS uuid) LIMIT 1"
-                ), {"cid": candidate_id, "co": str(company_id)})
+                    "SELECT 1 FROM vacancy_candidates WHERE candidate_id = :cid AND company_id = :co LIMIT 1"
+                ), {"cid": str(candidate_id), "co": str(company_id)})
                 if authz.fetchone() is None:
                     return ActionResult(
                         status="error",
