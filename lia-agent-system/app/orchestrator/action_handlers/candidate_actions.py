@@ -402,9 +402,26 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
             )
 
         # SC-001: Confirmation gate — ask before starting WSI for multiple candidates
-        _confirmed = params.get("confirmed") or params.get("confirmado") or False
+        # P0-FIX: confirmed comes from user payload (params) which is spoofable.
+        # We add a nonce-based check: on the first (unconfirmed) pass we issue a
+        # server-side nonce stored in context["_pending_nonces"]; on the confirmed
+        # pass we require the nonce to match before proceeding.
+        import secrets as _secrets
+        _confirmed: bool = bool(params.get("confirmed") or params.get("confirmado"))
+        _nonce_from_params: str = params.get("_confirm_nonce", "")
+        _pending_nonces: dict = (context or {}).get("_pending_nonces", {})
+        _nonce_key: str = f"start_screening:{str(job_vacancy_id)}"
+
         if not _confirmed and len(candidate_ids) > 1:
+            # Issue a nonce so the orchestrator can embed it in the confirmation reply
+            _nonce: str = _secrets.token_hex(16)
+            if context is not None:
+                context.setdefault("_pending_nonces", {})[_nonce_key] = _nonce
             job_label = str(job_vacancy_id)
+            logger.info(
+                "start_screening: confirmation gate issued nonce for %d candidates, job=%s",
+                len(candidate_ids), job_vacancy_id,
+            )
             return ActionResult(
                 status="pending",
                 message=(
@@ -416,9 +433,37 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                     "job_vacancy_id": str(job_vacancy_id),
                     "candidates_count": len(candidate_ids),
                     "requires_confirmation": True,
+                    "_confirm_nonce": _nonce,
                     "action": "start_screening",
                 },
                 action_type="start_screening",
+            )
+
+        if _confirmed and len(candidate_ids) > 1:
+            # Validate nonce when context supports it
+            if _pending_nonces:
+                _expected_nonce: str = _pending_nonces.get(_nonce_key, "")
+                if _expected_nonce and _nonce_from_params != _expected_nonce:
+                    logger.warning(
+                        "start_screening: nonce mismatch for job=%s — possible replay attack",
+                        job_vacancy_id,
+                    )
+                    return ActionResult(
+                        status="error",
+                        message="Confirmação inválida. Tente novamente.",
+                        error_detail="Confirmation nonce mismatch",
+                        action_type="start_screening",
+                    )
+                # Consume the nonce (one-time use)
+                _pending_nonces.pop(_nonce_key, None)
+            else:
+                logger.warning(
+                    "start_screening: _pending_nonces not in context — nonce check skipped "
+                    "(wire _pending_nonces into OrchestratorContext to enforce)",
+                )
+            logger.info(
+                "start_screening: confirmed=True accepted for %d candidates, job=%s",
+                len(candidate_ids), job_vacancy_id,
             )
 
         triagem_service = TriagemSessionService()

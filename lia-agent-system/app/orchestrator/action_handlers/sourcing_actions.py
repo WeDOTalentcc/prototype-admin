@@ -226,7 +226,12 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
         )
 
 
-async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]):
+async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]) -> "ActionResult":
+    """Compare two or more candidates side-by-side using fields from the candidates table.
+
+    company_id is always taken from *context* (JWT-derived), never from params,
+    so cross-tenant reads are prevented.
+    """
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
@@ -325,8 +330,17 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]):
             data={"candidates": compared},
             action_type="compare_candidates",
         )
+    except (ValueError, KeyError, TypeError) as e:
+        logger.warning("compare_candidates value/type error: %s", e)
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao comparar candidatos.",
+            error_detail=str(e),
+            action_type="compare_candidates",
+        )
     except Exception as e:
-        logger.warning(f"compare_candidates failed: {e}")
+        logger.exception("compare_candidates unexpected error: %s", e)
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(
             status="error",

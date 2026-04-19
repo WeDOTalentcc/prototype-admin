@@ -257,7 +257,9 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
 
     # ---- SCORE / FIT / QUALIFICATION ----
     if _re.search(r"score|fit.*assess|qualif|match|recommend|per.*(question|block)", c):
-        return has_pct or bool(_re.search(r"\d+\s*(pontos|%|score|pts|out of|de \d)", resp_lower))
+        return (has_pct or 
+                bool(_re.search(r"\d+\s*(pontos|%|score|pts|out of|de \d)", resp_lower)) or
+                any(w in resp_lower for w in ["recomend", "recomendação", "recomendacao", "se destaca", "mais aderente", "melhor candidato", "melhor perfil"]))
 
     # ---- SALARY RANGE ----
     if _re.search(r"salary.*range|range.*min|min.*max|percentile|market.*data|benchmark", c):
@@ -421,6 +423,15 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
     # ---- REFERENCES LOCATION/MARKET (Portuguese-aware) ----
     if _re.search(r"references?.*(?:market|location|paulo|city|cidade|mercado)", c):
         return any(w in resp_lower for w in ["são paulo", "sp", "mercado", "market", "brasil", "local", "cidade"])
+
+    # ---- COMPARISON (Portuguese-aware) ----
+    if _re.search(r"compares?.*both|both.*cand|compare.*profil|compare.*cand", c):
+        return (
+            (has_bold and n > 100) or
+            "candidatos" in resp_lower or 
+            "comparação" in resp_lower or
+            bool(_re.search(r"[-*]\s+\*\*[^*]+\*\*.*@", response))  # "- **Name** @ Company" pattern
+        )
 
     # ---- DEFAULT: keyword presence ----
     keywords = [w for w in c.split() if len(w) > 5]

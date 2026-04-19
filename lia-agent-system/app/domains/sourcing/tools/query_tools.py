@@ -1066,8 +1066,20 @@ async def get_market_benchmarks(
     context = _extract_context(kwargs)
     company_id = context.company_id if context else None
     
-    logger.info(f"🏆 Getting market benchmarks (company: {company_id}, title: {job_title})")
-    
+    logger.info("Getting market benchmarks (company: %s, title: %s)", company_id, job_title)
+
+    # P1-FIX: Require company_id so we never query across tenants
+    if not company_id:
+        logger.warning(
+            "get_market_benchmarks called without company_id in context -- "
+            "returning error to avoid cross-tenant data leak"
+        )
+        return {
+            "success": False,
+            "message": "Contexto de empresa nao disponivel. Faca login novamente.",
+            "error": "company_id missing from context",
+        }
+
     try:
         from sqlalchemy import and_, func, select
 
@@ -1189,10 +1201,10 @@ async def get_market_benchmarks(
             }
             
     except Exception as e:
-        logger.error(f"❌ Error getting market benchmarks: {e}", exc_info=True)
+        logger.error("Error getting market benchmarks: %s", e, exc_info=True)
         return {
             "success": False,
-            "message": f"❌ Erro ao buscar benchmarks de mercado: {str(e)}",
+            "message": f"Erro ao buscar benchmarks de mercado: {str(e)}",
             "error": str(e)
         }
 
@@ -1202,19 +1214,42 @@ async def get_market_benchmarks(
 async def compare_candidates(
     candidate_names: list[str] | None = None,
     candidate_ids: list[str] | None = None,
-    company_id: str | None = None,
+    company_id: str | None = None,  # DEPRECATED — always overridden by context; kept for compat
     **kwargs
 ) -> dict:
-    """
-    Compare multiple candidate profiles side-by-side.
+    """Compare multiple candidate profiles side-by-side.
+
     Accepts candidate names (will resolve to IDs) or UUIDs directly.
+
+    SECURITY: company_id is ALWAYS taken from the JWT/session context object
+    (_context kwarg).  Any value supplied via the *company_id* parameter is
+    ignored when context is available, preventing cross-tenant reads.
     """
     from app.core.database import AsyncSessionLocal
     from sqlalchemy import text
-    
+
     context = kwargs.get("_context")
-    if context and not company_id:
-        company_id = getattr(context, "company_id", None) or str(context) if hasattr(context, "company_id") else None
+    # P0-FIX: context company_id always wins — never trust caller-supplied company_id
+    _ctx_company_id: str | None = None
+    if context:
+        _ctx_company_id = getattr(context, "company_id", None)
+        if _ctx_company_id is not None:
+            _ctx_company_id = str(_ctx_company_id)
+    if _ctx_company_id:
+        if company_id and company_id != _ctx_company_id:
+            import logging as _logging
+            _logging.getLogger(__name__).warning(
+                "compare_candidates: caller supplied company_id=%s but context has %s — "
+                "using context value (caller value ignored)",
+                company_id, _ctx_company_id,
+            )
+        company_id = _ctx_company_id
+    if not company_id:
+        import logging as _logging
+        _logging.getLogger(__name__).warning(
+            "compare_candidates: no company_id in context — query will NOT be tenant-scoped. "
+            "Ensure _context is injected by the tool dispatcher."
+        )
     
     # Resolve names to UUIDs if needed
     if not candidate_ids and candidate_names:
@@ -1235,20 +1270,38 @@ async def compare_candidates(
     
     placeholders = ", ".join([f":id_{i}" for i in range(len(candidate_ids))])
     params = {f"id_{i}": cid for i, cid in enumerate(candidate_ids)}
-    
-    async with AsyncSessionLocal() as db:
-        result = await db.execute(
-            text(f"""
-                SELECT id, name, current_title, current_company, seniority_level,
-                       years_of_experience, technical_skills, soft_skills,
-                       location_city, location_state, lia_score
-                FROM candidates
-                WHERE id IN ({placeholders})
-            """),
-            params,
-        )
-        rows = result.mappings().all()
-    
+
+    # P1-FIX: always filter by company_id for tenant isolation
+    if company_id:
+        params["_company_id"] = str(company_id)
+        company_filter = "AND company_id = :_company_id"
+    else:
+        company_filter = ""  # degraded mode — logged above
+
+    try:
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                text(f"""
+                    SELECT id, name, current_title, current_company, seniority_level,
+                           years_of_experience, technical_skills, soft_skills,
+                           location_city, location_state, lia_score
+                    FROM candidates
+                    WHERE id IN ({placeholders})
+                    {company_filter}
+                """),
+                params,
+            )
+            rows = result.mappings().all()
+    except Exception as e:
+        import logging as _logging
+        _logging.getLogger(__name__).exception("compare_candidates DB error: %s", e)
+        return {
+            "success": False,
+            "message": "Erro ao consultar candidatos no banco de dados.",
+            "candidates": [],
+            "error": str(e),
+        }
+
     if not rows:
         return {"success": False, "message": "Candidatos nao encontrados.", "candidates": []}
     
@@ -1392,7 +1445,7 @@ def register_sourcing_query_tools() -> None:
     
     tool_registry.register(ToolDefinition(
         name="get_diversity_metrics",
-        description="Obter métricas de diversidade e inclusão: distribuição por gênero, etnia, PCD e faixa etária dos candidatos.",
+        description="Obter métricas de diversidade e inclusão: distribuição por gênero, etnia, PCD e faixa etária dos candidatos. LGPD: dados exibidos como agregados estatísticos apenas — nunca expõe dados individuais identificáveis.",
         parameters_schema={
             "type": "object",
             "properties": {
@@ -1441,6 +1494,8 @@ def register_sourcing_query_tools() -> None:
         description="Compara dois ou mais candidatos lado a lado. Aceita nomes dos candidatos diretamente — nao precisa de IDs. Use quando solicitado a comparar perfis.",
         parameters_schema={
             "type": "object",
+            # NOTE: company_id is intentionally absent — the handler extracts it
+            # from JWT/session context (_context kwarg) injected by the tool dispatcher.
             "properties": {
                 "candidate_names": {
                     "type": "array",
