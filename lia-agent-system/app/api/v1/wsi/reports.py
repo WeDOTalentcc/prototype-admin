@@ -446,12 +446,32 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
         """), {"sid": session_id})
         cached = cache_r.fetchone()
         if cached and cached[0]:
-            report = F11ReportResponse(**cached[0])
-            report.already_generated = True
-            # Task #511 — disclaimer EU AI Act/LGPD sempre presente, mesmo em
-            # respostas cacheadas (cache pode ter sido gerado antes da feature).
-            report.compliance_disclaimer = EU_AI_ACT_DISCLAIMER
-            return report
+            cached_payload = cached[0]
+            # Audit task #528 (G23-02 / G23-03) — invalida cache antigo que não
+            # contém os campos de transparência granular. Sem isso, sessões
+            # geradas antes desta feature continuariam servindo um payload sem
+            # `degraded_quality` agregado e sem `flags_structured` por resposta,
+            # quebrando o banner LGPD/EU AI Act na UI.
+            cached_responses = cached_payload.get("responses") or []
+            cache_has_transparency = (
+                "degraded_count" in cached_payload
+                and (
+                    not cached_responses
+                    or "flags_structured" in (cached_responses[0] or {})
+                )
+            )
+            if cache_has_transparency:
+                report = F11ReportResponse(**cached_payload)
+                report.already_generated = True
+                # Task #511 — disclaimer EU AI Act/LGPD sempre presente, mesmo em
+                # respostas cacheadas (cache pode ter sido gerado antes da feature).
+                report.compliance_disclaimer = EU_AI_ACT_DISCLAIMER
+                return report
+            # Cache obsoleto — segue o fluxo abaixo para regenerar e re-cachear.
+            logger.info(
+                "[F11 cache] Invalidando payload sem transparência granular para sessão %s",
+                session_id,
+            )
 
         sess_r = await db.execute(text("""
             SELECT s.id, s.candidate_id, s.job_vacancy_id, s.screening_type, s.mode,

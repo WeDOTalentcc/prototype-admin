@@ -27,7 +27,28 @@ import yaml
 
 BASE_DIR = Path(__file__).parent
 DEFAULT_URL = os.getenv("LIA_BACKEND_URL", "http://localhost:8001")
-DEFAULT_TOKEN = os.getenv("LIA_TEST_TOKEN", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxM2NmODJmYi1mMWY2LTQyMDUtOTM3Ny03NThlNTkwNDAxNDgiLCJlbWFpbCI6ImRlbW9Ad2Vkb3RhbGVudC5jYyIsImNvbXBhbnlfaWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtYTAwMC0wMDAwMDAwMDAwMDEiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzk4Njc1MjAwfQ.4WYQvm1Yhc-1rB6GkN6xo07tHWKTkGpJlJVlFummzKo")
+def _make_eval_token() -> str:
+    """Auto-generate JWT from the server's current SECRET_KEY so token survives server restarts."""
+    env_token = os.getenv("LIA_TEST_TOKEN")
+    if env_token:
+        return env_token
+    try:
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+        import jwt as _jwt
+        from app.core.config import settings as _settings
+        payload = {
+            "sub": "13cf82fb-f1f6-4205-9377-758e59040148",
+            "email": "demo@wedotalent.cc",
+            "company_id": "00000000-0000-4000-a000-000000000001",
+            "type": "access",
+            "exp": 1798675200,
+        }
+        return _jwt.encode(payload, _settings.SECRET_KEY, algorithm="HS256")
+    except Exception:
+        return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxM2NmODJmYi1mMWY2LTQyMDUtOTM3Ny03NThlNTkwNDAxNDgiLCJlbWFpbCI6ImRlbW9Ad2Vkb3RhbGVudC5jYyIsImNvbXBhbnlfaWQiOiIwMDAwMDAwMC0wMDAwLTQwMDAtYTAwMC0wMDAwMDAwMDAwMDEiLCJ0eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzk4Njc1MjAwfQ.pYFqeaO2CigvqLQwwPX19rufzOH44ZZSCwIer6MCcJA"
+
+
+DEFAULT_TOKEN = _make_eval_token()
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
