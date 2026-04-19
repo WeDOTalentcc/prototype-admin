@@ -719,8 +719,11 @@ Resumo (máximo 200 palavras):"""
         if not messages:
             return ""
         
+        structured_ids = self._extract_structured_ids(messages)
+
         if not self.llm_service:
-            return self._generate_simple_summary_from_dicts(messages)
+            base = self._generate_simple_summary_from_dicts(messages)
+            return (f"[IDs preservados: {structured_ids}]\n{base}" if structured_ids else base)
         
         try:
             messages_text = "\n".join([

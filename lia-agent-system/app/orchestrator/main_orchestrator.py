@@ -377,6 +377,21 @@ class MainOrchestrator:
                         except Exception:
                             pass  # Fail-open: use gemini default
 
+                    # D10 — Pre-condition check for proactive assistance
+                    _proactive_hints_text = ""
+                    try:
+                        from app.orchestrator.precondition_checker import precondition_checker
+                        _hints = await precondition_checker.check(ctx)
+                        if _hints:
+                            _proactive_hints_text = (
+                                "## Sugestoes Proativas (detectadas pelo sistema)\n"
+                                "Voce DEVE mencionar estas proativamente se relevantes ao que o recrutador pediu:\n\n"
+                                + "\n".join(f"- [{h.severity}] {h.message}" for h in _hints)
+                            )
+                            logger.info("[PreConditionChecker] %d proactive hint(s) generated", len(_hints))
+                    except Exception as _pc_exc:
+                        logger.debug("[PreConditionChecker] check skipped: %s", _pc_exc)
+
                     from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
                     _system_prompt = SystemPromptBuilder.build(
                         agent_type="orchestrator",
@@ -386,6 +401,7 @@ class MainOrchestrator:
                         conversation_history=ctx.extra.get("conversation_history", []),
                         conversation_state=ctx.conversation_state,
                         context_page=getattr(ctx, "context_page", "general") or "general",
+                        extra_instructions=_proactive_hints_text,
                     )
                     _agentic_result = await agentic_loop.run(
                         user_message=ctx.message,
