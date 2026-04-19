@@ -115,7 +115,7 @@ async def _move_candidate(params: dict[str, Any], context: dict[str, Any]):
             result = await db.execute(text("""
                 UPDATE vacancy_candidates
                 SET stage = :to_stage, status = 'active', updated_at = NOW()
-                WHERE (id = CAST(:candidate_id AS uuid) OR candidate_id = CAST(:candidate_id AS uuid))
+                WHERE (id = CAST(:candidate_id AS uuid) OR candidate_id = :candidate_id)
             """), {
                 "to_stage": to_stage,
                 "candidate_id": str(candidate_id),
@@ -206,7 +206,7 @@ async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any
         async with AsyncSessionLocal() as db:
             if company_id and candidate_id:
                 authz = await db.execute(
-                    text("SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = CAST(:co AS uuid) LIMIT 1"),
+                    text("SELECT 1 FROM vacancy_candidates WHERE candidate_id = :cid AND company_id = :co LIMIT 1"),
                     {"cid": candidate_id, "co": str(company_id)},
                 )
                 if authz.fetchone() is None:
@@ -323,7 +323,7 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                                     SELECT vc.candidate_id
                                     FROM vacancy_candidates vc
                                     WHERE vc.job_vacancy_id = CAST(:jid AS uuid)
-                                      AND vc.company_id = CAST(:co AS uuid)
+                                      AND vc.company_id = :co
                                       AND vc.stage IN ('Novo', 'Triagem', 'Aguardando')
                                       AND (vc.status IS NULL OR vc.status NOT IN ('screening', 'screened'))
                                     LIMIT 50
@@ -336,7 +336,7 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                                     FROM vacancy_candidates vc
                                     JOIN job_vacancies jv ON jv.id = vc.job_vacancy_id
                                     WHERE jv.job_id = :jid
-                                      AND vc.company_id = CAST(:co AS uuid)
+                                      AND vc.company_id = :co
                                       AND vc.stage IN ('Novo', 'Triagem', 'Aguardando')
                                       AND (vc.status IS NULL OR vc.status NOT IN ('screening', 'screened'))
                                     LIMIT 50
@@ -416,7 +416,7 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                 job_row = await db.execute(
                     text("""
                         SELECT id, title FROM job_vacancies
-                        WHERE id = CAST(:jid AS uuid) AND company_id = CAST(:co AS uuid)
+                        WHERE id = CAST(:jid AS uuid) AND company_id = :co
                         LIMIT 1
                     """),
                     {"jid": str(job_vacancy_id), "co": str(company_id)},
@@ -429,7 +429,7 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                 job_row2 = await db.execute(
                     text("""
                         SELECT id, title FROM job_vacancies
-                        WHERE job_id = :jid AND company_id = CAST(:co AS uuid)
+                        WHERE job_id = :jid AND company_id = :co
                         LIMIT 1
                     """),
                     {"jid": str(job_vacancy_id), "co": str(company_id)},
@@ -460,9 +460,9 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                     text("""
                         SELECT c.id, c.name, c.email
                         FROM candidates c
-                        JOIN vacancy_candidates vc ON vc.candidate_id = c.id
+                        JOIN vacancy_candidates vc ON vc.candidate_id = c.id::text
                         WHERE c.id = CAST(:cid AS uuid)
-                          AND vc.company_id = CAST(:co AS uuid)
+                          AND vc.company_id = :co
                           AND vc.job_vacancy_id = CAST(:jid AS uuid)
                         LIMIT 1
                     """),
@@ -478,9 +478,9 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                     text("""
                         UPDATE vacancy_candidates
                         SET stage = 'Triagem', status = 'screening', updated_at = NOW()
-                        WHERE candidate_id = CAST(:cid AS uuid)
+                        WHERE candidate_id = :cid
                           AND job_vacancy_id = CAST(:jid AS uuid)
-                          AND company_id = CAST(:co AS uuid)
+                          AND company_id = :co
                     """),
                     {"cid": cid_str, "jid": str(job_vacancy_id), "co": str(company_id)},
                 )
@@ -745,11 +745,11 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
                 update_sql = """
                     UPDATE vacancy_candidates
                     SET stage = :to_stage, status = 'active', updated_at = NOW()
-                    WHERE (id = CAST(:cid AS uuid) OR candidate_id = CAST(:cid AS uuid))
+                    WHERE (id = CAST(:cid AS uuid) OR candidate_id = :cid)
                 """
                 bind: dict[str, Any] = {"to_stage": to_stage, "cid": str(cid)}
                 if company_id:
-                    update_sql += " AND company_id = CAST(:co AS uuid)"
+                    update_sql += " AND company_id = :co"
                     bind["co"] = str(company_id)
                 result = await db.execute(text(update_sql), bind)
                 moved += result.rowcount
@@ -845,7 +845,7 @@ async def _bulk_move_by_stage(params: dict, context: dict):
                         "jid": str(job_id),
                     }
                     if company_id and attempt == 0:
-                        sql += " AND company_id = CAST(:co AS uuid)"
+                        sql += " AND company_id = :co"
                         bind["co"] = str(company_id)
                     elif company_id and attempt == 1:
                         sql += " AND vc.company_id = :co"
