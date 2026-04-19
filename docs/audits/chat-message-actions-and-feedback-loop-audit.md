@@ -359,6 +359,52 @@ Resultados devem ser anexados como subseção `Apêndice A — Evidência ao viv
 
 ---
 
+## Apêndice A — Evidência ao vivo (2026-04-19, réplica read-only de produção)
+
+Coleta executada via `executeSql` com `environment: "production"` (réplica read-only do ATS). Sem nenhuma escrita. Resultados crus abaixo confirmam todas as inferências do relatório.
+
+**Q0 — Schema confirmado** (apenas para registro): `interaction_feedback` tem 20 colunas (id, session_id, company_id, user_id, message_id, user_message, lia_response, intent, stage, rating, thumbs, correction, feedback_text, feedback_category, response_time_ms, tools_used, confidence_score, processed, incorporated_to_rag, created_at). `learning_patterns` tem 16 colunas. **Observação relevante:** o campo originalmente referenciado como `expires_at` (P2 item 14, decay temporal) **não existe** no schema atual — adicionar como migration faz parte do escopo do follow-up #573.
+
+**Q1 — Volume últimas 24 h:**
+```
+total_24h | up_24h | down_24h | last_event_at
+        0 |      0 |        0 | (null)
+```
+
+**Q1b — Volume diário últimos 30 dias:**
+```
+(zero linhas — nenhum evento em 30 dias)
+```
+
+**Q1c — Total histórico:**
+```
+total_ever | first_event              | last_event
+         3 | 2026-01-30 00:38:31.726  | 2026-01-30 00:38:38.940
+```
+Apenas 3 registros em toda a história da tabela, todos no mesmo segundo de 2026-01-30 (compatível com smoke test manual). Zero atividade orgânica.
+
+**Q3 — Padrões aprendidos:**
+```
+total_patterns | active_patterns | avg_conf | avg_sr
+             0 |               0 |   (null) | (null)
+```
+
+**Q3b — Padrões com exemplos populados:**
+```
+patterns_with_good_examples
+                          0
+```
+
+**Veredicto da evidência:** o loop `chat → interaction_feedback → learning_patterns → prompt` está **comprovadamente morto em produção**. A tabela de padrões nunca foi populada (0 linhas, não apenas inativas). Confirmado o achado F1 do relatório com 100% de certeza factual — não é mais inferência. O bloco "Aprendizados de interações anteriores" injetado em `nodes.py:1075-1087` cai obrigatoriamente em `has_patterns: False` para qualquer empresa em qualquer caminho, porque a tabela de origem é vazia.
+
+**Implicação adicional:** o gap não é só do chat unificado. Como `learning_patterns` está zerado, **nenhum** caminho de feedback (wizard incluso) está conseguindo popular padrões para o `response_generator`. O `_update_patterns_from_feedback` não roda por nenhum canal hoje — vale auditar separadamente os caminhos `/lia/learning/stage-feedback` e `/lia/wizard/stage{8,10}/feedback` para entender se eles também estão quebrados ou se simplesmente não chamam o método de update.
+
+**Q4 (captura do prompt final em runtime) — não executada nesta coleta:** requer ativar log/trace temporário em produção (LangSmith ou flag `LIA_LOG_FINAL_PROMPT`), o que ultrapassa o escopo de "apenas leitura ao banco" autorizado. Recomendado fazer junto com o deploy do hardening da Tarefa #570 — ali a captura passa a valer ouro como prova "antes vs depois".
+
+**PII:** nenhum conteúdo de `user_message` ou `lia_response` foi consultado nesta coleta — apenas agregações (COUNT, MIN, MAX). Sem exposição de dados pessoais.
+
+---
+
 ## 12. Próximos Passos
 
 - A Tarefa **#570** absorve os itens P0 e P1 desta auditoria (escopo: criar router canônico, parar de mascarar erro, persistir thumbs, comentário no thumbs down, toast, regenerar).
