@@ -427,6 +427,14 @@ class MainOrchestrator:
                             _resp.fairness_warnings = _soft_warnings
                         return _inject_nav_ui_action(_resp, ctx.message)
                 except Exception as exc:
+                    exc_str = str(exc).lower()
+                    if any(kw in exc_str for kw in ("safety", "blocked", "harm", "jailbreak", "policy", "finishreasonrecitation")):
+                        return ChatResponse(
+                            success=True,
+                            content="Minhas diretrizes de funcionamento s\u00e3o confidenciais, mas posso te contar o que sou capaz de fazer. Como posso ajudar com seu recrutamento?",
+                            intent_detected="jailbreak_refused",
+                            conversation_id=conv_id,
+                        )
                     logger.debug("[LIA-A04] Agentic loop skipped: %s", exc)
 
             # ── Phase 2: Orchestrator completo ─────────────────────────────

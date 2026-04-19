@@ -197,17 +197,21 @@ async def get_job_details(
             job = None
             # First attempt: treat job_id as UUID
             try:
+                job_uuid_attempt = UUID(job_id)
+            except (ValueError, AttributeError, TypeError):
+                job_uuid_attempt = None
+
+            if job_uuid_attempt is not None:
                 result = await db.execute(
                     select(JobVacancy).where(
                         and_(
-                            JobVacancy.id == UUID(job_id),
+                            JobVacancy.id == job_uuid_attempt,
                             JobVacancy.company_id == company_id
                         )
                     )
                 )
                 job = result.scalar_one_or_none()
-            except Exception:
-                pass
+
             # Fallback: job_id is a short code (e.g. "V0039")
             if job is None:
                 from sqlalchemy import text as _text
@@ -257,7 +261,7 @@ async def get_job_details(
                         )
                     ).where(
                         and_(
-                            VacancyCandidate.vacancy_id == UUID(job_id),
+                            VacancyCandidate.vacancy_id == job.id,
                             VacancyCandidate.company_id == company_id
                         )
                     )
