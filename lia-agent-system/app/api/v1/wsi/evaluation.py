@@ -350,7 +350,8 @@ Return ONLY valid JSON:
             model="claude-sonnet-4-6",
             max_tokens=1024,
             messages=[{"role": "user", "content": prompt}],
-            timeout=30.0
+            timeout=30.0,
+            task_type="wsi",
         )
         try:
             if response is None:

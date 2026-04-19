@@ -259,12 +259,17 @@ def _jd_get_band(score: int):
 # ---------------------------------------------------------------------------
 
 async def get_anthropic_client():
-    """DEPRECATED: Returns a ProviderContainer via LLMProviderFactory (Task #93).
+    """Returns a tenant-aware ProviderContainer via LLMProviderFactory.
 
-    Callers should migrate to using generate_with_llm() directly.
-    Returns None only on critical init failure.
+    Reads company_id from AuthEnforcementMiddleware contextvar so BYOK
+    key is respected. Falls back to platform defaults when no tenant set.
     """
     try:
+        from app.shared.tenant_llm_context import get_current_llm_tenant
+        tenant_id = get_current_llm_tenant()
+        if tenant_id:
+            from app.shared.providers.llm_factory import get_provider_for_tenant_from_db
+            return await get_provider_for_tenant_from_db(tenant_id)
         from app.shared.providers.llm_factory import get_provider_for_tenant
         return get_provider_for_tenant()
     except Exception as e:
@@ -298,15 +303,19 @@ class _FakeResponse:
         self.content = [type("Block", (), {"text": text})()]
 
 
-async def _run_anthropic_sync(client, model: str, max_tokens: int, messages: list, timeout: float = 30.0):
+async def _run_anthropic_sync(
+    client, model: str, max_tokens: int, messages: list,
+    timeout: float = 30.0, task_type: str = "chat",
+):
     """
     MIGRATED: Now uses LLMProviderFactory instead of direct Anthropic SDK (Task #93).
     Returns a _FakeResponse shim so callers can still access response.content[0].text.
+    task_type activates Quality Tier Guard — use "wsi" for screening analysis.
     """
     try:
         prompt = "\n".join(m.get("content", "") for m in messages if m.get("role") == "user")
         text = await asyncio.wait_for(
-            client.generate_with_fallback(prompt),
+            client.generate_with_fallback(prompt, task_type=task_type),
             timeout=timeout,
         )
         return _FakeResponse(text)
