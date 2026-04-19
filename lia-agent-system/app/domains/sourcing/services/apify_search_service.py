@@ -74,7 +74,10 @@ class ApifySearchService:
 
         step1_start = time.time()
         try:
-            linkedin_urls = await self._step1_search(query, location, limit, errors)
+            linkedin_urls = await self._step1_search(
+                query, location, limit, errors,
+                company_id=company_id, user_id=user_id, pipeline_id=pipeline_id,
+            )
             stage_records.append(StageRecord(
                 operation="apify_search",
                 cost_usd=APIFY_SEARCH_COST_USD,
@@ -135,6 +138,11 @@ class ApifySearchService:
         location: str | None,
         limit: int,
         errors: list[str],
+        *,
+        company_id: str | None = None,
+        user_id: str | None = None,
+        pipeline_id: str | None = None,
+        search_session_id: str | None = None,
     ) -> list[str]:
         input_data: dict = {
             "searchTerms": [query],
@@ -146,7 +154,13 @@ class ApifySearchService:
 
         try:
             result = await asyncio.wait_for(
-                self._apify.run_apify_actor(LINKEDIN_SEARCH_ACTOR_ID, input_data),
+                self._apify.run_apify_actor(
+                    LINKEDIN_SEARCH_ACTOR_ID, input_data,
+                    company_id=company_id,
+                    user_id=user_id,
+                    operation="apify_search",
+                    metadata={"pipeline_id": pipeline_id},
+                ),
                 timeout=APIFY_SEARCH_TIMEOUT,
             )
         except asyncio.TimeoutError:
