@@ -50,6 +50,28 @@
 
 ---
 
+## 0.1 Atualização 2026-04-19 (sessão TA/TB/TC/TD)
+
+> **Por quê.** Fechamento dos pendentes consolidados da auditoria pré-produção (F4/F5/F8/F10/F11/F12, durabilidade #544 + cobertura #545, reconciliação documental). Esta entrada **não modifica** as classificações da §0 — apenas registra as evidências canônicas frescas geradas nas sessões TA/TB/TC/TD e o commit de referência.
+>
+> **Reconciliação.** 2026-04-19. Commit SHA de referência: `82024c5864738d65e76fa58644f0cc4e8e8d30dd` (HEAD da sessão TD).
+
+| ID / Eixo | Selo | Evidência canônica fresca (2026-04-19) |
+|---|---|---|
+| **F4 — FairnessGuard no `interview_graph`** | ✅ RESOLVIDO confirmado | `lia-agent-system/app/domains/interview_scheduling/agents/interview_graph.py` — 25+ hits de `FairnessGuard` (política BLOCK + REGENERATE + `audit_service.log_decision`); teste `lia-agent-system/tests/integration/test_interview_graph_fairness.py` cobre o gate. |
+| **F8 — `require_company=False`** | ✅ RESOLVIDO + DOC consolidada | 18 decoradores justificados + 1 nova exceção sub-classe (total **19**) catalogadas em `docs/policies/require_company_exemptions.md`; teste-guard `lia-agent-system/tests/test_global_tool_registry_smoke.py` impede regressão silenciosa. |
+| **F10 — Shims `RAILS-DEPRECATED`** | ✅ RESOLVIDO + SLA documentado | 14 shims com SLA por tipo (data alvo de remoção + responsável) em `docs/policies/shim_sla.md`. |
+| **F11 — `@tool` LangChain em `domains/`** | ✅ RESOLVIDO + guard ativo | 0 ocorrências; `lia-agent-system/tests/integration/test_no_langchain_tool_decorator_guard.py` falha CI se reaparecer. |
+| **F12 — `global_tool_registry`** | ✅ RESOLVIDO via deleção | Confirmado: arquivo ausente; canary fitness mantido. |
+| **F5 — Sub-agents + top-level ReAct** | ✅ RESOLVIDO | Fechado em tasks #369/#371 (já refletido na §0 original). |
+| **#544 — Durabilidade do AI consumption (outbox)** | ⚠️ RESOLVIDO (single-instance) — follow-up multi-instance | `lia-agent-system/alembic/versions/095_create_ai_consumption_outbox.py` cria tabela outbox; teste `lia-agent-system/tests/test_ai_consumption_outbox.py` (4 casos) cobre enqueue + drain idempotente; helper de callback unificado em `app/shared/observability/usage_tracking_callback.py` (review-fix 2026-04-19: removido `asyncio.shield` espúrio que mascarava `TypeError` no `create_task` — regressão coberta por `test_outbox_callback_nao_usa_shield_em_create_task`). **Follow-up v2 hardening**: o drain do worker (`ai_consumption_outbox_worker.py`) faz `SELECT ... ORDER BY created_at LIMIT N` sem `FOR UPDATE SKIP LOCKED` — seguro hoje (Replit single-instance) mas **não é multi-instance safe**: drainers concorrentes processariam o mesmo lote. Antes de escalar horizontalmente, adicionar `FOR UPDATE SKIP LOCKED` ao SELECT e atualizar o teste `test_enqueue_and_drain_outbox` com cenário de 2 workers concorrentes. |
+| **#545 — Cobertura do tracking de IA** | ✅ RESOLVIDO | `safe_invoke(on_usage=...)` propagado nos sinks estratégicos da Camada 2 do WSI + helpers reusáveis (commits `0b9ee1434`, `965cbb82f`, `b098b04e1`, `f795649dd`, `6f85980fe`, `3de3ce2ba`); cobertura registrada no Apêndice A do `.local/audit/wsi-screening-e2e-report.md` rev. 3. |
+| **WSI E2E rev. 3 (17 achados)** | 11 ✅ + 5 ⚠️ + 1 ❌ | Reauditoria exaustiva publicada em `.local/audit/wsi-screening-e2e-report.md` (rev. 3). Único ❌: P0-4 (persistência por-questão no `wsi_voice_orchestrator`). Decisão sobre follow-up cabe ao usuário — esta auditoria não propõe tasks. |
+
+**Garantia.** Nenhum arquivo de código foi alterado por esta atualização do relatório. Toda evidência veio de grep/path:line do commit alvo ou de artefatos criados nas sessões TA/TB/TC (migrations, testes-guard, policies).
+
+---
+
 ## 1. Sumário Executivo
 
 ### 1.1 O quanto andou desde 2026-04-16

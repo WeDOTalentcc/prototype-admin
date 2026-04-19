@@ -31,7 +31,7 @@ Cada uso de `require_company=False` em produção precisa cumprir **todos** os c
 
 ## 2. Inventário canônico (2026-04-17)
 
-Existem **18 ocorrências** de `require_company=False` em `app/domains/**/tools/` e
+Existem **19 ocorrências** de `require_company=False` em `app/domains/**/tools/` e
 `app/domains/**/agents/*_tool_registry.py` (auditoria recompilada do report 2026-04
 que estimava 23 com base em grep histórico). Todas têm comentário `kept:` justificando.
 
@@ -55,6 +55,7 @@ que estimava 23 com base em grep histórico). Todas têm comentário `kept:` jus
 | 16 | `recruiter_assistant/agents/kanban_tool_registry.py` | 833 | (stub recipients) | Stub: ecoa recipients — sem write | n/a |
 | 17 | `recruiter_assistant/agents/kanban_tool_registry.py` | 856 | (stub initiation) | Stub: devolve status de iniciação — sem write | n/a |
 | 18 | `sourcing/agents/sourcing_tool_registry.py` | 22 | (echo criteria) | Ecoa critérios de input para chat state | n/a |
+| 19 | `cv_screening/tools/cv_match_tool.py` | 26 | analyze_cv_match | **TBD por dono (cv_screening)** — tool aceita `company_id` opcional para chamada via chat global; quando presente, filtra `JobVacancy` por company_id. Revisar em ticket dedicado: avaliar flip para `require_company=True` com fail-closed. | n/a |
 
 Distribuição final por domínio:
 - pipeline: 5
@@ -62,7 +63,13 @@ Distribuição final por domínio:
 - hiring_policy: 3
 - recruiter_assistant: 3
 - talent_intelligence: 3
+- cv_screening: 1
 - sourcing: 1
+
+> **Paridade YAML × código:** o registry YAML em `app/tools/yaml/` declara metadados
+> sem flag de tenant; o controle de `require_company` vive **somente** no decorator
+> `@tool_handler` no código. Se o YAML for estendido para conter essa flag no futuro,
+> esta tabela passa a ser a fonte canônica e o YAML é gerado a partir dela.
 
 ---
 

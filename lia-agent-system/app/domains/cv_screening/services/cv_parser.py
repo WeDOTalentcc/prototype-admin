@@ -285,8 +285,18 @@ TEXTO DO CV:
 Retorne APENAS o objeto JSON, sem texto adicional ou markdown."""
 
         try:
+            # Audit task #545 — instrumenta parser de CV via outbox.
+            from app.shared.observability.usage_tracking_callback import (
+                build_usage_callback,
+            )
+            _on_usage = build_usage_callback(
+                getattr(self, "tracking_context", None),
+                agent_type="cv_parser",
+                default_operation="parse_cv_text",
+            )
             response = await self.llm_service.generate(
                 prompt=prompt,
+                on_usage=_on_usage,
             )
             
             json_str = response.strip()

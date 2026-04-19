@@ -79,6 +79,12 @@ Estas regras valem para toda sessão de trabalho — humana ou IA — antes de q
    - ❌ Não fazer: marcar `completed` porque "compilou e a tela abriu".
    - ✅ Fazer: passar pelas 14 dimensões, anexar o resultado, só então fechar.
 
+**Policies canônicas (consultar antes de tocar tools/shims):**
+- `docs/policies/require_company_exemptions.md` — catálogo das 19 exceções `@tool_handler(require_company=False)` autorizadas (uma linha por decorador, com justificativa). Qualquer novo decorador sem entrada nesta lista é bloqueado por `lia-agent-system/tests/test_global_tool_registry_smoke.py`.
+- `docs/policies/shim_sla.md` — SLA dos 14 shims `RAILS-DEPRECATED` (data alvo de remoção + responsável). Adicionar shim sem SLA = violar a política.
+- `.local/audit/wsi-screening-e2e-report.md` (rev. 3) — auditoria E2E WSI com selo por achado (17 itens). Consultar antes de mexer em rotas de triagem/voz/convite.
+- `docs/audits/AUDIT_STATUS_REPORT_2026-04-FINAL.md` §0.1 — reconciliação 2026-04-19 das pendências F4/F5/F8/F10/F11/F12 + #544 + #545.
+
 **Skills relacionadas:**
 - `feature-audit` — auditoria obrigatória de 14 dimensões antes de marcar qualquer task como concluída.
 - `lia-planning` — metodologia de planning unificada (GSD + spec-driven + brainstorming) para qualquer trabalho significativo.

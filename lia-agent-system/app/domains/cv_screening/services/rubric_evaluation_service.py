@@ -17,6 +17,7 @@ import logging
 import os
 import time
 from datetime import datetime, timedelta
+from collections.abc import Callable
 from typing import Any
 
 
@@ -789,6 +790,7 @@ class RubricEvaluationService:
         prompt: str,
         max_retries: int = 3,
         initial_delay: float = 1.0,
+        on_usage: "Callable[[dict[str, Any]], None] | None" = None,
     ) -> str | None:
         """
         Call LLM with retry logic and fallback to different providers.
@@ -807,7 +809,11 @@ class RubricEvaluationService:
             for attempt in range(max_retries):
                 try:
                     logger.info(f"LLM call attempt {attempt + 1}/{max_retries} with {provider}")
-                    response = await self.llm_service.generate(prompt, provider=provider)
+                    # Audit task #545 — instrumenta CV-screening Camada 1
+                    # (rubric LLM evaluation) via outbox.
+                    response = await self.llm_service.generate(
+                        prompt, provider=provider, on_usage=on_usage,
+                    )
                     
                     if response and response.strip():
                         logger.info(f"LLM call successful with {provider}")
@@ -836,6 +842,7 @@ class RubricEvaluationService:
         requirements: list[JobRequirementCreate],
         use_cache: bool = True,
         force_refresh: bool = False,
+        tracking_context: "dict[str, Any] | None" = None,
     ) -> RubricEvaluationResult:
         """
         Evaluate a candidate against job requirements using structured rubrics.
@@ -908,8 +915,19 @@ class RubricEvaluationService:
         if _benchmark_ctx:
             prompt = prompt + f"\n\n## Benchmark Setorial (anti-sycophancy)\n{_benchmark_ctx}"
 
+        # Audit task #545 — propaga callback de tracking para o LLM.
+        from app.shared.observability.usage_tracking_callback import (
+            build_usage_callback,
+        )
+        _on_usage = build_usage_callback(
+            tracking_context,
+            agent_type="cv_screening_rubric",
+            default_operation="rubric_evaluate_candidate",
+            extra={"layer": 1},
+        )
+
         _llm_call_start = time.monotonic()
-        response = await self._call_llm_with_retry(prompt)
+        response = await self._call_llm_with_retry(prompt, on_usage=_on_usage)
         _llm_latency_ms = (time.monotonic() - _llm_call_start) * 1000
 
         if response:

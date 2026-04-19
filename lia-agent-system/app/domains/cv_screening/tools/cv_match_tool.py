@@ -17,6 +17,9 @@ from app.tools.registry import ToolDefinition
 logger = logging.getLogger(__name__)
 
 
+# require_company=False kept: TBD por dono (cv_screening) — tool aceita company_id opcional
+# para chamada via chat global; quando presente, filtra JobVacancy por company_id.
+# Revisar em ticket dedicado: avaliar flip para require_company=True com fail-closed.
 @tool_handler(domain="cv_screening", require_company=False)
 async def analyze_cv_match(
     candidate_id: str | None = None,

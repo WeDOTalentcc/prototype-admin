@@ -8,9 +8,18 @@ Política canônica: tools de domínio devem usar `@tool_handler(domain, ...)` d
 módulo `app/shared/tool_handler.py`, que aplica fail-closed em company_id, audit
 trail e module gating de forma uniforme.
 
-Exit code:
-    0  -> nenhuma violação
-    1  -> uma ou mais violações detectadas (lista impressa em stderr)
+Integração com CI:
+    - Coberto pelo job de fitness `tests/fitness/test_audit_2026_04_finals.py`
+      (`TestF11NoLangchainToolDecoratorRegression`), que executa este script
+      como subprocess e valida exit-code 0.
+    - Coberto pelo unit guard `tests/test_no_langchain_tool_decorator_guard.py`,
+      que valida exit-code para diretório limpo vs. diretório violador (tmp).
+    - **Gap conhecido:** o pre-commit (`.pre-commit-config.yaml`) usa o script
+      legado `check_no_legacy_tool_decorator.py` (S7.3), que cobre
+      `app/domains/*/tools/*.py` mas **não** cobre `*_tool_registry.py`.
+      Este script (F11) é mais abrangente. Antes de remover o legado, migrar
+      o hook do pre-commit para apontar aqui — ver
+      `docs/audits/AUDIT_STATUS_REPORT_2026-04-FINAL.md` §F11.
 """
 from __future__ import annotations
 

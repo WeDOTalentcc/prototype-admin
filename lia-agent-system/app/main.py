@@ -288,6 +288,16 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️  Platform Event Handlers não registrados: {e}")
 
+    # Audit task #544 — start AiConsumption outbox drainer worker.
+    try:
+        from app.shared.observability.ai_consumption_outbox_worker import (
+            get_outbox_worker,
+        )
+        await get_outbox_worker().start()
+        logger.info("✅ AiConsumption outbox drainer started")
+    except Exception as e:
+        logger.warning("⚠️  AiConsumption outbox drainer NOT started: %s", e)
+
     # Seed A/B Testing email template variants (Fase 5 / A5 — idempotent)
     try:
         from app.shared.intelligence.ab_testing import seed_email_ab_tests
@@ -347,6 +357,15 @@ async def lifespan(app: FastAPI):
         automation_scheduler.stop()
     except Exception as e:
         logger.error(f"Error stopping Automation Scheduler: {e}")
+
+    # Audit task #544 — stop AiConsumption outbox drainer (drains final batch).
+    try:
+        from app.shared.observability.ai_consumption_outbox_worker import (
+            get_outbox_worker,
+        )
+        await get_outbox_worker().stop()
+    except Exception as e:
+        logger.warning("Error stopping AiConsumption outbox drainer: %s", e)
 
 
 # ---------------------------------------------------------------------------

@@ -32,7 +32,8 @@ class CultureAnalyzerService:
         self, 
         content: str, 
         linkedin_data: dict | None = None,
-        provider: LLMProvider = "claude"
+        provider: LLMProvider = "claude",
+        tracking_context: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
         Analyze company culture from scraped content and LinkedIn data.
@@ -58,7 +59,18 @@ class CultureAnalyzerService:
             )
             
             logger.info(f"Calling LLM service with provider: {provider}")
-            response = await llm_service.generate(prompt, provider=provider)
+            # Audit task #545 — instrumenta análise de cultura via outbox.
+            from app.shared.observability.usage_tracking_callback import (
+                build_usage_callback,
+            )
+            _on_usage = build_usage_callback(
+                tracking_context,
+                agent_type="culture_analyzer",
+                default_operation="analyze_culture",
+            )
+            response = await llm_service.generate(
+                prompt, provider=provider, on_usage=_on_usage,
+            )
             logger.info(f"LLM response received, length: {len(response) if response else 0}")
             logger.debug(f"LLM response preview: {response[:500] if response else 'None'}")
             
