@@ -426,17 +426,10 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
         except Exception:
             await db.rollback()
 
-        # Audit task #528 (rev. 23) — coluna p/ persistir os campos de transparência
-        # adicionais (flags_structured, breakdowns, degraded_quality, layer2_degraded_reason).
-        # Idempotente; se a coluna já existe é no-op. Writers que ainda não escrevem
-        # neste campo deixam NULL → API serve defaults (compat. retroativa).
-        try:
-            await db.execute(text(
-                "ALTER TABLE wsi_response_analyses "
-                "ADD COLUMN IF NOT EXISTS transparency_extras JSONB"
-            ))
-        except Exception:
-            await db.rollback()
+        # Audit task #528 (rev. 23) — coluna `transparency_extras` agora é
+        # garantida por migração formal (`database/migrations/016_*.sql`) e
+        # reforçada no startup do FastAPI (lifespan). DDL no request-path foi
+        # removido para evitar mutação de schema fora da janela de deploy.
 
         # F11-3 — verificar cache antes de regenerar
         cache_r = await db.execute(text("""
