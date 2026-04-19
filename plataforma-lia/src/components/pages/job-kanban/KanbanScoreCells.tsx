@@ -2,7 +2,7 @@
 
 import React from "react"
 import {
-  Brain, Target, Code, Globe, Fingerprint, Gauge,
+  Brain, Target, Code, Globe, Fingerprint, Gauge, AlertTriangle,
 } from "lucide-react"
 import { formatScorePercent } from "@/lib/design-tokens"
 import type { KanbanCandidate } from "./KanbanTableCellRenderer.types"
@@ -66,6 +66,10 @@ export function renderScoreCell(
     case 'liaScore': {
       const hasTriagem = (candidate.liaScore !== null && candidate.liaScore !== undefined) || (candidate.score !== null && candidate.score !== undefined)
       const triagemValue = candidate.liaScore ?? candidate.score
+      // Audit task #530 (G23-02 frontend) — selo de modo degradado também na
+      // tabela (paridade com KanbanCardScores).
+      const isDegraded = hasTriagem && candidate.triagemDegraded === true
+      const degradedTooltip = 'Análise em modo degradado — abra o relatório para ver detalhes'
       return (
         <div
           className={`flex items-center gap-1 justify-center cursor-pointer group ${hasTriagem ? '' : 'opacity-40'}`}
@@ -75,12 +79,19 @@ export function renderScoreCell(
               onOpenTriagem(candidate)
             }
           }}
-          title={hasTriagem ? t('clickLIAScreening') : t('notEvaluated')}
+          title={isDegraded ? degradedTooltip : (hasTriagem ? t('clickLIAScreening') : t('notEvaluated'))}
         >
           <Brain className={`w-3.5 h-3.5 ${hasTriagem ? 'text-wedo-cyan' : 'text-lia-text-disabled'}`} strokeWidth={2} />
           <span className={`text-xs font-semibold ${hasTriagem ? 'text-lia-text-primary' : 'text-lia-text-disabled'}`}>
             {hasTriagem ? formatScorePercent(triagemValue as number, 0) : '—'}
           </span>
+          {isDegraded && (
+            <AlertTriangle
+              className="w-3 h-3 text-status-warning"
+              strokeWidth={2.5}
+              aria-label={degradedTooltip}
+            />
+          )}
         </div>
       )
     }

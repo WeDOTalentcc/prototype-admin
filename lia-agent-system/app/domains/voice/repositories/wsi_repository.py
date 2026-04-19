@@ -438,14 +438,30 @@ class WsiRepository:
         return result.fetchone()
 
     async def get_latest_scores_per_candidate(self, job_vacancy_id: str) -> list:
-        """Return one result per candidate (latest) for a vacancy with WSI scores."""
+        """Return one result per candidate (latest) for a vacancy with WSI scores.
+
+        Audit task #530 (G23-02 frontend) — também devolve ``is_degraded`` por
+        candidato (booleano agregado das respostas da última sessão), para o
+        kanban poder exibir um indicador de modo degradado ao lado do score
+        WSI sem precisar buscar o detalhe completo. Fallback seguro para
+        registros legados: COALESCE retorna FALSE quando ``transparency_extras``
+        é nulo ou a coluna não tem nenhuma análise associada.
+        """
         result = await self.db.execute(text("""
-            SELECT DISTINCT ON (candidate_id)
-                candidate_id, overall_wsi, technical_wsi, behavioral_wsi,
-                classification, percentile
-            FROM wsi_results
-            WHERE job_vacancy_id = :job_vacancy_id
-            ORDER BY candidate_id, created_at DESC
+            SELECT DISTINCT ON (r.candidate_id)
+                r.candidate_id, r.overall_wsi, r.technical_wsi, r.behavioral_wsi,
+                r.classification, r.percentile,
+                COALESCE((
+                    SELECT bool_or(
+                        COALESCE((ra.transparency_extras->>'degraded_quality')::boolean, FALSE)
+                        OR (ra.transparency_extras->>'layer2_degraded_reason') IS NOT NULL
+                    )
+                    FROM wsi_response_analyses ra
+                    WHERE ra.session_id = r.session_id
+                ), FALSE) AS is_degraded
+            FROM wsi_results r
+            WHERE r.job_vacancy_id = :job_vacancy_id
+            ORDER BY r.candidate_id, r.created_at DESC
         """), {"job_vacancy_id": job_vacancy_id})
         return result.fetchall()
 

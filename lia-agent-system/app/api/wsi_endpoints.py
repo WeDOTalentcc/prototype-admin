@@ -1422,6 +1422,10 @@ async def get_candidates_wsi_scores(
             behavioral_raw = float(row[3]) if row[3] is not None else 0.0
             classification = row[4] or "não_classificado"
             percentile = row[5]
+            # Audit task #530 (G23-02 frontend) — flag de modo degradado vinda
+            # do agregado por sessão na repository (FALSE para registros legados
+            # sem ``transparency_extras``).
+            is_degraded = bool(row[6]) if len(row) > 6 else False
 
             # B0 #523 — escala canônica /10 (era /5 *20→0-100; agora /10 *SCALE_MAX→0-100)
             from app.domains.cv_screening.constants.wsi_scale import SCALE_MAX
@@ -1430,7 +1434,8 @@ async def get_candidates_wsi_scores(
                 "technical_wsi": round(technical_raw * SCALE_MAX, 1),
                 "behavioral_wsi": round(behavioral_raw * SCALE_MAX, 1),
                 "classification": classification,
-                "percentile": percentile
+                "percentile": percentile,
+                "degraded_quality": is_degraded,
             }
 
         return {"candidates": candidates}

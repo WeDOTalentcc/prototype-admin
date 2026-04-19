@@ -5,7 +5,13 @@ import { useTranslations } from "next-intl"
 import { ScoreIconButton } from "@/components/ui/score-icon-button"
 import { ScoreBreakdownBadgeLazy } from "@/components/score/ScoreBreakdownBadge"
 import { formatScorePercent } from "@/lib/design-tokens"
-import { Gauge, BrainCircuit, Target, Code, Globe, Fingerprint } from "lucide-react"
+import { Gauge, BrainCircuit, Target, Code, Globe, Fingerprint, AlertTriangle } from "lucide-react"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface KanbanCardScoresProps {
   candidate: {
@@ -18,6 +24,9 @@ interface KanbanCardScoresProps {
     englishTestScore?: number | null
     bigFive?: Record<string, number> | null
     bigFiveScores?: Record<string, number> | null
+    // Audit task #530 (G23-02 frontend) — flag de modo degradado da triagem,
+    // populada por useKanbanDataEffects a partir do endpoint candidates/scores.
+    triagemDegraded?: boolean
     [key: string]: unknown
   }
   calculateNotaLiaGeral: (candidate: unknown) => number | null
@@ -62,23 +71,48 @@ export function KanbanCardScores({
 
   return (
     <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-      {scores.map(({ id, icon: Icon, value, label, alwaysClickable }) => (
-        <ScoreIconButton
-          key={id}
-          id={id}
-          icon={Icon}
-          value={value}
-          formattedValue={value ? formatScorePercent(value, 0) : undefined}
-          label={label}
-          alwaysClickable={alwaysClickable}
-          onClick={() =>
-            onOpenScoreModal(
-              candidate,
-              id as "geral" | "triagem" | "cv" | "tecnico" | "ingles" | "b5"
-            )
-          }
-        />
-      ))}
+      {scores.map(({ id, icon: Icon, value, label, alwaysClickable }) => {
+        // Audit task #530 (G23-02 frontend) — selo de modo degradado ao lado
+        // do score de triagem WSI quando a Camada 2 (semântica) não rodou.
+        const showDegraded =
+          id === "triagem" && triagemScore != null && candidate.triagemDegraded === true
+        return (
+          <div key={id} className="flex items-center gap-0.5">
+            <ScoreIconButton
+              id={id}
+              icon={Icon}
+              value={value}
+              formattedValue={value ? formatScorePercent(value, 0) : undefined}
+              label={label}
+              alwaysClickable={alwaysClickable}
+              onClick={() =>
+                onOpenScoreModal(
+                  candidate,
+                  id as "geral" | "triagem" | "cv" | "tecnico" | "ingles" | "b5"
+                )
+              }
+            />
+            {showDegraded && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span
+                      role="img"
+                      aria-label="Triagem em modo degradado — abra o relatório para ver detalhes"
+                      className="inline-flex"
+                    >
+                      <AlertTriangle className="h-3 w-3 text-status-warning" strokeWidth={2.5} />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Análise em modo degradado — abra o relatório para ver detalhes</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+        )
+      })}
       {/* E1 — Score clicável: badge lazy com detalhamento da rubrica */}
       {geralScore != null && _jobIdForSL && candidate.id && (
         <ScoreBreakdownBadgeLazy

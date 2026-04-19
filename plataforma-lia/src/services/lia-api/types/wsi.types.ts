@@ -275,6 +275,10 @@ export interface WSICandidatesScores {
     behavioral_wsi: number
     classification: string
     percentile: number
+    // Audit task #530 (G23-02 frontend) — flag de modo degradado por candidato
+    // (agregada das respostas da última sessão WSI). Usado pelo kanban e tabela
+    // para exibir um indicador de atenção ao lado do score de triagem.
+    degraded_quality?: boolean
   }>
 }
 

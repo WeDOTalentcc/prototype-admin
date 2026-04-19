@@ -65,6 +65,11 @@ export function useKanbanDataEffects({
                 wsiBehavioral: wsiData.behavioral_wsi,
                 wsiClassification: wsiData.classification,
                 wsiPercentile: wsiData.percentile,
+                // Audit task #530 (G23-02 frontend) — flag exposta pelo backend
+                // para o kanban marcar visualmente o score WSI calculado em
+                // modo degradado (sem Camada 2). UI consome em
+                // KanbanCardScores e KanbanScoreCells.
+                triagemDegraded: wsiData.degraded_quality === true,
               }
             })
           }
