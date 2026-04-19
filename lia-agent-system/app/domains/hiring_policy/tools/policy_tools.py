@@ -248,3 +248,77 @@ async def get_compliance_report(
         "note": "Production implementation must query real audit and compliance services.",
         "generated_at": datetime.now(UTC).isoformat(),
     }
+
+
+@tool_handler(domain="hiring_policy", require_company=True)
+async def configure_candidate_portal(
+    enable_portal: str = "false",
+    show_wsi_feedback: str = "false",
+    lgpd_review_contact: str = "",
+    farewell_message: str = "",
+    **kwargs: Any,
+) -> dict:
+    """Configures the Candidate Self-Service Portal for this company.
+
+    Called during configure_communication flow when RH decides to enable
+    the candidate portal (WhatsApp + web link). Saves config to hiring_policy.
+
+    Args:
+        enable_portal: "true" to activate portal — candidates receive link on apply.
+        show_wsi_feedback: "true" to allow candidates to see WSI feedback (5 dimensions).
+        lgpd_review_contact: Email for LGPD Art. 20 right-to-explanation requests.
+        farewell_message: Custom closing message shown at end of candidate chat.
+
+    Returns:
+        dict with saved configuration and next_steps.
+    """
+    company_id = kwargs.get("company_id", "")
+    logger.info(
+        "configure_candidate_portal: company_id=%s portal=%s feedback=%s",
+        company_id, enable_portal, show_wsi_feedback,
+    )
+
+    portal_enabled = enable_portal.lower() in ("true", "sim", "yes", "1", "ativar")
+    feedback_enabled = show_wsi_feedback.lower() in ("true", "sim", "yes", "1")
+
+    try:
+        from app.shared.rails_client import rails_patch
+        await rails_patch(
+            f"/v1/companies/{company_id}/hiring_policy",
+            data={
+                "candidate_portal_enabled": portal_enabled,
+                "show_wsi_feedback_to_candidate": feedback_enabled,
+                "lgpd_review_contact_email": lgpd_review_contact or None,
+                "candidate_portal_farewell_message": farewell_message or None,
+            },
+        )
+        saved_to_rails = True
+    except Exception as exc:
+        logger.warning("configure_candidate_portal: rails patch failed: %s", exc)
+        saved_to_rails = False
+
+    next_steps = []
+    if portal_enabled:
+        next_steps.append("Candidatos receberão link do portal ao serem cadastrados pela LIA.")
+        next_steps.append("Link: https://lia.wedotalent.cc/candidate/status?token=<jwt>")
+    if feedback_enabled:
+        next_steps.append("Feedback WSI (5 dimensões) ficará disponível após encerramento do processo.")
+    if lgpd_review_contact:
+        next_steps.append(f"Solicitações LGPD Art. 20 serão direcionadas para: {lgpd_review_contact}")
+    if not portal_enabled:
+        next_steps.append("Portal desativado. Candidatos não receberão o link de acesso.")
+
+    return {
+        "success": True,
+        "company_id": company_id,
+        "candidate_portal_enabled": portal_enabled,
+        "show_wsi_feedback_to_candidate": feedback_enabled,
+        "lgpd_review_contact_email": lgpd_review_contact or None,
+        "farewell_message_set": bool(farewell_message),
+        "saved_to_rails": saved_to_rails,
+        "next_steps": next_steps,
+        "note": (
+            "Para ativar o WhatsApp do portal, os templates WABA "
+            "precisam ser aprovados pela Meta com antecedência."
+        ) if portal_enabled else "",
+    }

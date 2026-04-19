@@ -1,7 +1,18 @@
 # Fase 2C - Domain Actions & Execute() Verification Report
 
+> ⚠️ **OBSOLETO desde 19/abr/2026** — este documento foi superado por
+> [`chat_capabilities_audit.md`](./chat_capabilities_audit.md) (auditoria
+> programática completa via `scripts/audit_chat_capabilities.py`).
+>
+> O relatório abaixo cobre apenas ~10 domínios e afirmava que "all domains
+> properly implement execute_action()". A nova auditoria revelou que dos
+> **17 domínios registrados**, **13 têm gaps críticos** (mapeamentos
+> quebrados, handlers com import quebrado, actions sem executor, tools
+> órfãs). Mantido aqui apenas como histórico — **não usar como fonte da
+> verdade**.
+
 **Date**: February 16, 2026  
-**Status**: Complete  
+**Status**: Superseded (April 19, 2026)  
 **Task**: Verify that each domain has proper actions.py/execute_action() to handle the tool intents from the legacy INTENT_TO_TOOL_MAPPING.
 
 ---

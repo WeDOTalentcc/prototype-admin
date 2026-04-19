@@ -1,5 +1,6 @@
 """Candidate Self-Service ReAct Agent — read-only, FairnessGuard, HITL-aware."""
 import logging
+import time
 from typing import Any
 
 from lia_agents_core.agent_interface import AgentAction, AgentInput, AgentOutput
@@ -89,6 +90,8 @@ class CandidateSelfServiceAgent(LangGraphReActBase, EnhancedAgentMixin):
             confidence = 0.40
         conf_action = confidence_policy_service.get_action_for_confidence(confidence)
 
+        tools_called = [a.params.get("tool", "") for a in actions if a.params.get("tool")]
+
         return AgentOutput(
             message=response,
             actions=actions,
@@ -98,11 +101,54 @@ class CandidateSelfServiceAgent(LangGraphReActBase, EnhancedAgentMixin):
                 "domain": self.domain_name,
                 "confidence_action": conf_action.value,
                 "candidate_self_service": True,
+                "tools_called": tools_called,
             },
         )
 
     async def process(self, input: AgentInput) -> AgentOutput:
-        return await self._process_langgraph(input)
+        """Process candidate query with observability span."""
+        candidate_id = (input.context or {}).get("candidate_id", "unknown")
+        vacancy_id = (input.context or {}).get("vacancy_id", "unknown")
+        company_id = input.company_id or "unknown"
+        channel = (input.context or {}).get("channel", "web")
+        start_ts = time.monotonic()
+
+        span_attrs = {
+            "domain": "candidate_self_service",
+            "candidate_id": candidate_id,   # UUID — not PII per ADR-006
+            "vacancy_id": vacancy_id,
+            "company_id": company_id,
+            "channel": channel,
+        }
+
+        try:
+            from app.observability import get_tracer
+            tracer = get_tracer("candidate_self_service")
+        except Exception:
+            tracer = None
+
+        output = await self._process_langgraph(input)
+
+        elapsed_ms = int((time.monotonic() - start_ts) * 1000)
+        tools_called = output.metadata.get("tools_called", []) if output.metadata else []
+
+        logger.info(
+            "[CSS Agent] processed candidate_id=%s vacancy_id=%s tools=%s elapsed_ms=%d",
+            candidate_id, vacancy_id, tools_called, elapsed_ms,
+        )
+
+        if tracer:
+            try:
+                with tracer.start_as_current_span("css.agent.process") as span:
+                    for k, v in span_attrs.items():
+                        span.set_attribute(k, v)
+                    span.set_attribute("tools_called", str(tools_called))
+                    span.set_attribute("elapsed_ms", elapsed_ms)
+                    span.set_attribute("confidence", output.confidence or 0)
+            except Exception:
+                pass  # Observability must never break the agent flow
+
+        return output
 
     async def get_status(self) -> dict:
         return {

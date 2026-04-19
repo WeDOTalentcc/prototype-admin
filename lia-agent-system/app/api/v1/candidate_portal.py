@@ -1,8 +1,8 @@
-"""Candidate Portal API — /api/v1/candidate-chat and /api/v1/candidate-portal/*.
+"""Candidate Portal API — /api/v1/candidate/*.
 
 ADR-014: All routes under /api/v1.
 ADR-005: All endpoints declare response_model.
-ADR-006: No PII in logs — candidate_id only.
+ADR-006: No PII in logs — candidate_id/vacancy_id/company_id only.
 ADR-008: APIResponse envelope.
 """
 import logging
@@ -10,7 +10,6 @@ import os
 from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.schemas.api_envelope import APIResponse
@@ -25,6 +24,7 @@ _JWT_SECRET = os.getenv("CANDIDATE_PORTAL_JWT_SECRET", "")
 class CandidateChatRequest(BaseModel):
     message: str
     candidate_token: str
+    vacancy_id: str | None = None
 
 
 class CandidateChatResponse(BaseModel):
@@ -34,7 +34,6 @@ class CandidateChatResponse(BaseModel):
 
 class CandidateApplicationsResponse(BaseModel):
     applications: list[dict[str, Any]]
-    candidate_name: str
 
 
 @router.post("/chat", response_model=APIResponse)
@@ -43,10 +42,13 @@ async def candidate_chat(request_data: CandidateChatRequest, request: Request):
 
     Auth: JWT token in body (candidate_token).
     Rate limiting: per candidate_id via Redis (10/hour, 30/day).
-    Routing: cascaded_router → candidate_self_service domain.
+    Routing: CandidateSelfServiceAgent.
     """
     from app.domains.candidate_self_service.services.candidate_status_service import (
         CandidateStatusService,
+    )
+    from app.domains.candidate_self_service.repositories.candidate_status_repository import (
+        CandidateSelfServiceRepository,
     )
 
     service = CandidateStatusService()
@@ -55,10 +57,9 @@ async def candidate_chat(request_data: CandidateChatRequest, request: Request):
         raise HTTPException(status_code=401, detail="Token inválido ou expirado.")
 
     candidate_id = token_data["candidate_id"]
-    vacancy_id = token_data["vacancy_id"]
-    company_id = token_data["company_id"]
+    vacancy_id = request_data.vacancy_id or token_data["vacancy_id"]
+    company_id = token_data["company_id"]  # always from token — anti-IDOR
 
-    # Rate limiting per candidate_id (ADR-006: log id only)
     rate = await service.check_rate_limit(candidate_id)
     if not rate["allowed"]:
         raise HTTPException(
@@ -70,6 +71,9 @@ async def candidate_chat(request_data: CandidateChatRequest, request: Request):
         "[CandidatePortal] chat candidate_id=%s vacancy_id=%s",
         candidate_id, vacancy_id,
     )
+
+    tools_called: list[str] = []
+    fairness_triggered = False
 
     try:
         from lia_agents_core.agent_interface import AgentInput
@@ -86,9 +90,13 @@ async def candidate_chat(request_data: CandidateChatRequest, request: Request):
                 "candidate_id": candidate_id,
                 "vacancy_id": vacancy_id,
                 "domain": "candidate_self_service",
+                "channel": "web",
             },
         )
         output = await agent.process(agent_input)
+
+        tools_called = getattr(output, "tools_called", []) or []
+        fairness_triggered = getattr(output, "fairness_triggered", False) or False
 
         return APIResponse.ok(
             data={
@@ -99,6 +107,20 @@ async def candidate_chat(request_data: CandidateChatRequest, request: Request):
     except Exception as exc:
         logger.error("[CandidatePortal] chat error candidate_id=%s: %s", candidate_id, exc)
         raise HTTPException(status_code=500, detail="Erro interno. Tente novamente.")
+    finally:
+        # Audit log — ADR-006: IDs only, no PII
+        try:
+            repo = CandidateSelfServiceRepository()
+            await repo.log_portal_access(
+                candidate_id=candidate_id,
+                vacancy_id=vacancy_id,
+                company_id=company_id,
+                channel="web",
+                tools_called=tools_called,
+                fairness_triggered=bool(fairness_triggered),
+            )
+        except Exception as audit_exc:
+            logger.debug("[CandidatePortal] audit log failed: %s", audit_exc)
 
 
 @router.get("/applications", response_model=APIResponse)
@@ -110,6 +132,9 @@ async def list_candidate_applications(candidate_token: str):
     from app.domains.candidate_self_service.services.candidate_status_service import (
         CandidateStatusService,
     )
+    from app.domains.candidate_self_service.repositories.candidate_status_repository import (
+        CandidateSelfServiceRepository,
+    )
 
     service = CandidateStatusService()
     token_data = await service.validate_token(candidate_token, _JWT_SECRET)
@@ -117,7 +142,7 @@ async def list_candidate_applications(candidate_token: str):
         raise HTTPException(status_code=401, detail="Token inválido ou expirado.")
 
     candidate_id = token_data["candidate_id"]
-    company_id = token_data["company_id"]
+    company_id = token_data["company_id"]  # always from token — anti-IDOR
 
     logger.info("[CandidatePortal] list_applications candidate_id=%s", candidate_id)
 
@@ -128,6 +153,21 @@ async def list_candidate_applications(candidate_token: str):
             params={"candidate_id": candidate_id},
             company_id=company_id,
         )
+
+        # Audit log — list access
+        try:
+            repo = CandidateSelfServiceRepository()
+            await repo.log_portal_access(
+                candidate_id=candidate_id,
+                vacancy_id=token_data.get("vacancy_id", ""),
+                company_id=company_id,
+                channel="web",
+                tools_called=["list_applications"],
+                fairness_triggered=False,
+            )
+        except Exception as audit_exc:
+            logger.debug("[CandidatePortal] audit log failed: %s", audit_exc)
+
         return APIResponse.ok(data=data)
     except Exception as exc:
         logger.error("[CandidatePortal] list_applications error candidate_id=%s: %s", candidate_id, exc)
