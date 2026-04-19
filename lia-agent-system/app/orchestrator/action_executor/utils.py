@@ -375,6 +375,12 @@ def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
         _loc_m = re.search(r"\bem\s+([A-ZÁÉÍÓÚ][a-záéíóúâêîôûãõ]+(?:\s+[A-ZÁÉÍÓÚ]?[a-záéíóúâêîôûãõ]+)?)", msg)
         if _loc_m and not entities.get("location"):
             entities["location"] = _loc_m.group(1).strip()
+        # Infer seniority from job title (Tech Lead, Senior, Head → sênior)
+        _title_val = entities.get("job_title", "").lower()
+        if any(k in _title_val for k in ["tech lead", "lead ", "sênior", "senior", "head ", "principal", "staff ", "gerente", "manager"]):
+            if not entities.get("seniority"):
+                entities["seniority"] = "sênior"
+
         # Infer seniority from years: "5 anos de experiência"
         _years_m = re.search(r"(\d+)\s+anos?\s+de\s+experiência", msg, re.IGNORECASE)
         if _years_m and not entities.get("seniority"):

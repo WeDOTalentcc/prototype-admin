@@ -1,0 +1,173 @@
+[
+  {
+    "id": "WZ-001",
+    "category": "WZ",
+    "severity": "critical",
+    "title": "Create new job via Wizard",
+    "prompt": "cria uma nova vaga de DevOps Senior com foco em Kubernetes, AWS e CI/CD, modalidade remota",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "create_job_draft",
+      "extract_job_requirements"
+    ],
+    "canonical_files": [
+      "app/domains/job_management/agents/wizard_react_agent.py",
+      "app/domains/job_management/agents/wizard_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Extracts DevOps/Kubernetes/AWS/CI-CD as requirements",
+      "Sets modality as remote",
+      "Creates draft (not published directly)",
+      "Shows draft for approval"
+    ],
+    "anti_patterns": [
+      "Publishes without review",
+      "Cannot create job"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 2035,
+    "response": "Para criar a vaga de DevOps Sênior, preciso de algumas informações adicionais. Poderia me informar o ID da empresa?",
+    "error": "",
+    "score": 2,
+    "flags": [],
+    "scored_at": "2026-04-19T09:35:55.308005"
+  },
+  {
+    "id": "WZ-002",
+    "category": "WZ",
+    "severity": "high",
+    "title": "Generate job description",
+    "prompt": "gera uma descrição de vaga para Product Manager com metodologias ágeis e experiência em dados",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "generate_job_description"
+    ],
+    "canonical_files": [
+      "app/domains/job_management/agents/wizard_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Generates structured JD",
+      "Includes agile methodologies",
+      "Includes data experience requirement"
+    ],
+    "anti_patterns": [
+      "Generic JD without specified requirements"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 1929,
+    "response": "**Product Manager — Descrição de Vaga**\n\n**Sobre a Vaga**\nBuscamos um(a) profissional para atuar como **Product Manager** (Pleno), contribuindo diretamente para os objetivos estratégicos da empresa.\n\n**Responsabilidades**\n- Liderar e executar projetos relacionados a Product Manager\n- Colaborar com equipes multifuncionais\n- Propor melhorias de processos e boas práticas\n- Apresentar resultados e métricas para stakeholders\n\n**Requisitos Técnicos**\n- Metodologias Ágeis\n- Scrum\n- Kanban\n- Análise de Dados\n- SQL\n- Experiência prévia em funções similares\n- Inglês intermediário (desejável)\n\n**Competências Comportamentais**\n- Comunicação clara e objetiva\n- Autonomia e proatividade\n- Visão analítica e orientação a dados\n- Trabalho em equipe e colaboração\n\n**Benefícios**\n- Salário competitivo com benchmark de mercado\n- Vale Refeição / Alimentação\n- Plano de Saúde e Odontológico\n- Possibilidade de trabalho híbrido\n- Ambiente de crescimento e aprendizado contínuo",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-19T09:35:57.737720"
+  },
+  {
+    "id": "WZ-003",
+    "category": "WZ",
+    "severity": "high",
+    "title": "Salary suggestion for new job",
+    "prompt": "qual salário sugerir para um Tech Lead Frontend em São Paulo com 5 anos de experiência?",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "suggest_salary_range"
+    ],
+    "canonical_files": [
+      "app/domains/job_management/agents/wizard_tool_registry.py",
+      "app/domains/analytics/services/salary_benchmark_service.py"
+    ],
+    "success_criteria": [
+      "Returns salary range with min/max",
+      "References São Paulo market",
+      "Considers seniority (5 years)"
+    ],
+    "anti_patterns": [
+      "Generic range without market data"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 20917,
+    "response": "**Benchmark salarial — Tech Lead Frontend (Pleno)**\n\n📍 Mercado: **São Paulo**\n💰 Faixa sugerida: **R$ 8,000** – **R$ 15,000**\n📊 Baseado em dados do mercado brasileiro de tecnologia",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-19T09:36:19.155845"
+  },
+  {
+    "id": "WZ-004",
+    "category": "WZ",
+    "severity": "medium",
+    "title": "Duplicate existing job",
+    "prompt": "duplica a vaga de Product Manager para abrir uma segunda posição",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs",
+      "duplicate_job"
+    ],
+    "canonical_files": [
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Creates a duplicate",
+      "New job in draft state (not published)"
+    ],
+    "anti_patterns": [
+      "Cannot duplicate",
+      "Publishes duplicate directly"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 2267,
+    "response": "Para duplicar a vaga de Product Manager, preciso do ID da vaga original. Você pode me fornecer o ID da vaga de Product Manager que deseja duplicar?\n\nAlém disso, a nova vaga terá o mesmo título \"Product Manager\"? Deseja alterar alguma informação como departamento, local, salário, etc., ou devo criar uma cópia exata?",
+    "error": "",
+    "score": 2,
+    "flags": [],
+    "scored_at": "2026-04-19T09:36:21.922993"
+  },
+  {
+    "id": "WZ-005",
+    "category": "WZ",
+    "severity": "medium",
+    "title": "Configure pipeline for new job",
+    "prompt": "configura as etapas do processo seletivo: triagem, teste técnico, entrevista RH, entrevista técnica, proposta",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "set_pipeline_template"
+    ],
+    "canonical_files": [
+      "app/domains/job_management/agents/wizard_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Creates all 5 stages in order",
+      "Asks for approval"
+    ],
+    "anti_patterns": [
+      "Creates only some stages",
+      "Uses default template instead"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 1273,
+    "response": "Para configurar as etapas do processo seletivo, preciso do ID da sua empresa. Você também gostaria de aplicá-las a uma vaga específica? Se sim, por favor, forneça o ID da vaga.",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-19T09:36:23.696941"
+  }
+]

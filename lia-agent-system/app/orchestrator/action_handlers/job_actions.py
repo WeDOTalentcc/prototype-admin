@@ -470,29 +470,41 @@ async def _generate_jd_direct(params: dict, context: dict):
         except Exception:
             pass  # Fall through to template
 
-        # Template-based fallback
+        # Template-based fallback — build dynamic responsibilities from skills
         skills_text = "\n".join(f"- {s}" for s in skills[:6]) if skills else "- Habilidades técnicas relevantes para o cargo"
+
+        # Build dynamic responsibilities based on extracted skills
+        dynamic_resps = [f"- Liderar iniciativas de {title} alinhadas à estratégia do produto"]
+        agile_skills = [s for s in skills if any(k in s.lower() for k in ["ágeis", "agil", "scrum", "kanban", "sprint"])]
+        data_skills = [s for s in skills if any(k in s.lower() for k in ["dados", "data", "sql", "analytics", "bi"])]
+        if agile_skills:
+            dynamic_resps.append(f"- Gerenciar backlog e cerimônias ágeis (Scrum/Kanban)")
+        if data_skills:
+            dynamic_resps.append(f"- Tomar decisões orientadas a dados e definir métricas de produto (KPIs, OKRs)")
+        dynamic_resps += [
+            "- Colaborar com engenharia, design e stakeholders para entrega de valor",
+            "- Mapear e priorizar oportunidades de melhoria de produto",
+        ]
+        resps_text = "\n".join(dynamic_resps[:5])
+
         jd = f"""**{title} — Descrição de Vaga**
 
 **Sobre a Vaga**
-Buscamos um(a) profissional para atuar como **{title}** ({seniority}), contribuindo diretamente para os objetivos estratégicos da empresa.
+Buscamos um(a) {title} ({seniority}) para impulsionar nossa estratégia de produto, unindo visão de negócio, análise de dados e execução ágil.
 
 **Responsabilidades**
-- Liderar e executar projetos relacionados a {title}
-- Colaborar com equipes multifuncionais
-- Propor melhorias de processos e boas práticas
-- Apresentar resultados e métricas para stakeholders
+{resps_text}
 
 **Requisitos Técnicos**
 {skills_text}
-- Experiência prévia em funções similares
+- Experiência prévia em funções similares de produto
 - Inglês intermediário (desejável)
 
 **Competências Comportamentais**
-- Comunicação clara e objetiva
-- Autonomia e proatividade
-- Visão analítica e orientação a dados
-- Trabalho em equipe e colaboração
+- Comunicação clara com times técnicos e de negócio
+- Autonomia e capacidade de priorização em ambiente ágil
+- Visão analítica e orientação a resultados
+- Capacidade de influenciar sem autoridade formal
 
 **Benefícios**
 - Salário competitivo com benchmark de mercado
