@@ -209,17 +209,27 @@ class PreConditionChecker:
     # ═══════════════════════════════════════════════════════════════
 
     async def _check_company_profile_completeness(self, company_id: str) -> list[str]:
-        """Return list of missing fields in the company profile. Empty if complete."""
+        """Return list of missing canonical fields in the company profile. Empty if complete.
+
+        Uses canonical `company_profiles` table (schema: CompanyProfile model).
+        Matches fields with D1 `check_company_completeness` tool for consistency.
+        """
         try:
             from lia_config.database import AsyncSessionLocal
             from sqlalchemy import text
             async with AsyncSessionLocal() as session:
+                # Match by id OR client_account_id — token semantics vary across call paths
                 row = (await session.execute(
-                    text("SELECT name, industry, size FROM companies WHERE id = :cid LIMIT 1"),
+                    text(
+                        "SELECT name, industry, company_size, website "
+                        "FROM company_profiles "
+                        "WHERE id::text = :cid OR client_account_id::text = :cid "
+                        "LIMIT 1"
+                    ),
                     {"cid": company_id},
                 )).first()
                 if row is None:
-                    return ["nome", "setor", "tamanho"]
+                    return ["nome", "setor", "tamanho", "website"]
                 missing: list[str] = []
                 if not row[0]:
                     missing.append("nome")
@@ -227,6 +237,8 @@ class PreConditionChecker:
                     missing.append("setor")
                 if not row[2]:
                     missing.append("tamanho")
+                if not row[3]:
+                    missing.append("website")
                 return missing
         except Exception as exc:
             logger.debug("[PreConditionChecker] profile read failed: %s", exc)
@@ -251,30 +263,27 @@ class PreConditionChecker:
             return False
 
     async def _get_company_website(self, company_id: str) -> str | None:
-        """Return the company's website URL, or None if not set."""
+        """Return the company's website URL, or None if not set.
+
+        Uses canonical company_profiles table. Matches by id OR client_account_id
+        to handle both tenant token semantics.
+        """
         try:
             from lia_config.database import AsyncSessionLocal
             from sqlalchemy import text
             async with AsyncSessionLocal() as session:
                 row = (await session.execute(
-                    text("SELECT website FROM company_profiles WHERE id::text = :cid LIMIT 1"),
+                    text(
+                        "SELECT website FROM company_profiles "
+                        "WHERE id::text = :cid OR client_account_id::text = :cid "
+                        "LIMIT 1"
+                    ),
                     {"cid": company_id},
                 )).first()
                 return row[0] if row and row[0] else None
-        except Exception:
-            try:
-                # Fallback: older schema uses `companies.website`
-                from lia_config.database import AsyncSessionLocal
-                from sqlalchemy import text
-                async with AsyncSessionLocal() as session:
-                    row = (await session.execute(
-                        text("SELECT website FROM companies WHERE id = :cid LIMIT 1"),
-                        {"cid": company_id},
-                    )).first()
-                    return row[0] if row and row[0] else None
-            except Exception as exc:
-                logger.debug("[PreConditionChecker] website read failed: %s", exc)
-                return None
+        except Exception as exc:
+            logger.debug("[PreConditionChecker] website read failed: %s", exc)
+            return None
 
     async def _culture_profile_missing(self, company_id: str) -> bool:
         """True if company_culture_profiles has no record for this tenant."""

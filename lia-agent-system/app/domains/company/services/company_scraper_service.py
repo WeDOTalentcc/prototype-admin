@@ -77,26 +77,79 @@ class CompanyScraperService:
             self._mcp_client = ApifyMCPClient()
         return self._mcp_client
     
-    async def scrape_website(self, url: str, linkedin_url: str | None = None) -> dict:
+    async def scrape_website(
+        self,
+        url: str,
+        linkedin_url: str | None = None,
+        *,
+        company_id: str | None = None,
+        user_id: str | None = None,
+    ) -> dict:
         """
         Main entry point: scrapes a company website for culture content using Apify.
         Optionally also scrapes LinkedIn for structured company data.
         Supports MCP mode when USE_APIFY_MCP=true environment variable is set.
-        
+
+        Consumption is tracked via ConsumptionTrackingService (D0 gateway pattern).
+        company_id is REQUIRED for proper tenant cost attribution — if absent,
+        logs WARN and proceeds with attribution=unattributed.
+
         Args:
             url: The company website URL
             linkedin_url: Optional LinkedIn company page URL
-            
+            company_id: Tenant isolation for consumption tracking
+            user_id: User who initiated the scrape (audit trail)
+
         Returns:
             Dict with scraped content, discovered pages, LinkedIn URL, and structured LinkedIn data
         """
-        logger.info(f"Starting website scrape for: {url}")
-        
-        if self.use_mcp:
-            logger.info("Using MCP mode for Apify calls")
-            return await self._scrape_with_mcp(url, linkedin_url)
-        
-        return await self._scrape_website_http(url, linkedin_url)
+        import time as _t
+        logger.info(f"Starting website scrape for: {url} (company_id={company_id})")
+
+        if not company_id:
+            logger.warning(
+                "[company_scraper] scrape_website WITHOUT company_id — "
+                "tenant cost attribution compromised for %s", url,
+            )
+
+        _start = _t.monotonic()
+        _success = False
+        _err: str | None = None
+        _result: dict = {}
+
+        try:
+            if self.use_mcp:
+                logger.info("Using MCP mode for Apify calls")
+                _result = await self._scrape_with_mcp(url, linkedin_url)
+            else:
+                _result = await self._scrape_website_http(url, linkedin_url)
+            _success = bool(_result and _result.get("success"))
+            return _result
+        except Exception as _exc:
+            _err = f"{type(_exc).__name__}: {_exc}"
+            raise
+        finally:
+            # D0 tracking pattern — record Apify call (website-content-crawler + optional LinkedIn)
+            if company_id:
+                try:
+                    from app.core.database import AsyncSessionLocal
+                    from app.domains.billing.services.consumption_tracking_service import ConsumptionTrackingService
+                    operation = "mcp_company_scrape" if self.use_mcp else "company_scrape"
+                    _cost = ConsumptionTrackingService.get_operation_price("apify", operation) or 0.012
+                    _duration_ms = int((_t.monotonic() - _start) * 1000)
+                    async with AsyncSessionLocal() as _db:
+                        await ConsumptionTrackingService.record_apify_call(
+                            db=_db, company_id=company_id, user_id=user_id, candidate_id=None,
+                            linkedin_url=linkedin_url, operation=operation,
+                            cost_usd=_cost, success=_success,
+                            result_status="success" if _success else "fail",
+                            response_time_ms=_duration_ms,
+                            error_message=_err,
+                            actor_id="company_scraper_service",
+                        )
+                        await _db.commit()
+                except Exception as _track_exc:
+                    logger.debug("[company_scraper] tracking failed: %s", _track_exc)
     
     async def _scrape_with_mcp(self, url: str, linkedin_url: str | None = None) -> dict:
         """

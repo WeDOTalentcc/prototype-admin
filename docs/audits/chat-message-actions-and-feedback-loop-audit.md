@@ -8,14 +8,29 @@
 
 ---
 
+## 0. Limitações Probatórias (ler antes do resto)
+
+Para que o leitor saiba o peso de cada afirmação:
+
+- **Verificado em código (alta confiança):** rotas registradas em `app/api/routes.py`, prefixos dos routers, ausência do path `/lia/feedback/{thumbs|rating|correction|metrics}` (busca exaustiva por `@router.post|get` em `lia_assistant*.py`), comportamento do proxy `lia/[...path]/route.ts`, comportamento do cliente `feedback-api.ts`, comportamento do componente `MessageActions` (incluindo o `toast.error` em falha — linhas 81 e 85 de `UnifiedMessageList.tsx`), serviço canônico `feedback_service.py`, ponto de injeção em `nodes.py:982-1087`.
+- **Inferência razoável (confiança média) a partir do código verificado:** que **em produção** as chamadas reais retornam 4xx, que `record_feedback` não é invocado via API hoje, que `learning_patterns` está vazio para o caminho do chat, que o bloco "Aprendizados de interações anteriores" injetado no prompt é vazio para esse caminho. Isso decorre logicamente da ausência da rota, mas **não foi confirmado com SELECT em produção** neste workspace.
+- **Não verificado nesta auditoria (evidência pendente):**
+  1. Snapshot SQL antes/depois de um clique em thumbs no ambiente real (banco não provisionado neste workspace; `checkDatabase` retornou `provisioned: false`; produção não foi acessada por escopo).
+  2. Captura de log/trace do prompt final do `response_generator` mostrando ou não a presença dos blocos `Exemplos de boas respostas` / `Evite respostas como` em uma sessão real.
+  3. Volume real de `interaction_feedback.created_at >= NOW() - 24h` em produção.
+
+A seção 11 lista o protocolo exato para coletar essas três evidências antes do hardening da Tarefa #570 (recomenda-se executar contra produção em modo read-only via `database` skill com `environment: "production"`).
+
+---
+
 ## 1. Sumário Executivo
 
-A camada visual de ações por mensagem está implementada (copy + thumbs up/down + chips de clarificação) e a camada conceitual de aprendizado existe no backend (serviço, modelos, injeção no prompt do gerador de resposta). **Porém o caminho que liga as duas está quebrado em produção:** o frontend posta thumbs em endpoints (`/api/v1/lia/feedback/thumbs`, `/rating`, `/correction`, `/metrics`) que **não existem** no FastAPI. O cliente engole o erro silenciosamente (`return { feedback_id: '', status: 'error' }`) e o usuário nunca percebe — nenhum toast, nenhum log no console.
+A camada visual de ações por mensagem está implementada (copy + thumbs up/down + chips de clarificação) e a camada conceitual de aprendizado existe no backend (serviço, modelos, injeção no prompt do gerador de resposta). **Porém o caminho que liga as duas está quebrado em código:** o frontend posta thumbs em endpoints (`/api/v1/lia/feedback/thumbs`, `/rating`, `/correction`, `/metrics`) que **não existem** no FastAPI. O cliente HTTP captura qualquer erro e devolve `{ feedback_id: '', status: 'error' }` sem propagar status nem causa. O componente `MessageActions` reverte o ícone e dispara `toast.error(t('feedbackErrorToast'))` (linhas 81 e 85 de `UnifiedMessageList.tsx`), então o usuário **percebe** que algo falhou — porém recebe sempre uma mensagem genérica ("erro de feedback") e nunca a causa real (404 do endpoint inexistente). Para o usuário final é "às vezes não funciona"; para o time é um bug crônico cuja origem fica oculta no Network tab.
 
-Consequências diretas:
-- **Zero registros novos** em `interaction_feedback` vindos do chat unificado desde que o endpoint correto deixou de existir/ser servido.
-- **Zero `learning_patterns`** alimentados pelo chat → o bloco "Aprendizados de interações anteriores" injetado em `nodes.py:1075-1087` é sempre vazio para o caminho do chat (pode haver dados via wizard, via outro fluxo, mas não via thumbs do chat).
-- **Loop de personalização do chat → resposta da LIA não está rodando.** A funcionalidade existe no código mas é morta na prática.
+Consequências diretas (inferidas do código — confirmar com SQL na seção 11):
+- **Zero registros novos esperados** em `interaction_feedback` vindos do caminho do chat unificado, porque a chamada HTTP nunca chega a `feedback_service.record_feedback`.
+- **`learning_patterns` não alimentados pelo chat** → o bloco "Aprendizados de interações anteriores" injetado em `nodes.py:1075-1087` deve cair em `has_patterns: False` para esse caminho. Padrões oriundos do wizard ou outros fluxos podem coexistir e, se houver, mascaram o gap nas métricas agregadas — daí a importância da query 4 da seção 11 (filtrar por origem do feedback, não só por volume total).
+- **Loop de personalização do chat → resposta da LIA presumivelmente não está rodando.** A funcionalidade existe no código mas, no caminho do chat, é morta na prática.
 
 Além desse achado P0, a auditoria identifica gaps de UX (sem persistência entre refresh, sem comentário opcional no thumbs down, sem confirmação visual robusta, sem regenerar/editar/continuar/TTS/export/share/branch/lembrar) e gaps de compliance/observabilidade (LGPD, métricas de eficácia do aprendizado, A/B testing não alimentado por thumbs).
 
@@ -24,7 +39,7 @@ Além desse achado P0, a auditoria identifica gaps de UX (sem persistência entr
 | # | Achado | Severidade | Onde corrigir |
 |---|--------|-----------|---------------|
 | F1 | Endpoint `/api/v1/lia/feedback/thumbs` (e família) **não existe** no backend; thumbs falham 404 silenciosamente | **P0 — Bloqueante** | Backend (criar router canônico) + frontend (parar de mascarar erro) |
-| F2 | Cliente `feedback-api.ts` mascara qualquer erro como `{status:'error'}` sem toast nem log → bug invisível | **P0 — Anti-pattern canonical-fix #3 e #4** | `plataforma-lia/src/services/lia-api/feedback-api.ts` |
+| F2 | Cliente `feedback-api.ts` colapsa qualquer erro em `{status:'error'}` sem propagar status/causa; o componente exibe só um toast genérico → causa real (404) fica oculta | **P0 — Anti-pattern canonical-fix #3 e #4** | `plataforma-lia/src/services/lia-api/feedback-api.ts` |
 | F3 | Thumbs não persistem entre refresh da conversa (estado só em React state local de `MessageActions`) | **P1 — UX** | Hidratar de `interaction_feedback` ao carregar histórico |
 | F4 | Thumbs down sem campo de comentário opcional → perde-se o "porquê" da insatisfação | **P1 — UX/Loop** | Modal/popover após thumbs down |
 | F5 | Sem confirmação visual após sucesso (só hover state) → usuário duvida se foi salvo | **P1 — UX** | Toast "obrigado pelo feedback" + estado fixo |
@@ -101,7 +116,7 @@ lia_assistant_wizard   POST /lia/wizard/stage10/feedback     (wizard)
 - **UI:** Optimistic update + revert em falha + `aria-pressed`. Bom no plano de acessibilidade (WCAG 2.1 AA — ver lia-compliance crença 13).
 - **Backend chamado:** `POST ${BACKEND_URL}/lia/feedback/thumbs` → proxy → `POST /api/v1/lia/feedback/thumbs`.
 - **Estado real:** **404.** Endpoint não existe.
-- **Tratamento de erro:** mascarado (anti-padrão #3 da `canonical-fix`). O usuário vê o ícone preencher ao clicar (otimista) e sumir 1 s depois quando volta ao estado prévio. Nenhum toast. Nenhum console.error. **Bug invisível.**
+- **Tratamento de erro:** colapsado (anti-padrão #3 da `canonical-fix`). O cliente HTTP transforma qualquer status ≠ 2xx em `{ status: 'error' }` sem `console.error`, sem distinguir 404 de 500 de timeout. O componente reverte o ícone e dispara `toast.error(t('feedbackErrorToast'))` (linhas 81 e 85) — então o usuário **vê** uma mensagem genérica, mas a causa real (404 do endpoint inexistente) só é visível abrindo o Network tab. Resultado prático: bug crônico que o usuário reporta como "às vezes o thumbs não funciona", e que o time não consegue rastrear sem investigação manual.
 - **Sem comentário no thumbs down:** mesmo se o endpoint existisse, o sinal "down" entraria sem o "porquê" — perda massiva de qualidade de aprendizado.
 - **Sem persistência entre refresh:** estado só em `useState` local. Recarregar a conversa zera as marcações (gap UX-1 já mapeado no Task #570).
 
@@ -291,9 +306,62 @@ Aplicada ao escopo conjunto desta auditoria + Tarefa #570. Apenas dimensões com
 
 ---
 
-## 10. Próximos Passos
+## 11. Protocolo de Coleta das Evidências Pendentes
+
+Para fechar as três lacunas listadas em §0, executar **antes de aplicar a Tarefa #570** (todas read-only contra produção, via `database` skill com `environment: "production"`):
+
+**Q1 — Volume baseline (confirma F1 em campo):**
+```sql
+SELECT COUNT(*) AS total_24h,
+       COUNT(*) FILTER (WHERE thumbs = 'up')   AS up_24h,
+       COUNT(*) FILTER (WHERE thumbs = 'down') AS down_24h,
+       MAX(created_at)                         AS last_event_at
+  FROM interaction_feedback
+ WHERE created_at >= NOW() - INTERVAL '24 hours';
+```
+Esperado se F1 verdadeiro: `total_24h = 0` (ou apenas inserts vindos de outros caminhos não-chat).
+
+**Q2 — Quebra por origem (separa chat de wizard):**
+```sql
+SELECT (message_context->>'source')::text AS source,
+       COUNT(*) AS n
+  FROM interaction_feedback
+ WHERE created_at >= NOW() - INTERVAL '7 days'
+ GROUP BY 1 ORDER BY 2 DESC;
+```
+Esperado: `chat_unified` ausente ou zero.
+
+**Q3 — Padrões ativos por empresa:**
+```sql
+SELECT company_id,
+       COUNT(*) AS active_patterns,
+       AVG(confidence) AS avg_conf,
+       AVG(success_rate) AS avg_sr,
+       COUNT(*) FILTER (
+         WHERE jsonb_array_length(COALESCE(example_good_responses::jsonb, '[]'::jsonb)) > 0
+            OR jsonb_array_length(COALESCE(example_bad_responses::jsonb, '[]'::jsonb)) > 0
+       ) AS patterns_with_examples
+  FROM learning_patterns
+ WHERE is_active
+ GROUP BY company_id ORDER BY active_patterns DESC LIMIT 20;
+```
+Esperado: `patterns_with_examples ≈ 0` para a maioria — sinal de loop morto.
+
+**Q4 — Captura do prompt final do `response_generator`:**
+1. Em produção, ativar log `LIA_LOG_FINAL_PROMPT=true` (ou usar trace LangSmith do nó `response_generator`) por uma janela de 1 hora.
+2. Selecionar 5 traces de empresas distintas com `intent` recorrente (ex.: `screening`, `vacancy_analysis`).
+3. Verificar a presença literal do bloco `## Aprendizados de interações anteriores:` e se as listas de exemplos estão preenchidas. Anexar excertos (com PII mascarada) ao apêndice da próxima revisão deste documento.
+
+**Q5 — Comparação após Tarefa #570 mergeada:**
+Re-executar Q1, Q2 e Q3 24 h após o deploy. Esperado: `total_24h > 0` em Q1, `chat_unified` aparecendo em Q2, `patterns_with_examples` crescendo em Q3.
+
+Resultados devem ser anexados como subseção `Apêndice A — Evidência ao vivo (data X)` deste mesmo arquivo, mantendo PII mascarada (alinhado a lia-compliance PARTE 4 pilar 3).
+
+---
+
+## 12. Próximos Passos
 
 - A Tarefa **#570** absorve os itens P0 e P1 desta auditoria (escopo: criar router canônico, parar de mascarar erro, persistir thumbs, comentário no thumbs down, toast, regenerar).
 - Os itens P2 viram follow-ups separados (dashboard, A/B, paridade competitiva, DSR LGPD, decay).
-- Recomenda-se rodar as queries da seção 4.3 em produção antes do hardening para quantificar o gap (volume zero esperado).
+- Recomenda-se rodar as queries da seção 11 em produção antes do hardening para quantificar o gap (volume zero esperado).
 - Após F1 corrigido, executar bias audit (lia-compliance PARTE 3) sobre os 100 primeiros `learning_patterns` ativados para garantir que o loop não está aprendendo viés.
