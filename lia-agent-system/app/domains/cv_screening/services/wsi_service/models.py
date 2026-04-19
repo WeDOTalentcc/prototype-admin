@@ -210,6 +210,16 @@ class ResponseAnalysis(BaseModel):
     # M01 — quando Camada 2 falhou, registrar motivo p/ EU AI Act / auditoria
     layer2_degraded_reason: str | None = None
 
+    # Audit task #528 (rev. 23 G23-02 / G23-03) — transparência LGPD Art. 20 / EU AI Act §13.
+    # Flags estruturadas (is_inflation, is_paraphrase, is_prompt_injection, ...)
+    flags_structured: dict[str, bool] | None = None
+    # Selo de qualidade degradada (autodec. inferida, bloom_expected default, etc.)
+    degraded_quality: bool = False
+    degraded_reasons: list[str] | None = None
+    # Breakdown granular das penalidades/bônus (motivo → contribuição assinada)
+    penalty_breakdown: dict[str, float] | None = None
+    bonus_breakdown: dict[str, float] | None = None
+
 
 class WSIResult(BaseModel):
     """Resultado final da avaliação WSI."""

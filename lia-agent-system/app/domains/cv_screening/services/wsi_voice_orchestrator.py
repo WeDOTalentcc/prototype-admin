@@ -577,12 +577,12 @@ class WSIVoiceOrchestrator:
                         id, session_id, question_id, competency, response_text,
                         autodeclaration_score, context_score, bloom_level, dreyfus_level,
                         evidences, red_flags, consistency_penalty, final_score, justification,
-                        response_hash
+                        response_hash, transparency_extras
                     )
                     VALUES (:id, :session_id, :question_id, :competency, :response_text,
                             :autodeclaration_score, :context_score, :bloom_level, :dreyfus_level,
                             :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification,
-                            :response_hash)
+                            :response_hash, :transparency_extras::jsonb)
                     """
                 ),
                 {
@@ -601,6 +601,17 @@ class WSIVoiceOrchestrator:
                     "final_score": analysis.final_score,
                     "justification": analysis.justification,
                     "response_hash": resp_hash,
+                    # Audit task #528 (G23-02 / G23-03) — transparência LGPD/EU AI Act.
+                    # Coluna idempotente garantida no endpoint F11; writers que ainda
+                    # não populam deixam NULL e a API serve defaults (compat retro).
+                    "transparency_extras": json.dumps({
+                        "flags_structured": analysis.flags_structured or {},
+                        "penalty_breakdown": analysis.penalty_breakdown or {},
+                        "bonus_breakdown": analysis.bonus_breakdown or {},
+                        "degraded_quality": bool(analysis.degraded_quality),
+                        "degraded_reasons": analysis.degraded_reasons or [],
+                        "layer2_degraded_reason": analysis.layer2_degraded_reason,
+                    }),
                 },
             )
             logger.info(

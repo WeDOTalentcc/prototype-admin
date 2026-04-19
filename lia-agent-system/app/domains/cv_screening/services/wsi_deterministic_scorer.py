@@ -267,6 +267,13 @@ class DeterministicWSIResult:
     # pode mostrar selo "qualidade degradada" e EU AI Act Art. 13 fica auditável.
     degraded_quality: bool = False
     degraded_reasons: list[str] | None = None
+    # Audit task #528 (rev. 23 G23-03) — breakdown granular das penalidades/bônus
+    # aplicadas. Cada chave é um motivo (ex.: "paraphrase", "quantification") e
+    # o valor é a contribuição assinada (negativa para penalidade, positiva
+    # para bônus). UI consome para mostrar "por que o score caiu/subiu".
+    # None quando não calculado (compat. com chamadores legados).
+    penalty_breakdown: dict[str, float] | None = None
+    bonus_breakdown: dict[str, float] | None = None
 
 
 def extract_autodeclaracao_score(text: str) -> float | None:
@@ -498,6 +505,67 @@ def detect_red_flags(
     return red_flags
 
 
+def calculate_penalty_detailed(
+    text: str,
+    autodeclaracao: float | None,
+    context_score: float,
+    layer2: "Layer2Signals | None" = None,
+    *,
+    expects_first_person: bool = False,
+) -> tuple[float, dict[str, float]]:
+    """Mesma lógica de ``calculate_penalty``, mas retorna ``(total, breakdown)``.
+
+    O ``breakdown`` mapeia o motivo (chave canônica) → contribuição negativa
+    aplicada. Permite à UI mostrar "por que o score caiu" (LGPD Art. 20 —
+    direito à explicação). Audit task #528 (rev. 23 G23-03).
+
+    Chaves possíveis (todas opcionais; só presente quando aplicada):
+      - ``inflation_lex``           heurística lexical (autodec×contexto)
+      - ``generic_lex``             keywords genéricas detectadas
+      - ``no_context_lex``          resposta < min words (Camada 1)
+      - ``paraphrase``              Camada 2: respondeu reformulando a pergunta
+      - ``language_mismatch``       Camada 2: idioma divergente
+      - ``missing_r_outcome``       Camada 2: STAR sem R
+      - ``no_first_person``         Camada 2: comportamental sem 1ª pessoa
+      - ``word_band_very_short``    Camada 2: word_count_band == "<30"
+      - ``word_band_short``         Camada 2: word_count_band == "30-50"
+    """
+    breakdown: dict[str, float] = {}
+    text_lower = text.lower()
+
+    if (
+        autodeclaracao
+        and autodeclaracao >= INFLATION_AUTODECLARATION_MIN
+        and context_score < INFLATION_CONTEXT_MAX
+    ):
+        breakdown["inflation_lex"] = float(PENALTY_TRIGGERS["inflation"]["penalty"])
+
+    generic_count = sum(1 for kw in PENALTY_TRIGGERS["generic"]["keywords"] if kw in text_lower)
+    if generic_count >= 2:
+        breakdown["generic_lex"] = float(PENALTY_TRIGGERS["generic"]["penalty"])
+
+    if len(text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"]:
+        breakdown["no_context_lex"] = float(PENALTY_TRIGGERS["no_context"]["penalty"])
+
+    if layer2 is not None:
+        if layer2.is_paraphrase:
+            breakdown["paraphrase"] = float(PENALTY_PARAPHRASE)
+        if not layer2.language_consistency:
+            breakdown["language_mismatch"] = float(PENALTY_LANGUAGE_MISMATCH)
+        if not layer2.has_R_outcome:
+            breakdown["missing_r_outcome"] = float(PENALTY_MISSING_R_OUTCOME)
+        if expects_first_person and not layer2.is_first_person:
+            breakdown["no_first_person"] = float(PENALTY_NO_FIRST_PERSON)
+        if layer2.word_count_band == "<30":
+            if len(text.split()) >= PENALTY_TRIGGERS["no_context"]["min_words"]:
+                breakdown["word_band_very_short"] = float(PENALTY_WORD_BAND_VERY_SHORT)
+        elif layer2.word_count_band == "30-50":
+            breakdown["word_band_short"] = float(PENALTY_WORD_BAND_SHORT)
+
+    total = round(sum(breakdown.values()), 2)
+    return total, {k: round(v, 2) for k, v in breakdown.items()}
+
+
 def calculate_penalty(
     text: str,
     autodeclaracao: float | None,
@@ -531,45 +599,77 @@ def calculate_penalty(
             ``PENALTY_NO_FIRST_PERSON`` só se aplica quando este flag é True.
 
     Returns: Valor negativo da penalidade
+
+    Nota: Para obter o breakdown granular por motivo (UI G23-03),
+    use ``calculate_penalty_detailed`` — esta função preserva o contrato
+    legado retornando apenas o total.
     """
-    penalty = 0.0
+    total, _ = calculate_penalty_detailed(
+        text, autodeclaracao, context_score, layer2,
+        expects_first_person=expects_first_person,
+    )
+    return total
+
+
+def calculate_bonus_detailed(
+    text: str,
+    layer2: "Layer2Signals | None" = None,
+    *,
+    bloom_expected: int | None = None,
+    dreyfus_expected: int | None = None,
+    trait_signals_expected: int | None = None,
+    is_behavioral: bool = False,
+) -> tuple[float, dict[str, float]]:
+    """Mesma lógica de ``calculate_bonus``, mas retorna ``(total, breakdown)``.
+
+    O ``breakdown`` mapeia o motivo (chave canônica) → contribuição assinada.
+    Valores negativos são ajustes spec descontados (ex.: ``no_trait_signals``).
+    O total é clampado em ``[-BONUS_MAX, +BONUS_MAX]``; o breakdown traz os
+    valores brutos antes do clamp para permitir auditoria fiel. Audit task
+    #528 (rev. 23 G23-03).
+
+    Chaves possíveis:
+      - ``humility_lex``           keywords de humildade
+      - ``exceptional_evidence_lex`` evidências excepcionais (open-source, prêmio)
+      - ``quantification``         Camada 2: tem números/métricas
+      - ``bloom_exceeds``          Camada 2: bloom > esperado
+      - ``trait_signals_exceed``   Camada 2: # sinais > esperado
+      - ``dreyfus_exceeds``        Camada 2: dreyfus > esperado
+      - ``no_trait_signals``       (negativo) comportamental sem sinais de trait
+      - ``dreyfus_below``          (negativo) dreyfus < (esperado − 1)
+    """
+    breakdown: dict[str, float] = {}
     text_lower = text.lower()
 
-    if (
-        autodeclaracao
-        and autodeclaracao >= INFLATION_AUTODECLARATION_MIN
-        and context_score < INFLATION_CONTEXT_MAX
-    ):
-        penalty += PENALTY_TRIGGERS["inflation"]["penalty"]
+    humility_count = sum(1 for kw in BONUS_TRIGGERS["humility"]["keywords"] if kw in text_lower)
+    if humility_count >= 1:
+        breakdown["humility_lex"] = float(BONUS_TRIGGERS["humility"]["bonus"])
 
-    generic_count = sum(1 for kw in PENALTY_TRIGGERS["generic"]["keywords"] if kw in text_lower)
-    if generic_count >= 2:
-        penalty += PENALTY_TRIGGERS["generic"]["penalty"]
+    exceptional_count = sum(1 for kw in BONUS_TRIGGERS["exceptional_evidence"]["keywords"] if kw in text_lower)
+    if exceptional_count >= 1:
+        breakdown["exceptional_evidence_lex"] = float(BONUS_TRIGGERS["exceptional_evidence"]["bonus"])
 
-    if len(text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"]:
-        penalty += PENALTY_TRIGGERS["no_context"]["penalty"]
-
-    # M04 — penalidades semânticas (Camada 2)
     if layer2 is not None:
-        if layer2.is_paraphrase:
-            penalty += PENALTY_PARAPHRASE
-        if not layer2.language_consistency:
-            penalty += PENALTY_LANGUAGE_MISMATCH
-        if not layer2.has_R_outcome:
-            penalty += PENALTY_MISSING_R_OUTCOME
-        if expects_first_person and not layer2.is_first_person:
-            penalty += PENALTY_NO_FIRST_PERSON
-        # Word bands — não acumulam com PENALTY_NO_CONTEXT (aquele já cobre <20).
-        # Aqui modelamos a granularidade adicional 20-50 (que escapa do gate <20).
-        if layer2.word_count_band == "<30":
-            # Só aplica se PENALTY_NO_CONTEXT não foi disparada (>=20 palavras
-            # mas <30): evita double-charging quando a resposta tem <20 palavras.
-            if len(text.split()) >= PENALTY_TRIGGERS["no_context"]["min_words"]:
-                penalty += PENALTY_WORD_BAND_VERY_SHORT
-        elif layer2.word_count_band == "30-50":
-            penalty += PENALTY_WORD_BAND_SHORT
+        if layer2.has_quantification:
+            breakdown["quantification"] = float(BONUS_QUANTIFICATION)
+        if bloom_expected is not None and layer2.bloom_demonstrated > bloom_expected:
+            breakdown["bloom_exceeds"] = float(BONUS_BLOOM_EXCEEDS)
+        if (
+            trait_signals_expected is not None
+            and layer2.trait_signals_count > trait_signals_expected
+        ):
+            breakdown["trait_signals_exceed"] = float(BONUS_TRAIT_SIGNALS_EXCEED)
+        if dreyfus_expected is not None:
+            if layer2.dreyfus_demonstrated > dreyfus_expected:
+                breakdown["dreyfus_exceeds"] = float(BONUS_DREYFUS_EXCEEDS)
+            if layer2.dreyfus_demonstrated < (dreyfus_expected - 1):
+                breakdown["dreyfus_below"] = float(PENALTY_DREYFUS_BELOW)
+        if is_behavioral and layer2.trait_signals_count == 0:
+            breakdown["no_trait_signals"] = float(PENALTY_NO_TRAIT_SIGNALS)
 
-    return round(penalty, 2)
+    raw = sum(breakdown.values())
+    total = round(max(-BONUS_MAX, min(BONUS_MAX, raw)), 2)
+    return total, {k: round(v, 2) for k, v in breakdown.items()}
 
 
 def calculate_bonus(
@@ -607,38 +707,18 @@ def calculate_bonus(
         is_behavioral: pergunta é comportamental (controla penalidade no_trait_signals)
 
     Returns: Valor (assinado) do bônus líquido após os ajustes spec
+
+    Nota: Para obter o breakdown granular por motivo (UI G23-03),
+    use ``calculate_bonus_detailed``.
     """
-    bonus = 0.0
-    text_lower = text.lower()
-
-    humility_count = sum(1 for kw in BONUS_TRIGGERS["humility"]["keywords"] if kw in text_lower)
-    if humility_count >= 1:
-        bonus += BONUS_TRIGGERS["humility"]["bonus"]
-
-    exceptional_count = sum(1 for kw in BONUS_TRIGGERS["exceptional_evidence"]["keywords"] if kw in text_lower)
-    if exceptional_count >= 1:
-        bonus += BONUS_TRIGGERS["exceptional_evidence"]["bonus"]
-
-    # M05 — ajustes semânticos (Camada 2)
-    if layer2 is not None:
-        if layer2.has_quantification:
-            bonus += BONUS_QUANTIFICATION
-        if bloom_expected is not None and layer2.bloom_demonstrated > bloom_expected:
-            bonus += BONUS_BLOOM_EXCEEDS
-        if (
-            trait_signals_expected is not None
-            and layer2.trait_signals_count > trait_signals_expected
-        ):
-            bonus += BONUS_TRAIT_SIGNALS_EXCEED
-        if dreyfus_expected is not None:
-            if layer2.dreyfus_demonstrated > dreyfus_expected:
-                bonus += BONUS_DREYFUS_EXCEEDS
-            if layer2.dreyfus_demonstrated < (dreyfus_expected - 1):
-                bonus += PENALTY_DREYFUS_BELOW
-        if is_behavioral and layer2.trait_signals_count == 0:
-            bonus += PENALTY_NO_TRAIT_SIGNALS
-
-    return round(max(-BONUS_MAX, min(BONUS_MAX, bonus)), 2)
+    total, _ = calculate_bonus_detailed(
+        text, layer2,
+        bloom_expected=bloom_expected,
+        dreyfus_expected=dreyfus_expected,
+        trait_signals_expected=trait_signals_expected,
+        is_behavioral=is_behavioral,
+    )
+    return total
 
 
 def extract_evidences(text: str) -> list[str]:
@@ -804,14 +884,14 @@ def calculate_wsi_deterministic(
         flags_structured["is_prompt_injection"] = bool(layer2_signals.prompt_injection_detected)
 
     is_behavioral = (question_type == "behavioral")
-    penalty = calculate_penalty(
+    penalty, penalty_breakdown = calculate_penalty_detailed(
         response_text,
         autodeclaracao,
         context_score,
         layer2=layer2_signals,
         expects_first_person=is_behavioral,
     )
-    bonus = calculate_bonus(
+    bonus, bonus_breakdown = calculate_bonus_detailed(
         response_text,
         layer2=layer2_signals,
         bloom_expected=bloom_expected,
@@ -904,6 +984,8 @@ def calculate_wsi_deterministic(
         flags_structured=flags_structured,
         degraded_quality=bool(degraded_reasons),
         degraded_reasons=degraded_reasons or None,
+        penalty_breakdown=penalty_breakdown or None,
+        bonus_breakdown=bonus_breakdown or None,
     )
 
 

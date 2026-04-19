@@ -157,6 +157,12 @@ class WSIResponseAnalyzer:
                 category=_category_from_framework(question.framework),
                 layer2_signals=layer2_signals,
                 layer2_degraded_reason=layer2_degraded_reason,
+                # Audit task #528 — transparência (G23-02 + G23-03)
+                flags_structured=result.flags_structured,
+                degraded_quality=result.degraded_quality,
+                degraded_reasons=result.degraded_reasons,
+                penalty_breakdown=result.penalty_breakdown,
+                bonus_breakdown=result.bonus_breakdown,
             )
         except Exception as e:
             logger.error(f"Deterministic analysis failed for {question.competency}: {e}")

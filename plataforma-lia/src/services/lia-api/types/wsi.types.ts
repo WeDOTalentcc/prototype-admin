@@ -200,7 +200,19 @@ export interface WSIResultDetails {
       expected_signals: string[]
       sequence: number
     }
+    // Audit task #528 (G23-02 / G23-03) — transparência LGPD/EU AI Act.
+    // Modal/kanban consomem para mostrar banner degraded e breakdown granular.
+    flags_structured?: Record<string, boolean>
+    penalty_breakdown?: Record<string, number>
+    bonus_breakdown?: Record<string, number>
+    degraded_quality?: boolean
+    degraded_reasons?: string[]
+    layer2_degraded_reason?: string | null
   }[]
+  // Agregação cross-respostas para banner global do relatório.
+  degraded_quality?: boolean
+  degraded_reasons?: string[]
+  degraded_count?: number
   report?: {
     executive_summary?: string
     technical_analysis: Record<string, unknown>

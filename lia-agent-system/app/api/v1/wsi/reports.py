@@ -128,6 +128,12 @@ class F11ReportResponse(BaseModel):
     attention_flags: list[str] = []
     generated_at: str
     methodology_version: str = "WSI v2.0"
+    # Audit task #528 (rev. 23 G23-02) — selo de qualidade degradada agregado.
+    # True quando QUALQUER análise (Camada 1 ou Camada 2) sinalizou degradação.
+    # UI exibe banner global "Análise semântica não disponível em N respostas".
+    degraded_quality: bool = False
+    degraded_reasons: list[str] = []
+    degraded_count: int = 0
 
 
 def _get_seniority_weights(seniority: str | None) -> dict[str, float] | None:
@@ -377,6 +383,32 @@ Retorne JSON:
 # Routes
 # ---------------------------------------------------------------------------
 
+def _aggregate_degraded(analyses_list: list[dict[str, Any]]) -> dict[str, Any]:
+    """Audit task #528 (G23-02) — agrega selo de qualidade degradada para o root.
+
+    Reúne ``degraded_quality`` / ``degraded_reasons`` / ``layer2_degraded_reason``
+    de todas as análises, deduplica e devolve para o ``F11ReportResponse``.
+    UI exibe banner global "Análise semântica não disponível em N respostas".
+    """
+    reasons_set: set[str] = set()
+    degraded_count = 0
+    for a in analyses_list:
+        is_degraded = bool(a.get("degraded_quality")) or bool(a.get("layer2_degraded_reason"))
+        if is_degraded:
+            degraded_count += 1
+        for r in (a.get("degraded_reasons") or []):
+            if r:
+                reasons_set.add(str(r))
+        l2 = a.get("layer2_degraded_reason")
+        if l2:
+            reasons_set.add(f"layer2:{l2}")
+    return {
+        "degraded_quality": degraded_count > 0,
+        "degraded_reasons": sorted(reasons_set),
+        "degraded_count": degraded_count,
+    }
+
+
 @router.get("/f11-report/{session_id}", summary="F11 — Relatório completo do consultor WSI", response_model=None)
 async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
     """Gera o relatório completo F11 para uma sessão WSI concluída.
@@ -390,6 +422,18 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
         try:
             await db.execute(text(
                 "ALTER TABLE wsi_results ADD COLUMN IF NOT EXISTS f11_report_json JSONB"
+            ))
+        except Exception:
+            await db.rollback()
+
+        # Audit task #528 (rev. 23) — coluna p/ persistir os campos de transparência
+        # adicionais (flags_structured, breakdowns, degraded_quality, layer2_degraded_reason).
+        # Idempotente; se a coluna já existe é no-op. Writers que ainda não escrevem
+        # neste campo deixam NULL → API serve defaults (compat. retroativa).
+        try:
+            await db.execute(text(
+                "ALTER TABLE wsi_response_analyses "
+                "ADD COLUMN IF NOT EXISTS transparency_extras JSONB"
             ))
         except Exception:
             await db.rollback()
@@ -455,7 +499,8 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
         ana_r = await db.execute(text("""
             SELECT ra.id, ra.question_id, ra.competency, ra.response_text,
                    ra.autodeclaration_score, ra.context_score, ra.bloom_level, ra.dreyfus_level,
-                   ra.evidences, ra.red_flags, ra.consistency_penalty, ra.final_score, ra.justification
+                   ra.evidences, ra.red_flags, ra.consistency_penalty, ra.final_score, ra.justification,
+                   ra.transparency_extras
             FROM wsi_response_analyses ra
             WHERE ra.session_id = :sid
         """), {"sid": session_id})
@@ -470,8 +515,21 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
         analyses_list = []
         for a in analyses:
             (a_id, q_id, competency, resp_text, auto_score, ctx_score,
-             bloom_lv, dreyfus_lv, evidences, red_flags, cons_pen, final_score, justification) = a
+             bloom_lv, dreyfus_lv, evidences, red_flags, cons_pen, final_score,
+             justification, transparency_extras) = a
             q = q_map.get(str(q_id), None)
+            # Audit task #528 (G23-02 / G23-03) — transparência granular.
+            # Coluna pode estar NULL (registro legado anterior à coluna) ou string
+            # (driver pode devolver JSON como string em alguns paths). Normaliza.
+            extras: dict[str, Any] = {}
+            if transparency_extras:
+                if isinstance(transparency_extras, dict):
+                    extras = transparency_extras
+                else:
+                    try:
+                        extras = json.loads(transparency_extras)
+                    except (TypeError, ValueError):
+                        extras = {}
             bloom_info  = BLOOM_LEVELS.get(bloom_lv or 3, BLOOM_LEVELS[3])
             dreyfus_info = DREYFUS_LEVELS.get(dreyfus_lv or 3, DREYFUS_LEVELS[3])
 
@@ -535,6 +593,15 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
                 "consistency_penalty": float(cons_pen) if cons_pen else 0.0,
                 "final_score": float(final_score) if final_score else 0.0,
                 "justification": justification or "",
+                # Audit task #528 (G23-02 / G23-03) — campos de transparência
+                # consumidos pela UI (modal/kanban). Defaults seguros quando o
+                # registro foi gravado antes da coluna existir.
+                "flags_structured": extras.get("flags_structured") or {},
+                "penalty_breakdown": extras.get("penalty_breakdown") or {},
+                "bonus_breakdown": extras.get("bonus_breakdown") or {},
+                "degraded_quality": bool(extras.get("degraded_quality", False)),
+                "degraded_reasons": extras.get("degraded_reasons") or [],
+                "layer2_degraded_reason": extras.get("layer2_degraded_reason"),
             })
 
         g1_failed = any(
@@ -712,6 +779,9 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             generated_at=datetime.utcnow().isoformat() + "Z",
             # Task #511 — disclaimer EU AI Act/LGPD no payload do F11.
             compliance_disclaimer=EU_AI_ACT_DISCLAIMER,
+            # Audit task #528 (G23-02) — agregação do selo de qualidade degradada.
+            # Razões agregadas (deduplicadas) a partir dos extras + reasons da Camada 2.
+            **_aggregate_degraded(analyses_list),
         )
 
         # F11-3 — persistir no cache para evitar re-geração
