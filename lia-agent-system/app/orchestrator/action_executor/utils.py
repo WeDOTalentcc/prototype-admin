@@ -323,6 +323,12 @@ def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
             if job_m:
                 entities["job_title"] = job_m.group(1).strip()
 
+    # MT-002: job_title lookup for sourcing intents that need job context
+    if intent in ("rankear_candidatos", "sugerir_candidatos", "iniciar_triagem") and "job_title" not in entities and "job_id" not in entities:
+        _jt_m = re.search(r"para\s+a\s+vaga\s+de\s+(.{3,50}?)(?:\s*$|,|\.|!)", msg, re.IGNORECASE)
+        if _jt_m:
+            entities["job_title"] = _jt_m.group(1).strip()
+
         # CM-007 / MT-002: Extract job_id from message text (e.g. "V0037", "vaga V0037")
     # This is needed when context doesn't have entity_id (scope=Vagas without specific job)
     if "job_id" not in entities and intent in (
