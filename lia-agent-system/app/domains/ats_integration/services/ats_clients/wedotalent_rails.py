@@ -229,6 +229,9 @@ class WeDOTalentATSClient:
     async def put(self, path: str, json_body: dict | None = None) -> RailsAPIResponse:
         return await self._request("PUT", path, json_body=json_body)
 
+    async def patch(self, path: str, json_body: dict | None = None) -> RailsAPIResponse:
+        return await self._request("PATCH", path, json_body=json_body)
+
     async def delete(self, path: str) -> RailsAPIResponse:
         return await self._request("DELETE", path)
 
