@@ -90,14 +90,28 @@ def _extract_text(data: Any) -> str:
 def _extract_agent(data: Any) -> str | None:
     if not isinstance(data, dict):
         return None
-    for key in ("agent", "agent_name", "routed_agent", "active_agent"):
-        if isinstance(data.get(key), str):
-            return data[key]
-    meta = data.get("metadata") if isinstance(data.get("metadata"), dict) else None
-    if meta:
-        for key in ("agent", "agent_name", "routed_agent"):
-            if isinstance(meta.get(key), str):
-                return meta[key]
+    # Explicit routing keys only — `domain` is the page context, not the
+    # answering agent, so we deliberately exclude it to avoid false matches.
+    keys = ("agent", "agent_name", "routed_agent", "active_agent", "specialist")
+    # Top-level, then a few common nested containers the chat API uses.
+    candidates: list[Any] = [data]
+    for nest in ("metadata", "routing", "data", "result"):
+        nested = data.get(nest)
+        if isinstance(nested, dict):
+            candidates.append(nested)
+            inner = nested.get("message") if isinstance(nested.get("message"), dict) else None
+            if inner:
+                candidates.append(inner)
+    msg = data.get("message") if isinstance(data.get("message"), dict) else None
+    if msg:
+        candidates.append(msg)
+    # Iterate keys outermost so explicit `agent` always wins over weaker
+    # signals like `specialist` even when they appear in different containers.
+    for key in keys:
+        for c in candidates:
+            v = c.get(key)
+            if isinstance(v, str) and v.strip():
+                return v
     return None
 
 

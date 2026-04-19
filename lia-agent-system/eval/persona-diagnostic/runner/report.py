@@ -15,6 +15,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from routing_audit import audit as build_routing_audit
+
 CATEGORY_THRESHOLDS = {
     "A. Identidade":          {"min_avg": 3.0, "no_zero": True},
     "B. Capacidades":         {"min_avg": 2.5, "no_zero": False},
@@ -107,6 +109,8 @@ def build_report(judged: list[dict], baseline: dict | None = None) -> dict[str, 
     overall_avg = _avg([r["judgment"]["score"] for r in judged])
     weighted_avg = round(weighted_num / weighted_den, 2) if weighted_den else 0.0
 
+    routing = build_routing_audit(judged)
+
     summary = {
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "probes_total": len(judged),
@@ -124,6 +128,7 @@ def build_report(judged: list[dict], baseline: dict | None = None) -> dict[str, 
         "summary": summary,
         "categories": cats,
         "agents": agents,
+        "routing_audit": routing,
         "critical_failures": critical_failures,
         "probes": [
             {
@@ -261,6 +266,49 @@ def render_markdown(report: dict) -> str:
     for a in report["agents"]:
         lines.append(f"| {a['agent']} | {a['n']} | {a['avg_score']} | {a['critical_failures']} |")
     lines.append("")
+
+    ra = report.get("routing_audit") or {}
+    ra_sum = ra.get("summary") or {}
+    if ra_sum.get("agent_specific_total"):
+        lines.append("## Routing audit")
+        lines.append("")
+        lines.append(
+            f"Agent-specific probes (J.1–J.6 + non-LIA targets): "
+            f"**{ra_sum['agent_specific_total']}**  "
+        )
+        lines.append(
+            f"Matched intended agent: **{ra_sum['matched']}**, "
+            f"mismatched: **{ra_sum['mismatched']}**, "
+            f"unknown (no `agent` in reply): **{ra_sum['unknown']}**  "
+        )
+        lines.append(
+            f"Match rate (matched / decided): **{ra_sum['match_rate']}** "
+            f"(threshold ≥ {ra_sum['match_rate_threshold']}) — "
+            f"{'✅ pass' if ra_sum['pass'] else '❌ fail'}"
+        )
+        lines.append("")
+        if ra.get("per_agent"):
+            lines.append("| Agent | N | Matched | Mismatched | Unknown | Match rate |")
+            lines.append("|-------|---|---------|------------|---------|------------|")
+            for a in ra["per_agent"]:
+                lines.append(
+                    f"| {a['agent']} | {a['n']} | {a['matched']} | "
+                    f"{a['mismatched']} | {a['unknown']} | {a['match_rate']} |"
+                )
+            lines.append("")
+        if ra.get("mismatches"):
+            lines.append("**Probes whose target agent did not answer:**")
+            lines.append("")
+            lines.append("| ID | Category | Target | Observed (raw) | Observed (code) | Kind |")
+            lines.append("|----|----------|--------|----------------|-----------------|------|")
+            for m in ra["mismatches"]:
+                obs_raw = (str(m.get("agent_observed") or "—")).replace("|", "\\|")[:40]
+                obs_code = m.get("agent_observed_code") or "—"
+                lines.append(
+                    f"| {m['id']} | {m['category']} | {m['agent']} | "
+                    f"{obs_raw} | {obs_code} | {m['kind']} |"
+                )
+            lines.append("")
 
     if report["critical_failures"]:
         lines.append("## ❌ Critical failures")
