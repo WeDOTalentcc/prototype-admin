@@ -31,11 +31,7 @@
       "gaps": {
         "action_tool_map_broken": [],
         "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [
-          "recalibrate_agent",
-          "pause_agent",
-          "list_sector_templates"
-        ],
+        "actions_without_tool_or_handler": [],
         "handlers_failing_import": []
       },
       "errors": []
@@ -76,41 +72,30 @@
         "analytics_dashboard",
         "analytics_monitoring"
       ],
-      "action_tool_map": {},
+      "action_tool_map": {
+        "generate_kpi_report": "analytics_generate_kpi",
+        "analyze_funnel": "analytics_analyze_funnel",
+        "job_health_check": "analytics_job_health",
+        "detect_anomalies": "analytics_detect_anomalies",
+        "compare_periods": "analytics_dashboard",
+        "forecast": "analytics_predict",
+        "suggest_strategy": "analytics_get_insights",
+        "answer_data_question": "analytics_get_insights",
+        "get_job_insights": "analytics_get_insights",
+        "generate_job_report": "analytics_generate_report",
+        "generate_candidate_report": "analytics_generate_report",
+        "get_search_analytics": "analytics_search_analytics",
+        "get_wizard_analytics": "analytics_search_analytics",
+        "predict_hiring_probability": "analytics_predict",
+        "predict_time_to_fill": "analytics_predict",
+        "predict_dropout_risk": "analytics_predict",
+        "get_dashboard_data": "analytics_dashboard",
+        "get_agent_monitoring": "analytics_monitoring"
+      },
       "gaps": {
         "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [
-          "analytics_generate_kpi",
-          "analytics_analyze_funnel",
-          "analytics_job_health",
-          "analytics_detect_anomalies",
-          "analytics_get_insights",
-          "analytics_generate_report",
-          "analytics_search_analytics",
-          "analytics_predict",
-          "analytics_dashboard",
-          "analytics_monitoring"
-        ],
-        "actions_without_tool_or_handler": [
-          "generate_kpi_report",
-          "analyze_funnel",
-          "job_health_check",
-          "detect_anomalies",
-          "compare_periods",
-          "forecast",
-          "suggest_strategy",
-          "answer_data_question",
-          "get_job_insights",
-          "generate_job_report",
-          "generate_candidate_report",
-          "get_search_analytics",
-          "get_wizard_analytics",
-          "predict_hiring_probability",
-          "predict_time_to_fill",
-          "predict_dropout_risk",
-          "get_dashboard_data",
-          "get_agent_monitoring"
-        ],
+        "tools_orphaned_no_action": [],
+        "actions_without_tool_or_handler": [],
         "handlers_failing_import": []
       },
       "errors": []
@@ -151,41 +136,30 @@
         "ats_update_status",
         "ats_send_score"
       ],
-      "action_tool_map": {},
+      "action_tool_map": {
+        "sync_candidate": "ats_sync_candidate",
+        "sync_job": "ats_sync_job",
+        "bulk_sync": "ats_sync_candidate",
+        "pull_candidates": "ats_pull_candidates",
+        "pull_jobs": "ats_pull_jobs",
+        "check_sync_status": "ats_check_status",
+        "configure_ats": "ats_list_connections",
+        "list_connections": "ats_list_connections",
+        "test_connection": "ats_test_connection",
+        "map_fields": "ats_view_sync_log",
+        "view_sync_log": "ats_view_sync_log",
+        "resolve_conflict": "ats_view_sync_log",
+        "update_status_ats": "ats_update_status",
+        "send_score_ats": "ats_send_score",
+        "sync_interview_result": "ats_send_score",
+        "enable_webhook": "ats_test_connection",
+        "disable_webhook": "ats_test_connection",
+        "view_field_mapping": "ats_view_sync_log"
+      },
       "gaps": {
         "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [
-          "ats_sync_candidate",
-          "ats_sync_job",
-          "ats_pull_candidates",
-          "ats_pull_jobs",
-          "ats_check_status",
-          "ats_list_connections",
-          "ats_test_connection",
-          "ats_view_sync_log",
-          "ats_update_status",
-          "ats_send_score"
-        ],
-        "actions_without_tool_or_handler": [
-          "sync_candidate",
-          "sync_job",
-          "bulk_sync",
-          "pull_candidates",
-          "pull_jobs",
-          "check_sync_status",
-          "configure_ats",
-          "list_connections",
-          "test_connection",
-          "map_fields",
-          "view_sync_log",
-          "resolve_conflict",
-          "update_status_ats",
-          "send_score_ats",
-          "sync_interview_result",
-          "enable_webhook",
-          "disable_webhook",
-          "view_field_mapping"
-        ],
+        "tools_orphaned_no_action": [],
+        "actions_without_tool_or_handler": [],
         "handlers_failing_import": [
           {
             "tool_id": "ats_sync_candidate",
@@ -279,43 +253,32 @@
         "automation_trigger",
         "automation_view_log"
       ],
-      "action_tool_map": {},
+      "action_tool_map": {
+        "create_task": "automation_create_task",
+        "list_tasks": "automation_list_tasks",
+        "complete_task": "automation_complete_task",
+        "cancel_task": "automation_cancel_task",
+        "decompose_task": "automation_create_task",
+        "plan_execution": "automation_create_task",
+        "get_next_tasks": "automation_list_tasks",
+        "create_automation": "automation_create_rule",
+        "list_automations": "automation_list_rules",
+        "enable_automation": "automation_enable_rule",
+        "disable_automation": "automation_disable_rule",
+        "trigger_automation": "automation_trigger",
+        "view_automation_log": "automation_view_log",
+        "configure_stage_automation": "automation_create_rule",
+        "predict_substatus": "automation_view_log",
+        "check_proactive_alerts": "automation_view_log",
+        "configure_alert": "automation_create_rule",
+        "schedule_recurring": "automation_create_rule",
+        "view_task_dependencies": "automation_list_tasks",
+        "run_autonomous_check": "automation_trigger"
+      },
       "gaps": {
         "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [
-          "automation_create_task",
-          "automation_list_tasks",
-          "automation_complete_task",
-          "automation_cancel_task",
-          "automation_create_rule",
-          "automation_list_rules",
-          "automation_enable_rule",
-          "automation_disable_rule",
-          "automation_trigger",
-          "automation_view_log"
-        ],
-        "actions_without_tool_or_handler": [
-          "create_task",
-          "list_tasks",
-          "complete_task",
-          "cancel_task",
-          "decompose_task",
-          "plan_execution",
-          "get_next_tasks",
-          "create_automation",
-          "list_automations",
-          "enable_automation",
-          "disable_automation",
-          "trigger_automation",
-          "view_automation_log",
-          "configure_stage_automation",
-          "predict_substatus",
-          "check_proactive_alerts",
-          "configure_alert",
-          "schedule_recurring",
-          "view_task_dependencies",
-          "run_autonomous_check"
-        ],
+        "tools_orphaned_no_action": [],
+        "actions_without_tool_or_handler": [],
         "handlers_failing_import": [
           {
             "tool_id": "automation_create_task",
@@ -386,12 +349,7 @@
       "gaps": {
         "action_tool_map_broken": [],
         "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [
-          "get_status",
-          "get_interview_info",
-          "get_feedback",
-          "get_lgpd_info"
-        ],
+        "actions_without_tool_or_handler": [],
         "handlers_failing_import": []
       },
       "errors": []
@@ -434,33 +392,22 @@
         "communication_manage_webhook",
         "communication_data_request"
       ],
-      "action_tool_map": {},
+      "action_tool_map": {
+        "send_email": "communication_send_email",
+        "send_bulk_email": "communication_send_bulk",
+        "create_template": "communication_create_template",
+        "list_templates": "communication_list_templates",
+        "preview_template": "communication_preview_template",
+        "send_whatsapp": "communication_send_whatsapp",
+        "send_teams_message": "communication_send_teams",
+        "get_communication_history": "communication_get_history",
+        "manage_webhook": "communication_manage_webhook",
+        "handle_data_request": "communication_data_request"
+      },
       "gaps": {
         "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [
-          "communication_send_email",
-          "communication_send_bulk",
-          "communication_send_whatsapp",
-          "communication_send_teams",
-          "communication_create_template",
-          "communication_list_templates",
-          "communication_preview_template",
-          "communication_get_history",
-          "communication_manage_webhook",
-          "communication_data_request"
-        ],
-        "actions_without_tool_or_handler": [
-          "send_email",
-          "send_bulk_email",
-          "create_template",
-          "list_templates",
-          "preview_template",
-          "send_whatsapp",
-          "send_teams_message",
-          "get_communication_history",
-          "manage_webhook",
-          "handle_data_request"
-        ],
+        "tools_orphaned_no_action": [],
+        "actions_without_tool_or_handler": [],
         "handlers_failing_import": []
       },
       "errors": []
@@ -483,15 +430,7 @@
       "gaps": {
         "action_tool_map_broken": [],
         "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [
-          "configure_profile",
-          "configure_culture",
-          "configure_tech_stack",
-          "configure_benefits",
-          "configure_workforce",
-          "analyze_website",
-          "process_document"
-        ],
+        "actions_without_tool_or_handler": [],
         "handlers_failing_import": []
       },
       "errors": []
@@ -539,35 +478,25 @@
         "pre_qualify_candidate",
         "run_screening_pipeline"
       ],
-      "action_tool_map": {},
+      "action_tool_map": {
+        "parse_cv": "parse_cv",
+        "auto_screen": "run_screening_pipeline",
+        "calculate_wsi_score": "calculate_wsi",
+        "evaluate_rubric": "evaluate_rubric",
+        "generate_questions": "generate_wsi_questions",
+        "adjust_questions": "adjust_wsi_questions",
+        "voice_screening": "run_screening_pipeline",
+        "normalize_scores": "normalize_scores",
+        "assess_seniority": "assess_seniority",
+        "send_feedback": "send_candidate_feedback",
+        "pre_qualify": "pre_qualify_candidate"
+      },
       "gaps": {
         "action_tool_map_broken": [],
         "tools_orphaned_no_action": [
-          "parse_cv",
-          "score_cv",
-          "evaluate_rubric",
-          "calculate_wsi",
-          "generate_wsi_questions",
-          "adjust_wsi_questions",
-          "normalize_scores",
-          "assess_seniority",
-          "send_candidate_feedback",
-          "pre_qualify_candidate",
-          "run_screening_pipeline"
+          "score_cv"
         ],
-        "actions_without_tool_or_handler": [
-          "parse_cv",
-          "auto_screen",
-          "calculate_wsi_score",
-          "evaluate_rubric",
-          "generate_questions",
-          "adjust_questions",
-          "voice_screening",
-          "normalize_scores",
-          "assess_seniority",
-          "send_feedback",
-          "pre_qualify"
-        ],
+        "actions_without_tool_or_handler": [],
         "handlers_failing_import": [
           {
             "tool_id": "parse_cv",
@@ -634,13 +563,7 @@
       "gaps": {
         "action_tool_map_broken": [],
         "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [
-          "create_twin",
-          "evaluate_with_twin",
-          "list_twins",
-          "index_twin_audio",
-          "deactivate_twin"
-        ],
+        "actions_without_tool_or_handler": [],
         "handlers_failing_import": []
       },
       "errors": []
@@ -708,33 +631,22 @@
         "scheduling_transcribe_audio",
         "scheduling_analyze_voice"
       ],
-      "action_tool_map": {},
+      "action_tool_map": {
+        "schedule_interview": "scheduling_schedule_interview",
+        "reschedule_interview": "scheduling_reschedule",
+        "cancel_interview": "scheduling_cancel",
+        "check_availability": "scheduling_check_availability",
+        "generate_self_scheduling_link": "scheduling_self_scheduling_link",
+        "find_common_slots": "scheduling_find_slots",
+        "send_reminder": "scheduling_send_reminder",
+        "list_today_interviews": "scheduling_list_today",
+        "transcribe_audio": "scheduling_transcribe_audio",
+        "analyze_voice": "scheduling_analyze_voice"
+      },
       "gaps": {
         "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [
-          "scheduling_schedule_interview",
-          "scheduling_reschedule",
-          "scheduling_cancel",
-          "scheduling_check_availability",
-          "scheduling_self_scheduling_link",
-          "scheduling_find_slots",
-          "scheduling_send_reminder",
-          "scheduling_list_today",
-          "scheduling_transcribe_audio",
-          "scheduling_analyze_voice"
-        ],
-        "actions_without_tool_or_handler": [
-          "schedule_interview",
-          "reschedule_interview",
-          "cancel_interview",
-          "check_availability",
-          "generate_self_scheduling_link",
-          "find_common_slots",
-          "send_reminder",
-          "list_today_interviews",
-          "transcribe_audio",
-          "analyze_voice"
-        ],
+        "tools_orphaned_no_action": [],
+        "actions_without_tool_or_handler": [],
         "handlers_failing_import": [
           {
             "tool_id": "scheduling_schedule_interview",
@@ -840,55 +752,42 @@
         "advance_wizard",
         "get_job_analytics"
       ],
-      "action_tool_map": {},
+      "action_tool_map": {
+        "create_job": "create_job_vacancy",
+        "guided_wizard": "get_wizard_step",
+        "extract_requirements": "enrich_job_description",
+        "generate_rubrics": "enrich_job_description",
+        "update_job": "update_job_vacancy",
+        "health_check": "get_job_health",
+        "suggest_strategy": "get_job_analytics",
+        "duplicate_job": "create_job_vacancy",
+        "create_from_template": "search_job_templates",
+        "clone_job": "create_job_vacancy",
+        "close_job": "close_job_vacancy",
+        "pause_job": "pause_job_vacancy",
+        "get_benefits": "get_job_analytics",
+        "suggest_jd_improvements": "enrich_job_description",
+        "detect_criteria": "enrich_job_description",
+        "generate_wsi_questions": "enrich_job_description",
+        "advance_wizard_step": "advance_wizard",
+        "get_wizard_step_data": "get_wizard_step",
+        "enrich_jd": "enrich_job_description",
+        "import_jd": "import_job_description",
+        "generate_jd": "generate_job_description",
+        "job_analytics": "get_job_analytics",
+        "qualify_job": "get_job_health",
+        "list_jobs": "get_job_analytics",
+        "publish_job": "update_job_vacancy",
+        "job_status_webhook": "get_job_health",
+        "search_templates": "search_job_templates",
+        "apply_template": "search_job_templates",
+        "analyze_jd": "enrich_job_description",
+        "suggest_compensation": "get_job_analytics"
+      },
       "gaps": {
         "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [
-          "create_job_vacancy",
-          "update_job_vacancy",
-          "close_job_vacancy",
-          "pause_job_vacancy",
-          "generate_job_description",
-          "enrich_job_description",
-          "import_job_description",
-          "search_job_templates",
-          "get_job_health",
-          "get_wizard_step",
-          "advance_wizard",
-          "get_job_analytics"
-        ],
-        "actions_without_tool_or_handler": [
-          "create_job",
-          "guided_wizard",
-          "extract_requirements",
-          "generate_rubrics",
-          "update_job",
-          "health_check",
-          "suggest_strategy",
-          "duplicate_job",
-          "create_from_template",
-          "clone_job",
-          "close_job",
-          "pause_job",
-          "get_benefits",
-          "suggest_jd_improvements",
-          "detect_criteria",
-          "generate_wsi_questions",
-          "advance_wizard_step",
-          "get_wizard_step_data",
-          "enrich_jd",
-          "import_jd",
-          "generate_jd",
-          "job_analytics",
-          "qualify_job",
-          "list_jobs",
-          "publish_job",
-          "job_status_webhook",
-          "search_templates",
-          "apply_template",
-          "analyze_jd",
-          "suggest_compensation"
-        ],
+        "tools_orphaned_no_action": [],
+        "actions_without_tool_or_handler": [],
         "handlers_failing_import": []
       },
       "errors": []
@@ -956,33 +855,22 @@
         "assistant_send_notification",
         "assistant_track_goals"
       ],
-      "action_tool_map": {},
+      "action_tool_map": {
+        "pipeline_health": "assistant_pipeline_health",
+        "stale_candidates": "assistant_stale_candidates",
+        "move_candidate": "assistant_move_candidate",
+        "search_context": "assistant_search_context",
+        "save_memory": "assistant_save_memory",
+        "recall_memory": "assistant_recall_memory",
+        "conversation_summary": "assistant_conversation_summary",
+        "kanban_analysis": "assistant_kanban_analysis",
+        "send_notification": "assistant_send_notification",
+        "track_goals": "assistant_track_goals"
+      },
       "gaps": {
         "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [
-          "assistant_pipeline_health",
-          "assistant_stale_candidates",
-          "assistant_move_candidate",
-          "assistant_search_context",
-          "assistant_save_memory",
-          "assistant_recall_memory",
-          "assistant_conversation_summary",
-          "assistant_kanban_analysis",
-          "assistant_send_notification",
-          "assistant_track_goals"
-        ],
-        "actions_without_tool_or_handler": [
-          "pipeline_health",
-          "stale_candidates",
-          "move_candidate",
-          "search_context",
-          "save_memory",
-          "recall_memory",
-          "conversation_summary",
-          "kanban_analysis",
-          "send_notification",
-          "track_goals"
-        ],
+        "tools_orphaned_no_action": [],
+        "actions_without_tool_or_handler": [],
         "handlers_failing_import": [
           {
             "tool_id": "assistant_pipeline_health",
@@ -1060,7 +948,7 @@
     },
     "sourcing": {
       "class": "SourcingDomain",
-      "action_count": 30,
+      "action_count": 34,
       "tool_count": 10,
       "actions": [
         "search_candidates",
@@ -1092,7 +980,11 @@
         "dedup_candidates",
         "tag_candidates",
         "engagement_pipeline",
-        "schedule_outreach"
+        "schedule_outreach",
+        "update_candidate_stage",
+        "reject_candidate",
+        "shortlist_candidate",
+        "add_candidate_to_vacancy"
       ],
       "tools": [
         "sourcing_update_candidate_stage",
@@ -1107,51 +999,22 @@
         "sourcing_get_talent_quality"
       ],
       "action_tool_map": {
-        "search_candidates": "search_candidates",
-        "global_search": "pearch_search",
-        "rank_candidates": "candidate_match",
-        "filter_candidates": "boolean_search",
-        "compare_candidates": "search_candidates",
-        "assess_market": "search_analytics"
+        "search_candidates": "sourcing_search_candidates",
+        "rank_candidates": "sourcing_rank_candidates",
+        "update_candidate_stage": "sourcing_update_candidate_stage",
+        "reject_candidate": "sourcing_reject_candidate",
+        "shortlist_candidate": "sourcing_shortlist_candidate",
+        "add_candidate_to_vacancy": "sourcing_add_candidate_to_vacancy",
+        "global_search": "sourcing_search_candidates",
+        "filter_candidates": "sourcing_search_candidates",
+        "compare_candidates": "sourcing_get_candidate_details",
+        "assess_market": "sourcing_get_talent_quality"
       },
       "gaps": {
-        "action_tool_map_broken": [
-          {
-            "action": "search_candidates",
-            "missing_tool": "search_candidates"
-          },
-          {
-            "action": "global_search",
-            "missing_tool": "pearch_search"
-          },
-          {
-            "action": "rank_candidates",
-            "missing_tool": "candidate_match"
-          },
-          {
-            "action": "filter_candidates",
-            "missing_tool": "boolean_search"
-          },
-          {
-            "action": "compare_candidates",
-            "missing_tool": "search_candidates"
-          },
-          {
-            "action": "assess_market",
-            "missing_tool": "search_analytics"
-          }
-        ],
+        "action_tool_map_broken": [],
         "tools_orphaned_no_action": [
-          "sourcing_update_candidate_stage",
-          "sourcing_reject_candidate",
-          "sourcing_shortlist_candidate",
-          "sourcing_add_candidate_to_vacancy",
-          "sourcing_search_candidates",
-          "sourcing_rank_candidates",
-          "sourcing_get_candidate_details",
           "sourcing_get_candidate_stats",
-          "sourcing_get_candidate_history",
-          "sourcing_get_talent_quality"
+          "sourcing_get_candidate_history"
         ],
         "actions_without_tool_or_handler": [],
         "handlers_failing_import": []
@@ -1271,12 +1134,12 @@
   "gaps_by_domain": {},
   "global_summary": {
     "total_registered": 17,
-    "total_actions": 264,
+    "total_actions": 268,
     "total_tools": 93,
-    "domains_with_gaps": 13,
-    "broken_mappings": 6,
-    "orphan_tools": 93,
-    "actions_no_handler": 146,
+    "domains_with_gaps": 6,
+    "broken_mappings": 0,
+    "orphan_tools": 3,
+    "actions_no_handler": 0,
     "broken_handlers": 49
   },
   "domain_dirs_total": 61,

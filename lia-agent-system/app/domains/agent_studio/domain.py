@@ -82,6 +82,9 @@ class AgentStudioDomain(ComplianceDomainPrompt):
             "uninstall_agent": self._handle_uninstall_agent,
             "explain_agent_studio": self._handle_explain_agent_studio,
             "list_agents": self._handle_list_agents,
+            "recalibrate_agent": self._handle_recalibrate_agent,
+            "pause_agent": self._handle_pause_agent,
+            "list_sector_templates": self._handle_list_sector_templates,
         }
 
         handler = handler_map.get(action_id)
@@ -984,3 +987,84 @@ class AgentStudioDomain(ComplianceDomainPrompt):
                 action_id="list_agents",
             )
 
+
+
+    async def _handle_recalibrate_agent(self, params: dict[str, Any], context: DomainContext) -> DomainResponse:
+        agent_id = params.get("agent_id", "").strip()
+        if not agent_id:
+            return DomainResponse.clarification_response(
+                question="Qual agente deseja recalibrar? Informe o agent_id.",
+                domain_id=self.domain_id,
+                action_id="recalibrate_agent",
+            )
+        return await self._handle_calibrate_agent({**params, "force": True}, context)
+
+    async def _handle_pause_agent(self, params: dict[str, Any], context: DomainContext) -> DomainResponse:
+        agent_id = params.get("agent_id", "").strip()
+        if not agent_id:
+            return DomainResponse.clarification_response(
+                question="Qual agente deseja pausar? Informe o agent_id.",
+                domain_id=self.domain_id,
+                action_id="pause_agent",
+            )
+        try:
+            from app.core.database import get_db
+            from sqlalchemy import text
+            company_id = context.tenant_id
+            async for db in get_db():
+                await db.execute(
+                    text("UPDATE sourcing_agents SET status = 'paused' WHERE id = :id AND company_id = :cid"),
+                    {"id": agent_id, "cid": company_id},
+                )
+                await db.commit()
+                break
+            return DomainResponse.success_response(
+                message=f"Agente {agent_id} pausado.",
+                data={"agent_id": agent_id, "status": "paused"},
+                domain_id=self.domain_id,
+                action_id="pause_agent",
+                suggestions=["Reativar agente", "Listar agentes"],
+            )
+        except Exception as exc:
+            logger.exception("[AgentStudio] pause_agent failed: %s", exc)
+            return DomainResponse.error_response(
+                error=f"Erro ao pausar agente: {exc}",
+                domain_id=self.domain_id,
+                action_id="pause_agent",
+            )
+
+    async def _handle_list_sector_templates(self, params: dict[str, Any], context: DomainContext) -> DomainResponse:
+        try:
+            from app.core.database import get_db
+            from sqlalchemy import text
+            templates: list[dict[str, Any]] = []
+            async for db in get_db():
+                result = await db.execute(
+                    text("SELECT id, name, sector, description FROM agent_sector_templates ORDER BY name")
+                )
+                templates = [dict(r._mapping) for r in result.fetchall()] if result else []
+                break
+            if not templates:
+                return DomainResponse.success_response(
+                    message="Nenhum template de setor disponível ainda.",
+                    data={"templates": []},
+                    domain_id=self.domain_id,
+                    action_id="list_sector_templates",
+                )
+            lines = ["Templates de setor disponíveis:\n"]
+            for t in templates:
+                lines.append(f"- **{t.get('name')}** ({t.get('sector')})")
+            return DomainResponse.success_response(
+                message="\n".join(lines),
+                data={"templates": templates, "count": len(templates)},
+                domain_id=self.domain_id,
+                action_id="list_sector_templates",
+            )
+        except Exception as exc:
+            logger.warning("[AgentStudio] list_sector_templates failed: %s", exc)
+            return DomainResponse.success_response(
+                message="Templates de setor estão disponíveis no Agent Studio. Use o painel para visualizar.",
+                data={"navigation_hint": {"page": "Agent Studio", "section": "templates"}},
+                domain_id=self.domain_id,
+                action_id="list_sector_templates",
+            )

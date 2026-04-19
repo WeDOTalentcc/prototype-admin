@@ -33,6 +33,21 @@ _KEYWORD_ACTION_MAP: dict[str, str] = (
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="interview_scheduling")
 
 
+# Mapeamento canônico action_id -> tool_id (module-level p/ auditor + smoke test).
+_ACTION_TOOL_MAP: dict[str, str] = {
+    "schedule_interview": "scheduling_schedule_interview",
+    "reschedule_interview": "scheduling_reschedule",
+    "cancel_interview": "scheduling_cancel",
+    "check_availability": "scheduling_check_availability",
+    "generate_self_scheduling_link": "scheduling_self_scheduling_link",
+    "find_common_slots": "scheduling_find_slots",
+    "send_reminder": "scheduling_send_reminder",
+    "list_today_interviews": "scheduling_list_today",
+    "transcribe_audio": "scheduling_transcribe_audio",
+    "analyze_voice": "scheduling_analyze_voice",
+}
+
+
 @register_domain
 class InterviewSchedulingDomain(ComplianceDomainPrompt):
 

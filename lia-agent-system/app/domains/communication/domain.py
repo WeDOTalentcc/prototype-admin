@@ -22,6 +22,21 @@ _KEYWORD_ACTION_MAP: dict[str, str] = (
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="communication")
 
 
+# Mapeamento canônico action_id -> tool_id (module-level p/ auditor + smoke test).
+_ACTION_TOOL_MAP: dict[str, str] = {
+    "send_email": "communication_send_email",
+    "send_bulk_email": "communication_send_bulk",
+    "create_template": "communication_create_template",
+    "list_templates": "communication_list_templates",
+    "preview_template": "communication_preview_template",
+    "send_whatsapp": "communication_send_whatsapp",
+    "send_teams_message": "communication_send_teams",
+    "get_communication_history": "communication_get_history",
+    "manage_webhook": "communication_manage_webhook",
+    "handle_data_request": "communication_data_request",
+}
+
+
 
 @register_domain
 class CommunicationDomain(ComplianceDomainPrompt):

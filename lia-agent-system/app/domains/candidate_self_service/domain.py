@@ -119,9 +119,205 @@ class CandidateSelfServiceDomain(ComplianceDomainPrompt):
                 error=f"Ação '{action_id}' não encontrada no domínio candidate_self_service."
             )
         logger.info("[CSS] action=%s candidate_id=%s", action_id, params.get("candidate_id"))
-        return DomainResponse.success_response(
-            message="Consultando informações...",
-            data={"action_id": action_id},
+
+        handler_map = {
+            "get_status": self._handle_get_status,
+            "get_interview_info": self._handle_get_interview_info,
+            "get_feedback": self._handle_get_feedback,
+            "get_lgpd_info": self._handle_get_lgpd_info,
+        }
+        handler = handler_map.get(action_id)
+        if handler:
+            return await handler(params, context)
+
+        return DomainResponse.error_response(
+            error=f"Ação '{action_id}' não implementada.",
             domain_id=self.domain_id,
             action_id=action_id,
+        )
+
+    @staticmethod
+    def _require_authenticated(context: DomainContext, action_id: str) -> DomainResponse | None:
+        """Bloqueia execução sem identidade autenticada (defesa contra IDOR)."""
+        if not context.user_id or not context.tenant_id:
+            return DomainResponse.error_response(
+                error="Acesso negado: identidade do candidato não autenticada.",
+                domain_id="candidate_self_service",
+                action_id=action_id,
+            )
+        return None
+
+    async def _handle_get_status(
+        self, params: dict[str, Any], context: DomainContext
+    ) -> DomainResponse:
+        if (denied := self._require_authenticated(context, "get_status")):
+            return denied
+        vacancy_id = params.get("vacancy_id")
+        if not vacancy_id:
+            return DomainResponse.clarification_response(
+                question="Para qual vaga você quer consultar seu status?",
+                domain_id=self.domain_id,
+                action_id="get_status",
+            )
+        # Identidade do candidato vem do contexto autenticado (NUNCA dos params)
+        # e os predicados SQL aplicam escopo por tenant para evitar IDOR.
+        try:
+            from app.core.database import get_db
+            from sqlalchemy import text
+            data: dict[str, Any] = {}
+            async for db in get_db():
+                result = await db.execute(
+                    text(
+                        "SELECT ca.current_stage, ca.applied_at, ca.last_updated_at "
+                        "FROM candidate_applications ca "
+                        "JOIN candidates c ON c.id = ca.candidate_id "
+                        "WHERE c.user_id = :uid AND ca.company_id = :cid "
+                        "  AND ca.vacancy_id = :vid LIMIT 1"
+                    ),
+                    {"uid": context.user_id, "cid": context.tenant_id, "vid": vacancy_id},
+                )
+                row = result.fetchone() if result else None
+                data = dict(row._mapping) if row else {}
+                break
+            if not data:
+                return DomainResponse.success_response(
+                    message="Não encontramos sua candidatura ativa para essa vaga.",
+                    data={"vacancy_id": vacancy_id},
+                    domain_id=self.domain_id,
+                    action_id="get_status",
+                )
+            return DomainResponse.success_response(
+                message=f"Sua candidatura está na etapa: **{data.get('current_stage', 'em análise')}**",
+                data=data,
+                domain_id=self.domain_id,
+                action_id="get_status",
+            )
+        except Exception as exc:
+            logger.warning("[CSS] get_status failed: %s", exc)
+            return DomainResponse.error_response(
+                error="Não foi possível consultar seu status agora. Tente novamente em instantes.",
+                domain_id=self.domain_id,
+                action_id="get_status",
+            )
+
+    async def _handle_get_interview_info(
+        self, params: dict[str, Any], context: DomainContext
+    ) -> DomainResponse:
+        if (denied := self._require_authenticated(context, "get_interview_info")):
+            return denied
+        vacancy_id = params.get("vacancy_id")
+        if not vacancy_id:
+            return DomainResponse.clarification_response(
+                question="De qual vaga você quer ver os detalhes da entrevista?",
+                domain_id=self.domain_id,
+                action_id="get_interview_info",
+            )
+        try:
+            from app.core.database import get_db
+            from sqlalchemy import text
+            row_data: dict[str, Any] = {}
+            async for db in get_db():
+                result = await db.execute(
+                    text(
+                        "SELECT i.scheduled_at, i.format, i.location, i.meeting_url "
+                        "FROM interviews i "
+                        "JOIN candidates c ON c.id = i.candidate_id "
+                        "WHERE c.user_id = :uid AND i.company_id = :cid "
+                        "  AND i.vacancy_id = :vid "
+                        "ORDER BY i.scheduled_at DESC LIMIT 1"
+                    ),
+                    {"uid": context.user_id, "cid": context.tenant_id, "vid": vacancy_id},
+                )
+                row = result.fetchone() if result else None
+                row_data = dict(row._mapping) if row else {}
+                break
+            if not row_data:
+                return DomainResponse.success_response(
+                    message="Você ainda não tem entrevista agendada para essa vaga.",
+                    data={},
+                    domain_id=self.domain_id,
+                    action_id="get_interview_info",
+                )
+            return DomainResponse.success_response(
+                message=f"Sua entrevista está agendada para {row_data.get('scheduled_at')}.",
+                data=row_data,
+                domain_id=self.domain_id,
+                action_id="get_interview_info",
+            )
+        except Exception as exc:
+            logger.warning("[CSS] get_interview_info failed: %s", exc)
+            return DomainResponse.error_response(
+                error="Não foi possível consultar sua entrevista agora.",
+                domain_id=self.domain_id,
+                action_id="get_interview_info",
+            )
+
+    async def _handle_get_feedback(
+        self, params: dict[str, Any], context: DomainContext
+    ) -> DomainResponse:
+        if (denied := self._require_authenticated(context, "get_feedback")):
+            return denied
+        vacancy_id = params.get("vacancy_id")
+        if not vacancy_id:
+            return DomainResponse.clarification_response(
+                question="De qual vaga você quer ver o feedback?",
+                domain_id=self.domain_id,
+                action_id="get_feedback",
+            )
+        try:
+            from app.core.database import get_db
+            from sqlalchemy import text
+            feedback: dict[str, Any] = {}
+            async for db in get_db():
+                result = await db.execute(
+                    text(
+                        "SELECT cf.feedback_text, cf.shared_at "
+                        "FROM candidate_feedback cf "
+                        "JOIN candidates c ON c.id = cf.candidate_id "
+                        "WHERE c.user_id = :uid AND cf.company_id = :cid "
+                        "  AND cf.vacancy_id = :vid "
+                        "  AND cf.shared_with_candidate = true "
+                        "ORDER BY cf.shared_at DESC LIMIT 1"
+                    ),
+                    {"uid": context.user_id, "cid": context.tenant_id, "vid": vacancy_id},
+                )
+                row = result.fetchone() if result else None
+                feedback = dict(row._mapping) if row else {}
+                break
+            if not feedback:
+                return DomainResponse.success_response(
+                    message="A empresa ainda não compartilhou feedback público para essa vaga.",
+                    data={},
+                    domain_id=self.domain_id,
+                    action_id="get_feedback",
+                )
+            return DomainResponse.success_response(
+                message=feedback.get("feedback_text", "Feedback disponível."),
+                data=feedback,
+                domain_id=self.domain_id,
+                action_id="get_feedback",
+            )
+        except Exception as exc:
+            logger.warning("[CSS] get_feedback failed: %s", exc)
+            return DomainResponse.error_response(
+                error="Não foi possível consultar feedback agora.",
+                domain_id=self.domain_id,
+                action_id="get_feedback",
+            )
+
+    async def _handle_get_lgpd_info(
+        self, params: dict[str, Any], context: DomainContext
+    ) -> DomainResponse:
+        return DomainResponse.success_response(
+            message=(
+                "Sob a LGPD (Art. 20), você tem direito a uma explicação sobre decisões "
+                "automatizadas que afetem sua candidatura. Para solicitar revisão humana ou "
+                "exportar/excluir seus dados, envie um e-mail para dpo@wedotalent.com."
+            ),
+            data={
+                "rights": ["explicação", "revisão humana", "exportação", "exclusão"],
+                "contact": "dpo@wedotalent.com",
+            },
+            domain_id=self.domain_id,
+            action_id="get_lgpd_info",
         )

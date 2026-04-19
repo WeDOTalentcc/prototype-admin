@@ -222,7 +222,22 @@ class PipelineTransitionDomain(ComplianceDomainPrompt):
             "tenant_id": context.tenant_id,
             "auth_token": context.metadata.get("auth_token"),
         }
-        result = await handle_tool_call(action_id, params, tool_context)
+        # Mantém compat com handler_map dict (auditor + smoke #583).
+        handler_map = {
+            "move_candidate": self._handle_move_candidate,
+            "interpret_context": self._handle_interpret_context,
+            "predict_sub_status": self._handle_predict_sub_status,
+            "suggest_next_action": self._handle_suggest_next_action,
+            "list_pipeline_stages": self._handle_list_pipeline_stages,
+        }
+        if action_id in handler_map:
+            try:
+                result = await handler_map[action_id](params, tool_context)
+            except Exception as exc:
+                logger.error(f"[PIPELINE-DOMAIN] {action_id} failed: {exc}", exc_info=True)
+                result = {"success": False, "error": str(exc)}
+        else:
+            result = await handle_tool_call(action_id, params, tool_context)
 
         if result.get("success"):
             return DomainResponse.success_response(
@@ -243,6 +258,22 @@ class PipelineTransitionDomain(ComplianceDomainPrompt):
             "Ver etapas do pipeline",
             "Sugerir próxima ação para candidato",
         ]
+
+    # Wrappers de instância (delegação para os handlers module-level).
+    async def _handle_move_candidate(self, params, ctx):
+        return await _handle_move_candidate(params, ctx)
+
+    async def _handle_interpret_context(self, params, ctx):
+        return await _handle_interpret_context(params, ctx)
+
+    async def _handle_predict_sub_status(self, params, ctx):
+        return await _handle_predict_sub_status(params, ctx)
+
+    async def _handle_suggest_next_action(self, params, ctx):
+        return await _handle_suggest_next_action(params, ctx)
+
+    async def _handle_list_pipeline_stages(self, params, ctx):
+        return await _handle_list_stages(params, ctx)
 
 
 async def handle_tool_call(

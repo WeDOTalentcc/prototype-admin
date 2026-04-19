@@ -73,16 +73,16 @@ class DigitalTwinDomain(ComplianceDomainPrompt):
         if not action:
             return DomainResponse.error_response(error=f"Action '{action_id}' not found")
 
-        if action_id == "create_twin":
-            return await self._handle_create_twin(params, context)
-        if action_id == "evaluate_with_twin":
-            return await self._handle_evaluate_with_twin(params, context)
-        if action_id == "list_twins":
-            return await self._handle_list_twins(params, context)
-        if action_id == "index_twin_audio":
-            return await self._handle_index_twin_audio(params, context)
-        if action_id == "deactivate_twin":
-            return await self._handle_deactivate_twin(params, context)
+        handler_map = {
+            "create_twin": self._handle_create_twin,
+            "evaluate_with_twin": self._handle_evaluate_with_twin,
+            "list_twins": self._handle_list_twins,
+            "index_twin_audio": self._handle_index_twin_audio,
+            "deactivate_twin": self._handle_deactivate_twin,
+        }
+        handler = handler_map.get(action_id)
+        if handler:
+            return await handler(params, context)
 
         return DomainResponse.error_response(error=f"Action '{action_id}' not implemented")
 

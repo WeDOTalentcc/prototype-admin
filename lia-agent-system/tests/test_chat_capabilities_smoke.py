@@ -114,22 +114,38 @@ def _registered_tool_ids_per_domain() -> dict[str, set[str]]:
 
 
 def _extract_action_tool_map(domain_instance: Any) -> dict[str, str]:
-    """Extrai `_ACTION_TOOL_MAP` da implementação de execute_action via fonte.
+    """Extrai `_ACTION_TOOL_MAP` do domínio (#583).
 
-    Como o dict é definido inline dentro do método, parseamos via regex sobre o
-    código fonte. Isso evita ter que invocar execute_action (que dispararia IO).
+    Procura a estrutura em duas posições:
+      1. **Module-level** — `domain_module._ACTION_TOOL_MAP` (padrão canônico
+         alinhado ao `scripts/audit_chat_capabilities.py`).
+      2. **Inline em `execute_action`** — para domínios legados que ainda
+         declaram o dict dentro do método (parseado via regex sobre fonte).
+
+    O dict module-level vence em caso de colisão de chave.
     """
+    mapping: dict[str, str] = {}
+
+    # (2) inline em execute_action — fallback legado
     try:
         src = inspect.getsource(domain_instance.execute_action)
+        map_blocks = re.findall(
+            r'_ACTION_TOOL_MAP[^=]*=\s*\{(.*?)\}', src, flags=re.DOTALL
+        )
+        for block in map_blocks:
+            for k, v in re.findall(r'"([^"]+)"\s*:\s*"([^"]+)"', block):
+                mapping[k] = v
     except (TypeError, OSError):
-        return {}
-    map_blocks = re.findall(
-        r'_ACTION_TOOL_MAP[^=]*=\s*\{(.*?)\}', src, flags=re.DOTALL
-    )
-    mapping: dict[str, str] = {}
-    for block in map_blocks:
-        for k, v in re.findall(r'"([^"]+)"\s*:\s*"([^"]+)"', block):
-            mapping[k] = v
+        pass
+
+    # (1) module-level — padrão canônico
+    domain_module = inspect.getmodule(type(domain_instance))
+    module_map = getattr(domain_module, "_ACTION_TOOL_MAP", None)
+    if isinstance(module_map, dict):
+        for k, v in module_map.items():
+            if isinstance(k, str) and isinstance(v, str):
+                mapping[k] = v
+
     return mapping
 
 
@@ -256,3 +272,113 @@ def test_smoke_collected_at_least_100_actions() -> None:
     assert len(_ACTION_ROWS) >= 100, (
         f"Esperado ≥100 actions; coletor achou {len(_ACTION_ROWS)}."
     )
+
+
+def test_zero_actions_without_tool_or_handler() -> None:
+    """[#583] Gate canônico — toda action deve ter tool mapeado OU handler.
+
+    Reproduz o critério de aceitação do auditor (`scripts/audit_chat_capabilities`):
+    para cada (domain, action), ou (a) está em `_ACTION_TOOL_MAP` (module-level
+    ou inline) com tool registrado em `*_TOOLS`, ou (b) está em `handler_map`
+    dentro do domain.py via padrão `"action_id": self._handle_*`.
+
+    Domínios em P1_DOMAINS_DEFERRED são tolerados (xfail-equivalente).
+    """
+    from pathlib import Path
+
+    failures: list[str] = []
+    repo_root = Path(__file__).resolve().parent.parent
+
+    for domain_id, action_id, domain_instance in _ACTION_ROWS:
+        if domain_id in P1_DOMAINS_DEFERRED:
+            continue
+        if (domain_id, action_id) in _DEFERRED_ACTIONS:
+            continue
+
+        # (a) action em _ACTION_TOOL_MAP com tool registrado
+        mapping = _extract_action_tool_map(domain_instance)
+        registered = _TOOL_IDS_BY_DOMAIN.get(domain_id, set())
+        if action_id in mapping and mapping[action_id] in registered:
+            continue
+
+        # (b) handler_map regex sobre o arquivo real da classe (alguns
+        # domínios — como pipeline_transition — vivem em pacote diferente).
+        domain_src = ""
+        try:
+            domain_src = Path(inspect.getfile(type(domain_instance))).read_text(errors="ignore")
+        except (TypeError, OSError):
+            domain_src_path = repo_root / "app" / "domains" / domain_id / "domain.py"
+            try:
+                domain_src = domain_src_path.read_text(errors="ignore")
+            except OSError:
+                domain_src = ""
+        if "handler_map" in domain_src:
+            handler_keys = set(re.findall(
+                r'"([a-z_][a-z0-9_]*)"\s*:\s*self\._handle', domain_src
+            ))
+            if action_id in handler_keys:
+                continue
+
+        failures.append(f"{domain_id}::{action_id}")
+
+    assert not failures, (
+        f"[#583] {len(failures)} actions sem tool nem handler:\n  - "
+        + "\n  - ".join(sorted(failures))
+    )
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Execution-level checks (#583 review follow-up)
+# ──────────────────────────────────────────────────────────────────────────────
+def test_candidate_self_service_blocks_unauthenticated_access() -> None:
+    """[#583/security] Handlers do candidato exigem identidade autenticada.
+
+    Defesa contra IDOR: nao basta passar candidate_id no payload — a identidade
+    deve vir do contexto autenticado. Sem user_id/tenant_id, deve falhar.
+    """
+    import asyncio
+    from app.domains.candidate_self_service.domain import CandidateSelfServiceDomain
+    from app.domains.base import DomainContext
+
+    domain = CandidateSelfServiceDomain()
+    anon_ctx = DomainContext(
+        domain_id="candidate_self_service", user_id="", session_id="s", tenant_id=""
+    )
+    for handler_name in ("_handle_get_status", "_handle_get_interview_info", "_handle_get_feedback"):
+        handler = getattr(domain, handler_name)
+        resp = asyncio.run(handler({"vacancy_id": "v1"}, anon_ctx))
+        assert resp.success is False, f"{handler_name} permitiu acesso anonimo"
+        assert "negado" in (resp.error or "").lower(), (
+            f"{handler_name} nao retornou mensagem de acesso negado: {resp.error!r}"
+        )
+
+
+def test_company_settings_handlers_fail_explicitly_when_service_missing() -> None:
+    """[#583] Sem CompanyProfileService, handlers devolvem error_response.
+
+    Anteriormente o ImportError era engolido e respondia success — mascarando
+    no-op como execucao. Agora deve falhar explicitamente.
+    """
+    import asyncio
+    from app.domains.company_settings.domain import CompanySettingsDomain
+    from app.domains.base import DomainContext
+
+    domain = CompanySettingsDomain()
+    ctx = DomainContext(
+        domain_id="company_settings", user_id="u1", session_id="s", tenant_id="t1"
+    )
+    for handler_name in (
+        "_handle_configure_profile",
+        "_handle_configure_culture",
+        "_handle_configure_tech_stack",
+        "_handle_configure_benefits",
+        "_handle_configure_workforce",
+        "_handle_analyze_website",
+        "_handle_process_document",
+    ):
+        handler = getattr(domain, handler_name)
+        resp = asyncio.run(handler({}, ctx))
+        assert resp.success is False, f"{handler_name} mascarou no-op como sucesso"
+        assert "nao foi implementado" in (resp.error or "").lower(), (
+            f"{handler_name} mensagem inesperada: {resp.error!r}"
+        )

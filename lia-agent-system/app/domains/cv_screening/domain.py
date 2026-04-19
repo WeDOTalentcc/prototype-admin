@@ -23,6 +23,22 @@ _KEYWORD_ACTION_MAP: dict[str, str] = (
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="cv_screening")
 
 
+# Mapeamento canônico action_id -> tool_id (module-level p/ auditor + smoke test).
+_ACTION_TOOL_MAP: dict[str, str] = {
+    "parse_cv": "parse_cv",
+    "auto_screen": "run_screening_pipeline",
+    "calculate_wsi_score": "calculate_wsi",
+    "evaluate_rubric": "evaluate_rubric",
+    "generate_questions": "generate_wsi_questions",
+    "adjust_questions": "adjust_wsi_questions",
+    "voice_screening": "run_screening_pipeline",
+    "normalize_scores": "normalize_scores",
+    "assess_seniority": "assess_seniority",
+    "send_feedback": "send_candidate_feedback",
+    "pre_qualify": "pre_qualify_candidate",
+}
+
+
 
 @register_domain
 class CVScreeningDomain(ComplianceDomainPrompt):

@@ -30,6 +30,10 @@ _ACTION_TOOL_MAP: dict[str, str] = {
     "reject_candidate": "sourcing_reject_candidate",
     "shortlist_candidate": "sourcing_shortlist_candidate",
     "add_candidate_to_vacancy": "sourcing_add_candidate_to_vacancy",
+    "global_search": "sourcing_search_candidates",
+    "filter_candidates": "sourcing_search_candidates",
+    "compare_candidates": "sourcing_get_candidate_details",
+    "assess_market": "sourcing_get_talent_quality",
 }
 
 

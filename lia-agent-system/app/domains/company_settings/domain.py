@@ -136,9 +136,61 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
 
         logger.info(f"Executing company_settings action '{action_id}' (tenant={context.tenant_id})")
 
-        return DomainResponse.success_response(
-            message=f"Acao '{action.name}' executada. Use o chat conversacional para configurar.",
-            data={"action_id": action_id},
+        handler_map = {
+            "configure_profile": self._handle_configure_profile,
+            "configure_culture": self._handle_configure_culture,
+            "configure_tech_stack": self._handle_configure_tech_stack,
+            "configure_benefits": self._handle_configure_benefits,
+            "configure_workforce": self._handle_configure_workforce,
+            "analyze_website": self._handle_analyze_website,
+            "process_document": self._handle_process_document,
+        }
+        handler = handler_map.get(action_id)
+        if handler:
+            return await handler(params, context)
+
+        return DomainResponse.error_response(
+            error=f"Acao '{action_id}' nao implementada.",
             domain_id=self.domain_id,
             action_id=action_id,
         )
+
+    # Falha explicita: o servico backend ainda nao existe (#602).
+    # Retornamos error_response em vez de mascarar com sucesso falso.
+    _SERVICE_UNAVAILABLE = (
+        "Configuracao de empresa por chat ainda nao esta disponivel: "
+        "o servico backend (CompanyProfileService) nao foi implementado. "
+        "Use o painel de Configuracoes da empresa por enquanto."
+    )
+
+    def _service_unavailable(self, action_id: str) -> DomainResponse:
+        return DomainResponse.error_response(
+            error=self._SERVICE_UNAVAILABLE,
+            domain_id=self.domain_id,
+            action_id=action_id,
+        )
+
+    async def _handle_configure_profile(self, params, context):
+        return self._service_unavailable("configure_profile")
+
+    async def _handle_configure_culture(self, params, context):
+        return self._service_unavailable("configure_culture")
+
+    async def _handle_configure_tech_stack(self, params, context):
+        return self._service_unavailable("configure_tech_stack")
+
+    async def _handle_configure_benefits(self, params, context):
+        return self._service_unavailable("configure_benefits")
+
+    async def _handle_configure_workforce(self, params, context):
+        return self._service_unavailable("configure_workforce")
+
+    async def _handle_analyze_website(
+        self, params: dict[str, Any], context: DomainContext
+    ) -> DomainResponse:
+        return self._service_unavailable("analyze_website")
+
+    async def _handle_process_document(
+        self, params: dict[str, Any], context: DomainContext
+    ) -> DomainResponse:
+        return self._service_unavailable("process_document")

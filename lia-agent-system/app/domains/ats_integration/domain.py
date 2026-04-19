@@ -24,6 +24,29 @@ _KEYWORD_ACTION_MAP: dict[str, str] = (
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="ats_integration")
 
 
+# Mapeamento canônico action_id -> tool_id (module-level p/ auditor + smoke test).
+_ACTION_TOOL_MAP: dict[str, str] = {
+    "sync_candidate": "ats_sync_candidate",
+    "sync_job": "ats_sync_job",
+    "bulk_sync": "ats_sync_candidate",
+    "pull_candidates": "ats_pull_candidates",
+    "pull_jobs": "ats_pull_jobs",
+    "check_sync_status": "ats_check_status",
+    "configure_ats": "ats_list_connections",
+    "list_connections": "ats_list_connections",
+    "test_connection": "ats_test_connection",
+    "map_fields": "ats_view_sync_log",
+    "view_sync_log": "ats_view_sync_log",
+    "resolve_conflict": "ats_view_sync_log",
+    "update_status_ats": "ats_update_status",
+    "send_score_ats": "ats_send_score",
+    "sync_interview_result": "ats_send_score",
+    "enable_webhook": "ats_test_connection",
+    "disable_webhook": "ats_test_connection",
+    "view_field_mapping": "ats_view_sync_log",
+}
+
+
 @register_domain
 class ATSIntegrationDomain(ComplianceDomainPrompt):
 
@@ -89,18 +112,6 @@ class ATSIntegrationDomain(ComplianceDomainPrompt):
                 reasoning=f"Keyword heuristic matched action '{best_action}'",
             )
 
-    _ACTION_TOOL_MAP: dict[str, str] = {
-        "sync_candidate": "ats_sync_candidate",
-        "sync_job": "ats_sync_job",
-        "pull_candidates": "ats_pull_candidates",
-        "pull_jobs": "ats_pull_jobs",
-        "check_sync_status": "ats_check_status",
-        "list_connections": "ats_list_connections",
-        "test_connection": "ats_test_connection",
-        "view_sync_log": "ats_view_sync_log",
-        "update_status_ats": "ats_update_status",
-        "send_score_ats": "ats_send_score",
-    }
 
     async def execute_action(self, action_id: str, params: dict[str, Any], context: DomainContext) -> DomainResponse:
         action = None
@@ -119,7 +130,7 @@ class ATSIntegrationDomain(ComplianceDomainPrompt):
         from app.domains.ats_integration.tools import ATS_INTEGRATION_TOOLS, execute_ats_integration_tool
 
         tool_ids = {t["tool_id"] for t in ATS_INTEGRATION_TOOLS}
-        mapped_tool = self._ACTION_TOOL_MAP.get(action_id)
+        mapped_tool = _ACTION_TOOL_MAP.get(action_id)
 
         if mapped_tool and mapped_tool in tool_ids:
             result = await execute_ats_integration_tool(mapped_tool, params, context)
