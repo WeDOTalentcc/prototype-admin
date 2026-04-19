@@ -87,7 +87,7 @@ async def pre_compliance(
             from app.shared.compliance.fairness_guard import FairnessGuard
             fg = FairnessGuard()
             # Check the ORIGINAL message first — PII stripping removes numeric
-            # age values (e.g. "50 anos" → "[IDADE REMOVIDA]") before the guard
+            # age values (e.g. "50 anos" → "[IDADE REMOVIDO]") before the guard
             # runs, causing age-discrimination patterns (\d+\s+anos) to miss.
             # We must scan the pre-strip text so patterns like "mais de 50 anos"
             # are detected even when PII masking has already been applied.

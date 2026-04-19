@@ -92,9 +92,21 @@ import os as _os
 _LLM_PROMPT_PII_STRIPPING_ENABLED = _os.environ.get("LLM_PROMPT_PII_STRIPPING_ENABLED", "true").lower() == "true"
 
 # Quasi-identifier patterns — Layer 3 basic (no NER required)
+# Captura variações com profissão/curso entre o verbo de formatura e o ano,
+# por exemplo: "Formada em Engenharia em 2012", "Bacharelado em Administração
+# concluído em 2009", "Concluí o MBA em 2021", "Formou-se em 2017".
 _GRADUATION_YEAR_PATTERN = re.compile(
-    r'\b(?:formad[oa]|graduad[oa]|formatura|conclu[ií][u]|bacharelad[oa]|pós[\-\s]graduad[oa])'
-    r'(?:\s+em)?\s+(?:em\s+)?\d{4}\b',
+    r'\b(?:'
+    r'formad[oa]s?|formou[\-\s]se|formaram[\-\s]se|formei[\-\s]me|'
+    r'graduad[oa]s?|graduou[\-\s]se|graduaram[\-\s]se|graduei[\-\s]me|gradua[çc][ãa]o|'
+    r'formatura|'
+    r'conclu[ií](?:do|da|u|í|ído|ída)?|conclus[ãa]o|'
+    r'bacharelad[oa]|licenciad[oa]|'
+    r'mestrad[oa]|mestrando|'
+    r'doutorad[oa]|doutorando|'
+    r'p[óo]s[\-\s]?graduad[oa]|p[óo]s[\-\s]?gradua[çc][ãa]o|'
+    r'mba'
+    r')\b[^.\n]{0,80}?\b\d{4}\b',
     re.IGNORECASE,
 )
 _AGE_EXPLICIT_PATTERN = re.compile(
@@ -117,7 +129,10 @@ _LLM_PROMPT_PII_PATTERNS: list[tuple[Pattern, str]] = [
     (_CNPJ_PATTERN, "[CNPJ REMOVIDO]"),
     # Quasi-identifiers
     (_GRADUATION_YEAR_PATTERN, "[ANO_FORMATURA REMOVIDO]"),
-    (_AGE_EXPLICIT_PATTERN, "[IDADE REMOVIDA]"),
+    # Marker padronizado: usa "REMOVIDO" para alinhar com os demais
+    # ([CPF REMOVIDO], [EMAIL REMOVIDO], [ANO_FORMATURA REMOVIDO] …) — assim
+    # consumidores e testes podem assumir um único token grammar-agnostic.
+    (_AGE_EXPLICIT_PATTERN, "[IDADE REMOVIDO]"),
     (_ADDRESS_BAIRRO_PATTERN, "[ENDEREÇO REMOVIDO]"),
 ]
 
