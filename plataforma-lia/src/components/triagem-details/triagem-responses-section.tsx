@@ -210,14 +210,16 @@ present
                     )}
 
                     {/* Audit task #529 (G23-03 frontend) — "Como cheguei nesta nota":
-                        breakdown granular de penalidades/bônus para LGPD Art. 20. */}
+                        breakdown granular de penalidades/bônus para LGPD Art. 20.
+                        Sempre renderizado (mesmo sem ajustes) para garantir
+                        rastro de explicabilidade em toda resposta. */}
                     {(() => {
                       const penalties = Object.entries(resp.penalty_breakdown || {}).filter(([, v]) => Number(v) > 0)
                       const bonuses = Object.entries(resp.bonus_breakdown || {}).filter(([, v]) => Number(v) > 0)
-                      if (penalties.length === 0 && bonuses.length === 0) return null
                       const totalPenalty = penalties.reduce((acc, [, v]) => acc + Number(v), 0)
                       const totalBonus = bonuses.reduce((acc, [, v]) => acc + Number(v), 0)
                       const baseScore = finalScore + totalPenalty - totalBonus
+                      const noAdjustments = penalties.length === 0 && bonuses.length === 0
                       const breakdownKey = `breakdown-${idx}`
                       const isBreakdownOpen = expandedSections.has(breakdownKey)
                       return (
@@ -265,6 +267,12 @@ present
                                     </div>
                                   ))}
                                 </div>
+                              )}
+
+                              {noAdjustments && (
+                                <p className="text-xs text-lia-text-secondary italic">
+                                  Nenhuma penalidade ou bônus aplicado — score final igual ao score base.
+                                </p>
                               )}
 
                               <div className="flex items-center justify-between text-xs pt-2 border-t border-lia-border-subtle">
