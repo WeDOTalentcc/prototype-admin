@@ -12,6 +12,7 @@ Apify calls automatically track consumption via ConsumptionTrackingService
 from __future__ import annotations
 
 import logging
+from app.domains.sourcing.services.consent_cache import has_valid_consent, record_consent
 from typing import TYPE_CHECKING, Any, Optional
 from uuid import UUID
 
@@ -197,6 +198,24 @@ async def enrich_candidate_linkedin(
             "error": "company_id_required",
             "message": "Tenant isolation compromised — company_id is required.",
         }
+
+    # P2#8 LGPD consent check (90-day TTL) before any Apify enrichment
+    if candidate_id:
+        if not await has_valid_consent(candidate_id=str(candidate_id), company_id=str(company_id)):
+            return {
+                "success": False,
+                "requires_consent": True,
+                "message": (
+                    "Para enriquecer os dados deste candidato, precisamos do consentimento explícito. "
+                    "O recrutador deve confirmar que o candidato autorizou o uso de seus dados públicos "
+                    "para esta finalidade (LGPD Art. 7)."
+                ),
+            }
+        await record_consent(
+            candidate_id=str(candidate_id),
+            company_id=str(company_id),
+            user_id=str(user_id or ""),
+        )
 
     try:
         from app.domains.candidates.services.candidate_enrichment_service import (
