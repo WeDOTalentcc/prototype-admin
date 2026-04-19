@@ -109,15 +109,15 @@ intent_keywords:
   vagas abertas: list_jobs
   minhas vagas: list_jobs
   mostra vagas: list_jobs
-  # WZ-002: JD generation keyword substrings
+  # JD generation keyword substrings
   descrição de vaga: generate_jd
   gerar descrição: generate_jd
   generate job description: generate_jd
   job desc: generate_jd
-  # WZ-003: salary suggestion keyword substrings
+  # Salary suggestion keyword substrings
   salário sugerir: suggest_compensation
   qual salário: suggest_compensation
   suggest salary: suggest_compensation
   salary for: suggest_compensation
-  # WZ-004: duplica variant (duplicar already present)
+  # `duplicar` is already mapped above; this covers the `duplica` variant.
   duplica: duplicate_job

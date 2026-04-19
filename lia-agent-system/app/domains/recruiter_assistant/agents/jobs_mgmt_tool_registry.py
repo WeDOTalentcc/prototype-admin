@@ -870,7 +870,7 @@ _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 STAGE_TOOLS: dict[str, list[str]] = {
     "overview": ["list_jobs", "view_job_details", "get_portfolio_metrics", "get_recruitment_benchmarks", "validate_job_action_fairness", "get_pipeline_prediction"],
     "analysis": ["compare_jobs", "check_sla", "analyze_bottlenecks", "view_job_details", "get_portfolio_metrics", "get_recruitment_benchmarks", "validate_job_action_fairness", "get_pipeline_prediction"],
-    "action": ["pause_job", "reopen_job", "close_job", "update_priority", "generate_report", "get_recruitment_benchmarks", "validate_job_action_fairness", "get_pipeline_prediction"],
+    "action": ["pause_job", "reopen_job", "close_job", "update_priority", "duplicate_job", "generate_report", "get_recruitment_benchmarks", "validate_job_action_fairness", "get_pipeline_prediction"],
 }
 
 
@@ -892,15 +892,22 @@ def get_jobs_mgmt_tools(stage: str = "") -> list[ToolDefinition]:
     return tools
 
 
-# ─── duplicate_job — NEW TOOL (eval fix: WZ-004) ──────────────────────────
 @tool_handler("jobs_mgmt")
 async def _wrap_duplicate_job(**kwargs: Any) -> dict[str, Any]:
-    """Duplicate an existing job vacancy as a new draft."""
+    """Duplicate an existing job vacancy via canonical job_clone_service.
+
+    Accepts job_id (UUID) OR job_title (resolved by ILIKE within company).
+    Always creates the duplicate as 'Rascunho' (draft) — single source of truth
+    is `app.domains.job_management.services.job_clone_service.duplicate_job`.
+    """
+    from app.domains.job_management.services.job_clone_service import job_clone_service
+
     job_id_or_title: str = (
         kwargs.get("job_id") or kwargs.get("vacancy_id") or kwargs.get("job_title") or ""
     )
     company_id: str = kwargs.get("company_id", "") or ""
     new_title: str = kwargs.get("new_title", "") or ""
+    created_by: str = kwargs.get("user_id", "") or kwargs.get("user_email", "") or ""
 
     if not company_id:
         return {"success": False, "error": "company_id obrigatorio para duplicar vaga."}
@@ -908,93 +915,92 @@ async def _wrap_duplicate_job(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "error": "Informe o ID ou titulo da vaga a duplicar."}
 
     logger.info(f"[jobs_mgmt] duplicate_job: identifier={job_id_or_title!r} company={company_id!r}")
+
+    source_uuid: uuid.UUID | None = None
+    original_title: str | None = None
     try:
-        async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                text("""
-                    SELECT id, title, department, location, work_model, employment_type,
-                           seniority_level, salary_range, requirements,
-                           technical_requirements, behavioral_competencies, description
-                    FROM job_vacancies
-                    WHERE company_id = :cid
-                      AND (job_id = :jid OR title ILIKE :title_pat)
-                    LIMIT 2
-                """),
-                {
-                    "cid": company_id,
-                    "jid": job_id_or_title,
-                    "title_pat": f"%{job_id_or_title}%",
-                },
-            )
-            rows = result.fetchall()
+        source_uuid = uuid.UUID(job_id_or_title)
+    except (ValueError, TypeError):
+        source_uuid = None
 
-        if not rows:
+    try:
+        if source_uuid is None:
+            async with AsyncSessionLocal() as db:
+                lookup = await db.execute(
+                    text(
+                        """
+                        SELECT id, title FROM job_vacancies
+                        WHERE company_id = :cid
+                          AND (job_id = :jid OR title ILIKE :title_pat)
+                        LIMIT 2
+                        """
+                    ),
+                    {
+                        "cid": company_id,
+                        "jid": job_id_or_title,
+                        "title_pat": f"%{job_id_or_title}%",
+                    },
+                )
+                rows = lookup.fetchall()
+
+            if not rows:
+                return {
+                    "success": False,
+                    "error": f"Vaga '{job_id_or_title}' nao encontrada para esta empresa.",
+                }
+            if len(rows) > 1:
+                titles = [r[1] for r in rows]
+                return {
+                    "success": False,
+                    "error": f"Titulo ambiguo — {len(rows)} vagas encontradas: {titles}. Especifique melhor.",
+                }
+            source_uuid = rows[0][0]
+            original_title = rows[0][1]
+
+        overrides = {"title": new_title} if new_title else None
+
+        async with AsyncSessionLocal() as db:
+            result = await job_clone_service.duplicate_job(
+                db=db,
+                source_job_id=source_uuid,
+                company_id=company_id,
+                copies=1,
+                include_candidates=False,
+                overrides=overrides,
+                created_by=created_by or None,
+            )
+
+        if not result.get("success"):
             return {
                 "success": False,
-                "error": f"Vaga '{job_id_or_title}' nao encontrada para esta empresa.",
+                "error": result.get("error", "Falha ao duplicar vaga via servico canonico."),
             }
-        if len(rows) > 1:
-            titles = [r[1] for r in rows]
+
+        jobs_created = result.get("jobs_created") or []
+        if not jobs_created:
             return {
                 "success": False,
-                "error": f"Titulo ambiguo — {len(rows)} vagas encontradas: {titles}. Especifique melhor.",
+                "error": "Servico retornou sucesso mas nao listou vagas criadas.",
             }
 
-        source = rows[0]
-        original_title = source[1]
-        dup_title = new_title or f"{original_title} - Segunda Posicao"
-        new_job_id = f"DUP-{uuid.uuid4().hex[:8].upper()}"
-        new_uuid = uuid.uuid4()
-
-        async with AsyncSessionLocal() as db:
-            await db.execute(
-                text("""
-                    INSERT INTO job_vacancies (
-                        id, company_id, job_id, title, department, location, work_model,
-                        employment_type, seniority_level, description, salary_range,
-                        status, stage, priority, urgency_level,
-                        open_date, deadline, requirements, technical_requirements,
-                        behavioral_competencies, visibility,
-                        created_by, recruiter_email,
-                        created_at, updated_at, is_pipeline_customized
-                    )
-                    SELECT
-                        :new_id, company_id, :new_job_id, :new_title, department, location, work_model,
-                        employment_type, seniority_level, description, salary_range,
-                        'Rascunho', 'Planejamento', priority, urgency_level,
-                        NOW(), NOW() + INTERVAL '60 days',
-                        requirements, technical_requirements,
-                        behavioral_competencies, visibility,
-                        created_by, recruiter_email,
-                        NOW(), NOW(), false
-                    FROM job_vacancies
-                    WHERE id = :source_id AND company_id = :cid
-                """),
-                {
-                    "new_id": new_uuid,
-                    "new_job_id": new_job_id,
-                    "new_title": dup_title,
-                    "source_id": source[0],
-                    "cid": company_id,
-                },
-            )
-            await db.commit()
+        new_job = jobs_created[0]
+        original_title = original_title or result.get("source_job", {}).get("title", "")
 
         return {
             "success": True,
             "original_title": original_title,
-            "new_title": dup_title,
-            "new_job_id": new_job_id,
-            "new_vacancy_id": str(new_uuid),
-            "status": "Rascunho",
+            "new_title": new_job["title"],
+            "new_job_id": new_job["job_id"],
+            "new_vacancy_id": new_job["id"],
+            "status": new_job.get("status", "Rascunho"),
             "message": (
                 f"Vaga duplicada com sucesso! "
-                f"Nova vaga '{dup_title}' criada como rascunho (ID: {new_job_id}). "
-                f"Revise e publique quando estiver pronta."
+                f"Nova vaga '{new_job['title']}' criada como {new_job.get('status', 'Rascunho')} "
+                f"(ID: {new_job['job_id']}). Revise e publique quando estiver pronta."
             ),
         }
     except Exception as exc:
-        logger.error(f"[jobs_mgmt] duplicate_job error: {exc}", exc_info=True)
+        logger.exception("[jobs_mgmt] duplicate_job error via canonical service")
         return {"success": False, "error": f"Erro ao duplicar vaga: {str(exc)[:200]}"}
 
 

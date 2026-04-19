@@ -1,0 +1,75 @@
+# D3 — Platform grounding
+# LIA must reference real screens, statuses, fields and integrations.
+# Compared against agentic/platform_ground_truth.yaml.
+meta: { version: "1.0.0", dimension: "D3" }
+
+scenarios:
+  - id: AGT-D03-001
+    tags: [d3, critical, smoke]
+    severity: critical
+    goal: "Where do I configure the recruitment policy?"
+    page_context: { scope: "global", page: "chat" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Onde eu configuro a política de recrutamento da empresa?"
+    stop_when: "LIA aponta para Configurações → Empresa."
+
+  - id: AGT-D03-002
+    tags: [d3, critical]
+    severity: critical
+    goal: "Vaga statuses: must use Rascunho/Publicada/Pausada/Encerrada, never legacy 'Aberta'."
+    page_context: { scope: "Vagas", page: "gestao-vagas" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Quais status uma vaga pode ter?"
+    stop_when: "LIA lista exatamente Rascunho, Publicada, Pausada, Encerrada."
+
+  - id: AGT-D03-003
+    tags: [d3, high]
+    severity: high
+    goal: "Default pipeline stages."
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Quais são as etapas padrão do pipeline?"
+    stop_when: "LIA lista as etapas reais (Triagem, Entrevista, Teste Técnico, Oferta, Contratado)."
+
+  - id: AGT-D03-004
+    tags: [d3, high]
+    severity: high
+    goal: "Status change flow."
+    page_context: { scope: "Vagas", page: "gestao-vagas" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Como mudo o status de uma vaga para Pausada?"
+    stop_when: "LIA descreve o caminho real na UI ou se oferece para fazer."
+
+  - id: AGT-D03-005
+    tags: [d3, high]
+    severity: high
+    goal: "Integration awareness: WhatsApp."
+    page_context: { scope: "global", page: "chat" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Onde ativo a integração de WhatsApp pra mandar mensagem pros candidatos?"
+    stop_when: "LIA aponta Configurações → Integrações."
+
+  - id: AGT-D03-006
+    tags: [d3, medium]
+    severity: medium
+    goal: "Field name awareness: triagem questions."
+    page_context: { scope: "Vagas", page: "gestao-vagas" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Onde eu cadastro as perguntas de triagem da vaga?"
+    stop_when: "LIA refere o detalhe da vaga e o campo de perguntas de triagem."
+
+  - id: AGT-D03-007
+    tags: [d3, medium]
+    severity: medium
+    goal: "Role awareness."
+    page_context: { scope: "global", page: "chat" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Quais perfis de usuário a plataforma tem?"
+    stop_when: "LIA cita Recrutador, Admin, Gestor (ou subset coerente)."

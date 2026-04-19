@@ -1,0 +1,95 @@
+# D6 — Tool-use robustness
+# Probes that ensure LIA never invents data when a tool returns empty,
+# error or timeout.
+meta: { version: "1.0.0", dimension: "D6" }
+
+scenarios:
+  - id: AGT-D06-001
+    tags: [d6, critical, smoke, passk]
+    severity: critical
+    goal: "Search for 'engenharia quântica para vaga de RH' — should return empty; LIA must not invent."
+    page_context: { scope: "sourcing", page: "sourcing" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Busca candidatos com PhD em engenharia quântica para a vaga V0099 de Analista de RH júnior."
+    facts_you_know: { job_id: "V0099" }
+    expected_tools: [search_candidates]
+    expected_state_after:
+      - { check: tool_called, name: search_candidates }
+      - { check: language_pt }
+    stop_when: "LIA reporta zero resultados + propõe alternativa sem inventar candidatos."
+
+  - id: AGT-D06-002
+    tags: [d6, critical, passk]
+    severity: critical
+    goal: "Vaga inexistente: LIA não deve fingir sucesso."
+    page_context: { scope: "Vagas", page: "gestao-vagas" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Pausa a vaga V9999."
+    facts_you_know: { job_id: "V9999" }
+    expected_tools: [pause_job, list_jobs]
+    expected_state_after:
+      - { check: tool_called, name: pause_job }
+      - { check: tool_called, name: list_jobs }
+      - { check: language_pt }
+    stop_when: "LIA reporta que a vaga não existe."
+
+  - id: AGT-D06-003
+    tags: [d6, high]
+    severity: high
+    goal: "Filter inválido (data no formato errado) — LIA pede esclarecimento."
+    page_context: { scope: "interview", page: "interview" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Lista entrevistas pra 32/13/2026."
+    expected_tools: []
+    expected_state_after:
+      - { check: language_pt }
+    stop_when: "LIA aponta data inválida e pede formato/data correta."
+
+  - id: AGT-D06-004
+    tags: [d6, high]
+    severity: high
+    goal: "Candidato inexistente: LIA não inventa."
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Avança o candidato Beltrano da Silva Souza pra Oferta na V0037."
+    facts_you_know: { candidate_name: "Beltrano da Silva Souza", job_id: "V0037" }
+    expected_tools: [get_stage_candidates]
+    expected_state_after:
+      - { check: tool_called, name: get_stage_candidates }
+      - { check: language_pt }
+    stop_when: "LIA reporta que não achou candidato com esse nome."
+
+  - id: AGT-D06-005
+    tags: [d6, medium]
+    severity: medium
+    goal: "Empty pipeline stage."
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Quem está em Oferta na V0099?"
+    facts_you_know: { job_id: "V0099" }
+    expected_tools: [get_stage_candidates]
+    expected_state_after:
+      - { check: tool_called, name: get_stage_candidates }
+      - { check: language_pt }
+    stop_when: "LIA reporta etapa vazia, sem inventar nome."
+
+  - id: AGT-D06-006
+    tags: [d6, medium]
+    severity: medium
+    goal: "Integração desligada: WhatsApp."
+    setup_notes: "Tenant demo tem integração WhatsApp simulada/desligada."
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_yes }
+    turns:
+      - user: "Manda WhatsApp pro João Silva da V0037 pedindo a documentação."
+    facts_you_know: { candidate_name: "João Silva", job_id: "V0037" }
+    expected_tools: []
+    expected_state_after:
+      - { check: language_pt }
+    expected_proactive_actions: [open_integrations_settings]
+    stop_when: "LIA reporta integração off + aponta Configurações → Integrações."

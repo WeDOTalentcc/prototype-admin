@@ -936,6 +936,49 @@ async def _reject_candidate(params: dict[str, Any], context: dict[str, Any]):
                 action_type="reject_candidate",
             )
 
+        # Rejection must be scoped to a single vacancy. Without
+        # `vacancy_id` the UPDATE would affect every vacancy this
+        # candidate is on for the tenant. Auto-resolve a unique active
+        # vacancy when possible; otherwise stop and ask the user.
+        if not vacancy_id:
+            async with AsyncSessionLocal() as db:
+                row = await db.execute(
+                    sql_text(
+                        "SELECT vacancy_id FROM vacancy_candidates "
+                        "WHERE candidate_id = :cid AND company_id = :co "
+                        "AND COALESCE(stage,'') <> 'rejected' "
+                        "LIMIT 2"
+                    ),
+                    {"cid": str(candidate_id), "co": str(company_id)},
+                )
+                rows = row.fetchall()
+            if len(rows) == 1:
+                vacancy_id = str(rows[0][0])
+            elif len(rows) == 0:
+                return ActionResult(
+                    status="error",
+                    message=(
+                        f"Nao encontrei vagas ativas para **{candidate_name}**. "
+                        "Informe a vaga (ex.: V0037) que deseja reprovar."
+                    ),
+                    error_detail="no active vacancy_candidates row",
+                    action_type="reject_candidate",
+                )
+            else:
+                return ActionResult(
+                    status="pending",
+                    message=(
+                        f"**{candidate_name}** esta em mais de uma vaga ativa. "
+                        "Diga em qual vaga voce quer reprova-lo (ex.: V0037)."
+                    ),
+                    data={
+                        "candidate_id": str(candidate_id),
+                        "candidate_name": candidate_name,
+                        "requires_vacancy_disambiguation": True,
+                    },
+                    action_type="reject_candidate",
+                )
+
         # Authz: verify candidate belongs to company
         async with AsyncSessionLocal() as db:
             authz_row = await db.execute(
@@ -991,29 +1034,33 @@ async def _reject_candidate(params: dict[str, Any], context: dict[str, Any]):
                     action_type="reject_candidate",
                 )
 
-        # Apply rejection
+        # Apply rejection — always scoped to a single vacancy now (the
+        # disambiguation block above guarantees vacancy_id is set).
         async with AsyncSessionLocal() as db:
-            if vacancy_id:
-                await db.execute(
-                    sql_text(
-                        "UPDATE vacancy_candidates "
-                        "SET stage = 'rejected', updated_at = NOW() "
-                        "WHERE candidate_id = :cid "
-                        "AND company_id = :co "
-                        "AND vacancy_id = :vid"
-                    ),
-                    {"cid": str(candidate_id), "co": str(company_id), "vid": str(vacancy_id)},
-                )
-            else:
-                await db.execute(
-                    sql_text(
-                        "UPDATE vacancy_candidates "
-                        "SET stage = 'rejected', updated_at = NOW() "
-                        "WHERE candidate_id = :cid AND company_id = :co"
-                    ),
-                    {"cid": str(candidate_id), "co": str(company_id)},
-                )
+            result = await db.execute(
+                sql_text(
+                    "UPDATE vacancy_candidates "
+                    "SET stage = 'rejected', updated_at = NOW() "
+                    "WHERE candidate_id = :cid "
+                    "AND company_id = :co "
+                    "AND vacancy_id = :vid"
+                ),
+                {"cid": str(candidate_id), "co": str(company_id), "vid": str(vacancy_id)},
+            )
             await db.commit()
+            affected = result.rowcount or 0
+
+        # Verify the UPDATE actually touched a row before claiming success.
+        if affected == 0:
+            return ActionResult(
+                status="error",
+                message=(
+                    f"Nao consegui reprovar **{candidate_name}** na vaga indicada — "
+                    "verifique se ele realmente esta nessa vaga."
+                ),
+                error_detail=f"reject UPDATE affected 0 rows (cid={candidate_id}, vid={vacancy_id})",
+                action_type="reject_candidate",
+            )
 
         # Audit log
         await log_action_audit(

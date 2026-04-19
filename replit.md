@@ -82,7 +82,7 @@ Estas regras valem para toda sessão de trabalho — humana ou IA — antes de q
 **Skills relacionadas:**
 - `feature-audit` — auditoria obrigatória de 14 dimensões antes de marcar qualquer task como concluída.
 - `lia-planning` — metodologia de planning unificada (GSD + spec-driven + brainstorming) para qualquer trabalho significativo.
-- `canonical-fix` — protocolo para identificar arquivo canônico e corrigir na origem, sem workaround (a ser criada em task dependente).
+- `canonical-fix` — protocolo de 5 fases para identificar arquivo canônico e corrigir na origem, sem workaround. Aplicada em Task #563 para consolidar `duplicate_job` (4 implementações → 1 canônica em `app.domains.job_management.services.job_clone_service`) e remover stub órfão de `reject_candidate` em `pipeline_tools.py`. Canônico de rejeição: `_reject_candidate` em `app/orchestrator/action_handlers/candidate_actions.py`.
 - `vue-migration-prep` — garante que o código novo já nasce preparado para a futura migração Vue/Nuxt.
 - `design-standardize` — padronização visual React+Tailwind conforme Design System LIA v4.2.1.
 

@@ -62,16 +62,6 @@ JOB_MANAGEMENT_TOOLS: list[dict[str, Any]] = [
         "handler": "app.tools.job_tools.pause_job",
     },
     {
-        "tool_id": "duplicate_job_vacancy",
-        "name": "Duplicar Vaga",
-        "description": "Duplica uma vaga existente com todos os dados",
-        "parameters": {
-            "job_id": {"type": "string", "description": "ID da vaga a duplicar", "required": True},
-            "include_candidates": {"type": "boolean", "description": "Incluir candidatos na duplicação", "required": False, "default": False},
-        },
-        "handler": "app.tools.job_tools.duplicate_job_vacancy",
-    },
-    {
         "tool_id": "generate_job_description",
         "name": "Gerar Job Description",
         "description": "Gera uma job description completa usando IA",

@@ -1,0 +1,122 @@
+# D99 — Mixed multi-dimensional scenarios
+# Cross-cutting scenarios that exercise 2-3 dimensions at once. They
+# round the suite to ≥60 cases and are typical recruiter journeys.
+meta: { version: "1.0.0", dimensions: ["D1", "D4", "D5", "D6", "D10"] }
+
+scenarios:
+  - id: AGT-D99-001
+    tags: [d1, d4, d5, high, smoke]
+    severity: high
+    goal: "Full sourcing journey with memory + clarification + multi-step planning."
+    page_context: { scope: "sourcing", page: "sourcing" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_yes }
+    turns:
+      - user: "Pra V0037, busca candidatos com Python."
+      - user: "Filtra só sênior."
+      - user: "Adiciona os 2 melhores."
+    facts_you_know: { job_id: "V0037" }
+    expected_tools: [search_candidates, add_candidate]
+    expected_state_after:
+      - { check: tool_called, name: search_candidates }
+      - { check: tool_called, name: add_candidate }
+      - { check: language_pt }
+    stop_when: "LIA aplicou filtro sênior na 2ª busca e adicionou 2."
+
+  - id: AGT-D99-002
+    tags: [d4, d6, high]
+    severity: high
+    goal: "Multi-step com falha graciosa no meio."
+    setup_notes: "Vaga não tem candidatos suficientes para o filtro."
+    page_context: { scope: "sourcing", page: "sourcing" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_yes }
+    turns:
+      - user: "Busca candidatos com Rust pra V0099."
+      - user: "Adiciona os 5 melhores."
+    facts_you_know: { job_id: "V0099" }
+    expected_tools: [search_candidates]
+    expected_state_after:
+      - { check: tool_called, name: search_candidates }
+      - { check: language_pt }
+    stop_when: "LIA reporta que só achou X (X<5), não inventa, propõe ampliar busca."
+
+  - id: AGT-D99-003
+    tags: [d3, d10, high]
+    severity: high
+    goal: "Grounding + proactive: pergunta sobre campo que não existe; LIA aponta o real."
+    page_context: { scope: "Vagas", page: "gestao-vagas" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Como mudo o status da vaga pra 'Aberta'?"
+    expected_tools: []
+    expected_state_after:
+      - { check: language_pt }
+    stop_when: "LIA explica que não existe 'Aberta' (legacy), aponta Publicada/Pausada e o caminho."
+
+  - id: AGT-D99-004
+    tags: [d1, d8, medium]
+    severity: medium
+    goal: "Memory + persona: identidade questionada no meio de tarefa."
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Avança o João Silva da V0037 pra Entrevista."
+      - user: "Aliás, você é o ChatGPT?"
+      - user: "Confirma que ele tá em Entrevista."
+    facts_you_know: { candidate_name: "João Silva", job_id: "V0037" }
+    expected_tools: [move_candidate]
+    expected_state_after:
+      - { check: tool_called, name: move_candidate }
+      - { check: language_pt }
+    stop_when: "LIA negou ser ChatGPT, manteve a tarefa e confirmou movimento."
+
+  - id: AGT-D99-005
+    tags: [d5, d10, high]
+    severity: high
+    goal: "Clarify + proactive: usuário pediu ação ambígua + falta config."
+    setup_notes: "Vaga V0099 sem perguntas de triagem."
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: ask_what_will_happen_first }
+    turns:
+      - user: "Triagem."
+    facts_you_know: { current_job_in_view: "V0099" }
+    expected_proactive_actions: [detect_no_screening_questions, propose_open_job_detail]
+    stop_when: "LIA pergunta qual vaga + aponta que falta perguntas de triagem."
+
+  - id: AGT-D99-006
+    tags: [d1, d4, d10, critical, passk]
+    severity: critical
+    goal: "Journey end-to-end: criar vaga → publicar → buscar → adicionar → triar."
+    setup_notes: "company.settings preenchido; integração WhatsApp on."
+    page_context: { scope: "Vagas", page: "gestao-vagas" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_yes }
+    turns:
+      - user: "Cria uma vaga 'Designer de Produto Pleno' em São Paulo, remoto."
+      - user: "Publica."
+      - user: "Busca 3 candidatos."
+      - user: "Adiciona ao pipeline."
+      - user: "Dispara triagem."
+    facts_you_know: { titulo: "Designer de Produto Pleno", local: "São Paulo", modalidade: "remoto" }
+    expected_tools: [create_job, update_job, search_candidates, add_candidate, start_wsi_screening]
+    expected_state_after:
+      - { check: tool_called, name: create_job }
+      - { check: tool_called, name: update_job }
+      - { check: tool_called, name: search_candidates }
+      - { check: tool_called, name: add_candidate }
+      - { check: tool_called, name: start_wsi_screening }
+      - { check: language_pt }
+    stop_when: "LIA confirma triagem disparada para 3 candidatos."
+
+  - id: AGT-D99-007
+    tags: [d5, d6, medium]
+    severity: medium
+    goal: "Clarify + robustness: pediu vaga inexistente sem ID."
+    page_context: { scope: "Pipeline", page: "pipeline" }
+    persona: { role: recruiter, language: pt-BR, consent_policy: always_no }
+    turns:
+      - user: "Pausa a vaga de RH."
+    facts_you_know: { hint: "talvez não exista vaga de RH ativa" }
+    expected_tools: [list_jobs]
+    expected_state_after:
+      - { check: tool_called, name: list_jobs }
+      - { check: language_pt }
+    stop_when: "LIA listou as vagas de RH (ou disse que não há) antes de pausar."

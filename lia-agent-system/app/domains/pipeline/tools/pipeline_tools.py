@@ -97,42 +97,6 @@ async def get_pipeline_overview(
 
 
 @tool_handler(domain="pipeline", require_company=True)
-async def reject_candidate(
-    candidate_id: str = "",
-    job_id: str = "",
-    rejection_reason: str = "",
-    notify: bool = True,
-    **kwargs: Any,
-) -> dict:
-    """Rejects a candidate from the hiring process with an optional notification.
-
-    Moves the candidate to the 'rejected' stage, records the rejection reason,
-    and optionally triggers a notification to inform the candidate.
-
-    Args:
-        candidate_id: Unique identifier of the candidate.
-        job_id: Unique identifier of the job/requisition.
-        rejection_reason: Human-readable reason for the rejection.
-        notify: Whether to send a notification to the candidate (default True).
-
-    Returns:
-        dict with candidate_id, job_id, status, reason, notified, and timestamp.
-    """
-    logger.info(
-        "reject_candidate: candidate=%s job=%s notify=%s", candidate_id, job_id, notify
-    )
-    return {
-        "success": True,
-        "candidate_id": candidate_id,
-        "job_id": job_id,
-        "status": "rejected",
-        "reason": rejection_reason,
-        "notified": notify,
-        "timestamp": datetime.now(UTC).isoformat(),
-    }
-
-
-@tool_handler(domain="pipeline", require_company=True)
 async def extend_offer(
     candidate_id: str = "",
     job_id: str = "",

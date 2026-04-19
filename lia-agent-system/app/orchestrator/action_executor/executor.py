@@ -573,21 +573,6 @@ class ActionExecutorService:
                 action_type="close_job",
             )
 
-        elif action_id == "duplicate_job":
-            job_title = params.get("job_title", "a vaga")
-            return ActionResult(
-                status="executed",
-                message=f"Vaga **{job_title}** duplicada com sucesso.",
-                data={
-                    "job_id": params.get("job_id", ""),
-                    "job_title": job_title,
-                    "new_title": params.get("new_title", ""),
-                    "duplicated_at": datetime.utcnow().isoformat(),
-                    "simulated": True,
-                },
-                action_type="duplicate_job",
-            )
-
         elif action_id == "reopen_job":
             job_title = params.get("job_title", "a vaga")
             return ActionResult(

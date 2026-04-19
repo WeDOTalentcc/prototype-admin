@@ -362,7 +362,7 @@ def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
             entities["candidate_name"] = _mv_m.group(1).strip()
             # candidate_id will be resolved by _move_candidate via resolve_candidate_by_name
 
-    # WZ-003: Extract job_title, location, seniority for salary suggestion
+    # Extract job_title, location, seniority for salary suggestion.
     if intent == "sugerir_salario":
         # Extract job title: "para um Tech Lead Frontend", "de Product Manager"
         _title_m = re.search(
@@ -392,7 +392,7 @@ def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:
             else:
                 entities["seniority"] = "sênior"
 
-    # WZ-002: Extract job_title and skills for JD generation
+    # Extract job_title and skills for JD generation.
     if intent == "gerar_jd":
         # Extract job title: "para Product Manager", "de Tech Lead"
         _jd_title_m = re.search(
