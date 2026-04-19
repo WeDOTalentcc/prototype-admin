@@ -1,3 +1,4 @@
+import re
 """
 Sourcing Actions — candidate discovery, tagging, ranking, and management.
 
@@ -110,7 +111,10 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
 
         from app.core.database import AsyncSessionLocal
 
-        job_id = params.get("job_id") or (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
+        _UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
+        _ctx_eid = (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
+        _ctx_eid_valid = _ctx_eid and bool(_UUID_RE.match(str(_ctx_eid)))
+        job_id = params.get("job_id") or (_ctx_eid if _ctx_eid_valid else None)
         company_id = context.get("company_id") if context else None
         limit = int(params.get("limit", 10))
 
