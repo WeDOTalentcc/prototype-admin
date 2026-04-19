@@ -597,6 +597,26 @@ class ActionExecutorService:
                 action_type="reopen_job",
             )
 
+        elif action_id == "respond_identity":
+            return ActionResult(
+                status="executed",
+                message=(
+                    "Sou a **LIA**, assistente de recrutamento da **WeDOTalent**.\n\n"
+                    "Posso ajudar com:\n"
+                    "- Gerenciar vagas e candidatos no pipeline\n"
+                    "- Triagem automática de candidatos (WSI)\n"
+                    "- Análise de perfis e comparação de candidatos\n"
+                    "- Rankear candidatos por adequação à vaga\n"
+                    "- Gerar descrições de vagas e sugerir salários\n"
+                    "- Agendar entrevistas e enviar feedback\n"
+                    "- Consultar métricas de funil e tempo por etapa\n\n"
+                    "Como posso ajudar você hoje?"
+                ),
+                data={"identity": "LIA", "company": "WeDOTalent"},
+                action_type="respond_identity",
+            )
+
+
         return ActionResult(
             status="executed",
             message=f"Ação **{action_id}** executada com sucesso.",
