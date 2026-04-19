@@ -538,3 +538,39 @@ mapping and the rationale behind the consolidation.
 
 *Last updated: 2026-04-17 | ADR-017: canonical observability layer*
 
+
+
+---
+
+## ADR-018: LLM Factory — Choose Your AI / BYOK Contract
+
+**Status**: Implementado (2026-04-19)
+
+### Decisão
+
+O sistema de LLM opera via **LLM Factory**, composto por três camadas canônicas:
+
+| Camada | Classe | Responsabilidade |
+|--------|--------|-----------------|
+| Registry global | `LLMProviderFactory` | Catálogo de providers; factory de clientes LLM |
+| Container por tenant | `ProviderContainer` | Chave do tenant + fallback_order + Quality Tier Guard |
+| Registro de tenants | `TenantProviderRegistry` | Singleton `tenant_id → ProviderContainer`; carregado do DB |
+
+### Contratos Não-Negociáveis
+
+1. **BYOK**: Quando um tenant configura sua própria API key, ela é SEMPRE usada. Qualquer fallback para key da plataforma gera log `WARN [LIA-BYOK]`.
+2. **Quality Tier Guard**: Modelos Tier 2 (`claude-haiku-3-5`, `gemini-2.0-flash`, `gpt-4o-mini`) são bloqueados para tasks `screening` e `wsi` — a plataforma substitui pelo modelo Tier 1 e registra `WARN [LIA-QUALITY]`.
+3. **Audit trail**: Toda chamada LLM bem-sucedida registra `key_source="tenant"|"system"` via `audit_service.log_decision()`.
+4. **Embedding lock**: Fallback cross-provider em embeddings (Gemini 768 dims → OpenAI 1536 dims) gera `CRITICAL [EmbeddingFactory]`; bloqueável via `EMBEDDING_LOCK_PROVIDER`.
+
+### Paths Canônicos
+
+- **Chat / Orchestrator**: `TenantProviderRegistry.load_from_db()` → `ProviderContainer.generate_with_fallback(task_type="chat")`
+- **Triagem WSI**: `wsi_compact_pipeline` → `generate_with_fallback(task_type="screening")` — Quality Tier Guard ativo
+- **LangGraph agents**: `langgraph_react_base._get_model()` + budget check antes de `_run_graph()`
+
+### Referência Operacional
+
+Ver `LLM_FACTORY_HANDOFF_v2.md` para: tabela de gaps, constantes de referência (`QUALITY_TIERS`, `TASK_MINIMUM_TIER`), guia de logs, env vars e matriz Provider × Capacidade × Tier.
+
+*Last updated: 2026-04-19 | ADR-018: LLM Factory / Choose Your AI BYOK contract*
