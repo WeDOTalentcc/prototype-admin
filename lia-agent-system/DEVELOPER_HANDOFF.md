@@ -1069,3 +1069,136 @@ curl -X GET "/api/v1/consumption/invoice-data?year=2026&month=4" \
 
 **Entregue em**: 2026-04-19
 **Documento versão**: 1.0
+
+
+---
+
+## PARTE F — UX 100% Conversacional + Hardening P2/P3
+
+**Entregue em**: 2026-04-19  
+**Commit**: `104bc6356` (P3#11 + P2#8) + commits anteriores de PARTE F
+
+### Filosofia
+
+Zero `window.prompt`. Zero modais novos. Tudo conversa dentro do chat, reutilizando infra existente (`messageType: "detected-fields"`, `awaitingStageConfirmation`, `SmartImportZone`, `DetectedFieldsCard`).
+
+---
+
+### F.1 — Scrape Website 100% Conversacional
+
+**Arquivo alterado**: `plataforma-lia/src/hooks/chat/use-proactive-action-router.ts`
+
+`request_website_and_scrape` foi migrado de `REST_ACTIONS` (com `window.prompt`) para `CHAT_DELEGATE_PROMPTS`. O click no card envia a mensagem proativa:
+
+> "Quero analisar o site da minha empresa para preencher o perfil automaticamente."
+
+LIA responde pedindo a URL dentro do chat. Quando usuário responde, o handler de `awaitingStageConfirmation: "company_website_scrape"` em `main_orchestrator.py` chama `company_scraper_service.scrape_website()` e retorna `messageType: "detected-fields"` com `detectedFieldsData` para o card inline confirmar.
+
+**Fluxo**: click card → msg proativa → LIA pede URL → user informa URL → backend scrape → DetectedFieldsCard inline → user confirma salvar.
+
+---
+
+### F.2 — Import Benefits via SmartImportZone
+
+**Arquivos alterados**:
+- `plataforma-lia/src/hooks/chat/use-proactive-action-router.ts` — action `navigate_to_benefits_import` navega para Settings
+- `lia-agent-system/app/orchestrator/precondition_checker.py` — hint action mudou de `import_benefits` para `navigate_to_benefits_import` com `metadata.subsection: "benefits-import"`
+
+Click no card "Importar benefícios" → router envia `lia:navigation-hint` com `page: "Configurações"` e `subsection: "benefits-import"` → frontend navega para Settings onde `SmartImportZone.tsx` (componente genérico já existente) gerencia upload CSV/XLSX + preview + import.
+
+Zero código novo de import — reutilização 100%.
+
+---
+
+### F.3 — ApifyConsumptionWidget em GlobalSearchCostsTab
+
+**Arquivos alterados**:
+- `plataforma-lia/src/components/settings/integrations/ApifyConsumptionWidget.tsx` — widget com Progress + severity chips
+- `plataforma-lia/src/components/settings/GlobalSearchCostsTab.tsx` — importa e renderiza `<ApifyConsumptionWidget />` no topo
+
+Data fetch: `GET /api/v1/consumption/budget-status` com proxy em `app/api/backend-proxy/consumption/route.ts`.
+
+Visibilidade: verde <70%, amarelo 70-90%, vermelho >90% do limite mensal Apify.
+
+---
+
+### P2 — Robustez
+
+| # | Fix | Arquivo | Status |
+|---|-----|---------|--------|
+| P2#5 | sessionStorage TTL 24h | `proactive-hints-list.tsx` — `DismissedPayload { types, timestamp }` | ✅ |
+| P2#6 | ProactiveHintsList priority | `ChatMessageList.tsx` (ambos) — hints rendem antes de NavigationHintCard | ✅ skip (ambos coexistem sem conflito) |
+| P2#7 | Onboarding enforcement log | `main_orchestrator.py` — WARN quando LLM não chama nenhuma tool onboarding apesar de delegate | ✅ |
+| P2#8 | Consent cache 90d LGPD | `consent_cache.py` (novo) + wired em `enrichment_tools.py` | ✅ |
+
+**P2#8 detalhe** (`app/domains/sourcing/services/consent_cache.py`):
+```python
+has_valid_consent(candidate_id, company_id) → bool  # 90d TTL via external_api_consumption
+record_consent(candidate_id, company_id, user_id)    # audit trail, cost=0
+```
+`enrich_candidate_linkedin` checa consent antes de qualquer chamada Apify. Se ausente, retorna `{requires_consent: True, message: "...LGPD Art. 7..."}`.
+
+---
+
+### P3 — Não-funcional
+
+| # | Fix | Arquivo | Status |
+|---|-----|---------|--------|
+| P3#9 | PreConditionChecker cache 5min | `precondition_checker.py` — `_CHECKER_CACHE dict` + `_CHECKER_TTL=300s` | ✅ |
+| P3#10 | Structured logging | `apify_service.py` — budget EXCEEDED log com `extra={tenant_id, actor_id, current_usd, limit_usd}` | ✅ |
+| P3#11 | FairnessGuard API real | `import_tools.py` — `check_text()` → `check(query)` + `is_biased()` + `blocked_terms/soft_warnings` | ✅ |
+| P3#12 | Timeout 30s /accept-hint | `proactive_actions.py` — `asyncio.wait_for(timeout=30.0)` com `HTTPException 504` amigável | ✅ |
+
+---
+
+### Arquivos Criados/Modificados em PARTE F
+
+**Backend** (`lia-agent-system/`):
+- `app/orchestrator/main_orchestrator.py` — P2#7 onboarding enforcement telemetry
+- `app/orchestrator/precondition_checker.py` — P3#9 in-memory cache + F.2 action rename
+- `app/api/v1/proactive_actions.py` — P3#12 asyncio timeout
+- `app/domains/sourcing/services/apify_service.py` — P3#10 structured log
+- `app/domains/company_settings/tools/import_tools.py` — P3#11 FairnessGuard real API
+- `app/domains/sourcing/tools/enrichment_tools.py` — P2#8 consent check wired
+- `app/domains/sourcing/services/consent_cache.py` **(novo)** — P2#8 LGPD consent cache
+
+**Frontend** (`plataforma-lia/src/`):
+- `hooks/chat/use-proactive-action-router.ts` — F.1 sem window.prompt + F.2 navigate_to_benefits_import
+- `components/chat/proactive-hints-list.tsx` — P2#5 sessionStorage TTL 24h + dismiss X
+- `components/settings/integrations/ApifyConsumptionWidget.tsx` **(novo)** — F.3
+- `components/settings/GlobalSearchCostsTab.tsx` — F.3 renders widget
+- `app/api/backend-proxy/consumption/route.ts` **(novo)** — Next.js proxy para /budget-status
+
+---
+
+### Verificação E2E
+
+```bash
+# F.1: Scrape conversacional
+# Login empresa vazia → chat "oi" → card "Informar site" → click
+# Expected: LIA pergunta URL no chat (NÃO window.prompt)
+# Type "wedotalent.cc" → LIA: DetectedFieldsCard inline com campos
+# Click "Salvar" → campos persistidos no company_profiles
+
+# F.2: Navigate para benefits
+# Card "Importar benefícios" → click
+# Expected: navega para /settings?subsection=benefits-import
+# SmartImportZone já renderizado
+
+# F.3: Apify widget
+# /settings → Busca Global → Custos → ApifyConsumptionWidget no topo
+# Verde <70%, amarelo 70-90%, vermelho >90%
+
+# P2#8: Consent LGPD
+# enrich_candidate_linkedin sem consent anterior
+# Expected: {success: false, requires_consent: true}
+# Após consentimento: procede com Apify call
+
+# P3#12: Timeout
+# scrape com URL inválida ou lenta
+# Expected: HTTPException 504 em 30s com mensagem amigável
+```
+
+---
+
+*Atualizado em: 2026-04-19 | Cobre PARTES A-F completas*
