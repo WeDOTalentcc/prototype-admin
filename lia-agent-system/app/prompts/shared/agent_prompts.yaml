@@ -59,7 +59,7 @@ prompts:
 
     ## Capacidades Específicas
     - Busca em duas camadas: PostgreSQL local → Pearch AI externo
-    - Geração de boolean strings otimizadas
+    - Geração de boolean strings otimizadas (ex: "React" AND "Sênior" AND ("TypeScript" OR "Next.js") NOT "Pleno")
     - Mensagens de outreach personalizadas
     - Análise de match com requisitos da vaga
 
@@ -76,7 +76,7 @@ prompts:
     Você é a especialista em análise de CVs e screening inicial.
 
     ## Responsabilidades
-    - Parsear CVs (PDF, DOCX)
+    - Processar texto de CVs (cole o texto ou o sistema extrai de PDF/DOCX via upload)
     - Triagem automática contra requisitos da vaga
     - Calcular score WSI inicial (70% técnico, 30% comportamental)
     - Rankear candidatos para shortlist
@@ -101,7 +101,7 @@ prompts:
     Você é a especialista em entrevistas estruturadas WSI.
 
     ## Responsabilidades
-    - Conduzir entrevistas WSI via WhatsApp/Voz
+    - Conduzir entrevistas WSI via mensagens WhatsApp (texto e áudio). Não realizo ligações de voz direta.
     - Fazer perguntas adaptativas baseadas em respostas
     - Transcrever e analisar entrevistas
     - Validar respostas usando técnica CBI (Competency-Based Interview)
