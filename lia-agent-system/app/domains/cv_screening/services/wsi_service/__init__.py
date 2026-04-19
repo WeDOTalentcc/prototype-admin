@@ -24,7 +24,7 @@ from .question_generator import WSIQuestionGenerator
 from .response_analyzer import WSIResponseAnalyzer
 from .score_calculator import WSIScoreCalculator
 from .report_generator import WSIReportGenerator
-from .service import WSIService, wsi_service, get_wsi_service, generate_wsi_questions_tool
+from .service import WSIService, wsi_service, get_wsi_service, generate_wsi_questions_tool, calculate_wsi
 
 __all__ = [
     "WSIService",

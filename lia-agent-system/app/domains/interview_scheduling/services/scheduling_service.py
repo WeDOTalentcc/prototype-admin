@@ -1085,6 +1085,121 @@ class SchedulingService:
             }
 
 
+    # ------------------------------------------------------------------
+    # Chat tool surface (registered in app/domains/interview_scheduling/tools/__init__.py)
+    # Thin wrappers around create/update/list primitives for the chat registry.
+    # ------------------------------------------------------------------
+    async def schedule_interview(
+        self,
+        db=None,
+        candidate_id: str = "",
+        interviewer_id: str = "",
+        scheduled_at: str = "",
+        duration_minutes: int = 60,
+        company_id: str | None = None,
+        **kwargs,
+    ):
+        """Public alias around create_interview() exposed to the chat registry."""
+        return await self.create_interview(
+            db=db,
+            candidate_id=candidate_id,
+            interviewer_id=interviewer_id,
+            scheduled_at=scheduled_at,
+            duration_minutes=duration_minutes,
+            company_id=company_id,
+            **kwargs,
+        )
+
+    async def reschedule_interview(
+        self,
+        db=None,
+        interview_id: str = "",
+        new_scheduled_at: str = "",
+        company_id: str | None = None,
+        **kwargs,
+    ):
+        """Public alias around update_interview() that adjusts the scheduled time."""
+        return await self.update_interview(
+            db=db,
+            interview_id=interview_id,
+            updates={"scheduled_at": new_scheduled_at},
+            company_id=company_id,
+            **kwargs,
+        )
+
+    async def generate_self_scheduling_link(
+        self,
+        candidate_id: str = "",
+        interview_type: str = "",
+        company_id: str | None = None,
+        **kwargs,
+    ) -> dict:
+        """Generate a self-scheduling link the candidate can use to pick a slot.
+
+        Stub: returns a structured payload. Real implementation will create a
+        Booking page entry and persist the token.
+        """
+        import uuid as _uuid
+        token = _uuid.uuid4().hex
+        return {
+            "success": True,
+            "candidate_id": candidate_id,
+            "interview_type": interview_type,
+            "company_id": company_id,
+            "url": f"/booking/{token}",
+            "token": token,
+            "simulation_stub": True,
+        }
+
+    async def send_reminder(
+        self,
+        db=None,
+        interview_id: str = "",
+        recipient: str = "candidate",
+        company_id: str | None = None,
+        **kwargs,
+    ) -> dict:
+        """Send a reminder for an upcoming interview.
+
+        Stub: returns a structured payload until the messaging pipeline is wired
+        end-to-end (Teams + email + WhatsApp).
+        """
+        return {
+            "success": True,
+            "interview_id": interview_id,
+            "recipient": recipient,
+            "company_id": company_id,
+            "channel": "email",
+            "sent_at": datetime.utcnow().isoformat() if 'datetime' in globals() else None,
+            "simulation_stub": True,
+        }
+
+    async def list_today_interviews(
+        self,
+        db=None,
+        company_id: str | None = None,
+        **kwargs,
+    ):
+        """List interviews scheduled for the current day (alias over list_interviews)."""
+        from datetime import datetime as _dt, timedelta as _td
+        today_start = _dt.combine(_dt.utcnow().date(), _dt.min.time())
+        today_end = today_start + _td(days=1)
+        if db is None:
+            return {"success": True, "interviews": [], "count": 0, "date": today_start.date().isoformat()}
+        interviews, total = await self.list_interviews(
+            db=db,
+            from_date=today_start,
+            to_date=today_end,
+            **{k: v for k, v in kwargs.items() if k in {"candidate_id", "vacancy_id", "interviewer_email", "status", "skip", "limit"}},
+        )
+        return {
+            "success": True,
+            "date": today_start.date().isoformat(),
+            "count": total,
+            "interview_ids": [getattr(i, "id", None) for i in interviews],
+        }
+
+
 scheduling_service = SchedulingService()
 
 

@@ -160,58 +160,7 @@
         "action_tool_map_broken": [],
         "tools_orphaned_no_action": [],
         "actions_without_tool_or_handler": [],
-        "handlers_failing_import": [
-          {
-            "tool_id": "ats_sync_candidate",
-            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.sync_candidate",
-            "error": "ModuleNotFoundError: No module named 'app.domains.ats_integration.services.ats_sync_service.ats_sync_service'; 'app.domains.ats_integration.services.ats_sync_se"
-          },
-          {
-            "tool_id": "ats_sync_job",
-            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.sync_job",
-            "error": "ModuleNotFoundError: No module named 'app.domains.ats_integration.services.ats_sync_service.ats_sync_service'; 'app.domains.ats_integration.services.ats_sync_se"
-          },
-          {
-            "tool_id": "ats_pull_candidates",
-            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.pull_candidates",
-            "error": "ModuleNotFoundError: No module named 'app.domains.ats_integration.services.ats_sync_service.ats_sync_service'; 'app.domains.ats_integration.services.ats_sync_se"
-          },
-          {
-            "tool_id": "ats_pull_jobs",
-            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.pull_jobs",
-            "error": "ModuleNotFoundError: No module named 'app.domains.ats_integration.services.ats_sync_service.ats_sync_service'; 'app.domains.ats_integration.services.ats_sync_se"
-          },
-          {
-            "tool_id": "ats_check_status",
-            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.check_sync_status",
-            "error": "ModuleNotFoundError: No module named 'app.domains.ats_integration.services.ats_sync_service.ats_sync_service'; 'app.domains.ats_integration.services.ats_sync_se"
-          },
-          {
-            "tool_id": "ats_list_connections",
-            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.list_connections",
-            "error": "ModuleNotFoundError: No module named 'app.domains.ats_integration.services.ats_sync_service.ats_sync_service'; 'app.domains.ats_integration.services.ats_sync_se"
-          },
-          {
-            "tool_id": "ats_test_connection",
-            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.test_connection",
-            "error": "ModuleNotFoundError: No module named 'app.domains.ats_integration.services.ats_sync_service.ats_sync_service'; 'app.domains.ats_integration.services.ats_sync_se"
-          },
-          {
-            "tool_id": "ats_view_sync_log",
-            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.view_sync_log",
-            "error": "ModuleNotFoundError: No module named 'app.domains.ats_integration.services.ats_sync_service.ats_sync_service'; 'app.domains.ats_integration.services.ats_sync_se"
-          },
-          {
-            "tool_id": "ats_update_status",
-            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.update_candidate_status",
-            "error": "ModuleNotFoundError: No module named 'app.domains.ats_integration.services.ats_sync_service.ats_sync_service'; 'app.domains.ats_integration.services.ats_sync_se"
-          },
-          {
-            "tool_id": "ats_send_score",
-            "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.send_score",
-            "error": "ModuleNotFoundError: No module named 'app.domains.ats_integration.services.ats_sync_service.ats_sync_service'; 'app.domains.ats_integration.services.ats_sync_se"
-          }
-        ]
+        "handlers_failing_import": []
       },
       "errors": []
     },
@@ -279,58 +228,7 @@
         "action_tool_map_broken": [],
         "tools_orphaned_no_action": [],
         "actions_without_tool_or_handler": [],
-        "handlers_failing_import": [
-          {
-            "tool_id": "automation_create_task",
-            "handler": "app.domains.automation.services.task_service.TaskService.create_task",
-            "error": "ModuleNotFoundError: No module named 'app.domains.automation.services.task_service.TaskService'; 'app.domains.automation.services.task_service' is not a package"
-          },
-          {
-            "tool_id": "automation_list_tasks",
-            "handler": "app.domains.automation.services.task_service.TaskService.list_tasks",
-            "error": "ModuleNotFoundError: No module named 'app.domains.automation.services.task_service.TaskService'; 'app.domains.automation.services.task_service' is not a package"
-          },
-          {
-            "tool_id": "automation_complete_task",
-            "handler": "app.domains.automation.services.task_service.TaskService.complete_task",
-            "error": "ModuleNotFoundError: No module named 'app.domains.automation.services.task_service.TaskService'; 'app.domains.automation.services.task_service' is not a package"
-          },
-          {
-            "tool_id": "automation_cancel_task",
-            "handler": "app.domains.automation.services.task_service.TaskService.cancel_task",
-            "error": "ModuleNotFoundError: No module named 'app.domains.automation.services.task_service.TaskService'; 'app.domains.automation.services.task_service' is not a package"
-          },
-          {
-            "tool_id": "automation_create_rule",
-            "handler": "app.domains.automation.services.automation_service.AutomationService.create_automation",
-            "error": "ModuleNotFoundError: No module named 'app.domains.automation.services.automation_service.AutomationService'; 'app.domains.automation.services.automation_service"
-          },
-          {
-            "tool_id": "automation_list_rules",
-            "handler": "app.domains.automation.services.automation_service.AutomationService.list_automations",
-            "error": "ModuleNotFoundError: No module named 'app.domains.automation.services.automation_service.AutomationService'; 'app.domains.automation.services.automation_service"
-          },
-          {
-            "tool_id": "automation_enable_rule",
-            "handler": "app.domains.automation.services.automation_service.AutomationService.enable_automation",
-            "error": "ModuleNotFoundError: No module named 'app.domains.automation.services.automation_service.AutomationService'; 'app.domains.automation.services.automation_service"
-          },
-          {
-            "tool_id": "automation_disable_rule",
-            "handler": "app.domains.automation.services.automation_service.AutomationService.disable_automation",
-            "error": "ModuleNotFoundError: No module named 'app.domains.automation.services.automation_service.AutomationService'; 'app.domains.automation.services.automation_service"
-          },
-          {
-            "tool_id": "automation_trigger",
-            "handler": "app.domains.automation.services.automation_trigger_service.AutomationTriggerService.trigger",
-            "error": "ModuleNotFoundError: No module named 'app.domains.automation.services.automation_trigger_service.AutomationTriggerService'; 'app.domains.automation.services.aut"
-          },
-          {
-            "tool_id": "automation_view_log",
-            "handler": "app.domains.automation.services.automation_service.AutomationService.get_execution_log",
-            "error": "ModuleNotFoundError: No module named 'app.domains.automation.services.automation_service.AutomationService'; 'app.domains.automation.services.automation_service"
-          }
-        ]
+        "handlers_failing_import": []
       },
       "errors": []
     },
@@ -497,53 +395,7 @@
           "score_cv"
         ],
         "actions_without_tool_or_handler": [],
-        "handlers_failing_import": [
-          {
-            "tool_id": "parse_cv",
-            "handler": "app.domains.cv_screening.services.cv_parser.parse_cv",
-            "error": "function 'parse_cv' not found in app.domains.cv_screening.services.cv_parser"
-          },
-          {
-            "tool_id": "score_cv",
-            "handler": "app.domains.cv_screening.services.cv_scoring_service.score_cv",
-            "error": "function 'score_cv' not found in app.domains.cv_screening.services.cv_scoring_service"
-          },
-          {
-            "tool_id": "evaluate_rubric",
-            "handler": "app.domains.cv_screening.services.rubric_evaluation_service.evaluate_rubric",
-            "error": "function 'evaluate_rubric' not found in app.domains.cv_screening.services.rubric_evaluation_service"
-          },
-          {
-            "tool_id": "calculate_wsi",
-            "handler": "app.domains.cv_screening.services.wsi_service.calculate_wsi",
-            "error": "function 'calculate_wsi' not found in app.domains.cv_screening.services.wsi_service"
-          },
-          {
-            "tool_id": "adjust_wsi_questions",
-            "handler": "app.domains.cv_screening.services.wsi_question_adjuster.adjust_questions",
-            "error": "function 'adjust_questions' not found in app.domains.cv_screening.services.wsi_question_adjuster"
-          },
-          {
-            "tool_id": "normalize_scores",
-            "handler": "app.domains.cv_screening.services.score_normalization_service.normalize",
-            "error": "function 'normalize' not found in app.domains.cv_screening.services.score_normalization_service"
-          },
-          {
-            "tool_id": "send_candidate_feedback",
-            "handler": "app.domains.cv_screening.services.personalized_feedback_service.send_feedback",
-            "error": "function 'send_feedback' not found in app.domains.cv_screening.services.personalized_feedback_service"
-          },
-          {
-            "tool_id": "pre_qualify_candidate",
-            "handler": "app.domains.cv_screening.services.pre_qualification_service.pre_qualify",
-            "error": "function 'pre_qualify' not found in app.domains.cv_screening.services.pre_qualification_service"
-          },
-          {
-            "tool_id": "run_screening_pipeline",
-            "handler": "app.domains.cv_screening.services.wsi_screening_pipeline.run_pipeline",
-            "error": "function 'run_pipeline' not found in app.domains.cv_screening.services.wsi_screening_pipeline"
-          }
-        ]
+        "handlers_failing_import": []
       },
       "errors": []
     },
@@ -647,58 +499,46 @@
         "action_tool_map_broken": [],
         "tools_orphaned_no_action": [],
         "actions_without_tool_or_handler": [],
-        "handlers_failing_import": [
-          {
-            "tool_id": "scheduling_schedule_interview",
-            "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.schedule_interview",
-            "error": "ModuleNotFoundError: No module named 'app.domains.interview_scheduling.services.scheduling_service.scheduling_service'; 'app.domains.interview_scheduling.servic"
-          },
-          {
-            "tool_id": "scheduling_reschedule",
-            "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.reschedule_interview",
-            "error": "ModuleNotFoundError: No module named 'app.domains.interview_scheduling.services.scheduling_service.scheduling_service'; 'app.domains.interview_scheduling.servic"
-          },
-          {
-            "tool_id": "scheduling_cancel",
-            "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.cancel_interview",
-            "error": "ModuleNotFoundError: No module named 'app.domains.interview_scheduling.services.scheduling_service.scheduling_service'; 'app.domains.interview_scheduling.servic"
-          },
-          {
-            "tool_id": "scheduling_check_availability",
-            "handler": "app.domains.interview_scheduling.services.calendar_service.calendar_service.check_availability",
-            "error": "ModuleNotFoundError: No module named 'app.domains.interview_scheduling.services.calendar_service.calendar_service'; 'app.domains.interview_scheduling.services.c"
-          },
-          {
-            "tool_id": "scheduling_self_scheduling_link",
-            "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.generate_self_scheduling_link",
-            "error": "ModuleNotFoundError: No module named 'app.domains.interview_scheduling.services.scheduling_service.scheduling_service'; 'app.domains.interview_scheduling.servic"
-          },
-          {
-            "tool_id": "scheduling_find_slots",
-            "handler": "app.domains.interview_scheduling.services.calendar_service.calendar_service.find_common_slots",
-            "error": "ModuleNotFoundError: No module named 'app.domains.interview_scheduling.services.calendar_service.calendar_service'; 'app.domains.interview_scheduling.services.c"
-          },
-          {
-            "tool_id": "scheduling_send_reminder",
-            "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.send_reminder",
-            "error": "ModuleNotFoundError: No module named 'app.domains.interview_scheduling.services.scheduling_service.scheduling_service'; 'app.domains.interview_scheduling.servic"
-          },
-          {
-            "tool_id": "scheduling_list_today",
-            "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.list_today_interviews",
-            "error": "ModuleNotFoundError: No module named 'app.domains.interview_scheduling.services.scheduling_service.scheduling_service'; 'app.domains.interview_scheduling.servic"
-          },
-          {
-            "tool_id": "scheduling_transcribe_audio",
-            "handler": "app.services.voice_service.voice_service.transcribe_audio",
-            "error": "ModuleNotFoundError: No module named 'app.services.voice_service'"
-          },
-          {
-            "tool_id": "scheduling_analyze_voice",
-            "handler": "app.services.voice_service.voice_service.transcribe_audio",
-            "error": "ModuleNotFoundError: No module named 'app.services.voice_service'"
-          }
-        ]
+        "handlers_failing_import": []
+      },
+      "errors": []
+    },
+    "job_creation": {
+      "class": "JobCreationDomain",
+      "action_count": 11,
+      "tool_count": 0,
+      "actions": [
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        ""
+      ],
+      "tools": [],
+      "action_tool_map": {},
+      "gaps": {
+        "action_tool_map_broken": [],
+        "tools_orphaned_no_action": [],
+        "actions_without_tool_or_handler": [
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ],
+        "handlers_failing_import": []
       },
       "errors": []
     },
@@ -871,58 +711,7 @@
         "action_tool_map_broken": [],
         "tools_orphaned_no_action": [],
         "actions_without_tool_or_handler": [],
-        "handlers_failing_import": [
-          {
-            "tool_id": "assistant_pipeline_health",
-            "handler": "app.domains.recruiter_assistant.services.pipeline_service.pipeline_service.get_stale_candidates",
-            "error": "ModuleNotFoundError: No module named 'app.domains.recruiter_assistant.services.pipeline_service.pipeline_service'; 'app.domains.recruiter_assistant.services.pip"
-          },
-          {
-            "tool_id": "assistant_stale_candidates",
-            "handler": "app.domains.recruiter_assistant.services.pipeline_service.pipeline_service.get_stale_candidates",
-            "error": "ModuleNotFoundError: No module named 'app.domains.recruiter_assistant.services.pipeline_service.pipeline_service'; 'app.domains.recruiter_assistant.services.pip"
-          },
-          {
-            "tool_id": "assistant_move_candidate",
-            "handler": "app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service.transition_candidate",
-            "error": "ModuleNotFoundError: No module named 'app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service'; 'app.domains.recruiter_assistant."
-          },
-          {
-            "tool_id": "assistant_search_context",
-            "handler": "app.domains.recruiter_assistant.services.memory_service.memory_service.search_similar_messages",
-            "error": "ModuleNotFoundError: No module named 'app.domains.recruiter_assistant.services.memory_service.memory_service'; 'app.domains.recruiter_assistant.services.memory_"
-          },
-          {
-            "tool_id": "assistant_save_memory",
-            "handler": "app.domains.recruiter_assistant.services.memory_service.memory_service.store_message",
-            "error": "ModuleNotFoundError: No module named 'app.domains.recruiter_assistant.services.memory_service.memory_service'; 'app.domains.recruiter_assistant.services.memory_"
-          },
-          {
-            "tool_id": "assistant_recall_memory",
-            "handler": "app.domains.recruiter_assistant.services.memory_service.memory_service.search_similar_messages",
-            "error": "ModuleNotFoundError: No module named 'app.domains.recruiter_assistant.services.memory_service.memory_service'; 'app.domains.recruiter_assistant.services.memory_"
-          },
-          {
-            "tool_id": "assistant_conversation_summary",
-            "handler": "app.domains.recruiter_assistant.services.conversation_memory.ConversationMemory.update_summary",
-            "error": "ModuleNotFoundError: No module named 'app.domains.recruiter_assistant.services.conversation_memory.ConversationMemory'; 'app.domains.recruiter_assistant.service"
-          },
-          {
-            "tool_id": "assistant_kanban_analysis",
-            "handler": "app.domains.recruiter_assistant.services.kanban_assistant_service.kanban_assistant_service.process_command",
-            "error": "ModuleNotFoundError: No module named 'app.domains.recruiter_assistant.services.kanban_assistant_service.kanban_assistant_service'; 'app.domains.recruiter_assist"
-          },
-          {
-            "tool_id": "assistant_send_notification",
-            "handler": "app.services.notification_service.notification_service.send_proactive_notification",
-            "error": "ModuleNotFoundError: No module named 'app.services.notification_service.notification_service'; 'app.services.notification_service' is not a package"
-          },
-          {
-            "tool_id": "assistant_track_goals",
-            "handler": "app.services.goal_service.goal_service.get_user_goals",
-            "error": "ModuleNotFoundError: No module named 'app.services.goal_service'"
-          }
-        ]
+        "handlers_failing_import": []
       },
       "errors": []
     },
@@ -1070,7 +859,6 @@
     "health_check",
     "integrations_hub",
     "interview_intelligence",
-    "job_creation",
     "job_vacancies_analytics",
     "journey_mapping",
     "lgpd",
@@ -1092,55 +880,62 @@
     "workforce"
   ],
   "agent_type_mapping": {
-    "job_planner": "job_management",
-    "job_intake": "job_management",
-    "sourcing": "sourcing",
+    "analytics": "analytics",
+    "analyst_feedback": "analytics",
+    "ats_integration": "ats_integration",
+    "ats_integrator": "ats_integration",
+    "automation": "automation",
+    "task_planner": "automation",
+    "communication": "communication",
     "cv_screening": "cv_screening",
     "screening": "cv_screening",
     "wsi_evaluator": "cv_screening",
+    "company_settings": "company_settings",
+    "settings_config": "company_settings",
+    "company_profile": "company_settings",
+    "company_config": "company_settings",
+    "hiring_policy": "hiring_policy",
+    "interview_scheduling": "interview_scheduling",
     "interviewer": "interview_scheduling",
     "scheduling": "interview_scheduling",
-    "analyst_feedback": "analytics",
-    "analytics": "analytics",
-    "communication": "communication",
-    "ats_integrator": "ats_integration",
+    "job_management": "job_management",
+    "job_planner": "job_management",
+    "job_intake": "job_management",
     "recruiter_assistant": "recruiter_assistant",
-    "task_planner": "automation",
+    "pipeline_transition": "pipeline_transition",
     "kanban_search": "pipeline_transition",
     "kanban_insight": "pipeline_transition",
     "kanban_action": "pipeline_transition",
     "pipeline_context": "pipeline_transition",
     "pipeline_decision": "pipeline_transition",
     "pipeline_action": "pipeline_transition",
+    "sourcing": "sourcing",
     "sourcing_planner": "sourcing",
     "sourcing_search": "sourcing",
     "sourcing_enrich": "sourcing",
     "sourcing_engagement": "sourcing",
     "talent_pool": "talent_pool",
+    "voice_screening": "talent_pool",
     "agent_studio": "agent_studio",
+    "multi_strategy": "agent_studio",
     "digital_twin": "digital_twin",
     "recruitment_campaign": "recruitment_campaign",
-    "multi_strategy": "agent_studio",
-    "voice_screening": "talent_pool",
     "candidate_self_service": "candidate_self_service",
     "candidate_status": "candidate_self_service",
     "candidate_portal": "candidate_self_service",
-    "settings_config": "company_settings",
-    "company_settings": "company_settings",
-    "company_profile": "company_settings",
-    "company_config": "company_settings"
+    "job_creation": "job_creation"
   },
   "agent_types_pointing_to_unknown_domain": [],
   "gaps_by_domain": {},
   "global_summary": {
-    "total_registered": 17,
-    "total_actions": 268,
+    "total_registered": 18,
+    "total_actions": 279,
     "total_tools": 93,
-    "domains_with_gaps": 6,
+    "domains_with_gaps": 3,
     "broken_mappings": 0,
     "orphan_tools": 3,
-    "actions_no_handler": 0,
-    "broken_handlers": 49
+    "actions_no_handler": 11,
+    "broken_handlers": 0
   },
   "domain_dirs_total": 61,
   "domain_import_failures": {},

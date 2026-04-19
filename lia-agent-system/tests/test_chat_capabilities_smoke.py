@@ -32,13 +32,7 @@ import pytest
 # ──────────────────────────────────────────────────────────────────────────────
 # Configuração: domínios P1 ainda fora de escopo da Fase 1
 # ──────────────────────────────────────────────────────────────────────────────
-P1_DOMAINS_DEFERRED: set[str] = {
-    "ats_integration",
-    "automation",
-    "cv_screening",
-    "interview_scheduling",
-    "recruiter_assistant",
-}
+P1_DOMAINS_DEFERRED: set[str] = set()  # Phase 2 (#582): all P1 handlers now resolve.
 
 # Actions cujo execute_action depende de IO pesado (DB com vagas reais, APIs
 # externas) — validamos coverage mas não invocamos.

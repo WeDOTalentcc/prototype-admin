@@ -1408,3 +1408,15 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
 
 
 personalized_feedback_service = PersonalizedFeedbackService()
+
+
+# Module-level handler exposed to the chat tool registry
+async def send_feedback(**kwargs):
+    """Chat-surface wrapper around PersonalizedFeedbackService.
+
+    Routes to send_approval_feedback() when an `approval_id`/`feedback_id` is
+    present, otherwise falls back to generate_personalized_feedback().
+    """
+    if kwargs.get("feedback_id") or kwargs.get("approval_id"):
+        return await personalized_feedback_service.send_approval_feedback(**kwargs)
+    return await personalized_feedback_service.generate_personalized_feedback(**kwargs)

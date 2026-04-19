@@ -627,3 +627,9 @@ class WSIScreeningPipeline:
 
 
 wsi_screening_pipeline = WSIScreeningPipeline()
+
+
+# Module-level handler exposed to the chat tool registry
+async def run_pipeline(**kwargs):
+    """Chat-surface wrapper around WSIScreeningPipeline.build_pipeline()."""
+    return await wsi_screening_pipeline.build_pipeline(**kwargs)

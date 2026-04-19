@@ -442,3 +442,14 @@ class PreQualificationService:
 
 
 pre_qualification_service = PreQualificationService()
+
+
+# Module-level handler exposed to the chat tool registry
+async def pre_qualify(**kwargs):
+    """Chat-surface wrapper around PreQualificationService.evaluate()."""
+    result = pre_qualification_service.evaluate(**kwargs)
+    if hasattr(result, "to_dict"):
+        return {"success": True, "result": result.to_dict()}
+    if hasattr(result, "__dict__"):
+        return {"success": True, "result": dict(result.__dict__)}
+    return {"success": True, "result": result}

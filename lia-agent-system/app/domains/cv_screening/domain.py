@@ -148,6 +148,12 @@ class CVScreeningDomain(ComplianceDomainPrompt):
                 params=params,
                 tenant_id=context.tenant_id,
             )
+            if isinstance(result, dict) and (result.get("status") == "error" or result.get("success") is False):
+                return DomainResponse.error_response(
+                    error=result.get("error") or result.get("message") or f"Ferramenta '{mapped_tool}' falhou.",
+                    domain_id=self.domain_id,
+                    action_id=action_id,
+                )
             return DomainResponse.success_response(
                 message=f"Ferramenta '{mapped_tool}' executada para ação '{action.name}'.",
                 data={"action_id": action_id, "tool_id": mapped_tool, "result": result},

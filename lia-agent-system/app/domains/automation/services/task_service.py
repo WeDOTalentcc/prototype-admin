@@ -656,5 +656,47 @@ class TaskService:
         result = await db.execute(query)
         return list(result.scalars().all())
 
+    # ------------------------------------------------------------------
+    # Chat tool surface (registered in app/domains/automation/tools/__init__.py)
+    # ------------------------------------------------------------------
+    async def list_tasks(
+        self,
+        db=None,
+        company_id: str | None = None,
+        status: str | None = None,
+        **kwargs,
+    ):
+        """List tasks for the chat surface; defaults to pending."""
+        if db is None:
+            return {"success": True, "tasks": [], "count": 0, "filter": status or "pending"}
+        if status == "overdue":
+            tasks = await self.get_overdue_tasks(db, company_id=company_id)
+        elif status == "today":
+            tasks = await self.get_tasks_due_today(db, company_id=company_id)
+        else:
+            tasks = await self.get_pending_tasks(db, company_id=company_id)
+        return {
+            "success": True,
+            "count": len(tasks),
+            "filter": status or "pending",
+            "tasks": [getattr(t, "id", None) for t in tasks],
+        }
+
+    async def complete_task(
+        self,
+        db=None,
+        task_id: str = "",
+        completed_by: str | None = None,
+        **kwargs,
+    ):
+        """Mark a task as completed (thin wrapper over update_task_status)."""
+        from app.models.automation_models import TaskStatus  # local import: avoid cycles
+        return await self.update_task_status(
+            db=db,
+            task_id=task_id,
+            new_status=TaskStatus.COMPLETED if hasattr(TaskStatus, "COMPLETED") else "completed",
+            updated_by=completed_by,
+        )
+
 
 task_service = TaskService()

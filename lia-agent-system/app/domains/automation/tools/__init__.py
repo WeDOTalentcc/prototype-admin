@@ -25,61 +25,61 @@ AUTOMATION_TOOLS = [
         "tool_id": "automation_create_task",
         "name": "Criar Tarefa",
         "description": "Cria uma nova tarefa para execução",
-        "handler": "app.domains.automation.services.task_service.TaskService.create_task",
+        "handler": "app.domains.automation.services.task_service.task_service.create_task",
     },
     {
         "tool_id": "automation_list_tasks",
         "name": "Listar Tarefas",
         "description": "Lista tarefas e seus status atuais",
-        "handler": "app.domains.automation.services.task_service.TaskService.list_tasks",
+        "handler": "app.domains.automation.services.task_service.task_service.list_tasks",
     },
     {
         "tool_id": "automation_complete_task",
         "name": "Concluir Tarefa",
         "description": "Marca uma tarefa como concluída",
-        "handler": "app.domains.automation.services.task_service.TaskService.complete_task",
+        "handler": "app.domains.automation.services.task_service.task_service.complete_task",
     },
     {
         "tool_id": "automation_cancel_task",
         "name": "Cancelar Tarefa",
         "description": "Cancela uma tarefa pendente",
-        "handler": "app.domains.automation.services.task_service.TaskService.cancel_task",
+        "handler": "app.domains.automation.services.task_service.task_service.cancel_task",
     },
     {
         "tool_id": "automation_create_rule",
         "name": "Criar Regra de Automação",
         "description": "Cria uma nova regra de automação",
-        "handler": "app.domains.automation.services.automation_service.AutomationService.create_automation",
+        "handler": "app.domains.automation.services.automation_service.automation_service.create_automation",
     },
     {
         "tool_id": "automation_list_rules",
         "name": "Listar Regras de Automação",
         "description": "Lista regras de automação configuradas",
-        "handler": "app.domains.automation.services.automation_service.AutomationService.list_automations",
+        "handler": "app.domains.automation.services.automation_service.automation_service.list_automations",
     },
     {
         "tool_id": "automation_enable_rule",
         "name": "Ativar Automação",
         "description": "Ativa uma regra de automação",
-        "handler": "app.domains.automation.services.automation_service.AutomationService.enable_automation",
+        "handler": "app.domains.automation.services.automation_service.automation_service.enable_automation",
     },
     {
         "tool_id": "automation_disable_rule",
         "name": "Desativar Automação",
         "description": "Desativa uma regra de automação",
-        "handler": "app.domains.automation.services.automation_service.AutomationService.disable_automation",
+        "handler": "app.domains.automation.services.automation_service.automation_service.disable_automation",
     },
     {
         "tool_id": "automation_trigger",
         "name": "Disparar Automação",
         "description": "Dispara manualmente uma automação configurada",
-        "handler": "app.domains.automation.services.automation_trigger_service.AutomationTriggerService.trigger",
+        "handler": "app.domains.automation.services.automation_trigger_service.automation_trigger_service.trigger",
     },
     {
         "tool_id": "automation_view_log",
         "name": "Ver Log de Execução",
         "description": "Visualiza histórico de execução de automações",
-        "handler": "app.domains.automation.services.automation_service.AutomationService.get_execution_log",
+        "handler": "app.domains.automation.services.automation_service.automation_service.get_execution_log",
     },
 ]
 
@@ -101,16 +101,15 @@ async def execute_automation_tool(
         return {"error": f"Tool {tool_id} not found", "status": "error"}
 
     handler_path = tool["handler"]
-    parts = handler_path.rsplit(".", 1)
-    if len(parts) != 2:
-        return {"error": f"Invalid handler path: {handler_path}", "status": "error"}
-
-    module_path, func_name = parts
     try:
-        import importlib
-        module = importlib.import_module(module_path)
-        handler = getattr(module, func_name)
-        result = await handler(**parameters) if callable(handler) else handler
+        from app.shared.tool_handler import resolve_handler_path
+        import asyncio, inspect
+        handler = resolve_handler_path(handler_path)
+        if not callable(handler):
+            return {"error": f"Handler not callable: {handler_path}", "status": "error", "tool_id": tool_id}
+        result = await handler(**parameters) if asyncio.iscoroutinefunction(handler) else handler(**parameters)
+        if inspect.isawaitable(result):
+            result = await result
         return {"status": "success", "result": result}
     except Exception as e:
         return {"error": str(e), "status": "error", "tool_id": tool_id}

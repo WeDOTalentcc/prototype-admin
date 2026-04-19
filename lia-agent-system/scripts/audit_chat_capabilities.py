@@ -208,15 +208,18 @@ def _audit_domain(did: str, registry) -> dict:
     for t in tools_list:
         handler = t.get("handler")
         if handler and isinstance(handler, str) and "." in handler:
-            mod_path, fn = handler.rsplit(".", 1)
-            mod, err = _safe_import(mod_path)
-            if err:
+            # Use the same progressive resolver as the runtime tool registry
+            # and the unified-chat smoke gate, so all three agree.
+            try:
+                from app.shared.tool_handler import resolve_handler_path
+                obj = resolve_handler_path(handler)
+                if not callable(obj):
+                    info["gaps"]["handlers_failing_import"].append(
+                        {"tool_id": t.get("tool_id"), "handler": handler, "error": "resolved object is not callable"}
+                    )
+            except Exception as exc:
                 info["gaps"]["handlers_failing_import"].append(
-                    {"tool_id": t.get("tool_id"), "handler": handler, "error": err[:160]}
-                )
-            elif not hasattr(mod, fn):
-                info["gaps"]["handlers_failing_import"].append(
-                    {"tool_id": t.get("tool_id"), "handler": handler, "error": f"function '{fn}' not found in {mod_path}"}
+                    {"tool_id": t.get("tool_id"), "handler": handler, "error": f"{type(exc).__name__}: {exc}"[:160]}
                 )
 
     return info

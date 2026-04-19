@@ -530,6 +530,43 @@ Responda em JSON:
 wsi_service = WSIService()
 
 
+async def calculate_wsi(
+    candidate_id: str = "",
+    responses: list[Any] | None = None,
+    decision: str = "aguardando",
+    tracking_context: dict[str, Any] | None = None,
+    **kwargs: Any,
+) -> dict[str, Any]:
+    """Chat-surface entry point: compute WSI score + structured report.
+
+    Pulls together score calculation and parecer generation around the
+    `WSIService` singleton so the chat tool registry has a single resolvable
+    handler. When `responses` are not provided, returns a structured
+    placeholder rather than attempting an empty calculation.
+    """
+    if not responses:
+        return {
+            "success": False,
+            "error": "missing_responses",
+            "message": "responses (list[ResponseAnalysis]) is required to calculate WSI",
+            "candidate_id": candidate_id,
+        }
+    score_calculator = wsi_service.score_calculator
+    wsi_result = score_calculator.calculate(responses=responses, **kwargs.get("score_kwargs", {}))
+    report = await wsi_service.generate_structured_report(
+        candidate_id=candidate_id,
+        wsi_result=wsi_result,
+        responses=responses,
+        tracking_context=tracking_context,
+    )
+    return {
+        "success": True,
+        "candidate_id": candidate_id,
+        "wsi": wsi_result.dict() if hasattr(wsi_result, "dict") else wsi_result,
+        "report": report.dict() if hasattr(report, "dict") else report,
+    }
+
+
 async def generate_wsi_questions_tool(job_id: str, count: int = 5, **kwargs) -> list[dict[str, Any]]:
     result = await wsi_service.generate_from_simple_inputs(
         skills=kwargs.get("technical_skills", []),

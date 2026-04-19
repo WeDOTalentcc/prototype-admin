@@ -1100,6 +1100,155 @@ class ATSSyncService:
         }
 
 
+    # ------------------------------------------------------------------
+    # Chat tool surface (registered in app/domains/ats_integration/tools/__init__.py)
+    # Thin wrappers around the existing pull/push primitives so the chat
+    # registry resolves to a single canonical method per capability.
+    # ------------------------------------------------------------------
+    async def sync_candidate(
+        self,
+        ats_type: str = "",
+        external_candidate_id: str = "",
+        company_id: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Pull a single candidate from the source ATS into LIA."""
+        logger.info(
+            "ATSSyncService.sync_candidate ats=%s ext=%s company=%s",
+            ats_type, external_candidate_id, company_id,
+        )
+        return await self.pull_candidate(
+            ats_type=ats_type,
+            external_candidate_id=external_candidate_id,
+            company_id=company_id,
+            **kwargs,
+        )
+
+    async def sync_job(
+        self,
+        ats_type: str = "",
+        external_job_id: str = "",
+        company_id: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Pull (or upsert) a single job/vacancy from the source ATS."""
+        logger.info(
+            "ATSSyncService.sync_job ats=%s ext=%s company=%s",
+            ats_type, external_job_id, company_id,
+        )
+        result = await self.pull_jobs(
+            ats_type=ats_type,
+            company_id=company_id,
+            external_job_ids=[external_job_id] if external_job_id else None,
+            **kwargs,
+        )
+        return result
+
+    async def check_sync_status(
+        self,
+        ats_type: str = "",
+        company_id: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Return last-sync health for a given ATS connection."""
+        logger.info("ATSSyncService.check_sync_status ats=%s", ats_type)
+        connected = self.has_client(ats_type) if ats_type else bool(self._clients)
+        last = None
+        for log in reversed(self.audit_log):
+            if not ats_type or log.ats_type == ats_type:
+                last = log.to_dict()
+                break
+        return {
+            "success": True,
+            "ats_type": ats_type,
+            "connected": connected,
+            "last_sync": last,
+            "configured_clients": list(self._clients.keys()),
+        }
+
+    async def list_connections(
+        self,
+        company_id: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Enumerate ATS connections currently registered."""
+        logger.info("ATSSyncService.list_connections company=%s", company_id)
+        connections = [
+            {"ats_type": ats_type, "client": type(client).__name__}
+            for ats_type, client in self._clients.items()
+        ]
+        return {
+            "success": True,
+            "connections": connections,
+            "count": len(connections),
+        }
+
+    async def view_sync_log(
+        self,
+        ats_type: str = "",
+        limit: int = 50,
+        company_id: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Return the most recent audit-log entries (newest first)."""
+        logger.info(
+            "ATSSyncService.view_sync_log ats=%s limit=%s", ats_type, limit,
+        )
+        entries = list(reversed(self.audit_log))
+        if ats_type:
+            entries = [e for e in entries if e.ats_type == ats_type]
+        entries = entries[: max(0, int(limit or 0))]
+        return {
+            "success": True,
+            "entries": [e.to_dict() for e in entries],
+            "count": len(entries),
+        }
+
+    async def update_candidate_status(
+        self,
+        ats_type: str = "",
+        external_candidate_id: str = "",
+        new_status: str = "",
+        company_id: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Push a candidate stage/status change to the source ATS."""
+        logger.info(
+            "ATSSyncService.update_candidate_status ats=%s ext=%s new=%s",
+            ats_type, external_candidate_id, new_status,
+        )
+        return await self.trigger_status_change(
+            ats_type=ats_type,
+            external_candidate_id=external_candidate_id,
+            new_status=new_status,
+            company_id=company_id,
+            **kwargs,
+        )
+
+    async def send_score(
+        self,
+        ats_type: str = "",
+        external_candidate_id: str = "",
+        score: float | None = None,
+        parecer: str = "",
+        company_id: str | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Push a WSI/parecer score back to the source ATS."""
+        logger.info(
+            "ATSSyncService.send_score ats=%s ext=%s score=%s",
+            ats_type, external_candidate_id, score,
+        )
+        return await self.trigger_parecer_sync(
+            ats_type=ats_type,
+            external_candidate_id=external_candidate_id,
+            score=score,
+            parecer=parecer,
+            company_id=company_id,
+            **kwargs,
+        )
+
+
 ats_sync_service = ATSSyncService()
 
 

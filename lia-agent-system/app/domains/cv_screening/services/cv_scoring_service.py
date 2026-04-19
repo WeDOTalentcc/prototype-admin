@@ -501,3 +501,9 @@ cv_scoring_service = CVScoringService()
 
 def get_cv_scoring_service() -> "CVScoringService":
     return cv_scoring_service
+
+
+# Module-level handler exposed to the chat tool registry
+async def score_cv(**kwargs):
+    """Chat-surface wrapper around CVScoringService.screen_candidate()."""
+    return await cv_scoring_service.screen_candidate(**kwargs)

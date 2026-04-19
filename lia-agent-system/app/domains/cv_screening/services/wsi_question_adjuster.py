@@ -293,3 +293,9 @@ Responda APENAS com o texto da avaliação, sem formatação especial."""
 
 
 wsi_question_adjuster_service = WSIQuestionAdjusterService()
+
+
+# Module-level handler exposed to the chat tool registry
+async def adjust_questions(**kwargs):
+    """Chat-surface wrapper around WSIQuestionAdjusterService.adjust_questions()."""
+    return await wsi_question_adjuster_service.adjust_questions(**kwargs)

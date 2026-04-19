@@ -154,11 +154,9 @@ async def execute_cv_screening_tool(
         }
 
     handler_path = tool_def["handler"]
-    module_path, func_name = handler_path.rsplit(".", 1)
-
     try:
-        module = importlib.import_module(module_path)
-        handler_fn = getattr(module, func_name)
+        from app.shared.tool_handler import resolve_handler_path
+        handler_fn = resolve_handler_path(handler_path)
     except (ImportError, AttributeError) as exc:
         logger.error(f"Falha ao carregar handler '{handler_path}': {exc}")
         return {

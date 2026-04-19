@@ -125,3 +125,83 @@ def tool_handler(domain: str, *, require_company: bool = True, module: Optional[
         return wrapper
 
     return decorator
+
+
+def resolve_handler_path(handler_path: str) -> Any:
+    """Resolve a dotted handler path progressively.
+
+    Supports both module-level callables (`pkg.mod.func`) and
+    class/singleton method paths (`pkg.mod.singleton.method`,
+    `pkg.mod.Class.classmethod`). Mirrors the strategy used by
+    `tests/test_chat_capabilities_smoke.py::_resolve_handler` so the
+    runtime tool registry agrees with the smoke gate.
+
+    Fail-closed: when a handler resolves to an *unbound* instance method
+    (i.e. a class accessor like `pkg.mod.Service.method` whose first
+    parameter is `self`), this resolver looks for a sibling singleton on
+    the same module and binds against it. If no singleton exists, raises
+    `TypeError` so the caller surfaces a real error instead of silently
+    calling `func(**parameters)` and exploding with
+    "missing 1 required positional argument: 'self'".
+
+    Raises ImportError, AttributeError or TypeError on failure (caller
+    wraps in its own response shape).
+    """
+    import importlib
+    import inspect
+
+    parts = handler_path.split(".")
+    last_err: Exception | None = None
+    for i in range(len(parts), 0, -1):
+        try:
+            module = importlib.import_module(".".join(parts[:i]))
+        except ImportError as exc:
+            last_err = exc
+            continue
+        obj: Any = module
+        owner: Any = module
+        try:
+            for attr in parts[i:]:
+                owner = obj
+                obj = getattr(obj, attr)
+        except AttributeError as exc:
+            last_err = exc
+            continue
+        # Detect "unbound" class methods: callable whose immediate owner is
+        # a class and whose first positional param is `self`. Try to find
+        # an instance to bind on the same module.
+        if (
+            callable(obj)
+            and inspect.isclass(owner)
+            and not inspect.ismethod(obj)
+            and not isinstance(obj, (staticmethod, classmethod))
+        ):
+            try:
+                sig_params = list(inspect.signature(obj).parameters.values())
+            except (TypeError, ValueError):
+                sig_params = []
+            if sig_params and sig_params[0].name == "self":
+                instance = _find_singleton_for_class(module, owner)
+                if instance is not None:
+                    return getattr(instance, parts[-1])
+                raise TypeError(
+                    f"Handler '{handler_path}' resolves to an unbound method on "
+                    f"{owner.__name__}; register the singleton path "
+                    f"(e.g. '{owner.__module__}.<singleton>.{parts[-1]}') instead."
+                )
+        return obj
+    raise (last_err or ImportError(f"Could not resolve handler: {handler_path}"))
+
+
+def _find_singleton_for_class(module: Any, cls: Any) -> Any:
+    """Return the first module-level attribute that is an instance of `cls`."""
+    for name in dir(module):
+        if name.startswith("_"):
+            continue
+        try:
+            value = getattr(module, name)
+        except Exception:
+            continue
+        if isinstance(value, cls) and value is not cls:
+            return value
+    return None

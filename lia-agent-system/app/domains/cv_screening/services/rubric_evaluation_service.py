@@ -1404,3 +1404,9 @@ rubric_evaluation_service = RubricEvaluationService()
 
 def get_rubric_evaluation_service() -> RubricEvaluationService:
     return rubric_evaluation_service
+
+
+# Module-level handler exposed to the chat tool registry
+async def evaluate_rubric(**kwargs):
+    """Chat-surface wrapper around RubricEvaluationService.evaluate_candidate()."""
+    return await rubric_evaluation_service.evaluate_candidate(**kwargs)

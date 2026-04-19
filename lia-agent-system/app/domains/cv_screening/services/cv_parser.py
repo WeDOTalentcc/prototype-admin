@@ -620,3 +620,11 @@ cv_parser_service = CVParserService()
 def get_cv_parser_service() -> "CVParserService":
     return cv_parser_service
 
+
+# Module-level handler exposed to the chat tool registry
+async def parse_cv(file=None, **kwargs):
+    """Chat-surface wrapper around CVParserService.parse_cv()."""
+    if file is None:
+        return {"success": False, "error": "missing_file", "message": "file is required"}
+    return await cv_parser_service.parse_cv(file=file)
+
