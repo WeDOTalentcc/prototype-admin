@@ -343,7 +343,148 @@ async def _wrap_check_job_draft_health(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+
+@tool_handler("wizard")
+async def _wrap_extract_job_requirements(**kwargs: Any) -> dict[str, Any]:
+    """Extracts structured job requirements from user input text."""
+    text = kwargs.get("text", "") or kwargs.get("input", "") or kwargs.get("prompt", "")
+    title = kwargs.get("title", "")
+
+    # Detect common tech skills from input
+    skill_keywords = [
+        "Kubernetes", "AWS", "CI/CD", "Docker", "Python", "JavaScript", "TypeScript",
+        "React", "Node.js", "Go", "SQL", "PostgreSQL", "MongoDB", "Redis", "Kafka",
+        "Azure", "GCP", "Terraform", "Ansible", "Jenkins", "GitHub Actions", "Linux",
+        "Java", "Spring", "Scala", "Rust", "C++", "C#", ".NET", "Flutter", "Kotlin",
+        "Swift", "Ruby", "Rails", "PHP", "Laravel", "Vue.js", "Angular", "GraphQL",
+    ]
+    combined = (text + " " + title).lower()
+    skills_found = [s for s in skill_keywords if s.lower() in combined]
+
+    # Detect work model
+    if "remot" in combined:
+        work_model = "Remoto"
+    elif "híbrido" in combined or "hibrido" in combined:
+        work_model = "Híbrido"
+    elif "presencial" in combined:
+        work_model = "Presencial"
+    else:
+        work_model = "Remoto"
+
+    # Detect seniority
+    if "senior" in combined or "sênior" in combined:
+        seniority = "Sênior"
+    elif "pleno" in combined:
+        seniority = "Pleno"
+    elif "junior" in combined or "júnior" in combined or "jr" in combined:
+        seniority = "Júnior"
+    elif "estagio" in combined or "estágio" in combined:
+        seniority = "Estágio"
+    else:
+        seniority = "Sênior"
+
+    logger.info(f"[wizard_tools] extract_job_requirements: skills={skills_found}, work_model={work_model}, seniority={seniority}")
+    return {
+        "success": True,
+        "data": {
+            "title": title,
+            "skills": skills_found,
+            "work_model": work_model,
+            "seniority": seniority,
+            "raw_input": text[:200],
+        },
+        "message": f"Extraído: {len(skills_found)} skills ({', '.join(skills_found[:5])}{'...' if len(skills_found) > 5 else ''}), modalidade={work_model}, senioridade={seniority}.",
+    }
+
+
+@tool_handler("wizard")
+async def _wrap_create_job_draft(**kwargs: Any) -> dict[str, Any]:
+    """Creates a new job draft from extracted requirements. Returns structured preview for HITL approval."""
+    import uuid as _uuid
+
+    title = kwargs.get("title", "")
+    skills = kwargs.get("skills", []) or kwargs.get("requirements", [])
+    work_model = kwargs.get("work_model") or kwargs.get("modality") or kwargs.get("modalidade", "Remoto")
+    seniority = kwargs.get("seniority") or kwargs.get("senioridade", "Sênior")
+    location = kwargs.get("location") or kwargs.get("localizacao") or ("Remoto" if work_model == "Remoto" else "")
+    description = kwargs.get("description", "")
+    salary_min = kwargs.get("salary_min")
+    salary_max = kwargs.get("salary_max")
+
+    # Auto-inject company_id
+    company_id = kwargs.get("company_id", "")
+    if not company_id:
+        try:
+            from app.shared.tenant_llm_context import get_current_llm_tenant
+            company_id = get_current_llm_tenant() or ""
+        except Exception:
+            pass
+
+    draft_id = str(_uuid.uuid4())
+    draft = {
+        "draft_id": draft_id,
+        "title": title or "Nova vaga",
+        "seniority": seniority,
+        "work_model": work_model,
+        "location": location or work_model,
+        "skills": skills if isinstance(skills, list) else [skills],
+        "description": description,
+        "salary_min": salary_min,
+        "salary_max": salary_max,
+        "status": "draft",
+        "company_id": company_id or "(auto-detect)",
+    }
+
+    logger.info(f"[wizard_tools] create_job_draft: title={title!r} draft_id={draft_id} skills={skills}")
+    return {
+        "success": True,
+        "data": draft,
+        "message": (
+            f"Rascunho criado para '{title}' (ID: {draft_id[:8]}...). "
+            f"Skills: {', '.join(skills[:5]) if skills else 'nenhuma definida'}. "
+            f"Modalidade: {work_model}. Status: rascunho (nao publicado). "
+            f"Revise os dados abaixo antes de publicar."
+        ),
+        "requires_confirmation": True,
+        "action": "create_job_draft",
+        "draft": draft,
+    }
+
+
 TOOL_DEFINITIONS: list[ToolDefinition] = [
+    ToolDefinition(
+        name="extract_job_requirements",
+        description="Extrai requisitos estruturados de uma descricao de vaga em texto livre. Use PRIMEIRO ao receber uma solicitacao de criacao de vaga para identificar skills, modalidade e senioridade.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "text": {"type": "string", "description": "Texto com descricao da vaga ou input do usuario"},
+                "title": {"type": "string", "description": "Titulo do cargo, se ja identificado"},
+            },
+            "required": ["text"],
+        },
+        function=_wrap_extract_job_requirements,
+    ),
+    ToolDefinition(
+        name="create_job_draft",
+        description="Cria um NOVO rascunho de vaga com os requisitos extraidos. Use APOS extract_job_requirements. Retorna draft para revisao — NAO publica diretamente. FLUXO: extract_job_requirements → create_job_draft → show for approval → save_job_draft (so apos confirmacao).",
+        parameters={
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "description": "Titulo do cargo"},
+                "skills": {"type": "array", "items": {"type": "string"}, "description": "Lista de skills/requisitos tecnicos"},
+                "work_model": {"type": "string", "description": "Modalidade: Remoto, Hibrido ou Presencial"},
+                "seniority": {"type": "string", "description": "Nivel: Junior, Pleno, Senior, Especialista"},
+                "location": {"type": "string", "description": "Cidade/estado"},
+                "description": {"type": "string", "description": "Descricao da vaga"},
+                "salary_min": {"type": "number", "description": "Salario minimo"},
+                "salary_max": {"type": "number", "description": "Salario maximo"},
+                "company_id": {"type": "string", "description": "ID da empresa (OPCIONAL — auto-injetado da sessao)"},
+            },
+            "required": ["title"],
+        },
+        function=_wrap_create_job_draft,
+    ),
     ToolDefinition(
         name="validate_job_requirements",
         description="Valida requisitos da vaga contra viés discriminatório usando FairnessGuard. Verifica viés explícito (bloqueia) e implícito (alertas educacionais). Use para validar requirements, description e screening_questions.",

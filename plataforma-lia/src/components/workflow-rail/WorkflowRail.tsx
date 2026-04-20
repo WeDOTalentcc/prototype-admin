@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import {
-  ArrowRight, Zap, Check, X,
+  ArrowRight, Zap, Check, X, Sun, Moon, MessageSquare,
   ChevronLeft, ChevronRight, MoreHorizontal,
 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
@@ -20,6 +20,7 @@ interface WorkflowRailProps {
   userId: string
   onNavigate: (path: string) => void
   onCreateJob?: () => void
+  showBackToChat?: boolean
 }
 
 /** Derive the current funnel stage key from the list of active workflow entries. */
@@ -31,13 +32,14 @@ function deriveCurrentStage(entries: WorkflowEntry[]): FunnelStageKey {
   return mapCampaignStageToFunnelKey(inProgress?.stage ?? latest.currentStage)
 }
 
-export default function WorkflowRail({ userId, onNavigate, onCreateJob }: WorkflowRailProps) {
+export default function WorkflowRail({ userId, onNavigate, onCreateJob, showBackToChat = false }: WorkflowRailProps) {
   const { entries, isConnected } = useWorkflowRail(userId)
   const [isExpanded, setIsExpanded] = useState(false)
   const [currentStageKey, setCurrentStageKey] = useState<FunnelStageKey>("initial")
   const [hoveredKey, setHoveredKey] = useState<FunnelStageKey | null>(null)
   const [canScrollL, setCanScrollL] = useState(false)
   const [canScrollR, setCanScrollR] = useState(false)
+  const [isDark, setIsDark] = useState(false)
   const t = useTranslations()
   const containerRef = useRef<HTMLDivElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
@@ -136,14 +138,45 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
   /* ---- Magnifier (Dock-style) scale based on distance from hovered chip ---- */
   const magnifyScale = (key: FunnelStageKey): number => {
     if (!hoveredKey) return 1
-    if (hoveredKey === key) return 1.15
+    if (hoveredKey === key) return 1.18
     const hi = FUNNEL_STAGES.findIndex(s => s.key === hoveredKey)
     const ki = FUNNEL_STAGES.findIndex(s => s.key === key)
     const d = Math.abs(hi - ki)
-    if (d === 1) return 1.06
-    if (d === 2) return 1.02
+    if (d === 1) return 1.08
+    if (d === 2) return 1.03
     return 1
   }
+
+  /* ---- Theme tokens (light default; dark optional) ---- */
+  const T = isDark
+    ? {
+        rail:        "bg-[#0F172A] border-white/10",
+        railShadow:  "0 12px 32px -12px rgba(15,23,42,0.55)",
+        popover:     "bg-[#0F172A] border-white/10",
+        popoverArrow:"bg-[#0F172A] border-white/10",
+        textDim:     "text-white/45",
+        textMid:     "text-white/70",
+        textStrong:  "text-white/95",
+        chipHover:   "hover:bg-white/8",
+        chipHoverBg: "bg-white/10",
+        divider:     "bg-white/15",
+        connectorIdle: "rgba(255,255,255,0.10)",
+        miniBtn:     "border-white/10 bg-[#0F172A] text-white/70 hover:text-white hover:bg-white/10",
+      }
+    : {
+        rail:        "bg-white border-lia-border-subtle",
+        railShadow:  "0 10px 28px -12px rgba(17,24,39,0.18)",
+        popover:     "bg-white border-lia-border-subtle",
+        popoverArrow:"bg-white border-lia-border-subtle",
+        textDim:     "text-lia-text-disabled",
+        textMid:     "text-lia-text-secondary",
+        textStrong:  "text-lia-text-primary",
+        chipHover:   "hover:bg-lia-bg-tertiary/40",
+        chipHoverBg: "bg-lia-bg-tertiary/60",
+        divider:     "bg-lia-border-subtle",
+        connectorIdle: "rgba(0,0,0,0.08)",
+        miniBtn:     "border-lia-border-subtle bg-white text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-tertiary/60",
+      }
 
   return (
     <div
@@ -172,7 +205,24 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
       {/* ---- Rail + popover row (centered) ---- */}
       <div className="relative pointer-events-auto flex justify-center">
         {/* RAIL — pill-shape, magnifier, horizontal scroll, mini toggle */}
-        <div className="rounded-full border border-lia-border-subtle bg-white shadow-lg flex items-center pl-1 pr-1.5 py-1 max-w-full">
+        <div
+          className={`rounded-full border ${T.rail} flex items-center pl-1 pr-1.5 py-1 max-w-full transition-colors duration-300 ease-out`}
+          style={{ boxShadow: T.railShadow }}
+        >
+
+          {/* "Back to chat" escape hatch — always available outside the /chat route */}
+          {showBackToChat && (
+            <button
+              type="button"
+              onClick={() => onNavigate("/chat")}
+              aria-label="Voltar para o chat com a LIA"
+              title="Voltar para o chat"
+              className={`shrink-0 w-6 h-6 rounded-full border ${T.miniBtn} flex items-center justify-center mr-1 z-10 transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40`}
+              style={{ color: currentAccent }}
+            >
+              <MessageSquare className="w-3 h-3" strokeWidth={2.25} />
+            </button>
+          )}
 
           {/* MOBILE compact: only the current chip (no magnifier/scroll) */}
           <div className="flex sm:hidden items-center gap-1.5 px-1 min-w-0">
@@ -207,9 +257,9 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
               type="button"
               onClick={() => scrollBy(-1)}
               aria-label="Rolar para a esquerda"
-              className="hidden sm:flex shrink-0 w-6 h-6 rounded-full border border-lia-border-subtle bg-white text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-tertiary/60 items-center justify-center mr-0.5 z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40"
+              className={`hidden sm:flex shrink-0 w-5 h-5 rounded-full border ${T.miniBtn} items-center justify-center mr-0.5 z-10 transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40`}
             >
-              <ChevronLeft className="w-3.5 h-3.5" strokeWidth={2.5} />
+              <ChevronLeft className="w-3 h-3" strokeWidth={2.5} />
             </button>
           )}
 
@@ -233,11 +283,11 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
                   {i > 0 && (
                     <span
                       aria-hidden="true"
-                      className="h-[2px] w-2 rounded-full mx-0.5 shrink-0"
+                      className="h-px w-2 rounded-full mx-0.5 shrink-0 transition-colors duration-300 ease-out"
                       style={{
                         background: isPast || isCurrent
                           ? `linear-gradient(90deg, ${prevAccent}, ${accent})`
-                          : "rgba(0,0,0,0.08)",
+                          : T.connectorIdle,
                       }}
                     />
                   )}
@@ -260,21 +310,21 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
                         ? { color: accent }
                         : {}),
                     }}
-                    className={`relative flex items-center gap-1 rounded-full text-[11px] font-bold whitespace-nowrap shrink-0
-                      transition-[padding,background-color,color,transform] duration-150 ease-out
+                    className={`relative flex items-center gap-1 rounded-full text-[10px] font-semibold whitespace-nowrap shrink-0
+                      transition-all duration-300 ease-out
                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40
-                      ${isCurrent ? "px-2 py-1" : isHovered ? "px-2 py-1 bg-lia-bg-tertiary/60" : "px-1.5 py-1 text-lia-text-disabled hover:bg-lia-bg-tertiary/40"}`}
+                      ${isCurrent ? "px-1.5 py-0.5" : isHovered ? `px-1.5 py-0.5 ${T.chipHoverBg}` : `px-1 py-0.5 ${T.textDim} ${T.chipHover}`}`}
                   >
                     <span className="relative inline-flex items-center">
                       {isPast && !isHovered ? (
-                        <Check className="w-3.5 h-3.5" strokeWidth={2.75} aria-hidden="true" />
+                        <Check className="w-3 h-3" strokeWidth={2.75} aria-hidden="true" />
                       ) : (
-                        <Icon className="w-3.5 h-3.5" strokeWidth={isCurrent ? 2.5 : 2} aria-hidden="true" />
+                        <Icon className="w-3 h-3" strokeWidth={isCurrent ? 2.5 : 1.85} aria-hidden="true" />
                       )}
                       {isCurrent && pendingCount > 0 && (
                         <span
                           aria-label={t("workflowRail.pill.pendingAriaLabel", { count: pendingCount })}
-                          className="absolute -top-1.5 -right-1.5 min-w-[14px] h-[14px] px-1 rounded-full bg-yellow-400 text-[9px] font-bold text-yellow-900 flex items-center justify-center"
+                          className="absolute -top-1 -right-1 min-w-[12px] h-[12px] px-1 rounded-full bg-yellow-400 text-[8px] font-bold text-yellow-900 flex items-center justify-center"
                         >
                           {pendingCount}
                         </span>
@@ -293,18 +343,18 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
               type="button"
               onClick={() => scrollBy(1)}
               aria-label="Rolar para a direita"
-              className="hidden sm:flex shrink-0 w-6 h-6 rounded-full border border-lia-border-subtle bg-white text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-tertiary/60 items-center justify-center ml-0.5 z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40"
+              className={`hidden sm:flex shrink-0 w-5 h-5 rounded-full border ${T.miniBtn} items-center justify-center ml-0.5 z-10 transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40`}
             >
-              <ChevronRight className="w-3.5 h-3.5" strokeWidth={2.5} />
+              <ChevronRight className="w-3 h-3" strokeWidth={2.5} />
             </button>
           )}
 
           {/* Active flow inline (desktop) */}
           {activeFlowName && (
             <>
-              <span aria-hidden="true" className="hidden sm:block mx-1.5 h-4 w-px bg-lia-border-subtle shrink-0" />
+              <span aria-hidden="true" className={`hidden sm:block mx-1.5 h-3.5 w-px ${T.divider} shrink-0`} />
               <span
-                className={`hidden sm:block ${textStyles.caption} text-lia-text-secondary truncate max-w-[160px] shrink min-w-0 font-medium`}
+                className={`hidden sm:block text-[10px] ${T.textMid} truncate max-w-[140px] shrink min-w-0 font-medium`}
                 title={activeFlowName}
               >
                 {activeFlowName}
@@ -321,15 +371,28 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
             />
           )}
 
+          {/* Theme toggle (sun / moon) */}
+          <button
+            type="button"
+            onClick={() => setIsDark(v => !v)}
+            aria-label={isDark ? "Alternar para tema claro" : "Alternar para tema escuro"}
+            title={isDark ? "Tema claro" : "Tema escuro"}
+            className={`ml-1.5 shrink-0 w-5 h-5 rounded-full border ${T.miniBtn} flex items-center justify-center transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40`}
+          >
+            {isDark
+              ? <Sun className="w-3 h-3" strokeWidth={2.25} />
+              : <Moon className="w-3 h-3" strokeWidth={2.25} />}
+          </button>
+
           {/* Mini toggle for popover (the "..." button) */}
           <button
             type="button"
             onClick={() => setIsExpanded(v => !v)}
             aria-expanded={isExpanded}
             aria-label={isExpanded ? t("workflowRail.bar.collapseAriaLabel") : t("workflowRail.bar.expandAriaLabel")}
-            className={`ml-1.5 shrink-0 w-6 h-6 rounded-full border border-lia-border-subtle bg-white text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-tertiary/60 flex items-center justify-center transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40 ${isExpanded ? "rotate-90" : ""}`}
+            className={`ml-1 shrink-0 w-5 h-5 rounded-full border ${T.miniBtn} flex items-center justify-center transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40 ${isExpanded ? "rotate-90" : ""}`}
           >
-            <MoreHorizontal className="w-3.5 h-3.5" strokeWidth={2.5} />
+            <MoreHorizontal className="w-3 h-3" strokeWidth={2.5} />
           </button>
         </div>
 
@@ -340,31 +403,31 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
             aria-label={t("workflowRail.panel.ariaLabel")}
             aria-modal="false"
             title={currentLabel}
-            className="absolute z-10 pointer-events-auto
+            className={`absolute z-10 pointer-events-auto
               bottom-full mb-2 left-0 right-0 mx-auto max-w-[min(420px,calc(100vw-2rem))]
               lg:bottom-auto lg:top-1/2 lg:-translate-y-1/2 lg:left-full lg:right-auto lg:ml-2 lg:mb-0 lg:mx-0 lg:max-w-[460px]
-              rounded-2xl lg:rounded-full border border-lia-border-subtle bg-white
-              animate-in fade-in zoom-in-95 duration-150"
-            style={{ boxShadow: `0 12px 32px -8px rgba(17,24,39,0.18), 0 0 0 1px ${currentAccent}1A` }}
+              rounded-2xl lg:rounded-full border ${T.popover}
+              animate-in fade-in zoom-in-95 duration-300`}
+            style={{ boxShadow: `${T.railShadow}, 0 0 0 1px ${currentAccent}1A` }}
           >
             {/* Side arrow pointing back to the rail (desktop only) */}
             <span
               aria-hidden="true"
-              className="hidden lg:block absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 bg-white border-l border-b border-lia-border-subtle"
+              className={`hidden lg:block absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 border-l border-b ${T.popoverArrow}`}
             />
 
             {/* Mobile-only header (because the popover is detached above the bar) */}
-            <div className="lg:hidden flex w-full items-center justify-between px-3 py-1.5 border-b border-lia-border-subtle/60">
-              <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: currentAccent }}>
+            <div className={`lg:hidden flex w-full items-center justify-between px-3 py-1 border-b ${T.divider}`}>
+              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: currentAccent }}>
                 {currentLabel}
               </span>
               <button
                 type="button"
                 onClick={() => setIsExpanded(false)}
                 aria-label={t("workflowRail.panel.close")}
-                className="text-lia-text-tertiary hover:text-lia-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40 rounded"
+                className={`${T.textDim} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40 rounded transition-colors duration-300 ease-out`}
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3 h-3" />
               </button>
             </div>
 
@@ -379,13 +442,13 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
                     type="button"
                     onClick={() => handleNextStep(step)}
                     title={t(step.descKey as Parameters<typeof t>[0])}
-                    className={`group inline-flex items-center gap-1.5 px-2.5 py-1.5 lg:py-1 rounded-full text-[11px] font-semibold whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40
+                    className={`group inline-flex items-center gap-1 px-2 py-1 lg:py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40
                       ${isPrimary
                         ? "text-white"
-                        : "text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-tertiary/60"}`}
+                        : `${T.textMid} ${T.chipHover}`}`}
                     style={isPrimary ? { backgroundColor: currentAccent } : undefined}
                   >
-                    <span aria-hidden="true" className="text-sm leading-none flex-shrink-0">{step.icon}</span>
+                    <span aria-hidden="true" className="text-[11px] leading-none flex-shrink-0">{step.icon}</span>
                     <span className="truncate">{t(step.titleKey as Parameters<typeof t>[0])}</span>
                   </button>
                 )
@@ -394,12 +457,12 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
               {/* Next-in-funnel preview — separator + small chip */}
               {nextMainStage && (
                 <>
-                  <span aria-hidden="true" className="hidden lg:block h-4 w-px bg-lia-border-subtle mx-0.5 shrink-0" />
+                  <span aria-hidden="true" className={`hidden lg:block h-3.5 w-px ${T.divider} mx-0.5 shrink-0`} />
                   <button
                     type="button"
                     onClick={() => { setIsExpanded(false); onNavigate(nextMainStage.canonical.navPath) }}
                     title={t("workflowRail.panel.nextInFunnel")}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10.5px] font-medium text-lia-text-tertiary hover:text-lia-text-secondary hover:bg-lia-bg-tertiary/40 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40"
+                    className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium ${T.textDim} ${T.chipHover} transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40`}
                   >
                     <ArrowRight className="w-3 h-3" aria-hidden="true" />
                     <nextMainStage.canonical.Icon className="w-3 h-3" aria-hidden="true" />

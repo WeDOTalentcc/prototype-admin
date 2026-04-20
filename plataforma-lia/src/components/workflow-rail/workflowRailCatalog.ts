@@ -9,6 +9,7 @@
 
 import {
   CANONICAL_FUNNEL_STAGES,
+  CANONICAL_UTILITY_STAGES,
   type CanonicalStage,
   type CanonicalStageId,
 } from "./canonicalFunnelStages"
@@ -48,9 +49,12 @@ const KEY_TO_CANONICAL: Record<Exclude<FunnelStageKey, "initial" | "analytics">,
 
 function canonicalFor(key: Exclude<FunnelStageKey, "initial">): CanonicalStage {
   if (key === "analytics") {
-    // Analytics is a utility node in canonical, but lives at the end of the rail.
-    const analytics = CANONICAL_FUNNEL_STAGES.find((s) => s.key === "contratacao")!
-    return { ...analytics, key: "analytics", labelKey: "chat.workflowReels.stages.analytics.label", shortLabelKey: "chat.workflowReels.stages.analytics.shortLabel", navPath: "/visao-do-funil" }
+    // Analytics is a utility node in canonical (BarChart3 + amber). Use the
+    // dedicated utility entry instead of cloning "contratacao", which would
+    // duplicate the TrendingUp icon on the rail.
+    const analytics = CANONICAL_UTILITY_STAGES.find((s) => s.key === "analytics")
+    if (!analytics) throw new Error("Missing canonical utility stage 'analytics'")
+    return analytics
   }
   const canonicalKey = KEY_TO_CANONICAL[key]
   const stage = CANONICAL_FUNNEL_STAGES.find((s) => s.key === canonicalKey)

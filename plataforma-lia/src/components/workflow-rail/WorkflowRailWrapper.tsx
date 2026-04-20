@@ -38,6 +38,11 @@ export default function WorkflowRailWrapper() {
   // even without a real session so designers/recruiters can perceive the
   // unified funnel vocabulary. Production keeps the strict auth check.
   const isDev = process.env.NODE_ENV !== "production"
+  // Hide the "back to chat" button when the user is already on /chat to avoid
+  // a redundant control. Otherwise, surface it so the rail always provides an
+  // escape hatch back to the assistant on pages without their own sidebar.
+  const isOnChat = !!pathname?.startsWith(`/${locale}/chat`)
+
   if (!isAuthenticated || !user?.id) {
     if (!isDev) return null
     return (
@@ -45,6 +50,7 @@ export default function WorkflowRailWrapper() {
         userId="dev-demo-user"
         onNavigate={handleNavigate}
         onCreateJob={handleCreateJob}
+        showBackToChat={!isOnChat}
       />
     )
   }
@@ -54,6 +60,7 @@ export default function WorkflowRailWrapper() {
       userId={user.id}
       onNavigate={handleNavigate}
       onCreateJob={handleCreateJob}
+      showBackToChat={!isOnChat}
     />
   )
 }
