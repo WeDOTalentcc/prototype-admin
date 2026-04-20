@@ -45,7 +45,7 @@ def _aggregate_all_tool_names() -> list[str]:
     Importa lazy para evitar circular deps no boot.
     """
     try:
-        from app.domains.sourcing.tools import get_sourcing_tools
+        from app.domains.sourcing.agents.sourcing_tool_registry import get_sourcing_tools
         from app.domains.sourcing.agents.github_tool_registry import get_github_tools
         from app.domains.sourcing.agents.stackoverflow_tool_registry import get_stackoverflow_tools
         from app.domains.sourcing.agents.diversity_tool_registry import get_diversity_tools
@@ -72,7 +72,7 @@ def _aggregate_all_tool_names() -> list[str]:
     except Exception as exc:
         logger.warning("[SourcingReActAgent] _aggregate_all_tool_names fallback: %s", exc)
         try:
-            from app.domains.sourcing.tools import get_sourcing_tools
+            from app.domains.sourcing.agents.sourcing_tool_registry import get_sourcing_tools
             return [t.name for t in get_sourcing_tools()]
         except Exception:
             return []
