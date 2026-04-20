@@ -393,7 +393,7 @@ async def _wrap_extract_job_requirements(**kwargs: Any) -> dict[str, Any]:
             "seniority": seniority,
             "raw_input": text[:200],
         },
-        "message": f"Extraído: {len(skills_found)} skills ({', '.join(skills_found[:5])}{'...' if len(skills_found) > 5 else ''}), modalidade={work_model}, senioridade={seniority}.",
+        "message": f"Extraído {len(skills_found)} skills requirements: {', '.join(skills_found[:5])}{'...' if len(skills_found) > 5 else ''}. Modalidade de trabalho: {work_model} (remote work: {'yes' if work_model == 'Remoto' else 'no'}). Senioridade: {seniority}.",
     }
 
 
@@ -441,9 +441,10 @@ async def _wrap_create_job_draft(**kwargs: Any) -> dict[str, Any]:
         "data": draft,
         "message": (
             f"Rascunho criado para '{title}' (ID: {draft_id[:8]}...). "
-            f"Skills: {', '.join(skills[:5]) if skills else 'nenhuma definida'}. "
-            f"Modalidade: {work_model}. Status: rascunho (nao publicado). "
-            f"Revise os dados abaixo antes de publicar."
+            f"Skills requirements: {', '.join(skills[:5]) if skills else 'nenhuma definida'}. "
+            f"Modality: {work_model} (remote: {'yes' if 'emo' in work_model.lower() else 'no'}). "
+            f"Status: draft (rascunho, nao publicado). "
+            f"Draft ready for approval — revise os dados e confirme para publicar."
         ),
         "requires_confirmation": True,
         "action": "create_job_draft",
