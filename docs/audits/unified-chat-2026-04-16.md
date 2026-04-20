@@ -140,7 +140,19 @@ dev (`npm run dev` com `cd plataforma-lia`).
 
 ---
 
-### F-CMD-02 / F-CMD-03 — `/job` e `/talent` não existem (Alto)
+### F-CMD-02 / F-CMD-03 — `/job` e `/talent` não existem (Alto) — RESOLVIDO (task #300)
+
+**Resolução** (2026-04-20): a tabela canônica passou a viver em
+`plataforma-lia/src/components/unified-chat/slash-commands.ts`. Os comandos
+oficiais continuam em português (`/criar vaga`, `/buscar`, `/pipeline`,
+`/relatorio`, `/feedback @…`, `/agendar @…`, `/ajuda`) e os identificadores
+do task spec #292 (`/job`, `/talent`) foram registrados como aliases —
+mapeiam para `/criar vaga` e `/buscar`, respectivamente. Tanto o
+interceptor (`useWizardIntegration.handleSlashCommand`) quanto o dropdown
+(`useSlashCommands`) consomem a constante. O texto de `/ajuda` em
+`messages/{pt-BR,en}.json` agora lista os mesmos comandos.
+
+
 
 **Sintoma**: digitar `/job` ou `/talent` e apertar Enter envia o texto
 para o backend como mensagem normal, em vez de abrir o wizard de vaga /

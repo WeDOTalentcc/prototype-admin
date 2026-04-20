@@ -1,6 +1,10 @@
 "use client"
 
 import { useCallback, useEffect } from "react"
+import {
+  findSlashCommandByToken,
+  findSlashCommandByVerb,
+} from "../slash-commands"
 // Types imported as needed by consumers
 
 /**
@@ -118,61 +122,40 @@ export function useWizardIntegration({
   }, [currentStage])
 
   // D.1: /commands → wizard (supports cross @mention+/command)
+  // The set of recognised commands lives in `../slash-commands.ts` — keep it
+  // as the single source of truth for product, docs and tests.
   const handleSlashCommand = useCallback((command: string) => {
     const cmd = command.trim()
-    const cmdLower = cmd.toLowerCase()
 
-    // Simple commands
-    if (cmdLower === "/criar vaga" || cmdLower === "/nova vaga") {
-      sendMessage("Criar nova vaga")
-      return true
-    }
-    if (cmdLower === "/ajuda") {
-      sendMessage("/ajuda")
-      return true
-    }
-    if (cmdLower === "/pipeline") {
-      sendMessage("Mostrar funil de vagas abertas")
-      return true
-    }
-    if (cmdLower === "/relatorio") {
-      sendMessage("Gerar relatorio semanal de recrutamento")
-      return true
+    // Bare command, e.g. "/criar vaga", "/job", "/pipeline".
+    const bareMatch = cmd.match(/^\/[\w\u00C0-\u017F][\w\u00C0-\u017F\s]*$/i)
+    if (bareMatch) {
+      const found = findSlashCommandByToken(cmd)
+      const message = found?.buildBareMessage?.()
+      if (message) {
+        sendMessage(message)
+        return true
+      }
     }
 
-    // Cross: /command @mention (e.g., "/buscar @NomeCandidato")
+    // Cross form: "/command @target" (e.g., "/buscar @NomeCandidato").
     const crossMatch = cmd.match(/^\/(\w+)\s+@(.+)$/i)
     if (crossMatch) {
-      const action = crossMatch[1].toLowerCase()
+      const verb = crossMatch[1]
       const mention = crossMatch[2].trim()
-
-      if (action === "buscar") {
-        sendMessage(`Buscar candidato: ${mention}`)
+      const found = findSlashCommandByVerb(verb)
+      const message = found?.buildMentionMessage?.(mention)
+      if (message) {
+        sendMessage(message)
         return true
       }
-      if (action === "pipeline") {
-        sendMessage(`Pipeline da vaga: ${mention}`)
-        return true
-      }
-      if (action === "relatorio") {
-        sendMessage(`Relatorio da vaga: ${mention}`)
-        return true
-      }
-      if (action === "feedback") {
-        sendMessage(`Enviar feedback para: ${mention}`)
-        return true
-      }
-      if (action === "agendar") {
-        sendMessage(`Agendar entrevista com: ${mention}`)
-        return true
-      }
-      // Unknown cross command — send as-is
+      // Unknown cross command — forward as-is so the backend can react.
       sendMessage(cmd)
       return true
     }
 
-    // /command without match — pass through
-    if (cmdLower.startsWith("/buscar")) {
+    // Free-form fallback: "/buscar <query>" without an @mention.
+    if (/^\/buscar\b/i.test(cmd)) {
       sendMessage(cmd.replace(/^\/buscar\s*/i, "Buscar: "))
       return true
     }

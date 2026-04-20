@@ -1,15 +1,13 @@
 import { useCallback, useEffect } from "react"
-import { Briefcase, Search, BarChart2, FileText, HelpCircle, Plus } from "lucide-react"
 import { useInputDropdown, type DropdownItem } from "./useInputDropdown"
+import { SLASH_COMMANDS } from "./slash-commands"
 
-const COMMANDS: DropdownItem[] = [
-  { id: "criar-vaga", label: "Criar vaga", subtitle: "Iniciar wizard de criacao de vaga", icon: Briefcase },
-  { id: "buscar", label: "Buscar candidatos", subtitle: "Pesquisar candidatos por criterios", icon: Search },
-  { id: "pipeline", label: "Ver pipeline", subtitle: "Status do funil de candidatos", icon: BarChart2 },
-  { id: "relatorio", label: "Gerar relatorio", subtitle: "Relatorios de recrutamento", icon: FileText },
-  { id: "ajuda", label: "O que posso fazer?", subtitle: "Ver todas as capacidades da LIA", icon: HelpCircle },
-  { id: "nova-conversa", label: "Nova conversa", subtitle: "Iniciar conversa limpa", icon: Plus },
-]
+const COMMANDS: DropdownItem[] = SLASH_COMMANDS.filter((cmd) => cmd.showInDropdown).map((cmd) => ({
+  id: cmd.id,
+  label: cmd.label,
+  subtitle: cmd.subtitle,
+  icon: cmd.icon,
+}))
 
 interface UseSlashCommandsOptions {
   inputText: string
@@ -27,16 +25,8 @@ export function useSlashCommands(options: UseSlashCommandsOptions) {
       return
     }
 
-    // Map command to expanded prompt
-    const prompts: Record<string, string> = {
-      "criar-vaga": "Quero criar uma nova vaga de emprego. ",
-      "buscar": "Buscar candidatos que ",
-      "pipeline": "Mostrar o status do funil de candidatos",
-      "relatorio": "Gerar um relatorio de recrutamento ",
-      "ajuda": "O que voce pode fazer? Liste todas as suas capacidades.",
-    }
-
-    const prompt = prompts[item.id] || item.label
+    const cmd = SLASH_COMMANDS.find((c) => c.id === item.id)
+    const prompt = cmd?.dropdownPrefill ?? item.label
     onPrefillInput(prompt)
   }, [onExecuteCommand, onPrefillInput])
 
