@@ -344,7 +344,7 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
       )}
 
       {/* ---- Rail + popover row (centered) ---- */}
-      <div className="relative pointer-events-auto flex justify-center">
+      <div className="relative flex justify-center">
         {/* RAIL — pill-shape, magnifier, horizontal scroll, mini toggle */}
         <div
           onPointerDown={onPointerDown}
@@ -352,7 +352,7 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
           style={{ boxShadow: T.railShadow, touchAction: "none" }}
-          className={`rounded-full border ${T.rail} flex items-center pl-1 pr-1.5 py-1 max-w-full transition-colors duration-300 ease-out ${cursorClass}`}
+          className={`pointer-events-auto rounded-full border ${T.rail} flex items-center pl-1 pr-1.5 py-1 max-w-full transition-colors duration-300 ease-out ${cursorClass}`}
         >
           {/* Drag handle (always visible — also acts as a visual hint) */}
           <span
