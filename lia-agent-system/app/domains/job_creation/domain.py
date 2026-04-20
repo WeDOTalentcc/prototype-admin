@@ -40,6 +40,14 @@ def _mask_pii(text: str) -> str:
 @register_domain
 class JobCreationDomain(ComplianceDomainPrompt):
 
+    domain_id = "job_creation"
+    domain_name = "Criacao de Vaga (Wizard WSI)"
+    description = (
+        "Wizard conversacional para criar vagas com metodologia WSI. "
+        "Guia o recrutador passo a passo: JD enrichment, Big Five, "
+        "competencias, perguntas de triagem, publicacao e calibracao."
+    )
+
     def __init__(self):
         self._graph = None
 
@@ -48,22 +56,6 @@ class JobCreationDomain(ComplianceDomainPrompt):
         if self._graph is None:
             self._graph = get_job_creation_graph()
         return self._graph
-
-    @property
-    def domain_id(self) -> str:
-        return "job_creation"
-
-    @property
-    def domain_name(self) -> str:
-        return "Criacao de Vaga (Wizard WSI)"
-
-    @property
-    def description(self) -> str:
-        return (
-            "Wizard conversacional para criar vagas com metodologia WSI. "
-            "Guia o recrutador passo a passo: JD enrichment, Big Five, "
-            "competencias, perguntas de triagem, publicacao e calibracao."
-        )
 
     def get_allowed_actions(self) -> List[DomainAction]:
         return [
