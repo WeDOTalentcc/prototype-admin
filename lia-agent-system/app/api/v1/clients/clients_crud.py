@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.domains.company.repositories.company_profile_repository import CompanyProfileRepository
 from app.domains.company.dependencies import get_company_profile_repo
+from app.shared.services.rails_account_sync_service import sync_client_to_rails
 from ._shared import (
     CLIENT_STATUS_OPTIONS,
     COMPANY_SIZE_OPTIONS,
@@ -230,10 +231,21 @@ async def create_client(
         except Exception as hubspot_error:
             logger.warning(f"Error syncing to HubSpot: {hubspot_error}")
 
+        rails_result = None
+        try:
+            rails_result = await sync_client_to_rails(client, repo.db)
+            if rails_result.get("success"):
+                logger.info(f"Synced client {client.id} to Rails (rails_id={rails_result.get('rails_id')})")
+            else:
+                logger.warning(f"Rails account sync skipped or failed: {rails_result.get('error')}")
+        except Exception as rails_error:
+            logger.warning(f"Error syncing to Rails: {rails_error}")
+
         response_data = client.to_dict()
         response_data["organization_id"] = organization_id
         response_data["email_sent"] = email_sent
         response_data["hubspot_synced"] = hubspot_result.get("success") if hubspot_result else False
+        response_data["rails_synced"] = rails_result.get("success") if rails_result else False
 
         return {"success": True, "message": "Client created successfully", "data": response_data}
     except HTTPException:
