@@ -24,9 +24,11 @@ _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id=
 
 
 # Mapeamento canônico action_id -> tool_id (module-level p/ auditor + smoke test).
+# Mantido em uma única definição (módulo) e referenciado diretamente em
+# execute_action — mesmo padrão adotado em SourcingDomain (task #579).
 _ACTION_TOOL_MAP: dict[str, str] = {
     "parse_cv": "parse_cv",
-    "auto_screen": "run_screening_pipeline",
+    "auto_screen": "score_cv",
     "calculate_wsi_score": "calculate_wsi",
     "evaluate_rubric": "evaluate_rubric",
     "generate_questions": "generate_wsi_questions",
@@ -112,20 +114,6 @@ class CVScreeningDomain(ComplianceDomainPrompt):
         )
 
 
-    _ACTION_TOOL_MAP: dict[str, str] = {
-        "parse_cv": "parse_cv",
-        "auto_screen": "score_cv",
-        "calculate_wsi_score": "calculate_wsi",
-        "evaluate_rubric": "evaluate_rubric",
-        "generate_questions": "generate_wsi_questions",
-        "adjust_questions": "adjust_wsi_questions",
-        "normalize_scores": "normalize_scores",
-        "assess_seniority": "assess_seniority",
-        "send_feedback": "send_candidate_feedback",
-        "pre_qualify": "pre_qualify_candidate",
-        "voice_screening": "run_screening_pipeline",
-    }
-
     async def execute_action(
         self, action_id: str, params: dict[str, Any], context: DomainContext
     ) -> DomainResponse:
@@ -140,7 +128,7 @@ class CVScreeningDomain(ComplianceDomainPrompt):
         from app.domains.cv_screening.tools import CV_SCREENING_TOOLS, execute_cv_screening_tool
 
         tool_ids = {t["tool_id"] for t in CV_SCREENING_TOOLS}
-        mapped_tool = self._ACTION_TOOL_MAP.get(action_id)
+        mapped_tool = _ACTION_TOOL_MAP.get(action_id)
 
         if mapped_tool and mapped_tool in tool_ids:
             result = await execute_cv_screening_tool(
