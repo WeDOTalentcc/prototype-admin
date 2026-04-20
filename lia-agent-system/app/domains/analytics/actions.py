@@ -5,7 +5,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="generate_kpi_report",
         name="Gerar Relatório de KPIs",
-        description="Gerar relatórios de KPIs para métricas de recrutamento",
+        description="Gera relatório consolidado de KPIs de recrutamento (tempo de preenchimento, taxa de aprovação, volume de candidatos) para uma vaga ou período. Aciona quando o recrutador pede métricas, indicadores ou relatório gerencial. Saída: documento com gráficos e tabelas.",
         required_params=["job_id"],
         optional_params=["period", "format"],
         requires_confirmation=False,
@@ -13,7 +13,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="analyze_funnel",
         name="Analisar Funil de Conversão",
-        description="Analisar métricas do funil de conversão de recrutamento",
+        description="Analisa as métricas do funil de conversão de recrutamento etapa por etapa (candidaturas → triagem → entrevista → oferta). Identifica gargalos e etapas com maior perda. Aciona ao detectar queda de candidatos ou pedir análise de funil.",
         required_params=["job_id"],
         optional_params=["period", "stages"],
         requires_confirmation=False,
@@ -21,7 +21,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="job_health_check",
         name="Verificar Saúde da Vaga",
-        description="Verificar indicadores de saúde da vaga de emprego",
+        description="Verifica indicadores de saúde da vaga em tempo real: volume de candidatos, taxa de triagem, SLAs, saturação do pipeline e alertas de risco. Aciona ao abrir a vaga no dashboard ou quando recruiter pede 'como está a vaga?'.",
         required_params=["job_id"],
         optional_params=[],
         requires_confirmation=False,
@@ -29,7 +29,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="detect_anomalies",
         name="Detectar Anomalias",
-        description="Detectar anomalias nos dados de recrutamento",
+        description="Detecta anomalias estatísticas nos dados de recrutamento — picos, quedas abruptas, métricas fora do padrão histórico. Aciona automaticamente ou quando recruiter suspeita de problema de qualidade de dados.",
         required_params=[],
         optional_params=["job_id", "metric", "threshold"],
         requires_confirmation=False,
@@ -37,7 +37,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="compare_periods",
         name="Comparar Períodos",
-        description="Comparar métricas entre períodos de tempo diferentes",
+        description="Compara métricas de recrutamento entre dois períodos de tempo distintos (semana, mês, trimestre). Identifica tendências positivas e negativas. Aciona quando recruiter pergunta 'este mês vs o anterior' ou análises sazonais.",
         required_params=["period_a", "period_b"],
         optional_params=["job_id", "metrics"],
         requires_confirmation=False,
@@ -45,7 +45,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="forecast",
         name="Previsão de Métricas",
-        description="Prever métricas e tendências de recrutamento",
+        description="Prevê métricas e tendências de recrutamento para os próximos dias/semanas usando modelos de IA. Aciona quando recruiter planeja capacidade, quer estimar time-to-fill ou simular cenários futuros.",
         required_params=[],
         optional_params=["job_id", "metric", "horizon_days"],
         requires_confirmation=False,
@@ -53,7 +53,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="suggest_strategy",
         name="Sugerir Estratégia",
-        description="Sugestões de estratégia baseadas em dados com IA",
+        description="Sugere mudanças de estratégia de recrutamento baseadas em dados históricos e benchmarks do mercado via IA. Aciona quando recruiter pede recomendações, plano de ação ou está com a vaga parada.",
         required_params=["job_id"],
         optional_params=["context", "goals"],
         requires_confirmation=False,
@@ -61,7 +61,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="answer_data_question",
         name="Responder Pergunta sobre Dados",
-        description="Responder perguntas sobre dados e analytics",
+        description="Responde perguntas abertas sobre dados e analytics de recrutamento usando linguagem natural. Aciona para qualquer pergunta analítica: 'quantos candidatos passaram?', 'qual a taxa de aprovação?', 'quando a vaga vai fechar?'.",
         required_params=["question"],
         optional_params=["job_id", "context"],
         requires_confirmation=False,
@@ -69,7 +69,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="get_job_insights",
         name="Obter Insights da Vaga",
-        description="Obter benchmarks salariais, competências e vagas similares",
+        description="Obtém insights combinados da vaga: benchmarks salariais do mercado, competências mais demandadas e vagas similares publicadas. Aciona quando recruiter quer contextualizar a vaga ou negociar salário.",
         required_params=["job_id"],
         optional_params=["include_salary", "include_skills", "include_similar"],
         requires_confirmation=False,
@@ -77,7 +77,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="generate_job_report",
         name="Gerar Relatório da Vaga",
-        description="Gerar relatório da vaga em PDF/Excel",
+        description="Gera relatório completo da vaga em formato PDF ou Excel com histórico de candidatos, métricas e análise de pipeline. Aciona quando recruiter precisa apresentar resultados ao cliente ou ao hiring manager.",
         required_params=["job_id"],
         optional_params=["format", "sections"],
         requires_confirmation=False,
@@ -85,7 +85,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="generate_candidate_report",
         name="Gerar Relatório de Candidato",
-        description="Gerar relatório comparativo de candidatos",
+        description="Gera relatório comparativo de candidatos selecionados com scores WSI, competências e recomendação final. Aciona antes de apresentar shortlist ao hiring manager ou para decisão de oferta.",
         required_params=["candidate_ids"],
         optional_params=["job_id", "format", "criteria"],
         requires_confirmation=False,
@@ -93,7 +93,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="get_search_analytics",
         name="Analytics de Busca",
-        description="Analytics de desempenho de busca de candidatos",
+        description="Obtém analytics de desempenho das buscas de candidatos: taxa de match, qualidade dos resultados, estratégias mais eficazes. Aciona quando recruiter avalia efetividade do sourcing.",
         required_params=[],
         optional_params=["period", "search_type"],
         requires_confirmation=False,
@@ -101,7 +101,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="get_wizard_analytics",
         name="Analytics do Wizard",
-        description="Analytics de uso do wizard de criação de vagas",
+        description="Obtém métricas de uso do wizard de criação de vagas: tempo médio, etapas com mais abandono, campos mais editados. Aciona para análise de UX e melhoria de processo.",
         required_params=[],
         optional_params=["period"],
         requires_confirmation=False,
@@ -109,7 +109,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="predict_hiring_probability",
         name="Prever Probabilidade de Contratação",
-        description="Previsão com IA para probabilidade de sucesso na contratação",
+        description="Prevê via IA a probabilidade de sucesso na contratação para uma vaga ou candidato específico, baseado em dados históricos de vagas similares. Aciona quando recruiter quer priorizar vagas ou candidatos.",
         required_params=["job_id"],
         optional_params=["candidate_id"],
         requires_confirmation=False,
@@ -117,7 +117,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="predict_time_to_fill",
         name="Prever Tempo de Preenchimento",
-        description="Estimar tempo para preencher uma posição",
+        description="Estima o tempo necessário para preencher uma posição com base em histórico de vagas similares, mercado e pipeline atual. Aciona quando recruiter planeja prazo de entrega para o cliente.",
         required_params=["job_id"],
         optional_params=[],
         requires_confirmation=False,
@@ -125,7 +125,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="predict_dropout_risk",
         name="Prever Risco de Desistência",
-        description="Prever risco de desistência do candidato",
+        description="Prevê o risco de desistência do candidato em cada etapa do pipeline usando IA. Aciona para intervir proativamente com candidatos de alto risco antes da perda.",
         required_params=["candidate_id"],
         optional_params=["job_id"],
         requires_confirmation=False,
@@ -133,7 +133,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="get_dashboard_data",
         name="Dados do Dashboard",
-        description="Obter indicadores estratégicos e dados do dashboard",
+        description="Obtém indicadores estratégicos do dashboard principal: vagas ativas, pipeline geral, alertas e KPIs do período. Aciona ao abrir o dashboard ou pedir visão geral do recrutamento.",
         required_params=[],
         optional_params=["period", "metrics"],
         requires_confirmation=False,
@@ -141,7 +141,7 @@ ANALYTICS_ACTIONS = [
     DomainAction(
         action_id="get_agent_monitoring",
         name="Monitoramento de Agentes",
-        description="Monitorar desempenho dos agentes de IA",
+        description="Monitora o desempenho dos agentes de IA: chamadas, latência, taxa de sucesso, uso de tokens e erros recentes. Aciona para diagnóstico de problemas com agentes ou análise de custos.",
         required_params=[],
         optional_params=["agent_type", "period"],
         requires_confirmation=False,

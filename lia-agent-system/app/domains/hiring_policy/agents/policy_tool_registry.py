@@ -1097,7 +1097,7 @@ def get_policy_tools() -> list[ToolDefinition]:
     return [
         ToolDefinition(
             name="get_current_policy",
-            description="Carrega todas as politicas de contratacao atuais da empresa do banco de dados.",
+            description="Carrega todas as politicas de contratacao atuais da empresa do banco de dados com blocos de pipeline, scheduling, screening e automacao.",
             parameters={
                 "type": "object",
                 "properties": {
@@ -1124,7 +1124,7 @@ def get_policy_tools() -> list[ToolDefinition]:
         ),
         ToolDefinition(
             name="get_policy_summary",
-            description="Retorna um resumo formatado de todas as politicas configuradas da empresa.",
+            description="Retorna resumo formatado de todas as politicas configuradas — pipeline rules, SLAs, comunicacao e automacao — para revisao rapida.",
             parameters={
                 "type": "object",
                 "properties": {

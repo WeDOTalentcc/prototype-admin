@@ -585,7 +585,7 @@ def get_company_settings_tools() -> list[ToolDefinition]:
         ),
         ToolDefinition(
             name="save_company_section",
-            description="Salva multiplos campos de uma secao de uma vez.",
+            description="Salva multiplos campos de uma secao do perfil de empresa de uma vez. Mais eficiente que save_company_field para atualizacoes em lote.",
             parameters={
                 "type": "object",
                 "properties": {
@@ -653,7 +653,7 @@ def get_company_settings_tools() -> list[ToolDefinition]:
         ),
         ToolDefinition(
             name="get_company_completion",
-            description="Retorna o progresso de preenchimento do perfil da empresa por secao.",
+            description="Retorna percentual de preenchimento do perfil da empresa por secao (perfil, cultura, tech stack, beneficios) para guiar o onboarding.",
             parameters={
                 "type": "object",
                 "properties": {

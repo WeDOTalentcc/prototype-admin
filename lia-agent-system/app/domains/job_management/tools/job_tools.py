@@ -68,6 +68,9 @@ async def create_job(
         
     Returns:
         Result with job creation details
+
+    Side effects: db_write, audit_trail
+    Governance: multi_tenant, audit_trail
     """
     context = _extract_context(kwargs)
     effective_company_id = context.company_id if context else company_id
@@ -380,6 +383,9 @@ async def close_job(
         
     Returns:
         Result with close details
+
+    Side effects: db_write, email_sent, audit_trail, write_destructive
+    Governance: multi_tenant, hitl_required, audit_trail, write_destructive
     """
     logger.info(f"🔒 Closing job vacancy: {job_id}, reason: {reason}")
     

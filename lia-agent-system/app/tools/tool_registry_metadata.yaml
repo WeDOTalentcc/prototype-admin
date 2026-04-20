@@ -1,10 +1,30 @@
-# Tool Registry Metadata — Sprint G5
+# Tool Registry Metadata — Sprint G5 / Task #690 (Enriched Descriptions)
 # Source of truth for tool declarations (descriptions, allowed_agents, scope).
 # Handlers remain in Python. This file is validated at startup via ToolRegistry.validate_yaml().
 #
+# ── DESCRIPTION TEMPLATE (mandatory for every tool) ──────────────────────────
+# description:   Rich LLM-facing description ≥ 80 chars — active voice, 1–3 sentences.
+#               Must convey: WHAT it does · WHEN to use · key side-effects.
+# when_to_use:  Trigger conditions / recruiter intent signals.
+# when_not_to_use: Anti-patterns / situations where a different tool is better.
+# side_effects: List of observable effects beyond reading data.
+#               Values: db_write | db_delete | email_sent | whatsapp_sent |
+#                       webhook_fired | quota_consumed | credits_consumed |
+#                       external_api_call | mock_only | none
+# governance_tags: Applicable compliance/safety flags.
+#               Values: pii | fairness_guard | requires_hitl | multi_tenant |
+#                       audit_trail | credits_consumed | write_destructive
+# related_tools: Suggested next tools or alternatives.
+# version: semver string (bump minor when description enriched, major for schema break)
+#
 # Format per tool:
 #   name: string (unique identifier)
-#   description: string (sent to LLM)
+#   description: string (sent to LLM — enriched per template above)
+#   when_to_use: string
+#   when_not_to_use: string
+#   side_effects: list of strings
+#   governance_tags: list of strings
+#   related_tools: list of strings
 #   allowed_agents: list of agent type strings
 #   scope: TALENT_FUNNEL | JOB_TABLE | IN_JOB | GLOBAL
 #   version: semver string
@@ -12,13 +32,26 @@
 
 tools:
 
-  # ── Job Wizard Tools ───────────────────────────────────────────────────────
+  # ── Job Wizard Tools ────────────────────────────────────────────────────────
 
   - name: search_salary_benchmark
-    description: Search for salary benchmark data for a given job role, seniority, and location.
+    description: >
+      Fetches external salary benchmark data for a specific job title, seniority level, and
+      location so the recruiter can define a competitive and realistic compensation range.
+      Use this before drafting salary bands or when the recruiter asks "quanto pagar" for a role.
+      Does NOT write to the database — read-only market data retrieval.
+    when_to_use: >
+      Recruiter starts a new job and needs a salary reference; wizard step for salary
+      collection; recruiter explicitly asks for market salary data or benchmark.
+    when_not_to_use: >
+      Salary has already been confirmed; recruiter wants to update an existing job's salary
+      (use update_job); detailed internal budget analysis (use analytics tools).
+    side_effects: [external_api_call]
+    governance_tags: [multi_tenant]
+    related_tools: [get_intelligent_salary, validate_job_fields, save_job_draft]
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
     scope: JOB_TABLE
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [job_title]
@@ -29,10 +62,23 @@ tools:
         industry: {type: string}
 
   - name: validate_job_fields
-    description: Validate job creation fields and check for missing required information.
+    description: >
+      Validates a set of job creation fields against business rules and returns a structured
+      report of missing required information, format errors, and improvement suggestions.
+      Use this after collecting job data from the recruiter to confirm completeness before
+      persisting — prevents wasted saves with incomplete records.
+    when_to_use: >
+      Before calling save_job_draft or create_job; wizard step transitions; recruiter
+      says they are "done" entering job info; pre-publish validation check.
+    when_not_to_use: >
+      Job is already published or active; validating candidate data (use different schema);
+      real-time per-field validation while recruiter is still typing.
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [save_job_draft, create_job, get_job_suggestions]
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
     scope: JOB_TABLE
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [fields]
@@ -40,10 +86,23 @@ tools:
         fields: {type: object}
 
   - name: get_job_suggestions
-    description: Get AI-powered suggestions to improve a job description or requirements.
+    description: >
+      Generates AI-powered improvement suggestions for a job description or requirements list,
+      including bias warnings, unclear language, missing sections, and competitive positioning tips.
+      Use this when the recruiter has drafted a description and wants quality or inclusivity feedback.
+    when_to_use: >
+      Recruiter provides initial job description; wizard step for description quality check;
+      recruiter asks "está bom assim?" or "como melhorar a descrição?".
+    when_not_to_use: >
+      Job is already published and recruiter does not plan to edit it; recruiter wants salary
+      data (use search_salary_benchmark); recruiter wants to generate the full JD from scratch
+      (use generate_enriched_jd).
+    side_effects: [none]
+    governance_tags: [multi_tenant, fairness_guard]
+    related_tools: [generate_enriched_jd, validate_job_fields, search_salary_benchmark]
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
     scope: JOB_TABLE
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [job_title]
@@ -53,10 +112,24 @@ tools:
         industry: {type: string}
 
   - name: save_job_draft
-    description: Save the current job vacancy as a draft to the database.
+    description: >
+      Persists the current job vacancy as a DRAFT in the database, creating or updating
+      the draft record without publishing it. Use this to checkpoint progress during
+      multi-turn wizard sessions so recruiters can resume later without data loss.
+      Writes to job_vacancies table with status=draft.
+    when_to_use: >
+      Wizard session paused or recruiter needs to leave; partial job data collected;
+      recruiter explicitly says "salvar rascunho"; intermediate auto-save checkpoint.
+    when_not_to_use: >
+      Recruiter wants to publish immediately (use create_job + publish_job); job data
+      is invalid or incomplete without recruiter confirmation; updating a published job
+      (use update_job).
+    side_effects: [db_write]
+    governance_tags: [multi_tenant, audit_trail]
+    related_tools: [create_job, validate_job_fields, publish_job]
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
     scope: JOB_TABLE
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [fields]
@@ -65,20 +138,46 @@ tools:
         draft_id: {type: string}
 
   - name: get_company_config
-    description: Get company configuration including hiring workflow and approval settings.
+    description: >
+      Retrieves company-level configuration including hiring workflow stages, approval
+      requirements, default pipeline settings, and integration preferences for the tenant.
+      Use this to tailor agent behavior to the company's specific recruiting process.
+    when_to_use: >
+      Before building a job or pipeline to know approval requirements; checking if HITL
+      approval is required; agent needs company-specific workflow stages or SLA config.
+    when_not_to_use: >
+      Fetching candidate or job data (use search_candidates / get_job_details); checking
+      user permissions (use auth context); retrieving billing info (use billing tools).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [validate_job_fields, create_job, get_pipeline_stats]
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
     scope: GLOBAL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       properties:
         config_type: {type: string}
 
   - name: get_intelligent_salary
-    description: Get intelligent salary suggestions based on market data and company budget.
+    description: >
+      Returns AI-calibrated salary range suggestions by combining real-time external market
+      data with the company's internal budget history and approved compensation bands.
+      Produces a contextual recommendation rather than raw benchmark data, reducing negotiation
+      risk and aligning with budget constraints.
+    when_to_use: >
+      Wizard salary step; recruiter is uncertain about compensation range and wants a
+      calibrated suggestion that respects both market and internal budget; final salary
+      confirmation before saving job.
+    when_not_to_use: >
+      Recruiter has already decided on salary (just use save_job_draft / create_job);
+      pure market benchmark needed without internal context (use search_salary_benchmark).
+    side_effects: [external_api_call]
+    governance_tags: [multi_tenant]
+    related_tools: [search_salary_benchmark, validate_job_fields, save_job_draft]
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
     scope: JOB_TABLE
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [job_title]
@@ -88,10 +187,22 @@ tools:
         location: {type: string}
 
   - name: get_intelligent_skills
-    description: Get intelligent skill suggestions for a given job title and seniority.
+    description: >
+      Generates a prioritized and deduplicated skill list for a given job title and seniority
+      using the LIA skills ontology, past job postings, and market signals. Helps recruiters
+      avoid overfitting to their own vocabulary and surfaces adjacent or emerging skills.
+    when_to_use: >
+      Recruiter starts skills section of job creation wizard; job title is known but recruiter
+      is unsure which skills to require; improving an existing requirement list.
+    when_not_to_use: >
+      Skills have already been confirmed; deep ontology traversal needed (use infer_related_skills
+      or get_skill_adjacencies); analyzing candidate skills vs job requirements (use analyze_skill_gaps).
+    side_effects: [none]
+    governance_tags: [multi_tenant, fairness_guard]
+    related_tools: [infer_related_skills, get_job_suggestions, validate_job_fields]
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
     scope: JOB_TABLE
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [job_title]
@@ -101,10 +212,22 @@ tools:
         industry: {type: string}
 
   - name: capture_wizard_feedback
-    description: Capture user feedback about the job creation wizard experience.
+    description: >
+      Records recruiter feedback and satisfaction rating about the job creation wizard
+      experience, categorized by feedback type (e.g., suggestions, bugs, praise). Writes
+      to the feedback table for product improvement tracking — does NOT affect job data.
+    when_to_use: >
+      End of wizard session; recruiter explicitly provides feedback; post-wizard NPS prompt;
+      recruiter complains about or praises the wizard experience mid-session.
+    when_not_to_use: >
+      Feedback about a candidate (different tool); feedback about interview results;
+      recording a hiring outcome (use record_hiring_outcome).
+    side_effects: [db_write]
+    governance_tags: [multi_tenant]
+    related_tools: [record_hiring_outcome, generate_enriched_jd]
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
     scope: GLOBAL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [feedback_type, rating]
@@ -114,10 +237,23 @@ tools:
         comment: {type: string}
 
   - name: generate_enriched_jd
-    description: Generate an enriched job description based on collected fields and market data.
+    description: >
+      Generates a complete, bias-audited, market-aligned job description from collected
+      fields and available market data. Output includes structured sections (role summary,
+      responsibilities, requirements, benefits) following WeDO inclusivity standards.
+      Does not persist — combine with save_job_draft or create_job to store.
+    when_to_use: >
+      Recruiter has confirmed core fields and wants a polished, publishable JD; final
+      wizard step before review; recruiter asks LIA to "escrever a descrição completa".
+    when_not_to_use: >
+      Recruiter wants only suggestions or improvements (use get_job_suggestions); JD is
+      already written and recruiter only wants to save it; generating candidate content.
+    side_effects: [none]
+    governance_tags: [multi_tenant, fairness_guard]
+    related_tools: [get_job_suggestions, save_job_draft, create_job, validate_job_fields]
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
     scope: JOB_TABLE
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [fields]
@@ -125,13 +261,27 @@ tools:
         fields: {type: object}
         tone: {type: string}
 
-  # ── Candidate Tools ────────────────────────────────────────────────────────
+  # ── Candidate Pipeline Tools ────────────────────────────────────────────────
 
   - name: update_candidate_stage
-    description: Move a candidate to a different pipeline stage within a vacancy.
+    description: >
+      Moves a single candidate to a specified pipeline stage within a vacancy, creating
+      an audit log entry and optionally notifying the candidate. Enforces tenant isolation
+      to prevent cross-company data access. Use when the recruiter explicitly advances or
+      regresses a candidate's status in the funnel.
+    when_to_use: >
+      Recruiter says "mover para entrevistas", "avançar candidato", "reprovar na triagem";
+      post-screening decision; scheduled stage progression; HITL approval granted.
+    when_not_to_use: >
+      Moving multiple candidates at once (use bulk_update_candidates_stage); permanently
+      rejecting (use reject_candidate); hiding from view (use hide_candidate);
+      removing from vacancy (different operation).
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, audit_trail, pii, requires_hitl]
+    related_tools: [bulk_update_candidates_stage, reject_candidate, hide_candidate, wsi_screening]
     allowed_agents: [orchestrator, recruiter_assistant, screening, analyst_feedback]
     scope: IN_JOB
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [candidate_id, target_stage]
@@ -143,10 +293,23 @@ tools:
         notify_candidate: {type: boolean}
 
   - name: add_candidate_to_vacancy
-    description: Add a candidate from the talent pool to a specific vacancy.
+    description: >
+      Adds an existing talent-pool candidate to a specific vacancy, creating a
+      VacancyCandidate record at the specified initial stage. Use when sourcing agents
+      find matches or when the recruiter manually nominates a candidate for a position.
+      Writes to vacancy_candidates table; does not duplicate the candidate profile.
+    when_to_use: >
+      Sourcing agent found a match; recruiter says "adicionar esse candidato à vaga X";
+      bulk sourcing results need to be funneled into an active job; talent pool promotion.
+    when_not_to_use: >
+      Candidate is not yet in the talent pool (import first); candidate is already in
+      the vacancy (will create duplicate); moving between stages (use update_candidate_stage).
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, pii, audit_trail]
+    related_tools: [search_candidates, update_candidate_stage, shortlist_candidate]
     allowed_agents: [orchestrator, recruiter_assistant]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [candidate_id, vacancy_id]
@@ -157,10 +320,24 @@ tools:
         notes: {type: string}
 
   - name: reject_candidate
-    description: Reject a candidate from a vacancy with an optional reason.
+    description: >
+      Permanently rejects a candidate from a vacancy, records the rejection reason,
+      optionally sends a rejection notification, and removes them from the active funnel.
+      Creates an audit log entry. This is a definitive action — the candidate remains
+      in the talent pool but is marked rejected for this vacancy.
+    when_to_use: >
+      Recruiter confirms rejection after screening or interviews; HITL rejection approval
+      granted; FairnessGuard audit passed; recruiter says "reprovar", "dispensar", "não aprovado".
+    when_not_to_use: >
+      Temporarily hiding a candidate (use hide_candidate); moving to a lower stage (use
+      update_candidate_stage); bulk rejecting multiple candidates (use bulk_update_candidates_stage
+      with a rejection stage).
+    side_effects: [db_write, audit_trail, email_sent]
+    governance_tags: [multi_tenant, pii, audit_trail, requires_hitl, fairness_guard]
+    related_tools: [hide_candidate, update_candidate_stage, bulk_update_candidates_stage]
     allowed_agents: [orchestrator, recruiter_assistant, screening, analyst_feedback]
     scope: IN_JOB
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [candidate_id]
@@ -171,10 +348,24 @@ tools:
         notify: {type: boolean}
 
   - name: shortlist_candidate
-    description: Add a candidate to a shortlist for a specific vacancy.
+    description: >
+      Adds a candidate to the shortlist for a specific vacancy, flagging them as a
+      priority prospect for the recruiter's review. Shortlisted candidates appear at
+      the top of the pipeline view. This is a soft endorsement that does not change
+      the pipeline stage.
+    when_to_use: >
+      Screening agent identifies a high-score candidate worth highlighting; recruiter
+      wants to curate a shortlist before sending to hiring manager; talent pool pipeline
+      preview step.
+    when_not_to_use: >
+      Moving candidate to a formal interview stage (use update_candidate_stage); adding
+      a new candidate to the vacancy (use add_candidate_to_vacancy); final hiring decision.
+    side_effects: [db_write]
+    governance_tags: [multi_tenant, pii]
+    related_tools: [add_candidate_to_vacancy, update_candidate_stage, get_candidate_details]
     allowed_agents: [orchestrator, recruiter_assistant]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [candidate_id, vacancy_id]
@@ -184,10 +375,24 @@ tools:
         notes: {type: string}
 
   - name: bulk_update_candidates_stage
-    description: Move multiple candidates to a new pipeline stage in bulk.
+    description: >
+      Moves a list of candidates to the same target stage within a job vacancy in a
+      single atomic operation. Use for post-screening batch decisions where multiple
+      candidates are advanced or rejected simultaneously. Generates one audit entry per
+      candidate to maintain a full audit trail.
+    when_to_use: >
+      After automated screening batch completes; recruiter approves a set of candidates
+      for next stage; mass rejection after final round; HITL bulk approval event.
+    when_not_to_use: >
+      Moving a single candidate (use update_candidate_stage for cleaner logging); different
+      target stages per candidate (call update_candidate_stage in sequence); pipeline stats
+      only (use get_pipeline_stats).
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, pii, audit_trail, requires_hitl, fairness_guard]
+    related_tools: [update_candidate_stage, reject_candidate, get_pipeline_stats]
     allowed_agents: [orchestrator, recruiter_assistant, screening, analyst_feedback]
     scope: IN_JOB
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [candidate_ids, target_stage]
@@ -199,10 +404,23 @@ tools:
         job_id: {type: string}
 
   - name: add_to_list
-    description: Add a candidate to a named candidate list (talent pool management).
+    description: >
+      Adds a candidate to a named talent pool list (e.g., "Banco Sênior Python", "Ex-clientes
+      interessados") for future outreach and pipeline management. Lists are tenant-scoped.
+      Does not change the candidate's stage or vacancy assignment.
+    when_to_use: >
+      Tagging a candidate for future sourcing campaigns; recruiter wants to segment the
+      talent pool by profile type; pre-campaign list building; saving silver medalists.
+    when_not_to_use: >
+      Adding candidate to an active vacancy (use add_candidate_to_vacancy); creating a
+      full talent pool with automation (use create_talent_pool); shortlisting for specific
+      vacancy (use shortlist_candidate).
+    side_effects: [db_write]
+    governance_tags: [multi_tenant, pii]
+    related_tools: [create_talent_pool, add_to_talent_pool, shortlist_candidate]
     allowed_agents: [orchestrator, recruiter_assistant]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [candidate_id, list_name]
@@ -212,10 +430,24 @@ tools:
         notes: {type: string}
 
   - name: wsi_screening
-    description: Initiate a WSI (Workforce Screening Interview) for a candidate.
+    description: >
+      Initiates a WSI (Workforce Screening Interview) for a candidate in the context of
+      a job vacancy, launching the AI-driven voice, text, or video screening session.
+      Triggers the full WSI pipeline including question delivery, transcript generation,
+      BARS scoring, and Bloom/Dreyfus analysis. This action contacts the candidate.
+    when_to_use: >
+      Candidate advances to screening stage; recruiter or automation decides to start
+      the structured WSI interview; post-shortlist step to qualify candidates at scale.
+    when_not_to_use: >
+      Candidate has already completed a WSI for this vacancy; recruiter wants to review
+      existing WSI results (use get_candidate_details or analyze_interview_recording);
+      candidate has not consented to AI screening.
+    side_effects: [db_write, webhook_fired, whatsapp_sent, audit_trail]
+    governance_tags: [multi_tenant, pii, requires_hitl, fairness_guard, audit_trail]
+    related_tools: [analyze_interview_recording, update_candidate_stage, get_candidate_details]
     allowed_agents: [orchestrator, recruiter_assistant]
     scope: IN_JOB
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [candidate_id, job_id]
@@ -225,10 +457,23 @@ tools:
         screening_type: {type: string, enum: [voice, text, video]}
 
   - name: hide_candidate
-    description: Hide a candidate from the active pipeline view (soft remove).
+    description: >
+      Soft-removes a candidate from the active pipeline view without rejecting or deleting
+      them. The candidate remains in the talent pool and can be unhidden later. Use when
+      the recruiter wants to deprioritize a candidate without making a final rejection decision.
+    when_to_use: >
+      Recruiter says "esconder", "tirar da vista", "não quero ver agora"; candidate is
+      on hold pending other interviews; duplicates in the view; keeping pipeline clean
+      without committing to rejection.
+    when_not_to_use: >
+      Final rejection decision (use reject_candidate); moving to a different stage (use
+      update_candidate_stage); permanent removal.
+    side_effects: [db_write]
+    governance_tags: [multi_tenant, pii, audit_trail]
+    related_tools: [reject_candidate, update_candidate_stage, get_candidate_details]
     allowed_agents: [orchestrator, recruiter_assistant, screening, analyst_feedback]
     scope: IN_JOB
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [candidate_id]
@@ -237,13 +482,26 @@ tools:
         vacancy_id: {type: string}
         reason: {type: string}
 
-  # ── Query / Analytics Tools ────────────────────────────────────────────────
+  # ── Query / Analytics Tools ─────────────────────────────────────────────────
 
   - name: search_candidates
-    description: Search the talent pool for candidates matching specified criteria.
+    description: >
+      Searches the tenant-scoped talent pool using multi-dimensional filters including
+      skills, seniority, experience range, WSI score, availability, location, and language.
+      Returns a ranked list of matching candidates with summary profiles. Use this as the
+      primary discovery tool when the recruiter wants to find or surface candidates.
+    when_to_use: >
+      Recruiter asks to find candidates matching a profile; sourcing agent needs matches
+      for a job; building a shortlist; proactive talent discovery; analytics queries.
+    when_not_to_use: >
+      Fetching a single known candidate (use get_candidate_details); searching external
+      networks like LinkedIn (use search_candidates_pearch); pipeline stats (use get_pipeline_stats).
+    side_effects: [none]
+    governance_tags: [multi_tenant, pii]
+    related_tools: [get_candidate_details, search_candidates_pearch, add_candidate_to_vacancy]
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       properties:
@@ -253,10 +511,23 @@ tools:
         offset: {type: integer}
 
   - name: get_candidate_details
-    description: Get full profile details for a specific candidate.
+    description: >
+      Retrieves the complete profile for a specific candidate including personal data,
+      skills, work history, WSI scores, pipeline history, and engagement signals.
+      Optionally includes the full stage transition history. Use when you need the full
+      context on a known candidate to support a decision.
+    when_to_use: >
+      After finding a candidate in search results; recruiter says "ver mais sobre [nome]";
+      before making a stage decision; before generating interview opinion; HITL review step.
+    when_not_to_use: >
+      Searching for candidates (use search_candidates); aggregate stats (use get_candidate_stats);
+      pipeline funnel overview (use get_vacancy_funnel). Contains PII — check consent before displaying.
+    side_effects: [none]
+    governance_tags: [multi_tenant, pii, audit_trail]
+    related_tools: [search_candidates, update_candidate_stage, analyze_interview_recording]
     allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [candidate_id]
@@ -265,10 +536,23 @@ tools:
         include_history: {type: boolean}
 
   - name: get_candidate_stats
-    description: Get aggregate statistics about candidates in the talent pool.
+    description: >
+      Returns aggregate statistical summaries about the tenant's candidate pool, such as
+      skill distribution, seniority breakdown, availability percentages, and score histograms.
+      Supports optional grouping and filtering. Use for dashboard and analytical views,
+      not individual candidate lookup.
+    when_to_use: >
+      Recruiter wants overview of talent pool composition; analytics dashboard load;
+      before launching sourcing campaign to understand existing coverage; reporting.
+    when_not_to_use: >
+      Looking for individual candidates (use search_candidates); pipeline-level stats per
+      vacancy (use get_pipeline_stats); detailed funnel analysis (use get_vacancy_funnel).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [get_pipeline_stats, search_candidates, generate_report]
     allowed_agents: [orchestrator, recruiter_assistant, analytics]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       properties:
@@ -276,10 +560,23 @@ tools:
         group_by: {type: string}
 
   - name: search_jobs
-    description: Search job vacancies by title, status, department, or other criteria.
+    description: >
+      Searches the tenant's job vacancy table by title, status, department, or free text,
+      returning a list of matching vacancies with summary data. Use when the recruiter
+      references a job by name or asks to list active/open positions.
+    when_to_use: >
+      Recruiter refers to a job by name or partial name; listing active vacancies for
+      dashboard; cross-vacancy analytics; before adding a candidate to a vacancy if
+      job_id is unknown.
+    when_not_to_use: >
+      Single job with known job_id (use get_job_details); analytics on pipeline stages
+      (use get_pipeline_stats); external job board search (use publish_to_job_board).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [get_job_details, get_pipeline_stats, create_job]
     allowed_agents: [orchestrator, recruiter_assistant, analytics, job_planner]
     scope: JOB_TABLE
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       properties:
@@ -289,10 +586,23 @@ tools:
         limit: {type: integer}
 
   - name: get_job_details
-    description: Get full details of a specific job vacancy including requirements and pipeline.
+    description: >
+      Returns the full record for a specific job vacancy including title, description,
+      requirements, skills, salary range, pipeline stages, and optionally the list of
+      associated candidates. Use when you need the complete job context before taking
+      an action or generating content.
+    when_to_use: >
+      Recruiter references a specific job_id; before generating a JD update; before
+      publishing to a board; HITL approval requiring full job context; before sourcing.
+    when_not_to_use: >
+      Searching for jobs by name (use search_jobs); pipeline stats only (use get_pipeline_stats);
+      candidate list without job context (use search_candidates).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [search_jobs, get_pipeline_stats, update_job, publish_job]
     allowed_agents: [orchestrator, recruiter_assistant, analytics, job_planner]
     scope: JOB_TABLE
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [job_id]
@@ -301,10 +611,22 @@ tools:
         include_candidates: {type: boolean}
 
   - name: get_pipeline_stats
-    description: Get pipeline statistics for a specific vacancy or all vacancies.
+    description: >
+      Returns stage-by-stage conversion statistics for one or all vacancies over an
+      optional date range, including candidate counts per stage, conversion rates,
+      average time-in-stage, and rejection reasons. Essential for identifying bottlenecks.
+    when_to_use: >
+      Recruiter asks "como está o funil?"; analytics dashboard load; detecting SLA
+      bottlenecks; before forecasting time-to-fill; comparing pipeline health across jobs.
+    when_not_to_use: >
+      Individual candidate details (use get_candidate_details); aggregate talent pool stats
+      (use get_candidate_stats); full funnel with per-candidate list (use get_vacancy_funnel).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [get_vacancy_funnel, get_candidate_stats, forecast_hiring_needs]
     allowed_agents: [orchestrator, recruiter_assistant, analytics]
     scope: JOB_TABLE
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       properties:
@@ -312,10 +634,22 @@ tools:
         date_range: {type: string}
 
   - name: get_vacancy_funnel
-    description: Get funnel data for a specific vacancy showing candidates at each stage.
+    description: >
+      Returns per-stage candidate counts and (optionally) the candidate list for a specific
+      vacancy, providing a complete funnel snapshot including rejected candidates if requested.
+      Use when the recruiter needs the full picture of who is where in a specific vacancy.
+    when_to_use: >
+      Recruiter asks "quem está em cada etapa da vaga X?"; hiring manager review;
+      before making bulk stage decisions; sourcing gap analysis for a specific vacancy.
+    when_not_to_use: >
+      Aggregate stats across vacancies (use get_pipeline_stats); talent pool overview
+      (use get_candidate_stats); searching for candidates by profile (use search_candidates).
+    side_effects: [none]
+    governance_tags: [multi_tenant, pii]
+    related_tools: [get_pipeline_stats, bulk_update_candidates_stage, get_candidate_details]
     allowed_agents: [orchestrator, recruiter_assistant, analytics]
     scope: IN_JOB
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [job_id]
@@ -323,13 +657,28 @@ tools:
         job_id: {type: string}
         include_rejected: {type: boolean}
 
-  # ── Export Tools ──────────────────────────────────────────────────────────
+  # ── Export Tools ───────────────────────────────────────────────────────────
 
   - name: export_candidates
-    description: Export candidate data to CSV or Excel format.
+    description: >
+      Exports candidate profile data for a list of candidate IDs to CSV or Excel format,
+      with configurable field selection. The resulting file contains PII and should only be
+      generated when the recruiter explicitly requests an export. Logs the export event
+      for LGPD compliance audit.
+    when_to_use: >
+      Recruiter explicitly requests to export candidate data; sharing shortlist with
+      hiring manager offline; bulk data transfer to external ATS; compliance-requested
+      data extraction.
+    when_not_to_use: >
+      Recruiter wants to view data on screen (use search_candidates or get_candidate_details);
+      syncing to external ATS automatically (use ats_sync_candidate); generating a report
+      (use generate_report).
+    side_effects: [audit_trail, external_api_call]
+    governance_tags: [multi_tenant, pii, audit_trail, requires_hitl]
+    related_tools: [search_candidates, generate_report, get_candidate_details]
     allowed_agents: [orchestrator, recruiter_assistant, analytics]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       properties:
@@ -339,13 +688,27 @@ tools:
         format: {type: string, enum: [csv, xlsx]}
         fields: {type: array, items: {type: string}}
 
-  # ── Communication Tools ───────────────────────────────────────────────────
+  # ── Communication Tools ────────────────────────────────────────────────────
 
   - name: send_email
-    description: Send an email to one or more candidates or recruiters.
+    description: >
+      Sends a transactional or templated email to one or more candidates or recruiters.
+      Supports free-form body or template_id lookup. This action sends a REAL email —
+      it is not a preview or draft. Logs delivery to the communication audit trail.
+      MOCK status: partially live; confirm template coverage before production use.
+    when_to_use: >
+      Recruiter explicitly requests to notify a candidate by email; automated pipeline
+      event triggers notification (rejection, interview invite, offer letter); communication
+      domain action routed here.
+    when_not_to_use: >
+      WhatsApp is the preferred channel for this candidate (use send_whatsapp); email
+      should only be previewed, not sent; bulk automated nurture (use create_nurture_sequence).
+    side_effects: [email_sent, audit_trail]
+    governance_tags: [multi_tenant, pii, audit_trail, requires_hitl]
+    related_tools: [send_whatsapp, create_nurture_sequence, reject_candidate]
     allowed_agents: [orchestrator, recruiter_assistant, communication]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [to, subject, body]
@@ -358,10 +721,23 @@ tools:
         template_id: {type: string}
 
   - name: send_whatsapp
-    description: Send a WhatsApp message to a candidate phone number.
+    description: >
+      Sends a WhatsApp message to a candidate's phone number using a registered template
+      or free-form message. This action delivers a REAL WhatsApp message via the configured
+      provider — not a preview. Logs delivery to the communication audit trail.
+      MOCK status: provider integration required for production; may return mock response in dev.
+    when_to_use: >
+      Candidate's preferred contact channel is WhatsApp; WSI invitation via WhatsApp;
+      interview scheduling confirmation; recruiter explicitly requests WhatsApp outreach.
+    when_not_to_use: >
+      Candidate has not provided phone number or consented to WhatsApp contact; email
+      is preferred channel (use send_email); bulk automated sequence (use create_nurture_sequence).
+    side_effects: [whatsapp_sent, audit_trail]
+    governance_tags: [multi_tenant, pii, audit_trail, requires_hitl]
+    related_tools: [send_email, wsi_screening, create_nurture_sequence]
     allowed_agents: [orchestrator, recruiter_assistant, communication]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [phone, message]
@@ -370,13 +746,28 @@ tools:
         message: {type: string}
         template_name: {type: string}
 
-  # ── Job Management Tools ──────────────────────────────────────────────────
+  # ── Job Management Tools ───────────────────────────────────────────────────
 
   - name: create_job
-    description: Create a new job vacancy with the specified requirements and settings.
+    description: >
+      Creates a new job vacancy record in the database with the provided title, description,
+      requirements, and optional fields. Returns the new job_id. Use only when all required
+      data has been confirmed — prefer save_job_draft for work-in-progress. Increments the
+      company's active vacancy count for quota enforcement.
+    when_to_use: >
+      Recruiter confirms all required fields and explicitly wants to create the vacancy;
+      wizard flow is complete and data is validated; job is being created programmatically
+      from an approved template.
+    when_not_to_use: >
+      Data is still being collected (use save_job_draft); recruiter wants to review
+      before committing; updating an existing vacancy (use update_job); publishing
+      immediately without review (create first, then publish_job separately).
+    side_effects: [db_write, audit_trail, quota_consumed]
+    governance_tags: [multi_tenant, audit_trail]
+    related_tools: [save_job_draft, validate_job_fields, publish_job, update_job]
     allowed_agents: [orchestrator, job_planner, job_wizard]
     scope: JOB_TABLE
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [title, description]
@@ -389,10 +780,24 @@ tools:
         requirements: {type: array, items: {type: string}}
 
   - name: update_job
-    description: Update fields of an existing job vacancy.
+    description: >
+      Updates one or more fields of an existing job vacancy identified by job_id. Partial
+      updates are supported — only provided fields are changed. Creates an audit log entry
+      with the previous and new values. Use when the recruiter wants to edit an existing
+      published or draft vacancy.
+    when_to_use: >
+      Recruiter wants to change title, description, requirements, salary, or status of
+      an existing job; correcting a published job; applying hiring manager feedback; updating
+      work model or location.
+    when_not_to_use: >
+      Creating a new job (use create_job); publishing a draft for the first time
+      (use publish_job); pausing or cancelling a vacancy (use pause_vacancy / cancel_vacancy).
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, audit_trail]
+    related_tools: [create_job, publish_job, pause_vacancy, cancel_vacancy]
     allowed_agents: [orchestrator, job_planner, job_wizard]
     scope: JOB_TABLE
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [job_id]
@@ -401,10 +806,23 @@ tools:
         fields: {type: object}
 
   - name: publish_job
-    description: Publish a job vacancy to make it visible to candidates and job boards.
+    description: >
+      Publishes a job vacancy to make it visible to candidates and distributes it to
+      configured job boards and channels. Changes status from draft to published.
+      Optionally specifies which channels to publish to. This is an irreversible action
+      without a complementary unpublish — use pause_vacancy to take offline temporarily.
+    when_to_use: >
+      Recruiter confirms job is ready for candidates; wizard completion step; HR approval
+      workflow completes; recruiter explicitly says "publicar vaga".
+    when_not_to_use: >
+      Job is still being drafted (use save_job_draft); recruiter wants to review once
+      more; publishing to a specific external board only (use publish_to_job_board).
+    side_effects: [db_write, webhook_fired, external_api_call, audit_trail]
+    governance_tags: [multi_tenant, audit_trail, requires_hitl]
+    related_tools: [create_job, update_job, pause_vacancy, publish_to_job_board]
     allowed_agents: [orchestrator, job_planner]
     scope: JOB_TABLE
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [job_id]
@@ -414,13 +832,26 @@ tools:
           type: array
           items: {type: string}
 
-  # ── Global Tools ──────────────────────────────────────────────────────────
+  # ── Global / Reporting Tools ───────────────────────────────────────────────
 
   - name: generate_report
-    description: Generate a recruitment analytics report for a given date range and scope.
+    description: >
+      Generates a recruitment analytics report covering the specified date range and scope,
+      in PDF, CSV, or JSON format. Reports include KPIs, funnel metrics, time-to-fill,
+      diversity stats, and hiring quality indicators. Does not store in DB by default —
+      returns a download URL or inline data.
+    when_to_use: >
+      Recruiter asks for a report; end-of-month KPI review; board presentation prep;
+      compliance reporting; comparing performance across periods.
+    when_not_to_use: >
+      Real-time pipeline view (use get_pipeline_stats); scheduling recurring reports
+      (use schedule_report); individual candidate report (use export_candidates).
+    side_effects: [external_api_call, audit_trail]
+    governance_tags: [multi_tenant, pii, audit_trail]
+    related_tools: [schedule_report, get_pipeline_stats, get_candidate_stats, export_candidates]
     allowed_agents: [orchestrator, analytics]
     scope: GLOBAL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [report_type]
@@ -431,10 +862,22 @@ tools:
         format: {type: string, enum: [pdf, csv, json]}
 
   - name: schedule_report
-    description: Schedule a recurring analytics report to be sent automatically.
+    description: >
+      Creates a recurring scheduled report job that automatically generates and sends
+      the specified report type to designated recipients on a cron schedule. Persists
+      the schedule configuration to the database and activates the job immediately.
+    when_to_use: >
+      Recruiter wants to receive weekly/monthly reports automatically; HR director wants
+      a recurring KPI digest; setting up ongoing pipeline health monitoring for a client.
+    when_not_to_use: >
+      One-time report (use generate_report); checking current pipeline stats (use
+      get_pipeline_stats); modifying an existing schedule (use an update operation).
+    side_effects: [db_write, webhook_fired]
+    governance_tags: [multi_tenant, audit_trail]
+    related_tools: [generate_report, get_pipeline_stats]
     allowed_agents: [orchestrator, analytics]
     scope: GLOBAL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [report_type, schedule, recipients]
@@ -449,10 +892,22 @@ tools:
 
   # Talent Pool (5)
   - name: create_talent_pool
-    description: Create a new live talent pool with optional archetype
+    description: >
+      Creates a new live talent pool in the tenant's account with an optional archetype
+      (persona template) to guide automated sourcing. The pool is immediately active and
+      can be linked to sourcing agents. Writes to the talent_pools table.
+    when_to_use: >
+      Recruiter wants a dedicated pool for a recurring role type; launching a proactive
+      sourcing initiative; organizing candidates by archetype (e.g., "Líderes de Produto").
+    when_not_to_use: >
+      Adding candidates to an existing pool (use add_to_talent_pool); creating a single job
+      vacancy (use create_job); listing existing pools (use list_talent_pools).
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant]
+    related_tools: [add_to_talent_pool, list_talent_pools, create_sourcing_agent]
     allowed_agents: [talent_pool, recruiter_assistant, orchestrator]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [name]
@@ -462,20 +917,47 @@ tools:
         description: {type: string}
 
   - name: list_talent_pools
-    description: List active talent pools for the current company
+    description: >
+      Lists all talent pools for the current tenant, optionally filtered by status
+      (active, paused, archived). Returns pool metadata including candidate counts,
+      archetype, and last activity timestamp. Use to give the recruiter an overview
+      of available pools before selecting one for action.
+    when_to_use: >
+      Recruiter asks "quais pools temos?"; before adding candidates to a pool; before
+      moving candidates from pool to vacancy; analytics on pool coverage.
+    when_not_to_use: >
+      Getting candidates inside a specific pool (use get_pool_candidates); creating
+      a new pool (use create_talent_pool); searching for candidates (use search_candidates).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [get_pool_candidates, create_talent_pool, add_to_talent_pool]
     allowed_agents: [talent_pool, recruiter_assistant, orchestrator]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       properties:
         status: {type: string, enum: [active, paused, archived]}
 
   - name: add_to_talent_pool
-    description: Add candidates to a talent pool
+    description: >
+      Adds one or more candidates to an existing talent pool by pool_id and candidate ID list.
+      Creates pool membership records. Candidates remain in the pool independently of any
+      active vacancy assignment. Use this to grow a talent pool from sourcing results or
+      talent pool migration.
+    when_to_use: >
+      Sourcing agent surfaces matching profiles for a pool; recruiter manually adds
+      candidates to a strategic pool; bulk import from external source into pool.
+    when_not_to_use: >
+      Adding candidate to a specific vacancy (use add_candidate_to_vacancy); creating
+      a new pool (use create_talent_pool); moving candidates from pool to job
+      (use move_pool_to_job).
+    side_effects: [db_write]
+    governance_tags: [multi_tenant, pii]
+    related_tools: [move_pool_to_job, get_pool_candidates, create_talent_pool]
     allowed_agents: [talent_pool, sourcing, orchestrator]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [pool_id, candidate_ids]
@@ -484,10 +966,24 @@ tools:
         candidate_ids: {type: array, items: {type: string}}
 
   - name: move_pool_to_job
-    description: Move candidates from talent pool to a job vacancy
+    description: >
+      Moves selected candidates from a talent pool directly into a job vacancy at a
+      specified pipeline stage, creating VacancyCandidate records in a single atomic
+      operation. Use for efficient pool-to-vacancy pipeline transfers when a matching
+      job opens up.
+    when_to_use: >
+      Recruiter activates a new job matching an existing pool archetype; campaign triggered
+      pool-to-vacancy transfer; recruiter says "mover pool X para a vaga Y".
+    when_not_to_use: >
+      Adding individual candidates not in a pool (use add_candidate_to_vacancy);
+      bulk stage change within a vacancy (use bulk_update_candidates_stage);
+      exporting pool data (use export_candidates).
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, pii, audit_trail]
+    related_tools: [add_candidate_to_vacancy, bulk_update_candidates_stage, get_pool_candidates]
     allowed_agents: [talent_pool, orchestrator]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [pool_id, job_id, candidate_ids, target_stage]
@@ -498,10 +994,23 @@ tools:
         target_stage: {type: string}
 
   - name: get_pool_candidates
-    description: List candidates in a talent pool with stage filtering
+    description: >
+      Returns the list of candidates in a specific talent pool, optionally filtered by
+      their pool stage (discovered, contacted, screening, screened, ready). Includes
+      candidate summary data and pool-specific metadata. Use to inspect pool contents
+      before making sourcing or transfer decisions.
+    when_to_use: >
+      Recruiter asks "quem está no pool X?"; before moving candidates from pool to vacancy;
+      analytics on pool readiness; campaign targeting within a pool.
+    when_not_to_use: >
+      Searching all candidates (use search_candidates); getting a full candidate profile
+      (use get_candidate_details); listing pools (use list_talent_pools).
+    side_effects: [none]
+    governance_tags: [multi_tenant, pii]
+    related_tools: [list_talent_pools, move_pool_to_job, get_candidate_details]
     allowed_agents: [talent_pool, recruiter_assistant, orchestrator]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [pool_id]
@@ -511,10 +1020,23 @@ tools:
 
   # Agent Studio (4)
   - name: create_sourcing_agent
-    description: Create a persistent sourcing agent for a job or talent pool
+    description: >
+      Creates a persistent AI sourcing agent linked to a job or talent pool, using an
+      optional sector template to pre-configure search strategies and scoring criteria.
+      The agent runs autonomously between sessions, discovering and scoring candidates.
+      Consumes quota credits per run.
+    when_to_use: >
+      Recruiter wants ongoing automated sourcing for a hard-to-fill role; talent pool
+      needs continuous population; recruiter says "criar agente de sourcing para [vaga]".
+    when_not_to_use: >
+      One-time search (use search_candidates or run_multi_strategy_search); calibrating
+      an existing agent (use calibrate_sourcing_agent); listing existing agents (use get_agent_status).
+    side_effects: [db_write, credits_consumed, audit_trail]
+    governance_tags: [multi_tenant, credits_consumed, audit_trail]
+    related_tools: [calibrate_sourcing_agent, run_multi_strategy_search, get_agent_status]
     allowed_agents: [agent_studio, orchestrator]
     scope: GLOBAL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [agent_name]
@@ -525,10 +1047,24 @@ tools:
         talent_pool_id: {type: string}
 
   - name: calibrate_sourcing_agent
-    description: Start calibration for a sourcing agent (trigger Big Card modal)
+    description: >
+      Triggers the calibration flow for an existing sourcing agent, launching the Big Card
+      modal where the recruiter reviews a batch of candidate profiles and rates them as
+      positive or negative examples. The agent updates its scoring model based on this
+      HITL feedback to reduce false positives.
+    when_to_use: >
+      Agent has completed initial sourcing run and has candidates to review; recruiter
+      is getting poor quality matches; after major job requirement changes; periodic
+      recalibration cycle.
+    when_not_to_use: >
+      Creating a new agent (use create_sourcing_agent); checking agent performance metrics
+      without triggering calibration (use get_agent_status); one-time search (use run_multi_strategy_search).
+    side_effects: [webhook_fired, db_write]
+    governance_tags: [multi_tenant, requires_hitl]
+    related_tools: [create_sourcing_agent, get_agent_status, run_multi_strategy_search]
     allowed_agents: [agent_studio, orchestrator]
     scope: GLOBAL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [agent_id]
@@ -536,10 +1072,22 @@ tools:
         agent_id: {type: string}
 
   - name: get_agent_status
-    description: Get status, strategy, and metrics of a sourcing agent
+    description: >
+      Returns the current status, active search strategy, performance metrics (candidates
+      found, qualified, conversion rate), and last-run timestamp for a sourcing agent.
+      Read-only — does not trigger any agent action.
+    when_to_use: >
+      Recruiter asks "como está o agente X?"; monitoring dashboard; before deciding to
+      calibrate or pause; checking if agent is healthy or stuck.
+    when_not_to_use: >
+      Triggering calibration (use calibrate_sourcing_agent); running a search now
+      (use run_multi_strategy_search); checking analytics metrics (use analytics tools).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [calibrate_sourcing_agent, create_sourcing_agent, run_multi_strategy_search]
     allowed_agents: [agent_studio, recruiter_assistant, orchestrator]
     scope: GLOBAL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [agent_id]
@@ -547,10 +1095,24 @@ tools:
         agent_id: {type: string}
 
   - name: run_multi_strategy_search
-    description: Execute 4 parallel search strategies (direct, adjacent, silver medalists, reengagement)
+    description: >
+      Executes four parallel candidate discovery strategies simultaneously — direct match,
+      adjacent skills, silver medalists (past applicants), and re-engagement — and returns
+      a merged, deduplicated, and ranked result set. More thorough than a single search
+      but consumes more compute. Use for high-priority or hard-to-fill roles.
+    when_to_use: >
+      Recruiter opens a critical or urgent role and wants maximum coverage; initial sourcing
+      run for a new talent pool; recruiter says "busca completa" or "encontrar todos os perfis".
+    when_not_to_use: >
+      Simple skills-based search is sufficient (use search_candidates); persistent ongoing
+      sourcing is needed (use create_sourcing_agent); specific external network search
+      (use search_candidates_pearch).
+    side_effects: [credits_consumed, external_api_call]
+    governance_tags: [multi_tenant, credits_consumed]
+    related_tools: [search_candidates, create_sourcing_agent, search_candidates_pearch]
     allowed_agents: [agent_studio, sourcing, orchestrator]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [job_title]
@@ -562,10 +1124,24 @@ tools:
 
   # Digital Twins (3)
   - name: create_digital_twin
-    description: Create a Digital Twin from a Subject Matter Expert
+    description: >
+      Creates a Digital Twin agent from a Subject Matter Expert (SME) user, capturing
+      their evaluation reasoning, scoring criteria, and interview patterns via RAG.
+      The twin can later evaluate candidates as if the SME were conducting the interview.
+      Writes twin profile to the database.
+    when_to_use: >
+      SME wants their judgment to scale across all candidates; senior recruiter or domain
+      expert wants to automate their screening logic; company has a valued interviewer
+      whose patterns should be preserved.
+    when_not_to_use: >
+      Evaluating a candidate with an existing twin (use evaluate_with_twin); listing
+      available twins (use list_digital_twins); standard AI screening without personalization.
+    side_effects: [db_write, credits_consumed]
+    governance_tags: [multi_tenant, audit_trail]
+    related_tools: [evaluate_with_twin, list_digital_twins, calibrate_sourcing_agent]
     allowed_agents: [digital_twin, orchestrator]
     scope: GLOBAL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [twin_name]
@@ -575,10 +1151,24 @@ tools:
         specialties: {type: array, items: {type: string}}
 
   - name: evaluate_with_twin
-    description: Evaluate a candidate using a Digital Twin's reasoning (RAG few-shot)
+    description: >
+      Evaluates a candidate using a Digital Twin's internalized reasoning model, producing
+      a structured assessment that mirrors how the SME would judge the candidate. Uses
+      RAG few-shot retrieval to apply historical evaluation patterns. Result includes
+      score, evidence, and recommendation. Counts against credits.
+    when_to_use: >
+      Candidate is at a stage where the SME's judgment should be simulated; scaling
+      expert evaluation to many candidates; consistency check before final HITL review;
+      recruiter says "avaliar com o twin do [nome]".
+    when_not_to_use: >
+      No existing digital twin (use analyze_interview_recording for standard AI analysis);
+      final hiring decision (always requires HITL); creating a new twin (use create_digital_twin).
+    side_effects: [db_write, credits_consumed, audit_trail]
+    governance_tags: [multi_tenant, pii, requires_hitl, fairness_guard, credits_consumed, audit_trail]
+    related_tools: [create_digital_twin, analyze_interview_recording, generate_interview_opinion]
     allowed_agents: [digital_twin, cv_screening, orchestrator]
     scope: IN_JOB
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [twin_id, candidate_id]
@@ -588,20 +1178,45 @@ tools:
         job_id: {type: string}
 
   - name: list_digital_twins
-    description: List available Digital Twins for the current company
+    description: >
+      Lists all Digital Twins available to the current tenant with their names, associated
+      SME, specialties, and creation date. Use to let the recruiter or agent select the
+      right twin before evaluation.
+    when_to_use: >
+      Before calling evaluate_with_twin; recruiter asks "quais twins temos?"; selecting
+      a domain specialist twin for a technical role evaluation.
+    when_not_to_use: >
+      Evaluating a candidate (use evaluate_with_twin); creating a twin (use create_digital_twin);
+      listing sourcing agents (use get_agent_status).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [create_digital_twin, evaluate_with_twin]
     allowed_agents: [digital_twin, recruiter_assistant, orchestrator]
     scope: GLOBAL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       properties: {}
 
   # Campaigns (3)
   - name: create_recruitment_campaign
-    description: Create an end-to-end recruitment campaign for a job or pool
+    description: >
+      Creates an end-to-end recruitment campaign that orchestrates sourcing, screening,
+      nurture sequences, and pipeline actions for a job or talent pool in a single
+      automated workflow. Supports three automation levels: fully automatic, semi-automated
+      with HITL checkpoints, or recruiter-assisted. Writes campaign config to the database.
+    when_to_use: >
+      Recruiter wants to launch a full recruitment drive for a position; proactive talent
+      pipeline campaign for an upcoming hiring need; recruiter says "criar campanha para vaga X".
+    when_not_to_use: >
+      Quick one-time sourcing run (use run_multi_strategy_search); manual candidate-by-candidate
+      management (use individual tools); checking campaign progress (use get_campaign_progress).
+    side_effects: [db_write, webhook_fired, credits_consumed, audit_trail]
+    governance_tags: [multi_tenant, requires_hitl, audit_trail, credits_consumed]
+    related_tools: [get_campaign_progress, advance_campaign_stage, create_talent_pool]
     allowed_agents: [recruitment_campaign, orchestrator]
     scope: GLOBAL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [name]
@@ -612,10 +1227,22 @@ tools:
         automation_level: {type: string, enum: [auto, semi, assisted]}
 
   - name: get_campaign_progress
-    description: Get current stage and progress of a recruitment campaign
+    description: >
+      Returns the current stage, completion percentage, candidate funnel counts, and
+      activity timeline for an active recruitment campaign. Use to monitor campaign
+      health and decide whether to advance to the next stage.
+    when_to_use: >
+      Recruiter asks "como está a campanha?"; monitoring dashboard; before advancing
+      campaign stage; detecting if campaign is stuck or needs intervention.
+    when_not_to_use: >
+      Creating a campaign (use create_recruitment_campaign); advancing stage (use
+      advance_campaign_stage); generic pipeline stats (use get_pipeline_stats).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [create_recruitment_campaign, advance_campaign_stage, get_pipeline_stats]
     allowed_agents: [recruitment_campaign, recruiter_assistant, orchestrator]
     scope: GLOBAL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [campaign_id]
@@ -623,10 +1250,24 @@ tools:
         campaign_id: {type: string}
 
   - name: advance_campaign_stage
-    description: Advance a recruitment campaign to the next stage
+    description: >
+      Advances a recruitment campaign to its next configured stage, triggering the
+      associated automation actions (e.g., sending WSI invites, mass shortlisting,
+      notifying hiring manager). HITL confirmation is required for stages marked as
+      sensitive (offer, hire).
+    when_to_use: >
+      Recruiter confirms campaign is ready to move forward; current stage goals are met;
+      time-based trigger fires; recruiter says "avançar campanha para próxima etapa".
+    when_not_to_use: >
+      Campaign has not met stage completion criteria; recruiter wants to review progress
+      first (use get_campaign_progress); manually handling individual candidates (use
+      update_candidate_stage).
+    side_effects: [db_write, webhook_fired, email_sent, audit_trail]
+    governance_tags: [multi_tenant, requires_hitl, audit_trail]
+    related_tools: [get_campaign_progress, create_recruitment_campaign, bulk_update_candidates_stage]
     allowed_agents: [recruitment_campaign, orchestrator]
     scope: GLOBAL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [campaign_id]
@@ -635,10 +1276,23 @@ tools:
 
   # Job Flow Completion (4)
   - name: create_offer_letter
-    description: Generate an offer letter for a selected candidate
+    description: >
+      Generates a structured offer letter document for a selected candidate and job,
+      incorporating the agreed salary, start date, and company-standard terms. The letter
+      is generated as a PDF or structured data but NOT sent automatically — recruiter
+      reviews before delivery. HITL required before sending.
+    when_to_use: >
+      Recruiter is ready to make a formal offer; candidate has been approved by hiring
+      manager; final stage of pipeline; recruiter says "gerar carta de oferta para [candidato]".
+    when_not_to_use: >
+      Verbal offer negotiation still in progress; candidate hasn't reached offer stage;
+      confirming a hire (use confirm_placement after offer is accepted).
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, pii, requires_hitl, audit_trail]
+    related_tools: [confirm_placement, update_candidate_stage, send_email]
     allowed_agents: [pipeline_action, orchestrator]
     scope: IN_JOB
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [candidate_id, job_id]
@@ -649,10 +1303,22 @@ tools:
         start_date: {type: string}
 
   - name: confirm_placement
-    description: Confirm a candidate has been hired and close the position
+    description: >
+      Marks a candidate as hired, closes the vacancy (or reduces headcount target),
+      and records the hiring outcome for learning analytics. Creates a permanent hire record.
+      Triggers onboarding integration if configured. This is a terminal action for the vacancy.
+    when_to_use: >
+      Offer has been accepted; recruiter confirms the hire; closing the recruitment cycle
+      for a position; recruiter says "contratar [candidato]", "fechar vaga".
+    when_not_to_use: >
+      Offer letter hasn't been signed; candidate needs more evaluation; pausing the
+      vacancy (use pause_vacancy); cancelling without a hire (use cancel_vacancy).
+    side_effects: [db_write, webhook_fired, audit_trail]
+    governance_tags: [multi_tenant, pii, requires_hitl, audit_trail]
+    related_tools: [create_offer_letter, cancel_vacancy, record_hiring_outcome]
     allowed_agents: [pipeline_action, orchestrator]
     scope: IN_JOB
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [candidate_id, job_id]
@@ -662,10 +1328,23 @@ tools:
         start_date: {type: string}
 
   - name: cancel_vacancy
-    description: Cancel a job vacancy with a structured reason
+    description: >
+      Cancels a job vacancy with a structured reason code, closes the pipeline, and
+      updates the vacancy status to cancelled. Sends notifications to candidates in
+      active stages if configured. This is a write-destructive action — cancelled
+      vacancies cannot be easily reopened.
+    when_to_use: >
+      Budget cut eliminates the position; role filled internally; position restructured;
+      recruiter says "cancelar vaga", "encerrar processo seletivo".
+    when_not_to_use: >
+      Temporarily pausing (use pause_vacancy); job was filled (use confirm_placement);
+      updating job requirements (use update_job).
+    side_effects: [db_write, email_sent, audit_trail, write_destructive]
+    governance_tags: [multi_tenant, requires_hitl, audit_trail, write_destructive]
+    related_tools: [pause_vacancy, confirm_placement, update_job]
     allowed_agents: [job_planner, orchestrator]
     scope: IN_JOB
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [job_id, reason]
@@ -674,10 +1353,22 @@ tools:
         reason: {type: string, enum: [budget_cut, position_eliminated, internal_hire, other]}
 
   - name: pause_vacancy
-    description: Pause a job vacancy with reason and expected resume date
+    description: >
+      Pauses an active job vacancy, stopping new applications and sourcing while
+      preserving all existing candidates in the pipeline. Sets an expected resume date.
+      The vacancy can be re-activated later without data loss.
+    when_to_use: >
+      Hiring temporarily blocked (budget review, org change); need to pause intake
+      without closing; recruiter says "pausar vaga", "segurar processo por agora".
+    when_not_to_use: >
+      Permanent cancellation (use cancel_vacancy); vacancy is already filled (use
+      confirm_placement); updating vacancy fields (use update_job).
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, audit_trail]
+    related_tools: [cancel_vacancy, update_job, publish_job]
     allowed_agents: [job_planner, orchestrator]
     scope: IN_JOB
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [job_id, reason]
@@ -688,10 +1379,22 @@ tools:
 
   # Marketplace (3)
   - name: publish_to_job_board
-    description: Publish a job vacancy to external job boards (LinkedIn, Indeed)
+    description: >
+      Publishes a job vacancy to a specific external job board (LinkedIn, Indeed, Gupy,
+      Glassdoor) via the configured integration. Separate from the internal publish action.
+      Consumes integration credits if applicable. Posts the full JD with application link.
+    when_to_use: >
+      Recruiter wants to expand candidate sourcing to external channels; job is published
+      internally and ready for external distribution; recruiter says "postar no LinkedIn".
+    when_not_to_use: >
+      Internal publish only (use publish_job); job is still a draft; searching for
+      external candidates (use search_candidates_pearch); checking job board performance.
+    side_effects: [external_api_call, credits_consumed, audit_trail]
+    governance_tags: [multi_tenant, credits_consumed, audit_trail]
+    related_tools: [publish_job, get_external_applications, search_candidates_pearch]
     allowed_agents: [job_planner, communication, orchestrator]
     scope: IN_JOB
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [job_id, board]
@@ -700,10 +1403,23 @@ tools:
         board: {type: string, enum: [linkedin, indeed, gupy, glassdoor]}
 
   - name: get_external_applications
-    description: Import applications from external job boards
+    description: >
+      Imports applications received from external job boards for a specific vacancy,
+      creating candidate profiles and VacancyCandidate records for new applicants.
+      Deduplicates against existing profiles. Should be run periodically or on-demand
+      to sync inbound applications from external channels.
+    when_to_use: >
+      After publishing to external job boards; syncing applications from LinkedIn/Indeed;
+      recruiter asks "importar candidatos do [board]"; scheduled sync job.
+    when_not_to_use: >
+      Searching existing candidates (use search_candidates); adding a known candidate
+      manually (use add_candidate_to_vacancy); ATS full sync (use ats_pull_candidates).
+    side_effects: [db_write, external_api_call, audit_trail]
+    governance_tags: [multi_tenant, pii, audit_trail]
+    related_tools: [publish_to_job_board, add_candidate_to_vacancy, search_candidates]
     allowed_agents: [sourcing, orchestrator]
     scope: IN_JOB
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [job_id]
@@ -712,10 +1428,25 @@ tools:
         board: {type: string}
 
   - name: search_candidates_pearch
-    description: Search candidates using Pearch AI (800M+ profiles, consumes credits)
+    description: >
+      Searches 800M+ external professional profiles via Pearch AI using semantic search.
+      Returns enriched profiles that can be imported into the talent pool. Each search
+      consumes Pearch credits — select fast (cheaper) or pro (more accurate) mode.
+      External data; always validate before candidate contact.
+    when_to_use: >
+      No matching candidates in internal pool; recruiter explicitly wants external talent
+      discovery; hard-to-fill specialty roles; recruiter says "buscar no Pearch" or
+      "encontrar candidatos externos".
+    when_not_to_use: >
+      Internal pool has sufficient candidates (use search_candidates first); recruiter
+      wants to post a job externally (use publish_to_job_board); budget constraints
+      prohibit credit consumption.
+    side_effects: [external_api_call, credits_consumed]
+    governance_tags: [multi_tenant, pii, credits_consumed]
+    related_tools: [search_candidates, run_multi_strategy_search, add_candidate_to_vacancy]
     allowed_agents: [sourcing, sourcing_search, agent_studio, orchestrator]
     scope: TALENT_FUNNEL
-    version: "1.0"
+    version: "1.1"
     parameters:
       type: object
       required: [query]
@@ -725,10 +1456,25 @@ tools:
         limit: {type: integer, maximum: 50}
         show_emails: {type: boolean}
 
-  # ── Talent Intelligence: Skills Ontology ─────────────────────────────────
+  # ── Talent Intelligence: Skills Ontology ──────────────────────────────────
 
   - name: infer_related_skills
-    description: Infer related skills from a set of input skills using the ontology graph with adjacency traversal and semantic proximity scoring
+    description: >
+      Uses the LIA skills ontology graph to infer related and adjacent skills from a set
+      of input skills, applying adjacency traversal and semantic proximity scoring.
+      Returns a prioritized list of skills the LLM should consider when screening candidates
+      or building job requirements. Depth 1–3 controls breadth of traversal.
+    when_to_use: >
+      Job requirements seem too narrow; sourcing is not finding enough candidates; recruiter
+      wants to surface non-obvious adjacent skills; before running search_candidates with
+      an expanded skill set.
+    when_not_to_use: >
+      Comparing candidate skills to job requirements (use analyze_skill_gaps); mapping
+      raw skill strings to canonical nodes (use map_candidate_skills_to_ontology);
+      getting a single skill's neighbors (use get_skill_adjacencies).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [get_skill_adjacencies, analyze_skill_gaps, map_candidate_skills_to_ontology]
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, job_planner, job_wizard]
     scope: GLOBAL
     version: "1.0"
@@ -742,7 +1488,20 @@ tools:
         limit: {type: integer, minimum: 1, maximum: 30}
 
   - name: get_skill_adjacencies
-    description: Get adjacent skills for a given skill with proximity weights, domain classification, and relationship type from the skills ontology graph
+    description: >
+      Returns adjacent skills for a single given skill with their proximity weights,
+      domain classifications, and relationship types (complementary, prerequisite,
+      alternative) from the skills ontology graph. Use to explore the immediate skill
+      neighborhood for a specific technology or competency.
+    when_to_use: >
+      Recruiter asks what skills relate to a specific technology; expanding a single
+      skill before sourcing; building a comprehensive competency map for a role.
+    when_not_to_use: >
+      Multiple input skills (use infer_related_skills); gap analysis for a candidate
+      (use analyze_skill_gaps); mapping raw strings to canonical names (use map_candidate_skills_to_ontology).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [infer_related_skills, analyze_skill_gaps]
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, job_planner, job_wizard]
     scope: GLOBAL
     version: "1.0"
@@ -755,7 +1514,21 @@ tools:
         min_weight: {type: number, minimum: 0, maximum: 1}
 
   - name: analyze_skill_gaps
-    description: Analyze skill gaps between candidate and job requirements using ontology adjacencies, identifying matched, missing, and transferable skills with development suggestions
+    description: >
+      Analyzes the gap between a candidate's skill set and a job's requirements using the
+      skills ontology. Categorizes each job requirement as matched, missing, or transferable
+      (adjacent via ontology) and provides development suggestions. Supports candidate_id
+      and job_id for database-backed analysis or direct skill lists.
+    when_to_use: >
+      Evaluating a specific candidate against job requirements; before making a screening
+      decision; generating development feedback for a candidate; HITL decision support.
+    when_not_to_use: >
+      Searching for candidates broadly (use search_candidates with skill filters); inferring
+      related skills for job design (use infer_related_skills); mapping skill names (use
+      map_candidate_skills_to_ontology).
+    side_effects: [none]
+    governance_tags: [multi_tenant, pii]
+    related_tools: [infer_related_skills, map_candidate_skills_to_ontology, evaluate_with_twin]
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, screening]
     scope: TALENT_FUNNEL
     version: "1.0"
@@ -769,7 +1542,21 @@ tools:
         job_id: {type: string}
 
   - name: map_candidate_skills_to_ontology
-    description: Map raw skill strings from a candidate profile to canonical ontology nodes with domain and specialization classification
+    description: >
+      Normalizes raw skill strings from a candidate's profile to canonical ontology node
+      names with domain and specialization classifications. Resolves abbreviations, typos,
+      and synonyms (e.g., "JS" → "JavaScript", "react.js" → "React"). Essential pre-step
+      before skill gap analysis or ontology-based searches.
+    when_to_use: >
+      Before running analyze_skill_gaps with raw profile data; normalizing imported
+      candidate skills from external ATS or resume parser; ensuring consistent skill
+      terminology across the tenant.
+    when_not_to_use: >
+      Skills are already normalized; gap analysis without normalization is acceptable for
+      quick checks; inferring related skills (different purpose — use infer_related_skills).
+    side_effects: [none]
+    governance_tags: [multi_tenant, pii]
+    related_tools: [analyze_skill_gaps, infer_related_skills]
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, screening]
     scope: TALENT_FUNNEL
     version: "1.0"
@@ -780,10 +1567,25 @@ tools:
         skills: {type: array, items: {type: string}}
         candidate_id: {type: string}
 
-  # ── Talent Intelligence: Internal Mobility ───────────────────────────────
+  # ── Talent Intelligence: Internal Mobility ────────────────────────────────
 
   - name: match_internal_candidates
-    description: Match internal employees to an open position considering direct skill matches, adjacent/transferable skills via ontology, and development potential
+    description: >
+      Matches internal employees to an open position using direct skill matches, adjacent
+      and transferable skills via the ontology graph, and development potential scoring.
+      Returns a ranked list of internal candidates with match rationale, enabling evidence-based
+      internal mobility decisions before external sourcing.
+    when_to_use: >
+      New vacancy opens and recruiter wants to check internal talent first; recruiter says
+      "tem alguém interno para essa vaga?"; strategic internal mobility initiative; cost
+      reduction before external hiring.
+    when_not_to_use: >
+      No internal employee database available; vacancy requires external market hire
+      by policy; already searched internally (avoid redundant calls); searching external
+      talent pool (use search_candidates).
+    side_effects: [none]
+    governance_tags: [multi_tenant, pii]
+    related_tools: [search_candidates, analyze_skill_gaps, add_candidate_to_vacancy]
     allowed_agents: [orchestrator, recruiter_assistant, analytics]
     scope: TALENT_FUNNEL
     version: "1.0"
@@ -798,10 +1600,24 @@ tools:
         department: {type: string}
         limit: {type: integer, minimum: 1, maximum: 50}
 
-  # ── Talent Intelligence: Workforce Planning ──────────────────────────────
+  # ── Talent Intelligence: Workforce Planning ────────────────────────────────
 
   - name: forecast_hiring_needs
-    description: Forecast hiring needs based on historical turnover data, pipeline velocity, growth targets, and seasonality for a given time period
+    description: >
+      Forecasts hiring needs for a given period by combining historical turnover data,
+      current pipeline velocity, growth targets, and seasonal patterns. Returns projected
+      headcount requirements per department, including backfill and net-new positions.
+      Read-only planning output — does not create any jobs.
+    when_to_use: >
+      Quarterly or annual headcount planning; recruiter or HR director asks "quantas
+      contratações precisamos para Q3?"; board presentation preparation; budget justification
+      for hiring team.
+    when_not_to_use: >
+      Real-time vacancy management (use search_jobs / get_pipeline_stats); generating
+      a single report (use generate_report); current pipeline status (not planning).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [get_pipeline_stats, generate_report, get_candidate_stats]
     allowed_agents: [orchestrator, recruiter_assistant, analytics]
     scope: GLOBAL
     version: "1.0"
@@ -814,10 +1630,24 @@ tools:
         growth_rate: {type: number}
         include_backfills: {type: boolean}
 
-  # ── Talent Intelligence: Interview Intelligence ──────────────────────────
+  # ── Talent Intelligence: Interview Intelligence ────────────────────────────
 
   - name: analyze_interview_recording
-    description: "Análise completa de entrevista: WSI (Bloom, Dreyfus, CBI, Big Five) + detecção de viés + análise comparativa + parecer estratégico + feedback ao candidato."
+    description: >
+      Performs a comprehensive analysis of an interview transcript using multi-dimensional
+      frameworks: WSI (Bloom, Dreyfus, CBI, Big Five), bias detection, comparative ranking
+      against other candidates in the same vacancy, strategic hiring opinion, and structured
+      candidate feedback. Requires an interview_id or raw transcript. Consumes LLM credits.
+    when_to_use: >
+      WSI or video interview has been completed; recruiter asks for full interview analysis;
+      before HITL hire/reject decision; generating post-interview candidate feedback.
+    when_not_to_use: >
+      Only bias check needed (use detect_interview_bias); only opinion needed (use
+      generate_interview_opinion); interview has not been completed; no transcript available.
+    side_effects: [db_write, credits_consumed, audit_trail]
+    governance_tags: [multi_tenant, pii, fairness_guard, credits_consumed, audit_trail]
+    related_tools: [detect_interview_bias, generate_interview_opinion, generate_candidate_feedback,
+                    compare_interview_performance, evaluate_with_twin]
     allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
     scope: IN_JOB
     version: "2.0"
@@ -837,7 +1667,20 @@ tools:
         include_feedback: {type: boolean, default: true}
 
   - name: detect_interview_bias
-    description: "Detectar viés em entrevista: padrões linguísticos + análise LLM. Identifica viés de idade, gênero, aparência, afinidade e perguntas ilegais."
+    description: >
+      Detects potential bias patterns in an interview transcript using linguistic pattern
+      analysis and LLM-based evaluation. Identifies age, gender, appearance, affinity,
+      and illegal question bias. Returns a structured bias report with evidence citations.
+      Always runs as part of FairnessGuard pipeline.
+    when_to_use: >
+      Post-interview compliance check; FairnessGuard pipeline trigger; recruiter requests
+      bias audit; HR policy requires bias screening before final decision.
+    when_not_to_use: >
+      Full interview analysis needed (use analyze_interview_recording which includes bias);
+      no interview transcript available; candidate screening without an interview (different stage).
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, pii, fairness_guard, audit_trail]
+    related_tools: [analyze_interview_recording, generate_interview_opinion]
     allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
     scope: IN_JOB
     version: "1.0"
@@ -850,7 +1693,20 @@ tools:
         use_llm: {type: boolean, default: true}
 
   - name: generate_interview_opinion
-    description: "Gerar parecer estratégico de contratação: CONTRATAR / NÃO CONTRATAR / AVALIAR MAIS com evidências da transcrição."
+    description: >
+      Generates a structured strategic hiring opinion based on an interview analysis,
+      returning one of three verdicts: CONTRATAR / NÃO CONTRATAR / AVALIAR MAIS,
+      each supported by evidence citations from the transcript and alignment with job
+      requirements. Does NOT make the decision — provides decision support for HITL.
+    when_to_use: >
+      After interview analysis; before HITL hire/reject decision; recruiter asks "o que
+      você acha desse candidato?"; generating summary for hiring manager review.
+    when_not_to_use: >
+      No interview analysis exists (run analyze_interview_recording first); final hiring
+      decision (must be HITL); generating candidate feedback (use generate_candidate_feedback).
+    side_effects: [db_write, credits_consumed, audit_trail]
+    governance_tags: [multi_tenant, pii, requires_hitl, fairness_guard, credits_consumed, audit_trail]
+    related_tools: [analyze_interview_recording, generate_candidate_feedback, compare_interview_performance]
     allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
     scope: IN_JOB
     version: "1.0"
@@ -862,7 +1718,22 @@ tools:
         interview_id: {type: string}
 
   - name: generate_candidate_feedback
-    description: "Gerar feedback estruturado e construtivo para devolver ao candidato após entrevista."
+    description: >
+      Generates a structured, constructive, and empathetic feedback message for a candidate
+      after their interview, referencing specific strengths, development areas, and next
+      steps. The feedback is designed to be sent directly to the candidate and follows
+      WeDO communication standards.
+    when_to_use: >
+      Interview is complete and recruiter wants to provide feedback to the candidate;
+      post-rejection courtesy feedback; offering development guidance to rejected candidates;
+      recruiter says "gerar feedback para o candidato".
+    when_not_to_use: >
+      Interview has not been analyzed yet (run analyze_interview_recording first); internal
+      hiring opinion (use generate_interview_opinion); sending the feedback (use send_email
+      or send_whatsapp after generating).
+    side_effects: [credits_consumed]
+    governance_tags: [multi_tenant, pii, credits_consumed]
+    related_tools: [analyze_interview_recording, generate_interview_opinion, send_email]
     allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
     scope: IN_JOB
     version: "1.0"
@@ -874,7 +1745,20 @@ tools:
         interview_id: {type: string}
 
   - name: compare_interview_performance
-    description: "Comparar performance do candidato vs. outros da mesma vaga com ranking, benchmarks e insights."
+    description: >
+      Compares a candidate's interview performance against all other candidates who have
+      interviewed for the same vacancy, producing a ranked comparison with benchmarks,
+      percentile scores, and differentiating insights. Use to contextualize individual
+      performance within the full applicant pool.
+    when_to_use: >
+      Recruiter asks "como esse candidato se compara aos outros?"; before final shortlist
+      decision; hiring manager wants relative ranking; after multiple interviews are complete.
+    when_not_to_use: >
+      Only one candidate has been interviewed (no comparison possible); generating individual
+      feedback (use generate_candidate_feedback); full analysis (use analyze_interview_recording).
+    side_effects: [none]
+    governance_tags: [multi_tenant, pii]
+    related_tools: [analyze_interview_recording, generate_interview_opinion, get_vacancy_funnel]
     allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
     scope: IN_JOB
     version: "1.0"
@@ -885,10 +1769,24 @@ tools:
       properties:
         interview_id: {type: string}
 
-  # ── Talent Intelligence: Passive Candidate Nurture ───────────────────────
+  # ── Talent Intelligence: Passive Candidate Nurture ─────────────────────────
 
   - name: create_nurture_sequence
-    description: Create an automated nurture sequence to engage passive candidates over time with multi-channel touchpoints
+    description: >
+      Creates an automated multi-channel nurture sequence to engage passive candidates
+      over time with configurable touchpoints (email, WhatsApp, LinkedIn). Supports
+      four predefined templates (tech_talent, leadership, silver_medalist, general) or
+      custom naming. Sequences run automatically in the background after creation.
+    when_to_use: >
+      Recruiter wants long-term engagement with passive candidates in a pool; silver
+      medalists should be kept warm for future openings; talent pool requires ongoing
+      nurture between campaigns.
+    when_not_to_use: >
+      Immediate one-off communication (use send_email or send_whatsapp); checking
+      engagement metrics (use get_engagement_metrics); active-candidate pipeline management.
+    side_effects: [db_write, email_sent, whatsapp_sent, audit_trail]
+    governance_tags: [multi_tenant, pii, audit_trail, requires_hitl]
+    related_tools: [get_engagement_metrics, suggest_reengagement, send_email]
     allowed_agents: [orchestrator, recruiter_assistant, communication, recruitment_campaign]
     scope: TALENT_FUNNEL
     version: "1.0"
@@ -903,7 +1801,20 @@ tools:
         tags: {type: array, items: {type: string}}
 
   - name: get_engagement_metrics
-    description: Get engagement metrics for nurture sequences including open rates, click rates, and conversion to applicant/hire
+    description: >
+      Returns engagement analytics for one or all nurture sequences, including open rates,
+      click-through rates, reply rates, and conversion rates (passive → applicant → hired).
+      Use to evaluate which nurture templates and touchpoints are most effective.
+    when_to_use: >
+      Recruiter asks "como está performando nossa sequência de nurture?"; monthly
+      engagement review; optimizing templates based on conversion data; campaign ROI analysis.
+    when_not_to_use: >
+      Creating a nurture sequence (use create_nurture_sequence); re-engaging specific
+      inactive candidates (use suggest_reengagement); general pipeline analytics
+      (use get_pipeline_stats).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [create_nurture_sequence, suggest_reengagement, get_pipeline_stats]
     allowed_agents: [orchestrator, recruiter_assistant, analytics, recruitment_campaign]
     scope: TALENT_FUNNEL
     version: "1.0"
@@ -915,7 +1826,21 @@ tools:
         period: {type: string, enum: [week, month, quarter]}
 
   - name: suggest_reengagement
-    description: Suggest inactive candidates for re-engagement based on inactivity period, past scores, and engagement signals
+    description: >
+      Identifies inactive candidates in the talent pool who are strong re-engagement
+      targets based on inactivity duration, past WSI scores, and engagement signal history.
+      Returns a prioritized list of candidates to re-contact. Does not send any messages —
+      use create_nurture_sequence or send_email to act.
+    when_to_use: >
+      Recruiter wants to revive cold candidates; launching a re-engagement campaign;
+      pipeline is thin and recruiter wants to tap existing talent before sourcing externally.
+    when_not_to_use: >
+      Sending messages (use send_email / send_whatsapp / create_nurture_sequence after);
+      searching for new candidates (use search_candidates); getting engagement data
+      (use get_engagement_metrics).
+    side_effects: [none]
+    governance_tags: [multi_tenant, pii]
+    related_tools: [create_nurture_sequence, search_candidates, get_engagement_metrics]
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, recruitment_campaign]
     scope: TALENT_FUNNEL
     version: "1.0"
@@ -927,7 +1852,21 @@ tools:
         limit: {type: integer, minimum: 1, maximum: 50}
 
   - name: get_market_intelligence
-    description: Get real-time market intelligence for a role — salary benchmarks from external sources (web search + LLM parsing), demand trends, in-demand skills, and competitive analysis
+    description: >
+      Retrieves real-time market intelligence for a given job role by combining web search
+      with LLM parsing to surface: external salary benchmarks, demand trends, in-demand
+      skill shifts, supply/demand ratios, and competitive landscape analysis. Results are
+      richer but slower and costlier than get_intelligent_salary.
+    when_to_use: >
+      Recruiter wants a comprehensive market analysis before opening a new position;
+      salary negotiation context; sourcing strategy planning; recruiter asks "como está o
+      mercado para [cargo]?".
+    when_not_to_use: >
+      Quick salary estimate only (use search_salary_benchmark or get_intelligent_salary);
+      candidate skills analysis (use infer_related_skills); job exists and only needs update.
+    side_effects: [external_api_call, credits_consumed]
+    governance_tags: [multi_tenant, credits_consumed]
+    related_tools: [search_salary_benchmark, get_intelligent_salary, infer_related_skills]
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analyst_feedback, wsi_evaluator]
     scope: GLOBAL
     version: "1.0"
@@ -942,10 +1881,23 @@ tools:
         include_trends: {type: boolean, default: true}
       required: [job_title]
 
-  # ── Proactive Intelligence Tools ────────────────────────────────────────────
+  # ── Proactive Intelligence Tools ──────────────────────────────────────────
 
   - name: get_proactive_alerts
-    description: Get proactive pipeline alerts (stale candidates, SLA risks, bottlenecks, empty pipelines, high rejection rates)
+    description: >
+      Returns a list of proactive pipeline alerts generated by LIA's monitoring system,
+      covering stale candidates exceeding SLA, bottleneck stages, empty pipelines, and
+      high rejection rate anomalies. Filter by severity or category. Read-only — use
+      confirm_autonomous_action to act on pending suggestions.
+    when_to_use: >
+      Recruiter starts a session and wants to know what needs attention; monitoring
+      dashboard load; before planning daily sourcing/review activities.
+    when_not_to_use: >
+      Acting on a specific alert (use confirm_autonomous_action); listing pending
+      autonomous actions (use get_autonomous_actions); pipeline data only (use get_pipeline_stats).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [get_autonomous_actions, confirm_autonomous_action, get_pipeline_stats]
     allowed_agents: [orchestrator, recruiter_assistant]
     scope: GLOBAL
     version: "1.0"
@@ -956,7 +1908,19 @@ tools:
         category: {type: string}
 
   - name: get_autonomous_actions
-    description: List autonomous actions executed or pending confirmation by LIA
+    description: >
+      Lists autonomous actions that LIA has executed or is waiting for recruiter confirmation
+      to execute. Pending actions require HITL approval before running. Use to review what
+      LIA has done or is planning to do autonomously.
+    when_to_use: >
+      Recruiter wants to review LIA's autonomous activities; HITL check at start of session;
+      audit of automated actions for the day; before approving or rejecting a batch.
+    when_not_to_use: >
+      Proactive alert view (use get_proactive_alerts); approving a specific action
+      (use confirm_autonomous_action); rejecting an action (use reject_autonomous_action).
+    side_effects: [none]
+    governance_tags: [multi_tenant, audit_trail]
+    related_tools: [confirm_autonomous_action, reject_autonomous_action, get_proactive_alerts]
     allowed_agents: [orchestrator, recruiter_assistant]
     scope: GLOBAL
     version: "1.0"
@@ -966,7 +1930,20 @@ tools:
         status: {type: string, enum: [pending, executed, all]}
 
   - name: confirm_autonomous_action
-    description: Confirm a pending autonomous action for execution
+    description: >
+      Approves a pending autonomous action for immediate execution. Once confirmed, the
+      action executes with the same parameters LIA prepared. Creates a HITL approval
+      audit entry. This is the mandatory HITL gate for autonomous operations that write
+      data or contact candidates.
+    when_to_use: >
+      Recruiter reviews pending action and approves it; HITL approval workflow step;
+      bulk confirmation of low-risk actions; recruiter says "pode executar essa ação".
+    when_not_to_use: >
+      Action should be rejected (use reject_autonomous_action); reviewing actions without
+      deciding (use get_autonomous_actions); executing a tool directly without HITL.
+    side_effects: [db_write, webhook_fired, audit_trail]
+    governance_tags: [multi_tenant, requires_hitl, audit_trail]
+    related_tools: [reject_autonomous_action, get_autonomous_actions, get_proactive_alerts]
     allowed_agents: [orchestrator, recruiter_assistant]
     scope: GLOBAL
     version: "1.0"
@@ -977,7 +1954,19 @@ tools:
         action_id: {type: string}
 
   - name: reject_autonomous_action
-    description: Reject a pending autonomous action
+    description: >
+      Rejects a pending autonomous action, preventing its execution and logging the
+      rejection reason for LIA's learning system. The rejection is recorded to help
+      calibrate future autonomous decisions and reduce similar false positives.
+    when_to_use: >
+      Recruiter reviews pending action and disagrees; action parameters are wrong;
+      context has changed and action is no longer appropriate; recruiter says "não fazer essa ação".
+    when_not_to_use: >
+      Approving an action (use confirm_autonomous_action); reviewing without deciding
+      (use get_autonomous_actions); cancelling a vacancy (different concept — use cancel_vacancy).
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, audit_trail]
+    related_tools: [confirm_autonomous_action, get_autonomous_actions]
     allowed_agents: [orchestrator, recruiter_assistant]
     scope: GLOBAL
     version: "1.0"
@@ -989,7 +1978,20 @@ tools:
         reason: {type: string}
 
   - name: detect_pending_decisions
-    description: Detect pending hiring manager decisions and send escalation notifications
+    description: >
+      Scans the pipeline for hiring manager decisions that are overdue based on SLA
+      configuration, identifies the bottlenecks, and optionally sends escalation
+      notifications to the responsible parties. Use to maintain pipeline velocity and
+      enforce decision SLAs.
+    when_to_use: >
+      SLA monitoring scheduled run; recruiter asks "o que está pendente de decisão?";
+      end-of-week pipeline review; before escalating to hiring managers.
+    when_not_to_use: >
+      Viewing general pipeline stats (use get_pipeline_stats); checking autonomous actions
+      (use get_autonomous_actions); sending a specific notification (use send_email).
+    side_effects: [email_sent, audit_trail]
+    governance_tags: [multi_tenant, audit_trail]
+    related_tools: [get_proactive_alerts, get_pipeline_stats, send_email]
     allowed_agents: [orchestrator, recruiter_assistant]
     scope: GLOBAL
     version: "1.0"
@@ -999,7 +2001,21 @@ tools:
         send_notifications: {type: boolean, default: false}
 
   - name: get_learning_insights
-    description: Get insights from hiring outcome learning (successful patterns, ranking adjustments)
+    description: >
+      Returns patterns and insights derived from historical hiring outcomes, including
+      which skills, sourcing channels, and screening criteria most reliably predicted
+      successful hires for a given role and seniority. Helps recruiters refine future
+      screening criteria and sourcing strategies.
+    when_to_use: >
+      Recruiter is opening a new role and wants to know what worked before; calibrating
+      screening criteria; strategy planning based on past data; recruiter asks "o que
+      funcionou para esse perfil antes?".
+    when_not_to_use: >
+      Recording a new hiring outcome (use record_hiring_outcome); real-time pipeline
+      analytics (use get_pipeline_stats); forecasting future hiring needs (use forecast_hiring_needs).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [record_hiring_outcome, forecast_hiring_needs, get_pipeline_stats]
     allowed_agents: [orchestrator, recruiter_assistant]
     scope: GLOBAL
     version: "1.0"
@@ -1010,7 +2026,22 @@ tools:
         seniority: {type: string}
 
   - name: record_hiring_outcome
-    description: Record a hiring outcome for learning (filled, cancelled, turnover)
+    description: >
+      Records the final outcome of a hiring cycle (filled, cancelled, expired, or turnover)
+      along with an optional satisfaction score and retention data. This data feeds LIA's
+      continuous learning system to improve future scoring and routing decisions.
+      Should be called once per vacancy lifecycle close event.
+    when_to_use: >
+      Hiring cycle is closed for any reason; vacancy is filled and candidate has started;
+      tracking early attrition after 30/60/90 days; recording that a vacancy was cancelled
+      or expired without a hire.
+    when_not_to_use: >
+      Confirming a hire (use confirm_placement first, then record_hiring_outcome for
+      learning data); retrieving historical insights (use get_learning_insights);
+      interim pipeline status recording.
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, pii, audit_trail]
+    related_tools: [confirm_placement, get_learning_insights, forecast_hiring_needs]
     allowed_agents: [orchestrator, recruiter_assistant]
     scope: IN_JOB
     version: "1.0"
@@ -1023,3 +2054,323 @@ tools:
         outcome: {type: string, enum: [filled, cancelled, expired, turnover]}
         satisfaction_score: {type: number, minimum: 1, maximum: 5}
         retention_days: {type: integer}
+
+  # ── Automation: Task Planning Tools ─────────────────────────────────────────
+  # Registered via get_automation_tools() in app/domains/automation/agents/automation_tool_registry.py
+
+  - name: decompose_task
+    description: >
+      Decomposes a complex recruitment or workflow task into executable subtasks using an LLM
+      with a structured planning prompt. Automatically assigns agent types, priorities, estimated
+      durations, and dependency chains. Optionally persists the subtasks to the database via
+      PlannedTaskService. Use for any multi-step workflow that requires orchestration across
+      multiple agents.
+    when_to_use: >
+      Recruiter or orchestrator has a high-level goal requiring multiple specialized agents
+      (e.g., "open and fill a senior engineer role in 30 days"); automation domain receives
+      a complex task; goal planning step at the start of an autonomous pipeline.
+    when_not_to_use: >
+      Simple single-step tasks with no dependencies (use the specific tool directly);
+      already have a decomposed task list (use get_execution_plan or prioritize_tasks);
+      previewing only without persisting (pass persist=False).
+    side_effects: [db_write, credits_consumed]
+    governance_tags: [multi_tenant, audit_trail]
+    related_tools: [prioritize_tasks, get_execution_plan, build_dag]
+    allowed_agents: [orchestrator, automation]
+    scope: GLOBAL
+    version: "1.1"
+    parameters:
+      type: object
+      required: [task_description]
+      properties:
+        task_description: {type: string}
+        goal_id: {type: string}
+        parent_task_id: {type: string}
+        deadline: {type: string}
+        persist: {type: boolean, default: true}
+
+  - name: prioritize_tasks
+    description: >
+      Recalculates and updates priority scores for a list of planned tasks using multi-criteria
+      scoring (urgency 30%, impact 25%, criticality 25%, efficiency 20%). Writes updated
+      priority values back to the planned_tasks table. Run after decomposing tasks or when
+      context changes (budget cut, new deadline, blocked dependency).
+    when_to_use: >
+      After decompose_task creates a set of subtasks; context has changed and priority order
+      needs re-evaluation; orchestrator detects a bottleneck and needs to reorder the queue.
+    when_not_to_use: >
+      Tasks have not been created yet (use decompose_task first); generating an execution
+      plan (use get_execution_plan which calls prioritization internally); retrieving the
+      next tasks to run (use get_next_tasks).
+    side_effects: [db_write]
+    governance_tags: [multi_tenant, audit_trail]
+    related_tools: [decompose_task, get_execution_plan, get_next_tasks]
+    allowed_agents: [orchestrator, automation]
+    scope: GLOBAL
+    version: "1.1"
+    parameters:
+      type: object
+      properties:
+        task_ids: {type: array, items: {type: string}}
+        goal_id: {type: string}
+
+  - name: get_execution_plan
+    description: >
+      Generates a structured execution plan with parallel levels from a set of planned tasks,
+      validates the dependency DAG for cycles, and persists the plan to the database. Returns
+      the plan with its parallel execution levels and any cycle warnings. Use to prepare the
+      final, validated execution schedule before starting an autonomous pipeline.
+    when_to_use: >
+      Tasks are decomposed and prioritized, and the orchestrator is ready to start executing;
+      recruiter asks "qual é o plano de execução?"; before dispatching tasks to specialist agents.
+    when_not_to_use: >
+      Tasks haven't been decomposed yet (use decompose_task first); just checking dependencies
+      without a plan (use build_dag); retrieving next ready tasks during execution (use get_next_tasks).
+    side_effects: [db_write]
+    governance_tags: [multi_tenant, audit_trail]
+    related_tools: [decompose_task, build_dag, get_next_tasks, prioritize_tasks]
+    allowed_agents: [orchestrator, automation]
+    scope: GLOBAL
+    version: "1.1"
+    parameters:
+      type: object
+      properties:
+        task_ids: {type: array, items: {type: string}}
+        goal_id: {type: string}
+        name: {type: string}
+
+  - name: build_dag
+    description: >
+      Builds and validates a Directed Acyclic Graph (DAG) from a list of task dependencies,
+      detecting cycles and computing topological execution levels. Read-only — does not
+      persist anything. Use to validate a dependency graph before committing to an execution plan.
+    when_to_use: >
+      Validating a new task decomposition for cycle-free dependencies; debugging a
+      stuck pipeline; before calling get_execution_plan to check graph integrity first.
+    when_not_to_use: >
+      Generating and persisting the full plan (use get_execution_plan); getting next
+      ready tasks (use get_next_tasks); decomposing tasks (use decompose_task).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [get_execution_plan, decompose_task, check_dependencies]
+    allowed_agents: [orchestrator, automation]
+    scope: GLOBAL
+    version: "1.1"
+    parameters:
+      type: object
+      required: [task_ids]
+      properties:
+        task_ids: {type: array, items: {type: string}}
+
+  - name: check_dependencies
+    description: >
+      Checks the dependency completion status for a specific planned task, returning which
+      prerequisite tasks are done, pending, or blocked. Use to determine if a task is ready
+      to start before dispatching it to the appropriate specialist agent.
+    when_to_use: >
+      Orchestrator is about to start a task and needs to confirm all dependencies are met;
+      debugging why a task is not being picked up; validating execution readiness.
+    when_not_to_use: >
+      Getting the full dependency graph (use build_dag); retrieving multiple ready tasks
+      at once (use get_next_tasks); generating an execution plan (use get_execution_plan).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [build_dag, get_next_tasks, get_execution_plan]
+    allowed_agents: [orchestrator, automation]
+    scope: GLOBAL
+    version: "1.1"
+    parameters:
+      type: object
+      required: [task_id]
+      properties:
+        task_id: {type: string}
+
+  - name: get_next_tasks
+    description: >
+      Returns the list of planned tasks that are ready for execution (all dependencies
+      completed, not yet started), filtered by goal, agent type, and company. Use to
+      drive the autonomous execution loop — call repeatedly to pick up tasks as they
+      become available.
+    when_to_use: >
+      Orchestrator's main execution loop polling for work; agent checks if there are pending
+      tasks before going idle; after completing a task, checking if any newly unblocked tasks
+      are ready.
+    when_not_to_use: >
+      Decomposing tasks (use decompose_task); checking a specific task's dependencies
+      (use check_dependencies); generating the execution plan (use get_execution_plan).
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [check_dependencies, get_execution_plan, prioritize_tasks]
+    allowed_agents: [orchestrator, automation]
+    scope: GLOBAL
+    version: "1.1"
+    parameters:
+      type: object
+      properties:
+        goal_id: {type: string}
+        parent_task_id: {type: string}
+        agent_type: {type: string}
+        limit: {type: integer, default: 5}
+
+  # ── Interview Scheduling Tools ────────────────────────────────────────────────
+  # Registered via @tool_handler in app/domains/interview_scheduling/tools/scheduling_tools.py
+  # NOTE: These tools use simulation stubs — calendar integrations (Google/Outlook) are pending.
+
+  - name: check_interviewer_availability
+    description: >
+      Checks calendar availability for an interviewer over a specified date range, returning
+      available and busy time slots. Currently uses a deterministic simulation stub — replace
+      with real Google Calendar or Outlook integration in production. Use before scheduling
+      an interview to confirm slot availability.
+    when_to_use: >
+      Before scheduling an interview to find open slots; recruiter asks "quando [entrevistador]
+      está disponível?"; automatic interview scheduling flow; candidate proposes dates and
+      agent checks feasibility.
+    when_not_to_use: >
+      Scheduling the interview (use schedule_interview after confirming availability);
+      checking candidate availability (different operation); post-scheduling status
+      (use get_interview_status).
+    side_effects: [external_api_call, mock_only]
+    governance_tags: [multi_tenant, pii]
+    related_tools: [schedule_interview, get_interview_status]
+    allowed_agents: [orchestrator, recruiter_assistant, interview_scheduling]
+    scope: IN_JOB
+    version: "1.1"
+    parameters:
+      type: object
+      required: [interviewer_id, date_range]
+      properties:
+        interviewer_id: {type: string}
+        date_range: {type: string, description: "Format: 'YYYY-MM-DD to YYYY-MM-DD'"}
+
+  - name: schedule_interview
+    description: >
+      Creates a scheduled interview slot between a candidate and an interviewer at the
+      specified date/time, returning an interview_id and calendar link. Currently uses
+      a simulation stub for calendar creation — real integration pending. Sends no
+      notifications automatically; use send_interview_invitation separately.
+    when_to_use: >
+      Availability has been confirmed and recruiter or candidate chooses a specific slot;
+      automatic scheduling after candidate accepts an interview invite; recruiter says
+      "agendar entrevista para [data] com [entrevistador]".
+    when_not_to_use: >
+      Availability not checked yet (use check_interviewer_availability first); rescheduling
+      an existing interview (use reschedule_interview); sending the invitation (use
+      send_interview_invitation after scheduling).
+    side_effects: [db_write, mock_only, audit_trail]
+    governance_tags: [multi_tenant, pii, audit_trail]
+    related_tools: [check_interviewer_availability, send_interview_invitation, reschedule_interview]
+    allowed_agents: [orchestrator, recruiter_assistant, interview_scheduling]
+    scope: IN_JOB
+    version: "1.1"
+    parameters:
+      type: object
+      required: [candidate_id, interviewer_id, datetime_str]
+      properties:
+        candidate_id: {type: string}
+        interviewer_id: {type: string}
+        datetime_str: {type: string}
+        interview_type: {type: string, enum: [technical, behavioral, cultural_fit, final]}
+
+  - name: send_interview_invitation
+    description: >
+      Sends an interview invitation email to a candidate for a scheduled interview.
+      Currently simulated — real email delivery requires email provider integration.
+      PII handling: candidate_email is not logged, only identifiers are recorded.
+      Use after schedule_interview to notify the candidate.
+    when_to_use: >
+      Interview has been scheduled and candidate needs to be notified; recruiter says
+      "enviar convite de entrevista para [candidato]"; automated pipeline step after
+      scheduling confirmation.
+    when_not_to_use: >
+      Interview not yet scheduled (use schedule_interview first); general email communication
+      (use send_email); WhatsApp notification preferred (use send_whatsapp).
+    side_effects: [email_sent, mock_only, audit_trail]
+    governance_tags: [multi_tenant, pii, audit_trail]
+    related_tools: [schedule_interview, send_email, get_interview_status]
+    allowed_agents: [orchestrator, recruiter_assistant, interview_scheduling]
+    scope: IN_JOB
+    version: "1.1"
+    parameters:
+      type: object
+      required: [candidate_id, interview_id]
+      properties:
+        candidate_id: {type: string}
+        interview_id: {type: string}
+        candidate_email: {type: string}
+
+  - name: reschedule_interview
+    description: >
+      Reschedules an existing interview to a new date/time, recording the reason for the
+      change. Currently simulated — persistent state update requires full database integration.
+      Use when the candidate or interviewer needs to change the previously agreed slot.
+    when_to_use: >
+      Candidate requests a new time after confirming the original; interviewer is unavailable
+      for the scheduled slot; recruiter says "remarcar entrevista [id] para [nova data]".
+    when_not_to_use: >
+      Cancelling the interview entirely (use cancel_interview); scheduling for the first
+      time (use schedule_interview); checking interview status (use get_interview_status).
+    side_effects: [db_write, email_sent, mock_only, audit_trail]
+    governance_tags: [multi_tenant, pii, audit_trail]
+    related_tools: [schedule_interview, cancel_interview, send_interview_invitation]
+    allowed_agents: [orchestrator, recruiter_assistant, interview_scheduling]
+    scope: IN_JOB
+    version: "1.1"
+    parameters:
+      type: object
+      required: [interview_id, new_datetime_str]
+      properties:
+        interview_id: {type: string}
+        new_datetime_str: {type: string}
+        reason: {type: string}
+
+  - name: cancel_interview
+    description: >
+      Cancels a scheduled interview, records the reason and timestamp for audit purposes,
+      and notifies all participants. Currently simulated — real calendar cancellation and
+      notification require integration. This is a write-destructive action; the interview
+      slot becomes free and must be rescheduled if still needed.
+    when_to_use: >
+      Candidate withdraws or is rejected before the interview; interviewer is no longer
+      available and rescheduling is not possible; recruiter says "cancelar entrevista [id]".
+    when_not_to_use: >
+      Rescheduling to a different time (use reschedule_interview); candidate is rejected
+      after interview (use reject_candidate); checking interview status (use get_interview_status).
+    side_effects: [db_write, email_sent, mock_only, audit_trail, write_destructive]
+    governance_tags: [multi_tenant, pii, audit_trail, write_destructive]
+    related_tools: [reschedule_interview, get_interview_status, reject_candidate]
+    allowed_agents: [orchestrator, recruiter_assistant, interview_scheduling]
+    scope: IN_JOB
+    version: "1.1"
+    parameters:
+      type: object
+      required: [interview_id]
+      properties:
+        interview_id: {type: string}
+        reason: {type: string}
+
+  - name: get_interview_status
+    description: >
+      Retrieves the current status and details of an interview by its ID. Status values are:
+      scheduled, completed, cancelled, pending. Currently uses a deterministic simulation —
+      real status requires integration with the interview management database. Use to check
+      if an interview has been completed before triggering post-interview analysis.
+    when_to_use: >
+      Before calling analyze_interview_recording to verify the interview is complete;
+      recruiter asks "qual o status da entrevista [id]?"; pipeline automation checks
+      interview completion to unlock the next stage.
+    when_not_to_use: >
+      Analyzing interview results (use analyze_interview_recording); scheduling a new
+      interview (use schedule_interview); checking interviewer availability (use
+      check_interviewer_availability).
+    side_effects: [mock_only]
+    governance_tags: [multi_tenant, pii]
+    related_tools: [analyze_interview_recording, schedule_interview, reschedule_interview]
+    allowed_agents: [orchestrator, recruiter_assistant, interview_scheduling]
+    scope: IN_JOB
+    version: "1.1"
+    parameters:
+      type: object
+      required: [interview_id]
+      properties:
+        interview_id: {type: string}
