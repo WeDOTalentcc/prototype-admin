@@ -1741,3 +1741,624 @@ python3 eval/eval_runner.py --timeout 60
 ---
 
 *Atualizado em: 2026-04-20 | PARTE G adicionada — LIA Eval 62→70/73*
+
+
+---
+
+## PARTE H — Chat Capabilities, ReAct Surfacing, Stub Replacement, Scheduling Real, WorkflowRail UX (2026-04-19/20)
+
+**Entregue em**: 2026-04-19/20
+**Cobertura**: ~50 commits entre `f027fa26e` (WorkflowRail overlay fix) e `1adc24fcc` (último checkpoint do ciclo).
+**Branch GitHub**: `wedotalent/replit-sync` (`WeDOTalentcc/wedotalent02202026`).
+
+> Esta PARTE consolida tudo o que aterrissou na main **depois** da PARTE G (eval suite 70/73). Os blocos abaixo seguem a ordem temática (ReAct/chat → tools/handlers → scheduling → WSI → WorkflowRail UX → security → cleanup → infra de testes/docs), com path canônico, endpoint/contrato e instruções para reprodução no `ats-api-copia` (backend) e na camada de IA separada.
+
+---
+
+### H.0 — Mapa de commits cobertos
+
+**Backend / IA (lia-agent-system/)**
+
+| SHA | Subject | Task |
+|-----|---------|------|
+| `bd974aea4` | Surface ReAct tool calls on chat HTTP response (LIA-LCF-01) | #620 |
+| `42c9ce4d2` | Replace stub/fallback handlers with real impl ou erros explícitos | #602 |
+| `3e17624ea` | Conectar handlers quebrados de tools de chat aos serviços reais | #601 |
+| `9bbb304be` | Remove unused `score_cv` chat tool from cv_screening | #623 |
+| `f539d14c1` | Unify `_ACTION_TOOL_MAP` em cv_screening, fechar audit gap | #597 |
+| `985cb54bd` | Restore Sourcing ReAct agent's full tool set | #596 |
+| `fbe592761` | Padronizar identidade dos domínios (atributos simples) | #604 |
+| `2bf526354` | Echo routed specialist em respostas de chat | #552 |
+| `9bc805b29` | Slash commands canônicos (/job, /talent como aliases) | #300 |
+| `b3d068c9c` | CI smoke test do chat capabilities audit | #633 |
+| `6fd638fbc` | Fail-closed dos tool registries sem company_id | #330 |
+| `ceb6c78fa` | Fix de imports stale `from app.*` (8 arquivos) | #585 |
+| `8cd82e847` | ADR-018: consolidação operacional do tool registry | #382 |
+| `6dceda378` | Audit corrections — `tool_permissions_loader` + `registry.py` | #381 |
+| `d9127032c` | Implementar `_extract_structured_ids` em ConversationMemory | #637 |
+| `3d6328f02` | Tests de billing por agente (per-agent AI billing) | #558 |
+| `92e6fe1c8` | Recruiter goals reais (OKR/quota) — fim do `simulation_stub` | #599 |
+| `7670dfb5b` | Endpoint real `GET /api/v1/recruitment_campaigns` | #609 |
+| `43d9891d3` | Wire `duplicate_job` / `clone_job` chat actions | #624 |
+| `cdaa7b2c6` | Real interview reminders + self-scheduling links | #598 |
+| `c8559a442` | Reminders por WhatsApp + Teams (não só email) | #626 |
+| `933949c9f` | Fix do schema `self_scheduling_links` | #625 |
+| `9c7e65855` | Forward de tenant id no pipeline WSI on-the-fly | #334 |
+| `97205ecc1` | Fix IDOR em `/finetuning/stats` e `/finetuning/export` | #306 |
+
+**Frontend (plataforma-lia/)**
+
+| SHA | Subject | Task |
+|-----|---------|------|
+| `f027fa26e` | Fix WorkflowRail overlay bloqueando botão de envio do chat | #618 |
+| `eafe4f551` | WorkflowRail × Chat: coexistência sem poluição visual | #617 |
+| `b5455e013` | Track WorkflowRail next-step clicks + panel toggles | #589 |
+| `93a88173b` | Persistir last active funnel stage do recrutador | #588 |
+| `ae21f9542` | Redesign WorkflowRail floating ball + compact BetaBadge | #648 |
+| `5e2c78aed` | Remove duplicate `useCandidatesExecuteSearch.ts` (645 LoC) | #288 |
+| `e1eb1ed58` | E2E auth fixture: `/dashboard` → `/pt/chat` + `load` | — |
+| `efe036a83` `086641ef8` `4207bf817` `e5299e769` `09a29366d` `709659f8a` `9aa587053` `bc41ff494` `8fee1b64a` `8062dff21` `8c0e472d0` `152625d10` `32f36cf9c` `b0209e7c8` `69825249d` `8a2f575ef` `075ac39ba` `ebe6d4b72` `5b3a85cad` | Mockup-sandbox updates (triagem, funnel, weekly digest, toasts, welcome polish) | — |
+
+---
+
+### H.1 — Surface ReAct tool calls no response do `/api/v1/chat` (commit `bd974aea4`, Task #620, LIA-LCF-01)
+
+**Problema**: queries do tipo "quantos candidatos tem a vaga V0037?" recebiam "Pode reformular?" sem invocar `list_jobs` / `get_pipeline_summary` / `pause_job`. Eval D1/D4 e check determinístico AGT-D01-001 falhavam porque nenhuma tool call chegava ao body do response.
+
+**Correção** — pipeline em 5 camadas:
+
+| Camada | Arquivo | Mudança |
+|--------|---------|---------|
+| Domain | `app/domains/workflow.py` (`DomainWorkflow._execute`) | Em low-confidence intent, **tentar primeiro o domain ReAct agent**; só cair em clarification se nenhum agent disponível ou se ele falhar. |
+| Orchestrator | `app/orchestrator/orchestrator.py` (`Orchestrator.process_request`) | Extrair `tool_results` de `DomainResponse.metadata` e normalizar em `actions: [{name, args, success, error}]` — exposto tanto no top-level quanto em `result.data.tool_calls`. |
+| Adapter | `app/orchestrator/chat_adapter.py` (`_convert_response`) | Repassar `actions` no dict de saída. |
+| API | `app/api/v1/chat.py` (`POST /chat` e `POST /chat/with-attachments`) | Encaminhar `orch_result["actions"]` para `MessageResponse.tool_calls`. |
+| Schema | `app/schemas/chat.py` (`MessageResponse`) | Novo campo `tool_calls: list[dict]`. |
+
+**Contrato do payload** (visível em `body.message.tool_calls`):
+```json
+{
+  "tool_calls": [
+    {"name": "get_pipeline_summary", "args": {"job_id": "V0037"}, "success": true, "error": null}
+  ]
+}
+```
+
+**Reprodução no destino**:
+- [ ] Replicar a normalização nos 5 arquivos acima (mesma assinatura do dict).
+- [ ] Garantir que o eval extractor lê de `body.message.tool_calls` (não do top-level).
+
+---
+
+### H.2 — Substituição de handlers stub/fallback por implementações reais (commit `42c9ce4d2`, Task #602)
+
+**Domínios afetados**: `agent_studio`, `candidate_self_service`, `company_settings`. Cada handler stub foi substituído por implementação real ou por `error_response` explícito (zero "fake success" retornando `simulation_stub: true`).
+
+#### 2.1 `app/domains/agent_studio/domain.py`
+- `pause_agent`: valida UUID, carrega `SourcingAgent` via ORM **scoped por tenant**, retorna NOT FOUND se ausente, idempotente em `already-paused`, commit só em mudança real.
+- `list_sector_templates`: lê do canonical `app.shared.agent_templates.sector_templates.list_templates()` (não mais SELECT em tabela inexistente `agent_sector_templates`).
+
+#### 2.2 `app/domains/candidate_self_service/domain.py`
+- `get_status` / `get_interview_info` / `get_feedback`: deletado SQL fabricado contra tabelas inexistentes — agora **delegam para endpoints canônicos do Rails ATS**:
+  - `GET /v1/candidate-portal/status`
+  - `GET /v1/candidate-portal/interview`
+  - `GET /v1/candidate-portal/wsi-feedback`
+  - `GET /v1/candidate-portal/policy` (consultado em `get_feedback` para honrar a preferência "show feedback" da empresa)
+- Identidade do candidato **sempre via `context.user_id`** (nunca params) — fecha vetor IDOR.
+- Tenant scope passado via `company_id`.
+- **Allowlist de campos** no response: scoring interno, notas de avaliador, etc., são filtrados antes de devolver para chat candidato-facing.
+
+#### 2.3 `app/domains/company_settings/domain.py`
+- Removida referência falsa a `CompanyProfileService` inexistente.
+- `configure_profile` / `culture` / `tech_stack` / `benefits` / `workforce`: retornam `error_response` explícito ("no conversational write service yet") + navigation hint para o painel.
+- `analyze_website`: agora **wired ao `CompanyScraperService.scrape_website`** com `company_id` / `user_id` (D0 cost attribution), valida URL, retorna preview real do conteúdo + LinkedIn data quando disponível.
+- **SSRF guard** (post code-review): aceita só http/https; rejeita `localhost`, hostnames de metadata GCP/AWS, e qualquer host que resolva para IP private/loopback/link-local/multicast/reservado. Mesma checagem aplicada a `linkedin_url` opcional.
+
+**Reprodução no destino**: replicar os 3 arquivos preservando (1) `context.user_id` como fonte de identity, (2) allowlist de response, (3) SSRF guard em qualquer endpoint que recebe URL externa.
+
+---
+
+### H.3 — Padronização e auditoria do registry de chat capabilities (commits `3e17624ea`, `f539d14c1`, `985cb54bd`, `fbe592761`, Tasks #601/#597/#596/#604)
+
+#### H.3.1 — `cv_screening`: unify `_ACTION_TOOL_MAP` (`f539d14c1`)
+**Arquivo**: `app/domains/cv_screening/domain.py`
+- Havia **dois `_ACTION_TOOL_MAP` divergentes**: módulo (lido pelo auditor) dizia `auto_screen → run_screening_pipeline`; classe (usado em runtime) dizia `auto_screen → score_cv`.
+- Fix: deletado o map de classe; o map de módulo passa a apontar `auto_screen → score_cv` (matching runtime). `execute_action` referencia o dict de módulo direto. Uma única source of truth.
+
+#### H.3.2 — Sourcing ReAct full tool set (`985cb54bd`)
+**Arquivo**: `app/domains/sourcing/agents/sourcing_react_agent.py`
+- `_aggregate_all_tool_names` importava `get_sourcing_tools` de `app.domains.sourcing.tools`, símbolo que não existe mais (agora exporta `SOURCING_TOOLS` + `execute_sourcing_tool`).
+- Fix: ambos imports (linha 48 + fallback linha 75) agora apontam para o registry canônico `app.domains.sourcing.agents.sourcing_tool_registry.get_sourcing_tools` (mesma fonte usada em `_get_tools` linha 128).
+- Resultado: `_aggregate_all_tool_names()` agora retorna **40 tools** (sourcing base + 6 sub-agents), não mais lista vazia.
+
+#### H.3.3 — Identidade canônica de domínios (`fbe592761`)
+**Arquivos**: `app/domains/job_creation/domain.py`, `app/domains/registry.py`
+- `JobCreationDomain` expunha `domain_id` / `domain_name` / `description` como `@property`, divergindo dos outros domínios (atributos de classe). Forçava o registry (#584) a instanciar a classe.
+- Fix: convertidos para atributos de classe (string literais). `app/domains/registry.py` removeu o fallback "instanciar para resolver property" e agora valida `cls.domain_id` é string simples (raise `ValueError` se descriptor).
+
+#### H.3.4 — Status da auditoria (#601)
+Após os fixes acima + trabalho prévio do Phase 2 (#582):
+```
+broken_handlers: 0
+broken_mappings: 0
+orphan_tools: 0
+actions_no_handler: 0
+domains_with_gaps: 0
+total_domains: 18 | total_actions: 281 | total_tools: 92
+```
+
+---
+
+### H.4 — Slash commands canônicos (commit `9bc805b29`, Task #300)
+
+**Decisão arquitetural**: manter os comandos PT-BR existentes (`/criar vaga`, `/buscar`, `/pipeline`, `/relatorio`, `/feedback`, `/agendar`, `/ajuda`) como set oficial, e registrar `/job` + `/talent` (do spec #292) **como aliases** para `/criar vaga` e `/buscar`. Honra o spec sem quebrar vocabulário in-app nem o teste e2e que afirma `/criar vaga` é interceptado localmente.
+
+**Single source of truth**: `plataforma-lia/src/components/unified-chat/slash-commands.ts` (novo, 176 linhas).
+```typescript
+export const SLASH_COMMANDS: SlashCommand[] = [
+  { token: "criar vaga", aliases: ["job"], showInDropdown: true,
+    backendPayload: "Criar nova vaga", crossPayload: ... },
+  { token: "buscar",     aliases: ["talent"], showInDropdown: true,
+    backendPayload: "Buscar candidato",   crossPayload: ... },
+  ...
+];
+export function findSlashCommandByToken(token: string): SlashCommand | undefined;
+export function findSlashCommandByVerb(verb: string): SlashCommand | undefined;
+```
+
+**Consumidores refatorados** (todos lêem do registry):
+- `unified-chat/wizard/useWizardIntegration.ts` (`handleSlashCommand`) — resolve bare e cross commands via registry, preserva todos backend payloads legacy.
+- `unified-chat/useSlashCommands.ts` — dropdown agora deriva items via flag `showInDropdown` + `dropdownPrefill`.
+
+**Help text atualizado**: `plataforma-lia/messages/pt-BR.json` e `messages/en.json` (`/ajuda` lista canonicals + aliases + os shortcuts não-documentados `/feedback` e `/agendar`).
+
+**Tests**: `slash-commands.test.ts` (7 cases, registry/aliases/verb matching/normalization/payloads) + `useWizardIntegration.slash.test.tsx`. Doc `docs/audits/unified-chat-2026-04-16.md` marca F-CMD-02/03 resolvidos.
+
+---
+
+### H.5 — CI smoke do chat capabilities audit (commit `b3d068c9c`, Task #633)
+
+**Arquivo novo**: `lia-agent-system/tests/test_chat_capabilities_audit_ci.py`
+
+Embrulha `scripts/audit_chat_capabilities.py` em pytest. Carrega o script via `importlib.util` (script vive em `scripts/` sem `__init__.py`), roda `audit()` uma vez por módulo via fixture, e assertiona `global_summary`:
+- `broken_mappings == 0`
+- `orphan_tools == 0`
+- `actions_no_handler == 0`
+- `broken_handlers == 0`
+- `domains_with_gaps == 0`
+
+Cada assertion message inclui breakdown por domínio (`REPORT["registered_domains"][*].gaps`) — falha CI aponta exatamente qual domínio regrediu. Verificado: 5/5 passing em 18 domínios / 281 actions / 93 tools (~14s sem coverage).
+
+---
+
+### H.6 — Fail-closed dos tool registries sem `company_id` (commit `6fd638fbc`, Task #330)
+
+**Arquivo novo**: `lia-agent-system/tests/shared/test_tool_handler_isolation.py`
+
+E2E test que itera sobre **toda tool exportada** pelos 4 registries principais (autonomous, sourcing, pipeline + cv_screening, kanban) e assertiona que invocar sem `company_id` retorna a falha estruturada `app.shared.tool_handler._TENANT_REQUIRED_RESPONSE`.
+
+**Allowlist exemption** derivado **automaticamente** scaneando comentários `# require_company=False kept:` no source — as 23 exemptions documentadas ficam em sync sem manutenção manual.
+
+**Resultado**: 105 cases, todos passing.
+
+**Drift fixado durante o trabalho**: 6 wrappers autonomous (`_wrap_rag_search`, `_wrap_auto_search_candidates`, `_wrap_auto_analyze_profile`, `_wrap_auto_compare_candidates`, `_wrap_auto_score_candidate`, `_wrap_auto_filter_candidates`) delegavam para `_delegate_sourcing` **sem o decorator `@tool_handler`** — não fail-closed. Decorados todos os 6 e mudada delegation call para keyword args (decorator é `**kwargs`-only).
+
+**Arquivo modificado**: `app/domains/autonomous/agents/autonomous_tool_registry.py`.
+
+---
+
+### H.7 — `ConversationMemory._extract_structured_ids` (commit `d9127032c`, Task #637)
+
+**Bug**: `_generate_summary_from_dicts` chamava `self._extract_structured_ids(messages)`, mas o método **não existia**. AttributeError silencioso, fallback para summary simples, perda do texto LLM **e** dos IDs estruturados que o comentário prometia preservar.
+
+**Correção** em `app/domains/recruiter_assistant/services/conversation_memory.py`:
+- Implementado `_extract_structured_ids(messages)` retornando string deduplicada com 3 buckets:
+  1. **Labeled refs**: `vaga/candidato/job/...` (regex `_LABELED_REF_RE`)
+  2. **Long numeric IDs**: 10+ dígitos (regex `_LONG_NUMERIC_RE`)
+  3. **UUIDs** (regex `_UUID_RE`)
+- Numerics que são substring de labeled ref ou UUID são pulados (anti-duplicate).
+- Path LLM-backed agora também prepende `[IDs preservados: ...]` — IDs sobrevivem em ambas branches (matches `DEVELOPER_HANDOFF.md §4.8 / C3`).
+
+**Tests**:
+- `tests/unit/test_conversation_memory_summary_dicts.py` (novo, 5 cases): extraction UUIDs/numerics/labeled refs, no-LLM path, LLM path (verifica chamada do LLM + IDs prepended), short-circuit empty.
+- `tests/test_per_agent_billing.py`: removido stub workaround agora que helper existe.
+
+---
+
+### H.8 — Per-agent AI billing tests (commit `3d6328f02`, Task #558)
+
+**Arquivo novo**: `lia-agent-system/tests/test_per_agent_billing.py` (486 LoC, 9 tests).
+
+Cobre cada `agent_type` adicionado pelo Task #545. Para cada agent, stub `safe_invoke` para invocar seu `on_usage` callback com payload fake, substitui `enqueue_outbox_payload` por fake que chama `TokenTrackingService.record_usage` direto (bypassa DB e worker drainer), e assertiona kwargs capturados carregam `agent_type` / `company_id` / token counts esperados.
+
+**Coverage**:
+| `agent_type` | Função coberta |
+|--------------|----------------|
+| `wsi_question_generator` | `WSIQuestionGenerator._generate_cbi_question` |
+| `wsi_report_generator` | `WSIReportGenerator.generate_report` |
+| `wsi_candidate_feedback` | `WSIReportGenerator.generate_feedback` |
+| `personalized_feedback_whatsapp` | `PersonalizedFeedbackService._generate_whatsapp_version` |
+| `wsi_transcript_analysis` | `handlers_screening._analyze_transcript_for_wsi` |
+| `recruiter_conversation_summary` | `ConversationMemory._generate_summary_from_dicts` |
+| `interview_analysis` | inline em `handle_interview_completed` (source-grep + behavioral test de `build_usage_callback(agent_type="interview_analysis")`) |
+
+---
+
+### H.9 — Recruiter goals reais (commit `92e6fe1c8`, Task #599)
+
+**Bug**: `assistant_track_goals` chat tool resolvia para `app/services/goal_service.py:GoalService.get_user_goals` que retornava `simulation_stub: true` vazio.
+
+**Correção** em `app/services/goal_service.py`:
+- `get_user_goals` abre session via `AsyncSessionLocal`, monta `GoalsRepository`, normaliza period aliases (`current_month` → "monthly"; quarter/year variants), coerce `company_id` para UUID, lê goals scoped por user/company/period.
+- **Fail-closed scoping** (post code-review): rejeita BEFORE tocar repository quando `company_id` ausente/inválido, `user_id` empty, `period` desconhecido. Erros distintos: `missing_company_id`, `invalid_company_id`, `missing_user_id`, `invalid_period`. Failure de repository → `goal_fetch_failed` genérico (full exception logado, internals não vazam para chat).
+- `aggregate_goals` helper puro: bucketiza por status + gap progress-vs-elapsed (>15% atrás → `at_risk`). Retorna per-goal items + summary `{total, on_track, at_risk, achieved}`.
+- `_fetch_goals` extraído para tests patch sem stack DB.
+
+**Tests**: `tests/test_goal_service.py` (9 cases) — bucket classification, aggregation, real shape com period normalization, empty path, graceful failure, **guardrail tests** que verificam repository **não** é chamado quando scope incompleto.
+
+Tool registration em `app/domains/recruiter_assistant/tools/__init__.py` inalterado — handler path `app.services.goal_service.goal_service.get_user_goals` resolve.
+
+---
+
+### H.10 — Endpoint real `GET /api/v1/recruitment_campaigns` (commit `7670dfb5b`, Task #609)
+
+**Arquivo**: `app/api/v1/recruitment_campaigns.py` (placeholder `not_implemented` substituído por implementação real, 187 LoC).
+
+**Tabela canônica**: `recruitment_campaigns` (model + alembic 064 já existentes).
+
+**Consumidores frontend**:
+- `useWorkflowRail` (rail flutuante) — precisa de `name`, `current_stage`, `stages[]` com `{stage, label, status, candidatesCount, checkpoint}`, `pending_action`, `job_id`, `talent_pool_id`, `created_at`.
+- `JobCampaignBadge` — precisa de `status` (`active|paused|...`) e `job_id`.
+
+**Query params**: `?status=` e `?job_id=`, ambos scoped ao `company_id` do caller via `get_user_company_id`.
+
+**Stage projection**:
+- Indices `< current_stage_index` → `completed`
+- Index `== current_stage_index` → `in_progress`
+- Indices `> current_stage_index` → `pending`
+- Campaign `completed` → todos os stages collapsam para `completed`
+
+**Per-stage candidate counts** lidos dos counters do model (`total_candidates`, `candidates_screened`, `candidates_contacted`, `candidates_interviewed`, `candidates_offered`). Custom stages sem counter dedicado contribuem 0 (não None) — rail badge sempre renderiza.
+
+**Stage labels**: humanizados para os 6 canonical stages, fallback Title-cased para custom.
+
+**`pending_action`**: surface o `checkpoint` string do stage in_progress — rail renderiza action banner.
+
+**Writes** (POST/PATCH/advance/complete/checkpoint) **intencionalmente continuam `501`** — Rails ATS ainda owns campaign mutation. ActionCable `WorkflowChannel` já broadcasts `campaign_update` payload que rail consome. Documentado no docstring. (Migração para WS FastAPI-native: follow-up #642.)
+
+**Tests**: `tests/test_recruitment_campaigns_projection.py` (6 cases, JSONAPI shape, stage-status, completed/paused, empty stages, custom-stage fallback).
+
+**Code-review followup**: removido try/except amplo que mascarava DB failures como "Sem campanha" — erros agora propagam como 5xx.
+
+---
+
+### H.11 — Wire `duplicate_job` / `clone_job` chat actions (commit `43d9891d3`, Task #624)
+
+**Arquivos**:
+- `app/tools/job_tools.py`: 2 wrappers novos `duplicate_job_vacancy` e `clone_job_vacancy`. Reusam `JobCloneService` existente (full duplicate vs template clone), abrem própria `AsyncSessionLocal`, resolvem `job_id` (UUID, código WDT, ou title fragment) via `get_job_by_id_or_title`, enforce tenant isolation via `_tenant_id` injetado pelo executor, emit `ValueError`/`LookupError` estruturados.
+- `app/domains/job_management/tools/__init__.py`: registradas as 2 tools em `JOB_MANAGEMENT_TOOLS` com parameter schemas.
+
+Resolve os 4 xfails do `tests/test_chat_capabilities_smoke.py` (eram action-level deferrals em `job_management::duplicate_job` e `clone_job`).
+
+---
+
+### H.12 — Remoção de tool `score_cv` órfã (commit `9bbb304be`, Task #623)
+
+`score_cv` era thin chat-registry indirection sobre `CVScoringService.screen_candidate`. Únicos callers (`auto_screen` action mapping + `_handle_batch_screen`) wired direto ao service.
+
+**Arquivos**:
+- `app/domains/cv_screening/tools/__init__.py`: drop entry de `CV_SCREENING_TOOLS` (11 → 10 tools).
+- `app/domains/cv_screening/domain.py`: remove `"auto_screen": "score_cv"` de `_ACTION_TOOL_MAP`; novo `_handle_auto_screen` no handler_map chama `cv_scoring_service.screen_candidate(candidate_id, vacancy_id, tenant_id)`. `_handle_batch_screen` reescrito para chamar `screen_candidate` direto.
+- `app/domains/cv_screening/services/cv_scoring_service.py`: deletado wrapper morto `async def score_cv(**kwargs)`.
+
+**Audit pós-fix**: `cv_screening` 0 orphan tools / 0 broken mappings / 0 actions_no_handler / 0 broken_handlers. Total tools 93 → 92.
+
+---
+
+### H.13 — Real interview reminders + self-scheduling links (commits `cdaa7b2c6`, `c8559a442`, `933949c9f`, Tasks #598/#626/#625)
+
+**Arquivo principal**: `app/domains/interview_scheduling/services/scheduling_service.py` (483 LoC modificadas).
+
+#### H.13.1 — `generate_self_scheduling_link` (#598)
+Substitui `simulation_stub`. Persiste row real `SelfSchedulingLink` (token, `expires_at`, slots, candidate + job context, organizer/interviewer emails). Retorna URL pública `${FRONTEND_URL}/agendar/{token}` consumida pelo endpoint público de self-scheduling existente. Valida required candidate info — failure estruturado se ausente. Hidrata `candidate_name` / `candidate_email` da Candidate row quando só `candidate_id` é supplied (back-compat com chat-tool legacy).
+
+#### H.13.2 — `send_reminder` multi-canal (#598 + #626)
+- Aceita `channels: list[str]` (default `["email"]` para back-compat). Valida contra `{email, whatsapp, teams}`.
+- **Tenant scope**: SELECT em `Interview` filtra por `company_id` quando supplied — fecha IDOR (não trigger reminder cross-tenant mesmo com guess de UUID).
+- Cada (recipient, channel) wrapped em try/except próprio — falha de um canal não bloqueia outros.
+- **email + whatsapp** via `_dispatch_reminder_message`: render template `INTERVIEW_REMINDER` via `template_service`, hand off para `CommunicationService.send_message` (policy checks + `CommunicationLog` persist + provider retries).
+- **whatsapp**: candidato phone resolvido via Candidate row lookup. Fail-closed (`no_phone`) com audit row se ausente. WhatsApp para interviewer **explicitamente não** tentado (sem phone).
+- **teams** via `_dispatch_reminder_teams`: adaptive card via `teams_bot.notify_scheduling_confirmed`. Card label suffixed com `"(interviewer)"` quando recipient é interviewer (não confunde candidate vs interviewer).
+- Cada attempt persiste `InterviewReminder` row capturando `status` (sent/failed), `sent_at`, `send_error`, `channels=[ch]`. Commit batch.
+- Atualiza `Interview.reminder_sent` / `reminder_sent_at` se qualquer leg succeed.
+
+> **Nota arquitetural**: enum `MessageChannel` não tem TEAMS member. Teams dispatch vai por `teams_bot` (adaptive card) não pela Communication pipeline — matches existing notification patterns.
+
+**Tests**: `tests/integration/test_scheduling_reminder_and_link.py` (13 cases) — happy path, fan-out 3 canais, no-phone, tenant scoping (company_id mismatch → `interview_not_found`), real CommunicationService email path com só leaf provider mocked.
+
+#### H.13.3 — Schema fix `self_scheduling_links` (#625)
+Migração `063_create_scheduling_links_table` criava `scheduling_links` que não match com schema do model `SelfSchedulingLink` (target rico). Fix consertou nomes/colunas — model + migration agora alinhados.
+
+---
+
+### H.14 — Forward de tenant id no pipeline WSI on-the-fly (commit `9c7e65855`, Task #334)
+
+**Bug**: quando WSI interview graph hit fallback on-the-fly que chama `WSIScreeningPipeline().build_pipeline(...)` para gerar perguntas (porque nenhuma question salva pra job), tenant id **não era propagado explicitamente**. Se contextvar não setado por upstream caller, LLM provider resolution silently caía pra global Anthropic key — não usava Choose-Your-AI do tenant.
+
+**Correção** em `app/domains/cv_screening/services/wsi_screening_pipeline.py`:
+- Novo `_tenant_scope(request)` context manager: seta `_current_company_id` contextvar from `request.company_id` durante `build_pipeline` (no-op se vazio ou já setado upstream).
+- Novo `_tracking_context_for(request, operation)` helper: monta `tracking_context` dict carregando tenant id + operation name para usage attribution.
+- `build_pipeline` envelopa implementação existente no tenant scope; `_build_technical_block` e `_build_behavioral_block` passam o tracking_context para `WSIService.generate_from_simple_inputs` — toda LLM dispatch vê tenant id.
+
+**Tests**: `tests/test_wsi_pipeline_tenant_id.py` (novo) — afirma que `WSIScreeningPipelineRequest` com `company_id` faz toda chamada `WSIService` receber via `tracking_context` E `_current_company_id` contextvar setado durante dispatch. No-op case (sem `company_id`): zero tracking, contextvar untouched.
+
+`wsi_interview_graph.WSIInterviewNodes.load_context` já passava `company_id=state.company_id` ao construir request — wiring novo no pipeline garante tenant honored end-to-end.
+
+---
+
+### H.15 — Fix IDOR em `/finetuning/stats` e `/finetuning/export` (commit `97205ecc1`, Task #306, audit finding R1)
+
+**Endpoints alterados** em `app/api/v1/finetuning_export.py`:
+- `GET /finetuning/stats/{company_id}` → **`GET /finetuning/stats`**
+- `POST /finetuning/export/{company_id}` → **`POST /finetuning/export`**
+
+**Mudança**: `company_id` agora derivado **exclusivamente do JWT-authenticated user**. User sem company_id rejeitado com 403, e denial gravado via `audit_service.log_decision(decision="denied_no_company")` para deny-trail compliance. Removidos helpers obsoletos de dual-id path pattern.
+
+**Resultado**: cross-tenant via URL é **estruturalmente impossível** (route absent → 404). 403 só para user sem company assigned. Mais estrito que contrato original.
+
+**Tests**: `tests/test_endpoints/test_finetuning_export_auth.py` reescrito (unauth → 401/403; legacy URLs `/{company_id}` → 404; no-company user → 403 com audit log em ambos paths). `tests/api/test_dual_id_route_shadowing.py`: removido `finetuning_export` dos parametrize lists.
+
+**Frontend**: `plataforma-lia/src/types/api.generated.ts` é auto-gen — refresca no próximo codegen. Nenhum código frontend consome paths antigos.
+
+---
+
+### H.16 — Echo do routed specialist em respostas de chat (commit `2bf526354`, Task #552)
+
+**Bug**: persona-diagnostic routing audit (#537) populava `agent_observed` scaneando response do chat pelo agent identifier, mas payload de `POST /api/v1/chat` **nunca setava**. `MainOrchestrator.ChatResponse` carregava `agent_used`, mas `ChatAdapter._convert_response` empurrava para `prompt_version` (overload de campo registry hash) e `chat.py` só ecoava `intent` + `entities` em `message_metadata`. Net: toda probe classificada como "unknown", assertion 90% routing nunca rodava.
+
+**Correção**:
+- `app/orchestrator/chat_adapter.py`: expõe `agent_used` e `agents_consulted` como **chaves próprias** (mantém `prompt_version` para back-compat). Error fallback também carrega.
+- `app/api/v1/chat.py`: ambos endpoints REST copiam routed specialist para `message_metadata.routed_agent` (também `agent_used` + `agents_consulted` para simetria). Fairness-block early return tag-se como `fairness_guard` (audits nunca veem `None` silencioso).
+- `eval/persona-diagnostic/runner/runner.py` (`_extract_agent`): desce em `message.message_metadata` — sem isso, novo metadata ficaria 1 nível mais fundo do que o runner walked.
+- `tests/test_chat_routed_agent.py`: pin contrato e2e (adapter conversion populates, error path keeps, runner extracts da shape real).
+
+---
+
+### H.17 — Persistir last active funnel stage do recrutador (commit `93a88173b`, Task #588)
+
+**Problema**: `WorkflowRail` wide bar derivava "current stage" puramente de workflow entries em real-time — recrutadores retornando sem active workflows sempre viam bar resetada para "initial".
+
+**Correção** em `plataforma-lia/src/components/workflow-rail/`:
+- **Novo** `lastStageStorage.ts`:
+  ```typescript
+  loadLastStage(userId): FunnelStageKey
+  saveLastStage(userId, stage): void
+  // Per-user key: workflow-rail:last-stage:${userId}
+  // Fallback "initial" se missing/malformed/stale (>7 dias)
+  // Valida stage contra FunnelStageKey whitelist
+  // SSR-safe; tolera JSON parse errors + localStorage failures
+  ```
+- `WorkflowRail.tsx`:
+  - Hidrata `currentStageKey` do storage on mount + on `userId` change.
+  - Para de forçar `currentStageKey → "initial"` quando entries é empty; só deriva de entries se ≥1 entry.
+  - Persist effect gated por `hydratedFor` state (writes só após React aplicar valor hidratado para current user — previne cross-user leakage on user switch).
+  - `lastSavedRef` skip writes redundantes — page loads passivos **não** refrescam staleness timestamp; só changes meaningful.
+  - `handleNextStep` chama `saveLastStage` explicitamente — rail actions com mesma stage ainda refrescam timestamp.
+- `useWorkflowRail.ts`: reseta `entries` para `[]` quando `userId` muda — previne entries do user anterior influenciando UI.
+
+---
+
+### H.18 — Track WorkflowRail next-step clicks + panel toggles (commit `b5455e013`, Task #589)
+
+**Arquivo novo**: `plataforma-lia/src/components/workflow-rail/workflowRailAnalytics.ts`
+```typescript
+trackWorkflowRailNextStepClick(stageKey, step)
+trackWorkflowRailPanelToggle(open, stageKey, source)
+// Emit CustomEvent on window:
+//   workflowRail:nextStepClicked
+//   workflowRail:panelToggled
+// Mesmo lightweight pub/sub usado em lia:chat-mode-changed, hitl:approval_required
+```
+
+**Wired em `WorkflowRail.tsx`**:
+- `handleNextStep`: fires click event com current stage key + step id (+ actionType / path / handlerId).
+- `setPopoverOpenTracked(next, source)` wrapper emit open/close em **toda toggle user-initiated**: botão "...", mobile X close, outside-click, Escape, pending-action banner, next-stage chip, implicit close on next-step click.
+- Auto-collapse effect (quando active entries somem) **intencionalmente NOT tracked** — não é gesto user.
+
+---
+
+### H.19 — WorkflowRail × Chat: coexistência sem poluição (commit `eafe4f551`, Task #617)
+
+Faz trilho flutuante (barra/bolinha) coexistir com trilho interno do chat (`ChatWorkflowReels`) sem duplicação visual + mostra discretamente onde o chat está.
+
+**Arquivos**:
+- **Novo** `plataforma-lia/src/hooks/useActiveChatPresence.ts` (93 LoC): fonte única de presença do chat (modo + visibilidade dos reels) escutando eventos globais `lia:chat-mode-changed` e `lia:chat-reels-visibility`. Helper `focusChat()` dispara `lia:chat-mode-changed` + `lia:focus-chat` para reabrir chat no modo atual.
+- `unified-chat/UnifiedChatEmptyState.tsx`: emit `lia:chat-reels-visibility` no mount/unmount usando **counter global** (`window.__liaChatReelsCount`) para tolerar múltiplas instâncias do empty state em paralelo (sidebar + dashboard inline).
+- `unified-chat/UnifiedChatConditional.tsx`: ouve `lia:focus-chat` e chama `open()` do `LiaFloatContext` — clique no chip realmente foca/abre chat.
+- `workflow-rail/WorkflowRail.tsx`:
+  - **Suprime renderização** quando `isChatVisible && isShowingReels`.
+  - Adiciona chip indicador do modo do chat (`PanelRight` / `MessageSquare` / `Maximize2` / `Minus`) em ambas barra expandida e colada à bolinha.
+  - **Anti-colisão**: chat em modo `floating` + bolinha não arrastada → posiciona trilho no canto inferior **esquerdo** (onde fica bolinha do chat fica direito).
+
+**Storage key alinhada**: `lia-chat-mode` (era `wedo-chat-mode`).
+
+---
+
+### H.20 — Fix WorkflowRail overlay bloqueando botão de envio do chat (commit `f027fa26e`, Task #618)
+
+**Bug**: `pointer-events-auto` aplicado em flex container full-width (`flex justify-center`) dentro de fixed bar `min(1080px, calc(100vw-2rem))`. Pill visível pequena e centrada, mas área vazia em volta interceptava clicks — bloqueava send button do chat. **65 de 66 cenários do agentic eval davam timeout em AGT-D02-001+.**
+
+**Fix**: removido `pointer-events-auto` do flex row wrapper, movido para o pill em si. Espaço vazio passa pointer events para chat composer abaixo.
+
+**Arquivo**: `plataforma-lia/src/components/workflow-rail/WorkflowRail.tsx` (4 LoC).
+
+---
+
+### H.21 — Redesign WorkflowRail floating ball + compact BetaBadge (commit `ae21f9542`, Task #648)
+
+Resolve colisão visual entre bolinha colapsada do WorkflowRail e ícones de chat LIA / modal funnel + tighten chip BETA.
+
+**`workflow-rail/WorkflowRail.tsx`** (collapsed ball):
+- **Solid grafite bg** (`bg-lia-text-primary`) em vez de accent fill (não compete com cyan da chat bubble).
+- Stage accent → 2px border + soft halo `box-shadow` (semantic da current funnel stage preservado).
+- Replaced canonical stage icon por `Compass` neutro (não bate com Briefcase/Search/UserCheck do funnel modal).
+- Diameter 36 → 40, `pendingCount` badge tightened (`min-w-14px`, `text-[8px]`, `px-[3px]`).
+- Chat presence chip nudged para `-top-1.5/-left-1.5` (clear new ring).
+- Removido `CurrentIcon` derivation morto.
+
+**`ui/beta-badge.tsx`**:
+- `sm`: solid `bg-wedo-purple` + `text-white`, `text-[8px]`, `px-1.5 py-[1px]`, `FlaskConical` hidden (só em md). Chip inline discreto.
+- `md` (modules-page) mantém ícone + padding maior.
+
+**`sidebar.tsx`**: import `BetaBadge` adicionado, consome `<BetaBadge size="sm" />` (unifica visual language, não mais inline span custom).
+
+---
+
+### H.22 — Fix de imports stale `from app.*` (commit `ceb6c78fa`, Task #585)
+
+AST-scan da tree `lia-agent-system/app/` por `from app.*` apontando para módulos que não existem mais após refactoring. **8 imports broken em 7 arquivos** corrigidos:
+
+| Arquivo | De | Para |
+|---------|-----|------|
+| `api/v1/whatsapp_webhook.py` (2x) | `app.shared.database.get_db` | `app.core.database.AsyncSessionLocal` (factory) |
+| `api/v1/onboarding.py` | `app.shared.database.get_db` | `app.core.database.AsyncSessionLocal` |
+| `api/v1/teams.py` | `app.core.security` | `app.auth.security` |
+| `api/v1/wsi/admin.py` | `app.api.dependencies.auth.require_admin_user` | `app.auth.dependencies.require_admin` (aliased) |
+| `domains/automation/services/proactive_alert_service.py` | `app.services.credits_service.CreditsService.get_credits_balance(...)` | `app.domains.credits.services.credit_service.CreditService.get_balance(...)` (+ remap response keys) |
+| `domains/automation/services/task_service.py` | `app.models.automation_models.TaskStatus` | `lia_models.task.TaskStatus` |
+| `domains/integrations_hub/services/rails_adapter.py` | `app.services.ats_clients.wedotalent_rails` | `app.domains.ats_integration.services.ats_clients.wedotalent_rails` |
+| `shared/compliance/fairness_guard.py` | `app.services.llm_service.LLMService` | `app.domains.ai.services.llm.LLMService` |
+
+**Bonus**: relocou `industry_weights.py` de `app/config/` para `app/core/` (acceptance gate "zero `from app.config.` imports"). `app/config/__init__.py` agora só re-exporta `CacheSettings` / `cache_settings` direto do canonical `app.shared.cache_strategy`.
+
+**Verificação**: AST audit 0 broken imports remaining; 7 módulos + `app.main` import sem erro.
+
+---
+
+### H.23 — Dead code: `useCandidatesExecuteSearch.ts` legacy (commit `5e2c78aed`, Task #288)
+
+**Removido** `plataforma-lia/src/components/pages/candidates/useCandidatesExecuteSearch.ts` (645 LoC).
+
+Verificado zero imports do path legacy. Todas referências apontam para canonical em `plataforma-lia/src/components/pages/candidates/hooks/useCandidatesExecuteSearch.ts` (já updated em #274 + #275).
+
+`docs/specs/frontend/REACT_VUE_BRIDGE.md` updated — removida row stale "useCandidatesExecuteSearch (pages)" do hooks inventory.
+
+---
+
+### H.24 — ADR-018 e correções de auditoria (commits `8cd82e847`, `6dceda378`, Tasks #382, #381)
+
+#### H.24.1 — ADR-018 (`8cd82e847`)
+**Arquivo novo**: `docs/specs/ai/ADR-018-tool-registry-consolidation-migration.md` (230 LoC).
+
+Plano operacional (sucessor de ADR-016) para consolidar `app/tools/registry.py` + `tool_permissions.yaml` + `tool_permissions_loader.py`:
+- Reafirma target: **registry como execution router**, `@tool_handler` como **authoring surface**, YAML scoped a **governance**.
+- Nomeia cada um dos **11 grandfathered ALLOW_LIST files** + dá shape canônico post-migration (`get_<x>_tools()` + agregação em `initialize_tools()`, ALLOW_LIST entry removida no mesmo commit).
+- Plano ordenado **M1–M10** core consolidation + **M11–M13** para `scope_config` import-time globals removal, YAML cleanup de legacy per-tenant LLM keys (já DB-resident desde Task #353), e README update.
+- 8 acceptance criteria (A1–A8) + 5 canary pytests sob `tests/consolidation/`, marcados `@pytest.mark.consolidation` (pytest exclui marker por default; CI gate liga em M10).
+- **Non-decisions explícitos** anti-scope-creep: ToolRegistry stays, executor untouched, os 30+ `*_tool_registry.py` em `app/domains/*/agents/` stay as-is.
+
+Cross-link adicionado no topo do ADR-016 → ADR-018 successor.
+
+#### H.24.2 — Audit corrections (`6dceda378`)
+**Arquivo**: `docs/audits/AUDIT_STATUS_REPORT_2026-04-FINAL.md`.
+
+Audit anterior reportava `app/tools/tool_permissions_loader.py` e `app/tools/registry.py` como "dead code" — claim **stale** (causou Task #373 com premissa errada).
+
+**Verificado contra código atual**:
+- `tool_permissions_loader.py`: importado por `app/tools/scope_config.py` (orchestrator + tool_executor_service via scope → tools + restricted_tools HITL), por `app/shared/providers/llm_factory.py:461` (per-tenant LLM provider/fallback), e por `app/orchestrator/tenant_budget.py:282`. `GlobalToolRegistry` **nunca** foi caller do loader.
+- `app/tools/registry.py`: canônico `tool_registry`, instanciado em `app/tools/__init__.py:18` e populado por `initialize_tools()`. **18 caller files** (`grep -rln "from app.tools.registry" app/`) registrando tools em ~14 domain modules + consumers diretos em executor, orchestrator, agentic_loop, tool_executor_service, job_wizard_graph. `@tool_handler` é decorator per-function tenant-check, **não** replacement enumerable do registry.
+
+Doc atualizado: §0/§1.2/§3.2/§3.5/§6/§7.4/§8/§9.4/§9.7/§9b.2 reescritos com errata block + caller inventory + opções F6′/F7′ corrigidas + non-tasks NF3/NF4 anti-refile.
+
+---
+
+### H.25 — E2E auth fixture: `/dashboard` → `/pt/chat` (commit `e1eb1ed58`)
+
+**Arquivo**: `plataforma-lia/e2e/fixtures/auth.fixture.ts`.
+
+`/dashboard` retornava 404 em dev mode → fixture timeout 240s. Switch para `/pt/chat` (200) + `waitUntil: 'load'` (vez de `'networkidle'`, que nunca dispara por causa de HMR websockets).
+
+```typescript
+await page.goto('/pt/chat', { waitUntil: 'load', timeout: 30_000 });
+```
+
+---
+
+### H.26 — Atualizações de mockup-sandbox
+
+**Diretório**: `artifacts/mockup-sandbox/src/.generated/mockup-components.ts`.
+
+19 commits agent-driven (ver tabela H.0) atualizando manifesto de componentes do canvas para **5 famílias de mockups**:
+1. **Triagem flow screens** (`efe036a83`, `086641ef8`, `4207bf817`, `bc41ff494`, `8fee1b64a`, `8062dff21`)
+2. **Weekly digest** (`e5299e769`, `09a29366d`, `69825249d`)
+3. **Chat welcome polish + toasts** (`709659f8a`, `9aa587053`, `075ac39ba`, `ebe6d4b72`, `32f36cf9c`, `b0209e7c8`)
+4. **Funnel/cards/badges styling** (`8c0e472d0`, `152625d10`, `8a2f575ef`, `5b3a85cad`)
+
+Estes commits **não tocam app de produção** — só prototipação visual no canvas via mockup-sandbox skill. Não exigem reprodução no `ats-api-copia` nem na camada IA. Servem como **referência visual** para tasks que vão graduar componentes via `mockup-graduate` skill.
+
+---
+
+### H.27 — Checklist consolidado de reprodução no ambiente de destino
+
+#### Backend Python (camada IA — repositório separado)
+
+**Chat / ReAct / Tools registry**
+- [ ] H.1: Replicar normalização de `tool_calls` em `workflow.py` → `orchestrator.py` → `chat_adapter.py` → `chat.py` → `MessageResponse` schema.
+- [ ] H.2: Substituir handlers stub em `agent_studio/`, `candidate_self_service/`, `company_settings/` por implementações reais ou `error_response` explícito. **Aplicar SSRF guard** em todo handler que recebe URL.
+- [ ] H.3: Garantir 1 single `_ACTION_TOOL_MAP` por domain (no module-level, sem override de classe). `domain_id` como atributo de classe simples (não @property).
+- [ ] H.5: Adicionar `tests/test_chat_capabilities_audit_ci.py` ao CI gate.
+- [ ] H.6: Adicionar `tests/shared/test_tool_handler_isolation.py`. Decorar com `@tool_handler` qualquer wrapper que delegue para outro service.
+- [ ] H.7: Implementar `_extract_structured_ids` em `ConversationMemory` se path LLM-backed for usado.
+- [ ] H.8: Adicionar `tests/test_per_agent_billing.py` cobrindo todos `agent_type` que persistem usage.
+
+**Services reais (sem stubs)**
+- [ ] H.9: Reescrever `goal_service.py` com fail-closed scoping (rejeitar antes de tocar repository quando scope incompleto).
+- [ ] H.10: Implementar `GET /api/v1/recruitment_campaigns?status=&job_id=` lendo da tabela `recruitment_campaigns` (alembic 064). Stage projection conforme tabela em H.10. Writes ficam 501 (Rails owns).
+- [ ] H.11: `duplicate_job_vacancy` + `clone_job_vacancy` em `app/tools/job_tools.py` reusando `JobCloneService`. Resolver job por UUID/WDT/title fragment.
+- [ ] H.12: Remover tool órfã `score_cv` e wirar `auto_screen` direto em `cv_scoring_service.screen_candidate`.
+- [ ] H.13: `SchedulingService.generate_self_scheduling_link` persiste `SelfSchedulingLink`. `send_reminder` multi-canal (email/whatsapp/teams) com **tenant scope**, **fail-closed `no_phone`**, **InterviewReminder audit row por tentativa**, Teams via `teams_bot.notify_scheduling_confirmed`.
+- [ ] H.14: `WSIScreeningPipeline` envelopa `build_pipeline` em `_tenant_scope` e propaga `tracking_context` com tenant id em todo dispatch LLM.
+
+**Security**
+- [ ] H.15: Endpoints `/finetuning/stats` e `/finetuning/export` **sem path param `{company_id}`**. Derivar do JWT exclusivamente. 403 + audit log para no-company. **Aplicar mesmo padrão para qualquer endpoint que carregue `{tenant_id}` na URL.**
+- [ ] H.16: `ChatAdapter` expõe `agent_used` e `agents_consulted` como chaves próprias. `chat.py` copia para `message_metadata.routed_agent`.
+
+**Imports / arquitetura**
+- [ ] H.22: AST-scan periódico por `from app.*` apontando para módulos inexistentes. Padrão de fix em tabela H.22.
+- [ ] H.24: Seguir plano M1-M13 do ADR-018 antes de tocar `tool_registry`.
+
+#### Frontend (deploy próprio com mesmo front)
+
+- [ ] H.4: Adotar `unified-chat/slash-commands.ts` como single source of truth. Comandos PT-BR canônicos + `/job` `/talent` aliases.
+- [ ] H.17: `lastStageStorage.ts` per-user com TTL 7 dias + whitelist `FunnelStageKey`. `WorkflowRail` hidrata on mount + on userId change. Reset entries on userId change.
+- [ ] H.18: `workflowRailAnalytics.ts` com 2 helpers + emit em todas user-initiated toggles (não auto-collapse).
+- [ ] H.19: `useActiveChatPresence.ts` com counter global. WorkflowRail suprime quando `isChatVisible && isShowingReels`. Anti-colisão posiciona no canto oposto à chat bubble.
+- [ ] H.20: `pointer-events-auto` **sempre no elemento interativo final**, nunca em flex container wrapper.
+- [ ] H.21: Bolinha do rail = solid grafite + ícone `Compass` neutro + 2px border accent + halo box-shadow. `BetaBadge size="sm"` solid purple/white sem ícone.
+- [ ] H.23: Verificar nenhum import legacy de `useCandidatesExecuteSearch` no path antigo.
+- [ ] H.25: Fixtures e2e usam `/pt/chat` + `waitUntil: 'load'`.
+
+#### Banco de dados
+
+Tabelas referenciadas nesta PARTE (validar schema no destino):
+- `recruitment_campaigns` (alembic 064) — H.10
+- `self_scheduling_links` (model `SelfSchedulingLink`, schema rico) — H.13. **Atenção**: alembic 063 criava `scheduling_links` divergente; usar schema corrigido em #625.
+- `interviews`, `interview_reminders` — H.13
+- `goals` — H.9
+- `external_api_consumption` — auditoria de chamadas Apify (PARTE D, ainda válido)
+
+#### Infra / deploy
+
+- Endpoints novos / alterados:
+  - `GET /api/v1/recruitment_campaigns?status=&job_id=` (público autenticado)
+  - `GET /finetuning/stats` (was `/finetuning/stats/{company_id}`)
+  - `POST /finetuning/export` (was `/finetuning/export/{company_id}`)
+  - `GET /agendar/{token}` (já público, agora populado por `SelfSchedulingLink`)
+- Webhook/external touchpoints **inalterados**:
+  - Rails ATS `/v1/candidate-portal/{status,interview,wsi-feedback,policy}` — agora consumidos por `candidate_self_service/domain.py`.
+  - Rails ActionCable `WorkflowChannel` — broadcasts `campaign_update` que rail consome (FastAPI WS ainda follow-up #642).
+- Env vars adicionadas: nenhuma nova nesta PARTE.
+
+---
+
+*Atualizado em: 2026-04-20 | PARTE H adicionada — Chat ReAct, Stub Replacement, Scheduling Real, WSI tenant forward, WorkflowRail UX, Security IDOR. Cobre commits `f027fa26e`..`1adc24fcc`.*
