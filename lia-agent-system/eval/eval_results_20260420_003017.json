@@ -1,0 +1,384 @@
+[
+  {
+    "id": "AN-001",
+    "category": "AN",
+    "severity": "critical",
+    "title": "Get recruitment KPIs dashboard",
+    "prompt": "me dá um overview dos KPIs de recrutamento do mês",
+    "context": {
+      "scope": "Analytics",
+      "page": "analytics"
+    },
+    "expected_tools": [
+      "get_recruitment_kpis"
+    ],
+    "canonical_files": [
+      "app/domains/analytics/agents/analytics_tool_registry.py",
+      "app/domains/analytics/agents/analytics_react_agent.py"
+    ],
+    "success_criteria": [
+      "Returns multiple KPIs",
+      "Includes time period",
+      "Numerical data"
+    ],
+    "anti_patterns": [
+      "Returns text-only with no data",
+      "Cannot access analytics"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 3096,
+    "response": "**Relatório de KPIs de Recrutamento — Este Mês (Abril 2026):**\n\n**Vagas:** 30 ativas | 0 pausadas | 0 fechadas (156 total)\n**Candidatos Únicos:** 150\n\n**Distribuição no Pipeline:**\n  - Novos: 0\n  - Triagem: 91\n  - Entrevista: 4\n  - Proposta: 45\n  - Contratados: 40\n  - Rejeitados: 0\n\n**Tempo Médio no Pipeline:** 11 dias\n**Taxa de Contratação:** 26.7%\n**Tempo Médio de Contratação (TTH):** 11 dias\n**Eficiência do Funil:** 40 contratados de 150 candidatos | 140 em andamento\n\n**Insight:** Taxa de contratação acima de 20% — funil saudável para o período.\n\n**Predições ML:**\n  - Previsão Time-to-Fill: **36 dias** (27-45d, 30% confiança)\n  - dentro da média do mercado\n  - Faixa Salarial Sugerida: **R$ 6,800 — R$ 9,200** (P50)\n  - Na média do mercado - competitivo",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-20T00:29:05.069968"
+  },
+  {
+    "id": "AN-002",
+    "category": "AN",
+    "severity": "high",
+    "title": "Funnel analysis for a job",
+    "prompt": "qual a taxa de conversão de candidatos na vaga de Product Manager?",
+    "context": {
+      "scope": "Analytics",
+      "page": "analytics"
+    },
+    "expected_tools": [
+      "get_funnel_analysis"
+    ],
+    "canonical_files": [
+      "app/domains/analytics/agents/analytics_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Returns stage-by-stage conversion rates",
+      "Identifies the correct job"
+    ],
+    "anti_patterns": [
+      "Returns overall metrics only"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 2753,
+    "response": "Para te dar a taxa de conversão exata para a vaga de Product Manager, eu preciso do **ID da vaga**.\n\nVocê consegue me informar o ID da vaga? Se não tiver, posso procurar por ela, mas preciso que me diga qual das vagas de Product Manager você quer analisar, caso tenha mais de uma.",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-20T00:29:08.324178"
+  },
+  {
+    "id": "AN-003",
+    "category": "AN",
+    "severity": "high",
+    "title": "Salary benchmark",
+    "prompt": "qual a faixa de mercado para Product Manager sênior em São Paulo?",
+    "context": {
+      "scope": "Analytics",
+      "page": "analytics"
+    },
+    "expected_tools": [
+      "get_salary_benchmark"
+    ],
+    "canonical_files": [
+      "app/domains/analytics/agents/analytics_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Returns salary range",
+      "References location",
+      "Includes percentiles or min/max"
+    ],
+    "anti_patterns": [
+      "Generic answer without numbers"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 10467,
+    "response": "Não consegui encontrar uma faixa salarial específica para Product Manager Sênior em São Paulo no momento. Minha confiança na busca é média e pode ser que os dados para essa combinação exata sejam limitados.\n\nPosso tentar uma busca mais ampla, talvez sem a localização específica, ou você gostaria de buscar por outro cargo?",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-20T00:29:19.292036"
+  },
+  {
+    "id": "AN-004",
+    "category": "AN",
+    "severity": "high",
+    "title": "Job performance report",
+    "prompt": "gera um parecer completo da vaga V0039 — tempo aberta, funil, riscos",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "get_job_details",
+      "get_funnel_analysis",
+      "get_pipeline_velocity"
+    ],
+    "canonical_files": [
+      "app/domains/analytics/agents/analytics_tool_registry.py",
+      "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Covers time open",
+      "Covers funnel/conversion",
+      "Identifies at least one risk or insight"
+    ],
+    "anti_patterns": [
+      "Single metric response",
+      "Cannot generate report"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 2237,
+    "response": "Com certeza! Para te dar um parecer completo da vaga V0039, vou buscar as informações sobre o tempo de abertura, a performance do funil e os possíveis riscos.\n\nPor favor, aguarde um momento enquanto eu compilo esses dados.",
+    "error": "",
+    "score": 2,
+    "flags": [],
+    "scored_at": "2026-04-20T00:29:22.033873"
+  },
+  {
+    "id": "AN-005",
+    "category": "AN",
+    "severity": "medium",
+    "title": "Time to hire analysis",
+    "prompt": "qual o tempo médio de contratação nos últimos 3 meses?",
+    "context": {
+      "scope": "Analytics",
+      "page": "analytics"
+    },
+    "expected_tools": [
+      "get_time_to_hire"
+    ],
+    "canonical_files": [
+      "app/domains/analytics/agents/analytics_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Returns numeric time value",
+      "Specifies time period (3 months)"
+    ],
+    "anti_patterns": [
+      "Cannot calculate"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 1680,
+    "response": "**Relatório de KPIs de Recrutamento — Este Mês (Abril 2026):**\n\n**Vagas:** 30 ativas | 0 pausadas | 0 fechadas (156 total)\n**Candidatos Únicos:** 150\n\n**Distribuição no Pipeline:**\n  - Novos: 0\n  - Triagem: 91\n  - Entrevista: 4\n  - Proposta: 45\n  - Contratados: 40\n  - Rejeitados: 0\n\n**Tempo Médio no Pipeline:** 11 dias\n**Taxa de Contratação:** 26.7%\n**Tempo Médio de Contratação (TTH):** 11 dias\n**Eficiência do Funil:** 40 contratados de 150 candidatos | 140 em andamento\n\n**Insight:** Taxa de contratação acima de 20% — funil saudável para o período.\n\n**Predições ML:**\n  - Previsão Time-to-Fill: **36 dias** (27-45d, 30% confiança)\n  - dentro da média do mercado\n  - Faixa Salarial Sugerida: **R$ 6,800 — R$ 9,200** (P50)\n  - Na média do mercado - competitivo",
+    "error": "",
+    "score": 3,
+    "flags": [],
+    "scored_at": "2026-04-20T00:29:24.214612"
+  },
+  {
+    "id": "AN-006",
+    "category": "AN",
+    "severity": "medium",
+    "title": "Diversity metrics",
+    "prompt": "qual o índice de diversidade das contratações deste trimestre?",
+    "context": {
+      "scope": "Analytics",
+      "page": "analytics"
+    },
+    "expected_tools": [
+      "get_diversity_metrics"
+    ],
+    "canonical_files": [
+      "app/domains/analytics/agents/analytics_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Returns diversity percentages",
+      "At least one dimension (gender/ethnicity)"
+    ],
+    "anti_patterns": [
+      "Cannot access diversity data"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 2631,
+    "response": "**Relatório de KPIs de Recrutamento — Este Mês (Abril 2026):**\n\n**Vagas:** 30 ativas | 0 pausadas | 0 fechadas (156 total)\n**Candidatos Únicos:** 150\n\n**Distribuição no Pipeline:**\n  - Novos: 0\n  - Triagem: 91\n  - Entrevista: 4\n  - Proposta: 45\n  - Contratados: 40\n  - Rejeitados: 0\n\n**Tempo Médio no Pipeline:** 11 dias\n**Taxa de Contratação:** 26.7%\n**Tempo Médio de Contratação (TTH):** 11 dias\n**Eficiência do Funil:** 40 contratados de 150 candidatos | 140 em andamento\n\n**Insight:** Taxa de contratação acima de 20% — funil saudável para o período.\n\n**Predições ML:**\n  - Previsão Time-to-Fill: **36 dias** (27-45d, 30% confiança)\n  - dentro da média do mercado\n  - Faixa Salarial Sugerida: **R$ 6,800 — R$ 9,200** (P50)\n  - Na média do mercado - competitivo",
+    "error": "",
+    "score": 2,
+    "flags": [],
+    "scored_at": "2026-04-20T00:29:27.346131"
+  },
+  {
+    "id": "MT-001",
+    "category": "MT",
+    "severity": "critical",
+    "title": "Multi-task with planning display",
+    "prompt": "pausa a vaga V0037, move todos os candidatos em triagem para reprovado, e me manda um resumo do que foi feito",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "pause_job",
+      "get_stage_candidates",
+      "move_candidate"
+    ],
+    "canonical_files": [
+      "app/orchestrator/main_orchestrator.py",
+      "app/orchestrator/agentic_loop.py"
+    ],
+    "success_criteria": [
+      "Shows plan before executing",
+      "Asks for confirmation",
+      "Executes all 3 tasks",
+      "Reports what was done"
+    ],
+    "anti_patterns": [
+      "Executes without showing plan",
+      "Only does first task"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 62,
+    "response": "Vou executar a ação **bulk_move_by_stage** para **o candidato**. Confirma?",
+    "error": "",
+    "score": 2,
+    "flags": [],
+    "scored_at": "2026-04-20T00:29:27.909323"
+  },
+  {
+    "id": "MT-002",
+    "category": "MT",
+    "severity": "high",
+    "title": "Cross-domain multi-task",
+    "prompt": "encontra os 3 melhores candidatos para a vaga de Product Manager, avança eles para entrevista e manda convite por email",
+    "context": {
+      "scope": "Sourcing",
+      "page": "sourcing"
+    },
+    "expected_tools": [
+      "match_candidates_to_job",
+      "move_candidate",
+      "send_email"
+    ],
+    "canonical_files": [
+      "app/domains/sourcing/agents/sourcing_tool_registry.py",
+      "app/domains/cv_screening/agents/pipeline_react_agent.py",
+      "app/domains/communication/agents/communication_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Executes all 3 steps in order",
+      "Confirms before write actions",
+      "Reports results"
+    ],
+    "anti_patterns": [
+      "Stops after first step",
+      "No confirmation for write actions"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 8262,
+    "response": "Para que eu possa avançar os 3 melhores candidatos para a vaga de Product Manager, preciso primeiro entender como você gostaria de identificá-los.\n\nNotei que a vaga \"Product Manager (Cópia)\" (ID: `227ba616-4553-4486-8106-7faaedd673c5`) ainda não possui nenhum candidato em pipeline.\n\nVocê gostaria que eu:\n1.  Buscasse candidatos em nosso banco de talentos com base em algumas skills ou critérios?\n2.  Ou você já tem em mente alguns candidatos e pode me passar os nomes ou IDs deles?",
+    "error": "",
+    "score": 2,
+    "flags": [],
+    "scored_at": "2026-04-20T00:29:36.672637"
+  },
+  {
+    "id": "MT-003",
+    "category": "MT",
+    "severity": "high",
+    "title": "Task interruption and correction",
+    "prompt": "não, não era isso — cancela e filtra só os candidatos com nota acima de 8",
+    "context": {
+      "scope": "Kanban",
+      "page": "kanban"
+    },
+    "expected_tools": [],
+    "canonical_files": [
+      "app/shared/prompts/interaction_patterns.py",
+      "app/orchestrator/main_orchestrator.py"
+    ],
+    "success_criteria": [
+      "Cancels previous intent",
+      "Applies new filter (score > 8)",
+      "Does not re-execute cancelled action"
+    ],
+    "anti_patterns": [
+      "Ignores negation",
+      "Applies both old and new filter"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 27121,
+    "response": "Para filtrar candidatos com nota acima de 8, preciso de mais algumas informações:\n\n1. **Qual vaga** você quer filtrar? (ou é para todas as vagas?)\n2. **Nota de qual avaliação?** Score LIA, WSI, ou outra avaliação específica?\n\nAssim busco os candidatos certos para você.",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-20T00:30:04.294829"
+  },
+  {
+    "id": "MT-004",
+    "category": "MT",
+    "severity": "medium",
+    "title": "Create job + configure WSI + source candidates",
+    "prompt": "abre uma vaga de Engenheiro de Dados, configura a triagem automática e já busca candidatos no pool",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "create_job_draft",
+      "configure_wsi_questions",
+      "search_candidates"
+    ],
+    "canonical_files": [
+      "app/domains/job_management/agents/wizard_tool_registry.py",
+      "app/domains/sourcing/agents/sourcing_tool_registry.py"
+    ],
+    "success_criteria": [
+      "Executes all 3 tasks",
+      "Sequential execution with checkpoints"
+    ],
+    "anti_patterns": [
+      "Executes in parallel without confirmation"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 6854,
+    "response": "Nenhum candidato encontrado para \"no pool\".",
+    "error": "",
+    "score": 2,
+    "flags": [],
+    "scored_at": "2026-04-20T00:30:11.649605"
+  },
+  {
+    "id": "MT-005",
+    "category": "MT",
+    "severity": "medium",
+    "title": "Report + action combo",
+    "prompt": "gera um relatório das vagas em risco e já toma as ações necessárias para cada uma",
+    "context": {
+      "scope": "Vagas",
+      "page": "gestao-vagas"
+    },
+    "expected_tools": [
+      "list_jobs",
+      "get_recruitment_kpis",
+      "get_pipeline_summary"
+    ],
+    "canonical_files": [
+      "app/domains/analytics/agents/analytics_tool_registry.py",
+      "app/orchestrator/main_orchestrator.py"
+    ],
+    "success_criteria": [
+      "Generates report first",
+      "Proposes specific actions per job",
+      "Confirms before executing each action"
+    ],
+    "anti_patterns": [
+      "Takes actions without reporting first",
+      "Generic actions"
+    ],
+    "api_ok": true,
+    "http_status": 200,
+    "latency_ms": 4904,
+    "response": "Não encontrei nenhuma vaga com alto risco no momento, o que é uma ótima notícia!\n\nIsso significa que, de acordo com as minhas análises, não há vagas em iminente perigo de estourar o SLA, candidatos \"esfriando\" de forma crítica ou gargalos graves que exijam uma intervenção imediata de alto impacto.\n\nSe quiser, posso verificar alertas de risco médio ou baixo, ou até mesmo gerar um relatório de status geral das suas vagas ativas para você ter uma visão mais completa.",
+    "error": "",
+    "score": 1,
+    "flags": [],
+    "scored_at": "2026-04-20T00:30:17.054665"
+  }
+]

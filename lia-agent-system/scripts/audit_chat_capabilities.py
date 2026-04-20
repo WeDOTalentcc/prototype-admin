@@ -27,6 +27,12 @@ os.environ.setdefault("LIA_SKIP_DB", "1")
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+# Domínios que executam actions via state-machine intent routing
+# (process_intent + _route_by_stage), em vez de _ACTION_TOOL_MAP / handler_map.
+# Para esses, a ausência de mapeamento explícito NÃO é um gap.
+_INTENT_ROUTED_DOMAINS: set[str] = {"job_creation"}
+
+
 REPORT: dict = {
     "registered_domains": {},
     "domain_dirs_unregistered": [],
@@ -193,7 +199,7 @@ def _audit_domain(did: str, registry) -> dict:
             if tid not in mapped_tools:
                 info["gaps"]["tools_orphaned_no_action"].append(tid)
 
-    if domain_mod:
+    if domain_mod and did not in _INTENT_ROUTED_DOMAINS:
         domain_src = (ROOT / "app" / "domains" / did / "domain.py").read_text(errors="ignore")
         action_handler_keys = set()
         if "handler_map = {" in domain_src or "handler_map={" in domain_src:
@@ -204,6 +210,8 @@ def _audit_domain(did: str, registry) -> dict:
         for a in info["actions"]:
             if a not in mapped_actions and a not in action_handler_keys:
                 info["gaps"]["actions_without_tool_or_handler"].append(a)
+    elif did in _INTENT_ROUTED_DOMAINS:
+        info["intent_routed"] = True
 
     for t in tools_list:
         handler = t.get("handler")

@@ -508,39 +508,28 @@
       "action_count": 11,
       "tool_count": 0,
       "actions": [
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        "",
-        ""
+        "start_wizard",
+        "approve_jd",
+        "set_salary",
+        "set_screening_mode",
+        "approve_questions",
+        "set_eligibility",
+        "configure_publish",
+        "publish_job",
+        "calibrate",
+        "wizard_status",
+        "help"
       ],
       "tools": [],
       "action_tool_map": {},
       "gaps": {
         "action_tool_map_broken": [],
         "tools_orphaned_no_action": [],
-        "actions_without_tool_or_handler": [
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          "",
-          ""
-        ],
+        "actions_without_tool_or_handler": [],
         "handlers_failing_import": []
       },
-      "errors": []
+      "errors": [],
+      "intent_routed": true
     },
     "job_management": {
       "class": "JobManagementDomain",
@@ -737,7 +726,7 @@
     },
     "sourcing": {
       "class": "SourcingDomain",
-      "action_count": 34,
+      "action_count": 36,
       "tool_count": 10,
       "actions": [
         "search_candidates",
@@ -773,7 +762,9 @@
         "update_candidate_stage",
         "reject_candidate",
         "shortlist_candidate",
-        "add_candidate_to_vacancy"
+        "add_candidate_to_vacancy",
+        "get_candidate_stats",
+        "get_candidate_history"
       ],
       "tools": [
         "sourcing_update_candidate_stage",
@@ -797,14 +788,13 @@
         "global_search": "sourcing_search_candidates",
         "filter_candidates": "sourcing_search_candidates",
         "compare_candidates": "sourcing_get_candidate_details",
-        "assess_market": "sourcing_get_talent_quality"
+        "assess_market": "sourcing_get_talent_quality",
+        "get_candidate_stats": "sourcing_get_candidate_stats",
+        "get_candidate_history": "sourcing_get_candidate_history"
       },
       "gaps": {
         "action_tool_map_broken": [],
-        "tools_orphaned_no_action": [
-          "sourcing_get_candidate_stats",
-          "sourcing_get_candidate_history"
-        ],
+        "tools_orphaned_no_action": [],
         "actions_without_tool_or_handler": [],
         "handlers_failing_import": []
       },
@@ -929,12 +919,12 @@
   "gaps_by_domain": {},
   "global_summary": {
     "total_registered": 18,
-    "total_actions": 279,
+    "total_actions": 281,
     "total_tools": 93,
-    "domains_with_gaps": 3,
+    "domains_with_gaps": 1,
     "broken_mappings": 0,
-    "orphan_tools": 3,
-    "actions_no_handler": 11,
+    "orphan_tools": 1,
+    "actions_no_handler": 0,
     "broken_handlers": 0
   },
   "domain_dirs_total": 61,

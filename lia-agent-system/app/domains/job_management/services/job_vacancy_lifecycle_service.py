@@ -30,12 +30,76 @@ from app.domains.job_management.repositories.job_vacancy_crud_repository import 
 logger = logging.getLogger(__name__)
 
 _UPDATABLE_FIELDS: set[str] = {
+    # Identidade básica
     "title",
     "department",
     "location",
     "work_model",
+    "employment_type",
+    "seniority_level",
+    # Descrição e requisitos
     "description",
+    "requirements",
+    "technical_requirements",
+    "languages",
+    "behavioral_competencies",
+    # Remuneração
+    "salary",
+    "salary_range",
+    "bonus_range",
+    "benefits",
+    # Status e workflow
     "status",
+    "stage",
+    "priority",
+    "urgency_level",
+    # Datas
+    "open_date",
+    "deadline",
+    "deadline_screening",
+    "deadline_shortlist",
+    "deadline_closing",
+    # Pessoas
+    "manager",
+    "manager_email",
+    "recruiter",
+    "recruiter_email",
+    # Estrutura e processo
+    "organizational_structure",
+    "interview_stages",
+    "screening_questions",
+    "disabled_eligibility_question_ids",
+    "eligibility_questions",
+    "pipeline_config",
+    # Confidencialidade e ação afirmativa
+    "is_confidential",
+    "is_affirmative",
+    "affirmative_criteria_primary",
+    "affirmative_criteria_secondary",
+    "affirmative_description",
+    "affirmative_document_required",
+    "affirmative_document_types",
+    "visibility",
+    "access_list",
+    "masked_company_name",
+    "exclude_from_sync",
+    "whatsapp_template_type",
+    "confidentiality_config",
+    # Orçamento
+    "budget",
+    # Tags e segmentação
+    "tags",
+    "hiring_process",
+    "target_audience",
+    "target_sector",
+    "target_segment",
+    # Próximas ações e governança
+    "next_actions",
+    "timeline",
+    "governance_rules",
+    "screening_config",
+    # JD enriquecido
+    "enriched_jd",
 }
 
 

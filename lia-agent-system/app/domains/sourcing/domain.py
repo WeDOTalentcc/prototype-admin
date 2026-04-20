@@ -34,6 +34,8 @@ _ACTION_TOOL_MAP: dict[str, str] = {
     "filter_candidates": "sourcing_search_candidates",
     "compare_candidates": "sourcing_get_candidate_details",
     "assess_market": "sourcing_get_talent_quality",
+    "get_candidate_stats": "sourcing_get_candidate_stats",
+    "get_candidate_history": "sourcing_get_candidate_history",
 }
 
 
