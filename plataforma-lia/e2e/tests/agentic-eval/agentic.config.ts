@@ -33,8 +33,22 @@ export default defineConfig({
     viewport: { width: 1366, height: 900 },
     ignoreHTTPSErrors: true,
     ...(systemChromium
-      ? { launchOptions: { executablePath: systemChromium, args: ["--no-sandbox", "--disable-setuid-sandbox"] } }
-      : { launchOptions: { args: ["--no-sandbox", "--disable-setuid-sandbox"] } }),
+      ? { launchOptions: {
+          executablePath: systemChromium,
+          args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--disable-extensions",
+            "--disable-background-networking",
+            "--disable-sync",
+            "--metrics-recording-only",
+            "--no-first-run",
+            "--js-flags=--max-old-space-size=512",
+          ],
+        } }
+      : { launchOptions: { args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage", "--disable-gpu"] } }),
   },
 
   projects: [
