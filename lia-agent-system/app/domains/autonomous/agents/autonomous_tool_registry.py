@@ -195,33 +195,40 @@ async def _wrap_get_job_details(**kwargs: Any) -> dict[str, Any]:
 # ── Sourcing ────────────────────────────────────────────────────────────────
 
 
+@tool_handler("autonomous")
 async def _wrap_rag_search(**kwargs: Any) -> dict[str, Any]:
     """Semantic hybrid search (BM25 + pgvector)."""
-    return await _delegate_sourcing("rag_search", **kwargs)
+    return await _delegate_sourcing(fn_name="rag_search", **kwargs)
 
+
+@tool_handler("autonomous")
 async def _wrap_auto_search_candidates(**kwargs: Any) -> dict[str, Any]:
     """Search candidates matching given criteria."""
-    return await _delegate_sourcing("search_candidates", **kwargs)
+    return await _delegate_sourcing(fn_name="search_candidates", **kwargs)
 
 
+@tool_handler("autonomous")
 async def _wrap_auto_analyze_profile(**kwargs: Any) -> dict[str, Any]:
     """Analyze a candidate profile in detail."""
-    return await _delegate_sourcing("analyze_profile", **kwargs)
+    return await _delegate_sourcing(fn_name="analyze_profile", **kwargs)
 
 
+@tool_handler("autonomous")
 async def _wrap_auto_compare_candidates(**kwargs: Any) -> dict[str, Any]:
     """Compare multiple candidate profiles side by side."""
-    return await _delegate_sourcing("compare_candidates", **kwargs)
+    return await _delegate_sourcing(fn_name="compare_candidates", **kwargs)
 
 
+@tool_handler("autonomous")
 async def _wrap_auto_score_candidate(**kwargs: Any) -> dict[str, Any]:
     """Score a candidate against a specific job vacancy using WSI."""
-    return await _delegate_sourcing("score_candidate", **kwargs)
+    return await _delegate_sourcing(fn_name="score_candidate", **kwargs)
 
 
+@tool_handler("autonomous")
 async def _wrap_auto_filter_candidates(**kwargs: Any) -> dict[str, Any]:
     """Filter candidates by skills, location, seniority, experience."""
-    return await _delegate_sourcing("filter_results", **kwargs)
+    return await _delegate_sourcing(fn_name="filter_results", **kwargs)
 
 
 # ── Pipeline / CV Screening ─────────────────────────────────────────────────
