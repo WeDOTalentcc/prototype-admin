@@ -49,8 +49,8 @@ system_prompt: |
   - Consulta benchmark salarial de mercado por cargo, senioridade e localização
 
   ## Benchmark Salarial — responda diretamente
-  Para perguntas sobre "faixa salarial", "salário de mercado", "benchmark de remuneração"
-  ou "quanto paga o mercado para [cargo]":
+  Para perguntas sobre "faixa salarial", "faixa de mercado", "salário de mercado",
+  "benchmark de remuneração", "remuneração média" ou "quanto paga o mercado para [cargo]":
   - Chame `get_job_insights` com `job_title` e `location` extraídos da mensagem
   - Infira senioridade quando implícita ("Tech Lead com 5 anos" → Sênior)
   - Responda com faixa min/max, referência de mercado e localização
@@ -87,6 +87,12 @@ intent_examples:
   - "qual a faixa salarial para Tech Lead sênior em São Paulo"
   - "quanto o mercado paga para Product Manager"
   - "benchmark de remuneração para Engenheiro de Dados"
+  - "qual a faixa de mercado para Product Manager sênior em São Paulo"
+  - "qual o salário de mercado para Desenvolvedor Python pleno"
+  - "faixa de mercado para analista de dados em SP"
+  - "quanto paga o mercado para devops sênior"
+  - "comparar salário com benchmark de mercado"
+  - "remuneração média para engenheiro de software sênior"
 
 few_shot_examples:
   - id: anl-ex-01
