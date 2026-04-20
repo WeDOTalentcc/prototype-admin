@@ -472,74 +472,6 @@ updates in `docs/specs/CANONICAL_SOURCES_SPEC.md` and the root
 
 ---
 
-## ADR-017: Canonical Observability Layer (2026-04-17) [ENFORCED by CI]
-
-**Rule:** All tracing, structured logging, LLM callbacks, agent monitoring,
-drift detection, token tracking/budget, and LangSmith configuration live in
-**one** package: `app/shared/observability/`. There is no other valid home.
-
-**Background.** Task #343 collapsed eleven scattered modules — previously
-spread across `app/shared/tracing.py`, `app/shared/llm/callbacks.py`,
-`app/shared/governance/`, `app/shared/services/`,
-`app/domains/{ai,lgpd,analytics,credits}/services/`, and
-`app/config/langsmith.py` — into a single canonical package. The legacy
-files and the five re-export shims that briefly bridged the move were then
-deleted to leave a single source of truth.
-
-**Canonical layout — `app/shared/observability/`:**
-
-| Concern | Module |
-|---|---|
-| Sentry / OpenTelemetry tracing | `tracing.py` |
-| Structured logging (structlog) | `structured_logging.py` |
-| LangChain LLM callback handlers | `callbacks.py` |
-| Agent monitoring service | `agent_monitoring_service.py` |
-| Agent health alerting | `agent_health_alert_service.py` |
-| Model drift detection | `model_drift_service.py` |
-| Drift alerting | `drift_alert_service.py` |
-| Token usage tracking | `token_tracking_service.py` |
-| Token / spend budget | `token_budget_service.py` |
-| WSI-specific observability | `wsi_observability.py` |
-| LangSmith configuration | `langsmith.py` |
-
-**Correct imports:**
-```python
-from app.shared.observability.tracing import setup_tracing
-from app.shared.observability.callbacks import LIACallbackHandler
-from app.shared.observability.langsmith import configure_langsmith
-from app.shared.observability.agent_monitoring_service import AgentMonitoringService
-from app.shared.observability.token_tracking_service import TokenTrackingService
-from app.shared.observability.token_budget_service import TokenBudgetService
-from app.shared.observability.model_drift_service import ModelDriftService
-from app.shared.observability.drift_alert_service import DriftAlertService
-from app.shared.observability.wsi_observability import WSIObservability
-```
-
-**Forbidden — every legacy path is rejected by CI:**
-- `from app.shared.tracing …`
-- `from app.shared.structured_logging …`
-- `from app.shared.llm.callbacks …`
-- `from app.shared.governance.agent_monitoring_service …`
-- `from app.shared.services.{agent_health_alert_service,model_drift_service,drift_alert_service,token_tracking_service,token_budget_service} …`
-- `from app.domains.ai.services.model_drift_service …`
-- `from app.domains.lgpd.services.drift_alert_service …`
-- `from app.domains.analytics.services.{token_tracking_service,wsi_observability,agent_monitoring_service} …`
-- `from app.domains.credits.services.token_budget_service …`
-- `from app.config.langsmith …`
-
-**Enforcement:** `scripts/check_forbidden_imports.py` (pre-commit hook **G5**
-+ CI). The script's `FORBIDDEN_PATTERNS` list pins all 11 legacy paths; any
-new code reintroducing them fails the build with an actionable diff.
-
-**See also:** `docs/CANONICAL_SOURCES_SPEC.md` for the full module-level
-mapping and the rationale behind the consolidation.
-
----
-
-*Last updated: 2026-04-17 | ADR-017: canonical observability layer*
-
----
-
 O sistema de LLM opera via **LLM Factory**, composto por três camadas canônicas:
 
 | Camada | Classe | Responsabilidade |
@@ -597,6 +529,7 @@ desses 8 e listar aqui.
 
 ---
 
+<<<<<<< HEAD
 ## ADR-019: Chat-Capabilities Audit Gate + Domain-Resolver Observability (2026-04-20) [ENFORCED by CI]
 
 Closes Fase 2C P0-2 (silent fallback) and P2-4 (regression guard) — Task #672.
@@ -652,3 +585,74 @@ capabilities"). The full Fase 2C audit appendix lives in
 
 *Last updated: 2026-04-20 | ADR-019: chat-capabilities audit gate + resolver observability*
 >>>>>>> c634fcbdc (Task #672 — DEFAULT_DOMAIN routing warning + chat-capabilities CI gate)
+=======
+## ADR-019: Tenant Isolation in Tool Handlers (2026-04-20) [ENFORCED by CI]
+
+**Decision.** Every public function defined under `app/domains/*/tools/` MUST
+either (a) carry the `@tool_handler(...)` decorator from
+`app/shared/tool_handler.py` or (b) live in a file that declares
+`# tenant-isolation: manual: <reason>` in its header AND is grandfathered into
+`MANUAL_ALLOWLIST` inside `scripts/check_tool_tenant_isolation.py`. New
+modules MUST take path (a). Path (b) exists only so the legacy hand-rolled
+`_extract_context(kwargs)` files written before `@tool_handler` can be
+migrated incrementally without leaving the rule unenforced in the meantime.
+
+**Why.** The Phase 2C audit flagged P0-1 ("handlers without `@tool_handler`
+can leak data cross-tenant") as the highest-priority residual. Five separate
+tasks were tracking pieces of the same problem (#329 tenant-isolation guard,
+#335 retire legacy demo-tenant shim, #336 demo-tenant column UUID, #359 fix
+demo company id in auth guard, #361 CI check for new tools skipping tenant
+isolation). They mutated the same auth/middleware/tools surface and were
+collapsed into Task #673; this ADR is the consolidated outcome.
+
+**Inventory.** `scripts/audit_tenant_isolation_handlers.py` produces the full
+classification (`decorator` / `manual` / `register_helper` / `private` /
+`UNPROTECTED`). Snapshot at adoption (2026-04-20):
+`docs/audits/tenant_isolation_handlers_2026-04-20.md`. Result: 0
+`UNPROTECTED` handlers, 48 on `@tool_handler`, 77 in 23 grandfathered files
+under the `manual` annotation. The grandfathered count is expected to fall to
+zero as each file is migrated; do not add new entries to `MANUAL_ALLOWLIST`.
+
+**Demo company contract.**
+- Canonical id: `DEMO_COMPANY_UUID = "00000000-0000-4000-a000-000000000001"`,
+  defined in `app/core/tenant.py` and consumed by `ensure_demo_user`
+  (ADR-013). Closes #359.
+- The legacy alias map (`DEMO_COMPANY_LEGACY_ALIASES` +
+  `normalize_demo_company_id`) is dev/staging only and carries a hard
+  deletion deadline of **2026-07-31** in the source. After that date the
+  shim and its callers must be removed. Closes #335.
+- The `Company.id` column is already `UUID(as_uuid=True)` in `lia_models.company`,
+  so no migration is required for #336 — confirmed by the audit and recorded
+  here so it does not get re-opened.
+
+**Cross-tenant regression coverage.** Existing pytest modules pin the
+contract (sample, not exhaustive):
+
+- `tests/security/test_tenant_isolation.py` — `get_verified_company_id` JWT
+  vs header/query reconciliation
+- `tests/security/test_red_team_multi_tenant.py` — adversarial cross-tenant
+  attempts
+- `tests/integration/test_multi_tenant_isolation.py`,
+  `tests/integration/test_candidates_tenant_isolation.py`,
+  `tests/integration/test_job_readiness_tenant_isolation.py`
+- `tests/contract/test_multi_tenant_isolation_contract.py`
+- `tests/e2e/test_tenant_isolation_e2e.py`
+- `tests/shared/test_tool_handler_isolation.py` — fail-closed semantics of
+  the decorator itself
+
+**Enforcement.** `scripts/check_tool_tenant_isolation.py` (pre-commit hook
+`tool-tenant-isolation` + CI). Companion guards already in place:
+`check_require_company_exemptions.py` (F8 — every `require_company=False`
+needs a `kept:` comment + doc entry) and `check_no_legacy_tool_decorator.py`
+(S7.3 — no `from langchain_core.tools import tool` in domain tools).
+
+```bash
+python3 scripts/check_tool_tenant_isolation.py
+python3 scripts/audit_tenant_isolation_handlers.py
+python3 scripts/audit_tenant_isolation_handlers.py --markdown > docs/audits/...
+```
+
+*Closes tasks #329, #335, #336, #359, #361.*
+
+*Last updated: 2026-04-20 | ADR-019: Tenant isolation consolidation (Task #673)*
+>>>>>>> e14118576 (Task #673: Consolidate tenant-isolation residual (closes #329, #335, #336, #359, #361))
