@@ -162,6 +162,12 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
 
   const handleStartWizard = () => {
     setShowSetupIntroModal(false)
+    if (typeof window !== "undefined") {
+      // Task #712: stop swallowing the setup intent — kick off the
+      // conversational onboarding flow (OnboardingChatPage) instead of
+      // dropping the user back into an empty dashboard.
+      window.location.href = "/onboarding"
+    }
   }
 
   const handleSkipSetup = () => {

@@ -193,16 +193,54 @@ export default function SettingsPageEnhanced() {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['minha-empresa']))
 
   useEffect(() => {
-    const handler = (e: Event) => {
+    const openTabHandler = (e: Event) => {
       const detail = (e as CustomEvent).detail
+      if (typeof detail !== 'string') return
       if (detail === 'alertas') {
         setActiveSection('comunicacao-alertas')
         setActiveSubsection('')
         setExpandedSections(new Set(['comunicacao-alertas']))
+        return
+      }
+      const known = settingsSections.find((s) => s.id === detail)
+      if (known) {
+        setActiveSection(detail)
+        setActiveSubsection('')
+        setExpandedSections((prev) => new Set([...Array.from(prev), detail]))
       }
     }
-    window.addEventListener('settings-open-tab', handler)
-    return () => window.removeEventListener('settings-open-tab', handler)
+
+    // Task #712 — bridge bidirecional chat<>configurações para as 7 actions
+    // de company_settings. Quando a LIA executa uma action via chat, ela
+    // dispara este evento e a tab correspondente abre destacando o campo.
+    const actionHandler = (e: Event) => {
+      const detail = (e as CustomEvent).detail || {}
+      const section = detail.section || 'minha-empresa'
+      const known = settingsSections.find((s) => s.id === section)
+      if (!known) return
+      setActiveSection(section)
+      setActiveSubsection('')
+      setExpandedSections((prev) => new Set([...Array.from(prev), section]))
+      if (detail.field && typeof window !== 'undefined') {
+        window.requestAnimationFrame(() => {
+          const el = document.querySelector(`[data-field="${detail.field}"]`) as HTMLElement | null
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            el.dataset.recentlyHighlighted = 'true'
+            window.setTimeout(() => {
+              if (el) delete el.dataset.recentlyHighlighted
+            }, 3000)
+          }
+        })
+      }
+    }
+
+    window.addEventListener('settings-open-tab', openTabHandler)
+    window.addEventListener('lia:settings-action', actionHandler)
+    return () => {
+      window.removeEventListener('settings-open-tab', openTabHandler)
+      window.removeEventListener('lia:settings-action', actionHandler)
+    }
   }, [])
   
   const [sectionCompletion, setSectionCompletion] = useState<Record<string, number>>({

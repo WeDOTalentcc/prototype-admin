@@ -28,6 +28,7 @@ import { DashboardChatPanel } from "@/components/unified-chat"
 import { GlobalSearchModal } from "@/components/global-search-modal"
 import { PipelineOverviewPage } from "@/components/pages/pipeline-overview-page"
 import { ModulesPage } from "@/components/pages/modules-page"
+import { SetupProgressBanner } from "@/components/onboarding/SetupProgressBanner"
 
 interface DashboardAppProps {
   initialPage?: string
@@ -267,6 +268,11 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
       />
 
       <main id="main-content" className="flex-1 flex flex-col overflow-hidden" aria-label={currentPage}>
+        {currentPage !== "Chat LIA" && currentPage !== "Configurações" && (
+          <div className="px-4 pt-3">
+            <SetupProgressBanner />
+          </div>
+        )}
         <div className="flex-1 min-h-0 overflow-hidden flex">
           <div className="flex-1 min-w-0 overflow-hidden">
             {renderCurrentPage()}

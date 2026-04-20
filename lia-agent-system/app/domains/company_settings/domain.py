@@ -156,39 +156,185 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
             action_id=action_id,
         )
 
-    # Falha explicita: ainda NAO existe um servico de WRITE conversacional para
-    # cada bloco de configuracao da empresa (perfil/cultura/tech/beneficios/workforce).
-    # As leituras vivem em `CompanyConfigurationService` e os repositorios
-    # (`CompanyBenefitRepository` etc.) escrevem entidades isoladas, mas nao ha
-    # um orquestrador que receba campos parciais do chat e faca merge seguro
-    # com auditoria + invalidacao de cache.
-    # Retornamos error_response (sem mascarar com mensagem de sucesso falsa).
-    def _configure_unavailable(self, action_id: str, section: str) -> DomainResponse:
-        return DomainResponse.error_response(
-            error=(
-                f"Configuracao de '{section}' por chat ainda nao esta disponivel: "
-                "ainda nao existe um servico de escrita conversacional para esse bloco. "
-                "Use o painel de Configuracoes da empresa por enquanto."
-            ),
+    # WRITE conversacional — Task #712
+    # As tools `_wrap_save_company_section`, `_wrap_save_company_field` e
+    # `_wrap_import_workforce_plan` ja existem em
+    # `app.domains.company_settings.agents.company_tool_registry` e ja aplicam
+    # FairnessGuard + Audit + tier validation. Os 5 handlers abaixo apenas
+    # delegam para essas tools, transformando a resposta em DomainResponse e
+    # pedindo clarification quando faltam campos.
+
+    _SECTION_FIELD_HINTS: dict[str, dict[str, list[str]]] = {
+        "configure_profile": {
+            "section": "profile",
+            "fields": ["name", "trading_name", "cnpj", "website", "hr_email",
+                       "hr_phone", "address", "industry", "company_size",
+                       "employee_count", "founded_year", "linkedin_url", "logo_url"],
+            "label": "perfil da empresa",
+        },
+        "configure_culture": {
+            "section": "culture",
+            "fields": ["mission", "vision", "values", "core_competencies",
+                       "evp_bullets", "work_model", "employment_types",
+                       "team_dynamics", "leadership_style", "dei_initiatives",
+                       "sustainability", "social_impact"],
+            "label": "cultura e EVP",
+        },
+        "configure_tech_stack": {
+            "section": "culture",
+            "fields": ["tech_stack", "engineering_culture", "default_languages"],
+            "label": "tech stack",
+        },
+        "configure_benefits": {
+            "section": "culture",
+            "fields": ["benefits"],
+            "label": "beneficios",
+        },
+    }
+
+    def _extract_section_payload(self, action_id: str, params: dict[str, Any]) -> dict[str, Any]:
+        hints = self._SECTION_FIELD_HINTS.get(action_id, {})
+        allowed = set(hints.get("fields", []))
+        payload: dict[str, Any] = {}
+        if isinstance(params.get("data"), dict):
+            for k, v in params["data"].items():
+                if k in allowed and v not in (None, "", []):
+                    payload[k] = v
+        for k, v in params.items():
+            if k in allowed and v not in (None, "", []):
+                payload[k] = v
+        return payload
+
+    async def _delegate_section_write(
+        self,
+        action_id: str,
+        params: dict[str, Any],
+        context: DomainContext,
+    ) -> DomainResponse:
+        hints = self._SECTION_FIELD_HINTS[action_id]
+        section = hints["section"]
+        label = hints["label"]
+        company_id = (params.get("company_id") or context.tenant_id or "").strip()
+        if not company_id:
+            return DomainResponse.error_response(
+                error="company_id ausente — nao foi possivel identificar a empresa.",
+                domain_id=self.domain_id,
+                action_id=action_id,
+            )
+
+        payload = self._extract_section_payload(action_id, params)
+        if not payload:
+            return DomainResponse.clarification_response(
+                question=(
+                    f"Quais campos de {label} voce quer atualizar? "
+                    f"Posso salvar: {', '.join(hints['fields'][:6])}."
+                ),
+                domain_id=self.domain_id,
+                action_id=action_id,
+            )
+
+        try:
+            from app.domains.company_settings.agents.company_tool_registry import (
+                _wrap_save_company_section,
+            )
+            result = await _wrap_save_company_section(
+                company_id=company_id,
+                section=section,
+                data=payload,
+                user_id=context.user_id or "system",
+            )
+        except Exception as exc:
+            logger.exception("[company_settings] %s delegate failed: %s", action_id, exc)
+            return DomainResponse.error_response(
+                error=f"Falha ao salvar {label}: {exc}",
+                domain_id=self.domain_id,
+                action_id=action_id,
+            )
+
+        if not result.get("success"):
+            return DomainResponse.error_response(
+                error=result.get("message") or f"Falha ao salvar {label}.",
+                data=result.get("data") or {},
+                domain_id=self.domain_id,
+                action_id=action_id,
+            )
+
+        return DomainResponse.success_response(
+            message=result.get("message") or f"{label.capitalize()} atualizado(a).",
+            data={
+                **(result.get("data") or {}),
+                "navigation_hint": {"page": "Company Settings", "section": "minha-empresa"},
+            },
             domain_id=self.domain_id,
             action_id=action_id,
-            metadata={"navigation_hint": {"page": "Company Settings", "section": section}},
+            suggestions=["Abrir tela de Configuracoes", "Continuar onboarding"],
         )
 
     async def _handle_configure_profile(self, params, context):
-        return self._configure_unavailable("configure_profile", "perfil")
+        return await self._delegate_section_write("configure_profile", params, context)
 
     async def _handle_configure_culture(self, params, context):
-        return self._configure_unavailable("configure_culture", "cultura")
+        return await self._delegate_section_write("configure_culture", params, context)
 
     async def _handle_configure_tech_stack(self, params, context):
-        return self._configure_unavailable("configure_tech_stack", "tech_stack")
+        return await self._delegate_section_write("configure_tech_stack", params, context)
 
     async def _handle_configure_benefits(self, params, context):
-        return self._configure_unavailable("configure_benefits", "beneficios")
+        return await self._delegate_section_write("configure_benefits", params, context)
 
     async def _handle_configure_workforce(self, params, context):
-        return self._configure_unavailable("configure_workforce", "workforce")
+        company_id = (params.get("company_id") or context.tenant_id or "").strip()
+        if not company_id:
+            return DomainResponse.error_response(
+                error="company_id ausente — nao foi possivel identificar a empresa.",
+                domain_id=self.domain_id,
+                action_id="configure_workforce",
+            )
+        plan_data = params.get("plan_data") or params.get("plan") or []
+        if isinstance(plan_data, dict):
+            plan_data = [plan_data]
+        if not plan_data:
+            return DomainResponse.clarification_response(
+                question=(
+                    "Me envie o planejamento de contratacoes como uma lista de "
+                    "{department, role, quantity, deadline, seniority}."
+                ),
+                domain_id=self.domain_id,
+                action_id="configure_workforce",
+            )
+        try:
+            from app.domains.company_settings.agents.company_tool_registry import (
+                _wrap_import_workforce_plan,
+            )
+            result = await _wrap_import_workforce_plan(
+                company_id=company_id,
+                plan_data=plan_data,
+                user_id=context.user_id or "system",
+            )
+        except Exception as exc:
+            logger.exception("[company_settings] configure_workforce delegate failed: %s", exc)
+            return DomainResponse.error_response(
+                error=f"Falha ao importar planejamento: {exc}",
+                domain_id=self.domain_id,
+                action_id="configure_workforce",
+            )
+        if not result.get("success"):
+            return DomainResponse.error_response(
+                error=result.get("message") or "Falha ao importar planejamento.",
+                data=result.get("data") or {},
+                domain_id=self.domain_id,
+                action_id="configure_workforce",
+            )
+        return DomainResponse.success_response(
+            message=result.get("message") or "Planejamento importado.",
+            data={
+                **(result.get("data") or {}),
+                "navigation_hint": {"page": "Company Settings", "section": "minha-empresa"},
+            },
+            domain_id=self.domain_id,
+            action_id="configure_workforce",
+            suggestions=["Revisar plano de contratacoes"],
+        )
 
     @staticmethod
     def _is_safe_public_url(url: str) -> tuple[bool, str]:
@@ -315,16 +461,123 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
     async def _handle_process_document(
         self, params: dict[str, Any], context: DomainContext
     ) -> DomainResponse:
-        # Nao existe servico backend para extrair dados estruturados de
-        # documentos institucionais (PDF/DOCX) e gravar no perfil. Falhamos
-        # explicitamente em vez de fingir sucesso.
-        return DomainResponse.error_response(
-            error=(
-                "Processamento de documentos institucionais por chat ainda nao "
-                "esta disponivel: nao ha pipeline de extracao + gravacao no "
-                "perfil da empresa. Anexe o documento no painel de Configuracoes."
-            ),
+        """Pipeline de processamento de documento institucional — Task #712.
+
+        Aceita texto pre-extraido (`document_text`) OU base64 de PDF/DOCX
+        (`document_b64` + `document_format`). Faz extracao de texto se
+        necessario, passa por FairnessGuard + PII via tool ja existente e
+        retorna campos esperados para revisao humana antes de gravar.
+        """
+        company_id = (params.get("company_id") or context.tenant_id or "").strip()
+        if not company_id:
+            return DomainResponse.error_response(
+                error="company_id ausente — nao foi possivel identificar a empresa.",
+                domain_id=self.domain_id,
+                action_id="process_document",
+            )
+
+        document_text = (params.get("document_text") or "").strip()
+        document_type = params.get("document_type") or "general"
+        if not document_text:
+            b64 = params.get("document_b64")
+            fmt = (params.get("document_format") or "").lower()
+            if b64 and fmt in ("pdf", "docx", "txt"):
+                try:
+                    import base64
+                    raw = base64.b64decode(b64)
+                    if fmt == "txt":
+                        document_text = raw.decode("utf-8", errors="ignore")
+                    elif fmt == "pdf":
+                        try:
+                            from pypdf import PdfReader
+                            from io import BytesIO
+                            reader = PdfReader(BytesIO(raw))
+                            document_text = "\n".join(
+                                (p.extract_text() or "") for p in reader.pages
+                            )
+                        except Exception as exc:
+                            return DomainResponse.error_response(
+                                error=f"Falha ao extrair texto do PDF: {exc}",
+                                domain_id=self.domain_id,
+                                action_id="process_document",
+                            )
+                    elif fmt == "docx":
+                        try:
+                            from docx import Document  # type: ignore
+                            from io import BytesIO
+                            doc = Document(BytesIO(raw))
+                            document_text = "\n".join(p.text for p in doc.paragraphs)
+                        except Exception as exc:
+                            return DomainResponse.error_response(
+                                error=f"Falha ao extrair texto do DOCX: {exc}",
+                                domain_id=self.domain_id,
+                                action_id="process_document",
+                            )
+                except Exception as exc:
+                    return DomainResponse.error_response(
+                        error=f"Documento invalido: {exc}",
+                        domain_id=self.domain_id,
+                        action_id="process_document",
+                    )
+            else:
+                return DomainResponse.clarification_response(
+                    question=(
+                        "Me envie o texto do documento (campo `document_text`) "
+                        "ou um arquivo base64 com `document_b64` + "
+                        "`document_format` (pdf, docx ou txt)."
+                    ),
+                    domain_id=self.domain_id,
+                    action_id="process_document",
+                )
+
+        if not document_text.strip():
+            return DomainResponse.error_response(
+                error="O documento nao contem texto extraivel.",
+                domain_id=self.domain_id,
+                action_id="process_document",
+            )
+
+        try:
+            from app.domains.company_settings.agents.company_tool_registry import (
+                _wrap_process_uploaded_document,
+            )
+            result = await _wrap_process_uploaded_document(
+                company_id=company_id,
+                document_text=document_text,
+                document_type=document_type,
+                user_id=context.user_id or "system",
+            )
+        except Exception as exc:
+            logger.exception("[company_settings] process_document delegate failed: %s", exc)
+            return DomainResponse.error_response(
+                error=f"Falha ao processar documento: {exc}",
+                domain_id=self.domain_id,
+                action_id="process_document",
+            )
+
+        if not result.get("success"):
+            return DomainResponse.error_response(
+                error=result.get("message") or "Falha ao processar documento.",
+                data=result.get("data") or {},
+                domain_id=self.domain_id,
+                action_id="process_document",
+            )
+
+        data = result.get("data") or {}
+        expected = data.get("expected_fields") or []
+        msg = (
+            f"{result.get('message') or 'Documento processado.'} "
+            f"Quer que eu salve {', '.join(expected[:5]) or 'os campos extraidos'}? "
+            "Confirme antes — gravacao requer aprovacao humana (LGPD Art. 8)."
+        )
+        return DomainResponse.success_response(
+            message=msg,
+            data={
+                **data,
+                "requires_human_approval": True,
+                "navigation_hint": {"page": "Company Settings", "section": "minha-empresa"},
+            },
             domain_id=self.domain_id,
             action_id="process_document",
-            metadata={"navigation_hint": {"page": "Company Settings", "section": "documentos"}},
+            suggestions=["Revisar campos extraidos", "Confirmar gravacao"],
         )

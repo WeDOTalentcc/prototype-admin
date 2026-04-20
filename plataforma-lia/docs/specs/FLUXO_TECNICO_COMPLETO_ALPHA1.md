@@ -374,6 +374,110 @@ Legenda: ● ativo na etapa · ◐ disponível mas precisa ativar · — não se
 
 ---
 
+## E0.5 — ONBOARDING PROATIVO + CONFIGURAÇÕES 100% CONECTADAS — 7 ACTIONS
+
+> **Objetivo.** Garantir que toda configuração da empresa (perfil, cultura, tech stack, benefícios, workforce, análise de site, processamento de documento) seja executável **tanto pelo painel `/configuracoes` quanto pela LIA via chat**, com FairnessGuard + AuditTrail + tier validation aplicados de forma idêntica nos dois caminhos. Sem duplicação de lógica de escrita: o domínio `company_settings` delega 100% para as tools canônicas em `agents/company_tool_registry.py`.
+
+### A. Catálogo das 7 actions canônicas
+
+Domain: `lia-agent-system/app/domains/company_settings/domain.py` (`CompanySettingsDomain`).
+
+| Action ID                | Tool delegada (registry)              | Section UI                | Tier de aprovação                |
+| ------------------------ | ------------------------------------- | ------------------------- | -------------------------------- |
+| `configure_profile`      | `_wrap_save_company_section('profile')` | Minha Empresa › Perfil    | TIER 1 para `cnpj`/`name` pós-setup |
+| `configure_culture`      | `_wrap_save_company_section('culture')` | Minha Empresa › Cultura   | TIER 2 (humano + audit)          |
+| `configure_tech_stack`   | `_wrap_save_company_section('culture')` | Minha Empresa › Tech      | TIER 2                           |
+| `configure_benefits`     | `_wrap_save_company_section('culture')` | Minha Empresa › Benefícios | TIER 2                           |
+| `configure_workforce`    | `_wrap_import_workforce_plan`         | Minha Empresa › Workforce | TIER 2 (audit detalhado)         |
+| `analyze_website`        | `_wrap_analyze_company_website` (Apify) | Minha Empresa (CTA topo)  | TIER 3 — humano confirma antes de gravar |
+| `process_document`       | `_wrap_process_uploaded_document`      | Minha Empresa (upload)    | TIER 3 — `requires_human_approval=True` |
+
+**Princípio canônico (anti-duplicação).** Os handlers do `domain.py` **não** instanciam serviços de gravação. Cada `_handle_configure_*` chama `_delegate_section_write` que invoca diretamente `_wrap_save_company_section`. Assim, a passagem por FairnessGuard L1+L2+L3, PII Masking, AuditTrail e tier validation é **a mesma** em chat e em UI — não há um "atalho conversacional" sem governança.
+
+### B. Pipeline conversacional (chat → action → painel)
+
+```
+Usuário (chat) ──► CascadedRouter (E0 §A)
+                  └─ FastRouter (regex) → company_settings  (precisão pt-BR)
+                  └─ LLM Router (gpt-5-mini) → fallback
+                  ──► CompanySettingsDomain.execute_action(action_id, params, ctx)
+                       ├─ params completos? → _wrap_save_company_section(...)
+                       │                       ├─ FairnessGuard L1+L2+L3
+                       │                       ├─ PII Masking + Audit (LGPD Art. 37)
+                       │                       └─ commit no `CompanyConfigurationService`
+                       └─ params incompletos? → DomainResponse.clarification_response(...)
+                                                  (LIA pergunta os campos faltantes)
+                       ──► resposta inclui `navigation_hint: { page, section }`
+Frontend (chat) ──► dispatch CustomEvent('lia:settings-action', { actionId, section, field })
+                    + dispatch CustomEvent('settings-open-tab', section)
+SettingsPageEnhanced ──► listener abre a tab + scrolla até `[data-field=...]`
+                          + flag `recentlyHighlighted` por 3s (highlight visual)
+```
+
+**Hook canônico no frontend**: `plataforma-lia/src/hooks/settings/use-settings-conversational.ts` exporta `useSettingsConversational()` com `triggerAction(actionId, opts)` que:
+1. Dispara `lia:settings-action` (consumido por `settings-page-enhanced.tsx`).
+2. Dispara `settings-open-tab` (compatibilidade reversa).
+3. Opcionalmente envia prompt para o chat via `lia:chat-prompt`.
+
+### C. Onboarding proativo (Setup Intro → Chat de Onboarding)
+
+Antes (bug coberto até #711): `SetupIntroModal.handleStartWizard` apenas fechava o modal e devolvia o usuário a um dashboard vazio — a intenção declarada de "configurar agora" era engolida.
+
+Agora (`onboarding-controller.tsx` §`handleStartWizard`):
+- Fecha o modal **e** redireciona para `/onboarding`, que renderiza `OnboardingChatPage`.
+- A `OnboardingChatPage` instancia o chat conectado ao `CompanySettingsReActAgent` e pode invocar as 7 actions iterativamente (Q&A guiado).
+- A finalização do chat zera `canReplayOnboarding` e setta `setupComplete=true` no store.
+
+### D. Banner persistente (`SetupProgressBanner`)
+
+Componente: `plataforma-lia/src/components/onboarding/SetupProgressBanner.tsx`.
+
+- **Quando aparece**: em qualquer página do dashboard exceto Chat LIA e Configurações, **enquanto** o `overall progress` retornado por `GET /api/backend-proxy/settings/progress/` for **< 80%**.
+- **Quando desaparece**: ao atingir ≥ 80% **ou** quando o usuário clica `X` (gravado em `localStorage['lia.setup-banner.dismissed-at']` por 24h).
+- **Acessibilidade**: `role="status"`, `aria-live="polite"`, contraste AA, `motion-reduce:transition-none`, dark/light tokens LIA DS v4.2.1.
+- **CTA**: link direto para `/onboarding` (mesma rota do `handleStartWizard`).
+
+### E. CTA proativa "Analisar nosso site" (Minha Empresa Hub)
+
+Em `MinhaEmpresaHub.tsx`, ao lado do botão de refresh, há um botão `[data-testid="analyze-website-cta"]` que chama `triggerAction('analyze_website', { prompt: '...' })`. Esse fluxo:
+1. Abre o chat lateral com o prompt pré-preenchido.
+2. Roda `_wrap_analyze_company_website` (Apify Crawler) com o `website_url` do perfil.
+3. Devolve `data.suggested_fields` ao chat — usuário aprova **antes** que `_wrap_save_company_section` seja chamado (TIER 3).
+
+### F. Pipeline de `process_document`
+
+Aceita dois caminhos:
+- `document_text` (pré-extraído).
+- `document_b64` + `document_format` (`pdf` via `pypdf`, `docx` via `python-docx`, `txt` UTF-8).
+
+Sempre devolve `requires_human_approval: True` e os `expected_fields` no `data` — gravação só ocorre num segundo turn confirmado pelo recrutador. Isso satisfaz **LGPD Art. 8** (consentimento informado) e o tier de governança WeDO para entrada de dados não-estruturada.
+
+### G. Inegociáveis (anti-regressão)
+
+1. **Delegar, nunca duplicar**: qualquer write em settings via chat **deve** passar por uma tool em `company_tool_registry.py`. PRs novos que instanciem services de gravação direto no domínio devem ser bloqueados em code review.
+2. **Sem fallback silencioso**: se a tool falha, `DomainResponse.error_response` carrega a mensagem real — nunca um "feito!" mockado.
+3. **Clarification-first**: handler sem dados suficientes responde `clarification_response`, jamais grava parcial.
+4. **TIER 1 pós-setup**: alterações de `cnpj` e `name` exigem `confirmed=true` + `is_admin=true` mesmo via chat (validado dentro do `_wrap_save_company_field`).
+5. **AuditTrail obrigatório**: todo write registra `actor`, `before`, `after`, `tier`, `source=chat|ui` (gravado pela tool, não pelo handler).
+
+### H. Mapa de testes mínimos
+
+- `tests/unit/test_company_settings_actions.py` (Task #712): cada uma das 7 actions cobre `success`, `clarification` (sem dados) e `error` (`company_id` ausente).
+- `tests/unit/test_company_settings_routing.py` (#320, já existia): garante que prompts pt-BR caem em `company_settings`.
+- E2E (futuro): o fluxo "chat → action → tab abre + campo destacado" deve virar smoke do Playwright na #714.
+
+### I. Status
+
+- Backend domain handlers: **OK** (commit Task #712).
+- Tools canônicas: **OK** (já existiam, agora consumidas pelo domain).
+- Hook + bridge frontend: **OK** (`use-settings-conversational.ts`, listener `lia:settings-action`).
+- CTA analyze_website: **OK** (`MinhaEmpresaHub`).
+- Banner persistente: **OK** (`SetupProgressBanner` no `DashboardApp`).
+- Onboarding redirect: **OK** (`handleStartWizard` → `/onboarding`).
+- Doc canônico: **OK** (este capítulo).
+
+---
+
 ## E1 — LOGIN — 4 STEPS
 
 ```

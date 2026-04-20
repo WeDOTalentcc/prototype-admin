@@ -6,8 +6,10 @@ import {
   Loader2, RefreshCw, AlertCircle, CheckCircle, Upload,
 } from "lucide-react"
 import { useCompanySettingsCards } from "@/hooks/settings/use-company-settings-cards"
+import { useSettingsConversational } from "@/hooks/settings/use-settings-conversational"
 import { MinhaEmpresaCard } from "@/components/settings/MinhaEmpresaCard"
 import { textStyles } from "@/lib/design-tokens"
+import { Globe } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -39,6 +41,18 @@ export function MinhaEmpresaHub() {
     saveField,
     refreshAll,
   } = useCompanySettingsCards()
+
+  const { triggerAction } = useSettingsConversational()
+
+  const handleAnalyzeWebsite = React.useCallback(() => {
+    triggerAction("analyze_website", {
+      section: "minha-empresa",
+      prompt:
+        "Analise nosso site institucional e extraia missão, valores, cultura, " +
+        "tech stack e benefícios. Mostre os campos extraídos para eu revisar antes de gravar.",
+      source: "ui",
+    })
+  }, [triggerAction])
 
   if (loading) {
     return (
@@ -73,6 +87,21 @@ export function MinhaEmpresaHub() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleAnalyzeWebsite}
+              data-testid="analyze-website-cta"
+              className="
+                inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium
+                bg-lia-bg-secondary dark:bg-lia-bg-elevated
+                text-lia-text-primary border border-lia-border-subtle
+                hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none
+              "
+              title="Pedir para a LIA analisar nosso site"
+            >
+              <Globe className="w-3.5 h-3.5 text-wedo-cyan" aria-hidden />
+              Analisar nosso site
+            </button>
             <button
               onClick={refreshAll}
               className="p-1.5 rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
