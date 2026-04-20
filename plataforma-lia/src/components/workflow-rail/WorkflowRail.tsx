@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl"
 import {
   ArrowRight, Zap, Check, X, Sun, Moon,
   ChevronLeft, ChevronRight, MoreHorizontal, GripVertical,
-  PanelRight, MessageSquare, Maximize2, Minus, Compass,
+  PanelRight, MessageSquare, Maximize2, Minus, Compass, Loader2,
 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
 import { useWorkflowRail, WorkflowEntry } from "./useWorkflowRail"
@@ -299,6 +299,9 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
   const nextMainStage = FUNNEL_STAGES.find(s => s.order === currentStageOrder + 1)
   const latest = entries[0] as WorkflowEntry | undefined
   const activeFlowName = latest?.name
+  // Scoped to the displayed (latest) entry — avoids a non-current workflow
+  // making the visible card appear to be processing.
+  const isThinking = Boolean(latest?.isThinking)
   const currentLabel = currentStageObj
     ? t(currentStageObj.labelKey as Parameters<typeof t>[0])
     : t("workflowRail.bar.noActiveFlow")
@@ -396,7 +399,20 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
             border-2 transition-transform duration-200 ease-out hover:scale-110 active:scale-95
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2`}
         >
-          <Compass className="w-[18px] h-[18px]" strokeWidth={2.25} aria-hidden="true" />
+          {isThinking ? (
+            <Loader2 className="w-[18px] h-[18px] animate-spin" strokeWidth={2.25} aria-hidden="true" />
+          ) : (
+            <Compass className="w-[18px] h-[18px]" strokeWidth={2.25} aria-hidden="true" />
+          )}
+
+          {/* Live thinking pulse ring — visible while LIA is processing */}
+          {isThinking && (
+            <span
+              aria-hidden="true"
+              className="absolute inset-0 rounded-full animate-ping"
+              style={{ boxShadow: `0 0 0 3px ${currentAccent}55` }}
+            />
+          )}
 
           {/* Pending count badge */}
           {pendingCount > 0 && (
@@ -512,8 +528,12 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
                 style={{ backgroundColor: currentAccent, color: "#fff" }}
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold flex-shrink-0 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40"
               >
-                <currentStageObj.canonical.Icon className="w-3.5 h-3.5" aria-hidden="true" />
-                <span className="truncate max-w-[120px]">{currentLabel}</span>
+                {isThinking ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
+                ) : (
+                  <currentStageObj.canonical.Icon className="w-3.5 h-3.5" aria-hidden="true" />
+                )}
+                <span className={`truncate max-w-[120px] ${isThinking ? "animate-pulse" : ""}`}>{currentLabel}</span>
                 {pendingCount > 0 && (
                   <span
                     aria-label={t("workflowRail.pill.pendingAriaLabel", { count: pendingCount })}
@@ -592,9 +612,11 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40
                       ${isCurrent ? "px-1.5 py-0.5" : isHovered ? `px-1.5 py-0.5 ${T.chipHoverBg}` : `px-1 py-0.5 ${T.textDim} ${T.chipHover}`}`}
                   >
-                    <span className="relative inline-flex items-center">
+                    <span className={`relative inline-flex items-center ${isCurrent && isThinking ? "animate-pulse" : ""}`}>
                       {isPast && !isHovered ? (
                         <Check className="w-3 h-3" strokeWidth={2.75} aria-hidden="true" />
+                      ) : isCurrent && isThinking ? (
+                        <Loader2 className="w-3 h-3 animate-spin" strokeWidth={2.5} aria-hidden="true" />
                       ) : (
                         <Icon className="w-3 h-3" strokeWidth={isCurrent ? 2.5 : 1.85} aria-hidden="true" />
                       )}

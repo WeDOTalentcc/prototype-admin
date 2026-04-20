@@ -30,6 +30,7 @@ export interface WorkflowEntry {
   searchResults?: { count: number; query: string } | null
   createdAt: string
   expiresAt?: string | null  // for search entries (auto-dismiss after 30min)
+  isThinking?: boolean
 }
 
 // ---------- Hook ----------
@@ -230,16 +231,26 @@ export function useWorkflowRail(userId: string) {
       ))
     }
 
+    const onThinking = (e: Event) => {
+      const { id, isThinking } = (e as CustomEvent).detail ?? {}
+      if (!id) return
+      setEntries(prev => prev.map(en =>
+        en.id === id ? { ...en, isThinking: Boolean(isThinking) } : en
+      ))
+    }
+
     window.addEventListener("workflow:started", onStarted)
     window.addEventListener("workflow:updated", onUpdated)
     window.addEventListener("workflow:completed", onCompleted)
     window.addEventListener("workflow:failed", onFailed)
+    window.addEventListener("workflow:thinking", onThinking)
 
     return () => {
       window.removeEventListener("workflow:started", onStarted)
       window.removeEventListener("workflow:updated", onUpdated)
       window.removeEventListener("workflow:completed", onCompleted)
       window.removeEventListener("workflow:failed", onFailed)
+      window.removeEventListener("workflow:thinking", onThinking)
     }
   }, [])
 
