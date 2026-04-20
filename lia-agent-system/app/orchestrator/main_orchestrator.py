@@ -924,7 +924,14 @@ class MainOrchestrator:
 
         result.update({"conversation_id": conv_id})
 
-        if isinstance(_cache_key, str) and result.get("success"):
+        # Don't cache low-confidence fallback/clarification responses — they cause eval oscillation
+        _resp_text = result.get("content", "") or result.get("response", "") or ""
+        _is_fallback_resp = (
+            "Não tenho certeza" in _resp_text
+            or "Pode reformular" in _resp_text
+            or "nao tenho certeza" in _resp_text.lower()
+        )
+        if isinstance(_cache_key, str) and result.get("success") and not _is_fallback_resp:
             await self._write_cache(response_cache_service, _cache_key, result)
 
         await self._persist_candidate_list(conv_id, result)
