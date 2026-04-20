@@ -9,9 +9,22 @@ Provides:
 - User preference tracking across sessions
 """
 import logging
+import re
 from datetime import datetime
 from typing import Any
 from uuid import UUID
+
+_UUID_RE = re.compile(
+    r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-"
+    r"[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b"
+)
+_LONG_NUMERIC_RE = re.compile(r"\b\d{10,}\b")
+_LABELED_REF_RE = re.compile(
+    r"\b(vaga|vagas|candidato|candidatos|candidata|candidatas|"
+    r"job|jobs|vacancy|vacancies|talent|talents)\s+"
+    r"(?:#|n[º°o]\.?\s*)?((?=[A-Za-z0-9_-]*\d)[A-Za-z0-9_-]{1,})",
+    re.IGNORECASE,
+)
 
 from sqlalchemy import and_, delete, desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -720,10 +733,11 @@ Resumo (máximo 200 palavras):"""
             return ""
         
         structured_ids = self._extract_structured_ids(messages)
+        prefix = f"[IDs preservados: {structured_ids}]\n" if structured_ids else ""
 
         if not self.llm_service:
             base = self._generate_simple_summary_from_dicts(messages)
-            return (f"[IDs preservados: {structured_ids}]\n{base}" if structured_ids else base)
+            return f"{prefix}{base}"
         
         try:
             messages_text = "\n".join([
@@ -755,14 +769,77 @@ Resumo conciso:"""
                 agent_type="recruiter_conversation_summary",
                 default_operation="conversation_summary_dicts",
             )
-            return await self.llm_service.safe_invoke(
+            llm_summary = await self.llm_service.safe_invoke(
                 prompt, provider="claude", on_usage=on_usage,
             )
+            return f"{prefix}{llm_summary}" if llm_summary else f"{prefix}".rstrip("\n")
             
         except Exception as e:
             logger.error(f"LLM summary generation from dicts failed: {e}")
-            return self._generate_simple_summary_from_dicts(messages)
-    
+            return f"{prefix}{self._generate_simple_summary_from_dicts(messages)}"
+
+    def _extract_structured_ids(self, messages: list[dict]) -> str:
+        """
+        Extract structured IDs (UUIDs, long numeric IDs, labeled refs) from
+        message content so they survive LLM-based summarization.
+
+        Returns a single-line, deduplicated string suitable for prepending to
+        the summary, e.g.:
+            "refs: vaga 1776373052020, candidato 42 | UUIDs: 550e8400-..."
+        Returns an empty string when no IDs are found.
+        """
+        if not messages:
+            return ""
+
+        uuids: list[str] = []
+        long_numerics: list[str] = []
+        labeled_refs: list[str] = []
+        seen_uuids: set[str] = set()
+        seen_numerics: set[str] = set()
+        seen_refs: set[str] = set()
+
+        for msg in messages:
+            content = msg.get("content", "")
+            if not isinstance(content, str):
+                content = str(content)
+            if not content:
+                continue
+
+            for match in _UUID_RE.findall(content):
+                key = match.lower()
+                if key not in seen_uuids:
+                    seen_uuids.add(key)
+                    uuids.append(match)
+
+            for label, value in _LABELED_REF_RE.findall(content):
+                ref = f"{label.lower()} {value}"
+                if ref not in seen_refs:
+                    seen_refs.add(ref)
+                    labeled_refs.append(ref)
+
+            for match in _LONG_NUMERIC_RE.findall(content):
+                if match in seen_numerics:
+                    continue
+                # Skip numerics already captured as part of a labeled ref or
+                # embedded in a UUID — avoids duplicating
+                # "vaga 1776373052020" or the trailing block of a UUID.
+                if any(match in ref for ref in labeled_refs):
+                    continue
+                if any(match in u for u in uuids):
+                    continue
+                seen_numerics.add(match)
+                long_numerics.append(match)
+
+        parts: list[str] = []
+        if labeled_refs:
+            parts.append(f"refs: {', '.join(labeled_refs)}")
+        if long_numerics:
+            parts.append(f"IDs: {', '.join(long_numerics)}")
+        if uuids:
+            parts.append(f"UUIDs: {', '.join(uuids)}")
+
+        return " | ".join(parts)
+
     def _generate_simple_summary_from_dicts(self, messages: list[dict]) -> str:
         """Generate a simple summary from dict-format messages without LLM."""
         user_messages = [

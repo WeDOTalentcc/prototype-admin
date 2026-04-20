@@ -350,14 +350,6 @@ async def test_recruiter_conversation_summary_records_billing(monkeypatch):
     fake_llm.safe_invoke = _stub_safe_invoke_with_usage("Resumo da conversa.")
 
     mem = ConversationMemory(llm_service=fake_llm)
-    # `_generate_summary_from_dicts` chama `_extract_structured_ids` que
-    # não existe na implementação atual (lazy bug não relacionado a billing).
-    # Stub no-op pra isolar a assertiva de tracking.
-    if not hasattr(mem, "_extract_structured_ids"):
-        monkeypatch.setattr(
-            mem, "_extract_structured_ids",
-            lambda messages: {}, raising=False,
-        )
     messages = [
         {"role": "user", "content": "Qual o status da vaga X?"},
         {"role": "assistant", "content": "Vaga X tem 5 candidatos."},
