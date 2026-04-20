@@ -78,9 +78,21 @@ async def send_email(
                         "error": "no_email"
                     }
                 
+                logger.warning(
+                    "[CommunicationTools] send_email is_mock=True: CommunicationDispatcher not called. "
+                    "candidate_id=%s email=%s. See ADR-018 / Task #673 for migration plan.",
+                    candidate_id, candidate_email,
+                )
                 return {
                     "success": True,
-                    "message": f"📧 Email enviado para {candidate_name} ({candidate_email}).",
+                    "is_mock": True,
+                    "dispatch_status": "not_dispatched",
+                    "mock_notice": (
+                        "⚠️ SIMULAÇÃO: o email foi registrado mas NÃO enviado. "
+                        "A integração com o provedor de email (CommunicationDispatcher) "
+                        "ainda não está conectada neste tool. Ver ADR-018."
+                    ),
+                    "message": f"📧 [SIMULADO] Email preparado para {candidate_name} ({candidate_email}) — não enviado.",
                     "action_taken": "send_email",
                     "affected_entities": [candidate_id],
                     "data": {
@@ -164,9 +176,21 @@ async def send_whatsapp(
                         "error": "no_phone"
                     }
                 
+                logger.warning(
+                    "[CommunicationTools] send_whatsapp is_mock=True: CommunicationDispatcher not called. "
+                    "candidate_id=%s phone=%s. See ADR-018 / Task #673 for migration plan.",
+                    candidate_id, candidate_phone,
+                )
                 return {
                     "success": True,
-                    "message": f"📱 WhatsApp enviado para {candidate_name} ({candidate_phone}).",
+                    "is_mock": True,
+                    "dispatch_status": "not_dispatched",
+                    "mock_notice": (
+                        "⚠️ SIMULAÇÃO: a mensagem WhatsApp foi registrada mas NÃO enviada. "
+                        "A integração com o provedor WhatsApp (CommunicationDispatcher) "
+                        "ainda não está conectada neste tool. Ver ADR-018."
+                    ),
+                    "message": f"📱 [SIMULADO] WhatsApp preparado para {candidate_name} ({candidate_phone}) — não enviado.",
                     "action_taken": "send_whatsapp",
                     "affected_entities": [candidate_id],
                     "data": {
@@ -275,9 +299,21 @@ async def schedule_interview(
                 
                 formatted_date = interview_datetime.strftime("%d/%m/%Y às %H:%M")
                 
+                logger.warning(
+                    "[CommunicationTools] schedule_interview is_mock=True: no DB record created, "
+                    "no calendar event dispatched. candidate_id=%s job_id=%s. See ADR-018 / Task #673.",
+                    candidate_id, job_id,
+                )
                 return {
                     "success": True,
-                    "message": f"📅 Entrevista {interview_type_display} agendada para {candidate_name} no dia {formatted_date}.",
+                    "is_mock": True,
+                    "dispatch_status": "not_dispatched",
+                    "mock_notice": (
+                        "⚠️ SIMULAÇÃO: a entrevista foi registrada localmente mas NÃO criada no calendário "
+                        "e o convite NÃO foi enviado. A integração com o provedor de calendário "
+                        "ainda não está conectada neste tool. Ver ADR-018."
+                    ),
+                    "message": f"📅 [SIMULADO] Entrevista {interview_type_display} preparada para {candidate_name} no dia {formatted_date} — não confirmada.",
                     "action_taken": "schedule_interview",
                     "affected_entities": [candidate_id, job_id],
                     "data": {
@@ -291,7 +327,7 @@ async def schedule_interview(
                         "interviewers": interviewers or [],
                         "location": location,
                         "meeting_link": meeting_link,
-                        "invite_sent": send_invite,
+                        "invite_sent": False,
                         "created_at": datetime.utcnow().isoformat()
                     }
                 }

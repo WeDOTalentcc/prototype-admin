@@ -430,6 +430,7 @@ class MainOrchestrator:
                     from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
                     _system_prompt = SystemPromptBuilder.build(
                         agent_type=_agent_type,
+                        company_id=_loop_company_id or "",
                         tenant_context_snippet=getattr(ctx, "tenant_context_snippet", "") or ctx.extra.get("tenant_context", ""),
                         user_name=getattr(ctx, "user_name", ""),
                         user_role=getattr(ctx, "user_role", ""),

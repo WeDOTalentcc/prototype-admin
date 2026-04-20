@@ -64,3 +64,18 @@ jobs:
           name: chat-capabilities-audit
           path: lia-agent-system/docs/chat_capabilities_audit.json
           retention-days: 30
+
+      - name: Run production readiness audit (Task #691)
+        working-directory: ${{ github.workspace }}
+        run: python3 production_readiness_audit.py --production-only
+        env:
+          LIA_SKIP_DB: "1"
+
+      - name: Upload production readiness report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-readiness-report
+          path: production_readiness_report.json
+          if-no-files-found: ignore
+          retention-days: 30

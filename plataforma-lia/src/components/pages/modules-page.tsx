@@ -24,7 +24,7 @@ import { BetaBadge } from "@/components/ui/beta-badge"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/auth-context"
 
-type ModuleStatusType = "beta" | "trial" | "active" | "expired" | "disabled" | "coming_soon"
+type ModuleStatusType = "experimental" | "beta" | "trial" | "active" | "expired" | "disabled" | "deprecated" | "coming_soon"
 
 interface ModuleInfo {
   module_name: string
@@ -93,20 +93,22 @@ const MODULE_FEATURE_KEYS: Record<string, string[]> = {
 }
 
 const STATUS_DISPLAY: Record<ModuleStatusType, { labelKey: string; variant: "info" | "success" | "neutral"; muted?: boolean; icon: React.ElementType }> = {
+  experimental: { labelKey: "status.experimental", variant: "info", icon: Sparkles },
   beta: { labelKey: "status.beta", variant: "info", icon: Sparkles },
   trial: { labelKey: "status.trial", variant: "info", icon: Clock },
   active: { labelKey: "status.active", variant: "success", icon: CheckCircle },
   expired: { labelKey: "status.expired", variant: "neutral", muted: true, icon: Clock },
   disabled: { labelKey: "status.disabled", variant: "neutral", muted: true, icon: Lock },
+  deprecated: { labelKey: "status.deprecated", variant: "neutral", muted: true, icon: Lock },
   coming_soon: { labelKey: "status.comingSoon", variant: "neutral", muted: true, icon: Clock },
 }
 
 function ModuleCard({ module }: { module: ModuleInfo }) {
   const t = useTranslations('modules')
   const statusConfig = STATUS_DISPLAY[module.status]
-  const isBeta = module.status === "beta"
+  const isBeta = module.status === "beta" || module.status === "experimental"
   const isComingSoon = module.status === "coming_soon"
-  const isAccessible = ["beta", "trial", "active"].includes(module.status)
+  const isAccessible = ["experimental", "beta", "trial", "active"].includes(module.status)
   const Icon = module.icon
   const featureKeys = MODULE_FEATURE_KEYS[module.module_name] || []
 
@@ -310,14 +312,14 @@ export function ModulesPage() {
     loadModules()
   }, [loadModules])
 
-  const betaModules = modules.filter((m) => m.status === "beta")
+  const betaModules = modules.filter((m) => m.status === "beta" || m.status === "experimental")
   const activeModules = modules.filter(
     (m) => m.status === "active" || m.status === "trial",
   )
   const comingSoonModules = modules.filter((m) => m.status === "coming_soon")
   const otherModules = modules.filter(
     (m) =>
-      !["beta", "active", "trial", "coming_soon"].includes(m.status),
+      !["experimental", "beta", "active", "trial", "coming_soon"].includes(m.status),
   )
 
   return (
