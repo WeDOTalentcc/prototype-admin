@@ -93,3 +93,4 @@ dump.rdb
 .coverage
 .coverage
 =155
+eval/agentic/runs/*.json
