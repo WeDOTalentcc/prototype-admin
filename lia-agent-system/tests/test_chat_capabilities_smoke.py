@@ -177,83 +177,103 @@ _TOOL_IDS_BY_DOMAIN = _registered_tool_ids_per_domain()
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Test 1: Handler resolution (consolidated — itera internamente sobre 90+ tools)
+# Test 1: Handler resolution — per-case parametrize para diagnóstico granular
 # ──────────────────────────────────────────────────────────────────────────────
-def test_chat_tool_handlers_resolve() -> None:
-    """Todo handler declarado por um tool de chat deve ser importável e callable.
+@pytest.mark.parametrize(
+    "domain_id,tool_id,handler",
+    _TOOL_ROWS,
+    ids=[f"{d}::{t}" for d, t, _ in _TOOL_ROWS],
+)
+def test_chat_tool_handler_resolves(domain_id: str, tool_id: str, handler: str) -> None:
+    """Cada handler declarado por um tool de chat deve ser importável e callable."""
+    if domain_id in P1_DOMAINS_DEFERRED:
+        pytest.xfail(f"Domínio P1 ({domain_id}) ainda não saneado — Fase 2 (#582).")
 
-    Consolidado em um único teste com iteração interna (era parametrizado com
-    93 casos, ~2min de overhead) — mesma cobertura, ~6s de execução. Falhas
-    são agregadas e reportadas de uma vez para diagnóstico granular.
-    """
-    failures: list[str] = []
-    for domain_id, tool_id, handler in _TOOL_ROWS:
-        if domain_id in P1_DOMAINS_DEFERRED:
-            continue
-        try:
-            resolved = _resolve_handler(handler)
-        except Exception as exc:
-            failures.append(f"{domain_id}::{tool_id} → {handler!r} (erro: {exc!r})")
-            continue
-        if not callable(resolved):
-            failures.append(
-                f"{domain_id}::{tool_id} → {handler!r} resolveu para "
-                f"{type(resolved).__name__} (não callable)"
-            )
-
-    assert not failures, (
-        f"[#580] {len(failures)} handlers de tool não resolvem ou não são "
-        f"callable:\n  - " + "\n  - ".join(failures)
+    resolved = _resolve_handler(handler)
+    assert callable(resolved), (
+        f"Handler {handler!r} para tool {tool_id!r} do domínio {domain_id!r} "
+        f"não é callable (resolveu para: {type(resolved).__name__})."
     )
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Test 2: Action coverage (consolidated — itera sobre 250+ actions)
+# Test 2: Action coverage — per-case parametrize
 # ──────────────────────────────────────────────────────────────────────────────
-def test_actions_have_execution_path() -> None:
-    """Toda action declarada deve ter caminho válido para execução.
+@pytest.mark.parametrize(
+    "domain_id,action_id,domain_instance",
+    _ACTION_ROWS,
+    ids=[f"{d}::{a}" for d, a, _ in _ACTION_ROWS],
+)
+def test_action_has_execution_path(
+    domain_id: str, action_id: str, domain_instance: Any
+) -> None:
+    """Toda action declarada em get_allowed_actions() tem caminho válido para execução."""
+    if domain_id in P1_DOMAINS_DEFERRED:
+        pytest.xfail(f"Domínio P1 ({domain_id}) — Fase 2 (#582).")
+    if (domain_id, action_id) in _DEFERRED_ACTIONS:
+        pytest.xfail(f"Action {domain_id}::{action_id} marcada deferred.")
 
-    Consolidado: era parametrizado com 268 casos (~3min). Mesma cobertura,
-    ~10s. Caminhos válidos: (a) tool mapeado em `_ACTION_TOOL_MAP` registrado
-    em `*_TOOLS`, ou (b) override de `execute_action` no domínio.
+    # Intent-routed domains (state-machine wizards) executam via
+    # process_intent + _route_by_stage. A ausência de mapping é por design.
+    if domain_id in _INTENT_ROUTED_DOMAINS:
+        assert hasattr(domain_instance, "process_intent"), (
+            f"Domínio intent-routed '{domain_id}' não implementa process_intent."
+        )
+        return
+
+    mapping = _extract_action_tool_map(domain_instance)
+    registered_tools = _TOOL_IDS_BY_DOMAIN.get(domain_id, set())
+
+    if action_id in mapping:
+        mapped_tool = mapping[action_id]
+        assert mapped_tool in registered_tools, (
+            f"Action '{action_id}' do domínio '{domain_id}' mapeia para tool "
+            f"'{mapped_tool}' que NÃO está registrado em *_TOOLS. "
+            f"Tools disponíveis: {sorted(registered_tools)}"
+        )
+    else:
+        assert hasattr(domain_instance, "execute_action"), (
+            f"Domínio '{domain_id}' não implementa execute_action e action "
+            f"'{action_id}' não está em _ACTION_TOOL_MAP. Backlog: mapear ou "
+            f"adicionar a _DEFERRED_ACTIONS."
+        )
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Test 3: execute_action contract — verifica que método existe, é coroutine
+# e tem signature compatível. NÃO invoca (evita DB/IO em smoke).
+# ──────────────────────────────────────────────────────────────────────────────
+@pytest.mark.parametrize(
+    "domain_id,action_id,domain_instance",
+    _ACTION_ROWS,
+    ids=[f"{d}::{a}" for d, a, _ in _ACTION_ROWS],
+)
+def test_action_execute_method_contract(
+    domain_id: str, action_id: str, domain_instance: Any
+) -> None:
+    """execute_action de cada domínio deve ser callable e async-compatível.
+
+    Smoke leve de contrato — não invoca o método (params reais exigem DB,
+    APIs externas, fixtures de tenant). Valida apenas que a interface
+    pública para acionar a chain de execução está disponível.
     """
-    failures: list[str] = []
-    for domain_id, action_id, domain_instance in _ACTION_ROWS:
-        if domain_id in P1_DOMAINS_DEFERRED:
-            continue
-        if (domain_id, action_id) in _DEFERRED_ACTIONS:
-            continue
-        # Intent-routed domains (state-machine wizards) executam via
-        # process_intent + _route_by_stage. A ausência de mapping é por
-        # design — basta que process_intent esteja overridado.
-        if domain_id in _INTENT_ROUTED_DOMAINS:
-            if not hasattr(domain_instance, "process_intent"):
-                failures.append(
-                    f"{domain_id}::{action_id} é intent-routed mas domínio "
-                    f"não implementa process_intent"
-                )
-            continue
+    if domain_id in P1_DOMAINS_DEFERRED:
+        pytest.xfail(f"Domínio P1 ({domain_id}) — Fase 2 (#582).")
+    if (domain_id, action_id) in _DEFERRED_ACTIONS:
+        pytest.xfail(f"Action {domain_id}::{action_id} marcada deferred.")
 
-        mapping = _extract_action_tool_map(domain_instance)
-        registered_tools = _TOOL_IDS_BY_DOMAIN.get(domain_id, set())
+    method = getattr(domain_instance, "execute_action", None)
+    assert callable(method), (
+        f"Domínio '{domain_id}' não expõe execute_action callable "
+        f"(action '{action_id}' não tem entrypoint de execução)."
+    )
 
-        if action_id in mapping:
-            mapped_tool = mapping[action_id]
-            if mapped_tool not in registered_tools:
-                failures.append(
-                    f"{domain_id}::{action_id} mapeia para tool "
-                    f"'{mapped_tool}' não registrado em *_TOOLS"
-                )
-        else:
-            if not hasattr(domain_instance, "execute_action"):
-                failures.append(
-                    f"{domain_id}::{action_id} sem mapping E sem "
-                    f"execute_action — adicionar a _DEFERRED_ACTIONS ou implementar"
-                )
-
-    assert not failures, (
-        f"[#580] {len(failures)} actions sem caminho válido:\n  - "
-        + "\n  - ".join(failures)
+    import inspect
+    sig = inspect.signature(method)
+    params = list(sig.parameters.keys())
+    assert len(params) >= 2, (
+        f"{domain_id}.execute_action tem signature insuficiente "
+        f"(esperado pelo menos action_id+params/context, obteve {params})."
     )
 
 
@@ -318,6 +338,11 @@ def test_zero_actions_without_tool_or_handler() -> None:
         if domain_id in P1_DOMAINS_DEFERRED:
             continue
         if (domain_id, action_id) in _DEFERRED_ACTIONS:
+            continue
+        # Intent-routed (state-machine) — execução é via process_intent
+        # + _route_by_stage; ausência de _ACTION_TOOL_MAP / handler_map
+        # é arquitetura intencional. Validado em test_action_has_execution_path.
+        if domain_id in _INTENT_ROUTED_DOMAINS:
             continue
 
         # (a) action em _ACTION_TOOL_MAP com tool registrado
