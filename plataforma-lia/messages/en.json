@@ -34,7 +34,8 @@
       "ariaLabel": "Possible next steps",
       "nextStepsLabel": "Next steps",
       "nextInFunnel": "Next",
-      "close": "Close panel"
+      "close": "Close panel",
+      "thinking": "LIA is thinking…"
     },
     "funnel": {
       "createJob": "Job",

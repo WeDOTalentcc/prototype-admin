@@ -34,7 +34,8 @@
       "ariaLabel": "Próximos passos possíveis",
       "nextStepsLabel": "Próximos passos",
       "nextInFunnel": "Próximo",
-      "close": "Fechar painel"
+      "close": "Fechar painel",
+      "thinking": "LIA está pensando…"
     },
     "funnel": {
       "createJob": "Vaga",

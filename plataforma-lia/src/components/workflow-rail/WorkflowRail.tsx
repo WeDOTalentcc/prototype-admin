@@ -717,8 +717,18 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
 
             {/* Mobile-only header (because the popover is detached above the bar) */}
             <div className={`lg:hidden flex w-full items-center justify-between px-3 py-1 border-b ${T.divider}`}>
-              <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: currentAccent }}>
+              <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider" style={{ color: currentAccent }}>
                 {currentLabel}
+                {isThinking && (
+                  <span
+                    role="status"
+                    aria-live="polite"
+                    className="inline-flex items-center gap-1 normal-case font-medium tracking-normal animate-pulse"
+                  >
+                    <Loader2 className="w-3 h-3 animate-spin" strokeWidth={2.5} aria-hidden="true" />
+                    <span>{t("workflowRail.panel.thinking")}</span>
+                  </span>
+                )}
               </span>
               <button
                 type="button"
@@ -734,21 +744,35 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
             <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-1 px-1.5 py-1.5 lg:py-1">
               {nextSteps.map((step, idx) => {
                 const isPrimary = idx === 0
+                const showThinking = isPrimary && isThinking
                 return (
                   <button
                     key={step.id}
                     ref={idx === 0 ? firstNextStepRef : undefined}
                     type="button"
                     onClick={() => handleNextStep(step)}
-                    title={t(step.descKey as Parameters<typeof t>[0])}
+                    title={showThinking ? t("workflowRail.panel.thinking") : t(step.descKey as Parameters<typeof t>[0])}
                     className={`group inline-flex items-center gap-1 px-2 py-1 lg:py-0.5 rounded-full text-[10px] font-semibold whitespace-nowrap transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40
                       ${isPrimary
-                        ? "text-white"
+                        ? `text-white ${showThinking ? "animate-pulse" : ""}`
                         : `${T.textMid} ${T.chipHover}`}`}
                     style={isPrimary ? { backgroundColor: currentAccent } : undefined}
                   >
-                    <span aria-hidden="true" className="text-[11px] leading-none flex-shrink-0">{step.icon}</span>
+                    {showThinking ? (
+                      <Loader2
+                        className="w-3 h-3 animate-spin flex-shrink-0"
+                        strokeWidth={2.5}
+                        aria-hidden="true"
+                      />
+                    ) : (
+                      <span aria-hidden="true" className="text-[11px] leading-none flex-shrink-0">{step.icon}</span>
+                    )}
                     <span className="truncate">{t(step.titleKey as Parameters<typeof t>[0])}</span>
+                    {showThinking && (
+                      <span role="status" aria-live="polite" className="sr-only">
+                        {t("workflowRail.panel.thinking")}
+                      </span>
+                    )}
                   </button>
                 )
               })}
