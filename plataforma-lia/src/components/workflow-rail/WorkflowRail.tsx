@@ -5,10 +5,13 @@ import { useTranslations } from "next-intl"
 import {
   ArrowRight, Zap, Check, X, Sun, Moon,
   ChevronLeft, ChevronRight, MoreHorizontal, GripVertical,
+  PanelRight, MessageSquare, Maximize2, Minus,
 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
 import { useWorkflowRail, WorkflowEntry } from "./useWorkflowRail"
 import { useWorkflowRailStore } from "@/stores/workflow-rail-store"
+import { useActiveChatPresence } from "@/hooks/useActiveChatPresence"
+import type { ChatMode } from "@/components/unified-chat/unified-chat-types"
 import {
   FUNNEL_STAGES,
   NEXT_STEPS_MAP,
@@ -37,8 +40,17 @@ function deriveCurrentStage(entries: WorkflowEntry[]): FunnelStageKey {
 const BALL_SIZE = 36
 const DRAG_THRESHOLD = 4 // px before drag is considered a real drag (vs a click)
 
+/** Chat mode → indicator icon + tooltip label. */
+const CHAT_MODE_META: Record<ChatMode, { Icon: React.ComponentType<{ className?: string; strokeWidth?: number; "aria-hidden"?: boolean }>; label: string }> = {
+  sidebar:    { Icon: PanelRight,     label: "Chat aberto na lateral" },
+  floating:   { Icon: MessageSquare,  label: "Chat em janela flutuante" },
+  fullscreen: { Icon: Maximize2,      label: "Chat em tela cheia" },
+  minimized:  { Icon: Minus,          label: "Chat minimizado" },
+}
+
 export default function WorkflowRail({ userId, onNavigate, onCreateJob }: WorkflowRailProps) {
   const { entries, isConnected } = useWorkflowRail(userId)
+  const { mode: chatMode, isShowingReels, isChatVisible, focusChat } = useActiveChatPresence()
 
   // Global UI state (persisted) — toggled from sidebar and from collapse button.
   const enabled = useWorkflowRailStore((s) => s.enabled)
@@ -196,6 +208,11 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
   if (!mounted) return null
   if (!enabled) return null
   if (!hasEntries && !onCreateJob) return null
+  // Coexistência: se o chat está visível e mostrando o trilho interno
+  // (ChatWorkflowReels no empty state), suprime a barra/bolinha global
+  // para evitar duplicação visual. O toggle global do sidebar continua
+  // mandando — quando desligado, nada aparece de qualquer forma.
+  if (isChatVisible && isShowingReels) return null
 
   /* ---- Derived values ---- */
   const nextSteps = NEXT_STEPS_MAP[currentStageKey] ?? NEXT_STEPS_MAP.initial
@@ -255,12 +272,23 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
 
   /* ---- Positioning (free-floating when user has dragged) ---- */
   const useCustomPosition = position !== null
+  // Anti-colisão: quando o chat da LIA está em modo flutuante e o usuário
+  // ainda não arrastou a bolinha, deslocamos para o canto inferior esquerdo
+  // para não brigar com a bolinha do chat (canto inferior direito).
+  const avoidFloatingChat = chatMode === "floating" && !useCustomPosition
   const positionStyle: React.CSSProperties = useCustomPosition
     ? { left: position!.x, top: position!.y }
     : expanded
       ? { left: "50%", bottom: 16, transform: "translateX(-50%)" }
-      // Default collapsed position: bottom-right, lifted above LIA chat bubble.
-      : { right: 16, bottom: 80 }
+      : avoidFloatingChat
+        ? { left: 16, bottom: 80 }
+        // Default collapsed position: bottom-right, lifted above LIA chat bubble.
+        : { right: 16, bottom: 80 }
+
+  /* ---- Chat presence chip (indicator + click-to-focus) ---- */
+  const chatModeMeta = CHAT_MODE_META[chatMode]
+  const ChatModeIcon = chatModeMeta.Icon
+  const chatPresenceTitle = `${chatModeMeta.label} · clique para focar`
 
   const cursorClass = isDragging ? "cursor-grabbing" : "cursor-grab"
 
@@ -312,6 +340,18 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
               className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500 border border-white"
             />
           )}
+        </button>
+
+        {/* Chat presence indicator — subtle chip glued to the ball.
+            Clicking re-focuses the chat in its current mode. */}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); focusChat() }}
+          aria-label={chatPresenceTitle}
+          title={chatPresenceTitle}
+          className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-white border border-lia-border-subtle text-lia-text-secondary flex items-center justify-center shadow-sm hover:text-wedo-cyan hover:border-wedo-cyan/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40 transition-colors"
+        >
+          <ChatModeIcon className="w-2.5 h-2.5" strokeWidth={2.25} aria-hidden={true} />
         </button>
       </div>
     )
@@ -373,6 +413,17 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
             style={{ color: currentAccent }}
           >
             <ChevronLeft className="w-3 h-3" strokeWidth={2.5} />
+          </button>
+
+          {/* Chat presence chip — shows where the chat lives now and focuses it on click. */}
+          <button
+            type="button"
+            onClick={focusChat}
+            aria-label={chatPresenceTitle}
+            title={chatPresenceTitle}
+            className={`shrink-0 w-6 h-6 rounded-full border ${T.miniBtn} flex items-center justify-center mr-1 z-10 transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40`}
+          >
+            <ChatModeIcon className="w-3 h-3" strokeWidth={2.25} aria-hidden={true} />
           </button>
 
           {/* MOBILE compact: only the current chip (no magnifier/scroll) */}

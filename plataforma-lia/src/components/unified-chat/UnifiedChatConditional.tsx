@@ -30,6 +30,25 @@ export function UnifiedChatConditional() {
     return () => window.removeEventListener("lia:chat-mode-changed", handler)
   }, [])
 
+  // Permite que componentes externos (ex: WorkflowRail / chip de presença)
+  // peçam para focar/abrir o chat no modo informado, sem precisarem
+  // conhecer o LiaFloatContext diretamente.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ mode?: ChatMode }>).detail
+      const target: ChatMode = detail?.mode ?? "sidebar"
+      if (target === "minimized") {
+        close()
+        return
+      }
+      setChatMode(target)
+      try { localStorage.setItem("lia-chat-mode", target) } catch { /* ignore */ }
+      open()
+    }
+    window.addEventListener("lia:focus-chat", handler)
+    return () => window.removeEventListener("lia:focus-chat", handler)
+  }, [open, close])
+
 
   useEffect(() => {
     const check = () => setHasDashboardShell(!!document.querySelector("[data-dashboard-shell]"))
