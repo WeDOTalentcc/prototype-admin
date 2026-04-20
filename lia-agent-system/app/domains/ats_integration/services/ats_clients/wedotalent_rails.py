@@ -624,3 +624,43 @@ class WeDOTalentATSClient:
             status="remote" if data.get("is_remote") else data.get("workplace_type", ""),
             raw_data=data,
         )
+
+    # ------------------------------------------------------------------
+    # Admin / Tenant Provisioning
+    # ------------------------------------------------------------------
+
+    async def create_client_account(self, payload: dict) -> dict | None:
+        """Create a ClientAccount in Rails (POST /v1/users/client_accounts).
+
+        Called during admin client provisioning to ensure multi-tenancy is
+        consistent between FastAPI and Rails (Apartment gem schema-per-tenant).
+
+        Args:
+            payload: Dict with fields matching Rails ClientAccount permitted params:
+                name, cnpj, trade_name, industry, sector, size, employee_count,
+                website, phone, email, plan_id, status, user_limit, job_limit,
+                ai_credits_monthly, features_enabled
+
+        Returns:
+            Dict with created resource attributes, or None on failure.
+        """
+        resp = await self.post(
+            "/v1/users/client_accounts",
+            json_body={"client_account": payload},
+        )
+        if resp.success:
+            return self._extract_attributes(resp.data)
+        logger.warning("[RailsClient] create_client_account failed: %s", resp.errors)
+        return None
+
+    async def get_client_account(self, account_id: int | str) -> dict | None:
+        """Fetch a ClientAccount from Rails by ID."""
+        resp = await self.get(f"/v1/users/client_accounts/{account_id}")
+        if resp.success:
+            return self._extract_attributes(resp.data)
+        return None
+
+    async def list_client_accounts(self, search: str = "*", page: int = 1, limit: int = 50) -> list[dict]:
+        """List ClientAccounts from Rails."""
+        resp = await self.get("/v1/users/client_accounts", params={"search": search, "page": page, "limit": limit})
+        return self._extract_list(resp)
