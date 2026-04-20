@@ -304,7 +304,9 @@
         "hallucinated": "Made things up"
       },
       "regenerateTitle": "Regenerate",
-      "regenerateAriaLabel": "Regenerate the response"
+      "regenerateAriaLabel": "Regenerate the response",
+      "insertTitle": "Insert into input",
+      "insertAriaLabel": "Insert this message into the input field"
     },
     "workflowReels": {
       "scrollLeft": "Scroll left",
