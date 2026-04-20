@@ -646,14 +646,24 @@ Adicionar em: `.env.example`, Heroku/Railway config vars, Vault (se em uso).
 ### Commits no Replit (branch replit-sync)
 
 **Repositório**: `WeDOTalentcc/wedotalent02202026`  
-**Branch**: `replit-sync`  
-**Implementado por**: Paulo (via Replit IDE)  
-**Commits relevantes**: confirmar hashes exatos via `git log --oneline` no Replit
+**Branch**: `replit-sync` (Paulo faz push do Replit IDE)  
+**Data de implementação**: 2026-04-19
 
-Os commits cobrem:
-- Candidate Self-Service domain completo (agente ReAct + tools + repositories + services)
-- Frontend `CandidateChatPage` + `CandidateChatHeader` + `CandidateJobSelector`
-- Public API endpoint `POST /api/v1/candidate/chat` com rate limiting e LGPD
+| Commit | Descrição | O que entregou |
+|--------|-----------|----------------|
+| `4a762e0ca` | Add candidate portal for job application status and chat | Frontend: `CandidateChatPage.tsx`, `CandidateJobSelector.tsx`, `status/page.tsx` |
+| `a21e52d29` | Add candidate portal (merge commit) | Merge do commit acima |
+| `ab40cf130` | Update candidate status page and chat features | Proxy routes, `CandidateChatHeader.tsx`, integração com backend APIs |
+| `9ebfa3359` | Add functionality to manage candidate requests | `candidate_react_agent.py` inicial, LGPD Art.20 logging |
+| `5c1976c09` | Manage candidate requests (merge commit) | Merge — agente ReAct + LGPD |
+| `c6220768f` | Improve job creation and candidate sourcing workflows | UX redesign + refinamentos |
+| `9bc805b29` | Align chat slash commands across product, code, and docs | Chat slash commands incluindo `/candidate-status` |
+| `1b0ca9629` | docs: CANDIDATE_PORTAL_RAILS_SPEC.md | Este documento |
+
+**Commits do domínio `candidate_self_service/` backend**:
+- `42c9ce4d2` — Replace stub/fallback handlers with real implementations
+- `d312e34dd` — Auto-discovery of AGENT_TYPE_TO_DOMAIN (registra o domínio)
+- `b41c542e4` — PII in logs remediation (0 violations)
 
 ### Agente ReAct (LangGraph)
 
