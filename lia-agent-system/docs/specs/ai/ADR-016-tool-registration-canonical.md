@@ -3,6 +3,7 @@
 **Status:** Accepted
 **Data:** 2026-04-17
 **Relacionado:** ADR-015 (S7.1/S7.2/S7.3), Task #350 (não-execução), `RAILS_API_INTEGRATION.md`
+**Sucessor operacional:** ADR-018 (plano de execução, acceptance criteria, canary fitness tests — Task #382)
 
 ---
 
