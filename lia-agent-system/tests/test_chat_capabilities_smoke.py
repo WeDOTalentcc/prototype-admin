@@ -42,11 +42,7 @@ _INTENT_ROUTED_DOMAINS: set[str] = {"job_creation"}
 
 # Actions cujo execute_action depende de IO pesado (DB com vagas reais, APIs
 # externas) — validamos coverage mas não invocamos.
-_DEFERRED_ACTIONS: set[tuple[str, str]] = {
-    # Mapeiam para tool 'duplicate_job_vacancy' ainda não implementado — Fase 2 (#582).
-    ("job_management", "duplicate_job"),
-    ("job_management", "clone_job"),
-}
+_DEFERRED_ACTIONS: set[tuple[str, str]] = set()
 
 # Domínios cujas actions são roteadas via state-machine (process_intent +
 # _route_by_stage), sem _ACTION_TOOL_MAP nem handler_map. Para esses, a
