@@ -209,18 +209,48 @@ async def test_culture_and_techstack_delegate_to_save_section(
 
 
 # ---------------------------------------------------------------------------
-# configure_benefits — clarification com navigation_hint (nao finge sucesso)
+# configure_benefits — clarification quando vazio + delega para tool
+# dedicada (write real em company_benefits) quando lista presente
 # ---------------------------------------------------------------------------
 @pytest.mark.asyncio
-async def test_configure_benefits_returns_clarification_with_hint(
+async def test_configure_benefits_clarification_when_empty(
     domain: CompanySettingsDomain,
 ) -> None:
-    resp = await domain._handle_configure_benefits(
-        {"company_id": "co_demo", "data": {"benefits": [{"name": "Plano de saude"}]}},
-        _ctx(),
+    resp = await domain._handle_configure_benefits({"company_id": "co_demo"}, _ctx())
+    assert resp.needs_clarification
+    assert resp.data.get("navigation_hint", {}).get("subsection") == "beneficios"
+
+
+@pytest.mark.asyncio
+async def test_configure_benefits_delegates_to_save_benefits_tool(
+    domain: CompanySettingsDomain,
+) -> None:
+    target = (
+        "app.domains.company_settings.agents.company_tool_registry"
+        "._wrap_save_company_benefits"
     )
-    assert resp.needs_clarification, "benefits deve pedir clarification (sem write tool)"
-    assert "beneficios" in (resp.clarification_question or "").lower()
+    fake = AsyncMock(
+        return_value={
+            "success": True,
+            "message": "Beneficios salvos: 2 inserido(s).",
+            "data": {"inserted": 2, "deactivated": 0, "mode": "append"},
+        },
+    )
+    with patch(target, fake):
+        resp = await domain._handle_configure_benefits(
+            {
+                "company_id": "co_demo",
+                "benefits": ["Vale Refeicao", {"name": "Plano de Saude", "category": "health"}],
+            },
+            _ctx(),
+        )
+    assert resp.success, f"esperado success, veio error={resp.error}"
+    fake.assert_awaited_once()
+    kwargs = fake.await_args.kwargs
+    assert kwargs["company_id"] == "co_demo"
+    assert kwargs["mode"] == "append"
+    assert len(kwargs["benefits"]) == 2
+    assert kwargs["benefits"][0] == {"name": "Vale Refeicao"}
     assert resp.data.get("navigation_hint", {}).get("subsection") == "beneficios"
 
 

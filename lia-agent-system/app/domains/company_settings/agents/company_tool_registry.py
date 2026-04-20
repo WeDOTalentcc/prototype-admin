@@ -311,6 +311,118 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("company_settings")
+async def _wrap_save_company_benefits(**kwargs: Any) -> dict[str, Any]:
+    """Persist company benefits in the dedicated `company_benefits` table.
+
+    Mode `replace` deactivates current benefits before inserting the new set;
+    `append` only inserts. Each item runs through FairnessGuard L1 on
+    `name`+`description` before insert. Audit log records actor, count, and
+    operation. Multi-tenant: rows are scoped by `company_id` and we never
+    touch rows outside that scope.
+    """
+    company_id = (kwargs.get("company_id") or "").strip()
+    user_id = kwargs.get("user_id", "system")
+    benefits = kwargs.get("benefits") or kwargs.get("data") or []
+    mode = (kwargs.get("mode") or "append").lower()
+
+    if not company_id:
+        return {"success": False, "data": {}, "message": "company_id obrigatorio."}
+    if not isinstance(benefits, list) or not benefits:
+        return {"success": False, "data": {}, "message": "Lista de beneficios vazia."}
+    if mode not in ("append", "replace"):
+        return {"success": False, "data": {}, "message": "mode deve ser 'append' ou 'replace'."}
+
+    valid_keys = {"name", "category", "description", "icon", "value",
+                  "value_type", "is_highlighted", "order"}
+    cleaned: list[dict[str, Any]] = []
+    for raw in benefits:
+        if not isinstance(raw, dict):
+            return {"success": False, "data": {}, "message": "Cada beneficio deve ser um objeto."}
+        name = (raw.get("name") or "").strip()
+        if not name:
+            return {"success": False, "data": {}, "message": "Cada beneficio precisa de 'name'."}
+        item = {k: raw.get(k) for k in valid_keys if raw.get(k) is not None}
+        item["name"] = name
+        # FairnessGuard em texto livre (name + description)
+        for tf in ("name", "description"):
+            txt = item.get(tf)
+            if isinstance(txt, str) and len(txt) > 10:
+                check = _fairness_guard.check(txt)
+                if check.is_blocked:
+                    return {
+                        "success": False,
+                        "data": {"blocked_field": tf, "category": check.category},
+                        "message": (
+                            f"Beneficio '{name}' bloqueado por compliance: "
+                            f"{check.educational_message}"
+                        ),
+                    }
+        cleaned.append(item)
+
+    inserted = 0
+    deactivated = 0
+    async with AsyncSessionLocal() as session:
+        if mode == "replace":
+            res = await session.execute(
+                text("UPDATE company_benefits SET is_active = false, updated_at = NOW() "
+                     "WHERE company_id = :cid AND is_active = true"),
+                {"cid": company_id},
+            )
+            deactivated = res.rowcount or 0
+
+        for item in cleaned:
+            await session.execute(
+                text(
+                    "INSERT INTO company_benefits "
+                    "(id, company_id, name, category, description, icon, value, "
+                    " value_type, is_active, is_highlighted, \"order\", created_at, updated_at) "
+                    "VALUES (gen_random_uuid(), :cid, :name, :category, :description, "
+                    " :icon, :value, COALESCE(:value_type, 'informative'), true, "
+                    " COALESCE(:is_highlighted, false), COALESCE(:order_idx, 0), NOW(), NOW())"
+                ),
+                {
+                    "cid": company_id,
+                    "name": item["name"],
+                    "category": item.get("category"),
+                    "description": item.get("description"),
+                    "icon": item.get("icon"),
+                    "value": item.get("value"),
+                    "value_type": item.get("value_type"),
+                    "is_highlighted": item.get("is_highlighted"),
+                    "order_idx": item.get("order"),
+                },
+            )
+            inserted += 1
+        await session.commit()
+
+    await _audit_log(
+        company_id,
+        "save_benefits",
+        metadata={
+            "mode": mode,
+            "inserted": inserted,
+            "deactivated": deactivated,
+            "user_id": user_id,
+            "names": [b["name"] for b in cleaned][:25],
+        },
+    )
+
+    return {
+        "success": True,
+        "data": {
+            "inserted": inserted,
+            "deactivated": deactivated,
+            "mode": mode,
+            "names": [b["name"] for b in cleaned],
+        },
+        "message": (
+            f"Beneficios salvos: {inserted} inserido(s)"
+            + (f", {deactivated} desativado(s)." if deactivated else ".")
+        ),
+    }
+
+
 def _validate_url_ssrf(url: str) -> str | None:
     import ipaddress as _ip
     from urllib.parse import urlparse

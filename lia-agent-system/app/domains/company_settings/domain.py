@@ -278,10 +278,8 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
         return await self._delegate_section_write("configure_tech_stack", params, context)
 
     async def _handle_configure_benefits(self, params, context):
-        # 'benefits' vive em tabela dedicada (company_benefits) e nao em
-        # company_culture_profiles. Nao temos tool registry de write para
-        # essa tabela ainda, entao retornamos clarification com
-        # navigation_hint para a UI dedicada — sem fingir sucesso.
+        # Delega para tool dedicada da tabela company_benefits.
+        # FairnessGuard L1 + Audit + tenant scoping rodam dentro da tool.
         company_id = (params.get("company_id") or context.tenant_id or "").strip()
         if not company_id:
             return DomainResponse.error_response(
@@ -289,22 +287,77 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
                 domain_id=self.domain_id,
                 action_id="configure_benefits",
             )
-        return DomainResponse.clarification_response(
-            question=(
-                "A edicao de beneficios ainda nao esta disponivel via chat — "
-                "abra Configuracoes > Minha Empresa > Beneficios para gerenciar "
-                "(adicionar, remover ou desativar) os beneficios da empresa."
-            ),
-            domain_id=self.domain_id,
-            action_id="configure_benefits",
+
+        raw = params.get("benefits")
+        if raw is None and isinstance(params.get("data"), dict):
+            raw = params["data"].get("benefits")
+        if isinstance(raw, dict):
+            raw = [raw]
+        if not isinstance(raw, list) or not raw:
+            return DomainResponse.clarification_response(
+                question=(
+                    "Quais beneficios voce quer registrar? Me envie uma lista "
+                    "(ex.: 'Vale Refeicao', 'Plano de Saude', 'Gympass') ou "
+                    "objetos com {name, category, description}."
+                ),
+                domain_id=self.domain_id,
+                action_id="configure_benefits",
+                data={"navigation_hint": {
+                    "page": "Company Settings",
+                    "section": "minha-empresa",
+                    "subsection": "beneficios",
+                }},
+            )
+
+        # Aceita strings simples — converte em {name: ...}
+        normalized: list[dict[str, Any]] = []
+        for it in raw:
+            if isinstance(it, str):
+                normalized.append({"name": it.strip()})
+            elif isinstance(it, dict):
+                normalized.append(it)
+
+        mode = (params.get("mode") or "append").lower()
+
+        try:
+            from app.domains.company_settings.agents.company_tool_registry import (
+                _wrap_save_company_benefits,
+            )
+            result = await _wrap_save_company_benefits(
+                company_id=company_id,
+                benefits=normalized,
+                mode=mode,
+                user_id=context.user_id or "system",
+            )
+        except Exception as exc:
+            logger.exception("[company_settings] configure_benefits delegate failed: %s", exc)
+            return DomainResponse.error_response(
+                error=f"Falha ao salvar beneficios: {exc}",
+                domain_id=self.domain_id,
+                action_id="configure_benefits",
+            )
+
+        if not result.get("success"):
+            return DomainResponse.error_response(
+                error=result.get("message") or "Falha ao salvar beneficios.",
+                data=result.get("data") or {},
+                domain_id=self.domain_id,
+                action_id="configure_benefits",
+            )
+
+        return DomainResponse.success_response(
+            message=result.get("message") or "Beneficios atualizados.",
             data={
+                **(result.get("data") or {}),
                 "navigation_hint": {
                     "page": "Company Settings",
                     "section": "minha-empresa",
                     "subsection": "beneficios",
                 },
             },
-            suggestions=["Abrir Configuracoes > Beneficios"],
+            domain_id=self.domain_id,
+            action_id="configure_benefits",
+            suggestions=["Abrir Configuracoes > Beneficios", "Continuar onboarding"],
         )
 
     async def _handle_configure_workforce(self, params, context):

@@ -387,7 +387,7 @@ Domain: `lia-agent-system/app/domains/company_settings/domain.py` (`CompanySetti
 | `configure_profile`      | `_wrap_save_company_section('profile')` | Minha Empresa › Perfil    | TIER 1 para `cnpj`/`name` pós-setup |
 | `configure_culture`      | `_wrap_save_company_section('culture')` | Minha Empresa › Cultura   | TIER 2 (humano + audit)          |
 | `configure_tech_stack`   | `_wrap_save_company_section('culture')` | Minha Empresa › Tech      | TIER 2                           |
-| `configure_benefits`     | _**clarification → UI**_ (tabela `company_benefits` ainda sem write tool) | Minha Empresa › Benefícios | n/a — write 100% via UI |
+| `configure_benefits`     | `_wrap_save_company_benefits` (tabela dedicada `company_benefits`, modes `append`/`replace`) | Minha Empresa › Benefícios | TIER 2 + FairnessGuard L1 |
 | `configure_workforce`    | `_wrap_import_workforce_plan`         | Minha Empresa › Workforce | TIER 2 (audit detalhado)         |
 | `analyze_website`        | `CompanyScraperService.scrape_website` direto + SSRF guard (gravação via UI/TIER 3) | Minha Empresa (CTA topo)  | TIER 3 — humano confirma antes de gravar |
 | `process_document`       | `_wrap_process_uploaded_document`      | Minha Empresa (upload)    | TIER 3 — `requires_human_approval=True` |
@@ -395,7 +395,7 @@ Domain: `lia-agent-system/app/domains/company_settings/domain.py` (`CompanySetti
 **Princípio canônico (anti-duplicação).** Os handlers do `domain.py` **não** instanciam serviços de gravação dos campos cobertos por `_wrap_save_company_section`. Cada `_handle_configure_{profile,culture,tech_stack}` chama `_delegate_section_write`, que invoca a tool canônica do registry — assim FairnessGuard L1+L2+L3, PII Masking, AuditTrail e tier validation são **idênticos** em chat e UI.
 
 **Exceções declaradas (sem silent fallback).**
-- `configure_benefits` — `benefits` vive em tabela dedicada (`company_benefits`) que ainda **não** possui write tool no registry. Em vez de fingir sucesso, o handler retorna `clarification_response` com `navigation_hint.subsection="beneficios"` orientando o usuário à UI dedicada (Configurações › Minha Empresa › Benefícios). Quando uma tool de write para `company_benefits` for criada, este handler passa a delegar.
+- `configure_benefits` — usa **tool dedicada** `_wrap_save_company_benefits` (a tabela `company_benefits` não pertence a `company_culture_profiles`). Aceita `benefits=[strings|objetos]` + `mode='append'|'replace'`; aplica FairnessGuard L1 em `name`/`description`, escopa por `company_id`, registra audit (`save_benefits` com inserted/deactivated/names). Se o usuário não envia lista, handler responde `clarification_response` com `navigation_hint.subsection="beneficios"` (em vez de gravar parcial).
 - `analyze_website` — usa `CompanyScraperService.scrape_website` direto **só para leitura**, com SSRF guard (`_is_safe_public_url`) bloqueando endereços internos. Nenhuma gravação acontece neste handler — o usuário aprova os campos extraídos antes que `_wrap_save_company_section` seja chamado num turn subsequente (TIER 3 — humano confirma).
 
 ### B. Pipeline conversacional (chat → action → painel)
@@ -474,7 +474,7 @@ Sempre devolve `requires_human_approval: True` e os `expected_fields` no `data` 
 
 - Backend domain handlers: **OK** (commit Task #712 + fix code-review).
 - Tools canônicas: **OK** (já existiam, agora consumidas pelo domain via `_delegate_section_write`).
-- `configure_benefits`: **clarification → UI** (sem write tool ainda — exceção declarada acima, sem silent fallback).
+- `configure_benefits`: **OK** — write real via `_wrap_save_company_benefits` em `company_benefits` (FairnessGuard L1 + Audit + tenant scope; modes append/replace).
 - `analyze_website`: **OK** (scrape direto + SSRF guard, gravação só após aprovação humana).
 - Hook + bridge frontend: **OK** (`use-settings-conversational.ts` dispara `lia:settings-action` + `lia:prefill-message`).
 - CTA analyze_website: **OK** (`MinhaEmpresaHub`).

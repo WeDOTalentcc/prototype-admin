@@ -198,3 +198,47 @@ Paulo commita manualmente via Replit IDE (nunca git push direto).
 Após cada tarefa: rodar skills do CLAUDE.md (audit_tool_routing + check_no_pii_in_logs + validate_stubs + pytest).
 Reportar progresso em MIGRATION-LOG-TOOLS-UNIFIED.md no final de cada tarefa.
 ```
+
+---
+
+## Sessão B — 2026-04-20 (Paulo + Claude Sonnet 4.6)
+
+### Task 1 — Admin Tenant Gap (P0) ✅ COMPLETO
+
+**Branch**: `feat/admin-tenant-rails-account-sync`
+
+**Problema resolvido**: Admin criava clientes em FastAPI/WorkOS/HubSpot mas NÃO no Rails.
+Apartment gem não conseguia criar schema do tenant → login do cliente quebrava.
+
+**Entregues**:
+
+| Arquivo | Tipo | Descrição |
+|---|---|---|
+| `app/shared/services/rails_account_sync_service.py` | NOVO | Serviço de sync com fallback gracioso |
+| `app/api/v1/clients/clients_crud.py` | MOD | Chamada sync_client_to_rails após HubSpot |
+| `app/domains/ats_integration/services/ats_clients/wedotalent_rails.py` | MOD (já commitado) | Método create_client_account adicionado |
+| `tests/integration/test_admin_tenant_rails_sync.py` | NOVO | 6 testes: success, unreachable, no-token, none-response, field-mapping, none-stripping |
+
+**Commits**:
+- `04b5f8bb0` — feat(admin-tenant): Rails ClientAccount sync on client creation — P0 fix
+
+**Gates**:
+| Check | Resultado |
+|---|---|
+| 6 integration tests | ✅ 6/6 green |
+| 23 unit tests (regression gate) | ✅ 23/23 green |
+| audit_tool_routing.py | ⚠️ Baseline inalterado (CHECK 1 WARN, CHECK 3 WARN, CHECK 4 FAIL — fora de escopo desta task) |
+
+**CLAUDE.md enforcement**:
+- Multi-tenancy: company_id do JWT no client_crud, token via env var no sync service ✅
+- LGPD: sem PII em logs ✅
+- Secrets: RAILS_ADMIN_TOKEN via os.environ ✅
+- Boy Scout: sem P2s encontrados nos arquivos tocados ✅
+
+**Behavior**:
+- `RAILS_ADMIN_TOKEN` ausente → log warning + `{"success": False}` (não bloqueia flow)
+- Rails 5xx → retry + circuit breaker + log warning (não bloqueia)
+- Rails 201 → `{"success": True, "rails_id": <int>}` + log info
+- Response do `POST /admin/clients` agora inclui `rails_synced: bool`
+
+**Próxima task**: Task 2 — Kanban 5 bugs (fix/kanban-e2e-bugs)
