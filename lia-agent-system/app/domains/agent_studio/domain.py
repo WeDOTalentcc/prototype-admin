@@ -1008,20 +1008,61 @@ class AgentStudioDomain(ComplianceDomainPrompt):
                 domain_id=self.domain_id,
                 action_id="pause_agent",
             )
+
+        # SourcingAgent.id é UUID — validamos cedo para evitar erro genérico de SQL.
+        import uuid as _uuid
+        try:
+            agent_uuid = _uuid.UUID(agent_id)
+        except (ValueError, TypeError):
+            return DomainResponse.error_response(
+                error=f"agent_id inválido (esperado UUID): '{agent_id}'.",
+                domain_id=self.domain_id,
+                action_id="pause_agent",
+            )
+
         try:
             from app.core.database import get_db
-            from sqlalchemy import text
+            from lia_models.sourcing_agent import SourcingAgent
+            from sqlalchemy import select
+
             company_id = context.tenant_id
+            agent_name: str | None = None
+            already_paused = False
+            found = False
+
             async for db in get_db():
-                await db.execute(
-                    text("UPDATE sourcing_agents SET status = 'paused' WHERE id = :id AND company_id = :cid"),
-                    {"id": agent_id, "cid": company_id},
+                result = await db.execute(
+                    select(SourcingAgent).where(
+                        SourcingAgent.id == agent_uuid,
+                        SourcingAgent.company_id == company_id,
+                    )
                 )
-                await db.commit()
+                agent = result.scalar_one_or_none()
+                if agent is not None:
+                    found = True
+                    agent_name = agent.agent_name
+                    already_paused = agent.status == "paused"
+                    if not already_paused:
+                        agent.status = "paused"
+                        await db.commit()
                 break
+
+            if not found:
+                return DomainResponse.error_response(
+                    error="Agente não encontrado neste tenant.",
+                    domain_id=self.domain_id,
+                    action_id="pause_agent",
+                )
+
+            label = agent_name or agent_id
+            msg = (
+                f"Agente '{label}' já estava pausado."
+                if already_paused
+                else f"Agente '{label}' pausado."
+            )
             return DomainResponse.success_response(
-                message=f"Agente {agent_id} pausado.",
-                data={"agent_id": agent_id, "status": "paused"},
+                message=msg,
+                data={"agent_id": agent_id, "agent_name": agent_name, "status": "paused"},
                 domain_id=self.domain_id,
                 action_id="pause_agent",
                 suggestions=["Reativar agente", "Listar agentes"],
@@ -1035,37 +1076,37 @@ class AgentStudioDomain(ComplianceDomainPrompt):
             )
 
     async def _handle_list_sector_templates(self, params: dict[str, Any], context: DomainContext) -> DomainResponse:
+        # Os templates de setor vivem em código (`app.shared.agent_templates.sector_templates`)
+        # — são curados pela WeDO e não há uma tabela `agent_sector_templates`. Este handler
+        # apenas espelha o mesmo catálogo exposto pelo endpoint
+        # GET /api/v1/agent-templates/sectors usado pela UI do Agent Studio.
         try:
-            from app.core.database import get_db
-            from sqlalchemy import text
-            templates: list[dict[str, Any]] = []
-            async for db in get_db():
-                result = await db.execute(
-                    text("SELECT id, name, sector, description FROM agent_sector_templates ORDER BY name")
-                )
-                templates = [dict(r._mapping) for r in result.fetchall()] if result else []
-                break
-            if not templates:
-                return DomainResponse.success_response(
-                    message="Nenhum template de setor disponível ainda.",
-                    data={"templates": []},
-                    domain_id=self.domain_id,
-                    action_id="list_sector_templates",
-                )
-            lines = ["Templates de setor disponíveis:\n"]
-            for t in templates:
-                lines.append(f"- **{t.get('name')}** ({t.get('sector')})")
-            return DomainResponse.success_response(
-                message="\n".join(lines),
-                data={"templates": templates, "count": len(templates)},
-                domain_id=self.domain_id,
-                action_id="list_sector_templates",
-            )
+            from app.shared.agent_templates.sector_templates import list_templates
+            templates = list_templates()
         except Exception as exc:
-            logger.warning("[AgentStudio] list_sector_templates failed: %s", exc)
-            return DomainResponse.success_response(
-                message="Templates de setor estão disponíveis no Agent Studio. Use o painel para visualizar.",
-                data={"navigation_hint": {"page": "Agent Studio", "section": "templates"}},
+            logger.exception("[AgentStudio] list_sector_templates failed: %s", exc)
+            return DomainResponse.error_response(
+                error=f"Não foi possível carregar os templates de setor: {exc}",
                 domain_id=self.domain_id,
                 action_id="list_sector_templates",
             )
+
+        if not templates:
+            return DomainResponse.success_response(
+                message="Nenhum template de setor disponível ainda.",
+                data={"templates": [], "count": 0},
+                domain_id=self.domain_id,
+                action_id="list_sector_templates",
+            )
+
+        lines = ["Templates de setor disponíveis:\n"]
+        for t in templates:
+            display = t.get("display_name") or t.get("id")
+            lines.append(f"- **{display}** ({t.get('id')}): {t.get('description', '')}")
+        return DomainResponse.success_response(
+            message="\n".join(lines),
+            data={"templates": templates, "count": len(templates)},
+            domain_id=self.domain_id,
+            action_id="list_sector_templates",
+            suggestions=["Aplicar template", "Criar agente customizado"],
+        )

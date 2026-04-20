@@ -148,6 +148,38 @@ class CandidateSelfServiceDomain(ComplianceDomainPrompt):
             )
         return None
 
+    # NOTE: Os handlers abaixo delegam para os endpoints canônicos do Rails
+    # (`/v1/candidate-portal/*`) — a mesma fonte usada pelas tools do
+    # `CandidateSelfServiceAgent`. Não escrevemos SQL aqui porque a triagem,
+    # entrevistas e feedback ficam no monólito Rails (e seus modelos não estão
+    # mapeados no Postgres da LIA com o schema fictício antes assumido).
+    # Identidade do candidato vem do contexto autenticado (NUNCA dos params)
+    # para evitar IDOR.
+    #
+    # Sanitização: a resposta crua do Rails pode trazer campos internos
+    # (scores brutos, notas de avaliadores, IDs de avaliação). Filtramos com
+    # allowlists explícitas antes de devolver para o canal de chat — nunca
+    # retornamos o payload bruto.
+    _STATUS_ALLOWED_FIELDS = {
+        "vacancy_id", "vacancy_title", "stage", "stage_name", "current_stage",
+        "applied_at", "last_updated_at", "next_step", "next_step_at",
+        "expected_response_at",
+    }
+    _INTERVIEW_ALLOWED_FIELDS = {
+        "vacancy_id", "vacancy_title", "scheduled_at", "start_time", "end_time",
+        "format", "modality", "location", "meeting_url", "interviewer_name",
+        "duration_minutes", "instructions",
+    }
+    _FEEDBACK_ALLOWED_FIELDS = {
+        "vacancy_id", "vacancy_title", "feedback_text", "summary", "shared_at",
+        "stage", "outcome", "next_steps",
+    }
+
+    @staticmethod
+    def _filter_fields(payload: Any, allowed: set[str]) -> dict[str, Any]:
+        if not isinstance(payload, dict):
+            return {}
+        return {k: v for k, v in payload.items() if k in allowed}
     async def _handle_get_status(
         self, params: dict[str, Any], context: DomainContext
     ) -> DomainResponse:
@@ -160,26 +192,16 @@ class CandidateSelfServiceDomain(ComplianceDomainPrompt):
                 domain_id=self.domain_id,
                 action_id="get_status",
             )
-        # Identidade do candidato vem do contexto autenticado (NUNCA dos params)
-        # e os predicados SQL aplicam escopo por tenant para evitar IDOR.
         try:
-            from app.core.database import get_db
-            from sqlalchemy import text
-            data: dict[str, Any] = {}
-            async for db in get_db():
-                result = await db.execute(
-                    text(
-                        "SELECT ca.current_stage, ca.applied_at, ca.last_updated_at "
-                        "FROM candidate_applications ca "
-                        "JOIN candidates c ON c.id = ca.candidate_id "
-                        "WHERE c.user_id = :uid AND ca.company_id = :cid "
-                        "  AND ca.vacancy_id = :vid LIMIT 1"
-                    ),
-                    {"uid": context.user_id, "cid": context.tenant_id, "vid": vacancy_id},
-                )
-                row = result.fetchone() if result else None
-                data = dict(row._mapping) if row else {}
-                break
+            from app.shared.rails_client import rails_get
+            data = await rails_get(
+                "/v1/candidate-portal/status",
+                params={
+                    "candidate_id": context.user_id,
+                    "vacancy_id": vacancy_id,
+                    "company_id": context.tenant_id,
+                },
+            )
             if not data:
                 return DomainResponse.success_response(
                     message="Não encontramos sua candidatura ativa para essa vaga.",
@@ -187,9 +209,16 @@ class CandidateSelfServiceDomain(ComplianceDomainPrompt):
                     domain_id=self.domain_id,
                     action_id="get_status",
                 )
+            stage = (
+                data.get("stage_name")
+                or data.get("current_stage")
+                or data.get("stage")
+                or "em análise"
+            )
+            safe = self._filter_fields(data, self._STATUS_ALLOWED_FIELDS)
             return DomainResponse.success_response(
-                message=f"Sua candidatura está na etapa: **{data.get('current_stage', 'em análise')}**",
-                data=data,
+                message=f"Sua candidatura está na etapa: **{stage}**",
+                data=safe,
                 domain_id=self.domain_id,
                 action_id="get_status",
             )
@@ -214,34 +243,31 @@ class CandidateSelfServiceDomain(ComplianceDomainPrompt):
                 action_id="get_interview_info",
             )
         try:
-            from app.core.database import get_db
-            from sqlalchemy import text
-            row_data: dict[str, Any] = {}
-            async for db in get_db():
-                result = await db.execute(
-                    text(
-                        "SELECT i.scheduled_at, i.format, i.location, i.meeting_url "
-                        "FROM interviews i "
-                        "JOIN candidates c ON c.id = i.candidate_id "
-                        "WHERE c.user_id = :uid AND i.company_id = :cid "
-                        "  AND i.vacancy_id = :vid "
-                        "ORDER BY i.scheduled_at DESC LIMIT 1"
-                    ),
-                    {"uid": context.user_id, "cid": context.tenant_id, "vid": vacancy_id},
-                )
-                row = result.fetchone() if result else None
-                row_data = dict(row._mapping) if row else {}
-                break
-            if not row_data:
+            from app.shared.rails_client import rails_get
+            data = await rails_get(
+                "/v1/candidate-portal/interview",
+                params={
+                    "candidate_id": context.user_id,
+                    "vacancy_id": vacancy_id,
+                    "company_id": context.tenant_id,
+                },
+            )
+            if not data:
                 return DomainResponse.success_response(
                     message="Você ainda não tem entrevista agendada para essa vaga.",
                     data={},
                     domain_id=self.domain_id,
                     action_id="get_interview_info",
                 )
+            scheduled = (
+                data.get("scheduled_at")
+                or data.get("start_time")
+                or "data a confirmar"
+            )
+            safe = self._filter_fields(data, self._INTERVIEW_ALLOWED_FIELDS)
             return DomainResponse.success_response(
-                message=f"Sua entrevista está agendada para {row_data.get('scheduled_at')}.",
-                data=row_data,
+                message=f"Sua entrevista está agendada para {scheduled}.",
+                data=safe,
                 domain_id=self.domain_id,
                 action_id="get_interview_info",
             )
@@ -266,25 +292,30 @@ class CandidateSelfServiceDomain(ComplianceDomainPrompt):
                 action_id="get_feedback",
             )
         try:
-            from app.core.database import get_db
-            from sqlalchemy import text
-            feedback: dict[str, Any] = {}
-            async for db in get_db():
-                result = await db.execute(
-                    text(
-                        "SELECT cf.feedback_text, cf.shared_at "
-                        "FROM candidate_feedback cf "
-                        "JOIN candidates c ON c.id = cf.candidate_id "
-                        "WHERE c.user_id = :uid AND cf.company_id = :cid "
-                        "  AND cf.vacancy_id = :vid "
-                        "  AND cf.shared_with_candidate = true "
-                        "ORDER BY cf.shared_at DESC LIMIT 1"
+            from app.shared.rails_client import rails_get
+            # Política da empresa precisa habilitar feedback público — checamos antes
+            policy = await rails_get(
+                "/v1/candidate-portal/policy",
+                params={"company_id": context.tenant_id},
+            )
+            if policy and not policy.get("show_feedback", False):
+                return DomainResponse.success_response(
+                    message=(
+                        "A empresa optou por não disponibilizar feedback detalhado "
+                        "neste processo seletivo."
                     ),
-                    {"uid": context.user_id, "cid": context.tenant_id, "vid": vacancy_id},
+                    data={"feedback_available": False},
+                    domain_id=self.domain_id,
+                    action_id="get_feedback",
                 )
-                row = result.fetchone() if result else None
-                feedback = dict(row._mapping) if row else {}
-                break
+            feedback = await rails_get(
+                "/v1/candidate-portal/wsi-feedback",
+                params={
+                    "candidate_id": context.user_id,
+                    "vacancy_id": vacancy_id,
+                    "company_id": context.tenant_id,
+                },
+            )
             if not feedback:
                 return DomainResponse.success_response(
                     message="A empresa ainda não compartilhou feedback público para essa vaga.",
@@ -292,9 +323,15 @@ class CandidateSelfServiceDomain(ComplianceDomainPrompt):
                     domain_id=self.domain_id,
                     action_id="get_feedback",
                 )
+            text = (
+                feedback.get("feedback_text")
+                or feedback.get("summary")
+                or "Feedback disponível — confira os detalhes abaixo."
+            )
+            safe = self._filter_fields(feedback, self._FEEDBACK_ALLOWED_FIELDS)
             return DomainResponse.success_response(
-                message=feedback.get("feedback_text", "Feedback disponível."),
-                data=feedback,
+                message=text,
+                data=safe,
                 domain_id=self.domain_id,
                 action_id="get_feedback",
             )
