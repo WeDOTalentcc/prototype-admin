@@ -761,8 +761,19 @@ class CascadedRouter:
             logger.debug("[CascadedRouter] llm_cascade falhou: %s", exc)
             return None
 
-    def _intent_to_domain(self, intent: str) -> str:
-        return resolve_domain(intent)
+    def _intent_to_domain(
+        self,
+        intent: str,
+        context: dict[str, Any] | None = None,
+        session_id: str | None = None,
+    ) -> str:
+        ctx = context or {}
+        return resolve_domain(
+            intent,
+            tenant_id=ctx.get("company_id") or ctx.get("tenant_id"),
+            user_id=ctx.get("user_id"),
+            conversation_id=ctx.get("conversation_id") or session_id,
+        )
 
     def _cache_store(self, key: str, result: RouteResult) -> None:
         if len(self._memory_cache) >= self._cache_max_size:

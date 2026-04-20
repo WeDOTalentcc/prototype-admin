@@ -1186,7 +1186,12 @@ async def set_chat_context(
             detail=f"Unknown context_type '{ctx}'. Allowed: {sorted(_ALLOWED_CONTEXT_TYPES)}",
         )
 
-    domain = resolve_domain(ctx)
+    domain = resolve_domain(
+        ctx,
+        tenant_id=str(getattr(current_user, "company_id", "") or "") or None,
+        user_id=str(getattr(current_user, "id", "") or "") or None,
+        conversation_id=payload.conversation_id,
+    )
 
     # Persist context on the conversation if an ID was provided
     if payload.conversation_id:

@@ -13,10 +13,18 @@ registered (see task #580 — 10 orphans resolved manually).
 
 Adding a new agent-type alias is therefore a one-file change in the owning
 domain. There is no list to keep in sync here.
+
+Silent-fallback observability (Task #672 / Fase 2C P0-2): when ``resolve_domain``
+receives an agent-type that is not in ``AGENT_TYPE_TO_DOMAIN`` and falls back to
+``DEFAULT_DOMAIN``, it emits a structured ``logger.warning`` and increments an
+in-process counter exposed via ``get_fallback_stats()``. This is the only way to
+detect a Tier 5 LLM emitting unmapped agent-types in production — without it the
+chat silently routes to ``recruiter_assistant`` and produces off-context answers.
 """
 from __future__ import annotations
 
 import logging
+import threading
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -121,9 +129,70 @@ def __getattr__(name: str):  # PEP 562
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
-def resolve_domain(intent: str) -> str:
-    """Resolve an intent/agent-type string to its canonical domain_id."""
-    intent_lower = str(intent).lower().strip()
+# ─── Silent-fallback telemetry (Task #672 / Fase 2C P0-2) ────────────────────
+# Aggregated counters only — per-request identifiers (tenant/user/conversation)
+# stay in the structured warning log and never leak through any health/metrics
+# endpoint, so we don't expand the public telemetry surface with PII or
+# internal IDs.
+_FALLBACK_LOCK = threading.Lock()
+_FALLBACK_TOTAL: int = 0
+_FALLBACK_BY_INTENT: dict[str, int] = {}
+
+
+def get_fallback_stats() -> dict[str, object]:
+    """Return a snapshot of silent-fallback counters for observability.
+
+    Exposed via ``GET /api/v1/orchestrator/health`` so operators can monitor
+    whether the Tier 5 LLM is emitting unmapped agent-types after a deploy.
+
+    Aggregated counts only — request-level identifiers (tenant_id, user_id,
+    conversation_id) are intentionally **not** included here. They live in the
+    structured ``logger.warning`` emitted by ``resolve_domain`` so that the
+    health endpoint never exposes per-conversation or per-user data.
+    """
+    with _FALLBACK_LOCK:
+        return {
+            "total": _FALLBACK_TOTAL,
+            "by_intent": dict(
+                sorted(_FALLBACK_BY_INTENT.items(), key=lambda kv: -kv[1])
+            ),
+        }
+
+
+def reset_fallback_stats() -> None:
+    """Clear silent-fallback counters (testing helper)."""
+    global _FALLBACK_TOTAL
+    with _FALLBACK_LOCK:
+        _FALLBACK_TOTAL = 0
+        _FALLBACK_BY_INTENT.clear()
+
+
+def _record_fallback(agent_type_received: str) -> None:
+    global _FALLBACK_TOTAL
+    with _FALLBACK_LOCK:
+        _FALLBACK_TOTAL += 1
+        _FALLBACK_BY_INTENT[agent_type_received] = (
+            _FALLBACK_BY_INTENT.get(agent_type_received, 0) + 1
+        )
+
+
+def resolve_domain(
+    intent: str,
+    *,
+    tenant_id: str | None = None,
+    user_id: str | None = None,
+    conversation_id: str | None = None,
+) -> str:
+    """Resolve an intent/agent-type string to its canonical domain_id.
+
+    When the intent does not match any registered alias (neither exact nor
+    substring), this function returns ``DEFAULT_DOMAIN`` and emits a structured
+    ``logger.warning`` so the silent fallback is observable. Caller-supplied
+    ``tenant_id`` / ``user_id`` / ``conversation_id`` are echoed in the log
+    ``extra`` dict to make the warning actionable.
+    """
+    intent_raw = str(intent)
+    intent_lower = intent_raw.lower().strip()
     mapping = _get_mapping()
 
     if intent_lower in mapping:
@@ -133,4 +202,16 @@ def resolve_domain(intent: str) -> str:
         if agent_key in intent_lower or intent_lower in agent_key:
             return domain_id
 
+    _record_fallback(intent_lower)
+    logger.warning(
+        "agent-type desconhecido caiu no DEFAULT_DOMAIN — "
+        "investigar prompt do Tier 5 ou registrar mapeamento",
+        extra={
+            "agent_type_received": intent_lower,
+            "fallback_domain": DEFAULT_DOMAIN,
+            "tenant_id": tenant_id,
+            "user_id": user_id,
+            "conversation_id": conversation_id,
+        },
+    )
     return DEFAULT_DOMAIN

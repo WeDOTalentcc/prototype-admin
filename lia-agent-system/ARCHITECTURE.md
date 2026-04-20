@@ -538,15 +538,7 @@ mapping and the rationale behind the consolidation.
 
 *Last updated: 2026-04-17 | ADR-017: canonical observability layer*
 
-
-
 ---
-
-## ADR-018: LLM Factory — Choose Your AI / BYOK Contract
-
-**Status**: Implementado (2026-04-19)
-
-### Decisão
 
 O sistema de LLM opera via **LLM Factory**, composto por três camadas canônicas:
 
@@ -573,6 +565,7 @@ O sistema de LLM opera via **LLM Factory**, composto por três camadas canônica
 
 Ver `LLM_FACTORY_HANDOFF_v2.md` para: tabela de gaps, constantes de referência (`QUALITY_TIERS`, `TASK_MINIMUM_TIER`), guia de logs, env vars e matriz Provider × Capacidade × Tier.
 
+<<<<<<< HEAD
 ---
 
 ## Documentos de Status por Dir (2026-04-20)
@@ -599,3 +592,63 @@ Ao adicionar novos dirs estratégicos, criar `STATUS.md` seguindo o template
 desses 8 e listar aqui.
 
 *Last updated: 2026-04-20 | Documentos de Status por Dir (task #670)*
+=======
+*Last updated: 2026-04-19 | ADR-018: LLM Factory / Choose Your AI BYOK contract*
+
+---
+
+## ADR-019: Chat-Capabilities Audit Gate + Domain-Resolver Observability (2026-04-20) [ENFORCED by CI]
+
+Closes Fase 2C P0-2 (silent fallback) and P2-4 (regression guard) — Task #672.
+
+### Domain resolver — silent-fallback observability (P0-2)
+
+`app.orchestrator.domain_mappings.resolve_domain` is the **canonical** resolver
+for agent-type → domain. When the Tier 5 LLM emits an `agent_type` that is not
+in `AGENT_TYPE_TO_DOMAIN`, the resolver still returns `DEFAULT_DOMAIN`
+(`recruiter_assistant`) **and** now:
+
+- emits a structured `logger.warning(...)` with `extra={agent_type_received,
+  fallback_domain, tenant_id, user_id, conversation_id}`;
+- increments an in-process counter exposed via
+  `get_fallback_stats()`, surfaced at `GET /api/v1/orchestrator/health` under
+  `domain_resolver_fallbacks` as **aggregated counts only** (`total` +
+  `by_intent`). Per-request identifiers (`tenant_id`, `user_id`,
+  `conversation_id`) live in the structured log and are intentionally **not**
+  echoed in the health payload, so the public telemetry surface never carries
+  per-conversation or per-user data.
+
+Callers that have tenant/user/conversation context (`cascaded_router._intent_to_domain`,
+`/api/v1/chat/context`) pass it through so each warning is actionable.
+
+### CI gate — chat-capabilities audit (P2-4)
+
+`scripts/audit_chat_capabilities.py` writes
+`docs/chat_capabilities_audit.json`. The thin gate
+`scripts/ci_audit_gate.py` runs the auditor and fails the build if **any** of
+these regress:
+
+- `global_summary.domains_with_gaps`
+- `global_summary.broken_handlers`
+- `global_summary.actions_no_handler`
+- `global_summary.orphan_tools`
+- `global_summary.broken_mappings`
+- `agent_types_pointing_to_unknown_domain` (top-level list)
+- `global_summary.total_registered < 18` (baseline — protects against an
+  accidental `@register_domain` deletion; bump intentionally via
+  `--baseline-domains` when adding a new domain)
+
+Reproduce locally:
+
+```bash
+cd lia-agent-system
+python3 scripts/audit_chat_capabilities.py   # writes docs/chat_capabilities_audit.json
+python3 scripts/ci_audit_gate.py             # parses + enforces
+```
+
+Enforcement: `.github/workflows/ci-audit-gate.yml` (job "Audit Gate — chat
+capabilities"). The full Fase 2C audit appendix lives in
+`docs/fase2c_domain_verification_report.md`.
+
+*Last updated: 2026-04-20 | ADR-019: chat-capabilities audit gate + resolver observability*
+>>>>>>> c634fcbdc (Task #672 — DEFAULT_DOMAIN routing warning + chat-capabilities CI gate)
