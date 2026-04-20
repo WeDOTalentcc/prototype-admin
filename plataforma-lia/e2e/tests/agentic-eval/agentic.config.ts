@@ -32,7 +32,9 @@ export default defineConfig({
     video: 'off',
     viewport: { width: 1366, height: 900 },
     ignoreHTTPSErrors: true,
-    ...(systemChromium ? { launchOptions: { executablePath: systemChromium } } : {}),
+    ...(systemChromium
+      ? { launchOptions: { executablePath: systemChromium, args: ["--no-sandbox", "--disable-setuid-sandbox"] } }
+      : { launchOptions: { args: ["--no-sandbox", "--disable-setuid-sandbox"] } }),
   },
 
   projects: [

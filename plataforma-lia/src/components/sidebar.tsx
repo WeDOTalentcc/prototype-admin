@@ -64,6 +64,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { NotificationSystem } from "@/components/notification-system"
+import { BetaBadge } from "@/components/ui/beta-badge"
 import { HitlPendingBadge } from "@/components/hitl-pending-badge"
 import { ProfileModal } from "@/components/modals/profile-modal"
 import { useAuth } from "@/contexts/auth-context"
