@@ -34,6 +34,12 @@ import pytest
 # ──────────────────────────────────────────────────────────────────────────────
 P1_DOMAINS_DEFERRED: set[str] = set()  # Phase 2 (#582): all P1 handlers now resolve.
 
+# Domínios cujo roteamento é via state-machine (process_intent + _route_by_stage)
+# em vez de _ACTION_TOOL_MAP / handler_map. Para esses, a ausência de
+# mapeamento explícito NÃO é um gap — espelha `_INTENT_ROUTED_DOMAINS`
+# em scripts/audit_chat_capabilities.py.
+_INTENT_ROUTED_DOMAINS: set[str] = {"job_creation"}
+
 # Actions cujo execute_action depende de IO pesado (DB com vagas reais, APIs
 # externas) — validamos coverage mas não invocamos.
 _DEFERRED_ACTIONS: set[tuple[str, str]] = {
@@ -398,6 +404,8 @@ def test_zero_actions_without_tool_or_handler() -> None:
     for domain_id, action_id, domain_instance in _ACTION_ROWS:
         if domain_id in P1_DOMAINS_DEFERRED:
             continue
+        if domain_id in _INTENT_ROUTED_DOMAINS:
+            continue  # state-machine routing — não usa _ACTION_TOOL_MAP/handler_map
         if (domain_id, action_id) in _DEFERRED_ACTIONS:
             continue
         # Intent-routed (state-machine) — execução é via process_intent
@@ -462,6 +470,91 @@ def test_candidate_self_service_blocks_unauthenticated_access() -> None:
         assert "negado" in (resp.error or "").lower(), (
             f"{handler_name} nao retornou mensagem de acesso negado: {resp.error!r}"
         )
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# [#591] Cobertura de execução real do _ACTION_TOOL_MAP por domínio
+# ──────────────────────────────────────────────────────────────────────────────
+# Actions que executamos com payload dummy para validar o contrato execute_action
+# → DomainResponse. Excluídas:
+#   - actions em _DEFERRED_ACTIONS (já cobertas pela exceção declarativa);
+#   - actions cujo handler exige IO externo pesado (Apify, OpenAI, e-mail real)
+#     e não retorna DomainResponse estruturado em modo dummy. A whitelist
+#     abaixo é deliberadamente curta — qualquer crescimento exige justificativa
+#     no PR. Adicionar aqui = aceitar débito técnico.
+_ACTION_EXECUTION_SKIP: set[tuple[str, str]] = set()
+
+
+def test_mapped_actions_return_domain_response_under_dummy_payload() -> None:
+    """[#591] Para CADA action mapeada em `_ACTION_TOOL_MAP`, executar com
+    payload dummy seguro DEVE retornar DomainResponse — sem exceção crua.
+
+    Cobre o contrato prometido pelo saneamento da Fase 1: handlers tipados
+    devolvem `success`, `clarification` ou `error_response`; nunca propagam
+    stack trace para o orquestrador. Falhas listam (domain, action, exc) para
+    diagnóstico granular, em vez de parar no primeiro erro.
+    """
+    from app.domains.base import DomainContext, DomainResponse
+    from app.domains.registry import DomainRegistry
+
+    registry = DomainRegistry()
+    failures: list[str] = []
+    executed = 0
+
+    dummy_ctx = DomainContext(
+        domain_id="__smoke__",
+        user_id="00000000-0000-0000-0000-000000000001",
+        session_id="smoke-session",
+        tenant_id="00000000-0000-0000-0000-000000000099",
+    )
+
+    for domain_id in sorted(_TOOL_IDS_BY_DOMAIN.keys() | set(P1_DOMAINS_DEFERRED)):
+        if domain_id in P1_DOMAINS_DEFERRED:
+            continue
+        if domain_id in _INTENT_ROUTED_DOMAINS:
+            continue
+        try:
+            domain = registry.get_instance(domain_id)
+        except Exception as exc:
+            failures.append(f"{domain_id} :: registry.get_instance crashed → {exc!r}")
+            continue
+        if domain is None:
+            continue
+
+        mapping = _extract_action_tool_map(domain)
+        for action_id, _tool_id in mapping.items():
+            if (domain_id, action_id) in _DEFERRED_ACTIONS:
+                continue
+            if (domain_id, action_id) in _ACTION_EXECUTION_SKIP:
+                continue
+
+            dummy_ctx.domain_id = domain_id
+            try:
+                resp = asyncio.run(domain.execute_action(action_id, {}, dummy_ctx))
+            except Exception as exc:
+                failures.append(
+                    f"{domain_id}::{action_id} levantou {type(exc).__name__}: "
+                    f"{str(exc)[:160]}"
+                )
+                continue
+
+            if not isinstance(resp, DomainResponse):
+                failures.append(
+                    f"{domain_id}::{action_id} retornou {type(resp).__name__} "
+                    f"em vez de DomainResponse"
+                )
+                continue
+            executed += 1
+
+    # Sanity: cobrimos pelo menos as 4 famílias saneadas na Fase 1.
+    assert executed >= 30, (
+        f"Cobertura suspeita: só {executed} actions exercitadas "
+        f"(esperado ≥30 entre os 4 domínios P0)."
+    )
+    assert not failures, (
+        f"[#591] {len(failures)} actions estouraram exceção ou não retornaram "
+        f"DomainResponse:\n  - " + "\n  - ".join(failures)
+    )
 
 
 def test_company_settings_handlers_fail_explicitly_when_service_missing() -> None:

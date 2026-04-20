@@ -1242,12 +1242,21 @@ async def compare_candidates(
             )
         company_id = _ctx_company_id
     if not company_id:
+        # P0-FIX (#591): fail-fast — sem tenant nao ha como garantir isolamento.
+        # Antes degradavamos silenciosamente (sem WHERE company_id), o que
+        # expunha dados cross-tenant se o dispatcher nao injetasse _context.
         import logging as _logging
-        _logging.getLogger(__name__).warning(
-            "compare_candidates: no company_id in context — query will NOT be tenant-scoped. "
-            "Ensure _context is injected by the tool dispatcher."
+        _logging.getLogger(__name__).error(
+            "compare_candidates: no company_id in context — refusing to execute "
+            "to prevent cross-tenant data leak."
         )
-    
+        return {
+            "success": False,
+            "message": "Contexto de empresa ausente — nao e possivel comparar candidatos sem identificar o tenant.",
+            "error": "missing_tenant_context",
+            "candidates": [],
+        }
+
     # Resolve names to UUIDs if needed
     if not candidate_ids and candidate_names:
         from app.orchestrator.action_handlers._handler_hooks import resolve_candidate_by_name as _rcbn
@@ -1257,23 +1266,21 @@ async def compare_candidates(
             if r:
                 resolved.append(r["id"])
         candidate_ids = resolved
-    
+
     if not candidate_ids or len(candidate_ids) < 2:
         return {
             "success": False,
             "message": "Informe ao menos 2 nomes ou IDs de candidatos para comparar.",
             "candidates": []
         }
-    
+
     placeholders = ", ".join([f":id_{i}" for i in range(len(candidate_ids))])
     params = {f"id_{i}": cid for i, cid in enumerate(candidate_ids)}
 
-    # P1-FIX: always filter by company_id for tenant isolation
-    if company_id:
-        params["_company_id"] = str(company_id)
-        company_filter = "AND company_id = :_company_id"
-    else:
-        company_filter = ""  # degraded mode — logged above
+    # P0-FIX (#591): tenant predicate is MANDATORY — never run a SELECT on
+    # candidates without filtering by company_id (IDOR defense).
+    params["_company_id"] = str(company_id)
+    company_filter = "AND company_id = :_company_id"
 
     try:
         async with AsyncSessionLocal() as db:
