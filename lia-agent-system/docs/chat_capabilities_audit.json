@@ -336,7 +336,7 @@
     "cv_screening": {
       "class": "CVScreeningDomain",
       "action_count": 24,
-      "tool_count": 11,
+      "tool_count": 10,
       "actions": [
         "parse_cv",
         "auto_screen",
@@ -365,7 +365,6 @@
       ],
       "tools": [
         "parse_cv",
-        "score_cv",
         "evaluate_rubric",
         "calculate_wsi",
         "generate_wsi_questions",
@@ -378,7 +377,6 @@
       ],
       "action_tool_map": {
         "parse_cv": "parse_cv",
-        "auto_screen": "score_cv",
         "calculate_wsi_score": "calculate_wsi",
         "evaluate_rubric": "evaluate_rubric",
         "generate_questions": "generate_wsi_questions",
@@ -918,7 +916,7 @@
   "global_summary": {
     "total_registered": 18,
     "total_actions": 281,
-    "total_tools": 93,
+    "total_tools": 92,
     "domains_with_gaps": 0,
     "broken_mappings": 0,
     "orphan_tools": 0,

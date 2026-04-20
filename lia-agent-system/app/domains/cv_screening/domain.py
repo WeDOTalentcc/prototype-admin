@@ -28,7 +28,6 @@ _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id=
 # execute_action — mesmo padrão adotado em SourcingDomain (task #579).
 _ACTION_TOOL_MAP: dict[str, str] = {
     "parse_cv": "parse_cv",
-    "auto_screen": "score_cv",
     "calculate_wsi_score": "calculate_wsi",
     "evaluate_rubric": "evaluate_rubric",
     "generate_questions": "generate_wsi_questions",
@@ -150,6 +149,7 @@ class CVScreeningDomain(ComplianceDomainPrompt):
             )
 
         handler_map = {
+            "auto_screen": self._handle_auto_screen,
             "batch_screen": self._handle_batch_screen,
             "rank_candidates": self._handle_rank_candidates,
             "dynamic_cutoff": self._handle_dynamic_cutoff,
@@ -184,8 +184,38 @@ class CVScreeningDomain(ComplianceDomainPrompt):
             action_id=action_id,
         )
 
+    async def _handle_auto_screen(self, params: dict, context: DomainContext) -> DomainResponse:
+        from app.domains.cv_screening.services.cv_scoring_service import cv_scoring_service
+
+        candidate_id = params.get("candidate_id")
+        job_id = params.get("job_id") or params.get("vacancy_id")
+
+        if not candidate_id or not job_id:
+            return DomainResponse.clarification_response(
+                question="Informe o ID do candidato e da vaga para a triagem automática.",
+                domain_id=self.domain_id, action_id="auto_screen",
+            )
+
+        result = await cv_scoring_service.screen_candidate(
+            candidate_id=str(candidate_id),
+            vacancy_id=str(job_id),
+            company_id=context.tenant_id,
+        )
+
+        if isinstance(result, dict) and result.get("success") is False:
+            return DomainResponse.error_response(
+                error=result.get("error") or result.get("message") or "Falha na triagem automática.",
+                domain_id=self.domain_id, action_id="auto_screen",
+            )
+
+        return DomainResponse.success_response(
+            message=f"Triagem automática concluída para candidato #{candidate_id} na vaga #{job_id}.",
+            data={"action_id": "auto_screen", "candidate_id": candidate_id, "job_id": job_id, "result": result},
+            domain_id=self.domain_id, action_id="auto_screen",
+        )
+
     async def _handle_batch_screen(self, params: dict, context: DomainContext) -> DomainResponse:
-        from app.domains.cv_screening.tools import execute_cv_screening_tool
+        from app.domains.cv_screening.services.cv_scoring_service import cv_scoring_service
 
         job_id = params.get("job_id")
         candidate_ids = params.get("candidate_ids", [])
@@ -198,10 +228,10 @@ class CVScreeningDomain(ComplianceDomainPrompt):
 
         results = []
         for cid in (candidate_ids or []):
-            result = await execute_cv_screening_tool(
-                "score_cv",
-                {"candidate_id": str(cid), "job_id": str(job_id)},
-                context.tenant_id,
+            result = await cv_scoring_service.screen_candidate(
+                candidate_id=str(cid),
+                vacancy_id=str(job_id),
+                company_id=context.tenant_id,
             )
             results.append({"candidate_id": cid, "result": result})
 
