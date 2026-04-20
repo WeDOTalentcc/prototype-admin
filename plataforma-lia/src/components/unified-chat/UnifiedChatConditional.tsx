@@ -8,7 +8,7 @@ import { UnifiedChatBubble } from "./UnifiedChatBubble"
 import { UnifiedChat } from "./UnifiedChat"
 import type { ChatMode } from "./unified-chat-types"
 
-const HIDDEN_PATHS = ["/login", "/login/welcome", "/forgot-password", "/reset-password"]
+import { isAuthRoute } from "@/lib/auth-routes"
 
 export function UnifiedChatConditional() {
   const pathname = usePathname()
@@ -74,8 +74,7 @@ export function UnifiedChatConditional() {
     return () => document.removeEventListener("keydown", handleKeyDown)
   }, [isOpen, open, close])
 
-  const isHidden = HIDDEN_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"))
-  if (isHidden) return null
+  if (isAuthRoute(pathname ?? "")) return null
 
   const showFloating = isOpen && chatMode === "floating" && !hasInlineChat
   const showSidebarOverlay = isOpen && chatMode === "sidebar" && !hasInlineChat && !hasDashboardShell

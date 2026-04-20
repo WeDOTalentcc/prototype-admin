@@ -4,6 +4,7 @@ import React, { useCallback } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { useLocale } from "next-intl"
 import { useAuthStore } from "@/stores/auth-store"
+import { isAuthRoute } from "@/lib/auth-routes"
 import WorkflowRail from "./WorkflowRail"
 
 /**
@@ -35,6 +36,8 @@ export default function WorkflowRailWrapper() {
     const target = path.startsWith(localePrefix) ? path : `${localePrefix}${path}`
     router.push(target)
   }, [router, locale])
+
+  if (isAuthRoute(pathname ?? "")) return null
 
   // Task #592 — Educational phase: in development we want the rail visible
   // even without a real session so designers/recruiters can perceive the

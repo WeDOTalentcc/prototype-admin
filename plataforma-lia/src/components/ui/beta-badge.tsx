@@ -19,9 +19,9 @@ export const BetaBadge = React.memo(function BetaBadge({
     <span
       className={cn(
         "inline-flex items-center gap-0.5 rounded-full font-semibold tracking-wide leading-none",
-        "bg-blue-600 text-white",
-        size === "sm" && "px-1 py-[1px] text-[7px]",
-        size === "md" && "px-1.5 py-[1px] text-[8px]",
+        "bg-wedo-cyan text-white",
+        size === "sm" && "px-1 py-[1px] text-[6px]",
+        size === "md" && "px-1.5 py-[1px] text-[7px]",
         className,
       )}
     >
