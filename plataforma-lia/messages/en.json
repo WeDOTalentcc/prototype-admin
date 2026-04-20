@@ -1756,7 +1756,52 @@
       "twins": {
         "cloneReasoning": "Clone the reasoning of your best evaluators",
         "cloneDesc": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and works as an automatic 'second opinion' in screening.",
-        "label": "Digital Twins"
+        "label": "Digital Twins",
+        "headerTitle": "Clone the reasoning of your best evaluators",
+        "headerDesc": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and works as an automatic second opinion in screening.",
+        "createModal": {
+          "title": "Create Digital Twin",
+          "subtitle": "Capture a specialist's reasoning to use as automatic screening support",
+          "nameLabel": "Twin name",
+          "namePlaceholder": "E.g.: Senior Backend Evaluator",
+          "nameHelp": "Name the specialist this twin will represent",
+          "specialtyLabel": "Specialties",
+          "specialtyPlaceholder": "E.g.: Backend, Python, AWS (comma-separated)",
+          "specialtyHelp": "Areas this evaluator is most experienced in",
+          "descLabel": "Description",
+          "descPlaceholder": "E.g.: Evaluator with 10+ years in backend systems...",
+          "descHelp": "Brief summary of the specialist's profile and evaluation style",
+          "decisionsLabel": "Past decisions (optional)",
+          "decisionsUploadCta": "Click to upload a decision file",
+          "decisionsFormats": ".csv, .json or .txt",
+          "decisionsHelp": "Upload a file with past approved/rejected decisions to accelerate calibration",
+          "fileTooLargeTitle": "File too large",
+          "fileTooLargeDesc": "Maximum allowed size is 5 MB",
+          "successTitle": "Digital Twin created!",
+          "successDesc": "The twin will start learning from your decisions.",
+          "errorTitle": "Error creating twin",
+          "errorDesc": "Please try again in a few moments.",
+          "cancel": "Cancel",
+          "creating": "Creating...",
+          "create": "Create Twin"
+        },
+        "emptyState": {
+          "title": "No Digital Twin created",
+          "description": "Capture a specialist's reasoning to create a twin that acts as automatic screening support.",
+          "createFirst": "Create first twin",
+          "noExperience": "No prior experience required — the twin learns from your feedback."
+        },
+        "onboarding": {
+          "stepLabel": "Step {number}",
+          "step1Title": "Choose a specialist",
+          "step1Desc": "Name and describe the evaluator the twin will represent",
+          "step2Title": "Upload past decisions",
+          "step2Desc": "Add past approved/rejected decisions to accelerate calibration",
+          "step3Title": "Evaluate profiles",
+          "step3Desc": "The twin learns from each profile you evaluate",
+          "step4Title": "Automated screening",
+          "step4Desc": "The twin acts as a second opinion in every new screening"
+        }
       },
       "search": {
         "multiStrategy": "Multi-Strategy Search",
@@ -2449,7 +2494,9 @@
       "fairnessGuardOk": "FairnessGuard OK",
       "piiStripOk": "PII Strip OK",
       "auditLogOk": "Audit Log OK",
-      "agentFallback": "Agent"
+      "agentFallback": "Agent",
+      "defaultAgentName": "New Agent",
+      "toolsLabel": "Tools"
     },
     "digitalTwin": {
       "active": "Active",
@@ -2476,7 +2523,9 @@
       "evaluateCandidate": "Evaluate candidate",
       "manage": "Manage",
       "digitalTwinEvaluation": "Digital Twin Evaluation",
-      "reevaluate": "Re-evaluate"
+      "reevaluate": "Re-evaluate",
+      "createNew": "New Twin",
+      "twinCount": "{count} twin(s) active"
     },
     "candidateOrigin": {
       "origins": {
@@ -3387,6 +3436,7 @@
         "selectJob": "Select Job",
         "loadingJobs": "Loading jobs...",
         "noJobsAvailable": "No jobs available",
+        "noChannelsEnabled": "No channels enabled. Go to Settings to configure email or WhatsApp.",
         "selectAJob": "Select a job...",
         "pipelineStage": "Pipeline Stage",
         "stageNew": "New",

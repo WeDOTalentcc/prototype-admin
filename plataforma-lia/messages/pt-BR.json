@@ -1756,7 +1756,52 @@
       "twins": {
         "cloneReasoning": "Clone o raciocínio dos seus melhores avaliadores",
         "cloneDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
-        "label": "Gêmeos Digitais"
+        "label": "Gêmeos Digitais",
+        "headerTitle": "Clone o raciocínio dos seus melhores avaliadores",
+        "headerDesc": "Capture como um especialista da equipe avalia candidatos. O Gêmeo Digital aprende os critérios e atua como segundo parecer automático na triagem.",
+        "createModal": {
+          "title": "Criar Gêmeo Digital",
+          "subtitle": "Capture o raciocínio de um especialista para usar como suporte automático de triagem",
+          "nameLabel": "Nome do gêmeo",
+          "namePlaceholder": "Ex.: Avaliador Sênior Backend",
+          "nameHelp": "Nomeie o especialista que este gêmeo irá representar",
+          "specialtyLabel": "Especialidades",
+          "specialtyPlaceholder": "Ex.: Backend, Python, AWS (separados por vírgula)",
+          "specialtyHelp": "Áreas em que este avaliador tem maior experiência",
+          "descLabel": "Descrição",
+          "descPlaceholder": "Ex.: Avaliador com 10+ anos em sistemas backend...",
+          "descHelp": "Resumo do perfil e estilo de avaliação do especialista",
+          "decisionsLabel": "Decisões anteriores (opcional)",
+          "decisionsUploadCta": "Clique para enviar um arquivo de decisões",
+          "decisionsFormats": ".csv, .json ou .txt",
+          "decisionsHelp": "Envie um arquivo com decisões passadas de aprovação/rejeição para acelerar a calibração",
+          "fileTooLargeTitle": "Arquivo muito grande",
+          "fileTooLargeDesc": "Tamanho máximo permitido é 5 MB",
+          "successTitle": "Gêmeo Digital criado!",
+          "successDesc": "O gêmeo começará a aprender com suas decisões.",
+          "errorTitle": "Erro ao criar gêmeo",
+          "errorDesc": "Tente novamente em alguns instantes.",
+          "cancel": "Cancelar",
+          "creating": "Criando...",
+          "create": "Criar Gêmeo"
+        },
+        "emptyState": {
+          "title": "Nenhum Gêmeo Digital criado",
+          "description": "Capture o raciocínio de um especialista para criar um gêmeo que atua como suporte automático de triagem.",
+          "createFirst": "Criar primeiro gêmeo",
+          "noExperience": "Não é necessária experiência prévia — o gêmeo aprende com seu feedback."
+        },
+        "onboarding": {
+          "stepLabel": "Passo {number}",
+          "step1Title": "Escolha um especialista",
+          "step1Desc": "Nomeie e descreva o avaliador que o gêmeo irá representar",
+          "step2Title": "Envie decisões anteriores",
+          "step2Desc": "Adicione decisões passadas de aprovação/rejeição para acelerar a calibração",
+          "step3Title": "Avalie perfis",
+          "step3Desc": "O gêmeo aprende com cada perfil que você avalia",
+          "step4Title": "Triagem automatizada",
+          "step4Desc": "O gêmeo atua como segundo parecer em cada nova triagem"
+        }
       },
       "search": {
         "multiStrategy": "Busca Multi-Estratégia",
@@ -2449,7 +2494,9 @@
       "fairnessGuardOk": "FairnessGuard OK",
       "piiStripOk": "Remoção PII OK",
       "auditLogOk": "Log de Auditoria OK",
-      "agentFallback": "Agente"
+      "agentFallback": "Agente",
+      "defaultAgentName": "Novo Agente",
+      "toolsLabel": "Ferramentas"
     },
     "digitalTwin": {
       "active": "Ativo",
@@ -2476,7 +2523,9 @@
       "evaluateCandidate": "Avaliar candidato",
       "manage": "Gerenciar",
       "digitalTwinEvaluation": "Avaliação Digital Twin",
-      "reevaluate": "Reavaliar"
+      "reevaluate": "Reavaliar",
+      "createNew": "Novo Gêmeo",
+      "twinCount": "{count} gêmeo(s) ativo(s)"
     },
     "candidateOrigin": {
       "origins": {
@@ -3387,6 +3436,7 @@
         "selectJob": "Selecione a Vaga",
         "loadingJobs": "Carregando vagas...",
         "noJobsAvailable": "Nenhuma vaga disponível",
+        "noChannelsEnabled": "Nenhum canal habilitado. Acesse as configurações para habilitar e-mail ou WhatsApp.",
         "selectAJob": "Selecione uma vaga...",
         "pipelineStage": "Etapa do Pipeline",
         "stageNew": "Novo",

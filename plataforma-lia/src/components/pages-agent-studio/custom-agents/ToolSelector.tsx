@@ -26,7 +26,7 @@ export function ToolSelector({ selectedTools, onChange, label }: ToolSelectorPro
   return (
     <div>
       <label className="text-xs font-semibold text-lia-text-primary mb-2 block">
-        {label || t('tools')}
+        {label || t('toolsLabel')}
         <span className="font-normal text-lia-text-disabled ml-1">
           ({selectedTools.length}/{ALL_TOOLS.length})
         </span>

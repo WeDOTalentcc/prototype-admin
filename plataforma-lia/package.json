@@ -35,6 +35,7 @@
     "test:all": "vitest run",
     "generate:api-types": "curl -s http://localhost:8001/openapi.json > /tmp/lia-openapi.json && npx openapi-typescript /tmp/lia-openapi.json -o src/types/api.generated.ts",
     "analyze": "ANALYZE=true npm run build",
+    "i18n:check": "node scripts/i18n-check.js",
     "prepare": "husky"
   },
   "dependencies": {
