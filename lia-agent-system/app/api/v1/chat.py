@@ -384,6 +384,7 @@ async def send_message(
                 role="assistant",
                 content=final_response,
                 message_metadata=_meta,
+                tool_calls=list(orch_result.get("actions") or []),
                 created_at=_now,
             ),
             conversation=ConversationResponse(
@@ -554,6 +555,7 @@ async def send_message_with_attachments(
                 role="assistant",
                 content=lia_response,
                 message_metadata=_meta,
+                tool_calls=list(orch_result.get("actions") or []),
                 created_at=_now,
             ),
             conversation=ConversationResponse(

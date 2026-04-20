@@ -148,6 +148,9 @@ class ChatAdapter:
             "prompt_version": getattr(orch_response, "agent_used", "main_orchestrator"),
             "fairness_warnings": getattr(orch_response, "fairness_warnings", []),
             "from_cache": getattr(orch_response, "from_cache", False),
+            # LIA-LCF-01 (Task #620): expose tool calls observed by the ReAct agent
+            # so chat.py can surface them on the response body for eval/judge.
+            "actions": list(getattr(orch_response, "actions", []) or []),
         }
 
         # ── Structured data → workflow_data ──

@@ -275,12 +275,30 @@ class Orchestrator:
                 if conv_state and conversation_id:
                     state_updates["conversation_state"] = conv_state.to_dict()
                 self.state_manager.update_state(conversation_id, state_updates)
+                # LIA-LCF-01 (Task #620): Surface ReAct tool calls so eval/judge
+                # and downstream consumers can observe which tools the agent used.
+                _tool_results = (dr.metadata or {}).get("tool_results") or []
+                _actions: list[dict[str, Any]] = []
+                for _tr in _tool_results:
+                    if not isinstance(_tr, dict):
+                        continue
+                    _name = _tr.get("tool_name") or _tr.get("name")
+                    if not _name:
+                        continue
+                    _actions.append({
+                        "name": _name,
+                        "args": _tr.get("arguments") or _tr.get("args") or _tr.get("params") or {},
+                        "success": bool(_tr.get("success", True)),
+                        "error": _tr.get("error"),
+                    })
                 result = {"success": dr.success, "conversation_id": conversation_id,
                           "intent": dr.action_id or domain_id, "agent": domain_id,
                           "agent_type": domain_id, "confidence": dr.confidence or confidence,
                           "message": resp_msg, "requires_user_input": dr.needs_clarification or dr.needs_confirmation,
                           "suggested_prompts": dr.suggestions or [], "next_actions": [],
-                          "result": {"message": resp_msg, "data": dr.data, "suggestions": dr.suggestions},
+                          "actions": _actions,
+                          "result": {"message": resp_msg, "data": dr.data, "suggestions": dr.suggestions,
+                                     "tool_calls": _actions},
                           "policy_constraints": policy.get("constraints", {})}
             else:
                 fb = await self._handle_directly(intent, sanitized, {}, context=ctx)
