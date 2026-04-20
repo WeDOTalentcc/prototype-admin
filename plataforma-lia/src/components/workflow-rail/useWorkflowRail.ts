@@ -191,6 +191,58 @@ export function useWorkflowRail(userId: string) {
     return () => clearInterval(interval)
   }, [])
 
+  // Listen for workflow events emitted by UnifiedChat (wizard, scheduling, outreach)
+  useEffect(() => {
+    const onStarted = (e: Event) => {
+      const { id, type, label, stage, vacancyId } = (e as CustomEvent).detail
+      setEntries(prev => {
+        if (prev.find(en => en.id === id)) return prev
+        return [{
+          id,
+          type: type === "campaign" ? "campaign" : "search",
+          name: label ?? "Fluxo",
+          currentStage: stage,
+          stages: [],
+          jobId: vacancyId ?? null,
+          talentPoolId: null,
+          pendingAction: null,
+          createdAt: new Date().toISOString(),
+        } as WorkflowEntry, ...prev]
+      })
+    }
+
+    const onUpdated = (e: Event) => {
+      const { id, stage, label } = (e as CustomEvent).detail
+      setEntries(prev => prev.map(en =>
+        en.id === id ? { ...en, currentStage: stage ?? en.currentStage, name: label ?? en.name } : en
+      ))
+    }
+
+    const onCompleted = (e: Event) => {
+      const { id } = (e as CustomEvent).detail
+      setEntries(prev => prev.filter(en => en.id !== id))
+    }
+
+    const onFailed = (e: Event) => {
+      const { id, error } = (e as CustomEvent).detail
+      setEntries(prev => prev.map(en =>
+        en.id === id ? { ...en, pendingAction: { message: error ?? "Falha no fluxo" } } : en
+      ))
+    }
+
+    window.addEventListener("workflow:started", onStarted)
+    window.addEventListener("workflow:updated", onUpdated)
+    window.addEventListener("workflow:completed", onCompleted)
+    window.addEventListener("workflow:failed", onFailed)
+
+    return () => {
+      window.removeEventListener("workflow:started", onStarted)
+      window.removeEventListener("workflow:updated", onUpdated)
+      window.removeEventListener("workflow:completed", onCompleted)
+      window.removeEventListener("workflow:failed", onFailed)
+    }
+  }, [])
+
   // Init
   useEffect(() => {
     loadEntries()

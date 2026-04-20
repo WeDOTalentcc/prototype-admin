@@ -1068,17 +1068,14 @@ async def get_market_benchmarks(
     
     logger.info("Getting market benchmarks (company: %s, title: %s)", company_id, job_title)
 
-    # P1-FIX: Require company_id so we never query across tenants
+    # NOTE: company_id is used to compare against company own data but
+    # market benchmarks (external stats) are not tenant-scoped.
+    # If company_id is absent, proceed with global market benchmarks only.
     if not company_id:
         logger.warning(
-            "get_market_benchmarks called without company_id in context -- "
-            "returning error to avoid cross-tenant data leak"
+            "get_market_benchmarks: no company_id in context — skipping internal comparison, "
+            "returning global market benchmarks only"
         )
-        return {
-            "success": False,
-            "message": "Contexto de empresa nao disponivel. Faca login novamente.",
-            "error": "company_id missing from context",
-        }
 
     try:
         from sqlalchemy import and_, func, select

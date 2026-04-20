@@ -1,12 +1,13 @@
 "use client"
 
 import React, { useState, useCallback, useRef, useEffect } from "react"
+import { X, Maximize2 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { useAuthStore } from "@/stores/auth-store"
 import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
-import { DynamicContextPanel } from "./wizard/DynamicContextPanel"
+import { DynamicContextPanel, SPLIT_STAGES } from "./wizard/DynamicContextPanel"
 import type { WizardStage } from "./wizard/wizard-types"
 import { SwitchTaskModal } from "@/components/lia-float/SwitchTaskModal"
 import { useNavigationIntent } from "@/hooks/shared/use-navigation-intent"
@@ -17,25 +18,23 @@ import { UnifiedChatInput } from "./UnifiedChatInput"
 import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState"
 import { UnifiedMessageList } from "./UnifiedMessageList"
 import type { ChatMode } from "./unified-chat-types"
-import { requestRegeneration } from "@/services/lia-api/feedback-api"
-import { toast } from "@/lib/toast"
-
-import {
-  FLOATING_POSITION_STORAGE_KEY,
-  FLOATING_RESET_EVENT,
-  BUBBLE_RESET_EVENT,
-  FLOATING_WIDTH,
-  FLOATING_HEIGHT,
-  FLOATING_DRAG_THRESHOLD,
-  ARROW_STEP,
-  ARROW_STEP_LARGE,
-  clampFloatingPosition,
-  readPersistedFloatingPosition,
-  getUserScopedKey,
-  type Point,
-} from "./floating-position"
 
 const MODE_STORAGE_KEY = "lia-chat-mode"
+
+const WIZARD_STAGE_LABELS: Record<string, string> = {
+  intake: "Criando vaga · Início",
+  jd_enrichment: "Criando vaga · Descrição",
+  bigfive: "Criando vaga · Perfil",
+  salary: "Criando vaga · Salário",
+  competency: "Criando vaga · Competências",
+  wsi_questions: "Criando vaga · Triagem",
+  eligibility: "Criando vaga · Elegibilidade",
+  review: "Criando vaga · Revisão",
+  publish: "Criando vaga · Publicação",
+  calibration: "Calibrando · Candidatos",
+  handoff: "Criando vaga · Finalização",
+  done: "Vaga criada",
+}
 const WIDTH_STORAGE_KEY = "lia-chat-width"
 const DEFAULT_WIDTH = 380
 const MIN_WIDTH = 300
@@ -58,16 +57,6 @@ function getStoredWidth(): number {
   return DEFAULT_WIDTH
 }
 
-function getStoredFloatingPositionFor(userId: string | null | undefined): Point | null {
-  if (typeof window === "undefined") return null
-  const viewport = { width: window.innerWidth, height: window.innerHeight }
-  // Try the user-scoped key first, then migrate from the legacy unscoped key.
-  const scopedKey = getUserScopedKey(FLOATING_POSITION_STORAGE_KEY, userId)
-  const scoped = readPersistedFloatingPosition(window.localStorage, viewport, scopedKey)
-  if (scoped) return scoped
-  return readPersistedFloatingPosition(window.localStorage, viewport, FLOATING_POSITION_STORAGE_KEY)
-}
-
 interface Props {
   renderMode?: "inline" | "overlay"
   initialMode?: ChatMode
@@ -87,149 +76,12 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const [inputText, setInputText] = useState("")
   const [attachedFile, setAttachedFile] = useState<File | null>(null)
   const [showSwitchTask, setShowSwitchTask] = useState(false)
-  // Task #570 (review fix #2): assistant message ids the user has just
-  // regenerated. We hide them from the rendered list so the thread does
-  // NOT inflate by one bubble per retry. The set is in-memory only —
-  // backend metadata.regenerated=true is the durable record.
-  const [supersededMessageIds, setSupersededMessageIds] = useState<Set<string>>(() => new Set())
+  const [showFullscreenHint, setShowFullscreenHint] = useState(false)
+  const fullscreenHintShown = useRef(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [sidebarWidthPx, setSidebarWidthPx] = useState(getStoredWidth)
   const [isResizing, setIsResizing] = useState(false)
   const widthRef = useRef(sidebarWidthPx)
-  const userId = useAuthStore(s => s.user?.id ?? null)
-  const [floatingPosition, setFloatingPosition] = useState<{ x: number; y: number } | null>(
-    () => getStoredFloatingPositionFor(userId),
-  )
-  const floatingDragRef = useRef<{ startX: number; startY: number; bx: number; by: number; moved: boolean; origin: { x: number; y: number } | null } | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-
-  // Reload position when the active user changes (login/logout)
-  const lastUserIdRef = useRef<string | null>(userId)
-  useEffect(() => {
-    if (lastUserIdRef.current === userId) return
-    lastUserIdRef.current = userId
-    setFloatingPosition(getStoredFloatingPositionFor(userId))
-  }, [userId])
-
-  // Persist floating position under a per-user key.
-  // Always also drop the legacy unscoped key so that resets are durable
-  // for users who had been migrated from the old global key.
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    const key = getUserScopedKey(FLOATING_POSITION_STORAGE_KEY, userId)
-    if (floatingPosition) {
-      localStorage.setItem(key, JSON.stringify(floatingPosition))
-    } else {
-      localStorage.removeItem(key)
-    }
-    localStorage.removeItem(FLOATING_POSITION_STORAGE_KEY)
-  }, [floatingPosition, userId])
-
-  // Reposition on resize
-  useEffect(() => {
-    const handleResize = () => {
-      setFloatingPosition(prev => {
-        if (!prev) return prev
-        const next = clampFloatingPosition(prev)
-        if (next.x === prev.x && next.y === prev.y) return prev
-        return next
-      })
-    }
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
-
-  // Reset event listener
-  useEffect(() => {
-    const handleReset = () => setFloatingPosition(null)
-    window.addEventListener(FLOATING_RESET_EVENT, handleReset)
-    return () => window.removeEventListener(FLOATING_RESET_EVENT, handleReset)
-  }, [])
-
-  const handleHeaderPointerDown = useCallback((e: React.PointerEvent) => {
-    // Ignore drag if clicking on interactive elements
-    const target = e.target as HTMLElement
-    if (target.closest('button, input, [role="menu"], [role="menuitem"]')) return
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (!rect) return
-    floatingDragRef.current = {
-      startX: e.clientX,
-      startY: e.clientY,
-      bx: rect.left,
-      by: rect.top,
-      moved: false,
-      origin: floatingPosition,
-    }
-    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
-
-    const handleMove = (ev: PointerEvent) => {
-      const ref = floatingDragRef.current
-      if (!ref) return
-      const dx = ev.clientX - ref.startX
-      const dy = ev.clientY - ref.startY
-      if (!ref.moved && (Math.abs(dx) > FLOATING_DRAG_THRESHOLD || Math.abs(dy) > FLOATING_DRAG_THRESHOLD)) {
-        ref.moved = true
-      }
-      if (!ref.moved) return
-      setFloatingPosition(clampFloatingPosition({ x: ref.bx + dx, y: ref.by + dy }))
-    }
-    const cleanup = () => {
-      window.removeEventListener("pointermove", handleMove)
-      window.removeEventListener("pointerup", handleUp)
-      window.removeEventListener("pointercancel", handleUp)
-      window.removeEventListener("keydown", handleKey)
-      try {
-        ;(e.currentTarget as HTMLElement)?.releasePointerCapture?.(e.pointerId)
-      } catch {}
-    }
-    const handleUp = () => {
-      floatingDragRef.current = null
-      cleanup()
-    }
-    const handleKey = (ev: KeyboardEvent) => {
-      if (ev.key !== "Escape") return
-      const ref = floatingDragRef.current
-      if (!ref) return
-      ev.preventDefault()
-      // Restore origin (may be null, meaning back to default position)
-      setFloatingPosition(ref.origin)
-      floatingDragRef.current = null
-      cleanup()
-    }
-    window.addEventListener("pointermove", handleMove)
-    window.addEventListener("pointerup", handleUp)
-    window.addEventListener("pointercancel", handleUp)
-    window.addEventListener("keydown", handleKey)
-  }, [floatingPosition])
-
-  const handleResetFloatingPosition = useCallback(() => {
-    setFloatingPosition(null)
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new CustomEvent(BUBBLE_RESET_EVENT))
-    }
-  }, [])
-
-  // Keyboard arrow movement when header has focus (only floating mode)
-  const handleContainerKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (mode !== "floating") return
-    const target = e.target as HTMLElement
-    if (target.closest('input, textarea, [contenteditable="true"]')) return
-    const arrowMap: Record<string, [number, number]> = {
-      ArrowUp: [0, -1],
-      ArrowDown: [0, 1],
-      ArrowLeft: [-1, 0],
-      ArrowRight: [1, 0],
-    }
-    const delta = arrowMap[e.key]
-    if (!delta) return
-    if (!target.closest('[data-drag-handle]')) return
-    e.preventDefault()
-    const step = e.shiftKey ? ARROW_STEP_LARGE : ARROW_STEP
-    setFloatingPosition(prev => {
-      const base = prev ?? { x: window.innerWidth - FLOATING_WIDTH - 16, y: window.innerHeight - FLOATING_HEIGHT - 16 }
-      return clampFloatingPosition({ x: base.x + delta[0] * step, y: base.y + delta[1] * step })
-    })
-  }, [mode])
 
   useEffect(() => {
     if (!isResizing) return
@@ -350,6 +202,62 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const currentModeRef = useRef(mode)
   currentModeRef.current = mode
 
+  // Suggest fullscreen once when wizard starts in non-fullscreen mode
+  useEffect(() => {
+    if (
+      dynamicPanel?.stage === "intake" &&
+      mode !== "fullscreen" &&
+      renderMode !== "inline" &&
+      !fullscreenHintShown.current
+    ) {
+      fullscreenHintShown.current = true
+      setShowFullscreenHint(true)
+      const timer = setTimeout(() => setShowFullscreenHint(false), 7000)
+      return () => clearTimeout(timer)
+    }
+  }, [dynamicPanel?.stage, mode, renderMode])
+
+  // Workflow Rail integration — emit lifecycle events as wizard stage changes
+  const prevStageRef = useRef<string | null>(null)
+  const wizardWorkflowIdRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    const stage = dynamicPanel?.stage ?? null
+    const prevStage = prevStageRef.current
+    if (stage === prevStage) return
+    prevStageRef.current = stage
+
+    if (stage === "intake" && !prevStage) {
+      wizardWorkflowIdRef.current = `wizard-${Date.now()}`
+      window.dispatchEvent(new CustomEvent("workflow:started", {
+        detail: { id: wizardWorkflowIdRef.current, type: "campaign", label: "Criando vaga", stage: "intake" },
+      }))
+    } else if (stage && wizardWorkflowIdRef.current) {
+      if (stage === "done") {
+        window.dispatchEvent(new CustomEvent("workflow:completed", {
+          detail: { id: wizardWorkflowIdRef.current, outcome: "success" },
+        }))
+        wizardWorkflowIdRef.current = null
+      } else {
+        window.dispatchEvent(new CustomEvent("workflow:updated", {
+          detail: { id: wizardWorkflowIdRef.current, stage, label: WIZARD_STAGE_LABELS[stage] ?? stage },
+        }))
+      }
+    } else if (!stage && prevStage && wizardWorkflowIdRef.current) {
+      window.dispatchEvent(new CustomEvent("workflow:failed", {
+        detail: { id: wizardWorkflowIdRef.current, error: "Fluxo interrompido" },
+      }))
+      wizardWorkflowIdRef.current = null
+    }
+  }, [dynamicPanel?.stage])
+
+  useEffect(() => {
+    if (!wizardWorkflowIdRef.current) return
+    window.dispatchEvent(new CustomEvent("workflow:thinking", {
+      detail: { id: wizardWorkflowIdRef.current, isThinking: chatIsThinking },
+    }))
+  }, [chatIsThinking])
+
   const handleModeChange = useCallback((newMode: ChatMode) => {
     const prevMode = currentModeRef.current
     if (newMode === "minimized") {
@@ -387,7 +295,10 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
 
   const conversationTitle = chatMessages.find(m => m.sender === "user")?.content?.slice(0, 40) || null
   const hasMessages = chatMessages.length > 0
-  const hasDynamicPanel = !!dynamicPanel
+  const hasDynamicPanel = !!dynamicPanel && SPLIT_STAGES.includes(dynamicPanel.stage as WizardStage)
+  const activeTaskLabel = dynamicPanel?.stage
+    ? (WIZARD_STAGE_LABELS[dynamicPanel.stage] ?? dynamicPanel.stage)
+    : null
 
   if (renderMode === "overlay" && !isOpen && mode !== "fullscreen") return null
 
@@ -397,15 +308,8 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const dynamicPanelWidth = hasDynamicPanel ? 340 : 0
   const inlineWidth = isInline ? sidebarWidthPx + dynamicPanelWidth : undefined
 
-  const isFloatingOverlay = !isInline && mode === "floating"
-  const floatingStyle: React.CSSProperties | undefined = isFloatingOverlay && floatingPosition
-    ? { left: floatingPosition.x, top: floatingPosition.y, right: "auto", bottom: "auto" }
-    : undefined
-
   return (
     <div
-      ref={containerRef}
-      onKeyDown={handleContainerKeyDown}
       className={cn(
         "flex bg-lia-bg-primary relative overflow-hidden",
         isInline
@@ -414,17 +318,10 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
             ? "fixed inset-0 z-50"
             : mode === "sidebar"
               ? "fixed top-2 right-2 bottom-2 z-40 border border-lia-border-subtle rounded-xl shadow-xl"
-              : "fixed w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle shadow-xl",
-        isFloatingOverlay && !floatingPosition && "bottom-4 right-4",
+              : "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle shadow-xl",
         className
       )}
-      style={
-        isInline
-          ? { width: `${inlineWidth}px` }
-          : (!isInline && mode === "sidebar")
-            ? { width: `${sidebarWidthPx + dynamicPanelWidth}px` }
-            : floatingStyle
-      }
+      style={isInline ? { width: `${inlineWidth}px` } : (!isInline && mode === "sidebar") ? { width: `${sidebarWidthPx + dynamicPanelWidth}px` } : undefined}
       data-chat-mode={effectiveMode}
       data-render-mode={renderMode}
     >
@@ -452,75 +349,20 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           isConnected={chatIsConnected}
           transportMode={chatTransportMode}
           isReconnecting={chatIsReconnecting}
-          isDraggable={isFloatingOverlay}
-          onHeaderPointerDown={isFloatingOverlay ? handleHeaderPointerDown : undefined}
-          onResetPosition={isFloatingOverlay ? handleResetFloatingPosition : undefined}
+          activeTaskLabel={activeTaskLabel}
         />
 
         {/* Content area */}
         {hasMessages ? (
           <UnifiedMessageList
             mode={effectiveMode}
-            // Task #570 (review fix #2): hide assistant bubbles that the
-            // user superseded via Regenerate so the thread doesn't grow
-            // by one extra question/answer pair on every retry. The IDs
-            // are tracked in `supersededMessageIds` and unioned with the
-            // also-orphaned user prompt that triggered the supersede.
-            messages={chatMessages.filter((m) => !supersededMessageIds.has(m.id))}
+            messages={chatMessages}
             isStreaming={chatIsStreaming}
             streamingContent={chatStreamingContent}
             isThinking={chatIsThinking}
             thinkingSteps={chatThinkingSteps}
             userName={userName}
-            conversationId={chatConversationId}
             onChipClick={(value) => sendChatMessage(value)}
-            onRegenerate={async (assistantMessageId) => {
-              // Task #570 (review fix): server-side regeneration handshake.
-              // Backend verifies ownership, marks the old assistant row as
-              // superseded, returns the prior user message text. We then
-              // (a) hide the old assistant bubble locally and (b) re-invoke
-              // the pipeline. Fallback to a pure client-side scan when the
-              // endpoint isn't reachable or the message id isn't a UUID
-              // (optimistic local-only turns).
-              const supersedeLocally = () => {
-                setSupersededMessageIds((prev) => {
-                  const next = new Set(prev)
-                  next.add(assistantMessageId)
-                  return next
-                })
-              }
-
-              const fallback = () => {
-                const idx = chatMessages.findIndex((m) => m.id === assistantMessageId)
-                if (idx <= 0) return false
-                for (let i = idx - 1; i >= 0; i--) {
-                  if (chatMessages[i].sender === "user") {
-                    supersedeLocally()
-                    sendChatMessage(chatMessages[i].content)
-                    return true
-                  }
-                }
-                return false
-              }
-
-              if (!chatConversationId) {
-                fallback()
-                return
-              }
-              try {
-                const res = await requestRegeneration(chatConversationId, assistantMessageId)
-                if (res?.user_message) {
-                  supersedeLocally()
-                  sendChatMessage(res.user_message)
-                  return
-                }
-                fallback()
-              } catch {
-                if (!fallback()) {
-                  toast.error("Não foi possível regenerar a resposta")
-                }
-              }
-            }}
           />
         ) : (
           <UnifiedChatEmptyState
@@ -549,6 +391,33 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           />
         )}
 
+        {/* Fullscreen suggestion hint (once when wizard starts in non-fullscreen) */}
+        {showFullscreenHint && (
+          <div className="px-4 pb-1">
+            <div className="flex items-center justify-between px-3 py-2 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary">
+              <span className="text-xs text-lia-text-secondary">
+                Tela cheia melhora a experiência do wizard
+              </span>
+              <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+                <button
+                  onClick={() => { handleModeChange("fullscreen"); setShowFullscreenHint(false) }}
+                  className="flex items-center gap-1 text-xs font-medium text-lia-text-primary px-2 py-0.5 rounded-md hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+                >
+                  <Maximize2 className="w-3 h-3" aria-hidden="true" />
+                  Tela cheia
+                </button>
+                <button
+                  onClick={() => setShowFullscreenHint(false)}
+                  className="p-0.5 text-lia-text-disabled hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
+                  aria-label="Fechar sugestão"
+                >
+                  <X className="w-3 h-3" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Input */}
         <UnifiedChatInput
           mode={effectiveMode}
@@ -567,9 +436,12 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
         />
       </div>
 
-      {/* Split View: DynamicContextPanel (sidebar + fullscreen) */}
+      {/* Split View: DynamicContextPanel — wider in fullscreen to use available space */}
       {hasDynamicPanel && (
-        <div className="w-[340px] flex-shrink-0 border-l border-lia-border-subtle overflow-y-auto">
+        <div className={cn(
+          "flex-shrink-0 border-l border-lia-border-subtle overflow-y-auto",
+          effectiveMode === "fullscreen" ? "w-[420px]" : "w-[340px]"
+        )}>
           <DynamicContextPanel
             stage={(dynamicPanel?.stage as WizardStage) ?? null}
             data={dynamicPanel?.data ?? {}}

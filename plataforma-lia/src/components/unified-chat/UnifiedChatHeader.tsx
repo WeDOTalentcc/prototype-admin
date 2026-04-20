@@ -10,16 +10,6 @@ import { useTranslations } from 'next-intl'
 import type { ChatMode } from "./unified-chat-types"
 import type { TransportMode } from "@/hooks/chat/lia-chat-connection-types"
 import { TransportModeIndicator } from "./TransportModeIndicator"
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogAction,
-  AlertDialogCancel,
-} from "@/components/ui/alert-dialog"
 
 interface Props {
   mode: ChatMode
@@ -33,10 +23,7 @@ interface Props {
   isReconnecting?: boolean
   onRename?: (newTitle: string) => void
   onDelete?: () => void
-  hasMessages?: boolean
-  onResetPosition?: () => void
-  onHeaderPointerDown?: (e: React.PointerEvent) => void
-  isDraggable?: boolean
+  activeTaskLabel?: string | null
 }
 
 export function UnifiedChatHeader({
@@ -51,16 +38,12 @@ export function UnifiedChatHeader({
   isReconnecting,
   onRename,
   onDelete,
-  hasMessages,
-  onResetPosition,
-  onHeaderPointerDown,
-  isDraggable,
+  activeTaskLabel,
 }: Props) {
   const t = useTranslations('chat.header')
   const [showModeMenu, setShowModeMenu] = useState(false)
   const [showOptionsMenu, setShowOptionsMenu] = useState(false)
   const [isRenaming, setIsRenaming] = useState(false)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [renameValue, setRenameValue] = useState("")
   const renameInputRef = useRef<HTMLInputElement>(null)
 
@@ -106,12 +89,9 @@ export function UnifiedChatHeader({
 
   const handleDelete = () => {
     setShowOptionsMenu(false)
-    setShowDeleteDialog(true)
-  }
-
-  const handleConfirmDelete = () => {
-    setShowDeleteDialog(false)
-    onDelete?.()
+    if (window.confirm(t('deleteConfirm'))) {
+      onDelete?.()
+    }
   }
 
   const renderTitle = () => {
@@ -132,18 +112,7 @@ export function UnifiedChatHeader({
   }
 
   return (
-    <div
-      onPointerDown={onHeaderPointerDown}
-      className={cn(
-        "flex items-center justify-between px-4 py-2.5 flex-shrink-0 bg-lia-bg-primary",
-        isDraggable && "cursor-grab active:cursor-grabbing select-none touch-none"
-      )}
-      title={isDraggable ? t('dragHandle') : undefined}
-      data-drag-handle={isDraggable || undefined}
-      tabIndex={isDraggable ? 0 : undefined}
-      role={isDraggable ? "toolbar" : undefined}
-      aria-label={isDraggable ? t('dragHandle') : undefined}
-    >
+    <div className="flex items-center justify-between px-4 py-2.5 flex-shrink-0 bg-lia-bg-primary">
       <div className="flex items-center gap-2 min-w-0">
         <Brain className="w-4 h-4 text-wedo-cyan flex-shrink-0" strokeWidth={2} />
 
@@ -188,6 +157,19 @@ export function UnifiedChatHeader({
         )}
         {transportMode && (
           <TransportModeIndicator transportMode={transportMode} isReconnecting={isReconnecting} />
+        )}
+
+        {/* Active task pill (Tezi Task Context Bar pattern) */}
+        {activeTaskLabel && (
+          <button
+            onClick={onSwitchTask}
+            className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none flex-shrink-0 max-w-[200px]"
+            title={`${activeTaskLabel} — trocar conversa (⌘K)`}
+            aria-label={`Tarefa ativa: ${activeTaskLabel}. Clique para trocar`}
+          >
+            <span className="text-xs truncate">{activeTaskLabel}</span>
+            <ArrowRightLeft className="w-3 h-3 flex-shrink-0 opacity-60" aria-hidden="true" />
+          </button>
         )}
       </div>
 
@@ -250,20 +232,6 @@ export function UnifiedChatHeader({
                     )}
                   </button>
                 ))}
-                {onResetPosition && mode === "floating" && (
-                  <>
-                    <div className="my-1 border-t border-lia-border-subtle" />
-                    <button
-                      onClick={() => {
-                        onResetPosition()
-                        setShowModeMenu(false)
-                      }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
-                    >
-                      <span>{t('resetPosition')}</span>
-                    </button>
-                  </>
-                )}
               </div>
             </>
           )}
@@ -290,7 +258,7 @@ export function UnifiedChatHeader({
             <MoreHorizontal className="w-4 h-4" />
           </button>
 
-          {showOptionsMenu && hasMessages && (
+          {showOptionsMenu && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowOptionsMenu(false)} />
               <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-xl border border-lia-border-subtle bg-lia-bg-primary py-1">
@@ -314,30 +282,6 @@ export function UnifiedChatHeader({
           )}
         </div>
       </div>
-
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent className="sm:max-w-[420px] bg-lia-bg-primary rounded-xl dark:bg-lia-bg-secondary dark:border-lia-border-subtle">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm font-semibold">
-              {t('deleteTitle')}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-sm text-lia-text-secondary">
-              {t('deleteDescription')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="text-xs h-8">
-              {t('deleteCancel')}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleConfirmDelete}
-              className="bg-status-error hover:bg-status-error/90 text-white text-xs h-8"
-            >
-              {t('deleteAction')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }

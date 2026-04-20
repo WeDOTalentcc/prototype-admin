@@ -43,6 +43,9 @@ const HandoffPanel = lazy(() =>
 const DonePanel = lazy(() =>
   import("./panels/DonePanel").then((m) => ({ default: m.DonePanel }))
 )
+const SchedulingPanel = lazy(() =>
+  import("./panels/SchedulingPanel").then((m) => ({ default: m.SchedulingPanel }))
+)
 
 function PanelLoader() {
   return (
@@ -63,9 +66,22 @@ interface Props {
 }
 
 /**
+ * Stages with meaningful visual content that warrant splitting the chat view.
+ * Stages not listed (intake → eligibility) are conversational — full-width only.
+ */
+export const SPLIT_STAGES: WizardStage[] = [
+  "review",
+  "publish",
+  "calibration",
+  "handoff",
+  "done",
+  "scheduling",
+]
+
+/**
  * DynamicContextPanel — routes to the correct wizard panel based on stage.
  *
- * Renders in the 340px split-view column of UnifiedChat.
+ * Renders in the split-view column of UnifiedChat (340px sidebar, 420px fullscreen).
  * All panels are lazy-loaded with Suspense for code splitting.
  */
 export function DynamicContextPanel({
@@ -163,6 +179,8 @@ function renderPanel(
       return <HandoffPanel data={data} />
     case "done":
       return <DonePanel data={data} />
+    case "scheduling":
+      return <SchedulingPanel data={data} onApprove={onApprove} />
     default:
       return (
         <div className="p-4 text-sm text-lia-text-secondary">

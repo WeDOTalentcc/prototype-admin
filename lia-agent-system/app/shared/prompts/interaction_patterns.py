@@ -5,7 +5,7 @@ Centraliza NEGATION_WORDS, CONFIRMATION_WORDS e blocos de prompt reutilizáveis.
 
 NEGATION_WORDS = {
     "não", "nao", "espera", "ainda não", "ainda nao", "calma", "volta",
-    "quero mudar", "cancelar", "cancela", "parar", "para", "não quero",
+    "quero mudar", "cancelar", "cancela", "parar", "não quero",
     "nao quero", "desistir", "esqueça", "esqueca", "deixa pra lá",
     "deixa pra la", "não é isso", "nao e isso", "errei", "corrijo",
 }

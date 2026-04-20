@@ -16,6 +16,7 @@ export type WizardStage =
   | "calibration"
   | "handoff"
   | "done"
+  | "scheduling"
 
 export type ScreeningMode = "compact" | "full"
 
@@ -127,34 +128,6 @@ export interface WsiQuestionsData {
   questions: ScreeningQuestion[]
   screening_mode: ScreeningMode | null
   distribution: { technical: number; behavioral: number } | null
-  /**
-   * Questions that the FairnessGuard removed from the generated set, with
-   * the reason. Surfaced so the recruiter can see exactly why the question
-   * count shrank instead of the wizard silently dropping them.
-   */
-  dropped_questions?: WsiDroppedQuestion[]
-  /**
-   * Friendly summary of the fairness event for banner display. `null` /
-   * `undefined` when nothing was dropped.
-   */
-  fairness_warning?: WsiFairnessWarning | null
-}
-
-export interface WsiDroppedQuestion {
-  question: string
-  category?: string | null
-  blocked_terms: string[]
-  fairness_category?: string | null
-  message: string
-}
-
-export interface WsiFairnessWarning {
-  kind: "input_blocked" | "questions_dropped"
-  title: string
-  message: string
-  category?: string | null
-  blocked_terms?: string[]
-  dropped_count: number
 }
 
 export interface ScreeningQuestion {
