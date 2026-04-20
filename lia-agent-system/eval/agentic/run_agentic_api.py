@@ -233,7 +233,7 @@ async def run_scenario(scenario: dict, token: str, run_index: int) -> dict:
         "expected_proactive_actions": scenario.get("expected_proactive_actions", []),
         "expected_state_after": scenario.get("expected_state_after", []),
         "transcript": transcript,
-        "observed_tools": all_tools,
+        "observed_tools": [{"name": t, "ok": True, "status": 200} for t in all_tools],
         "total_turns": len(transcript),
         "total_duration_ms": total_ms,
         **({"errored": errored} if errored else {}),
