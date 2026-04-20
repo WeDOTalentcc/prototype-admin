@@ -32,6 +32,11 @@ class ResponseEnvelopeMiddleware(BaseHTTPMiddleware):
         if "application/json" not in content_type:
             return response
 
+        # Downloads (e.g. Teams manifest.json) must be returned verbatim — wrapping them
+        # in {ok, data, meta} breaks the consuming tool (Teams Admin Center, etc.).
+        if "attachment" in response.headers.get("content-disposition", "").lower():
+            return response
+
         body_parts = []
         async for chunk in response.body_iterator:
             if isinstance(chunk, bytes):
