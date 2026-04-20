@@ -16,7 +16,7 @@ import { test as _baseTest, expect } from '../../fixtures/auth.fixture';
 // because HMR WebSockets prevent waitUntil='load' from completing.
 const AUTH_DOMAIN = process.env.PLAYWRIGHT_BASE_URL
   ? new URL(process.env.PLAYWRIGHT_BASE_URL).hostname
-  : 'localhost';
+  : '127.0.0.1';
 const test = _baseTest.extend<{ authenticatedPage: import('@playwright/test').Page }>({
   authenticatedPage: async ({ context, page }, use) => {
     await context.addCookies([
@@ -116,7 +116,7 @@ function persist() {
   if (!fs.existsSync(RUNS_DIR)) fs.mkdirSync(RUNS_DIR, { recursive: true });
   const meta = {
     timestamp: RUN_TIMESTAMP,
-    base_url: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5000',
+    base_url: process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:5000',
     pass_k: PASS_K,
     scenarios_total: SCENARIOS.length,
     scenarios_run: RESULTS.length,
