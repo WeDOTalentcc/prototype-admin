@@ -366,7 +366,6 @@ A abordagem de **"extrair lógica primeiro, migrar renderização depois"** perm
 | useCandidatesSearch | components/pages/candidates/hooks/ | @/types, @/lib, React | Apenas tipos + lib pura |
 | useCandidatesSelection | components/pages/candidates/hooks/ | useState, useCallback, useMemo, @/types | Apenas React hooks + tipos |
 | useCandidatesTableConfig | components/pages/candidates/hooks/ | useState, useEffect | Apenas React hooks |
-| useCandidatesExecuteSearch (pages) | components/pages/candidates/ | @/services/lia-api, @/lib, @/types | Apenas service calls + tipos |
 | useChatMessages | components/pages/chat-page/chat-core/ | useState, useCallback, useRef, useEffect, @/hooks, @/types | Composição de hooks internos |
 | useChatSession | components/pages/chat-page/chat-core/ | useState, useCallback, useEffect, useMemo, useRef, @/hooks, @/services | Composição de hooks internos |
 | useIndicatorsPage | components/pages/indicators/ | useState, useMemo, useCallback, @/types | Apenas React hooks + tipos |
