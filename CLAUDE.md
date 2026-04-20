@@ -217,6 +217,8 @@ Serviço central: `app/services/notification_service.py`
 | Mapa de Alertas | `docs/integracao/communication-alerts-map.md` |
 | Gaps e Pendências | `docs/analises/ANALISE-GAPS-COMPLETA.md` |
 | Metodologia WSI | `docs/WSI_METHODOLOGY_REFERENCE.md` |
+| **Glossário Central (fonte única de terminologia)** | `docs/GLOSSARY.md` — sync via `python3 scripts/glossary_sync.py` |
+| Manutenção do Glossário | `docs/GLOSSARY_MAINTENANCE.md` |
 | **Histórico de Sprints** | `docs/archived/sprint-history.md` |
 | Runbook Operacional | `docs/RUNBOOK_DEGRADATION.md`, `docs/RUNBOOK_INCIDENT_PLAYBOOKS.md` |
 
