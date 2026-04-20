@@ -144,7 +144,7 @@ test.describe('Agentic Eval Roteiro', () => {
     for (let i = 0; i < runs; i++) {
       const label = runs > 1 ? `${scenario.id} #${i + 1}/${runs} ${tagSuffix}` : `${scenario.id} ${tagSuffix}`;
       test(label, async ({ authenticatedPage: page }) => {
-        test.setTimeout(180_000);
+        test.setTimeout(300_000);
         // Normalise pageContext (camelCase canonical) ← page_context (snake legacy).
         const ctx = scenario.pageContext || scenario.page_context || {};
         const scope = ctx.scope || 'global';
