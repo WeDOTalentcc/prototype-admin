@@ -89,7 +89,7 @@ export function useJDEvaluation(props: {
 }) {
   const { jobTitle, responsibilities, technicalSkills, behavioralCompetencies, seniority, department, description, hasQuestions, enrichedJd, companyId, companyName, companyDescription, companyIndustry, benefits = [], interviewStages = [], onSaveJDInline, onSaveEnrichedJD, onUpdateOfficialJD, onUpdateJobDescription } = props
 
-  const [isExpanded, setIsExpanded] = useState(!hasQuestions)
+  const [isExpanded, setIsExpanded] = useState(true)
   const [evaluation, setEvaluation] = useState<JDEvaluationData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -133,8 +133,6 @@ export function useJDEvaluation(props: {
       }
     }
   }, [description, responsibilities, technicalSkills, behavioralCompetencies, isEditing, enrichedJd])
-
-  useEffect(() => { setIsExpanded(!hasQuestions) }, [hasQuestions])
 
   useEffect(() => {
     if (!isEditing) {
@@ -226,23 +224,44 @@ export function useJDEvaluation(props: {
     setIsLoading(true)
     try {
       const response = await fetch("/api/backend-proxy/wsi/jd-evaluate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_title: jobTitle, responsibilities: evalResp, technical_skills: evalTech, behavioral_competencies: evalBehav, seniority: seniority || null, department: department || null, description: evalDesc || null }) })
+
+      if (response.status === 422) {
+        const detail = await response.json()
+        // Proxy normalizes FastAPI { detail: {...} } → flat shape; guard against edge cases
+        // Backend may surface the suggestion as lia_suggestion or message field
+        const suggestion = (typeof detail.lia_suggestion === 'string' && detail.lia_suggestion)
+          ? detail.lia_suggestion
+          : (typeof detail.message === 'string' && detail.message)
+            ? detail.message
+            : 'JD com qualidade insuficiente para geração de perguntas WSI.'
+        setEvaluation({
+          score: typeof detail.score === 'number' ? detail.score : 0,
+          max_score: typeof detail.max_score === 'number' ? detail.max_score : 100,
+          band: typeof detail.band === 'string' ? detail.band : 'critico',
+          band_label: typeof detail.band_label === 'string' ? detail.band_label : 'Crítico',
+          indicators: Array.isArray(detail.indicators) ? detail.indicators : [],
+          lia_suggestion: suggestion,
+          can_generate: false,
+          details: detail.details ?? { responsibilities_count: evalResp.length, technical_skills_count: evalTech.length, behavioral_competencies_count: evalBehav.length, seniority_defined: !!seniority, has_description: !!evalDesc },
+        })
+        return
+      }
+
+      if (!response.ok) {
+        console.error('[fetchEvaluation] backend error:', response.status)
+        setEvaluation(null)
+        return
+      }
+
       const data = await response.json()
-      if (data.success) { setEvaluation(data) }
-    } catch {
-      const respCount = evalResp.length; const techCount = evalTech.length; const behavCount = evalBehav.length
-      let score = 0; const indicators: JDIndicator[] = []
-      if (respCount >= 3) { score += 30; indicators.push({ label: "Responsabilidades", count: respCount, status: "sufficient", minimum: 3 }) }
-      else if (respCount >= 1) { score += 15; indicators.push({ label: "Responsabilidades", count: respCount, status: "partial", minimum: 3 }) }
-      else { indicators.push({ label: "Responsabilidades", count: 0, status: "insufficient", minimum: 3 }) }
-      if (techCount >= 9) { score += 30; indicators.push({ label: "Comp. Técnicas", count: techCount, status: "sufficient", minimum: 9 }) }
-      else if (techCount >= 3) { score += 15; indicators.push({ label: "Comp. Técnicas", count: techCount, status: "partial", minimum: 9 }) }
-      else { indicators.push({ label: "Comp. Técnicas", count: 0, status: "insufficient", minimum: 9 }) }
-      if (behavCount >= 5) { score += 30; indicators.push({ label: "Comp. Comportamentais", count: behavCount, status: "sufficient", minimum: 5 }) }
-      else if (behavCount >= 2) { score += 15; indicators.push({ label: "Comp. Comportamentais", count: behavCount, status: "partial", minimum: 5 }) }
-      else { indicators.push({ label: "Comp. Comportamentais", count: 0, status: "insufficient", minimum: 5 }) }
-      if (seniority) { score += 10; indicators.push({ label: "Senioridade", count: 1, status: "sufficient", minimum: 1 }) }
-      else { indicators.push({ label: "Senioridade", count: 0, status: "insufficient", minimum: 1 }) }
-      setEvaluation({ score, max_score: 100, indicators, lia_suggestion: score >= 70 ? "Descrição do cargo bem estruturada para geração de perguntas WSI." : "Adicione mais informações à descrição do cargo para melhorar a qualidade das perguntas.", can_generate: score >= 50, details: { responsibilities_count: respCount, technical_skills_count: techCount, behavioral_competencies_count: behavCount, seniority_defined: !!seniority, has_description: !!evalDesc } })
+      if (data.success) {
+        setEvaluation(data)
+      } else {
+        setEvaluation(null)
+      }
+    } catch (err) {
+      console.error('[fetchEvaluation] network/proxy error:', err)
+      setEvaluation(null)
     } finally { setIsLoading(false) }
   }
 

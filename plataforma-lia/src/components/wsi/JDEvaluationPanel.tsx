@@ -71,7 +71,6 @@ export function JDEvaluationPanel({
         <div className="border border-lia-border-subtle rounded-xl overflow-hidden">
           <JDEvaluationHeader
             jobTitle={jobTitle}
-            hasQuestions={hasQuestions}
             isExpanded={false}
             isEditing={isEditing}
             evaluation={evaluation}
@@ -80,12 +79,7 @@ export function JDEvaluationPanel({
               setIsExpanded(true)
               setIsEditing(true)
             }}
-            onEditJD={onEditJD}
             canEdit={!!(onSaveJDInline || onEditJD)}
-            responsibilities={responsibilities}
-            technicalSkills={technicalSkills}
-            behavioralCompetencies={behavioralCompetencies}
-            description={description}
           />
           <div className="px-4 py-2.5 border-t border-lia-border-subtle bg-lia-bg-primary">
             <div className="flex items-center gap-2 flex-wrap">
@@ -117,29 +111,37 @@ export function JDEvaluationPanel({
       <div className="border border-lia-border-subtle rounded-xl overflow-hidden">
         <JDEvaluationHeader
           jobTitle={jobTitle}
-          hasQuestions={hasQuestions}
           isExpanded={true}
           isEditing={isEditing}
-          evaluation={null}
-          onToggleExpand={() => hasQuestions && setIsExpanded(false)}
+          evaluation={evaluation}
+          onToggleExpand={() => setIsExpanded(false)}
           onStartEdit={() => setIsEditing(true)}
-          onEditJD={onEditJD}
           canEdit={!!(onSaveJDInline || onEditJD)}
-          responsibilities={responsibilities}
-          technicalSkills={technicalSkills}
-          behavioralCompetencies={behavioralCompetencies}
-          description={description}
         />
 
-        <div className="p-3" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="p-3">
           {isLoading ? (
-            <div className="flex items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="flex items-center justify-center py-4" role="status" aria-live="polite" aria-label="Carregando avaliação...">
               <Loader2 className="h-5 w-5 animate-spin motion-reduce:animate-none text-lia-text-secondary" />
               <span className="ml-2 text-xs text-lia-text-secondary">Avaliando Descrição do Cargo...</span>
             </div>
-          ) : evaluation ? (
+          ) : (
             <div className="space-y-3">
-              <JDEvalCriteriaList evaluation={evaluation} />
+              {evaluation && <JDEvalCriteriaList evaluation={evaluation} />}
+
+              {!evaluation && !isEditing && (
+                <div className="text-center py-4">
+                  <p className="text-xs text-lia-text-secondary">Não foi possível avaliar o JD.</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs mt-2"
+                    onClick={() => fetchEvaluation()}
+                  >
+                    Tentar novamente
+                  </Button>
+                </div>
+              )}
 
               {!isEditing && (
                 <JDEvalResultsPanel
@@ -281,18 +283,6 @@ export function JDEvaluationPanel({
                   )}
                 </div>
               )}
-            </div>
-          ) : (
-            <div className="text-center py-6">
-              <p className="text-xs text-lia-text-secondary">Não foi possível avaliar o JD.</p>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs mt-2"
-                onClick={() => fetchEvaluation()}
-              >
-                Tentar novamente
-              </Button>
             </div>
           )}
         </div>
