@@ -177,6 +177,12 @@ async def run_scenario(scenario: dict, token: str, run_index: int) -> dict:
                     if mtype == "message":
                         lia_text = msg.get("content", "")
                         break
+                    if mtype == "error":
+                        lia_text = "[ERROR] " + msg.get("message", "backend error")
+                        break
+                    if mtype == "clarification":
+                        lia_text = msg.get("question", "") + " " + str(msg.get("options", ""))
+                        break
                     # background_task_update may carry tool info
                     if mtype == "background_task_update":
                         task_type = msg.get("task_type", "")
