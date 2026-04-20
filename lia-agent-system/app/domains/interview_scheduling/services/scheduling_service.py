@@ -1582,14 +1582,26 @@ class SchedulingService:
         data_entrevista: str,
         horario_entrevista: str,
     ) -> dict[str, Any]:
-        """Deliver the reminder as an adaptive card through the Teams bot."""
+        """Deliver the reminder as an adaptive card through the Teams bot.
+
+        The card always shows the actual candidate name (so an interviewer
+        viewing the reminder sees *who* the interview is with, not their own
+        name in the candidate slot). The interview_type label is augmented
+        with the recipient role so the same card is unambiguous for both
+        candidate and interviewer recipients.
+        """
         try:
             from app.domains.communication.services.teams_bot import teams_bot
+            label = (
+                "Lembrete de entrevista (interviewer)"
+                if recipient_type == "interviewer"
+                else "Lembrete de entrevista"
+            )
             ok = await teams_bot.notify_scheduling_confirmed(
-                candidate_name=recipient_name or interview.candidate_name,
+                candidate_name=interview.candidate_name or (recipient_name or ""),
                 job_title=interview.job_title or "Processo Seletivo",
                 scheduled_time=f"{data_entrevista} às {horario_entrevista}",
-                interview_type="Lembrete de entrevista",
+                interview_type=label,
             )
             if ok:
                 return {"success": True, "channel": "teams", "recipient_type": recipient_type}
