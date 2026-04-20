@@ -9,7 +9,24 @@
  * The judge (`judge_agentic.py`) and report (`eval_report_agentic.py`)
  * consume the output downstream — see `docs/eval/AGENTIC_EVAL_PLAYBOOK.md`.
  */
-import { test, expect } from '../../fixtures/auth.fixture';
+import { test as _baseTest, expect } from '../../fixtures/auth.fixture';
+
+// Override authenticatedPage to skip the initial page.goto — openChatOnPage handles
+// navigation per scenario. The shared auth fixture's goto hangs in dev-mode Next.js
+// because HMR WebSockets prevent waitUntil='load' from completing.
+const AUTH_DOMAIN = process.env.PLAYWRIGHT_BASE_URL
+  ? new URL(process.env.PLAYWRIGHT_BASE_URL).hostname
+  : 'localhost';
+const test = _baseTest.extend<{ authenticatedPage: import('@playwright/test').Page }>({
+  authenticatedPage: async ({ context, page }, use) => {
+    await context.addCookies([
+      { name: 'lia_access_token', value: 'e2e-test-token', domain: AUTH_DOMAIN, path: '/' },
+      { name: 'lia_auth_method',  value: 'jwt',            domain: AUTH_DOMAIN, path: '/' },
+    ]);
+    // Do NOT navigate here — openChatOnPage does it per scenario.
+    await use(page);
+  },
+});
 import * as fs from 'fs';
 import * as path from 'path';
 import * as YAML from 'yaml';
