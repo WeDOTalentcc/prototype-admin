@@ -72,6 +72,7 @@ import type { Notification as AppNotification } from "@/hooks/shared/use-notific
 import Image from "next/image"
 import { useTranslations } from 'next-intl'
 import { LanguageSwitcher } from "@/components/language-switcher"
+import { useWorkflowRailStore } from "@/stores/workflow-rail-store"
 
 const sectionLabelKeys: Record<string, string> = {
   "Operacional": "sections.operational",
@@ -478,6 +479,44 @@ const RecentItemRow = React.memo(({
 
 RecentItemRow.displayName = 'RecentItemRow'
 
+/**
+ * Pequeno botão para ligar/desligar o trilho de fluxo (workflow rail).
+ * Renderizado ao lado do avatar do usuário no rodapé do sidebar.
+ * Resolve hidratação (zustand persist) renderizando só após mount.
+ */
+function WorkflowRailToggleButton() {
+  const enabled = useWorkflowRailStore((s) => s.enabled)
+  const toggleEnabled = useWorkflowRailStore((s) => s.toggleEnabled)
+  const setExpanded = useWorkflowRailStore((s) => s.setExpanded)
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+  if (!mounted) {
+    return <div className="h-6 w-6" aria-hidden="true" />
+  }
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => {
+        // Ao reativar, garante que aparece já como bolinha (não invasivo).
+        if (!enabled) setExpanded(false)
+        toggleEnabled()
+      }}
+      aria-pressed={enabled}
+      aria-label={enabled ? "Desativar trilho de fluxo" : "Ativar trilho de fluxo"}
+      title={enabled ? "Trilho de fluxo: ativo (clique para desativar)" : "Trilho de fluxo: desativado (clique para ativar)"}
+      className={cn(
+        "h-6 w-6 p-0 rounded-full transition-colors",
+        enabled
+          ? "text-wedo-cyan bg-wedo-cyan/10 hover:bg-wedo-cyan/20"
+          : "text-lia-text-tertiary hover:bg-lia-interactive-hover"
+      )}
+    >
+      <GitBranch className="w-3 h-3" />
+    </Button>
+  )
+}
+
 export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClick, onRecentItemRemove, onRecentItemsClear, onShowSearch }: SidebarProps) {
   const t = useTranslations('sidebar')
   const { talentPools, agents } = useSidebarDynamicItems()
@@ -816,6 +855,9 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
               panelPosition="sidebar"
             />
           )}
+
+          {/* Toggle do trilho de fluxo (workflow rail) — mostra/oculta a barra/bolinha global */}
+          <WorkflowRailToggleButton />
 
           {isMounted ? (
           <DropdownMenu>

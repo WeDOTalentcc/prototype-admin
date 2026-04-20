@@ -3,11 +3,12 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import {
-  ArrowRight, Zap, Check, X, Sun, Moon, MessageSquare,
-  ChevronLeft, ChevronRight, MoreHorizontal,
+  ArrowRight, Zap, Check, X, Sun, Moon,
+  ChevronLeft, ChevronRight, MoreHorizontal, GripVertical,
 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
 import { useWorkflowRail, WorkflowEntry } from "./useWorkflowRail"
+import { useWorkflowRailStore } from "@/stores/workflow-rail-store"
 import {
   FUNNEL_STAGES,
   NEXT_STEPS_MAP,
@@ -20,6 +21,7 @@ interface WorkflowRailProps {
   userId: string
   onNavigate: (path: string) => void
   onCreateJob?: () => void
+  /** Kept for compatibility; the rail now uses its own collapse/expand model. */
   showBackToChat?: boolean
 }
 
@@ -32,61 +34,78 @@ function deriveCurrentStage(entries: WorkflowEntry[]): FunnelStageKey {
   return mapCampaignStageToFunnelKey(inProgress?.stage ?? latest.currentStage)
 }
 
-export default function WorkflowRail({ userId, onNavigate, onCreateJob, showBackToChat = false }: WorkflowRailProps) {
+const BALL_SIZE = 36
+const DRAG_THRESHOLD = 4 // px before drag is considered a real drag (vs a click)
+
+export default function WorkflowRail({ userId, onNavigate, onCreateJob }: WorkflowRailProps) {
   const { entries, isConnected } = useWorkflowRail(userId)
-  const [isExpanded, setIsExpanded] = useState(false)
+
+  // Global UI state (persisted) — toggled from sidebar and from collapse button.
+  const enabled = useWorkflowRailStore((s) => s.enabled)
+  const expanded = useWorkflowRailStore((s) => s.expanded)
+  const setExpanded = useWorkflowRailStore((s) => s.setExpanded)
+  const position = useWorkflowRailStore((s) => s.position)
+  const setPosition = useWorkflowRailStore((s) => s.setPosition)
+
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [currentStageKey, setCurrentStageKey] = useState<FunnelStageKey>("initial")
   const [hoveredKey, setHoveredKey] = useState<FunnelStageKey | null>(null)
   const [canScrollL, setCanScrollL] = useState(false)
   const [canScrollR, setCanScrollR] = useState(false)
   const [isDark, setIsDark] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const t = useTranslations()
   const containerRef = useRef<HTMLDivElement | null>(null)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const firstNextStepRef = useRef<HTMLButtonElement | null>(null)
 
+  // Drag bookkeeping (refs so handlers stay stable).
+  const dragOriginRef = useRef<{ x: number; y: number; px: number; py: number } | null>(null)
+  const movedRef = useRef(false)
+
   const hasEntries = entries.length > 0
   const pendingCount = entries.filter(e => e.pendingAction).length
+
+  /* ---- Avoid hydration mismatch: persisted store reads after mount only ---- */
+  useEffect(() => { setMounted(true) }, [])
 
   /* ---- Sync current stage from real-time entries ---- */
   useEffect(() => {
     setCurrentStageKey(deriveCurrentStage(entries))
   }, [entries])
 
-  /* ---- Close on outside click ---- */
+  /* ---- Close popover on outside click ---- */
   useEffect(() => {
-    if (!isExpanded) return
+    if (!isPopoverOpen) return
     const onDown = (e: MouseEvent) => {
       if (!containerRef.current) return
-      if (!containerRef.current.contains(e.target as Node)) setIsExpanded(false)
+      if (!containerRef.current.contains(e.target as Node)) setIsPopoverOpen(false)
     }
     document.addEventListener("mousedown", onDown)
     return () => document.removeEventListener("mousedown", onDown)
-  }, [isExpanded])
+  }, [isPopoverOpen])
 
-  /* ---- Close on Esc ---- */
+  /* ---- Close popover on Esc ---- */
   useEffect(() => {
-    if (!isExpanded) return
-    const onKey = (e: globalThis.KeyboardEvent) => { if (e.key === "Escape") setIsExpanded(false) }
+    if (!isPopoverOpen) return
+    const onKey = (e: globalThis.KeyboardEvent) => { if (e.key === "Escape") setIsPopoverOpen(false) }
     document.addEventListener("keydown", onKey)
     return () => document.removeEventListener("keydown", onKey)
-  }, [isExpanded])
+  }, [isPopoverOpen])
 
-  /* ---- Focus first next-step when expanded ---- */
+  /* ---- Focus first next-step when popover opens ---- */
   useEffect(() => {
-    if (isExpanded) setTimeout(() => firstNextStepRef.current?.focus(), 50)
-  }, [isExpanded])
+    if (isPopoverOpen) setTimeout(() => firstNextStepRef.current?.focus(), 50)
+  }, [isPopoverOpen])
 
-  /* ---- Auto-collapse when last active entry disappears mid-session ----
-   * Only collapse if the user was tracking a real flow (not on the neutral
-   * "initial" suggestions state). Keeps "Comece por aqui" reachable when empty.
-   */
+  /* ---- Auto-collapse popover when last active entry disappears mid-session ---- */
   const prevHasEntriesRef = useRef(hasEntries)
   useEffect(() => {
     const wasTracking = prevHasEntriesRef.current && currentStageKey !== "initial"
-    if (!hasEntries && isExpanded && wasTracking) setIsExpanded(false)
+    if (!hasEntries && isPopoverOpen && wasTracking) setIsPopoverOpen(false)
     prevHasEntriesRef.current = hasEntries
-  }, [hasEntries, isExpanded, currentStageKey])
+  }, [hasEntries, isPopoverOpen, currentStageKey])
 
   /* ---- Scroll overflow detection (chip strip) ---- */
   const updateScroll = useCallback(() => {
@@ -104,7 +123,7 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob, showBack
     const ro = new ResizeObserver(updateScroll)
     ro.observe(el)
     return () => { el.removeEventListener("scroll", updateScroll); ro.disconnect() }
-  }, [updateScroll, entries.length, hoveredKey])
+  }, [updateScroll, entries.length, hoveredKey, expanded])
 
   const scrollBy = (dir: 1 | -1) => {
     scrollRef.current?.scrollBy({ left: dir * 140, behavior: "smooth" })
@@ -112,7 +131,7 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob, showBack
 
   /* ---- Handle next-step action ---- */
   const handleNextStep = useCallback((step: NextStep) => {
-    setIsExpanded(false)
+    setIsPopoverOpen(false)
     if (step.actionType === "handler") {
       if (step.handlerId === "createJob" && onCreateJob) onCreateJob()
     } else if (step.path) {
@@ -121,6 +140,61 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob, showBack
     if (step.resultingStage) setCurrentStageKey(step.resultingStage)
   }, [onNavigate, onCreateJob])
 
+  /* ---- Drag handlers (used for both ball and expanded bar) ---- */
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    // Ignore drags that start on interactive children (buttons inside the bar).
+    const target = e.target as HTMLElement
+    if (target.closest("button,a,input")) return
+    const el = containerRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    dragOriginRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      px: rect.left,
+      py: rect.top,
+    }
+    movedRef.current = false
+    ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
+  }, [])
+
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    const origin = dragOriginRef.current
+    if (!origin) return
+    const dx = e.clientX - origin.x
+    const dy = e.clientY - origin.y
+    if (!movedRef.current && Math.hypot(dx, dy) < DRAG_THRESHOLD) return
+    movedRef.current = true
+    setIsDragging(true)
+    // Clamp to viewport with a small padding.
+    const el = containerRef.current
+    const w = el?.offsetWidth ?? BALL_SIZE
+    const h = el?.offsetHeight ?? BALL_SIZE
+    const maxX = window.innerWidth - w - 8
+    const maxY = window.innerHeight - h - 8
+    const nextX = Math.max(8, Math.min(maxX, origin.px + dx))
+    const nextY = Math.max(8, Math.min(maxY, origin.py + dy))
+    setPosition({ x: nextX, y: nextY })
+  }, [setPosition])
+
+  const onPointerUp = useCallback((e: React.PointerEvent) => {
+    const wasDragging = movedRef.current
+    dragOriginRef.current = null
+    movedRef.current = false
+    setIsDragging(false)
+    ;(e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId)
+    return wasDragging
+  }, [])
+
+  // Click handler for the ball — only if no drag happened.
+  const onBallPointerUp = useCallback((e: React.PointerEvent) => {
+    const wasDragging = onPointerUp(e)
+    if (!wasDragging) setExpanded(true)
+  }, [onPointerUp, setExpanded])
+
+  /* ---- Early returns ---- */
+  if (!mounted) return null
+  if (!enabled) return null
   if (!hasEntries && !onCreateJob) return null
 
   /* ---- Derived values ---- */
@@ -134,6 +208,7 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob, showBack
     ? t(currentStageObj.labelKey as Parameters<typeof t>[0])
     : t("workflowRail.bar.noActiveFlow")
   const currentAccent = currentStageObj?.canonical.color.accent ?? "var(--wedo-cyan, #60BED1)"
+  const CurrentIcon = currentStageObj?.canonical.Icon
 
   /* ---- Magnifier (Dock-style) scale based on distance from hovered chip ---- */
   const magnifyScale = (key: FunnelStageKey): number => {
@@ -178,10 +253,76 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob, showBack
         miniBtn:     "border-lia-border-subtle bg-white text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-bg-tertiary/60",
       }
 
+  /* ---- Positioning (free-floating when user has dragged) ---- */
+  const useCustomPosition = position !== null
+  const positionStyle: React.CSSProperties = useCustomPosition
+    ? { left: position!.x, top: position!.y }
+    : expanded
+      ? { left: "50%", bottom: 16, transform: "translateX(-50%)" }
+      // Default collapsed position: bottom-right, lifted above LIA chat bubble.
+      : { right: 16, bottom: 80 }
+
+  const cursorClass = isDragging ? "cursor-grabbing" : "cursor-grab"
+
+  /* ---------- COLLAPSED: floating ball (Replit-issues style) ---------- */
+  if (!expanded) {
+    return (
+      <div
+        ref={containerRef}
+        className="fixed z-40"
+        style={positionStyle}
+      >
+        <button
+          type="button"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onBallPointerUp}
+          onPointerCancel={onPointerUp}
+          aria-label={`Abrir trilho de fluxo (etapa atual: ${currentLabel})`}
+          title={`Abrir trilho · ${currentLabel}`}
+          style={{
+            backgroundColor: currentAccent,
+            width: BALL_SIZE,
+            height: BALL_SIZE,
+            boxShadow: `0 6px 20px -6px ${currentAccent}66, 0 2px 8px rgba(0,0,0,0.12)`,
+            touchAction: "none",
+          }}
+          className={`relative ${cursorClass} rounded-full text-white flex items-center justify-center
+            transition-transform duration-200 ease-out hover:scale-110 active:scale-95
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/50 focus-visible:ring-offset-2`}
+        >
+          {CurrentIcon
+            ? <CurrentIcon className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />
+            : <ChevronRight className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />}
+
+          {/* Pending count badge */}
+          {pendingCount > 0 && (
+            <span
+              aria-label={t("workflowRail.pill.pendingAriaLabel", { count: pendingCount })}
+              className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-yellow-400 text-[9px] font-bold text-yellow-900 flex items-center justify-center border border-white"
+            >
+              {pendingCount}
+            </span>
+          )}
+
+          {/* Disconnected dot */}
+          {!isConnected && (
+            <span
+              aria-hidden="true"
+              className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500 border border-white"
+            />
+          )}
+        </button>
+      </div>
+    )
+  }
+
+  /* ---------- EXPANDED: full bar ---------- */
   return (
     <div
       ref={containerRef}
-      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[min(1080px,calc(100vw-2rem))] pointer-events-none"
+      className={`fixed z-40 ${useCustomPosition ? "" : "w-[min(1080px,calc(100vw-2rem))]"} pointer-events-none`}
+      style={positionStyle}
     >
       {/* ---- Pending action banner (above the rail) ---- */}
       {latest?.pendingAction && (
@@ -193,7 +334,7 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob, showBack
           {latest.pendingAction.actionUrl && (
             <button
               type="button"
-              onClick={() => { setIsExpanded(false); onNavigate(latest!.pendingAction!.actionUrl!) }}
+              onClick={() => { setIsPopoverOpen(false); onNavigate(latest!.pendingAction!.actionUrl!) }}
               className="flex items-center gap-1 text-xs text-yellow-700 font-medium hover:text-yellow-900 flex-shrink-0"
             >
               {t("workflowRail.entry.go")} <ArrowRight className="w-3 h-3" />
@@ -206,23 +347,33 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob, showBack
       <div className="relative pointer-events-auto flex justify-center">
         {/* RAIL — pill-shape, magnifier, horizontal scroll, mini toggle */}
         <div
-          className={`rounded-full border ${T.rail} flex items-center pl-1 pr-1.5 py-1 max-w-full transition-colors duration-300 ease-out`}
-          style={{ boxShadow: T.railShadow }}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
+          style={{ boxShadow: T.railShadow, touchAction: "none" }}
+          className={`rounded-full border ${T.rail} flex items-center pl-1 pr-1.5 py-1 max-w-full transition-colors duration-300 ease-out ${cursorClass}`}
         >
+          {/* Drag handle (always visible — also acts as a visual hint) */}
+          <span
+            aria-hidden="true"
+            className={`shrink-0 mr-0.5 flex items-center justify-center w-3 h-5 ${T.textDim}`}
+            title="Arraste para mover"
+          >
+            <GripVertical className="w-3 h-3" strokeWidth={2} />
+          </span>
 
-          {/* "Back to chat" escape hatch — always available outside the /chat route */}
-          {showBackToChat && (
-            <button
-              type="button"
-              onClick={() => onNavigate("/chat")}
-              aria-label="Voltar para o chat com a LIA"
-              title="Voltar para o chat"
-              className={`shrink-0 w-6 h-6 rounded-full border ${T.miniBtn} flex items-center justify-center mr-1 z-10 transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40`}
-              style={{ color: currentAccent }}
-            >
-              <MessageSquare className="w-3 h-3" strokeWidth={2.25} />
-            </button>
-          )}
+          {/* Collapse button — turns the bar back into a floating ball */}
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            aria-label="Recolher trilho"
+            title="Recolher para bolinha"
+            className={`shrink-0 w-6 h-6 rounded-full border ${T.miniBtn} flex items-center justify-center mr-1 z-10 transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40`}
+            style={{ color: currentAccent }}
+          >
+            <ChevronLeft className="w-3 h-3" strokeWidth={2.5} />
+          </button>
 
           {/* MOBILE compact: only the current chip (no magnifier/scroll) */}
           <div className="flex sm:hidden items-center gap-1.5 px-1 min-w-0">
@@ -387,17 +538,17 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob, showBack
           {/* Mini toggle for popover (the "..." button) */}
           <button
             type="button"
-            onClick={() => setIsExpanded(v => !v)}
-            aria-expanded={isExpanded}
-            aria-label={isExpanded ? t("workflowRail.bar.collapseAriaLabel") : t("workflowRail.bar.expandAriaLabel")}
-            className={`ml-1 shrink-0 w-5 h-5 rounded-full border ${T.miniBtn} flex items-center justify-center transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40 ${isExpanded ? "rotate-90" : ""}`}
+            onClick={() => setIsPopoverOpen(v => !v)}
+            aria-expanded={isPopoverOpen}
+            aria-label={isPopoverOpen ? t("workflowRail.bar.collapseAriaLabel") : t("workflowRail.bar.expandAriaLabel")}
+            className={`ml-1 shrink-0 w-5 h-5 rounded-full border ${T.miniBtn} flex items-center justify-center transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40 ${isPopoverOpen ? "rotate-90" : ""}`}
           >
             <MoreHorizontal className="w-3 h-3" strokeWidth={2.5} />
           </button>
         </div>
 
         {/* SIDE POPOVER (lg+) / TOP POPOVER (< lg) — actions for current stage */}
-        {isExpanded && (
+        {isPopoverOpen && (
           <div
             role="dialog"
             aria-label={t("workflowRail.panel.ariaLabel")}
@@ -423,7 +574,7 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob, showBack
               </span>
               <button
                 type="button"
-                onClick={() => setIsExpanded(false)}
+                onClick={() => setIsPopoverOpen(false)}
                 aria-label={t("workflowRail.panel.close")}
                 className={`${T.textDim} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40 rounded transition-colors duration-300 ease-out`}
               >
@@ -460,7 +611,7 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob, showBack
                   <span aria-hidden="true" className={`hidden lg:block h-3.5 w-px ${T.divider} mx-0.5 shrink-0`} />
                   <button
                     type="button"
-                    onClick={() => { setIsExpanded(false); onNavigate(nextMainStage.canonical.navPath) }}
+                    onClick={() => { setIsPopoverOpen(false); onNavigate(nextMainStage.canonical.navPath) }}
                     title={t("workflowRail.panel.nextInFunnel")}
                     className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium ${T.textDim} ${T.chipHover} transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40`}
                   >

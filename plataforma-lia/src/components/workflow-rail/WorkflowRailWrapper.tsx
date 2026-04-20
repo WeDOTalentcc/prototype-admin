@@ -9,6 +9,10 @@ import WorkflowRail from "./WorkflowRail"
 /**
  * Client wrapper for WorkflowRail — connects to auth context and router.
  * Used in root layout (server component) to bridge client-side state.
+ *
+ * NOTE: A visibilidade do trilho agora é controlada globalmente pelo
+ * `useWorkflowRailStore` (toggle no rodapé do sidebar). O wrapper só
+ * provê navegação e identidade.
  */
 export default function WorkflowRailWrapper() {
   const router = useRouter()
@@ -20,7 +24,6 @@ export default function WorkflowRailWrapper() {
   const handleCreateJob = useCallback(() => {
     const target = `/${locale}/jobs?action=create`
     if (pathname?.includes("/jobs")) {
-      // Already on jobs route — replace to re-trigger search-param effect
       router.replace(target)
     } else {
       router.push(target)
@@ -28,7 +31,6 @@ export default function WorkflowRailWrapper() {
   }, [router, pathname, locale])
 
   const handleNavigate = useCallback((path: string) => {
-    // Paths from catalog are locale-relative (e.g. /jobs); prefix with current locale
     const localePrefix = `/${locale}`
     const target = path.startsWith(localePrefix) ? path : `${localePrefix}${path}`
     router.push(target)
@@ -38,10 +40,6 @@ export default function WorkflowRailWrapper() {
   // even without a real session so designers/recruiters can perceive the
   // unified funnel vocabulary. Production keeps the strict auth check.
   const isDev = process.env.NODE_ENV !== "production"
-  // Hide the "back to chat" button when the user is already on /chat to avoid
-  // a redundant control. Otherwise, surface it so the rail always provides an
-  // escape hatch back to the assistant on pages without their own sidebar.
-  const isOnChat = !!pathname?.startsWith(`/${locale}/chat`)
 
   if (!isAuthenticated || !user?.id) {
     if (!isDev) return null
@@ -50,7 +48,6 @@ export default function WorkflowRailWrapper() {
         userId="dev-demo-user"
         onNavigate={handleNavigate}
         onCreateJob={handleCreateJob}
-        showBackToChat={!isOnChat}
       />
     )
   }
@@ -60,7 +57,6 @@ export default function WorkflowRailWrapper() {
       userId={user.id}
       onNavigate={handleNavigate}
       onCreateJob={handleCreateJob}
-      showBackToChat={!isOnChat}
     />
   )
 }
