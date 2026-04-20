@@ -95,9 +95,24 @@ def audit():
     registered = sorted(str(k) for k in _DOMAIN_REGISTRY.keys() if isinstance(k, str))
     print(f"      Registered: {len(registered)} → {registered}")
 
+    # Map registered domain instances back to the dir that hosts them.
+    # Without this, dirs like `pipeline/` (registers `pipeline_transition`)
+    # falsely appear as unregistered because their dir name != domain_id.
+    registered_dirs: set[str] = set()
+    for did in registered:
+        try:
+            inst = registry.get_instance(did)
+            mod = type(inst).__module__ if inst is not None else ""
+        except Exception:
+            mod = ""
+        if mod.startswith("app.domains."):
+            registered_dirs.add(mod.split(".")[2])
+    # Always treat dir names that match a domain_id literally as registered too.
+    registered_dirs.update(registered)
+    REPORT["registered_domain_dirs"] = sorted(registered_dirs)
     REPORT["domain_dirs_unregistered"] = sorted(
         set(domain_dirs)
-        - {n for n in registered}
+        - registered_dirs
         - {"DOMAIN_CATALOG.md", "compliance_base.py"}
     )
 

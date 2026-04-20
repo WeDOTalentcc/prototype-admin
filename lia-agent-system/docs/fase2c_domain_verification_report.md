@@ -221,17 +221,63 @@ DomainResponse → ChatAdapter → SSE/WebSocket → UI
 **Registrados via `@register_domain`:** 18  
 **Não-registrados:** 43
 
-### Classificação dos 43 dirs não-registrados
+### Classificação dos dirs não-registrados (corrigida — 20/abr)
+
+> **Correção importante:** a categoria "Domínios parcialmente desenvolvidos"
+> da versão anterior estava errada. Investigação mostrou que **nenhum** desses
+> 8 dirs é código órfão. São todos código produção viva — `ai` é a infra LLM
+> core (>25 importadores), `pipeline/` JÁ está registrado como
+> `pipeline_transition` (o auditor não pegava porque comparava nome de dir
+> contra ID de domain literalmente), `autonomous` é o Tier 6 do
+> `CascadedRouter`, `policy` tem agente + 17 endpoints REST, e os outros 4
+> têm endpoints REST ativos. Cada um desses 8 dirs agora tem um `STATUS.md`
+> na sua raiz com dono, classificação, plano de evolução e regra
+> anti-deleção.
+
+Após a recategorização e a correção do auditor (que reduziu o "não-registrados"
+de 43 para 42 — `pipeline/` saiu da lista), a fotografia real é:
 
 | Categoria | Dirs |
 |---|---|
+| **Infra LLM Core** (biblioteca, não chat domain — correto) | `ai` |
+| **Já registrado no chat** (auditor corrigido) | `pipeline` (= `pipeline_transition`) |
+| **Agente especial do roteador** (Tier 6, sem chat domain por design) | `autonomous` |
+| **Feature REST candidata a chat domain** (com endpoints + lógica viva) | `interview_intelligence`, `journey_mapping`, `policy`, `workforce`, `technical_tests` |
 | **Infraestrutura / API** (sem chat domain — correto) | `admin`, `admin_settings`, `auth`, `billing`, `candidates`, `chat`, `client_users`, `clients`, `company`, `credits`, `health_check`, `notifications`, `observability`, `saas_metrics`, `tasks` |
 | **Compliance / LGPD** (lógica específica, sem chat domain — correto) | `compliance`, `consent`, `data_subject`, `lgpd`, `trust_center` |
 | **Features laterais** (funcionalidades auxiliares, sem chat domain) | `agent_memory`, `approvals`, `bulk_actions`, `candidate_lists`, `company_culture`, `email_templates`, `goals`, `integrations_hub`, `opinions`, `shared_searches`, `triagem`, `voice` |
 | **Analytics / BI** (dados, sem chat domain por agora) | `job_vacancies_analytics`, `recruitment`, `recruitment_journey`, `talent_intelligence` |
-| **Domínios parcialmente desenvolvidos** (podem precisar de registro futuramente) | `ai`, `autonomous`, `interview_intelligence`, `journey_mapping`, `pipeline`, `policy`, `workforce`, `technical_tests` |
 
-> **Conclusão:** nenhum dos 43 dirs não-registrados aparenta ser código morto crítico que bloqueia o chat. Os dirs da categoria "Domínios parcialmente desenvolvidos" merecem revisão para decidir se serão registrados ou consolidados em domínios existentes.
+> **Conclusão:** nenhum dos dirs não-registrados é código morto. Os 5 dirs
+> da nova categoria "Feature REST candidata a chat domain" são candidatos
+> estratégicos a `@register_domain` futura — a decisão é do usuário, fora do
+> escopo desta task.
+
+### Diagnóstico dos Domínios em Desenvolvimento Estratégico
+
+| Dir | Categoria | Gap atual para virar `@register_domain` | Esforço | Risco se ficar como está | Próximo passo sugerido |
+|---|---|---|---|---|---|
+| `ai` | Infra LLM Core | N/A — não deve ser chat domain. É biblioteca consumida por todos os 18 domínios. | — | Refactor descuidado quebra os 18 domínios e o roteador. | Manter como pacote-biblioteca; considerar mover para `app/shared/ai/` em RFC futura. |
+| `pipeline` | Já registrado | Nenhum — `domain.py` tem `@register_domain` e o ID `pipeline_transition` está nos 18 registrados. Auditor agora reconhece via `__module__` da classe. | ✅ feito | — | Aumentar cobertura de `execute_action` (hoje só tem teste de agente). |
+| `autonomous` | Agente especial | N/A — é o Tier 6 do roteador; promover quebraria a semântica de fallback. | — | Deletar arquivos desativa o Tier 6 → degradação silenciosa. | Adicionar métricas de hit-rate do Tier 6. |
+| `interview_intelligence` | Feature REST | Falta `domain.py`, `tools.py`, agent-types em `AGENT_TYPE_TO_DOMAIN`, testes unitários dos services. Tem 6 services maduros (≥1.865 LOC) e 27 endpoints REST entre `interviews.py`, `interview_notes.py`, `interview_analysis.py`. | M | Bias detector e comparative analysis sem cobertura: regressões só aparecem em produção. | Cobrir bias_detector + comparative_analysis com unit tests; depois desenhar 5–8 actions. |
+| `journey_mapping` | Feature REST | Falta camada de service (hoje só repositório). Promoção precisa primeiro de services de análise. 13 endpoints REST em `journey_mapping.py`. | M | Lógica de jornada concentrada no controller — ADR-001 viola tendência. | Adicionar services + cobrir repositório com integration test. |
+| `policy` | Feature REST | Tem agente, services e 17+ endpoints (`policy_engine.py`), mas convive com chat domain `hiring_policy` — fronteira ambígua. | M | Confusão de ownership entre `hiring_policy` (configurar) e `policy` (avaliar). | Documentar separação; decidir: consolidar em `hiring_policy` ou criar `policy_engine` chat domain. |
+| `workforce` | Feature REST | Só repositório (~338 LOC), sem services nem agente. 29 endpoints ativos (`workforce.py` + `workforce_planning.py`). | L | Lógica em controllers; sem testes. | Adicionar services + integration tests antes de chat domain. |
+| `technical_tests` | Feature REST | Só repositório (~276 LOC). 11 endpoints (`technical_tests.py`). | L | Mesma situação que `workforce`. | Decidir se vira chat domain próprio ou tools dentro de `cv_screening`. |
+
+**Cada um dos 8 dirs ganhou um `STATUS.md` na raiz** (fonte de verdade do
+estado, plano de evolução e regra anti-deleção). Ver
+`app/domains/<dir>/STATUS.md`.
+
+### Correção do auditor
+
+`scripts/audit_chat_capabilities.py` agora deriva `domain_dirs_unregistered`
+inspecionando `type(instance).__module__` de cada domínio em
+`_DOMAIN_REGISTRY`, em vez de comparar nome do dir contra `domain_id`
+literalmente. Isso corrige o falso-positivo de `pipeline/` (que registra
+`pipeline_transition`) e protege contra futuros dirs com mesmo padrão
+(nome do dir ≠ ID do domain).
 
 ---
 
@@ -361,7 +407,7 @@ Fluxos end-to-end que chegam a execução de tool com sucesso (evidência: 0 gap
 |---|---|---|---|---|
 | P1-1 | 11 domínios sem teste de `execute_action` end-to-end | Regressões silenciosas em deploys | L | Parcialmente: #232, #361 |
 | P1-2 | `job_creation` sem testes (domínio novo, intent-routed) | Wizard de criação pode regredir | M | ❌ sem task |
-| P1-3 | 8 dirs "parcialmente desenvolvidos" não-registrados (ex.: `pipeline`, `policy`, `autonomous`, `interview_intelligence`) sem decisão explícita | Lógica viva pode estar inacessível via chat | M | ❌ sem task |
+| P1-3 | ~~8 dirs "parcialmente desenvolvidos" sem decisão explícita~~ ✅ Resolvido em 20/abr: auditor corrigido (pipeline reconhecido), 8 STATUS.md criados, recategorização documentada (seção 4 + "Diagnóstico dos Domínios em Desenvolvimento Estratégico"). | — | ✅ FECHADO |
 | P1-4 | `recruiter_assistant` é DEFAULT_DOMAIN — qualquer intent não-mapeado cai aqui | Dificulta debugging de roteamento | S | ❌ sem task |
 | P1-5 | Schema de params dos handlers não é validado em tempo de registro | Erros aparecem só em runtime | M | ❌ sem task |
 
@@ -408,7 +454,7 @@ Fluxos end-to-end que chegam a execução de tool com sucesso (evidência: 0 gap
 | Audit e cobertura de tenant isolation em handlers sem `@tool_handler` | Listar todos os handlers que não usam o decorator e verificar se isolam `company_id` manualmente | P0 | M |
 | Testes de execute_action para 11 domínios sem cobertura | Criar pytest parametrizado cobrindo `analytics`, `ats_integration`, `automation`, `communication`, `company_settings`, `digital_twin`, `agent_studio`, `candidate_self_service`, `recruitment_campaign`, `recruiter_assistant`, `job_creation` | P1 | L |
 | Testes para `job_creation` intent-routed | Cobrir fluxo `process_intent + _route_by_stage` com casos de criação de vaga completos | P1 | M |
-| Inventário e decisão sobre 8 dirs parcialmente desenvolvidos | Para cada um de `ai`, `autonomous`, `interview_intelligence`, `journey_mapping`, `pipeline`, `policy`, `workforce`, `technical_tests`: registrar como domínio, consolidar em existente, ou marcar como código morto | P1 | M |
+| ~~Inventário e decisão sobre 8 dirs parcialmente desenvolvidos~~ | ✅ Concluído em 20/abr (task #670). Cada dir tem `STATUS.md`, recategorização e diagnóstico no relatório. | ✅ FEITO | — |
 | CI gate: `audit_chat_capabilities.py` com fail se gaps > 0 | Adicionar ao pipeline CI para prevenir regressão nos zeros conquistados | P2 | S |
 | Atualizar `MAPA_CAMADA_INTELIGENCIA.md` para 18 domínios | Corrigir contagem de domínios, diagrama e organograma | P2 | S |
 | Validar schema de params de handlers em tempo de registro | Na inicialização do domain, checar que cada handler aceita os campos declarados em `DomainAction.params_schema` | P2 | M |

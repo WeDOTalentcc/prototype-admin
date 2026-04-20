@@ -573,4 +573,29 @@ O sistema de LLM opera via **LLM Factory**, composto por três camadas canônica
 
 Ver `LLM_FACTORY_HANDOFF_v2.md` para: tabela de gaps, constantes de referência (`QUALITY_TIERS`, `TASK_MINIMUM_TIER`), guia de logs, env vars e matriz Provider × Capacidade × Tier.
 
-*Last updated: 2026-04-19 | ADR-018: LLM Factory / Choose Your AI BYOK contract*
+---
+
+## Documentos de Status por Dir (2026-04-20)
+
+**Regra:** dirs estratégicos em `app/domains/` devem ter um `STATUS.md` na
+raiz que serve como **fonte de verdade** do estado, dono, classificação,
+plano de evolução e regra anti-deleção do dir. Esses arquivos são
+referenciados pelo relatório `docs/fase2c_domain_verification_report.md`.
+
+**Cobertura inicial (task #670):** os 8 dirs abaixo têm `STATUS.md`
+obrigatório. **NÃO** podem ser deletados nem ter o `STATUS.md` removido sem
+PR explícito que atualize também o relatório Fase 2C:
+
+- `app/domains/ai/STATUS.md` — Infra LLM Core (>25 importadores)
+- `app/domains/autonomous/STATUS.md` — Tier 6 do CascadedRouter
+- `app/domains/interview_intelligence/STATUS.md` — Feature REST candidata
+- `app/domains/journey_mapping/STATUS.md` — Feature REST candidata
+- `app/domains/pipeline/STATUS.md` — `pipeline_transition` (já registrado)
+- `app/domains/policy/STATUS.md` — Engine + agente (17 endpoints)
+- `app/domains/workforce/STATUS.md` — Feature REST (29 endpoints)
+- `app/domains/technical_tests/STATUS.md` — Feature REST (11 endpoints)
+
+Ao adicionar novos dirs estratégicos, criar `STATUS.md` seguindo o template
+desses 8 e listar aqui.
+
+*Last updated: 2026-04-20 | Documentos de Status por Dir (task #670)*
