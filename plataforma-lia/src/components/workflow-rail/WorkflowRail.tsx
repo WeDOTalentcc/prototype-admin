@@ -24,6 +24,7 @@ import {
   trackWorkflowRailPanelToggle,
   type PanelToggleSource,
 } from "./workflowRailAnalytics"
+import { loadLastStage, saveLastStage } from "./lastStageStorage"
 
 interface WorkflowRailProps {
   userId: string
@@ -87,10 +88,48 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
   /* ---- Avoid hydration mismatch: persisted store reads after mount only ---- */
   useEffect(() => { setMounted(true) }, [])
 
-  /* ---- Sync current stage from real-time entries ---- */
+  /* ---- Hydrate last known stage from localStorage (per user) ----
+     Always reset state from storage when the user changes, so the previous
+     user's stage never leaks into the new user's session. `hydratedFor`
+     gates the persist effect so writes only happen once React has applied
+     the hydrated value (and the gate is in state, not a ref, so it triggers
+     the persist effect when it flips). `lastSavedRef` tracks the most
+     recently persisted value so passive hydration does NOT refresh the
+     stored timestamp — staleness reflects last meaningful change only. */
+  const [hydratedFor, setHydratedFor] = useState<string | null>(null)
+  const lastSavedRef = useRef<{ userId: string; stage: FunnelStageKey } | null>(null)
   useEffect(() => {
+    if (!mounted) return
+    setHydratedFor(null)
+    const stored = loadLastStage(userId)
+    lastSavedRef.current = { userId, stage: stored }
+    setCurrentStageKey(stored)
+    setHydratedFor(userId)
+  }, [mounted, userId])
+
+  /* ---- Sync current stage from real-time entries ----
+     When there are active entries, derive from them. When there are none,
+     keep the last known stage (loaded from storage / set by user actions)
+     instead of forcing "initial" on every render. */
+  useEffect(() => {
+    if (entries.length === 0) return
     setCurrentStageKey(deriveCurrentStage(entries))
   }, [entries])
+
+  /* ---- Persist current stage when it actually changes ----
+     Only writes after hydration has completed for the *current* userId
+     (preventing a stale stage from a previous user being saved under a
+     new user's key when userId switches), and skips writes when the value
+     matches what was last saved/loaded so passive page loads don't refresh
+     the staleness timestamp. */
+  useEffect(() => {
+    if (!mounted || !userId) return
+    if (hydratedFor !== userId) return
+    const last = lastSavedRef.current
+    if (last && last.userId === userId && last.stage === currentStageKey) return
+    saveLastStage(userId, currentStageKey)
+    lastSavedRef.current = { userId, stage: currentStageKey }
+  }, [mounted, userId, hydratedFor, currentStageKey])
 
   /* ---- Helper: toggle popover state and emit a tracked analytics event.
          Use this for *user-initiated* opens/closes. The auto-collapse
@@ -182,8 +221,14 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
     } else if (step.path) {
       onNavigate(step.path)
     }
+    // Always persist on a rail action — even when the resulting stage equals
+    // the current one, this refreshes the stored timestamp so the entry stays
+    // fresh (and won't be treated as stale on next visit). The state update
+    // alone wouldn't trigger the persist effect when the value is unchanged.
+    const nextStage = step.resultingStage ?? currentStageKey
     if (step.resultingStage) setCurrentStageKey(step.resultingStage)
-  }, [onNavigate, onCreateJob, currentStageKey, setPopoverOpenTracked])
+    if (userId) saveLastStage(userId, nextStage)
+  }, [onNavigate, onCreateJob, userId, currentStageKey, setPopoverOpenTracked])
 
   /* ---- Drag handlers (used for both ball and expanded bar) ---- */
   const onPointerDown = useCallback((e: React.PointerEvent) => {

@@ -243,6 +243,13 @@ export function useWorkflowRail(userId: string) {
     }
   }, [])
 
+  // Reset entries immediately when the user changes — prevents the previous
+  // user's in-memory entries from briefly influencing UI (e.g. stage derivation)
+  // before the next loadEntries() resolves.
+  useEffect(() => {
+    setEntries([])
+  }, [userId])
+
   // Init
   useEffect(() => {
     loadEntries()
