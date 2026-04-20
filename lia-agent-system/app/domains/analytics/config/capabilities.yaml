@@ -49,6 +49,15 @@ intent_keywords:
   benchmark salarial: get_job_insights
   benchmark: get_job_insights
   salário médio: get_job_insights
+  faixa salarial: get_job_insights
+  faixa de mercado: get_job_insights
+  faixa de remuneração: get_job_insights
+  remuneração de mercado: get_job_insights
+  salário de mercado: get_job_insights
+  mercado paga: get_job_insights
+  quanto paga o mercado: get_job_insights
+  quanto o mercado paga: get_job_insights
+  remuneração média: get_job_insights
   relatório vaga: generate_job_report
   relatório da vaga: generate_job_report
   job report: generate_job_report
