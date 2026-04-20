@@ -19,6 +19,11 @@ import {
   NextStep,
   mapCampaignStageToFunnelKey,
 } from "./workflowRailCatalog"
+import {
+  trackWorkflowRailNextStepClick,
+  trackWorkflowRailPanelToggle,
+  type PanelToggleSource,
+} from "./workflowRailAnalytics"
 
 interface WorkflowRailProps {
   userId: string
@@ -87,24 +92,51 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
     setCurrentStageKey(deriveCurrentStage(entries))
   }, [entries])
 
+  /* ---- Helper: toggle popover state and emit a tracked analytics event.
+         Use this for *user-initiated* opens/closes. The auto-collapse
+         effect (when active entries disappear) bypasses tracking on
+         purpose. ---- */
+  const setPopoverOpenTracked = useCallback(
+    (next: boolean, source: PanelToggleSource) => {
+      setIsPopoverOpen((prev) => {
+        if (prev !== next) trackWorkflowRailPanelToggle(next, currentStageKey, source)
+        return next
+      })
+    },
+    [currentStageKey],
+  )
+
+  /** Toggle helper that uses the functional form internally so rapid
+   *  successive clicks before a re-render can't drop a transition. */
+  const togglePopoverTracked = useCallback(
+    (source: PanelToggleSource) => {
+      setIsPopoverOpen((prev) => {
+        const next = !prev
+        trackWorkflowRailPanelToggle(next, currentStageKey, source)
+        return next
+      })
+    },
+    [currentStageKey],
+  )
+
   /* ---- Close popover on outside click ---- */
   useEffect(() => {
     if (!isPopoverOpen) return
     const onDown = (e: MouseEvent) => {
       if (!containerRef.current) return
-      if (!containerRef.current.contains(e.target as Node)) setIsPopoverOpen(false)
+      if (!containerRef.current.contains(e.target as Node)) setPopoverOpenTracked(false, "outside-click")
     }
     document.addEventListener("mousedown", onDown)
     return () => document.removeEventListener("mousedown", onDown)
-  }, [isPopoverOpen])
+  }, [isPopoverOpen, setPopoverOpenTracked])
 
   /* ---- Close popover on Esc ---- */
   useEffect(() => {
     if (!isPopoverOpen) return
-    const onKey = (e: globalThis.KeyboardEvent) => { if (e.key === "Escape") setIsPopoverOpen(false) }
+    const onKey = (e: globalThis.KeyboardEvent) => { if (e.key === "Escape") setPopoverOpenTracked(false, "escape") }
     document.addEventListener("keydown", onKey)
     return () => document.removeEventListener("keydown", onKey)
-  }, [isPopoverOpen])
+  }, [isPopoverOpen, setPopoverOpenTracked])
 
   /* ---- Focus first next-step when popover opens ---- */
   useEffect(() => {
@@ -143,14 +175,15 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
 
   /* ---- Handle next-step action ---- */
   const handleNextStep = useCallback((step: NextStep) => {
-    setIsPopoverOpen(false)
+    trackWorkflowRailNextStepClick(currentStageKey, step)
+    setPopoverOpenTracked(false, "next-step-click")
     if (step.actionType === "handler") {
       if (step.handlerId === "createJob" && onCreateJob) onCreateJob()
     } else if (step.path) {
       onNavigate(step.path)
     }
     if (step.resultingStage) setCurrentStageKey(step.resultingStage)
-  }, [onNavigate, onCreateJob])
+  }, [onNavigate, onCreateJob, currentStageKey, setPopoverOpenTracked])
 
   /* ---- Drag handlers (used for both ball and expanded bar) ---- */
   const onPointerDown = useCallback((e: React.PointerEvent) => {
@@ -374,7 +407,7 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
           {latest.pendingAction.actionUrl && (
             <button
               type="button"
-              onClick={() => { setIsPopoverOpen(false); onNavigate(latest!.pendingAction!.actionUrl!) }}
+              onClick={() => { setPopoverOpenTracked(false, "pending-action"); onNavigate(latest!.pendingAction!.actionUrl!) }}
               className="flex items-center gap-1 text-xs text-yellow-700 font-medium hover:text-yellow-900 flex-shrink-0"
             >
               {t("workflowRail.entry.go")} <ArrowRight className="w-3 h-3" />
@@ -589,7 +622,7 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
           {/* Mini toggle for popover (the "..." button) */}
           <button
             type="button"
-            onClick={() => setIsPopoverOpen(v => !v)}
+            onClick={() => togglePopoverTracked("toggle-button")}
             aria-expanded={isPopoverOpen}
             aria-label={isPopoverOpen ? t("workflowRail.bar.collapseAriaLabel") : t("workflowRail.bar.expandAriaLabel")}
             className={`ml-1 shrink-0 w-5 h-5 rounded-full border ${T.miniBtn} flex items-center justify-center transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40 ${isPopoverOpen ? "rotate-90" : ""}`}
@@ -625,7 +658,7 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
               </span>
               <button
                 type="button"
-                onClick={() => setIsPopoverOpen(false)}
+                onClick={() => setPopoverOpenTracked(false, "mobile-close")}
                 aria-label={t("workflowRail.panel.close")}
                 className={`${T.textDim} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40 rounded transition-colors duration-300 ease-out`}
               >
@@ -662,7 +695,7 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
                   <span aria-hidden="true" className={`hidden lg:block h-3.5 w-px ${T.divider} mx-0.5 shrink-0`} />
                   <button
                     type="button"
-                    onClick={() => { setIsPopoverOpen(false); onNavigate(nextMainStage.canonical.navPath) }}
+                    onClick={() => { setPopoverOpenTracked(false, "next-stage-chip"); onNavigate(nextMainStage.canonical.navPath) }}
                     title={t("workflowRail.panel.nextInFunnel")}
                     className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium ${T.textDim} ${T.chipHover} transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40`}
                   >
