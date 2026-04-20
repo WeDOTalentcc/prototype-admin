@@ -146,13 +146,6 @@ async def run_scenario(scenario: dict, token: str, run_index: int) -> dict:
 
     try:
         async with websockets.connect(url, open_timeout=CONNECT_TIMEOUT_S) as ws:
-            # Drain the 'connected' handshake message
-            while True:
-                raw = await asyncio.wait_for(ws.recv(), timeout=10)
-                hello = json.loads(raw)
-                if hello.get("type") == "connected":
-                    break
-
             # Turn loop
             user_msg = sim.opening_turn()
             for turn_num in range(MAX_TURNS):
