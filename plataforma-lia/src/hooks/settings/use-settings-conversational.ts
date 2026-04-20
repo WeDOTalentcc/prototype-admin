@@ -49,8 +49,11 @@ export function useSettingsConversational() {
 
   const sendChatPrompt = useCallback((prompt: string) => {
     if (typeof window === "undefined") return
+    // Usa o evento canonico ja consumido pelo UnifiedChat (InlineChatBridge / useSmartFileUpload)
     window.dispatchEvent(
-      new CustomEvent("lia:chat-prompt", { detail: { prompt, source: "settings" } }),
+      new CustomEvent("lia:prefill-message", {
+        detail: { message: prompt, source: "settings", autoSend: false },
+      }),
     )
   }, [])
 

@@ -185,11 +185,9 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
             "fields": ["tech_stack", "engineering_culture", "default_languages"],
             "label": "tech stack",
         },
-        "configure_benefits": {
-            "section": "culture",
-            "fields": ["benefits"],
-            "label": "beneficios",
-        },
+        # NOTA: configure_benefits NAO usa _delegate_section_write porque
+        # 'benefits' nao existe em VALID_CULTURE_FIELDS (tabela dedicada
+        # company_benefits). Tratado em _handle_configure_benefits abaixo.
     }
 
     def _extract_section_payload(self, action_id: str, params: dict[str, Any]) -> dict[str, Any]:
@@ -280,7 +278,34 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
         return await self._delegate_section_write("configure_tech_stack", params, context)
 
     async def _handle_configure_benefits(self, params, context):
-        return await self._delegate_section_write("configure_benefits", params, context)
+        # 'benefits' vive em tabela dedicada (company_benefits) e nao em
+        # company_culture_profiles. Nao temos tool registry de write para
+        # essa tabela ainda, entao retornamos clarification com
+        # navigation_hint para a UI dedicada — sem fingir sucesso.
+        company_id = (params.get("company_id") or context.tenant_id or "").strip()
+        if not company_id:
+            return DomainResponse.error_response(
+                error="company_id ausente — nao foi possivel identificar a empresa.",
+                domain_id=self.domain_id,
+                action_id="configure_benefits",
+            )
+        return DomainResponse.clarification_response(
+            question=(
+                "A edicao de beneficios ainda nao esta disponivel via chat — "
+                "abra Configuracoes > Minha Empresa > Beneficios para gerenciar "
+                "(adicionar, remover ou desativar) os beneficios da empresa."
+            ),
+            domain_id=self.domain_id,
+            action_id="configure_benefits",
+            data={
+                "navigation_hint": {
+                    "page": "Company Settings",
+                    "section": "minha-empresa",
+                    "subsection": "beneficios",
+                },
+            },
+            suggestions=["Abrir Configuracoes > Beneficios"],
+        )
 
     async def _handle_configure_workforce(self, params, context):
         company_id = (params.get("company_id") or context.tenant_id or "").strip()

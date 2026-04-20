@@ -172,3 +172,100 @@ async def test_process_document_delegates_to_process_uploaded(
     assert resp.success
     assert resp.data.get("requires_human_approval") is True
     fake.assert_awaited_once()
+
+
+# ---------------------------------------------------------------------------
+# success — culture / tech_stack delegam para a mesma tool canônica
+# ---------------------------------------------------------------------------
+@pytest.mark.parametrize(
+    "action_id, payload, expected_section",
+    [
+        ("configure_culture", {"mission": "empoderar pessoas"}, "culture"),
+        ("configure_tech_stack", {"tech_stack": ["Python", "TS"]}, "culture"),
+    ],
+)
+@pytest.mark.asyncio
+async def test_culture_and_techstack_delegate_to_save_section(
+    domain: CompanySettingsDomain,
+    action_id: str,
+    payload: dict,
+    expected_section: str,
+) -> None:
+    target = (
+        "app.domains.company_settings.agents.company_tool_registry"
+        "._wrap_save_company_section"
+    )
+    fake = AsyncMock(
+        return_value={"success": True, "message": "ok", "data": {"updated_fields": list(payload)}},
+    )
+    handler = getattr(domain, f"_handle_{action_id}")
+    with patch(target, fake):
+        resp = await handler({"company_id": "co_demo", "data": payload}, _ctx())
+    assert resp.success
+    fake.assert_awaited_once()
+    kwargs = fake.await_args.kwargs
+    assert kwargs["section"] == expected_section
+    assert kwargs["data"] == payload
+
+
+# ---------------------------------------------------------------------------
+# configure_benefits — clarification com navigation_hint (nao finge sucesso)
+# ---------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_configure_benefits_returns_clarification_with_hint(
+    domain: CompanySettingsDomain,
+) -> None:
+    resp = await domain._handle_configure_benefits(
+        {"company_id": "co_demo", "data": {"benefits": [{"name": "Plano de saude"}]}},
+        _ctx(),
+    )
+    assert resp.needs_clarification, "benefits deve pedir clarification (sem write tool)"
+    assert "beneficios" in (resp.clarification_question or "").lower()
+    assert resp.data.get("navigation_hint", {}).get("subsection") == "beneficios"
+
+
+# ---------------------------------------------------------------------------
+# analyze_website — clarification, error de SSRF, success com scraper mockado
+# ---------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_analyze_website_clarification_when_no_url(
+    domain: CompanySettingsDomain,
+) -> None:
+    resp = await domain._handle_analyze_website({}, _ctx())
+    assert resp.needs_clarification
+    assert "site" in (resp.clarification_question or "").lower()
+
+
+@pytest.mark.asyncio
+async def test_analyze_website_rejects_unsafe_url(
+    domain: CompanySettingsDomain,
+) -> None:
+    resp = await domain._handle_analyze_website({"website": "http://localhost/admin"}, _ctx())
+    assert resp.success is False
+    assert "seguranca" in (resp.error or "").lower()
+
+
+@pytest.mark.asyncio
+async def test_analyze_website_success_uses_scraper(
+    domain: CompanySettingsDomain,
+) -> None:
+    target = (
+        "app.domains.company.services.company_scraper_service.CompanyScraperService"
+    )
+    fake_instance = AsyncMock()
+    fake_instance.scrape_website = AsyncMock(
+        return_value={
+            "success": True,
+            "pages_scraped": 3,
+            "pages": [],
+            "content": "Somos a WeDOTalent",
+            "source": "live",
+        }
+    )
+    with patch(target, return_value=fake_instance):
+        resp = await domain._handle_analyze_website(
+            {"website": "https://wedotalent.cc"}, _ctx()
+        )
+    assert resp.success
+    assert resp.data["pages_scraped"] == 3
+    assert resp.data["url"] == "https://wedotalent.cc"

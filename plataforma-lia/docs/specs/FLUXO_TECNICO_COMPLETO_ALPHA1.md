@@ -387,12 +387,16 @@ Domain: `lia-agent-system/app/domains/company_settings/domain.py` (`CompanySetti
 | `configure_profile`      | `_wrap_save_company_section('profile')` | Minha Empresa › Perfil    | TIER 1 para `cnpj`/`name` pós-setup |
 | `configure_culture`      | `_wrap_save_company_section('culture')` | Minha Empresa › Cultura   | TIER 2 (humano + audit)          |
 | `configure_tech_stack`   | `_wrap_save_company_section('culture')` | Minha Empresa › Tech      | TIER 2                           |
-| `configure_benefits`     | `_wrap_save_company_section('culture')` | Minha Empresa › Benefícios | TIER 2                           |
+| `configure_benefits`     | _**clarification → UI**_ (tabela `company_benefits` ainda sem write tool) | Minha Empresa › Benefícios | n/a — write 100% via UI |
 | `configure_workforce`    | `_wrap_import_workforce_plan`         | Minha Empresa › Workforce | TIER 2 (audit detalhado)         |
-| `analyze_website`        | `_wrap_analyze_company_website` (Apify) | Minha Empresa (CTA topo)  | TIER 3 — humano confirma antes de gravar |
+| `analyze_website`        | `CompanyScraperService.scrape_website` direto + SSRF guard (gravação via UI/TIER 3) | Minha Empresa (CTA topo)  | TIER 3 — humano confirma antes de gravar |
 | `process_document`       | `_wrap_process_uploaded_document`      | Minha Empresa (upload)    | TIER 3 — `requires_human_approval=True` |
 
-**Princípio canônico (anti-duplicação).** Os handlers do `domain.py` **não** instanciam serviços de gravação. Cada `_handle_configure_*` chama `_delegate_section_write` que invoca diretamente `_wrap_save_company_section`. Assim, a passagem por FairnessGuard L1+L2+L3, PII Masking, AuditTrail e tier validation é **a mesma** em chat e em UI — não há um "atalho conversacional" sem governança.
+**Princípio canônico (anti-duplicação).** Os handlers do `domain.py` **não** instanciam serviços de gravação dos campos cobertos por `_wrap_save_company_section`. Cada `_handle_configure_{profile,culture,tech_stack}` chama `_delegate_section_write`, que invoca a tool canônica do registry — assim FairnessGuard L1+L2+L3, PII Masking, AuditTrail e tier validation são **idênticos** em chat e UI.
+
+**Exceções declaradas (sem silent fallback).**
+- `configure_benefits` — `benefits` vive em tabela dedicada (`company_benefits`) que ainda **não** possui write tool no registry. Em vez de fingir sucesso, o handler retorna `clarification_response` com `navigation_hint.subsection="beneficios"` orientando o usuário à UI dedicada (Configurações › Minha Empresa › Benefícios). Quando uma tool de write para `company_benefits` for criada, este handler passa a delegar.
+- `analyze_website` — usa `CompanyScraperService.scrape_website` direto **só para leitura**, com SSRF guard (`_is_safe_public_url`) bloqueando endereços internos. Nenhuma gravação acontece neste handler — o usuário aprova os campos extraídos antes que `_wrap_save_company_section` seja chamado num turn subsequente (TIER 3 — humano confirma).
 
 ### B. Pipeline conversacional (chat → action → painel)
 
@@ -417,7 +421,7 @@ SettingsPageEnhanced ──► listener abre a tab + scrolla até `[data-field=.
 **Hook canônico no frontend**: `plataforma-lia/src/hooks/settings/use-settings-conversational.ts` exporta `useSettingsConversational()` com `triggerAction(actionId, opts)` que:
 1. Dispara `lia:settings-action` (consumido por `settings-page-enhanced.tsx`).
 2. Dispara `settings-open-tab` (compatibilidade reversa).
-3. Opcionalmente envia prompt para o chat via `lia:chat-prompt`.
+3. Opcionalmente envia prompt para o chat via `lia:prefill-message` (evento canônico já consumido pelo `UnifiedChat`/`InlineChatBridge`).
 
 ### C. Onboarding proativo (Setup Intro → Chat de Onboarding)
 
@@ -468,13 +472,16 @@ Sempre devolve `requires_human_approval: True` e os `expected_fields` no `data` 
 
 ### I. Status
 
-- Backend domain handlers: **OK** (commit Task #712).
-- Tools canônicas: **OK** (já existiam, agora consumidas pelo domain).
-- Hook + bridge frontend: **OK** (`use-settings-conversational.ts`, listener `lia:settings-action`).
+- Backend domain handlers: **OK** (commit Task #712 + fix code-review).
+- Tools canônicas: **OK** (já existiam, agora consumidas pelo domain via `_delegate_section_write`).
+- `configure_benefits`: **clarification → UI** (sem write tool ainda — exceção declarada acima, sem silent fallback).
+- `analyze_website`: **OK** (scrape direto + SSRF guard, gravação só após aprovação humana).
+- Hook + bridge frontend: **OK** (`use-settings-conversational.ts` dispara `lia:settings-action` + `lia:prefill-message`).
 - CTA analyze_website: **OK** (`MinhaEmpresaHub`).
 - Banner persistente: **OK** (`SetupProgressBanner` no `DashboardApp`).
-- Onboarding redirect: **OK** (`handleStartWizard` → `/onboarding`).
-- Doc canônico: **OK** (este capítulo).
+- Rota onboarding: **OK** (`/[locale]/onboarding/page.tsx` renderiza `OnboardingChatPage` + `UnifiedChat`).
+- Testes unitários: **OK** (21/21 em `tests/unit/test_company_settings_actions.py`, cobre clarification + error + success por action).
+- Doc canônico: **OK** (este capítulo, alinhado ao código pós-review).
 
 ---
 
