@@ -71,7 +71,7 @@ export async function sendOneTurn(
   const input = page.locator(CHAT_INPUT).first();
   const messagesBefore = await page.locator(LIA_MESSAGE).count();
   await input.fill(message);
-  await page.locator(CHAT_SEND).first().click();
+  await page.locator(CHAT_SEND).first().click({ force: true });
 
   const start = Date.now();
   const deadline = start + maxWaitMs;
@@ -110,7 +110,7 @@ function extractToolCalls(body: any): { name: string; args?: Record<string, unkn
   const containers: any[] = [body, body?.metadata, body?.data, body?.result, body?.message];
   for (const c of containers) {
     if (!c || typeof c !== 'object') continue;
-    const arr = c.tool_calls || c.tools || c.actions;
+    const arr = c.tool_calls || c.tool_calls_requested || c.tools || c.actions;
     if (Array.isArray(arr)) {
       for (const t of arr) {
         if (typeof t === 'string') out.push({ name: t });

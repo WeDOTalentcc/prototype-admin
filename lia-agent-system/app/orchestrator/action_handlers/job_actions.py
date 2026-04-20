@@ -39,21 +39,47 @@ async def execute_job_action(
 
 async def _pause_job(params: dict[str, Any], context: dict[str, Any]):
     try:
+        import re as _re_local
         from sqlalchemy import text
 
         from app.core.database import AsyncSessionLocal
 
-        job_id = params.get("job_id", "")
+        job_id_raw = str(params.get("job_id", "")).strip()
         job_title = params.get("job_title", "a vaga")
         company_id = context.get("company_id") if context else None
 
+        _UUID_RE = _re_local.compile(
+            r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            _re_local.IGNORECASE,
+        )
+
         async with AsyncSessionLocal() as db:
-            sql = """
-                UPDATE job_vacancies
-                SET status = 'Pausada', updated_at = NOW()
-                WHERE id = CAST(:job_id AS uuid)
-            """
-            bind: dict[str, Any] = {"job_id": job_id}
+            if _UUID_RE.match(job_id_raw):
+                resolved_uuid = job_id_raw
+            else:
+                lookup_sql = "SELECT id, title FROM job_vacancies WHERE job_id = :code"
+                lookup_bind: dict[str, Any] = {"code": job_id_raw}
+                if company_id:
+                    lookup_sql += " AND company_id = CAST(:co AS uuid)"
+                    lookup_bind["co"] = str(company_id)
+                lookup_sql += " LIMIT 1"
+                row = (await db.execute(text(lookup_sql), lookup_bind)).fetchone()
+                if not row:
+                    return ActionResult(
+                        status="error",
+                        message=f"Vaga '{job_id_raw}' não encontrada no sistema. Verifique o código e tente novamente.",
+                        error_detail=f"job_id code '{job_id_raw}' not found",
+                        action_type="pause_job",
+                    )
+                resolved_uuid = str(row[0])
+                if job_title == "a vaga":
+                    job_title = row[1] or job_title
+
+            sql = (
+                "UPDATE job_vacancies SET status = 'Pausada', updated_at = NOW()"
+                " WHERE id = CAST(:job_id AS uuid)"
+            )
+            bind: dict[str, Any] = {"job_id": resolved_uuid}
             if company_id:
                 sql += " AND company_id = CAST(:co AS uuid)"
                 bind["co"] = str(company_id)
@@ -61,20 +87,21 @@ async def _pause_job(params: dict[str, Any], context: dict[str, Any]):
             if result.rowcount == 0:
                 return ActionResult(
                     status="error",
-                    message="Vaga não encontrada",
-                    error_detail="Vaga não encontrada no sistema",
+                    message="Vaga não encontrada ou já foi alterada.",
+                    error_detail="rowcount=0 after UPDATE",
                     action_type="pause_job",
                 )
             await db.commit()
 
-        await log_action_audit("pause_job", company_id, job_vacancy_id=str(job_id))
-        await sync_to_rails("job_paused", "job", str(job_id))
+        await log_action_audit("pause_job", company_id, job_vacancy_id=resolved_uuid)
+        await sync_to_rails("job_paused", "job", resolved_uuid)
 
         return ActionResult(
             status="executed",
             message=f"Vaga **{job_title}** pausada com sucesso.",
             data={
-                "job_id": job_id,
+                "job_id": resolved_uuid,
+                "job_code": job_id_raw,
                 "job_title": job_title,
                 "paused_at": datetime.utcnow().isoformat(),
                 "simulated": False,

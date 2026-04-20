@@ -543,17 +543,11 @@ class ActionExecutorService:
             )
 
         elif action_id == "pause_job":
-            job_title = params.get("job_title", "a vaga")
+            # Never simulate destructive job mutations — surface the real error.
             return ActionResult(
-                status="executed",
-                message=f"Vaga **{job_title}** pausada com sucesso.",
-                data={
-                    "job_id": params.get("job_id", ""),
-                    "job_title": job_title,
-                    "reason": params.get("reason", ""),
-                    "paused_at": datetime.utcnow().isoformat(),
-                    "simulated": True,
-                },
+                status="error",
+                message="Não foi possível pausar a vaga. Por favor, tente novamente ou verifique o código da vaga.",
+                error_detail="pause_job reached _simulate_execution — real handler failed",
                 action_type="pause_job",
             )
 
