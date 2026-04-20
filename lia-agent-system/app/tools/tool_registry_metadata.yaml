@@ -2374,3 +2374,126 @@ tools:
       required: [interview_id]
       properties:
         interview_id: {type: string}
+
+  # ── Job Portfolio Management Tools (P1.B — added 2026-04-20) ─────────────
+  # These tools are served by JobsManagementReActAgent via jobs_mgmt_tool_registry.
+  # Entries here ensure sync_descriptions_from_yaml() injects enriched descriptions.
+
+  - name: list_jobs
+    description: >-
+      List all job vacancies in the company portfolio with status, metrics, candidate counts,
+      and department breakdown. Returns active, paused, and closed vacancies with key KPIs
+      such as time-to-fill, pipeline velocity, and SLA health per vacancy.
+    when_to_use: >-
+      When the recruiter asks to see their job portfolio, list open or active vacancies,
+      check how many jobs are currently running, or browse all positions across departments.
+      Triggers on: "minhas vagas", "vagas abertas", "listar vagas", "ver vagas", "vagas ativas".
+    when_not_to_use: >-
+      Do not use to get details of a single vacancy — use view_job_details instead.
+      Do not use to search candidates — use search_candidates instead.
+      Do not use when the recruiter is creating a new job — use create_job instead.
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [view_job_details, pause_job, search_jobs]
+    allowed_agents: [jobs_management, recruiter_assistant, orchestrator]
+    scope: JOB_TABLE
+    version: "1.0"
+    parameters:
+      type: object
+      properties:
+        status:
+          type: string
+          description: "Filter by status: active, paused, closed, all (default: active)"
+        department:
+          type: string
+          description: "Filter by department name (optional)"
+
+  - name: view_job_details
+    description: >-
+      Get comprehensive details of a specific job vacancy including full description,
+      requirements, pipeline stages, candidate counts per stage, SLA status, priority
+      level, and recruitment KPIs such as time-in-stage and conversion rates.
+    when_to_use: >-
+      When the recruiter asks about a specific vacancy's details, pipeline status, or
+      recruitment metrics. Triggers on: "ver detalhes da vaga", "como está a vaga X",
+      "detalhes da vaga", "ver vaga", "informações da vaga".
+    when_not_to_use: >-
+      Do not use to list all vacancies — use list_jobs instead.
+      Do not use to update vacancy fields — use update_job instead.
+      Requires job_id; if not provided, ask the recruiter to specify which vacancy.
+    side_effects: [none]
+    governance_tags: [multi_tenant, pii]
+    related_tools: [list_jobs, update_job, pause_job]
+    allowed_agents: [jobs_management, recruiter_assistant, orchestrator]
+    scope: JOB_TABLE
+    version: "1.0"
+    parameters:
+      type: object
+      required: [job_id]
+      properties:
+        job_id:
+          type: string
+          description: "UUID of the job vacancy to retrieve details for"
+
+  - name: pause_job
+    description: >-
+      Pause an active job vacancy, temporarily stopping new applications and sourcing
+      activities. Requires a structured reason for audit trail compliance. The vacancy
+      remains in the system and can be reactivated at any time using reopen_job.
+    when_to_use: >-
+      When the recruiter explicitly asks to pause, suspend, or temporarily halt a vacancy.
+      Appropriate for: "pausar a vaga", "suspender recrutamento", "colocar vaga em espera",
+      "pausar", "suspender vaga". Always confirm intent before executing.
+    when_not_to_use: >-
+      Do not use if the recruiter intends to close the vacancy permanently — use close_job.
+      Do not pause without a job_id and reason — both are required.
+      Always ask for confirmation before pausing, as it affects candidates in the pipeline.
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, write_destructive, audit_trail]
+    related_tools: [close_job, reopen_job, list_jobs]
+    allowed_agents: [jobs_management, recruiter_assistant, orchestrator]
+    scope: IN_JOB
+    version: "1.0"
+    parameters:
+      type: object
+      required: [job_id, reason]
+      properties:
+        job_id:
+          type: string
+          description: "UUID of the job vacancy to pause"
+        reason:
+          type: string
+          description: "Reason for pausing the vacancy (required for audit trail)"
+
+  - name: move_candidate
+    description: >-
+      Move a candidate to a different stage in the recruitment pipeline, such as advancing
+      from screening to interview, or from interview to offer stage. Records a reason for
+      audit trail and triggers downstream notifications if configured for the target stage.
+    when_to_use: >-
+      When the recruiter asks to advance or move a specific candidate to another stage.
+      Triggers on: "mover candidato para entrevista", "avançar candidato", "mover para
+      próxima etapa", "candidato X para triagem", "mover X para oferta".
+    when_not_to_use: >-
+      Do not use to reject candidates — use reject_candidate instead.
+      Do not use to move multiple candidates at once — use bulk_update_candidates_stage.
+      Do not use without candidate_id, target_stage, and reason — all three are required.
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, pii, write_destructive, audit_trail]
+    related_tools: [reject_candidate, bulk_update_candidates_stage, update_candidate_stage]
+    allowed_agents: [cv_screening, pipeline_action, recruiter_assistant, orchestrator]
+    scope: IN_JOB
+    version: "1.0"
+    parameters:
+      type: object
+      required: [candidate_id, target_stage, reason]
+      properties:
+        candidate_id:
+          type: string
+          description: "UUID of the candidate to move"
+        target_stage:
+          type: string
+          description: "Target pipeline stage name (e.g. triagem, entrevista, oferta)"
+        reason:
+          type: string
+          description: "Reason for the stage move (required for audit trail)"
