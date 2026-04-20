@@ -243,7 +243,7 @@ def _format_ttl(seconds: int) -> str:
 
 import os as _os
 
-# Fase 7: Moved from app.config.cache_config (LIA-D05 consolidation)
+# Fase 7: Moved from the legacy cache_config shim (LIA-D05 consolidation)
 class CacheSettings:
     """Cache configuration settings loaded from environment."""
     

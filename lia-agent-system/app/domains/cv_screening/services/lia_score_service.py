@@ -21,7 +21,7 @@ from enum import Enum
 from typing import Any
 
 
-from app.config.industry_weights import ScoringWeights, get_weights_for_industry
+from app.core.industry_weights import ScoringWeights, get_weights_for_industry
 from app.shared.compliance.scoring_safeguards import (
     FairnessBlockedError,
     hash_payload,

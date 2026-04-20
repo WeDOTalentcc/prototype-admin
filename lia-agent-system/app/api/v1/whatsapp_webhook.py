@@ -57,17 +57,23 @@ def verify_twilio_signature(request_url: str, params: dict, signature: str) -> b
 async def _find_session_by_phone(phone: str):
     """Look up onboarding session by phone number."""
     try:
-        from app.shared.database import get_db
-        db = await get_db()
-        row = await db.fetch_one(
-            """
-            SELECT oas.* FROM onboarding_agent_state oas
-            JOIN whatsapp_sessions ws ON ws.user_id = oas.user_id
-            WHERE ws.phone_number = $1 AND ws.session_active = true
-            ORDER BY ws.updated_at DESC LIMIT 1
-            """,
-            [phone],
-        )
+        from sqlalchemy import text
+
+        from app.core.database import AsyncSessionLocal
+
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                text(
+                    """
+                    SELECT oas.* FROM onboarding_agent_state oas
+                    JOIN whatsapp_sessions ws ON ws.user_id = oas.user_id
+                    WHERE ws.phone_number = :phone AND ws.session_active = true
+                    ORDER BY ws.updated_at DESC LIMIT 1
+                    """
+                ),
+                {"phone": phone},
+            )
+            row = result.mappings().first()
         if row:
             from app.services.onboarding_orchestrator import OnboardingSession, OnboardingPhase
             session_data = json.loads(row["session_data"]) if row["session_data"] else {}
@@ -98,10 +104,10 @@ async def _get_orchestrator():
     db, llm, wa_client = None, None, None
 
     try:
-        from app.shared.database import get_db
-        db = await get_db()
-    except ImportError:
-        pass
+        from app.core.database import AsyncSessionLocal
+        db = AsyncSessionLocal()
+    except Exception as exc:  # pragma: no cover — best-effort, orchestrator handles db=None
+        logger.debug("[WhatsApp] DB session unavailable: %s", exc)
     try:
         from app.shared.providers.llm_factory import get_llm
         llm = get_llm(tier="fast")

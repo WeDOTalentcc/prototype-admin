@@ -690,7 +690,7 @@ class TaskService:
         **kwargs,
     ):
         """Mark a task as completed (thin wrapper over update_task_status)."""
-        from app.models.automation_models import TaskStatus  # local import: avoid cycles
+        from lia_models.task import TaskStatus  # local import: avoid cycles
         return await self.update_task_status(
             db=db,
             task_id=task_id,

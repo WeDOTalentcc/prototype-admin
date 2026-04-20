@@ -1473,7 +1473,7 @@ async def teams_tab_auth(
             )
 
         # Generate a platform JWT (reuse existing auth service if available)
-        from app.core.security import create_access_token
+        from app.auth.security import create_access_token
         platform_token = create_access_token(subject=str(user.id), company_id=getattr(user, "company_id", None))
 
         logger.info(f"[TeamsTabAuth] SSO resolved: AAD={aad_object_id} → user={user.id}")

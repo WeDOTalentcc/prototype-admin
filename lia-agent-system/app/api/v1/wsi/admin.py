@@ -16,7 +16,7 @@ from app.domains.cv_screening.services.wsi_service.layer2_extractor import (
 )
 
 try:
-    from app.api.dependencies.auth import require_admin_user  # type: ignore[import-not-found]
+    from app.auth.dependencies import require_admin as require_admin_user  # type: ignore[import-not-found]
 except ImportError:  # pragma: no cover — fallback se dependency não existir
     def require_admin_user():  # type: ignore[misc]
         return None

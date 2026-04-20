@@ -37,10 +37,10 @@ class WebEventRequest(BaseModel):
 async def _get_db():
     """Get database connection. Replace with your actual dependency."""
     try:
-        from app.shared.database import get_db
-        return await get_db()
-    except ImportError:
-        logger.warning("[Onboarding] get_db not available")
+        from app.core.database import AsyncSessionLocal
+        return AsyncSessionLocal()
+    except Exception as exc:
+        logger.warning("[Onboarding] AsyncSessionLocal not available: %s", exc)
         return None
 
 
@@ -50,10 +50,15 @@ async def _load_session(db, user_id: int):
         return None
 
     try:
-        row = await db.fetch_one(
-            "SELECT * FROM onboarding_agent_state WHERE user_id = $1 ORDER BY updated_at DESC LIMIT 1",
-            [user_id],
+        from sqlalchemy import text
+
+        result = await db.execute(
+            text(
+                "SELECT * FROM onboarding_agent_state WHERE user_id = :uid ORDER BY updated_at DESC LIMIT 1"
+            ),
+            {"uid": user_id},
         )
+        row = result.mappings().first()
         if row:
             from app.services.onboarding_orchestrator import OnboardingSession, OnboardingPhase
             session_data = json.loads(row["session_data"]) if row["session_data"] else {}

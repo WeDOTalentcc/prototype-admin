@@ -663,20 +663,22 @@ class ProactiveAlertService:
             logger.debug(f"Error checking agent health: {e}")
         
         try:
-            from app.services.credits_service import CreditsService
-            
-            credits_service = CreditsService()
-            credits_info = await credits_service.get_credits_balance(company_id, db)
+            from app.domains.credits.services.credit_service import CreditService
+
+            credits_service = CreditService()
+            credits_info = await credits_service.get_balance(db, company_id)
             threshold = self.get_threshold(AlertCondition.CREDITS_LOW)
-            
+
             if credits_info:
-                remaining_percent = (credits_info.get("remaining", 0) / max(credits_info.get("total", 1), 1)) * 100
-                if remaining_percent < threshold.get("threshold_percent", 20):
+                balance = credits_info.get("balance", 0) or 0
+                low_threshold = credits_info.get("low_balance_threshold") or 0
+                low_warning = credits_info.get("low_balance_warning", False)
+                if low_warning or (low_threshold and balance <= low_threshold):
                     alerts.append({
                         "condition": AlertCondition.CREDITS_LOW,
                         "category": AlertCategory.SYSTEM,
                         "title": "💳 Créditos de Pesquisa Baixos",
-                        "message": f"Restam apenas {remaining_percent:.0f}% dos créditos de busca. Considere adquirir mais créditos.",
+                        "message": f"Restam apenas {balance} créditos de busca (limite: {low_threshold}). Considere adquirir mais créditos.",
                         "severity": threshold.get("severity"),
                         "data": credits_info,
                         "suggested_action": "buy_credits",

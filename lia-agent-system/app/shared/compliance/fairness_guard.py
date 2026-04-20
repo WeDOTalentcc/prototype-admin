@@ -805,7 +805,7 @@ class FairnessGuard:
         result = self.check(text)
 
         try:
-            from app.services.llm_service import LLMService
+            from app.domains.ai.services.llm import LLMService
             llm_service = LLMService()
 
             # Layer 3: bilingual prompt (auto-detect PT-BR vs EN)
