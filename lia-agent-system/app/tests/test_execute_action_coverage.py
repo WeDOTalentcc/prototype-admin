@@ -1,7 +1,7 @@
 """
-Cobertura de execute_action para 11 dominios (task #674).
+Cobertura de execute_action para 18 dominios (tasks #674 e #687).
 
-Suite parametrizada que percorre TODAS as actions declaradas pelos 10 dominios
+Suite parametrizada que percorre TODAS as actions declaradas pelos 17 dominios
 "padrao" (estilo handler_map / _ACTION_TOOL_MAP) e verifica que a cadeia
 `domain.execute_action(action_id, params, context)`:
 
@@ -11,8 +11,14 @@ Suite parametrizada que percorre TODAS as actions declaradas pelos 10 dominios
   - se comporta de forma graciosa quando o tenant_id esta ausente
     (fail-closed na camada de tools wrapadas por @tool_handler).
 
-O 11o dominio (`job_creation`) e intent-routed (state machine via LangGraph)
+O 18o dominio (`job_creation`) e intent-routed (state machine via LangGraph)
 e tem suite dedicada em `test_job_creation_intent_flow.py`.
+
+Task #674 cobriu os 10 primeiros dominios. Task #687 estendeu a suite com
+os 7 dominios restantes que ja tinham cobertura parcial em outros arquivos
+mas ainda nao tinham checagem ponta-a-ponta `execute_action -> handler`:
+sourcing, cv_screening, interview_scheduling, talent_pool, job_management,
+hiring_policy e pipeline_transition.
 
 Mocks agressivos sao aplicados via fixtures autouse para evitar IO real
 (banco, LLM, ATS externo, email). Tempo alvo da suite: < 60s.
@@ -33,9 +39,13 @@ os.environ.setdefault("LIA_ALLOW_NON_COMPLIANT_DOMAINS", "1")
 os.environ.setdefault("LIA_SKIP_DB", "1")
 
 
-# Os 10 dominios "padrao" cobertos por esta suite. job_creation e tratado
+# Os 17 dominios "padrao" cobertos por esta suite. job_creation e tratado
 # separadamente em test_job_creation_intent_flow.py.
+#
+# Os 10 primeiros vieram da task #674; os 7 ultimos foram adicionados pela
+# task #687 para fechar o gap de cobertura `execute_action -> handler`.
 STANDARD_DOMAINS: tuple[str, ...] = (
+    # Task #674 — primeira leva
     "agent_studio",
     "analytics",
     "ats_integration",
@@ -46,6 +56,14 @@ STANDARD_DOMAINS: tuple[str, ...] = (
     "digital_twin",
     "recruiter_assistant",
     "recruitment_campaign",
+    # Task #687 — segunda leva (dominios com cobertura parcial preexistente)
+    "cv_screening",
+    "hiring_policy",
+    "interview_scheduling",
+    "job_management",
+    "pipeline_transition",
+    "sourcing",
+    "talent_pool",
 )
 
 # Padroes (regex) que indicam que o dispatch de action falhou em encontrar
@@ -182,6 +200,81 @@ KNOWN_TENANT_ISOLATION_GAPS: frozenset[tuple[str, str]] = frozenset({
     ("recruiter_assistant", "stale_candidates"),
     ("recruiter_assistant", "track_goals"),
     ("recruitment_campaign", "list_campaigns"),
+    # ----- Adicionados pela task #687 (segunda leva de dominios) -----
+    ("cv_screening", "calibrate_model"),
+    ("cv_screening", "check_saturation"),
+    ("hiring_policy", "configure_policy"),
+    ("hiring_policy", "configure_pipeline"),
+    ("hiring_policy", "configure_scheduling"),
+    ("hiring_policy", "configure_screening"),
+    ("hiring_policy", "configure_communication"),
+    ("hiring_policy", "configure_automation"),
+    ("hiring_policy", "validate_compliance"),
+    ("hiring_policy", "get_progress"),
+    ("hiring_policy", "configure_candidate_portal"),
+    ("interview_scheduling", "generate_self_scheduling_link"),
+    ("interview_scheduling", "send_reminder"),
+    ("interview_scheduling", "list_today_interviews"),
+    ("interview_scheduling", "interview_qa"),
+    ("job_management", "create_job"),
+    ("job_management", "guided_wizard"),
+    ("job_management", "extract_requirements"),
+    ("job_management", "generate_rubrics"),
+    ("job_management", "update_job"),
+    ("job_management", "health_check"),
+    ("job_management", "suggest_strategy"),
+    ("job_management", "duplicate_job"),
+    ("job_management", "create_from_template"),
+    ("job_management", "clone_job"),
+    ("job_management", "close_job"),
+    ("job_management", "pause_job"),
+    ("job_management", "get_benefits"),
+    ("job_management", "suggest_jd_improvements"),
+    ("job_management", "detect_criteria"),
+    ("job_management", "generate_wsi_questions"),
+    ("job_management", "advance_wizard_step"),
+    ("job_management", "get_wizard_step_data"),
+    ("job_management", "enrich_jd"),
+    ("job_management", "import_jd"),
+    ("job_management", "generate_jd"),
+    ("job_management", "job_analytics"),
+    ("job_management", "qualify_job"),
+    ("job_management", "list_jobs"),
+    ("job_management", "publish_job"),
+    ("job_management", "job_status_webhook"),
+    ("job_management", "search_templates"),
+    ("job_management", "apply_template"),
+    ("job_management", "analyze_jd"),
+    ("job_management", "suggest_compensation"),
+    ("pipeline_transition", "suggest_next_action"),
+    ("pipeline_transition", "list_pipeline_stages"),
+    ("sourcing", "search_candidates"),
+    ("sourcing", "global_search"),
+    ("sourcing", "generate_boolean"),
+    ("sourcing", "check_volume"),
+    ("sourcing", "proactive_suggest"),
+    ("sourcing", "filter_candidates"),
+    ("sourcing", "rank_candidates"),
+    ("sourcing", "compare_candidates"),
+    ("sourcing", "talent_pool_search"),
+    ("sourcing", "pearch_search"),
+    ("sourcing", "build_search_strategy"),
+    ("sourcing", "analyze_search_results"),
+    ("sourcing", "feedback_search"),
+    ("sourcing", "expand_search"),
+    ("sourcing", "screen_candidates"),
+    ("sourcing", "assess_market"),
+    ("sourcing", "export_candidates"),
+    ("sourcing", "import_candidates"),
+    ("sourcing", "dedup_candidates"),
+    ("sourcing", "engagement_pipeline"),
+    ("sourcing", "schedule_outreach"),
+    ("sourcing", "update_candidate_stage"),
+    ("sourcing", "reject_candidate"),
+    ("sourcing", "shortlist_candidate"),
+    ("sourcing", "add_candidate_to_vacancy"),
+    ("sourcing", "get_candidate_stats"),
+    ("sourcing", "get_candidate_history"),
 })
 
 
