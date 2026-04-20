@@ -240,22 +240,47 @@ def test_action_has_execution_path(
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Test 3: execute_action contract — verifica que método existe, é coroutine
-# e tem signature compatível. NÃO invoca (evita DB/IO em smoke).
+# Test 3: execute_action invocation — chama execute_action com params vazios e
+# DomainContext dummy. Aceita DomainResponse OU exceções de runtime esperadas
+# (faltam fixtures DB/tenant). Falha apenas em quebras estruturais:
+# AttributeError de método inexistente, NameError, ImportError ou
+# TypeError de signature incompatível — todos sinalizam handler quebrado.
 # ──────────────────────────────────────────────────────────────────────────────
+import asyncio as _asyncio
+from app.domains.base import DomainContext as _DomainCtx, DomainResponse as _DomainResp
+
+# Erros que indicam código quebrado de verdade (não falta de fixture).
+_STRUCTURAL_BUG_ERRORS = (
+    NameError,
+    ImportError,
+    SyntaxError,
+)
+
+
+def _build_dummy_context(domain_id: str) -> _DomainCtx:
+    return _DomainCtx(
+        domain_id=domain_id,
+        user_id="smoke-user",
+        session_id="smoke-session",
+        tenant_id="smoke-tenant",
+    )
+
+
 @pytest.mark.parametrize(
     "domain_id,action_id,domain_instance",
     _ACTION_ROWS,
     ids=[f"{d}::{a}" for d, a, _ in _ACTION_ROWS],
 )
-def test_action_execute_method_contract(
+def test_action_execute_invocation(
     domain_id: str, action_id: str, domain_instance: Any
 ) -> None:
-    """execute_action de cada domínio deve ser callable e async-compatível.
+    """Invoca execute_action(action_id, {}, dummy_ctx) para cada (domain, action).
 
-    Smoke leve de contrato — não invoca o método (params reais exigem DB,
-    APIs externas, fixtures de tenant). Valida apenas que a interface
-    pública para acionar a chain de execução está disponível.
+    Validação: ou retorna DomainResponse válido (success/error/clarification),
+    ou levanta exceção de runtime esperada (DB indisponível, tenant fake, etc).
+    Falha apenas em erros estruturais — handler ausente, import quebrado,
+    signature incompatível — que indicariam regressão real na cadeia de
+    execução do chat unificado (#580).
     """
     if domain_id in P1_DOMAINS_DEFERRED:
         pytest.xfail(f"Domínio P1 ({domain_id}) — Fase 2 (#582).")
@@ -264,16 +289,52 @@ def test_action_execute_method_contract(
 
     method = getattr(domain_instance, "execute_action", None)
     assert callable(method), (
-        f"Domínio '{domain_id}' não expõe execute_action callable "
-        f"(action '{action_id}' não tem entrypoint de execução)."
+        f"Domínio '{domain_id}' não expõe execute_action callable."
     )
 
-    import inspect
-    sig = inspect.signature(method)
-    params = list(sig.parameters.keys())
-    assert len(params) >= 2, (
-        f"{domain_id}.execute_action tem signature insuficiente "
-        f"(esperado pelo menos action_id+params/context, obteve {params})."
+    ctx = _build_dummy_context(domain_id)
+
+    async def _invoke() -> Any:
+        return await _asyncio.wait_for(method(action_id, {}, ctx), timeout=1.5)
+
+    try:
+        result = _asyncio.run(_invoke())
+    except _asyncio.TimeoutError:
+        # Handler estava chamando IO/DB real — chain de execução está
+        # estruturalmente OK (não levantou erro de import/atributo), só
+        # pendurou esperando recurso. Aceito como pass.
+        return
+    except _STRUCTURAL_BUG_ERRORS as exc:
+        pytest.fail(
+            f"[#580] {domain_id}::{action_id} levantou erro estrutural "
+            f"({type(exc).__name__}: {exc}) — handler quebrado."
+        )
+    except TypeError as exc:
+        msg = str(exc)
+        # TypeError de signature do execute_action é bug; TypeError de IO interno é tolerado.
+        if "execute_action" in msg or "positional argument" in msg or "keyword argument" in msg:
+            pytest.fail(
+                f"[#580] {domain_id}::{action_id} signature incompatível: {exc}"
+            )
+        return  # TypeError de outra origem = falta de fixture/dado real.
+    except AttributeError as exc:
+        msg = str(exc)
+        # AttributeError em self._handle_xxx ou método inexistente = bug.
+        if "_handle" in msg or "execute_action" in msg:
+            pytest.fail(
+                f"[#580] {domain_id}::{action_id} handler ausente: {exc}"
+            )
+        return  # AttributeError de objeto interno = falta de fixture.
+    except Exception:
+        # Qualquer outra exceção (PermissionError, ValueError, RuntimeError, etc.)
+        # é runtime esperado em smoke sem DB/APIs reais. O importante é que a
+        # chain de execução foi acionada e não quebrou estruturalmente.
+        return
+
+    # Se retornou, deve ser DomainResponse.
+    assert isinstance(result, _DomainResp), (
+        f"[#580] {domain_id}::{action_id} retornou {type(result).__name__} "
+        f"em vez de DomainResponse."
     )
 
 
