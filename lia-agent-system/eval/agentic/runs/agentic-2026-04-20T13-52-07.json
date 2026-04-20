@@ -113,6 +113,7 @@
         }
       ],
       "observed_tools": [
+<<<<<<< HEAD
         {
           "name": "view_job_details",
           "ok": true,
@@ -128,6 +129,11 @@
           "ok": true,
           "status": 200
         }
+=======
+        "view_job_details",
+        "view_job_details",
+        "list_stage_candidates"
+>>>>>>> 1403184d7 (Saved your changes before starting work)
       ],
       "total_turns": 8,
       "total_duration_ms": 20336
@@ -225,6 +231,7 @@
         }
       ],
       "observed_tools": [
+<<<<<<< HEAD
         {
           "name": "get_recruiter_backlog",
           "ok": true,
@@ -240,6 +247,11 @@
           "ok": true,
           "status": 200
         }
+=======
+        "get_recruiter_backlog",
+        "get_pipeline_health",
+        "list_jobs"
+>>>>>>> 1403184d7 (Saved your changes before starting work)
       ],
       "total_turns": 8,
       "total_duration_ms": 54850
@@ -456,6 +468,7 @@
         }
       ],
       "observed_tools": [
+<<<<<<< HEAD
         {
           "name": "check_pool_health",
           "ok": true,
@@ -591,6 +604,35 @@
           "ok": true,
           "status": 200
         }
+=======
+        "check_pool_health",
+        "check_pipeline_risks",
+        "get_pipeline_health",
+        "predict_dropout_risk",
+        "get_conversion_rates",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis"
+>>>>>>> 1403184d7 (Saved your changes before starting work)
       ],
       "total_turns": 8,
       "total_duration_ms": 108744
@@ -874,6 +916,7 @@
         }
       ],
       "observed_tools": [
+<<<<<<< HEAD
         {
           "name": "search_candidates",
           "ok": true,
@@ -919,6 +962,17 @@
           "ok": true,
           "status": 200
         }
+=======
+        "search_candidates",
+        "search_candidates",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis"
+>>>>>>> 1403184d7 (Saved your changes before starting work)
       ],
       "total_turns": 8,
       "total_duration_ms": 24887
@@ -1223,6 +1277,7 @@
         }
       ],
       "observed_tools": [
+<<<<<<< HEAD
         {
           "name": "list_jobs",
           "ok": true,
@@ -1233,6 +1288,10 @@
           "ok": true,
           "status": 200
         }
+=======
+        "list_jobs",
+        "get_portfolio_metrics"
+>>>>>>> 1403184d7 (Saved your changes before starting work)
       ],
       "total_turns": 8,
       "total_duration_ms": 45488
@@ -1374,6 +1433,7 @@
         }
       ],
       "observed_tools": [
+<<<<<<< HEAD
         {
           "name": "search_candidates",
           "ok": true,
@@ -1424,6 +1484,18 @@
           "ok": true,
           "status": 200
         }
+=======
+        "search_candidates",
+        "search_candidates",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis",
+        "bg:analysis"
+>>>>>>> 1403184d7 (Saved your changes before starting work)
       ],
       "total_turns": 8,
       "total_duration_ms": 25817
