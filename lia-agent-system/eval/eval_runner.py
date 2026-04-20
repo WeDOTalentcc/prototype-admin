@@ -586,7 +586,7 @@ async def run(args: argparse.Namespace) -> None:
             print_progress(idx, len(cases), case["id"], scoring["score"], api_result["latency_ms"])
 
             # Small delay to avoid rate limiting
-            await asyncio.sleep(1.2)
+            await asyncio.sleep(0.5)
 
     # Summary
     total = len(results)
