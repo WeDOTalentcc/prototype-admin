@@ -8,8 +8,15 @@ import {
   Edit, Trash2, Mail, MapPin, Users, Shield, Loader2, Send
 } from "lucide-react"
 import { textStyles, badgeStyles } from '@/lib/design-tokens'
+import { cn } from "@/lib/utils"
 import type { UserData } from './user-management-types'
 import { useTranslations } from "next-intl"
+
+// Override de tamanho aplicado em cima do `getStatusColor()` para que as
+// pílulas do card de usuário fiquem na mesma densidade compacta da tabela
+// (texto micro, padding mínimo, peso normal). Sem isso, o `badgeStyles.*`
+// reaplica `px-2 py-0.5 text-micro font-medium`, inflando a badge no card.
+const COMPACT_STATUS_OVERRIDE = "px-1.5 py-0 text-[10px] leading-[14px] font-normal"
 
 interface UserListProps {
   filteredUsers: UserData[]
@@ -56,21 +63,21 @@ export function UserList({
             <CardContent className="p-4">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
-                  <Avatar className="w-10 h-10">
+                  <Avatar className="w-9 h-9">
                     <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback className={`${badgeStyles.info} font-medium text-xs`}>
+                    <AvatarFallback className={`${badgeStyles.info} font-medium text-micro`}>
                       {user.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h4 className={textStyles.subtitle}>{user.name}</h4>
-                    <p className={textStyles.description}>{user.role}</p>
+                    <h4 className={cn(textStyles.subtitle, "leading-tight")}>{user.name}</h4>
+                    <p className={cn(textStyles.description, "leading-tight")}>{user.role}</p>
                     <div className="flex items-center gap-1.5 mt-1">
-                      <Chip variant="neutral" muted className={`text-micro ${getStatusColor(user.status)}`}>
+                      <Chip variant="neutral" muted density="compact" className={cn(getStatusColor(user.status), COMPACT_STATUS_OVERRIDE)}>
                         {user.status === 'active' ? t('statusActive') : user.status === 'inactive' ? t('statusInactive') : t('statusPending')}
                       </Chip>
                       {user.isScimManaged && (
-                        <Chip variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle text-micro">
+                        <Chip variant="neutral" muted density="compact" className={cn("bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle dark:border-lia-border-subtle", COMPACT_STATUS_OVERRIDE)}>
                           <Shield className="w-2.5 h-2.5 mr-0.5" />
                           SSO
                         </Chip>
