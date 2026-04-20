@@ -102,9 +102,15 @@ def _extract_agent(data: Any) -> str | None:
             inner = nested.get("message") if isinstance(nested.get("message"), dict) else None
             if inner:
                 candidates.append(inner)
+    # `POST /api/v1/chat` returns ChatResponse{message: MessageResponse, ...}
+    # and the routed specialist is echoed inside `message.message_metadata`
+    # (Task #552). Descend into both so we don't miss it.
     msg = data.get("message") if isinstance(data.get("message"), dict) else None
     if msg:
         candidates.append(msg)
+        meta = msg.get("message_metadata") if isinstance(msg.get("message_metadata"), dict) else None
+        if meta:
+            candidates.append(meta)
     # Iterate keys outermost so explicit `agent` always wins over weaker
     # signals like `specialist` even when they appear in different containers.
     for key in keys:

@@ -246,7 +246,17 @@ async def send_message(
                 conversation_id=conversation_id,
                 role="assistant",
                 content=_block_msg,
-                message_metadata={"fairness_blocked": True, "fairness_flags": _c3b_pre.fairness_flags},
+                message_metadata={
+                    "fairness_blocked": True,
+                    "fairness_flags": _c3b_pre.fairness_flags,
+                    # Task #552: even compliance-blocked replies must echo the
+                    # answering "agent" so the routing audit always populates
+                    # `agent_observed` (and downstream tooling can distinguish
+                    # blocks from regular routes).
+                    "routed_agent": "fairness_guard",
+                    "agent_used": "fairness_guard",
+                    "agents_consulted": ["fairness_guard"],
+                },
                 created_at=_now_block,
             ),
             conversation=ConversationResponse(
@@ -311,9 +321,16 @@ async def send_message(
         # Item 2: handle_action_flow deleted — MainOrchestrator Phase 0+1 handles all actions
         final_response = lia_response
 
+        # Task #552: always echo the routed specialist so eval/diagnostic
+        # tooling (persona-diagnostic routing audit) can populate
+        # `agent_observed` without scanning a dozen fallback fields.
+        _routed_agent = orch_result.get("agent_used") or "main_orchestrator"
         msg_metadata: dict[str, Any] = {
             "intent": detected_intent,
             "entities": detected_entities,
+            "routed_agent": _routed_agent,
+            "agent_used": _routed_agent,
+            "agents_consulted": list(orch_result.get("agents_consulted") or []),
         }
 
         # Item 2: action_metadata removed — MainOrchestrator handles actions
@@ -524,9 +541,14 @@ async def send_message_with_attachments(
 
         import uuid as _uuid
         _now = __import__("datetime").datetime.utcnow()
+        # Task #552: echo routed specialist on attachments path too.
+        _routed_agent2 = orch_result.get("agent_used") or "main_orchestrator"
         _meta = {
             "intent": orch_result.get("intent"),
             "entities": orch_result.get("entities"),
+            "routed_agent": _routed_agent2,
+            "agent_used": _routed_agent2,
+            "agents_consulted": list(orch_result.get("agents_consulted") or []),
             "processed_attachments": attachment_info,
             "processed_audio": audio_info,
         }

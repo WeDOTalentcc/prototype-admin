@@ -135,17 +135,25 @@ class ChatAdapter:
         - entities: dict
         - workflow_data: dict
         - prompt_version: str
+        - agent_used: str  (Task #552 — routed specialist identifier)
+        - agents_consulted: list[str]  (Task #552)
         - action_result: dict | None (new)
         - pending_action: dict | None (new)
         - fairness_warnings: list[str] (new)
         - from_cache: bool (new)
         """
+        _agent_used = getattr(orch_response, "agent_used", "") or "main_orchestrator"
         result: dict[str, Any] = {
             "response": getattr(orch_response, "content", "") or "",
             "intent": getattr(orch_response, "intent_detected", "general"),
             "entities": {},
             "workflow_data": {},
-            "prompt_version": getattr(orch_response, "agent_used", "main_orchestrator"),
+            # Task #552: expose the routed specialist explicitly so chat.py can
+            # echo it on the response payload (instead of overloading
+            # prompt_version, which is meant for the prompt-registry hash).
+            "agent_used": _agent_used,
+            "agents_consulted": list(getattr(orch_response, "agents_consulted", []) or []),
+            "prompt_version": _agent_used,
             "fairness_warnings": getattr(orch_response, "fairness_warnings", []),
             "from_cache": getattr(orch_response, "from_cache", False),
             # LIA-LCF-01 (Task #620): expose tool calls observed by the ReAct agent
@@ -196,6 +204,8 @@ class ChatAdapter:
             "intent": "error",
             "entities": {},
             "workflow_data": {},
+            "agent_used": "chat_adapter_error",
+            "agents_consulted": [],
             "prompt_version": "chat_adapter_error",
             "error": error_msg,
         }
