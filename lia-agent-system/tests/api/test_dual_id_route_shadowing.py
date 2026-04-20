@@ -179,7 +179,9 @@ from app.api.v1.email_tracking import router as _t489_email_tracking_router
 from app.api.v1.event_history import router as _t489_event_history_router
 from app.api.v1.experience_highlights import router as _t489_experience_highlights_router
 from app.api.v1.fairness_reports import router as _t489_fairness_reports_router
-from app.api.v1.finetuning_export import router as _t489_finetuning_export_router
+# Task #306 — finetuning_export no longer has any ``{*_id}`` path params
+# (company_id is now derived from the JWT, not the URL), so it is no
+# longer subject to the dual-ID shadowing invariant.
 from app.api.v1.gemini_voice import router as _t489_gemini_voice_router
 from app.api.v1.global_policies import router as _t489_global_policies_router
 from app.api.v1.goals import router as _t489_goals_router
@@ -299,7 +301,6 @@ _TASK_489_DUAL_ID_PARAMS = [
     pytest.param(_t489_event_history_router, "event-history", id="event-history"),
     pytest.param(_t489_experience_highlights_router, "experience-highlights", id="experience-highlights"),
     pytest.param(_t489_fairness_reports_router, "fairness-reports", id="fairness-reports"),
-    pytest.param(_t489_finetuning_export_router, "finetuning-export", id="finetuning-export"),
     pytest.param(_t489_gemini_voice_router, "gemini-voice", id="gemini-voice"),
     pytest.param(_t489_global_policies_router, "global-policies", id="global-policies"),
     pytest.param(_t489_goals_router, "goals", id="goals"),
