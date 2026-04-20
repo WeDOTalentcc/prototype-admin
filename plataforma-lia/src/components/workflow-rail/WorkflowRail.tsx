@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl"
 import {
   ArrowRight, Zap, Check, X, Sun, Moon,
   ChevronLeft, ChevronRight, MoreHorizontal, GripVertical,
-  PanelRight, MessageSquare, Maximize2, Minus,
+  PanelRight, MessageSquare, Maximize2, Minus, Compass,
 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
 import { useWorkflowRail, WorkflowEntry } from "./useWorkflowRail"
@@ -43,7 +43,7 @@ function deriveCurrentStage(entries: WorkflowEntry[]): FunnelStageKey {
   return mapCampaignStageToFunnelKey(inProgress?.stage ?? latest.currentStage)
 }
 
-const BALL_SIZE = 36
+const BALL_SIZE = 40
 const DRAG_THRESHOLD = 4 // px before drag is considered a real drag (vs a click)
 
 /** Chat mode → indicator icon + tooltip label. */
@@ -303,7 +303,6 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
     ? t(currentStageObj.labelKey as Parameters<typeof t>[0])
     : t("workflowRail.bar.noActiveFlow")
   const currentAccent = currentStageObj?.canonical.color.accent ?? "var(--wedo-cyan, #60BED1)"
-  const CurrentIcon = currentStageObj?.canonical.Icon
 
   /* ---- Magnifier (Dock-style) scale based on distance from hovered chip ---- */
   const magnifyScale = (key: FunnelStageKey): number => {
@@ -387,25 +386,23 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
           aria-label={`Abrir trilho de fluxo (etapa atual: ${currentLabel})`}
           title={`Abrir trilho · ${currentLabel}`}
           style={{
-            backgroundColor: currentAccent,
             width: BALL_SIZE,
             height: BALL_SIZE,
-            boxShadow: `0 6px 20px -6px ${currentAccent}66, 0 2px 8px rgba(0,0,0,0.12)`,
+            borderColor: currentAccent,
+            boxShadow: `0 0 0 3px ${currentAccent}22, 0 8px 22px -8px ${currentAccent}66, 0 2px 6px rgba(0,0,0,0.18)`,
             touchAction: "none",
           }}
-          className={`relative ${cursorClass} rounded-full text-white flex items-center justify-center
-            transition-transform duration-200 ease-out hover:scale-110 active:scale-95
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/50 focus-visible:ring-offset-2`}
+          className={`relative ${cursorClass} rounded-full bg-lia-text-primary text-white flex items-center justify-center
+            border-2 transition-transform duration-200 ease-out hover:scale-110 active:scale-95
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2`}
         >
-          {CurrentIcon
-            ? <CurrentIcon className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />
-            : <ChevronRight className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />}
+          <Compass className="w-[18px] h-[18px]" strokeWidth={2.25} aria-hidden="true" />
 
           {/* Pending count badge */}
           {pendingCount > 0 && (
             <span
               aria-label={t("workflowRail.pill.pendingAriaLabel", { count: pendingCount })}
-              className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-yellow-400 text-[9px] font-bold text-yellow-900 flex items-center justify-center border border-white"
+              className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-[3px] rounded-full bg-yellow-400 text-[8px] leading-none font-bold text-yellow-900 flex items-center justify-center border border-white"
             >
               {pendingCount}
             </span>
@@ -427,7 +424,7 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
           onClick={(e) => { e.stopPropagation(); focusChat() }}
           aria-label={chatPresenceTitle}
           title={chatPresenceTitle}
-          className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-white border border-lia-border-subtle text-lia-text-secondary flex items-center justify-center shadow-sm hover:text-wedo-cyan hover:border-wedo-cyan/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40 transition-colors"
+          className="absolute -top-1.5 -left-1.5 w-4 h-4 rounded-full bg-white border border-lia-border-subtle text-lia-text-secondary flex items-center justify-center shadow-sm hover:text-wedo-cyan hover:border-wedo-cyan/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40 transition-colors"
         >
           <ChatModeIcon className="w-2.5 h-2.5" strokeWidth={2.25} aria-hidden={true} />
         </button>

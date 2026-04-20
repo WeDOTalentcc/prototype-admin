@@ -18,19 +18,16 @@ export const BetaBadge = React.memo(function BetaBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full font-semibold border border-transparent",
-        "bg-wedo-purple/15 text-wedo-purple dark:bg-wedo-purple/20 dark:text-wedo-purple",
-        size === "sm" && "px-1.5 py-0.5 text-[9px]",
+        "inline-flex items-center gap-0.5 rounded-full font-semibold tracking-wide leading-none",
+        "bg-wedo-purple text-white",
+        size === "sm" && "px-1.5 py-[1px] text-[8px]",
         size === "md" && "px-2 py-0.5 text-[10px]",
         className,
       )}
     >
-      <FlaskConical
-        className={cn(
-          "flex-shrink-0",
-          size === "sm" ? "w-2 h-2" : "w-2.5 h-2.5",
-        )}
-      />
+      {size === "md" && (
+        <FlaskConical className="w-2.5 h-2.5 flex-shrink-0" />
+      )}
       {label}
     </span>
   )

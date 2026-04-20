@@ -291,9 +291,7 @@ const MenuItem = React.memo(({
             <div className="flex items-center gap-1.5">
               <span className="text-base-ui">{itemLabelKeys[item.label] ? t(itemLabelKeys[item.label]) : item.label}</span>
               {item.isBeta && (
-                <span className="text-[10px] font-semibold bg-lia-info-light text-lia-info-color border border-lia-info-color px-1.5 py-0.5 rounded-full leading-none">
-                  {t('labels.beta')}
-                </span>
+                <BetaBadge size="sm" label={t('labels.beta')} />
               )}
             </div>
             <div className="flex items-center gap-1">
