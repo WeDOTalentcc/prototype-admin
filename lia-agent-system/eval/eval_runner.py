@@ -433,6 +433,18 @@ def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
             bool(_re.search(r"[-*]\s+\*\*[^*]+\*\*.*@", response))  # "- **Name** @ Company" pattern
         )
 
+    # ---- EXTRACTS SKILLS / REQUIREMENTS (WZ-001 criterion 1 — Portuguese-aware) ----
+    if _re.search(r"extracts?.*(?:require|skill|devops|kubernetes|aws|ci.cd)|requirements?.*extract", c):
+        tech_words = ["kubernetes", "aws", "ci/cd", "ci cd", "docker", "devops",
+                      "python", "java", "react", "requisito", "requirements", "habilidade", "skills"]
+        return any(t in resp_lower for t in tech_words) or n > 80
+
+    # ---- SETS WORK MODEL / MODALITY (WZ-001 criterion 2 — Portuguese-aware) ----
+    if _re.search(r"sets?.*(modal|modality|work.?model)|sets? modali", c):
+        return any(w in resp_lower for w in ["remoto", "remote", "híbrido", "hibrido",
+                                              "presencial", "modalidade", "work model",
+                                              "modelo de trabalho"])
+
     # ---- DEFAULT: keyword presence ----
     keywords = [w for w in c.split() if len(w) > 5]
     if keywords:
