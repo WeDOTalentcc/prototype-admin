@@ -4,6 +4,11 @@
   > Permite entender toda a camada de IA, seus componentes, padroes de codigo
   > e saber exatamente onde e como fazer qualquer alteracao.
 
+  > **Documentos relacionados:**
+  > - [`../ARCHITECTURE.md`](../ARCHITECTURE.md) — ADRs normativos (ADR-020: domínios intent-routed para wizards stateful).
+  > - [`fase2c_domain_verification_report.md`](./fase2c_domain_verification_report.md) — auditoria viva (18 dom., 281 actions, 94 tools), padrão arquitetural por domínio (§2-bis), inventário ampliado de agentes (§2-ter).
+  > - [`GLOSSARIO_ACTIONS_TOOLS.md`](./GLOSSARIO_ACTIONS_TOOLS.md) — glossário completo das 281 actions e 94 tools (gerado por `scripts/generate_glossario_actions_tools.py`).
+
   ---
 
   ## Indice
@@ -16,9 +21,11 @@
   4. [Orquestrador](#4-orquestrador)
      - ConversationGraph (47 nos, 4 subgrafos)
      - Sistema de Actions (Closed-Loop), ACTIONABLE_INTENTS, Multi-turno, Confirmation Patterns
-  5. [Todos os Dominios](#5-todos-os-dominios) (10 dominios)
+  5. [Todos os Dominios](#5-todos-os-dominios) (**18 dominios**, 281 actions, 94 tools)
      - Fluxos ponta-a-ponta: Perguntas WSI, Feedback Personalizado (§5.4), Triagem WhatsApp (§5.6), Agendamento (§5.7)
-  6. [Catalogo Completo de Agentes](#6-catalogo-completo-de-agentes) (26 agentes)
+     - Domínio intent-routed (ADR-020): `job_creation` (§5.11)
+     - Glossário completo de actions/tools: [`GLOSSARIO_ACTIONS_TOOLS.md`](./GLOSSARIO_ACTIONS_TOOLS.md)
+  6. [Catalogo Completo de Agentes](#6-catalogo-completo-de-agentes) (**34 agentes**: 30 ReAct + 2 LangGraph custom + 2 legacy ativos)
   7. [Agentes ReAct em Detalhe](#7-agentes-react-em-detalhe) (7 agentes, 89 tools)
      - ReActLoop (ciclo iterativo), Grafo JobWizardGraph (6 nos)
   8. [Infraestrutura Compartilhada](#8-infraestrutura-compartilhada) (~118 arquivos)
@@ -251,7 +258,13 @@
              └────────────┘      └──────────────┘      └────────────┘
 ```
 
-**Numeros totais**: 7 agentes ReAct + 1 LangGraph + 18 Legacy = 26 agentes | 140 servicos catalogados (~330 arquivos de servico) | 89 tools | 89 modelos de dados
+**Numeros totais (atualizados — fonte: `chat_capabilities_audit.json` 20-abr-2026):**
+- **18 dominios** registrados no `DomainRegistry` (auditoria 100% — 0 gaps).
+- **281 actions** declaradas + **94 tools** ativas + **148 handlers** distintos (94/94 mapeados).
+- **34 agentes ativos** = 30 ReAct (incluindo sub-agentes de `Sourcing`, `Kanban`, `Pipeline`) + 2 LangGraph custom (`JobCreationGraph`, `JobWizardGraph`) + 2 legacy ainda ativos (`PolicySetupAgent`, `RecruiterAssistantAgent`).
+- 140 servicos catalogados (~330 arquivos de servico) | 89 modelos de dados.
+
+> O organograma acima mostra os **9 fluxos roteados pelo CascadedRouter Tier 4 (FastRouter)**; os 9 dominios restantes (`agent_studio`, `candidate_self_service`, `company_settings`, `digital_twin`, `hiring_policy`, `job_creation`, `pipeline_transition`, `recruitment_campaign`, `talent_pool`) sao acessados via Tier 5 (LLM router) ou via wizard intent-routed. Ver §5.11–§5.18 e tabela completa em [`fase2c_domain_verification_report.md` §2-bis](./fase2c_domain_verification_report.md#2-bis-padrão-arquitetural-por-domínio).
 
 ### Diagrama Geral de Execucao (3 mecanismos)
 
@@ -1398,9 +1411,119 @@ app/domains/automation/
 
 **Conexoes**: Celery (processamento em background), APScheduler (agendamento), Redis (broker), todos os outros dominios (triggers de automacao)
 
+### 5.11 job_creation — Wizard Conversacional WSI (intent-routed — ADR-020)
+
+Wizard de criacao de vaga end-to-end, com aplicação obrigatória da metodologia
+WSI (Working Style Index). É o unico dominio que usa **intent-routing** ao
+invés de `_ACTION_TOOL_MAP`: a action é escolhida pelo `process_intent`
+olhando o `current_stage` do estado conversacional.
+
+```
+app/domains/job_creation/
+├── domain.py          ← JobCreationDomain (process_intent + _route_by_stage)
+├── graph.py           ← JobCreationGraph (StateGraph LangGraph customizado)
+├── prompts.py         ← Prompts por estagio
+└── __init__.py
+```
+
+**11 actions:** `start_wizard`, `approve_jd`, `set_salary`, `set_screening_mode`, `approve_questions`, `set_eligibility`, `configure_publish`, `publish_job`, `calibrate`, `wizard_status`, `help`.
+
+**Estagios do wizard:** `intake → jd_enrichment → salary → competency → wsi_questions → eligibility → review → publish → calibration` (cada um com gate HITL).
+
+**ADR aplicável:** [`../ARCHITECTURE.md` ADR-020](../ARCHITECTURE.md#adr-020-intent-routed-domains-for-stateful-wizards-2026-04-20). Esse padrão é único na plataforma — todos os outros 17 domínios usam `_ACTION_TOOL_MAP` ou pure-agent.
+
+**Conexoes:** `WSIService` (perguntas obrigatorias), `JDEnrichmentService` (job_management), `LLMFactory`, `WorkingMemory` (state do wizard), `FairnessGuard`.
+
+### 5.12 pipeline_transition — Movimentação de Candidatos no Pipeline
+
+Movimentação contextual de candidatos entre estágios do pipeline, com
+explicação de impacto e sub-status. Pure-agent (sem `_ACTION_TOOL_MAP`).
+
+```
+app/domains/pipeline/
+├── domain.py
+├── agents/
+│   ├── pipeline_transition_agent.py      ← Agente principal
+│   ├── pipeline_action_agent.py          ← Sub-agente (ações)
+│   ├── pipeline_decision_agent.py        ← Sub-agente (decisões)
+│   └── pipeline_context_agent.py         ← Sub-agente (contexto)
+└── tools/
+```
+
+**14 actions** (transicoes, sub-status, justificativas, undo). **Conexoes:** `cv_screening`, `automation`, audit log.
+
+### 5.13 candidate_self_service — Portal do Candidato
+
+Portal conversacional do candidato (status, entrevista, feedback, dados LGPD).
+
+```
+app/domains/candidate_self_service/
+├── domain.py
+├── agents/
+│   └── candidate_react_agent.py
+└── ...
+```
+
+**Status:** em evolução. Pure-agent. **Conexoes:** `interview_scheduling`, `communication`, `cv_screening`, LGPD pipeline.
+
+### 5.14 company_settings — Configuração da Empresa
+
+Configura perfil, cultura, stack e benefícios da empresa via chat.
+
+```
+app/domains/company_settings/
+├── domain.py
+└── agents/company_react_agent.py
+```
+
+**Status:** em evolução. Pure-agent. **Conexoes:** `analytics` (insights culturais), `job_management` (defaults).
+
+### 5.15 hiring_policy — Políticas de Contratação
+
+Configuração das políticas (DEI, salário, autonomia da IA) via wizard de políticas.
+
+```
+app/domains/hiring_policy/
+├── domain.py
+└── agents/policy_react_agent.py     (+ legacy app/domains/policy/agents/agent.py)
+```
+
+**Status:** production. Pure-agent. **Agente legacy ativo:** `PolicySetupAgent` (durante onboarding). **Conexoes:** `FairnessGuard`, `cv_screening`, `sourcing`.
+
+### 5.16 talent_pool — Talent Pools
+
+Criação de talent pools, vinculação a vagas e geração de vagas a partir de pools.
+
+```
+app/domains/talent_pool/
+├── domain.py
+└── ...
+```
+
+**6 actions.** **Status:** em evolução. **Conexoes:** `sourcing`, `job_management`.
+
+### 5.17 recruitment_campaign — Campanhas de Recrutamento
+
+Campanhas multi-etapa de atração, engajamento e conversão.
+
+```
+app/domains/recruitment_campaign/
+├── domain.py
+└── ...
+```
+
+**Status:** em evolução. **Conexoes:** `sourcing` (`NurtureSequenceAgent`), `communication`.
+
+### 5.18 agent_studio + digital_twin — Customização e Gêmeo Digital
+
+- **`agent_studio`** — criação, calibração e marketplace de agentes customizados por tenant. Usa agentes de outros domínios (sem agente próprio).
+- **`digital_twin`** — gêmeo digital de avaliador (clonagem do julgamento humano via voice + decisões prévias).
+
+Ambos em evolução; consulte o [glossário](./GLOSSARIO_ACTIONS_TOOLS.md#dom-agent_studio) para a lista completa de actions.
+
 ### Arquivos Base de Dominios
 
-Alem dos 10 dominios, existem 3 arquivos base que definem a infraestrutura comum:
+Alem dos 18 dominios, existem 3 arquivos base que definem a infraestrutura comum:
 
 | Arquivo | Para que serve |
 |---|---|
@@ -1412,42 +1535,45 @@ Alem dos 10 dominios, existem 3 arquivos base que definem a infraestrutura comum
 
 ## 6. Catalogo Completo de Agentes
 
-### Visao Geral
+> **Inventário ampliado (34 agentes):** a tabela completa com sub-agentes,
+> arquivos e agent-types do roteador está em
+> [`fase2c_domain_verification_report.md` §2-ter — Inventário Ampliado de Agentes](./fase2c_domain_verification_report.md#2-ter-inventário-ampliado-de-agentes-26).
+
+### Visao Geral (agentes principais)
 
 | # | Agente | Dominio | Tipo | Tools | O que faz |
 |---|---|---|---|---|---|
 | 1 | WizardReActAgent | job_management | ReAct | 9 | Guia criacao de vagas com enriquecimento IA |
-| 2 | KanbanReActAgent | recruiter_assistant | ReAct | 14 | Gestao de pipeline de candidatos |
+| 2 | KanbanReActAgent (+ 3 sub: Action/Insight/Search) | recruiter_assistant | ReAct | 14 | Gestao de pipeline de candidatos |
 | 3 | TalentReActAgent | recruiter_assistant | ReAct | 12 | Busca e analise de candidatos |
 | 4 | JobsMgmtReActAgent | recruiter_assistant | ReAct | 13 | Gestao de portfolio de vagas |
 | 5 | PolicyReActAgent | hiring_policy | ReAct | 13 | Config de politicas de contratacao |
-| 6 | SourcingReActAgent | sourcing | ReAct | 14 | Busca ativa e outreach de candidatos |
+| 6 | SourcingReActAgent (+ 9 sub: Planner/Search/Enrich/Engagement/Diversity/Github/StackOverflow/Referral/Nurture/PassivePipeline) | sourcing | ReAct | 14 | Busca ativa e outreach de candidatos |
 | 7 | PipelineReActAgent | cv_screening | ReAct | 14 | Triagem e movimentacao no pipeline |
-| 8 | JobWizardGraph | job_management | LangGraph | - | Grafo de estado do wizard (6 nos) |
-| 9 | JobDraftingAgent | job_management | Legacy | - | Rascunho de descricao de vaga |
-| 10 | JobIntakeAgent | job_management | Legacy | - | Intake de requisitos de vaga |
-| 11 | JobLifecycleAgent | job_management | Legacy | - | Ciclo de vida da vaga |
-| 12 | JobInsightsAgent | job_management | Legacy | - | Insights sobre vagas |
-| 13 | JobBenefitsCompAgent | job_management | Legacy | - | Beneficios e compensacao |
-| 14 | JobRubricAgent | job_management | Legacy | - | Rubricas de avaliacao |
-| 15 | RecruiterAssistantAgent | recruiter_assistant | Legacy | - | Assistente geral (fallback) |
-| 16 | ScreeningAgent | cv_screening | Legacy | - | Screening de candidatos |
-| 17 | AvaliadorWSIAgent | cv_screening | Legacy | - | Avaliacao WSI |
-| 18 | TriagemCurricularAgent | cv_screening | Legacy | - | Triagem curricular |
-| 19 | SourcingAgent | sourcing | Legacy | - | Sourcing (fallback) |
-| 20 | CommunicationAgent | communication | Legacy | - | Comunicacao multi-canal |
-| 21 | SchedulingAgent | interview_scheduling | Legacy | - | Agendamento de entrevistas |
-| 22 | EntrevistadorAgent | interview_scheduling | Legacy | - | Conducao de entrevistas |
-| 23 | AnalyticsAgent | analytics | Legacy | - | Relatorios e analytics |
-| 24 | AnalistaFeedbackAgent | analytics | Legacy | - | Analise de feedback |
-| 25 | IntegradorATSAgent | ats_integration | Legacy | - | Integracao com ATS |
-| 26 | TaskPlannerAgent | automation | Legacy | - | Planejamento de tarefas |
+| 8 | PipelineTransitionAgent (+ 3 sub: Action/Decision/Context) | pipeline_transition | ReAct | — | Movimentação contextual no pipeline |
+| 9 | CommunicationReActAgent | communication | ReAct | 8 | Comunicacao multi-canal (email/wpp/teams/sms) |
+| 10 | AnalyticsReActAgent | analytics | ReAct | 5 | Relatorios, KPIs, anomalias, previsoes |
+| 11 | AutomationReActAgent | automation | ReAct | 6 | Tarefas, regras, alertas proativos |
+| 12 | ATSIntegrationReActAgent | ats_integration | ReAct | 6 | Integracao Gupy/Pandape/Merge |
+| 13 | CompanySettingsReActAgent | company_settings | ReAct | — | Configuracao do perfil da empresa |
+| 14 | CandidateSelfServiceAgent | candidate_self_service | ReAct | — | Portal conversacional do candidato |
+| 15 | AutonomousReActAgent | cross-domain (Tier 6) | ReAct | dynamic | Fallback final do CascadedRouter antes da clarificação |
+| 16 | JobWizardGraph (LangGraph 6-nó) | job_management | LangGraph custom | — | Grafo de estado do wizard de vagas |
+| 17 | JobCreationGraph (StateGraph custom — ADR-020) | job_creation | LangGraph custom | — | Wizard WSI completo (intent-routed) |
+| 18 | PolicySetupAgent | hiring_policy (legacy dir `policy/`) | Legacy ativo | — | Setup inicial de politicas no onboarding |
+| 19 | RecruiterAssistantAgent (fallback) | recruiter_assistant | Legacy ativo | — | Fallback geral quando ReAct nao resolve |
+
+> **Sub-agentes (15):** os 3 sub-agentes do `Kanban`, os 3 do `PipelineTransition` e os 9 do `Sourcing` herdam do agente principal do domínio para reuso de tools e prompt context. Estão listados individualmente em `fase2c_domain_verification_report.md` §2-ter (linhas 4–6, 12–21, 23–25).
 
 ### Tipos de Agente
 
-- **ReAct (7)**: Agentes autonomos que raciocinam, decidem e executam acoes via tools. Seguem o padrao de 4 arquivos. Usam `ReActLoop` com `ReActConfig`.
-- **LangGraph (1)**: Grafo de estado com nos fixos e transicoes definidas. Usado para o wizard que tem 6 etapas sequenciais.
-- **Legacy (18)**: Agentes com pipeline fixo. Recebem input, processam e retornam output sem raciocinio autonomo. Feature flag `USE_REACT_AGENTS` controla routing entre ReAct e Legacy com fallback automatico.
+- **ReAct (30)**: Agentes autonomos que raciocinam, decidem e executam acoes via tools (15 principais + 15 sub-agentes). Seguem o padrao de 4 arquivos. Usam `ReActLoop` com `ReActConfig` (ou `LangGraphReActBase` na geração nova).
+- **LangGraph custom (2)**: `JobWizardGraph` (6 nós) e `JobCreationGraph` (intent-routed por estágio — ADR-020). Grafos de estado com nos fixos e transicoes definidas.
+- **Legacy ainda ativos (2)**: `PolicySetupAgent` (onboarding de políticas) e `RecruiterAssistantAgent` (fallback). Feature flag `USE_REACT_AGENTS` controla routing com fallback automatico para Legacy quando ReAct falha.
+
+### Resolução agent-type → domain
+
+Os agent-types do `CascadedRouter` (Tier 5 LLM) são auto-descobertos via `DomainRegistry.get_agent_aliases()` (ver `app/orchestrator/domain_mappings.py`). Adicionar um novo alias é uma edição de **1 arquivo** no domínio dono — sem lista para manter sincronizada aqui.
 
 ---
 

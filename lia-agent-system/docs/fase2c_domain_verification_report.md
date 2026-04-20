@@ -100,7 +100,97 @@ DomainResponse → ChatAdapter → SSE/WebSocket → UI
 | 18 | `talent_pool` | TalentPoolDomain | 6 | 0 | 0 | — | ✅ | ✅ |
 | **Σ** | | | **281** | **94** | **148** | **94/94** | | **18/18 ✅** |
 
-> **Nota `job_creation`:** usa `process_intent + _route_by_stage` em vez de `_ACTION_TOOL_MAP`. É intent-routed por design — não é um gap.
+> **Nota `job_creation`:** usa `process_intent + _route_by_stage` em vez de `_ACTION_TOOL_MAP`. É intent-routed por design — formalizado em **ADR-020** (`ARCHITECTURE.md`). Não é um gap.
+
+---
+
+## 2-bis. Padrão Arquitetural por Domínio
+
+Tabela viva do padrão de cada domínio: **base class do agente principal**,
+**padrão de execução** (`_ACTION_TOOL_MAP` vs `process_intent` vs pure agent),
+**hierarquia de sub-agentes**, **status enterprise**. Substitui a hipótese
+implícita de que "todo domínio usa o mesmo template" — três padrões coexistem.
+
+| # | domain_id | Base class do agente | Padrão de execução | Sub-agentes / agentes vinculados | Status enterprise |
+|---|---|---|---|---|---|
+| 1 | `agent_studio` | — (sem agente próprio) | via agent delegation (sem `_ACTION_TOOL_MAP`) | usa agentes de outros domínios | em evolução |
+| 2 | `analytics` | `LangGraphReActBase + EnhancedAgentMixin` | `_ACTION_TOOL_MAP` | `AnalyticsReActAgent` | production |
+| 3 | `ats_integration` | `LangGraphReActBase + EnhancedAgentMixin` | `_ACTION_TOOL_MAP` | `ATSIntegrationReActAgent` | production |
+| 4 | `automation` | `LangGraphReActBase + EnhancedAgentMixin` | `_ACTION_TOOL_MAP` | `AutomationReActAgent` | production |
+| 5 | `candidate_self_service` | `LangGraphReActBase + EnhancedAgentMixin` | via agent (pure ReAct) | `CandidateSelfServiceAgent` | em evolução |
+| 6 | `communication` | `LangGraphReActBase + EnhancedAgentMixin` | `_ACTION_TOOL_MAP` | `CommunicationReActAgent` | production |
+| 7 | `company_settings` | `LangGraphReActBase + EnhancedAgentMixin` | via agent (pure ReAct) | `CompanySettingsReActAgent` | em evolução |
+| 8 | `cv_screening` | `LangGraphReActBase + EnhancedAgentMixin` | `_ACTION_TOOL_MAP` | `PipelineReActAgent` | production |
+| 9 | `digital_twin` | `DomainPrompt` simples | via agent (pure ReAct) | — | em evolução |
+| 10 | `hiring_policy` | `LangGraphReActBase + EnhancedAgentMixin` | via agent (pure ReAct) | `PolicyReActAgent` (+ `PolicySetupAgent` legacy em `domains/policy/`) | production |
+| 11 | `interview_scheduling` | `LangGraphReActBase + EnhancedAgentMixin` | `_ACTION_TOOL_MAP` | — (sem agente ReAct dedicado, executa via tools) | production |
+| 12 | `job_creation` | **`StateGraph` custom (`JobCreationGraph`)** | **`process_intent + _route_by_stage` (intent-routed — ADR-020)** | — (grafo é o agente) | production |
+| 13 | `job_management` | `LangGraphReActBase + EnhancedAgentMixin` | `_ACTION_TOOL_MAP` (+ `JobWizardGraph` 6-nó) | `WizardReActAgent` | production |
+| 14 | `pipeline_transition` | `LangGraphReActBase + EnhancedAgentMixin` | via agent (pure ReAct) | `PipelineTransitionAgent` + 3 sub: `PipelineActionAgent`, `PipelineDecisionAgent`, `PipelineContextAgent` | production |
+| 15 | `recruiter_assistant` (DEFAULT_DOMAIN) | `LangGraphReActBase + EnhancedAgentMixin` | `_ACTION_TOOL_MAP` | `KanbanReActAgent` + 3 sub (`KanbanActionAgent`, `KanbanInsightAgent`, `KanbanSearchAgent`) + `TalentReActAgent` + `JobsManagementReActAgent` | production |
+| 16 | `recruitment_campaign` | `DomainPrompt` simples | via agent (pure ReAct) | — | em evolução |
+| 17 | `sourcing` | `LangGraphReActBase + EnhancedAgentMixin` | `_ACTION_TOOL_MAP` | `SourcingReActAgent` + 9 sub: `SourcingPlannerAgent`, `SourcingSearchAgent`, `SourcingEnrichAgent`, `SourcingEngagementAgent`, `DiversitySourcingAgent`, `GithubSourcingAgent`, `StackOverflowSourcingAgent`, `ReferralAgent`, `NurtureSequenceAgent`, `PassivePipelineAgent` | production |
+| 18 | `talent_pool` | `DomainPrompt` simples | via agent (pure ReAct) | — | em evolução |
+
+**Resumo dos padrões:**
+
+| Padrão | Domínios | Quando aplicar |
+|---|---|---|
+| `_ACTION_TOOL_MAP` + tool handlers | 9 | Operações stateless (CRUD, busca, envio) — caminho default. Ver ADR-015/ADR-016. |
+| Pure agent (sem `_ACTION_TOOL_MAP`) | 8 | Domínios cuja decisão é majoritariamente conversacional (config de políticas, transição contextual de pipeline) ou ainda em evolução. |
+| Intent-routed (`process_intent + _route_by_stage`) | 1 (`job_creation`) | Wizards multi-turno com gates HITL e estado entre mensagens. Ver **ADR-020**. |
+
+> Cross-reference com o catálogo de fluxos completos: `docs/MAPA_CAMADA_INTELIGENCIA.md` §5 (todos os domínios) e §6 (catálogo de agentes).
+
+---
+
+## 2-ter. Inventário Ampliado de Agentes (26+)
+
+A tabela complementa o §6 do `MAPA_CAMADA_INTELIGENCIA.md` listando todos
+os agentes ReAct + LangGraph ativos, suas bases, o domínio que servem e os
+agent-types do `AGENT_TYPE_TO_DOMAIN` que disparam cada um.
+
+| # | Agente | Arquivo | Base class | Domínio servido | Agent-types do roteador |
+|---|---|---|---|---|---|
+| 1 | `WizardReActAgent` | `domains/job_management/agents/wizard_react_agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | `job_management` | `job_management`, `job_planner`, `job_intake` |
+| 2 | `JobWizardGraph` (LangGraph) | `domains/job_management/agents/job_wizard_graph.py` | `StateGraph` custom (6 nós) | `job_management` | invocado pelo `WizardReActAgent` |
+| 3 | `KanbanReActAgent` | `domains/recruiter_assistant/agents/kanban_react_agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | `recruiter_assistant` | `kanban_search`, `kanban_insight`, `kanban_action` (via sub-agentes) |
+| 4 | `KanbanActionAgent` | `domains/recruiter_assistant/agents/kanban_action_agent.py` | `KanbanReActAgent` (sub) | `recruiter_assistant` | `kanban_action` |
+| 5 | `KanbanInsightAgent` | `domains/recruiter_assistant/agents/kanban_insight_agent.py` | `KanbanReActAgent` (sub) | `recruiter_assistant` | `kanban_insight` |
+| 6 | `KanbanSearchAgent` | `domains/recruiter_assistant/agents/kanban_search_agent.py` | `KanbanReActAgent` (sub) | `recruiter_assistant` | `kanban_search` |
+| 7 | `TalentReActAgent` | `domains/recruiter_assistant/agents/talent_react_agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | `recruiter_assistant` | `recruiter_assistant` (talent flows) |
+| 8 | `JobsManagementReActAgent` | `domains/recruiter_assistant/agents/jobs_mgmt_react_agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | `recruiter_assistant` | `recruiter_assistant` (portfolio flows) |
+| 9 | `PolicyReActAgent` | `domains/hiring_policy/agents/policy_react_agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | `hiring_policy` | `hiring_policy` |
+| 10 | `PolicySetupAgent` | `domains/policy/agents/agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | `hiring_policy` (legacy dir) | invocado durante onboarding de políticas |
+| 11 | `SourcingReActAgent` | `domains/sourcing/agents/sourcing_react_agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | `sourcing` | `sourcing` |
+| 12 | `SourcingPlannerAgent` | `domains/sourcing/agents/sourcing_planner_agent.py` | `SourcingReActAgent` (sub) | `sourcing` | `sourcing_planner` |
+| 13 | `SourcingSearchAgent` | `domains/sourcing/agents/sourcing_search_agent.py` | `SourcingReActAgent` (sub) | `sourcing` | `sourcing_search` |
+| 14 | `SourcingEnrichAgent` | `domains/sourcing/agents/sourcing_enrich_agent.py` | `SourcingReActAgent` (sub) | `sourcing` | `sourcing_enrich` |
+| 15 | `SourcingEngagementAgent` | `domains/sourcing/agents/sourcing_engagement_agent.py` | `SourcingReActAgent` (sub) | `sourcing` | `sourcing_engagement` |
+| 16 | `DiversitySourcingAgent` | `domains/sourcing/agents/diversity_sourcing_agent.py` | `SourcingReActAgent` (sub) | `sourcing` | invocado em estratégia diversidade |
+| 17 | `GithubSourcingAgent` | `domains/sourcing/agents/github_sourcing_agent.py` | `SourcingReActAgent` (sub) | `sourcing` | invocado em busca técnica |
+| 18 | `StackOverflowSourcingAgent` | `domains/sourcing/agents/stackoverflow_sourcing_agent.py` | `SourcingReActAgent` (sub) | `sourcing` | invocado em busca técnica |
+| 19 | `ReferralAgent` | `domains/sourcing/agents/referral_agent.py` | `SourcingReActAgent` (sub) | `sourcing` | invocado em pipeline de indicação |
+| 20 | `NurtureSequenceAgent` | `domains/sourcing/agents/nurture_sequence_agent.py` | `SourcingReActAgent` (sub) | `sourcing` | nurture/outreach |
+| 21 | `PassivePipelineAgent` | `domains/sourcing/agents/passive_pipeline_agent.py` | `SourcingReActAgent` (sub) | `sourcing` | candidatos passivos |
+| 22 | `PipelineTransitionAgent` | `domains/pipeline/agents/pipeline_transition_agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | `pipeline_transition` | `pipeline_transition` |
+| 23 | `PipelineActionAgent` | `domains/pipeline/agents/pipeline_action_agent.py` | `PipelineTransitionAgent` (sub) | `pipeline_transition` | `pipeline_action` |
+| 24 | `PipelineDecisionAgent` | `domains/pipeline/agents/pipeline_decision_agent.py` | `PipelineTransitionAgent` (sub) | `pipeline_transition` | `pipeline_decision` |
+| 25 | `PipelineContextAgent` | `domains/pipeline/agents/pipeline_context_agent.py` | `PipelineTransitionAgent` (sub) | `pipeline_transition` | `pipeline_context` |
+| 26 | `PipelineReActAgent` | `domains/cv_screening/agents/pipeline_react_agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | `cv_screening` | `cv_screening`, `screening`, `wsi_evaluator` |
+| 27 | `CommunicationReActAgent` | `domains/communication/agents/communication_react_agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | `communication` | `communication` |
+| 28 | `AnalyticsReActAgent` | `domains/analytics/agents/analytics_react_agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | `analytics` | `analytics`, `analyst_feedback` |
+| 29 | `AutomationReActAgent` | `domains/automation/agents/automation_react_agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | `automation` | `automation`, `task_planner` |
+| 30 | `ATSIntegrationReActAgent` | `domains/ats_integration/agents/ats_integration_react_agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | `ats_integration` | `ats_integration`, `ats_integrator` |
+| 31 | `CompanySettingsReActAgent` | `domains/company_settings/agents/company_react_agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | `company_settings` | `company_settings`, `settings_config`, `company_profile`, `company_config` |
+| 32 | `CandidateSelfServiceAgent` | `domains/candidate_self_service/agents/candidate_react_agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | `candidate_self_service` | `candidate_self_service`, `candidate_status`, `candidate_portal` |
+| 33 | `JobCreationGraph` (StateGraph custom) | `domains/job_creation/graph.py` | `StateGraph` LangGraph customizado | `job_creation` (intent-routed — ADR-020) | `job_creation` |
+| 34 | `AutonomousReActAgent` | `domains/autonomous/agents/autonomous_react_agent.py` | `LangGraphReActBase + EnhancedAgentMixin` | cross-domain (Tier 6 do `CascadedRouter`) | fallback final antes de clarification |
+
+> **Nota:** os 30+ agentes ReAct herdam de `LangGraphReActBase` que provê
+> tracing, fairness guard hooks, observability, multi-tenant scoping e
+> tool execution. Sub-agentes herdam do agente principal do domínio para
+> reuso de tools e prompt context.
 
 ### Detalhe por domínio
 
