@@ -1129,50 +1129,477 @@ class SchedulingService:
 
     async def generate_self_scheduling_link(
         self,
+        db: AsyncSession | None = None,
         candidate_id: str = "",
-        interview_type: str = "",
+        candidate_name: str | None = None,
+        candidate_email: str | None = None,
+        job_vacancy_id: str | None = None,
+        job_title: str | None = None,
+        interview_type: str = "hr",
+        interview_mode: str = "video",
+        duration_minutes: int = 60,
+        available_slots: list[dict[str, str]] | None = None,
+        interviewer_emails: list[str] | None = None,
+        organizer_email: str | None = None,
+        expires_hours: int = 72,
+        max_uses: int = 1,
         company_id: str | None = None,
+        created_by: str = "system",
         **kwargs,
     ) -> dict:
-        """Generate a self-scheduling link the candidate can use to pick a slot.
+        """Persist a real self-scheduling link backed by the SelfSchedulingLink table.
 
-        Stub: returns a structured payload. Real implementation will create a
-        Booking page entry and persist the token.
+        Returns the public booking URL, secure token and expiry. Recruiters or
+        candidates can use this URL to pick a slot, which is consumed by the
+        public self-scheduling endpoint (`/api/v1/self-scheduling/...`).
         """
-        import uuid as _uuid
-        token = _uuid.uuid4().hex
-        return {
-            "success": True,
-            "candidate_id": candidate_id,
-            "interview_type": interview_type,
-            "company_id": company_id,
-            "url": f"/booking/{token}",
-            "token": token,
-            "simulation_stub": True,
-        }
+        import os
+        from lia_models.self_scheduling import SelfSchedulingLink
+
+        should_close = False
+        if db is None:
+            from app.core.database import AsyncSessionLocal
+            db = AsyncSessionLocal()
+            should_close = True
+
+        try:
+            # Backwards-compat: legacy callers may pass only candidate_id.
+            # Hydrate name/email from the Candidate row when missing.
+            if candidate_id and (not candidate_email or not candidate_name):
+                try:
+                    from lia_models.candidate import Candidate
+                    cand_uuid: Any = candidate_id
+                    try:
+                        cand_uuid = UUID(candidate_id)
+                    except (ValueError, TypeError):
+                        cand_uuid = candidate_id
+                    cand_res = await db.execute(
+                        select(Candidate).where(Candidate.id == cand_uuid).limit(1)
+                    )
+                    cand = cand_res.scalar_one_or_none()
+                    if cand is not None:
+                        candidate_name = candidate_name or getattr(cand, "name", None) or getattr(cand, "full_name", None)
+                        candidate_email = candidate_email or getattr(cand, "email", None)
+                except Exception as cand_err:
+                    logger.debug("Candidate hydrate for self-scheduling link failed: %s", cand_err)
+
+            if not candidate_email or not candidate_name:
+                return {
+                    "success": False,
+                    "error": "missing_candidate_info",
+                    "message": "candidate_name and candidate_email are required (and could not be resolved from candidate_id)",
+                }
+
+            token = SelfSchedulingLink.generate_token()
+            expires_at = datetime.utcnow() + timedelta(hours=expires_hours)
+
+            link = SelfSchedulingLink(
+                token=token,
+                candidate_id=UUID(candidate_id) if candidate_id else None,
+                candidate_name=candidate_name,
+                candidate_email=candidate_email,
+                job_vacancy_id=UUID(job_vacancy_id) if job_vacancy_id else None,
+                job_title=job_title,
+                interviewer_emails=interviewer_emails or [],
+                organizer_email=organizer_email,
+                interview_type=interview_type or "hr",
+                interview_mode=interview_mode or "video",
+                duration_minutes=duration_minutes or 60,
+                available_slots=available_slots or [],
+                status="pending",
+                expires_at=expires_at,
+                max_uses=max_uses,
+                created_by=created_by,
+            )
+            db.add(link)
+            await db.commit()
+            await db.refresh(link)
+
+            base_url = os.getenv("FRONTEND_URL", "https://plataforma-lia.replit.app").rstrip("/")
+            public_url = f"{base_url}/agendar/{token}"
+
+            logger.info(
+                "🔗 Self-scheduling link created: token=%s... candidate=%s vacancy=%s",
+                token[:8], candidate_name, job_title,
+            )
+
+            return {
+                "success": True,
+                "link_id": str(link.id),
+                "token": token,
+                "url": public_url,
+                "scheduling_url": public_url,
+                "candidate_id": candidate_id,
+                "candidate_name": candidate_name,
+                "candidate_email": candidate_email,
+                "job_vacancy_id": job_vacancy_id,
+                "interview_type": interview_type,
+                "company_id": company_id,
+                "expires_at": expires_at.isoformat(),
+                "slots_offered": len(available_slots or []),
+            }
+        except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            logger.error("❌ Failed to generate self-scheduling link: %s", e)
+            return {
+                "success": False,
+                "error": "link_creation_failed",
+                "message": str(e),
+            }
+        finally:
+            if should_close:
+                try:
+                    await db.close()
+                except Exception:
+                    pass
 
     async def send_reminder(
         self,
-        db=None,
+        db: AsyncSession | None = None,
         interview_id: str = "",
         recipient: str = "candidate",
+        hours_before: int = 24,
         company_id: str | None = None,
+        channels: list[str] | None = None,
         **kwargs,
     ) -> dict:
-        """Send a reminder for an upcoming interview.
+        """Send a real interview reminder via the communication pipeline.
 
-        Stub: returns a structured payload until the messaging pipeline is wired
-        end-to-end (Teams + email + WhatsApp).
+        Looks up the Interview (scoped by company_id when provided to prevent
+        cross-tenant access), dispatches an `INTERVIEW_REMINDER` templated
+        message to each requested recipient over each requested channel
+        (email, whatsapp, teams) and persists one `InterviewReminder` audit
+        row per delivery attempt.
         """
-        return {
-            "success": True,
-            "interview_id": interview_id,
-            "recipient": recipient,
-            "company_id": company_id,
-            "channel": "email",
-            "sent_at": datetime.utcnow().isoformat() if 'datetime' in globals() else None,
-            "simulation_stub": True,
-        }
+        from app.domains.communication.services.communication_service import (
+            MessageChannel,
+            MessageType,
+        )
+        from lia_models.self_scheduling import InterviewReminder
+
+        if not interview_id:
+            return {
+                "success": False,
+                "error": "missing_interview_id",
+                "message": "interview_id is required to send a reminder",
+            }
+
+        try:
+            interview_uuid = UUID(interview_id)
+        except (ValueError, TypeError):
+            return {
+                "success": False,
+                "error": "invalid_interview_id",
+                "message": f"interview_id '{interview_id}' is not a valid UUID",
+            }
+
+        requested_channels = [str(c).strip().lower() for c in (channels or ["email"]) if c]
+        valid_channels = [c for c in requested_channels if c in {"email", "whatsapp", "teams"}]
+        if not valid_channels:
+            return {
+                "success": False,
+                "error": "invalid_channels",
+                "message": f"No supported channels in {requested_channels!r}; expected email/whatsapp/teams",
+            }
+
+        should_close = False
+        if db is None:
+            from app.core.database import AsyncSessionLocal
+            db = AsyncSessionLocal()
+            should_close = True
+
+        try:
+            # Tenant-scoped lookup: when caller supplies company_id, the
+            # Interview must belong to that tenant. Prevents cross-tenant
+            # reminder triggering when an attacker guesses an interview UUID.
+            stmt = select(Interview).where(Interview.id == interview_uuid)
+            if company_id:
+                stmt = stmt.where(Interview.company_id == str(company_id))
+            result = await db.execute(stmt)
+            interview = result.scalar_one_or_none()
+            if interview is None:
+                return {
+                    "success": False,
+                    "error": "interview_not_found",
+                    "message": (
+                        f"Interview {interview_id} not found"
+                        + (f" for company {company_id}" if company_id else "")
+                    ),
+                }
+
+            effective_company_id = company_id or interview.company_id
+            if not effective_company_id:
+                return {
+                    "success": False,
+                    "error": "missing_company_scope",
+                    "message": "Interview has no company_id and no company_id was supplied; refusing to send.",
+                }
+
+            # Resolve candidate phone for WhatsApp delivery (lookup is best-
+            # effort; missing phone simply skips the WhatsApp leg).
+            candidate_phone: str | None = None
+            if "whatsapp" in valid_channels and interview.candidate_id:
+                try:
+                    from lia_models.candidate import Candidate
+                    cand_res = await db.execute(
+                        select(Candidate).where(Candidate.id == interview.candidate_id).limit(1)
+                    )
+                    cand = cand_res.scalar_one_or_none()
+                    if cand is not None:
+                        candidate_phone = getattr(cand, "phone", None)
+                except Exception as cand_err:
+                    logger.debug("Candidate phone lookup failed: %s", cand_err)
+
+            recipient_norm = (recipient or "candidate").lower()
+            recipients: list[tuple[str, str, str | None, UUID | None]] = []
+            if recipient_norm in ("candidate", "both", "all") and interview.candidate_email:
+                recipients.append((
+                    "candidate",
+                    interview.candidate_email,
+                    interview.candidate_name,
+                    interview.candidate_id,
+                ))
+            if recipient_norm in ("interviewer", "both", "all") and interview.interviewer_email:
+                recipients.append((
+                    "interviewer",
+                    interview.interviewer_email,
+                    interview.interviewer_name,
+                    None,
+                ))
+
+            if not recipients:
+                return {
+                    "success": False,
+                    "error": "no_recipients",
+                    "message": f"No recipients resolved for recipient='{recipient}'",
+                }
+
+            comm_service = get_communication_service()
+            company_name = await self._resolve_company_name(db, effective_company_id, None)
+
+            data_entrevista = interview.start_time.strftime("%d/%m/%Y")
+            horario_entrevista = interview.start_time.strftime("%H:%M")
+            base_variables = {
+                "vaga": interview.job_title or "Processo Seletivo",
+                "empresa_nome": company_name,
+                "data_entrevista": data_entrevista,
+                "horario_entrevista": horario_entrevista,
+                "duracao_entrevista": f"{interview.duration_minutes or 60} minutos",
+                "formato_entrevista": interview.interview_mode or "video",
+                "link_entrevista": interview.meeting_url or interview.location or "",
+                "horas_restantes": str(hours_before),
+            }
+
+            channel_enum_map = {
+                "email": MessageChannel.EMAIL,
+                "whatsapp": MessageChannel.WHATSAPP,
+            }
+
+            deliveries: list[dict[str, Any]] = []
+            any_success = False
+
+            for r_type, r_email, r_name, r_candidate_id in recipients:
+                variables = dict(base_variables)
+                variables["candidato_nome"] = r_name or "candidato(a)"
+                variables["destinatario_nome"] = r_name or ""
+                variables["entrevistador_nome"] = interview.interviewer_name or ""
+
+                cand_id_for_log = (
+                    str(r_candidate_id) if r_candidate_id
+                    else (str(interview.candidate_id) if interview.candidate_id else "")
+                )
+
+                for ch in valid_channels:
+                    send_result: dict[str, Any]
+                    if ch in channel_enum_map:
+                        if ch == "whatsapp" and r_type == "candidate" and not candidate_phone:
+                            send_result = {
+                                "success": False,
+                                "error": "no_phone",
+                                "message": "Candidate has no phone for WhatsApp",
+                            }
+                        elif ch == "whatsapp" and r_type == "interviewer":
+                            send_result = {
+                                "success": False,
+                                "error": "no_phone",
+                                "message": "WhatsApp not supported for interviewer recipients",
+                            }
+                        else:
+                            try:
+                                send_result = await self._dispatch_reminder_message(
+                                    comm_service=comm_service,
+                                    db=db,
+                                    channel=channel_enum_map[ch],
+                                    company_id=effective_company_id,
+                                    candidate_id=cand_id_for_log,
+                                    candidate_email=r_email if ch == "email" else None,
+                                    candidate_phone=candidate_phone if ch == "whatsapp" else None,
+                                    candidate_name=r_name or "",
+                                    variables=variables,
+                                    job_id=str(interview.job_vacancy_id) if interview.job_vacancy_id else None,
+                                )
+                            except Exception as send_err:
+                                logger.warning(
+                                    "Reminder send failed for %s/%s (%s): %s",
+                                    r_type, ch, r_email, send_err,
+                                )
+                                send_result = {"success": False, "error": "send_failed", "message": str(send_err)}
+                    elif ch == "teams":
+                        send_result = await self._dispatch_reminder_teams(
+                            interview=interview,
+                            recipient_type=r_type,
+                            recipient_name=r_name,
+                            data_entrevista=data_entrevista,
+                            horario_entrevista=horario_entrevista,
+                        )
+                    else:  # pragma: no cover - guarded by valid_channels filter
+                        send_result = {"success": False, "error": "unsupported_channel", "message": ch}
+
+                    ok = bool(send_result.get("success"))
+                    any_success = any_success or ok
+
+                    audit = InterviewReminder(
+                        interview_id=interview.id,
+                        reminder_type=f"manual_{hours_before}h",
+                        recipient_email=r_email,
+                        recipient_type=r_type,
+                        scheduled_for=datetime.utcnow(),
+                        hours_before=hours_before,
+                        status="sent" if ok else "failed",
+                        sent_at=datetime.utcnow() if ok else None,
+                        send_error=None if ok else (send_result.get("message") or send_result.get("error")),
+                        channels=[ch],
+                    )
+                    db.add(audit)
+
+                    deliveries.append({
+                        "recipient_type": r_type,
+                        "recipient_email": r_email,
+                        "channel": ch,
+                        "success": ok,
+                        "communication_log_id": send_result.get("log_id"),
+                        "template_used": send_result.get("template_used"),
+                        "error": send_result.get("error") if not ok else None,
+                        "message": send_result.get("message") if not ok else None,
+                    })
+
+            if any_success:
+                interview.reminder_sent = True
+                interview.reminder_sent_at = datetime.utcnow()
+
+            await db.commit()
+
+            return {
+                "success": any_success,
+                "interview_id": interview_id,
+                "recipient": recipient,
+                "company_id": effective_company_id,
+                "channels": valid_channels,
+                "deliveries": deliveries,
+                "sent_at": datetime.utcnow().isoformat(),
+            }
+
+        except Exception as e:
+            try:
+                await db.rollback()
+            except Exception:
+                pass
+            logger.error("❌ Failed to send interview reminder: %s", e)
+            return {
+                "success": False,
+                "error": "reminder_failed",
+                "message": str(e),
+            }
+        finally:
+            if should_close:
+                try:
+                    await db.close()
+                except Exception:
+                    pass
+
+    async def _dispatch_reminder_message(
+        self,
+        *,
+        comm_service,
+        db,
+        channel,
+        company_id: str,
+        candidate_id: str,
+        candidate_email: str | None,
+        candidate_phone: str | None,
+        candidate_name: str,
+        variables: dict[str, Any],
+        job_id: str | None,
+    ) -> dict[str, Any]:
+        """Render the INTERVIEW_REMINDER template and send through send_message.
+
+        We render via the template_service then call send_message so that the
+        WhatsApp path can carry candidate_phone (send_templated_message
+        always passes phone=None). Email goes through the same path for
+        consistency and full audit/policy enforcement.
+        """
+        from app.domains.communication.services.communication_service import MessageType
+        from app.domains.communication.services.template_service import render_message_template
+
+        rendered = await render_message_template(
+            db=db,
+            message_type=MessageType.INTERVIEW_REMINDER,
+            channel=channel,
+            company_id=company_id,
+            candidate_id=candidate_id,
+            variables=variables,
+        )
+        if not rendered.get("success"):
+            return rendered
+
+        send_result = await comm_service.send_message(
+            company_id=company_id,
+            candidate_id=candidate_id,
+            candidate_email=candidate_email,
+            candidate_phone=candidate_phone,
+            message_type=MessageType.INTERVIEW_REMINDER,
+            channel=channel,
+            subject=rendered.get("subject"),
+            body=rendered.get("body_text") or rendered.get("body_html", ""),
+            body_html=rendered.get("body_html"),
+            job_id=job_id,
+            sent_by="scheduling_service.send_reminder",
+            db=db,
+        )
+        if send_result.get("success") and rendered.get("template_name"):
+            send_result["template_used"] = rendered.get("template_name")
+        return send_result
+
+    async def _dispatch_reminder_teams(
+        self,
+        *,
+        interview,
+        recipient_type: str,
+        recipient_name: str | None,
+        data_entrevista: str,
+        horario_entrevista: str,
+    ) -> dict[str, Any]:
+        """Deliver the reminder as an adaptive card through the Teams bot."""
+        try:
+            from app.domains.communication.services.teams_bot import teams_bot
+            ok = await teams_bot.notify_scheduling_confirmed(
+                candidate_name=recipient_name or interview.candidate_name,
+                job_title=interview.job_title or "Processo Seletivo",
+                scheduled_time=f"{data_entrevista} às {horario_entrevista}",
+                interview_type="Lembrete de entrevista",
+            )
+            if ok:
+                return {"success": True, "channel": "teams", "recipient_type": recipient_type}
+            return {
+                "success": False,
+                "error": "teams_send_failed",
+                "message": "Teams bot returned False (webhook/adapter not configured?)",
+            }
+        except Exception as e:
+            return {"success": False, "error": "teams_send_failed", "message": str(e)}
 
     async def list_today_interviews(
         self,
