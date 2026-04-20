@@ -42,6 +42,7 @@ import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 import { useTranslations } from "next-intl"
 import { useSearchParams } from "next/navigation"
 import { PipelineRail, type PipelineRailNode } from "@/components/pages/pipeline-overview/pipeline-rail"
+import { JobCampaignBadge } from "@/components/jobs/JobCampaignBadge"
 import dynamic from "next/dynamic"
 
 const GeneralScoreModal = dynamic(
@@ -1198,6 +1199,9 @@ function PipelineVacancyCard({ vacancy, stageKey, stageColor }: PipelineVacancyC
               <ShieldCheck className="w-2.5 h-2.5" />
               {tCard("vacancyCard.approvalPending")}
             </span>
+          )}
+          {vacancy.id && (
+            <JobCampaignBadge jobId={vacancy.id} className="flex-shrink-0" />
           )}
         </div>
 

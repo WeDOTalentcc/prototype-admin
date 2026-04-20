@@ -34,7 +34,20 @@ export default function WorkflowRailWrapper() {
     router.push(target)
   }, [router, locale])
 
-  if (!isAuthenticated || !user?.id) return null
+  // Task #592 — Educational phase: in development we want the rail visible
+  // even without a real session so designers/recruiters can perceive the
+  // unified funnel vocabulary. Production keeps the strict auth check.
+  const isDev = process.env.NODE_ENV !== "production"
+  if (!isAuthenticated || !user?.id) {
+    if (!isDev) return null
+    return (
+      <WorkflowRail
+        userId="dev-demo-user"
+        onNavigate={handleNavigate}
+        onCreateJob={handleCreateJob}
+      />
+    )
+  }
 
   return (
     <WorkflowRail

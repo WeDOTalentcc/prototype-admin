@@ -146,6 +146,12 @@ export interface KanbanItem {
   /** Task #562 — Idade da vaga em dias (desde openDate). */
   ageDays?: number
   /**
+   * Task #592 — Status informativo de campanha (LIA executando a vaga).
+   * Quando ausente, o card busca via JobCampaignBadge usando o `id`. Quando
+   * presente, força o estado (útil para testes / Storybook).
+   */
+  campaignStatus?: "active" | "paused" | "none"
+  /**
    * Task #562 — Status do deadline para colorir o chip:
    *  - `ok`: > 7 dias restantes
    *  - `warning`: ≤ 7 dias restantes

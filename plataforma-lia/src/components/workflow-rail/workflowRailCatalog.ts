@@ -1,14 +1,22 @@
 /**
  * workflowRailCatalog — declarative map of funnel stages and predictive next steps.
  *
- * This is the single source of truth for the WorkflowRail bar.
- * Each `FunnelStage` defines a node in the main funnel progression.
- * Each `NextStep` defines a clickable action the recruiter can take from a given stage,
- * including which stage the rail should transition to after the action is performed.
- *
- * To extend: add stages or next-step entries here; the bar picks them up automatically.
+ * This is the source of truth for the WorkflowRail bar's *behavior*
+ * (next-step suggestions, transitions). The *visual identity* (icons,
+ * colors, labels) comes from `canonicalFunnelStages.ts`, which is shared
+ * with the chat home rail (ChatWorkflowReels) so both rails look the same.
  */
 
+import {
+  CANONICAL_FUNNEL_STAGES,
+  type CanonicalStage,
+  type CanonicalStageId,
+} from "./canonicalFunnelStages"
+
+/**
+ * Funnel stage keys used by the WorkflowRail's state machine. These map 1:1
+ * to canonical stages, with `initial` reserved as the "no active flow" state.
+ */
 export type FunnelStageKey =
   | "initial"
   | "create_job"
@@ -22,9 +30,32 @@ export type FunnelStageKey =
 export interface FunnelStage {
   key: FunnelStageKey
   labelKey: string
-  icon: string
   /** Ordered position in the linear funnel display (1-based). "initial" is excluded from the bar. */
   order: number
+  /** Canonical stage providing the icon, color and nav path. */
+  canonical: CanonicalStage
+}
+
+/** Map FunnelStageKey ↔ CanonicalStageId so the rail can render canonical visuals. */
+const KEY_TO_CANONICAL: Record<Exclude<FunnelStageKey, "initial" | "analytics">, CanonicalStageId> = {
+  create_job: "definir-vaga",
+  sourcing: "sourcing",
+  screening: "triagem",
+  interview: "entrevista",
+  offer: "oferta",
+  hired: "contratacao",
+}
+
+function canonicalFor(key: Exclude<FunnelStageKey, "initial">): CanonicalStage {
+  if (key === "analytics") {
+    // Analytics is a utility node in canonical, but lives at the end of the rail.
+    const analytics = CANONICAL_FUNNEL_STAGES.find((s) => s.key === "contratacao")!
+    return { ...analytics, key: "analytics", labelKey: "chat.workflowReels.stages.analytics.label", shortLabelKey: "chat.workflowReels.stages.analytics.shortLabel", navPath: "/visao-do-funil" }
+  }
+  const canonicalKey = KEY_TO_CANONICAL[key]
+  const stage = CANONICAL_FUNNEL_STAGES.find((s) => s.key === canonicalKey)
+  if (!stage) throw new Error(`Missing canonical stage for ${key}`)
+  return stage
 }
 
 export type NextStepActionType = "navigate" | "handler"
@@ -48,13 +79,13 @@ export interface NextStep {
 }
 
 export const FUNNEL_STAGES: FunnelStage[] = [
-  { key: "create_job", labelKey: "workflowRail.funnel.createJob", icon: "📋", order: 1 },
-  { key: "sourcing",   labelKey: "workflowRail.funnel.sourcing",  icon: "🔍", order: 2 },
-  { key: "screening",  labelKey: "workflowRail.funnel.screening", icon: "📝", order: 3 },
-  { key: "interview",  labelKey: "workflowRail.funnel.interview", icon: "🤝", order: 4 },
-  { key: "offer",      labelKey: "workflowRail.funnel.offer",     icon: "📄", order: 5 },
-  { key: "hired",      labelKey: "workflowRail.funnel.hired",     icon: "✅", order: 6 },
-  { key: "analytics",  labelKey: "workflowRail.funnel.analytics", icon: "📊", order: 7 },
+  { key: "create_job", labelKey: "chat.workflowReels.stages.definir-vaga.shortLabel", order: 1, canonical: canonicalFor("create_job") },
+  { key: "sourcing",   labelKey: "chat.workflowReels.stages.sourcing.shortLabel",     order: 2, canonical: canonicalFor("sourcing") },
+  { key: "screening",  labelKey: "chat.workflowReels.stages.triagem.shortLabel",      order: 3, canonical: canonicalFor("screening") },
+  { key: "interview",  labelKey: "chat.workflowReels.stages.entrevista.shortLabel",   order: 4, canonical: canonicalFor("interview") },
+  { key: "offer",      labelKey: "chat.workflowReels.stages.oferta.shortLabel",       order: 5, canonical: canonicalFor("offer") },
+  { key: "hired",      labelKey: "chat.workflowReels.stages.contratacao.shortLabel",  order: 6, canonical: canonicalFor("hired") },
+  { key: "analytics",  labelKey: "chat.workflowReels.stages.analytics.shortLabel",    order: 7, canonical: canonicalFor("analytics") },
 ]
 
 export const NEXT_STEPS_MAP: Record<FunnelStageKey, NextStep[]> = {

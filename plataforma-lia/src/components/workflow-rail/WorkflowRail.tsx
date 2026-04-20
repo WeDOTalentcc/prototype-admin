@@ -205,8 +205,9 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
               <ArrowRight className="w-3 h-3 text-lia-text-disabled flex-shrink-0" />
               <span className={`${textStyles.caption} text-lia-text-tertiary`}>
                 {t("workflowRail.panel.nextInFunnel")}:{" "}
-                <span className="font-medium text-lia-text-secondary">
-                  {nextMainStage.icon} {t(nextMainStage.labelKey as Parameters<typeof t>[0])}
+                <span className="inline-flex items-center gap-1 font-medium text-lia-text-secondary">
+                  <nextMainStage.canonical.Icon className="w-3 h-3" aria-hidden="true" />
+                  {t(nextMainStage.labelKey as Parameters<typeof t>[0])}
                 </span>
               </span>
             </div>
@@ -217,26 +218,19 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
       {/* ---- Main bar ---- */}
       <div className="pointer-events-auto rounded-2xl border border-lia-border-subtle bg-white shadow-lg overflow-hidden">
 
-        {/* Funnel steps row — click anywhere to expand/collapse */}
-        <button
-          type="button"
-          onClick={() => setIsExpanded(v => !v)}
-          aria-expanded={isExpanded}
-          aria-label={
-            isExpanded
-              ? t("workflowRail.bar.collapseAriaLabel")
-              : t("workflowRail.bar.expandAriaLabel")
-          }
-          className="w-full flex items-center px-3 py-2 hover:bg-lia-bg-tertiary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-wedo-cyan/40 transition-colors"
-        >
-          {/* ---- Mobile compact view (< sm): only current stage chip + chevron ---- */}
+        {/* Funnel steps row — chips navigate; chevron toggles the expanded panel */}
+        <div className="w-full flex items-center px-3 py-2">
+          {/* ---- Mobile compact view (< sm): only current stage chip ---- */}
           <div className="flex sm:hidden flex-1 items-center gap-2 min-w-0">
             {currentStageObj ? (
-              <div
+              <button
+                type="button"
+                onClick={() => onNavigate(currentStageObj.canonical.navPath)}
                 aria-current="step"
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-lia-bg-inverse text-white flex-shrink-0"
+                aria-label={t(currentStageObj.labelKey as Parameters<typeof t>[0])}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-lia-bg-inverse text-white flex-shrink-0 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40"
               >
-                <span aria-hidden="true">{currentStageObj.icon}</span>
+                <currentStageObj.canonical.Icon className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>{t(currentStageObj.labelKey as Parameters<typeof t>[0])}</span>
                 {pendingCount > 0 && (
                   <span
@@ -244,23 +238,24 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
                     className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"
                   />
                 )}
-              </div>
+              </button>
             ) : (
               <span className={`${textStyles.caption} text-lia-text-tertiary`}>
                 {t("workflowRail.bar.noActiveFlow")}
               </span>
             )}
-            <span className={`${textStyles.caption} text-lia-text-disabled truncate`}>
-              {t("workflowRail.bar.expandAriaLabel")}
-            </span>
           </div>
 
-          {/* ---- Desktop full funnel view (≥ sm) ---- */}
+          {/* ---- Desktop full funnel view (≥ sm) — each chip is a navigation button ---- */}
           <div className="hidden sm:flex flex-1 items-center min-w-0 overflow-x-auto scrollbar-none">
             {FUNNEL_STAGES.map((stage, idx) => {
               const isCurrent = stage.key === currentStageKey
               const isPast = stage.order < currentStageOrder
               const isNext = stage.order === currentStageOrder + 1
+              const Icon = stage.canonical.Icon
+              const accent = stage.canonical.color.accent
+              const accentBg = stage.canonical.color.accentBg
+              const label = t(stage.labelKey as Parameters<typeof t>[0])
 
               return (
                 <React.Fragment key={stage.key}>
@@ -270,44 +265,59 @@ export default function WorkflowRail({ userId, onNavigate, onCreateJob }: Workfl
                       className={`h-px w-3 flex-shrink-0 ${isPast || isCurrent ? "bg-lia-bg-inverse" : "bg-lia-border-subtle"}`}
                     />
                   )}
-                  <div
+                  <button
+                    type="button"
+                    onClick={() => onNavigate(stage.canonical.navPath)}
                     aria-current={isCurrent ? "step" : undefined}
-                    title={t(stage.labelKey as Parameters<typeof t>[0])}
+                    aria-label={label}
+                    title={label}
+                    style={isCurrent ? { backgroundColor: accent, color: "#fff" } : isNext ? { backgroundColor: accentBg, color: accent } : undefined}
                     className={`
                       flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium flex-shrink-0 whitespace-nowrap transition-colors
+                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40
                       ${isCurrent
-                        ? "bg-lia-bg-inverse text-white"
+                        ? "hover:opacity-90"
                         : isPast
-                        ? "bg-lia-bg-tertiary text-lia-text-secondary"
+                        ? "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-bg-tertiary/80"
                         : isNext
-                        ? "bg-lia-bg-tertiary/60 text-lia-text-tertiary"
-                        : "text-lia-text-disabled"
+                        ? "hover:opacity-90"
+                        : "text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-bg-tertiary/60"
                       }
                     `}
                   >
-                    <span aria-hidden="true">{stage.icon}</span>
-                    <span>{t(stage.labelKey as Parameters<typeof t>[0])}</span>
+                    <Icon className="w-3 h-3" aria-hidden="true" />
+                    <span>{label}</span>
                     {isCurrent && pendingCount > 0 && (
                       <span
                         aria-label={t("workflowRail.pill.pendingAriaLabel", { count: pendingCount })}
                         className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse flex-shrink-0"
                       />
                     )}
-                  </div>
+                  </button>
                 </React.Fragment>
               )
             })}
           </div>
 
-          {/* Expand/collapse chevron */}
-          <span aria-hidden="true" className="pl-2 flex-shrink-0 text-lia-text-disabled">
+          {/* Expand/collapse toggle */}
+          <button
+            type="button"
+            onClick={() => setIsExpanded(v => !v)}
+            aria-expanded={isExpanded}
+            aria-label={
+              isExpanded
+                ? t("workflowRail.bar.collapseAriaLabel")
+                : t("workflowRail.bar.expandAriaLabel")
+            }
+            className="ml-2 flex-shrink-0 p-1 rounded text-lia-text-disabled hover:text-lia-text-secondary hover:bg-lia-bg-tertiary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/40"
+          >
             {isExpanded ? (
               <ChevronDown className="w-3.5 h-3.5" />
             ) : (
               <ChevronUp className="w-3.5 h-3.5" />
             )}
-          </span>
-        </button>
+          </button>
+        </div>
 
         {/* Bottom strip: active flow name + create-job shortcut */}
         {onCreateJob && (

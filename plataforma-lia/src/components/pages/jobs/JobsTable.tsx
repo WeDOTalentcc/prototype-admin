@@ -9,6 +9,7 @@ import {
   ArrowUpDown, ArrowUp, ArrowDown, MapPin, Building,
   Clock, Calendar, TrendingUp
 } from"lucide-react"
+import { JobCampaignBadge } from"@/components/jobs/JobCampaignBadge"
 import type { JobVacancy, JobSortConfig } from"./types"
 
 interface JobsTableProps {
@@ -159,7 +160,10 @@ export function JobsTable({
                 </div>
               </td>
               <td className="p-4">
-                {getStatusBadge(job.status)}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {getStatusBadge(job.status)}
+                  <JobCampaignBadge jobId={job.id} />
+                </div>
               </td>
               <td className="p-4 text-center">
                 <div className="flex items-center justify-center gap-1">

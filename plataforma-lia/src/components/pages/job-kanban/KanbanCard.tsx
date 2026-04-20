@@ -24,6 +24,7 @@ import { kanbanCardStyles } from "@/lib/design-tokens"
 import { KanbanCardShell } from "./KanbanCardShell"
 import { KanbanChip } from "./KanbanChip"
 import { JobKanbanMiniFunnel } from "./JobKanbanMiniFunnel"
+import { JobCampaignBadge } from "@/components/jobs/JobCampaignBadge"
 import type { KanbanItem } from "./types"
 
 interface KanbanCardProps {
@@ -263,6 +264,12 @@ export const KanbanCard = React.memo(function KanbanCard({
           <KanbanChip density={DENSITY}>{item.badge}</KanbanChip>
         </div>
       )}
+
+      {/* Task #592 — Campaign badge (informativo, fase educativa). */}
+      <div className="mt-2">
+        <JobCampaignBadge jobId={item.id} status={item.campaignStatus} />
+      </div>
+
 
       {(chips.length > 0 || item.ageDays != null) && (
         <div className="flex flex-wrap gap-1 mt-2">
