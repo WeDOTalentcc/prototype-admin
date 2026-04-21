@@ -398,16 +398,26 @@ class MainOrchestrator:
                                 "Voce DEVE mencionar estas proativamente se relevantes ao que o recrutador pediu:\n\n"
                                 + "\n".join(f"- [{h.severity}] {h.message}" for h in _hints)
                             )
-                            # Gap 4: delegate to company_settings agent when onboarding hints emitted
+                            # FIX 14 — Preserve hint signal WITHOUT hijacking agent_type.
+                            # Previous behavior forced _agent_type = "company_settings"
+                            # whenever any onboarding hint was detected. This broke
+                            # multi-turn conversations: "pode sim" after a search turn
+                            # was routed to company_settings and responded about
+                            # cultural profile instead of continuing search.
+                            #
+                            # Hints remain visible to the LLM via _proactive_hints_text
+                            # (see `extra_instructions` below). The LLM decides whether
+                            # to mention onboarding based on CONTEXT RELEVANCE, not a
+                            # hard override that ignores the cascade router's decision.
                             _onboarding_hints_detected = [h.type for h in _hints if h.type in _ONBOARDING_HINT_TYPES]
                             if _onboarding_hints_detected:
-                                _agent_type = "company_settings"
                                 logger.info(
-                                    "[PreConditionChecker] Delegating to company_settings agent",
+                                    "[PreConditionChecker] Onboarding hints injected (no delegation override)",
                                     extra={
                                         "company_id": _loop_company_id,
                                         "onboarding_hints": _onboarding_hints_detected,
                                         "total_hints": len(_hints),
+                                        "agent_type": _agent_type,
                                     },
                                 )
                             # Structured payload for frontend rendering (NavigationHintCard / proactive-insight-card)

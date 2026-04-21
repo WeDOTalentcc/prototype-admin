@@ -352,6 +352,11 @@ async def main():
     async_session_factory, engine = await get_async_session()
     
     async with engine.begin() as conn:
+        # DEPRECATED — see app/core/database.py:init_db (Task #729). This
+        # ``create_all`` call is the second source of schema drift. The seed
+        # script should assume Alembic has already brought the DB to head.
+        # Removal scheduled with the same follow-up that retires the
+        # boot-time create_all in init_db.
         await conn.run_sync(Base.metadata.create_all)
     
     async with async_session_factory() as session:
