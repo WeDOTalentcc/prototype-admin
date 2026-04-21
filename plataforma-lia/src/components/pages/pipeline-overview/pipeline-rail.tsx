@@ -170,7 +170,7 @@ export function PipelineRail({ nodes, emptyMessage }: PipelineRailProps) {
 
                 {node.count > 0 ? (
                   <span
-                    className="text-xs font-bold rounded-full px-1.5 py-0.5"
+                    className="text-micro font-bold rounded-full px-1.5 py-0.5"
                     style={{ backgroundColor: hexToRgba(stageColor, 0.08), color: stageColor }}
                   >
                     {node.count}

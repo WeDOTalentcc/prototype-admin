@@ -416,7 +416,7 @@ export const kanbanColumnHeaderStyles = {
   },
   count: {
     sm: 'inline-flex items-center text-micro text-lia-text-primary bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full',
-    md: 'inline-flex items-center text-xs text-lia-text-secondary bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-2 py-0.5 rounded-full ml-1',
+    md: 'inline-flex items-center text-micro text-lia-text-secondary bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-2 py-0.5 rounded-full ml-1',
   },
   subtitle:
     "mt-1 font-['Open_Sans',sans-serif] text-micro font-normal text-lia-text-secondary dark:text-lia-text-secondary",

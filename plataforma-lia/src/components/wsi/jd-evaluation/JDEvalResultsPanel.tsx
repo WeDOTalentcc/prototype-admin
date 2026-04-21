@@ -68,7 +68,7 @@ export const JDEvalResultsPanel = React.memo(function JDEvalResultsPanel({
             <span className="text-micro font-semibold text-lia-text-primary uppercase tracking-wide block mb-1">Competências Técnicas</span>
             <div className="flex flex-wrap gap-1.5">
               {technicalSkills.map((skill) => (
-                <span key={skill} className="px-2.5 py-0.5 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-secondary">
+                <span key={skill} className="px-2 py-0.5 text-micro rounded-full bg-lia-bg-tertiary text-lia-text-secondary">
                   {skill}
                 </span>
               ))}
@@ -81,7 +81,7 @@ export const JDEvalResultsPanel = React.memo(function JDEvalResultsPanel({
             <span className="text-micro font-semibold text-lia-text-primary uppercase tracking-wide block mb-1">Competências Comportamentais</span>
             <div className="flex flex-wrap gap-1.5">
               {behavioralCompetencies.map((comp) => (
-                <span key={comp} className="px-2.5 py-0.5 text-xs rounded-full bg-lia-bg-tertiary text-lia-text-secondary">
+                <span key={comp} className="px-2 py-0.5 text-micro rounded-full bg-lia-bg-tertiary text-lia-text-secondary">
                   {comp}
                 </span>
               ))}
@@ -126,7 +126,7 @@ export const JDEvalResultsPanel = React.memo(function JDEvalResultsPanel({
                 <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Competências Técnicas</span>
                 <div className="flex flex-wrap gap-1.5">
                   {enrichedJd.technical_skills.map((skill) => (
-                    <span key={skill} className="px-2.5 py-0.5 text-xs rounded-full bg-wedo-cyan/10">
+                    <span key={skill} className="px-2 py-0.5 text-micro rounded-full bg-wedo-cyan/10">
                       {skill}
                     </span>
                   ))}
@@ -139,7 +139,7 @@ export const JDEvalResultsPanel = React.memo(function JDEvalResultsPanel({
                 <span className="text-micro font-semibold uppercase tracking-wide block mb-1">Competências Comportamentais</span>
                 <div className="flex flex-wrap gap-1.5">
                   {enrichedJd.behavioral_competencies.map((comp) => (
-                    <span key={comp} className="px-2.5 py-0.5 text-xs rounded-full bg-wedo-cyan/10">
+                    <span key={comp} className="px-2 py-0.5 text-micro rounded-full bg-wedo-cyan/10">
                       {comp}
                     </span>
                   ))}

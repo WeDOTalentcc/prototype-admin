@@ -133,7 +133,7 @@ function OverviewView({ atsSystems, integrations, syncLogs, getStatusColor, setS
                     <p className={textStyles.bodySmall}>{system.description}</p>
                     <div className="flex items-center gap-2 mt-1">
                       {getStatusIcon(system.status)}
-                      <span className={`text-xs px-2 py-1 rounded-full border ${getStatusColor(system.status)}`}>{STATUS_LABEL[system.status] ?? system.status}</span>
+                      <span className={`text-micro px-2 py-0.5 rounded-full border ${getStatusColor(system.status)}`}>{STATUS_LABEL[system.status] ?? system.status}</span>
                       {system.lastSync && <span className="text-xs text-lia-text-secondary">Última sync: {new Date(system.lastSync).toLocaleString('pt-BR')}</span>}
                     </div>
                   </div>
@@ -338,7 +338,7 @@ function LogsView({ syncLogs }: Pick<HookState, 'syncLogs'>) {
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
                         {getSyncStatusIcon(log.status)}
-                        <span className={`text-xs px-2 py-1 rounded-full ${statusCls(log.status)}`} aria-live="polite">{statusLabel(log.status)}</span>
+                        <span className={`text-micro px-2 py-0.5 rounded-full ${statusCls(log.status)}`} aria-live="polite">{statusLabel(log.status)}</span>
                       </div>
                     </td>
                     <td className="py-3 px-4"><span className="font-medium text-lia-text-primary">{log.system}</span></td>
