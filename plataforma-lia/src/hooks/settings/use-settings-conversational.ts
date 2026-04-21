@@ -36,6 +36,7 @@ export interface SettingsActionEventDetail {
   prompt?: string
   payload?: Record<string, unknown>
   source?: "chat" | "ui" | "onboarding"
+  autoSend?: boolean
 }
 
 const ACTION_TO_TAB: Record<SettingsActionId, string> = {
@@ -66,12 +67,12 @@ export function useSettingsConversational() {
     )
   }, [])
 
-  const sendChatPrompt = useCallback((prompt: string) => {
+  const sendChatPrompt = useCallback((prompt: string, autoSend = false) => {
     if (typeof window === "undefined") return
     // Usa o evento canonico ja consumido pelo UnifiedChat (InlineChatBridge / useSmartFileUpload)
     window.dispatchEvent(
       new CustomEvent("lia:prefill-message", {
-        detail: { message: prompt, source: "settings", autoSend: false },
+        detail: { message: prompt, source: "settings", autoSend },
       }),
     )
   }, [])
@@ -88,7 +89,7 @@ export function useSettingsConversational() {
       }
       dispatchAction(detail)
       if (detail.prompt) {
-        sendChatPrompt(detail.prompt)
+        sendChatPrompt(detail.prompt, detail.autoSend ?? false)
       }
     },
     [dispatchAction, sendChatPrompt],

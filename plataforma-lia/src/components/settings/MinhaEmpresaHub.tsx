@@ -75,15 +75,23 @@ export function MinhaEmpresaHub() {
     }, 60)
   }, [expandedBlocks, toggleBlock])
 
+  const websiteUrl = React.useMemo(() => {
+    const basicBlock = blocks.find((b) => b.key === "basic")
+    return basicBlock?.fields.find((f) => f.key === "website")?.value as string | undefined
+  }, [blocks])
+
   const handleAnalyzeWebsite = React.useCallback(() => {
+    const urlTag = websiteUrl ? `\n[website_url:${websiteUrl}]` : ""
     triggerAction("analyze_website", {
       section: "minha-empresa",
       prompt:
+        "[ACTION:analyze_website]" + urlTag + "\n\n" +
         "Analise nosso site institucional e extraia missão, valores, cultura, " +
         "tech stack e benefícios. Mostre os campos extraídos para eu revisar antes de gravar.",
       source: "ui",
+      autoSend: true,
     })
-  }, [triggerAction])
+  }, [triggerAction, websiteUrl])
 
   if (loading) {
     return (
