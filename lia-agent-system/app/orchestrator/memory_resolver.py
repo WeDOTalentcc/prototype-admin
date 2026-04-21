@@ -149,11 +149,20 @@ def _extract_entity_label(entity: dict[str, Any]) -> str:
 
 
 def _should_resolve(message: str) -> bool:
-    """Retorna True se a mensagem contém pronomes ou referências que precisam de resolução."""
+    """Retorna True se a mensagem contém pronomes, referências ou affirmations.
+
+    FIX 19 (2026-04-21) — affirmations foram adicionadas ao gate para que
+    o ``MemoryResolver.resolve()`` processe mensagens curtas como "pode sim",
+    "ok", "beleza" e injete contexto de continuação (quando WorkingMemory
+    tem dados de turnos anteriores). Sem esta mudança, ``is_simple_affirmation``
+    existia apenas como função isolada (test-green) mas era dead code em
+    runtime (resolve() retornava early antes de processar a afirmação).
+    """
     return bool(
         _PRONOUN_PATTERNS.search(message)
         or _ENTITY_REF_PATTERNS.search(message)
         or _POSITIONAL_PATTERNS.search(message)
+        or is_simple_affirmation(message)
     )
 
 
