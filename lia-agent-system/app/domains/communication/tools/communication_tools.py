@@ -11,6 +11,7 @@ Provides function calling capabilities for:
 - Sending WhatsApp messages
 - Scheduling interviews
 """
+import asyncio
 import logging
 from datetime import datetime
 from typing import Any
@@ -19,6 +20,104 @@ from uuid import UUID
 from app.tools.registry import ToolDefinition, tool_registry
 
 logger = logging.getLogger(__name__)
+
+
+async def _load_email_template(
+    db,
+    template_id: str,
+    variables: dict[str, Any] | None = None,
+    company_id: str | None = None,
+) -> dict[str, str] | None:
+    """Load a RecruitmentEmailTemplate by id (UUID) or stage_name and render it.
+
+    Tenant isolation: when ``company_id`` is provided, only templates owned by
+    that company OR system templates (``is_system=True`` with no ``company_id``)
+    are eligible. A UUID lookup that resolves to a template belonging to a
+    different tenant is treated as not-found to prevent cross-tenant leakage.
+
+    Returns dict with rendered ``subject``, ``body_html`` and ``body_text`` —
+    or ``None`` if the template cannot be found / not visible to this tenant.
+    """
+    from sqlalchemy import or_, select
+
+    from lia_models.recruitment_email_template import RecruitmentEmailTemplate
+
+    def _tenant_visible(t: RecruitmentEmailTemplate) -> bool:
+        if company_id is None:
+            return True
+        if t.company_id is None and getattr(t, "is_system", False):
+            return True
+        return str(t.company_id) == str(company_id)
+
+    template = None
+    try:
+        template_uuid = UUID(template_id)
+        result = await db.execute(
+            select(RecruitmentEmailTemplate).where(
+                RecruitmentEmailTemplate.id == template_uuid
+            )
+        )
+        candidate_template = result.scalar_one_or_none()
+        if candidate_template is not None and _tenant_visible(candidate_template):
+            template = candidate_template
+        elif candidate_template is not None:
+            logger.warning(
+                "[CommunicationTools] template %s belongs to another tenant — refusing to load",
+                template_id,
+            )
+    except (ValueError, TypeError):
+        stmt = (
+            select(RecruitmentEmailTemplate)
+            .where(RecruitmentEmailTemplate.stage_name == template_id)
+            .where(RecruitmentEmailTemplate.is_active.is_(True))
+        )
+        if company_id is not None:
+            stmt = stmt.where(
+                or_(
+                    RecruitmentEmailTemplate.company_id == str(company_id),
+                    RecruitmentEmailTemplate.is_system.is_(True),
+                )
+            )
+        stmt = stmt.order_by(
+            RecruitmentEmailTemplate.company_id.is_(None),  # tenant first
+            RecruitmentEmailTemplate.is_default.desc(),
+        )
+        result = await db.execute(stmt)
+        template = result.scalars().first()
+
+    if template is None:
+        return None
+
+    rendered_subject = template.subject or ""
+    rendered_html = template.body_html or ""
+    rendered_text = template.body_text or ""
+
+    for key, value in (variables or {}).items():
+        placeholder = "{{" + str(key) + "}}"
+        replacement = "" if value is None else str(value)
+        rendered_subject = rendered_subject.replace(placeholder, replacement)
+        rendered_html = rendered_html.replace(placeholder, replacement)
+        rendered_text = rendered_text.replace(placeholder, replacement)
+
+    return {
+        "subject": rendered_subject,
+        "body_html": rendered_html,
+        "body_text": rendered_text or rendered_html,
+    }
+
+
+def _render_email_body(subject: str | None, body: str | None) -> tuple[str, str]:
+    """Return (html, text) — escapes user content to avoid HTML injection."""
+    import html as html_module
+    text_body = body or ""
+    safe_subject = html_module.escape(subject or "")
+    safe_body = html_module.escape(text_body).replace("\n", "<br/>")
+    html_body = (
+        f"<div><h2>{safe_subject}</h2><p>{safe_body}</p></div>"
+        if safe_subject
+        else f"<div><p>{safe_body}</p></div>"
+    )
+    return html_body, text_body
 
 
 async def send_email(
@@ -78,32 +177,119 @@ async def send_email(
                         "error": "no_email"
                     }
                 
-                logger.warning(
-                    "[CommunicationTools] send_email is_mock=True: CommunicationDispatcher not called. "
-                    "candidate_id=%s email=%s. See ADR-018 / Task #673 for migration plan.",
-                    candidate_id, candidate_email,
+                resolved_subject = subject
+                resolved_html: str | None = None
+                resolved_text: str | None = None
+                template_used = False
+
+                if template_id:
+                    template_vars: dict[str, Any] = {
+                        "candidate_name": candidate_name,
+                        "candidate_email": candidate_email,
+                        "job_id": job_id or "",
+                    }
+                    candidate_company_id = getattr(candidate, "company_id", None)
+                    rendered = await _load_email_template(
+                        db,
+                        template_id,
+                        variables=template_vars,
+                        company_id=(
+                            str(candidate_company_id)
+                            if candidate_company_id is not None
+                            else None
+                        ),
+                    )
+                    if rendered is None:
+                        if not subject or not body:
+                            return {
+                                "success": False,
+                                "message": (
+                                    f"Template '{template_id}' não encontrado e nenhum "
+                                    "assunto/corpo foi informado."
+                                ),
+                                "error": "template_not_found",
+                            }
+                    else:
+                        template_used = True
+                        resolved_subject = subject or rendered["subject"]
+                        resolved_html = rendered["body_html"]
+                        resolved_text = rendered["body_text"]
+
+                if not template_used and (not subject or not body):
+                    return {
+                        "success": False,
+                        "message": "Para enviar um email é necessário informar assunto e corpo (ou um template_id válido).",
+                        "error": "missing_subject_or_body",
+                    }
+
+                from app.domains.communication.services.communication_dispatcher import (
+                    communication_dispatcher,
+                )
+
+                if resolved_html is None:
+                    html_body, text_body = _render_email_body(resolved_subject, body)
+                else:
+                    html_body = resolved_html
+                    text_body = resolved_text or ""
+
+                dispatch_result = await asyncio.to_thread(
+                    communication_dispatcher.send_email,
+                    to_email=candidate_email,
+                    subject=resolved_subject or "Atualização do processo seletivo",
+                    body_html=html_body,
+                    body_text=text_body,
+                )
+
+                if not dispatch_result.get("success"):
+                    error_msg = dispatch_result.get("error", "unknown error")
+                    logger.error(
+                        "[CommunicationTools] send_email failed candidate=%s provider=%s error=%s",
+                        candidate_id, dispatch_result.get("provider"), error_msg,
+                    )
+                    return {
+                        "success": False,
+                        "dispatch_status": "failed",
+                        "message": f"❌ Falha ao enviar email para {candidate_name}: {error_msg}",
+                        "error": error_msg,
+                        "data": {
+                            "candidate_id": candidate_id,
+                            "candidate_name": candidate_name,
+                            "email": candidate_email,
+                            "provider": dispatch_result.get("provider"),
+                        },
+                    }
+
+                provider = dispatch_result.get("provider", "unknown")
+                is_mock = bool(dispatch_result.get("mock"))
+                message_id = dispatch_result.get("message_id")
+
+                logger.info(
+                    "[CommunicationTools] send_email dispatched candidate=%s provider=%s id=%s mock=%s",
+                    candidate_id, provider, message_id, is_mock,
                 )
                 return {
                     "success": True,
-                    "is_mock": True,
-                    "dispatch_status": "not_dispatched",
-                    "mock_notice": (
-                        "⚠️ SIMULAÇÃO: o email foi registrado mas NÃO enviado. "
-                        "A integração com o provedor de email (CommunicationDispatcher) "
-                        "ainda não está conectada neste tool. Ver ADR-018."
+                    "dispatch_status": "dispatched",
+                    "message": (
+                        f"📧 Email enviado para {candidate_name} ({candidate_email}) via {provider}."
                     ),
-                    "message": f"📧 [SIMULADO] Email preparado para {candidate_name} ({candidate_email}) — não enviado.",
                     "action_taken": "send_email",
                     "affected_entities": [candidate_id],
                     "data": {
                         "candidate_id": candidate_id,
                         "candidate_name": candidate_name,
                         "email": candidate_email,
-                        "subject": subject,
+                        "subject": resolved_subject,
                         "template_id": template_id,
+                        "template_used": template_used,
                         "job_id": job_id,
-                        "sent_at": datetime.utcnow().isoformat()
-                    }
+                        "message_id": message_id,
+                        "provider": provider,
+                        "is_mock_provider": is_mock,
+                        "sent_at": dispatch_result.get(
+                            "timestamp", datetime.utcnow().isoformat()
+                        ),
+                    },
                 }
                 
             except Exception as e:
@@ -176,32 +362,63 @@ async def send_whatsapp(
                         "error": "no_phone"
                     }
                 
-                logger.warning(
-                    "[CommunicationTools] send_whatsapp is_mock=True: CommunicationDispatcher not called. "
-                    "candidate_id=%s phone=%s. See ADR-018 / Task #673 for migration plan.",
-                    candidate_id, candidate_phone,
+                from app.domains.communication.services.communication_dispatcher import (
+                    communication_dispatcher,
+                )
+
+                dispatch_result = await asyncio.to_thread(
+                    communication_dispatcher.send_whatsapp,
+                    to_phone=candidate_phone,
+                    message=message,
+                    template_sid=template_id,
+                )
+
+                if not dispatch_result.get("success"):
+                    error_msg = dispatch_result.get("error", "unknown error")
+                    logger.error(
+                        "[CommunicationTools] send_whatsapp failed candidate=%s error=%s",
+                        candidate_id, error_msg,
+                    )
+                    return {
+                        "success": False,
+                        "dispatch_status": "failed",
+                        "message": f"❌ Falha ao enviar WhatsApp para {candidate_name}: {error_msg}",
+                        "error": error_msg,
+                        "data": {
+                            "candidate_id": candidate_id,
+                            "candidate_name": candidate_name,
+                            "phone": candidate_phone,
+                        },
+                    }
+
+                is_mock = bool(dispatch_result.get("mock"))
+                message_id = dispatch_result.get("message_id")
+
+                logger.info(
+                    "[CommunicationTools] send_whatsapp dispatched candidate=%s id=%s mock=%s",
+                    candidate_id, message_id, is_mock,
                 )
                 return {
                     "success": True,
-                    "is_mock": True,
-                    "dispatch_status": "not_dispatched",
-                    "mock_notice": (
-                        "⚠️ SIMULAÇÃO: a mensagem WhatsApp foi registrada mas NÃO enviada. "
-                        "A integração com o provedor WhatsApp (CommunicationDispatcher) "
-                        "ainda não está conectada neste tool. Ver ADR-018."
-                    ),
-                    "message": f"📱 [SIMULADO] WhatsApp preparado para {candidate_name} ({candidate_phone}) — não enviado.",
+                    "dispatch_status": "dispatched",
+                    "message": f"📱 WhatsApp enviado para {candidate_name} ({candidate_phone}).",
                     "action_taken": "send_whatsapp",
                     "affected_entities": [candidate_id],
                     "data": {
                         "candidate_id": candidate_id,
                         "candidate_name": candidate_name,
                         "phone": candidate_phone,
-                        "message_preview": message[:100] + "..." if len(message) > 100 else message,
+                        "message_preview": (
+                            message[:100] + "..." if len(message) > 100 else message
+                        ),
                         "template_id": template_id,
                         "job_id": job_id,
-                        "sent_at": datetime.utcnow().isoformat()
-                    }
+                        "message_id": message_id,
+                        "is_mock_provider": is_mock,
+                        "sent_at": dispatch_result.get(
+                            "timestamp", datetime.utcnow().isoformat()
+                        ),
+                    },
                 }
                 
             except Exception as e:
@@ -299,24 +516,136 @@ async def schedule_interview(
                 
                 formatted_date = interview_datetime.strftime("%d/%m/%Y às %H:%M")
                 
-                logger.warning(
-                    "[CommunicationTools] schedule_interview is_mock=True: no DB record created, "
-                    "no calendar event dispatched. candidate_id=%s job_id=%s. See ADR-018 / Task #673.",
-                    candidate_id, job_id,
+                if not candidate:
+                    return {
+                        "success": False,
+                        "message": f"Candidato não encontrado: {candidate_id}",
+                        "error": "candidate_not_found",
+                    }
+
+                candidate_email = getattr(candidate, "email", None)
+                company_id = getattr(candidate, "company_id", None)
+                if company_id is not None:
+                    company_id = str(company_id)
+
+                from app.domains.interview_scheduling.services.scheduling_service import (
+                    SchedulingService,
                 )
+
+                scheduling = SchedulingService()
+                interviewer_email = (
+                    interviewers[0] if interviewers else "noreply@wedotalent.com"
+                )
+                interviewer_name = interviewer_email.split("@")[0].replace(".", " ").title()
+                interview_mode = (
+                    "in_person" if interview_type == "onsite"
+                    else ("phone" if interview_type == "phone" else "video")
+                )
+
+                interview = await scheduling.create_interview(
+                    db=db,
+                    candidate_id=candidate_id,
+                    candidate_name=candidate_name,
+                    candidate_email=candidate_email or "",
+                    interviewer_name=interviewer_name,
+                    interviewer_email=interviewer_email,
+                    start_time=interview_datetime,
+                    duration_minutes=duration_minutes,
+                    interview_type=interview_type,
+                    interview_mode=interview_mode,
+                    job_title=job_title,
+                    job_vacancy_id=job_id,
+                    company_id=company_id,
+                    location=location or meeting_link,
+                    notes=notes,
+                    additional_interviewers=[
+                        {"email": e, "name": e.split("@")[0]} for e in (interviewers or [])[1:]
+                    ],
+                    created_by="lia_agent",
+                )
+
+                interview_id = str(interview.id)
+                invite_sent = False
+                invite_error: str | None = None
+                ics_content: str | None = None
+                try:
+                    ics_content = scheduling.generate_ics_content(
+                        interview, include_meeting_link=True
+                    )
+                except Exception as ics_exc:
+                    logger.warning(
+                        "[CommunicationTools] failed to build ICS for interview %s: %s",
+                        interview_id, ics_exc,
+                    )
+
+                if send_invite and candidate_email:
+                    from app.domains.communication.services.communication_dispatcher import (
+                        communication_dispatcher,
+                    )
+
+                    invite_subject = (
+                        f"Convite de Entrevista — {job_title or 'Processo Seletivo'}"
+                    )
+                    invite_text = (
+                        f"Olá {candidate_name},\n\n"
+                        f"Você está confirmado(a) para uma entrevista {interview_type_display} "
+                        f"no dia {formatted_date} (duração: {duration_minutes} min).\n"
+                        + (f"Local: {location}\n" if location else "")
+                        + (f"Link da reunião: {meeting_link}\n" if meeting_link else "")
+                        + (f"\nObservações: {notes}\n" if notes else "")
+                        + "\nAté breve!\nEquipe de Recrutamento"
+                    )
+                    html_invite, text_invite = _render_email_body(invite_subject, invite_text)
+
+                    invite_attachments: list[dict[str, Any]] | None = None
+                    if ics_content:
+                        invite_attachments = [{
+                            "filename": "invite.ics",
+                            "content_type": "text/calendar; method=REQUEST",
+                            "content": ics_content,
+                        }]
+
+                    invite_result = await asyncio.to_thread(
+                        communication_dispatcher.send_email,
+                        to_email=candidate_email,
+                        subject=invite_subject,
+                        body_html=html_invite,
+                        body_text=text_invite,
+                        attachments=invite_attachments,
+                    )
+                    invite_sent = bool(invite_result.get("success"))
+                    if not invite_sent:
+                        invite_error = invite_result.get("error", "unknown error")
+                        logger.warning(
+                            "[CommunicationTools] schedule_interview invite email failed: %s",
+                            invite_error,
+                        )
+
+                logger.info(
+                    "[CommunicationTools] schedule_interview dispatched id=%s candidate=%s invite_sent=%s",
+                    interview_id, candidate_id, invite_sent,
+                )
+
+                msg_suffix = (
+                    " Convite enviado por email." if invite_sent
+                    else (
+                        " (Convite por email pendente — sem email cadastrado)"
+                        if not candidate_email else
+                        f" (Falha ao enviar convite por email: {invite_error})"
+                    )
+                )
+
                 return {
                     "success": True,
-                    "is_mock": True,
-                    "dispatch_status": "not_dispatched",
-                    "mock_notice": (
-                        "⚠️ SIMULAÇÃO: a entrevista foi registrada localmente mas NÃO criada no calendário "
-                        "e o convite NÃO foi enviado. A integração com o provedor de calendário "
-                        "ainda não está conectada neste tool. Ver ADR-018."
+                    "dispatch_status": "dispatched",
+                    "message": (
+                        f"📅 Entrevista {interview_type_display} agendada para {candidate_name} "
+                        f"no dia {formatted_date}." + msg_suffix
                     ),
-                    "message": f"📅 [SIMULADO] Entrevista {interview_type_display} preparada para {candidate_name} no dia {formatted_date} — não confirmada.",
                     "action_taken": "schedule_interview",
-                    "affected_entities": [candidate_id, job_id],
+                    "affected_entities": [candidate_id, job_id, interview_id],
                     "data": {
+                        "interview_id": interview_id,
                         "candidate_id": candidate_id,
                         "candidate_name": candidate_name,
                         "job_id": job_id,
@@ -327,9 +656,11 @@ async def schedule_interview(
                         "interviewers": interviewers or [],
                         "location": location,
                         "meeting_link": meeting_link,
-                        "invite_sent": False,
-                        "created_at": datetime.utcnow().isoformat()
-                    }
+                        "invite_sent": invite_sent,
+                        "invite_error": invite_error,
+                        "ics_attached": bool(ics_content),
+                        "created_at": datetime.utcnow().isoformat(),
+                    },
                 }
                 
             except Exception as e:

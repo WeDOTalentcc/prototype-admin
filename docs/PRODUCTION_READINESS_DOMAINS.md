@@ -88,7 +88,7 @@ Execute `python production_readiness_audit.py --verbose --json` para dados atual
 | Internal Mobility Suite | `beta` | 100% | Nenhum crítico |
 | Interview Intelligence Pro | `beta` | 100% | Nenhum crítico; frontend ainda pendente (AUDIT_MODULES_GOVERNANCE_T163) |
 | Candidate Nurture / CRM | `beta` | 100% | Nenhum crítico |
-| Communication Tools | `beta` | 100% | **PR-06 documentado**: `send_email`/`send_whatsapp` retornam `is_mock=True` + `dispatch_status: "not_dispatched"` — CommunicationDispatcher não conectado (ADR-018 / Task #673) |
+| Communication Tools | `beta` | 100% | PR-06 fechado (Task #693): `send_email`/`send_whatsapp`/`schedule_interview` agora chamam `CommunicationDispatcher` (Mailgun + Resend fallback / Twilio WhatsApp) e persistem `Interview` real via `SchedulingService`. |
 
 ### Domínios Experimentais / Coming Soon
 

@@ -83,7 +83,8 @@ class CommunicationDispatcher:
         body_html: str,
         body_text: str | None = None,
         from_name: str | None = None,
-        reply_to: str | None = None
+        reply_to: str | None = None,
+        attachments: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         """
         Send an email via Mailgun with automatic Resend fallback.
@@ -147,11 +148,26 @@ class CommunicationDispatcher:
 
             try:
                 import httpx
+                files_param: list[tuple[str, tuple[str, Any, str]]] | None = None
+                if attachments:
+                    files_param = []
+                    for att in attachments:
+                        filename = att.get("filename") or "attachment.bin"
+                        content = att.get("content")
+                        content_type = att.get("content_type") or "application/octet-stream"
+                        if isinstance(content, str):
+                            content = content.encode("utf-8")
+                        if content is None:
+                            continue
+                        files_param.append(
+                            ("attachment", (filename, content, content_type))
+                        )
                 with httpx.Client(timeout=30) as client:
                     response = client.post(
                         f"{api_base}/{domain}/messages",
                         auth=("api", api_key),
                         data=data,
+                        files=files_param,
                     )
 
                 if response.status_code == 200:
@@ -194,6 +210,7 @@ class CommunicationDispatcher:
                 from_email=from_email_address,
                 reply_to=reply_to,
                 resend_api_key=resend_api_key,
+                attachments=attachments,
             )
             if resend_result.get("success"):
                 return resend_result
@@ -250,6 +267,7 @@ class CommunicationDispatcher:
         from_name: str | None = None,
         from_email: str | None = None,
         reply_to: str | None = None,
+        attachments: list[dict[str, Any]] | None = None,
     ) -> dict[str, Any]:
         """Send email via Resend as fallback provider."""
         try:
@@ -280,6 +298,21 @@ class CommunicationDispatcher:
                 params["text"] = body_text
             if reply_to:
                 params["reply_to"] = reply_to
+            if attachments:
+                import base64
+                resend_attachments: list[dict[str, Any]] = []
+                for att in attachments:
+                    content = att.get("content")
+                    if content is None:
+                        continue
+                    if isinstance(content, str):
+                        content = content.encode("utf-8")
+                    resend_attachments.append({
+                        "filename": att.get("filename") or "attachment.bin",
+                        "content": base64.b64encode(content).decode("ascii"),
+                    })
+                if resend_attachments:
+                    params["attachments"] = resend_attachments
 
             response = resend_sdk.Emails.send(params)
 

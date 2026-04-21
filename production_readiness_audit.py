@@ -458,7 +458,7 @@ DOMAIN_REGISTRY: dict[str, dict[str, Any]] = {
         "status": "beta",
         "pr_status": "beta",
         "domain_folder": "communication",
-        "known_gaps": ["PR-06: send_email/send_whatsapp are mocked (is_mock=True). Real dispatch pending ADR-018."],
+        "known_gaps": [],  # PR-06 closed (Task #693): send_email/send_whatsapp now wired to CommunicationDispatcher (Mailgun/Resend + Twilio).
     },
     "interview_scheduling": {
         "label": "Interview Scheduling",
@@ -467,7 +467,7 @@ DOMAIN_REGISTRY: dict[str, dict[str, Any]] = {
         "domain_folder": "interview_scheduling",
         "known_gaps": [
             "Rails routes GET /v1/users/scheduling/availability and POST /v1/users/calendar_events do not exist.",
-            "schedule_interview tool is mocked (is_mock=True).",
+            "schedule_interview tool now persists Interview row + sends invite email (Task #693); Rails calendar sync still pending.",
         ],
     },
 }
