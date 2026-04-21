@@ -1342,6 +1342,355 @@ Aceita dois caminhos:
 
 ---
 
+## E10 — PROPOSTA & NEGOCIAÇÃO — 6 STEPS  ⚠ MAJORITARIAMENTE STUB
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  LIA — Fluxo de Proposta & Negociação — 6 STEPS                              │
+│  Status global: STUB (sem domínio dedicado, sem orquestração, sem template)  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+ 1  Trigger: candidato APROVADO em todas as entrevistas (E9A concluída)
+    Fonte real hoje: transição manual de pipeline (PipelineTransitionAgent)
+    Status: ◐ existe a transição, NÃO existe action `generate_offer`
+
+ 2  Geração de carta-proposta
+    ⚠ STUB — não há `OfferLetterService` nem template em `report_templates.py`
+    Plano (PÓS-MVP): Ag.7 + JobDescriptionGeneratorService como base
+    LLM previsto: Claude (mesma stack do JD), com merge de:
+      - Compensação (vem de hiring_policy / company_benefits)
+      - Benefícios (company_benefits.py — preenchido em E0.5)
+      - Cláusulas obrigatórias (legal/compliance — sem catálogo hoje)
+
+ 3  Aprovação interna (multi-step approver)
+    Fonte real hoje: domínio `approvals` + `company_approvers.py` + `agent_approvals.py`
+    Status: ● infra de aprovação existe (ApprovalChainService)
+    Falta: workflow específico "offer_approval" cadastrado
+
+ 4  Envio ao candidato (multi-canal)
+    Reaproveita Ag.7 CommunicationReActAgent
+    Email + WhatsApp (templates de proposta = STUB)
+    🔒 LGPD: envio só com consent ativo (mesma regra de E6)
+
+ 5  Negociação (rodadas de contraproposta)
+    ⚠ STUB completo — sem state machine de negociação, sem histórico estruturado
+    Workaround atual: thread livre no UnifiedChat (sem tipagem)
+
+ 6  Aceite / recusa
+    Aceite → trigger E11 (Hire & Pré-Onboarding)
+    Recusa → trigger E12 (Arquivamento) + audit + rediscovery embedding
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PROTEÇÕES PREVISTAS PARA E10 (a implementar)                                 │
+│  1. ApprovalChain — chain configurável por valor da proposta ◐               │
+│  2. AuditTrail — log completo de cada rodada de negociação ✗                 │
+│  3. PII Masking — proteger CPF/RG na carta gerada ●                          │
+│  4. ConsentManagement — opt-in já existe (E6) ●                              │
+│  5. OfferLetterTemplate — versionado em `report_templates.py` ✗              │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## E11 — HIRE & PRÉ-ONBOARDING — 5 STEPS  ⚠ STUB (sem integração HRIS)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  LIA — Fluxo Hire & Pré-Onboarding — 5 STEPS                                 │
+│  Status global: STUB — não há conector HRIS, não há `OnboardingKitService`   │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+ 1  Trigger: aceite de proposta confirmado (E10 → E11)
+    Fonte real: ainda manual (pipeline transition para "hired")
+
+ 2  Coleta de documentos do contratado
+    ⚠ STUB — não há fluxo "document collection" pós-hire
+    Existe `process_document` (E0.5) usado para a EMPRESA, NÃO para o candidato
+    Plano: reaproveitar pipeline OCR + `_wrap_save_company_section` adaptado
+
+ 3  Sincronização para HRIS / folha de pagamento
+    ⚠ STUB completo — `integrations_hub` existe como infra, sem conector HR
+    Conectores pendentes: Gupy/Senior/TOTVS RH/SAP SuccessFactors
+    Hoje: ats_integration cobre só ATS de recrutamento (Ag.8 ATSIntegrationReActAgent)
+
+ 4  Geração de "kit de boas-vindas"
+    ⚠ STUB — sem template, sem orquestração
+    Plano: Ag.7 envia email com checklist + dados de acesso
+
+ 5  Handoff para RH operacional
+    Hoje: notificação manual via Teams/email (sem automação)
+    Falta: webhook saída para sistema de onboarding do cliente
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PROTEÇÕES PREVISTAS PARA E11 (a implementar)                                 │
+│  1. CircuitBreaker para HRIS connectors ✗                                    │
+│  2. PII Masking em logs de sync HR ●                                         │
+│  3. Audit do handoff (quem recebeu, quando) ✗                                │
+│  4. LGPD: base legal "execução de contrato" para dados sensíveis ◐           │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## E12 — ARQUIVAMENTO & TALENT POOL — 7 STEPS  ✓ PARCIAL
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  LIA — Fluxo Arquivamento & Talent Pool — 7 STEPS                            │
+│  Status global: ● PARCIAL — `talent_pool` domain existe e funciona           │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+ 1  Trigger: candidato encerrado em qualquer etapa
+    Fontes: rejeição em Gate 1 (E5), Gate 2 (E8), pós-entrevista (E9B),
+            recusa de proposta (E10), perda para concorrente
+    Domínio destino: `talent_pool`
+
+ 2  Classificação de motivo de saída
+    Tool: tag/reason capturado em `talent_pool/actions.py`
+    🧠 LearningLoop usa motivo para ajustar score em rediscovery
+    🔒 FairnessGuard: motivos não-discriminatórios (regra L2)
+
+ 3  Adicionar a Talent Pool
+    POST /api/v1/talent_pools/{pool_id}/add_candidates  ●
+    TalentPoolDomain.process_intent → `add_candidates_to_pool`
+    Pool é tipado: por skill, por sector, por nível, custom
+    Capabilities: `lia-agent-system/app/domains/talent_pool/config/capabilities.yaml`
+
+ 4  Gerar embedding de rediscovery (rediscovery embedding)
+    🧠 _generate_rediscovery_embedding (Gemini text-embedding-004, 768-dim)
+    Salvo via embedding_cache_service.py
+    Reutilizado por SourcingReActAgent quando vaga similar abrir (E4)
+
+ 5  Comunicação ao candidato (opt-in para pool)
+    Ag.7 envia email/WhatsApp explicando: "ficou na nossa base"
+    🔒 ConsentManagement: candidato pode revogar a qualquer momento
+    🔒 LGPD: TTL de retenção configurável (default 24 meses)
+
+ 6  Migração para nova vaga (silver medalist)
+    POST /api/v1/talent_pools/{pool_id}/move_to_job  ●
+    POST /api/v1/talent_pools/{pool_id}/create_job_from_pool  ●
+    Service: `silver_medalist_service.py` ●
+    Reativa fluxo a partir de E4 (busca) com embedding já calculado
+
+ 7  AuditTrail + métricas de pool
+    🔒 Audit: log de inclusão / migração ◐
+    🧠 Pool stats: tamanho, taxa de rediscovery, time-to-rediscovery
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PROTEÇÕES ATIVADAS NESTE FLUXO (E12)                                         │
+│  1. ConsentManagement — opt-in obrigatório ●                                 │
+│  2. FairnessGuard L2 — motivos não-discriminatórios ●                        │
+│  3. LGPD TTL — retenção configurável ●                                       │
+│  4. PII Masking — ativo globalmente ●                                        │
+│  5. Rediscovery embedding — silver medalist ●                                │
+│  6. AuditTrail — inclusão em pool ◐ (precisa ativar)                         │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## E13 — PÓS-DECISÃO ANALÍTICO — 6 STEPS  ⚠ STUB (NPS) / PARCIAL (analytics)
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  LIA — Fluxo Pós-Decisão Analítico — 6 STEPS                                 │
+│  Status global: NPS = STUB | Analytics base = ● parcial                      │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+ 1  Trigger: vaga FECHADA (vai para E14) ou candidato HIRED/REJECTED
+    Domínios envolvidos: `analytics`, `journey_mapping`, `recruitment_journey`
+
+ 2  Cálculo de Quality of Hire (QoH)
+    ⚠ STUB — não há `quality_of_hire_service.py`; métrica não calculada
+    Plano: ML model em `services/ml/` (diretório existe, sem modelo de QoH ainda)
+    Sinais previstos: tempo de permanência, performance review, NPS gestor
+
+ 3  Cálculo de Time-to-Hire e Cost-per-Hire
+    ◐ Parcial — `recruiter_metrics.py` e `saas_metrics.py` existem
+    Métricas de funil já calculadas (talent_funnel.py)
+    Falta: agregação por vaga + custo (custo = STUB)
+
+ 4  Coleta de NPS (recrutador & candidato)
+    ⚠ STUB completo — não há endpoint NPS, não há schema
+    Existe `lia_feedback.py` (thumbs/rating/correction) — mas é feedback
+       sobre o AGENTE LIA, não NPS do processo de recrutamento
+    Plano: novo domínio `nps` + survey via Ag.7 após T+7 dias do hire
+
+ 5  Análise de viés agregada (Bias Audit)
+    Endpoint: GET /api/v1/admin/bias_audit  ●
+    Dashboard: `admin_bias_audit.py` ● (rota existe; UI = STUB)
+    Four-Fifths Rule: implementada em `bias_audit.py`
+    Audit dimensions: gender, ethnicity, age, region
+
+ 6  Persistência em data lake / warehouse
+    ⚠ STUB — sem export programado para BI externo
+    Hoje: dados ficam em Postgres (consultados via reports.py)
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PROTEÇÕES ATIVADAS / PREVISTAS NESTE FLUXO (E13)                             │
+│  1. Bias Audit — Four-Fifths Rule ● (cálculo) ◐ (UI)                         │
+│  2. PII Masking em métricas agregadas ●                                      │
+│  3. LGPD: anonimização para analytics ◐                                      │
+│  4. NPS pipeline ✗ (STUB)                                                    │
+│  5. QoH ML model ✗ (STUB)                                                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## E14 — CLOSING DA VAGA — 5 STEPS  ⚠ MAJORITARIAMENTE STUB
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  LIA — Fluxo Closing da Vaga — 5 STEPS                                       │
+│  Status global: STUB — falta orquestração de "fechamento" formal             │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+ 1  Trigger: vaga atinge condição de fechamento
+    Condições: hired_count >= openings | cancelled by company | expirou SLA
+    Hoje: status muda manualmente em `job_management` (sem automação)
+
+ 2  Notificar candidatos ainda em processo
+    Reaproveita Ag.7 CommunicationReActAgent + template "vaga encerrada"
+    ⚠ Template específico = STUB (usa template genérico de feedback)
+    🔒 LGPD: comunicação por base legal "interesse legítimo"
+
+ 3  Mover candidatos remanescentes para Talent Pool
+    Reusa fluxo de E12 (silver medalist)
+    ● Funciona via `move_to_job` reverso (mover para pool default)
+
+ 4  Lockdown da vaga (read-only)
+    ⚠ STUB — não há flag `is_closed` aplicando read-only nos endpoints
+    Plano: middleware em `pipeline.py` + `job_management.py`
+
+ 5  Gerar relatório executivo de fechamento
+    ◐ Parcial — `reports.py` tem `/preview/{report_type}` mas sem template "closing"
+    Plano: novo `report_templates.py::closing_report` (Claude)
+    Conteúdo previsto: time-to-fill, custos, candidatos avaliados, decisões
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PROTEÇÕES ATIVADAS / PREVISTAS NESTE FLUXO (E14)                             │
+│  1. Audit do fechamento (quem, quando, motivo) ✗ (STUB)                      │
+│  2. Lockdown / read-only ✗ (STUB)                                            │
+│  3. LGPD: comunicação em base legal correta ●                                │
+│  4. Talent Pool migration ● (reusa E12)                                      │
+│  5. Closing report ✗ (template ausente)                                      │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## E15 — REPORTING & DASHBOARDS — 7 STEPS  ✓ PARCIAL
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  LIA — Fluxo Reporting & Dashboards — 7 STEPS                                │
+│  Status global: ● PARCIAL — endpoints existem; UI parcial; BI externo = STUB │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+ 1  HTTP Request: relatório operacional
+    POST /api/v1/reports/candidate                ●
+    POST /api/v1/reports/comparison               ●
+    POST /api/v1/reports/daily-briefing/send      ● (digest/diário)
+    POST /api/v1/reports/weekly/send              ●
+    POST /api/v1/reports/monthly/send             ●
+    GET  /api/v1/reports/preview/{report_type}    ● (HTML/JSON)
+
+ 2  Ag.7 + Templates de relatório
+    Templates em `app/templates/report_templates.py` ●
+    LLM: Claude (mesma stack do JD/feedback)
+    🔒 PII Masking ativo no preview HTML
+
+ 3  Dashboards executivos (frontend Next.js)
+    GET /api/v1/admin/agent_quality_dashboard     ●
+    GET /api/v1/agent_quality_dashboard/*         ●
+    GET /api/v1/calibration_dashboard_v2          ●
+    GET /api/v1/ml_predictions_dashboard          ●
+    GET /api/v1/rh_dashboard                      ●
+    UI: alguns hubs em `/admin/*` ◐ (parcial)
+
+ 4  Métricas SaaS internas (governança)
+    Endpoints `saas_metrics.py` ● — MRR, churn, NPS produto, ativação
+    Schema dedicado: `app/schemas/saas_metrics.py`
+    Uso: WeDO Talent (governança) — não exposto ao cliente final
+
+ 5  WSI Reports (qualidade do screening)
+    Sub-router: `app/api/v1/wsi/reports.py` ●
+    Métricas: distribuição de scores, taxa de aprovação por dimensão Bloom
+
+ 6  Export para BI externo
+    ⚠ STUB — não há job de export para Snowflake/BigQuery/Looker
+    Hoje: clientes consomem via API REST direto (rate-limited)
+
+ 7  Alerts proativos
+    Endpoint: `alerts.py` ● — define regras
+    Engine: `early_warning.py` ● — dispara via webhook/email
+    🧠 ProactiveActions (`proactive_actions.py`) — sugere ações no chat
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PROTEÇÕES ATIVADAS NESTE FLUXO (E15)                                         │
+│  1. PII Masking em todo preview ●                                            │
+│  2. RBAC por relatório (admin vs recruiter) ●                                │
+│  3. Audit de download de relatório ◐                                         │
+│  4. LGPD: anonimização em métricas agregadas ◐                               │
+│  5. BI export ✗ (STUB)                                                       │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## E16 — FEEDBACK LOOP (CONTÍNUO) — 6 STEPS  ✓ PARCIAL
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  LIA — Fluxo de Feedback Loop Contínuo — 6 STEPS                             │
+│  Status global: ● PARCIAL — feedback do AGENTE = sólido; do PROCESSO = STUB  │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+ 1  Captura de feedback do usuário sobre o agente LIA
+    POST /api/v1/lia_feedback/thumbs       ●  (👍/👎 por mensagem)
+    POST /api/v1/lia_feedback/rating       ●  (1-5 estrelas)
+    POST /api/v1/lia_feedback/correction   ●  (correção textual)
+    GET  /api/v1/lia_feedback/metrics      ●
+    GET  /api/v1/lia_feedback/by-conversation/{session_id}  ●
+    POST /api/v1/lia_feedback/regenerate   ●  (regerar resposta após 👎)
+
+ 2  Persistência + agregação
+    Tabela `lia_feedback` em Postgres
+    Agregado por agente / domínio / tier do CascadedRouter
+
+ 3  Drift detection
+    Service: `golden_drift_monitor.py` ●
+    Endpoint: `app/api/v1/drift.py` ●
+    Dispara alerta quando taxa de 👎 sobe acima do baseline
+
+ 4  Few-shot evolution (auto-improvement)
+    Service: `fewshot_evolution_service.py` ●
+    Pega correções (correction) e propõe novos few-shots para o prompt
+    🔒 Aprovação humana obrigatória (HITL) antes de promover
+
+ 5  Suggestion feedback (E2E sourcing/triagem)
+    Endpoint: `suggestion_feedback.py` ●
+    Captura aceitação/rejeição de sugestões do agente em E4/E5/E8
+
+ 6  Feedback do PROCESSO (recrutador & candidato sobre experiência)
+    ⚠ STUB — não há captura estruturada de NPS do processo de recrutamento
+    (mesma lacuna apontada em E13.4)
+    Plano: convergir com pipeline NPS de E13
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PROTEÇÕES ATIVADAS NESTE FLUXO (E16)                                         │
+│  1. PII Masking em correções textuais ●                                      │
+│  2. HITL em few-shot evolution ●                                             │
+│  3. Drift detection automático ●                                             │
+│  4. RBAC: feedback agregado só para admin ●                                  │
+│  5. Audit de cada thumbs/rating/correction ◐                                 │
+│  6. NPS do processo ✗ (STUB — converge com E13)                             │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## SEÇÃO TRANSVERSAL: GOVERNANÇA TÉCNICA
 
 ### Policy Engine — Motor de Políticas por Setor
@@ -1802,6 +2151,165 @@ Princípios aplicados:
 │  Long-term memory          │ Compressão 30d  │ Anonimizado                   │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## SEÇÃO TRANSVERSAL: CT — CHAT UNIFIED COMO ENTRADA MVP
+
+> **Premissa do MVP**: o `UnifiedChat` é a **superfície primária** de interação com a LIA. Todo
+> hub de UI (Configurações, Vagas, Kanban, Triagem, Onboarding) é um *fallback formal* —
+> a entrada conversacional precede e gera as ações da UI.
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  CT — Chat Unified (transversal a TODAS as etapas E0–E16)                    │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+ 1  Componentização (frontend)
+    Pasta: plataforma-lia/src/components/unified-chat/
+      • UnifiedChat.tsx               (raiz; 3 render modes: floating, panel, page)
+      • UnifiedChatHeader.tsx         (título contextual + ações rápidas)
+      • UnifiedChatBubble.tsx         (renderização por role + cards especiais)
+      • UnifiedChatInput.tsx          (input + slash commands + mentions + uploads)
+      • UnifiedMessageList.tsx        (virtualizada; auto-scroll inteligente)
+      • UnifiedChatEmptyState.tsx     (sugestões iniciais por contexto)
+      • UnifiedChatConditional.tsx    (gating por feature flag / role)
+      • DashboardChatPanel.tsx        (modo "panel" usado no dashboard)
+      • ChatPageFullscreen.tsx        (modo "page" — onboarding, /chat)
+      • InlineChatBridge.tsx          (chat embutido em hubs de Configurações)
+      • SmartSuggestions.tsx          (chips de próxima ação)
+      • SlashCommandDropdown.tsx + slash-commands.ts (catálogo /comandos)
+      • MentionDropdown.tsx + useMentionAutocomplete.ts (@vaga, @candidato)
+      • useSmartFileUpload.ts         (drop de PDF/DOCX → process_document)
+      • useInputDropdown.ts           (orquestração unificada dos popups)
+      • LgpdConsentDialog.tsx         (modal de consent inline no chat)
+      • FairnessWarningBanner.tsx     (banner quando FairnessGuard L1/L2 alerta)
+      • ContextConfigPanel.tsx        (debug: ver contexto enviado ao agente)
+      • NavigationHintCard.tsx        (sugere navegar para hub específico)
+      • OutreachCard.tsx, TastingInsightCard.tsx, ThinkingStepsCard.tsx
+        (cards estruturados retornados pelos agentes)
+      • TransportModeIndicator.tsx    (indica SSE vs WebSocket vs polling)
+      • wizard/                       (subfluxo do WizardReActAgent dentro do chat)
+
+ 2  Transporte (frontend ↔ backend)
+    Primário:  POST /api/v1/agent_chat_sse  (SSE streaming)             ●
+    Fallback:  WS   /api/v1/agent_chat_ws   (full duplex)               ●
+    Retry:     auto downgrade SSE → WS → polling
+    Indicador visual: TransportModeIndicator.tsx mostra modo ativo
+
+ 3  Roteamento por intenção (backend)
+    Toda mensagem → CascadedRouter (8 tiers — ver E0)
+    Tier 0: MemoryResolver (resolve "ele/ela/aquele candidato")
+    Tier 1-3: caches (LRU + Redis + pgvector)
+    Tier 4: FastRouter (regex/keyword)
+    Tier 5: LLM Cascade (Haiku → Sonnet → Opus) — A/B variant via prompt_experiment
+    Tier 6: AutonomousReActAgent (cross-domain fallback)
+    Tier 7 (fallback): clarification_needed → pergunta no chat
+
+ 4  Slash commands (entrada direta de ação)
+    Catálogo: slash-commands.ts (testes em slash-commands.test.ts)
+    Exemplos: /vaga novo, /candidato buscar, /triagem iniciar,
+              /agendar, /relatorio diario, /onboarding continuar
+    Cada / equivale a uma `action_id` específica — pula CascadedRouter
+
+ 5  Mentions e contexto
+    @vaga:<id> e @candidato:<id> injetam entidade no contexto do turno
+    useMentionAutocomplete.ts faz lookup via /api/v1/autocomplete
+
+ 6  Eventos cross-component (event bus de janela)
+    `lia:settings-action`     → hub dispara ação para o chat executar
+    `lia:settings-success`    → chat avisa hub que persistiu (E0.5, T003)
+    `lia:settings-error`      → chat avisa hub que falhou
+    `lia:settings-updated`    → hub avisa chat que houve save pela UI (T004)
+    `lia:onboarding-progress` → progresso 7-actions (E0.5)
+    `lia:navigate`            → NavigationHintCard solicita rota
+    Broadcaster condicional: SettingsSyncBroadcaster (shell incondicional
+    em dashboard-app.tsx — ativo em Configurações, Chat e demais hubs)
+
+ 7  Integração com OnboardingChatPage (E0.5)
+    OnboardingChatPage.tsx hospeda UnifiedChat em modo "page" + state machine
+    de 7 ações; cada step do onboarding emite/escuta eventos do item 6 acima.
+
+ 8  Cards estruturados retornados por agentes
+    OutreachCard         → Ag.7 sugere mensagem de outreach
+    TastingInsightCard   → Ag.4/Ag.5 explica score WSI
+    ThinkingStepsCard    → mostra passos do ReAct (debug-friendly)
+    NavigationHintCard   → Ag.0 sugere abrir hub específico
+
+ 9  Proteções aplicadas em CADA turno
+    🔒 FairnessGuard L1 (pré-roteamento) — mensagem do usuário
+    🔒 PII Masking — sempre ativo nas requests/logs
+    🔒 ConsentManagement — bloqueia ações de outreach sem opt-in
+    🔒 LgpdConsentDialog — modal inline antes de coletar dados sensíveis
+    🔒 FairnessWarningBanner — alerta visível ao usuário (transparência)
+    🧠 LongTermMemory — episódios salvos por agente
+    🧠 Few-shot evolution — correções via lia_feedback alimentam prompts
+
+10  Status de cobertura por hub (entrada conversacional)
+    ● Vagas (E2/E3)           — WizardReActAgent dentro do chat
+    ● Funil (E4)              — TalentReActAgent
+    ● Kanban (E5/E8)          — KanbanReActAgent
+    ● Triagem (E7)            — WSIInterviewGraph
+    ● Agendamento (E9A)       — InterviewGraph
+    ● Configurações (E0.5)    — 7 actions via process_document/save_*
+    ◐ Talent Pool (E12)       — domain existe; comandos de chat parciais
+    ◐ Reports (E15)           — endpoints existem; comandos de chat parciais
+    ✗ Proposta (E10)          — STUB
+    ✗ Hire / HRIS (E11)       — STUB
+    ✗ Closing (E14)           — STUB
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PROTEÇÕES TRANSVERSAIS DO CHAT UNIFIED                                       │
+│  1. Anti-Sycophancy — perfil ORCHESTRATOR no router ●                        │
+│  2. FairnessGuard L1+L2 (todo turno) ●                                       │
+│  3. PII Masking ●                                                            │
+│  4. ConsentManagement ●                                                      │
+│  5. Rate limiting por user/company ●                                         │
+│  6. CircuitBreaker em cada provider LLM ●                                    │
+│  7. Audit por turno ◐ (precisa expansão por agente)                          │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## TABELA CONSOLIDADA — STATUS DAS 16 ETAPAS + TRANSVERSAIS
+
+Legenda: ● implementado · ◐ parcial · ✗ stub / ausente
+
+| Etapa | Nome | Domínio principal | Agente principal | Status |
+|-------|------|-------------------|------------------|--------|
+| E0    | Arquitetura de IA (camada cognitiva)         | orchestrator              | Ag.0 MainOrchestrator       | ●  |
+| E0.5  | Onboarding proativo + Configurações 7-actions| company_settings          | Ag.0 + process_document     | ●  |
+| E1    | Login                                        | auth                      | —                           | ●  |
+| E2    | Editar/criar vaga                            | job_management            | WizardReActAgent            | ●  |
+| E3    | Configurar roteiro WSI                       | cv_screening              | WSIQuestionGenerator        | ●  |
+| E4    | Buscar candidatos (funil)                    | sourcing + cv_screening   | Ag.2 SourcingReAct + Ag.3   | ●  |
+| E5    | Aprovar mapeados (Gate 1)                    | pipeline                  | KanbanReAct + PipelineTrans.| ●  |
+| E6    | Contato via email + follow-up                | communication             | Ag.7 CommunicationReAct     | ●  |
+| E7    | Triagem WSI                                  | cv_screening              | Ag.4 WSIInterviewGraph      | ●  |
+| E7A   | Triagem abandonada                           | cv_screening              | Ag.4 (timeout handler)      | ●  |
+| E7B   | Feedback pós-triagem                         | cv_screening              | Ag.4 + Ag.7                 | ●  |
+| E8    | Aprovar/reprovar triados (Gate 2)            | pipeline                  | KanbanReAct + PipelineTrans.| ●  |
+| E9A   | Agendar entrevista                           | interview_scheduling      | Ag.6 InterviewGraph         | ●  |
+| E9B   | Enviar feedback (reprovado)                  | communication + cv_screen | Ag.7 + PersonalizedFeedback | ●  |
+| E10   | Proposta & Negociação                        | (sem domínio dedicado)    | Ag.7 (parcial)              | ✗  |
+| E11   | Hire & Pré-Onboarding                        | (sem domínio dedicado)    | (sem agente)                | ✗  |
+| E12   | Arquivamento & Talent Pool                   | talent_pool               | TalentPoolDomain            | ◐  |
+| E13   | Pós-decisão Analítico                        | analytics + journey_map.  | (parcial via reports/bias)  | ◐  |
+| E14   | Closing da vaga                              | job_management            | (sem orquestração)          | ✗  |
+| E15   | Reporting & Dashboards                       | analytics + saas_metrics  | Ag.7 (templates)            | ◐  |
+| E16   | Feedback Loop (contínuo)                     | ai (lia_feedback)         | drift + fewshot evolution   | ◐  |
+| **CT**| **Chat Unified (entrada MVP — transversal)** | **chat / orchestrator**   | **Ag.0 + 8-tier Cascade**   | ●  |
+
+**Resumo de cobertura MVP**:
+- **Sólidas (●)**: 14 etapas — E0, E0.5, E1–E9B, CT
+- **Parciais (◐)**: 4 etapas — E12, E13, E15, E16
+- **Stubs (✗)**: 3 etapas — E10, E11, E14 (todas pós-decisão / contratação)
+
+> **Conclusão técnica**: o MVP cobre o ciclo completo *atrair → triar → decidir*
+> com qualidade. O ciclo *contratar → onboardear → analisar QoH* (E10/E11/E14)
+> permanece como STUB e é o principal vetor de trabalho pós-MVP, junto com a
+> camada de ML para Quality of Hire e o pipeline de NPS estruturado (E13/E16).
 
 ---
 
