@@ -195,6 +195,7 @@ interface KanbanColumnRendererProps {
   onSendFeedback: (candidate: KanbanCandidate) => void
   onApproveFromScreening: (candidate: KanbanCandidate) => void
   onRejectFromScreening: (candidate: KanbanCandidate) => void
+  onManageProposal?: (candidate: KanbanCandidate) => void
   onInlineRename: (stageId: string, newName: string) => void
   onInlineToggleActive: (stageId: string, isActive: boolean) => void
   onInlineRemove: (stageId: string) => void
@@ -260,6 +261,7 @@ export function KanbanColumnRenderer({
   onSendFeedback,
   onApproveFromScreening,
   onRejectFromScreening,
+  onManageProposal,
   onInlineRename,
   onInlineToggleActive,
   onInlineRemove,
@@ -460,6 +462,7 @@ export function KanbanColumnRenderer({
                 onApproveFromScreening={onApproveFromScreening as (c: unknown) => void}
                 onRejectFromScreening={onRejectFromScreening as (c: unknown) => void}
                 openTransition={openTransition as (candidates: unknown[], fromStage: string, toStage: string) => void}
+                onManageProposal={onManageProposal ? (onManageProposal as (c: unknown) => void) : undefined}
               />
             }
             footerDivider={false}
