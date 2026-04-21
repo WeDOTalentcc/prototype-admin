@@ -1069,8 +1069,6 @@
     "closing": "Encerramento",
     "liaSuggestions": "{count, plural, one {# sugestão da LIA} other {# sugestões da LIA}}",
     "comingSoon": "Em breve",
-    "comingSoonStages": "Em breve: Configuração de etapas do funil",
-    "configureStages": "Configurar Etapas",
     "report": "Relatório",
     "shareMode": "Modo Compartilhamento",
     "shareModeDescription": "Todos os candidatos foram selecionados. Ajuste a seleção e clique em Compartilhar na barra de ações.",

@@ -1069,8 +1069,6 @@
     "closing": "Closing",
     "liaSuggestions": "{count, plural, one {# LIA suggestion} other {# LIA suggestions}}",
     "comingSoon": "Coming soon",
-    "comingSoonStages": "Coming soon: Pipeline stage configuration",
-    "configureStages": "Configure Stages",
     "report": "Report",
     "shareMode": "Share Mode",
     "shareModeDescription": "All candidates have been selected. Adjust the selection and click Share in the action bar.",
