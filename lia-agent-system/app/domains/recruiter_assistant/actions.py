@@ -8,6 +8,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Gera briefing diário personalizado para o recrutador com prioridades do dia, candidatos aguardando ação, SLAs em risco e agenda de entrevistas. Aciona automaticamente pela manhã ou quando recruiter pede 'o que tenho para hoje?'.",
         requires_confirmation=False,
         tags=["briefing", "daily", "delegate_to_agent"],
+        examples=('briefing diário', 'quero briefing diário'),
     ),
     DomainAction(
         action_id="end_of_day_summary",
@@ -15,6 +16,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Gera resumo de encerramento do dia com ações realizadas, pendências e destaques. Aciona no fim do expediente para registro e planejamento do dia seguinte.",
         requires_confirmation=False,
         tags=["summary", "daily", "delegate_to_agent"],
+        examples=('resumo do dia', 'quero resumo do dia'),
     ),
     DomainAction(
         action_id="quick_question",
@@ -22,6 +24,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Responde pergunta rápida do recrutador sobre candidato, vaga ou processo sem roteamento para domínio especializado. Aciona para perguntas simples de contexto ou verificações rápidas.",
         requires_confirmation=False,
         tags=["question", "quick", "delegate_to_agent"],
+        examples=('pergunta rápida', 'quero pergunta rápida'),
     ),
     DomainAction(
         action_id="plan_day",
@@ -29,6 +32,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Ajuda o recrutador a planejar e priorizar as atividades do dia baseado em pipeline, SLAs e metas. Aciona quando recruiter pede ajuda para organizar agenda ou não sabe por onde começar.",
         requires_confirmation=False,
         tags=["planning", "productivity", "delegate_to_agent"],
+        examples=('planejar dia', 'quero planejar dia'),
     ),
     DomainAction(
         action_id="pipeline_health",
@@ -36,6 +40,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Analisa a saúde geral do pipeline de recrutamento: vagas com risco, candidatos parados, SLAs vencidos e volume total. Aciona quando recruiter quer visão consolidada de todos os processos.",
         requires_confirmation=False,
         tags=["pipeline", "health", "analysis"],
+        examples=('saúde do pipeline', 'quero saúde do pipeline'),
     ),
     DomainAction(
         action_id="stale_candidates",
@@ -43,6 +48,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Identifica e lista candidatos que estão parados em etapas sem movimento há mais de N dias. Aciona para limpeza proativa de pipeline ou quando recruiter quer reativar candidatos esquecidos.",
         requires_confirmation=False,
         tags=["candidates", "stale", "pipeline"],
+        examples=('candidatos parados', 'quero candidatos parados'),
     ),
     DomainAction(
         action_id="move_candidate",
@@ -50,6 +56,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Move candidato para etapa específica do pipeline com confirmação e registro. Requer confirmação. Aciona quando recruiter quer mover candidato sem abrir tela de candidatura.",
         requires_confirmation=True,
         tags=["candidate", "move", "stage"],
+        examples=('move o candidato João para entrevista', 'avança este candidato pra próxima etapa'),
     ),
     DomainAction(
         action_id="suggest_action",
@@ -57,6 +64,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Sugere a próxima melhor ação para um candidato ou vaga usando IA baseada no contexto atual. Aciona quando recruiter está indeciso ou quer recomendação do assistente.",
         requires_confirmation=False,
         tags=["suggestion", "action", "ai", "delegate_to_agent"],
+        examples=('sugere isso', 'recomenda isso'),
     ),
     DomainAction(
         action_id="search_context",
@@ -64,6 +72,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Busca no histórico de conversas e memória persistente por contexto relevante sobre candidato, vaga ou situação. Aciona quando recruiter referencia algo discutido anteriormente.",
         requires_confirmation=False,
         tags=["search", "context", "history"],
+        examples=('busca isso', 'quero encontrar isso'),
     ),
     DomainAction(
         action_id="save_memory",
@@ -71,6 +80,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Salva informação importante na memória persistente para referência futura (preferências de candidato, acordos com cliente, etc.). Aciona quando recruiter diz 'anota isso' ou quer preservar contexto.",
         requires_confirmation=False,
         tags=["memory", "save", "persistent"],
+        examples=('salvar memória', 'quero salvar memória'),
     ),
     DomainAction(
         action_id="recall_memory",
@@ -78,6 +88,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Recupera informação da memória persistente sobre candidato, vaga ou decisão anterior. Aciona quando recruiter pergunta 'o que você sabe sobre X?' ou referencia informação anterior.",
         requires_confirmation=False,
         tags=["memory", "recall", "search"],
+        examples=('recuperar memória', 'quero recuperar memória'),
     ),
     DomainAction(
         action_id="conversation_summary",
@@ -85,6 +96,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Gera resumo estruturado da conversa atual com pontos-chave, decisões e próximas ações. Aciona quando recruiter pede resumo ou ao fim de conversa longa.",
         requires_confirmation=False,
         tags=["conversation", "summary"],
+        examples=('resumo da conversa', 'quero resumo da conversa'),
     ),
     DomainAction(
         action_id="kanban_analysis",
@@ -92,6 +104,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Analisa o quadro Kanban de recrutamento com IA identificando padrões, gargalos e oportunidades de otimização. Aciona quando recruiter quer análise estratégica do fluxo de candidatos.",
         requires_confirmation=False,
         tags=["kanban", "analysis", "ai"],
+        examples=('análise do kanban', 'quero análise do kanban'),
     ),
     DomainAction(
         action_id="calibrate_profile",
@@ -99,6 +112,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Calibra o perfil ideal de candidato para a vaga com base no feedback do recruiter sobre candidatos vistos. Aciona quando triagem está retornando candidatos fora do perfil desejado.",
         requires_confirmation=False,
         tags=["calibration", "profile", "delegate_to_agent"],
+        examples=('calibra isso', 'ajusta isso'),
     ),
     DomainAction(
         action_id="send_notification",
@@ -106,6 +120,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Envia notificação proativa para o recrutador sobre evento crítico (candidato que vai desistir, SLA em risco). Aciona automaticamente pela IA ao detectar situação que requer atenção imediata.",
         requires_confirmation=False,
         tags=["notification", "proactive"],
+        examples=('envia isso', 'manda isso'),
     ),
     DomainAction(
         action_id="track_goals",
@@ -113,6 +128,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Acompanha o progresso das metas de recrutamento do período (vagas fechadas, tempo médio, candidatos contratados). Aciona quando recruiter quer ver performance ou relatório para liderança.",
         requires_confirmation=False,
         tags=["goals", "tracking", "metrics"],
+        examples=('acompanhar metas', 'quero acompanhar metas'),
     ),
     DomainAction(
         action_id="generate_insights",
@@ -120,6 +136,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Gera insights proativos sobre padrões de sourcing, efetividade de canais e oportunidades de melhoria. Aciona semanalmente ou quando recruiter pede análise de desempenho.",
         requires_confirmation=False,
         tags=["insights", "proactive", "delegate_to_agent"],
+        examples=('gera isso', 'crie isso'),
     ),
     DomainAction(
         action_id="compare_candidates",
@@ -127,6 +144,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Faz comparação rápida entre candidatos selecionados com análise de pontos fortes, gaps e recomendação. Aciona quando recruiter tem dúvida entre dois ou mais finalistas.",
         requires_confirmation=False,
         tags=["candidates", "comparison", "delegate_to_agent"],
+        examples=('compara candidato', 'compara estes candidato'),
     ),
     DomainAction(
         action_id="stage_recommendation",
@@ -134,6 +152,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Recomenda próxima etapa ideal para candidato baseado em score, perfil e histórico do processo. Aciona quando recruiter pede orientação sobre como avançar com candidato específico.",
         requires_confirmation=False,
         tags=["stage", "recommendation", "delegate_to_agent"],
+        examples=('recomendar etapa', 'quero recomendar etapa'),
     ),
     DomainAction(
         action_id="proactive_alerts",
@@ -141,6 +160,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Lista e prioriza alertas proativos do pipeline: SLA vencidos, candidatos parados, vagas sem movimento, risco de perda. Aciona no início do dia ou quando recruiter pede 'o que precisa de atenção?'.",
         requires_confirmation=False,
         tags=["alerts", "proactive", "monitoring"],
+        examples=('alertas proativos', 'quero alertas proativos'),
     ),
     DomainAction(
         action_id="autonomous_actions",
@@ -148,6 +168,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Lista e gerencia ações autônomas executadas pela LIA (emails enviados, candidatos movidos) para revisão e auditoria. Aciona quando recruiter quer saber o que a IA fez ou revisar ações automáticas.",
         requires_confirmation=False,
         tags=["autonomous", "actions", "automation"],
+        examples=('ações autônomas', 'quero ações autônomas'),
     ),
     DomainAction(
         action_id="stakeholder_notify",
@@ -155,6 +176,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Detecta decisões pendentes de hiring managers e dispara notificações com escalação automática. Aciona quando candidato está aguardando decisão do gestor há mais do prazo acordado.",
         requires_confirmation=False,
         tags=["stakeholder", "notification", "escalation", "hiring_manager"],
+        examples=('notifica sobre isso', 'avisa sobre isso'),
     ),
     DomainAction(
         action_id="learning_insights",
@@ -162,6 +184,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Apresenta o que a LIA aprendeu com contratações anteriores: padrões de sucesso, preditores de performance e calibrações. Aciona quando recruiter quer entender o aprendizado do sistema.",
         requires_confirmation=False,
         tags=["learning", "insights", "outcomes", "feedback"],
+        examples=('insights de aprendizado', 'quero insights de aprendizado'),
     ),
     DomainAction(
         action_id="help_command",
@@ -169,5 +192,6 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Mostra lista de comandos, funcionalidades disponíveis e exemplos de uso para orientar o recruiter. Aciona quando recruiter digita 'ajuda', 'help' ou está perdido na plataforma.",
         requires_confirmation=False,
         tags=["help", "commands"],
+        examples=('ajuda', 'quero ajuda'),
     ),
 ]

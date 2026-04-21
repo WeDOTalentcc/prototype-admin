@@ -9,6 +9,7 @@ ANALYTICS_ACTIONS = [
         required_params=["job_id"],
         optional_params=["period", "format"],
         requires_confirmation=False,
+        examples=('gera KPIs', 'crie KPIs'),
     ),
     DomainAction(
         action_id="analyze_funnel",
@@ -17,6 +18,7 @@ ANALYTICS_ACTIONS = [
         required_params=["job_id"],
         optional_params=["period", "stages"],
         requires_confirmation=False,
+        examples=('analisa isso', 'avalia isso'),
     ),
     DomainAction(
         action_id="job_health_check",
@@ -25,6 +27,7 @@ ANALYTICS_ACTIONS = [
         required_params=["job_id"],
         optional_params=[],
         requires_confirmation=False,
+        examples=('checa vaga', 'verifica vaga'),
     ),
     DomainAction(
         action_id="detect_anomalies",
@@ -33,6 +36,7 @@ ANALYTICS_ACTIONS = [
         required_params=[],
         optional_params=["job_id", "metric", "threshold"],
         requires_confirmation=False,
+        examples=('detecta isso', 'identifica isso'),
     ),
     DomainAction(
         action_id="compare_periods",
@@ -41,6 +45,7 @@ ANALYTICS_ACTIONS = [
         required_params=["period_a", "period_b"],
         optional_params=["job_id", "metrics"],
         requires_confirmation=False,
+        examples=('compara isso', 'compara estes isso'),
     ),
     DomainAction(
         action_id="forecast",
@@ -49,6 +54,7 @@ ANALYTICS_ACTIONS = [
         required_params=[],
         optional_params=["job_id", "metric", "horizon_days"],
         requires_confirmation=False,
+        examples=('previsão de métricas', 'quero previsão de métricas'),
     ),
     DomainAction(
         action_id="suggest_strategy",
@@ -57,6 +63,7 @@ ANALYTICS_ACTIONS = [
         required_params=["job_id"],
         optional_params=["context", "goals"],
         requires_confirmation=False,
+        examples=('minha vaga tá parada, o que faço?', 'sugere mudança de estratégia de sourcing'),
     ),
     DomainAction(
         action_id="answer_data_question",
@@ -65,6 +72,7 @@ ANALYTICS_ACTIONS = [
         required_params=["question"],
         optional_params=["job_id", "context"],
         requires_confirmation=False,
+        examples=('responder pergunta sobre dados', 'quero responder pergunta sobre dados'),
     ),
     DomainAction(
         action_id="get_job_insights",
@@ -73,6 +81,7 @@ ANALYTICS_ACTIONS = [
         required_params=["job_id"],
         optional_params=["include_salary", "include_skills", "include_similar"],
         requires_confirmation=False,
+        examples=('mostra vaga', 'quero ver vaga'),
     ),
     DomainAction(
         action_id="generate_job_report",
@@ -81,6 +90,7 @@ ANALYTICS_ACTIONS = [
         required_params=["job_id"],
         optional_params=["format", "sections"],
         requires_confirmation=False,
+        examples=('gera vaga', 'crie vaga'),
     ),
     DomainAction(
         action_id="generate_candidate_report",
@@ -89,6 +99,7 @@ ANALYTICS_ACTIONS = [
         required_params=["candidate_ids"],
         optional_params=["job_id", "format", "criteria"],
         requires_confirmation=False,
+        examples=('gera candidato', 'crie candidato'),
     ),
     DomainAction(
         action_id="get_search_analytics",
@@ -97,6 +108,7 @@ ANALYTICS_ACTIONS = [
         required_params=[],
         optional_params=["period", "search_type"],
         requires_confirmation=False,
+        examples=('mostra métricas', 'quero ver métricas'),
     ),
     DomainAction(
         action_id="get_wizard_analytics",
@@ -105,6 +117,7 @@ ANALYTICS_ACTIONS = [
         required_params=[],
         optional_params=["period"],
         requires_confirmation=False,
+        examples=('mostra métricas', 'quero ver métricas'),
     ),
     DomainAction(
         action_id="predict_hiring_probability",
@@ -113,6 +126,7 @@ ANALYTICS_ACTIONS = [
         required_params=["job_id"],
         optional_params=["candidate_id"],
         requires_confirmation=False,
+        examples=('prever probabilidade de contratação', 'quero prever probabilidade de contratação'),
     ),
     DomainAction(
         action_id="predict_time_to_fill",
@@ -121,6 +135,7 @@ ANALYTICS_ACTIONS = [
         required_params=["job_id"],
         optional_params=[],
         requires_confirmation=False,
+        examples=('prever tempo de preenchimento', 'quero prever tempo de preenchimento'),
     ),
     DomainAction(
         action_id="predict_dropout_risk",
@@ -129,6 +144,7 @@ ANALYTICS_ACTIONS = [
         required_params=["candidate_id"],
         optional_params=["job_id"],
         requires_confirmation=False,
+        examples=('prever risco de desistência', 'quero prever risco de desistência'),
     ),
     DomainAction(
         action_id="get_dashboard_data",
@@ -137,6 +153,7 @@ ANALYTICS_ACTIONS = [
         required_params=[],
         optional_params=["period", "metrics"],
         requires_confirmation=False,
+        examples=('mostra KPIs', 'quero ver KPIs'),
     ),
     DomainAction(
         action_id="get_agent_monitoring",
@@ -145,5 +162,6 @@ ANALYTICS_ACTIONS = [
         required_params=[],
         optional_params=["agent_type", "period"],
         requires_confirmation=False,
+        examples=('mostra agente', 'quero ver agente'),
     ),
 ]
