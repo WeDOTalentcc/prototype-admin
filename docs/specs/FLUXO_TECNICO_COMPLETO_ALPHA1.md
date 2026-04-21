@@ -1134,43 +1134,162 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  LIA — Triagem por Voz (voice) — VoiceScreeningOrchestrator                  │
 │  Arquivo: app/domains/voice/services/voice_screening_orchestrator.py          │
+│  Stream:  app/api/v1/twilio_voice.py  (WebSocket + TwiML webhooks)            │
+│  Web:     app/api/v1/triagem.py       (browser audio + VoIP fallback)         │
 └──────────────────────────────────────────────────────────────────────────────┘
 
-ENDPOINTS DE CONTROLE:
-  POST /api/v1/triagem/{token}/request-call      → Candidato solicita ligação
-  POST /api/v1/triagem/{token}/whatsapp-initiate → Candidato inicia via WhatsApp
+ENDPOINTS — TWILIO VOICE (8 endpoints PSTN — app/api/v1/twilio_voice.py)
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ Método │ Caminho                                          │ Função           │
+├────────┼──────────────────────────────────────────────────┼──────────────────┤
+│ POST   │ /api/v1/twilio-voice/initiate                    │ Cria chamada     │
+│        │                                                  │ PSTN sob         │
+│        │                                                  │ TWILIO_VOICE_    │
+│        │                                                  │ CIRCUIT; se      │
+│        │                                                  │ aberto/sem       │
+│        │                                                  │ creds → status=  │
+│        │                                                  │ "fallback",      │
+│        │                                                  │ fallback_channel │
+│        │                                                  │ ="whatsapp"      │
+│ POST   │ /api/v1/twilio-voice/greeting                    │ TwiML inicial +  │
+│        │                                                  │ consentimento    │
+│ POST   │ /api/v1/twilio-voice/consent-response            │ Captura "sim/    │
+│        │                                                  │ não" do          │
+│        │                                                  │ candidato        │
+│ POST   │ /api/v1/twilio-voice/status                      │ Webhook de       │
+│        │                                                  │ CallStatus       │
+│ WS     │ /api/v1/twilio-voice/audio-stream?session_id=…   │ Bidirectional    │
+│        │                                                  │ Media Stream —   │
+│        │                                                  │ pipeline μ-law   │
+│ POST   │ /api/v1/twilio-voice/end-call/{session_id}       │ Encerra chamada  │
+│ GET    │ /api/v1/twilio-voice/sessions/{session_id}       │ Estado da sessão │
+│ GET    │ /api/v1/twilio-voice/health                      │ Health-check     │
+│        │                                                  │ (config + estado │
+│        │                                                  │ do circuit)      │
+└──────────────────────────────────────────────────────────────────────────────┘
+  (+ 2 endpoints auxiliares para o cliente VoIP do navegador:
+      POST /api/v1/twilio-voice/voip-token   — emite token JWT do Voice SDK
+      POST /api/v1/twilio-voice/voip-connect — TwiML que liga o cliente VoIP
+                                                ao mesmo /audio-stream)
 
-WEBHOOK TWILIO:
-  POST /api/v1/twilio-voice/status               → Twilio notifica status da chamada
-                                                   (CallStatus: completed/failed/busy/etc.)
+ENDPOINTS — TRIAGEM VOICE (5 endpoints — app/api/v1/triagem.py)
+┌──────────────────────────────────────────────────────────────────────────────┐
+│ Método │ Caminho                                          │ Função           │
+├────────┼──────────────────────────────────────────────────┼──────────────────┤
+│ POST   │ /api/v1/triagem/{token}/voip-start               │ Inicia sessão de │
+│        │                                                  │ voz no browser.  │
+│        │                                                  │ Provider:        │
+│        │                                                  │ Gemini Live      │
+│        │                                                  │ Audio (preferido,│
+│        │                                                  │ ~$0.065/triagem).│
+│        │                                                  │ Se Gemini Live   │
+│        │                                                  │ indisponível →   │
+│        │                                                  │ cai para o chat  │
+│        │                                                  │ (Twilio é PSTN-  │
+│        │                                                  │ only e não cobre │
+│        │                                                  │ este caminho).   │
+│ POST   │ /api/v1/triagem/{token}/audio                    │ Upload de áudio  │
+│        │                                                  │ do browser →     │
+│        │                                                  │ VoiceService.    │
+│        │                                                  │ transcribe_      │
+│        │                                                  │ audio() com      │
+│        │                                                  │ OpenAI Whisper-1 │
+│        │                                                  │ (apenas neste    │
+│        │                                                  │ caminho).        │
+│ POST   │ /api/v1/triagem/{token}/tts                      │ TTS sob demanda  │
+│        │                                                  │ no chat web      │
+│ POST   │ /api/v1/triagem/{token}/tts/{message_id}         │ TTS de uma       │
+│        │                                                  │ mensagem         │
+│        │                                                  │ específica       │
+│ GET    │ /api/v1/triagem/{token}/voice-status             │ Status atual da  │
+│        │                                                  │ sessão de voz    │
+└──────────────────────────────────────────────────────────────────────────────┘
+  (Os disparos /request-call e /whatsapp-initiate continuam descritos em
+   "Triggers de Triagem WSI" — não fazem processamento de áudio.)
+
+PIPELINE DE ÁUDIO EM TEMPO REAL (WebSocket /twilio-voice/audio-stream)
+
+  ┌────────┐  base64    ┌──────────────┐  μ-law 8kHz  ┌──────────────────┐
+  │ Twilio │ ─────────▶ │ b64 decode + │ ───────────▶ │ mulaw_to_wav()   │
+  │ Media  │  payload   │ buffer 8000B │              │ (RIFF WAV header)│
+  │ Stream │            └──────────────┘              └────────┬─────────┘
+  └────────┘                                                   │ WAV mono
+       ▲                                                       ▼
+       │ base64                                       ┌──────────────────┐
+       │ μ-law                                        │ Gemini Flash 2.5 │
+  ┌────┴───────┐                                      │      (STT)       │
+  │ b64 encode │                                      │  — NÃO Whisper   │
+  └────────────┘                                      └────────┬─────────┘
+       ▲                                                       │ transcript
+       │ μ-law 8kHz                                            ▼
+  ┌────┴────────────┐                              ┌──────────────────────┐
+  │ mp3_to_mulaw()  │                              │ generate_lia_        │
+  │ (G.711 transc.) │                              │ response()           │
+  └─────────────────┘                              │  • PII masking       │
+       ▲                                           │  • FairnessGuard     │
+       │ MP3                                       │  • Gemini LLM        │
+  ┌────┴────────────┐                              │  • Scoring           │
+  │ OpenAI TTS      │ ◀────────────────────────────┤    determinístico    │
+  │ (voz da LIA)    │            texto da LIA      └──────────────────────┘
+  └─────────────────┘
+
+  Buffer: 8000 bytes (~1s a 8kHz μ-law) antes de chamar STT.
+  Persistência: _persist_session_state() a cada 2 turnos de fala.
+  Recuperação: get_or_restore_session() — pós-restart via PostgreSQL.
+
+NOTA SOBRE O PROVEDOR DE STT
+  • Pipeline Twilio em produção  → Gemini Flash 2.5 (μ-law → WAV → Gemini API)
+  • Upload de áudio do browser   → OpenAI Whisper-1 (POST /triagem/{token}/audio)
+  • Não há "Whisper genérico" no caminho da chamada telefônica — toda transcrição
+    em chamadas Twilio passa por Gemini Flash 2.5.
+
+CIRCUIT BREAKER E FALLBACK PARA WHATSAPP
+  • TWILIO_VOICE_CIRCUIT envolve a chamada Twilio em initiate_call().
+  • Estados:
+      closed     → chamada PSTN normal
+      open       → /initiate retorna status="fallback",
+                   fallback_channel="whatsapp" (CircuitBreakerError capturado)
+      unconfig.  → mesma resposta de fallback (sem credenciais Twilio)
+  • Caminhos alternativos quando o breaker abre / Twilio não está configurado:
+      1. WhatsApp        → POST /api/v1/triagem/{token}/whatsapp-initiate
+      2. Gemini Live no  → POST /api/v1/triagem/{token}/voip-start
+         navegador         (não usa rede telefônica — Twilio só cobre PSTN)
+      3. Chat web puro   → triagem padrão E7 (sem áudio)
+  • GEMINI_LIVE_CIRCUIT é independente: protege initiate_voip_session() do
+    caminho Gemini Live (browser). Quando aberto, /voip-start cai para chat.
+    Ele NÃO envolve o process_audio_chunk() do pipeline Twilio — naquele
+    caminho, falhas de STT são tratadas via try/except local e ficam sem
+    transcrição naquele turno.
 
 FLUXO INTERNO:
  1  verify_consent(candidate_id, company_id)
-    ConsentCheckerService verifica consentimento para ai_screening
-    Se revogado → não inicia chamada
+    ConsentCheckerService verifica consentimento para ai_screening.
+    Se revogado → não inicia chamada.
 
  2  initiate_call(session, db)
-    Twilio Voice API cria chamada
-    VoiceScreeningOrchestrator.initiate_call() → session criada no DB
+    TWILIO_VOICE_CIRCUIT.call(twilio.calls.create) cria a chamada PSTN.
+    Falha/circuit aberto → status="fallback", fallback_channel="whatsapp".
 
- 3  Pergunta → Resposta → Score (determinístico)
-    LIA faz pergunta via OpenAI TTS
-    Candidato responde por voz
-    Gemini Flash 2.5 STT transcreve resposta (μ-law → WAV → Gemini API)
-    FairnessGuard._check_fairness_on_response() valida resposta
-    Score calculado de forma DETERMINÍSTICA (sem LLM — zero latência)
-    Fallback determinístico se qualquer serviço LLM falhar
+ 3  WebSocket /twilio-voice/audio-stream (pipeline acima)
+    process_audio_chunk(): μ-law → WAV → Gemini Flash 2.5 STT
+    generate_lia_response(): FairnessGuard + Gemini LLM
+    synthesize_lia_response(for_twilio_stream=True): TTS → MP3 → μ-law
+    Scoring por turno é DETERMINÍSTICO (sem LLM — zero latência/viés).
+    Observação: finalize_screening() pode acionar analyze_voice_screening
+    (análise LLM standalone) como fallback se a trilha WSI não estiver
+    disponível.
 
- 4  Persistência e Audit
-    _persist_session_state() salva estado após cada pergunta
-    _mask_transcript_segments() mascara PII na transcrição
-    logger.info() — rastreamento via Python standard logging
-    Transcrição armazenada com PII mascarado (LGPD Art. 12 / SEG-3B)
+ 4  Persistência e logging
+    _persist_session_state() salva o estado da sessão a cada 2 turnos.
+    _mask_transcript_segments() mascara PII na transcrição (LGPD Art. 12).
+    Rastreamento via logger.info — sem AuditTrail estruturado por turno
+    nesta camada (o registro consolidado da sessão é gerado em
+    finalize_screening()/_register_wsi_session()).
 
  5  Finalização
-    finalize_screening(): gera WSIFinalReport
-    _register_wsi_session(): registra no sistema de triagem principal
-    Webhook /api/v1/twilio-voice/status confirma fim da chamada
+    finalize_screening(): gera WSIFinalReport.
+    _register_wsi_session(): registra no sistema de triagem principal.
+    Webhook /api/v1/twilio-voice/status confirma fim da chamada.
 
 RESTRIÇÕES:
   - Sem pause/resume durante chamada ao vivo
@@ -1183,8 +1302,10 @@ RESTRIÇÕES:
 │  2. PII Masking — transcrição mascarada (_mask_transcript_segments) ●        │
 │  3. FairnessGuard — check em cada resposta transcrita ●                      │
 │  4. Scoring determinístico — sem LLM (zero viés de geração) ●                │
-│  5. AuditTrail — EU AI Act + SOX compliant ●                                 │
-│  6. CircuitBreaker — Twilio + Gemini STT + OpenAI TTS ●                      │
+│  5. Persistência incremental — _persist_session_state a cada 2 turnos ●     │
+│  6. CircuitBreaker — TWILIO_VOICE_CIRCUIT (initiate → WhatsApp/chat) ●      │
+│  7. CircuitBreaker — GEMINI_LIVE_CIRCUIT (apenas no /voip-start, não no      │
+│     pipeline Twilio); STT do Twilio usa try/except local ●                   │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
