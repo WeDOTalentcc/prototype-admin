@@ -321,6 +321,34 @@ class MainOrchestrator:
                 except Exception as e:
                     logger.warning("[LIA-M01] Memory setup failed (non-blocking): %s", e)
 
+            # FIX 31 v2 (2026-04-21) — Wire memory_resolver BEFORE all phases.
+            # Earlier wiring was inside _process_via_orchestrator (Phase 2) but
+            # most chat turns trigger Phase 1.5 Agentic Loop (LIA-A04) which
+            # returns before reaching Phase 2. Moving it here ensures every
+            # phase's downstream LLM invocation sees enriched messages
+            # (pronouns / positional / affirmations / quantifiers resolved).
+            try:
+                from app.orchestrator.memory_resolver import memory_resolver as _mem_resolver
+                _enriched_message, _was_resolved = await _mem_resolver.resolve(
+                    ctx.message,
+                    session_id=conv_id,
+                    conversation_state=getattr(ctx, "conversation_state", None),
+                )
+                if _was_resolved:
+                    logger.info(
+                        "[MainOrchestrator] FIX 31 memory enrichment applied: "
+                        "conv=%s raw_len=%d enriched_len=%d",
+                        conv_id, len(ctx.message), len(_enriched_message),
+                    )
+                    ctx.message = _enriched_message
+                    # Also set extra flag so downstream phases can log/branch
+                    ctx.extra["memory_enrichment_applied"] = True
+            except Exception as _mr_exc:
+                logger.debug(
+                    "[MainOrchestrator] FIX 31 memory_resolver skipped (non-fatal): %s",
+                    _mr_exc,
+                )
+
             # ── Phase 0: PendingAction ──────────────────────────────────────
             pending_response = await self._handle_pending_action(ctx, conv_id)
             if pending_response is not None:
@@ -991,36 +1019,6 @@ class MainOrchestrator:
                 })
             except Exception as _enrich_exc:
                 logger.debug("[LIA-M01] Context enrichment skipped: %s", _enrich_exc)
-
-        # FIX 31 (2026-04-21) — Wire memory_resolver into production chat path.
-        # Before this wiring, FIX 19 (affirmations) and FIX 30 (quantifiers)
-        # were runtime-dead: resolver existed + tested but only cascaded_router
-        # (not used by chat) invoked it. Now every chat turn gets the same
-        # enrichment pipeline: pronouns/references/positional/affirmations/
-        # quantifiers resolved into explicit context signals for the LLM.
-        try:
-            from app.orchestrator.memory_resolver import memory_resolver as _mem_resolver
-            _enriched_message, _was_resolved = await _mem_resolver.resolve(
-                ctx.message,
-                session_id=conv_id,
-            )
-            if _was_resolved:
-                logger.info(
-                    "[MainOrchestrator] FIX 31 memory enrichment applied: "
-                    "conv=%s raw_len=%d enriched_len=%d",
-                    conv_id, len(ctx.message), len(_enriched_message),
-                )
-                # Replace the user-facing message with the enriched version so
-                # downstream LLM assembly sees the hint. Also mirror into
-                # orchestrator_context in case any consumer reads from there.
-                ctx.message = _enriched_message
-                orchestrator_context["resolved_message"] = _enriched_message
-                orchestrator_context["memory_enrichment_applied"] = True
-        except Exception as _mr_exc:
-            logger.debug(
-                "[MainOrchestrator] FIX 31 memory_resolver skipped (non-fatal): %s",
-                _mr_exc,
-            )
 
         result = await self._route_with_tenant_llm(ctx, conv_id, db, orchestrator_context)
 

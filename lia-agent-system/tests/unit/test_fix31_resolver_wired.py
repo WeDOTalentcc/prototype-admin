@@ -37,7 +37,7 @@ def test_main_orchestrator_calls_resolve_before_routing() -> None:
 
     source = Path(mo.__file__).read_text(encoding="utf-8")
     # Ensure resolve call sits within _process_via_orchestrator scope
-    method_start = source.find("async def _process_via_orchestrator")
+    method_start = source.find("async def process(")
     assert method_start > 0
     # Next async def after _process_via_orchestrator defines its end
     next_def = source.find("\n    async def ", method_start + 30)
