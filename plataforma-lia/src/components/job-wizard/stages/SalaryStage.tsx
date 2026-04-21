@@ -58,9 +58,18 @@ export function SalaryStage() {
   const [isLoadingBenchmark, setIsLoadingBenchmark] = useState(false)
 
   const groupedBenefits = React.useMemo(() => {
+    // Task #765 — fall back to the 'other' bucket for unknown category
+    // values (legacy strings, post-migration `null`, or new categories
+    // added by the backend before the FE enum is updated). The previous
+    // logic dropped wellness/flexibility/security/etc. silently because
+    // `BENEFIT_CATEGORY_META[cat]` was looked up downstream and the
+    // render returned `null` when missing.
     const groups: Record<string, JobBenefit[]> = {}
     for (const b of salaryInfo.benefits) {
-      const cat = b.category || 'quality_life'
+      const rawCat = b.category as string | null | undefined
+      const cat: BenefitCategory = (rawCat && rawCat in BENEFIT_CATEGORY_META)
+        ? (rawCat as BenefitCategory)
+        : 'other'
       if (!groups[cat]) groups[cat] = []
       groups[cat].push(b)
     }
@@ -298,9 +307,12 @@ export function SalaryStage() {
         </label>
         <div className="space-y-3">
           {Object.entries(groupedBenefits).map(([categoryId, categoryBenefits]) => {
+            // Task #765 — never silently drop a category. Any unmapped
+            // category was already coerced into 'other' upstream, but we
+            // also defend the render layer to keep the UI lossless.
             const meta = BENEFIT_CATEGORY_META[categoryId as BenefitCategory]
+              || BENEFIT_CATEGORY_META.other
             const CategoryIcon = CATEGORY_ICONS[categoryId as BenefitCategory] || Home
-            if (!meta) return null
             
             return (
               <div key={categoryId}>

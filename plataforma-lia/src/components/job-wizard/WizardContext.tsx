@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef, ReactNode } from 'react'
 import { useWizardStore } from '@/stores/wizard-store'
 import type {
   WizardStage,
@@ -31,6 +31,7 @@ import {
 } from './constants'
 import { useCompanyBenefits } from '@/hooks/company/useCompanyBenefits'
 import type { JobBenefit } from '@/types/benefits'
+import { mergeCompanyBenefits } from './benefits-merge'
 
 interface WizardContextValue {
   // Stage navigation
@@ -296,20 +297,24 @@ export function WizardProvider({ children, initialStage = 'input-evaluation', co
   // Company benefits from API
   const { benefits: companyBenefits, isLoading: isLoadingBenefits } = useCompanyBenefits()
 
+  // Task #765 — hydrate-once guard. The previous implementation only
+  // merged company benefits when `prev.benefits` was a byte-perfect copy
+  // of `INITIAL_BENEFITS`, which broke as soon as the user toggled
+  // anything (or as soon as a draft was loaded). We now hydrate on the
+  // first non-empty company-benefits delivery and merge any company
+  // benefit not already present (preserving the user's existing toggle
+  // state). Subsequent re-renders are no-ops thanks to the ref guard.
+  const hydratedFromCompanyRef = useRef(false)
+
   useEffect(() => {
-    if (companyBenefits.length > 0) {
-      setSalaryInfo(prev => {
-        const isStillInitial = prev.benefits.length <= INITIAL_BENEFITS.length && 
-          prev.benefits.every(b => INITIAL_BENEFITS.some(ib => ib.name === b.name))
-        if (!isStillInitial) return prev
-        
-        const jobBenefits: JobBenefit[] = companyBenefits.map(cb => ({
-          ...cb,
-          enabled: cb.is_highlighted || cb.is_mandatory || false
-        }))
-        return { ...prev, benefits: jobBenefits }
-      })
-    }
+    if (companyBenefits.length === 0) return
+    if (hydratedFromCompanyRef.current) return
+    hydratedFromCompanyRef.current = true
+
+    setSalaryInfo(prev => ({
+      ...prev,
+      benefits: mergeCompanyBenefits(prev.benefits || [], companyBenefits),
+    }))
   }, [companyBenefits])
 
   // UI states

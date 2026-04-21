@@ -19,6 +19,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.job_vacancy import JobVacancy
+from app.utils.benefits import benefit_display_names as _flatten_benefits
 from app.domains.ai.services.llm import llm_service
 
 logger = logging.getLogger(__name__)
@@ -342,7 +343,7 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
                 seniority_level=vacancy.seniority_level,
                 job_description=vacancy.description,
                 salary_range=vacancy.salary_range,
-                benefits=vacancy.benefits or [],
+                benefits=_flatten_benefits(vacancy.benefits),
                 technical_skills=vacancy.technical_requirements or [],
                 behavioral_competencies=vacancy.behavioral_competencies or [],
                 screening_questions=vacancy.screening_questions or [],

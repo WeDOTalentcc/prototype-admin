@@ -665,14 +665,19 @@ class JobEmbeddingService:
                     salary_min = job.salary_range.get("min")
                     salary_max = job.salary_range.get("max")
                 
+                # Task #765 — `job.benefits` is now JSONB structured;
+                # support legacy strings for unmigrated rows.
                 benefits = []
                 if job.benefits:
                     for i, b in enumerate(job.benefits):
-                        benefits.append({
-                            "id": str(i + 1),
-                            "name": b,
-                            "enabled": True
-                        })
+                        if isinstance(b, dict):
+                            entry = dict(b)
+                            entry.setdefault("id", str(i + 1))
+                            entry.setdefault("name", "")
+                            entry.setdefault("enabled", True)
+                            benefits.append(entry)
+                        elif isinstance(b, str):
+                            benefits.append({"id": str(i + 1), "name": b, "enabled": True})
                 
                 wsi_questions = []
                 if job.screening_questions:

@@ -4,6 +4,7 @@ for the job_vacancies sub-package.
 """
 import logging
 from datetime import datetime
+from typing import Any, Iterable, Union
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -129,6 +130,14 @@ def _is_job_at_risk(job: JobVacancy, now: datetime) -> bool:
     return has_empty_pipeline or is_stalled or deadline_soon
 
 
+# Task #765 — canonical helpers live in ``app.utils.benefits`` (a
+# neutral, layer-free module) so domain services can import them
+# without taking a dependency on the API layer. Re-export here for
+# backwards compatibility with code that already imports from
+# ``app.api.v1.job_vacancies._shared``.
+from app.utils.benefits import benefit_display_names  # noqa: F401
+
+
 def derive_screening_status(screening_config: dict) -> str:
     """Derive the screening status from screening_config data."""
     if not screening_config:
@@ -170,6 +179,12 @@ from app.auth.models import User  # noqa: F401  # noqa: F401
 from app.core.database import get_db  # noqa: F401
 
 
+# Task #765 — canonical write-time normalizer for JobVacancy.benefits
+# lives in app.utils.benefits (neutral, layer-free). Re-exported here
+# for backwards compatibility with existing API-layer imports.
+from app.utils.benefits import normalize_benefits_payload  # noqa: F401
+
+
 def generate_slug(title: str, company_name: str = "") -> str:
     """Generate a URL-friendly slug from title and company name."""
     base = f"{title}-{company_name}" if company_name else title
@@ -206,7 +221,10 @@ class JobVacancyCreate(BaseModel):
     behavioral_competencies: list[dict] | None = []
     salary: str | None = None
     salary_range: dict | None = None
-    benefits: list[str] | None = []
+    # Task #765 — accept either legacy strings or the structured wizard
+    # objects. ``normalize_benefits_payload`` runs at write time to coerce
+    # everything into the canonical dict shape persisted in JSONB.
+    benefits: list[Union[dict, str]] | None = []
     manager: str | None = None
     manager_email: str | None = None
     recruiter: str | None = None
@@ -249,7 +267,8 @@ class JobVacancyUpdate(BaseModel):
     salary: str | None = None
     salary_range: dict | None = None
     bonus_range: dict | None = None
-    benefits: list[str] | None = None
+    # Task #765 — see JobVacancyCreate.benefits
+    benefits: list[Union[dict, str]] | None = None
     manager: str | None = None
     manager_email: str | None = None
     recruiter: str | None = None
@@ -293,7 +312,10 @@ class JobVacancyResponse(BaseModel):
     salary: str | None = None
     salary_range: dict | None = None
     bonus_range: dict | None = None
-    benefits: list[str] | None = []
+    # Task #765 — JSONB structure round-tripped to clients. Strings still
+    # accepted for back-compat with very old rows that haven't been
+    # backfilled by alembic 100_*.
+    benefits: list[Union[dict, str]] | None = []
     manager: str | None = None
     manager_email: str | None = None
     recruiter: str | None = None

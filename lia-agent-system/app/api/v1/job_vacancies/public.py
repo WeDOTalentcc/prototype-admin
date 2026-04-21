@@ -244,7 +244,7 @@ async def get_public_vacancy(
             title=job.title,
             description=job.description,
             requirements=job.requirements or [],
-            benefits=job.benefits or [],
+            benefits=benefit_display_names(job.benefits),
             location=job.location,
             work_model=job.work_model,
             employment_type=job.employment_type,

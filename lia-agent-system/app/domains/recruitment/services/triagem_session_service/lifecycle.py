@@ -155,7 +155,10 @@ async def get_session_config(db: AsyncSession, token: str) -> dict[str, Any] | N
                 if show_salary and job.salary_range:
                     job_info["salaryRange"] = job.salary_range
                 if show_benefits and job.benefits:
-                    job_info["benefits"] = job.benefits
+                    # Task #765 — JobVacancy.benefits is JSONB now; flatten
+                    # to display names for the candidate-facing chat.
+                    from app.utils.benefits import benefit_display_names
+                    job_info["benefits"] = benefit_display_names(job.benefits)
                 job_info["showSalary"] = show_salary
                 job_info["showBenefits"] = show_benefits
                 sc = getattr(job, "screening_config", None) or {}

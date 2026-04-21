@@ -1,3 +1,36 @@
+/**
+ * Task #765 — JobVacancy.benefits is JSONB on the backend.
+ * Both legacy strings (pre-migration rows) and structured dicts are
+ * accepted by the create/update/response schemas. The wizard sends the
+ * full object so category, value, value_type, provider, is_highlighted
+ * and is_mandatory survive the round-trip.
+ */
+export type JobBenefitInput =
+  | string
+  | {
+      id?: string
+      name: string
+      description?: string
+      category?: string | null
+      // Aligned with backend `_BENEFIT_VALID_VALUE_TYPES` — anything
+      // outside this set is clamped to 'informative' on save by
+      // `normalize_benefits_payload`. Discount-flavored benefits are
+      // expressed via `is_discount: true` on a benefit with one of the
+      // three canonical value_types.
+      value_type?: 'monetary' | 'percentage' | 'informative'
+      value?: number | null
+      percentage_value?: number | null
+      value_details?: string | null
+      provider?: string | null
+      is_highlighted?: boolean
+      is_mandatory?: boolean
+      is_active?: boolean
+      is_discount?: boolean
+      seniority_levels?: string[]
+      waiting_period_days?: number | null
+      [extra: string]: unknown
+    }
+
 export interface JobCreatedNotificationRequest {
   job_id: string
   job_title: string
@@ -64,7 +97,7 @@ export interface JobVacancy {
   salary?: string
   salary_range?: Record<string, unknown>
   bonus_range?: Record<string, unknown>
-  benefits?: string[]
+  benefits?: JobBenefitInput[]
   manager?: string
   manager_email?: string
   recruiter?: string
@@ -191,7 +224,7 @@ export interface JobVacancyCreateRequest {
     bonus_min?: number
     bonus_max?: number
   }
-  benefits?: string[]
+  benefits?: JobBenefitInput[]
   manager?: string
   manager_email?: string
   recruiter?: string

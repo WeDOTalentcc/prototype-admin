@@ -101,7 +101,13 @@ export function useWizardJobPublisher(ctx: WizardPublishHandlersContext) {
           bonus_min: salaryInfo.minBonus ? parseInt(salaryInfo.minBonus) : undefined,
           bonus_max: salaryInfo.maxBonus ? parseInt(salaryInfo.maxBonus) : undefined
         } : undefined,
-        benefits: salaryInfo.benefits.filter(b => b.enabled).map(b => b.name),
+        // Task #765 — send the full structured benefit objects so the
+        // backend can persist category, value/value_type, provider,
+        // is_highlighted, is_mandatory, etc. The previous `.map(b =>
+        // b.name)` collapse silently destroyed every field but the name.
+        benefits: salaryInfo.benefits
+          .filter(b => b.enabled)
+          .map(({ enabled: _enabled, ...rest }) => rest),
         manager: basicInfoFields.gestor || undefined,
         status: 'active' as const,
         recruiter: user?.name || user?.email?.split('@')[0] || 'Recrutador',
@@ -203,6 +209,9 @@ export function useWizardJobPublisher(ctx: WizardPublishHandlersContext) {
             max: salaryInfo.maxSalary ? parseInt(salaryInfo.maxSalary) : undefined,
             currency: 'BRL'
           } : undefined,
+          // Notification payload still expects a flat list of names —
+          // structured benefits are persisted via the createJobVacancy
+          // call above (see Task #765).
           benefits: salaryInfo.benefits.filter(b => b.enabled).map(b => b.name),
           deadline_screening: jobConfig.deadlineScreening,
           deadline_shortlist: jobConfig.deadlineShortlist,

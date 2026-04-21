@@ -4,7 +4,7 @@ Job Vacancy models for conversational job creation system.
 from datetime import datetime
 from typing import Optional
 from sqlalchemy import Column, String, Integer, DateTime, Text, JSON, Boolean, Float, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID, ARRAY
+from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
 from sqlalchemy.orm import relationship
 import uuid
 
@@ -54,7 +54,15 @@ class JobVacancy(Base):
     # NEW: Structured bonus range
     bonus_range = Column(JSON, nullable=True)  # {"min": 5000, "max": 8000, "currency": "BRL"}
     
-    benefits = Column(ARRAY(String), default=list)
+    # Task #765 — JSONB with structured items:
+    # [{"name": str, "category": str|None, "value_type": "monetary"|"percentage"|"informative"|None,
+    #   "value": float|None, "percentage_value": float|None, "value_details": str|None,
+    #   "provider": str|None, "is_highlighted": bool, "is_mandatory": bool, "is_active": bool,
+    #   "is_discount": bool, "seniority_levels": list[str], "waiting_period_days": int,
+    #   "id": str|None, "description": str|None, "enabled": bool|None}]
+    # Legacy ARRAY(String) values are backfilled by alembic 100_* into the
+    # minimal `{"name": <str>, "value_type": "informative"}` shape.
+    benefits = Column(JSONB, default=list)
     
     # Status & Workflow
     status = Column(String(50), default="Rascunho", index=True)  # Ativa, Rascunho, Pausada, Concluída, etc

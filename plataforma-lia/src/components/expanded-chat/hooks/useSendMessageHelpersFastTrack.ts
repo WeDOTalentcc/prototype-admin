@@ -301,11 +301,26 @@ export async function handleFastTrackFlow(
               minBonus: '',
               maxBonus: '',
               bonusCriteria: '',
-              benefits: (activeDraft.benefits || []).map((b: unknown, i: number) =>
-                typeof b === 'string'
-                  ? { id: `benefit-${ts}-${i}`, name: b, enabled: true }
-                  : { id: `benefit-${ts}-${i}`, name: String(b), enabled: true }
-              ),
+              // Task #765 — preserve the full structured benefit shape
+              // (category, value_type, value, provider, is_highlighted,
+              // is_mandatory, …) when the draft already carries dicts.
+              // Strings stay supported for backward-compat with very old
+              // drafts that predate the JSONB migration.
+              benefits: (activeDraft.benefits || []).map((b: unknown, i: number) => {
+                if (typeof b === 'string') {
+                  return { id: `benefit-${ts}-${i}`, name: b, enabled: true }
+                }
+                if (b && typeof b === 'object') {
+                  const obj = b as Record<string, unknown>
+                  return {
+                    ...obj,
+                    id: (obj.id as string | undefined) || `benefit-${ts}-${i}`,
+                    name: typeof obj.name === 'string' ? obj.name : String(obj.name ?? ''),
+                    enabled: obj.enabled !== false,
+                  }
+                }
+                return { id: `benefit-${ts}-${i}`, name: String(b), enabled: true }
+              }),
             },
           }
           ctx.setPendingDraftData(mappedDraftData)
