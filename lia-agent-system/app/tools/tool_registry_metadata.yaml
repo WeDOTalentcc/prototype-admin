@@ -2497,3 +2497,186 @@ tools:
         reason:
           type: string
           description: "Reason for the stage move (required for audit trail)"
+
+  # ── Company Settings Tools (Task #712) ──────────────────────────────────────
+  # These tools back the 7 conversational actions exposed by the
+  # company_settings domain. All writes are mediated by _resolve_tenant in the
+  # domain layer (IDOR guard) and pass through FairnessGuard before reaching the
+  # database.
+
+  - name: save_company_field
+    description: >
+      Updates a single canonical field on a company's profile (e.g. name,
+      industry, size, mission, vision). Use when the recruiter wants to fix or
+      set ONE specific attribute conversationally; for bulk updates prefer
+      save_company_section.
+    when_to_use: >
+      Recruiter says "muda o nome da empresa para X", "atualiza o setor",
+      "corrige a missão"; single-field edits coming from the chat.
+    when_not_to_use: >
+      Updating multiple fields at once (use save_company_section);
+      tier-1 fields (cnpj, name) without prior is_admin + confirmed=true.
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, audit_trail, write_destructive, fairness_guard]
+    related_tools: [save_company_section, get_company_profile, process_uploaded_document]
+    allowed_agents: [company_settings, orchestrator]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [company_id, field, value]
+      properties:
+        company_id: {type: string}
+        field: {type: string}
+        value: {}
+        user_id: {type: string}
+        confirmed: {type: boolean}
+        is_admin: {type: boolean}
+
+  - name: save_company_section
+    description: >
+      Bulk-updates a whole section of a company record (profile, culture,
+      tech_stack, hiring_policies, benefits). Each section maps to its canonical
+      table and goes through FairnessGuard L1 before the write.
+    when_to_use: >
+      Recruiter is going through the onboarding orchestrator step "configure
+      cultura/perfil/benefícios"; chat needs to persist >1 field at once.
+    when_not_to_use: >
+      Single-field tweak (use save_company_field); document import
+      (use process_uploaded_document — two-phase with explicit confirm).
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, audit_trail, write_destructive, fairness_guard]
+    related_tools: [save_company_field, save_company_benefits, process_uploaded_document]
+    allowed_agents: [company_settings, orchestrator]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [company_id, section, data]
+      properties:
+        company_id: {type: string}
+        section:
+          type: string
+          enum: [profile, culture, tech_stack, hiring_policies]
+        data: {type: object}
+        user_id: {type: string}
+
+  - name: save_company_benefits
+    description: >
+      Persists benefits offered by the company into company_benefits. Supports
+      append (default) and replace modes; emits an audit entry per benefit.
+    when_to_use: >
+      Onboarding step "benefícios"; recruiter lists "vale-refeição,
+      home-office, plano de saúde…"; replace mode when the recruiter says
+      "substitui tudo".
+    when_not_to_use: >
+      Editing a single benefit attribute (use save_company_field with
+      field=benefits[].x); compensation bands (use save_company_section
+      culture).
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, audit_trail, write_destructive, fairness_guard]
+    related_tools: [save_company_section, get_company_benefits]
+    allowed_agents: [company_settings, orchestrator]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [company_id, benefits]
+      properties:
+        company_id: {type: string}
+        benefits:
+          type: array
+          items: {type: object}
+        mode:
+          type: string
+          enum: [append, replace]
+        user_id: {type: string}
+
+  - name: import_workforce_plan
+    description: >
+      Imports a hiring plan (department, role, quantity, deadline) into the
+      company_culture_profiles.additional_data.workforce_plan JSON. Replaces
+      any prior plan in full — no partial merge.
+    when_to_use: >
+      Onboarding step "workforce"; recruiter shares a planning spreadsheet or
+      table of upcoming hires.
+    when_not_to_use: >
+      Editing a single line of the plan (read first, then re-import the full
+      list); creating actual jobs (use create_job).
+    side_effects: [db_write, audit_trail]
+    governance_tags: [multi_tenant, audit_trail, write_destructive]
+    related_tools: [save_company_section, create_job]
+    allowed_agents: [company_settings, orchestrator]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [company_id, plan_data]
+      properties:
+        company_id: {type: string}
+        plan_data:
+          type: array
+          items:
+            type: object
+            properties:
+              department: {type: string}
+              role: {type: string}
+              quantity: {type: integer}
+              deadline: {type: string}
+        user_id: {type: string}
+
+  - name: analyze_company_website
+    description: >
+      Scrapes the company website (with SSRF guard) and surfaces structured
+      candidate fields (mission, values, benefits, tech_stack) for human review.
+      Does NOT write — gravação só após confirmação humana via
+      save_company_section.
+    when_to_use: >
+      Onboarding step "website"; recruiter pastes a URL and asks LIA to "puxar
+      o que dá daqui".
+    when_not_to_use: >
+      Site is private/paywalled; recruiter wants live job-board scraping
+      (different domain).
+    side_effects: [external_api_call]
+    governance_tags: [multi_tenant, audit_trail]
+    related_tools: [process_uploaded_document, save_company_section]
+    allowed_agents: [company_settings, orchestrator]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [company_id, website_url]
+      properties:
+        company_id: {type: string}
+        website_url: {type: string}
+        user_id: {type: string}
+
+  - name: process_uploaded_document
+    description: >
+      Two-phase document ingestion. Phase 1 extracts text (PDF/DOCX/TXT),
+      runs PII masking (CPF/email/phone) and FairnessGuard, then returns
+      suggested_fields for human approval. Phase 2 (handler-side, when the
+      recruiter confirms) persists per section via save_company_section and
+      logs persist_document_extraction.
+    when_to_use: >
+      Onboarding step "documento"; recruiter uploads handbook, comp policy,
+      org chart, or tech doc.
+    when_not_to_use: >
+      CV/resume parsing (use cv_screening tools); already-structured JSON
+      (use save_company_section directly).
+    side_effects: [audit_trail]
+    governance_tags: [pii, fairness_guard, requires_hitl, multi_tenant, audit_trail]
+    related_tools: [save_company_section, save_company_benefits, analyze_company_website]
+    allowed_agents: [company_settings, orchestrator]
+    scope: GLOBAL
+    version: "1.0"
+    parameters:
+      type: object
+      required: [company_id, document_text]
+      properties:
+        company_id: {type: string}
+        document_text: {type: string}
+        document_type:
+          type: string
+          enum: [handbook, org_chart, compensation, tech_doc, general]
+        user_id: {type: string}

@@ -7,6 +7,7 @@ processing uploaded documents with anonymization, and workforce planning.
 import json
 import logging
 import os
+import re
 import uuid as _uuid
 from typing import Any
 
@@ -15,6 +16,12 @@ from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.shared.pii_masking import (
+    CPF_PATTERN,
+    EMAIL_PATTERN,
+    PHONE_BR_PATTERN,
+    mask_pii,
+)
 from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
@@ -498,6 +505,137 @@ async def _wrap_analyze_company_website(**kwargs: Any) -> dict[str, Any]:
         }
 
 
+_SECTION_HEADERS_PT: dict[str, list[str]] = {
+    "mission": ["missao", "missão", "nossa missao", "nossa missão", "mission"],
+    "vision": ["visao", "visão", "nossa visao", "nossa visão", "vision"],
+    "values": ["valores", "nossos valores", "values", "core values"],
+    "benefits": ["beneficios", "benefícios", "perks", "benefits"],
+    "tech_stack": ["stack", "tecnologias", "tech stack", "ferramentas"],
+    "work_model": ["modelo de trabalho", "modalidade", "work model"],
+    "dei_initiatives": ["dei", "diversidade", "inclusao", "inclusão", "diversity"],
+}
+
+_LIST_BULLET_RE = re.compile(r"^\s*(?:[-*•·]|\d+[.)])\s+(.+)$", re.MULTILINE)
+_WORK_MODEL_RE = re.compile(r"\b(remoto|remote|hibrido|híbrido|hybrid|presencial|on[-\s]?site)\b", re.IGNORECASE)
+
+
+def _slice_section(text_in: str, headers: list[str]) -> str | None:
+    """Return text under a section heading (until next blank-line or next known header).
+
+    Heuristic, regex-only — no LLM call. Designed for handbooks/policies in pt-BR.
+    """
+    if not text_in:
+        return None
+    lines = text_in.splitlines()
+    lower_lines = [ln.lower() for ln in lines]
+    n = len(lines)
+    start_idx: int | None = None
+    for i, low in enumerate(lower_lines):
+        stripped = low.strip(" \t#:•-*").rstrip(":")
+        for h in headers:
+            if stripped == h or stripped.startswith(h + " ") or stripped.endswith(" " + h):
+                start_idx = i + 1
+                break
+        if start_idx is not None:
+            break
+    if start_idx is None:
+        return None
+    # Build set of all known headers to detect end
+    all_headers = {h for hs in _SECTION_HEADERS_PT.values() for h in hs}
+    collected: list[str] = []
+    blank_run = 0
+    for j in range(start_idx, n):
+        low = lower_lines[j].strip(" \t#:•-*").rstrip(":")
+        if not low:
+            blank_run += 1
+            if blank_run >= 2 and collected:
+                break
+            continue
+        blank_run = 0
+        if low in all_headers:
+            break
+        collected.append(lines[j].strip())
+        if len(collected) >= 12:  # cap
+            break
+    out = "\n".join(collected).strip()
+    return out or None
+
+
+def _extract_list_items(block: str | None, max_items: int = 8) -> list[str]:
+    if not block:
+        return []
+    items = [m.group(1).strip() for m in _LIST_BULLET_RE.finditer(block)]
+    if not items:
+        # Fall back to comma/semicolon split of the first non-empty line
+        first = next((ln.strip() for ln in block.splitlines() if ln.strip()), "")
+        items = [p.strip(" .;-") for p in re.split(r"[;,]", first) if p.strip()]
+    # Dedupe preserving order
+    seen: set[str] = set()
+    out: list[str] = []
+    for it in items:
+        key = it.lower()
+        if key in seen or len(it) > 200:
+            continue
+        seen.add(key)
+        out.append(it)
+        if len(out) >= max_items:
+            break
+    return out
+
+
+def _extract_first_sentence(block: str | None, max_len: int = 280) -> str | None:
+    if not block:
+        return None
+    # Take first line/sentence
+    text_in = re.split(r"(?<=[.!?])\s", block.strip(), maxsplit=1)[0].strip()
+    if not text_in:
+        return None
+    return text_in[:max_len]
+
+
+def _structured_extract(text_in: str, document_type: str) -> dict[str, Any]:
+    """Pull canonical company-settings fields from raw document text.
+
+    Returns a dict whose keys match _SECTION_FIELD_HINTS in domain.py
+    (profile.* and culture.* fields). Empty when nothing is detected.
+    """
+    out: dict[str, Any] = {}
+    mission = _extract_first_sentence(_slice_section(text_in, _SECTION_HEADERS_PT["mission"]))
+    if mission:
+        out["mission"] = mission
+    vision = _extract_first_sentence(_slice_section(text_in, _SECTION_HEADERS_PT["vision"]))
+    if vision:
+        out["vision"] = vision
+    values = _extract_list_items(_slice_section(text_in, _SECTION_HEADERS_PT["values"]))
+    if values:
+        out["values"] = values
+    benefits = _extract_list_items(_slice_section(text_in, _SECTION_HEADERS_PT["benefits"]))
+    if benefits:
+        out["benefits"] = benefits
+    tech = _extract_list_items(_slice_section(text_in, _SECTION_HEADERS_PT["tech_stack"]))
+    if tech:
+        out["tech_stack"] = tech
+    dei = _extract_list_items(_slice_section(text_in, _SECTION_HEADERS_PT["dei_initiatives"]))
+    if dei:
+        out["dei_initiatives"] = dei
+    wm_match = _WORK_MODEL_RE.search(text_in or "")
+    if wm_match:
+        wm = wm_match.group(1).lower()
+        normalized = {
+            "remoto": "remote",
+            "remote": "remote",
+            "hibrido": "hybrid",
+            "híbrido": "hybrid",
+            "hybrid": "hybrid",
+            "presencial": "onsite",
+            "onsite": "onsite",
+            "on-site": "onsite",
+            "on site": "onsite",
+        }.get(wm, wm)
+        out["work_model"] = normalized
+    return out
+
+
 @tool_handler("company_settings")
 async def _wrap_process_uploaded_document(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
@@ -508,12 +646,24 @@ async def _wrap_process_uploaded_document(**kwargs: Any) -> dict[str, Any]:
     if not document_text:
         return {"success": False, "data": {}, "message": "Texto do documento esta vazio."}
 
-    check = _fairness_guard.check(document_text)
-    anonymized_text = document_text
-    anonymization_applied = []
+    # ── L1: PII masking BEFORE anything downstream sees the text ──────────────
+    # mask_pii redacts CPF, e-mail, BR phones and "name=..." patterns. The masked
+    # form is the only string we keep around; the raw `document_text` is dropped
+    # so it never leaks into the structured extraction or the audit log payload.
+    masked_text = mask_pii(document_text)
+    pii_redactions: dict[str, int] = {
+        "cpf": len(CPF_PATTERN.findall(document_text)),
+        "email": len(EMAIL_PATTERN.findall(document_text)),
+        "phone": len(PHONE_BR_PATTERN.findall(document_text)),
+    }
+    pii_total = sum(pii_redactions.values())
 
-    if check.soft_warnings:
-        anonymization_applied = check.soft_warnings
+    # ── L2: FairnessGuard runs over the *masked* text (no PII to bias on) ─────
+    check = _fairness_guard.check(masked_text)
+    fairness_warnings = list(check.soft_warnings or [])
+
+    # ── L3: structured extraction (regex/heuristic, no LLM round-trip) ────────
+    suggested_fields = _structured_extract(masked_text, document_type)
 
     extraction_hints = {
         "handbook": ["mission", "vision", "values", "benefits", "work_model", "dei_initiatives"],
@@ -524,22 +674,40 @@ async def _wrap_process_uploaded_document(**kwargs: Any) -> dict[str, Any]:
     }
     expected_fields = extraction_hints.get(document_type, extraction_hints["general"])
 
-    await _audit_log(company_id, "process_document", metadata={"document_type": document_type, "text_length": len(document_text), "user_id": user_id})
+    await _audit_log(
+        company_id,
+        "process_document",
+        metadata={
+            "document_type": document_type,
+            "text_length": len(document_text),
+            "masked_length": len(masked_text),
+            "pii_redactions": pii_redactions,
+            "user_id": user_id,
+            "suggested_field_keys": sorted(suggested_fields.keys()),
+        },
+    )
 
     return {
         "success": True,
         "data": {
             "document_type": document_type,
             "text_length": len(document_text),
-            "anonymization_warnings": anonymization_applied,
+            "pii_redactions": pii_redactions,
+            "pii_total_redactions": pii_total,
+            "anonymization_warnings": fairness_warnings,
+            "suggested_fields": suggested_fields,
             "expected_fields": expected_fields,
             "compliance_check": {
                 "is_blocked": check.is_blocked,
                 "category": check.category if check.is_blocked else None,
-                "warnings": check.soft_warnings,
+                "warnings": fairness_warnings,
             },
         },
-        "message": f"Documento processado ({len(document_text)} caracteres). Campos esperados: {', '.join(expected_fields)}.",
+        "message": (
+            f"Documento processado ({len(document_text)} caracteres, {pii_total} PII redigidas). "
+            f"Campos sugeridos: {', '.join(suggested_fields.keys()) or 'nenhum detectado automaticamente'}. "
+            f"Confirme antes de gravar (LGPD Art. 8)."
+        ),
     }
 
 
