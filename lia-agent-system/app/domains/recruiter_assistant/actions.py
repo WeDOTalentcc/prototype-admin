@@ -64,7 +64,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Sugere a próxima melhor ação para um candidato ou vaga usando IA baseada no contexto atual. Aciona quando recruiter está indeciso ou quer recomendação do assistente.",
         requires_confirmation=False,
         tags=["suggestion", "action", "ai", "delegate_to_agent"],
-        examples=('sugere isso', 'recomenda isso'),
+        examples=('sugere próxima ação', 'o que devo fazer agora?'),
     ),
     DomainAction(
         action_id="search_context",
@@ -72,7 +72,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Busca no histórico de conversas e memória persistente por contexto relevante sobre candidato, vaga ou situação. Aciona quando recruiter referencia algo discutido anteriormente.",
         requires_confirmation=False,
         tags=["search", "context", "history"],
-        examples=('busca isso', 'quero encontrar isso'),
+        examples=('busca contexto sobre esta vaga', 'traz histórico relacionado'),
     ),
     DomainAction(
         action_id="save_memory",
@@ -112,7 +112,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Calibra o perfil ideal de candidato para a vaga com base no feedback do recruiter sobre candidatos vistos. Aciona quando triagem está retornando candidatos fora do perfil desejado.",
         requires_confirmation=False,
         tags=["calibration", "profile", "delegate_to_agent"],
-        examples=('calibra isso', 'ajusta isso'),
+        examples=('calibra perfil do candidato', 'ajusta fit com a vaga'),
     ),
     DomainAction(
         action_id="send_notification",
@@ -120,7 +120,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Envia notificação proativa para o recrutador sobre evento crítico (candidato que vai desistir, SLA em risco). Aciona automaticamente pela IA ao detectar situação que requer atenção imediata.",
         requires_confirmation=False,
         tags=["notification", "proactive"],
-        examples=('envia isso', 'manda isso'),
+        examples=('envia notificação', 'avisa sobre atualização'),
     ),
     DomainAction(
         action_id="track_goals",
@@ -136,7 +136,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Gera insights proativos sobre padrões de sourcing, efetividade de canais e oportunidades de melhoria. Aciona semanalmente ou quando recruiter pede análise de desempenho.",
         requires_confirmation=False,
         tags=["insights", "proactive", "delegate_to_agent"],
-        examples=('gera isso', 'crie isso'),
+        examples=('gera insights deste processo', 'o que aprendemos com este processo?'),
     ),
     DomainAction(
         action_id="compare_candidates",
@@ -144,7 +144,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Faz comparação rápida entre candidatos selecionados com análise de pontos fortes, gaps e recomendação. Aciona quando recruiter tem dúvida entre dois ou mais finalistas.",
         requires_confirmation=False,
         tags=["candidates", "comparison", "delegate_to_agent"],
-        examples=('compara candidato', 'compara estes candidato'),
+        examples=('compara estes dois candidatos', 'qual é melhor entre esses perfis?'),
     ),
     DomainAction(
         action_id="stage_recommendation",
@@ -152,7 +152,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Recomenda próxima etapa ideal para candidato baseado em score, perfil e histórico do processo. Aciona quando recruiter pede orientação sobre como avançar com candidato específico.",
         requires_confirmation=False,
         tags=["stage", "recommendation", "delegate_to_agent"],
-        examples=('recomendar etapa', 'quero recomendar etapa'),
+        examples=('recomenda próxima etapa', 'qual próximo passo pra esse candidato?'),
     ),
     DomainAction(
         action_id="proactive_alerts",
@@ -160,7 +160,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Lista e prioriza alertas proativos do pipeline: SLA vencidos, candidatos parados, vagas sem movimento, risco de perda. Aciona no início do dia ou quando recruiter pede 'o que precisa de atenção?'.",
         requires_confirmation=False,
         tags=["alerts", "proactive", "monitoring"],
-        examples=('alertas proativos', 'quero alertas proativos'),
+        examples=('mostra alertas proativos', 'tem alerta importante?'),
     ),
     DomainAction(
         action_id="autonomous_actions",
@@ -168,7 +168,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Lista e gerencia ações autônomas executadas pela LIA (emails enviados, candidatos movidos) para revisão e auditoria. Aciona quando recruiter quer saber o que a IA fez ou revisar ações automáticas.",
         requires_confirmation=False,
         tags=["autonomous", "actions", "automation"],
-        examples=('ações autônomas', 'quero ações autônomas'),
+        examples=('executa ações autônomas', 'roda o agente no modo automático'),
     ),
     DomainAction(
         action_id="stakeholder_notify",
@@ -176,7 +176,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Detecta decisões pendentes de hiring managers e dispara notificações com escalação automática. Aciona quando candidato está aguardando decisão do gestor há mais do prazo acordado.",
         requires_confirmation=False,
         tags=["stakeholder", "notification", "escalation", "hiring_manager"],
-        examples=('notifica sobre isso', 'avisa sobre isso'),
+        examples=('notifica stakeholders', 'avisa o gestor contratante'),
     ),
     DomainAction(
         action_id="learning_insights",
@@ -184,7 +184,7 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Apresenta o que a LIA aprendeu com contratações anteriores: padrões de sucesso, preditores de performance e calibrações. Aciona quando recruiter quer entender o aprendizado do sistema.",
         requires_confirmation=False,
         tags=["learning", "insights", "outcomes", "feedback"],
-        examples=('insights de aprendizado', 'quero insights de aprendizado'),
+        examples=('mostra insights de aprendizado', 'o que a LIA aprendeu até agora?'),
     ),
     DomainAction(
         action_id="help_command",
@@ -192,6 +192,6 @@ RECRUITER_ASSISTANT_ACTIONS = [
         description="Mostra lista de comandos, funcionalidades disponíveis e exemplos de uso para orientar o recruiter. Aciona quando recruiter digita 'ajuda', 'help' ou está perdido na plataforma.",
         requires_confirmation=False,
         tags=["help", "commands"],
-        examples=('ajuda', 'quero ajuda'),
+        examples=('me ajuda', 'o que você sabe fazer?', 'comandos disponíveis'),
     ),
 ]

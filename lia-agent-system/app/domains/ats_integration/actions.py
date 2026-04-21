@@ -25,7 +25,7 @@ ATS_INTEGRATION_ACTIONS = [
         required_params=["sync_type"],
         optional_params=["ats_provider", "connection_id", "filters"],
         requires_confirmation=True,
-        examples=('sincroniza isso', 'atualiza isso'),
+        examples=('sincroniza tudo do ATS agora', 'faz sync completo'),
     ),
     DomainAction(
         action_id="pull_candidates",
@@ -46,7 +46,7 @@ ATS_INTEGRATION_ACTIONS = [
         name="Verificar Status da Sincronização",
         description="Verifica o status atual de sincronização com o ATS: pendentes, erros, última execução e taxa de sucesso. Aciona para diagnóstico de problemas de integração ou verificação pós-sincronização.",
         optional_params=["connection_id", "sync_job_id"],
-        examples=('checa isso', 'verifica isso'),
+        examples=('qual status da sincronização?', 'o sync já terminou?'),
     ),
     DomainAction(
         action_id="configure_ats",
@@ -55,21 +55,21 @@ ATS_INTEGRATION_ACTIONS = [
         required_params=["ats_provider"],
         optional_params=["api_key", "api_endpoint", "company_id"],
         requires_confirmation=True,
-        examples=('configura isso', 'define isso'),
+        examples=('configura integração com ATS', 'conecta com Workday'),
     ),
     DomainAction(
         action_id="list_connections",
         name="Listar Conexões ATS",
         description="Lista todas as conexões ATS configuradas pela empresa com status de saúde e última sincronização. Aciona para gerenciamento de integrações ou escolha de conexão ativa.",
         optional_params=["ats_provider", "is_active"],
-        examples=('lista isso', 'mostra isso ativas'),
+        examples=('lista integrações ativas', 'quais ATS estão conectados?'),
     ),
     DomainAction(
         action_id="test_connection",
         name="Testar Conexão",
         description="Testa a saúde da conexão com o ATS verificando autenticação e disponibilidade do endpoint. Aciona antes de sincronizações críticas ou para diagnóstico de falhas de conexão.",
         optional_params=["connection_id", "ats_provider"],
-        examples=('testa isso', 'valida isso'),
+        examples=('testa a conexão com o ATS', 'o ATS está respondendo?'),
     ),
     DomainAction(
         action_id="map_fields",
@@ -85,7 +85,7 @@ ATS_INTEGRATION_ACTIONS = [
         name="Ver Log de Sincronização",
         description="Visualiza o log de auditoria de sincronização com registros de operações, erros e dados trocados. Aciona para auditoria, compliance ou debug de sincronizações que falharam.",
         optional_params=["connection_id", "sync_job_id", "limit"],
-        examples=('ver isso', 'mostra isso'),
+        examples=('mostra mapeamento de campos', 'como os campos estão mapeados?'),
     ),
     DomainAction(
         action_id="resolve_conflict",
@@ -102,7 +102,7 @@ ATS_INTEGRATION_ACTIONS = [
         description="Envia atualização de status do candidato (aprovado, rejeitado, em processo) para o ATS externo em tempo real. Aciona automaticamente após mudança de etapa quando integração está ativa.",
         required_params=["candidate_id", "new_status"],
         optional_params=["connection_id", "reason"],
-        examples=('atualiza isso', 'muda isso'),
+        examples=('atualiza status no ATS externo', 'sincroniza status do candidato'),
     ),
     DomainAction(
         action_id="send_score_ats",
@@ -140,6 +140,6 @@ ATS_INTEGRATION_ACTIONS = [
         name="Ver Mapeamento de Campos",
         description="Visualiza o mapeamento atual de campos entre WedoTalent e o ATS externo. Aciona para auditoria, verificação de configuração ou antes de alterar mapeamentos.",
         optional_params=["connection_id", "ats_provider"],
-        examples=('ver isso', 'mostra isso'),
+        examples=('mostra mapeamento de campos', 'como os campos estão mapeados?'),
     ),
 ]

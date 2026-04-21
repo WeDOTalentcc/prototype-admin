@@ -9,7 +9,7 @@ ANALYTICS_ACTIONS = [
         required_params=["job_id"],
         optional_params=["period", "format"],
         requires_confirmation=False,
-        examples=('gera KPIs', 'crie KPIs'),
+        examples=('gera relatório de KPIs do mês', 'cria dashboard de métricas'),
     ),
     DomainAction(
         action_id="analyze_funnel",
@@ -18,7 +18,7 @@ ANALYTICS_ACTIONS = [
         required_params=["job_id"],
         optional_params=["period", "stages"],
         requires_confirmation=False,
-        examples=('analisa isso', 'avalia isso'),
+        examples=('analisa o funil desta vaga', 'onde estamos perdendo candidatos no funil?'),
     ),
     DomainAction(
         action_id="job_health_check",
@@ -36,7 +36,7 @@ ANALYTICS_ACTIONS = [
         required_params=[],
         optional_params=["job_id", "metric", "threshold"],
         requires_confirmation=False,
-        examples=('detecta isso', 'identifica isso'),
+        examples=('detecta anomalias no funil', 'algo está fora do padrão?'),
     ),
     DomainAction(
         action_id="compare_periods",
@@ -45,7 +45,7 @@ ANALYTICS_ACTIONS = [
         required_params=["period_a", "period_b"],
         optional_params=["job_id", "metrics"],
         requires_confirmation=False,
-        examples=('compara isso', 'compara estes isso'),
+        examples=('compara este mês com o passado', 'evolução do pipeline mês a mês'),
     ),
     DomainAction(
         action_id="forecast",

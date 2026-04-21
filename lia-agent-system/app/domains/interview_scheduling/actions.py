@@ -35,7 +35,7 @@ INTERVIEW_SCHEDULING_ACTIONS = [
         description="Verifica disponibilidade do entrevistador no calendário para data e duração específicas. Aciona antes de propor horário ao candidato para garantir slot disponível.",
         required_params=["interviewer_email", "date"],
         optional_params=["duration_minutes", "timezone"],
-        examples=('checa isso', 'verifica isso'),
+        examples=('checa disponibilidade do candidato', 'quando o Lucas está livre?'),
     ),
     DomainAction(
         action_id="generate_self_scheduling_link",
@@ -43,7 +43,7 @@ INTERVIEW_SCHEDULING_ACTIONS = [
         description="Gera link para candidato escolher horário disponível do entrevistador de forma autônoma sem intervenção do recruiter. Aciona para otimizar agendamento e melhorar experiência do candidato.",
         required_params=["candidate_name", "candidate_email", "interviewer_emails"],
         optional_params=["job_title", "interview_type", "duration_minutes", "expires_in_days"],
-        examples=('gera isso', 'crie isso'),
+        examples=('gera email de follow-up', 'cria mensagem pós-entrevista'),
     ),
     DomainAction(
         action_id="find_common_slots",
@@ -51,7 +51,7 @@ INTERVIEW_SCHEDULING_ACTIONS = [
         description="Encontra horários comuns disponíveis para múltiplos participantes (painéis com vários entrevistadores). Aciona para agendamento de entrevistas em painel com 2+ entrevistadores.",
         required_params=["participant_emails"],
         optional_params=["duration_minutes", "preferred_days", "date_range"],
-        examples=('encontra isso', 'procura isso'),
+        examples=('encontra horário comum entre entrevistadores', 'quando todos estão livres?'),
     ),
     DomainAction(
         action_id="send_reminder",
@@ -60,7 +60,7 @@ INTERVIEW_SCHEDULING_ACTIONS = [
         required_params=["interview_id"],
         optional_params=["channels", "custom_message"],
         requires_confirmation=True,
-        examples=('envia isso', 'manda isso'),
+        examples=('envia lembrete da entrevista', 'lembra participantes da reunião'),
     ),
     DomainAction(
         action_id="schedule_reminders",
@@ -68,7 +68,7 @@ INTERVIEW_SCHEDULING_ACTIONS = [
         description="Configura lembretes automáticos recorrentes para entrevistas futuras com canais e timing definidos. Aciona na criação do agendamento para garantir lembretes sem intervenção manual.",
         required_params=["interview_id"],
         optional_params=["hours_before", "channels", "recipient_types"],
-        examples=('agenda isso', 'marca isso'),
+        examples=('agenda lembretes da entrevista', 'cria lembretes automáticos'),
     ),
     DomainAction(
         action_id="list_today_interviews",
@@ -124,7 +124,7 @@ INTERVIEW_SCHEDULING_ACTIONS = [
         description="Analisa tom de voz, confiança e consistência emocional do candidato durante entrevista oral. Aciona em entrevistas por voz para adicionar dimensão não-verbal à avaliação.",
         required_params=["audio_url"],
         optional_params=["interview_id", "candidate_id", "analysis_type"],
-        examples=('analisa isso', 'avalia isso'),
+        examples=('analisa voz da entrevista gravada', 'avalia tom de voz do candidato'),
     ),
     DomainAction(
         action_id="detect_evasive",
@@ -132,7 +132,7 @@ INTERVIEW_SCHEDULING_ACTIONS = [
         description="Detecta padrões de respostas evasivas ou inconsistentes durante entrevista para alertar o recruiter. Aciona automaticamente durante análise de respostas ou quando recruiter suspeita de inconsistência.",
         required_params=["interview_id", "response_text"],
         optional_params=["question_context", "threshold"],
-        examples=('detecta isso', 'identifica isso'),
+        examples=('detecta respostas evasivas', 'o candidato está sendo direto?'),
     ),
     DomainAction(
         action_id="generate_followup",
@@ -140,7 +140,7 @@ INTERVIEW_SCHEDULING_ACTIONS = [
         description="Gera pergunta de follow-up contextualizada baseada na resposta anterior do candidato para aprofundar evidências. Aciona quando resposta foi superficial ou vaga e recruiter precisa de mais evidências.",
         required_params=["interview_id", "previous_response"],
         optional_params=["competency_target", "depth_level", "question_type"],
-        examples=('gera isso', 'crie isso'),
+        examples=('gera email de follow-up', 'cria mensagem pós-entrevista'),
     ),
     DomainAction(
         action_id="complete_interview",
@@ -164,6 +164,6 @@ INTERVIEW_SCHEDULING_ACTIONS = [
         description="Inicia triagem rápida estruturada com candidato (10-15 minutos) para qualificação inicial antes de entrevista completa. Aciona como alternativa à entrevista WSI completa para pré-seleção eficiente.",
         required_params=["candidate_id"],
         optional_params=["job_vacancy_id", "screening_type", "questions"],
-        examples=('iniciar isso', 'começar isso'),
+        examples=('inicia triagem rápida', 'começa pré-triagem automática'),
     ),
 ]

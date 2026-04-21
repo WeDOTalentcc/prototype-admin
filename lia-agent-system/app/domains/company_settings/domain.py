@@ -41,6 +41,8 @@ COMPANY_SETTINGS_ACTIONS = [
         description="Configura dados institucionais da empresa (nome, CNPJ, website, etc.)",
         required_params=["company_id"],
         tags=["company", "profile"],
+    
+        examples=('configura perfil da empresa', 'edita dados institucionais'),
     ),
     DomainAction(
         action_id="configure_culture",
@@ -48,6 +50,8 @@ COMPANY_SETTINGS_ACTIONS = [
         description="Configura missao, visao, valores, cultura e proposta de valor",
         required_params=["company_id"],
         tags=["company", "culture"],
+    
+        examples=('configura cultura e valores', 'define missão e visão'),
     ),
     DomainAction(
         action_id="configure_tech_stack",
@@ -55,6 +59,8 @@ COMPANY_SETTINGS_ACTIONS = [
         description="Configura stack tecnologico e cultura de engenharia",
         required_params=["company_id"],
         tags=["company", "tech"],
+    
+        examples=('configura tech stack', 'define as tecnologias usadas'),
     ),
     DomainAction(
         action_id="configure_benefits",
@@ -62,6 +68,8 @@ COMPANY_SETTINGS_ACTIONS = [
         description="Configura pacote de beneficios da empresa",
         required_params=["company_id"],
         tags=["company", "benefits"],
+    
+        examples=('configura benefícios', 'define pacote de benefícios'),
     ),
     DomainAction(
         action_id="configure_workforce",
@@ -69,6 +77,8 @@ COMPANY_SETTINGS_ACTIONS = [
         description="Configura planejamento de contratacoes (workforce planning)",
         required_params=["company_id"],
         tags=["company", "workforce"],
+    
+        examples=('configura planejamento de contratações', 'define workforce planning'),
     ),
     DomainAction(
         action_id="analyze_website",
@@ -76,6 +86,8 @@ COMPANY_SETTINGS_ACTIONS = [
         description="Analisa website da empresa para extrair dados automaticamente",
         required_params=["company_id"],
         tags=["company", "analysis"],
+    
+        examples=('analisa nosso site pra extrair dados', 'olha no website e extrai info'),
     ),
     DomainAction(
         action_id="process_document",
@@ -83,6 +95,8 @@ COMPANY_SETTINGS_ACTIONS = [
         description="Processa documento enviado para extrair dados da empresa",
         required_params=["company_id"],
         tags=["company", "document"],
+    
+        examples=('processa este documento da empresa', 'extrai dados deste arquivo'),
     ),
 ]
 
