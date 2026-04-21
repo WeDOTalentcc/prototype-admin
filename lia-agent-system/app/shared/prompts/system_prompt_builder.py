@@ -121,7 +121,40 @@ def _get_platform_knowledge() -> str:
     return _PLATFORM_KNOWLEDGE_FALLBACK
 
 
+@lru_cache(maxsize=1)
+def _get_canonical_glossary_block() -> str:
+    """Load canonical term definitions from docs/GLOSSARY.md at startup.
+
+    Returns a markdown block listing key WSI/methodology terms with their
+    live definitions, so agents stay in sync with the glossary without a
+    code deploy. Returns "" if the glossary file is unavailable; in that
+    case the static _PLATFORM_KNOWLEDGE_FALLBACK still covers the basics.
+
+    Drift between the prompt's expected terms and the glossary is logged
+    as a WARNING so it can be detected via log monitoring.
+    """
+    try:
+        from app.shared.prompts.glossary_loader import (
+            CANONICAL_PROMPT_TERMS,
+            detect_drift,
+            render_canonical_terms_section,
+        )
+        block = render_canonical_terms_section(CANONICAL_PROMPT_TERMS)
+        missing = detect_drift(CANONICAL_PROMPT_TERMS)
+        if missing:
+            logger.warning(
+                "[SystemPromptBuilder] Glossary drift — terms missing from "
+                "docs/GLOSSARY.md: %s",
+                ", ".join(missing),
+            )
+        return block
+    except Exception as exc:
+        logger.debug("[SystemPromptBuilder] Glossary load failed: %s", exc)
+        return ""
+
+
 _PLATFORM_KNOWLEDGE = _get_platform_knowledge()
+_CANONICAL_GLOSSARY_BLOCK = _get_canonical_glossary_block()
 
 _IDENTITY_OVERRIDE = (
     "# REGRA ZERO -- SUA IDENTIDADE\n\n"
@@ -187,6 +220,8 @@ class SystemPromptBuilder:
         persona = _load_persona_base()
         sections.append(persona)
         sections.append(_PLATFORM_KNOWLEDGE)
+        if _CANONICAL_GLOSSARY_BLOCK:
+            sections.append(_CANONICAL_GLOSSARY_BLOCK)
 
         domain_additions = _load_domain_additions(agent_type)
         if domain_additions:
