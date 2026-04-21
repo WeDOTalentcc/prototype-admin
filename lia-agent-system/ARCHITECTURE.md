@@ -14,7 +14,7 @@ Cada documento abaixo tem um propósito distinto — eles **não** se substituem
 | [`docs/MAPA_CAMADA_INTELIGENCIA.md`](./docs/MAPA_CAMADA_INTELIGENCIA.md) | Mapa de onboarding: stack, fluxos ponta-a-ponta, organograma, "onde mexer". É o guia de leitura humana da camada de IA. |
 | [`docs/fase2c_domain_verification_report.md`](./docs/fase2c_domain_verification_report.md) | Auditoria viva (gerada por `scripts/audit_chat_capabilities.py`) — domínios, actions, tools, gaps, padrões arquiteturais por domínio, inventário de agentes. |
 | [`docs/GLOSSARIO_ACTIONS_TOOLS.md`](./docs/GLOSSARIO_ACTIONS_TOOLS.md) | Glossário das 281 actions e 94 tools (gerado por `scripts/generate_glossario_actions_tools.py`) — 1 frase por entrada cobrindo "o que faz / o que resolve / como atua". |
-| [`DEVELOPER_HANDOFF.md`](./DEVELOPER_HANDOFF.md) | Onboarding operacional para devs (setup, fluxos de trabalho, comandos). |
+| [`docs/DEVELOPER_HANDOFF.md`](./docs/DEVELOPER_HANDOFF.md) | Onboarding operacional para devs (setup, fluxos de trabalho, comandos). |
 | [`LLM_FACTORY_HANDOFF_v2.md`](./LLM_FACTORY_HANDOFF_v2.md) | Operação da camada LLM (BYOK, quality tiers, fallback) — referência viva do ADR-018. |
 
 ADRs específicos apontam para a seção correspondente do MAPA quando há fluxo completo (ver ADR-020 abaixo, que aponta para §5 — `job_creation`).

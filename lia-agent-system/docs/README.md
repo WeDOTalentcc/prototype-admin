@@ -4,6 +4,21 @@ Biblioteca de documentação do sistema LIA (Learning Intelligence Assistant).
 
 ---
 
+## Handoff Documents (índice rápido)
+
+Conjunto canônico para qualquer dev que precise pegar a camada de IA da LIA do zero. Ler nesta ordem:
+
+| Arquivo | Para quê serve |
+|---------|----------------|
+| [LIA_AI_HANDOFF.md](./LIA_AI_HANDOFF.md) | Handoff técnico das 12 melhorias (FIX 1–12) na camada de IA: governance enforcement, observability, HITL, related_tools. |
+| [specs/ai/ADR-019-governance-and-observability.md](./specs/ai/ADR-019-governance-and-observability.md) | ADR-019: decisões arquiteturais sobre governance tags, FairnessGuard enforcement e observability. |
+| [CANONICAL_SOURCES_SPEC.md](./CANONICAL_SOURCES_SPEC.md) | Fonte da verdade sobre "onde mora cada responsabilidade" (observability, registries) — arbitragem entre módulos similares. |
+| [GLOSSARIO_ACTIONS_TOOLS.md](./GLOSSARIO_ACTIONS_TOOLS.md) | Glossário de 103 tools + 270 DomainActions (auto-gerado — não editar à mão). |
+| [DEVELOPER_HANDOFF.md](./DEVELOPER_HANDOFF.md) | Handoff operacional consolidado do ciclo 2026-04 (PARTES A→E + LLM Factory BYOK + proatividade + UX). |
+| [`../scripts/generate_tool_action_glossary.py`](../scripts/generate_tool_action_glossary.py) | Script que regenera `GLOSSARIO_ACTIONS_TOOLS.md` a partir do YAML e dos `DomainActions`. Rodar após qualquer mudança nas fontes. |
+
+---
+
 ## Documento Principal
 
 O documento central que consolida toda a análise arquitetural, inventário de código, gap analysis, portabilidade e roadmap:

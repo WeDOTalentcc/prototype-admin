@@ -1,3 +1,24 @@
+<!--
+================================================================================
+AUTO-GENERATED — DO NOT EDIT BY HAND
+================================================================================
+Este arquivo é gerado automaticamente por:
+    lia-agent-system/scripts/generate_tool_action_glossary.py
+
+Fontes de verdade (editar nestes arquivos, nunca neste documento):
+  - app/tools/tool_registry_metadata.yaml      (tools)
+  - app/domains/*/actions.py                   (DomainActions)
+  - app/domains/*/domain.py                    (DomainActions inline)
+
+Para regenerar após mudanças nas fontes:
+    cd lia-agent-system
+    python scripts/generate_tool_action_glossary.py
+
+Para verificar em CI se o arquivo está atualizado:
+    python scripts/generate_tool_action_glossary.py --check
+================================================================================
+-->
+
 # Glossário de Tools e DomainActions — LIA AI
 
 > **Fonte da verdade visível** para o time de desenvolvimento consumir e reproduzir a camada de IA da plataforma LIA.
