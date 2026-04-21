@@ -4,10 +4,12 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import { useLoadingWatchdog } from "@/hooks/shared/use-loading-watchdog"
 import type { CompanyData } from "@/components/settings/companyTeamHub.types"
+import type { CompanyBenefit } from "@/types/benefits"
 
 export interface CardBlock {
   key: string
   title: string
+  subtitle?: string
   iconName: string
   fields: CardField[]
   status: "configured" | "partial" | "pending"
@@ -34,9 +36,10 @@ interface CompanySettingsCardsState {
   isSavingField: boolean
 }
 
-interface BenefitItem {
+type BenefitItem = Partial<CompanyBenefit> & {
   id?: string
   name?: string
+  category?: string
   is_active?: boolean
 }
 
@@ -164,13 +167,14 @@ function buildBlocks(
   ]
 
   const activeBenefits = benefits.filter((b) => b.is_active !== false)
-  const benefitNames = benefits.slice(0, 5).map((b) => b.name).filter(Boolean)
-  const benefitsFields: CardField[] = [
-    { key: "benefits_count", label: "Total de Beneficios", value: benefits.length > 0 ? `${benefits.length} cadastrado(s)` : null, type: "text", editable: false, block: "benefits" },
-    { key: "benefits_active", label: "Beneficios Ativos", value: activeBenefits.length || null, type: "number", editable: false, block: "benefits" },
-    { key: "benefits_list", label: "Pacote", value: benefitNames.length > 0 ? benefitNames : null, type: "list", editable: false, block: "benefits" },
-    { key: "departments_count", label: "Departamentos", value: departments.length > 0 ? `${departments.length} cadastrado(s)` : null, type: "text", editable: false, block: "benefits" },
-  ]
+  const benefitsFields: CardField[] = []
+  const benefitsStatus: "configured" | "partial" | "pending" =
+    benefits.length === 0 ? "pending" : activeBenefits.length > 0 ? "configured" : "partial"
+  const benefitsSubtitle =
+    benefits.length === 0
+      ? "Nenhum benefício cadastrado"
+      : `${benefits.length} cadastrado${benefits.length === 1 ? "" : "s"} · ${activeBenefits.length} ativo${activeBenefits.length === 1 ? "" : "s"}`
+  void departments
 
   const pr = hiringPolicy?.pipeline_rules
   const sr = hiringPolicy?.scheduling_rules
@@ -227,7 +231,7 @@ function buildBlocks(
     { key: "basic", title: "Dados Basicos", iconName: "Building", fields: basicFields, status: computeBlockStatus(basicFields) },
     { key: "culture", title: "Cultura & EVP", iconName: "Heart", fields: cultureFields, status: computeBlockStatus(cultureFields) },
     { key: "tech", title: "Tech Stack", iconName: "Code", fields: techFields, status: computeBlockStatus(techFields) },
-    { key: "benefits", title: "Beneficios & Departamentos", iconName: "Gift", fields: benefitsFields, status: computeBlockStatus(benefitsFields) },
+    { key: "benefits", title: "Benefícios", subtitle: benefitsSubtitle, iconName: "Gift", fields: benefitsFields, status: benefitsStatus },
     { key: "policy", title: "Politicas de Recrutamento", iconName: "GitBranch", fields: policyFields, status: computeBlockStatus(policyFields) },
     { key: "workforce", title: "Workforce Planning", iconName: "BarChart3", fields: workforceFields, status: computeBlockStatus(workforceFields) },
     { key: "documents", title: "Documentos & Onboarding", iconName: "FileText", fields: documentFields, status: computeBlockStatus(documentFields) },
@@ -570,7 +574,7 @@ export function useCompanySettingsCards() {
           body: JSON.stringify({ additional_data: nextAdditional }),
         })
       } else if (block === "benefits") {
-        throw new Error("Para gerenciar beneficios e departamentos, use o painel especifico.")
+        throw new Error("Use a lista de benefícios para adicionar ou editar itens.")
       } else {
         throw new Error(`Bloco desconhecido: ${block}`)
       }
@@ -636,6 +640,8 @@ export function useCompanySettingsCards() {
 
   return {
     ...state,
+    benefits,
+    companyId,
     toggleBlock,
     startEditing,
     cancelEditing,

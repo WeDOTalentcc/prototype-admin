@@ -20,10 +20,13 @@ const CATEGORY_ICONS: Record<BenefitCategory, any> = {
   food: Utensils,
   transport: Car,
   education: GraduationCap,
+  wellness: Stethoscope,
   financial: Wallet,
   quality_life: Home,
   family: Baby,
+  flexibility: Home,
   security: ShieldIcon,
+  other: Home,
 }
 
 function formatBenefitDisplay(benefit: JobBenefit): string {

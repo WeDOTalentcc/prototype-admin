@@ -1,4 +1,15 @@
-export type BenefitCategory = 'health' | 'food' | 'transport' | 'education' | 'financial' | 'quality_life' | 'family' | 'security'
+export type BenefitCategory =
+  | 'health'
+  | 'food'
+  | 'transport'
+  | 'education'
+  | 'wellness'
+  | 'financial'
+  | 'quality_life'
+  | 'family'
+  | 'flexibility'
+  | 'security'
+  | 'other'
 
 export type BenefitValueType = 'monetary' | 'percentage' | 'informative'
 
@@ -67,8 +78,11 @@ export const BENEFIT_CATEGORY_META: Record<BenefitCategory, { name: string; icon
   food: { name: 'Alimentação', icon: 'Utensils' },
   transport: { name: 'Transporte', icon: 'Car' },
   education: { name: 'Educação & Desenvolvimento', icon: 'GraduationCap' },
+  wellness: { name: 'Bem-estar', icon: 'HeartPulse' },
   financial: { name: 'Financeiro', icon: 'Wallet' },
   quality_life: { name: 'Qualidade de Vida', icon: 'Home' },
   family: { name: 'Família', icon: 'Baby' },
+  flexibility: { name: 'Flexibilidade', icon: 'Clock' },
   security: { name: 'Segurança', icon: 'Shield' },
+  other: { name: 'Outros', icon: 'Gift' },
 }

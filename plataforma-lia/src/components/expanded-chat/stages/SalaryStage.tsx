@@ -77,10 +77,13 @@ const CATEGORY_ICONS: Record<BenefitCategory, any> = {
   food: Utensils,
   transport: Car,
   education: GraduationCap,
+  wellness: Stethoscope,
   financial: Wallet,
   quality_life: HomeIcon,
   family: Baby,
+  flexibility: HomeIcon,
   security: ShieldIcon,
+  other: HomeIcon,
 }
 
 function formatBenefitDisplay(benefit: { value_type?: string; value?: string; percentage_value?: number; value_details?: string }): string {

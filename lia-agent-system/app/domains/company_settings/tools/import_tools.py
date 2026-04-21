@@ -332,7 +332,7 @@ async def import_benefits_from_data(
     category: health | food | transport | education | financial | quality_life | family | security
 
     Args:
-        benefits: list of {name, category, description, is_highlight}
+        benefits: list of {name, category, description, is_highlighted}
         replace_existing: if True, deactivates existing benefits before insert
 
     Returns:
@@ -393,7 +393,9 @@ async def import_benefits_from_data(
                         name=str(name)[:200],
                         category=b.get("category", "other"),
                         description=b.get("description", "")[:1000] if b.get("description") else None,
-                        is_highlight=bool(b.get("is_highlight", False)),
+                        is_highlighted=bool(
+                            b.get("is_highlighted", b.get("is_highlight", False))
+                        ),
                         is_active=True,
                     )
                     db.add(record)
@@ -490,10 +492,11 @@ def register_company_settings_tools() -> None:
                             "category": {
                                 "type": "string",
                                 "enum": ["health", "food", "transport", "education",
-                                         "financial", "quality_life", "family", "security", "other"],
+                                         "wellness", "financial", "quality_life",
+                                         "family", "flexibility", "security", "other"],
                             },
                             "description": {"type": "string"},
-                            "is_highlight": {"type": "boolean"},
+                            "is_highlighted": {"type": "boolean"},
                         },
                         "required": ["name"],
                     },

@@ -27,6 +27,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
 export function MinhaEmpresaHub() {
   const {
     blocks,
+    benefits,
+    companyId,
     loading,
     error,
     successMessage,
@@ -138,6 +140,9 @@ export function MinhaEmpresaHub() {
             recentlyUpdated={recentlyUpdated}
             editingField={editingField}
             isSavingField={isSavingField}
+            benefits={benefits}
+            companyId={companyId}
+            onBenefitsChanged={refreshAll}
             onToggle={() => toggleBlock(block.key)}
             onStartEditing={startEditing}
             onCancelEditing={cancelEditing}

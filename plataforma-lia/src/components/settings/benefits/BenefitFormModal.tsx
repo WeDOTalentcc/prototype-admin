@@ -37,6 +37,8 @@ import {
   Home,
   Baby,
   Shield,
+  Clock,
+  Gift,
 } from "lucide-react"
 
 const BENEFIT_CATEGORIES = [
@@ -44,10 +46,13 @@ const BENEFIT_CATEGORIES = [
   { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange" },
   { id: "transport", name: "Transporte", icon: Car, color: "text-lia-text-primary" },
   { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple" },
+  { id: "wellness", name: "Bem-estar", icon: Stethoscope, color: "text-wedo-cyan" },
   { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success" },
   { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-lia-text-secondary" },
   { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta" },
+  { id: "flexibility", name: "Flexibilidade", icon: Clock, color: "text-wedo-purple" },
   { id: "security", name: "Segurança", icon: Shield, color: "text-lia-text-primary" },
+  { id: "other", name: "Outros", icon: Gift, color: "text-lia-text-secondary" },
 ]
 
 const VALUE_TYPES = [

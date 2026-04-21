@@ -9,6 +9,8 @@ import type { CardBlock, CardField } from "@/hooks/settings/use-company-settings
 import { textStyles } from "@/lib/design-tokens"
 import type { LucideIcon } from "lucide-react"
 import { DocumentUploadCard } from "./DocumentUploadCard"
+import { BenefitsListSection } from "./benefits/BenefitsListSection"
+import type { CompanyBenefit } from "@/types/benefits"
 
 function formatFieldValue(value: unknown): string {
   if (value === null || value === undefined || value === "") return "Nao definido"
@@ -177,6 +179,9 @@ interface MinhaEmpresaCardProps {
   recentlyUpdated: Set<string>
   editingField: { block: string; field: string } | null
   isSavingField: boolean
+  benefits?: Array<Partial<CompanyBenefit> & { id?: string; name?: string }>
+  companyId?: string | null
+  onBenefitsChanged?: () => Promise<void> | void
   onToggle: () => void
   onStartEditing: (block: string, field: string) => void
   onCancelEditing: () => void
@@ -190,6 +195,9 @@ export function MinhaEmpresaCard({
   recentlyUpdated,
   editingField,
   isSavingField,
+  benefits = [],
+  companyId = null,
+  onBenefitsChanged,
   onToggle,
   onStartEditing,
   onCancelEditing,
@@ -205,9 +213,17 @@ export function MinhaEmpresaCard({
         aria-expanded={isExpanded}
         aria-label={`${block.title} - ${statusStyle.label}`}
       >
-        <div className="flex items-center gap-2">
-          {IconComp && <IconComp className="w-4 h-4 text-lia-text-secondary" />}
+        <div className="flex items-center gap-2 min-w-0">
+          {IconComp && <IconComp className="w-4 h-4 text-lia-text-secondary flex-shrink-0" />}
           <span className={textStyles.h3}>{block.title}</span>
+          {block.subtitle && (
+            <span
+              className={`${textStyles.description} truncate`}
+              data-testid={`block-subtitle-${block.key}`}
+            >
+              · {block.subtitle}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <span
@@ -229,6 +245,13 @@ export function MinhaEmpresaCard({
             <div className="mb-3">
               <DocumentUploadCard />
             </div>
+          )}
+          {block.key === "benefits" && (
+            <BenefitsListSection
+              benefits={benefits}
+              companyId={companyId}
+              onChanged={onBenefitsChanged || (() => {})}
+            />
           )}
           <div className="space-y-1">
             {block.fields.map((field) => {
