@@ -36,6 +36,11 @@ class ToolDefinition:
     governance_tags: list[str] = field(default_factory=list)
     # FIX 4 — Suggested follow-up tools (proactive suggestions after execution)
     related_tools: list[str] = field(default_factory=list)
+    # FIX 8 G2 — Side effects classification. Values: none | db_write |
+    # external_api_call | credits_consumed | audit_trail | email_sent |
+    # webhook_fired | whatsapp_sent | write_destructive | mock_only
+    # Drives retry/idempotency/audit decisions downstream.
+    side_effects: list[str] = field(default_factory=list)
     
     def to_claude_schema(self) -> dict[str, Any]:
         """Convert to Claude's tool format."""

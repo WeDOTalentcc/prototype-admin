@@ -195,6 +195,11 @@ def sync_descriptions_from_yaml() -> None:
             if isinstance(related_tools, list):
                 tool.related_tools = list(related_tools)
 
+            # FIX 8 G2 — populate side_effects from YAML
+            side_effects = meta.get("side_effects") or []
+            if isinstance(side_effects, list):
+                tool.side_effects = list(side_effects)
+
             synced += 1
 
         _logger.info(
