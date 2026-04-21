@@ -580,6 +580,37 @@ export function useCompanySettingsCards() {
         throw new Error(message)
       }
 
+      // Bidirectional UI -> chat bridge (Task #712): emit canonical events so
+      // (a) the OnboardingActionOrchestrator can advance its state machine
+      // when a save originates from a manual-edit card, and (b) the chat
+      // context assembly can surface a silent "system note" telling LIA the
+      // recruiter just edited <section>.<field>. We dispatch BOTH events here
+      // explicitly (defense-in-depth) on top of the global fetch interceptor
+      // in SettingsSyncBroadcaster so the bridge survives even if a hub
+      // bypasses the global wrapper (e.g. via axios or background save).
+      const blockToSection: Record<string, { section: string; actionId: string }> = {
+        basic: { section: "profile", actionId: "configure_profile" },
+        culture: { section: "culture", actionId: "configure_culture" },
+        tech: { section: "tech_stack", actionId: "configure_tech_stack" },
+        policy: { section: "hiring_policies", actionId: "configure_culture" },
+        workforce: { section: "workforce", actionId: "configure_workforce" },
+        documents: { section: "profile", actionId: "configure_profile" },
+        benefits: { section: "benefits", actionId: "configure_benefits" },
+      }
+      const mapping = blockToSection[block]
+      if (mapping && typeof window !== "undefined") {
+        const detail = {
+          actionId: mapping.actionId,
+          section: mapping.section,
+          field,
+          value,
+          source: "ui" as const,
+          ts: Date.now(),
+        }
+        window.dispatchEvent(new CustomEvent("lia:settings-success", { detail }))
+        window.dispatchEvent(new CustomEvent("lia:settings-updated", { detail }))
+      }
+
       setSuccessMessage("Campo atualizado com sucesso!")
       setTimeout(() => setSuccessMessage(null), 3000)
       await loadAll()

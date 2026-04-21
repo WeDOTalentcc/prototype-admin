@@ -56,6 +56,13 @@ const ENDPOINT_TO_ACTION: Array<{
     actionId: "configure_culture",
     section: "hiring_policies",
   },
+  {
+    // Single-block PATCH used by use-company-settings-cards saveField for
+    // policy edits (block === "policy").
+    match: /\/api\/backend-proxy\/hiring-policy(\/|$|\?)/,
+    actionId: "configure_culture",
+    section: "hiring_policies",
+  },
 ]
 
 const WRITE_METHODS = new Set(["POST", "PUT", "PATCH"])

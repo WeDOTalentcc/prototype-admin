@@ -1,77 +1,119 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 /**
- * useOnboardingFlow — detects first login and manages onboarding state.
+ * useOnboardingFlow — gates onboarding using REAL setup progress.
  *
- * Checks auth store for activation_state and first_login flag.
- * Redirects to /onboarding if needed.
+ * Source of truth: GET /api/backend-proxy/settings/progress (overall: 0..100).
+ * - needsOnboarding when overall < COMPLETE_THRESHOLD (80%).
+ * - >= 80% dismisses the banner (parity with SetupProgressBanner).
  *
- * Usage in layout:
- *   const { needsOnboarding, sessionId } = useOnboardingFlow()
- *   if (needsOnboarding) router.push("/onboarding")
+ * The previous implementation derived gating from `activation_state` returned by
+ * `/onboarding/status`, which did not reflect what the recruiter had actually
+ * filled in Configurações. Acceptance criteria for Task #712 require that the
+ * proactive onboarding be driven by setup_progress so that when the user
+ * advances via chat OR via UI the gate flips automatically.
  */
+
+const ONBOARDING_CHECKED_KEY = "lia-onboarding-checked"
+const COMPLETE_THRESHOLD = 80
 
 interface OnboardingFlowState {
   needsOnboarding: boolean
   sessionId: string | null
-  activationState: string | null
+  setupProgress: number | null
   loading: boolean
 }
 
-const ONBOARDING_CHECKED_KEY = "lia-onboarding-checked"
+interface ProgressPayload {
+  overall?: number
+  sections?: Record<string, number>
+  setup_progress?: number
+}
 
 export function useOnboardingFlow() {
   const [state, setState] = useState<OnboardingFlowState>({
     needsOnboarding: false,
     sessionId: null,
-    activationState: null,
+    setupProgress: null,
     loading: true,
   })
 
-  useEffect(() => {
-    async function checkOnboarding() {
-      // Skip if already checked this session
-      if (typeof window !== "undefined" && sessionStorage.getItem(ONBOARDING_CHECKED_KEY)) {
-        setState((prev) => ({ ...prev, loading: false }))
-        return
+  const evaluate = useCallback(async () => {
+    try {
+      const [progressRes, sessionRes] = await Promise.all([
+        fetch("/api/backend-proxy/settings/progress/", { credentials: "include" }),
+        fetch("/api/backend-proxy/onboarding/status", { credentials: "include" }).catch(
+          () => null,
+        ),
+      ])
+
+      let overall: number | null = null
+      if (progressRes.ok) {
+        const data: ProgressPayload = await progressRes.json()
+        const raw =
+          typeof data.overall === "number"
+            ? data.overall
+            : typeof data.setup_progress === "number"
+              ? data.setup_progress
+              : null
+        if (typeof raw === "number" && Number.isFinite(raw)) {
+          overall = Math.max(0, Math.min(100, raw))
+        }
       }
 
-      try {
-        const resp = await fetch("/api/backend-proxy/onboarding/status", {
-          credentials: "include",
-        })
-
-        if (!resp.ok) {
-          setState((prev) => ({ ...prev, loading: false }))
-          return
+      let sessionId: string | null = null
+      if (sessionRes && sessionRes.ok) {
+        try {
+          const sd = await sessionRes.json()
+          sessionId = sd?.session?.id ?? null
+        } catch {
+          sessionId = null
         }
-
-        const data = await resp.json()
-        const needsOnboarding =
-          data.activation_state === "onboarding" &&
-          !data.onboarding_completed &&
-          data.session?.phase !== "complete"
-
-        setState({
-          needsOnboarding,
-          sessionId: data.session?.id ?? null,
-          activationState: data.activation_state,
-          loading: false,
-        })
-
-        // Mark as checked so we don't re-check on every navigation
-        if (!needsOnboarding && typeof window !== "undefined") {
-          sessionStorage.setItem(ONBOARDING_CHECKED_KEY, "true")
-        }
-      } catch {
-        setState((prev) => ({ ...prev, loading: false }))
       }
+
+      const needsOnboarding = overall === null ? false : overall < COMPLETE_THRESHOLD
+
+      setState({
+        needsOnboarding,
+        sessionId,
+        setupProgress: overall,
+        loading: false,
+      })
+
+      if (!needsOnboarding && typeof window !== "undefined") {
+        sessionStorage.setItem(ONBOARDING_CHECKED_KEY, "true")
+      }
+    } catch {
+      setState((prev) => ({ ...prev, loading: false }))
     }
-
-    checkOnboarding()
   }, [])
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && sessionStorage.getItem(ONBOARDING_CHECKED_KEY)) {
+      // Still evaluate so completion thresholds reflect later UI/chat edits in
+      // this session, but skip the redirect-y "needs" flip on the first paint.
+      evaluate()
+      return
+    }
+    evaluate()
+  }, [evaluate])
+
+  // Re-evaluate whenever a settings save happens (UI or chat) — keeps the
+  // banner/gate honest without relying on a hard reload.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const handler = () => {
+      evaluate()
+    }
+    window.addEventListener("lia:settings-success", handler)
+    window.addEventListener("lia:settings-updated", handler)
+    return () => {
+      window.removeEventListener("lia:settings-success", handler)
+      window.removeEventListener("lia:settings-updated", handler)
+    }
+  }, [evaluate])
 
   const markComplete = useCallback(async () => {
     try {
@@ -81,15 +123,18 @@ export function useOnboardingFlow() {
         body: JSON.stringify({ phase: "complete" }),
         credentials: "include",
       })
-      setState((prev) => ({ ...prev, needsOnboarding: false, activationState: "active" }))
+      setState((prev) => ({ ...prev, needsOnboarding: false }))
       if (typeof window !== "undefined") {
         sessionStorage.setItem(ONBOARDING_CHECKED_KEY, "true")
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [])
 
   return {
     ...state,
+    activationState: state.needsOnboarding ? "onboarding" : "active",
     markComplete,
   }
 }
