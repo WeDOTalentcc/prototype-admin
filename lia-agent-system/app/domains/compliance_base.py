@@ -249,7 +249,7 @@ class ComplianceDomainPrompt(DomainPrompt):
             parts.append(defensive_block)
 
         # --- Guardrails (from guardrails_block.yaml) ---
-        for key in ("identity", "hallucination", "prompt_security", "multi_tenancy", "negation"):
+        for key in ("identity", "hallucination", "capability_truthfulness", "prompt_security", "multi_tenancy", "negation"):
             block = universal.get(key, "")
             if block:
                 parts.append(block)
