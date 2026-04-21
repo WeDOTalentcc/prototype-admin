@@ -46,6 +46,20 @@ _POSITIONAL_PATTERNS = re.compile(
     re.IGNORECASE | re.UNICODE,
 )
 
+# ---------------------------------------------------------------------------
+# FIX 26 (2026-04-21) — Quantifier patterns.
+# Closes chat gap: user said "todas" after LIA listed statuses and LIA asked
+# "todas o quê?". Root cause: bare quantifier words ("todas", "nenhum",
+# "alguns", "tudo", "cada", "qualquer") weren't in any gate pattern, so the
+# memory resolver skipped enrichment and the LLM treated them as standalone.
+# Now gated + enriched with prior-entity context when possible.
+# ---------------------------------------------------------------------------
+_QUANTIFIER_PATTERNS = re.compile(
+    r"^\s*(todas?|todos?|nenhum(a)?|alguns|algumas|tudo|cada|qualquer)\s*[.!?]?\s*$",
+    re.IGNORECASE | re.UNICODE,
+)
+
+
 _POSITIONAL_WORD_TO_INDEX: dict[str, int] = {
     "primeiro": 0, "1o": 0, "1º": 0, "1°": 0,
     "segundo": 1, "2o": 1, "2º": 1, "2°": 1,
@@ -163,6 +177,7 @@ def _should_resolve(message: str) -> bool:
         or _ENTITY_REF_PATTERNS.search(message)
         or _POSITIONAL_PATTERNS.search(message)
         or is_simple_affirmation(message)
+        or _QUANTIFIER_PATTERNS.search(message)  # FIX 26: bare quantifiers ("todas", "nenhum")
     )
 
 

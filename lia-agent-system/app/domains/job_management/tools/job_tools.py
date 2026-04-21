@@ -363,6 +363,65 @@ async def pause_job(
         }
 
 
+# ---------------------------------------------------------------------------
+# FIX 22 (2026-04-21) — close_job.reason PT→EN synonym normalizer.
+#
+# Closes chat gap: recruiter said "orçamento" and LIA treated it as a generic
+# budget query instead of the close_reason enum value "budget". This helper
+# maps common PT synonyms to canonical enum values so the LLM (or direct user
+# text) can speak natural PT-BR without triggering clarification spam.
+#
+# Returns None for unknown values so caller can reject cleanly with enum hint.
+# ---------------------------------------------------------------------------
+
+_CLOSE_REASON_VALID = frozenset({"filled", "cancelled", "budget", "on_hold", "other"})
+
+_CLOSE_REASON_PT_SYNONYMS = {
+    # budget
+    "orçamento": "budget",
+    "orcamento": "budget",
+    "restrição orçamentária": "budget",
+    "restricao orcamentaria": "budget",
+    "financeiro": "budget",
+    # filled
+    "preenchida": "filled",
+    "preenchido": "filled",
+    "contratado": "filled",
+    "contratada": "filled",
+    "hired": "filled",
+    # cancelled
+    "cancelada": "cancelled",
+    "cancelado": "cancelled",
+    "canceled": "cancelled",
+    "descontinuada": "cancelled",
+    "descontinuado": "cancelled",
+    # on_hold
+    "congelada": "on_hold",
+    "congelado": "on_hold",
+    "em espera": "on_hold",
+    "em_espera": "on_hold",
+    "pausada": "on_hold",
+    "pausado": "on_hold",
+    "on hold": "on_hold",
+    # other
+    "outro": "other",
+    "outra": "other",
+    "outros": "other",
+}
+
+
+def _normalize_close_reason(raw: str | None) -> str | None:
+    """FIX 22: map PT synonyms and canonical values to close_reason enum."""
+    if raw is None:
+        return None
+    key = str(raw).strip().lower()
+    if not key:
+        return None
+    if key in _CLOSE_REASON_VALID:
+        return key
+    return _CLOSE_REASON_PT_SYNONYMS.get(key)
+
+
 async def close_job(
     job_id: str,
     reason: str,
@@ -387,8 +446,26 @@ async def close_job(
     Side effects: db_write, email_sent, audit_trail, write_destructive
     Governance: multi_tenant, hitl_required, audit_trail, write_destructive
     """
-    logger.info(f"🔒 Closing job vacancy: {job_id}, reason: {reason}")
-    
+    logger.info(f"🔒 Closing job vacancy: {job_id}, reason: {reason!r} (raw)")
+
+    # FIX 22 (2026-04-21): normalize PT synonyms to canonical enum before validate.
+    # Without this, recruiter saying "orçamento" hit enum mismatch and LIA asked
+    # "qual orçamento?" instead of closing the job.
+    _normalized = _normalize_close_reason(reason)
+    if _normalized is None:
+        return {
+            "success": False,
+            "message": (
+                f"❌ Motivo de encerramento '{reason}' não reconhecido. "
+                f"Use um dos valores: preenchida (filled), cancelada (cancelled), "
+                f"orçamento (budget), em espera (on_hold), ou outro (other)."
+            ),
+            "error": "invalid_close_reason",
+            "valid_values": sorted(_CLOSE_REASON_VALID),
+        }
+    reason = _normalized
+    logger.info(f"🔒 close_job reason normalized: {reason}")
+
     reason_messages = {
         "filled": "preenchida",
         "cancelled": "cancelada",
@@ -700,7 +777,7 @@ CLOSE_JOB_SCHEMA = {
         },
         "reason": {
             "type": "string",
-            "description": "Reason for closing",
+            "description": "FIX 22: motivo do encerramento. Aceita valor canônico OU sinônimo PT — 'filled'/'preenchida'/'contratado', 'cancelled'/'cancelada', 'budget'/'orçamento', 'on_hold'/'congelada'/'em espera', 'other'/'outro'. Normalização no handler.",
             "enum": ["filled", "cancelled", "budget", "on_hold", "other"]
         },
         "hired_candidate_id": {

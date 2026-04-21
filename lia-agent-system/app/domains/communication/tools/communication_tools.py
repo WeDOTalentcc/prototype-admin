@@ -1005,6 +1005,196 @@ SEND_FEEDBACK_SCHEMA = {
 }
 
 
+# ---------------------------------------------------------------------------
+# FIX 21 (2026-04-21) — Template discovery tools (READ-ONLY).
+#
+# Closes chat gap: user asked "me mostre os templates" and LIA said "não tenho
+# função". Before FIX 21 this module only had send_* tools. Now LIA can:
+#   - list templates the tenant has access to (list_message_templates)
+#   - render a specific template without sending (preview_message_template)
+#
+# Tenant isolation: company_id extracted from injected _context; templates
+# returned are those owned by the tenant OR system templates (is_system=True).
+# Same visibility rule used in _load_email_template for consistency.
+# ---------------------------------------------------------------------------
+
+
+async def list_message_templates(
+    stage_name: str | None = None,
+    limit: int = 50,
+    **kwargs,
+) -> dict[str, Any]:
+    """List email templates visible to the current tenant.
+
+    Args:
+        stage_name: Optional filter by stage (e.g. "rejection", "next_steps",
+            "offer", "close_job_notification"). If None, lists all stages.
+        limit: Max number of templates to return (default 50 — templates list
+            is small, higher than search_jobs default).
+
+    Returns:
+        dict with success, message, data={templates: [{id, stage_name,
+        subject, is_default, is_system}], count, filters_applied}.
+
+    Tenant scope: returns templates where company_id == current tenant OR
+    is_system=True (shared across tenants).
+    """
+    _context = _extract_context(kwargs)
+    company_id = _context.company_id if _context else kwargs.get("company_id")
+
+    try:
+        from sqlalchemy import or_, select
+
+        from app.core.database import get_tenant_aware_session
+        from lia_models.recruitment_email_template import RecruitmentEmailTemplate
+
+        async with get_tenant_aware_session() as db:
+            stmt = select(RecruitmentEmailTemplate).where(
+                RecruitmentEmailTemplate.is_active.is_(True)
+            )
+            if company_id is not None:
+                stmt = stmt.where(
+                    or_(
+                        RecruitmentEmailTemplate.company_id == str(company_id),
+                        RecruitmentEmailTemplate.is_system.is_(True),
+                    )
+                )
+            if stage_name:
+                stmt = stmt.where(RecruitmentEmailTemplate.stage_name == stage_name)
+            stmt = stmt.order_by(
+                RecruitmentEmailTemplate.stage_name.asc(),
+                RecruitmentEmailTemplate.is_default.desc(),
+            ).limit(limit)
+
+            result = await db.execute(stmt)
+            rows = result.scalars().all()
+
+            templates = [
+                {
+                    "id": str(t.id),
+                    "stage_name": t.stage_name,
+                    "subject": t.subject or "",
+                    "is_default": bool(t.is_default),
+                    "is_system": bool(getattr(t, "is_system", False)),
+                }
+                for t in rows
+            ]
+
+            filter_desc = f" para o estágio '{stage_name}'" if stage_name else ""
+            message = (
+                f"✅ Encontrado(s) {len(templates)} template(s){filter_desc}."
+                if templates
+                else f"Nenhum template encontrado{filter_desc}."
+                "  Dica: templates são cadastrados em Configurações > Comunicação."
+            )
+
+            return {
+                "success": True,
+                "message": message,
+                "data": {
+                    "templates": templates,
+                    "count": len(templates),
+                    "filters_applied": {"stage_name": stage_name, "limit": limit},
+                },
+            }
+
+    except Exception as e:
+        logger.error(f"❌ FIX 21 list_message_templates error: {e}", exc_info=True)
+        return {
+            "success": False,
+            "message": f"❌ Erro ao listar templates: {str(e)}",
+            "error": str(e),
+        }
+
+
+async def preview_message_template(
+    template_id: str,
+    variables: dict[str, Any] | None = None,
+    **kwargs,
+) -> dict[str, Any]:
+    """Preview a specific email template rendered with optional variables.
+
+    This is a READ-ONLY operation: nothing is sent. LIA uses this when the
+    recruiter says "me mostre o template X" or "como ficaria essa mensagem?".
+
+    Args:
+        template_id: Either UUID of the template or its stage_name (e.g.
+            "rejection").
+        variables: Optional dict of placeholder→value used to render
+            {{placeholder}} strings. If omitted, raw template with
+            placeholders visible is returned (useful for auditing).
+
+    Returns:
+        dict with success, message, data={template_id, stage_name, subject,
+        body_html, body_text, placeholders_unresolved}.
+
+    Tenant scope inherited from _load_email_template helper.
+    """
+    _context = _extract_context(kwargs)
+    company_id = _context.company_id if _context else kwargs.get("company_id")
+
+    try:
+        from app.core.database import get_tenant_aware_session
+
+        async with get_tenant_aware_session() as db:
+            rendered = await _load_email_template(
+                db=db,
+                template_id=str(template_id),
+                variables=variables or {},
+                company_id=str(company_id) if company_id else None,
+            )
+
+            if rendered is None:
+                return {
+                    "success": False,
+                    "message": (
+                        f"❌ Template '{template_id}' não encontrado ou fora do escopo "
+                        f"desta empresa. Use list_message_templates para ver disponíveis."
+                    ),
+                    "error": "template_not_found_or_not_visible",
+                }
+
+            subject = rendered.get("subject", "")
+            body_html = rendered.get("body_html", "")
+            body_text = rendered.get("body_text", "")
+
+            # Scan for unresolved placeholders (helpful feedback)
+            import re as _re
+
+            unresolved: set[str] = set()
+            for blob in (subject, body_html, body_text):
+                unresolved.update(
+                    _re.findall(r"\{\{\s*([a-zA-Z0-9_.-]+)\s*\}\}", blob)
+                )
+
+            return {
+                "success": True,
+                "message": (
+                    f"✅ Template '{template_id}' renderizado."
+                    + (
+                        f" {len(unresolved)} placeholder(s) não preenchido(s)."
+                        if unresolved
+                        else ""
+                    )
+                ),
+                "data": {
+                    "template_id": str(template_id),
+                    "subject": subject,
+                    "body_html": body_html,
+                    "body_text": body_text,
+                    "placeholders_unresolved": sorted(unresolved),
+                },
+            }
+
+    except Exception as e:
+        logger.error(f"❌ FIX 21 preview_message_template error: {e}", exc_info=True)
+        return {
+            "success": False,
+            "message": f"❌ Erro ao pré-visualizar template: {str(e)}",
+            "error": str(e),
+        }
+
+
 def register_communication_tools() -> None:
     """Register all communication tools in the registry."""
     
@@ -1047,5 +1237,50 @@ def register_communication_tools() -> None:
         handler=send_feedback,
         allowed_agents=["orchestrator", "recruiter_assistant", "analyst_feedback"]
     ))
+
+    # FIX 21 (2026-04-21) — template discovery tools (READ-ONLY).
+    tool_registry.register(ToolDefinition(
+        name="list_message_templates",
+        description=(
+            "FIX 21: Listar templates de email disponíveis para a empresa. "
+            "Use quando o recrutador pedir para VER ou LISTAR templates "
+            "(ex.: 'me mostre os templates', 'quais templates de rejeição temos'). "
+            "NÃO envia nada — somente lista. Aceita filtro opcional stage_name "
+            "(ex.: 'rejection', 'next_steps', 'offer', 'close_job_notification')."
+        ),
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "stage_name": {"type": "string", "description": "Filtro opcional por estágio (rejection/next_steps/offer/close_job_notification)"},
+                "limit": {"type": "integer", "default": 50, "description": "Máximo de templates retornados"},
+            },
+        },
+        handler=list_message_templates,
+        allowed_agents=["recruiter_assistant", "analyst_feedback", "orchestrator"],
+    ))
+
+    tool_registry.register(ToolDefinition(
+        name="preview_message_template",
+        description=(
+            "FIX 21: Pré-visualizar o conteúdo de um template de email renderizado, "
+            "sem enviar. Use quando o recrutador quiser VER como a mensagem ficará. "
+            "Aceita template_id (UUID ou stage_name) e variables opcionais para "
+            "preencher placeholders {{...}}. READ-ONLY — não dispara envio."
+        ),
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "template_id": {"type": "string", "description": "UUID do template OU stage_name (ex.: 'rejection')"},
+                "variables": {
+                    "type": "object",
+                    "description": "Dict opcional placeholder→valor. Ex.: {'candidate_name': 'Ana', 'job_title': 'Dev'}.",
+                },
+            },
+            "required": ["template_id"],
+        },
+        handler=preview_message_template,
+        allowed_agents=["recruiter_assistant", "analyst_feedback", "orchestrator"],
+    ))
+
     
     logger.info("✅ Registered 5 communication tools")

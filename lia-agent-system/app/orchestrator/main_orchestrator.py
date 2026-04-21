@@ -1408,10 +1408,30 @@ def _get_suggested_prompts(intent: str, candidates_count: int, selected_count: i
     return base_prompts.get(intent, ["Como posso te ajudar?"])
 
 
+# FIX 25 (2026-04-21) — Enum-aware parameter normalizers.
+# Maps param_name → normalizer fn. When a pending action collects a param
+# with an entry here, the raw user message is coerced to the canonical
+# enum value (e.g. "orçamento" → "budget") BEFORE being stored in
+# collected_params. This ensures downstream tool calls + LLM context
+# always see normalized values.
+_PARAM_NORMALIZERS: dict[str, Any] = {}
+try:
+    from app.domains.job_management.tools.job_tools import _normalize_close_reason
+    _PARAM_NORMALIZERS["reason"] = _normalize_close_reason
+except Exception:  # pragma: no cover — defensive for partial imports
+    pass
+
+
 async def _extract_param_value(
     message: str, param_name: str, candidates: list[dict[str, Any]]
 ) -> str | None:
-    """Extração simples de parâmetro da mensagem do usuário."""
+    """Extração simples de parâmetro da mensagem do usuário.
+
+    FIX 25 (2026-04-21): quando o param tem um normalizer registrado em
+    _PARAM_NORMALIZERS, coerce o valor cru para o enum canônico antes de
+    devolver. Isso impede que collected_params guarde variantes soltas
+    (ex.: "orçamento") enquanto downstream espera canônico ("budget").
+    """
     msg = message.strip()
     if not msg:
         return None
@@ -1423,6 +1443,16 @@ async def _extract_param_value(
             name = c.get("name", "")
             if name and name.lower() in msg_lower:
                 return str(c.get("id", ""))
+
+    # FIX 25: enum-aware coercion when a normalizer exists for this param.
+    normalizer = _PARAM_NORMALIZERS.get(param_name)
+    if normalizer is not None:
+        coerced = normalizer(msg)
+        if coerced is not None:
+            return coerced
+        # Normalizer said unknown → fall through to raw passthrough.
+        # Higher-level caller (close_job entry) will reject with enum-hint
+        # message if the tool is eventually invoked with invalid value.
 
     # Fallback: retorna a mensagem bruta como valor
     return msg if len(msg) <= 200 else msg[:200]

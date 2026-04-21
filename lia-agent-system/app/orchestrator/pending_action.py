@@ -49,6 +49,52 @@ class PendingActionState:
     def next_missing_param(self) -> str | None:
         return self.missing_params[0] if self.missing_params else None
 
+    def to_prompt_context(self) -> str:
+        """FIX 25 (2026-04-21) — format state for system-prompt injection.
+
+        Returns a structured block the LLM can read to know exactly what
+        action is pending, what's been collected, and what's still missing.
+        Without this context, the LLM (especially across turn boundaries)
+        forgets partial state and asks for already-collected values OR
+        treats user replies as standalone queries.
+
+        Example output:
+            ## CONTEXTO DE AÇÃO PENDENTE (FIX 25)
+            Ação: close_job (intent: cancelar_vaga, domínio: job_management)
+            Já coletado:
+              - job_id = v0040
+            Ainda falta:
+              - reason (próximo a perguntar)
+            ID da pendência: pid-1
+
+        Inject BEFORE user message in the system prompt when a pending
+        action exists. Initiative II will wire this into the orchestrator
+        prompt assembly pipeline.
+        """
+        lines = [
+            "## CONTEXTO DE AÇÃO PENDENTE (FIX 25)",
+            f"Ação: {self.action_id} (intent: {self.intent}, domínio: {self.domain_id})",
+        ]
+        if self.collected_params:
+            lines.append("Já coletado:")
+            for k, v in self.collected_params.items():
+                lines.append(f"  - {k} = {v}")
+        else:
+            lines.append("Já coletado: (nenhum)")
+
+        if self.missing_params:
+            lines.append("Ainda falta:")
+            for i, p in enumerate(self.missing_params):
+                suffix = " (próximo a perguntar)" if i == 0 else ""
+                lines.append(f"  - {p}{suffix}")
+        elif self.awaiting_confirmation:
+            lines.append("Status: aguardando confirmação do usuário")
+        else:
+            lines.append("Status: completo, pronto para executar")
+
+        lines.append(f"ID da pendência: {self.pending_id}")
+        return "\n".join(lines)
+
 
 class PendingActionStore:
 
