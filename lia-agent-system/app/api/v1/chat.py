@@ -436,6 +436,24 @@ async def send_message(
             if isinstance(_meta["context_data"], dict):
                 _meta["context_data"]["pipeline_rail"] = _pipeline_rail
 
+        # Task #716: forward analyze_website preview to the chat layer so the
+        # frontend can render a "review & confirm" card before the second-turn
+        # write. Backend never persists on this turn — `requires_human_approval`
+        # makes that contract explicit (TIER 3).
+        if isinstance(workflow_data, dict):
+            _pending_writes = workflow_data.get("pending_writes")
+            if isinstance(_pending_writes, dict) and _pending_writes:
+                _meta["pending_writes"] = _pending_writes
+                _meta["requires_human_approval"] = bool(
+                    workflow_data.get("requires_human_approval", True)
+                )
+                _nav_hint = workflow_data.get("navigation_hint")
+                if isinstance(_nav_hint, dict):
+                    _meta["navigation_hint"] = _nav_hint
+                _src_url = workflow_data.get("url")
+                if _src_url:
+                    _meta["source_url"] = _src_url
+
         # Update snapshot with orchestrator results
         _conv_snapshot["title"] = _conv_snapshot["title"] or message_data.content[:100]
         _conv_snapshot["intent"] = detected_intent or _conv_snapshot["intent"]

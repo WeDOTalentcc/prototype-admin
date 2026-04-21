@@ -512,3 +512,189 @@ async def test_configure_benefits_propagates_fairness_block(
         )
     assert resp.success is False
     assert (resp.data or {}).get("blocked_field") == "description"
+
+
+# ---------------------------------------------------------------------------
+# Task #716 — analyze_website now returns `pending_writes` (phase 1) and
+# accepts `confirm=True` + `confirmed_fields` (phase 2) to persist via the
+# canonical save tools, mirroring the process_document flow.
+# ---------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_analyze_website_success_includes_pending_writes(
+    domain: CompanySettingsDomain,
+) -> None:
+    """Phase 1: scrape success surfaces `pending_writes` extracted from text
+    and from the LinkedIn payload (without writing anything)."""
+    target = (
+        "app.domains.company.services.company_scraper_service.CompanyScraperService"
+    )
+    fake_instance = AsyncMock()
+    fake_instance.scrape_website = AsyncMock(
+        return_value={
+            "success": True,
+            "pages_scraped": 4,
+            "pages": [],
+            "content": (
+                "## Missao\nConectar talento e proposito.\n\n"
+                "## Valores\n- Etica\n- Transparencia\n- Foco em resultado\n"
+            ),
+            "linkedin_data": {
+                "name": "WeDOTalent",
+                "industry": "HR Tech",
+                "employee_count": 42,
+                "company_size": "Startup",
+                "founded_year": 2021,
+            },
+            "source": "live",
+        }
+    )
+    save_targets = [
+        "app.domains.company_settings.agents.company_tool_registry._wrap_save_company_section",
+        "app.domains.company_settings.agents.company_tool_registry._wrap_save_company_benefits",
+    ]
+    with patch(target, return_value=fake_instance), \
+         patch(save_targets[0]) as m_section, \
+         patch(save_targets[1]) as m_benefits:
+        resp = await domain._handle_analyze_website(
+            {"website": "https://wedotalent.cc"}, _ctx()
+        )
+    assert resp.success
+    pw = (resp.data or {}).get("pending_writes") or {}
+    # Text extraction picks up mission + values; LinkedIn payload promotes
+    # name/industry/employee_count/company_size/founded_year.
+    assert "mission" in pw
+    assert "values" in pw and "Etica" in pw["values"]
+    assert pw.get("name") == "WeDOTalent"
+    assert pw.get("industry") == "HR Tech"
+    assert pw.get("employee_count") == 42
+    assert resp.data["requires_human_approval"] is True
+    # Phase 1 must NEVER call the save tools.
+    m_section.assert_not_called()
+    m_benefits.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_analyze_website_phase2_persists_confirmed_fields(
+    domain: CompanySettingsDomain,
+) -> None:
+    """Phase 2: confirm=True + confirmed_fields persists via the canonical
+    save tools and emits a `persist_website_extraction` audit entry."""
+    section_target = (
+        "app.domains.company_settings.agents.company_tool_registry."
+        "_wrap_save_company_section"
+    )
+    benefits_target = (
+        "app.domains.company_settings.agents.company_tool_registry."
+        "_wrap_save_company_benefits"
+    )
+    audit_target = (
+        "app.domains.company_settings.agents.company_tool_registry._audit_log"
+    )
+    fake_save = AsyncMock(return_value={
+        "success": True,
+        "data": {"section": "profile", "fields_saved": ["name", "mission"]},
+        "message": "ok",
+    })
+    fake_benefits = AsyncMock(return_value={
+        "success": True,
+        "data": {"benefits_saved": ["Vale Refeicao"]},
+        "message": "ok",
+    })
+    fake_audit = AsyncMock(return_value=None)
+    params = {
+        "company_id": "co_demo",
+        "website": "https://wedotalent.cc",
+        "confirm": True,
+        "confirmed_fields": {
+            "name": "WeDOTalent",
+            "mission": "Conectar talento e proposito",
+            "values": ["Etica", "Transparencia"],
+            "benefits": ["Vale Refeicao"],
+        },
+    }
+    with patch(section_target, fake_save), \
+         patch(benefits_target, fake_benefits), \
+         patch(audit_target, fake_audit):
+        resp = await domain._handle_analyze_website(params, _ctx())
+    assert resp.success
+    persisted = resp.data["persisted_sections"]
+    # Profile + culture + benefits all wrote successfully.
+    assert "profile" in persisted
+    assert "culture" in persisted
+    assert "benefits" in persisted
+    assert fake_save.await_count >= 1
+    assert fake_benefits.await_count == 1
+    # Audit explicitly tags the source as website extraction.
+    assert fake_audit.await_count >= 1
+    audit_call = fake_audit.await_args_list[-1]
+    assert audit_call.args[1] == "persist_website_extraction"
+    md = audit_call.kwargs.get("metadata") or {}
+    assert md.get("source_url") == "https://wedotalent.cc"
+
+
+@pytest.mark.asyncio
+async def test_analyze_website_phase2_clarifies_when_no_fields(
+    domain: CompanySettingsDomain,
+) -> None:
+    resp = await domain._handle_analyze_website(
+        {"company_id": "co_demo", "confirm": True, "confirmed_fields": {}},
+        _ctx(),
+    )
+    assert resp.needs_clarification
+    assert "confirmed_fields" in (resp.clarification_question or "")
+
+
+@pytest.mark.asyncio
+async def test_analyze_website_phase2_clarifies_when_fields_unrecognized(
+    domain: CompanySettingsDomain,
+) -> None:
+    """confirm=True with `confirmed_fields` that map to no savable section
+    must clarify instead of returning success with empty persisted_sections."""
+    section_target = (
+        "app.domains.company_settings.agents.company_tool_registry."
+        "_wrap_save_company_section"
+    )
+    benefits_target = (
+        "app.domains.company_settings.agents.company_tool_registry."
+        "_wrap_save_company_benefits"
+    )
+    fake_section = AsyncMock()
+    fake_benefits = AsyncMock()
+    with patch(section_target, fake_section), patch(benefits_target, fake_benefits):
+        resp = await domain._handle_analyze_website(
+            {
+                "company_id": "co_demo",
+                "confirm": True,
+                "confirmed_fields": {"unknown_field": "x", "another": 42},
+            },
+            _ctx(),
+        )
+    assert resp.needs_clarification
+    assert "secao gravavel" in (resp.clarification_question or "")
+    fake_section.assert_not_called()
+    fake_benefits.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_analyze_website_phase2_refuses_tenant_mismatch(
+    domain: CompanySettingsDomain,
+) -> None:
+    """The same tenant guard that protects every other write action must
+    also fire BEFORE the confirm path on analyze_website."""
+    section_target = (
+        "app.domains.company_settings.agents.company_tool_registry."
+        "_wrap_save_company_section"
+    )
+    fake_save = AsyncMock()
+    with patch(section_target, fake_save):
+        resp = await domain._handle_analyze_website(
+            {
+                "company_id": "co_attacker",
+                "confirm": True,
+                "confirmed_fields": {"mission": "x"},
+            },
+            _ctx(tenant="co_victim"),
+        )
+    assert resp.success is False
+    assert (resp.data or {}).get("reason") == "tenant_mismatch"
+    fake_save.assert_not_called()

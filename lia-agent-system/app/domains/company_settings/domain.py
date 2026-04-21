@@ -495,6 +495,147 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
     async def _handle_analyze_website(
         self, params: dict[str, Any], context: DomainContext
     ) -> DomainResponse:
+        # ------------------------------------------------------------------
+        # PHASE 2 — persist after explicit human approval.
+        # The chat orchestrator (or the user via a follow-up turn) calls
+        # back with `confirm=True` + `confirmed_fields` (a dict with the
+        # values the operator approved from the scrape preview). We map
+        # them to the canonical sections (profile/culture/benefits) and
+        # write via the existing _wrap_save_company_section /
+        # _wrap_save_company_benefits tools — both of which already enforce
+        # FairnessGuard + Audit + tenant scoping. An extra audit entry
+        # `persist_website_extraction` flags the source of the writes.
+        # ------------------------------------------------------------------
+        if params.get("confirm") is True or params.get("persist") is True:
+            company_id, err = self._resolve_tenant("analyze_website", params, context)
+            if err is not None:
+                return err
+            confirmed = params.get("confirmed_fields") or {}
+            if not isinstance(confirmed, dict) or not confirmed:
+                return DomainResponse.clarification_response(
+                    question=(
+                        "Para confirmar a gravacao, me envie `confirmed_fields` "
+                        "como um objeto com os campos revisados pela pessoa "
+                        "(ex.: {mission, vision, values, tech_stack, ...})."
+                    ),
+                    domain_id=self.domain_id,
+                    action_id="analyze_website",
+                )
+            buckets: dict[str, dict[str, Any]] = {"profile": {}, "culture": {}}
+            for _action_key, hints in self._SECTION_FIELD_HINTS.items():
+                section = hints["section"]
+                for field in hints["fields"]:
+                    if field in confirmed and confirmed[field] not in (None, "", []):
+                        buckets[section][field] = confirmed[field]
+            benefits_payload = confirmed.get("benefits")
+            if isinstance(benefits_payload, list) and benefits_payload:
+                normalized_benefits = [
+                    {"name": b} if isinstance(b, str) else b
+                    for b in benefits_payload
+                    if (isinstance(b, str) and b.strip())
+                    or (isinstance(b, dict) and (b.get("name") or "").strip())
+                ]
+            else:
+                normalized_benefits = []
+            has_section_payload = any(payload for payload in buckets.values())
+            if not has_section_payload and not normalized_benefits:
+                # `confirmed_fields` was provided but nothing maps to a
+                # savable section/benefit list. Return clarification rather
+                # than success-with-empty `persisted_sections`.
+                known_fields = sorted({
+                    f
+                    for hints in self._SECTION_FIELD_HINTS.values()
+                    for f in hints["fields"]
+                } | {"benefits"})
+                return DomainResponse.clarification_response(
+                    question=(
+                        "Os campos confirmados nao correspondem a nenhuma "
+                        "secao gravavel (perfil/cultura/beneficios). "
+                        f"Use chaves como: {', '.join(known_fields)}."
+                    ),
+                    domain_id=self.domain_id,
+                    action_id="analyze_website",
+                )
+            try:
+                from app.domains.company_settings.agents.company_tool_registry import (
+                    _wrap_save_company_section,
+                    _wrap_save_company_benefits,
+                    _audit_log,
+                )
+                results = []
+                for section, payload in buckets.items():
+                    if not payload:
+                        continue
+                    res = await _wrap_save_company_section(
+                        company_id=company_id,
+                        section=section,
+                        data=payload,
+                        user_id=context.user_id or "system",
+                    )
+                    results.append({"section": section, "result": res})
+                if normalized_benefits:
+                    res_benefits = await _wrap_save_company_benefits(
+                        company_id=company_id,
+                        benefits=normalized_benefits,
+                        mode="append",
+                        user_id=context.user_id or "system",
+                    )
+                    results.append({"section": "benefits", "result": res_benefits})
+                try:
+                    await _audit_log(
+                        company_id,
+                        "persist_website_extraction",
+                        metadata={
+                            "user_id": context.user_id or "system",
+                            "sections": [r["section"] for r in results],
+                            "fields_count": sum(
+                                len((r["result"] or {}).get("data", {}).get("fields_saved", []))
+                                for r in results
+                            ),
+                            "source_url": (params.get("website") or params.get("url") or "") or None,
+                        },
+                    )
+                except Exception:
+                    logger.warning(
+                        "[company_settings] audit persist_website_extraction failed",
+                        exc_info=True,
+                    )
+            except Exception as exc:
+                logger.exception(
+                    "[company_settings] analyze_website persist failed: %s", exc
+                )
+                return DomainResponse.error_response(
+                    error=f"Falha ao gravar campos confirmados: {exc}",
+                    domain_id=self.domain_id,
+                    action_id="analyze_website",
+                )
+            saved_sections = [r["section"] for r in results
+                              if (r["result"] or {}).get("success")]
+            failed = [r for r in results if not (r["result"] or {}).get("success")]
+            if failed and not saved_sections:
+                return DomainResponse.error_response(
+                    error="Nenhuma secao foi gravada.",
+                    data={"failed": failed},
+                    domain_id=self.domain_id,
+                    action_id="analyze_website",
+                )
+            return DomainResponse.success_response(
+                message=(
+                    f"Campos do site gravados em: {', '.join(saved_sections)}. "
+                    "Voce pode revisar em Configuracoes > Minha Empresa."
+                ),
+                data={
+                    "persisted_sections": saved_sections,
+                    "results": results,
+                    "navigation_hint": {
+                        "page": "Company Settings", "section": "minha-empresa",
+                    },
+                },
+                domain_id=self.domain_id,
+                action_id="analyze_website",
+                suggestions=["Abrir Configuracoes > Minha Empresa", "Continuar onboarding"],
+            )
+
         url = (params.get("website") or params.get("url") or "").strip()
         if not url:
             return DomainResponse.clarification_response(
@@ -553,12 +694,64 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
 
         pages_scraped = result.get("pages_scraped") or len(result.get("pages") or [])
         content_preview = (result.get("content") or "")[:600]
-        msg = (
-            f"Analise concluida para {url}. "
-            f"{pages_scraped} pagina(s) lida(s). "
-            "Os dados extraidos podem ser revisados antes de salvar no perfil "
-            "(a gravacao automatica no perfil ainda nao esta disponivel via chat)."
-        )
+
+        # ── Build `pending_writes`: structured field suggestions extracted ──
+        # from the scraped content + the LinkedIn payload. The chat layer
+        # uses this to render a "preview + confirmar" card; persisting only
+        # happens on a follow-up turn carrying confirm=True (TIER 3 — human
+        # confirms). We never write here.
+        pending_writes: dict[str, Any] = {}
+        # Allowed savable keys = every field declared in _SECTION_FIELD_HINTS
+        # plus the dedicated "benefits" list (handled by _wrap_save_company_benefits).
+        # Filtering both extractor output AND linkedin payload by this set keeps
+        # the preview card aligned with what the confirm path can actually
+        # persist — avoids "preview shows X but save ignores X" UX mismatch.
+        allowed_savable_fields: set[str] = {"benefits"}
+        for hints in self._SECTION_FIELD_HINTS.values():
+            allowed_savable_fields.update(hints.get("fields", []))
+        try:
+            from app.domains.company_settings.agents.company_tool_registry import (
+                _structured_extract,
+            )
+            extracted_text = _structured_extract(
+                result.get("content") or "", "general"
+            )
+            for k, v in extracted_text.items():
+                if k in allowed_savable_fields and v not in (None, "", []):
+                    pending_writes[k] = v
+        except Exception:
+            logger.debug(
+                "[company_settings] structured extract from scrape failed",
+                exc_info=True,
+            )
+        # LinkedIn structured payload — promote a curated subset onto
+        # pending_writes (only fields recognised by _SECTION_FIELD_HINTS).
+        li_data = result.get("linkedin_data") or {}
+        if isinstance(li_data, dict):
+            for k, v in li_data.items():
+                if (
+                    k in allowed_savable_fields
+                    and v not in (None, "", [])
+                    and k not in pending_writes
+                ):
+                    pending_writes[k] = v
+
+        if pending_writes:
+            preview_keys = ", ".join(list(pending_writes.keys())[:5])
+            msg = (
+                f"Analise concluida para {url} ({pages_scraped} pagina(s) lida(s)). "
+                f"Identifiquei {len(pending_writes)} campo(s) prontos para revisao: {preview_keys}. "
+                "Quer que eu salve agora? Confirme para gravar (TIER 3 — humano confirma)."
+            )
+            suggestions = ["Sim, pode salvar", "Quero revisar antes", "Abrir tela de Configuracoes"]
+        else:
+            msg = (
+                f"Analise concluida para {url} ({pages_scraped} pagina(s) lida(s)). "
+                "Nao consegui extrair campos estruturados automaticamente — "
+                "abra Configuracoes > Minha Empresa para revisar o conteudo bruto."
+            )
+            suggestions = ["Revisar dados extraidos", "Atualizar perfil no painel"]
+
         return DomainResponse.success_response(
             message=msg,
             data={
@@ -566,13 +759,16 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
                 "pages_scraped": pages_scraped,
                 "pages": result.get("pages", []),
                 "linkedin_url": result.get("linkedin_url"),
-                "linkedin_data": result.get("linkedin_data") or {},
+                "linkedin_data": li_data,
                 "content_preview": content_preview,
                 "source": result.get("source"),
+                "pending_writes": pending_writes,
+                "requires_human_approval": bool(pending_writes),
+                "navigation_hint": {"page": "Company Settings", "section": "minha-empresa"},
             },
             domain_id=self.domain_id,
             action_id="analyze_website",
-            suggestions=["Revisar dados extraidos", "Atualizar perfil no painel"],
+            suggestions=suggestions,
         )
 
     async def _handle_process_document(
