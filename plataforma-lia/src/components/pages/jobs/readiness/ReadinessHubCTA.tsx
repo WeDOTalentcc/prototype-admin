@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react"
 import Link from "next/link"
-import { ArrowRight, Sparkles, X } from "lucide-react"
+import { ArrowRight, Brain, X } from "lucide-react"
 import { getReadinessOverview, type ReadinessOverview } from "@/services/lia-api/readiness-api"
 
 const DISMISS_KEY = "lia.readiness.cta.dismissed_at"
@@ -41,7 +41,7 @@ export function ReadinessHubCTA({ href }: { href: string }) {
   return (
     <div className="flex items-center justify-between gap-3 px-3 py-2 mb-2 rounded-lg bg-gradient-to-r from-wedo-cyan/10 via-violet-500/5 to-transparent border border-wedo-cyan/30">
       <div className="flex items-center gap-2 min-w-0">
-        <Sparkles className="w-4 h-4 text-wedo-cyan shrink-0" />
+        <Brain className="w-4 h-4 text-wedo-cyan shrink-0" />
         <span className="text-xs text-lia-text-primary truncate">
           <strong>{overview.action_required}</strong> vaga(s) aguardando você no Hub de Prontidão
           {overview.queued_actions > 0 && (

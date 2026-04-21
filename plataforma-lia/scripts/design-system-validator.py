@@ -412,6 +412,15 @@ VALIDATION_RULES: List[Rule] = [
         context_check="check_lia_context",
         token_suggestion="Switch padrão: bg-gray-900, cyan apenas em LiaFieldToggle"
     ),
+    Rule(
+        id="SPARKLES_NEAR_LIA",
+        phase=7,
+        severity="warning",
+        description="Ícone Sparkles próximo a contexto LIA/IA — use Brain (LIAIcon) como identidade da LIA",
+        pattern=r"<Sparkles\b",
+        context_check="check_lia_text_context",
+        token_suggestion="Substituir <Sparkles ... /> por <Brain className=\"... text-wedo-cyan\" /> ou <LIAIcon /> (cérebro ciano = identidade LIA)"
+    ),
     
     # FASE 8: Validação Final
     Rule(
@@ -603,6 +612,11 @@ class DesignSystemValidator:
             r'(?:metric|kpi|percent|score|count|total|number|data-|tabular|\d+%|\d+\.\d)',
             re.IGNORECASE
         )
+        # Texto que indica contexto LIA/IA próximo (para SPARKLES_NEAR_LIA)
+        self.pattern_lia_text_context = re.compile(
+            r'(?:\bLIA\b(?![-\w])|assistente|\bIA\s+da\b|sugest(?:ão|oes|ões)\s+(?:inteligente|da\s+LIA|da\s+IA)|insights?\s+(?:da|de)\s+(?:LIA|IA)|analisad[oa]\s+pela?\s+(?:LIA|IA)|gerad[oa]\s+pela?\s+(?:LIA|IA)|aprendid[oa]\s+pela?\s+(?:LIA|IA)|onboarding\s+com\s+LIA|hub\s+de\s+prontid(?:ão|ao))',
+            re.IGNORECASE
+        )
     
     def validate_file(self, filepath: str) -> FileResult:
         """Valida um arquivo contra o Design System"""
@@ -707,6 +721,10 @@ class DesignSystemValidator:
         if check_type == "check_lia_context":
             # Verificar se há ícone LIA próximo
             return not bool(self.pattern_lia_icons.search(context))
+
+        elif check_type == "check_lia_text_context":
+            # Disparar regra apenas se texto adjacente menciona LIA/IA/assistente
+            return bool(self.pattern_lia_text_context.search(context))
         
         elif check_type == "check_not_sidebar":
             # Verificar se NÃO está em contexto de sidebar

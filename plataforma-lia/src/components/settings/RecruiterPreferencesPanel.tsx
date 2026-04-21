@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useState, useCallback } from "react"
-import { Brain, Settings2, Sparkles, RefreshCw } from "lucide-react"
+import { Brain, Settings2, RefreshCw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
@@ -129,7 +129,7 @@ export function RecruiterPreferencesPanel({ className }: { className?: string })
         {summary?.personalization_available && (
           <div className="space-y-2">
             <p className="text-xs font-medium text-lia-text-secondary flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-wedo-cyan" aria-hidden="true" />
+              <Brain className="w-3 h-3 text-wedo-cyan" aria-hidden="true" />
               Aprendido pela IA
             </p>
 

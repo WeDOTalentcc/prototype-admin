@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import {
-  CheckCircle2, XCircle, ChevronDown, Loader2, Sparkles,
+  CheckCircle2, XCircle, ChevronDown, Loader2, Brain,
   ArrowRight, Video, RotateCcw, Send, DollarSign, UserPlus
 } from "lucide-react"
 import { toast } from "sonner"
@@ -567,7 +567,7 @@ export function PipelineDecisionBar({
       return (
         <div className="border-b px-3 py-2 bg-lia-bg-primary dark:bg-lia-bg-primary">
           <div className="flex items-start gap-1.5 px-2 py-1.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
-            <Sparkles className="w-3 h-3 text-wedo-cyan mt-0.5 flex-shrink-0" />
+            <Brain className="w-3 h-3 text-wedo-cyan mt-0.5 flex-shrink-0" />
             <p className="text-micro text-lia-text-secondary leading-relaxed">
               {highlight.summary}
               {highlight.strengths.length > 0 && (
@@ -652,7 +652,7 @@ export function PipelineDecisionBar({
 
       {highlight && (highlight.summary || highlight.strengths.length > 0) && (
         <div className="flex items-start gap-1.5 px-2 py-1.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
-          <Sparkles className="w-3 h-3 text-wedo-cyan mt-0.5 flex-shrink-0" />
+          <Brain className="w-3 h-3 text-wedo-cyan mt-0.5 flex-shrink-0" />
           <p className="text-micro text-lia-text-secondary leading-relaxed">
             {highlight.summary}
             {highlight.strengths.length > 0 && (

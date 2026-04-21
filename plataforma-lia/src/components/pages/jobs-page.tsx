@@ -3,7 +3,7 @@
 import React, { useMemo } from "react"
 import dynamic from "next/dynamic"
 import { Button } from "@/components/ui/button"
-import { Plus, Users, Clock, AlertTriangle, CheckCircle2, Briefcase, Zap, Pause, CheckCircle, XCircle, WifiOff, Sparkles } from "lucide-react"
+import { Plus, Users, Clock, AlertTriangle, CheckCircle2, Briefcase, Zap, Pause, CheckCircle, XCircle, WifiOff, Brain } from "lucide-react"
 import Link from "next/link"
 import { useLocale } from "next-intl"
 import { ReadinessHubCTA } from "./jobs/readiness/ReadinessHubCTA"
@@ -128,7 +128,7 @@ export function JobsPage(props: JobsPageProps) {
                 className="gap-2 h-8 px-3"
                 title="Hub de Prontidão — preparar vagas importadas para triagem"
               >
-                <Sparkles className="w-4 h-4 text-wedo-cyan" />
+                <Brain className="w-4 h-4 text-wedo-cyan" />
                 Prontidão
               </Button>
             </Link>

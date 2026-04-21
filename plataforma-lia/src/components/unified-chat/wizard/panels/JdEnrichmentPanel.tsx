@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from"react"
 import { cn } from"@/lib/utils"
-import { CheckCircle, AlertTriangle, XCircle, Sparkles, Shield } from"lucide-react"
+import { CheckCircle, AlertTriangle, XCircle, Brain, Shield } from"lucide-react"
 import type { JdEnrichmentData } from"../wizard-types"
 
 interface Props {
@@ -138,7 +138,7 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
           {enriched.alteracoes_realizadas?.length > 0 && (
             <div>
               <div className="flex items-center gap-1.5 mb-1">
-                <Sparkles className="w-3.5 h-3.5 text-wedo-cyan" />
+                <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 <span className="text-xs font-medium text-lia-text-secondary">
                   Alteracoes realizadas pela IA
                 </span>

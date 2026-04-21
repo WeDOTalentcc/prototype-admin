@@ -3,7 +3,7 @@
 import React, { useMemo } from "react"
 import { cn } from "@/lib/utils"
 import {
-  Briefcase, Search, BarChart2, Users, FileText, Sparkles,
+  Briefcase, Search, BarChart2, Users, FileText,
   Brain, Calendar, MessageCircle, HelpCircle, Zap,
 } from "lucide-react"
 import { useTranslations } from 'next-intl'
@@ -30,7 +30,7 @@ const ALL_SUGGESTIONS: Suggestion[] = [
   { icon: Zap, labelKey: "autoSourcing", promptKey: "autoSourcing", category: "buscar" },
   { icon: BarChart2, labelKey: "weeklyReport", promptKey: "weeklyReport", category: "analisar" },
   { icon: BarChart2, labelKey: "funnelHealth", promptKey: "funnelHealth", category: "analisar" },
-  { icon: Sparkles, labelKey: "jobAnalytics", promptKey: "jobAnalytics", category: "analisar" },
+  { icon: Brain, labelKey: "jobAnalytics", promptKey: "jobAnalytics", category: "analisar" },
   { icon: MessageCircle, labelKey: "candidateFeedback", promptKey: "candidateFeedback", category: "comunicar" },
   { icon: Calendar, labelKey: "scheduleInterview", promptKey: "scheduleInterview", category: "comunicar" },
   { icon: HelpCircle, labelKey: "whatCanIDo", promptKey: "whatCanIDo", category: "ajuda" },
@@ -75,7 +75,7 @@ export function SmartSuggestions({ contextPage, mode, onSuggestionClick }: Props
     <div className="flex flex-col items-center justify-center flex-1 px-4 py-8">
       <div className="text-center mb-6">
         <div className="w-10 h-10 rounded-full bg-wedo-cyan/10 flex items-center justify-center mx-auto mb-3">
-          <Sparkles className="w-5 h-5 text-wedo-cyan" />
+          <Brain className="w-5 h-5 text-wedo-cyan" />
         </div>
         <h3 className={cn(
           "font-semibold text-lia-text-primary",

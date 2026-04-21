@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { Sparkles } from "lucide-react"
+import { Brain } from "lucide-react"
 
 /**
  * OnboardingSettingsToggle — toggle LIA onboarding on/off.
@@ -49,7 +49,7 @@ export function OnboardingSettingsToggle({ accountId }: Props) {
     <div className="flex items-center justify-between p-4 rounded-lg border border-lia-border-subtle bg-lia-bg-primary">
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-lg bg-wedo-cyan/10 flex items-center justify-center">
-          <Sparkles className="w-5 h-5 text-wedo-cyan" />
+          <Brain className="w-5 h-5 text-wedo-cyan" />
         </div>
         <div>
           <p className="text-sm font-medium text-lia-text-primary">

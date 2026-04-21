@@ -11,7 +11,7 @@ import {
   Loader2,
   Play,
   RefreshCcw,
-  Sparkles,
+  Brain,
   XCircle,
 } from "lucide-react"
 import { toast } from "sonner"
@@ -74,7 +74,7 @@ function OverviewHeader({
     <div className="flex items-start justify-between gap-4 mb-3">
       <div>
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-wedo-cyan" />
+          <Brain className="w-4 h-4 text-wedo-cyan" />
           <h1 className="text-lg font-semibold text-lia-text-primary">Hub de Prontidão</h1>
         </div>
         <p className="text-xs text-lia-text-secondary mt-1 max-w-2xl">

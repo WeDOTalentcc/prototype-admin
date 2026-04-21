@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Sparkles, X, ArrowRight } from "lucide-react"
+import { Brain, X, ArrowRight } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
 
 const DISMISS_KEY = "lia.setup-banner.dismissed-at"
@@ -67,7 +67,7 @@ export function SetupProgressBanner() {
       "
     >
       <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-lia-bg-tertiary dark:bg-lia-bg-secondary flex-shrink-0">
-        <Sparkles className="w-4 h-4 text-wedo-cyan" aria-hidden />
+        <Brain className="w-4 h-4 text-wedo-cyan" aria-hidden />
       </div>
       <div className="flex-1 min-w-0">
         <p className={`${textStyles.body} font-medium`}>
