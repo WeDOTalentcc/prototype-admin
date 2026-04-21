@@ -28,6 +28,44 @@ logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
 
+
+def _walk_fairness_check(value: Any, path: str = "") -> tuple[Any, str] | None:
+    """Recursively scan a value for FairnessGuard violations.
+
+    Returns ``(check, offending_path)`` for the first blocked text node, or
+    ``None`` if everything passes. Strings shorter than 10 chars are skipped
+    (FairnessGuard requires meaningful context — single tokens like "remote"
+    would otherwise generate noise). dicts/lists are walked recursively so
+    list-based fields (`values`, `tech_stack`, `evp_bullets`, etc.) cannot
+    bypass the guard.
+
+    The path string mirrors how the offending value was reached
+    (e.g. ``values[2]``, ``benefits.description``) so the rejection message
+    points the recruiter to the right spot.
+    """
+    if isinstance(value, str):
+        if len(value) > 10:
+            check = _fairness_guard.check(value)
+            if check.is_blocked:
+                return check, path or "(root)"
+        return None
+    if isinstance(value, list):
+        for idx, item in enumerate(value):
+            sub_path = f"{path}[{idx}]" if path else f"[{idx}]"
+            blocked = _walk_fairness_check(item, sub_path)
+            if blocked is not None:
+                return blocked
+        return None
+    if isinstance(value, dict):
+        for k, v in value.items():
+            sub_path = f"{path}.{k}" if path else str(k)
+            blocked = _walk_fairness_check(v, sub_path)
+            if blocked is not None:
+                return blocked
+        return None
+    # Numbers, bools, None — nothing to scan.
+    return None
+
 TIER_1_FIELDS = {"cnpj", "name"}
 TIER_2_FIELDS = {"website", "mission", "vision", "values", "core_competencies", "evp_bullets"}
 TIER_4_FIELDS = {"id", "created_at", "updated_at"}
@@ -220,14 +258,21 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
     if field in TIER_2_FIELDS:
         tier_warning = f"Aviso: Campo '{field}' e sensivel (TIER 2). Certifique-se de que o valor esta correto."
 
-    if isinstance(value, str) and len(value) > 10:
-        check = _fairness_guard.check(value)
-        if check.is_blocked:
-            return {
-                "success": False,
-                "data": {"blocked_field": field, "category": check.category},
-                "message": f"Campo '{field}' bloqueado por compliance: {check.educational_message}",
-            }
+    fairness_block = _walk_fairness_check(value)
+    if fairness_block is not None:
+        check, offending_path = fairness_block
+        return {
+            "success": False,
+            "data": {
+                "blocked_field": field,
+                "category": check.category,
+                "offending_path": offending_path,
+            },
+            "message": (
+                f"Campo '{field}' bloqueado por compliance "
+                f"(em '{offending_path}'): {check.educational_message}"
+            ),
+        }
 
     val = json.dumps(value, ensure_ascii=False) if isinstance(value, (list, dict)) else value
 
@@ -288,14 +333,21 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "data": {}, "message": "Dados vazios ou invalidos."}
 
     for field_name, field_value in data.items():
-        if isinstance(field_value, str) and len(field_value) > 10:
-            check = _fairness_guard.check(field_value)
-            if check.is_blocked:
-                return {
-                    "success": False,
-                    "data": {"blocked_field": field_name, "category": check.category},
-                    "message": f"Campo '{field_name}' bloqueado por compliance: {check.educational_message}",
-                }
+        fairness_block = _walk_fairness_check(field_value)
+        if fairness_block is not None:
+            check, offending_path = fairness_block
+            return {
+                "success": False,
+                "data": {
+                    "blocked_field": field_name,
+                    "category": check.category,
+                    "offending_path": offending_path,
+                },
+                "message": (
+                    f"Campo '{field_name}' bloqueado por compliance "
+                    f"(em '{offending_path}'): {check.educational_message}"
+                ),
+            }
 
     saved_fields = []
     failed_fields: dict[str, str] = {}
@@ -876,6 +928,33 @@ def get_company_settings_tools() -> list[ToolDefinition]:
                 "required": ["company_id", "section", "data"],
             },
             function=_wrap_save_company_section,
+        ),
+        ToolDefinition(
+            name="save_company_benefits",
+            description=(
+                "Persiste beneficios em company_benefits. modes: append (default) "
+                "ou replace. Cada item passa por FairnessGuard L1 em name+description. "
+                "Use sempre que o recrutador listar/atualizar beneficios pelo chat."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "company_id": {"type": "string", "description": "ID da empresa"},
+                    "benefits": {
+                        "type": "array",
+                        "description": "Lista de beneficios {name, description, category, ...}",
+                        "items": {"type": "object"},
+                    },
+                    "mode": {
+                        "type": "string",
+                        "enum": ["append", "replace"],
+                        "description": "append (default) ou replace (desativa atuais antes)",
+                    },
+                    "user_id": {"type": "string", "description": "ID do usuario solicitante"},
+                },
+                "required": ["company_id", "benefits"],
+            },
+            function=_wrap_save_company_benefits,
         ),
         ToolDefinition(
             name="analyze_company_website",

@@ -595,16 +595,30 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
                     domain_id=self.domain_id,
                     action_id="process_document",
                 )
-            # Particiona campos por seccao com base no _SECTION_FIELD_HINTS
+            # Particiona campos por seccao com base no _SECTION_FIELD_HINTS.
+            # `benefits` tem caminho dedicado (tabela company_benefits) e e
+            # roteado para _wrap_save_company_benefits — nunca via section.
             buckets: dict[str, dict[str, Any]] = {"profile": {}, "culture": {}}
             for action_key, hints in self._SECTION_FIELD_HINTS.items():
                 section = hints["section"]
                 for field in hints["fields"]:
                     if field in confirmed and confirmed[field] not in (None, "", []):
                         buckets[section][field] = confirmed[field]
+            benefits_payload = confirmed.get("benefits")
+            if isinstance(benefits_payload, list) and benefits_payload:
+                # Aceita list[str] (nomes) ou list[dict] (entradas completas).
+                normalized_benefits = [
+                    {"name": b} if isinstance(b, str) else b
+                    for b in benefits_payload
+                    if (isinstance(b, str) and b.strip())
+                    or (isinstance(b, dict) and (b.get("name") or "").strip())
+                ]
+            else:
+                normalized_benefits = []
             try:
                 from app.domains.company_settings.agents.company_tool_registry import (
                     _wrap_save_company_section,
+                    _wrap_save_company_benefits,
                     _audit_log,
                 )
                 results = []
@@ -618,6 +632,14 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
                         user_id=context.user_id or "system",
                     )
                     results.append({"section": section, "result": res})
+                if normalized_benefits:
+                    res_benefits = await _wrap_save_company_benefits(
+                        company_id=company_id,
+                        benefits=normalized_benefits,
+                        mode="append",
+                        user_id=context.user_id or "system",
+                    )
+                    results.append({"section": "benefits", "result": res_benefits})
                 # Audit extra: distingue persistencia oriunda de aprovacao humana
                 # de campos extraidos via process_document.
                 try:
