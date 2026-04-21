@@ -22,7 +22,7 @@ metadata:
   track: "3"
   initiative: "G2"
   created: "2026-04-21"
-  total_markers: 28
+  total_markers: 29
   reference: "docs/FINAL_AUDIT.md §G2"
 
 markers:
@@ -215,6 +215,13 @@ markers:
     category: reliability
     purpose: "Error recovery policy applied (matched YAML policy for signal)"
     origin: "app/orchestrator/error_policies.py"
+    severity: info
+
+  # ── Episodic Memory (III MVP) ────────────────────────────────────────
+  LIA-MEMSET:
+    category: memory
+    purpose: "Recruiter preference set (episodic memory). Also logs PII block events."
+    origin: "app/shared/memory/recruiter_preferences.py"
     severity: info
 
 # ── FIX/Initiative markers (log prefixes, not [LIA-*] markers) ────────────
