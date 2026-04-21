@@ -122,7 +122,14 @@ async def get_current_user(
     )
     
     token = credentials.credentials
-    
+
+    if await is_token_blacklisted(token):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token revogado. Faça login novamente.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     try:
         payload = decode_token(token)
         user_id: str = payload.get("sub")
