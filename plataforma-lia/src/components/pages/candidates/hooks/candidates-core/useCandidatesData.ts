@@ -10,7 +10,7 @@ import { useBulkCandidateDataRequests } from "@/hooks/candidates/use-candidate-d
 import { mapCandidateToInternal as _mapCandidateToInternal } from "@/components/pages/candidates/hooks/useCandidatesExecuteSearch"
 import type { Candidate } from "@/components/pages/candidates/types"
 import type { JobVacancy, EmailTemplate } from "@/services/lia-api"
-import { fetchWithRetry } from "@/services/lia-api/base"
+import { fetchWithRetry, isTransientNetworkError } from "@/services/lia-api/base"
 
 interface UseCandidatesDataOptions {
   /** Propagate the new Set of viewed candidate IDs upward */
@@ -74,6 +74,17 @@ export function useCandidatesData({
       )
       .catch(() => { setCandidateListsForModal([]); secondaryFetchFailedRef.current = true })
 
+    // Task #728: silence cold-start network failures — they are recoverable
+    // on focus re-fetch (see useEffect below) and do NOT need a console.warn
+    // that surfaces in the Next.js dev overlay. Real (non-transient) errors
+    // are still logged so we don't mask backend regressions.
+    const handleSecondaryFailure = (label: string, err: unknown) => {
+      secondaryFetchFailedRef.current = true
+      if (isTransientNetworkError(err)) return
+      const message = err instanceof Error ? err.message : String(err)
+      console.warn(`[useCandidatesData] ${label} fetch failed`, message)
+    }
+
     fetchWithRetry('/api/backend-proxy/candidates/viewed')
       .then(async r => {
         if (!r.ok) throw new Error(`viewed ${r.status}`)
@@ -82,7 +93,7 @@ export function useCandidatesData({
           onViewedIdsChange(() => new Set<string>(data.candidate_ids))
         }
       })
-      .catch((err) => { console.warn('[useCandidatesData] viewed-candidates fetch failed (cold-start)', err?.message || err); secondaryFetchFailedRef.current = true })
+      .catch((err) => handleSecondaryFailure('viewed-candidates', err))
 
     liaApi.listJobVacancies()
       .then(r =>
@@ -91,11 +102,11 @@ export function useCandidatesData({
           r.items.filter((j: JobVacancy) => j.status === 'open' || j.status === 'draft')
         )
       )
-      .catch((err) => { console.warn('[useCandidatesData] listJobVacancies fetch failed (cold-start)', err?.message || err); secondaryFetchFailedRef.current = true })
+      .catch((err) => handleSecondaryFailure('listJobVacancies', err))
 
     liaApi.listEmailTemplates(undefined, true)
       .then(r => r.items && setBulkEmailTemplates(r.items))
-      .catch((err) => { console.warn('[useCandidatesData] listEmailTemplates fetch failed (cold-start)', err?.message || err); secondaryFetchFailedRef.current = true })
+      .catch((err) => handleSecondaryFailure('listEmailTemplates', err))
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

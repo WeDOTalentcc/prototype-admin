@@ -1,4 +1,4 @@
-import { BACKEND_URL, getAuthHeaders } from './base'
+import { BACKEND_URL, fetchWithRetry, getAuthHeaders } from './base'
 import type {
   CompanyBenefit,
   CompanyUsersResponse,
@@ -135,9 +135,14 @@ export async function getCandidateLists(params?: { skip?: number; limit?: number
   if (params?.limit) searchParams.set('limit', params.limit.toString())
   if (params?.search) searchParams.set('search', params.search)
 
-  const response = await fetch(`${BACKEND_URL}/candidate-lists?${searchParams.toString()}`, {
-    headers: getAuthHeaders(),
-  })
+  // Task #728: route through canonical fetchWithRetry so cold-start network
+  // failures surface as a typed transient HttpError (caught upstream) instead
+  // of a raw `TypeError: Failed to fetch` that triggers the Next.js dev overlay.
+  const response = await fetchWithRetry(
+    `${BACKEND_URL}/candidate-lists?${searchParams.toString()}`,
+    { headers: getAuthHeaders() },
+    { timeoutMs: 15000 },
+  )
   if (!response.ok) {
     return { items: [], total: 0, skip: 0, limit: 50 }
   }
