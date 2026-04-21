@@ -55,7 +55,10 @@ class ClaudeLLMProvider(LLMProviderABC):
 
     @circuit_breaker_decorator(ANTHROPIC_CIRCUIT)
     @_traceable(name="Claude Generate", run_type="llm")
-    async def generate(self, prompt, model=None, temperature=0.7, max_tokens=4096, **kwargs):
+    async def generate(self, prompt, model=None, temperature=0.7, max_tokens=4096, use_prompt_cache: bool = False, **kwargs):
+        """G4 (2026-04-21): use_prompt_cache kwarg enables Anthropic prompt caching
+        on the system prompt. Actual cache_control wiring deferred to call site
+        refactor — this exposes the mechanism at provider interface."""
         client = self._get_client()
         t_start = time.time()
         status = "success"

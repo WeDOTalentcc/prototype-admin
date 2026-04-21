@@ -22,7 +22,7 @@ metadata:
   track: "3"
   initiative: "G2"
   created: "2026-04-21"
-  total_markers: 25
+  total_markers: 26
   reference: "docs/FINAL_AUDIT.md §G2"
 
 markers:
@@ -195,6 +195,13 @@ markers:
     purpose: "Prompt quality warning on LLM config save"
     origin: "app/api/v1/llm_config.py"
     severity: warning
+
+  # ── Cost / Latency (G4) ──────────────────────────────────────────────
+  LIA-COST:
+    category: cost
+    purpose: "Per-call LLM cost tracking (tokens in/out + estimated USD)"
+    origin: "app/shared/observability/cost_tracker.py"
+    severity: info
 
 # ── FIX/Initiative markers (log prefixes, not [LIA-*] markers) ────────────
 # Track how FIX-level changes manifest in logs:
