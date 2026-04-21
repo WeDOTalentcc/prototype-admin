@@ -47,24 +47,33 @@ def _load_domain_additions(agent_type: str) -> str | None:
 # claims), this ensures NO free-prose invention.
 # ---------------------------------------------------------------------------
 
-@lru_cache(maxsize=1)
-def _render_capability_cards() -> str:
+def _render_capability_cards(
+    *,
+    tenant_enable_overrides: frozenset[str] | None = None,
+    tenant_disable_overrides: frozenset[str] | None = None,
+) -> str:
     """Render app/prompts/catalog/capability_cards.yaml as a markdown section.
 
-    Format:
-        ## Minhas Capacidades
-        Use somente as capacidades abaixo ao responder perguntas sobre o que
-        você sabe fazer. Cada item mapeia a ferramentas reais.
+    G6 (2026-04-21) — multi-tenant capability toggle:
+        Each card may carry `enabled_for_tenant: default_on | default_off | system_only`.
+        - default_on (default): rendered unless disabled via tenant_disable_overrides
+        - default_off: skipped unless enabled via tenant_enable_overrides
+        - system_only: rendered only when caller explicitly flags (not via this API)
 
-        ### {title}
-        - Como o usuário pede: "{user_phrasing[0]}", "{user_phrasing[1]}"
-        - Exemplo: {example_input} → {example_output}
-        - tools: {tool1}, {tool2}
-        ...
+    Future Onda 2: tenant_enable/disable sets come from FeatureFlagService.
 
-    Cached: capability catalog is static per deploy. Empty string if YAML
-    missing (graceful degradation — persona still works without the section).
+    Args:
+        tenant_enable_overrides: card IDs this tenant has explicitly enabled
+          (overrides default_off cards)
+        tenant_disable_overrides: card IDs this tenant has explicitly disabled
+          (hides default_on cards)
+
+    Cached (for simple case with no overrides) via module-level dict; otherwise
+    recomputed per call. Token cost amortized via Anthropic prompt cache.
     """
+    _enable = tenant_enable_overrides or frozenset()
+    _disable = tenant_disable_overrides or frozenset()
+
     try:
         from app.shared.prompts.loader import PromptLoader
         data = PromptLoader.load("catalog/capability_cards")
@@ -73,6 +82,21 @@ def _render_capability_cards() -> str:
         logger.debug("Init I.B: capability_cards.yaml load failed: %s", exc)
         return ""
 
+    if not capabilities:
+        return ""
+
+    # G6 filter: decide visibility per card
+    def _card_visible(card: dict) -> bool:
+        policy = card.get("enabled_for_tenant", "default_on")
+        card_id = card.get("id", "")
+        if policy == "system_only":
+            return False  # G6: system_only cards not rendered via default API
+        if policy == "default_off":
+            return card_id in _enable
+        # default_on
+        return card_id not in _disable
+
+    capabilities = [c for c in capabilities if _card_visible(c)]
     if not capabilities:
         return ""
 
@@ -287,6 +311,11 @@ class SystemPromptBuilder:
         # None = auto (render for user-facing agents orchestrator/recruiter_assistant);
         # True/False = explicit override (escape hatch for token budget or non-user agents).
         include_capability_cards: bool | None = None,
+        # G6 (2026-04-21) — multi-tenant capability toggle.
+        # Card IDs this tenant has explicitly enabled (for default_off cards) or disabled
+        # (to hide default_on cards). When None, no overrides — all default_on cards render.
+        tenant_enable_card_ids: frozenset[str] | None = None,
+        tenant_disable_card_ids: frozenset[str] | None = None,
     ) -> str:
         sections: list[str] = []
 
@@ -310,7 +339,11 @@ class SystemPromptBuilder:
         )
         if _render_cards:
             try:
-                _cards_block = _render_capability_cards()
+                # G6 (2026-04-21) — pass tenant overrides when provided
+                _cards_block = _render_capability_cards(
+                    tenant_enable_overrides=tenant_enable_card_ids,
+                    tenant_disable_overrides=tenant_disable_card_ids,
+                )
                 if _cards_block:
                     sections.append(_cards_block)
             except Exception as _cards_exc:

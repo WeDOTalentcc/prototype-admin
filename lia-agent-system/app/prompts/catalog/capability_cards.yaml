@@ -22,9 +22,15 @@
 # Track 2 Initiative I.B will wire persona rendering from these cards.
 
 version: 1
+# G6 (2026-04-21) — Multi-tenant capability toggle.
+# Optional field on each card: `enabled_for_tenant`
+#   - default_on (default)  → rendered for all tenants unless explicit disable
+#   - default_off           → skipped unless tenant explicitly enables
+#   - system_only           → rendered only for internal/admin agents
+# When field is absent, behavior is default_on (backward compat).
 metadata:
   created: "2026-04-21"
-  initiative: "I.A"
+  initiative: "I.A + G6"
   reference: "docs/LIA_MATURITY_ROADMAP.md Track 2 Initiative I"
 
 capabilities:
