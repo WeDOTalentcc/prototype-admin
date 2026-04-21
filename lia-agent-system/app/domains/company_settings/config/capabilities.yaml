@@ -70,6 +70,15 @@ intent_keywords:
     - "extrair do site"
     - "importar do website"
     - "scraping"
+  manage_departments:
+    - "departamento"
+    - "departamentos"
+    - "criar departamento"
+    - "novo departamento"
+    - "gerenciar departamentos"
+    - "cadastrar departamento"
+    - "aprovador"
+    - "aprovadores"
   process_document:
     - "documento"
     - "handbook"

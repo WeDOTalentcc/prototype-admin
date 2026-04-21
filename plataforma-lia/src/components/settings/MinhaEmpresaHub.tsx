@@ -3,7 +3,7 @@
 import React from "react"
 import {
   Building, Heart, Code, Gift, Network, GitBranch, BarChart3, FileText,
-  Loader2, RefreshCw, AlertCircle, CheckCircle, Upload,
+  Loader2, RefreshCw, AlertCircle, CheckCircle, Upload, ArrowRight,
 } from "lucide-react"
 import { useCompanySettingsCards } from "@/hooks/settings/use-company-settings-cards"
 import { useSettingsConversational } from "@/hooks/settings/use-settings-conversational"
@@ -45,6 +45,18 @@ export function MinhaEmpresaHub() {
   } = useCompanySettingsCards()
 
   const { triggerAction } = useSettingsConversational()
+
+  const handleOpenDepartments = React.useCallback(() => {
+    if (typeof window === "undefined") return
+    try {
+      sessionStorage.setItem(
+        "settings-pending-subtab",
+        JSON.stringify({ section: "usuarios-departamentos", tab: "departments" }),
+      )
+    } catch { /* sessionStorage pode estar indisponivel */ }
+    window.dispatchEvent(new CustomEvent("settings-open-subtab", { detail: { section: "usuarios-departamentos", tab: "departments" } }))
+    window.dispatchEvent(new CustomEvent("settings-open-tab", { detail: "usuarios-departamentos" }))
+  }, [])
 
   const handleAnalyzeWebsite = React.useCallback(() => {
     triggerAction("analyze_website", {
@@ -128,6 +140,26 @@ export function MinhaEmpresaHub() {
             style={{ width: `${overallProgress}%` }}
           />
         </div>
+      </div>
+
+      <div className="flex items-center justify-between rounded-lg border border-lia-border-subtle bg-lia-bg-secondary/50 dark:bg-lia-bg-elevated px-3 py-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Network className="w-4 h-4 text-lia-text-tertiary flex-shrink-0" aria-hidden />
+          <div className="min-w-0">
+            <p className={`${textStyles.description} truncate`}>
+              Departamentos são gerenciados em Usuários & Departamentos.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={handleOpenDepartments}
+          data-testid="open-departments-shortcut"
+          className="inline-flex items-center gap-1 text-sm font-medium text-wedo-cyan hover:underline focus:outline-none focus:ring-1 focus:ring-lia-border-medium rounded-md px-1.5 py-0.5"
+        >
+          Gerenciar departamentos
+          <ArrowRight className="w-3.5 h-3.5" aria-hidden />
+        </button>
       </div>
 
       <div className="grid grid-cols-1 gap-4">

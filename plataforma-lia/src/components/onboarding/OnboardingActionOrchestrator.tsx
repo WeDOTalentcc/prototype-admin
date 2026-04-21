@@ -77,7 +77,7 @@ const STEPS: StepDef[] = [
     title: "Planejamento de contratacoes",
     question: "Quais vagas voce planeja abrir nos proximos meses?",
     prompt:
-      "Quero importar nosso planejamento de contratacoes (departamento, cargo, quantidade, prazo, senioridade).",
+      "Quero importar nosso planejamento de contratacoes (cargo, quantidade, prazo, senioridade).",
     cta: "Planejar contratacoes",
   },
   {

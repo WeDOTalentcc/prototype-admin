@@ -90,6 +90,15 @@ COMPANY_SETTINGS_ACTIONS = [
         examples=('analisa nosso site pra extrair dados', 'olha no website e extrai info'),
     ),
     DomainAction(
+        action_id="manage_departments",
+        name="Gerenciar Departamentos",
+        description="Redireciona o recrutador para o hub 'Usuarios & Departamentos', hub canonico de departamentos.",
+        required_params=[],
+        tags=["company", "departments", "routing"],
+
+        examples=('quero criar um departamento', 'onde gerencio departamentos', 'cadastrar aprovador'),
+    ),
+    DomainAction(
         action_id="process_document",
         name="Processar Documento",
         description="Processa documento enviado para extrair dados da empresa",
@@ -158,6 +167,7 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
             "configure_benefits": self._handle_configure_benefits,
             "configure_workforce": self._handle_configure_workforce,
             "analyze_website": self._handle_analyze_website,
+            "manage_departments": self._handle_manage_departments,
             "process_document": self._handle_process_document,
         }
         handler = handler_map.get(action_id)
@@ -414,7 +424,8 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
             return DomainResponse.clarification_response(
                 question=(
                     "Me envie o planejamento de contratacoes como uma lista de "
-                    "{department, role, quantity, deadline, seniority}."
+                    "{role, quantity, deadline, seniority}. Departamentos sao "
+                    "gerenciados em 'Usuarios & Departamentos'."
                 ),
                 domain_id=self.domain_id,
                 action_id="configure_workforce",
@@ -769,6 +780,36 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
             domain_id=self.domain_id,
             action_id="analyze_website",
             suggestions=suggestions,
+        )
+
+    async def _handle_manage_departments(
+        self, params: dict[str, Any], context: DomainContext
+    ) -> DomainResponse:
+        """Routing-only action: departments live in 'Usuarios & Departamentos' hub.
+
+        Nao cria, edita nem deleta departamentos aqui. Apenas orienta o recrutador
+        e devolve navigation_hint para o frontend abrir o hub canonico na aba
+        'departments'. Hub canonico: UsuariosDepartamentosHub -> DepartmentsTab.
+        """
+        del params, context
+        return DomainResponse.success_response(
+            message=(
+                "Departamentos são gerenciados em 'Usuários & Departamentos'. "
+                "Abra esse hub para criar, editar ou aprovar departamentos e aprovadores."
+            ),
+            data={
+                "navigation_hint": {
+                    "page": "Company Settings",
+                    "section": "usuarios-departamentos",
+                    "tab": "departments",
+                },
+            },
+            domain_id=self.domain_id,
+            action_id="manage_departments",
+            suggestions=[
+                "Abrir Usuários & Departamentos",
+                "Gerenciar aprovadores",
+            ],
         )
 
     async def _handle_process_document(

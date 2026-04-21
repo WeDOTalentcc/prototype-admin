@@ -125,7 +125,6 @@ function computeBlockStatus(fields: CardField[]): "configured" | "partial" | "pe
 function buildBlocks(
   company: CompanyData | null,
   benefits: BenefitItem[],
-  departments: unknown[],
   hiringPolicy: HiringPolicyData | null,
 ): CardBlock[] {
   if (!company) return []
@@ -167,14 +166,16 @@ function buildBlocks(
   ]
 
   const activeBenefits = benefits.filter((b) => b.is_active !== false)
-  const benefitsFields: CardField[] = []
-  const benefitsStatus: "configured" | "partial" | "pending" =
-    benefits.length === 0 ? "pending" : activeBenefits.length > 0 ? "configured" : "partial"
+  const benefitNames = benefits.slice(0, 5).map((b) => b.name).filter(Boolean)
+  const benefitsFields: CardField[] = [
+    { key: "benefits_count", label: "Total de Beneficios", value: benefits.length > 0 ? `${benefits.length} cadastrado(s)` : null, type: "text", editable: false, block: "benefits" },
+    { key: "benefits_active", label: "Beneficios Ativos", value: activeBenefits.length || null, type: "number", editable: false, block: "benefits" },
+    { key: "benefits_list", label: "Pacote", value: benefitNames.length > 0 ? benefitNames : null, type: "list", editable: false, block: "benefits" },
+  ]
   const benefitsSubtitle =
     benefits.length === 0
       ? "Nenhum benefício cadastrado"
       : `${benefits.length} cadastrado${benefits.length === 1 ? "" : "s"} · ${activeBenefits.length} ativo${activeBenefits.length === 1 ? "" : "s"}`
-  void departments
 
   const pr = hiringPolicy?.pipeline_rules
   const sr = hiringPolicy?.scheduling_rules
@@ -231,7 +232,7 @@ function buildBlocks(
     { key: "basic", title: "Dados Basicos", iconName: "Building", fields: basicFields, status: computeBlockStatus(basicFields) },
     { key: "culture", title: "Cultura & EVP", iconName: "Heart", fields: cultureFields, status: computeBlockStatus(cultureFields) },
     { key: "tech", title: "Tech Stack", iconName: "Code", fields: techFields, status: computeBlockStatus(techFields) },
-    { key: "benefits", title: "Benefícios", subtitle: benefitsSubtitle, iconName: "Gift", fields: benefitsFields, status: benefitsStatus },
+    { key: "benefits", title: "Benefícios", subtitle: benefitsSubtitle, iconName: "Gift", fields: benefitsFields, status: computeBlockStatus(benefitsFields) },
     { key: "policy", title: "Politicas de Recrutamento", iconName: "GitBranch", fields: policyFields, status: computeBlockStatus(policyFields) },
     { key: "workforce", title: "Workforce Planning", iconName: "BarChart3", fields: workforceFields, status: computeBlockStatus(workforceFields) },
     { key: "documents", title: "Documentos & Onboarding", iconName: "FileText", fields: documentFields, status: computeBlockStatus(documentFields) },
@@ -273,7 +274,6 @@ async function extractErrorMessage(response: Response, fallback: string): Promis
 export function useCompanySettingsCards() {
   const [companyData, setCompanyData] = useState<CompanyData | null>(null)
   const [benefits, setBenefits] = useState<BenefitItem[]>([])
-  const [departments, setDepartments] = useState<unknown[]>([])
   const [hiringPolicy, setHiringPolicy] = useState<HiringPolicyData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -324,14 +324,6 @@ export function useCompanySettingsCards() {
     return []
   }, [])
 
-  const fetchDepartments = useCallback(async () => {
-    try {
-      const res = await fetch("/api/backend-proxy/company/departments")
-      if (res.ok) return await res.json()
-    } catch { /* handled by caller */ }
-    return []
-  }, [])
-
   const fetchHiringPolicy = useCallback(async () => {
     try {
       const res = await fetch("/api/backend-proxy/hiring-policy")
@@ -357,10 +349,9 @@ export function useCompanySettingsCards() {
       const profile = await fetchCompanyProfile()
       const cid = profile?.id
 
-      const [culture, benefitsData, deptsData, policyData] = await Promise.all([
+      const [culture, benefitsData, policyData] = await Promise.all([
         cid ? fetchCultureProfile(cid) : null,
         cid ? fetchBenefits(cid) : [],
-        fetchDepartments(),
         fetchHiringPolicy(),
       ])
 
@@ -402,7 +393,6 @@ export function useCompanySettingsCards() {
 
       setCompanyData(merged)
       setBenefits(Array.isArray(benefitsData) ? benefitsData : [])
-      setDepartments(Array.isArray(deptsData) ? deptsData : [])
       setHiringPolicy(policyData)
 
       await fetchProgress()
@@ -411,15 +401,15 @@ export function useCompanySettingsCards() {
     } finally {
       setLoading(false)
     }
-  }, [fetchCompanyProfile, fetchCultureProfile, fetchBenefits, fetchDepartments, fetchHiringPolicy, fetchProgress])
+  }, [fetchCompanyProfile, fetchCultureProfile, fetchBenefits, fetchHiringPolicy, fetchProgress])
 
   useEffect(() => {
     loadAll()
   }, [loadAll])
 
   const blocks = useMemo(
-    () => buildBlocks(companyData, benefits, departments, hiringPolicy),
-    [companyData, benefits, departments, hiringPolicy]
+    () => buildBlocks(companyData, benefits, hiringPolicy),
+    [companyData, benefits, hiringPolicy]
   )
 
   useEffect(() => {

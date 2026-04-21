@@ -50,6 +50,20 @@ async def test_section_handlers_return_clarification_when_no_data(
 
 
 @pytest.mark.asyncio
+async def test_manage_departments_is_routing_only(
+    domain: CompanySettingsDomain,
+) -> None:
+    """Task #767 — `manage_departments` must route to canonical hub, not write."""
+    resp = await domain._handle_manage_departments({}, _ctx())
+    assert resp.success is True
+    assert not resp.needs_clarification
+    assert "Usuários & Departamentos" in (resp.message or "")
+    hint = (resp.data or {}).get("navigation_hint") or {}
+    assert hint.get("section") == "usuarios-departamentos"
+    assert hint.get("tab") == "departments"
+
+
+@pytest.mark.asyncio
 async def test_workforce_clarification(domain: CompanySettingsDomain) -> None:
     resp = await domain._handle_configure_workforce({"company_id": "co_demo"}, _ctx())
     assert resp.needs_clarification
