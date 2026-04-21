@@ -2272,6 +2272,197 @@ Princípios aplicados:
 
 ---
 
+## SEÇÃO TRANSVERSAL: CT-ML — CAMADA DE INTELIGÊNCIA (11 CAMADAS, AUDITORIA HONESTA)
+
+> Esta seção complementa a **SEÇÃO TRANSVERSAL: INTELIGÊNCIA** (acima) — lá estão os
+> detalhes de mecanismo por camada. Aqui está a **auditoria consolidada de status real**
+> (ativo / dormindo / stub) por camada, com localização canônica do código, integração
+> com agentes e endpoints, e o **ciclo virtuoso de aprendizado** que costura as 11.
+>
+> Fonte canônica de auditoria: [`lia-agent-system/docs/MAPA_CAMADA_INTELIGENCIA.md`](../../../lia-agent-system/docs/MAPA_CAMADA_INTELIGENCIA.md) (4995 linhas).
+>
+> Legenda: ● ativo (em produção, com tráfego real) · ◑ dormindo (código pronto, gating/uso parcial) · ✗ stub (esqueleto sem produção) · ⌬ shim (re-export retro-compat — usar canônico)
+
+### Tabela mestre — 11 camadas de inteligência
+
+| # | Camada | Localização canônica | Endpoint / Integração | Etapas | Status |
+|---|---|---|---|---|---|
+| 1 | **Learning Loop** (captura silenciosa) | `app/shared/learning/learning_loop_service.py` (1133 L) | `learning_snapshot_service.py` para rollback Z2-01; FairnessGuard `validate_learning_batch()` | E2 E3 E4 E5 E7 E8 E9 | ● |
+| 2 | **A/B Testing** | `app/shared/learning/ab_testing_service.py` (340 L) + `app/shared/intelligence/ab_testing/email_template_seeder.py` | `app/api/v1/ab_testing.py`; seed 3 experimentos no startup | E2 E3 E4 E6 E7 E9 | ● |
+| 3 | **Semantic Search** (skills/titles/industries) | `app/shared/intelligence/semantic_search_service.py` (414 L) | usado por sourcing/funil + WizardReActAgent | E2 E3 E4 | ● |
+| 4 | **Embedding Service** (Gemini text-embedding-004) | `app/shared/intelligence/embedding_service.py` (295 L) | base de Semantic Search e Calibration; cache Redis | transversal | ● |
+| 5 | **RAG** (retrieval-augmented generation) | `app/domains/ai/services/rag_service.py` (297 L) + `rag_pipeline_service.py` (657 L) + `ragas_evaluation_service.py` | `app/api/v1/rag_search.py`; PGVector como store; consumido por agentes de busca/insight | E4 E7 E15 | ◑ (ativo em search; insight ainda parcial) |
+| 6 | **Calibration** (dual feedback explícito + implícito) | `app/domains/analytics/services/calibration_service.py` (474 L) + `app/domains/cv_screening/services/calibration_profiles.py` (948 L) | `app/api/v1/calibration.py` + `app/api/v1/calibration_dashboard_v2.py` | E4 E5 E7 E8 | ● |
+| 7 | **Predictive Analytics** (time-to-fill, salary, skill success) | `app/domains/analytics/services/predictive_analytics_service.py` (945 L) + `app/services/ml/outcome_predictor.py` | `app/api/v1/predictive_analytics.py`; tools: `app/shared/tools/predictive_tools.py` | E2 E4 | ● |
+| 8 | **Score Normalization** (difficulty coefficient) | `app/domains/cv_screening/services/score_normalization_service.py` (183 L) | normaliza WSI por versão do roteiro; usado em E4/E7 | E4 E7 | ● |
+| 9 | **Conversation Memory** (pronoun resolution + entidades sticky) | `app/domains/recruiter_assistant/services/conversation_memory.py` + `app/shared/memory/conversation_state.py` | resolve "ele/ela/aquele candidato" no Tier 0 do CascadedRouter | E2 E3 E4 E5 E6 E7 | ● |
+| 10 | **Template Learning** (3+ vagas similares → template) | `app/shared/learning/template_learning_service.py` (401 L) ⌬ shim em `app/shared/intelligence/template_learning/template_learning_service.py` e `app/domains/job_management/services/template_learning_service.py` | `app/api/v1/job_templates.py` | E2 E6 E9 | ● |
+| 11 | **Routing Adaptativo** (multipliers por domínio) | `app/services/routing_learning_service.py` consumido em `app/orchestrator/cascaded_router.py::_apply_adaptive_adjustments` | range 0.8x–1.2x; `Task #672` adicionou warning + CI gate de capabilities | E4 E5 E8 | ● |
+| ＋ | **Voice Analysis** (STT/TTS para WSI por voz) | `app/domains/cv_screening/services/voice_service.py` + `wsi_voice_orchestrator.py` + `app/services/voice_interview_state_machine.py` | endpoints: `voice_stream.py`, `gemini_voice.py`, `twilio_voice.py`, `voice_screening.py`; STT Deepgram (Whisper fallback), TTS OpenAI nova | E7 | ◑ (ativo em piloto; generalização gated) |
+| ＋ | **Long-Term Memory** (episódios + compressão LLM) | `libs/agents-core/lia_agents_core/long_term_memory.py` consumido por `EnhancedAgentMixin._post_loop_learning` | Celery tasks de compressão após 30 dias | E4 E8 E9A E9B | ● |
+
+> Notas de auditoria
+> - Os arquivos `app/shared/services/calibration_service.py`, `embedding_service.py`,
+>   `learning_loop_service.py`, `rag_service.py`, `rag_pipeline_service.py`,
+>   `ragas_evaluation_service.py` são **shims retro-compatíveis** (⌬). Sempre importar
+>   da localização canônica listada acima — `app.shared.services.*` redireciona via
+>   `re-export` por compatibilidade histórica e será removido em consolidação futura
+>   (vide ADR-018 — tool registry consolidation).
+> - O caminho `app/shared/services/predictive_analytics_service.py` **não existe** — o
+>   serviço está em `app/domains/analytics/services/`. Mesma observação para
+>   `conversation_memory_service.py` (canônico em `app/domains/recruiter_assistant/services/conversation_memory.py`)
+>   e `score_normalization_service.py` (canônico em `app/domains/cv_screening/services/`).
+> - **Model Drift** (cobre toda a tabela como guardião) está documentado na seção
+>   INTELIGÊNCIA #8 — não é uma 12ª camada de aprendizado, é o monitor das demais.
+
+### Ciclo virtuoso (como as 11 camadas se costuram)
+
+```
+  ┌────────────────────── TURNO DO RECRUTADOR ──────────────────────┐
+  │  Mensagem → CascadedRouter (8 tiers — ver E0)                   │
+  │     Tier 0  Conversation Memory  (resolve pronome/entidade)     │
+  │     Tier 1-3 caches (LRU + Redis + pgvector — Embedding+RAG)    │
+  │     Tier 4  FastRouter (regex/keyword)                          │
+  │     Tier 5  LLM Cascade  ←── A/B Testing (variant via prompt)   │
+  │     Tier 6  AutonomousReActAgent                                │
+  │     ↓                                                           │
+  │  Routing Adaptativo aplica multipliers (0.8x–1.2x)              │
+  │     ↓                                                           │
+  │  Agente executa action → resposta + persistência                │
+  └────────────────────────────────┬────────────────────────────────┘
+                                   ↓
+  ┌─────────────────── OBSERVAÇÃO PÓS-AÇÃO ─────────────────────────┐
+  │  Recrutador: aceita / modifica / rejeita / ignora               │
+  │     ↓                                                           │
+  │  Learning Loop captura outcome (silencioso, sem perguntar)      │
+  │     ↓                                                           │
+  │  ├─→ Calibration  recebe sinal explícito + implícito            │
+  │  ├─→ Template Learning conta variantes (3+ similares = template)│
+  │  ├─→ Score Normalization atualiza difficulty_coefficient        │
+  │  ├─→ Predictive Analytics atualiza histórico de outcomes        │
+  │  └─→ Voice Analysis: transcrição alimenta WSI scoring (E7)      │
+  │     ↓                                                           │
+  │  FairnessGuard.validate_learning_batch()  ← bloqueia se viés    │
+  │     ↓                                                           │
+  │  learning_snapshot_service salva snapshot (rollback Z2-01)      │
+  │     ↓                                                           │
+  │  Persistência → próximo turno usa pesos atualizados             │
+  └────────────────────────────────┬────────────────────────────────┘
+                                   ↓
+  ┌──────────────── MONITORAMENTO CONTÍNUO (24/7) ──────────────────┐
+  │  Model Drift Service (4 dimensões, janela 7 dias)               │
+  │    Score / Approval / Cost / Latency Drift                      │
+  │  Trigger: 1 = WARNING · 2+ = URGENT → Bell + Teams              │
+  │  Long-Term Memory: episódios comprimidos após 30 dias           │
+  └─────────────────────────────────────────────────────────────────┘
+```
+
+### Gaps e dívidas técnicas explícitas (CT-ML)
+
+| Camada | Gap | Trilha |
+|---|---|---|
+| RAG | Insight (E15) consome RAG só parcialmente; falta cobertura RAG em E12 (Talent Pool) | Follow-up: ampliar `rag_pipeline` para insights de pool |
+| Voice Analysis | Generalização além de WSI; falta TTS multi-idioma além de pt-BR/en-US | Roadmap pós-MVP |
+| Shims `app/shared/services/*` | 6 shims ainda em uso por imports legados | ADR-018 consolida em sweep único |
+| Score Normalization | Apenas 183 L — falta exposição via API e dashboard | Follow-up `score_normalization` API |
+| Routing Adaptativo | Métrica de "qualidade do ajuste" não exposta no dashboard | Estender `agent_quality_dashboard.py` |
+
+---
+
+## SEÇÃO TRANSVERSAL: CT-CHANGELOG — MELHORIAS Q1–Q2/2026
+
+> Categorização das mudanças entregues no branch `replit-sync` entre **mar/2026** e
+> **abr/2026** (Q1 fim → Q2 início). Fonte: `git log replit-sync` + `.local/tasks/` +
+> `lia-agent-system/ARCHITECTURE.md` (ADRs 001–020).
+
+### A) Production Readiness (qualidade estrutural)
+
+| Tema | Entregas notáveis | Refs |
+|---|---|---|
+| Refactor abaixo de 1000 linhas | 39→5 arquivos > 1kL · `useEAPCallbacks`, `useExpandedChatModalCore`, `modern-conversations`, `CandidatesFilterPanel`, `JDEvaluationPanel`, `KanbanColumnRenderer`, `KanbanTableView`, `JobEditTab`, `BenefitsTab`, `DepartmentsTab`, `triagem-modal`, `expandable-ai-prompt`, `job-status-modal`, `lia-screening-guide`, `goals-management`, `CompanyDataSection`, `CandidateSearchResultsView` | commits `0cbe0ff75`, `e6c0ce72d`, `a849e3b8b`, `38c7cd2bb`, `669494b28`, `3897bc42a`, `5bfff47b2`, `a2447576a`, `b3d3b14f4`, `2cdad7231`, `326804725`, `46f637841`, `1ec46c597`, `60ad6e82d`, `311758d20` |
+| Cobertura de testes | 38→50+ test files unit · 756 testes totais · 12 novos arquivos hooks/utils/components · cobertura `execute_action` para 11 domínios (Task #687 + #596) | `55045840b`, `4375bf0ee`, `596c9c5e5` |
+| TypeScript / ESLint | 0 TS errors após refactors, 0 ESLint errors · guards de useMemo, fix duplicate className, IIFE, JSX comments | `b88d777db`, `485e37085`, `db9dfae7b`, `3762d311c` |
+| Auditoria Vue-readiness | v6→v7 (55→59/70), HOOKS_NEEDING_REFACTOR = [] · 100% Pinia-ready | `0cbe0ff75`, `8dcba821d`, `ed443047b`, `845fe57c8` |
+
+### B) Tenant Isolation (multi-tenancy fail-closed)
+
+| Tema | Entregas notáveis | Refs |
+|---|---|---|
+| Consolidação residual | Task #673 fecha #329, #335, #336, #359, #361 · sweep dos últimos vazamentos cross-tenant | `2f19de689` |
+| Tool registries fail-closed sem `company_id` | Asserts em todos os registries de tools · IDOR fix em `/finetuning/stats` e `/finetuning/export` (Task #306) | `6fd638fbc`, `97205ecc1` |
+| Forward de tenant ID | WSI on-the-fly question pipeline (Task #334) propaga `company_id` · admin client creation cria `company_profiles` com UUID explícito | `9c7e65855`, `d53d0af64`, `b90e8e2cb` |
+| Rails sync | ClientAccount sync no admin tenant (P0 fix) — ATS sincroniza criação de cliente | `04b5f8bb0` |
+
+### C) Routing Canônico (CascadedRouter + capabilities)
+
+| Tema | Entregas notáveis | Refs |
+|---|---|---|
+| Fixes canônicos P0/P1 | `feat(tools): canonical routing fixes — P0 + P1.A + P1.B + P1.C` · DEFAULT_DOMAIN warning + CI gate de chat-capabilities (Task #672) | `527f2c3ce`, `21f90805f`, `b3d068c9c` |
+| Echo de specialist | Chat replies declaram qual specialist tratou (Task #552) — observabilidade de routing | `2bf526354` |
+| Slash commands alinhados | Comandos `/...` consistentes entre produto, código e docs (Task #300) · `duplicate_job` / `clone_job` cabeados (Task #624) | `9bc805b29`, `43d9891d3` |
+| Cleanup de tools | Remoção de `score_cv` órfã do cv_screening (Task #623) · stub `recruiter-goals` substituído por OKR/quota real (Task #599) · restauração do toolset Sourcing | `9bbb304be`, `92e6fe1c8`, `985cb54bd` |
+| Proteção de diretórios estratégicos | Task #670 protege 8 dirs e recategoriza · ADR-018 plano operacional para registry | `4b95f2868`, `8cd82e847` |
+
+### D) Compliance (FairnessGuard + PII + LGPD + Audit)
+
+| Tema | Entregas notáveis | Refs |
+|---|---|---|
+| PII real (não-stub) | `feat(task-712): real PII masking + structured extraction + tool metadata` em todo turno do chat | `cb56abc90` |
+| FairnessGuard v5 vs LIA | Diagnóstico comparativo (Task #84) · WarningBanner inline no chat · `validate_learning_batch` bloqueia learning enviesado | `af9361a8d`, `f947f9a21` |
+| XSS defense-in-depth | Sanitização de `onHighlightSearchTerm` em `ChatMessageList` | `15435fae5` |
+| Bell notification in-app | Ativação completa (Task #82) — canal de alertas Drift/Audit/Compliance | `803aa38a4` |
+| Persona/identity hardening | LIA identity override impede leak do modelo subjacente (Gemini) · Phase-1 intercept para perguntas de identidade | `881aef9d0`, `44e381ce5`, `0ad291737`, `89c427955` |
+
+### E) ML / IA (camada cognitiva — ver CT-ML acima)
+
+| Tema | Entregas notáveis | Refs |
+|---|---|---|
+| Eval pipeline | LIA Eval 62→70/73 · 15 fixes documentados · regex Português-aware (WZ-002/003) · KB-006 UUID filter · suggest_salary/generate_jd_direct registrados | `04ff86a65`, `24a16fd56`, `aee9ab45f`, `3b53ca02e`, `a41b000bd` |
+| Camada de extração semântica | Layer dedicada extrai sinais semânticos das respostas do candidato · scoring fairness + remoção de legacy | `e762705ef`, `4af2b303d`, `f947f9a21` |
+| Calibration dashboard v2 | Endpoint dedicado `app/api/v1/calibration_dashboard_v2.py` para visualização de profiles | `527f2c3ce` linhagem |
+| Quality dashboard de agentes | Endpoint `agent_quality_dashboard.py` · billing por agente verificado E2E (Task #558) | `3d6328f02` |
+| Wizard ReAct estável | JD+salary Phase 1 estabilizado · MT-002/003 bypass · entity_id sanitization (strip non-UUID) | `a760fe110`, `d2a8954d9` |
+
+### F) Integrações (ATS, voz, email, scheduling)
+
+| Tema | Entregas notáveis | Refs |
+|---|---|---|
+| Microsoft Teams | Configurar e validar app LIA Teams para produção (Task #706) | `4a7191d99` |
+| WhatsApp + Teams reminders | Lembretes de entrevista por WhatsApp e Teams, não só email (Task #626) · scheduling-link DB schema corrigido (Task #625) | `c8559a442`, `933949c9f` |
+| Candidate Portal Rails | Spec completa (`CANDIDATE_PORTAL_RAILS_SPEC.md`) · commits hashes incluídos · admin/settings null profile fix | `1b0ca9629`, `63c21738e`, `c134dc252` |
+| Voz | Pipeline `voice_stream` / `gemini_voice` / `twilio_voice` / `voice_screening` operacional · WSI voice orchestrator | linhagem `wsi_voice_orchestrator.py` |
+| Auth | JWT blacklist check em `get_current_user` (P0) · `CandidatePreview` re-export | `2f1bd439c` |
+
+### G) Documentação / Glossário / ADRs
+
+| Tema | Entregas notáveis | Refs |
+|---|---|---|
+| FLUXO_TECNICO_COMPLETO_ALPHA1 | v2.0 (rewrite alpha-1 atual) · adicionado E0 (cognitiva) · E10–E16 + CT Chat Unified + tabela 16 etapas (Task #713) · CT-ML + CT-CHANGELOG (Task #714, este commit) | `1699d7fc9`, `694561e28`, `28e67f22a` |
+| Glossário central | Task #692 — glossário + sync automático + CI guard · GLOSSARIO_ACTIONS_TOOLS (281 actions / 94 tools) · descrições enriquecidas (Task #690) | `4930b4092`, `6e9287f50`, `27aaa3461` |
+| MAPA 18 domínios | `fase2c_domain_verification_report.md` reescrito · MAPA_CAMADA_INTELIGENCIA atualizado (4995 L) | `974282fe1`, `6e9287f50` |
+| ADRs novos | ADR-018 (tool registry consolidation, Task #382) · ADR-019 (glossário/MAPA) · ADR-020 (intent-routed wizards stateful) | `8cd82e847`, `6e9287f50` |
+| Padronização de domínios | Production-ready para domínios em evolução (Task #691) | `f05db64d8` |
+| Migration guide | GUIA_MIGRACAO_V5_COMPLIANCE v2.2 · Mapa de Aproveitamento · 13 problemas + 24 sub-problemas (Task #87) | `e5a26e80d`, `4fe4eedfb`, `aed2ee874` |
+
+### Ondas e marcos (timeline resumido)
+
+```
+mar/2026  ├─ refactor wave (Vue-readiness, < 1000L, 0 TS errors)
+          ├─ FairnessGuard v5 diagnose · Bell notif · Migration guide v2
+abr/2026  ├─ FLUXO v2.0 + E0 cognitiva
+          ├─ Routing canônico P0/P1 + ADR-018 + capabilities CI gate
+          ├─ Tenant isolation residual (Task #673)
+          ├─ Glossário Central (Task #692) + ADR-019/020
+          ├─ Eval LIA 62→70/73 + 15 fixes documentados
+          ├─ Microsoft Teams produção · WhatsApp/Teams reminders
+          ├─ PII real + identity hardening + JWT blacklist
+          ├─ Onboarding proativo + 7 actions company_settings (Task #712)
+          ├─ FLUXO E10–E16 + CT Chat Unified (Task #713)
+          └─ FLUXO CT-ML + CT-CHANGELOG (Task #714 — este documento)
+```
+
+---
+
 ## TABELA CONSOLIDADA — STATUS DAS 16 ETAPAS + TRANSVERSAIS
 
 Legenda: ● implementado · ◐ parcial · ✗ stub / ausente
