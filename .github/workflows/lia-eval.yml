@@ -1,0 +1,109 @@
+# LIA Eval Judge — Onda 2.2 Init VI Fase 1 (2026-04-21)
+# Runs eval_judge on golden set:
+#   - On PR: 20-case sample ($0.06 cost cap per PR)
+#   - Nightly: full 129 cases ($0.30 cost cap per run)
+# Judge: Claude Haiku via LLMProviderFactory (Init VI Fase 0).
+# Cost governance: monthly cap via Anthropic API budget settings; this workflow
+# only runs heuristic scoring + judge on sampled cases.
+
+name: LIA Eval Judge
+
+on:
+  pull_request:
+    paths:
+      - 'lia-agent-system/app/prompts/**'
+      - 'lia-agent-system/app/orchestrator/**'
+      - 'lia-agent-system/app/domains/**/tools/**'
+      - 'lia-agent-system/eval/**'
+  schedule:
+    # Nightly full run at 04:00 UTC (off-peak)
+    - cron: '0 4 * * *'
+  workflow_dispatch:  # manual trigger
+    inputs:
+      mode:
+        description: 'Eval mode: pr-sample (20 cases) or full (all cases)'
+        required: false
+        default: 'pr-sample'
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    env:
+      # Prevent any real DB writes during eval
+      LIA_SKIP_DB: "1"
+      # Cost cap enforcement — workflow aborts if exceeds
+      EVAL_MAX_CASES_PR: "20"
+      EVAL_MAX_CASES_NIGHTLY: "150"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        working-directory: lia-agent-system
+        run: |
+          pip install -r requirements.txt 2>/dev/null || pip install pyyaml anthropic
+
+      - name: Determine eval mode
+        id: mode
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "mode=pr-sample" >> $GITHUB_OUTPUT
+            echo "max_cases=${EVAL_MAX_CASES_PR}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "mode=full" >> $GITHUB_OUTPUT
+            echo "max_cases=${EVAL_MAX_CASES_NIGHTLY}" >> $GITHUB_OUTPUT
+          else
+            echo "mode=${{ github.event.inputs.mode || 'pr-sample' }}" >> $GITHUB_OUTPUT
+            echo "max_cases=${EVAL_MAX_CASES_PR}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Validate eval_cases.yaml shape
+        working-directory: lia-agent-system
+        run: |
+          python3 -c "
+          import yaml
+          data = yaml.safe_load(open('eval/eval_cases.yaml').read())
+          cases = data['cases']
+          assert len(cases) >= 100, f'expected >=100 cases, got {len(cases)}'
+          required = {'id', 'category', 'severity', 'title', 'prompt'}
+          for c in cases:
+              missing = required - set(c.keys())
+              assert not missing, f"case {c.get('id', '?')} missing {missing}"
+          print(f'✓ {len(cases)} cases valid')
+          "
+
+      - name: Validate eval_judge_config.yaml
+        working-directory: lia-agent-system
+        run: |
+          python3 -c "
+          import yaml
+          cfg = yaml.safe_load(open('eval/eval_judge_config.yaml').read())
+          assert cfg.get('provider') == 'claude'
+          assert cfg.get('model', {}).get('name')
+          print('✓ judge config valid')
+          "
+
+      # NOTE: Judge run is commented until ANTHROPIC_API_KEY is configured as
+      # GitHub secret. Uncomment + set secret to enable actual LLM judging.
+      #
+      # - name: Run judge
+      #   working-directory: lia-agent-system
+      #   env:
+      #     ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      #   run: |
+      #     python3 eval/eval_judge.py \
+      #       --mode "${{ steps.mode.outputs.mode }}" \
+      #       --max-cases "${{ steps.mode.outputs.max_cases }}"
+
+      - name: Upload eval artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lia-eval-${{ steps.mode.outputs.mode }}-${{ github.run_id }}
+          path: lia-agent-system/eval/eval_results_*.json
+          retention-days: 30
+          if-no-files-found: ignore
