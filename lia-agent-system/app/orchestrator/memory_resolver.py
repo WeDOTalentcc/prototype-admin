@@ -82,6 +82,58 @@ _NEW_SEARCH_PATTERNS = re.compile(
     re.IGNORECASE | re.UNICODE,
 )
 
+# FIX 15 — Affirmations curtas que indicam CONTINUAÇÃO do turn anterior.
+# Exemplo: LIA pergunta "Quer prosseguir?", user responde "pode sim" ou "ok".
+# Sem esse detector, o router perde contexto e pode sequestrar a conversa
+# para outro domínio (bug observado no audit 2026-04-21).
+_AFFIRMATION_PATTERNS = re.compile(
+    r"^\s*(sim|ok|okay|okey|beleza|blz|bora|vai|"
+    r"pode|pode sim|pode ser|pode continuar|pode fazer|"
+    r"pode prosseguir|manda|manda ver|manda bala|manda a ver|"
+    r"continua|continuar|vamos|prossegue|prosseguir|"
+    r"isso|isso ai|isso aí|isso mesmo|exato|exatamente|correto|"
+    r"confirmo|confirmado|concordo|aceito|aprovo|aprovado|"
+    r"claro|claro que sim|certo|tudo certo|perfeito|fechado|"
+    r"yes|yep|yeah|sure|go|go on|ack)"
+    r"(\s*[.!,;]*\s*[a-zà-ü\s]{0,30})?$",  # permite pequeno trailing: "ok, manda ver"
+    re.IGNORECASE | re.UNICODE,
+)
+
+# Padrões que indicam CORREÇÃO do usuário (FIX 16 vai tratar semanticamente).
+# Usado aqui apenas para EXCLUIR affirmations falsas tipo "não, quis dizer X".
+_CORRECTION_HINT_PATTERNS = re.compile(
+    r"\b(quis dizer|nao e isso|não é isso|nao quis|não quis|"
+    r"outra coisa|ao contr[aá]rio|estamos falando|na verdade|"
+    r"nao foi isso|não foi isso)\b",
+    re.IGNORECASE | re.UNICODE,
+)
+
+
+def is_simple_affirmation(message: str) -> bool:
+    """Return True if message is a short affirmation of the previous turn.
+
+    Examples that match:
+        "pode sim", "ok", "beleza", "manda ver", "continua", "isso mesmo"
+    Examples that DON'T match:
+        "busque python", "quero ver candidatos", "não, quis dizer outra coisa"
+
+    Used by should_keep_filters() and by CascadedRouter Tier 0 to preserve
+    intent across short-reply turns.
+    """
+    if not message or not isinstance(message, str):
+        return False
+    stripped = message.strip()
+    if not stripped:
+        return False
+    # Novas buscas nunca são affirmations
+    if _NEW_SEARCH_PATTERNS.search(stripped):
+        return False
+    # Correções ("quis dizer", "na verdade") são tratadas separadamente
+    # pelo correction_detector (FIX 16). Nunca confundir com affirmation.
+    if _CORRECTION_HINT_PATTERNS.search(stripped):
+        return False
+    return bool(_AFFIRMATION_PATTERNS.match(stripped))
+
 
 def _extract_entity_label(entity: dict[str, Any]) -> str:
     """Formata um entity dict em string legível para injeção no prompt."""
@@ -120,6 +172,9 @@ def should_keep_filters(message: str) -> bool:
     """
     if _NEW_SEARCH_PATTERNS.search(message):
         return False
+    # FIX 15 — affirmations preservam contexto/filtros (continuação)
+    if is_simple_affirmation(message):
+        return True
     if _CONTINUITY_PATTERNS.search(message):
         return True
     # Se tem pronome mas não é nova busca → provavelmente continuidade
