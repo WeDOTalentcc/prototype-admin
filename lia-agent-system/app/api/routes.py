@@ -563,6 +563,8 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(test_activities.router, prefix="/api/v1", tags=["testing"])
     app.include_router(bulk_actions.router, prefix="/api/v1", tags=["bulk-actions"])
     app.include_router(approvals.router, prefix="/api/v1", tags=["approvals"])
+    from app.api.v1 import offer_proposals as _offer_proposals
+    app.include_router(_offer_proposals.router, prefix="/api/v1", tags=["offer-proposals"])
     app.include_router(attachments.router, prefix="/api/v1", tags=["attachments"])
     app.include_router(file_analysis.router, prefix="/api/v1", tags=["file-analysis"])
     app.include_router(opinions.router, prefix="/api/v1", tags=["opinions"])
