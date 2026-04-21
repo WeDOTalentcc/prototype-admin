@@ -219,8 +219,12 @@ async def _wrap_auto_search_candidates(**kwargs: Any) -> dict[str, Any]:
         limit = int(kwargs.get("limit", 10) or 10)
     except (TypeError, ValueError):
         limit = 10
-    raw_scope = kwargs.get("scope", "both")
+    raw_scope = kwargs.get("scope", "both" if company_id else "global")
     scope = raw_scope if raw_scope in {"local", "global", "both"} else "both"
+    # Consistency with sourcing/talent wrappers: without a tenant, can't
+    # do local search — force global scope to avoid canonical validation error.
+    if not company_id and scope in {"local", "both"}:
+        scope = "global"
     location = kwargs.get("location")
     min_experience = kwargs.get("min_experience")
 
