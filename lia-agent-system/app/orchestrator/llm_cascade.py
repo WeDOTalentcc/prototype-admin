@@ -58,7 +58,7 @@ Guia de domínios kanban/pipeline:
   pipeline_context: perfil do candidato, scores WSI, salário, disponibilidade
   pipeline_decision: validar transição, sub-status, preferências do recrutador
   pipeline_action: atualizar candidato, cancelar/reagendar entrevista, fairness
-
+{actions_context}
 Mensagem: {message}
 
 Responda SOMENTE com o JSON, sem texto extra."""
@@ -230,11 +230,19 @@ class LLMCascadeRouter:
           qualquer outro → provider="claude"
         """
         base_prompt = system_prompt_override or _ROUTING_PROMPT
-        # FIX 1 — Inject domain actions context if available (built by rebuild_routing_context)
+        # FIX 11 / G5 — Substitute {actions_context} in the PROMPT BODY (not appended).
+        # Placement before {message} ensures the LLM weighs domain actions while
+        # interpreting the user query — not after the "respond with JSON" directive.
         actions_ctx = getattr(self, "_actions_context", "")
-        if actions_ctx and not system_prompt_override:
-            base_prompt = base_prompt + actions_ctx
-        prompt = base_prompt.replace("{message}", message[:500])
+        if system_prompt_override:
+            # Override path — no actions_context injection (respects caller's prompt)
+            prompt = base_prompt.replace("{message}", message[:500])
+        else:
+            prompt = (
+                base_prompt
+                .replace("{actions_context}", actions_ctx or "")
+                .replace("{message}", message[:500])
+            )
         tokens_est = len(prompt) // 4
         provider: LLMProvider = self._provider_for_model(model_name)
 
