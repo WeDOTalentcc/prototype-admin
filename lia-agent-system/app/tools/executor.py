@@ -208,6 +208,30 @@ class ToolExecutor:
             )
             self._log_execution(tool_name, parameters, result, agent_type, conversation_id)
             return result
+
+        # FIX 3 — Check governance_tags for HITL requirement before executing.
+        # A tool marked requires_hitl cannot execute automatically — caller must
+        # obtain human confirmation first and pass an explicit _hitl_confirmed=True
+        # flag in parameters to bypass this guard.
+        governance_tags = getattr(tool, "governance_tags", []) or []
+        if "requires_hitl" in governance_tags and not parameters.get("_hitl_confirmed"):
+            result = ToolResult(
+                success=True,
+                result={
+                    "status": "pending_hitl_confirmation",
+                    "requires_hitl": True,
+                    "tool_name": tool_name,
+                    "parameters": {k: v for k, v in parameters.items() if k != "_context"},
+                    "governance_tags": list(governance_tags),
+                    "message": (
+                        f"A ferramenta '{tool_name}' requer confirmação humana antes de executar "
+                        f"(governance_tags={governance_tags}). Confirme para prosseguir."
+                    ),
+                },
+                tool_name=tool_name,
+            )
+            self._log_execution(tool_name, parameters, result, agent_type, conversation_id)
+            return result
         
         validation_error = self._validate_parameters(parameters, tool.parameters_schema)
         if validation_error:

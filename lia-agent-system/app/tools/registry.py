@@ -31,6 +31,11 @@ class ToolDefinition:
     parameters_schema: dict[str, Any]
     handler: Callable[..., Awaitable[dict[str, Any]]]
     allowed_agents: list[str] = field(default_factory=list)
+    # FIX 3 — Compliance/safety flags. Values: pii | fairness_guard | requires_hitl |
+    #         multi_tenant | audit_trail | credits_consumed | write_destructive
+    governance_tags: list[str] = field(default_factory=list)
+    # FIX 4 — Suggested follow-up tools (proactive suggestions after execution)
+    related_tools: list[str] = field(default_factory=list)
     
     def to_claude_schema(self) -> dict[str, Any]:
         """Convert to Claude's tool format."""

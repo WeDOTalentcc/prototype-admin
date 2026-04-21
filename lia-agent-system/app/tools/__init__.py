@@ -186,6 +186,15 @@ def sync_descriptions_from_yaml() -> None:
                 enriched += f"\nDO NOT USE WHEN: {when_not_to_use}"
 
             tool.description = enriched
+
+            # FIX 3/4 — Populate governance_tags and related_tools from YAML
+            governance_tags = meta.get("governance_tags") or []
+            if isinstance(governance_tags, list):
+                tool.governance_tags = list(governance_tags)
+            related_tools = meta.get("related_tools") or []
+            if isinstance(related_tools, list):
+                tool.related_tools = list(related_tools)
+
             synced += 1
 
         _logger.info(

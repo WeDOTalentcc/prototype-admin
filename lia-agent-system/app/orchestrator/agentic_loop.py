@@ -161,9 +161,22 @@ class AgenticLoop:
 
             # --- Execute each requested tool call ---
             for tc in llm_response.tool_calls:
+                # FIX 4 — Attach related_tools as suggested_next for proactive UX
+                _suggested_next: list[str] = []
+                try:
+                    _tool_def = (
+                        self._tool_executor.registry.get_tool(tc.name)
+                        if self._tool_executor else None
+                    )
+                    if _tool_def is not None:
+                        _suggested_next = list(getattr(_tool_def, "related_tools", []) or [])
+                except Exception:
+                    pass
+
                 tool_calls_made.append({
                     "name": tc.name,
                     "parameters": tc.parameters,
+                    "suggested_next": _suggested_next,
                 })
 
                 try:
