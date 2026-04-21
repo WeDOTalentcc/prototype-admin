@@ -87,13 +87,17 @@ def test_contextual_inference_rule_in_lia_persona() -> None:
     else:
         raise RuntimeError("lia_persona.yaml not found")
 
-    text = candidate.read_text(encoding="utf-8")
-    low = text.lower()
-    assert "fix 26" in low, "FIX 26: lia_persona.yaml must contain FIX 26 marker"
-    assert "contextual_inference" in low or "infer" in low, (
-        "FIX 26: lia_persona.yaml must include contextual_inference rule"
+    # Post-FIX 29: rule migrated from top-level key INTO prompts.lia_persona.
+    # Check inside the rendered persona content (single source of truth).
+    import yaml
+    data = yaml.safe_load(candidate.read_text(encoding="utf-8"))
+    persona = data["prompts"]["lia_persona"].lower()
+    assert "fix 26" in persona or "fix 29" in persona, (
+        "FIX 26 (post-FIX 29): marker must be in prompts.lia_persona content"
     )
-    # Must cite the anti-pattern specifically so LLM knows what NOT to do
-    assert "o quê" in low or "o que" in low or "quê?" in low or "que?" in low, (
+    assert "inferência contextual" in persona or "inferencia contextual" in persona or "infer" in persona, (
+        "FIX 26 (post-FIX 29): persona must include Inferência Contextual section"
+    )
+    assert "o quê" in persona or "o que" in persona or "quê?" in persona or "que?" in persona, (
         "FIX 26: rule must explicitly call out 'X o quê?' as forbidden anti-pattern"
     )

@@ -52,16 +52,21 @@ def test_fix27_greeting_forbids_generic_opener() -> None:
 
 
 def test_fix28_proatividade_dados_rule_in_recruiter_assistant() -> None:
-    """FIX 28: recruiter_assistant.yaml must include proatividade_dados rule."""
-    text = _find_file("app/prompts/domains/recruiter_assistant.yaml").read_text(encoding="utf-8")
-    low = text.lower()
-    assert "fix 28" in low, "FIX 28: recruiter_assistant.yaml must contain FIX 28 marker"
-    assert "proatividade_dados" in low or "proatividade de dados" in low, (
-        "FIX 28: must define proatividade_dados rule"
+    """FIX 28 (post-FIX 29): proatividade_dados rule migrated to prompts.lia_persona.
+
+    Before FIX 29 this rule lived at top-level of recruiter_assistant.yaml but
+    was dead YAML (nothing loaded it). FIX 29 migrated it into the single
+    rendered persona block (app/prompts/shared/lia_persona.yaml
+    prompts.lia_persona) so it reaches every agent flow.
+    """
+    import yaml
+    data = yaml.safe_load(_find_file("app/prompts/shared/lia_persona.yaml").read_text(encoding="utf-8"))
+    persona = data["prompts"]["lia_persona"].lower()
+    assert "proatividade" in persona, (
+        "FIX 28 (post-FIX 29): proatividade rule must be present in persona content"
     )
-    # Must explicitly forbid the "navegar para X" pattern
-    assert "navegar" in low and ("nunca" in low or "não" in low or "nao" in low), (
-        "FIX 28: proatividade_dados must explicitly forbid 'você gostaria de navegar para X' pattern"
+    assert "navegar" in persona and ("nunca" in persona or "não" in persona or "nao" in persona), (
+        "FIX 28: proatividade rule must explicitly forbid 'você gostaria de navegar para X'"
     )
 
 

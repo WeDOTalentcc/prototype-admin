@@ -343,6 +343,32 @@ class MemoryResolver:
                     len(context_lines),
                 )
 
+        # FIX 30 (2026-04-21) — quantifier continuation enrichment.
+        # When user replies with a bare quantifier ("todas", "nenhum", etc.)
+        # and we have no entity context to inject, the LLM was asking
+        # "X o quê?". Inject an explicit instruction that tells the LLM to
+        # use conversation_history to resolve the referent instead of
+        # asking clarification. This complements persona contextual_inference
+        # rule (FIX 26/29) but is enforced at the resolver producer level.
+        if _QUANTIFIER_PATTERNS.search(message):
+            quantifier_hint = (
+                "[FIX 30 — resposta curta com quantifier ('todas', 'nenhum', "
+                "'alguns', etc.). PROVÁVEL continuação do turno anterior. "
+                "Use o histórico de mensagens para inferir a que se refere. "
+                "NÃO pergunte 'X o quê?' — esse é o anti-pattern; em vez "
+                "disso, assuma a referência mais natural da sua última mensagem "
+                "ao usuário.]"
+            )
+            if resolved:
+                enriched = f"{quantifier_hint}\n{enriched}"
+            else:
+                enriched = f"{quantifier_hint}\n{message}"
+                resolved = True
+            logger.info(
+                "[MemoryResolver] FIX 30 quantifier hint injected session=%s",
+                session_id,
+            )
+
         return enriched, resolved
 
     def _build_context_lines(self, context: Any, conversation_state: Any | None = None) -> list:
