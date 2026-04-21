@@ -29,7 +29,9 @@ Para verificar em CI se o arquivo está atualizado:
 >
 > **Regenerar:** `python scripts/generate_tool_action_glossary.py`
 >
-> **Última atualização:** 2026-04-21 11:14 UTC · **Status pós FIX 1-12:** 100% cobertura
+> **Manutenção automática:** o workflow `.github/workflows/tool-glossary-check.yml` (Task #733) roda `python scripts/generate_tool_action_glossary.py --check` em todo push/PR que mexe nos fontes de tools/actions, no gerador ou neste documento, e quebra o build se o glossário estiver desatualizado.
+>
+> **Última atualização:** 2026-04-21 12:25 UTC · **Status pós FIX 1-12:** 100% cobertura
 
 ## Changelog referente aos FIXes
 
@@ -10750,4 +10752,4 @@ python scripts/generate_tool_action_glossary.py --check  # exit 1 se stale
 - [`docs/specs/CANONICAL_SOURCES_SPEC.md`](./specs/CANONICAL_SOURCES_SPEC.md) — Registry canônico
 - [`app/tools/tool_registry_metadata.yaml`](../app/tools/tool_registry_metadata.yaml) — fonte YAML
 
-*Última regeneração: 2026-04-21 11:14 UTC*
+*Última regeneração: 2026-04-21 12:25 UTC*

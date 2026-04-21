@@ -186,6 +186,8 @@ def render_header() -> str:
 >
 > **Regenerar:** `python scripts/generate_tool_action_glossary.py`
 >
+> **Manutenção automática:** o workflow `.github/workflows/tool-glossary-check.yml` (Task #733) roda `python scripts/generate_tool_action_glossary.py --check` em todo push/PR que mexe nos fontes de tools/actions, no gerador ou neste documento, e quebra o build se o glossário estiver desatualizado.
+>
 > **Última atualização:** {today} · **Status pós FIX 1-12:** 100% cobertura
 
 ## Changelog referente aos FIXes
