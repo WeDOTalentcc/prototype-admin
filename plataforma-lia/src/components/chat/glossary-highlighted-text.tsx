@@ -27,6 +27,7 @@ import {
   listGlossaryTerms,
   lookupGlossaryTerm,
 } from "@/services/lia-api/glossary-api"
+import { GlossaryDrawer } from "./glossary-drawer"
 
 interface GlossaryHighlightedTextProps {
   html: string
@@ -157,6 +158,7 @@ export function GlossaryHighlightedText({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [terms, setTerms] = useState<GlossaryEntryDTO[]>([])
   const [active, setActive] = useState<ActiveTooltip | null>(null)
+  const [drawerTerm, setDrawerTerm] = useState<string | null>(null)
   const [definitions, setDefinitions] = useState<
     Record<string, DefinitionState>
   >({})
@@ -220,9 +222,63 @@ export function GlossaryHighlightedText({
     if (!(target instanceof HTMLElement)) return
     const trigger = target.closest<HTMLElement>("[data-glossary-term]")
     if (!trigger) return
-    if (event.type === "click") event.preventDefault()
+    if (event.type === "click") {
+      event.preventDefault()
+      const term = trigger.getAttribute("data-glossary-term")
+      if (term) {
+        setActive(null)
+        setDrawerTerm(term)
+      }
+      return
+    }
     openFor(trigger)
   }
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>): void => {
+    if (event.key !== "Enter" && event.key !== " ") return
+    const target = event.target
+    if (!(target instanceof HTMLElement)) return
+    const trigger = target.closest<HTMLElement>("[data-glossary-term]")
+    if (!trigger) return
+    event.preventDefault()
+    const term = trigger.getAttribute("data-glossary-term")
+    if (term) {
+      setActive(null)
+      setDrawerTerm(term)
+    }
+  }
+
+  // Open the drawer automatically when the page is loaded with a deep link
+  // such as `?glossary=BARS`. We attempt the open immediately on mount so the
+  // drawer still works when the canonical term list endpoint fails or is
+  // empty — the drawer's own lookup hits the per-term endpoint and will
+  // surface a clean error if the term is unknown. Once the term list does
+  // arrive we re-evaluate to upgrade the requested string to its canonical
+  // form (so `?glossary=wsi` becomes the canonical "WSI").
+  const deepLinkConsumedRef = useRef(false)
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const params = new URLSearchParams(window.location.search)
+    const requested = params.get("glossary")
+    if (!requested) return
+    const trimmed = requested.trim()
+    if (!trimmed) return
+    if (terms.length) {
+      const lower = trimmed.toLowerCase()
+      const match = terms.find(
+        (entry) =>
+          entry.name.toLowerCase() === lower ||
+          entry.sigla?.toLowerCase() === lower,
+      )
+      setDrawerTerm(match ? match.name : trimmed)
+      deepLinkConsumedRef.current = true
+      return
+    }
+    if (deepLinkConsumedRef.current) return
+    setDrawerTerm(trimmed)
+    deepLinkConsumedRef.current = true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [terms.length])
 
   const handleLeave = (event: React.MouseEvent<HTMLDivElement>): void => {
     const related = event.relatedTarget as HTMLElement | null
@@ -262,6 +318,7 @@ export function GlossaryHighlightedText({
         onFocus={handleEvent}
         onBlur={() => setActive(null)}
         onClick={handleEvent}
+        onKeyDown={handleKeyDown}
       />
       {active ? (
         <GlossaryTooltipPortal
@@ -271,6 +328,7 @@ export function GlossaryHighlightedText({
           onClose={() => setActive(null)}
         />
       ) : null}
+      <GlossaryDrawer term={drawerTerm} onClose={() => setDrawerTerm(null)} />
     </>
   )
 }
