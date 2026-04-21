@@ -15,8 +15,49 @@ from typing import Any
 
 from app.orchestrator.context_adapter import ContextAdapter, UniversalContext
 from app.orchestrator.main_orchestrator import MainOrchestrator
+from app.shared.pii_masking import redact_response_with_audit
 
 logger = logging.getLogger(__name__)
+
+
+# Onda 2.1 G5 light (2026-04-21) — PII redaction helper for response boundary.
+def _apply_pii_redaction(response_dict: dict) -> dict:
+    """Apply PII redaction to the 'response' field of a chat response dict.
+
+    LGPD Art. 12 + 13 compliance: redact candidate CPF/CNPJ/email/phone from
+    LIA responses before frontend exposes them. Audit trail logged to
+    compliance audit log (via logger with PIIMaskingFilter installed).
+
+    Returns a new dict with:
+      - response: redacted text
+      - pii_redacted: bool (True if any PII was detected + redacted)
+      - pii_audit_count: int (number of PII instances found)
+    """
+    text = response_dict.get("response", "")
+    if not isinstance(text, str) or not text:
+        return response_dict
+
+    redacted, audit = redact_response_with_audit(text)
+    if not audit:
+        # Nothing redacted — add explicit pii_redacted=False for traceability
+        response_dict = dict(response_dict)
+        response_dict["pii_redacted"] = False
+        response_dict["pii_audit_count"] = 0
+        return response_dict
+
+    # PII detected + redacted; log audit for LGPD compliance trail.
+    types_found = sorted({a["type"] for a in audit})
+    logger.info(
+        "[G5-PII] redaction applied count=%d types=%s",
+        len(audit), types_found,
+    )
+
+    response_dict = dict(response_dict)
+    response_dict["response"] = redacted
+    response_dict["pii_redacted"] = True
+    response_dict["pii_audit_count"] = len(audit)
+    return response_dict
+
 
 
 class ChatAdapter:
@@ -191,7 +232,7 @@ class ChatAdapter:
                 result["blocked"] = True
                 result["block_reason"] = intent
 
-        return result
+        return _apply_pii_redaction(result)
 
     # ──────────────────────────────────────────────────────────────────
     # Error fallback
