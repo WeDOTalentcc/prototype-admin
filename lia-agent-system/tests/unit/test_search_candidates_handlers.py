@@ -140,6 +140,30 @@ async def test_autonomous_wrapper_rejects_empty_query():
 
 
 @pytest.mark.asyncio
+async def test_autonomous_wrapper_propagates_canonical_error():
+    """Regression: canonical status='error' must NOT be reported as success."""
+    from app.domains.autonomous.agents import autonomous_tool_registry
+
+    canonical_payload = {
+        "status": "error",
+        "error": "DB connection lost",
+        "candidates": [],
+        "total": 0,
+    }
+    with patch(
+        "app.domains.ai.services.candidate_search_service.search_candidates",
+        new=AsyncMock(return_value=canonical_payload),
+    ):
+        out = await autonomous_tool_registry._wrap_auto_search_candidates(
+            query="python", company_id="co-1", scope="local",
+        )
+    assert out["success"] is False
+    err_text = out.get("error") or out.get("message") or ""
+    assert "DB connection lost" in err_text
+    assert out["data"]["total"] == 0
+
+
+@pytest.mark.asyncio
 async def test_autonomous_wrapper_normalizes_invalid_scope():
     from app.domains.autonomous.agents import autonomous_tool_registry
 

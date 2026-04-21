@@ -240,6 +240,15 @@ async def _wrap_auto_search_candidates(**kwargs: Any) -> dict[str, Any]:
             location=location,
             min_experience=min_experience,
         )
+        if result.get("status") == "error":
+            return {
+                "success": False,
+                "error": result.get("error", "search failed"),
+                "data": {
+                    "candidates": result.get("candidates", []),
+                    "total": result.get("total", 0),
+                },
+            }
         return {
             "success": True,
             "data": result,
