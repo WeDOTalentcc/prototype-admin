@@ -2362,3 +2362,220 @@ Tabelas referenciadas nesta PARTE (validar schema no destino):
 ---
 
 *Atualizado em: 2026-04-20 | PARTE H adicionada — Chat ReAct, Stub Replacement, Scheduling Real, WSI tenant forward, WorkflowRail UX, Security IDOR. Cobre commits `f027fa26e`..`1adc24fcc`.*
+
+---
+
+## PARTE I — LIA AI Intelligence: Routing + Governance + Observability (FIX 1-13, 2026-04-20/21)
+
+> **Ciclo 2026-04-20 a 2026-04-21.** Fechou 9 gaps arquiteturais identificados no diagnóstico das Tasks #690/#698: as Tasks haviam enriquecido 88 ToolDefinitions (YAML) e 245 DomainActions (Python) com `when_to_use`, `when_not_to_use`, `governance_tags`, `side_effects`, `related_tools`, `examples` — mas apenas as ToolDefinitions chegavam ao LLM. As DomainActions e os campos de governance eram documentação morta.
+>
+> **Documento completo e detalhado:** [`docs/LIA_AI_HANDOFF.md`](docs/LIA_AI_HANDOFF.md) — 45 KB, 13 seções PT-BR.
+> **ADR:** [`docs/specs/ai/ADR-019-governance-and-observability.md`](docs/specs/ai/ADR-019-governance-and-observability.md)
+> **Glossário regenerado:** [`docs/GLOSSARIO_ACTIONS_TOOLS.md`](docs/GLOSSARIO_ACTIONS_TOOLS.md) — 300 KB (103 tools × 281 DomainActions × 18 domínios)
+> **Canonical spec atualizado:** [`docs/specs/CANONICAL_SOURCES_SPEC.md`](docs/specs/CANONICAL_SOURCES_SPEC.md) §1.1, §1.2, §6, §7, §8
+
+### TL;DR — impacto prático
+
+| Capacidade | Antes | Depois |
+|-----------|-------|--------|
+| Escolha de ferramenta pelo LLM | Descrições genéricas → ~30% erro de primeira tentativa | `USE WHEN` + `DO NOT USE WHEN` + `related_tools` no schema → 20-35% menos tool-selection errors esperado |
+| Routing entre domínios | Router via 1-2 linhas por domínio → roteava no escuro | `_actions_context` injeta 245 actions + examples ANTES de `{message}` no prompt |
+| Few-shot em DomainActions | 0 exemplos populados em 270 actions | 100% quality (486 exemplos PT-BR, zero fallback "isso") |
+| FairnessGuard | Tag `fairness_guard` no YAML, nunca invocado pelo executor | **ATIVO** no `ToolExecutor` — Layer 1 regex bloqueia bias antes do handler (LGPD/CF Art. 5º) |
+| HITL (Human-in-the-Loop) | `requires_hitl` declarado mas nunca checado | **ATIVO** — `pending_hitl_confirmation` + `needs_confirmation=true` no envelope; Frontend pode renderizar diálogo |
+| Sugestões proativas | `related_tools` no YAML, nunca lido | `suggested_next` em cada `tool_call` — Frontend renderiza próximos passos |
+| Wizard de criação de vaga | 7/12 tools enriquecidas | 12/12 tools com USE WHEN + governance + side_effects |
+| Observability | Sem métricas de IA | `emit_tool_call` estruturado + LangSmith opcional (`LANGCHAIN_TRACING_V2`) |
+| Source of truth observability | n/a | `app.shared.observability.tool_metrics` (path canônico — Section 1) |
+| Source of truth requires_confirmation | 2 fontes paralelas divergindo | `resolve_requires_confirmation(intent, action_id)` — precedência intent > action |
+| 4 domínios novos com few-shot | `company_settings`, `hiring_policy`, `pipeline`, `candidate_self_service` — 0 examples | 25 actions inline populadas |
+| Disambiguação em clusters overlap | LIA confundia `generate_jd`/`enrich_jd`/`suggest_jd_improvements` | Cada description tem `Distinto de X (porque Y)` explícito |
+
+### Sumário de commits (branch `fix/kanban-e2e-bugs`)
+
+| SHA | FIX | Escopo | Files |
+|-----|-----|--------|-------|
+| `82009b0c8` | FIX 1 | DomainActions → LLM via routing context (`get_actions_for_prompt` + `rebuild_routing_context`) | 3 |
+| `4d55b7c40` | FIX 2 | 245 DomainActions × `examples` populados | 13 actions.py |
+| `c9ec97385` | FIX 3+4 | `governance_tags` HITL enforcement + `related_tools` → `suggested_next` | 3 |
+| `71a2ec1d1` | FIX 5+6+7 | Wizard sync + observability inline + overlap cluster 1-2 | 5 |
+| `8e8bfa3bd` | FIX 8 | **FairnessGuard enforcement** + `side_effects` field | 4 |
+| `eecf182e7` | — | Checkpoint Replit Agent (mudanças intermediárias FIX 9) | — |
+| `896f4ae34` | FIX 9 | 100% quality examples + 4 inline domains populados | 16 |
+| `c0a3e3b79` | FIX 10 | 5 wizard YAML entries + `resolve_requires_confirmation` resolver | 3 |
+| `cf12c3ec9` | FIX 11 | `{actions_context}` placement antes de `{message}` + WSI cluster cross-ref | 3 |
+| `3f7245f18` | FIX 12 | **HITL envelope** em `ChatResponse.structured_data.hitl_pending` + observability module | 5 |
+| `c15a89862` | docs | `LIA_AI_HANDOFF.md` + ADR-019 + `CANONICAL_SOURCES_SPEC.md` §6/7/8 + `GLOSSARIO_ACTIONS_TOOLS.md` regenerado (300 KB) + script gerador AST-based | 5 |
+| `453a46615` | FIX 13 | Migração canônica: `app/core/observability.py` → `app/shared/observability/tool_metrics.py` + reuso de `is_langsmith_enabled()` | 8 |
+
+**Testes:** 91 testes TDD (Red→Green) em `tests/unit/test_fix1_*.py` a `test_fix12_*.py` + `test_fix34_*`. **Regressão:** 109/109 verde (65 novos FIX + 44 existentes action_executor/handlers).
+
+### Arquivos canônicos modificados/criados
+
+| Área | Path canônico | Status |
+|------|---------------|--------|
+| ToolDefinition dataclass | `app/tools/registry.py` | +3 fields (governance_tags, related_tools, side_effects) |
+| Executor enforcement | `app/tools/executor.py` | +HITL gate, +FairnessGuard invocation, +`_check_fairness` helper |
+| YAML → ToolDefinition sync | `app/tools/__init__.py::sync_descriptions_from_yaml()` | +sync de governance_tags/related_tools/side_effects, +wizard sync |
+| DomainPrompt base | `app/domains/base.py` | +`get_actions_for_prompt(max_actions=8)` |
+| LLM routing | `app/orchestrator/llm_cascade.py` | +`rebuild_routing_context`, `{actions_context}` placeholder |
+| Agentic loop | `app/orchestrator/agentic_loop.py` | +`suggested_next`, +observability hook |
+| Main orchestrator | `app/orchestrator/main_orchestrator.py` | +`hitl_pending` envelope promotion |
+| Intent confirmation resolver | `app/orchestrator/action_executor/intents_config.py` | +`resolve_requires_confirmation(intent, action_id)` |
+| Observability module (canonical) | `app/shared/observability/tool_metrics.py` | NOVO — `emit_tool_call` + `emit_hitl_pending` |
+| Tool metadata YAML | `app/tools/tool_registry_metadata.yaml` | +5 wizard entries (FIX 10) |
+| 13 DomainActions files | `app/domains/*/actions.py` | +examples em 245 actions |
+| 4 inline domain files | `app/domains/{company_settings,hiring_policy,pipeline,candidate_self_service}/domain.py` | +examples em 25 actions inline |
+| Glossário gerador | `scripts/generate_tool_action_glossary.py` | NOVO — AST-based, CI-friendly com `--check` |
+
+### Fluxo cross-repo pós FIX 1-13
+
+```
+Frontend (plataforma-lia)
+   │
+   │  POST /api/v1/chat/   (ou stream, ws, with-attachments)
+   ▼
+Rails (ats-api) — fallback para CRUD quando aplicável
+   │
+   ▼
+FastAPI IA (lia-agent-system)
+   │
+   ├─ main_orchestrator.process_request()
+   ├─ cascaded_router.route() → usa {actions_context} + {message}  (FIX 1+11)
+   ├─ agentic_loop.run()
+   │    ├─ LLM vê schemas enriquecidos (USE WHEN + DO NOT USE WHEN)  (FIX 3/4/8)
+   │    ├─ tool_executor.execute()
+   │    │    ├─ if fairness_guard: FairnessGuard.check() ← LGPD enforcement (FIX 8)
+   │    │    ├─ if requires_hitl: return pending_hitl_confirmation (FIX 3)
+   │    │    └─ handler(params)
+   │    ├─ tool_calls_made[].suggested_next = related_tools  (FIX 4)
+   │    └─ emit_tool_call()  ← lia.tool_metrics log + optional LangSmith (FIX 12/13)
+   │
+   └─ ChatResponse(
+          structured_data={tool_calls, hitl_pending?},
+          needs_confirmation=bool(hitl_pending),
+          fairness_warnings=[...]
+       )
+```
+
+### Frontend contract (o que Rails/plataforma-lia consumem)
+
+```json
+{
+  "success": true,
+  "content": "texto da LIA",
+  "needs_confirmation": false,
+  "action_executed": true,
+  "structured_data": {
+    "tool_calls": [
+      {
+        "name": "create_job_vacancy",
+        "parameters": {...},
+        "suggested_next": ["save_job_draft", "validate_job_fields"],
+        "result": {...}
+      }
+    ],
+    "hitl_pending": [          // FIX 12 — presente se HITL
+      {
+        "tool_name": "send_bulk_email",
+        "parameters": {...},
+        "governance_tags": ["requires_hitl", "audit_trail"],
+        "message": "Precisa confirmação humana"
+      }
+    ],
+    "iterations": 2
+  },
+  "fairness_warnings": []
+}
+```
+
+**Como consumir no frontend:**
+- `structured_data.tool_calls[*].suggested_next` → renderizar botões proativos (FIX 4)
+- `structured_data.hitl_pending` + `needs_confirmation=true` → renderizar diálogo de confirmação (FIX 12)
+- `fairness_warnings[]` → alertas educacionais não-bloqueantes
+- Quando tool é bloqueada por FairnessGuard, `result.blocked_by_fairness_guard=true` + `educational_message` (FIX 8)
+
+### Observability runbook
+
+- **Log name:** `lia.tool_metrics`
+- **Módulo canônico:** `app.shared.observability.tool_metrics` (FIX 13)
+- **Funções públicas:** `emit_tool_call()`, `emit_hitl_pending()`
+- **Env vars para LangSmith forwarding:**
+  - `LANGCHAIN_TRACING_V2=true` → habilita
+  - `LANGSMITH_API_KEY` (ou `LANGCHAIN_API_KEY`) → obrigatório
+  - `LANGCHAIN_PROJECT=lia-prod` → opcional
+- **Gating centralizado:** `app.shared.observability.langsmith.is_langsmith_enabled()`
+- **Queries úteis:**
+  - `event=tool_call first_shot=true success=false` → tool-selection errors
+  - `event=tool_call governance_tags.contains=fairness_guard success=false` → bias block rate
+  - `event=hitl_pending` → HITL funnel
+
+### Governance tags — glossário pós FIX 8
+
+| Tag | Enforcement |
+|-----|-------------|
+| `multi_tenant` | ✅ via `ToolExecutionContext` |
+| `fairness_guard` | ✅ **FIX 8** — Layer 1 regex no executor |
+| `requires_hitl` | ✅ **FIX 3** — `pending_hitl_confirmation` |
+| `pii`, `audit_trail`, `credits_consumed` | ⏳ parcial (hooks futuros) |
+| `write_destructive` | ✅ via combinação com `requires_hitl` |
+
+### Side_effects — glossário pós FIX 8
+
+15+ valores parseados em `ToolDefinition.side_effects`: `none`, `db_write`, `external_api_call`, `credits_consumed`, `audit_trail`, `email_sent`, `webhook_fired`, `whatsapp_sent`, `mock_only`, `write_destructive`. Uso downstream: retry safety, idempotency, audit.
+
+### Deployment checklist (pós-push)
+
+1. [ ] Restart workflow FastAPI no Replit (sem restart, `initialize_tools()` não re-roda e mudanças não ativam)
+2. [ ] `python -m pytest tests/unit/test_fix*.py --no-cov -q` → esperado 91/91 verde
+3. [ ] `python scripts/generate_tool_action_glossary.py --check` → verificar glossário up to date
+4. [ ] Smoke test — `"busca candidatos somente homens"` → deve bloquear via FairnessGuard
+5. [ ] Smoke test — `"fecha a vaga 42"` → deve retornar `hitl_pending`
+6. [ ] Smoke test — `"melhora minha JD"` → deve escolher `enrich_jd`, não `generate_jd`
+7. [ ] Verificar logs: `grep "tool_call" logs/app.log` → eventos com campos estruturados
+
+### Gaps fechados (G1-G9)
+
+| Gap | Descrição | FIX(es) |
+|-----|-----------|---------|
+| G1 | DomainActions não chegam ao LLM | FIX 1, 11 |
+| G2 | DomainAction.examples vazio | FIX 2, 9 |
+| G3 | governance_tags = metadata morta | FIX 3, 8 |
+| G4 | related_tools ignorados + 5 wizard tools sem YAML | FIX 4, 10 |
+| G5 | actions_context no lugar errado (depois de {message}) | FIX 11 |
+| G6 | Overlap semântico (3 clusters: JD, candidate-search, WSI) | FIX 7, 11 |
+| G7 | requires_confirmation com 2 fontes divergindo | FIX 10 |
+| G8 | HITL sem envelope pro frontend | FIX 12 |
+| G9 | Observability sem ingestion | FIX 12, 13 |
+
+### Canonical-fix violation closed (FIX 13)
+
+Durante FIX 12 criamos `app/core/observability.py` — isso viola Section 1 do CANONICAL_SOURCES_SPEC.md (todo observability deve ficar em `app.shared.observability.*`). **FIX 13 (`453a46615`) corrigiu:**
+
+- `git mv app/core/observability.py → app/shared/observability/tool_metrics.py`
+- Imports atualizados em 4 callers (agentic_loop, main_orchestrator, 2 tests)
+- Reuso de `app.shared.observability.langsmith.is_langsmith_enabled()` → única fonte de verdade para o gate
+- `app.core.observability` adicionado aos forbidden paths da canonical spec (§1.2)
+- Docs sincronizados (HANDOFF §11, ADR-019 addendum, CANONICAL §1/§7)
+- **Follow-up:** adicionar `app.core.observability` em `scripts/check_forbidden_imports.py` (próxima PR)
+
+### Pendências conhecidas
+
+- **`pii` / `audit_trail` / `credits_consumed` enforcement** — tags declaradas, hooks parciais. Próximo ciclo: audit service forward automático + budget pré-execução.
+- **FairnessGuard Layer 2 (ML) + Layer 3 (LLM)** — só Layer 1 (regex) ativo no hot-path por custo/latência. Endpoints de revisão de JD (antes de publicar) devem usar Layer 3.
+- **CI guard** — `scripts/check_forbidden_imports.py` precisa receber entry para `app.core.observability`.
+- **Glossary regeneration em CI** — `scripts/generate_tool_action_glossary.py --check` deve ir pro pre-commit ou GitHub Action.
+
+### Referências rápidas
+
+- [`docs/LIA_AI_HANDOFF.md`](docs/LIA_AI_HANDOFF.md) — overview arquitetural completo (13 seções)
+- [`docs/specs/ai/ADR-019-governance-and-observability.md`](docs/specs/ai/ADR-019-governance-and-observability.md) — decisões arquiteturais
+- [`docs/GLOSSARIO_ACTIONS_TOOLS.md`](docs/GLOSSARIO_ACTIONS_TOOLS.md) — 103 tools + 281 actions completos
+- [`docs/specs/CANONICAL_SOURCES_SPEC.md`](docs/specs/CANONICAL_SOURCES_SPEC.md) — registry canônico de paths
+- [`app/tools/tool_registry_metadata.yaml`](app/tools/tool_registry_metadata.yaml) — YAML source of truth (93 tools)
+- [`scripts/generate_tool_action_glossary.py`](scripts/generate_tool_action_glossary.py) — regerador de glossário (AST-based)
+
+---
+
+*Atualizado em: 2026-04-21 | PARTE I adicionada — LIA AI Intelligence (FIX 1-13) com routing + governance + observability. Cobre commits `82009b0c8`..`453a46615` (branch `fix/kanban-e2e-bugs`), 10 commits de feature + 1 commit de docs + 1 commit de canonical-fix migration.*
+
