@@ -132,6 +132,14 @@ def initialize_tools() -> None:
     # receives the enriched descriptions via to_claude_schema() / to_gemini_schema().
     sync_descriptions_from_yaml()
 
+    # FIX 1 — Rebuild routing context with domain actions after tools are registered.
+    # Gives LLMCascadeRouter._actions_context knowledge of each domain's available
+    # actions so the routing prompt is more informative for intent disambiguation.
+    try:
+        from app.orchestrator.llm_cascade import llm_cascade_router
+        llm_cascade_router.rebuild_routing_context()
+    except Exception as _exc:
+        logger.warning("[initialize_tools] rebuild_routing_context failed (non-blocking): %s", _exc)
 
 
 def sync_descriptions_from_yaml() -> None:

@@ -212,5 +212,26 @@ class DomainPrompt(ABC):
                 return action
         return None
 
+
+    def get_actions_for_prompt(self, max_actions: int = 8) -> str:
+        """Build a concise list of available actions for LLM context injection.
+
+        Returns a formatted string listing action_id + first 100 chars of description,
+        with requires_confirmation flag and up to 1 example per action.
+        Returns empty string if domain has no actions.
+        """
+        actions = self.get_allowed_actions()[:max_actions]
+        if not actions:
+            return ""
+        lines = []
+        for action in actions:
+            conf = " [requer confirmação]" if action.requires_confirmation else ""
+            desc = action.description[:100] if action.description else ""
+            lines.append(f"  - {action.action_id}: {desc}{conf}")
+            examples = list(getattr(action, "examples", ()) or [])
+            if examples:
+                lines.append(f'    ex: "{examples[0]}"')
+        return "\n".join(lines)
+
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} domain_id='{self.domain_id}'>"

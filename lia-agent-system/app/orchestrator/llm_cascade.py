@@ -230,6 +230,10 @@ class LLMCascadeRouter:
           qualquer outro → provider="claude"
         """
         base_prompt = system_prompt_override or _ROUTING_PROMPT
+        # FIX 1 — Inject domain actions context if available (built by rebuild_routing_context)
+        actions_ctx = getattr(self, "_actions_context", "")
+        if actions_ctx and not system_prompt_override:
+            base_prompt = base_prompt + actions_ctx
         prompt = base_prompt.replace("{message}", message[:500])
         tokens_est = len(prompt) // 4
         provider: LLMProvider = self._provider_for_model(model_name)
@@ -319,6 +323,45 @@ class LLMCascadeRouter:
                 logger.warning("[LLMCascade] %s", warning)
         except Exception as exc:
             logger.debug("[LLMCascade] record_tokens_multi falhou: %s", exc)
+
+
+    def rebuild_routing_context(self) -> None:
+        """Build _actions_context from all registered domains for enriched routing.
+
+        Called from initialize_tools() after all domains are registered.
+        Iterates DomainRegistry and builds a compact action listing per domain
+        that is prepended to the routing prompt on each route() call.
+
+        Safe to call multiple times (idempotent) — replaces _actions_context.
+        """
+        try:
+            from app.domains.registry import DomainRegistry
+            registry = DomainRegistry()
+            domain_ids = registry.list_domains()
+            if not domain_ids:
+                self._actions_context = ""
+                logger.warning("[LLMCascade] rebuild_routing_context: no domains registered")
+                return
+
+            lines = ["\n## Ações disponíveis por domínio (referência para roteamento)"]
+            for domain_id in sorted(domain_ids):
+                instance = registry.get_instance(domain_id)
+                if instance is None:
+                    continue
+                actions_text = instance.get_actions_for_prompt(max_actions=5)
+                if actions_text:
+                    lines.append(f"\n{domain_id}:")
+                    lines.append(actions_text)
+
+            self._actions_context = "\n".join(lines)
+            logger.info(
+                "[LLMCascade] rebuild_routing_context: %d domains, %d chars",
+                len(domain_ids), len(self._actions_context),
+            )
+        except Exception as exc:
+            # Non-blocking — routing still works with static prompt
+            self._actions_context = ""
+            logger.warning("[LLMCascade] rebuild_routing_context failed (non-blocking): %s", exc)
 
 
 # Singleton compartilhado
