@@ -366,8 +366,12 @@ async def _search_candidates(params: dict[str, Any], context: dict[str, Any]):
 
     query = (params.get("query") or "").strip()
     company_id = context.get("company_id") if context else None
-    limit = int(params.get("limit", 10))
-    scope = params.get("scope", "both")
+    try:
+        limit = int(params.get("limit", 10) or 10)
+    except (TypeError, ValueError):
+        limit = 10
+    raw_scope = params.get("scope", "both")
+    scope = raw_scope if raw_scope in {"local", "global", "both"} else "both"
 
     if not query:
         return ActionResult(

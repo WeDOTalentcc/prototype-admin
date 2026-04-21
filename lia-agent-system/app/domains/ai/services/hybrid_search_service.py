@@ -221,6 +221,9 @@ class HybridSearchService:
         db: AsyncSession,
         limit: int,
     ) -> list[dict[str, Any]]:
+        # REMOVE: 2026-Q3 após Task #727 — query referencia coluna `summary`
+        # que não existe em `candidates`. Para busca textual canônica use
+        # `app.domains.ai.services.candidate_search_service.search_candidates`.
         try:
             sql = text("""
                 SELECT id, name,
