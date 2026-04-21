@@ -99,6 +99,9 @@ class ChatResponse(BaseModel):
     pending_action_id: str | None = None
     fairness_warnings: list[str] = Field(default_factory=list)
     from_cache: bool = False
+    # Onda 2.4 Init V (2026-04-21) — Reasoning transparency
+    citations: list[dict[str, Any]] = Field(default_factory=list)
+    has_citations: bool = False
 
     @classmethod
     def from_orchestrator_result(cls, result: dict[str, Any], conv_id: str) -> ChatResponse:
