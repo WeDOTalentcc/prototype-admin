@@ -47,6 +47,8 @@ Thumbs.db
 # Logs
 *.log
 logs/
+# Next.js API route segments named logs are not log files
+!plataforma-lia/src/app/api/backend-proxy/**/logs/route.ts
 
 # Large assets - not for GitHub
 attached_assets/
