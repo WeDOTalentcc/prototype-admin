@@ -9,7 +9,7 @@
 meta:
   version: "1.0.0"
   created: "2026-04-17"
-  total_cases: 78
+  total_cases: 82
   categories:
     JM: "Job Management"
     CM: "Candidate Management"
@@ -1624,3 +1624,76 @@ cases:
     anti_patterns:
       - "Tries to move candidates immediately"
       - "Asks for stage without explaining"
+
+  - id: MQ-006
+    category: MQ
+    severity: high
+    title: "Capability question — jobs domain (você sabe criar vagas)"
+    prompt: "você sabe criar vagas?"
+    context:
+      scope: "Vagas"
+      page: "vagas"
+    expected_tools: []
+    expected_behavior: "Recognises capability question about job creation, returns informational reply with example, does NOT open job creation wizard."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Does not start job creation wizard"
+      - "Returns informational reply mentioning example phrasing"
+    anti_patterns:
+      - "Opens wizard with empty fields"
+      - "Asks 'qual o título?' without context"
+
+  - id: MQ-007
+    category: MQ
+    severity: high
+    title: "Real command — jobs (NOT a meta-question, status filter present)"
+    prompt: "pode me listar vagas ativas?"
+    context:
+      scope: "Vagas"
+      page: "vagas"
+    expected_tools: ["list_jobs"]
+    expected_behavior: "Polite phrasing but explicit operational filter ('ativas') — must execute, NOT intercepted as meta-question."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Executes list_jobs with status=ativa"
+      - "Returns the list of active jobs"
+    anti_patterns:
+      - "Returns informational meta-question reply"
+
+  - id: MQ-008
+    category: MQ
+    severity: high
+    title: "Capability question — screening (consegue analisar CV)"
+    prompt: "consegue analisar CV?"
+    context:
+      scope: "Triagem"
+      page: "triagem"
+    expected_tools: []
+    expected_behavior: "Recognises capability question about CV screening, returns informational reply, does NOT trigger empty CV analysis."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Does not call CV analyzer"
+      - "Returns informational reply explaining how to ask"
+    anti_patterns:
+      - "Tries to analyze without a CV"
+      - "Returns score with no input"
+
+  - id: MQ-009
+    category: MQ
+    severity: high
+    title: "Real command — screening (analyze specific candidate for job)"
+    prompt: "analise o perfil do João para a vaga V0042"
+    context:
+      scope: "Triagem"
+      page: "triagem"
+    expected_tools: ["analyze_candidate"]
+    expected_behavior: "Has proper noun + job ID — must execute, NOT intercepted."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Executes WSI analysis for candidate"
+    anti_patterns:
+      - "Returns informational meta-question reply"

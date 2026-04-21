@@ -755,6 +755,15 @@ class MainOrchestrator:
         # "consegue buscar candidatos?" must NOT execute the underlying action
         # with the question fragment as the query. Intercept and return a
         # deterministic informational reply (no LLM call, no DB hit).
+        #
+        # Why HERE and not in fast_router: the canonical-fix audit traced the
+        # original symptom to `action_executor/utils.py::_detect_intent_from_message`
+        # matching `MESSAGE_INTENT_PATTERNS.buscar_candidatos` BEFORE fast_router
+        # ever ran. fast_router only handles cross-domain routing; the per-message
+        # intent regex lives inside ActionExecutor. Hooking the gate here
+        # short-circuits BOTH the regex dispatch and the downstream LLM cascade
+        # in a single place — a deeper fix in fast_router would not reach
+        # ActionExecutor's local pattern table.
         try:
             from app.orchestrator.meta_question_detector import (
                 detect_meta_capability_question,

@@ -72,22 +72,40 @@ _ACTION_VERBS = re.compile(
 # Concrete operational filter signals. If ANY of these appear, the message is
 # specific enough to be a real command, so we don't intercept.
 _SPECIFIC_FILTERS = re.compile(
-    r"\b(?:"
+    r"(?:"
     # Locations
-    r"em\s+s[ãa]o\s+paulo|em\s+sp\b|em\s+rj\b|em\s+belo|em\s+curitiba|"
-    r"no\s+rio\b|no\s+brasil|remoto|presencial|h[íi]brido|"
+    r"\bem\s+s[ãa]o\s+paulo\b|\bem\s+sp\b|\bem\s+rj\b|\bem\s+belo\b|\bem\s+curitiba\b|"
+    r"\bno\s+rio\b|\bno\s+brasil\b|\bremoto\b|\bpresencial\b|\bh[íi]brido\b|"
     # Tech / skills
-    r"react|angular|vue|python|java\b|javascript|typescript|node\b|"
-    r"kotlin|swift|golang|\bgo\b|c\+\+|\bc#\b|ruby|php|"
-    r"aws|gcp|azure|kubernetes|docker|terraform|"
-    r"sql\b|postgres|mongo|redis|kafka|spark|"
-    r"devops|sre\b|qa\b|backend|frontend|fullstack|mobile|data\s+science|"
-    # Quantifiers / IDs
-    r"\d+\s*(?:candidatos?|vagas?|dias?|semanas?|meses?)|"
-    r"v0\d{3,}|"
-    # Proper noun openers: "do João", "da Marina"
-    r"d[oa]\s+[A-Z]"
-    r")\b",
+    r"\breact\b|\bangular\b|\bvue\b|\bpython\b|\bjava\b|\bjavascript\b|\btypescript\b|\bnode\b|"
+    r"\bkotlin\b|\bswift\b|\bgolang\b|\bgo\b|c\+\+|c#|\bruby\b|\bphp\b|"
+    r"\baws\b|\bgcp\b|\bazure\b|\bkubernetes\b|\bdocker\b|\bterraform\b|"
+    r"\bsql\b|\bpostgres\b|\bmongo\b|\bredis\b|\bkafka\b|\bspark\b|"
+    r"\bdevops\b|\bsre\b|\bqa\b|\bbackend\b|\bfrontend\b|\bfullstack\b|\bmobile\b|\bdata\s+science\b|"
+    # Status / stage qualifiers (review fix #2): "vagas ativas",
+    # "candidatos pendentes", "entrevistas agendadas" etc. carry enough
+    # operational specificity to be real commands even with polite phrasing.
+    r"\bativ[ao]s?\b|\bpendentes?\b|\babert[ao]s?\b|\bfechad[ao]s?\b|"
+    r"\bpausad[ao]s?\b|\barquivad[ao]s?\b|\baprovad[ao]s?\b|\breprovad[ao]s?\b|"
+    r"\baprovados?\b|\beliminad[ao]s?\b|\brejeitad[ao]s?\b|"
+    r"\bagendad[ao]s?\b|\bcancelad[ao]s?\b|\bconclu[íi]d[ao]s?\b|\bvencid[ao]s?\b|"
+    # Pipeline stages
+    r"\btriagem\b|\bentrevista\s+(?:t[ée]cnica|final|inicial|com\s+gestor)|"
+    r"\bproposta\b|\bonboarding\b|\bshortlist\b|\bbanco\s+de\s+talentos\b|"
+    # Senioridade
+    r"\bj[úu]nior\b|\bpleno\b|\bs[êe]nior\b|\bespecialista\b|\bestagi[áa]rio\b|\btrainee\b|\blead\b|\bstaff\b|\bprincipal\b|"
+    # Time / quantifiers
+    r"\b(?:hoje|amanh[ãa]|ontem|semana|m[êe]s|trimestre|ano)\b|"
+    r"\bdesta\s+semana\b|\bdo\s+m[êe]s\b|\bda\s+sprint\b|"
+    r"\b\d+\s*(?:candidatos?|vagas?|dias?|semanas?|meses?|anos?|h(?:oras?)?)\b|"
+    # IDs (vagas, candidatos)
+    r"\bv0\d{3,}\b|\bc0\d{3,}\b|\bID\s*\d+\b|"
+    # Job titles / functions (jobs/screening domain)
+    r"\bdesenvolvedor[ae]s?\b|\bdev(?:eloper)?s?\b|\bengenheir[ao]s?\b|"
+    r"\brecrutador[ae]s?\b|\bdesigner\b|\bproduct\s+manager\b|\bscrum\s+master\b|"
+    # Proper noun openers: "do João", "da Marina", "para Marco"
+    r"\bd[oa]\s+[A-Z]\w+|\bpara\s+[A-Z]\w+"
+    r")",
     re.IGNORECASE | re.UNICODE,
 )
 
