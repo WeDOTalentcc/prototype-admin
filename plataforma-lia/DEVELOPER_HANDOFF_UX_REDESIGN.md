@@ -893,7 +893,8 @@ produção quanto em desenvolvimento.
 
 ## PARTE J — Onda Benefícios + Departamentos + Workforce (16 commits, 2026-04)
 
-> **Range:** `32f29426f..cfe3f51fa` (16 commits) · **Sincronizado em:** `wedotalent/replit-sync`
+> **Repo alvo:** `WeDOTalentcc/wedotalent02202026` · **Remote sincronizado:** `wedotalent/replit-sync`
+> **Range:** `32f29426f..cfe3f51fa` (16 commits, branch `develop`)
 > **Origem:** Tasks #763 → #768, #775, #776 (mais correção pós-merge de `voice_service`/`granular_consent`)
 > **Audit baseline obrigatório:** [`docs/audits/beneficios-departamentos-workforce-audit-2026-04.md`](../docs/audits/beneficios-departamentos-workforce-audit-2026-04.md)
 >
@@ -903,6 +904,29 @@ produção quanto em desenvolvimento.
 > - **IA repo separado (especificar)** — onde vivem os agentes LangGraph; specs de tools, audit log e Fairness abaixo.
 >
 > Cada bloco abaixo lista commits originais, o quê foi feito no Front, e os specs Rails + IA.
+
+### Commits em ordem cronológica (16 commits, oldest → newest)
+
+| # | Hash curto | Título |
+|---|---|---|
+| 1 | `66343bef5` | Git commit prior to merge (snapshot automático) |
+| 2 | `975d5e0d9` | docs(audit): baseline Benefícios + Departamentos + Workforce (task #763) |
+| 3 | `ebe39fccb` | Update component imports for welcome polish mockups |
+| 4 | `a2913e268` | feat(minha-empresa): Benefícios item-a-item + schema unificado em 4 camadas |
+| 5 | `c817b80f6` | Update component registration to include chat welcome polish mockups |
+| 6 | `241d88f72` | Persist enriched benefit fields via LIA chat tool |
+| 7 | `3045bdfdd` | Task #767: remove Departamentos from "Minha Empresa" Hub + onboarding |
+| 8 | `90833f800` | Group benefits list by category with icon and count (Task #775) |
+| 9 | `68bef95bf` | Git commit prior to merge (snapshot automático) |
+| 10 | `43981a976` | Task #766: paridade Beneficios chat ↔ Hub no schema canonico |
+| 11 | `311e74269` | Git commit prior to merge (snapshot automático) |
+| 12 | `843a0d224` | Task #768 — Workforce planning: rich view + 3 conversational paths + HITL |
+| 13 | `7a5142db5` | Git commit prior to merge (snapshot automático) |
+| 14 | `e03e9c7fa` | task#765: JobVacancy.benefits ARRAY→JSONB with structured backfill |
+| 15 | `182dec756` | Add pagination to job search functionality |
+| 16 | `cfe3f51fa` | fix: restore voice_service.py and granular_consent_service.py from broken merge |
+
+> **Done looks like (checklist por commit):** cada commit acima é coberto por um bloco abaixo (J.0 a J.11). Use a coluna “Bloco” do mapa logo a seguir para localizar a especificação completa de cada hash.
 
 ### Mapa de commits → blocos
 
@@ -1066,7 +1090,7 @@ Guardrail de teste (CI): `tests/unit/test_company_settings_actions.py` deve falh
 
 **Rails (especificar):**
 - Definir o canônico: `PlannedHeadcount` (com `title, salary, hiring_manager, department_id`) é o plano detalhado; `WorkforceEntry` apenas agregação derivada (yearly/monthly totais).
-- Endpoints: `GET/POST /workforce/plans`, `GET/POST /workforce/headcounts`, `POST /workforce/import/upload` (devolve preview), `POST /workforce/import/confirm` (commita).
+- Endpoints (nomes canônicos — paridade com o proxy do FE em `src/app/api/backend-proxy/workforce/entries/import`): `GET/POST /workforce/plans`, `GET/POST /workforce/headcounts`, `POST /workforce/entries/import` (devolve preview), `POST /workforce/entries/import/confirm` (commita). Onde houver legado citando `/workforce/import/upload`, tratar como **alias deprecado** que aponta para `/workforce/entries/import`.
 - Backfill/migração: nenhum dado destrutivo; só consolidar leituras no canônico.
 
 **IA (especificar):**
@@ -1173,17 +1197,29 @@ Guardrail de teste (CI): `tests/unit/test_company_settings_actions.py` deve falh
 
 Intent `configure_workforce` (onboarding): remover coleta de `departamento` do prompt.
 
-#### Testes recomendados (lia-testing)
+#### Testes adicionados nesta onda (factual, por commit)
 
-| Camada | Cobertura mínima |
+| Commit | Arquivo de teste | Camada / Foco |
+|---|---|---|
+| `3045bdfdd` (J.6) | `lia-agent-system/tests/unit/test_company_settings_actions.py` (criado) | Unit Python — guardrail de paridade após remoção de `configure_departments` do `configure_workforce`. |
+| `43981a976` (J.2) | `lia-agent-system/tests/unit/test_company_settings_actions.py` (estendido) | Unit Python — paridade `CompanyBenefit` model × Pydantic × TS × `CANONICAL_BENEFIT_FIELDS`; clarification rules de `value_type`. |
+| `843a0d224` (J.7) | `lia-agent-system/tests/unit/test_workforce_plan_hitl.py` (criado) | Unit Python — HITL antes de gravar `PlannedHeadcount`; bloqueio de `mode=replace` sem confirmação. |
+| `e03e9c7fa` (J.4) | `lia-agent-system/tests/integration/test_job_vacancy_benefits_jsonb.py` (criado) | Integração — backfill ARRAY → JSONB com match por `company_id`; preservação de metadados. |
+| `e03e9c7fa` (J.4) | `plataforma-lia/src/components/job-wizard/__tests__/benefits-merge.test.ts` (criado) | Unit TS — merge de `JobBenefit[]` no wizard preservando estrutura. |
+| `182dec756` (J.8) | `lia-agent-system/tests/unit/test_fix20_pagination.py` (criado) | Unit Python — paginação de `GET /jobs` (`page`, `per_page`, `total`, `total_pages`). |
+
+> Demais commits (`66343bef5`, `975d5e0d9`, `ebe39fccb`, `a2913e268`, `c817b80f6`, `241d88f72`, `90833f800`, `68bef95bf`, `311e74269`, `7a5142db5`, `cfe3f51fa`) **não adicionaram arquivos de teste** — são UI/docs/snapshots/restore. Cobertura listada abaixo é considerada lacuna.
+
+#### Testes recomendados (lacunas a cobrir em tasks de follow-up)
+
+| Camada | Cobertura recomendada (não adicionada nesta onda) |
 |---|---|
-| Unit Python | `test_company_settings_actions.py` — paridade `CompanyBenefit` model × Pydantic schema × TS type × `CANONICAL_BENEFIT_FIELDS`. |
-| Unit Python | `test_normalize_benefits_payload` — strings, dicts, `value_type` clamp, descarte de itens sem `name`. |
-| Eval IA | `_wrap_save_company_benefits` golden: append/replace, Fairness block, clarification de `value_type`. |
+| Unit Python | `test_normalize_benefits_payload` — strings, dicts, `value_type` clamp, descarte de itens sem `name` (helper `app/utils/benefits.py`). |
+| Eval IA | Golden de `_wrap_save_company_benefits`: append/replace, Fairness block, PII masking, clarification de `value_type`. |
 | E2E FE | `e2e/beneficios-hub.spec` — criar/editar/excluir item; trocar categoria; toggle `is_highlighted`. |
-| E2E FE | `e2e/workforce-3-paths.spec` — upload planilha, texto livre, colagem; HITL antes de gravar. |
-| Regressão FE | `e2e/usuarios-departamentos-hub.spec` — confirmar que não regrediu após remoção do bloco em MinhaEmpresaHub. |
-| Smoke backend | `python -c "from app.main import app"` no post-merge hook. |
+| E2E FE | `e2e/workforce-3-paths.spec` — upload planilha, texto livre, colagem; confirmação HITL antes de gravar. |
+| Regressão FE | `e2e/usuarios-departamentos-hub.spec` — confirmar que não regrediu após remoção do bloco em MinhaEmpresaHub (alvo da Task #773). |
+| Smoke backend | `python -c "from app.main import app"` no post-merge hook (evita reincidência do incidente J.11). |
 
 #### Pendências e follow-ups conhecidos (NÃO criar tasks duplicadas)
 
