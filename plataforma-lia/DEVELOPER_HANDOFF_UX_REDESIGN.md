@@ -1186,7 +1186,7 @@ Guardrail de teste (CI): `tests/unit/test_company_settings_actions.py` deve falh
 **Rails (especificar):** N/A (serviços vivem no backend de IA).
 
 **IA (replicar — post-merge fix):**
-- Restaurar `lia-agent-system/app/domains/voice/services/voice_service.py` (335 linhas) — `VoiceService` com `transcribe_audio` (Whisper), `synthesize_speech` (TTS), `stream_transcription`, detecção automática de formato (`mp3, wav, webm, m4a, ogg, flac, mpeg`), vozes suportadas (`alloy, echo, fable, onyx, nova, shimmer`).
+- Restaurar `lia-agent-system/app/domains/voice/services/voice_service.py` (334 linhas) — `VoiceService` com `transcribe_audio` (Whisper), `synthesize_speech` (TTS), `stream_transcription`, detecção automática de formato (`mp3, wav, webm, m4a, ogg, flac, mpeg`), vozes suportadas (`alloy, echo, fable, onyx, nova, shimmer`).
 - Restaurar `granular_consent_service.py` no mesmo padrão (LGPD — consentimento granular por finalidade).
 - **Causa raiz:** merge automático apagou ambos os arquivos; backend ficou sem startar (`ModuleNotFoundError`). Guardrail recomendado: smoke-test `python -c "from app.main import app"` no post-merge hook (`.local/skills/post_merge_setup`).
 
@@ -1253,7 +1253,7 @@ Intent `configure_workforce` (onboarding): **não coleta mais** `departamento` n
 | `843a0d224` (J.7) | `lia-agent-system/tests/unit/test_workforce_plan_hitl.py` (criado) | Unit Python — HITL antes de gravar `PlannedHeadcount`; bloqueio de `mode=replace` sem confirmação. |
 | `e03e9c7fa` (J.4) | `lia-agent-system/tests/integration/test_job_vacancy_benefits_jsonb.py` (criado) | Integração — backfill ARRAY → JSONB com match por `company_id`; preservação de metadados. |
 | `e03e9c7fa` (J.4) | `plataforma-lia/src/components/job-wizard/__tests__/benefits-merge.test.ts` (criado) | Unit TS — merge de `JobBenefit[]` no wizard preservando estrutura. |
-| `182dec756` (J.8) | `lia-agent-system/tests/unit/test_fix20_pagination.py` (criado) | Unit Python — paginação de `GET /jobs` (`page`, `per_page`, `total`, `total_pages`). |
+| `182dec756` (J.8) | `lia-agent-system/tests/unit/test_fix20_pagination.py` (criado) | Unit Python — paginação de `search_jobs` (`offset`, `limit`, `total_count`, `pagination.has_more`). |
 
 > Demais commits (`66343bef5`, `975d5e0d9`, `ebe39fccb`, `a2913e268`, `c817b80f6`, `241d88f72`, `90833f800`, `68bef95bf`, `311e74269`, `7a5142db5`, `cfe3f51fa`) **não adicionaram arquivos de teste** — são UI/docs/snapshots/restore. Cobertura listada abaixo é considerada lacuna.
 
