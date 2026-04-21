@@ -123,6 +123,7 @@ O 6-stage remediation plan executado na auditoria recente da LIA mapeia 1:1 para
 - Usuario pede catalogo de sensors prontos por categoria → leia `references/sensors-catalog.md`.
 - Usuario reporta falha especifica e quer classificar → leia `references/failure-taxonomy.md`.
 - Usuario pede auditoria formal de harness → leia `references/audit-template.md` e use como contrato de entrega.
+- Usuario pede para mapear FIX/Stage da remediacao LIA → leia `references/lia-stage-mapping.md` (instancias canonicas G-LIA-XX / S-LIA-XX referenciadas nos catalogos).
 
 ## Scripts disponiveis
 
