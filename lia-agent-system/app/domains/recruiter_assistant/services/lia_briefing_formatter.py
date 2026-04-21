@@ -57,7 +57,8 @@ def format_briefing_for_greeting(briefing: dict[str, Any] | None) -> str:
     urgent = briefing.get("urgent_actions") or []
     n_urgent = len(urgent) if isinstance(urgent, list) else 0
     if n_urgent > 0:
-        parts.append(f"{n_urgent} ação{'ões' if n_urgent != 1 else ''} urgente{'s' if n_urgent != 1 else ''}")
+        label = "ações urgentes" if n_urgent != 1 else "ação urgente"
+        parts.append(f"{n_urgent} {label}")
 
     # 2. Pipeline signals (candidates stale, missing feedback)
     pipeline = briefing.get("pipeline_summary") or {}
