@@ -76,6 +76,8 @@ lia-agent-system/audit_logs/
 !.agents/skills/feature-audit/**
 !.agents/skills/lia-planning/
 !.agents/skills/lia-planning/**
+!.agents/skills/harness-engineering/
+!.agents/skills/harness-engineering/**
 
 # Storybook assets (large PNGs)
 plataforma-lia/src/stories/assets/*.png
