@@ -78,6 +78,7 @@ Detalhes completos: `.agents/skills/lia-orchestrator/SKILL.md` (Tabela 4).
 |---|---|
 | **canonical-fix** | Antes de qualquer bug fix, refactor ou edicao com risco de duplicata |
 | **feature-audit** | DEPOIS de implementar, ANTES de marcar concluido (14 dimensoes) |
+| **harness-engineering** | Meta-skill (Agent = Model + Harness): erro recorrente, revisao de CLAUDE.md/AGENTS.md, guardrail/lint customizado/tool permission, auditoria de agente, consolidacao de findings |
 
 ### G — Testes
 
