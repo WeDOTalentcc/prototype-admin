@@ -92,6 +92,16 @@ async def search_candidates(
 ) -> dict[str, Any]:
     """Busca canônica de candidatos por texto livre.
 
+    Default scope rationale (Task #727):
+        Default `scope="both"` é intencional. UX esperada: ao buscar,
+        priorizamos candidatos da empresa (local) e — se não houver —
+        caímos automaticamente para o pool global, sinalizando o
+        fallback via `fellback_to_global=True`. Isto evita que o
+        recrutador veja "0 resultados" quando a empresa ainda não
+        possui candidatos vinculados (cenário comum em onboarding).
+        Consumidores que NÃO querem fallback devem passar `scope="local"`
+        ou `scope="global"` explicitamente.
+
     Args:
         query: termo de busca livre (nome, cargo, skill, cidade, empresa).
         company_id: tenant; obrigatório quando `scope` é "local" ou "both".
