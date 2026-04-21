@@ -955,6 +955,8 @@ produção quanto em desenvolvimento.
 
 **IA (especificar):** mapear todas as tools que tocam esses domínios — leitura (`get_company_profile`, `get_workforce`) e escrita (`save_company_benefits`, `save_workforce_plan`, `import_benefits_from_data`). Marcar quais aplicam FairnessGuard, PII masking e audit log.
 
+**APIs / endpoints / webhooks:** nenhum tocado (read-only — apenas mapeamento documental).
+
 ---
 
 ### J.1 — Piloto Benefícios no Hub Minha Empresa (Task #764, commit `a2913e268`)
@@ -989,6 +991,17 @@ produção quanto em desenvolvimento.
 - Schema do item idêntico a `CANONICAL_BENEFIT_FIELDS` (ver J.2).
 - Pipeline obrigatório: clarification (J.2) → PII masking (CPF/email/telefone) → FairnessGuard L1 sobre `name`, `description`, `value_details` → INSERT com `seniority_levels` em JSONB → audit log com `source`.
 - Mode `replace` exige confirmação humana (HITL) — destrutivo.
+
+**APIs / endpoints / webhooks tocados:**
+- `GET /api/v1/company/benefits` (lista, filtra por `company_id, category, active_only, search`)
+- `GET /api/v1/company/benefits/active` (atalho `active_only=true` — **novo**)
+- `POST /api/v1/company/benefits` (cria)
+- `PUT /api/v1/company/benefits/{id}` (atualiza)
+- `DELETE /api/v1/company/benefits/{id}?hard_delete=` (soft/hard)
+- `POST /api/v1/company/benefits/seed-defaults` (idempotente)
+- `GET /api/v1/company/benefits/categories/list` (enum canônico)
+- Proxy FE: `src/app/api/backend-proxy/company/benefits/route.ts` + `[benefitId]/route.ts`
+- Webhooks: nenhum.
 
 ---
 
@@ -1044,6 +1057,8 @@ Guardrail de teste (CI): `tests/unit/test_company_settings_actions.py` deve falh
 4. **Audit log** via `AuditService.log_action(action_type='company_settings.save_benefits', actor='company_settings_agent', target_type='company', metadata={source, count, mode})`.
 5. **Remover** o path duplicado/quebrado `import_tools.import_benefits_from_data` (escreve `is_highlight` — coluna inexistente, o correto é `is_highlighted`).
 
+**APIs / endpoints / webhooks tocados (J.2 + J.3):** mesmos da J.1 (`/api/v1/company/benefits/*`) — sem novas rotas. A tool `_wrap_save_company_benefits` escreve direto na tabela `company_benefits` via SQL (não passa pelo router REST). Webhooks: nenhum. Audit trail emitido via `AuditService` (interno, não HTTP).
+
 ---
 
 ### J.4 — `JobVacancy.benefits`: ARRAY(String) → JSONB estruturado (Task #765, commit `e03e9c7fa`)
@@ -1067,6 +1082,13 @@ Guardrail de teste (CI): `tests/unit/test_company_settings_actions.py` deve falh
 - Embedding/prompts da vaga devem usar `benefit_display_names()` — nunca consumir o JSONB cru.
 - Guardrail (CLAUDE.md / AGENTS.md): "JobVacancy.benefits é JSONB estruturado, nunca array de string."
 
+**APIs / endpoints / webhooks tocados:**
+- `POST /api/v1/jobs` (cria vaga — payload `benefits` agora aceita `list[dict|str]`)
+- `PUT /api/v1/jobs/{id}` (edita vaga — idem)
+- `GET /api/v1/jobs/{id}` (resposta serializa `benefits` como `list[dict]`)
+- Public read endpoint da vaga (consumo externo): payload preserva estrutura; consumidores legados devem chamar `benefit_display_names()` server-side ou usar campo `benefit_names` (se exposto).
+- Webhooks: nenhum novo — webhooks de vaga existentes (notificação a aprovador, push para sites de carreira) precisam ser revisados para não quebrar com a forma JSONB.
+
 ---
 
 ### J.5 — Lista agrupada por categoria com ícone e contador (Task #775, commit `90833f800`)
@@ -1079,6 +1101,8 @@ Guardrail de teste (CI): `tests/unit/test_company_settings_actions.py` deve falh
 **Rails (especificar):** se construir UI institucional equivalente, replicar a mesma ordem de categorias do enum compartilhado. Backend não muda — agrupamento é puramente FE.
 
 **IA (especificar):** quando o agente lista benefícios via chat ("quais benefícios temos?"), retornar **agrupado por categoria** no `summary_text`, com count por categoria — paridade visual com o Hub.
+
+**APIs / endpoints / webhooks tocados:** nenhum (mudança puramente visual sobre os mesmos endpoints da J.1).
 
 ---
 
@@ -1103,6 +1127,11 @@ Guardrail de teste (CI): `tests/unit/test_company_settings_actions.py` deve falh
 **IA (especificar):**
 - Intent `configure_workforce` **não coleta mais** `departamento` (mover para fluxo próprio quando/se necessário).
 - Implementar a intent `manage_departments` como **routing-only** (não criar tool de write — gerenciamento é manual via UI dedicada).
+
+**APIs / endpoints / webhooks tocados:**
+- Nenhum endpoint REST novo. Endpoints existentes mantidos intactos: `GET/POST/PUT/DELETE /api/v1/company/departments`, `POST /api/v1/company/departments/import`.
+- Eventos DOM (FE-only, não HTTP): `settings-open-tab` (já existente) e **`settings-open-subtab`** (novo).
+- Webhooks: nenhum.
 
 ---
 
@@ -1137,6 +1166,13 @@ Guardrail de teste (CI): `tests/unit/test_company_settings_actions.py` deve falh
   5. HITL para `mode=replace`.
 - Documentar defaults arriscados: turnover 15% (`workforce_planning_tools.py:100`), benchmark 45 dias (`:132`) — citar no audit.
 
+**APIs / endpoints / webhooks tocados:**
+- `POST /workforce/entries/import` (canônico — devolve **preview**, não commita) — proxy FE: `src/app/api/backend-proxy/workforce/entries/import/route.ts`.
+- `POST /workforce/entries/import/confirm` (commit — exige `approved=true` real). Alias deprecado: `/workforce/import/upload`.
+- `GET /workforce/plans`, `POST /workforce/plans` (CRUD do `PlannedHeadcount`).
+- `GET /workforce/headcounts` (agregação derivada — read-only).
+- Webhooks: nenhum. Audit log emitido via `AuditService.log_action(action_type='workforce.save_plan', ...)` — interno, não HTTP.
+
 ---
 
 ### J.8 — Pagination na busca de vagas (commit `182dec756`)
@@ -1158,6 +1194,11 @@ Guardrail de teste (CI): `tests/unit/test_company_settings_actions.py` deve falh
 - Em respostas longas, paginar visualmente ("mostrando 1–20 de 87").
 - Teste de fumaça: `tests/unit/test_fix20_pagination.py` valida assinatura, exposição do schema e marcador de rastreabilidade do fix.
 
+**APIs / endpoints / webhooks tocados:**
+- `GET /api/v1/jobs?offset=&limit=` (resposta: `{ data, total_count, pagination: { offset, limit, has_more } }`).
+- Tool IA `search_jobs` (interna, não HTTP) com mesma assinatura.
+- Webhooks: nenhum.
+
 ---
 
 ### J.9 — Polimento de mockups do welcome chat (commits `c817b80f6`, `ebe39fccb`)
@@ -1166,6 +1207,8 @@ Guardrail de teste (CI): `tests/unit/test_company_settings_actions.py` deve falh
 
 **Rails (especificar):** N/A.
 **IA (especificar):** N/A.
+
+**APIs / endpoints / webhooks tocados:** nenhum (sandbox isolada).
 
 ---
 
