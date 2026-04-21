@@ -7,6 +7,19 @@ import time
 from app.shared.providers.llm_provider import LLMProviderABC, LLMResponse, LLMToolCall, LLMToolResponse
 from app.shared.resilience.circuit_breaker import ANTHROPIC_CIRCUIT, circuit_breaker_decorator
 
+# Onda 4.2 G4.B (2026-04-21) — cost tracking hook
+try:
+    from app.shared.observability.cost_tracker import record_call as _record_cost_call
+except ImportError:
+    def _record_cost_call(**_kwargs):  # noqa: ANN202 — fail-safe no-op
+        return {}
+
+try:
+    from app.shared.tenant_llm_context import get_current_llm_tenant as _get_tenant
+except ImportError:
+    def _get_tenant() -> str:  # noqa: ANN202
+        return ""
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -70,6 +83,17 @@ class ClaudeLLMProvider(LLMProviderABC):
                 messages=[{"role": "user", "content": prompt}],
             )
             text = response.content[0].text if response.content else ""
+            # G4.B: record cost (fail-safe — never raises on tracking error)
+            try:
+                _record_cost_call(
+                    tenant_id=_get_tenant() or None,
+                    model=model or self._default_model,
+                    input_tokens=int(getattr(response.usage, "input_tokens", 0) or 0),
+                    output_tokens=int(getattr(response.usage, "output_tokens", 0) or 0),
+                    latency_ms=(time.time() - t_start) * 1000,
+                )
+            except Exception as _cost_exc:
+                logger.debug("[G4.B] cost_tracker skipped: %s", _cost_exc)
             return LLMResponse(
                 text=text,
                 provider=self._provider_name,
@@ -100,6 +124,17 @@ class ClaudeLLMProvider(LLMProviderABC):
                 messages=[{"role": "user", "content": user_message}],
             )
             text = response.content[0].text if response.content else ""
+                        # G4.B: record cost (fail-safe)
+            try:
+                _record_cost_call(
+                    tenant_id=_get_tenant() or None,
+                    model=model or self._default_model,
+                    input_tokens=int(getattr(response.usage, "input_tokens", 0) or 0),
+                    output_tokens=int(getattr(response.usage, "output_tokens", 0) or 0),
+                    latency_ms=(time.time() - t_start) * 1000,
+                )
+            except Exception as _cost_exc:
+                logger.debug("[G4.B] cost_tracker skipped: %s", _cost_exc)
             return LLMResponse(
                 text=text,
                 provider=self._provider_name,
