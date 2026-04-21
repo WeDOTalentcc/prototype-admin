@@ -351,80 +351,90 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]) -
 
 
 async def _search_candidates(params: dict[str, Any], context: dict[str, Any]):
+    """Action handler — delega para o service canônico de busca.
+
+    Task #727: a SQL antiga fazia LEFT JOIN com vacancy_candidates e adicionava
+    `vc.company_id = :co` no WHERE, anulando o LEFT JOIN (virava INNER JOIN).
+    Tenants sem vacancy_candidates recebiam sempre 0 resultados. Agora a busca
+    passa pelo `candidate_search_service`, que aplica scope local→global com
+    fallback explícito.
+    """
     from app.orchestrator.action_executor import ActionResult
-    try:
-        from sqlalchemy import text
+    from app.domains.ai.services.candidate_search_service import (
+        search_candidates as _canonical_search,
+    )
 
-        from app.core.database import AsyncSessionLocal
+    query = (params.get("query") or "").strip()
+    company_id = context.get("company_id") if context else None
+    limit = int(params.get("limit", 10))
+    scope = params.get("scope", "both")
 
-        query = params.get("query", "")
-        company_id = context.get("company_id") if context else None
-        limit = int(params.get("limit", 10))
-
-        if not query:
-            return ActionResult(
-                status="error",
-                message="Informe o critério de busca.",
-                error_detail="Missing query",
-                action_type="search_candidates",
-            )
-
-        search_term = f"%{query}%"
-        async with AsyncSessionLocal() as db:
-            sql = """
-                SELECT DISTINCT c.id, c.name, c.current_title, c.current_company,
-                       c.location_city, c.seniority_level
-                FROM candidates c
-                LEFT JOIN vacancy_candidates vc ON CAST(vc.candidate_id AS uuid) = c.id
-                WHERE (
-                    c.name ILIKE :q OR c.current_title ILIKE :q
-                    OR c.current_company ILIKE :q
-                    OR :raw_q = ANY(c.technical_skills)
-                    OR c.location_city ILIKE :q
-                )
-            """
-            bind = {"q": search_term, "raw_q": query}
-            if company_id:
-                sql += " AND vc.company_id = :co"
-                bind["co"] = str(company_id)
-            sql += " ORDER BY c.name LIMIT :lim"
-            bind["lim"] = limit
-
-            result = await db.execute(text(sql), bind)
-            rows = result.fetchall()
-
-        if not rows:
-            return ActionResult(
-                status="executed",
-                message=f"Nenhum candidato encontrado para \"{query}\".",
-                data={"candidates": [], "query": query},
-                action_type="search_candidates",
-            )
-
-        lines = [f"**Resultados para \"{query}\" ({len(rows)} encontrados):**\n"]
-        found = []
-        for row in rows:
-            lines.append(f"- **{row.name}** — {row.current_title or 'N/A'} @ {row.current_company or 'N/A'} | {row.location_city or 'N/A'}")
-            found.append({
-                "id": str(row.id), "name": row.name,
-                "title": row.current_title, "company": row.current_company,
-            })
-
+    if not query:
         return ActionResult(
-            status="executed",
-            message="\n".join(lines),
-            data={"candidates": found, "query": query},
+            status="error",
+            message="Informe o critério de busca.",
+            error_detail="Missing query",
             action_type="search_candidates",
         )
-    except Exception as e:
-        logger.warning(f"search_candidates failed: {e}")
-        from app.orchestrator.action_executor import ActionResult
+
+    result = await _canonical_search(
+        query=query,
+        company_id=str(company_id) if company_id else None,
+        scope=scope if company_id else "global",
+        limit=limit,
+    )
+
+    if result["status"] == "error":
+        logger.warning("search_candidates failed: %s", result.get("error"))
         return ActionResult(
             status="error",
             message="Erro ao buscar candidatos.",
-            error_detail=str(e),
+            error_detail=result.get("error", ""),
             action_type="search_candidates",
         )
+
+    candidates = result["candidates"]
+    fellback = result["fellback_to_global"]
+
+    if not candidates:
+        return ActionResult(
+            status="executed",
+            message=f"Nenhum candidato encontrado para \"{query}\".",
+            data={"candidates": [], "query": query, "scope_used": result["scope_used"]},
+            action_type="search_candidates",
+        )
+
+    header = f"**Resultados para \"{query}\" ({len(candidates)} encontrados):**"
+    if fellback:
+        header += (
+            "\n\n_Sua empresa ainda não tem candidatos vinculados a vagas; "
+            "mostrando candidatos do banco global._"
+        )
+    lines = [header, ""]
+    found = []
+    for cand in candidates:
+        lines.append(
+            f"- **{cand['name']}** — {cand['current_title'] or 'N/A'} "
+            f"@ {cand['current_company'] or 'N/A'} | {cand['location_city'] or 'N/A'}"
+        )
+        found.append({
+            "id": cand["id"],
+            "name": cand["name"],
+            "title": cand["current_title"],
+            "company": cand["current_company"],
+        })
+
+    return ActionResult(
+        status="executed",
+        message="\n".join(lines),
+        data={
+            "candidates": found,
+            "query": query,
+            "scope_used": result["scope_used"],
+            "fellback_to_global": fellback,
+        },
+        action_type="search_candidates",
+    )
 
 
 async def _suggest_candidates(params: dict[str, Any], context: dict[str, Any]):

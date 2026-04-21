@@ -96,7 +96,13 @@ class PostgresSearchBackend(SearchBackend):
         limit: int = 20,
         semantic: bool = True,
     ) -> list[SearchResult]:
-        """Busca candidatos usando pgvector + tsvector."""
+        """Busca candidatos usando pgvector + tsvector.
+
+        # REMOVE: 2026-Q3 após Task #727 — query referencia colunas inexistentes
+        # (`full_name`, `current_role`, `skills_text`, `c.skills`). Sempre falha
+        # em runtime e cai no `return []` silencioso. Para busca textual de
+        # candidatos use `app.domains.ai.services.candidate_search_service`.
+        """
         try:
             from sqlalchemy import text
 
