@@ -57,6 +57,11 @@ jobs:
           LIA_ALLOW_NON_COMPLIANT_DOMAINS: "1"
           LIA_SKIP_DB: "1"
 
+      - name: Run meta-question detector regression gate (Task #730)
+        run: python3 scripts/ci_meta_question_gate.py
+        env:
+          LIA_SKIP_DB: "1"
+
       - name: Upload audit report
         if: always()
         uses: actions/upload-artifact@v4

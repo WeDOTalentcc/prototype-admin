@@ -9,7 +9,7 @@
 meta:
   version: "1.0.0"
   created: "2026-04-17"
-  total_cases: 82
+  total_cases: 99
   categories:
     JM: "Job Management"
     CM: "Candidate Management"
@@ -1697,3 +1697,315 @@ cases:
       - "Executes WSI analysis for candidate"
     anti_patterns:
       - "Returns informational meta-question reply"
+
+  # ── Task #730: regional / informal PT-BR variations ────────────────
+  # Each case carries `meta_expected: intercept|passthrough` so the CI
+  # gate (scripts/ci_meta_question_gate.py) can compute precision/recall
+  # against the meta-question detector without spinning up the orchestrator.
+
+  - id: MQ-010
+    category: MQ
+    severity: high
+    title: "Slang pronoun — vc consegue buscar candidatos?"
+    prompt: "vc consegue buscar candidatos?"
+    context:
+      scope: "Candidatos"
+      page: "candidatos"
+    expected_tools: []
+    meta_expected: intercept
+    expected_behavior: "Slang pronoun 'vc' must be recognised as 'você' for opener detection."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Returns informational reply"
+      - "Does not call search_candidates"
+    anti_patterns:
+      - "Returns 'nenhum candidato encontrado'"
+
+  - id: MQ-011
+    category: MQ
+    severity: medium
+    title: "Slang pronoun — ce sabe agendar?"
+    prompt: "ce sabe agendar entrevista?"
+    context:
+      scope: "Pipeline"
+      page: "pipeline"
+    expected_tools: []
+    meta_expected: intercept
+    expected_behavior: "Slang pronoun 'ce' (para 'você') must trigger opener."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Returns informational reply about scheduling"
+    anti_patterns:
+      - "Asks 'qual candidato?' as if scheduling"
+
+  - id: MQ-012
+    category: MQ
+    severity: medium
+    title: "No accent — da pra exportar?"
+    prompt: "da pra exportar candidatos?"
+    context:
+      scope: "Candidatos"
+      page: "candidatos"
+    expected_tools: []
+    meta_expected: intercept
+    expected_behavior: "Mobile typing without diacritics — 'da pra' must match opener."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Returns informational reply about export"
+    anti_patterns:
+      - "Generates empty CSV"
+
+  - id: MQ-013
+    category: MQ
+    severity: medium
+    title: "No accent — e possivel criar uma vaga?"
+    prompt: "e possivel criar uma vaga nova?"
+    context:
+      scope: "Vagas"
+      page: "vagas"
+    expected_tools: []
+    meta_expected: intercept
+    expected_behavior: "'e possivel' (sem acento) must trigger opener."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Returns informational reply mentioning example phrasing"
+    anti_patterns:
+      - "Opens wizard with empty fields"
+
+  - id: MQ-014
+    category: MQ
+    severity: medium
+    title: "Greeting prefix — bom dia, consegue listar vagas?"
+    prompt: "bom dia, consegue listar vagas?"
+    context:
+      scope: "Vagas"
+      page: "vagas"
+    expected_tools: []
+    meta_expected: intercept
+    expected_behavior: "Greeting before opener must not break detection."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Returns informational reply"
+    anti_patterns:
+      - "Treats as real list_jobs command"
+
+  - id: MQ-015
+    category: MQ
+    severity: medium
+    title: "Discourse marker — olha, você sabe criar vaga?"
+    prompt: "olha, você sabe criar vaga?"
+    context:
+      scope: "Vagas"
+      page: "vagas"
+    expected_tools: []
+    meta_expected: intercept
+    expected_behavior: "'olha,' filler must not block opener match."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Returns informational reply"
+    anti_patterns:
+      - "Opens wizard"
+
+  - id: MQ-016
+    category: MQ
+    severity: medium
+    title: "Hedged opener — será que dá pra mover candidato?"
+    prompt: "será que dá pra mover candidato em lote?"
+    context:
+      scope: "Pipeline"
+      page: "pipeline"
+    expected_tools: []
+    meta_expected: intercept
+    expected_behavior: "'será que' hedge before 'dá pra' must trigger opener."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Returns informational reply about bulk move"
+    anti_patterns:
+      - "Tries bulk move without selection"
+
+  - id: MQ-017
+    category: MQ
+    severity: medium
+    title: "Hedged opener — queria saber se você consegue analisar CV"
+    prompt: "queria saber se você consegue analisar CV"
+    context:
+      scope: "Triagem"
+      page: "triagem"
+    expected_tools: []
+    meta_expected: intercept
+    expected_behavior: "Hedged 'queria saber se' lead-in must still match."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Returns informational reply about CV analysis"
+    anti_patterns:
+      - "Tries to analyse without a CV"
+
+  - id: MQ-018
+    category: MQ
+    severity: medium
+    title: "Polite opener — poderia me listar vagas?"
+    prompt: "poderia me listar vagas?"
+    context:
+      scope: "Vagas"
+      page: "vagas"
+    expected_tools: []
+    meta_expected: intercept
+    expected_behavior: "'poderia' alone (without 'você') must match opener."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Returns informational reply about listing"
+    anti_patterns:
+      - "Returns full job list"
+
+  - id: MQ-019
+    category: MQ
+    severity: medium
+    title: "Informal — tem como vc gerar relatório?"
+    prompt: "tem como vc gerar relatório?"
+    context:
+      scope: "Relatorios"
+      page: "relatorios"
+    expected_tools: []
+    meta_expected: intercept
+    expected_behavior: "'tem como' followed by slang pronoun must match."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Returns informational reply about report generation"
+    anti_patterns:
+      - "Generates empty report"
+
+  - id: MQ-020
+    category: MQ
+    severity: medium
+    title: "Slang — rola de exportar candidatos?"
+    prompt: "rola de exportar candidatos?"
+    context:
+      scope: "Candidatos"
+      page: "candidatos"
+    expected_tools: []
+    meta_expected: intercept
+    expected_behavior: "'rola de' (very informal) must trigger opener."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Returns informational reply about export"
+    anti_patterns:
+      - "Generates empty CSV"
+
+  - id: MQ-021
+    category: MQ
+    severity: medium
+    title: "Lia prefix + slang — Lia, vc sabe comparar candidatos?"
+    prompt: "Lia, vc sabe comparar candidatos?"
+    context:
+      scope: "Candidatos"
+      page: "candidatos"
+    expected_tools: []
+    meta_expected: intercept
+    expected_behavior: "'Lia,' addressing prefix + slang pronoun."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Returns informational reply about comparison"
+    anti_patterns:
+      - "Returns generic comparison"
+
+  - id: MQ-022
+    category: MQ
+    severity: medium
+    title: "Como que faço — como que faço pra criar vaga?"
+    prompt: "como que faço pra criar uma vaga?"
+    context:
+      scope: "Vagas"
+      page: "vagas"
+    expected_tools: []
+    meta_expected: intercept
+    expected_behavior: "'como que faço' (variante coloquial) must match."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Returns informational reply with example phrasing"
+    anti_patterns:
+      - "Opens wizard"
+
+  - id: MQ-023
+    category: MQ
+    severity: high
+    title: "Real command — informal but specific (vc lista vagas ativas?)"
+    prompt: "vc consegue listar vagas ativas?"
+    context:
+      scope: "Vagas"
+      page: "vagas"
+    expected_tools: ["list_jobs"]
+    meta_expected: passthrough
+    expected_behavior: "Slang pronoun + opener BUT explicit status filter ('ativas') — real command."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Calls list_jobs with status=ativa"
+    anti_patterns:
+      - "Returns informational meta-question reply"
+
+  - id: MQ-024
+    category: MQ
+    severity: high
+    title: "Real command — greeting + concrete filter"
+    prompt: "bom dia, busque candidatos React em SP"
+    context:
+      scope: "Candidatos"
+      page: "candidatos"
+    expected_tools: ["search_candidates"]
+    meta_expected: passthrough
+    expected_behavior: "Greeting prefix + real command (no opener) — must execute."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Calls search_candidates"
+    anti_patterns:
+      - "Returns informational meta-question reply"
+
+  - id: MQ-025
+    category: MQ
+    severity: high
+    title: "Out-of-scope — opener with non-platform verb (small talk)"
+    prompt: "consegue me ouvir?"
+    context:
+      scope: "Chat"
+      page: "chat"
+    expected_tools: []
+    meta_expected: passthrough
+    expected_behavior: "Opener present but verb is not a platform action — let the cascade reply naturally."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Detector returns None (passthrough)"
+    anti_patterns:
+      - "Intercepts as meta-question"
+
+  - id: MQ-026
+    category: MQ
+    severity: medium
+    title: "Long polite mixed phrasing — opener buried after filler"
+    prompt: "olha, queria saber se você consegue criar uma vaga"
+    context:
+      scope: "Vagas"
+      page: "vagas"
+    expected_tools: []
+    meta_expected: intercept
+    expected_behavior: "Discourse marker + hedged lead-in + opener — must match end-to-end."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Returns informational reply about job creation"
+    anti_patterns:
+      - "Opens wizard with empty fields"

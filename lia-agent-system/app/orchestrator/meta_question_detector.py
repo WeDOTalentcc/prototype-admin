@@ -33,14 +33,31 @@ logger = logging.getLogger(__name__)
 
 
 _CAPABILITY_OPENERS = re.compile(
-    r"^\s*(?:lia[,\s]+)?(?:"
-    r"voc[eê]\s+(?:consegue|sabe|pode|consegueria)|"
+    # Optional informal lead-in: greeting ("oi", "olá", "bom dia", "ei",
+    # "opa"), discourse marker ("olha", "escuta", "então"), or a hedged
+    # opener ("será que", "queria saber se"). All optional, all followed
+    # by a comma or whitespace. Keeps the "starts at the opener" semantics
+    # but tolerates the way recruiters actually type in PT-BR chat.
+    r"^\s*"
+    r"(?:(?:oi|ol[áa]|ei|opa|bom\s+dia|boa\s+tarde|boa\s+noite|"
+    r"olha|escuta|ent[ãa]o|hmm|hum)[,\s]+)?"
+    r"(?:lia[,\s]+)?"
+    r"(?:(?:ser[áa]\s+que|queria\s+saber\s+se|gostaria\s+de\s+saber\s+se|"
+    r"me\s+diz(?:\s+a[ií])?\s+se|sabe\s+me\s+dizer\s+se)[,\s]+)?"
+    r"(?:lia[,\s]+)?"
+    r"(?:"
+    # Pronoun + capability verb. "voce" without accent and slang "vc"/"ce"
+    # are first-class citizens in chat — they were the most common false
+    # negatives reported after Task #726 shipped.
+    r"(?:voc[eê]|vc|c[eê])\s+(?:consegue|sabe|pode|conseguiria|saberia|poderia)|"
     r"consegue|sabe|"
     r"tem\s+como|"
+    # "da pra" / "da para" without accent shows up constantly on mobile.
     r"d[áa]\s+(?:pra|para)|"
     r"[ée]\s+poss[íi]vel|"
+    r"rola\s+(?:de|pra)|"  # informal: "rola de exportar?"
     r"como\s+(?:eu\s+)?fa[çc]o\s+(?:pra|para)|"
-    r"como\s+(?:eu\s+)?pe[çc]o|"
+    r"como\s+(?:que\s+)?(?:eu\s+)?(?:fa[çc]o|pe[çc]o)|"
     r"pode\s+me|"
     r"poderia"
     r")\b",
@@ -103,8 +120,12 @@ _SPECIFIC_FILTERS = re.compile(
     # Job titles / functions (jobs/screening domain)
     r"\bdesenvolvedor[ae]s?\b|\bdev(?:eloper)?s?\b|\bengenheir[ao]s?\b|"
     r"\brecrutador[ae]s?\b|\bdesigner\b|\bproduct\s+manager\b|\bscrum\s+master\b|"
-    # Proper noun openers: "do João", "da Marina", "para Marco"
-    r"\bd[oa]\s+[A-Z]\w+|\bpara\s+[A-Z]\w+"
+    # Proper noun openers: "do João", "da Marina", "para Marco". The
+    # uppercase character class must remain case-sensitive even though the
+    # rest of the regex runs IGNORECASE — otherwise lowercase fragments
+    # like "da pra" get treated as a proper-noun reference and suppress
+    # legitimate meta-questions ("dá pra exportar candidatos?").
+    r"\bd[oa]\s+(?-i:[A-Z])\w+|\bpara\s+(?-i:[A-Z])\w+"
     r")",
     re.IGNORECASE | re.UNICODE,
 )
