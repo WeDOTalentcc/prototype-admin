@@ -392,8 +392,10 @@ async def _wrap_save_company_benefits(**kwargs: Any) -> dict[str, Any]:
     if mode not in ("append", "replace"):
         return {"success": False, "data": {}, "message": "mode deve ser 'append' ou 'replace'."}
 
-    valid_keys = {"name", "category", "description", "icon", "value",
-                  "value_type", "is_highlighted", "order"}
+    valid_keys = {"name", "category", "description", "icon", "provider", "value",
+                  "value_type", "percentage_value", "value_details",
+                  "seniority_levels", "waiting_period_days",
+                  "is_highlighted", "is_mandatory", "is_discount", "order"}
     cleaned: list[dict[str, Any]] = []
     for raw in benefits:
         if not isinstance(raw, dict):
@@ -431,14 +433,27 @@ async def _wrap_save_company_benefits(**kwargs: Any) -> dict[str, Any]:
             deactivated = res.rowcount or 0
 
         for item in cleaned:
+            seniority = item.get("seniority_levels")
+            seniority_json = (
+                json.dumps(seniority, ensure_ascii=False)
+                if isinstance(seniority, (list, dict))
+                else None
+            )
             await session.execute(
                 text(
                     "INSERT INTO company_benefits "
-                    "(id, company_id, name, category, description, icon, value, "
-                    " value_type, is_active, is_highlighted, \"order\", created_at, updated_at) "
+                    "(id, company_id, name, category, description, icon, provider, "
+                    " value, value_type, percentage_value, value_details, "
+                    " seniority_levels, waiting_period_days, "
+                    " is_active, is_highlighted, is_mandatory, is_discount, "
+                    " \"order\", created_at, updated_at) "
                     "VALUES (gen_random_uuid(), :cid, :name, :category, :description, "
-                    " :icon, :value, COALESCE(:value_type, 'informative'), true, "
-                    " COALESCE(:is_highlighted, false), COALESCE(:order_idx, 0), NOW(), NOW())"
+                    " :icon, :provider, :value, COALESCE(:value_type, 'informative'), "
+                    " :percentage_value, :value_details, "
+                    " CAST(:seniority_levels AS JSONB), COALESCE(:waiting_period_days, 0), "
+                    " true, COALESCE(:is_highlighted, false), "
+                    " COALESCE(:is_mandatory, false), COALESCE(:is_discount, false), "
+                    " COALESCE(:order_idx, 0), NOW(), NOW())"
                 ),
                 {
                     "cid": company_id,
@@ -446,9 +461,16 @@ async def _wrap_save_company_benefits(**kwargs: Any) -> dict[str, Any]:
                     "category": item.get("category"),
                     "description": item.get("description"),
                     "icon": item.get("icon"),
+                    "provider": item.get("provider"),
                     "value": item.get("value"),
                     "value_type": item.get("value_type"),
+                    "percentage_value": item.get("percentage_value"),
+                    "value_details": item.get("value_details"),
+                    "seniority_levels": seniority_json,
+                    "waiting_period_days": item.get("waiting_period_days"),
                     "is_highlighted": item.get("is_highlighted"),
+                    "is_mandatory": item.get("is_mandatory"),
+                    "is_discount": item.get("is_discount"),
                     "order_idx": item.get("order"),
                 },
             )
