@@ -10,6 +10,24 @@ export type SettingsActionId =
   | "configure_workforce"
   | "analyze_website"
   | "process_document"
+  | "prefill_section"
+
+export type PrefillSection =
+  | "culture"
+  | "tech_stack"
+  | "benefits"
+  | "workforce"
+  | "policy"
+  | "compensation"
+
+const SECTION_LABELS: Record<PrefillSection, string> = {
+  culture: "Cultura & EVP",
+  tech_stack: "Tech Stack",
+  benefits: "Benefícios",
+  workforce: "Workforce Planning",
+  policy: "Políticas de Recrutamento",
+  compensation: "Plano de Remuneração",
+}
 
 export interface SettingsActionEventDetail {
   actionId: SettingsActionId
@@ -28,6 +46,7 @@ const ACTION_TO_TAB: Record<SettingsActionId, string> = {
   configure_workforce: "minha-empresa",
   analyze_website: "minha-empresa",
   process_document: "minha-empresa",
+  prefill_section: "minha-empresa",
 }
 
 export const SETTINGS_ACTION_EVENT = "lia:settings-action"
@@ -75,5 +94,70 @@ export function useSettingsConversational() {
     [dispatchAction, sendChatPrompt],
   )
 
-  return { triggerAction, dispatchAction, sendChatPrompt, ACTION_TO_TAB }
+  /**
+   * Ask LIA to fill the missing fields of a single section.
+   *
+   * The chat prompt includes the section key + missing labels so the agent
+   * scopes its conversational follow-up to that area only. FairnessGuard /
+   * PII / HITL still apply on the agent side — this just pre-narrows the
+   * conversation. Triggered both by UI buttons and by free-text commands
+   * such as "preenche meus benefícios".
+   */
+  const triggerPrefillSection = useCallback(
+    (section: PrefillSection, missingLabels: string[] = []) => {
+      const label = SECTION_LABELS[section]
+      const missingClause = missingLabels.length
+        ? `Os campos ainda pendentes são: ${missingLabels.slice(0, 12).join(", ")}.`
+        : "Liste primeiro o que ainda falta nessa seção."
+      const prompt = [
+        `[ACTION:prefill_section]`,
+        `[target_section:${section}]`,
+        ``,
+        `Quero preencher a seção "${label}" da minha empresa.`,
+        missingClause,
+        `Faça perguntas focadas APENAS nesta seção, uma de cada vez, e ao final peça minha confirmação antes de salvar (FairnessGuard, PII e HITL continuam valendo).`,
+      ].join("\n")
+
+      const detail: SettingsActionEventDetail = {
+        actionId: "prefill_section",
+        section: "minha-empresa",
+        prompt,
+        payload: { target_section: section, missing: missingLabels },
+        source: "ui",
+      }
+      dispatchAction(detail)
+      sendChatPrompt(prompt)
+    },
+    [dispatchAction, sendChatPrompt],
+  )
+
+  return {
+    triggerAction,
+    triggerPrefillSection,
+    dispatchAction,
+    sendChatPrompt,
+    ACTION_TO_TAB,
+    SECTION_LABELS,
+  }
+}
+
+/**
+ * Heuristic parser for free-text commands like "preenche meus benefícios"
+ * coming from the chat. Returns the matching section key or `null`.
+ * Exported so the chat layer can pre-route the prompt before sending it
+ * to LIA, mirroring how `target_section` is propagated for uploads.
+ */
+export function detectPrefillSectionCommand(text: string): PrefillSection | null {
+  if (!text) return null
+  const t = text.toLowerCase()
+  const isFillIntent =
+    /\b(preenche|preencher|completa|completar|atualiza|atualizar)\b/.test(t)
+  if (!isFillIntent) return null
+  if (/benef[ií]cios?/.test(t)) return "benefits"
+  if (/cultura|evp|valores|miss[aã]o/.test(t)) return "culture"
+  if (/tech\s*stack|stack|tecnolog/.test(t)) return "tech_stack"
+  if (/workforce|headcount|departament|organograma/.test(t)) return "workforce"
+  if (/pol[ií]tic|recrutament|pipeline/.test(t)) return "policy"
+  if (/remunera|sal[aá]ri|compensation|cargos? e sal/.test(t)) return "compensation"
+  return null
 }

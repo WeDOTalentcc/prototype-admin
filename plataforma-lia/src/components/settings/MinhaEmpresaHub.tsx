@@ -44,7 +44,16 @@ export function MinhaEmpresaHub() {
     refreshAll,
   } = useCompanySettingsCards()
 
-  const { triggerAction } = useSettingsConversational()
+  const { triggerAction, triggerPrefillSection } = useSettingsConversational()
+
+  const BLOCK_TO_PREFILL: Record<string, "culture" | "tech_stack" | "benefits" | "workforce" | "policy" | "compensation" | undefined> = {
+    culture: "culture",
+    tech: "tech_stack",
+    benefits: "benefits",
+    workforce: "workforce",
+    policy: "policy",
+    documents: "compensation",
+  }
 
   const handleOpenDepartments = React.useCallback(() => {
     if (typeof window === "undefined") return
@@ -57,6 +66,26 @@ export function MinhaEmpresaHub() {
     window.dispatchEvent(new CustomEvent("settings-open-subtab", { detail: { section: "usuarios-departamentos", tab: "departments" } }))
     window.dispatchEvent(new CustomEvent("settings-open-tab", { detail: "usuarios-departamentos" }))
   }, [])
+
+  const pendingSections = React.useMemo(
+    () => blocks.filter((b) => b.progress.total > 0 && b.progress.filled < b.progress.total),
+    [blocks],
+  )
+  const totalPendingFields = React.useMemo(
+    () => pendingSections.reduce((acc, b) => acc + (b.progress.total - b.progress.filled), 0),
+    [pendingSections],
+  )
+
+  const handleJumpToBlock = React.useCallback((blockKey: string) => {
+    if (typeof window === "undefined") return
+    if (!expandedBlocks.has(blockKey)) toggleBlock(blockKey)
+    setTimeout(() => {
+      const target = document.querySelector(
+        `[data-block-anchor="${blockKey}"]`,
+      ) as HTMLElement | null
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, 60)
+  }, [expandedBlocks, toggleBlock])
 
   const handleAnalyzeWebsite = React.useCallback(() => {
     triggerAction("analyze_website", {
@@ -141,6 +170,64 @@ export function MinhaEmpresaHub() {
           />
         </div>
       </div>
+
+      {totalPendingFields > 0 && (
+        <div
+          className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary/60 dark:bg-lia-bg-elevated px-3 py-2.5"
+          data-testid="profile-progress-panel"
+        >
+          <div className="flex items-center justify-between mb-1.5">
+            <p className={`${textStyles.captionBold} text-lia-text-primary`}>
+              Perfil {overallProgress}% completo — {totalPendingFields} campo
+              {totalPendingFields === 1 ? "" : "s"} pendente
+              {totalPendingFields === 1 ? "" : "s"}
+            </p>
+            <span className="text-micro text-lia-text-tertiary">
+              {pendingSections.length} seç
+              {pendingSections.length === 1 ? "ão" : "ões"} para revisar
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {pendingSections.map((b) => {
+              const remaining = b.progress.total - b.progress.filled
+              const prefillKey = BLOCK_TO_PREFILL[b.key]
+              return (
+                <span key={b.key} className="inline-flex items-center gap-0.5">
+                  <button
+                    type="button"
+                    onClick={() => handleJumpToBlock(b.key)}
+                    data-testid={`pending-section-${b.key}`}
+                    className="
+                      inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium
+                      bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle
+                      text-lia-text-primary hover:border-lia-border-medium hover:bg-lia-bg-secondary
+                      transition-colors motion-reduce:transition-none
+                    "
+                  >
+                    {b.title}
+                    <span className="text-lia-text-tertiary">({remaining})</span>
+                  </button>
+                  {prefillKey && (
+                    <button
+                      type="button"
+                      onClick={() => triggerPrefillSection(prefillKey, b.progress.missingLabels)}
+                      data-testid={`pending-prefill-${b.key}`}
+                      className="
+                        inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium
+                        bg-lia-btn-primary-bg/10 text-lia-btn-primary-bg border border-lia-btn-primary-bg/30
+                        hover:bg-lia-btn-primary-bg/20 transition-colors motion-reduce:transition-none
+                      "
+                      title={`Pedir à LIA para preencher ${b.title}`}
+                    >
+                      LIA
+                    </button>
+                  )}
+                </span>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="flex items-center justify-between rounded-lg border border-lia-border-subtle bg-lia-bg-secondary/50 dark:bg-lia-bg-elevated px-3 py-2">
         <div className="flex items-center gap-2 min-w-0">

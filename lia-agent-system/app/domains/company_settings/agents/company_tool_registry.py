@@ -832,12 +832,50 @@ def _structured_extract(text_in: str, document_type: str) -> dict[str, Any]:
     return out
 
 
+# Maps a "target section" (the card the upload was triggered from) onto the
+# document_type that drives extraction hints. Keeps the upload contextual:
+# a file dropped on Tech Stack will be biased toward tech_stack/engineering
+# even if its filename says nothing about it.
+SECTION_TO_DOCUMENT_TYPE: dict[str, str] = {
+    "culture": "handbook",
+    "cultura": "handbook",
+    "benefits": "handbook",
+    "beneficios": "handbook",
+    "tech_stack": "tech_doc",
+    "tech": "tech_doc",
+    "workforce": "org_chart",
+    "workforce_planning": "org_chart",
+    "departments": "org_chart",
+    "compensation": "compensation",
+    "remuneracao": "compensation",
+    "policy": "handbook",
+    "hiring_policies": "handbook",
+}
+
+# Per-section subset of `expected_fields` so the LIA confirmation step shows
+# only the fields the recruiter actually asked to fill from this drop-zone.
+SECTION_EXPECTED_FIELDS: dict[str, list[str]] = {
+    "culture": ["mission", "vision", "values", "work_model", "dei_initiatives", "evp_bullets"],
+    "benefits": ["benefits"],
+    "tech_stack": ["tech_stack", "engineering_culture", "default_languages"],
+    "workforce": ["departments", "hiring_volume", "headcount"],
+    "compensation": ["seniority_levels", "salary_ranges", "default_salary_ranges"],
+    "policy": ["allowed_days", "allowed_hours", "lia_tone", "preferred_channel"],
+}
+
+
 @tool_handler("company_settings")
 async def _wrap_process_uploaded_document(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     document_text = kwargs.get("document_text", "")
     document_type = kwargs.get("document_type", "general")
+    target_section = (kwargs.get("target_section") or "").strip().lower() or None
     user_id = kwargs.get("user_id", "system")
+
+    # When the recruiter dropped the file on a specific card, derive the
+    # document_type from that section if the caller didn't override it.
+    if target_section and (not document_type or document_type == "general"):
+        document_type = SECTION_TO_DOCUMENT_TYPE.get(target_section, document_type)
 
     if not document_text:
         return {"success": False, "data": {}, "message": "Texto do documento esta vazio."}
@@ -869,12 +907,17 @@ async def _wrap_process_uploaded_document(**kwargs: Any) -> dict[str, Any]:
         "general": ["mission", "vision", "values", "tech_stack", "benefits"],
     }
     expected_fields = extraction_hints.get(document_type, extraction_hints["general"])
+    # If the upload is contextual to a single section, narrow the expected
+    # fields list so the LIA confirmation step only proposes that section.
+    if target_section and target_section in SECTION_EXPECTED_FIELDS:
+        expected_fields = SECTION_EXPECTED_FIELDS[target_section]
 
     await _audit_log(
         company_id,
         "process_document",
         metadata={
             "document_type": document_type,
+            "target_section": target_section,
             "text_length": len(document_text),
             "masked_length": len(masked_text),
             "pii_redactions": pii_redactions,
@@ -883,10 +926,14 @@ async def _wrap_process_uploaded_document(**kwargs: Any) -> dict[str, Any]:
         },
     )
 
+    section_hint = (
+        f" Foco: secao '{target_section}'." if target_section else ""
+    )
     return {
         "success": True,
         "data": {
             "document_type": document_type,
+            "target_section": target_section,
             "text_length": len(document_text),
             "pii_redactions": pii_redactions,
             "pii_total_redactions": pii_total,
@@ -900,7 +947,7 @@ async def _wrap_process_uploaded_document(**kwargs: Any) -> dict[str, Any]:
             },
         },
         "message": (
-            f"Documento processado ({len(document_text)} caracteres, {pii_total} PII redigidas). "
+            f"Documento processado ({len(document_text)} caracteres, {pii_total} PII redigidas).{section_hint} "
             f"Campos sugeridos: {', '.join(suggested_fields.keys()) or 'nenhum detectado automaticamente'}. "
             f"Confirme antes de gravar (LGPD Art. 8)."
         ),
@@ -1316,6 +1363,14 @@ def get_company_settings_tools() -> list[ToolDefinition]:
                     "company_id": {"type": "string", "description": "ID da empresa"},
                     "document_text": {"type": "string", "description": "Texto extraido do documento"},
                     "document_type": {"type": "string", "description": "Tipo do documento (handbook, org_chart, compensation, tech_doc, general)"},
+                    "target_section": {
+                        "type": "string",
+                        "description": (
+                            "Secao do hub Minha Empresa que originou o upload "
+                            "(culture, tech_stack, benefits, workforce, "
+                            "compensation, policy). Estreita os campos sugeridos."
+                        ),
+                    },
                 },
                 "required": ["company_id", "document_text"],
             },

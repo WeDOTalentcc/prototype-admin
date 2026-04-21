@@ -8,10 +8,31 @@ import {
 import type { CardBlock, CardField } from "@/hooks/settings/use-company-settings-cards"
 import { textStyles } from "@/lib/design-tokens"
 import type { LucideIcon } from "lucide-react"
-import { DocumentUploadCard } from "./DocumentUploadCard"
 import { BenefitsListSection } from "./benefits/BenefitsListSection"
 import type { CompanyBenefit } from "@/types/benefits"
 import { WorkforceHubContent } from "./WorkforceHubContent"
+import { SectionUploadDropZone, type TargetSection } from "./SectionUploadDropZone"
+
+interface SectionUploadConfig {
+  targetSection: TargetSection
+  documentType: "handbook" | "tech_doc" | "org_chart" | "compensation"
+  sectionLabel: string
+  hint?: string
+}
+
+// Per-block contextual upload configuration. The target_section value is what
+// the backend `process_uploaded_document` tool keys on to narrow the
+// extraction to a single area of "Minha Empresa". `basic` has no upload —
+// it's structured registration data, not a document-derived area.
+const BLOCK_UPLOAD: Record<string, SectionUploadConfig | undefined> = {
+  basic: undefined,
+  culture: { targetSection: "culture", documentType: "handbook", sectionLabel: "Cultura & EVP", hint: "Manual / handbook — extrai missão, valores, modelo de trabalho." },
+  tech: { targetSection: "tech_stack", documentType: "tech_doc", sectionLabel: "Tech Stack", hint: "Documentação técnica — extrai stack, ferramentas, cultura de engenharia." },
+  benefits: { targetSection: "benefits", documentType: "handbook", sectionLabel: "Benefícios", hint: "Manual de benefícios — extrai a lista de benefícios oferecidos." },
+  policy: { targetSection: "policy", documentType: "handbook", sectionLabel: "Políticas de Recrutamento", hint: "Manual de processos — extrai regras de pipeline, agendamento e comunicação." },
+  workforce: { targetSection: "workforce", documentType: "org_chart", sectionLabel: "Workforce Planning", hint: "Organograma — extrai departamentos, hierarquia e headcount." },
+  documents: { targetSection: "compensation", documentType: "compensation", sectionLabel: "Plano de Remuneração", hint: "Plano de cargos / remuneração — extrai níveis e faixas salariais." },
+}
 
 function formatFieldValue(value: unknown): string {
   if (value === null || value === undefined || value === "") return "Nao definido"
@@ -207,7 +228,10 @@ export function MinhaEmpresaCard({
   const statusStyle = STATUS_STYLES[block.status]
 
   return (
-    <Card className="bg-lia-bg-primary dark:bg-lia-bg-secondary overflow-hidden rounded-xl">
+    <Card
+      className="bg-lia-bg-primary dark:bg-lia-bg-secondary overflow-hidden rounded-xl"
+      data-block-anchor={block.key}
+    >
       <button
         onClick={onToggle}
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none duration-150"
@@ -227,6 +251,14 @@ export function MinhaEmpresaCard({
           )}
         </div>
         <div className="flex items-center gap-2">
+          {block.progress.total > 0 && (
+            <span
+              className="text-micro font-medium text-lia-text-secondary"
+              data-testid={`block-progress-${block.key}`}
+            >
+              {block.progress.filled} de {block.progress.total} preenchidos
+            </span>
+          )}
           <span
             className={`inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium border ${statusStyle.badge}`}
           >
@@ -241,10 +273,29 @@ export function MinhaEmpresaCard({
       </button>
 
       {isExpanded && (
-        <CardContent className="px-4 py-3 border-t border-lia-border-subtle">
-          {block.key === "documents" && (
-            <div className="mb-3">
-              <DocumentUploadCard />
+        <CardContent className="px-4 py-3 border-t border-lia-border-subtle space-y-3">
+          {BLOCK_UPLOAD[block.key] && (
+            <SectionUploadDropZone {...BLOCK_UPLOAD[block.key]!} />
+          )}
+          {block.progress.missingLabels.length > 0 && (
+            <div
+              className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary/50 dark:bg-lia-bg-elevated px-2.5 py-2"
+              data-testid={`block-missing-${block.key}`}
+            >
+              <p className={`${textStyles.captionBold} text-lia-text-primary mb-1`}>
+                Campos pendentes ({block.progress.missingLabels.length})
+              </p>
+              <p className="text-micro text-lia-text-secondary">
+                {block.progress.missingLabels.slice(0, 8).join(" · ")}
+                {block.progress.missingLabels.length > 8
+                  ? ` · +${block.progress.missingLabels.length - 8}`
+                  : ""}
+              </p>
+              {BLOCK_UPLOAD[block.key] && (
+                <p className="text-micro text-lia-text-tertiary mt-1">
+                  Um upload aqui pode preencher automaticamente esses campos (você confirma antes).
+                </p>
+              )}
             </div>
           )}
           {block.key === "benefits" && (

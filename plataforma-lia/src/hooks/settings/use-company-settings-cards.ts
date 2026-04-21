@@ -6,6 +6,12 @@ import { useLoadingWatchdog } from "@/hooks/shared/use-loading-watchdog"
 import type { CompanyData } from "@/components/settings/companyTeamHub.types"
 import type { CompanyBenefit } from "@/types/benefits"
 
+export interface BlockProgress {
+  filled: number
+  total: number
+  missingLabels: string[]
+}
+
 export interface CardBlock {
   key: string
   title: string
@@ -13,6 +19,7 @@ export interface CardBlock {
   iconName: string
   fields: CardField[]
   status: "configured" | "partial" | "pending"
+  progress: BlockProgress
 }
 
 export interface CardField {
@@ -109,17 +116,26 @@ const POLICY_FIELD_TO_BLOCK: Record<string, string> = {
   autonomy_level: "automation_rules",
 }
 
+function isFieldFilled(f: CardField): boolean {
+  if (f.value === null || f.value === undefined || f.value === "") return false
+  if (Array.isArray(f.value) && f.value.length === 0) return false
+  return true
+}
+
 function computeBlockStatus(fields: CardField[]): "configured" | "partial" | "pending" {
   const dataFields = fields.filter(f => !ACTION_FIELD_KEYS.has(f.key))
   if (dataFields.length === 0) return "pending"
-  const filled = dataFields.filter(f => {
-    if (f.value === null || f.value === undefined || f.value === "") return false
-    if (Array.isArray(f.value) && f.value.length === 0) return false
-    return true
-  }).length
+  const filled = dataFields.filter(isFieldFilled).length
   if (filled === 0) return "pending"
   if (filled === dataFields.length) return "configured"
   return "partial"
+}
+
+function computeBlockProgress(fields: CardField[]): BlockProgress {
+  const dataFields = fields.filter(f => !ACTION_FIELD_KEYS.has(f.key))
+  const filled = dataFields.filter(isFieldFilled).length
+  const missingLabels = dataFields.filter(f => !isFieldFilled(f)).map(f => f.label)
+  return { filled, total: dataFields.length, missingLabels }
 }
 
 function buildBlocks(
@@ -218,24 +234,26 @@ function buildBlocks(
     { key: "import_spreadsheet", label: "Importar Planilha", value: null, type: "text", editable: false, block: "workforce" },
   ]
 
+  // "documents" is renamed to "Remuneracao & Onboarding" — the upload hub
+  // moved into the section cards (T#779). The remaining fields here are
+  // onboarding metadata + the compensation summary; uploads of compensation
+  // documents now use the contextual drop-zone embedded in this card.
   const documentFields: CardField[] = [
     { key: "onboarding_completed", label: "Onboarding Concluido", value: additionalData?.onboarding_completed_at ? "Sim" : null, type: "text", editable: false, block: "documents" },
     { key: "responsible_name", label: "Responsavel", value: additionalData?.responsible_name, type: "text", editable: true, block: "documents" },
     { key: "responsible_position", label: "Cargo do Responsavel", value: additionalData?.responsible_position, type: "text", editable: true, block: "documents" },
     { key: "additional_notes", label: "Notas Adicionais", value: additionalData?.additional_notes, type: "text", editable: true, block: "documents" },
-    { key: "handbook", label: "Manual / Handbook", value: null, type: "text", editable: false, block: "documents" },
-    { key: "org_chart", label: "Organograma", value: null, type: "text", editable: false, block: "documents" },
     { key: "compensation_structure", label: "Estrutura de Remuneracao", value: company.default_salary_ranges && company.default_salary_ranges.length > 0 ? `${company.default_salary_ranges.length} faixa(s)` : null, type: "text", editable: false, block: "documents" },
   ]
 
   const blocks: CardBlock[] = [
-    { key: "basic", title: "Dados Basicos", iconName: "Building", fields: basicFields, status: computeBlockStatus(basicFields) },
-    { key: "culture", title: "Cultura & EVP", iconName: "Heart", fields: cultureFields, status: computeBlockStatus(cultureFields) },
-    { key: "tech", title: "Tech Stack", iconName: "Code", fields: techFields, status: computeBlockStatus(techFields) },
-    { key: "benefits", title: "Benefícios", subtitle: benefitsSubtitle, iconName: "Gift", fields: benefitsFields, status: computeBlockStatus(benefitsFields) },
-    { key: "policy", title: "Politicas de Recrutamento", iconName: "GitBranch", fields: policyFields, status: computeBlockStatus(policyFields) },
-    { key: "workforce", title: "Workforce Planning", iconName: "BarChart3", fields: workforceFields, status: computeBlockStatus(workforceFields) },
-    { key: "documents", title: "Documentos & Onboarding", iconName: "FileText", fields: documentFields, status: computeBlockStatus(documentFields) },
+    { key: "basic", title: "Dados Basicos", iconName: "Building", fields: basicFields, status: computeBlockStatus(basicFields), progress: computeBlockProgress(basicFields) },
+    { key: "culture", title: "Cultura & EVP", iconName: "Heart", fields: cultureFields, status: computeBlockStatus(cultureFields), progress: computeBlockProgress(cultureFields) },
+    { key: "tech", title: "Tech Stack", iconName: "Code", fields: techFields, status: computeBlockStatus(techFields), progress: computeBlockProgress(techFields) },
+    { key: "benefits", title: "Benefícios", subtitle: benefitsSubtitle, iconName: "Gift", fields: benefitsFields, status: computeBlockStatus(benefitsFields), progress: computeBlockProgress(benefitsFields) },
+    { key: "policy", title: "Politicas de Recrutamento", iconName: "GitBranch", fields: policyFields, status: computeBlockStatus(policyFields), progress: computeBlockProgress(policyFields) },
+    { key: "workforce", title: "Workforce Planning", iconName: "BarChart3", fields: workforceFields, status: computeBlockStatus(workforceFields), progress: computeBlockProgress(workforceFields) },
+    { key: "documents", title: "Remuneracao & Onboarding", iconName: "FileText", fields: documentFields, status: computeBlockStatus(documentFields), progress: computeBlockProgress(documentFields) },
   ]
 
   return blocks
