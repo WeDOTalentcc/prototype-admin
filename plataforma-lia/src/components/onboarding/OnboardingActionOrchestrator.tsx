@@ -204,13 +204,14 @@ export function OnboardingActionOrchestrator() {
         pushProgress(step.key, "in_progress")
         return { current: idx, status }
       })
+      // triggerAction ja despacha `lia:prefill-message` quando recebe `prompt`,
+      // entao nao chamamos sendChatPrompt aqui — evita prefill duplicado no chat.
       triggerAction(step.actionId, {
         prompt: step.prompt,
         source: "onboarding",
       })
-      sendChatPrompt(step.prompt)
     },
-    [triggerAction, sendChatPrompt],
+    [triggerAction],
   )
 
   const completed = useMemo(

@@ -21,66 +21,9 @@ __all__ = [
 ]
 
 INTERVIEW_SCHEDULING_TOOLS = [
-    {
-        "tool_id": "scheduling_schedule_interview",
-        "name": "Agendar Entrevista",
-        "description": "Agenda entrevista com candidato criando evento no calendário",
-        "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.schedule_interview",
-    },
-    {
-        "tool_id": "scheduling_reschedule",
-        "name": "Reagendar Entrevista",
-        "description": "Reagenda entrevista existente para novo horário",
-        "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.reschedule_interview",
-    },
-    {
-        "tool_id": "scheduling_cancel",
-        "name": "Cancelar Entrevista",
-        "description": "Cancela entrevista agendada e notifica participantes",
-        "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.cancel_interview",
-    },
-    {
-        "tool_id": "scheduling_check_availability",
-        "name": "Verificar Disponibilidade",
-        "description": "Verifica disponibilidade do entrevistador no calendário",
-        "handler": "app.domains.interview_scheduling.services.calendar_service.calendar_service.check_availability",
-    },
-    {
-        "tool_id": "scheduling_self_scheduling_link",
-        "name": "Gerar Link de Auto-agendamento",
-        "description": "Gera link para candidato escolher horário de entrevista",
-        "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.generate_self_scheduling_link",
-    },
-    {
-        "tool_id": "scheduling_find_slots",
-        "name": "Encontrar Horários Comuns",
-        "description": "Encontra horários disponíveis comuns para todos os participantes",
-        "handler": "app.domains.interview_scheduling.services.calendar_service.calendar_service.find_common_slots",
-    },
-    {
-        "tool_id": "scheduling_send_reminder",
-        "name": "Enviar Lembrete de Entrevista",
-        "description": "Envia lembrete de entrevista para participantes",
-        "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.send_reminder",
-    },
-    {
-        "tool_id": "scheduling_list_today",
-        "name": "Listar Entrevistas de Hoje",
-        "description": "Lista todas as entrevistas agendadas para hoje",
-        "handler": "app.domains.interview_scheduling.services.scheduling_service.scheduling_service.list_today_interviews",
-    },
-    {
-        "tool_id": "scheduling_transcribe_audio",
-        "name": "Transcrever Áudio",
-        "description": "Transcreve áudio de entrevista usando OpenAI Whisper STT",
-        "handler": "app.domains.voice.services.voice_service.voice_service.transcribe_audio",
-    },
-    {
-        "tool_id": "scheduling_analyze_voice",
-        "name": "Analisar Voz",
-        "description": "Analisa tom de voz e confiança do candidato na entrevista",
-        "handler": "app.domains.voice.services.voice_service.voice_service.transcribe_audio",
-    },
+    # Migrated to V2 DomainAction path (actions.py).
+    # Singleton instance pattern (.scheduling_service.scheduling_service.* etc.) is not
+    # resolvable via dynamic import. Routes handled via scheduling_tools.py.
 ]
 
 

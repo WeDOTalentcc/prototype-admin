@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.models import User, UserRole
-from app.auth.security import decode_token, get_password_hash
+from app.auth.security import decode_token, is_token_blacklisted, get_password_hash
 from app.core.database import get_db
 from app.core.tenant import DEMO_COMPANY_UUID, normalize_demo_company_id
 

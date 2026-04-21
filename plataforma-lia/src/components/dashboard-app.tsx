@@ -269,10 +269,13 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
       />
 
       <main id="main-content" className="flex-1 flex flex-col overflow-hidden" aria-label={currentPage}>
+        {/* SettingsSyncBroadcaster precisa estar montado em todas as paginas
+            (inclusive Configuracoes) para interceptar fetches de save e
+            emitir `lia:settings-updated`. Renderiza null. */}
+        <SettingsSyncBroadcaster />
         {currentPage !== "Chat LIA" && currentPage !== "Configurações" && (
           <div className="px-4 pt-3">
             <SetupProgressBanner />
-            <SettingsSyncBroadcaster />
           </div>
         )}
         <div className="flex-1 min-h-0 overflow-hidden flex">

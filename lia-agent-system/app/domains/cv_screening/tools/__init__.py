@@ -29,26 +29,6 @@ CV_SCREENING_TOOLS: list[dict[str, Any]] = [
         "handler": "app.domains.cv_screening.services.rubric_evaluation_service.evaluate_rubric",
     },
     {
-        "tool_id": "calculate_wsi",
-        "name": "Calcular WSI",
-        "description": "Calculate WSI score",
-        "parameters": {
-            "candidate_id": {"type": "string", "description": "ID do candidato", "required": True},
-            "job_id": {"type": "string", "description": "ID da vaga", "required": True},
-        },
-        "handler": "app.domains.cv_screening.services.wsi_service.calculate_wsi",
-    },
-    {
-        "tool_id": "generate_wsi_questions",
-        "name": "Gerar Perguntas WSI",
-        "description": "Generate WSI screening questions",
-        "parameters": {
-            "job_id": {"type": "string", "description": "ID da vaga", "required": True},
-            "count": {"type": "integer", "description": "Número de perguntas a gerar", "required": False, "default": 5},
-        },
-        "handler": "app.domains.cv_screening.services.wsi_service.generate_wsi_questions_tool",
-    },
-    {
         "tool_id": "adjust_wsi_questions",
         "name": "Ajustar Perguntas WSI",
         "description": "Adjust/refine questions with AI",
