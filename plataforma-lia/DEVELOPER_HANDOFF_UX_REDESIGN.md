@@ -961,9 +961,20 @@ produção quanto em desenvolvimento.
 
 **Front (replicar):**
 - UI canônica: `plataforma-lia/src/components/settings/BenefitsTab.tsx` + `benefits/BenefitItemCard.tsx` + `benefits/BenefitFormModal.tsx` + `benefits/BenefitTemplateModal.tsx`.
-- Hook: `src/hooks/company/useCompanyBenefits.ts` (invalida cache por mutação).
+- **Novo componente:** `plataforma-lia/src/components/settings/benefits/BenefitsListSection.tsx` — renderiza lista item-a-item dentro do card, invalida cache de `useCompanyBenefits` e dispara o evento DOM `lia:settings-updated` a cada mutação.
+- Card "Benefícios & Departamentos" foi **renomeado para "Benefícios"** (em `use-company-settings-cards.ts`).
+- Header do bloco ganhou novo campo **`subtitle` em `CardBlock`** mostrando agregado: `"X cadastrado(s) · Y ativo(s)"`.
+- Botão "Adicionar benefício" reaproveita o `BenefitFormModal` existente (sem duplicar UI).
+- Hook `use-company-settings-cards` agora expõe `benefits` e `companyId` e calcula status do bloco pela quantidade de benefícios ativos.
+- **Enum `BenefitCategory` unificado** em `types/benefits.ts`, `BenefitsTab`, `BenefitFormModal`, `BenefitTemplateModal` e nos maps de ícones em `SalaryStage` (chat + wizard).
 - Type FE: `src/types/benefits.ts` espelha o modelo rico (`provider`, `value_type`, `seniority_levels`, `waiting_period_days`, `is_mandatory`, `is_discount`).
 - Padrão visual: lista item-a-item, modal de form, modal de templates filtráveis por categoria/popular, batch-edit com `pendingChanges`/`backup`.
+
+**Backend Python (referência):**
+- `lia_models/company_benefit.py`: +`provider, percentage_value, value_details, seniority_levels (JSONB), waiting_period_days, is_mandatory, is_discount`.
+- Migration **idempotente** `alembic/versions/099_extend_company_benefits_schema.py`.
+- `app/api/v1/company_benefits.py`: Pydantic Create/Update/Response cobrem todos os novos campos; novo endpoint `/active`; `categories/list` canônico inclui `wellness, flexibility, other`.
+- **Bug fix audit:** `import_tools.py` usava `is_highlight` (coluna **inexistente**) — corrigido para `is_highlighted` aceitando ambos no input; enum do JSON schema atualizado.
 
 **Rails `ats-api-copia` (especificar):**
 - `Company::Benefit` model (singular, dono dos campos ricos) + tabela `company_benefits`.
@@ -981,11 +992,21 @@ produção quanto em desenvolvimento.
 
 ---
 
-### J.2 — Schema canônico Benefícios (Task #766, commit `43981a976`)
+### J.2 — Schema canônico Benefícios chat ↔ Hub (Task #766, commit `43981a976`)
 
 **Front (replicar):**
 - O type FE (`benefits.ts`) já contém todos os campos do modelo rico — usar como contrato único.
 - O wizard de vaga (`SalaryStage.tsx` + `WizardContext.tsx:295-315`) hidrata `JobBenefit[]` da empresa preservando metadata.
+- Quando a tool retorna `needs_clarification=True`, exibir como `clarification_response` com `navigation_hint` para o Hub (não persistir nada).
+
+**Backend Python (referência canônica):**
+- `_wrap_save_company_benefits` (`company_tool_registry.py`): aceita schema canônico completo; valida pares obrigatórios (clarification-first); mascara PII em texto livre; FairnessGuard L1 em `name/description`; persiste `seniority_levels` como JSONB; **audit log com `source ∈ {chat, spreadsheet, website}`**. Exporta `CANONICAL_BENEFIT_FIELDS`, `VALID_BENEFIT_VALUE_TYPES`, `BENEFIT_CLARIFICATION_FIELDS` para reuso.
+- **`_handle_configure_benefits`** (`domain.py`): forwarda `source` e converte `needs_clarification` em `DomainResponse.clarification_response` com `navigation_hint`.
+- **`_handle_analyze_website`** fase 1: promove benefícios extraídos (`list[str]`) para `list[dict{name}]` e expõe `expected_fields` a serem preenchidos antes da confirmação humana (TIER 3).
+- **`import_benefits_from_data`** (`import_tools.py`): refatorado — agora **delega ao wrapper canônico** com `source="spreadsheet"`. Corrige bug `is_highlight` via alias para `is_highlighted` e **propaga `needs_clarification`** em vez de gravar incompleto.
+- **`capabilities.yaml`**: nova seção **`actions.configure_benefits`** documenta campos aceitos, regras de clarification, sources e `audit_action`.
+- 6 testes unitários novos (51/51 passando) — ver tabela "Testes adicionados".
+- Guardrail registrado em `CLAUDE.md` e na skill `lia-compliance`.
 
 **Rails (especificar):**
 - Manter `Company::Benefit` como **único** modelo de benefício de empresa. Não duplicar em `CompanyBenefit` simples.
@@ -1064,29 +1085,42 @@ Guardrail de teste (CI): `tests/unit/test_company_settings_actions.py` deve falh
 ### J.6 — Remover Departamentos do Hub Minha Empresa + onboarding (Task #767, commit `3045bdfdd`)
 
 **Front (replicar):**
-- Remover bloco `departamentos` de `src/hooks/settings/use-company-settings-cards.ts` (array em `~:172` e fetch em `~:323`).
-- Remover menção a "departamento" do prompt em `src/components/onboarding/OnboardingActionOrchestrator.tsx:75-80` (intent `configure_workforce`).
-- **Manter intactos:** `UsuariosDepartamentosHub.tsx` (dono canônico de departamentos), `useDepartmentManagement.ts`, `useCompanyData.fetchDepartments`, router `company_departments`, modelo `Department`.
-- Smoke test: MinhaEmpresaHub não exibe mais "Departamentos"; UsuariosDepartamentosHub funciona idêntico.
+- `use-company-settings-cards.ts`: removidos `departments` state, `fetchDepartments`, campo `departments_count`; bloco renomeado de **"Beneficios & Departamentos" → "Beneficios"**.
+- `MinhaEmpresaHub.tsx`: adicionado **atalho textual "Gerenciar departamentos"** que dispara dois eventos DOM: `settings-open-tab` (já existente) e o **novo evento `settings-open-subtab`**.
+- `UsuariosDepartamentosHub.tsx`: passa a **escutar `settings-open-subtab`** e pré-seleciona a aba `departments` quando acionado.
+- `OnboardingActionOrchestrator.tsx`: removida a palavra "departamento" do prompt da intent `configure_workforce`.
+- **Manter intactos:** `useDepartmentManagement.ts`, `useCompanyData.fetchDepartments`, router `company_departments`, modelo `Department`, endpoint REST `import_departments`.
+- Smoke test: MinhaEmpresaHub não exibe mais "Departamentos"; clicar no atalho leva ao Hub Usuários & Departamentos com a aba certa pré-selecionada.
 
-**Rails (especificar):** sem mudança de schema. Garantir que `Department` continua acessível **apenas** via Hub Usuários & Departamentos — não duplicar em settings cards de empresa.
+**Backend Python (referência):**
+- **`capabilities.yaml`**: novos keywords da intent **`manage_departments`**.
+- **`domain.py`**: nova `DomainAction.manage_departments` + handler **`_handle_manage_departments`** (routing-only, **sem writes**) retornando `navigation_hint` com `section=usuarios-departamentos, tab=departments`.
+- Preserva fluxo de aprovador e endpoint REST `import_departments` intactos.
+- Teste novo: `test_manage_departments_is_routing_only` em `tests/unit/test_company_settings_actions.py`.
+
+**Rails (especificar):** sem mudança de schema. Replicar a intent `manage_departments` como rota de navegação (sem writes). Garantir que `Department` continua acessível **apenas** via Hub Usuários & Departamentos.
 
 **IA (especificar):**
-- Intent `configure_workforce` deve **parar** de coletar `departamento` no mesmo fluxo (mover para fluxo próprio se/quando necessário).
-- Não criar tool `configure_departments` agora — gerenciamento é manual via UI dedicada.
+- Intent `configure_workforce` **não coleta mais** `departamento` (mover para fluxo próprio quando/se necessário).
+- Implementar a intent `manage_departments` como **routing-only** (não criar tool de write — gerenciamento é manual via UI dedicada).
 
 ---
 
 ### J.7 — Workforce: visualização rica + 3 paths conversacionais + HITL (Task #768, commit `843a0d224`)
 
 **Front (replicar):**
-- `GoalsPlanningHub.tsx` + `WorkforceSection.tsx` voltam a ter ponto de entrada de navegação (não mais órfãos).
-- 3 paths de captura conversacional aceitos:
-  1. **Planilha** — upload via `SmartImportZone.tsx` → `/api/backend-proxy/workforce/entries/import` (já existia).
-  2. **Texto livre** — usuário descreve em prosa ("preciso contratar 5 devs sêniores em SP até Q3"); parser estrutura.
-  3. **Colagem** — textarea com parser de tabela colada (Excel/Sheets).
-- HITL: antes de gravar `PlannedHeadcount`, mostrar preview estruturado com botão "Confirmar" — `mode=replace` exige confirmação dupla.
-- Substituir o bloco `workforce` simplificado em `use-company-settings-cards.ts:206` pelo componente rico (ou alinhar dados).
+- **Novo componente:** `WorkforceHubContent` — wrapper do canônico `WorkforceSection` (tabela departamento × mês, totais, edit inline) que liga os 3 paths concretos:
+  1. **Anexar planilha** — file picker real → upload para `/api/backend-proxy/workforce/entries/import` → entrega ao chat para HITL.
+  2. **Descrever no chat** — dispara intent `configure_workforce` com `input_mode=text`.
+  3. **Colar dados** — modal captura tabela colada e envia como `raw_text` via prefill do chat com `input_mode=paste`.
+- **`MinhaEmpresaCard`**: substitui a lista de campos legada por `WorkforceHubContent` quando `block.key === "workforce"` (sem renderização duplicada dos campos antigos).
+
+**Backend Python (referência canônica):**
+- **`_wrap_import_workforce_plan`** suporta os 3 modos (`spreadsheet | paste | text`) e impõe **gate HITL estrito**: persistência exige `approved is True` (o booleano Python real). Valores como `"false"`, `"no"`, `0`, `1`, `"True"` (string) **não bypassam** a aprovação.
+- **Parser determinístico de TSV / CSV / `;`** (paste) com **aliases PT/EN** para cabeçalhos. Texto livre vai ao **extrator Claude com PII masking upfront**.
+- `ToolDefinition`, `tool_registry_metadata.yaml` e `_handle_configure_workforce` atualizados para forwardar `input_mode`, `raw_text` e `approved`.
+- Texto de clarification mantém a palavra "planejamento" — **regressão #712**.
+- Testes: `tests/unit/test_workforce_plan_hitl.py` (7 casos) cobre cada modo de input, recusa de input vazio, aliases de paste, rejeição de header desconhecido + regressão parametrizada provando que **só o booleano `True` real** desbloqueia persistência. Suite total: 56 testes verdes.
 
 **Rails (especificar):**
 - Definir o canônico: `PlannedHeadcount` (com `title, salary, hiring_manager, department_id`) é o plano detalhado; `WorkforceEntry` apenas agregação derivada (yearly/monthly totais).
@@ -1107,17 +1141,22 @@ Guardrail de teste (CI): `tests/unit/test_company_settings_actions.py` deve falh
 
 ### J.8 — Pagination na busca de vagas (commit `182dec756`)
 
+**Contrato canônico (implementado):** `search_jobs(query, filters, offset=0, limit=20)` em `query_tools.py`. Resposta inclui novo campo **`total_count`** (contagem real no DB) + bloco de **metadados de paginação**. Corrige discrepância em que o `total` reportado não refletia o real.
+
 **Front (replicar):**
-- Lista de vagas paginada (página + `pageSize`); infinite-scroll ou paginação clássica conforme padrão do hub.
-- Hook de busca aceita `?page=N&pageSize=M` e retorna `{items, total, page, pageSize, totalPages}`.
+- Lista de vagas paginada usando `offset` + `limit` (não `page`/`per_page`).
+- Hook de busca consome `total_count` para mostrar "1–20 de N" e calcular se há próxima página (`offset + limit < total_count`).
 
 **Rails (especificar):**
-- `GET /jobs` aceita `page` (default 1) e `per_page` (default 20, máximo 100).
-- Resposta: `{ data: [...], meta: { page, per_page, total, total_pages } }`. Header `X-Total-Count` opcional.
+- `GET /jobs` aceita `offset` (default 0) e `limit` (default 20, máximo 100) — paridade com o contrato Python da tool.
+- Resposta: `{ data: [...], total_count: <int>, pagination: { offset, limit, has_more } }`. Header `X-Total-Count` opcional como espelho de `total_count`.
 - Indexar colunas usadas em filtros + `created_at DESC` para paginar de forma estável.
 
 **IA (especificar):**
-- Tool `search_jobs(query, filters, page=1, page_size=20)` deve respeitar paginação e nunca tentar carregar tudo. Em respostas longas, paginar visualmente ("mostrando 1-20 de 87").
+- Tool `search_jobs(query, filters, offset=0, limit=20)` — assinatura idêntica à de `query_tools.py`.
+- Resposta DEVE expor `total_count` no topo do payload + `pagination.has_more`.
+- Em respostas longas, paginar visualmente ("mostrando 1–20 de 87").
+- Teste de fumaça: `tests/unit/test_fix20_pagination.py` valida assinatura, exposição do schema e marcador de rastreabilidade do fix.
 
 ---
 
@@ -1174,28 +1213,36 @@ Guardrail de teste (CI): `tests/unit/test_company_settings_actions.py` deve falh
 | `POST` | `/company/benefits/seed-defaults` | Seed inicial (idempotente: skip se já existem) |
 | `GET` | `/company/benefits/categories/list` | Enum canônico de categorias |
 | `GET/POST` | `/workforce/plans`, `/workforce/headcounts` | Workforce CRUD |
-| `POST` | `/workforce/entries/import` | Upload de planilha (preview + confirm) |
-| `GET` | `/jobs?page=&page_size=` | Vagas paginadas |
+| `POST` | `/workforce/entries/import` | Upload de planilha (preview) |
+| `POST` | `/workforce/entries/import/confirm` | Commita preview aprovado (HITL) |
+| `GET` | `/jobs?offset=&limit=` | Vagas paginadas (resposta inclui `total_count` + `pagination.has_more`) |
 
 #### Eventos DOM / FE
 
 | Evento | Origem | Listener |
 |---|---|---|
-| `benefits:saved` (invalidate cache) | `useCompanyBenefits` mutações | `BenefitsTab`, wizard de vaga |
-| `workforce:plan-saved` | `GoalsPlanningHub` confirm | `WorkforceSection` |
+| `lia:settings-updated` | `BenefitsListSection` (após mutação) | hooks de settings que invalidam cache |
+| `settings-open-tab` | `MinhaEmpresaHub` (atalho "Gerenciar departamentos") | `SettingsShell` (já existia) |
+| **`settings-open-subtab`** (novo, J.6) | `MinhaEmpresaHub` (atalho "Gerenciar departamentos") | `UsuariosDepartamentosHub` (pré-seleciona aba `departments`) |
 | `workflow:thinking` (legado, pendente) | `UnifiedChat` | sem listener — pendência herdada da PARTE H |
 
 #### IA — intents / tools / capabilities
 
-| Tool | Status | Camadas obrigatórias |
+| Tool / Intent | Status | Notas |
 |---|---|---|
-| `save_company_benefits` | canônico (this onda) | clarification, PII mask, Fairness L1, audit log, HITL para `replace` |
-| `import_benefits_from_data` | **a remover** | tem bug latente (`is_highlight`) e ignora Fairness |
-| `save_workforce_plan` | **a criar** (IA repo) | mesmo pipeline acima |
-| `forecast_hiring_needs` | mantém | só estimativa; documentar defaults (turnover 15%, 45 dias) |
-| `create_job` / `update_job` | atualizar | normalizar `benefits` via `normalize_benefits_payload` antes de salvar |
+| `save_company_benefits` (`_wrap_save_company_benefits`) | canônico (J.2/J.3) | clarification-first, PII mask, FairnessGuard L1, audit log com `source ∈ {chat,spreadsheet,website}`, HITL para `mode=replace`. Constantes exportadas: `CANONICAL_BENEFIT_FIELDS`, `VALID_BENEFIT_VALUE_TYPES`, `BENEFIT_CLARIFICATION_FIELDS`. |
+| `actions.configure_benefits` em `capabilities.yaml` | adicionado (J.2) | documenta campos aceitos, regras de clarification, sources e `audit_action`. |
+| `_handle_configure_benefits` (`domain.py`) | atualizado (J.2) | forwarda `source`; converte `needs_clarification` em `DomainResponse.clarification_response` com `navigation_hint`. |
+| `_handle_analyze_website` fase 1 | atualizado (J.2) | promove benefits `list[str]` → `list[dict{name}]` e expõe `expected_fields` (TIER 3). |
+| `import_benefits_from_data` (planilha) | refatorado (J.2) | delega ao wrapper canônico com `source="spreadsheet"`; alias `is_highlight → is_highlighted`; propaga `needs_clarification`. |
+| `_wrap_import_workforce_plan` | canônico (J.7) | 3 modos `spreadsheet | paste | text`; gate HITL `approved is True` (booleano real); parser TSV/CSV/`;` com aliases PT/EN; extrator Claude com PII mask para texto livre. |
+| `actions.configure_workforce` (`tool_registry_metadata.yaml`) | atualizado (J.7) | forwarda `input_mode`, `raw_text`, `approved`. Clarification preserva "planejamento" — regressão #712. |
+| `manage_departments` (intent + handler) | adicionado (J.6) | routing-only; `_handle_manage_departments` retorna `navigation_hint` para `section=usuarios-departamentos, tab=departments`; sem writes. |
+| `forecast_hiring_needs` | mantém | só estimativa; defaults documentados (turnover 15%, 45 dias). |
+| `create_job` / `update_job` | atualizar | normalizar `benefits` via `normalize_benefits_payload` antes de salvar (J.4). |
+| `search_jobs` | atualizado (J.8) | assinatura `(query, filters, offset=0, limit=20)`; resposta inclui `total_count` + `pagination.has_more`. |
 
-Intent `configure_workforce` (onboarding): remover coleta de `departamento` do prompt.
+Intent `configure_workforce` (onboarding): **não coleta mais** `departamento` no prompt (J.6).
 
 #### Testes adicionados nesta onda (factual, por commit)
 
