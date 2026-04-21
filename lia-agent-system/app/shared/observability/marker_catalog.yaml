@@ -1,0 +1,219 @@
+# LIA Observability Markers Catalog — Track 3 G2 (2026-04-21)
+#
+# Canonical inventory of all [LIA-XXX] log markers present in runtime.
+# Generated from code audit; each marker's purpose + location.
+#
+# Usage:
+#   grep '[LIA-XXX]' in logs — find structured events by category
+#   Future: Grafana/Metabase dashboards keyed off these markers
+#
+# Categories:
+#   A  = Agent / Action execution
+#   BYOK = Bring Your Own Key (tenant LLM config)
+#   C  = Compliance / Context
+#   D  = Deprecation
+#   E  = Event publishing
+#   I  = Intent / Info-query routing
+#   M  = Memory / State
+#   P  = Pipeline / Performance
+#   QUALITY = Prompt quality warnings
+
+metadata:
+  track: "3"
+  initiative: "G2"
+  created: "2026-04-21"
+  total_markers: 25
+  reference: "docs/FINAL_AUDIT.md §G2"
+
+markers:
+  # ── Agent / Action (A) ───────────────────────────────────────────────
+  LIA-A01:
+    category: agent
+    purpose: "Phase 0 action confirmation result interpretation"
+    origin: "app/orchestrator/main_orchestrator.py"
+    severity: debug
+    example: "[LIA-A01] Phase 0 confirmation interpretation skipped: <err>"
+
+  LIA-A02:
+    category: agent
+    purpose: "Workflow interpretation fail-open (pre-LLM result massage)"
+    origin: "app/domains/workflow.py"
+    severity: debug
+
+  LIA-A04:
+    category: agent
+    purpose: "Agentic loop (Phase 1.5 LIA-A04) tool-calling decisions"
+    origin: "app/orchestrator/agentic_loop.py"
+    severity: debug
+    note: "Most active marker post-FIX 20-32 — agentic path dominates chat"
+
+  # ── BYOK ─────────────────────────────────────────────────────────────
+  LIA-BYOK:
+    category: llm-factory
+    purpose: "Tenant BYOK (Bring Your Own Key) resolution — log when tenant lacks own key and falls back to system"
+    origin: "app/shared/providers/llm_factory.py"
+    severity: info
+
+  # ── Compliance / Context (C) ─────────────────────────────────────────
+  LIA-C01:
+    category: compliance
+    purpose: "Domain class does NOT extend DomainPrompt base — architectural violation"
+    origin: "app/domains/registry.py"
+    severity: warning
+
+  LIA-C02:
+    category: compliance
+    purpose: "Domain inherits DomainPrompt directly — should inherit ComplianceDomainPrompt for LGPD/fairness"
+    origin: "app/domains/workflow.py"
+    severity: warning
+
+  LIA-C06:
+    category: compliance
+    purpose: "Compliance pre-check skipped (fail-open)"
+    origin: "app/domains/workflow.py"
+    severity: debug
+
+  LIA-C07:
+    category: compliance
+    purpose: "Multi-tenancy mismatch (header vs JWT company_id)"
+    origin: "app/shared/policy_middleware.py"
+    severity: warning
+    note: "P0 security signal — JWT value always wins"
+
+  # ── Deprecation (D) ──────────────────────────────────────────────────
+  LIA-D06:
+    category: deprecation
+    purpose: "Orchestrator class deprecated — use MainOrchestrator"
+    origin: "app/orchestrator/orchestrator.py"
+    severity: warning
+
+  # ── Event publishing (E) ─────────────────────────────────────────────
+  LIA-E04:
+    category: event
+    purpose: "Unified event publisher delivered message to queue"
+    origin: "app/shared/messaging/unified_event_publisher.py"
+    severity: info
+
+  # ── Intent / Info-query routing (I) ──────────────────────────────────
+  LIA-I01:
+    category: routing
+    purpose: "Keyword intent matcher failed to load YAML"
+    origin: "app/shared/services/keyword_intent_matcher.py"
+    severity: warning
+
+  LIA-I02:
+    category: routing
+    purpose: "Workflow info-query detected (bypass agentic path)"
+    origin: "app/domains/workflow.py"
+    severity: info
+
+  LIA-I03:
+    category: routing
+    purpose: "Sourcing domain info-query detected (21 hits — most common info pattern)"
+    origin: "app/domains/sourcing/domain.py"
+    severity: info
+
+  LIA-I04:
+    category: routing
+    purpose: "Intent disagreement between regex and matcher"
+    origin: "app/orchestrator/action_executor/utils.py"
+    severity: info
+    note: "Useful for eval of intent detection drift"
+
+  LIA-I05:
+    category: routing
+    purpose: "Domain routing disagreement (fast_router vs matcher)"
+    origin: "app/orchestrator/fast_router.py"
+    severity: info
+
+  LIA-I06:
+    category: routing
+    purpose: "LIA_DISABLE_YAML_ROUTING env set — hardcoded DOMAIN_PATTERNS fallback"
+    origin: "app/orchestrator/fast_router.py"
+    severity: info
+
+  LIA-I07:
+    category: routing
+    purpose: "Sourcing routed via is_info_query (semantic short-circuit)"
+    origin: "app/domains/sourcing/domain.py"
+    severity: info
+
+  # ── Memory / State (M) ───────────────────────────────────────────────
+  LIA-M01:
+    category: memory
+    purpose: "Conversation memory setup (LIA-M01 loader)"
+    origin: "app/orchestrator/main_orchestrator.py"
+    severity: warning
+    note: "FIX 32 fixed the column-missing error that fired here historically"
+
+  LIA-M02:
+    category: memory
+    purpose: "Phase 0/1 response persistence to conversation memory"
+    origin: "app/orchestrator/main_orchestrator.py"
+    severity: warning
+
+  LIA-M04:
+    category: memory
+    purpose: "Loop detection — last response was action confirmation"
+    origin: "app/orchestrator/action_executor/utils.py"
+    severity: info
+
+  LIA-M05:
+    category: memory
+    purpose: "StateManager using in-memory dict fallback in PRODUCTION (Redis down)"
+    origin: "app/orchestrator/state_manager.py"
+    severity: error
+
+  # ── Pipeline / Performance (P) ───────────────────────────────────────
+  LIA-P01:
+    category: pipeline
+    purpose: "SSE compliance check skipped (fail-open)"
+    origin: "app/api/v1/chat.py"
+    severity: debug
+
+  LIA-P02:
+    category: pipeline
+    purpose: "WebSocket compliance check skipped"
+    origin: "app/api/v1/chat.py"
+    severity: debug
+
+  LIA-P03:
+    category: pipeline
+    purpose: "Agent SSE security_patterns skipped"
+    origin: "app/api/v1/agent_chat_sse.py"
+    severity: debug
+
+  LIA-P04:
+    category: pipeline
+    purpose: "Expanded-prompt compliance skipped"
+    origin: "app/api/v1/lia_assistant/insights.py"
+    severity: debug
+
+  # ── Quality signals ──────────────────────────────────────────────────
+  LIA-QUALITY:
+    category: quality
+    purpose: "Prompt quality warning on LLM config save"
+    origin: "app/api/v1/llm_config.py"
+    severity: warning
+
+# ── FIX/Initiative markers (log prefixes, not [LIA-*] markers) ────────────
+# Track how FIX-level changes manifest in logs:
+fix_log_prefixes:
+  - prefix: "FIX 19"
+    source: "app/orchestrator/memory_resolver.py"
+    purpose: "_should_resolve gate enriched with affirmations"
+  - prefix: "FIX 20"
+    source: "app/domains/job_management/tools/query_tools.py"
+    purpose: "search_jobs pagination (total_count + offset)"
+  - prefix: "FIX 22"
+    source: "app/domains/job_management/tools/job_tools.py"
+    purpose: "close_job.reason PT→EN normalizer"
+  - prefix: "FIX 26"
+    source: "app/orchestrator/memory_resolver.py"
+    purpose: "Quantifier pattern gate"
+  - prefix: "FIX 30"
+    source: "app/orchestrator/memory_resolver.py"
+    purpose: "Quantifier continuation hint injected"
+  - prefix: "FIX 31"
+    source: "app/orchestrator/main_orchestrator.py"
+    purpose: "Memory enrichment applied in production chat path"
