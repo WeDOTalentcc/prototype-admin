@@ -1,9 +1,12 @@
-# Developer Handoff — UX Redesign Competitivo (Sprints UX-1 a UX-7)
+# Developer Handoff — UX Redesign Competitivo (Sprints UX-1 a UX-7) + Onda Benefícios/Departamentos/Workforce
 
-> **Commit:** `5140997a` · **Branch:** `develop` · **Data:** 2026-04-19
+> **Commit base:** `5140997a` · **Branch:** `develop` · **Data:** 2026-04-19
+> **Última onda documentada:** PARTE J — commits `32f29426f..cfe3f51fa` (16 commits, 2026-04-21).
 > **Contexto:** Análise competitiva da Tezi (concorrente adquirido por PE para healthcare)
 > revelou 7 pilares de UX que o WeDo tinha infraestrutura para entregar mas não ativou.
 > Este handoff documenta todos os arquivos, interfaces, eventos e integrações implementados.
+> A **PARTE J** (final) descreve a onda Benefícios + Departamentos + Workforce, replicável em
+> três frentes: Front (este repo), Rails (`ats-api-copia`) e IA (repo separado).
 
 ---
 
@@ -885,3 +888,312 @@ produção quanto em desenvolvimento.
 3. **Rail pulsing (`workflow:thinking`)**: emitido pelo `UnifiedChat` mas sem
    listener no `WorkflowRailWrapper` — pendência herdada da PARTE H, item 4.
 
+
+---
+
+## PARTE J — Onda Benefícios + Departamentos + Workforce (16 commits, 2026-04)
+
+> **Range:** `32f29426f..cfe3f51fa` (16 commits) · **Sincronizado em:** `wedotalent/replit-sync`
+> **Origem:** Tasks #763 → #768, #775, #776 (mais correção pós-merge de `voice_service`/`granular_consent`)
+> **Audit baseline obrigatório:** [`docs/audits/beneficios-departamentos-workforce-audit-2026-04.md`](../docs/audits/beneficios-departamentos-workforce-audit-2026-04.md)
+>
+> Esta parte é um **guia de replicação** para três times trabalhando em paralelo:
+> - **Front (replicar)** — entregue neste repo (`plataforma-lia`); aqui só listamos o "como" para qualquer fork.
+> - **Rails `ats-api-copia` (especificar)** — backend institucional precisa do mesmo schema/contratos. Specs abaixo.
+> - **IA repo separado (especificar)** — onde vivem os agentes LangGraph; specs de tools, audit log e Fairness abaixo.
+>
+> Cada bloco abaixo lista commits originais, o quê foi feito no Front, e os specs Rails + IA.
+
+### Mapa de commits → blocos
+
+| Bloco | Commits |
+|---|---|
+| J.0 Auditoria baseline | `975d5e0d9` (Task #763) |
+| J.1 Piloto Benefícios Hub Minha Empresa | `a2913e268` (Task #764) |
+| J.2 Schema canônico Benefícios (chat ↔ Hub) | `43981a976` (Task #766) |
+| J.3 Persistência enriquecida via chat | `241d88f72` |
+| J.4 Vaga: `benefits` ARRAY → JSONB | `e03e9c7fa` (Task #765) |
+| J.5 Lista de benefícios agrupada por categoria | `90833f800` (Task #775) |
+| J.6 Remoção de Departamentos do Hub + onboarding | `3045bdfdd` (Task #767) |
+| J.7 Workforce: visualização rica + 3 paths conversacionais + HITL | `843a0d224` (Task #768) |
+| J.8 Pagination na busca de vagas | `182dec756` |
+| J.9 Polimento mockup welcome chat | `c817b80f6`, `ebe39fccb` |
+| J.10 Snapshots automáticos (`Git commit prior to merge`) | `7a5142db5`, `311e74269`, `68bef95bf`, `66343bef5` |
+| J.11 Correção pós-merge: `voice_service` + `granular_consent` | `cfe3f51fa` |
+
+---
+
+### J.0 — Auditoria baseline (read-only)
+
+**Front (replicar):** ler `docs/audits/beneficios-departamentos-workforce-audit-2026-04.md` antes de qualquer mudança nesses domínios. Define mapa canônico, duplicatas conhecidas, mismatches de schema, fallbacks silenciosos e ordem segura de execução.
+
+**Rails (especificar):** produzir baseline equivalente em `ats-api-copia` cobrindo `Benefit`, `CompanyBenefit`, `Department`, `WorkforceEntry`/`PlannedHeadcount`. Output mínimo: tabela "campo × DB × ActiveRecord × serializer × consumidores" e duplicatas a remover.
+
+**IA (especificar):** mapear todas as tools que tocam esses domínios — leitura (`get_company_profile`, `get_workforce`) e escrita (`save_company_benefits`, `save_workforce_plan`, `import_benefits_from_data`). Marcar quais aplicam FairnessGuard, PII masking e audit log.
+
+---
+
+### J.1 — Piloto Benefícios no Hub Minha Empresa (Task #764, commit `a2913e268`)
+
+**Front (replicar):**
+- UI canônica: `plataforma-lia/src/components/settings/BenefitsTab.tsx` + `benefits/BenefitItemCard.tsx` + `benefits/BenefitFormModal.tsx` + `benefits/BenefitTemplateModal.tsx`.
+- Hook: `src/hooks/company/useCompanyBenefits.ts` (invalida cache por mutação).
+- Type FE: `src/types/benefits.ts` espelha o modelo rico (`provider`, `value_type`, `seniority_levels`, `waiting_period_days`, `is_mandatory`, `is_discount`).
+- Padrão visual: lista item-a-item, modal de form, modal de templates filtráveis por categoria/popular, batch-edit com `pendingChanges`/`backup`.
+
+**Rails `ats-api-copia` (especificar):**
+- `Company::Benefit` model (singular, dono dos campos ricos) + tabela `company_benefits`.
+- Colunas obrigatórias: `name, category, description, icon, provider, value, value_type, percentage_value, value_details, seniority_levels (JSONB), waiting_period_days, is_active, is_highlighted, is_mandatory, is_discount, order, company_id, created_at, updated_at`.
+- Endpoints REST equivalentes: `GET /company/benefits`, `GET /company/benefits/active`, `POST /company/benefits`, `PUT /company/benefits/:id`, `DELETE /company/benefits/:id` (soft + hard via `?hard_delete=true`), `POST /company/benefits/seed-defaults`, `GET /company/benefits/categories/list`.
+- Categorias canônicas (enum compartilhado): `health, food, transport, education, wellness, financial, quality_life, family, flexibility, security, other`.
+- Validação: `value_type ∈ {informative, monetary, percentage, boolean}`. Se `value` informado e `value_type ∈ {nil, informative}` → 422.
+- Multi-tenant scoping: SEMPRE filtrar por `company_id` derivado do JWT (paridade com `get_user_company_id`).
+
+**IA (especificar):**
+- Tool `save_company_benefits(company_id, benefits[], mode='append'|'replace', source='chat'|'spreadsheet'|'website', user_id)`.
+- Schema do item idêntico a `CANONICAL_BENEFIT_FIELDS` (ver J.2).
+- Pipeline obrigatório: clarification (J.2) → PII masking (CPF/email/telefone) → FairnessGuard L1 sobre `name`, `description`, `value_details` → INSERT com `seniority_levels` em JSONB → audit log com `source`.
+- Mode `replace` exige confirmação humana (HITL) — destrutivo.
+
+---
+
+### J.2 — Schema canônico Benefícios (Task #766, commit `43981a976`)
+
+**Front (replicar):**
+- O type FE (`benefits.ts`) já contém todos os campos do modelo rico — usar como contrato único.
+- O wizard de vaga (`SalaryStage.tsx` + `WizardContext.tsx:295-315`) hidrata `JobBenefit[]` da empresa preservando metadata.
+
+**Rails (especificar):**
+- Manter `Company::Benefit` como **único** modelo de benefício de empresa. Não duplicar em `CompanyBenefit` simples.
+- Migration que estende a tabela com os 5 campos novos (`provider, value, value_type, percentage_value, value_details, seniority_levels, waiting_period_days, is_mandatory, is_discount`) — espelhar `lia-agent-system/alembic/versions/099_extend_company_benefits_schema.py`.
+- Serializer único `Company::BenefitSerializer` retornando `seniority_levels` como array (default `["all"]`).
+
+**IA (especificar):** definir `CANONICAL_BENEFIT_FIELDS` constante:
+```
+{name, category, description, icon, provider,
+ value, value_type, percentage_value, value_details,
+ seniority_levels, waiting_period_days,
+ is_active, is_highlighted, is_mandatory, is_discount, order}
+```
+Regras de clarification (devolver `needs_clarification=True` SEM gravar):
+- `value_type` fora de `{informative, monetary, percentage, boolean}` → bloquear.
+- `value` fornecido com `value_type ∈ {nil, informative}` → pedir tipo explícito.
+- `value_type=monetary` sem `value` nem `value_details` → pedir um dos dois.
+- `value_type=percentage` sem `percentage_value` nem `value` → pedir.
+- `percentage_value` sem `value_type=percentage` → corrigir tipo.
+
+Guardrail de teste (CI): `tests/unit/test_company_settings_actions.py` deve falhar se modelo, schema Pydantic, type FE e `CANONICAL_BENEFIT_FIELDS` divergirem.
+
+---
+
+### J.3 — Persistência enriquecida via LIA chat (commit `241d88f72`)
+
+**Front (replicar):** nada — fluxo é 100% backend/IA. O chat já chama a tool e o Hub re-renderiza por invalidação de cache.
+
+**Rails (especificar):** endpoint dedicado **opcional** `POST /company/benefits/bulk` (mode `append|replace`) usado pelo serviço de IA. Reaproveita CRUD se preferir.
+
+**IA (especificar):** referência canônica em `lia-agent-system/app/domains/company_settings/agents/company_tool_registry.py:374-460` (`_wrap_save_company_benefits`). Pontos críticos:
+1. **Reject empty list** → `success=false, message="Lista de beneficios vazia."`.
+2. **PII masking** com `mask_pii(text, [CPF_PATTERN, EMAIL_PATTERN, PHONE_BR_PATTERN])` em `name`, `description`, `value_details` antes do INSERT (LGPD Art. 6).
+3. **FairnessGuard L1** via `_walk_fairness_check(value)` — só strings com `len > 10`.
+4. **Audit log** via `AuditService.log_action(action_type='company_settings.save_benefits', actor='company_settings_agent', target_type='company', metadata={source, count, mode})`.
+5. **Remover** o path duplicado/quebrado `import_tools.import_benefits_from_data` (escreve `is_highlight` — coluna inexistente, o correto é `is_highlighted`).
+
+---
+
+### J.4 — `JobVacancy.benefits`: ARRAY(String) → JSONB estruturado (Task #765, commit `e03e9c7fa`)
+
+**Front (replicar):**
+- Helper canônico **layer-free**: `lia-agent-system/app/utils/benefits.py` — `normalize_benefits_payload(raw)` e `benefit_display_names(benefits)`. Importável por API, domain, embedding, notificações, chat.
+- Wizard (`WizardContext.tsx`) já produz `JobBenefit[]` estruturado; nenhuma mudança visual necessária.
+- Display "flat" (notificações, vaga pública, prompts LLM) → `benefit_display_names()` para extrair `name` preservando legados que ainda chegam como `string`.
+
+**Rails (especificar):**
+- Migration espelhando `lia-agent-system/alembic/versions/100_job_vacancy_benefits_jsonb.py`:
+  1. Adicionar `benefits_json JSONB DEFAULT '[]'::jsonb` (sem destruir `benefits`).
+  2. **Backfill**: para cada nome em `benefits` (ARRAY(String)), match normalizado contra `company_benefits` da MESMA `company_id`. Match → copiar `category, description, icon, value`. Sem match → `{name, category: 'other', source: 'legacy_string'}`. Volume estimado: ~42 vagas afetadas.
+  3. **Dual-write** por 1 release: continuar escrevendo `benefits` (nomes) e `benefits_json` (estruturado).
+  4. Após validação no FE, `DROP COLUMN benefits` e `RENAME benefits_json → benefits`.
+- Serializer `JobVacancySerializer#benefits` deve retornar a forma estruturada.
+- Validação: itens sem `name` (string vazia ou nula) são descartados silenciosamente — paridade com `normalize_benefits_payload`.
+
+**IA (especificar):**
+- Tool de criar/editar vaga (`create_job`, `update_job`) deve aceitar `benefits` como lista de objetos canônicos OU lista de strings (legado), e normalizar via `normalize_benefits_payload` antes de salvar.
+- Embedding/prompts da vaga devem usar `benefit_display_names()` — nunca consumir o JSONB cru.
+- Guardrail (CLAUDE.md / AGENTS.md): "JobVacancy.benefits é JSONB estruturado, nunca array de string."
+
+---
+
+### J.5 — Lista agrupada por categoria com ícone e contador (Task #775, commit `90833f800`)
+
+**Front (replicar):**
+- `BenefitsTab.tsx` agora agrupa benefícios por `category`, exibindo `BenefitCategoryHeader` (ícone + nome humano + count `N`) acima de cada grupo.
+- Ordem das categorias segue o enum canônico (`health → other`).
+- Categoria `null` cai em "Outros".
+
+**Rails (especificar):** se construir UI institucional equivalente, replicar a mesma ordem de categorias do enum compartilhado. Backend não muda — agrupamento é puramente FE.
+
+**IA (especificar):** quando o agente lista benefícios via chat ("quais benefícios temos?"), retornar **agrupado por categoria** no `summary_text`, com count por categoria — paridade visual com o Hub.
+
+---
+
+### J.6 — Remover Departamentos do Hub Minha Empresa + onboarding (Task #767, commit `3045bdfdd`)
+
+**Front (replicar):**
+- Remover bloco `departamentos` de `src/hooks/settings/use-company-settings-cards.ts` (array em `~:172` e fetch em `~:323`).
+- Remover menção a "departamento" do prompt em `src/components/onboarding/OnboardingActionOrchestrator.tsx:75-80` (intent `configure_workforce`).
+- **Manter intactos:** `UsuariosDepartamentosHub.tsx` (dono canônico de departamentos), `useDepartmentManagement.ts`, `useCompanyData.fetchDepartments`, router `company_departments`, modelo `Department`.
+- Smoke test: MinhaEmpresaHub não exibe mais "Departamentos"; UsuariosDepartamentosHub funciona idêntico.
+
+**Rails (especificar):** sem mudança de schema. Garantir que `Department` continua acessível **apenas** via Hub Usuários & Departamentos — não duplicar em settings cards de empresa.
+
+**IA (especificar):**
+- Intent `configure_workforce` deve **parar** de coletar `departamento` no mesmo fluxo (mover para fluxo próprio se/quando necessário).
+- Não criar tool `configure_departments` agora — gerenciamento é manual via UI dedicada.
+
+---
+
+### J.7 — Workforce: visualização rica + 3 paths conversacionais + HITL (Task #768, commit `843a0d224`)
+
+**Front (replicar):**
+- `GoalsPlanningHub.tsx` + `WorkforceSection.tsx` voltam a ter ponto de entrada de navegação (não mais órfãos).
+- 3 paths de captura conversacional aceitos:
+  1. **Planilha** — upload via `SmartImportZone.tsx` → `/api/backend-proxy/workforce/entries/import` (já existia).
+  2. **Texto livre** — usuário descreve em prosa ("preciso contratar 5 devs sêniores em SP até Q3"); parser estrutura.
+  3. **Colagem** — textarea com parser de tabela colada (Excel/Sheets).
+- HITL: antes de gravar `PlannedHeadcount`, mostrar preview estruturado com botão "Confirmar" — `mode=replace` exige confirmação dupla.
+- Substituir o bloco `workforce` simplificado em `use-company-settings-cards.ts:206` pelo componente rico (ou alinhar dados).
+
+**Rails (especificar):**
+- Definir o canônico: `PlannedHeadcount` (com `title, salary, hiring_manager, department_id`) é o plano detalhado; `WorkforceEntry` apenas agregação derivada (yearly/monthly totais).
+- Endpoints: `GET/POST /workforce/plans`, `GET/POST /workforce/headcounts`, `POST /workforce/import/upload` (devolve preview), `POST /workforce/import/confirm` (commita).
+- Backfill/migração: nenhum dado destrutivo; só consolidar leituras no canônico.
+
+**IA (especificar):**
+- Manter `forecast_hiring_needs` (em `app/domains/talent_intelligence/tools/workforce_planning_tools.py`) — só estima.
+- **Criar** tool `_wrap_save_workforce_plan(company_id, plan[], mode='append'|'replace', source='chat'|'spreadsheet'|'paste', user_id)` análoga a `_wrap_save_company_benefits`. Pipeline:
+  1. Clarification (faltando `title`, `department_id`, `quantity`, `target_date`).
+  2. PII masking em `hiring_manager_email`/notes.
+  3. FairnessGuard L1 sobre justificativas em texto livre.
+  4. Audit log `workforce.save_plan`.
+  5. HITL para `mode=replace`.
+- Documentar defaults arriscados: turnover 15% (`workforce_planning_tools.py:100`), benchmark 45 dias (`:132`) — citar no audit.
+
+---
+
+### J.8 — Pagination na busca de vagas (commit `182dec756`)
+
+**Front (replicar):**
+- Lista de vagas paginada (página + `pageSize`); infinite-scroll ou paginação clássica conforme padrão do hub.
+- Hook de busca aceita `?page=N&pageSize=M` e retorna `{items, total, page, pageSize, totalPages}`.
+
+**Rails (especificar):**
+- `GET /jobs` aceita `page` (default 1) e `per_page` (default 20, máximo 100).
+- Resposta: `{ data: [...], meta: { page, per_page, total, total_pages } }`. Header `X-Total-Count` opcional.
+- Indexar colunas usadas em filtros + `created_at DESC` para paginar de forma estável.
+
+**IA (especificar):**
+- Tool `search_jobs(query, filters, page=1, page_size=20)` deve respeitar paginação e nunca tentar carregar tudo. Em respostas longas, paginar visualmente ("mostrando 1-20 de 87").
+
+---
+
+### J.9 — Polimento de mockups do welcome chat (commits `c817b80f6`, `ebe39fccb`)
+
+**Front (replicar):** ajustes de imports e registro de componentes na sandbox de mockups (`artifacts/mockup-sandbox`). Sem impacto em runtime do app principal.
+
+**Rails (especificar):** N/A.
+**IA (especificar):** N/A.
+
+---
+
+### J.10 — Snapshots automáticos "Git commit prior to merge"
+
+**Commits:** `7a5142db5`, `311e74269`, `68bef95bf`, `66343bef5`.
+
+**O quê são:** snapshots automáticos criados pelo workflow de merge da plataforma de tasks **antes** de aplicar o patch de cada task agent. Documentação-only no contexto deste handoff — não há código a replicar.
+
+**Implicação para os 3 times:** ao consumir o range `32f29426f..cfe3f51fa`, considerar esses 4 commits como ruído controlado (não revertem nada; só marcam o estado pré-merge).
+
+---
+
+### J.11 — Correção pós-merge: `voice_service` + `granular_consent` (commit `cfe3f51fa`)
+
+**Front (replicar):** N/A.
+
+**Rails (especificar):** N/A (serviços vivem no backend de IA).
+
+**IA (replicar — post-merge fix):**
+- Restaurar `lia-agent-system/app/domains/voice/services/voice_service.py` (335 linhas) — `VoiceService` com `transcribe_audio` (Whisper), `synthesize_speech` (TTS), `stream_transcription`, detecção automática de formato (`mp3, wav, webm, m4a, ogg, flac, mpeg`), vozes suportadas (`alloy, echo, fable, onyx, nova, shimmer`).
+- Restaurar `granular_consent_service.py` no mesmo padrão (LGPD — consentimento granular por finalidade).
+- **Causa raiz:** merge automático apagou ambos os arquivos; backend ficou sem startar (`ModuleNotFoundError`). Guardrail recomendado: smoke-test `python -c "from app.main import app"` no post-merge hook (`.local/skills/post_merge_setup`).
+
+---
+
+### Sumário consolidado
+
+#### DB / migrations (paridade Python ↔ Rails)
+
+| Migration | Domínio | Mudança |
+|---|---|---|
+| `099_extend_company_benefits_schema.py` | Benefícios | +`provider, value, value_type, percentage_value, value_details, seniority_levels (JSONB), waiting_period_days, is_mandatory, is_discount` |
+| `100_job_vacancy_benefits_jsonb.py` | Vaga | `benefits ARRAY(String)` → `JSONB`, com backfill por match contra `company_benefits` da empresa |
+
+#### Endpoints REST canônicos
+
+| Método | Path | Domínio |
+|---|---|---|
+| `GET` | `/company/benefits` | Listar (suporta `?company_id, ?category, ?active_only, ?search`) |
+| `GET` | `/company/benefits/active` | Atalho `active_only=true` |
+| `POST` | `/company/benefits` | Criar |
+| `PUT` | `/company/benefits/:id` | Atualizar |
+| `DELETE` | `/company/benefits/:id?hard_delete=` | Soft (default) ou hard delete |
+| `POST` | `/company/benefits/seed-defaults` | Seed inicial (idempotente: skip se já existem) |
+| `GET` | `/company/benefits/categories/list` | Enum canônico de categorias |
+| `GET/POST` | `/workforce/plans`, `/workforce/headcounts` | Workforce CRUD |
+| `POST` | `/workforce/entries/import` | Upload de planilha (preview + confirm) |
+| `GET` | `/jobs?page=&page_size=` | Vagas paginadas |
+
+#### Eventos DOM / FE
+
+| Evento | Origem | Listener |
+|---|---|---|
+| `benefits:saved` (invalidate cache) | `useCompanyBenefits` mutações | `BenefitsTab`, wizard de vaga |
+| `workforce:plan-saved` | `GoalsPlanningHub` confirm | `WorkforceSection` |
+| `workflow:thinking` (legado, pendente) | `UnifiedChat` | sem listener — pendência herdada da PARTE H |
+
+#### IA — intents / tools / capabilities
+
+| Tool | Status | Camadas obrigatórias |
+|---|---|---|
+| `save_company_benefits` | canônico (this onda) | clarification, PII mask, Fairness L1, audit log, HITL para `replace` |
+| `import_benefits_from_data` | **a remover** | tem bug latente (`is_highlight`) e ignora Fairness |
+| `save_workforce_plan` | **a criar** (IA repo) | mesmo pipeline acima |
+| `forecast_hiring_needs` | mantém | só estimativa; documentar defaults (turnover 15%, 45 dias) |
+| `create_job` / `update_job` | atualizar | normalizar `benefits` via `normalize_benefits_payload` antes de salvar |
+
+Intent `configure_workforce` (onboarding): remover coleta de `departamento` do prompt.
+
+#### Testes recomendados (lia-testing)
+
+| Camada | Cobertura mínima |
+|---|---|
+| Unit Python | `test_company_settings_actions.py` — paridade `CompanyBenefit` model × Pydantic schema × TS type × `CANONICAL_BENEFIT_FIELDS`. |
+| Unit Python | `test_normalize_benefits_payload` — strings, dicts, `value_type` clamp, descarte de itens sem `name`. |
+| Eval IA | `_wrap_save_company_benefits` golden: append/replace, Fairness block, clarification de `value_type`. |
+| E2E FE | `e2e/beneficios-hub.spec` — criar/editar/excluir item; trocar categoria; toggle `is_highlighted`. |
+| E2E FE | `e2e/workforce-3-paths.spec` — upload planilha, texto livre, colagem; HITL antes de gravar. |
+| Regressão FE | `e2e/usuarios-departamentos-hub.spec` — confirmar que não regrediu após remoção do bloco em MinhaEmpresaHub. |
+| Smoke backend | `python -c "from app.main import app"` no post-merge hook. |
+
+#### Pendências e follow-ups conhecidos (NÃO criar tasks duplicadas)
+
+1. **Task #771** — rotação do GitHub PAT em `.git/config` (segredo no remote `wedotalent/replit-sync`).
+2. **Task #772** — auditoria final consolidada da onda (cobertura 14 dimensões — feature-audit).
+3. **Task #773** — e2e para o fluxo Departamentos pós-remoção do bloco em MinhaEmpresaHub.
+4. `isAuthRoute` — testes unitários ainda ausentes (anotado em onda anterior).
+5. Guardrail CI: lint customizado proibindo a string `is_highlight` em qualquer arquivo Python (evita ressurgência do bug do `import_tools.py`).
+6. Guide em `replit.md`: registrar "JobVacancy.benefits é JSONB estruturado, nunca array de string".
+
+---
+
+> **Fim da PARTE J.** Para o histórico anterior consolidado, ver PARTES A–I acima.
