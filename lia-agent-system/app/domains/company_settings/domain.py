@@ -575,6 +575,105 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
         if err is not None:
             return err
 
+        # ------------------------------------------------------------------
+        # PHASE 2 — persist after explicit human approval.
+        # The chat layer calls back with `confirm=True` + `confirmed_fields`
+        # (a dict in the same shape returned by phase 1). We map them to the
+        # canonical sections (profile/culture) and write via the existing
+        # _wrap_save_company_section tool. Audit trail differentiates this
+        # operation as `persist_document_extraction`.
+        # ------------------------------------------------------------------
+        if params.get("confirm") is True or params.get("persist") is True:
+            confirmed = params.get("confirmed_fields") or {}
+            if not isinstance(confirmed, dict) or not confirmed:
+                return DomainResponse.clarification_response(
+                    question=(
+                        "Para confirmar a gravacao, me envie `confirmed_fields` "
+                        "como um objeto com os campos revisados pela pessoa "
+                        "(ex.: {name, mission, values, tech_stack, ...})."
+                    ),
+                    domain_id=self.domain_id,
+                    action_id="process_document",
+                )
+            # Particiona campos por seccao com base no _SECTION_FIELD_HINTS
+            buckets: dict[str, dict[str, Any]] = {"profile": {}, "culture": {}}
+            for action_key, hints in self._SECTION_FIELD_HINTS.items():
+                section = hints["section"]
+                for field in hints["fields"]:
+                    if field in confirmed and confirmed[field] not in (None, "", []):
+                        buckets[section][field] = confirmed[field]
+            try:
+                from app.domains.company_settings.agents.company_tool_registry import (
+                    _wrap_save_company_section,
+                    _audit_log,
+                )
+                results = []
+                for section, payload in buckets.items():
+                    if not payload:
+                        continue
+                    res = await _wrap_save_company_section(
+                        company_id=company_id,
+                        section=section,
+                        data=payload,
+                        user_id=context.user_id or "system",
+                    )
+                    results.append({"section": section, "result": res})
+                # Audit extra: distingue persistencia oriunda de aprovacao humana
+                # de campos extraidos via process_document.
+                try:
+                    await _audit_log(
+                        company_id,
+                        "persist_document_extraction",
+                        metadata={
+                            "user_id": context.user_id or "system",
+                            "sections": [r["section"] for r in results],
+                            "fields_count": sum(
+                                len((r["result"] or {}).get("data", {}).get("fields_saved", []))
+                                for r in results
+                            ),
+                        },
+                    )
+                except Exception:
+                    logger.warning(
+                        "[company_settings] audit persist_document_extraction failed",
+                        exc_info=True,
+                    )
+            except Exception as exc:
+                logger.exception(
+                    "[company_settings] process_document persist failed: %s", exc
+                )
+                return DomainResponse.error_response(
+                    error=f"Falha ao gravar campos confirmados: {exc}",
+                    domain_id=self.domain_id,
+                    action_id="process_document",
+                )
+            saved_sections = [r["section"] for r in results
+                              if (r["result"] or {}).get("success")]
+            failed = [r for r in results if not (r["result"] or {}).get("success")]
+            if failed and not saved_sections:
+                return DomainResponse.error_response(
+                    error="Nenhuma secao foi gravada.",
+                    data={"failed": failed},
+                    domain_id=self.domain_id,
+                    action_id="process_document",
+                )
+            return DomainResponse.success_response(
+                message=(
+                    f"Campos confirmados gravados em: {', '.join(saved_sections)}. "
+                    "Voce pode revisar em Configuracoes > Minha Empresa."
+                ),
+                data={
+                    "persisted_sections": saved_sections,
+                    "results": results,
+                    "navigation_hint": {
+                        "page": "Company Settings", "section": "minha-empresa",
+                    },
+                },
+                domain_id=self.domain_id,
+                action_id="process_document",
+                suggestions=["Abrir Configuracoes > Minha Empresa", "Continuar onboarding"],
+            )
+
         document_text = (params.get("document_text") or "").strip()
         document_type = params.get("document_type") or "general"
         if not document_text:

@@ -383,3 +383,132 @@ async def test_write_actions_accept_matching_company_id(
     # success both prove the security guard didn't fire.
     resp = await handler(params, _ctx(tenant="co_demo"))
     assert (resp.data or {}).get("reason") != "tenant_mismatch"
+
+
+# ---------------------------------------------------------------------------
+# process_document — PHASE 2: confirm + confirmed_fields persists via
+# _wrap_save_company_section and emits persist_document_extraction audit.
+# ---------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_process_document_phase2_persists_confirmed_fields(
+    domain: CompanySettingsDomain,
+) -> None:
+    section_target = (
+        "app.domains.company_settings.agents.company_tool_registry."
+        "_wrap_save_company_section"
+    )
+    audit_target = (
+        "app.domains.company_settings.agents.company_tool_registry._audit_log"
+    )
+    fake_save = AsyncMock(return_value={
+        "success": True,
+        "data": {"section": "profile", "fields_saved": ["name", "mission"]},
+        "message": "ok",
+    })
+    fake_audit = AsyncMock(return_value=None)
+    params = {
+        "company_id": "co_demo",
+        "confirm": True,
+        "confirmed_fields": {
+            "name": "WeDOTalent",
+            "mission": "Conectar talento e proposito",
+            "values": ["Etica", "Transparencia"],
+        },
+    }
+    with patch(section_target, fake_save), patch(audit_target, fake_audit):
+        resp = await domain._handle_process_document(params, _ctx())
+    assert resp.success
+    assert "profile" in resp.data["persisted_sections"]
+    # save_company_section called at least once for profile/culture buckets
+    assert fake_save.await_count >= 1
+    # Extra audit emitted with persist_document_extraction action
+    assert fake_audit.await_count >= 1
+    audit_call = fake_audit.await_args_list[-1]
+    # signature: _audit_log(company_id, action_type, ...)
+    assert audit_call.args[1] == "persist_document_extraction"
+
+
+@pytest.mark.asyncio
+async def test_process_document_phase2_clarifies_when_no_fields(
+    domain: CompanySettingsDomain,
+) -> None:
+    resp = await domain._handle_process_document(
+        {"company_id": "co_demo", "confirm": True, "confirmed_fields": {}},
+        _ctx(),
+    )
+    assert resp.needs_clarification
+    assert "confirmed_fields" in (resp.clarification_question or "")
+
+
+@pytest.mark.asyncio
+async def test_process_document_phase2_refuses_tenant_mismatch(
+    domain: CompanySettingsDomain,
+) -> None:
+    section_target = (
+        "app.domains.company_settings.agents.company_tool_registry."
+        "_wrap_save_company_section"
+    )
+    fake_save = AsyncMock()
+    with patch(section_target, fake_save):
+        resp = await domain._handle_process_document(
+            {
+                "company_id": "co_attacker",
+                "confirm": True,
+                "confirmed_fields": {"name": "x"},
+            },
+            _ctx(tenant="co_victim"),
+        )
+    assert resp.success is False
+    assert (resp.data or {}).get("reason") == "tenant_mismatch"
+    fake_save.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# FairnessGuard — when the underlying tool blocks (e.g., discriminatory text),
+# the handler must surface that error and not pretend success.
+# ---------------------------------------------------------------------------
+@pytest.mark.asyncio
+async def test_configure_culture_propagates_fairness_block(
+    domain: CompanySettingsDomain,
+) -> None:
+    section_target = (
+        "app.domains.company_settings.agents.company_tool_registry."
+        "_wrap_save_company_section"
+    )
+    blocked = {
+        "success": False,
+        "data": {"blocked_field": "values", "category": "discriminatory"},
+        "message": "Campo 'values' bloqueado por compliance: linguagem discriminatoria detectada",
+    }
+    with patch(section_target, AsyncMock(return_value=blocked)):
+        resp = await domain._handle_configure_culture(
+            {"company_id": "co_demo", "values": ["Apenas homens jovens"]},
+            _ctx(),
+        )
+    assert resp.success is False
+    assert "compliance" in (resp.error or "").lower()
+    assert (resp.data or {}).get("blocked_field") == "values"
+
+
+@pytest.mark.asyncio
+async def test_configure_benefits_propagates_fairness_block(
+    domain: CompanySettingsDomain,
+) -> None:
+    benefits_target = (
+        "app.domains.company_settings.agents.company_tool_registry."
+        "_wrap_save_company_benefits"
+    )
+    blocked = {
+        "success": False,
+        "data": {"blocked_field": "description", "category": "discriminatory"},
+        "message": "Beneficio 'X' bloqueado por compliance: linguagem inadequada",
+    }
+    with patch(benefits_target, AsyncMock(return_value=blocked)):
+        resp = await domain._handle_configure_benefits(
+            {"company_id": "co_demo",
+             "benefits": [{"name": "Beneficio X",
+                           "description": "Apenas para pessoas brancas"}]},
+            _ctx(),
+        )
+    assert resp.success is False
+    assert (resp.data or {}).get("blocked_field") == "description"

@@ -454,7 +454,11 @@ Aceita dois caminhos:
 - `document_text` (pré-extraído).
 - `document_b64` + `document_format` (`pdf` via `pypdf`, `docx` via `python-docx`, `txt` UTF-8).
 
-Sempre devolve `requires_human_approval: True` e os `expected_fields` no `data` — gravação só ocorre num segundo turn confirmado pelo recrutador. Isso satisfaz **LGPD Art. 8** (consentimento informado) e o tier de governança WeDO para entrada de dados não-estruturada.
+**Two-phase obrigatório (LGPD Art. 8 — consentimento informado):**
+
+- **Fase 1 (extract)**: handler retorna `requires_human_approval: True` + `expected_fields` no `data`. Nada é gravado.
+- **Fase 2 (persist)**: chat re-chama `process_document` com `confirm: true` + `confirmed_fields={...}`. Handler particiona campos por seção (`profile`/`culture`) usando `_SECTION_FIELD_HINTS` e delega para `_wrap_save_company_section` por seção. Audit extra `persist_document_extraction` é emitido com `user_id`, `sections` gravadas e `fields_count`.
+- **Tenant authority**: ambas as fases passam por `_resolve_tenant` — `params.company_id` divergente do `context.tenant_id` é bloqueado com `reason=tenant_mismatch` e auditado (defesa em profundidade — IDOR guard).
 
 ### G. Inegociáveis (anti-regressão)
 
@@ -463,6 +467,17 @@ Sempre devolve `requires_human_approval: True` e os `expected_fields` no `data` 
 3. **Clarification-first**: handler sem dados suficientes responde `clarification_response`, jamais grava parcial.
 4. **TIER 1 pós-setup**: alterações de `cnpj` e `name` exigem `confirmed=true` + `is_admin=true` mesmo via chat (validado dentro do `_wrap_save_company_field`).
 5. **AuditTrail obrigatório**: todo write registra `actor`, `before`, `after`, `tier`, `source=chat|ui` (gravado pela tool, não pelo handler).
+6. **Tenant authority — IDOR guard**: `_resolve_tenant(action_id, params, context)` é a única fonte de verdade do `company_id` em writes. `params.company_id` é input não-confiável: se diferente do `context.tenant_id` autenticado, o handler bloqueia com `reason=tenant_mismatch`, emite warning e não chama nenhuma tool. Cobertura por testes parametrizados nas 6 actions de write.
+
+### J. Orquestração 7-actions e sync bidirecional UI↔chat
+
+**Frontend (Task #712):**
+
+- `OnboardingActionOrchestrator` (`components/onboarding/OnboardingActionOrchestrator.tsx`) — sidebar mostrada em `/[locale]/onboarding`. Renderiza state machine de 7 passos (perfil → cultura → tech → benefícios → workforce → website → documento) com `[Começar] [Pular] [Voltar]`. Persistência em `localStorage` (`lia:onboarding-712:v1`) + `PATCH /api/backend-proxy/onboarding/progress` por step. Cada `Começar` dispara `triggerAction(actionId, prompt)` (abre aba certa via `lia:settings-action` + escreve no chat via `lia:prefill-message`). Cada step avança ao receber `lia:settings-success` com o `actionId` correspondente.
+- `SettingsSyncBroadcaster` (`components/settings/SettingsSyncBroadcaster.tsx`) — wrapper instalado uma vez no app shell que intercepta `fetch` e detecta gravações bem-sucedidas em `/api/backend-proxy/company/{profile,culture-profile,tech-stack,benefits,hiring-policies}` e `/api/backend-proxy/workforce` (POST/PUT/PATCH 2xx). Emite dois eventos:
+  - `lia:settings-success` (consumido pelo orchestrator para avançar o step).
+  - `lia:settings-updated` (consumido pelo `LiaFloatProvider` que injeta uma "system note" silenciosa no histórico do chat: `[contexto] Configurações atualizadas via UI: <section> (<method>)`, com `metadata.system=true, source=settings-sync, silent=true`).
+- Resultado: usuário pode editar perfil/cultura/benefícios pela UI ou pelo chat e os dois lados convergem na próxima fala da LIA — sem polling, sem refetch manual.
 
 ### H. Mapa de testes mínimos
 

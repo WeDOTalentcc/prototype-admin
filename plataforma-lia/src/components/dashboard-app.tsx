@@ -29,6 +29,7 @@ import { GlobalSearchModal } from "@/components/global-search-modal"
 import { PipelineOverviewPage } from "@/components/pages/pipeline-overview-page"
 import { ModulesPage } from "@/components/pages/modules-page"
 import { SetupProgressBanner } from "@/components/onboarding/SetupProgressBanner"
+import { SettingsSyncBroadcaster } from "@/components/settings/SettingsSyncBroadcaster"
 
 interface DashboardAppProps {
   initialPage?: string
@@ -271,6 +272,7 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
         {currentPage !== "Chat LIA" && currentPage !== "Configurações" && (
           <div className="px-4 pt-3">
             <SetupProgressBanner />
+            <SettingsSyncBroadcaster />
           </div>
         )}
         <div className="flex-1 min-h-0 overflow-hidden flex">

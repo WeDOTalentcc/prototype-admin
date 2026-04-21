@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from "react"
 import { useTourMode } from "./tour/useTourMode"
 import { TourController } from "./tour/TourController"
 import { ONBOARDING_TOUR_STEPS } from "./tour/tour-steps"
+import { OnboardingActionOrchestrator } from "./OnboardingActionOrchestrator"
 
 /**
  * OnboardingChatPage — fullscreen chat wrapper for onboarding.
@@ -93,44 +94,31 @@ export function OnboardingChatPage({ sessionId, userId, children }: Props) {
         totalSteps={5}
       />
 
-      {/* Chat area — renders existing UnifiedChat in fullscreen mode */}
-      <div className="flex-1 relative">
-        {!tourReady ? (
-          <div className="flex items-center justify-center h-full text-lia-text-secondary">
-            <div className="text-center">
-              <div className="w-6 h-6 mx-auto mb-3 border-2 border-wedo-cyan border-t-transparent rounded-full animate-spin" />
-              <p className="text-sm">Preparando sua experiencia...</p>
-            </div>
-          </div>
-        ) : (
-          /*
-           * INTEGRATION POINT:
-           * Import and render UnifiedChat here in fullscreen mode:
-           *
-           * import { UnifiedChat } from "@/components/unified-chat/UnifiedChat"
-           * <UnifiedChat renderMode="overlay" initialMode="fullscreen" />
-           *
-           * The actual import depends on your project structure.
-           * In the page.tsx at /onboarding, render:
-           *
-           * <OnboardingChatPage sessionId={searchParams.session} userId={user.id}>
-           *   <UnifiedChat renderMode="inline" initialMode="fullscreen" />
-           * </OnboardingChatPage>
-           *
-           * Then here we render {children}
-           */
-          <div className="h-full">{children}</div>
-        )}
+      {/* Body: orchestrator (left) + chat (right) */}
+      <div className="flex-1 flex relative min-h-0">
+        {tourReady && <OnboardingActionOrchestrator />}
 
-        {/* Tour overlay */}
-        {tourActive && (
-          <TourController
-            steps={ONBOARDING_TOUR_STEPS}
-            onStepComplete={handleStepComplete}
-            onTourComplete={handleTourComplete}
-            sendLiaMessage={sendLiaMessage}
-          />
-        )}
+        <div className="flex-1 relative min-w-0">
+          {!tourReady ? (
+            <div className="flex items-center justify-center h-full text-lia-text-secondary">
+              <div className="text-center">
+                <div className="w-6 h-6 mx-auto mb-3 border-2 border-wedo-cyan border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm">Preparando sua experiencia...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="h-full">{children}</div>
+          )}
+
+          {tourActive && (
+            <TourController
+              steps={ONBOARDING_TOUR_STEPS}
+              onStepComplete={handleStepComplete}
+              onTourComplete={handleTourComplete}
+              sendLiaMessage={sendLiaMessage}
+            />
+          )}
+        </div>
       </div>
     </div>
   )

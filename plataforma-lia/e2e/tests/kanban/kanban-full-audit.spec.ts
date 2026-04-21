@@ -528,7 +528,7 @@ test.describe('05 · Ações do Card (Menu Dropdown)', () => {
       console.log(`  ✓ Shortlist: texto antes="${textBefore?.trim()}"`)
       // Reabre dropdown para verificar toggle
       await openCardDropdown(page)
-      const textAfter = await page.locator('[role="menuitem"]').filter({ hasText: /shortlist/i }).first().textContent().catch(() => '')
+      const textAfter = await page.locator('[role="menuitem"]').filter({ hasText: /short.?list|shortlist/i }).first().textContent().catch(() => '')
       console.log(`  ✓ Shortlist: texto depois="${textAfter?.trim()}"`)
       const toggled = textBefore?.trim() !== textAfter?.trim()
       expect.soft(toggled, 'Texto do shortlist deve mudar após clique').toBe(true)

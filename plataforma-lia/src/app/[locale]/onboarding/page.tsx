@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react"
 import { OnboardingChatPage } from "@/components/onboarding/OnboardingChatPage"
 import { UnifiedChat } from "@/components/unified-chat/UnifiedChat"
+import { SettingsSyncBroadcaster } from "@/components/settings/SettingsSyncBroadcaster"
 
 export default function OnboardingRoutePage() {
   const [userId, setUserId] = useState<number | null>(null)
@@ -36,8 +37,11 @@ export default function OnboardingRoutePage() {
   }
 
   return (
-    <OnboardingChatPage sessionId={sessionId} userId={userId}>
-      <UnifiedChat renderMode="inline" />
-    </OnboardingChatPage>
+    <>
+      <SettingsSyncBroadcaster />
+      <OnboardingChatPage sessionId={sessionId} userId={userId}>
+        <UnifiedChat renderMode="inline" />
+      </OnboardingChatPage>
+    </>
   )
 }

@@ -232,6 +232,38 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     setChatMessages(prev => [...prev, msg])
   }, [])
 
+  // Bidirectional sync (Task #712): UI saves in any settings hub broadcast
+  // `lia:settings-updated`. We absorb that into the chat as a silent system
+  // note so LIA's next turn knows the user just changed something via UI.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const onUpdated = (e: Event) => {
+      const detail = ((e as CustomEvent).detail || {}) as {
+        actionId?: string
+        section?: string
+        url?: string
+        method?: string
+        ts?: number
+      }
+      const note: LiaChatMessage = {
+        id: `sys-settings-${detail.ts || Date.now()}`,
+        sender: "lia",
+        content: `[contexto] Configuracoes atualizadas via UI: ${detail.section || detail.actionId || "secao"} (${detail.method || "PATCH"}).`,
+        timestamp: formatMessageTime(),
+        metadata: {
+          system: true,
+          source: "settings-sync",
+          actionId: detail.actionId,
+          section: detail.section,
+          silent: true,
+        },
+      }
+      setChatMessages(prev => [...prev, note])
+    }
+    window.addEventListener("lia:settings-updated", onUpdated)
+    return () => window.removeEventListener("lia:settings-updated", onUpdated)
+  }, [])
+
   const switchChatContext = useCallback((newType: ChatContextType, options?: { conversationId?: string | null; continuePrevious?: boolean }): string | null => {
     const prevType = chatContextTypeRef.current
     const isActualSwitch = prevType !== newType || options?.conversationId !== undefined
