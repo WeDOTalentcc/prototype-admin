@@ -1,13 +1,60 @@
 "use client"
 
 import React, { useCallback, useMemo, useState } from "react"
-import { Plus, Gift, Loader2 } from "lucide-react"
+import {
+  Plus,
+  Gift,
+  Loader2,
+  Stethoscope,
+  Utensils,
+  Car,
+  GraduationCap,
+  HeartPulse,
+  Wallet,
+  Home,
+  Baby,
+  Clock,
+  Shield,
+  type LucideIcon,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { textStyles } from "@/lib/design-tokens"
 import { BenefitFormModal } from "./BenefitFormModal"
 import { BenefitItemCard } from "./BenefitItemCard"
 import { invalidateBenefitsCache } from "@/hooks/company/useCompanyBenefits"
-import type { CompanyBenefit } from "@/types/benefits"
+import {
+  BENEFIT_CATEGORY_META,
+  type BenefitCategory,
+  type CompanyBenefit,
+} from "@/types/benefits"
+
+const CATEGORY_ICONS: Record<BenefitCategory, LucideIcon> = {
+  health: Stethoscope,
+  food: Utensils,
+  transport: Car,
+  education: GraduationCap,
+  wellness: HeartPulse,
+  financial: Wallet,
+  quality_life: Home,
+  family: Baby,
+  flexibility: Clock,
+  security: Shield,
+  other: Gift,
+}
+
+const CATEGORY_ORDER: BenefitCategory[] = [
+  "health",
+  "food",
+  "transport",
+  "wellness",
+  "financial",
+  "education",
+  "family",
+  "quality_life",
+  "flexibility",
+  "security",
+  "other",
+]
 
 type LooseBenefit = Partial<CompanyBenefit> & { id?: string; name?: string }
 
@@ -55,16 +102,34 @@ export function BenefitsListSection({
   const [busyId, setBusyId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const sorted = useMemo(
-    () =>
-      [...benefits].sort((a, b) => {
+  const groups = useMemo(() => {
+    const byCategory = new Map<BenefitCategory, LooseBenefit[]>()
+    for (const b of benefits) {
+      const category = (b.category as BenefitCategory) || "quality_life"
+      const list = byCategory.get(category) || []
+      list.push(b)
+      byCategory.set(category, list)
+    }
+    for (const list of byCategory.values()) {
+      list.sort((a, b) => {
         const aHighlight = a.is_highlighted ? 0 : 1
         const bHighlight = b.is_highlighted ? 0 : 1
         if (aHighlight !== bHighlight) return aHighlight - bHighlight
         return (a.name || "").localeCompare(b.name || "", "pt-BR")
-      }),
-    [benefits]
-  )
+      })
+    }
+    const ordered: { category: BenefitCategory; items: LooseBenefit[] }[] = []
+    for (const cat of CATEGORY_ORDER) {
+      const items = byCategory.get(cat)
+      if (items && items.length) ordered.push({ category: cat, items })
+    }
+    for (const [cat, items] of byCategory.entries()) {
+      if (!CATEGORY_ORDER.includes(cat)) ordered.push({ category: cat, items })
+    }
+    return ordered
+  }, [benefits])
+
+  const totalCount = benefits.length
 
   const refresh = useCallback(async () => {
     if (companyId) invalidateBenefitsCache(companyId)
@@ -197,7 +262,7 @@ export function BenefitsListSection({
         </div>
       )}
 
-      {sorted.length === 0 ? (
+      {totalCount === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 py-8 rounded-lg border border-dashed border-lia-border-subtle text-lia-text-secondary">
           <Gift className="w-6 h-6 text-lia-text-tertiary" />
           <p className={textStyles.description}>Nenhum benefício cadastrado ainda.</p>
@@ -207,42 +272,67 @@ export function BenefitsListSection({
           </Button>
         </div>
       ) : (
-        <div
-          role="list"
-          className="rounded-lg border border-lia-border-subtle divide-y divide-lia-border-subtle overflow-hidden"
-          data-testid="benefits-list"
-        >
-          {sorted.map((b) => (
-            <div
-              key={b.id || b.name}
-              role="listitem"
-              className={busyId === b.id ? "opacity-60 pointer-events-none" : ""}
-            >
-              <BenefitItemCard
-                benefit={{
-                  id: b.id,
-                  name: b.name || "Sem nome",
-                  description: b.description || "",
-                  category: b.category || "quality_life",
-                  value_type: b.value_type || "informative",
-                  value: b.value,
-                  percentage_value: b.percentage_value,
-                  value_details: b.value_details,
-                  seniority_levels: b.seniority_levels || ["all"],
-                  waiting_period_days: b.waiting_period_days || 0,
-                  is_mandatory: !!b.is_mandatory,
-                  is_active: b.is_active !== false,
-                  is_highlighted: !!b.is_highlighted,
-                  is_discount: !!b.is_discount,
-                  provider: b.provider,
-                }}
-                isEditingBenefits={true}
-                onToggleStatus={(sel) => handleToggleStatus(sel as CompanyBenefit)}
-                onEdit={(sel) => openEdit(sel as CompanyBenefit)}
-                onDelete={handleDelete}
-              />
-            </div>
-          ))}
+        <div className="space-y-4" data-testid="benefits-list">
+          {groups.map(({ category, items }) => {
+            const meta = BENEFIT_CATEGORY_META[category]
+            const Icon = CATEGORY_ICONS[category] || Gift
+            return (
+              <section
+                key={category}
+                aria-label={meta?.name || category}
+                data-testid={`benefits-group-${category}`}
+              >
+                <div className="flex items-center gap-2 px-1 pb-2">
+                  <Icon className="w-4 h-4 text-lia-text-secondary" aria-hidden="true" />
+                  <h4 className="text-xs font-semibold uppercase tracking-wide text-lia-text-secondary">
+                    {meta?.name || category}
+                  </h4>
+                  <span
+                    className="ml-1 inline-flex items-center justify-center min-w-[1.25rem] px-1.5 h-5 rounded-full bg-lia-surface-secondary text-[10px] font-medium text-lia-text-secondary"
+                    data-testid={`benefits-group-count-${category}`}
+                  >
+                    {items.length}
+                  </span>
+                </div>
+                <div
+                  role="list"
+                  className="rounded-lg border border-lia-border-subtle divide-y divide-lia-border-subtle overflow-hidden"
+                >
+                  {items.map((b) => (
+                    <div
+                      key={b.id || b.name}
+                      role="listitem"
+                      className={busyId === b.id ? "opacity-60 pointer-events-none" : ""}
+                    >
+                      <BenefitItemCard
+                        benefit={{
+                          id: b.id,
+                          name: b.name || "Sem nome",
+                          description: b.description || "",
+                          category: b.category || "quality_life",
+                          value_type: b.value_type || "informative",
+                          value: b.value,
+                          percentage_value: b.percentage_value,
+                          value_details: b.value_details,
+                          seniority_levels: b.seniority_levels || ["all"],
+                          waiting_period_days: b.waiting_period_days || 0,
+                          is_mandatory: !!b.is_mandatory,
+                          is_active: b.is_active !== false,
+                          is_highlighted: !!b.is_highlighted,
+                          is_discount: !!b.is_discount,
+                          provider: b.provider,
+                        }}
+                        isEditingBenefits={true}
+                        onToggleStatus={(sel) => handleToggleStatus(sel as CompanyBenefit)}
+                        onEdit={(sel) => openEdit(sel as CompanyBenefit)}
+                        onDelete={handleDelete}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )
+          })}
         </div>
       )}
 
