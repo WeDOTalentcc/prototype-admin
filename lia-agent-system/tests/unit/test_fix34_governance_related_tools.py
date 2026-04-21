@@ -40,35 +40,50 @@ class TestSyncPopulatesGovernanceAndRelated:
     """FIX 3/4: sync_descriptions_from_yaml must also populate new fields."""
 
     def test_sync_populates_governance_tags_from_yaml(self):
-        """After sync, at least some tools must have governance_tags populated."""
+        """After sync, at least some tools must have governance_tags populated.
+
+        FIX 34 v2 (2026-04-21): force clear + initialize_tools so
+        sync_descriptions_from_yaml ALWAYS runs. Previously the conditional
+        guard `if not tool_registry.list_tools()` skipped the sync path when
+        other tests had pre-registered tools via their own register_*() calls
+        (which don't invoke YAML sync). YAML has 105 tools with governance_tags
+        declared — sync is the producer; test isolation was the bug.
+        """
         from app.tools import initialize_tools
         from app.tools.registry import tool_registry
 
-        # Ensure tools are initialized (idempotent)
-        if not tool_registry.list_tools():
-            initialize_tools()
+        # FIX 34 v2: full reinit so sync_descriptions_from_yaml runs regardless
+        # of what prior tests left in the registry.
+        tool_registry.clear()
+        initialize_tools()
 
         tools_with_governance = [
             t for t in tool_registry._tools.values()
             if getattr(t, "governance_tags", [])
         ]
         assert len(tools_with_governance) >= 5, (
-            f"At least 5 tools should have governance_tags after sync, found {len(tools_with_governance)}"
+            f"At least 5 tools should have governance_tags after sync, found "
+            f"{len(tools_with_governance)}. Check tool_registry_metadata.yaml "
+            f"declares governance_tags for core tools."
         )
 
     def test_sync_populates_related_tools_from_yaml(self):
+        """FIX 34 v2: same isolation fix as governance_tags test."""
         from app.tools import initialize_tools
         from app.tools.registry import tool_registry
 
-        if not tool_registry.list_tools():
-            initialize_tools()
+        # FIX 34 v2: clear + reinit for clean sync
+        tool_registry.clear()
+        initialize_tools()
 
         tools_with_related = [
             t for t in tool_registry._tools.values()
             if getattr(t, "related_tools", [])
         ]
         assert len(tools_with_related) >= 5, (
-            f"At least 5 tools should have related_tools after sync, found {len(tools_with_related)}"
+            f"At least 5 tools should have related_tools after sync, found "
+            f"{len(tools_with_related)}. Check tool_registry_metadata.yaml "
+            f"declares related_tools for core tools."
         )
 
 
