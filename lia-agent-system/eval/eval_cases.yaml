@@ -9,7 +9,7 @@
 meta:
   version: "1.0.0"
   created: "2026-04-17"
-  total_cases: 72
+  total_cases: 78
   categories:
     JM: "Job Management"
     CM: "Candidate Management"
@@ -23,6 +23,7 @@ meta:
     MT: "Multi-task Planning"
     CX: "Context Awareness"
     EX: "Edge Cases / Robustness"
+    MQ: "Meta-Question vs Command"
 
 cases:
 
@@ -1518,3 +1519,108 @@ cases:
     anti_patterns:
       - "Says 'only Portuguese supported'"
       - "Fails to understand"
+
+  # ─────────────────────────────────────────────────────────────
+  # MQ — META-QUESTION vs COMMAND (Task #726)
+  # Capability questions ("consegue X?") must NOT execute X with the
+  # question fragment as a query. They must return an informational
+  # reply explaining how to phrase a real command.
+  # ─────────────────────────────────────────────────────────────
+
+  - id: MQ-001
+    category: MQ
+    severity: high
+    title: "Capability question — search candidates (no filter)"
+    prompt: "consegue buscar candidatos no banco local ou global?"
+    context:
+      scope: "Candidatos"
+      page: "candidatos"
+    expected_tools: []
+    expected_behavior: "Recognises this is a meta/capability question, returns informational reply explaining how to issue a real search, does NOT call search_candidates."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+      - "app/orchestrator/main_orchestrator.py"
+    success_criteria:
+      - "Does not invoke search_candidates"
+      - "Response explains how to issue a real search"
+      - "Mentions giving a concrete criterion (skill, location or job)"
+    anti_patterns:
+      - "Says 'Nenhum candidato encontrado'"
+      - "Returns empty candidates list"
+      - "Treats the question as a query"
+
+  - id: MQ-002
+    category: MQ
+    severity: high
+    title: "Capability question — você sabe agendar entrevista"
+    prompt: "você sabe agendar entrevista?"
+    context:
+      scope: "Pipeline"
+      page: "pipeline"
+    expected_tools: []
+    expected_behavior: "Recognises capability question, returns informational reply, does NOT open scheduling flow without a candidate."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Does not ask for candidate ID without context"
+      - "Returns informational, helpful response"
+    anti_patterns:
+      - "Asks 'qual candidato?' as if scheduling"
+      - "Treats as command"
+
+  - id: MQ-003
+    category: MQ
+    severity: medium
+    title: "Capability question — tem como exportar candidatos"
+    prompt: "tem como exportar candidatos?"
+    context:
+      scope: "Candidatos"
+      page: "candidatos"
+    expected_tools: []
+    expected_behavior: "Returns informational reply explaining how to request an export, does NOT generate an empty CSV."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Does not generate export immediately"
+      - "Explains how to phrase a real export command"
+    anti_patterns:
+      - "Returns empty file"
+      - "Says 'export concluído' without doing anything"
+
+  - id: MQ-004
+    category: MQ
+    severity: high
+    title: "Real command (NOT a meta-question) — search must execute"
+    prompt: "busque candidatos React em São Paulo"
+    context:
+      scope: "Candidatos"
+      page: "candidatos"
+    expected_tools: ["search_candidates"]
+    expected_behavior: "Has no capability opener, must execute search_candidates with query=React São Paulo."
+    canonical_files:
+      - "app/orchestrator/action_handlers/sourcing_actions.py"
+    success_criteria:
+      - "Calls search candidates tool"
+      - "Returns list or 'nenhum candidato encontrado' for the search"
+    anti_patterns:
+      - "Returns informational meta-question reply"
+      - "Treats as capability question"
+
+  - id: MQ-005
+    category: MQ
+    severity: high
+    title: "Capability question with verb — dá pra mover candidato em lote"
+    prompt: "dá pra mover candidatos em lote?"
+    context:
+      scope: "Pipeline"
+      page: "pipeline"
+    expected_tools: []
+    expected_behavior: "Recognises capability question about a feature, returns informational reply, does NOT trigger bulk move with empty selection."
+    canonical_files:
+      - "app/orchestrator/meta_question_detector.py"
+    success_criteria:
+      - "Does not move any candidates"
+      - "Returns informational reply"
+    anti_patterns:
+      - "Tries to move candidates immediately"
+      - "Asks for stage without explaining"

@@ -751,6 +751,27 @@ class MainOrchestrator:
     ) -> ChatResponse | None:
         candidates = ctx.candidates or []
 
+        # Task #726 — meta-question gate. Capability questions like
+        # "consegue buscar candidatos?" must NOT execute the underlying action
+        # with the question fragment as the query. Intercept and return a
+        # deterministic informational reply (no LLM call, no DB hit).
+        try:
+            from app.orchestrator.meta_question_detector import (
+                detect_meta_capability_question,
+            )
+            _meta = detect_meta_capability_question(ctx.message or "")
+            if _meta is not None:
+                return ChatResponse(
+                    success=True,
+                    content=_meta.reply,
+                    agent_used="meta_question_gate",
+                    intent_detected="meta_capability_question",
+                    confidence=0.95,
+                    conversation_id=conv_id,
+                )
+        except Exception as _meta_exc:  # fail-open — never block on detector bugs
+            logger.debug("[meta_question] detector skipped: %s", _meta_exc)
+
         try:
             action_result: ActionResult = await action_executor.try_execute(
                 message=ctx.message,
