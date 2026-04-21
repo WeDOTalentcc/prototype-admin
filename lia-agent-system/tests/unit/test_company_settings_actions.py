@@ -712,3 +712,250 @@ async def test_analyze_website_phase2_refuses_tenant_mismatch(
     assert resp.success is False
     assert (resp.data or {}).get("reason") == "tenant_mismatch"
     fake_save.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Task #766 — Beneficios via chat com schema canonico completo.
+# Cobre: clarification quando faltam pares obrigatorios, success com
+# input completo (chat), success por planilha (import_benefits_from_data),
+# success por site apos approval humano, e guardrail anti-regressao do
+# schema (CANONICAL_BENEFIT_FIELDS deve cobrir todas as colunas do
+# modelo CompanyBenefit).
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_configure_benefits_clarification_when_value_without_value_type(
+    domain: CompanySettingsDomain,
+) -> None:
+    """value sem value_type deve disparar clarification antes de gravar."""
+    resp = await domain._handle_configure_benefits(
+        {
+            "company_id": "co_demo",
+            "benefits": [{"name": "Vale Refeicao", "value": 800}],
+        },
+        _ctx(),
+    )
+    assert resp.needs_clarification, (
+        f"esperado clarification, veio success={resp.success} error={resp.error}"
+    )
+    q = (resp.clarification_question or "").lower()
+    assert "value_type" in q or "tipo" in q
+    assert (resp.data or {}).get("expected_fields"), (
+        "expected_fields deve listar campos canonicos para o usuario completar"
+    )
+
+
+@pytest.mark.asyncio
+async def test_configure_benefits_clarification_when_monetary_without_value(
+    domain: CompanySettingsDomain,
+) -> None:
+    """value_type=monetary sem value e sem value_details deve clarificar."""
+    resp = await domain._handle_configure_benefits(
+        {
+            "company_id": "co_demo",
+            "benefits": [
+                {"name": "Plano de Saude", "value_type": "monetary"},
+            ],
+        },
+        _ctx(),
+    )
+    assert resp.needs_clarification
+    assert "monetary" in (resp.clarification_question or "").lower()
+
+
+@pytest.mark.asyncio
+async def test_configure_benefits_success_with_full_canonical_schema(
+    domain: CompanySettingsDomain,
+) -> None:
+    """Quando o input ja vem completo, o handler delega passando o schema
+    inteiro (provider, value, value_type, percentage_value, etc.) para
+    a tool canonica — paridade com o formulario do Hub."""
+    target = (
+        "app.domains.company_settings.agents.company_tool_registry"
+        "._wrap_save_company_benefits"
+    )
+    fake = AsyncMock(return_value={
+        "success": True,
+        "data": {"inserted": 1, "deactivated": 0, "mode": "append",
+                 "source": "chat", "names": ["Plano de Saude Premium"]},
+        "message": "Beneficios salvos: 1 inserido(s).",
+    })
+    rich_benefit = {
+        "name": "Plano de Saude Premium",
+        "category": "health",
+        "description": "Cobertura nacional, sem coparticipacao.",
+        "icon": "hospital",
+        "provider": "Bradesco Saude",
+        "value": 850.0,
+        "value_type": "monetary",
+        "value_details": "Subsidio integral pela empresa",
+        "seniority_levels": ["junior", "pleno", "senior"],
+        "waiting_period_days": 30,
+        "is_highlighted": True,
+        "is_mandatory": False,
+        "is_discount": False,
+        "order": 4,
+    }
+    with patch(target, fake):
+        resp = await domain._handle_configure_benefits(
+            {"company_id": "co_demo", "benefits": [rich_benefit]},
+            _ctx(),
+        )
+    assert resp.success, f"esperado success, veio error={resp.error}"
+    fake.assert_awaited_once()
+    sent = fake.await_args.kwargs["benefits"]
+    assert len(sent) == 1
+    for k in (
+        "provider", "value", "value_type", "value_details",
+        "seniority_levels", "waiting_period_days",
+        "is_mandatory", "is_discount",
+    ):
+        assert sent[0].get(k) == rich_benefit[k], f"campo {k} perdido a caminho da tool"
+    assert fake.await_args.kwargs.get("source") == "chat"
+
+
+@pytest.mark.asyncio
+async def test_import_benefits_from_data_delegates_to_canonical_wrapper() -> None:
+    """A tool de import (planilha/JSON) deve delegar a tool canonica
+    com source='spreadsheet' — sem schema reduzido, sem bug `is_highlight`."""
+    from app.domains.company_settings.tools.import_tools import (
+        import_benefits_from_data,
+    )
+
+    class _FakeContext:
+        company_id = "co_demo"
+        user_id = "u_demo"
+
+    target = (
+        "app.domains.company_settings.agents.company_tool_registry"
+        "._wrap_save_company_benefits"
+    )
+    fake = AsyncMock(return_value={
+        "success": True,
+        "data": {"inserted": 2, "deactivated": 0, "mode": "append",
+                 "source": "spreadsheet", "names": ["A", "B"]},
+        "message": "Beneficios salvos: 2 inserido(s).",
+    })
+    rows = [
+        {"name": "Auxilio Creche", "category": "family",
+         "value": 400, "value_type": "monetary", "provider": "RH"},
+        {"nome": "Vale Cultura", "category": "wellness",
+         "is_highlight": True},
+    ]
+    with patch(target, fake):
+        resp = await import_benefits_from_data(
+            benefits=rows,
+            replace_existing=False,
+            _context=_FakeContext(),
+            source="spreadsheet",
+        )
+    assert resp["success"] is True
+    assert resp["inserted_count"] == 2
+    fake.assert_awaited_once()
+    kwargs = fake.await_args.kwargs
+    assert kwargs["source"] == "spreadsheet"
+    assert kwargs["mode"] == "append"
+    sent = kwargs["benefits"]
+    names = {b.get("name") for b in sent}
+    assert names == {"Auxilio Creche", "Vale Cultura"}
+    second = next(b for b in sent if b["name"] == "Vale Cultura")
+    assert second.get("is_highlighted") is True
+    assert "is_highlight" not in second
+    first = next(b for b in sent if b["name"] == "Auxilio Creche")
+    assert first.get("value") == 400
+    assert first.get("value_type") == "monetary"
+    assert first.get("provider") == "RH"
+
+
+@pytest.mark.asyncio
+async def test_import_benefits_from_data_propagates_clarification() -> None:
+    """Se a tool canonica detecta campo faltante, o importer NAO grava e
+    devolve needs_clarification=True (sem fallback silencioso)."""
+    from app.domains.company_settings.tools.import_tools import (
+        import_benefits_from_data,
+    )
+
+    class _FakeContext:
+        company_id = "co_demo"
+        user_id = "u_demo"
+
+    target = (
+        "app.domains.company_settings.agents.company_tool_registry"
+        "._wrap_save_company_benefits"
+    )
+    fake = AsyncMock(return_value={
+        "success": False,
+        "needs_clarification": True,
+        "data": {
+            "missing_fields": ["'X': value_type=monetary exige 'value'."],
+            "expected_fields": ["name", "value", "value_type"],
+        },
+        "message": "Antes de gravar...",
+    })
+    with patch(target, fake):
+        resp = await import_benefits_from_data(
+            benefits=[{"name": "X", "value_type": "monetary"}],
+            _context=_FakeContext(),
+        )
+    assert resp["success"] is False
+    assert resp.get("needs_clarification") is True
+    assert resp["inserted_count"] == 0
+    assert resp.get("expected_fields") == ["name", "value", "value_type"]
+
+
+@pytest.mark.asyncio
+async def test_analyze_website_phase1_proposes_structured_benefits(
+    domain: CompanySettingsDomain,
+) -> None:
+    """Phase 1 do analyze_website deve promover beneficios extraidos para
+    dicts {name} e listar `expected_fields` que o humano deve completar
+    antes de confirmar (Task #766)."""
+    target = (
+        "app.domains.company.services.company_scraper_service.CompanyScraperService"
+    )
+    fake_instance = AsyncMock()
+    fake_instance.scrape_website = AsyncMock(
+        return_value={
+            "success": True,
+            "pages_scraped": 2,
+            "pages": [],
+            "content": (
+                "## Beneficios\n- Vale Refeicao\n- Plano de Saude\n- Gympass\n"
+            ),
+            "source": "live",
+        }
+    )
+    with patch(target, return_value=fake_instance):
+        resp = await domain._handle_analyze_website(
+            {"website": "https://wedotalent.cc"}, _ctx()
+        )
+    assert resp.success
+    pw = (resp.data or {}).get("pending_writes") or {}
+    benefits_pw = pw.get("benefits")
+    assert isinstance(benefits_pw, list) and benefits_pw
+    assert all(isinstance(b, dict) and b.get("name") for b in benefits_pw)
+    assert {b["name"] for b in benefits_pw} >= {"Vale Refeicao", "Plano de Saude"}
+    assert resp.data.get("requires_human_approval") is True
+    assert "complete antes de confirmar" in (resp.message or "").lower()
+
+
+def test_canonical_benefit_fields_cover_company_benefit_columns() -> None:
+    """Anti-regressao (harness-engineering / Task #766): qualquer coluna nova
+    no modelo CompanyBenefit precisa ser refletida em CANONICAL_BENEFIT_FIELDS
+    para evitar que o chat / planilha / site voltem a aceitar schema reduzido.
+    """
+    from app.domains.company_settings.agents.company_tool_registry import (
+        CANONICAL_BENEFIT_FIELDS,
+    )
+    from lia_models.company_benefit import CompanyBenefit
+
+    db_columns = {c.name for c in CompanyBenefit.__table__.columns}
+    system_only = {"id", "company_id", "created_at", "updated_at"}
+    contract_columns = db_columns - system_only
+    missing = contract_columns - CANONICAL_BENEFIT_FIELDS
+    assert not missing, (
+        f"CANONICAL_BENEFIT_FIELDS desatualizado — colunas novas no modelo "
+        f"CompanyBenefit nao mapeadas: {sorted(missing)}. "
+        "Atualize CANONICAL_BENEFIT_FIELDS e o INSERT em "
+        "_wrap_save_company_benefits."
+    )

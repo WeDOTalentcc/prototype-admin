@@ -314,3 +314,14 @@ Os seguintes secrets são credenciais do Azure Bot Registration e **NÃO devem s
 | `MICROSOFT_TENANT_ID` | Directory (tenant) ID do Azure AD |
 
 Esses secrets são consumidos pela integração Teams em `app/api/v1/teams/` e são obrigatórios para autenticação com o Microsoft Bot Framework.
+
+---
+
+## Guardrail #766 — Beneficios via tools conversacionais
+
+**Regra (clarification-first, sem fallback silencioso):** as tools `save_company_benefits` (chat) e `import_benefits_from_data` (planilha/site) DEVEM aceitar TODOS os campos do modelo canonico `CompanyBenefit` (provider, value, value_type, percentage_value, value_details, seniority_levels, waiting_period_days, is_mandatory, is_discount, is_highlighted, ...). Paridade com o formulario do Hub eh contratual.
+
+- Se faltar par obrigatorio (`value` sem `value_type`, `value_type=monetary` sem `value`/`value_details`, `value_type=percentage` sem `percentage_value`/`value`), devolver `needs_clarification=True` com `expected_fields` — NUNCA gravar com defaults.
+- Toda gravacao audita com `source` ∈ {chat, spreadsheet, website}.
+- Texto livre passa por PII masking (LGPD) + FairnessGuard L1 (`name`, `description`, `value_details`).
+- Quando adicionar coluna nova ao modelo `CompanyBenefit`, atualizar `CANONICAL_BENEFIT_FIELDS` e o INSERT em `_wrap_save_company_benefits`. O teste `test_canonical_benefit_fields_cover_company_benefit_columns` quebra se isso for esquecido.

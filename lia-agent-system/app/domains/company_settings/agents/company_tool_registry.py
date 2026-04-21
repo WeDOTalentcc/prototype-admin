@@ -370,20 +370,106 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Canonical Benefit schema (Task #766) — keep in sync with
+# `lia_models.company_benefit.CompanyBenefit`. The conversational tools and
+# the spreadsheet/site importers MUST accept the same fields the structured
+# UI accepts. Any new field added to the model has to be added here too —
+# guardrail enforced by `tests/unit/test_company_settings_actions.py`.
+# ─────────────────────────────────────────────────────────────────────────────
+CANONICAL_BENEFIT_FIELDS: set[str] = {
+    "name", "category", "description", "icon", "provider",
+    "value", "value_type", "percentage_value", "value_details",
+    "seniority_levels", "waiting_period_days",
+    "is_active", "is_highlighted", "is_mandatory", "is_discount",
+    "order",
+}
+
+VALID_BENEFIT_VALUE_TYPES: set[str] = {
+    "informative", "monetary", "percentage", "boolean",
+}
+
+BENEFIT_CLARIFICATION_FIELDS: list[str] = [
+    "name", "category", "description", "value", "value_type",
+    "percentage_value", "provider", "is_mandatory",
+    "waiting_period_days", "seniority_levels",
+]
+
+
+def _benefit_clarification_issues(item: dict[str, Any]) -> list[str]:
+    """Detect "missing required pair" issues for a single benefit item.
+
+    Returns a list of human-readable issues. Empty list = OK to persist.
+
+    Rules (clarification-first, no silent fallback):
+      * `value_type` must be one of VALID_BENEFIT_VALUE_TYPES when given.
+      * If `value` is provided, `value_type` must be set explicitly to
+        monetary/percentage/boolean (never default to "informative").
+      * If `value_type=monetary`, either `value` or `value_details` is
+        required (e.g. "subsidio integral").
+      * If `value_type=percentage`, either `percentage_value` or `value`
+        is required.
+      * If `percentage_value` is set, `value_type` must be "percentage".
+    """
+    name = (item.get("name") or "").strip() or "(sem nome)"
+    value = item.get("value")
+    pct = item.get("percentage_value")
+    vtype = item.get("value_type")
+    issues: list[str] = []
+
+    if vtype is not None and vtype not in VALID_BENEFIT_VALUE_TYPES:
+        issues.append(
+            f"'{name}': value_type '{vtype}' invalido "
+            f"(use {sorted(VALID_BENEFIT_VALUE_TYPES)})"
+        )
+    if value not in (None, "") and vtype in (None, "informative"):
+        issues.append(
+            f"'{name}': informe value_type quando 'value' for fornecido "
+            "(monetary, percentage ou boolean)."
+        )
+    if vtype == "monetary" and value in (None, "") and not item.get("value_details"):
+        issues.append(
+            f"'{name}': value_type=monetary exige 'value' (BRL) ou 'value_details'."
+        )
+    if vtype == "percentage" and pct in (None, "") and value in (None, ""):
+        issues.append(
+            f"'{name}': value_type=percentage exige 'percentage_value' (%) ou 'value'."
+        )
+    if pct not in (None, "") and vtype not in (None, "percentage"):
+        issues.append(
+            f"'{name}': 'percentage_value' so e valido com value_type='percentage'."
+        )
+    return issues
+
+
 @tool_handler("company_settings")
 async def _wrap_save_company_benefits(**kwargs: Any) -> dict[str, Any]:
     """Persist company benefits in the dedicated `company_benefits` table.
 
+    Schema canonico — Task #766: aceita TODOS os campos do modelo
+    `CompanyBenefit` (provider, value, value_type, percentage_value,
+    value_details, seniority_levels, waiting_period_days, is_mandatory,
+    is_discount, etc.) — paridade com o formulario estruturado do Hub.
+
+    Pipeline:
+      1. Validacao por item: se faltar par obrigatorio (ex.: value sem
+         value_type, value_type=monetary sem value/value_details), devolve
+         `needs_clarification=True` SEM gravar.
+      2. PII masking (CPF/email/telefone) em campos de texto livre antes
+         de salvar — LGPD Art. 6 (necessidade).
+      3. FairnessGuard L1 em `name`/`description`/`value_details`.
+      4. INSERT com `seniority_levels` em JSONB.
+      5. Audit log com `source` (chat | spreadsheet | website).
+
     Mode `replace` deactivates current benefits before inserting the new set;
-    `append` only inserts. Each item runs through FairnessGuard L1 on
-    `name`+`description` before insert. Audit log records actor, count, and
-    operation. Multi-tenant: rows are scoped by `company_id` and we never
-    touch rows outside that scope.
+    `append` only inserts. Multi-tenant: rows are scoped by `company_id` and
+    we never touch rows outside that scope.
     """
     company_id = (kwargs.get("company_id") or "").strip()
     user_id = kwargs.get("user_id", "system")
     benefits = kwargs.get("benefits") or kwargs.get("data") or []
     mode = (kwargs.get("mode") or "append").lower()
+    source = (kwargs.get("source") or "chat").strip().lower() or "chat"
 
     if not company_id:
         return {"success": False, "data": {}, "message": "company_id obrigatorio."}
@@ -392,21 +478,39 @@ async def _wrap_save_company_benefits(**kwargs: Any) -> dict[str, Any]:
     if mode not in ("append", "replace"):
         return {"success": False, "data": {}, "message": "mode deve ser 'append' ou 'replace'."}
 
-    valid_keys = {"name", "category", "description", "icon", "provider", "value",
-                  "value_type", "percentage_value", "value_details",
-                  "seniority_levels", "waiting_period_days",
-                  "is_highlighted", "is_mandatory", "is_discount", "order"}
     cleaned: list[dict[str, Any]] = []
+    clarification_issues: list[str] = []
+
     for raw in benefits:
         if not isinstance(raw, dict):
-            return {"success": False, "data": {}, "message": "Cada beneficio deve ser um objeto."}
+            return {
+                "success": False,
+                "data": {},
+                "message": "Cada beneficio deve ser um objeto com pelo menos {name}.",
+            }
         name = (raw.get("name") or "").strip()
         if not name:
-            return {"success": False, "data": {}, "message": "Cada beneficio precisa de 'name'."}
-        item = {k: raw.get(k) for k in valid_keys if raw.get(k) is not None}
+            return {
+                "success": False,
+                "data": {},
+                "message": "Cada beneficio precisa de 'name'.",
+            }
+        item: dict[str, Any] = {
+            k: raw.get(k) for k in CANONICAL_BENEFIT_FIELDS if raw.get(k) is not None
+        }
         item["name"] = name
-        # FairnessGuard em texto livre (name + description)
-        for tf in ("name", "description"):
+
+        # PII masking on free-text fields BEFORE persistence (LGPD).
+        for tf in ("name", "description", "value_details", "provider"):
+            v = item.get(tf)
+            if isinstance(v, str) and v:
+                item[tf] = mask_pii(v)
+
+        # Clarification-first — no silent gravar-incompleto.
+        clarification_issues.extend(_benefit_clarification_issues(item))
+
+        # FairnessGuard L1 over free text (name + description + value_details).
+        for tf in ("name", "description", "value_details"):
             txt = item.get(tf)
             if isinstance(txt, str) and len(txt) > 10:
                 check = _fairness_guard.check(txt)
@@ -420,6 +524,21 @@ async def _wrap_save_company_benefits(**kwargs: Any) -> dict[str, Any]:
                         ),
                     }
         cleaned.append(item)
+
+    if clarification_issues:
+        return {
+            "success": False,
+            "needs_clarification": True,
+            "data": {
+                "missing_fields": clarification_issues,
+                "expected_fields": BENEFIT_CLARIFICATION_FIELDS,
+                "source": source,
+            },
+            "message": (
+                "Antes de gravar os beneficios preciso de mais informacoes: "
+                + " | ".join(clarification_issues)
+            ),
+        }
 
     inserted = 0
     deactivated = 0
@@ -451,7 +570,7 @@ async def _wrap_save_company_benefits(**kwargs: Any) -> dict[str, Any]:
                     " :icon, :provider, :value, COALESCE(:value_type, 'informative'), "
                     " :percentage_value, :value_details, "
                     " CAST(:seniority_levels AS JSONB), COALESCE(:waiting_period_days, 0), "
-                    " true, COALESCE(:is_highlighted, false), "
+                    " COALESCE(:is_active, true), COALESCE(:is_highlighted, false), "
                     " COALESCE(:is_mandatory, false), COALESCE(:is_discount, false), "
                     " COALESCE(:order_idx, 0), NOW(), NOW())"
                 ),
@@ -468,6 +587,7 @@ async def _wrap_save_company_benefits(**kwargs: Any) -> dict[str, Any]:
                     "value_details": item.get("value_details"),
                     "seniority_levels": seniority_json,
                     "waiting_period_days": item.get("waiting_period_days"),
+                    "is_active": item.get("is_active"),
                     "is_highlighted": item.get("is_highlighted"),
                     "is_mandatory": item.get("is_mandatory"),
                     "is_discount": item.get("is_discount"),
@@ -482,6 +602,7 @@ async def _wrap_save_company_benefits(**kwargs: Any) -> dict[str, Any]:
         "save_benefits",
         metadata={
             "mode": mode,
+            "source": source,
             "inserted": inserted,
             "deactivated": deactivated,
             "user_id": user_id,
@@ -495,6 +616,7 @@ async def _wrap_save_company_benefits(**kwargs: Any) -> dict[str, Any]:
             "inserted": inserted,
             "deactivated": deactivated,
             "mode": mode,
+            "source": source,
             "names": [b["name"] for b in cleaned],
         },
         "message": (

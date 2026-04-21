@@ -381,6 +381,7 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
                 benefits=normalized,
                 mode=mode,
                 user_id=context.user_id or "system",
+                source=params.get("source") or "chat",
             )
         except Exception as exc:
             logger.exception("[company_settings] configure_benefits delegate failed: %s", exc)
@@ -388,6 +389,25 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
                 error=f"Falha ao salvar beneficios: {exc}",
                 domain_id=self.domain_id,
                 action_id="configure_benefits",
+            )
+
+        # Clarification-first (Task #766): when the wrapper detects missing
+        # required field pairs (value sem value_type, etc.), surface it to the
+        # chat layer as a clarification turn instead of a silent error.
+        if result.get("needs_clarification"):
+            return DomainResponse.clarification_response(
+                question=result.get("message")
+                or "Preciso de mais detalhes para gravar os beneficios.",
+                domain_id=self.domain_id,
+                action_id="configure_benefits",
+                data={
+                    **(result.get("data") or {}),
+                    "navigation_hint": {
+                        "page": "Company Settings",
+                        "section": "minha-empresa",
+                        "subsection": "beneficios",
+                    },
+                },
             )
 
         if not result.get("success"):
@@ -747,6 +767,39 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
                 ):
                     pending_writes[k] = v
 
+        # Benefits in `pending_writes` come from the regex extractor as
+        # list[str] (apenas nomes). Para alinhar com o schema canonico
+        # (Task #766), promovemos cada nome para um dict {name, ...} e
+        # marcamos `expected_fields` que o humano deve revisar/preencher
+        # antes de confirmar (value, value_type, provider, is_mandatory...).
+        try:
+            from app.domains.company_settings.agents.company_tool_registry import (
+                BENEFIT_CLARIFICATION_FIELDS,
+            )
+        except Exception:
+            BENEFIT_CLARIFICATION_FIELDS = [
+                "name", "category", "description", "value", "value_type",
+                "percentage_value", "provider", "is_mandatory",
+                "waiting_period_days", "seniority_levels",
+            ]
+        benefit_expected_fields: list[str] = []
+        if isinstance(pending_writes.get("benefits"), list):
+            structured_benefits: list[dict[str, Any]] = []
+            for b in pending_writes["benefits"]:
+                if isinstance(b, str) and b.strip():
+                    structured_benefits.append({"name": b.strip()})
+                elif isinstance(b, dict) and (b.get("name") or "").strip():
+                    structured_benefits.append({"name": b["name"].strip(), **{
+                        k: v for k, v in b.items() if k != "name"
+                    }})
+            if structured_benefits:
+                pending_writes["benefits"] = structured_benefits
+                benefit_expected_fields = [
+                    f for f in BENEFIT_CLARIFICATION_FIELDS if f != "name"
+                ]
+            else:
+                pending_writes.pop("benefits", None)
+
         if pending_writes:
             preview_keys = ", ".join(list(pending_writes.keys())[:5])
             msg = (
@@ -754,6 +807,11 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
                 f"Identifiquei {len(pending_writes)} campo(s) prontos para revisao: {preview_keys}. "
                 "Quer que eu salve agora? Confirme para gravar (TIER 3 — humano confirma)."
             )
+            if benefit_expected_fields:
+                msg += (
+                    " Para os beneficios, complete antes de confirmar: "
+                    + ", ".join(benefit_expected_fields[:5]) + "."
+                )
             suggestions = ["Sim, pode salvar", "Quero revisar antes", "Abrir tela de Configuracoes"]
         else:
             msg = (

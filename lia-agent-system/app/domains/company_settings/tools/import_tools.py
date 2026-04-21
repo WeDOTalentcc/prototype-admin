@@ -325,22 +325,31 @@ async def import_benefits_from_data(
     replace_existing: bool = False,
     **kwargs,
 ) -> dict[str, Any]:
-    """
-    Bulk insert company benefits from structured data (parsed spreadsheet or form).
+    """Bulk import of company benefits from a parsed spreadsheet/JSON payload.
 
-    Each benefit item must have at least 'name'; 'category' and 'description' optional.
-    category: health | food | transport | education | financial | quality_life | family | security
+    Task #766 — DELEGATES to the canonical
+    ``_wrap_save_company_benefits`` so spreadsheet/site imports go through
+    the SAME schema, FairnessGuard, PII masking, audit log and
+    clarification-first checks as the chat path. No more reduced schema:
+    every CompanyBenefit field is accepted (provider, value, value_type,
+    percentage_value, value_details, seniority_levels,
+    waiting_period_days, is_mandatory, is_discount, ...).
 
     Args:
-        benefits: list of {name, category, description, is_highlighted}
+        benefits: list of {name, category, description, value, value_type,
+                  provider, is_mandatory, ...}
         replace_existing: if True, deactivates existing benefits before insert
+        kwargs._context: ToolExecutionContext (company_id + user_id)
+        kwargs.source: "spreadsheet" (default) | "website" | "chat"
 
     Returns:
-        {success, inserted_count, skipped_count, errors}
+        {success, inserted_count, skipped_count, errors,
+         needs_clarification?: bool, message}
     """
     context = _extract_context(kwargs)
     company_id = context.company_id if context else None
-    user_id = context.user_id if context else None
+    user_id = context.user_id if context else "system"
+    source = (kwargs.get("source") or "spreadsheet").strip().lower() or "spreadsheet"
 
     if not company_id:
         return {
@@ -356,67 +365,44 @@ async def import_benefits_from_data(
             "message": "`benefits` must be a non-empty list of objects.",
         }
 
-    try:
-        from lia_models.company_benefit import CompanyBenefit
-    except ImportError as e:
+    # Normalize spreadsheet aliases: pt-BR header "nome" → "name",
+    # legacy column name "is_highlight" → "is_highlighted".
+    normalized: list[dict[str, Any]] = []
+    skipped_pre = 0
+    errors_pre: list[str] = []
+    for idx, b in enumerate(benefits):
+        if not isinstance(b, dict):
+            errors_pre.append(f"item {idx}: not a dict")
+            skipped_pre += 1
+            continue
+        item = dict(b)
+        if "name" not in item and item.get("nome"):
+            item["name"] = item["nome"]
+        if "is_highlighted" not in item and "is_highlight" in item:
+            item["is_highlighted"] = bool(item["is_highlight"])
+        item.pop("nome", None)
+        item.pop("is_highlight", None)
+        normalized.append(item)
+
+    if not normalized:
         return {
             "success": False,
-            "error": "model_unavailable",
-            "message": f"CompanyBenefit model not importable: {e}",
+            "error": "invalid_input",
+            "message": "Nenhum item valido para importar.",
+            "errors": errors_pre[:10],
         }
-
-    inserted = 0
-    skipped = 0
-    errors: list[str] = []
 
     try:
-        async with AsyncSessionLocal() as db:
-            if replace_existing:
-                await db.execute(
-                    text("UPDATE company_benefits SET is_active = false WHERE company_id::text = :cid"),
-                    {"cid": company_id},
-                )
-
-            for idx, b in enumerate(benefits):
-                if not isinstance(b, dict):
-                    errors.append(f"item {idx}: not a dict")
-                    skipped += 1
-                    continue
-                name = b.get("name") or b.get("nome")
-                if not name:
-                    errors.append(f"item {idx}: missing 'name'")
-                    skipped += 1
-                    continue
-                try:
-                    record = CompanyBenefit(
-                        company_id=company_id,
-                        name=str(name)[:200],
-                        category=b.get("category", "other"),
-                        description=b.get("description", "")[:1000] if b.get("description") else None,
-                        is_highlighted=bool(
-                            b.get("is_highlighted", b.get("is_highlight", False))
-                        ),
-                        is_active=True,
-                    )
-                    db.add(record)
-                    inserted += 1
-                except Exception as e:
-                    errors.append(f"item {idx} ('{name}'): {e}")
-                    skipped += 1
-
-            await db.commit()
-
-        logger.info(
-            "[import_benefits] tenant=%s user=%s inserted=%d skipped=%d",
-            company_id, user_id, inserted, skipped,
+        from app.domains.company_settings.agents.company_tool_registry import (
+            _wrap_save_company_benefits,
         )
-        return {
-            "success": True,
-            "inserted_count": inserted,
-            "skipped_count": skipped,
-            "errors": errors[:10],
-            "message": f"Importados {inserted} benefícios ({skipped} ignorados).",
-        }
+        result = await _wrap_save_company_benefits(
+            company_id=company_id,
+            benefits=normalized,
+            mode="replace" if replace_existing else "append",
+            user_id=user_id or "system",
+            source=source,
+        )
     except Exception as e:
         logger.error("import_benefits_from_data failed: %s", e, exc_info=True)
         return {
@@ -424,6 +410,45 @@ async def import_benefits_from_data(
             "error": "db_error",
             "message": f"Erro ao importar benefícios: {e}",
         }
+
+    # Translate canonical wrapper response to the legacy contract callers
+    # already understand (`inserted_count`/`skipped_count`/`errors`).
+    if result.get("needs_clarification"):
+        data = result.get("data") or {}
+        return {
+            "success": False,
+            "needs_clarification": True,
+            "inserted_count": 0,
+            "skipped_count": len(normalized) + skipped_pre,
+            "errors": (errors_pre + (data.get("missing_fields") or []))[:10],
+            "expected_fields": data.get("expected_fields", []),
+            "message": result.get("message")
+            or "Faltam campos obrigatorios em pelo menos um beneficio.",
+        }
+    if not result.get("success"):
+        return {
+            "success": False,
+            "error": "save_failed",
+            "inserted_count": 0,
+            "skipped_count": len(normalized) + skipped_pre,
+            "errors": errors_pre[:10],
+            "message": result.get("message") or "Erro ao importar benefícios.",
+        }
+
+    data = result.get("data") or {}
+    inserted = int(data.get("inserted") or 0)
+    logger.info(
+        "[import_benefits] tenant=%s user=%s source=%s inserted=%d skipped=%d",
+        company_id, user_id, source, inserted, skipped_pre,
+    )
+    return {
+        "success": True,
+        "inserted_count": inserted,
+        "skipped_count": skipped_pre,
+        "errors": errors_pre[:10],
+        "source": source,
+        "message": f"Importados {inserted} benefícios ({skipped_pre} ignorados).",
+    }
 
 
 # ───────────────────────────────────────────────────────────────────
