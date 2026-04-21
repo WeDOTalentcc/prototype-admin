@@ -2680,3 +2680,149 @@ tools:
           type: string
           enum: [handbook, org_chart, compensation, tech_doc, general]
         user_id: {type: string}
+
+
+  # ──────────────────────────────────────────────────────────────
+  # FIX 10 / G4 — Wizard-only tools (not registered in global tool_registry
+  # but used by job_wizard React agent). Added so sync_descriptions_from_yaml()
+  # can enrich their descriptions with USE WHEN / DO NOT USE WHEN context.
+  # ──────────────────────────────────────────────────────────────
+
+  - name: extract_job_requirements
+    description: >
+      Extrai requisitos estruturados de uma descrição de vaga em texto livre
+      (skills, modalidade, senioridade) usando IA. Primeiro passo do fluxo
+      wizard — converte input não estruturado em dados prontos para create_job_draft.
+    when_to_use: >
+      Wizard agent receives unstructured job description or user request to create
+      a job. Use this BEFORE create_job_draft to structure the fields.
+    when_not_to_use: >
+      Job is already structured in the session context; skip to create_job_draft.
+      External JD import should use import_job_description tool instead.
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [create_job_draft, validate_job_requirements, enrich_job_description]
+    allowed_agents: [job_wizard]
+    scope: JOB_TABLE
+    version: "1.0"
+    parameters:
+      type: object
+      required: [text]
+      properties:
+        text: {type: string, description: "Texto da descrição ou input do usuário"}
+        title: {type: string, description: "Título do cargo se já identificado"}
+
+  - name: create_job_draft
+    description: >
+      Cria um NOVO rascunho de vaga em memória com os requisitos extraídos,
+      para revisão do recruiter. NÃO publica diretamente. Retorna draft que
+      precisa passar por save_job_draft após confirmação.
+    when_to_use: >
+      After extract_job_requirements produces structured output. The draft is
+      in-memory only — user reviews before save_job_draft persists it.
+    when_not_to_use: >
+      Job already exists — use update_job_vacancy instead. Direct persistence
+      desired — use save_job_draft with full spec.
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [extract_job_requirements, validate_job_requirements, save_job_draft]
+    allowed_agents: [job_wizard]
+    scope: JOB_TABLE
+    version: "1.0"
+    parameters:
+      type: object
+      required: [title]
+      properties:
+        title: {type: string}
+        skills: {type: array, items: {type: string}}
+        work_model: {type: string, enum: [Remoto, Híbrido, Presencial]}
+        seniority: {type: string}
+        location: {type: string}
+        description: {type: string}
+        salary_min: {type: number}
+        salary_max: {type: number}
+        company_id: {type: string, description: "Auto-injected from session"}
+
+  - name: validate_job_requirements
+    description: >
+      Valida requisitos da vaga contra viés discriminatório usando FairnessGuard.
+      Layer 1 bloqueia viés explícito; Layer 2 emite alertas educacionais para
+      viés implícito. Use para requirements, description e screening_questions.
+    when_to_use: >
+      Before saving a job draft, or when reviewing screening questions for
+      fairness compliance. Mandatory in the draft-to-publish transition.
+    when_not_to_use: >
+      Content is already validated in a prior step of the same flow; skip to
+      avoid redundant checks that waste tokens.
+    side_effects: [audit_trail]
+    governance_tags: [fairness_guard, multi_tenant, audit_trail]
+    related_tools: [extract_job_requirements, create_job_draft, check_job_draft_health]
+    allowed_agents: [job_wizard, orchestrator]
+    scope: JOB_TABLE
+    version: "1.0"
+    parameters:
+      type: object
+      required: [text, field_name]
+      properties:
+        text: {type: string}
+        field_name:
+          type: string
+          enum: [requirements, description, screening_questions]
+
+  - name: get_salary_benchmarks
+    description: >
+      Busca benchmarks salariais combinando histórico interno (SQL por empresa)
+      com dados externos de mercado (Robert Half 2024, Gupy). Retorna
+      internal_avg, market_range, sources citáveis e recommendation baseada
+      nos dois.
+    when_to_use: >
+      Wizard stage 'salary' — user needs concrete salary data to define the
+      range. Also when updating an existing job's compensation.
+    when_not_to_use: >
+      Salary already confirmed by user in the same session; skip external call
+      to save latency and credits.
+    side_effects: [external_api_call, credits_consumed]
+    governance_tags: [multi_tenant, credits_consumed]
+    related_tools: [search_salary_benchmark, suggest_compensation, create_job_draft]
+    allowed_agents: [job_wizard]
+    scope: JOB_TABLE
+    version: "1.0"
+    parameters:
+      type: object
+      required: [job_title, seniority]
+      properties:
+        job_title: {type: string}
+        seniority:
+          type: string
+          enum: [Estágio, Júnior, Pleno, Sênior, Especialista, Gerente, Diretor]
+        location: {type: string}
+        department: {type: string}
+
+  - name: check_job_draft_health
+    description: >
+      Avalia proativamente a saúde do rascunho da vaga — identifica campos
+      faltantes, salário abaixo do mercado, poucas skills ou responsabilidades
+      vagas. Retorna lista de risks + suggestions. Use antes de publicar.
+    when_to_use: >
+      User signals readiness to publish the draft, or wants a sanity check
+      on an in-progress draft. Also useful periodically during wizard flow.
+    when_not_to_use: >
+      Draft has just been created and not yet enriched — wait for user to
+      fill core fields first.
+    side_effects: [none]
+    governance_tags: [multi_tenant]
+    related_tools: [validate_job_requirements, enrich_job_description, suggest_jd_improvements]
+    allowed_agents: [job_wizard]
+    scope: JOB_TABLE
+    version: "1.0"
+    parameters:
+      type: object
+      required: [title]
+      properties:
+        title: {type: string}
+        seniority: {type: string}
+        salary_min: {type: number}
+        salary_max: {type: number}
+        skills: {type: array, items: {type: string}}
+        responsibilities: {type: array, items: {type: string}}
+
