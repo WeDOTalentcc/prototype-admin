@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useInterpretContext, type InterpretChatMessage as ChatMessage } from '@/hooks/shared/use-interpret-context'
 import { useTransitionContext, type CandidateContext, type JobContext } from '@/hooks/recruitment/use-transition-context'
 import { RECRUITMENT_STAGES } from '@/lib/recruitment-stages'
@@ -36,6 +36,8 @@ export interface AvailableStage {
   displayName: string
   actionBehavior?: string
 }
+
+const EMPTY_TRANSITION_CANDIDATES: CandidateContext[] = []
 
 export interface UniversalTransitionModalProps {
   isOpen: boolean
@@ -174,22 +176,29 @@ export function useUniversalTransitionModal({
   const showChatPanel = isLiaAutoAllowed(currentActionBehavior) && action !== 'just_move'
   const isRejectedStage = selectedToStage === 'rejected'
 
-  const transitionCandidates: CandidateContext[] = isRejectedBatch
-    ? candidates.map(c => ({
-        id: c.id,
-        name: c.name,
-        email: c.email,
-        phone: c.phone,
-        avatar: c.avatar,
-        current_title: c.role ?? undefined,
-        current_company: c.currentCompany || c.company,
-      }))
-    : []
+  // Stabilize references passed to useTransitionContext. Without useMemo these
+  // would be reconstructed every render, invalidating the downstream effect's
+  // dependency array (deps: [candidates, ..., jobContext]) on every render and
+  // triggering an infinite re-render loop via setPredictedSubStatuses /
+  // setIsPredicting in useTransitionState (canonical fix at the source where
+  // unstable identities are produced).
+  const transitionCandidates = useMemo<CandidateContext[]>(() => {
+    if (!isRejectedBatch) return EMPTY_TRANSITION_CANDIDATES
+    return candidates.map(c => ({
+      id: c.id,
+      name: c.name,
+      email: c.email,
+      phone: c.phone,
+      avatar: c.avatar,
+      current_title: c.role ?? undefined,
+      current_company: c.currentCompany || c.company,
+    }))
+  }, [isRejectedBatch, candidates])
 
-  const transitionJobContext: JobContext = {
+  const transitionJobContext = useMemo<JobContext>(() => ({
     id: companyId || '',
     title: jobTitle || '',
-  }
+  }), [companyId, jobTitle])
 
   const {
     predictedSubStatuses,
