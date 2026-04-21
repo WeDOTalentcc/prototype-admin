@@ -209,6 +209,8 @@ class SystemPromptBuilder:
         entities: dict[str, Any] | None = None,
         extra_instructions: str = "",
         conversation_state: Any | None = None,
+        # Initiative II.A (2026-04-21) — structured state injection
+        pending_action: Any | None = None,
     ) -> str:
         sections: list[str] = []
 
@@ -288,8 +290,32 @@ class SystemPromptBuilder:
                     mem_lines.append(f"- Candidatos mencionados: {names}")
                 if conversation_state.last_job_id:
                     mem_lines.append(f"- Última vaga: ID {conversation_state.last_job_id}")
+                # Initiative II.A (2026-04-21) — render active_filters so LLM keeps
+                # filter context across turns (closes chat gap where 'liste todas'
+                # lost the 'status=open' filter from the previous turn).
+                af = getattr(conversation_state, "active_filters", None)
+                if af:
+                    try:
+                        pairs = ", ".join(f"{k}={v}" for k, v in af.items() if v)
+                        if pairs:
+                            mem_lines.append(f"- Filtros ativos (aplicar se continuar a busca): {pairs}")
+                    except Exception:
+                        pass
                 if mem_lines:
                     context_parts.append("### Memória da Conversa\n" + "\n".join(mem_lines))
+            except Exception:
+                pass
+
+        # Initiative II.A (2026-04-21) — Ação Pendente block.
+        # Rendered ONLY when a PendingActionState is explicitly passed in.
+        # Uses PendingActionState.to_prompt_context() added in FIX 25.
+        if pending_action is not None:
+            try:
+                _pa_block = pending_action.to_prompt_context()
+                if _pa_block:
+                    context_parts.append(
+                        "### Ação Pendente (aguardando continuação)\n" + _pa_block
+                    )
             except Exception:
                 pass
 
