@@ -552,6 +552,7 @@ async def generate_interview_questions(
         from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
         _persona = SystemPromptBuilder.build(
             agent_type="orchestrator",
+            company_id=str(company_id) if company_id else "",
             extra_instructions="Você está gerando perguntas de entrevista PERSONALIZADAS. Seja analítica e precisa.",
         )
         prompt = f"""{_persona}
@@ -954,6 +955,7 @@ async def generate_interview_parecer(
         from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
         _persona = SystemPromptBuilder.build(
             agent_type="orchestrator",
+            company_id=str(company_id) if company_id else "",
             extra_instructions="Você está gerando um parecer profissional de entrevista. Seja analítica, objetiva e fundamentada.",
         )
         prompt = f"""{_persona}

@@ -325,7 +325,10 @@ class EnhancePromptResponse(BaseModel):
 
 
 @router.post("/enhance-prompt", response_model=EnhancePromptResponse)
-async def enhance_search_prompt(request: EnhancePromptRequest):
+async def enhance_search_prompt(
+    request: EnhancePromptRequest,
+    current_user=Depends(get_current_user_or_demo),
+):
     """
     Analisa e aprimora um prompt de busca de candidatos.
     
@@ -343,7 +346,12 @@ async def enhance_search_prompt(request: EnhancePromptRequest):
     
     try:
         from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
-        _persona = SystemPromptBuilder.build(agent_type="sourcing", extra_instructions="Otimize a busca de candidatos com critérios completos.")
+        _company_id = str(getattr(current_user, "company_id", "") or "")
+        _persona = SystemPromptBuilder.build(
+            agent_type="sourcing",
+            company_id=_company_id,
+            extra_instructions="Otimize a busca de candidatos com critérios completos.",
+        )
         prompt = f"""{_persona}
 
 Otimize a busca de candidatos para recrutamento.

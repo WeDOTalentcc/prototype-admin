@@ -22,6 +22,7 @@ async def handle_description(
     field_origins: dict,
     confidence_service,
     suggestions_data: dict,
+    company_id: str = "",
 ) -> tuple[str, dict, dict]:
     """
     Handle stage 1: parse job description, extract criteria, build LIA message.
@@ -32,7 +33,11 @@ async def handle_description(
     llm_service = LLMService()
 
     from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
-    _persona = SystemPromptBuilder.build(agent_type="job_planner", extra_instructions="Analise a descrição e extraia informações estruturadas.")
+    _persona = SystemPromptBuilder.build(
+        agent_type="job_planner",
+        company_id=company_id,
+        extra_instructions="Analise a descrição e extraia informações estruturadas.",
+    )
     prompt = f"""{_persona}
 
 Analise esta descrição de vaga e extraia TODAS as informações possíveis.

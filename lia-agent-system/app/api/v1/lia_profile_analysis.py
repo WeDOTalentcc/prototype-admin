@@ -96,11 +96,15 @@ def format_candidate_info(data: CandidateData) -> str:
     return "\n".join(info_parts)
 
 
-def get_system_prompt(analysis_type: str) -> str:
+def get_system_prompt(analysis_type: str, company_id: str = "") -> str:
     """Get the system prompt based on analysis type."""
     
     from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
-    base = SystemPromptBuilder.build(agent_type="cv_screening", extra_instructions="Gere um resumo profissional do candidato. Seja conciso, preciso e destaque os pontos fortes. NÃO inclua o nome do candidato no início - ele será adicionado separadamente.")
+    base = SystemPromptBuilder.build(
+        agent_type="cv_screening",
+        company_id=company_id,
+        extra_instructions="Gere um resumo profissional do candidato. Seja conciso, preciso e destaque os pontos fortes. NÃO inclua o nome do candidato no início - ele será adicionado separadamente.",
+    )
     
     if analysis_type == 'bullet_points':
         return base + """
@@ -163,7 +167,7 @@ async def generate_profile_analysis(
         container = get_provider_for_tenant(tenant_id=tenant_id)
         analysis_text = await container.generate_with_fallback(
             f"Generate a {request.analysis_type.replace('_', ' ')} profile summary for this candidate:\n\n{candidate_info}",
-            system=get_system_prompt(request.analysis_type),
+            system=get_system_prompt(request.analysis_type, company_id=tenant_id or ""),
             agent_type="ProfileAnalysisAgent",
             company_id=tenant_id,
         )

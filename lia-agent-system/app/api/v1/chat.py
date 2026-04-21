@@ -852,6 +852,7 @@ async def _sse_event_generator(
 
     _system_prompt = SystemPromptBuilder.build(
         agent_type="orchestrator",
+        company_id=str(company_id) if company_id else "",
         tenant_context_snippet=tenant_context_snippet,
         user_name=user_name,
         user_role=user_role,

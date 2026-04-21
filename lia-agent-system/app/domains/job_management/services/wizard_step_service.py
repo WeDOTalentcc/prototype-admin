@@ -606,10 +606,14 @@ class WizardStepService:
                 elif question_type == QuestionType.TIME_TO_FILL:
                     lia_message = await handle_time_to_fill_question(db, company_id, job_draft, request.user_input)
                 elif question_type == QuestionType.PROCESS:
-                    lia_message = await handle_process_question(request.user_input, llm_service)
+                    lia_message = await handle_process_question(request.user_input, llm_service, str(company_id) if company_id else "")
                 else:
                     from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
-                    _persona = SystemPromptBuilder.build(agent_type="job_planner", extra_instructions="Responda brevemente à pergunta do recrutador sobre a vaga.")
+                    _persona = SystemPromptBuilder.build(
+                        agent_type="job_planner",
+                        company_id=str(company_id) if company_id else "",
+                        extra_instructions="Responda brevemente à pergunta do recrutador sobre a vaga.",
+                    )
                     prompt = f"""{_persona}
 
 Responda brevemente à pergunta:
@@ -739,7 +743,11 @@ Responda brevemente à pergunta:
 
                 if current_stage == 1:
                     from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
-                    _persona = SystemPromptBuilder.build(agent_type="job_planner", extra_instructions="Analise a descrição e extraia informações estruturadas.")
+                    _persona = SystemPromptBuilder.build(
+                        agent_type="job_planner",
+                        company_id=str(company_id) if company_id else "",
+                        extra_instructions="Analise a descrição e extraia informações estruturadas.",
+                    )
                     prompt = f"""{_persona}
 
 Analise esta descrição de vaga e extraia TODAS as informações possíveis.

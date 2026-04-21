@@ -783,10 +783,15 @@ async def handle_time_to_fill_question(
     return "\n".join(response_parts)
 
 
-async def handle_process_question(user_input: str, llm_svc: LLMService) -> str:
+async def handle_process_question(user_input: str, llm_svc: LLMService, company_id: str = "") -> str:
     """Handle process/methodology questions using LLM."""
     from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
-    _persona = SystemPromptBuilder.build(agent_type="job_planner", context_page="wizard", extra_instructions="Responda perguntas sobre processo de recrutamento.")
+    _persona = SystemPromptBuilder.build(
+        agent_type="job_planner",
+        company_id=company_id,
+        context_page="wizard",
+        extra_instructions="Responda perguntas sobre processo de recrutamento.",
+    )
     prompt = f"""{_persona}
 O usuário está no wizard de criação de vaga e tem uma pergunta sobre processo.
 
