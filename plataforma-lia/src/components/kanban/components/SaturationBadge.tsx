@@ -153,18 +153,18 @@ export function SaturationBadge({ jobId }: SaturationBadgeProps) {
   const sourcingPercent = Math.min(data.sourcing.percentage, 100)
 
   const badgeElement = isSaturated ? (
-    <Chip density="compact" variant="danger" className="gap-1 cursor-pointer font-semibold rounded-lg" title="Funil Saturado">
-      <AlertTriangle className="w-3 h-3 shrink-0" />
-      <span>{data.organic.count}/{data.organic.threshold} org</span>
-      <span>|</span>
-      <span>{data.sourcing.count}/{data.sourcing.threshold} src</span>
+    <Chip density="compact" variant="danger" className="gap-1 cursor-pointer font-medium rounded-md whitespace-nowrap" title="Funil Saturado">
+      <AlertTriangle className="w-2.5 h-2.5 shrink-0" />
+      <span className="whitespace-nowrap">{data.organic.count}/{data.organic.threshold} org</span>
+      <span aria-hidden="true" className="text-lia-text-tertiary">|</span>
+      <span className="whitespace-nowrap">{data.sourcing.count}/{data.sourcing.threshold} src</span>
     </Chip>
   ) : (
-    <Chip variant="warning" className="gap-1 cursor-pointer font-semibold rounded-lg" title="Quase Saturado">
-      <TrendingUp className="w-3 h-3 shrink-0" />
-      <span>{data.organic.count}/{data.organic.threshold} org</span>
-      <span>|</span>
-      <span>{data.sourcing.count}/{data.sourcing.threshold} src</span>
+    <Chip density="compact" variant="warning" className="gap-1 cursor-pointer font-medium rounded-md whitespace-nowrap" title="Quase Saturado">
+      <TrendingUp className="w-2.5 h-2.5 shrink-0" />
+      <span className="whitespace-nowrap">{data.organic.count}/{data.organic.threshold} org</span>
+      <span aria-hidden="true" className="text-lia-text-tertiary">|</span>
+      <span className="whitespace-nowrap">{data.sourcing.count}/{data.sourcing.threshold} src</span>
     </Chip>
   )
 
