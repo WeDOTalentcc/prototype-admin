@@ -1,0 +1,21 @@
+{
+  "_comment": "Snapshot do harness — usado por scan_claude_md.py --check para detectar regressao. Atualize SOMENTE quando voce intencionalmente aceita o novo estado (ex: removeu um guide deprecado de proposito). Para regenerar: python3 .agents/skills/harness-engineering/scripts/scan_claude_md.py --update-baseline",
+  "required_guides": [
+    ".cursorrules",
+    "CLAUDE.md",
+    "replit.md"
+  ],
+  "required_covered_components": [
+    "1. Planning loop",
+    "10. Guardrails",
+    "11. Serving layer",
+    "2. Tool layer",
+    "3. Context management",
+    "4. Memoria",
+    "5. Sandbox",
+    "6. State persistence",
+    "7. Guides",
+    "8. Sensors",
+    "9. Error handling"
+  ]
+}

@@ -1,0 +1,70 @@
+name: Harness Scan (CLAUDE.md / AGENTS.md regression gate)
+
+# Task #737 — Catch repeated agent mistakes automatically before they ship.
+#
+# Runs the harness-engineering scan on every push/PR and fails when:
+#   - a guide file present in the baseline (CLAUDE.md, AGENTS.md, replit.md, ...)
+#     disappears from the repo, OR
+#   - the heuristic coverage of any of the 11 harness components regresses below
+#     the baseline.
+#
+# The baseline lives at:
+#   .agents/skills/harness-engineering/harness-baseline.json
+#
+# Reproduce locally:
+#   python3 .agents/skills/harness-engineering/scripts/scan_claude_md.py --check
+#
+# Intentionally accept a new state (e.g. you removed a deprecated guide on
+# purpose):
+#   python3 .agents/skills/harness-engineering/scripts/scan_claude_md.py --update-baseline
+#   git add .agents/skills/harness-engineering/harness-baseline.json && git commit
+
+on:
+  push:
+    paths:
+      - "CLAUDE.md"
+      - "AGENTS.md"
+      - ".cursorrules"
+      - "replit.md"
+      - ".windsurfrules"
+      - ".github/copilot-instructions.md"
+      - "**/CLAUDE.md"
+      - "**/AGENTS.md"
+      - "**/replit.md"
+      - ".agents/skills/harness-engineering/**"
+      - ".github/workflows/harness-scan.yml"
+  pull_request:
+    paths:
+      - "CLAUDE.md"
+      - "AGENTS.md"
+      - ".cursorrules"
+      - "replit.md"
+      - ".windsurfrules"
+      - ".github/copilot-instructions.md"
+      - "**/CLAUDE.md"
+      - "**/AGENTS.md"
+      - "**/replit.md"
+      - ".agents/skills/harness-engineering/**"
+      - ".github/workflows/harness-scan.yml"
+
+concurrency:
+  group: harness-scan-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  harness-scan:
+    name: Harness scan — guides & 11-component coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run harness scan in --check mode
+        run: |
+          if ! python3 .agents/skills/harness-engineering/scripts/scan_claude_md.py --check; then
+            echo "::error file=.agents/skills/harness-engineering/harness-baseline.json::Harness regression detected. Either restore the missing guide content or, if the change is intentional, run 'python3 .agents/skills/harness-engineering/scripts/scan_claude_md.py --update-baseline' and commit the regenerated baseline."
+            exit 1
+          fi
