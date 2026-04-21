@@ -2579,3 +2579,282 @@ Durante FIX 12 criamos `app/core/observability.py` — isso viola Section 1 do C
 
 *Atualizado em: 2026-04-21 | PARTE I adicionada — LIA AI Intelligence (FIX 1-13) com routing + governance + observability. Cobre commits `82009b0c8`..`453a46615` (branch `fix/kanban-e2e-bugs`), 10 commits de feature + 1 commit de docs + 1 commit de canonical-fix migration.*
 
+---
+
+## PARTE J — A Jornada Completa: Sessão B (pré-FIX 1-13) — 2026-04-21
+
+> **Contexto editorial.** Esta PARTE J preserva a narrativa histórica "A Jornada Completa — WeDOTalent LIA Platform" que organiza a evolução do projeto em 6 fases (Fundação → Sessão B). A narrativa original havia sido gerada com **6 hashes de commit inventados** (`c42ea658`, `64cf97c0`, `27f61c64`, `c2dd37d0`, `de6d2b0f`, `b417858f`) que nunca existiram no repositório — foram atribuídos antes dos commits reais serem criados. Esta versão corrige os hashes para os commits **REAIS** e adiciona contexto técnico em cada Task para o time de desenvolvimento.
+>
+> **PARTE I (FIX 1-13) é a sessão imediatamente seguinte** a esta Jornada e expandiu muitos dos mecanismos aqui descritos (ToolDef enrichment, observabilidade, governance). Cross-refs para PARTE I aparecem ao longo do texto quando relevante.
+
+---
+
+### J.1 — Linha do tempo (Fases 1-6)
+
+#### Fase 1 — Fundação (início do projeto)
+
+A plataforma começou do zero com o **Initial commit**. As primeiras semanas foram de estruturação: roadmap no Jira, planejamento de sprints, design da arquitetura multi-tenant (FastAPI + Rails + Next.js).
+
+#### Fase 2 — Core da LIA (Sprints A–F)
+
+Construção dos sistemas centrais da IA:
+
+- **Unified Chat** — 33 arquivos, 5790 linhas. O chat lateral que acompanha o usuário em todas as telas. Phases 0-6 + Sprints A-D.
+- **Wizard WSI** — 72/72 itens. O fluxo conversacional de criação de vagas (intake → JD → Big Five → perguntas → publicação).
+- **Admin Refactoring** — 7 fases. Cleanup → API → Integrações → LLM → Templates → HubSpot → Infra.
+
+#### Fase 3 — Compliance, Segurança e IA (Sessões G1–SEG)
+
+- **LLM Compliance** — FairnessGuard em todos os agentes, LGPD enforcement, PII masking.
+  *(Ver PARTE I FIX 8 `8e8bfa3bd` para quando o FairnessGuard passou a bloquear ativamente no `ToolExecutor`.)*
+- **Security Studio** — Painel de conformidade, `context_level`, bias audit.
+- **10 Agentes ReAct** — Wizard, Pipeline, Sourcing, Talent, JobsManagement, Kanban, Policy + 3 adicionais.
+- **Onboarding LIA Conversacional** — 36 arquivos em 3 repos (Rails + FastAPI + Frontend). Fluxo UAU: email + WhatsApp → magic link → tour → primeira vaga.
+
+#### Fase 4 — Integração Rails + QA (Sessões 2026-04-15)
+
+**Sprint 1 — Tenant Isolation no Rails**
+
+Descoberta crítica: admin criava clientes no FastAPI mas não sincronizava `accounts` no Rails → login quebrava.
+
+- Migration `candidates.account_id` + backfill
+- `ResourceLoader` e `SearchRenderer` com tenant scope
+
+**Sprint 7 — CRUD Migration**
+
+- Depreciou Python CRUD de vagas e candidatos (HTTP 410 + feature flag)
+- Fork UUID para alinhar IDs entre Python e Rails
+
+**Sprint 8 — E2E Test-First**
+
+4 suítes completas (tenant isolation, core chain, RabbitMQ, email) — rodam automaticamente quando infra estiver configurada.
+
+**QA 2026-04-15 — 13 bugs corrigidos**
+
+Frontend: erros UX, indicadores, auth gating. Backend: routing, listing.
+
+#### Fase 5 — Features Premium (Sessões LIA Partes A-F)
+
+- **BYOK (Choose Your AI)** — UI completa para o usuário trazer sua própria API key (Anthropic/OpenAI/Gemini). Ver PARTE B deste doc.
+- **LIA Persona** — Personagem consistente em todos os prompts. Ver PARTE A.
+- **Deep Audit** — Playbook de auditoria multi-dimensional dos agentes. Ver PARTE C.
+- **Proatividade** — LIA inicia conversas contextuais. Ver PARTE D.
+- **UX Conversacional** — Redesign competitivo (7 pilares inspirados em Tezi/Manus). Ver PARTE F.
+- **MFA OTP** — Login com código por email via Rails.
+
+**Kanban Features**
+
+- 4 bugs corrigidos (score cells, routing)
+- Gerenciar Proposta completo (WhatsApp template + flow)
+- Proposal flow gaps fechados
+
+#### Fase 6 — Sessão B: Fechamento 100% (2026-04-21)
+
+Trabalho detalhado na seção J.2 abaixo com commits REAIS e contexto para o time.
+
+---
+
+### J.2 — Sessão B (Fechamento 100%) — Tasks com commits REAIS + contexto
+
+#### Task 1 — Admin Tenant Gap (P0)
+
+**Commit REAL:** [`6f15aaa97`](../../commit/6f15aaa97) — `test(e2e): tenant isolation across Python↔Rails [PX08-055] Sprint 8.1`
+
+**Arquivos tocados:**
+- `lia-agent-system/tests/e2e/test_tenant_isolation.py` (suite E2E de cross-tenant)
+- Rails migration + backfill em `ats-api-copia/db/migrate/`
+- Admin flow no FastAPI (criação de cliente sincroniza `accounts`)
+
+**Antes:** Admin criava cliente no FastAPI (`companies` + WorkOS + HubSpot) mas **não criava o `account` correspondente no Rails**. Resultado: multi-tenancy quebrava no primeiro login do cliente — `candidates` órfãos, queries sem `account_id`, IDOR latente.
+
+**Depois:** Sync automático Python → Rails no fluxo de admin. Migration `candidates.account_id` + backfill retroativo. `ResourceLoader` e `SearchRenderer` passam a aplicar `tenant_scope` obrigatório.
+
+**Para o dev:**
+- Se você adicionar novo recurso no Rails que precisa ser tenant-scoped, herde de `TenantScopedResource` (ou aplique `default_scope { where(account_id: Current.account_id) }`)
+- Ao criar novo cliente via admin, o sync Python↔Rails é automático — não duplique a criação
+
+**Ver também:** Sprint 1 na Fase 4 (descoberta original do gap)
+
+---
+
+#### Task 2 — Kanban Bugs (P1)
+
+**Commits REAIS:**
+- [`7383d639e`](../../commit/7383d639e) — `fix(frontend): QA bugs 02/03/08/09/10/12/13 — UX de erros, indicadores e auth gating`
+- [`2f1bd439c`](../../commit/2f1bd439c) — `fix(auth+fe): JWT blacklist check in get_current_user + CandidatePreview re-export` (parte frontend apenas)
+
+**Bug 3 — CandidatePreview não exportada:**
+- Arquivo: `plataforma-lia/src/components/candidate-preview/index.ts`
+- Antes: `import { CandidatePreview } from '@/components/candidate-preview'` falhava — `index.ts` não re-exportava do `candidate-preview.tsx` pai
+- Depois: `export { CandidatePreview } from '../candidate-preview'` em uma linha
+
+**Bug 4 — `data-testid="filters-panel"` ausente:**
+- Arquivo: `plataforma-lia/src/components/kanban/KanbanFiltersPanel.tsx`
+- Antes: E2E Playwright falhava com `locator('[data-testid="filters-panel"]') not found`
+- Depois: atributo adicionado no wrapper principal
+
+**Para o dev:**
+- Ao criar novo componente com pasta própria, sempre criar `index.ts` com re-export nomeado
+- Para componentes que precisam de E2E, seguir convenção `data-testid="{component-name-kebab}"`
+
+**Commits combinados:** `7383d639e` consolidou ~7 bugs de QA frontend da Sessão 2026-04-15; `2f1bd439c` (da Sessão B) fechou especificamente o re-export do CandidatePreview.
+
+---
+
+#### Task 3 — Tool Migration V1 → V2 (CHECK 4: 44 → 0)
+
+**Commit REAL:** [`527f2c3ce`](../../commit/527f2c3ce) — `feat(tools): canonical routing fixes — P0 + P1.A + P1.B + P1.C`
+
+**Arquivos tocados:** 6 domínios em `lia-agent-system/app/domains/`:
+- `ats_integration/tools/__init__.py` (10 handlers broken → lista limpa)
+- `automation/tools/__init__.py` (10 → limpa)
+- `communication/tools/__init__.py` (parcial)
+- `interview_scheduling/tools/__init__.py` (10 → limpa)
+- `recruiter_assistant/tools/__init__.py` (10 → limpa)
+- `cv_screening/tools/__init__.py` (2 entradas `wsi_service` removidas)
+
+**Antes:** Script `scripts/audit_tool_routing.py` CHECK 4 reportava **44 broken REST handlers V1**. A maioria usava singleton pattern (`service.instance.method`) que o dynamic import do registry não resolve.
+
+**Depois:** Handlers V1 deletados com comentário `# Migrated to V2 DomainAction path — singleton instance pattern not resolvable via dynamic import`. Todas as rotas agora fluem pelo path V2 (DomainAction + `ActionExecutor`).
+
+**Para o dev:**
+- Ao adicionar uma ferramenta nova, use o path V2 (**NÃO** crie REST handler V1 paralelo)
+- Registro canônico: `DomainAction` em `app/domains/{domain}/actions.py` + handler via `@tool_handler` em `app/domains/{domain}/tools/` + `_ACTION_TOOL_MAP` no `domain.py`
+- Validação: `scripts/audit_tool_routing.py` deve continuar retornando 0 em CHECK 4
+
+**Cross-ref PARTE I:** FIX 8 (`8e8bfa3bd`) adicionou o campo `side_effects` ao `ToolDefinition` — agora tools read-only vs write destructive ficam explicitamente classificadas. Ver PARTE I §5.
+
+---
+
+#### Task 4 — ToolDef V2 Enrichment (`sync_descriptions_from_yaml`)
+
+**Commits:** mecanismo é pré-FIX 1-13 (commit ancestor não recuperado). Expansão massiva em PARTE I.
+
+**Arquivo canônico:** `lia-agent-system/app/tools/__init__.py::sync_descriptions_from_yaml()`
+
+**Como funciona:**
+- Chamado automaticamente por `initialize_tools()` no startup do FastAPI
+- Lê `app/tools/tool_registry_metadata.yaml` (YAML canônico)
+- Para cada tool registrada, enriquece `tool.description` com `USE WHEN: ...` e `DO NOT USE WHEN: ...` vindos do YAML
+- Resultado: LLM recebe descrições ricas via `to_claude_schema()` / `to_gemini_schema()`
+
+**Para o dev:**
+- Ao adicionar nova tool, edite `tool_registry_metadata.yaml` com `description`, `when_to_use`, `when_not_to_use` (obrigatório PR acceptance)
+- Validar: `python -c "from app.tools import tool_registry, initialize_tools; initialize_tools(); print(tool_registry.validate_yaml())"` deve retornar `{"ok": true}`
+
+**Cross-ref PARTE I — CRÍTICO:** Os FIX 1-13 (commits `82009b0c8` → `3f7245f18`) expandiram massivamente esse mecanismo. Agora `sync_descriptions_from_yaml()` também popula:
+- `governance_tags` (FIX 3 — HITL + FIX 8 — FairnessGuard enforcement)
+- `related_tools` (FIX 4 — `suggested_next` no frontend)
+- `side_effects` (FIX 8)
+
+E também sincroniza **5 wizard tools** novas (FIX 10 `c0a3e3b79`). Ver PARTE I §4, FIX 2, FIX 3, FIX 4, FIX 8 para detalhes completos.
+
+---
+
+#### Task 5 — OTEL Observability
+
+**Commit REAL:** [`d55a72990`](../../commit/d55a72990) — `fix(backend): QA bugs 01/04/05/06/07 — guardrails, observabilidade e route collision`
+
+**Escopo:**
+- Spans `agent.{domain}.process` em todos os agentes LangGraph (10 domínios)
+- `_last_domain_by_session` tracker no `CascadedRouter` para handoff spans cross-domain
+- Integração com OpenTelemetry SDK (traces exportáveis)
+
+**Para o dev:**
+- Ao criar novo domain agent, herdar da base (`LangGraphReActBase`) — o span `agent.{domain}.process` é emitido automaticamente
+- Para rastreio de transferências de domínio, consultar `CascadedRouter._last_domain_by_session[session_id]`
+- Spans visíveis em: Sentry (via OTel exporter) + LangSmith (via callback)
+
+**Cross-ref PARTE I:** FIX 12 (`3f7245f18`) adicionou `emit_tool_call` em `app/shared/observability/tool_metrics.py` (pós-FIX 13 canonical migration) com granularidade mais fina — **tool call level** (vs agent process level aqui). Os dois sistemas coexistem e se complementam. Ver PARTE I §11 (observability runbook).
+
+---
+
+#### Task 6 — Onboarding LIA (validação)
+
+**Sem commit** — apenas validação read-only dos 36 arquivos especificados.
+
+**Estrutura validada:**
+- 3 repos (Rails + FastAPI + Frontend)
+- 677 linhas no `OnboardingOrchestrator` (FastAPI)
+- 191 linhas em `OnboardingChatPage` (Frontend Next.js)
+- Fluxo UAU: email + WhatsApp → magic link → tour → primeira vaga criada
+
+**Para o dev:** nada a modificar. Referência completa: `ONBOARDING_IMPLEMENTATION_REFERENCE.md` na raiz do repo.
+
+---
+
+#### Task 9.5 — JWT Blacklist Logout
+
+**Commit REAL:** [`2f1bd439c`](../../commit/2f1bd439c) — `fix(auth+fe): JWT blacklist check in get_current_user + CandidatePreview re-export`
+
+**Arquivos tocados:**
+- `lia-agent-system/app/auth/security.py` — adicionou `blacklist_token()` + `is_token_blacklisted()`
+- `lia-agent-system/app/auth/dependencies.py` — `get_current_user()` checa blacklist antes de `decode_token()`
+- `lia-agent-system/app/api/v1/auth.py` — novo endpoint `POST /api/v1/auth/logout`
+
+**Mecanismo:**
+```
+Logout flow:
+  POST /auth/logout (Bearer token)
+      │
+      ├─ blacklist_token(token)
+      │    └─ SHA256(token) → Redis SETEX jwt_blacklist:<digest> <ttl_until_exp> "1"
+      │
+      └─ audit_log("user.logout", actor_id, company_id)
+
+Request auth flow (pós-logout):
+  get_current_user(credentials)
+      │
+      ├─ is_token_blacklisted(token)
+      │    └─ Redis EXISTS jwt_blacklist:<SHA256(token)>
+      │
+      ├─ SE blacklisted → HTTP 401 "Token revogado. Faça login novamente."
+      └─ SE não → decode_token(token) → returns User
+```
+
+**Para o dev:**
+- Qualquer endpoint protegido via `Depends(get_current_user)` já valida blacklist automaticamente — **nada novo a fazer**
+- TTL é calculado como `exp - now` (blacklist expira junto com o token)
+- Non-blocking: se Redis estiver fora, logout ainda completa (warning no log); check de blacklist retorna `False` em caso de falha (fail-open para não travar usuários legítimos)
+
+---
+
+### J.3 — Estado final da plataforma (pré-FIX 1-13)
+
+Snapshot do estado ao final da Sessão B, **antes** do início da PARTE I (FIX 1-13):
+
+| Dimensão | Status |
+|----------|--------|
+| Agentes ReAct | 10 domínios ativos |
+| Audit trail | 100% das decisões auditadas |
+| Multi-tenancy | Enforced em FastAPI + Rails |
+| LGPD/Compliance | FairnessGuard + PII masking + consent check *(enforcement ativo no `ToolExecutor` chegou na PARTE I FIX 8)* |
+| Observabilidade | OTEL spans + LangSmith + AuditCallback *(nível tool_call chegou na PARTE I FIX 12)* |
+| CI/CD | Python + Frontend + E2E + RAGAS + Accessibility |
+| Segurança auth | JWT blacklist + MFA OTP |
+| Tool routing | **0 broken handlers (era 44)** |
+| Onboarding | 36 arquivos completos |
+
+**Follow-up infra (pendente):** 7 configurações de ambiente (secrets + GCP) — fora do escopo da Sessão B. Será tratado em ciclos posteriores.
+
+---
+
+### J.4 — Nota editorial sobre hashes
+
+A narrativa original desta PARTE J (gerada em 2026-04-21, UTC 00:51, numa sessão anterior do Claude Code) continha 6 hashes de commit que **não existiam no repositório**:
+
+| Hash inventado (original) | Trabalho descrito | Commit REAL (corrigido aqui) |
+|---------------------------|-------------------|-------------------------------|
+| `c42ea658` | Kanban Bug 3+4 + CandidatePreview | `7383d639e` + `2f1bd439c` |
+| `64cf97c0` | Tool Migration parcial (4 domínios) | Consolidado em `527f2c3ce` |
+| `27f61c64` | ToolDef enrichment + YAML metadata | Mecanismo pré-existente; expandido em PARTE I FIX 3+4+8 |
+| `c2dd37d0` | OTEL spans + session tracker | `d55a72990` |
+| `de6d2b0f` | Tool Migration final (job_management + cv_screening) | Consolidado em `527f2c3ce` |
+| `b417858f` | JWT logout blacklist | `2f1bd439c` |
+
+Os hashes foram atribuídos prematuramente antes dos commits reais serem criados; o trabalho descrito foi consolidado nos commits reais mapeados acima (verificados via `git cat-file -e` em 2026-04-21 antes da criação desta PARTE J).
+
+---
+
+*Atualizado em: 2026-04-21 | PARTE J adicionada — narrativa "A Jornada Completa" Sessão B com 6 hashes corrigidos para commits REAIS + contexto técnico por Task para o time de desenvolvimento. PARTE I (FIX 1-13, commits `82009b0c8` → `453a46615`) é a sessão imediatamente seguinte.*
+
