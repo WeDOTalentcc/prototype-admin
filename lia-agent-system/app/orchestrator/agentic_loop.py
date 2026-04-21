@@ -192,6 +192,29 @@ class AgenticLoop:
                     tool_result_content = (
                         result.to_llm_content() if result else "Tool returned no result."
                     )
+                    # FIX 6 — Structured log for tool-call analytics (first_shot rate, governance).
+                    try:
+                        _success = bool(getattr(result, "success", False))
+                        _governance = []
+                        if self._tool_executor and self._tool_executor.registry.get_tool(tc.name):
+                            _governance = list(getattr(
+                                self._tool_executor.registry.get_tool(tc.name),
+                                "governance_tags", [],
+                            ) or [])
+                        logger.info(
+                            "tool_call",
+                            extra={
+                                "tool_name": tc.name,
+                                "company_id": getattr(exec_context, "company_id", None),
+                                "first_shot": iteration == 0,
+                                "call_index": len(tool_calls_made),
+                                "governance_tags": _governance,
+                                "has_related_tools": bool(_suggested_next),
+                                "success": _success,
+                            },
+                        )
+                    except Exception:
+                        pass  # observability is non-blocking
                 except Exception as exc:
                     logger.warning(
                         "[LIA-A04] Tool %s execution failed: %s", tc.name, exc

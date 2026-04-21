@@ -202,6 +202,39 @@ def sync_descriptions_from_yaml() -> None:
             synced, skipped, len(metadata),
         )
 
+        # FIX 5 — Extend sync to wizard TOOL_DEFINITIONS (different ToolDefinition class).
+        # Wizard uses lia_agents_core.ToolDefinition (pydantic BaseModel) — only
+        # `description` is mutable in this registry. Governance/related don't apply.
+        try:
+            from app.domains.job_management.agents.wizard_tool_registry import (
+                TOOL_DEFINITIONS as WIZARD_TOOLS,
+            )
+            wizard_synced = 0
+            for wt in WIZARD_TOOLS:
+                if wt.name not in metadata:
+                    continue
+                meta = metadata[wt.name]
+                yaml_description = (meta.get("description") or "").strip()
+                if not yaml_description:
+                    continue
+                enriched = yaml_description
+                when_to_use = (meta.get("when_to_use") or "").strip()
+                when_not_to_use = (meta.get("when_not_to_use") or "").strip()
+                if when_to_use:
+                    enriched += f"\n\nUSE WHEN: {when_to_use}"
+                if when_not_to_use:
+                    enriched += f"\nDO NOT USE WHEN: {when_not_to_use}"
+                wt.description = enriched
+                wizard_synced += 1
+            _logger.info(
+                "[sync_yaml] Wizard description sync — synced=%d total_wizard=%d",
+                wizard_synced, len(WIZARD_TOOLS),
+            )
+        except Exception as _wizard_exc:
+            _logger.warning(
+                "[sync_yaml] Wizard sync failed (non-blocking): %s", _wizard_exc
+            )
+
     except Exception as exc:
         import logging as _log
         _log.getLogger(__name__).warning(
