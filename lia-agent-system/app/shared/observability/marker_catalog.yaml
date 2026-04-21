@@ -22,7 +22,7 @@ metadata:
   track: "3"
   initiative: "G2"
   created: "2026-04-21"
-  total_markers: 27
+  total_markers: 28
   reference: "docs/FINAL_AUDIT.md §G2"
 
 markers:
@@ -208,6 +208,13 @@ markers:
     category: governance
     purpose: "HITL checkpoint built + surfaced to ChatResponse for frontend approval UI"
     origin: "app/orchestrator/hitl.py"
+    severity: info
+
+  # ── Error Recovery (VII) ─────────────────────────────────────────────
+  LIA-ERRPOL:
+    category: reliability
+    purpose: "Error recovery policy applied (matched YAML policy for signal)"
+    origin: "app/orchestrator/error_policies.py"
     severity: info
 
 # ── FIX/Initiative markers (log prefixes, not [LIA-*] markers) ────────────
