@@ -203,6 +203,43 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
                 payload[k] = v
         return payload
 
+    @staticmethod
+    def _resolve_tenant(
+        action_id: str,
+        params: dict[str, Any],
+        context: DomainContext,
+    ) -> tuple[str | None, DomainResponse | None]:
+        """Single source of truth: ALWAYS use context.tenant_id (the
+        authenticated tenant) — params.company_id is treated as untrusted
+        input from the LLM/tool args. If a different company_id is supplied,
+        we refuse and audit the attempt (defense in depth — tools also
+        re-scope by company_id, but the boundary check belongs here).
+        """
+        tenant = (context.tenant_id or "").strip()
+        if not tenant:
+            return None, DomainResponse.error_response(
+                error="company_id ausente — nao foi possivel identificar a empresa.",
+                domain_id="company_settings",
+                action_id=action_id,
+            )
+        supplied = (params.get("company_id") or "").strip()
+        if supplied and supplied != tenant:
+            logger.warning(
+                "[company_settings] tenant mismatch refused: action=%s "
+                "context.tenant_id=%s params.company_id=%s user=%s",
+                action_id, tenant, supplied, context.user_id,
+            )
+            return None, DomainResponse.error_response(
+                error=(
+                    "Operacao bloqueada: company_id informado nao corresponde "
+                    "ao tenant autenticado. Tentativa registrada."
+                ),
+                data={"forbidden": True, "reason": "tenant_mismatch"},
+                domain_id="company_settings",
+                action_id=action_id,
+            )
+        return tenant, None
+
     async def _delegate_section_write(
         self,
         action_id: str,
@@ -212,13 +249,9 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
         hints = self._SECTION_FIELD_HINTS[action_id]
         section = hints["section"]
         label = hints["label"]
-        company_id = (params.get("company_id") or context.tenant_id or "").strip()
-        if not company_id:
-            return DomainResponse.error_response(
-                error="company_id ausente — nao foi possivel identificar a empresa.",
-                domain_id=self.domain_id,
-                action_id=action_id,
-            )
+        company_id, err = self._resolve_tenant(action_id, params, context)
+        if err is not None:
+            return err
 
         payload = self._extract_section_payload(action_id, params)
         if not payload:
@@ -280,13 +313,9 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
     async def _handle_configure_benefits(self, params, context):
         # Delega para tool dedicada da tabela company_benefits.
         # FairnessGuard L1 + Audit + tenant scoping rodam dentro da tool.
-        company_id = (params.get("company_id") or context.tenant_id or "").strip()
-        if not company_id:
-            return DomainResponse.error_response(
-                error="company_id ausente — nao foi possivel identificar a empresa.",
-                domain_id=self.domain_id,
-                action_id="configure_benefits",
-            )
+        company_id, err = self._resolve_tenant("configure_benefits", params, context)
+        if err is not None:
+            return err
 
         raw = params.get("benefits")
         if raw is None and isinstance(params.get("data"), dict):
@@ -361,13 +390,9 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
         )
 
     async def _handle_configure_workforce(self, params, context):
-        company_id = (params.get("company_id") or context.tenant_id or "").strip()
-        if not company_id:
-            return DomainResponse.error_response(
-                error="company_id ausente — nao foi possivel identificar a empresa.",
-                domain_id=self.domain_id,
-                action_id="configure_workforce",
-            )
+        company_id, err = self._resolve_tenant("configure_workforce", params, context)
+        if err is not None:
+            return err
         plan_data = params.get("plan_data") or params.get("plan") or []
         if isinstance(plan_data, dict):
             plan_data = [plan_data]
@@ -546,13 +571,9 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
         necessario, passa por FairnessGuard + PII via tool ja existente e
         retorna campos esperados para revisao humana antes de gravar.
         """
-        company_id = (params.get("company_id") or context.tenant_id or "").strip()
-        if not company_id:
-            return DomainResponse.error_response(
-                error="company_id ausente — nao foi possivel identificar a empresa.",
-                domain_id=self.domain_id,
-                action_id="process_document",
-            )
+        company_id, err = self._resolve_tenant("process_document", params, context)
+        if err is not None:
+            return err
 
         document_text = (params.get("document_text") or "").strip()
         document_type = params.get("document_type") or "general"

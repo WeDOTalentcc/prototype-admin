@@ -299,3 +299,87 @@ async def test_analyze_website_success_uses_scraper(
     assert resp.success
     assert resp.data["pages_scraped"] == 3
     assert resp.data["url"] == "https://wedotalent.cc"
+
+
+# ---------------------------------------------------------------------------
+# Tenant isolation — context.tenant_id is the source of truth.
+# params.company_id pointing to a different tenant MUST be refused for ALL
+# write actions (security regression guard — Task #712 finding).
+# ---------------------------------------------------------------------------
+WRITE_ACTIONS_FOR_TENANT_TEST = [
+    "configure_profile",
+    "configure_culture",
+    "configure_tech_stack",
+    "configure_benefits",
+    "configure_workforce",
+    "process_document",
+]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("action_id", WRITE_ACTIONS_FOR_TENANT_TEST)
+async def test_write_actions_refuse_tenant_mismatch(
+    domain: CompanySettingsDomain,
+    action_id: str,
+) -> None:
+    """If params.company_id differs from context.tenant_id, the handler must
+    refuse with a tenant_mismatch error and NOT call any write tool."""
+    handler = {
+        "configure_profile": domain._handle_configure_profile,
+        "configure_culture": domain._handle_configure_culture,
+        "configure_tech_stack": domain._handle_configure_tech_stack,
+        "configure_benefits": domain._handle_configure_benefits,
+        "configure_workforce": domain._handle_configure_workforce,
+        "process_document": domain._handle_process_document,
+    }[action_id]
+    # Payload that would otherwise be valid for each action — we only care
+    # that the security check fires BEFORE any tool is invoked.
+    params = {
+        "company_id": "co_attacker",   # untrusted input
+        "name": "x",
+        "description": "x",
+        "benefits": ["Vale"],
+        "plan_data": [{"role": "dev", "quantity": 1}],
+        "document_text": "Texto institucional curto.",
+    }
+    ctx = _ctx(tenant="co_victim")
+
+    # Patch every possible downstream tool — none should be reached.
+    targets = [
+        "app.domains.company_settings.agents.company_tool_registry._wrap_save_company_section",
+        "app.domains.company_settings.agents.company_tool_registry._wrap_save_company_benefits",
+        "app.domains.company_settings.agents.company_tool_registry._wrap_import_workforce_plan",
+        "app.domains.company_settings.agents.company_tool_registry._wrap_process_uploaded_document",
+    ]
+    with patch(targets[0]) as m1, patch(targets[1]) as m2, \
+         patch(targets[2]) as m3, patch(targets[3]) as m4:
+        resp = await handler(params, ctx)
+
+    assert resp.success is False, f"{action_id} should refuse tenant mismatch"
+    assert (resp.data or {}).get("forbidden") is True
+    assert (resp.data or {}).get("reason") == "tenant_mismatch"
+    for m in (m1, m2, m3, m4):
+        m.assert_not_called()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("action_id", WRITE_ACTIONS_FOR_TENANT_TEST)
+async def test_write_actions_accept_matching_company_id(
+    domain: CompanySettingsDomain,
+    action_id: str,
+) -> None:
+    """When params.company_id matches context.tenant_id, the action proceeds
+    normally (no false-positive blocks)."""
+    handler = {
+        "configure_profile": domain._handle_configure_profile,
+        "configure_culture": domain._handle_configure_culture,
+        "configure_tech_stack": domain._handle_configure_tech_stack,
+        "configure_benefits": domain._handle_configure_benefits,
+        "configure_workforce": domain._handle_configure_workforce,
+        "process_document": domain._handle_process_document,
+    }[action_id]
+    params = {"company_id": "co_demo"}  # matches _ctx default
+    # Ensure the action gets PAST the tenant check — clarification or
+    # success both prove the security guard didn't fire.
+    resp = await handler(params, _ctx(tenant="co_demo"))
+    assert (resp.data or {}).get("reason") != "tenant_mismatch"
