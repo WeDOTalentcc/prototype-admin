@@ -23,7 +23,7 @@ import {
   User,
   Briefcase,
   FileText,
-  Sparkles,
+  Wand2,
   ListChecks,
   ShieldCheck,
   Send,
@@ -147,7 +147,7 @@ interface JobLifecycleStage {
 const JOB_LIFECYCLE_STAGE_ICONS: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties; strokeWidth?: number }>> = {
   ats_importada: Database,
   rascunho: FileText,
-  enriquecida: Sparkles,
+  enriquecida: Wand2,
   wsi_config: ListChecks,
   aguardando_aprovacao: ShieldCheck,
   publicada: Send,

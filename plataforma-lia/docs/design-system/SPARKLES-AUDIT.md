@@ -1,7 +1,7 @@
 # Auditoria de uso de `Sparkles` (vs cérebro da LIA)
 
-**Versão:** 1.0 — 2026-04-21
-**Tarefa:** #723
+**Versão:** 1.1 — 2026-04-21
+**Tarefas:** #723 (auditoria inicial), #725 (reavaliação do estágio `enriquecida`)
 
 ## Regra geral
 O ícone oficial da LIA é o **cérebro ciano** (`LIAIcon` em `src/components/ui/lia-icon.tsx`,
@@ -41,7 +41,7 @@ Convenção da coluna **Decisão**:
 | 13 | `components/pages/modules-page.tsx:96` | Mapa `STATUS_DISPLAY` — status `experimental`. | ✨ Manter | Indicador genérico de feature experimental, sem vínculo com LIA. |
 | 14 | `components/pages/modules-page.tsx:97` | Mapa `STATUS_DISPLAY` — status `beta`. | ✨ Manter | Indicador genérico de feature em beta. |
 | 15 | `components/pages/modules-page.tsx:358` | Cabeçalho da seção "Disponível em Beta" (cor `text-wedo-purple`). | ✨ Manter | Seção genérica "novidades / beta", roxa, não LIA. |
-| 16 | `components/pages/pipeline-overview-page.tsx:150` | Mapa `JOB_LIFECYCLE_STAGE_ICONS` — estágio `enriquecida`. | ✨ Manter | Estágio do ciclo de vida de vagas. Embora a enriquecimento seja feito pela IA, este é um símbolo de "vaga enriquecida" usado em uma rail neutra ao lado de `Database`, `FileText`, `ListChecks`, `ShieldCheck`, etc. Trocar para Brain criaria conflito visual com os outros estágios da mesma rail e descaracterizaria a função do "ícone de estágio". |
+| 16 | `components/pages/pipeline-overview-page.tsx:150` | Mapa `JOB_LIFECYCLE_STAGE_ICONS` — estágio `enriquecida`. | 🪄 Substituir por `Wand2` | Reavaliado na Tarefa #725. `Sparkles` destoava da rail (cujos vizinhos `Database`, `FileText`, `ListChecks`, `ShieldCheck`, `Send`, `Radio`, `Archive` são todos pictogramas semânticos neutros) — soava "celebratório/mágico" demais para um marcador de estágio. Substituído por `Wand2`, que mantém a leitura semântica de "transformação/enriquecimento de dados" sem invocar o cérebro ciano (reservado a contextos onde a LIA é a interlocutora, não onde a IA é só o motor por trás de um passo do funil). |
 | 17 | `components/chat/pipeline-rail-card.tsx:13,70` | Mapa `ICON_MAP` recebe nomes de ícones do backend; `"sparkles"` mapeia para `Sparkles`. | ✨ Manter | É um mapeamento literal: se o backend pede `sparkles`, recebe `Sparkles`. Remover quebraria payloads existentes. |
 | 18 | `components/ui/chat-workflow-reels.tsx:81` | Categoria utilitária `ia-automacoes` no Workflow Reels (ao lado de `analytics` e `configuracoes`). | ✨ Manter | É a "categoria" do agent-studio (automações de IA em geral, não a LIA assistente). Mantém paridade visual com as outras categorias utilitárias. |
 | 19 | `components/workflow-rail/canonicalFunnelStages.ts:168` | Stage canônico `ia-automacoes` (gêmeo do item 18). | ✨ Manter | Mesmo motivo do item 18. |
@@ -65,9 +65,10 @@ representando a LIA.
 ---
 
 ## Resumo
-- **Total de ocorrências de `Sparkles` em produção:** 19 callsites únicos (12 substituições + 7 mantidos).
-- **Substituídas:** 12 (todas LIA-explícitas).
-- **Mantidas:** 7 (badges genéricos, mapeamento backend e categorias não-LIA).
+- **Total de ocorrências de `Sparkles` em produção:** 19 callsites únicos (12 substituições por `Brain` + 1 substituição por `Wand2` + 6 mantidos).
+- **Substituídas por `Brain` ciano:** 12 (todas LIA-explícitas).
+- **Substituídas por `Wand2`:** 1 (estágio `enriquecida` do funil de vagas — Tarefa #725).
+- **Mantidas:** 6 (badges genéricos, mapeamento backend e categorias não-LIA).
 - **Validador:** regra leve adicionada em `scripts/design-system-validator.py` (fase 7) para
   alertar quando um novo `Sparkles` aparecer próximo a textos como `LIA`, `assistente` ou
   `IA da` — evitando regressões.
