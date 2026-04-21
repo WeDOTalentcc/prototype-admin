@@ -774,6 +774,27 @@ class MainOrchestrator:
         # short-circuits BOTH the regex dispatch and the downstream LLM cascade
         # in a single place — a deeper fix in fast_router would not reach
         # ActionExecutor's local pattern table.
+        # FIX 16 — Correction detector (must run BEFORE meta_question_detector).
+        # If user is correcting a previous LIA turn ("não, quis dizer X",
+        # "estamos falando de X e nao Y"), we must short-circuit with a
+        # clarification BEFORE cascade router interprets the correction as
+        # a literal search query.
+        try:
+            from app.orchestrator.correction_detector import detect_user_correction
+            _corr = detect_user_correction(ctx.message or "")
+            if _corr is not None:
+                return ChatResponse(
+                    success=True,
+                    content=_corr.reply,
+                    agent_used="correction_gate",
+                    intent_detected="user_correction",
+                    confidence=0.9,
+                    conversation_id=conv_id,
+                    needs_clarification=True if hasattr(ChatResponse, "needs_clarification") else False,
+                )
+        except Exception as _corr_exc:  # fail-open — never block on detector bugs
+            logger.debug("[correction_detector] skipped: %s", _corr_exc)
+
         try:
             from app.orchestrator.meta_question_detector import (
                 detect_meta_capability_question,
