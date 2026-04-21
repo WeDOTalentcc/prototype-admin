@@ -1,0 +1,196 @@
+# Grounded Capability Catalog — LIA Maturity Program Initiative I.A (2026-04-21)
+#
+# Source of truth for capabilities advertised to recruiters. Every card MUST
+# map to 1+ real tool registered in tool_registry. CI guard
+# (tests/unit/test_initI_capability_cards.py) validates this invariant.
+#
+# Why this file exists:
+#   Closes chat gap where LIA responded "o que sabe fazer?" with free-prose
+#   bullets including hallucinated capabilities ("prevejo quanto tempo",
+#   "calculo taxas de conversão entre etapas") — no tools backed those claims.
+#
+# Structure:
+#   Each card has:
+#     id                — stable identifier (snake_case)
+#     title             — short human-readable label (PT-BR)
+#     user_phrasing     — list of natural-language triggers recruiters use
+#     tools             — list of tool names (must exist in tool_registry)
+#     example_input     — concrete example recruiter can type
+#     example_output    — illustrative of what LIA responds
+#
+# To add a card: check tool_registry.list_tools() first. No phantom tools.
+# Track 2 Initiative I.B will wire persona rendering from these cards.
+
+version: 1
+metadata:
+  created: "2026-04-21"
+  initiative: "I.A"
+  reference: "docs/LIA_MATURITY_ROADMAP.md Track 2 Initiative I"
+
+capabilities:
+  # ── Vagas ──────────────────────────────────────────────────────────────────
+
+  - id: list_and_search_jobs
+    title: Listar e buscar vagas
+    user_phrasing:
+      - "liste as vagas"
+      - "quantas vagas temos"
+      - "vagas ativas"
+      - "vagas por status"
+      - "mostre as vagas de engenharia"
+    tools: [search_jobs]
+    example_input: "liste as vagas ativas de tecnologia"
+    example_output: "✅ Encontradas 12 vagas ativas em Tecnologia (mostrando 12 de 12)..."
+
+  - id: job_details
+    title: Ver detalhes de uma vaga
+    user_phrasing:
+      - "detalhes da vaga X"
+      - "me mostre a vaga V0042"
+      - "status da V0042"
+      - "pipeline da vaga X"
+    tools: [get_job_details]
+    example_input: "detalhes da vaga V0042"
+    example_output: "Vaga V0042 — Desenvolvedor Backend Sr, 8 candidatos no pipeline..."
+
+  - id: create_job
+    title: Criar nova vaga
+    user_phrasing:
+      - "criar vaga"
+      - "abrir uma nova vaga"
+      - "nova vaga de X"
+    tools: [create_job]
+    example_input: "criar vaga de Product Manager pleno em SP"
+    example_output: "Criando rascunho de PM pleno em SP..."
+
+  - id: publish_job
+    title: Publicar vaga
+    user_phrasing:
+      - "publicar a vaga X"
+      - "tornar a vaga ativa"
+      - "colocar a vaga no ar"
+    tools: [publish_job]
+    example_input: "publicar a vaga V0042"
+    example_output: "Vaga V0042 publicada com sucesso."
+
+  - id: pause_job
+    title: Pausar vaga
+    user_phrasing:
+      - "pausar a vaga X"
+      - "congelar a vaga X"
+      - "parar a vaga X"
+    tools: [pause_job]
+    example_input: "pausar a vaga V0042"
+    example_output: "Vaga V0042 pausada."
+
+  - id: close_job
+    title: Encerrar ou fechar vaga
+    user_phrasing:
+      - "encerrar a vaga X"
+      - "fechar a vaga X"
+      - "cancelar a vaga X"
+    tools: [close_job]
+    example_input: "cancele a vaga V0040 por orçamento"
+    example_output: "Confirmando encerramento de V0040 com motivo budget..."
+
+  # ── Candidatos ─────────────────────────────────────────────────────────────
+
+  - id: search_candidates
+    title: Buscar candidatos
+    user_phrasing:
+      - "buscar candidatos"
+      - "candidatos com X"
+      - "devs python em SP"
+      - "quem tem experiência com Y"
+    tools: [search_candidates]
+    example_input: "candidatos com React e inglês avançado em SP"
+    example_output: "Encontrei 18 candidatos com React + inglês em SP..."
+
+  - id: candidate_details
+    title: Ver detalhes do candidato
+    user_phrasing:
+      - "perfil do candidato X"
+      - "detalhes do candidato X"
+      - "me mostre o candidato X"
+    tools: [get_candidate_details]
+    example_input: "detalhes do candidato João Silva"
+    example_output: "João Silva — Backend Sr, 6 anos exp, stage: Entrevista Técnica..."
+
+  - id: move_candidate_stage
+    title: Mover candidato(s) de estágio no funil
+    user_phrasing:
+      - "mover candidato X pra próxima etapa"
+      - "avançar candidato X"
+      - "passar candidatos pra entrevista"
+    tools: [bulk_update_candidates_stage]
+    example_input: "mover João Silva para Entrevista Final"
+    example_output: "João Silva movido para Entrevista Final."
+
+  - id: export_candidates
+    title: Exportar candidatos
+    user_phrasing:
+      - "exportar candidatos"
+      - "baixar planilha de candidatos"
+      - "CSV dos candidatos da vaga X"
+    tools: [export_candidates]
+    example_input: "exporte os candidatos da vaga V0042 em CSV"
+    example_output: "CSV gerado — X candidatos da vaga V0042..."
+
+  # ── Entrevistas ────────────────────────────────────────────────────────────
+
+  - id: schedule_interview
+    title: Agendar entrevista
+    user_phrasing:
+      - "agendar entrevista"
+      - "marcar entrevista com X"
+      - "convocar candidato X"
+    tools: [schedule_interview]
+    example_input: "agendar entrevista com João Silva amanhã às 14h"
+    example_output: "Entrevista agendada para 22/04 14:00 com João Silva."
+
+
+  # ── Comunicação & Feedback ────────────────────────────────────────────────
+
+  - id: generate_candidate_feedback
+    title: Gerar feedback estruturado para candidato
+    user_phrasing:
+      - "gerar feedback do candidato X"
+      - "feedback estruturado pós-entrevista"
+      - "redigir feedback construtivo"
+    tools: [generate_candidate_feedback]
+    example_input: "gerar feedback pós-entrevista técnica para João Silva"
+    example_output: "Feedback estruturado: pontos fortes..., pontos de desenvolvimento..."
+
+  # ── Mercado & Salários ────────────────────────────────────────────────────
+
+  - id: salary_benchmark
+    title: Benchmark salarial de mercado
+    user_phrasing:
+      - "quanto pagar para X"
+      - "benchmark salarial de X"
+      - "faixa de mercado para Y"
+    tools: [search_salary_benchmark, get_intelligent_salary]
+    example_input: "quanto pagar para um PM sênior em SP?"
+    example_output: "Faixa de mercado R$ 18k-R$ 25k, mediana R$ 21k (amostra: 450 vagas)"
+
+  # ── Relatórios & Analytics ────────────────────────────────────────────────
+
+  - id: generate_report
+    title: Gerar relatórios de recrutamento
+    user_phrasing:
+      - "gerar relatório"
+      - "relatório semanal"
+      - "KPIs do trimestre"
+    tools: [generate_report]
+    example_input: "relatório semanal de recrutamento"
+    example_output: "Relatório: N vagas ativas, X candidatos novos, Y entrevistas..."
+
+  - id: skill_gap_analysis
+    title: Análise de gaps de skills
+    user_phrasing:
+      - "gaps de skills"
+      - "análise de skills"
+      - "o que falta no nosso time"
+    tools: [analyze_skill_gaps]
+    example_input: "gaps de skills no time de engenharia"
+    example_output: "Principais gaps: 1. Go (3 vagas), 2. Kafka..."
