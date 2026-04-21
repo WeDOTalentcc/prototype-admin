@@ -31,6 +31,11 @@ vi.mock('@/components/ui/avatar', () => ({
 vi.mock('@/components/chat/message-feedback', () => ({
   MessageFeedback: () => <div data-testid="message-feedback" />,
 }))
+vi.mock('@/components/chat/glossary-highlighted-text', () => ({
+  GlossaryHighlightedText: ({ html, className }: { html: string; className?: string }) => (
+    <div className={className} data-testid="glossary-highlighted" dangerouslySetInnerHTML={{ __html: html }} />
+  ),
+}))
 vi.mock('@/lib/chat-format', () => ({
   cleanAgentResponse: (s: string) => s,
   parseChatMarkdown: (s: string) => `<p>${s}</p>`,

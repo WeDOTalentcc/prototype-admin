@@ -15,6 +15,49 @@ export type GlossaryLookupResult =
   | { ok: true; entry: GlossaryEntryDTO }
   | { ok: false; status: number; message: string }
 
+let cachedTerms: GlossaryEntryDTO[] | null = null
+let pendingTerms: Promise<GlossaryEntryDTO[]> | null = null
+
+/**
+ * Return the canonical glossary terms (cached client-side). Powers passive
+ * tooltip highlighting in chat replies (Task #759). Falls back to an empty
+ * list when the backend is unreachable so callers can render plain text.
+ */
+export async function listGlossaryTerms(): Promise<GlossaryEntryDTO[]> {
+  if (cachedTerms) return cachedTerms
+  if (pendingTerms) return pendingTerms
+  pendingTerms = (async () => {
+    try {
+      const resp = await fetch("/api/lia/api/v1/glossary/terms", {
+        method: "GET",
+        headers: { "Accept": "application/json" },
+      })
+      if (!resp.ok) {
+        cachedTerms = []
+        return cachedTerms
+      }
+      const body = (await resp.json()) as {
+        success?: boolean
+        data?: { terms?: GlossaryEntryDTO[] }
+      }
+      cachedTerms = body?.data?.terms ?? []
+      return cachedTerms
+    } catch {
+      cachedTerms = []
+      return cachedTerms
+    } finally {
+      pendingTerms = null
+    }
+  })()
+  return pendingTerms
+}
+
+/** Test-only helper to reset the in-memory cache between specs. */
+export function __resetGlossaryCache(): void {
+  cachedTerms = null
+  pendingTerms = null
+}
+
 export async function lookupGlossaryTerm(term: string): Promise<GlossaryLookupResult> {
   const cleaned = term.trim()
   if (!cleaned) {

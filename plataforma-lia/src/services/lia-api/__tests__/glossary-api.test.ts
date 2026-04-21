@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
+  __resetGlossaryCache,
   formatGlossaryEntryMarkdown,
+  listGlossaryTerms,
   lookupGlossaryTerm,
 } from "../glossary-api"
 
@@ -16,6 +18,7 @@ const mockFetch = (responder: (url: string) => Response | Promise<Response>) => 
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  __resetGlossaryCache()
 })
 
 describe("lookupGlossaryTerm", () => {
@@ -74,6 +77,62 @@ describe("lookupGlossaryTerm", () => {
     if (!result.ok) {
       expect(result.message.toLowerCase()).toContain("sem conexao")
     }
+  })
+})
+
+describe("listGlossaryTerms", () => {
+  it("hits the canonical list endpoint and returns the terms array", async () => {
+    let calledUrl = ""
+    mockFetch((url) => {
+      calledUrl = url
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data: {
+            terms: [
+              { name: "WSI", sigla: "WSI", definition: "Indice.", category: "Scoring" },
+              { name: "Bloom", sigla: "", definition: "Taxonomia.", category: "Behavioral" },
+            ],
+            total_loaded: 2,
+          },
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      )
+    })
+    const terms = await listGlossaryTerms()
+    expect(calledUrl).toBe("/api/lia/api/v1/glossary/terms")
+    expect(terms).toHaveLength(2)
+    expect(terms[0].sigla).toBe("WSI")
+  })
+
+  it("caches the response so repeated callers share a single request", async () => {
+    const fetchSpy = vi.fn(async () =>
+      new Response(
+        JSON.stringify({ success: true, data: { terms: [], total_loaded: 0 } }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    )
+    vi.stubGlobal("fetch", fetchSpy)
+    await listGlossaryTerms()
+    await listGlossaryTerms()
+    expect(fetchSpy).toHaveBeenCalledTimes(1)
+  })
+
+  it("falls back to an empty list when the backend errors", async () => {
+    mockFetch(() => new Response("oops", { status: 500 }))
+    const terms = await listGlossaryTerms()
+    expect(terms).toEqual([])
+  })
+
+  it("falls back to an empty list when the network is offline", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new Error("offline")
+      }),
+    )
+    const terms = await listGlossaryTerms()
+    expect(terms).toEqual([])
   })
 })
 
