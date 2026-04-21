@@ -488,16 +488,50 @@ class MainOrchestrator:
                             except Exception:
                                 pass
 
+                        # FIX 12 / G8 — Detect pending_hitl_confirmation in any tool_call
+                        # and promote to top-level `hitl_pending` in structured_data so the
+                        # frontend can render a confirmation prompt.
+                        _tool_calls = _agentic_result.get("tool_calls_made", []) or []
+                        _hitl_pending: list[dict[str, Any]] = []
+                        for _tc in _tool_calls:
+                            _tc_result = _tc.get("result") if isinstance(_tc, dict) else None
+                            if not isinstance(_tc_result, dict):
+                                continue
+                            _inner = _tc_result.get("result") if isinstance(_tc_result.get("result"), dict) else _tc_result
+                            if isinstance(_inner, dict) and _inner.get("status") == "pending_hitl_confirmation":
+                                _hitl_pending.append({
+                                    "tool_name": _tc.get("name"),
+                                    "parameters": _tc.get("parameters"),
+                                    "governance_tags": _inner.get("governance_tags", []),
+                                    "message": _inner.get("message"),
+                                })
+                                # Also emit audit event
+                                try:
+                                    from app.core.observability import emit_hitl_pending
+                                    emit_hitl_pending(
+                                        tool_name=_tc.get("name"),
+                                        company_id=getattr(ctx, "company_id", None) if "ctx" in dir() else None,
+                                        governance_tags=_inner.get("governance_tags", []),
+                                        conversation_id=conv_id,
+                                    )
+                                except Exception:
+                                    pass
+
+                        _structured_data = {
+                            "tool_calls": _tool_calls,
+                            "iterations": _agentic_result.get("iterations", 0),
+                        }
+                        if _hitl_pending:
+                            _structured_data["hitl_pending"] = _hitl_pending
+
                         _resp = ChatResponse(
                             success=True,
                             content=_agentic_result["response"],
                             intent_detected="agentic_tool_call",
                             conversation_id=conv_id,
-                            action_executed=bool(_agentic_result.get("tool_calls_made")),
-                            structured_data={
-                                "tool_calls": _agentic_result.get("tool_calls_made", []),
-                                "iterations": _agentic_result.get("iterations", 0),
-                            },
+                            action_executed=bool(_tool_calls),
+                            needs_confirmation=bool(_hitl_pending),
+                            structured_data=_structured_data,
                         )
                         if _soft_warnings:
                             _resp.fairness_warnings = _soft_warnings

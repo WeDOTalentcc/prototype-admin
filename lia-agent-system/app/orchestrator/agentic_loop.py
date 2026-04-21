@@ -173,11 +173,12 @@ class AgenticLoop:
                 except Exception:
                     pass
 
-                tool_calls_made.append({
+                _tc_entry: dict[str, Any] = {
                     "name": tc.name,
                     "parameters": tc.parameters,
                     "suggested_next": _suggested_next,
-                })
+                }
+                tool_calls_made.append(_tc_entry)
 
                 try:
                     result = await asyncio.wait_for(
@@ -192,26 +193,34 @@ class AgenticLoop:
                     tool_result_content = (
                         result.to_llm_content() if result else "Tool returned no result."
                     )
-                    # FIX 6 — Structured log for tool-call analytics (first_shot rate, governance).
+                    # FIX 12 / G8 — persist result dict in the tool_calls_made entry
+                    # so main_orchestrator can detect pending_hitl_confirmation and surface it.
+                    if result:
+                        try:
+                            _tc_entry["result"] = result.to_dict()
+                        except Exception:
+                            pass
+                    # FIX 12 / G9 — Central observability helper (replaces inline FIX 6).
                     try:
+                        from app.core.observability import emit_tool_call
                         _success = bool(getattr(result, "success", False))
-                        _governance = []
+                        _governance: list[str] = []
+                        _latency_ms = float(getattr(result, "execution_time_ms", 0.0)) or None
                         if self._tool_executor and self._tool_executor.registry.get_tool(tc.name):
                             _governance = list(getattr(
                                 self._tool_executor.registry.get_tool(tc.name),
                                 "governance_tags", [],
                             ) or [])
-                        logger.info(
-                            "tool_call",
-                            extra={
-                                "tool_name": tc.name,
-                                "company_id": getattr(exec_context, "company_id", None),
-                                "first_shot": iteration == 0,
-                                "call_index": len(tool_calls_made),
-                                "governance_tags": _governance,
-                                "has_related_tools": bool(_suggested_next),
-                                "success": _success,
-                            },
+                        emit_tool_call(
+                            tool_name=tc.name,
+                            company_id=getattr(exec_context, "company_id", None),
+                            success=_success,
+                            first_shot=iteration == 0,
+                            call_index=len(tool_calls_made),
+                            governance_tags=_governance,
+                            has_related_tools=bool(_suggested_next),
+                            latency_ms=_latency_ms,
+                            error=getattr(result, "error", None),
                         )
                     except Exception:
                         pass  # observability is non-blocking
