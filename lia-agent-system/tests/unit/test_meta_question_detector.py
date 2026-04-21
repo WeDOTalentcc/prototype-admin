@@ -33,7 +33,10 @@ def test_meta_questions_are_detected(message: str) -> None:
     result = detect_meta_capability_question(message)
     assert result is not None, f"expected meta-question for: {message!r}"
     assert result.reply
-    assert "concreto" in result.reply or "específico" in result.reply
+    # All intent-aware reply templates begin with "Sim, posso" and include
+    # at least one concrete example phrase.
+    assert result.reply.startswith("Sim, posso")
+    assert "por exemplo" in result.reply or "ex.:" in result.reply
 
 
 @pytest.mark.parametrize(

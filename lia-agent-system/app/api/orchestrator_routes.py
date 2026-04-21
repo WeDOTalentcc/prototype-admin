@@ -215,6 +215,20 @@ async def health_check(
     except Exception as exc:  # pragma: no cover — defensive
         result["domain_resolver_fallbacks"] = {"error": str(exc)}
 
+    # Task #726: meta-question gate observability — counter
+    # `meta_question_intercepted` reported alongside fallback stats.
+    try:
+        from app.orchestrator.meta_question_detector import (
+            get_meta_question_stats,
+        )
+        _mq = get_meta_question_stats()
+        result["meta_question_intercepted"] = {
+            "total": _mq.get("total", 0),
+            "by_verb": _mq.get("by_verb", {}),
+        }
+    except Exception as exc:  # pragma: no cover — defensive
+        result["meta_question_intercepted"] = {"error": str(exc)}
+
     return result
 
 

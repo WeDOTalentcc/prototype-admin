@@ -624,12 +624,38 @@ async def run(args: argparse.Namespace) -> None:
         print(f"    {cat:<6} {cat_passed}/{len(cat_results)}")
     print()
 
+    # Per-category accuracy thresholds — fail the run when a tracked
+    # category drops below its target. Task #726 introduced MQ at 95%.
+    CATEGORY_THRESHOLDS: dict[str, float] = {
+        "MQ": 0.95,
+    }
+    threshold_failures: list[str] = []
+    for cat, target in CATEGORY_THRESHOLDS.items():
+        cat_results = by_cat.get(cat, [])
+        if not cat_results:
+            continue
+        cat_passed = sum(1 for r in cat_results if r["score"] >= 2)
+        accuracy = cat_passed / len(cat_results)
+        if accuracy < target:
+            msg = (
+                f"Category {cat} accuracy {accuracy:.0%} < threshold "
+                f"{target:.0%} ({cat_passed}/{len(cat_results)})"
+            )
+            print(f"  THRESHOLD FAIL: {msg}")
+            threshold_failures.append(msg)
+
     # Save results
     ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
     out_path = BASE_DIR / f"eval_results_{ts}.json"
     out_path.write_text(json.dumps(results, indent=2, ensure_ascii=False))
     print(f"  Results saved: {out_path.name}")
     print(f"  Run eval_report.py {out_path.name} to generate HTML report\n")
+
+    if threshold_failures:
+        print("EVAL FAILED — category thresholds not met:")
+        for msg in threshold_failures:
+            print(f"  - {msg}")
+        sys.exit(2)
 
 
 def main() -> None:

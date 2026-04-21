@@ -96,15 +96,102 @@ _SPECIFIC_FILTERS = re.compile(
 # platform can do this, (b) how to phrase a real command. We intentionally
 # avoid claiming specifics ("o banco tem N candidatos") because the
 # inventory check belongs to a real action call.
-_INFORMATIONAL_REPLY = (
-    "Sim, posso fazer isso. Para eu executar a busca de verdade, me passe "
-    "pelo menos um critério concreto — por exemplo:\n"
-    "- \"busque candidatos React em São Paulo\"\n"
-    "- \"liste candidatos com experiência em Python sênior\"\n"
-    "- \"procure candidatos para a vaga V0042\"\n\n"
-    "Quanto mais específico (skill, senioridade, localização ou vaga), "
-    "melhor o resultado."
-)
+# Intent-aware reply templates keyed by verb family. Avoids the misleading
+# "busca de candidatos" guidance when the user actually asked about a
+# different capability (export, scheduling, etc.).
+_REPLY_TEMPLATES: dict[str, str] = {
+    "search": (
+        "Sim, posso buscar candidatos. Para eu executar a busca de verdade, "
+        "me passe pelo menos um critério concreto — por exemplo:\n"
+        "- \"busque candidatos React em São Paulo\"\n"
+        "- \"liste candidatos com experiência em Python sênior\"\n"
+        "- \"procure candidatos para a vaga V0042\""
+    ),
+    "list": (
+        "Sim, posso listar. Me diga o que você quer ver (ex.: \"liste vagas "
+        "ativas\", \"mostre candidatos da vaga V0042\", \"liste entrevistas "
+        "desta semana\")."
+    ),
+    "create": (
+        "Sim, posso criar/cadastrar. Me passe os dados básicos — por exemplo: "
+        "\"crie uma vaga de Tech Lead remoto\" ou \"cadastre um candidato "
+        "novo com nome, email e skills\"."
+    ),
+    "schedule": (
+        "Sim, posso agendar. Me diga com quem, quando e o tipo — por exemplo: "
+        "\"agende entrevista com Marco amanhã às 14h\" ou \"reagende a "
+        "entrevista do candidato X para sexta\"."
+    ),
+    "move": (
+        "Sim, posso mover/aprovar/reprovar candidatos. Me diga quais e para "
+        "qual etapa — por exemplo: \"mova João para Entrevista Final\" ou "
+        "\"aprove os 3 candidatos selecionados para próxima fase\"."
+    ),
+    "export": (
+        "Sim, posso exportar. Me diga o que e em qual formato — por exemplo: "
+        "\"exporte candidatos da vaga V0042 em CSV\" ou \"baixe relatório de "
+        "pipeline de outubro\"."
+    ),
+    "send": (
+        "Sim, posso enviar mensagens. Me diga para quem e o conteúdo (ou "
+        "peça uma mensagem personalizada) — por exemplo: \"envie convite de "
+        "entrevista para Marco\"."
+    ),
+    "generate": (
+        "Sim, posso gerar conteúdo. Me diga o tipo — por exemplo: \"gere "
+        "uma mensagem de outreach para o candidato X\" ou \"gere relatório "
+        "de pipeline da vaga V0042\"."
+    ),
+    "analyze": (
+        "Sim, posso analisar/avaliar/comparar. Me diga o alvo — por exemplo: "
+        "\"analise o perfil do candidato X para a vaga V0042\" ou \"compare "
+        "os top 3 candidatos da shortlist\"."
+    ),
+}
+
+_VERB_GROUPS: dict[str, str] = {
+    "busca": "search", "buscar": "search", "buscan": "search",
+    "pesquisa": "search", "pesquisar": "search", "pesquisan": "search",
+    "encontra": "search", "encontrar": "search", "encontran": "search",
+    "procura": "search", "procurar": "search", "procuran": "search",
+    "lista": "list", "listar": "list", "listan": "list",
+    "mostra": "list", "mostrar": "list", "mostran": "list",
+    "exibe": "list", "exibi": "list", "exibir": "list", "exiben": "list", "exibin": "list",
+    "ver": "list",
+    "cria": "create", "criar": "create", "crian": "create",
+    "adiciona": "create", "adicionar": "create", "adicionan": "create",
+    "cadastra": "create", "cadastrar": "create", "cadastran": "create",
+    "registra": "create", "registrar": "create", "registran": "create",
+    "agenda": "schedule", "agendar": "schedule", "agendan": "schedule",
+    "reagenda": "schedule", "reagendar": "schedule", "reagendan": "schedule",
+    "mover": "move", "move": "move", "moven": "move", "mova": "move",
+    "avança": "move", "avancar": "move", "avançar": "move",
+    "aprova": "move", "aprovar": "move", "aprovan": "move",
+    "reprova": "move", "reprovar": "move", "reprovan": "move",
+    "rejeita": "move", "rejeitar": "move", "rejeitan": "move",
+    "exporta": "export", "exportar": "export", "exportan": "export",
+    "baixa": "export", "baixar": "export", "baixan": "export",
+    "envia": "send", "enviar": "send", "envian": "send",
+    "manda": "send", "mandar": "send", "mandan": "send",
+    "comunica": "send", "comunicar": "send", "comunican": "send",
+    "gera": "generate", "gerar": "generate", "geran": "generate",
+    "analisa": "analyze", "analisar": "analyze", "analisan": "analyze",
+    "avalia": "analyze", "avaliar": "analyze", "avalian": "analyze",
+    "compara": "analyze", "comparar": "analyze", "comparan": "analyze",
+}
+
+
+def _reply_for_verb(verb: str) -> str:
+    """Return the intent-aware reply template for the matched verb.
+
+    Falls back to the search template (the most common case in this product)
+    when the verb is recognised but ungrouped, since it preserves the
+    operator-friendly guidance pattern.
+    """
+    group = _VERB_GROUPS.get(verb.lower())
+    if group and group in _REPLY_TEMPLATES:
+        return _REPLY_TEMPLATES[group]
+    return _REPLY_TEMPLATES["search"]
 
 
 @dataclass(frozen=True)
@@ -200,5 +287,5 @@ def detect_meta_capability_question(message: str) -> MetaQuestionResult | None:
     return MetaQuestionResult(
         matched_opener=opener_match.group(0).strip().lower(),
         matched_verb=verb,
-        reply=_INFORMATIONAL_REPLY,
+        reply=_reply_for_verb(verb),
     )
