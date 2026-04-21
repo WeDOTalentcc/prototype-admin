@@ -38,6 +38,78 @@ def _load_domain_additions(agent_type: str) -> str | None:
 
 
 
+# ---------------------------------------------------------------------------
+# Initiative I.B (2026-04-21) — Capability cards renderer.
+# Closes anti-hallucination loop: persona now renders the 16 curated
+# capability_cards (Init I.A) so the LLM has a grounded list when the
+# recruiter asks "o que você sabe fazer?". Combined with FIX 23
+# (open_ended_discovery guardrail) and FIX 24 (cleanup of predictive
+# claims), this ensures NO free-prose invention.
+# ---------------------------------------------------------------------------
+
+@lru_cache(maxsize=1)
+def _render_capability_cards() -> str:
+    """Render app/prompts/catalog/capability_cards.yaml as a markdown section.
+
+    Format:
+        ## Minhas Capacidades
+        Use somente as capacidades abaixo ao responder perguntas sobre o que
+        você sabe fazer. Cada item mapeia a ferramentas reais.
+
+        ### {title}
+        - Como o usuário pede: "{user_phrasing[0]}", "{user_phrasing[1]}"
+        - Exemplo: {example_input} → {example_output}
+        - tools: {tool1}, {tool2}
+        ...
+
+    Cached: capability catalog is static per deploy. Empty string if YAML
+    missing (graceful degradation — persona still works without the section).
+    """
+    try:
+        from app.shared.prompts.loader import PromptLoader
+        data = PromptLoader.load("catalog/capability_cards")
+        capabilities = data.get("capabilities", []) if isinstance(data, dict) else []
+    except Exception as exc:
+        logger.debug("Init I.B: capability_cards.yaml load failed: %s", exc)
+        return ""
+
+    if not capabilities:
+        return ""
+
+    lines: list[str] = []
+    lines.append("## Minhas Capacidades")
+    lines.append(
+        "Use APENAS as capacidades abaixo ao responder perguntas sobre o "
+        "que você sabe fazer. Cada item mapeia a ferramentas reais no seu "
+        "registry. Não invente capacidades fora desta lista."
+    )
+    lines.append("")
+
+    for card in capabilities:
+        title = card.get("title") or card.get("id") or "(sem título)"
+        phrasing = card.get("user_phrasing") or []
+        example_input = card.get("example_input") or ""
+        example_output = card.get("example_output") or ""
+        tools = card.get("tools") or []
+
+        lines.append(f"### {title}")
+        if phrasing:
+            # Show at most 3 user phrasings to keep token count reasonable
+            shown = phrasing[:3]
+            quoted = ", ".join(f'"{p}"' for p in shown)
+            lines.append(f"- Como o usuário pede: {quoted}")
+        if example_input:
+            if example_output:
+                lines.append(f"- Exemplo: _{example_input}_ → _{example_output}_")
+            else:
+                lines.append(f"- Exemplo: _{example_input}_")
+        if tools:
+            lines.append(f"- tools: {', '.join(tools)}")
+        lines.append("")
+
+    return "\n".join(lines)
+
+
 REACT_INSTRUCTIONS = (
     "\n## Protocolo de Raciocinio (ReAct)\n\n"
     "Voce opera em um ciclo de Raciocinio-Acao-Observacao:\n\n"
@@ -211,6 +283,10 @@ class SystemPromptBuilder:
         conversation_state: Any | None = None,
         # Initiative II.A (2026-04-21) — structured state injection
         pending_action: Any | None = None,
+        # Initiative I.B (2026-04-21) — capability cards rendering.
+        # None = auto (render for user-facing agents orchestrator/recruiter_assistant);
+        # True/False = explicit override (escape hatch for token budget or non-user agents).
+        include_capability_cards: bool | None = None,
     ) -> str:
         sections: list[str] = []
 
@@ -221,6 +297,25 @@ class SystemPromptBuilder:
 
         persona = _load_persona_base()
         sections.append(persona)
+
+        # Initiative I.B (2026-04-21) — render capability_cards for user-facing agents.
+        # Default: auto-include for orchestrator + recruiter_assistant (the agents
+        # that field free-form user questions). Other agents (job_planner,
+        # wsi_evaluator, etc.) skip the section — they have narrower scopes.
+        _USER_FACING_AGENT_TYPES = {"orchestrator", "recruiter_assistant"}
+        _render_cards = (
+            include_capability_cards
+            if include_capability_cards is not None
+            else (agent_type in _USER_FACING_AGENT_TYPES)
+        )
+        if _render_cards:
+            try:
+                _cards_block = _render_capability_cards()
+                if _cards_block:
+                    sections.append(_cards_block)
+            except Exception as _cards_exc:
+                logger.debug("Init I.B: capability_cards render skipped: %s", _cards_exc)
+
         sections.append(_PLATFORM_KNOWLEDGE)
         if _CANONICAL_GLOSSARY_BLOCK:
             sections.append(_CANONICAL_GLOSSARY_BLOCK)
