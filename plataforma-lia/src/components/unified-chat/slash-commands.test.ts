@@ -48,6 +48,7 @@ describe("SLASH_COMMANDS registry", () => {
       "pipeline",
       "relatorio",
       "ajuda",
+      "definir",
       "nova-conversa",
     ])
   })

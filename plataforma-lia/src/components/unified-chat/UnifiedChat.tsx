@@ -18,6 +18,12 @@ import { UnifiedChatInput } from "./UnifiedChatInput"
 import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState"
 import { UnifiedMessageList } from "./UnifiedMessageList"
 import type { ChatMode } from "./unified-chat-types"
+import {
+  formatGlossaryEntryMarkdown,
+  lookupGlossaryTerm,
+} from "@/services/lia-api/glossary-api"
+
+const DEFINIR_REGEX = /^\/(?:definir|glossario|glossário)(?:\s+(.+))?$/i
 
 const MODE_STORAGE_KEY = "lia-chat-mode"
 
@@ -156,6 +162,56 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const handleSend = useCallback(() => {
     const text = inputText.trim()
     if (!text) return
+
+    // `/definir <termo>` is resolved locally against the canonical glossary
+    // endpoint so recruiters get the official WSI/BARS/Bloom definition without
+    // round-tripping the LIA agent (Task #745).
+    const definirMatch = text.match(DEFINIR_REGEX)
+    if (definirMatch) {
+      const term = (definirMatch[1] ?? "").trim()
+      const now = new Date().toISOString()
+      const userMsg = {
+        id: `user-${Date.now()}`,
+        sender: "user" as const,
+        content: text,
+        timestamp: now,
+      }
+      // Bare `/definir` (no term) — answer locally with usage guidance instead
+      // of hitting the backend agent.
+      if (!term) {
+        const helpMsg = {
+          id: `lia-${Date.now()}-glossary-help`,
+          sender: "lia" as const,
+          content:
+            "Informe o termo apos o comando. Exemplos: `/definir WSI`, `/definir Bloom`, `/definir BARS`.",
+          timestamp: now,
+        }
+        setChatMessages((prev) => [...prev, userMsg, helpMsg])
+        setInputText("")
+        setAttachedFile(null)
+        return
+      }
+      const pendingId = `lia-${Date.now()}-glossary`
+      const pendingMsg = {
+        id: pendingId,
+        sender: "lia" as const,
+        content: `Buscando a definicao oficial de **${term}**...`,
+        timestamp: now,
+      }
+      setChatMessages((prev) => [...prev, userMsg, pendingMsg])
+      setInputText("")
+      setAttachedFile(null)
+      void lookupGlossaryTerm(term).then((result) => {
+        const replyContent = result.ok
+          ? formatGlossaryEntryMarkdown(result.entry)
+          : `${result.message}\n\n_Tente outro termo, por exemplo: \`/definir WSI\`._`
+        setChatMessages((prev) =>
+          prev.map((m) => (m.id === pendingId ? { ...m, content: replyContent } : m)),
+        )
+      })
+      return
+    }
+
     // Intercept slash commands before sending to backend
     if (text.startsWith("/") && handleSlashCommand(text)) {
       setInputText("")

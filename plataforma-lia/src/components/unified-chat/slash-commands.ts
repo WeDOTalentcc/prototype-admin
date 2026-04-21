@@ -7,6 +7,7 @@ import {
   Plus,
   MessageSquare,
   Calendar,
+  BookOpen,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -135,6 +136,18 @@ export const SLASH_COMMANDS: readonly SlashCommand[] = [
     icon: HelpCircle,
     dropdownPrefill: "O que voce pode fazer? Liste todas as suas capacidades.",
     buildBareMessage: () => "/ajuda",
+    showInDropdown: true,
+  },
+  {
+    id: "definir",
+    primary: "/definir",
+    aliases: ["/glossario", "/glossário"],
+    label: "Definir termo",
+    subtitle: "Mostrar a definicao oficial de WSI, BARS, Bloom, etc.",
+    icon: BookOpen,
+    dropdownPrefill: "/definir ",
+    // Intercepted locally by UnifiedChat (calls /api/v1/glossary/terms/{term})
+    // — does NOT round-trip the backend agent.
     showInDropdown: true,
   },
   {

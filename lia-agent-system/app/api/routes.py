@@ -275,6 +275,10 @@ def register_all_routes(app: FastAPI) -> None:
     from app.api.v1 import internal_llm
     app.include_router(internal_llm.router, prefix="/api/v1")
 
+    # ── Glossary (canonical term lookup for chat tooltips/`/definir`) ─────────
+    from app.api.v1 import glossary as glossary_v1
+    app.include_router(glossary_v1.router, prefix="/api/v1/glossary", tags=["glossary"])
+
     # ── Core / Navigation ─────────────────────────────────────────────────────
     app.include_router(navigation_intent_router, prefix="/api/v1")
     app.include_router(chat.router, prefix="/api/v1")
