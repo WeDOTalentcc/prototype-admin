@@ -2,7 +2,7 @@
 FIX 6 — Structured logging of tool calls.
 
 After FIX 12 refactor, the structured log is emitted via
-`app.core.observability.emit_tool_call`. This test verifies the integration
+`app.shared.observability.tool_metrics.emit_tool_call`. This test verifies the integration
 point and payload shape.
 """
 
@@ -11,7 +11,7 @@ class TestFix6Observability:
     def test_observability_module_emits_tool_call(self):
         """The central emit_tool_call helper produces structured logs."""
         from pathlib import Path
-        import app.core.observability as obs
+        import app.shared.observability.tool_metrics as obs
         src = Path(obs.__file__).read_text()
         # Expected fields in the structured log event
         for field in (
@@ -31,7 +31,7 @@ class TestFix6Observability:
 
     def test_emit_tool_call_is_non_blocking(self):
         """The observability helper must never raise on bad inputs."""
-        from app.core.observability import emit_tool_call
+        from app.shared.observability.tool_metrics import emit_tool_call
         # Pass extreme edge cases
         emit_tool_call(
             tool_name="",

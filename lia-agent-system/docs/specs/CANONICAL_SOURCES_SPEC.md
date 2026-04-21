@@ -39,6 +39,7 @@ and re-fragmentation.
 | Token budget enforcement | `app.shared.observability.token_budget_service` |
 | WSI-specific observability | `app.shared.observability.wsi_observability` |
 | LangSmith configuration | `app.shared.observability.langsmith` |
+| Tool call + HITL metrics | `app.shared.observability.tool_metrics` |
 
 ### 1.2 Forbidden legacy paths (deleted; CI-blocked)
 
@@ -61,6 +62,7 @@ shims. `scripts/check_forbidden_imports.py` rejects any reintroduction.
 - `app.domains.analytics.services.agent_monitoring_service`
 - `app.domains.credits.services.token_budget_service`
 - `app.config.langsmith`
+- `app.core.observability` (migrated to `app.shared.observability.tool_metrics` in FIX 13)
 
 ### 1.3 Cross-references
 
@@ -131,49 +133,20 @@ shims. `scripts/check_forbidden_imports.py` rejects any reintroduction.
 
 ---
 
-## 7. Tool call observability — `app.shared.observability` (ADR-019)
+## 7. Tool call observability — `app.shared.observability.tool_metrics` (ADR-019)
 
-> **NOTA DE MIGRAÇÃO:** Em FIX 12 (commit `3f7245f18`) criamos `app/core/observability.py` com `emit_tool_call()` + `emit_hitl_pending()`. Isso **viola** a regra de Section 1 desta spec (todo observability deve ficar em `app/shared/observability/`). Um **follow-up fix é requerido** para mover o módulo para o path canônico antes do merge em main.
-
-- **Canonical target (pós-migração):** `app.shared.observability.tool_metrics`
+- **Canonical module:** `app/shared/observability/tool_metrics.py`
 - **Funções públicas:**
   - `emit_tool_call(**kwargs)` — structured log + opcional LangSmith forward
   - `emit_hitl_pending(**kwargs)` — audit trail de HITL
-- **Current location (a migrar):** `app.core.observability` — mantido temporariamente para estabilizar os commits FIX 12
-- **LangSmith client:** usar `app.shared.observability.langsmith` (Section 1.1) como source de `Client()`
+- **LangSmith gating:** delegado a `app.shared.observability.langsmith.is_langsmith_enabled()` — fonte única de verdade para "tracing está on?"
 - See **ADR-019**.
 
-### 7.1 Migration TODO
+### 7.1 Forbidden patterns
 
-**Action item para próxima sessão:**
-```bash
-# 1. Mover arquivo
-git mv app/core/observability.py app/shared/observability/tool_metrics.py
-
-# 2. Atualizar imports (2 callers)
-sed -i 's|from app.core.observability|from app.shared.observability.tool_metrics|g' \
-    app/orchestrator/agentic_loop.py \
-    app/orchestrator/main_orchestrator.py
-
-# 3. Atualizar test
-sed -i 's|from app.core.observability|from app.shared.observability.tool_metrics|g' \
-    tests/unit/test_fix12_hitl_obs.py
-
-# 4. Atualizar LangSmith init para reutilizar app.shared.observability.langsmith
-#    (evita duplicação de client init)
-
-# 5. Rodar CI guard
-python scripts/check_forbidden_imports.py
-
-# 6. Commit
-git commit -m "refactor(obs): move tool_metrics to canonical app.shared.observability path (ADR-019)"
-```
-
-### 7.2 Forbidden patterns (post-migration)
-
-- `from app.core.observability import emit_tool_call` → bloqueado após migração
-- Redefinir `emit_tool_call` em outros módulos → duplicação de concerna (Section 1 rule)
-- Invocar `langsmith.Client()` diretamente → usar wrapper de `app.shared.observability.langsmith`
+- `from app.core.observability import emit_tool_call` → **FORBIDDEN** (migrated to canonical path in FIX 13)
+- Redefinir `emit_tool_call` em outros módulos → duplicação (Section 1 rule)
+- Invocar `langsmith.Client()` diretamente → usar o gating de `app.shared.observability.langsmith.is_langsmith_enabled()`
 
 ---
 

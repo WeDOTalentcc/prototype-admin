@@ -1,42 +1,33 @@
 """
-app/core/observability.py — FIX 12 / G9.
+app/shared/observability/tool_metrics.py — FIX 13 (canonical migration).
 
-Central helper for structured logging of tool calls. Provides a single
-entry point used by agentic_loop.py (and future consumers). Emits:
+Central helper for structured logging of tool calls. Moved here from
+`app/core/observability.py` (FIX 12) to comply with Section 1 of
+`docs/specs/CANONICAL_SOURCES_SPEC.md` — all observability code lives
+under `app.shared.observability.*` with exactly one canonical path.
 
-  1. structured `logger.info("tool_call", extra={...})` — always
-  2. optional LangSmith span — when LANGCHAIN_TRACING_V2=true + langsmith installed
+Provides:
+    emit_tool_call(**kwargs)      → structured log + optional LangSmith span
+    emit_hitl_pending(**kwargs)   → audit event for HITL confirmation requests
 
-This centralization was added to close Gap 9 (tool-metrics ingestion gap).
-Previously, `logger.info("tool_call", ...)` was inlined in agentic_loop.py
-without any ingestion layer — logs existed but were not actionable.
+Reuses `app.shared.observability.langsmith.is_langsmith_enabled()` to gate
+LangSmith forwarding, avoiding duplicate env-var checks.
 
-## Usage
+## Environment variables (forwarding)
 
-    from app.core.observability import emit_tool_call
+  LANGCHAIN_TRACING_V2=true         enables LangSmith span emission
+  LANGSMITH_API_KEY=... or          required when tracing enabled
+    LANGCHAIN_API_KEY=...
+  LANGCHAIN_PROJECT=<name>          optional project name
 
-    emit_tool_call(
-        tool_name="create_job_vacancy",
-        company_id="abc-123",
-        success=True,
-        first_shot=True,
-        call_index=1,
-        governance_tags=["multi_tenant"],
-        has_related_tools=True,
-        latency_ms=420.5,
-    )
-
-## Environment variables
-
-  LANGCHAIN_TRACING_V2=true     enables LangSmith span emission
-  LANGCHAIN_API_KEY=...         required when tracing enabled
-  LANGCHAIN_PROJECT=<name>      optional project name
+See also ADR-019 and docs/LIA_AI_HANDOFF.md §11.
 """
 from __future__ import annotations
 
 import logging
-import os
 from typing import Any
+
+from app.shared.observability.langsmith import is_langsmith_enabled
 
 logger = logging.getLogger("lia.tool_metrics")
 
@@ -47,18 +38,16 @@ _LANGSMITH_INIT_ATTEMPTED = False
 def _maybe_get_langsmith_client() -> Any | None:
     """Return a LangSmith client if tracing is enabled and lib is available.
 
-    The lookup is cached: first call attempts init, subsequent calls return
-    the cached client (or None). Safe to call hot-path.
+    Delegates env-var gating to `app.shared.observability.langsmith` to keep
+    a single source of truth for "is tracing on?". Caches the client after
+    first successful init.
     """
     global _LANGSMITH_CLIENT, _LANGSMITH_INIT_ATTEMPTED
     if _LANGSMITH_INIT_ATTEMPTED:
         return _LANGSMITH_CLIENT
     _LANGSMITH_INIT_ATTEMPTED = True
 
-    tracing_enabled = os.getenv("LANGCHAIN_TRACING_V2", "").lower() in ("true", "1", "yes")
-    if not tracing_enabled:
-        return None
-    if not os.getenv("LANGCHAIN_API_KEY"):
+    if not is_langsmith_enabled():
         return None
 
     try:
@@ -87,8 +76,8 @@ def emit_tool_call(
 ) -> None:
     """Emit a structured tool-call event.
 
-    Always logs; optionally forwards to LangSmith when enabled. Never raises
-    — observability failures must never break the request flow.
+    Always logs; optionally forwards to LangSmith when enabled. Never raises —
+    observability failures must never break the request flow.
     """
     event: dict[str, Any] = {
         "tool_name": tool_name,
@@ -112,8 +101,6 @@ def emit_tool_call(
     client = _maybe_get_langsmith_client()
     if client is not None:
         try:
-            # Minimal: create a run record tagged with our event. Uses
-            # LangSmith's lightweight tracer — does not block.
             client.create_run(  # type: ignore[attr-defined]
                 name=f"tool_call:{tool_name}",
                 run_type="tool",
@@ -134,8 +121,8 @@ def emit_hitl_pending(
 ) -> None:
     """Emit a HITL-pending event for audit trail.
 
-    Called when a tool with governance_tags=[requires_hitl] returns
-    pending_hitl_confirmation. Lets us measure HITL confirmation funnel.
+    Called when a tool with `governance_tags=[requires_hitl]` returns
+    `pending_hitl_confirmation`. Enables HITL-funnel analytics.
     """
     event = {
         "tool_name": tool_name,
@@ -150,7 +137,7 @@ def emit_hitl_pending(
 
 
 def reset_langsmith_cache() -> None:
-    """Test helper: reset the cached LangSmith client (for unit tests)."""
+    """Test helper: reset the cached LangSmith client."""
     global _LANGSMITH_CLIENT, _LANGSMITH_INIT_ATTEMPTED
     _LANGSMITH_CLIENT = None
     _LANGSMITH_INIT_ATTEMPTED = False

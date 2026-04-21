@@ -10,15 +10,15 @@ import pytest
 
 class TestFix12ObservabilityModule:
     def test_emit_tool_call_exists(self):
-        from app.core.observability import emit_tool_call
+        from app.shared.observability.tool_metrics import emit_tool_call
         assert callable(emit_tool_call)
 
     def test_emit_hitl_pending_exists(self):
-        from app.core.observability import emit_hitl_pending
+        from app.shared.observability.tool_metrics import emit_hitl_pending
         assert callable(emit_hitl_pending)
 
     def test_emit_tool_call_never_raises(self):
-        from app.core.observability import emit_tool_call
+        from app.shared.observability.tool_metrics import emit_tool_call
         # Even with odd inputs, must not raise
         emit_tool_call(
             tool_name="t",
@@ -34,7 +34,7 @@ class TestFix12ObservabilityModule:
     def test_langsmith_disabled_by_default(self):
         """Without env vars, no LangSmith client is created."""
         import os
-        from app.core.observability import _maybe_get_langsmith_client, reset_langsmith_cache
+        from app.shared.observability.tool_metrics import _maybe_get_langsmith_client, reset_langsmith_cache
         reset_langsmith_cache()
         # Ensure env is clean for this test
         old = os.environ.pop("LANGCHAIN_TRACING_V2", None)

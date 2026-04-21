@@ -202,7 +202,7 @@ class AgenticLoop:
                             pass
                     # FIX 12 / G9 — Central observability helper (replaces inline FIX 6).
                     try:
-                        from app.core.observability import emit_tool_call
+                        from app.shared.observability.tool_metrics import emit_tool_call
                         _success = bool(getattr(result, "success", False))
                         _governance: list[str] = []
                         _latency_ms = float(getattr(result, "execution_time_ms", 0.0)) or None

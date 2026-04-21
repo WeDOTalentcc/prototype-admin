@@ -869,7 +869,7 @@ if (firstCall?.result?.result?.blocked_by_fairness_guard) {
 
 ### Módulo canônico
 
-**Path:** `app/core/observability.py` (criado em FIX 12).
+**Path:** `app/shared/observability/tool_metrics.py` (criado em FIX 12, migrado para o canonical path em FIX 13).
 
 **Funções públicas:**
 ```python
@@ -1006,7 +1006,7 @@ git reset --hard 82009b0c8^
 | [`896f4ae34`](../../commit/896f4ae34) | 2026-04-21 | FIX 9 | all actions.py + 4 inline domain.py |
 | [`c0a3e3b79`](../../commit/c0a3e3b79) | 2026-04-21 | FIX 10 | `tool_registry_metadata.yaml`, `intents_config.py` |
 | [`cf12c3ec9`](../../commit/cf12c3ec9) | 2026-04-21 | FIX 11 | `llm_cascade.py`, `job_management/actions.py` |
-| [`3f7245f18`](../../commit/3f7245f18) | 2026-04-21 | FIX 12 | **`app/core/observability.py`** (novo), `agentic_loop.py`, `main_orchestrator.py` |
+| [`3f7245f18`](../../commit/3f7245f18) | 2026-04-21 | FIX 12 | **`app/shared/observability/tool_metrics.py`** (migrado em FIX 13), `agentic_loop.py`, `main_orchestrator.py` |
 
 ### Apêndice B — Status dos 9 gaps
 

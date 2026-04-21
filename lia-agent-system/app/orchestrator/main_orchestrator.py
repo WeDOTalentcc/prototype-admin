@@ -507,7 +507,7 @@ class MainOrchestrator:
                                 })
                                 # Also emit audit event
                                 try:
-                                    from app.core.observability import emit_hitl_pending
+                                    from app.shared.observability.tool_metrics import emit_hitl_pending
                                     emit_hitl_pending(
                                         tool_name=_tc.get("name"),
                                         company_id=getattr(ctx, "company_id", None) if "ctx" in dir() else None,

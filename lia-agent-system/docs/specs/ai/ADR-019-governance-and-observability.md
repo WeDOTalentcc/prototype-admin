@@ -182,3 +182,19 @@ Queries úteis em LangSmith / log aggregator:
   - CF Art. 5º + Lei 7.716/89 — proibição de discriminação
   - Lei 9.029/95 — discriminação em processos seletivos
   - EU AI Act Art. 13 — transparência em IA de alto risco
+
+---
+
+## Addendum — FIX 13 (canonical-path migration)
+
+**Commit:** `<TBD after commit>`  ·  **Date:** 2026-04-21
+
+O módulo criado em FIX 12 em `app/core/observability.py` foi migrado para o path canônico `app/shared/observability/tool_metrics.py` conforme Section 1 de `docs/specs/CANONICAL_SOURCES_SPEC.md` (todo observability deve ficar sob `app.shared.observability.*`).
+
+Mudanças:
+- `git mv app/core/observability.py app/shared/observability/tool_metrics.py`
+- Imports atualizados em `agentic_loop.py`, `main_orchestrator.py` e 2 test files
+- Refactor para reutilizar `app.shared.observability.langsmith.is_langsmith_enabled()` (evita duplicação do check de env var)
+- `CANONICAL_SOURCES_SPEC.md` §1.1 atualizado com o novo módulo; §1.2 bloqueia o path legado; §7 removeu o TODO de migração
+
+Todos os 65 testes FIX 1-12 permanecem verdes após a migração.
