@@ -1,0 +1,88 @@
+# Initiative VI Fase 0 (2026-04-21) — externalized judge config.
+#
+# Before: eval/eval_judge.py had an inline 350-line JUDGE_PROMPT + hardcoded
+# model + direct anthropic.Anthropic() call (bypassed LLM Factory).
+#
+# After: config-driven. Change judge prompt, model, or output shape without
+# touching Python. Factory handles LLM call via canonical provider stack
+# (circuit breaker, langsmith tracing, tenant BYOK respected even for
+# system-tier eval).
+
+metadata:
+  initiative: "VI Fase 0"
+  created: "2026-04-21"
+  reference: "docs/FINAL_AUDIT.md §4"
+
+# Model config — Haiku chosen for cost ($0.003/1K tokens); use Sonnet for
+# high-stakes eval if budget allows.
+model:
+  name: "claude-haiku-4-5-20251001"
+  max_tokens: 512
+  temperature: 0.0  # deterministic judge output
+
+# Provider selection via LLM Factory. "claude" routes through ClaudeLLMProvider
+# which applies circuit breaker + langsmith + monkeypatched audit/PII strip.
+provider: "claude"
+
+# Output shape contract — judge MUST return JSON with these keys.
+# Kept in config so we can evolve output format without code changes.
+output_schema:
+  required: [score, verdict, reasoning]
+  optional:
+    - tool_called_correctly
+    - context_used
+    - confirmation_requested
+    - anti_pattern_detected
+    - suggested_fix
+
+# Prompt template — {placeholders} substituted at runtime.
+# Keep in YAML block scalar for easy editing without escape hell.
+prompt_template: |
+  You are an expert QA engineer evaluating an enterprise AI recruiting assistant called LIA.
+
+  # Test Case
+  ID: {case_id}
+  Category: {category}
+  Severity: {severity}
+  Title: {title}
+
+  # User Prompt
+  {prompt}
+
+  # Page Context
+  scope: {scope}
+  entity_id: {entity_id}
+
+  # Expected Behavior
+  {expected_behavior}
+
+  # Expected Tools to be Called
+  {expected_tools}
+
+  # Success Criteria
+  {success_criteria}
+
+  # Anti-Patterns to Detect
+  {anti_patterns}
+
+  # LIA's Actual Response
+  {response}
+
+  # Your Task
+  Score this response on a 0-3 scale:
+  - 0 = FAIL: Anti-pattern detected, tool not called, refused to act, or empty
+  - 1 = PARTIAL: Attempted but missed key criteria or took wrong approach
+  - 2 = PASS: Met main success criteria, no critical anti-patterns
+  - 3 = PERFECT: All criteria met, proactive, correct tool use, professional tone
+
+  Respond ONLY with valid JSON:
+  {{
+    "score": <0|1|2|3>,
+    "verdict": "<FAIL|PARTIAL|PASS|PERFECT>",
+    "tool_called_correctly": <true|false|null>,
+    "context_used": <true|false>,
+    "confirmation_requested": <true|false|null>,
+    "anti_pattern_detected": "<description or null>",
+    "reasoning": "<1-2 sentence explanation>",
+    "suggested_fix": "<which canonical file to fix, or null>"
+  }}

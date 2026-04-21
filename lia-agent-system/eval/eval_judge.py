@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
 """
-LIA Eval Judge — LLM-as-judge using Claude
-Re-scores results from eval_runner.py with deeper semantic analysis.
+LIA Eval Judge — LLM-as-judge using Claude (via LLM Factory).
+
+Initiative VI Fase 0 (2026-04-21): migrated from direct anthropic.Anthropic()
+call to canonical LLMProviderFactory. JUDGE_PROMPT + model config externalized
+to eval/eval_judge_config.yaml. See docs/FINAL_AUDIT.md §4.
 
 Usage:
   python eval_judge.py eval_results_<timestamp>.json [--rewrite]
 
-Requires: ANTHROPIC_API_KEY env var
-Output: eval_results_<timestamp>_judged.json
+Env:
+  - AI_INTEGRATIONS_ANTHROPIC_API_KEY or ANTHROPIC_API_KEY (factory picks up)
+
+Output: eval_results_<timestamp>_judged.json (format unchanged — backward compat)
 """
 from __future__ import annotations
 
 import argparse
+import asyncio
 import json
 import os
 import sys
@@ -19,9 +25,33 @@ import time
 from pathlib import Path
 from typing import Any
 
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+# Ensure lia-agent-system root on sys.path so we can import app.shared.providers
+_EVAL_DIR = Path(__file__).resolve().parent
+_PROJECT_ROOT = _EVAL_DIR.parent
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
 
-JUDGE_PROMPT = """\
+
+def _load_judge_config() -> dict:
+    """Load eval/eval_judge_config.yaml — Initiative VI Fase 0 externalization."""
+    try:
+        import yaml
+    except ImportError:
+        # Fallback to inline legacy if PyYAML missing (defensive for minimal envs)
+        return {}
+
+    cfg_path = _EVAL_DIR / "eval_judge_config.yaml"
+    if not cfg_path.exists():
+        return {}
+    return yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
+
+
+_CONFIG = _load_judge_config()
+_JUDGE_MODEL = (_CONFIG.get("model") or {}).get("name", "claude-haiku-4-5-20251001")
+_JUDGE_MAX_TOKENS = (_CONFIG.get("model") or {}).get("max_tokens", 512)
+_JUDGE_PROVIDER = _CONFIG.get("provider", "claude")
+
+JUDGE_PROMPT = _CONFIG.get("prompt_template") or """\
 You are an expert QA engineer evaluating an enterprise AI recruiting assistant called LIA.
 
 # Test Case
@@ -98,14 +128,34 @@ def judge_with_claude(case_result: dict) -> dict[str, Any]:
         response=case_result.get("response", "(empty)"),
     )
 
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    # Initiative VI Fase 0 (2026-04-21): use LLMProviderFactory instead of
+    # direct anthropic.Anthropic() — applies circuit breaker, langsmith tracing,
+    # tenant BYOK (when tenant_id provided), and the canonical provider stack.
     try:
-        resp = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=512,
-            messages=[{"role": "user", "content": prompt}],
+        from app.shared.providers.llm_factory import LLMProviderFactory
+        # Trigger provider registration (auto on import of llm_claude)
+        from app.shared.providers import llm_claude  # noqa: F401
+
+        provider = LLMProviderFactory.get(_JUDGE_PROVIDER)
+        # generate() is async; eval_judge is sync → asyncio.run()
+        resp: Any = asyncio.run(
+            provider.generate(
+                prompt=prompt,
+                model=_JUDGE_MODEL,
+                max_tokens=_JUDGE_MAX_TOKENS,
+                temperature=0.0,
+            )
         )
-        raw = resp.content[0].text.strip()
+        # LLMResponse has .text attribute (StandardizedResponse)
+        raw = (getattr(resp, "text", "") or "").strip()
+    except Exception as _factory_exc:
+        return {
+            "score": case_result["score"],
+            "verdict": "JUDGE_ERROR",
+            "error": f"LLM Factory call failed: {_factory_exc}",
+            "judged_by": "none",
+        }
+    try:
         # Extract JSON from response
         if "```json" in raw:
             raw = raw.split("```json")[1].split("```")[0].strip()
