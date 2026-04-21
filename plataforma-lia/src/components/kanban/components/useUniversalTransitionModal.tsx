@@ -205,6 +205,9 @@ export function useUniversalTransitionModal({
 
   const { sendMessage, messages, result: interpretResult, isLoading: isInterpreting, reset: resetInterpret } = useInterpretContext()
 
+  const firstCandidateId = candidates[0]?.id
+  const firstCandidateName = candidates[0]?.name
+
   useEffect(() => {
     if (!isOpen || !companyId) return
     const isOfferStage = selectedToStage.toLowerCase().includes('proposta') ||
@@ -215,43 +218,42 @@ export function useUniversalTransitionModal({
       setPolicyMetadata({})
       return
     }
-    const candidateId = candidates[0]?.id
-    if (!candidateId) return
+    if (!firstCandidateId) return
 
-    fetch(`/api/backend-proxy/pipeline-policy?action=validate-transition&candidate_id=${candidateId}&target_stage=${selectedToStage}&company_id=${companyId}`)
+    fetch(`/api/backend-proxy/pipeline-policy?action=validate-transition&candidate_id=${firstCandidateId}&target_stage=${selectedToStage}&company_id=${companyId}`)
       .then(res => res.json())
       .then(data => {
         setPolicyWarnings(data.warnings || [])
         setPolicyMetadata(data.metadata || {})
       })
       .catch((err) => { console.error('[useUniversalTransitionModal] pipeline-policy fetch failed', err) })
-  }, [isOpen, companyId, selectedToStage, candidates])
+  }, [isOpen, companyId, selectedToStage, firstCandidateId])
 
   useEffect(() => {
-    if (isOpen) {
-      setSubStatus(currentSubStatusOptions.length > 0 ? currentSubStatusOptions[0].code : '')
-      setAction('lia_auto')
-      setPrompt(initialPrompt || '')
-      setChannel('email')
-      setPerCandidateSubStatus({})
-      setManuallyEditedCandidates(new Set())
-      setShowAllPerCandidate(false)
-      resetInterpret()
-      if (initialPrompt) {
-        setTimeout(() => {
-          sendMessage(initialPrompt, {
-            candidate_id: candidates[0]?.id || '',
-            candidate_name: candidates[0]?.name,
-            job_title: jobTitle,
-            from_stage: fromStage,
-            to_stage: selectedToStage,
-            action_behavior: currentActionBehavior,
-            company_id: companyId,
-          })
-        }, 300)
-      }
+    if (!isOpen) return
+    setSubStatus(currentSubStatusOptions.length > 0 ? currentSubStatusOptions[0].code : '')
+    setAction('lia_auto')
+    setPrompt(initialPrompt || '')
+    setChannel('email')
+    setPerCandidateSubStatus({})
+    setManuallyEditedCandidates(new Set())
+    setShowAllPerCandidate(false)
+    resetInterpret()
+    if (initialPrompt) {
+      const timer = setTimeout(() => {
+        sendMessage(initialPrompt, {
+          candidate_id: firstCandidateId || '',
+          candidate_name: firstCandidateName,
+          job_title: jobTitle,
+          from_stage: fromStage,
+          to_stage: selectedToStage,
+          action_behavior: currentActionBehavior,
+          company_id: companyId,
+        })
+      }, 300)
+      return () => clearTimeout(timer)
     }
-  }, [isOpen, currentSubStatusOptions, resetInterpret, initialPrompt, candidates, companyId, currentActionBehavior, fromStage, jobTitle, selectedToStage, sendMessage])
+  }, [isOpen, currentSubStatusOptions, resetInterpret, initialPrompt, firstCandidateId, firstCandidateName, companyId, currentActionBehavior, fromStage, jobTitle, selectedToStage, sendMessage])
 
   useEffect(() => {
     if (isRejectedBatch && Object.keys(predictedSubStatuses).length > 0) {

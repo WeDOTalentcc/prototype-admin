@@ -459,30 +459,9 @@ class MainOrchestrator:
                     )
 
                     if _agentic_result and _agentic_result.get("response"):
-                        # P2#7 — Onboarding enforcement telemetry
-                        if _agent_type == "company_settings":
-                            _expected_tools = {
-                                "check_company_completeness",
-                                "analyze_company_website",
-                                "suggest_recruiting_policy",
-                                "import_benefits_from_data",
-                                "save_company_field",
-                                "save_company_section",
-                            }
-                            _tools_called = {
-                                tc.get("name") for tc in (_agentic_result.get("tool_calls_made") or [])
-                                if isinstance(tc, dict) and tc.get("name")
-                            }
-                            if not (_tools_called & _expected_tools):
-                                logger.warning(
-                                    "[Onboarding] LLM did NOT call any onboarding tool despite delegate",
-                                    extra={
-                                        "company_id": _loop_company_id,
-                                        "tools_called": list(_tools_called),
-                                        "expected_any_of": list(_expected_tools),
-                                        "onboarding_hints": _onboarding_hints_detected if "_onboarding_hints_detected" in dir() else [],
-                                    },
-                                )
+                        # Task B (2026-04-21): Removed dead P2#7 onboarding telemetry block
+                        # that depended on `_agent_type == "company_settings"`. After FIX 14,
+                        # this condition is never True (agent_type hijack removed).
                         logger.info(
                             "[LIA-A04] Agentic loop resolved in %d iterations with %d tool calls",
                             _agentic_result.get("iterations", 0),

@@ -80,11 +80,24 @@ FORBIDDEN_PATTERNS = [
     re.compile(r"\bimport\s+app\.domains\.credits\.services\.token_budget_service\b"),
     re.compile(r"\bfrom\s+app\.config\.langsmith\b"),
     re.compile(r"\bimport\s+app\.config\.langsmith\b"),
+    # FIX 13 (2026-04-21): app/core/observability.py was moved to
+    # app/shared/observability/tool_metrics.py per Section 1 of
+    # CANONICAL_SOURCES_SPEC.md (single source of truth for observability).
+    # Reintroducing app.core.observability would violate the canonical
+    # structure. The module is now at app.shared.observability.tool_metrics.
+    re.compile(r"\bfrom\s+app\.core\.observability\b"),
+    re.compile(r"\bimport\s+app\.core\.observability\b"),
 ]
 
 SCAN_DIRS = ["app", "scripts", "tests", "libs", "alembic"]
 
 SELF = Path(__file__).resolve()
+
+# Files that legitimately CONTAIN forbidden pattern strings as test fixtures
+# or documentation. These must be skipped to avoid false positives.
+SKIP_FILES: set[str] = {
+    "tests/unit/test_check_forbidden_imports.py",  # test fixtures for this script
+}
 
 
 def _scan_string_literals(
@@ -122,6 +135,12 @@ def _scan_string_literals(
 
 def _check_file(py_file: Path, base: Path, violations: list[str]) -> None:
     if py_file.resolve() == SELF:
+        return
+    try:
+        rel_str = str(py_file.relative_to(base))
+    except ValueError:
+        rel_str = ""
+    if rel_str in SKIP_FILES:
         return
     try:
         source = py_file.read_text(encoding="utf-8")
