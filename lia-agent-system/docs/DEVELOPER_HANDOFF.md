@@ -2858,3 +2858,165 @@ Os hashes foram atribuídos prematuramente antes dos commits reais serem criados
 
 *Atualizado em: 2026-04-21 | PARTE J adicionada — narrativa "A Jornada Completa" Sessão B com 6 hashes corrigidos para commits REAIS + contexto técnico por Task para o time de desenvolvimento. PARTE I (FIX 1-13, commits `82009b0c8` → `453a46615`) é a sessão imediatamente seguinte.*
 
+---
+
+## PARTE K — Auditoria de Chat em Produção: FIX 14-17 (2026-04-21 tarde)
+
+> Ciclo de diagnóstico + fix iniciado a partir de 4 screenshots do usuário testando LIA no chat após push do FIX 1-13. Aplicou skills `harness-engineering-lia` + `canonical-fix` + `lia-testing`. 4 bugs distintos identificados, 4 FIX entregues TDD Red → Green → commit.
+>
+> **Métodos aplicados:** harness engineering (guide × sensor × computacional × inferencial), canonical-fix (corrigir no produtor, nunca no consumidor), TDD obrigatório em cada fix.
+
+### K.1 — Diagnóstico: 4 bugs observados no chat
+
+Após push do FIX 1-13 + restart do workflow FastAPI (commit `5e7d94102` HEAD rodando às 13:24 UTC), usuário executou conversa real. Screenshots capturaram:
+
+| # | Sintoma | Célula harness | Causa raiz |
+|---|---------|---------------|------------|
+| **A1** | "Não consigo filtrar por localização" (alucinação de limitação) | Guide inferencial ausente | Sem guardrail contrastando schemas com declarações negativas |
+| **A2** | "pode sim" → saltou de sourcing para onboarding/company_settings | Guardrail errado | `main_orchestrator.py:402-412` forçava `_agent_type = "company_settings"` em qualquer hint de onboarding |
+| **A3** | "estamos falando de buscar candidatos e nao perfil cultura" → interpretado como query literal → "nenhum candidato encontrado" | Sensor ausente | Zero detecção de correção do usuário antes do cascade router |
+| **A4** | Banner "Configuração 0% completa" contaminando contexto do chat | Consequência de A2 | Mesmo bug que A2 — `PreConditionChecker` hints sequestravam agent_type |
+| **B1** | `HttpError: Failed to fetch` no frontend `base.ts:207` | Sensor OK, causa aberta | Provavelmente consequência de A2/A4. Deferido. |
+
+### K.2 — Fase 1: confirmação de deploy (hipótese refutada)
+
+Hipótese inicial: servidor rodando código pré-FIX 1-13 (caso contrário, A1-A4 não fariam sentido).
+
+Verificação via SSH:
+- Workflow uvicorn iniciado `2026-04-21 13:24:33 UTC`
+- HEAD `5e7d94102`, commits FIX 1-13 todos presentes
+- **Hipótese refutada.** Bugs são reais, sobrevivem ao deploy correto.
+
+Conclusão: os FIX 1-13 fecharam tool-layer harness. A **camada de intent continuity / correction / truthfulness** ficou descoberta — é o que FIX 14-17 atacam.
+
+### K.3 — FIXes entregues
+
+#### FIX 14 — remove onboarding-hint agent_type hijack (P0)
+
+**Commit:** absorvido em `8afc623b0` (checkpoint Replit Agent) — source tem marker `FIX 14 — Preserve hint signal`, test `test_fix14_no_agent_hijack.py` tracked.
+
+**Arquivo canônico:** `app/orchestrator/main_orchestrator.py` linhas ~402-412 (bloco `_onboarding_hints_detected`).
+
+**Mudança:** removeu o override `_agent_type = "company_settings"`. Hints continuam chegando ao LLM via `_proactive_hints_text` (inalterado). LIA decide sozinha se menciona onboarding, baseado em relevância — nunca por override forçado.
+
+**Fecha:** A2 e A4 (ambos eram o mesmo bug).
+
+**TDD:** 4 structural tests guardando contra regressão (anti-pattern check).
+
+#### FIX 15 — MemoryResolver affirmation patterns (P1 safety net)
+
+**Commit:** absorvido em `82aa4f6ccd` (checkpoint Replit Agent).
+
+**Arquivo canônico:** `app/orchestrator/memory_resolver.py` — estende `_AFFIRMATION_PATTERNS` + `is_simple_affirmation()` + `_CORRECTION_HINT_PATTERNS`.
+
+**Mudança:** adiciona detecção canônica de respostas curtas ("pode sim", "ok", "beleza", "manda ver", "isso", "confirmo", etc.) como **continuação do turn anterior** (preserva filtros/contexto). Integrado ao `should_keep_filters()` já usado no Tier 0 do cascade router.
+
+**Fecha:** A2 residual — safety net se cascade router errar domain para mensagem curta.
+
+**Excluído explicitamente** para evitar colisão com FIX 16:
+- "não" / "nao" sozinho (negação ≠ affirmation)
+- "não, quis dizer X" (correção, FIX 16 trata)
+- Verbos de busca ("buscar", "procurar", "filtrar")
+
+**TDD:** 7 tests cobrindo positive/negative/regression.
+
+#### FIX 16 — correction_detector intercepta correções (P1)
+
+**Commit:** absorvido em `7b2af8baa` (checkpoint Replit Agent).
+
+**Arquivos canônicos:**
+- NOVO: `app/orchestrator/correction_detector.py` (espelho estrutural de `meta_question_detector.py` Task #726)
+- MODIFICADO: `app/orchestrator/main_orchestrator.py` — integração em Phase 0, **ANTES** de `meta_question_detector` (correções têm prioridade sobre capability questions)
+
+**Padrões detectados:**
+- `"não, <X>"` / `"nao, <X>"` (negação + clarificação)
+- `"não é isso"`, `"não foi isso"`, `"não era isso"`
+- `"quis dizer X"` (inclui typo `"quiz dizer"`)
+- `"na verdade ..."`, `"ao contrário ..."`
+- `"estamos falando de X (e nao/mas) Y"` ← caso exato do screenshot
+- `"não é sobre X"`
+
+**Response:** clarification reply neutra em PT-BR, sem adivinhar intent:
+> "Desculpe, acho que entendi errado no turno anterior. Pode me dizer com outras palavras o que você precisa? Se estiver retomando algo que já pedimos antes, me diz qual ação ou candidato/vaga específica para eu continuar no mesmo contexto."
+
+**Fecha:** A3 (correção virando query literal).
+
+**TDD:** 11 tests incluindo guardas de regressão (affirmations, capability questions, normal searches não devem ser detectados como correção).
+
+#### FIX 17 — capability_truthfulness guardrail (P2)
+
+**Commit:** `4ca0b8c58`.
+
+**Arquivos canônicos:**
+- `app/prompts/shared/guardrails_block.yaml` — NOVO bloco `universal.capability_truthfulness`
+- `app/domains/compliance_base.py` — iteração na linha 264 adiciona `"capability_truthfulness"` à tupla de keys
+
+**Mudança:** bloco de texto injetado no system prompt de TODOS os agentes (universal):
+> Antes de responder "não consigo fazer X" ou "essa funcionalidade não está disponível", VERIFIQUE o schema das suas ferramentas disponíveis. Se X está descrito em description/parameters: TENTE executar. Se a tool falhar, reporte erro específico. Se X realmente não é suportado, explique O QUE você PODE fazer em vez disso. Dizer "não suportado" sem base nos schemas é **alucinação NEGATIVA** — evite.
+
+Exemplos contrastivos no próprio bloco:
+- ❌ "Não consigo filtrar por localização no momento" (sem verificar schema)
+- ✅ Chamar tool com `location="São Paulo"` e responder com resultado real
+- ✅ "A ferramenta falhou ao aplicar filtro — detalhe: <erro>"
+
+**Fecha:** A1 (alucinação de capability).
+
+**TDD:** 5 structural tests (YAML load + content + integration + regressão do bloco `hallucination` existente).
+
+### K.4 — Resumo guide × sensor das 4 intervenções
+
+| FIX | Guide | Sensor | Computacional | Inferencial |
+|-----|-------|--------|---------------|-------------|
+| 14 | — (remoção de guardrail errado) | — | — | — |
+| 15 | ✓ patterns canônicos | — | ✓ regex | — |
+| 16 | ✓ detector + reply | ✓ bloqueia antes do router | ✓ regex | — |
+| 17 | ✓ prompt instruction | — | — | ✓ (prompt texto) |
+
+FIX 17 é o único controle inferencial do lote — os demais são computacionais (mais baratos, determinísticos). Aderência a harness-engineering §3 (preferir computacional).
+
+### K.5 — Commits + estado do branch
+
+| Hash | FIX | Status |
+|------|-----|--------|
+| `8afc623b0` | FIX 14 (absorvido em Task #729) | ✓ no HEAD |
+| `82aa4f6cc` | FIX 15 (absorvido em Task #736) | ✓ no HEAD |
+| `7b2af8baa` | FIX 16 (absorvido em Task #737) | ✓ no HEAD |
+| `4ca0b8c58` | FIX 17 | ✓ no HEAD |
+
+Nota: FIX 14-16 foram absorvidos em commits de auto-checkpoint do Replit Agent (que capturou múltiplas mudanças simultâneas). Source code tem os markers `FIX 14`, `FIX 15`, `FIX 16` explícitos e todos os tests estão tracked. FIX 17 foi commitado direto.
+
+### K.6 — Regressão FIX 1-17
+
+```
+python -m pytest tests/unit/test_fix*.py tests/unit/test_action_executor_unit.py \
+    tests/unit/test_action_handlers_unit.py --no-cov
+# → 136 passed
+```
+
+Zero regressão em FIX 1-13. 27 tests novos em FIX 14-17 (4 + 7 + 11 + 5).
+
+### K.7 — Pendências
+
+**FIX 18 (B1 frontend) — deferido.** Recomendação: testar chat pós-FIX 14-17 ativos. Se `Failed to fetch` desaparecer, era consequência de A2/A4 (response estranha quebrava parser). Se persistir, audit detalhado do stack trace minificado em `plataforma-lia/src/services/lia-api.ts` (4941 linhas, arquivo monolítico, zero retry logic explícito).
+
+**Follow-ups opcionais pós-testing:**
+- Adicionar `last_domain_id` / `last_action_id` ao `ConversationState` (hoje só tem `last_agent`) para intent continuity cross-turn mais robusto
+- Sensor inferencial: LLM-as-judge em offline evals validando que LIA não declara capability falsa
+- Telemetry: emit `correction_detected` event via `emit_tool_call` para medir frequência do bug em produção
+
+### K.8 — Canonical-fix skill compliance
+
+Toda a sequência seguiu o protocolo canonical-fix (5 fases):
+
+1. **Mapear canônico:** `main_orchestrator.py`, `memory_resolver.py`, `meta_question_detector.py`, `guardrails_block.yaml`, `compliance_base.py` — todos identificados antes de qualquer edit
+2. **Listar consumers:** blast radius documentado por fix antes de mexer
+3. **Decidir tipo de fix:** todos fix-no-produtor, nenhum workaround no consumer
+4. **Executar:** TDD Red → Green → regression entre cada fix
+5. **Validar:** 136/136 regression green, zero quebra em FIX 1-13
+
+Anti-patterns evitados: `try/except pass` silencioso, fallback que esconde bug, permission gating no prompt, regex de correção dentro do handler do sourcing (seria fix no consumidor).
+
+---
+
+*Atualizado em: 2026-04-21 | PARTE K adicionada — FIX 14-17 cobrem conversation continuity layer (correção + affirmation + truthfulness + deletion do onboarding hijack). 136/136 regression.*
+
