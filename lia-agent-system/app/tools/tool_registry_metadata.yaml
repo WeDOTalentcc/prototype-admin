@@ -2594,26 +2594,32 @@ tools:
 
   - name: import_workforce_plan
     description: >
-      Imports a hiring plan (department, role, quantity, deadline) into the
-      company_culture_profiles.additional_data.workforce_plan JSON. Replaces
-      any prior plan in full — no partial merge.
+      Imports a hiring plan (department, role, quantity, deadline, seniority)
+      into company_culture_profiles.additional_data.workforce_plan. Three
+      input modes: spreadsheet (structured plan_data), text (LLM extraction
+      from raw_text) or paste (deterministic TSV/CSV parser). HITL gate:
+      writes ONLY when approved=true; otherwise returns a proposal preview.
     when_to_use: >
-      Onboarding step "workforce"; recruiter shares a planning spreadsheet or
-      table of upcoming hires.
+      Onboarding step "workforce"; recruiter shares a planning spreadsheet,
+      describes the plan in free text, or pastes a table.
     when_not_to_use: >
       Editing a single line of the plan (read first, then re-import the full
       list); creating actual jobs (use create_job).
     side_effects: [db_write, audit_trail]
-    governance_tags: [multi_tenant, audit_trail, write_destructive]
+    governance_tags: [multi_tenant, audit_trail, write_destructive, hitl_required]
     related_tools: [save_company_section, create_job]
     allowed_agents: [company_settings, orchestrator]
     scope: GLOBAL
-    version: "1.0"
+    version: "2.0"
     parameters:
       type: object
-      required: [company_id, plan_data]
+      required: [company_id]
       properties:
         company_id: {type: string}
+        input_mode:
+          type: string
+          enum: [spreadsheet, text, paste]
+        raw_text: {type: string}
         plan_data:
           type: array
           items:
@@ -2623,6 +2629,8 @@ tools:
               role: {type: string}
               quantity: {type: integer}
               deadline: {type: string}
+              seniority: {type: string}
+        approved: {type: boolean}
         user_id: {type: string}
 
   - name: analyze_company_website

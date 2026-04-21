@@ -440,11 +440,18 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
         plan_data = params.get("plan_data") or params.get("plan") or []
         if isinstance(plan_data, dict):
             plan_data = [plan_data]
-        if not plan_data:
+        raw_text = params.get("raw_text") or params.get("text") or ""
+        input_mode = (params.get("input_mode") or ("spreadsheet" if plan_data else "")).lower()
+        approved = bool(params.get("approved", False))
+
+        if not plan_data and not raw_text:
             return DomainResponse.clarification_response(
                 question=(
-                    "Me envie o planejamento de contratacoes como uma lista de "
-                    "{role, quantity, deadline, seniority}. Departamentos sao "
+                    "Como voce quer enviar o planejamento de contratacoes? "
+                    "Posso (1) receber uma planilha anexada, (2) interpretar "
+                    "uma descricao em texto livre ou (3) receber uma tabela "
+                    "colada. Em todos os casos preciso dos campos {role, "
+                    "quantity, deadline, seniority}. Departamentos sao "
                     "gerenciados em 'Usuarios & Departamentos'."
                 ),
                 domain_id=self.domain_id,
@@ -457,6 +464,9 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
             result = await _wrap_import_workforce_plan(
                 company_id=company_id,
                 plan_data=plan_data,
+                raw_text=raw_text,
+                input_mode=input_mode or "spreadsheet",
+                approved=approved,
                 user_id=context.user_id or "system",
             )
         except Exception as exc:
@@ -473,15 +483,22 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
                 domain_id=self.domain_id,
                 action_id="configure_workforce",
             )
+        data = {
+            **(result.get("data") or {}),
+            "navigation_hint": {"page": "Company Settings", "section": "minha-empresa"},
+        }
+        if result.get("requires_human_approval"):
+            data["requires_human_approval"] = True
         return DomainResponse.success_response(
             message=result.get("message") or "Planejamento importado.",
-            data={
-                **(result.get("data") or {}),
-                "navigation_hint": {"page": "Company Settings", "section": "minha-empresa"},
-            },
+            data=data,
             domain_id=self.domain_id,
             action_id="configure_workforce",
-            suggestions=["Revisar plano de contratacoes"],
+            suggestions=(
+                ["Aprovar plano proposto", "Ajustar itens antes de aprovar"]
+                if result.get("requires_human_approval")
+                else ["Revisar plano de contratacoes"]
+            ),
         )
 
     @staticmethod

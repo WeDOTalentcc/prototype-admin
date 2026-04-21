@@ -907,21 +907,214 @@ async def _wrap_process_uploaded_document(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+_WORKFORCE_EXPECTED_FIELDS = ["department", "role", "quantity", "deadline", "seniority"]
+
+
+def _parse_workforce_paste(raw_text: str) -> list[dict[str, Any]]:
+    """Deterministic parser for structured paste (TSV/CSV-like).
+
+    Accepts a header row with columns from ``_WORKFORCE_EXPECTED_FIELDS``
+    (case-insensitive, Portuguese aliases allowed) followed by data rows.
+    Separators: tab, semicolon, or comma. Never contacts an LLM — used as
+    the 'paste' input path so the recruiter sees exactly what was parsed
+    before HITL approval.
+    """
+    if not raw_text or not isinstance(raw_text, str):
+        return []
+
+    aliases = {
+        "departamento": "department", "department": "department", "area": "department", "área": "department",
+        "cargo": "role", "role": "role", "posicao": "role", "posição": "role", "position": "role",
+        "quantidade": "quantity", "qtd": "quantity", "qty": "quantity", "quantity": "quantity", "vagas": "quantity",
+        "prazo": "deadline", "deadline": "deadline", "data": "deadline", "mes": "deadline", "mês": "deadline", "month": "deadline",
+        "senioridade": "seniority", "seniority": "seniority", "nivel": "seniority", "nível": "seniority",
+    }
+
+    lines = [ln.strip() for ln in raw_text.splitlines() if ln.strip()]
+    if len(lines) < 2:
+        return []
+
+    def _split(line: str) -> list[str]:
+        if "\t" in line:
+            return [c.strip() for c in line.split("\t")]
+        if ";" in line:
+            return [c.strip() for c in line.split(";")]
+        return [c.strip() for c in line.split(",")]
+
+    header = _split(lines[0])
+    mapping: list[str | None] = [aliases.get(h.lower()) for h in header]
+
+    if not any(m in ("department", "role", "quantity") for m in mapping if m):
+        return []
+
+    rows: list[dict[str, Any]] = []
+    for raw_line in lines[1:]:
+        cells = _split(raw_line)
+        if not any(cells):
+            continue
+        item: dict[str, Any] = {}
+        for idx, canonical in enumerate(mapping):
+            if canonical is None or idx >= len(cells):
+                continue
+            value = cells[idx]
+            if canonical == "quantity":
+                try:
+                    item[canonical] = int(value)
+                except (TypeError, ValueError):
+                    item[canonical] = 0
+            else:
+                item[canonical] = value
+        if item.get("department") or item.get("role"):
+            rows.append(item)
+    return rows
+
+
+async def _extract_workforce_from_text(raw_text: str) -> list[dict[str, Any]]:
+    """Use the configured Claude provider to turn free-form text into a
+    structured workforce plan proposal. Returns an empty list on any
+    failure (LLM unreachable, invalid JSON, empty text) — HITL gate will
+    then surface a clarification to the recruiter.
+    """
+    if not raw_text or not isinstance(raw_text, str) or len(raw_text.strip()) < 6:
+        return []
+
+    # PII masking first — free text pode conter e-mail/CPF/telefone
+    masked = mask_pii(raw_text)
+
+    system_prompt = (
+        "Voce extrai planejamento de contratacoes de texto livre em portugues. "
+        "Responda APENAS com um JSON valido no formato "
+        '{"plan": [{"department": str, "role": str, "quantity": int, '
+        '"deadline": str, "seniority": str}]}. '
+        "Use strings vazias quando o campo nao for mencionado. Nao invente dados."
+    )
+    try:
+        from app.shared.providers.llm_claude import ClaudeLLMProvider
+
+        provider = ClaudeLLMProvider()
+        response = await provider.generate_with_system(
+            system_prompt=system_prompt,
+            user_message=masked,
+            temperature=0.0,
+            max_tokens=1024,
+        )
+        text_out = (response.text or "").strip()
+        if text_out.startswith("```"):
+            text_out = re.sub(r"^```(?:json)?\s*|\s*```$", "", text_out, flags=re.DOTALL)
+        parsed = json.loads(text_out)
+        plan = parsed.get("plan") if isinstance(parsed, dict) else parsed
+        if not isinstance(plan, list):
+            return []
+        cleaned: list[dict[str, Any]] = []
+        for item in plan:
+            if not isinstance(item, dict):
+                continue
+            entry = {k: item.get(k, "") for k in _WORKFORCE_EXPECTED_FIELDS}
+            try:
+                entry["quantity"] = int(entry.get("quantity") or 0)
+            except (TypeError, ValueError):
+                entry["quantity"] = 0
+            if entry.get("department") or entry.get("role"):
+                cleaned.append(entry)
+        return cleaned
+    except Exception as exc:
+        logger.warning("[import_workforce_plan] LLM extraction failed: %s", exc)
+        return []
+
+
 @tool_handler("company_settings")
 async def _wrap_import_workforce_plan(**kwargs: Any) -> dict[str, Any]:
+    """Import a workforce plan with MANDATORY Human-in-the-Loop approval.
+
+    Three input paths are supported (Task #768):
+      * ``input_mode='spreadsheet'`` (default) — ``plan_data`` already
+        structured by the frontend/uploader.
+      * ``input_mode='paste'`` — ``raw_text`` parsed deterministically.
+      * ``input_mode='text'`` — ``raw_text`` extracted via Claude.
+
+    Writes ONLY when ``approved=True``. Any other call returns
+    ``requires_human_approval=True`` plus a ``proposed_plan_data``
+    preview so the recruiter can confirm in the chat.
+    """
     company_id = kwargs.get("company_id", "")
-    plan_data = kwargs.get("plan_data", [])
+    plan_data = kwargs.get("plan_data") or []
+    raw_text = kwargs.get("raw_text", "") or ""
+    input_mode = (kwargs.get("input_mode") or "spreadsheet").lower()
+    # HITL gate — accept ONLY the real Python bool True. Strings like
+    # "false"/"no"/"0" and anything truthy-but-non-bool MUST NOT persist
+    # (defense in depth: a malformed tool call from the LLM cannot bypass
+    # human approval). Task #768 regression.
+    raw_approved = kwargs.get("approved", False)
+    approved = raw_approved is True
     user_id = kwargs.get("user_id", "system")
+
+    # Normalize input by mode ------------------------------------------------
+    if input_mode == "paste" and not plan_data:
+        plan_data = _parse_workforce_paste(raw_text)
+    elif input_mode == "text" and not plan_data:
+        plan_data = await _extract_workforce_from_text(raw_text)
 
     if not plan_data or not isinstance(plan_data, list):
         return {
             "success": False,
-            "data": {},
-            "message": "Dados do plano de contratacoes vazios. Envie uma lista com departamento, cargo, quantidade e prazo.",
+            "requires_human_approval": False,
+            "data": {
+                "input_mode": input_mode,
+                "expected_fields": _WORKFORCE_EXPECTED_FIELDS,
+            },
+            "message": (
+                "Nao consegui identificar um plano de contratacoes. Envie uma "
+                "planilha, cole uma tabela com cabecalho (departamento, cargo, "
+                "quantidade, prazo, senioridade) ou descreva em texto livre."
+            ),
         }
 
-    total_hires = sum(item.get("quantity", 0) for item in plan_data if isinstance(item, dict))
-    departments = list(set(item.get("department", "N/A") for item in plan_data if isinstance(item, dict)))
+    # Normalize items to expected shape --------------------------------------
+    normalized: list[dict[str, Any]] = []
+    for item in plan_data:
+        if not isinstance(item, dict):
+            continue
+        entry = {k: item.get(k, "") for k in _WORKFORCE_EXPECTED_FIELDS}
+        try:
+            entry["quantity"] = int(entry.get("quantity") or 0)
+        except (TypeError, ValueError):
+            entry["quantity"] = 0
+        normalized.append(entry)
+    plan_data = normalized
+
+    total_hires = sum(item.get("quantity", 0) for item in plan_data)
+    departments = sorted({item.get("department", "N/A") or "N/A" for item in plan_data})
+
+    # HITL gate — never write without explicit approval ----------------------
+    if not approved:
+        await _audit_log(
+            company_id,
+            "import_workforce_plan.preview",
+            metadata={
+                "input_mode": input_mode,
+                "total_hires": total_hires,
+                "departments": departments,
+                "user_id": user_id,
+                "items_count": len(plan_data),
+            },
+        )
+        return {
+            "success": True,
+            "requires_human_approval": True,
+            "data": {
+                "input_mode": input_mode,
+                "proposed_plan_data": plan_data,
+                "expected_fields": _WORKFORCE_EXPECTED_FIELDS,
+                "total_hires": total_hires,
+                "departments": departments,
+                "items_count": len(plan_data),
+            },
+            "message": (
+                f"Proposta de plano: {total_hires} contratacoes em "
+                f"{len(departments)} departamento(s). Confirme com 'aprovar' "
+                f"para gravar ou ajuste os itens antes de aprovar."
+            ),
+        }
 
     async with AsyncSessionLocal() as session:
         existing = await session.execute(
@@ -1130,14 +1323,32 @@ def get_company_settings_tools() -> list[ToolDefinition]:
         ),
         ToolDefinition(
             name="import_workforce_plan",
-            description="Importa planejamento de contratacoes (de planilha ou conversa). Cada item deve ter departamento, cargo, quantidade e prazo.",
+            description=(
+                "Importa planejamento de contratacoes via planilha, texto livre "
+                "ou paste estruturado. SEMPRE passa por aprovacao humana (HITL): "
+                "chame primeiro sem approved para obter a proposta e, apos "
+                "confirmacao do recrutador, chame novamente com approved=true."
+            ),
             parameters={
                 "type": "object",
                 "properties": {
                     "company_id": {"type": "string", "description": "ID da empresa"},
+                    "input_mode": {
+                        "type": "string",
+                        "enum": ["spreadsheet", "text", "paste"],
+                        "description": (
+                            "spreadsheet (plan_data ja estruturado pelo upload), "
+                            "text (descricao livre — extrai via LLM) ou "
+                            "paste (tabela colada — parser deterministico)."
+                        ),
+                    },
+                    "raw_text": {
+                        "type": "string",
+                        "description": "Texto livre ou tabela colada (para modos text/paste).",
+                    },
                     "plan_data": {
                         "type": "array",
-                        "description": "Lista de contratacoes planejadas",
+                        "description": "Lista de contratacoes planejadas (modo spreadsheet).",
                         "items": {
                             "type": "object",
                             "properties": {
@@ -1149,8 +1360,16 @@ def get_company_settings_tools() -> list[ToolDefinition]:
                             },
                         },
                     },
+                    "approved": {
+                        "type": "boolean",
+                        "description": (
+                            "Obrigatorio=true para persistir. Sem approved=true, "
+                            "a tool retorna apenas a proposta (preview HITL)."
+                        ),
+                    },
+                    "user_id": {"type": "string", "description": "ID do usuario solicitante"},
                 },
-                "required": ["company_id", "plan_data"],
+                "required": ["company_id"],
             },
             function=_wrap_import_workforce_plan,
         ),

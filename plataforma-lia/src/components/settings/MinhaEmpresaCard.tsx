@@ -11,6 +11,7 @@ import type { LucideIcon } from "lucide-react"
 import { DocumentUploadCard } from "./DocumentUploadCard"
 import { BenefitsListSection } from "./benefits/BenefitsListSection"
 import type { CompanyBenefit } from "@/types/benefits"
+import { WorkforceHubContent } from "./WorkforceHubContent"
 
 function formatFieldValue(value: unknown): string {
   if (value === null || value === undefined || value === "") return "Nao definido"
@@ -253,6 +254,10 @@ export function MinhaEmpresaCard({
               onChanged={onBenefitsChanged || (() => {})}
             />
           )}
+          {block.key === "workforce" && (
+            <WorkforceHubContent />
+          )}
+          {block.key !== "workforce" && (
           <div className="space-y-1">
             {block.fields.map((field) => {
               const isActionField = field.key === "import_spreadsheet" || field.key === "handbook" || field.key === "org_chart"
@@ -314,6 +319,7 @@ export function MinhaEmpresaCard({
               )
             })}
           </div>
+          )}
         </CardContent>
       )}
     </Card>
