@@ -102,6 +102,8 @@ class ChatResponse(BaseModel):
     # Onda 2.4 Init V (2026-04-21) — Reasoning transparency
     citations: list[dict[str, Any]] = Field(default_factory=list)
     has_citations: bool = False
+    # Onda 3.2 G3 (2026-04-21) — HITL checkpoint surfacing
+    hitl_checkpoint: dict[str, Any] | None = None
 
     @classmethod
     def from_orchestrator_result(cls, result: dict[str, Any], conv_id: str) -> ChatResponse:

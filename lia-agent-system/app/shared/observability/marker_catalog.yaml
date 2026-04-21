@@ -22,7 +22,7 @@ metadata:
   track: "3"
   initiative: "G2"
   created: "2026-04-21"
-  total_markers: 26
+  total_markers: 27
   reference: "docs/FINAL_AUDIT.md §G2"
 
 markers:
@@ -201,6 +201,13 @@ markers:
     category: cost
     purpose: "Per-call LLM cost tracking (tokens in/out + estimated USD)"
     origin: "app/shared/observability/cost_tracker.py"
+    severity: info
+
+  # ── HITL (G3) ────────────────────────────────────────────────────────
+  LIA-HITL:
+    category: governance
+    purpose: "HITL checkpoint built + surfaced to ChatResponse for frontend approval UI"
+    origin: "app/orchestrator/hitl.py"
     severity: info
 
 # ── FIX/Initiative markers (log prefixes, not [LIA-*] markers) ────────────
