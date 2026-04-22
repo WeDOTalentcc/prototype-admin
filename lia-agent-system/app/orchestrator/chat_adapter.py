@@ -222,6 +222,16 @@ class ChatAdapter:
                 "missing_params": getattr(orch_response, "needs_params", False),
             }
 
+        # ── Onda 4.10 (2026-04-22) — forward V.B citations + G3.B hitl_checkpoint ──
+        # PARTE L fix: orchestrator produces these; adapter must pass them through
+        # for chat.py to surface on the API envelope (frontend consumers).
+        _citations = getattr(orch_response, "citations", None) or []
+        result["citations"] = list(_citations)
+        result["has_citations"] = bool(getattr(orch_response, "has_citations", False))
+        _hitl_cp = getattr(orch_response, "hitl_checkpoint", None)
+        if _hitl_cp is not None:
+            result["hitl_checkpoint"] = _hitl_cp
+
         # ── Success check — blocked responses ──
         success = getattr(orch_response, "success", True)
         if not success:

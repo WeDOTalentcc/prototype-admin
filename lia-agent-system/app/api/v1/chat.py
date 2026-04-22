@@ -547,6 +547,18 @@ async def send_message(
         if context_data:
             _meta["context_data"] = context_data
 
+        # Onda 4.10 (2026-04-22) — surface V.B citations + G3.B hitl_checkpoint
+        # on the API envelope. ChatAdapter (Onda 4.10.a) forwards these from
+        # MainOrchestrator.ChatResponse; here we expose them on message_metadata
+        # so the frontend can render citations tooltips and HITL approval UI.
+        _citations_payload = orch_result.get("citations")
+        if _citations_payload:
+            _meta["citations"] = _citations_payload
+            _meta["has_citations"] = bool(orch_result.get("has_citations", True))
+        _hitl_payload = orch_result.get("hitl_checkpoint")
+        if _hitl_payload:
+            _meta["hitl_checkpoint"] = _hitl_payload
+
         # Task #432: forward pipeline_rail payload (rich response in chat)
         _pipeline_rail = workflow_data.get("pipeline_rail") if isinstance(workflow_data, dict) else None
         if _pipeline_rail and isinstance(_pipeline_rail, dict):
@@ -737,6 +749,18 @@ async def send_message_with_attachments(
         }
         if context_data:
             _meta["context_data"] = context_data
+
+        # Onda 4.10 (2026-04-22) — surface V.B citations + G3.B hitl_checkpoint
+        # on the API envelope. ChatAdapter (Onda 4.10.a) forwards these from
+        # MainOrchestrator.ChatResponse; here we expose them on message_metadata
+        # so the frontend can render citations tooltips and HITL approval UI.
+        _citations_payload = orch_result.get("citations")
+        if _citations_payload:
+            _meta["citations"] = _citations_payload
+            _meta["has_citations"] = bool(orch_result.get("has_citations", True))
+        _hitl_payload = orch_result.get("hitl_checkpoint")
+        if _hitl_payload:
+            _meta["hitl_checkpoint"] = _hitl_payload
 
         # Task #432: forward pipeline_rail payload (rich response in chat)
         _pipeline_rail2 = workflow_data.get("pipeline_rail") if isinstance(workflow_data, dict) else None
