@@ -326,6 +326,22 @@ class MainOrchestrator:
                 except Exception as e:
                     logger.warning("[LIA-M01] Memory setup failed (non-blocking): %s", e)
 
+            # Onda 4.3 III.B (2026-04-21) — Hydrate recruiter preferences from
+            # conversation_summaries.user_preferences (episodic memory Init III MVP).
+            # Consumed downstream by persona rendering + routing heuristics.
+            try:
+                _prefs = await self._hydrate_recruiter_preferences(ctx, db)
+                if _prefs:
+                    ctx.extra["recruiter_prefs"] = _prefs
+                    logger.debug(
+                        "[III.B] recruiter prefs hydrated user=%s keys=%s",
+                        ctx.user_id, list(_prefs.keys()),
+                    )
+            except Exception as _hydrate_exc:
+                logger.debug(
+                    "[III.B] hydrate skipped (non-fatal): %s", _hydrate_exc,
+                )
+
             # FIX 31 v2 (2026-04-21) — Wire memory_resolver BEFORE all phases.
             # Earlier wiring was inside _process_via_orchestrator (Phase 2) but
             # most chat turns trigger Phase 1.5 Agentic Loop (LIA-A04) which
@@ -1422,6 +1438,47 @@ class MainOrchestrator:
             logger.debug("[MainOrchestrator] Module tasting hints skipped: %s", exc)
 
         return result
+
+    async def _hydrate_recruiter_preferences(self, ctx: Any, db: Any) -> dict[str, Any] | None:
+        """Onda 4.3 III.B — Read user_preferences from latest ConversationSummary.
+
+        Returns a dict with structured prefs (preferred_top_n, briefing_style,
+        communication_channel, etc.) — values filtered through the
+        recruiter_preferences get_preference API so PII/schema guards apply.
+
+        Returns None on: no user_id, query failure, empty row.
+        Fail-safe: never raises (caller wraps in try/except regardless).
+        """
+        if not ctx.user_id:
+            return None
+        try:
+            from app.shared.memory.recruiter_preferences import get_preference
+            from sqlalchemy import select as _select
+            from lia_models.conversation import Conversation, ConversationSummary
+
+            _stmt = (
+                _select(ConversationSummary)
+                .join(Conversation, ConversationSummary.conversation_id == Conversation.id)
+                .where(Conversation.user_id == ctx.user_id)
+                .order_by(ConversationSummary.created_at.desc())
+                .limit(1)
+            )
+            _res = await db.execute(_stmt)
+            _row = _res.scalar_one_or_none()
+            _raw = (_row.user_preferences if _row else {}) or {}
+            if not isinstance(_raw, dict):
+                return None
+
+            return {
+                "preferred_top_n": get_preference(_raw, "preferred_top_n", default=5),
+                "briefing_style": get_preference(_raw, "briefing_style", default="short"),
+                "communication_channel": get_preference(_raw, "communication_channel", default="email"),
+                "locale_preference": get_preference(_raw, "locale_preference", default="pt-BR"),
+                "favored_stages": get_preference(_raw, "favored_stages", default=[]),
+            }
+        except Exception as _e:
+            logger.debug("[III.B] _hydrate_recruiter_preferences failed: %s", _e)
+            return None
 
 
 # ---------------------------------------------------------------------------
