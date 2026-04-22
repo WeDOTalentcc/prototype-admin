@@ -104,7 +104,10 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
       })
       .catch((err: Error & { status?: number; transientNetworkError?: boolean }) => {
         if (requestIdRef.current !== thisRequestId) return
-        console.error("[useCandidatesList] fetch error:", err)
+        // [Task #801 C1] erros de rede transientes NÃO devem poluir
+        // console.error — eles são esperados em cold-start/HMR e tratados
+        // com auto-retry abaixo. Apenas erros determinísticos (auth, 5xx
+        // persistente) sobem como `error` para o operador.
         // Só classifica; a UI traduz via i18n. `error` fica com mensagem crua
         // como fallback para consumers legados.
         const status = typeof err?.status === "number" ? err.status : undefined
@@ -112,6 +115,9 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
           err?.transientNetworkError === true ||
           (status === 0) ||
           (status === undefined && /network|failed to fetch|load failed/i.test(err?.message ?? ""))
+        if (!isTransient) {
+          console.error("[useCandidatesList] fetch error:", err)
+        }
         const kind: CandidatesErrorKind =
           status === 401 ? "unauthorized" :
           status === 403 ? "forbidden" :

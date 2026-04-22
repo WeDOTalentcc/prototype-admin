@@ -168,6 +168,42 @@ describe("useCandidatesList", () => {
     expect(result.current.error).toBeNull()
   })
 
+  // Task #801 (C1): mudança de filtro/página deve cancelar o auto-retry
+  // pendente — não pode disparar requisição com filtros antigos depois do
+  // backoff timer.
+  it("Task #801 — cancela auto-retry pendente ao mudar de filtro", async () => {
+    const transientErr = Object.assign(new Error("Network unavailable (transient)"), {
+      status: 0,
+      transientNetworkError: true,
+    })
+    mockGetCandidates
+      .mockResolvedValueOnce(MOCK_RESPONSE)   // 1ª carga: ok
+      .mockRejectedValueOnce(transientErr)    // refresh: falha transiente
+      .mockResolvedValue(MOCK_RESPONSE)       // qualquer chamada subsequente
+
+    const { result } = renderHook(() => useCandidatesList())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+
+    act(() => { result.current.refresh() })
+    await waitFor(() => expect(result.current.isTransientRetrying).toBe(true))
+
+    // Snapshot do número de chamadas ANTES de mudar filtro.
+    const callsBeforeFilterChange = mockGetCandidates.mock.calls.length
+
+    // Muda filtro — deve cancelar o auto-retry e disparar fetch novo.
+    act(() => { result.current.setFilters({ seniority: "Sênior" }) })
+
+    // O fetch novo dispara imediatamente (debounce zero p/ filtros não-search).
+    await waitFor(() => expect(result.current.isTransientRetrying).toBe(false))
+
+    // Avança bem além do backoff de 1s do retry cancelado: NÃO deve haver
+    // nova chamada disparada pelo timer cancelado.
+    const callsAfterFilterChange = mockGetCandidates.mock.calls.length
+    await act(async () => { vi.advanceTimersByTime(5000) })
+    expect(mockGetCandidates.mock.calls.length).toBe(callsAfterFilterChange)
+    expect(callsAfterFilterChange).toBeGreaterThan(callsBeforeFilterChange)
+  })
+
   // Task #293 — classificação de errorKind por HTTP status.
   it.each([
     [401, "unauthorized"],

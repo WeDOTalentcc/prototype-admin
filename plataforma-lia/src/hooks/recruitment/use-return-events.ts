@@ -127,7 +127,11 @@ const slaConfig: SLAConfig = useMemo(() => ({ ...DEFAULT_SLA_DAYS, ...customSlaC
       if (jobId) params.append('job_id', jobId)
       if (companyId) params.append('company_id', companyId)
 
-      const response = await fetch(`/api/backend-proxy/recruitment-stages/transition/return-event/recent?${params}`)
+      // [Task #801 C4] usar fetchWithRetry para herdar retry/timeout
+      const { fetchWithRetry } = await import("@/services/lia-api/base")
+      const response = await fetchWithRetry(
+        `/api/backend-proxy/recruitment-stages/transition/return-event/recent?${params}`,
+      )
 
       if (response.ok) {
         const data = await response.json()

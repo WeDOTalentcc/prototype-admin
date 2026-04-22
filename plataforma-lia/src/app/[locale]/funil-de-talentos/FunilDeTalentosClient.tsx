@@ -399,7 +399,29 @@ const SENIORITY_OPTIONS = [
             {/* Tabela — oculta durante estado de relogin. */}
             {!isAuthError && (
               <div className="bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl overflow-hidden">
-                {!loading && candidates.length === 0 && !error ? (
+                {/* [Task #801 UX] Em primeira carga com erro de rede e snapshot
+                    vazio, mostre um empty-state explícito com retry CTA em vez
+                    de renderizar uma tabela vazia. O banner de erro acima
+                    continua visível. */}
+                {!loading && candidates.length === 0 && error && errorKind === "network" ? (
+                  <div
+                    data-testid="funil-network-empty-state"
+                    className="flex flex-col items-center justify-center py-16 text-center px-4"
+                  >
+                    <AlertCircle className="h-10 w-10 text-status-error/70 mb-3" />
+                    <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary mb-3">
+                      {t('auth.serverErrorMessage')}
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => refresh()}
+                      className="h-8 rounded-xl text-xs"
+                    >
+                      {t('auth.retryCta')}
+                    </Button>
+                  </div>
+                ) : !loading && candidates.length === 0 && !error ? (
                   <div className="flex flex-col items-center justify-center py-16 text-center px-4">
                     <Users className="h-10 w-10 text-lia-text-disabled dark:text-lia-text-secondary mb-3" />
                     <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">

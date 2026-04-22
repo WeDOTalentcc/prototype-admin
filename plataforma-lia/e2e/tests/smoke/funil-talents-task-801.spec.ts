@@ -38,25 +38,31 @@ test.describe('@smoke Funil de Talentos — Task #801', () => {
 
     await page.goto(`${BASE}/funil-de-talentos`, { waitUntil: 'domcontentloaded' });
 
-    // Aguarda a contagem total de candidatos aparecer (>0). O backend tem 320
+    // Aguarda a contagem total de candidatos aparecer. O backend tem 320
     // candidates seed; com cold-start + retry deve resolver em <30s.
-    const totalLocator = page.locator('[data-testid="funil-relogin-state"], [data-testid="funil-error-state"]').first();
+    const errorLocator = page.locator('[data-testid="funil-relogin-state"], [data-testid="funil-error-state"]').first();
     const statsLocator = page.locator('text=/\\d+\\s+(candidates?|candidatos?)/i').first();
 
     await Promise.race([
       statsLocator.waitFor({ state: 'visible', timeout: 60_000 }),
-      totalLocator.waitFor({ state: 'visible', timeout: 60_000 }),
+      errorLocator.waitFor({ state: 'visible', timeout: 60_000 }),
     ]);
 
     // Não deve estar em estado de relogin/erro permanente
     await expect(page.locator('[data-testid="funil-relogin-state"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="funil-network-empty-state"]')).toHaveCount(0);
 
-    // O contador deve mostrar > 0
-    const statsText = await statsLocator.textContent();
-    expect(statsText).toBeTruthy();
-    const match = statsText!.match(/(\d{1,4})/);
-    expect(match).toBeTruthy();
-    expect(Number(match![1])).toBeGreaterThan(0);
+    // SLA do "happy-path" pós-warmup: precisamos de >=20 candidatos visíveis
+    // em <5s adicionais. (Page já pode estar em loading inicial; abrimos
+    // janela de 5s a partir de quando os stats aparecerem.)
+    await statsLocator.waitFor({ state: 'visible', timeout: 60_000 });
+    await expect
+      .poll(async () => {
+        const txt = (await statsLocator.textContent()) ?? '';
+        const m = txt.match(/(\d{1,4})/);
+        return m ? Number(m[1]) : 0;
+      }, { timeout: 5_000, message: '>=20 candidatos esperados em <5s pós-stats' })
+      .toBeGreaterThanOrEqual(20);
 
     // Não deveria ter ressuscitado o sintoma da Task #728 no console.
     expect(overlayHits, `dev-overlay deveria estar suprimido. Hits: ${overlayHits.join('|')}`).toHaveLength(0);
