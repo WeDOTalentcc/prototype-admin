@@ -26,6 +26,13 @@ from app.shared.compliance.audit_service import audit_service as _audit_svc
 from app.shared.pii_masking import strip_pii_for_llm_prompt
 from app.shared.tenant_llm_context import get_current_llm_tenant
 
+# Onda 4.13 G4.B cost tracking — fail-safe import
+try:
+    from app.shared.observability.cost_tracker import record_call as _record_cost_call
+except ImportError:
+    def _record_cost_call(**_kwargs):  # noqa: ANN202 — fail-safe no-op
+        return {}
+
 T = TypeVar("T", bound=BaseModel)
 
 logger = logging.getLogger(__name__)
@@ -536,8 +543,21 @@ class LLMService:
                 request_kwargs["system"] = system_prompt
             
             logger.info(f"Calling Claude with {len(tools)} tools, {len(messages)} messages")
+            _t_claude_start = _time.time()
             
             response = client.messages.create(**request_kwargs)
+            
+            # Onda 4.13 G4.B — record cost (fail-safe)
+            try:
+                _record_cost_call(
+                    tenant_id=get_current_llm_tenant() or None,
+                    model=settings.LLM_PRIMARY_MODEL,
+                    input_tokens=int(getattr(response.usage, "input_tokens", 0) or 0),
+                    output_tokens=int(getattr(response.usage, "output_tokens", 0) or 0),
+                    latency_ms=(_time.time() - _t_claude_start) * 1000,
+                )
+            except Exception as _cost_exc:
+                logger.debug("[Onda 4.13] claude tools cost_tracker skipped: %s", _cost_exc)
             
             tool_calls = []
             text_parts = []
@@ -645,12 +665,27 @@ class LLMService:
             )
             
             logger.info(f"Calling Gemini with {len(tools)} tools, {len(contents)} messages")
+            _t_gemini_start = _time.time()
             
             response = client.models.generate_content(
                 model=settings.LLM_GEMINI_MODEL,
                 contents=contents,
                 config=config
             )
+            
+            # Onda 4.13 G4.B — record cost (fail-safe); Gemini usage_metadata shape
+            try:
+                _g_usage = getattr(response, "usage_metadata", None)
+                if _g_usage:
+                    _record_cost_call(
+                        tenant_id=get_current_llm_tenant() or None,
+                        model=settings.LLM_GEMINI_MODEL,
+                        input_tokens=int(getattr(_g_usage, "prompt_token_count", 0) or 0),
+                        output_tokens=int(getattr(_g_usage, "candidates_token_count", 0) or 0),
+                        latency_ms=(_time.time() - _t_gemini_start) * 1000,
+                    )
+            except Exception as _cost_exc:
+                logger.debug("[Onda 4.13] gemini tools cost_tracker skipped: %s", _cost_exc)
             
             tool_calls = []
             text_parts = []

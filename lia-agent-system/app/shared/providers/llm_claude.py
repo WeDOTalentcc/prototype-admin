@@ -163,6 +163,17 @@ class ClaudeLLMProvider(LLMProviderABC):
             if system_prompt:
                 request_kwargs["system"] = system_prompt
             response = client.messages.create(**request_kwargs)
+            # Onda 4.13 (2026-04-22) G4.B — record cost for tools path (fail-safe)
+            try:
+                _record_cost_call(
+                    tenant_id=_get_tenant() or None,
+                    model=self._default_model,
+                    input_tokens=int(getattr(response.usage, "input_tokens", 0) or 0),
+                    output_tokens=int(getattr(response.usage, "output_tokens", 0) or 0),
+                    latency_ms=(time.time() - t_start) * 1000,
+                )
+            except Exception as _cost_exc:
+                logger.debug("[Onda 4.13] cost_tracker skipped (tools): %s", _cost_exc)
             tool_calls = []
             text_parts = []
             for block in response.content:
