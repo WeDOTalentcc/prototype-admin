@@ -582,6 +582,19 @@ class MainOrchestrator:
                         if _hitl_pending:
                             _structured_data["hitl_pending"] = _hitl_pending
 
+                        # Onda 4.5 V.B (2026-04-21) — build citations from tool_calls
+                        # for ChatResponse.citations field. Reasoning transparency
+                        # producer (Init V) + consumer wiring = complete pipeline.
+                        _citations: list[dict[str, Any]] = []
+                        try:
+                            from app.orchestrator.citation_processor import build_citations_from_tool_calls
+                            _citations = build_citations_from_tool_calls(
+                                _tool_calls,
+                                response_text=_agentic_result.get("response", ""),
+                            )
+                        except Exception as _cite_exc:
+                            logger.debug("[V.B] citation build skipped: %s", _cite_exc)
+
                         _resp = ChatResponse(
                             success=True,
                             content=_agentic_result["response"],
@@ -590,6 +603,8 @@ class MainOrchestrator:
                             action_executed=bool(_tool_calls),
                             needs_confirmation=bool(_hitl_pending),
                             structured_data=_structured_data,
+                            citations=_citations,
+                            has_citations=bool(_citations),
                         )
                         if _soft_warnings:
                             _resp.fairness_warnings = _soft_warnings
