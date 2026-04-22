@@ -2,14 +2,16 @@
 
 import { createContext, useContext, useEffect, ReactNode } from "react"
 import { useAuthStore } from "@/stores/auth-store"
-import type { AuthenticatedUser, AuthMethod } from "@/services/auth-service"
+import type { AuthenticatedUser, AuthMethod, MfaRequiredResponse } from "@/services/auth-service"
 
 interface AuthContextType {
   user: AuthenticatedUser | null
   authMethod: AuthMethod | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (email: string, password: string) => Promise<MfaRequiredResponse | null>
+  verifyMfa: (mfaToken: string, code: string) => Promise<void>
+  resendMfa: (mfaToken: string) => Promise<{ message: string; mfa_token?: string }>
   loginWithSSO: (options: { organization?: string; connection?: string; email?: string }) => void
   register: (email: string, password: string, name: string) => Promise<void>
   logout: () => Promise<void>
@@ -26,6 +28,8 @@ export function JWTAuthProvider({ children }: { children: ReactNode }) {
   const isLoading = useAuthStore((s) => s.isLoading)
   const isSSO = useAuthStore((s) => s.isSSO)
   const login = useAuthStore((s) => s.login)
+  const verifyMfa = useAuthStore((s) => s.verifyMfa)
+  const resendMfa = useAuthStore((s) => s.resendMfa)
   const loginWithSSO = useAuthStore((s) => s.loginWithSSO)
   const register = useAuthStore((s) => s.register)
   const logout = useAuthStore((s) => s.logout)
@@ -42,6 +46,8 @@ export function JWTAuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated,
     isLoading,
     login,
+    verifyMfa,
+    resendMfa,
     loginWithSSO,
     register,
     logout,
@@ -73,6 +79,7 @@ export function useAuth() {
       email: ctx.user.email,
       role: ("role" in ctx.user ? ctx.user.role : null) ?? null,
       company: ("company" in ctx.user ? ctx.user.company : null) ?? null,
+      company_id: ("company_id" in ctx.user ? (ctx.user as unknown as { company_id?: string }).company_id ?? null : null),
       avatar_url: ("avatar_url" in ctx.user ? ctx.user.avatar_url : null) ?? null,
       sso_provider: ("sso_provider" in ctx.user ? ctx.user.sso_provider : null) ?? null,
     } : null,

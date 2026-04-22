@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useAuth } from "@/contexts/auth-context"
-import { useAuthStore } from "@/stores/auth-store"
 import { useKanbanStore } from "@/stores/kanban-store"
 import { useShortList } from "@/hooks/candidates/use-short-list"
 import { useProactiveInsights } from "@/hooks/ai/use-proactive-insights"
@@ -45,21 +44,6 @@ import { useKanbanJobFormInit } from "@/components/pages/job-kanban/hooks/useKan
 import { useKanbanDataEffects } from "@/components/pages/job-kanban/hooks/useKanbanDataEffects"
 import { toast } from "sonner"
 
-/**
- * Extract the company UUID from the authenticated user shape.
- * The backend expects a real `company_id` (UUID); historically this hook
- * read `user.company` (which doesn't exist on AuthenticatedUser) and fell
- * back to the literal string `'demo'`, which then made the backend reject
- * the request and return an empty insights list. Returns null when the
- * user is not yet loaded or has no company_id, so callers can skip the
- * remote fetch instead of issuing a guaranteed-bad request.
- */
-export function getCompanyIdFromUser(user: unknown): string | null {
-  if (!user || typeof user !== 'object') return null
-  const candidate = (user as Record<string, unknown>).company_id
-  return typeof candidate === 'string' && candidate.length > 0 ? candidate : null
-}
-
 const EMPTY_JOB_FALLBACK: Record<string, unknown> & { id: number; jobId: string } = {
   id: 0,
   jobId: "",
@@ -73,15 +57,10 @@ const EMPTY_JOB_FALLBACK: Record<string, unknown> & { id: number; jobId: string 
 export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknown>; onBack?: () => void }) {
   const { saveJobsState } = useNavigationPersistence()
   const { user } = useAuth()
-  const authStoreUser = useAuthStore((s) => s.user)
   const talentFunnel = useTalentFunnel()
-  // Read the real `company_id` UUID from the auth store. The `useAuth()`
-  // wrapper omits it, and the previous code mistakenly read `user.company`
-  // (which doesn't exist) and fell back to the literal `'demo'`, causing
-  // the backend to reject every proactive-insights request.
-  const _companyIdForSL = getCompanyIdFromUser(authStoreUser)
+  const _companyIdForSL = (user?.company_id as string) || ''
   const _jobIdForSL = job?.id?.toString()
-  const { shortLists, createShortList: _createSL, addCandidate: _addToSL, removeCandidate: _removeFromSL } = useShortList(_companyIdForSL ?? '', _jobIdForSL)
+  const { shortLists, createShortList: _createSL, addCandidate: _addToSL, removeCandidate: _removeFromSL } = useShortList(_companyIdForSL, _jobIdForSL)
   const { insights: proactiveInsights, dismiss: dismissInsight } = useProactiveInsights(_jobIdForSL, _companyIdForSL)
   const { suggestions: aiSuggestions, approveSuggestion, rejectSuggestion } = useCandidateSuggestions(job?.id?.toString() || '')
   const pipelineInheritance = usePipelineInheritance(job?.id?.toString())
@@ -96,6 +75,34 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: pipelineInheritance object excluded to avoid re-runs
   }, [job?.id])
 
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const openChat = params.get('openChat')
+    const chatPrompt = params.get('chatPrompt')
+    const tab = params.get('tab')
+    const section = params.get('section')
+
+    if (openChat === 'true') {
+      uiModals.actions.setShowExpandedLIA(true)
+      if (chatPrompt === 'wsi_regenerate') {
+        const title = (job?.title as string) || 'esta vaga'
+        const dept = (job?.department as string) ? ` (${job?.department as string})` : ''
+        uiModals.actions.setLiaPromptValue(
+          `Acabei de criar a vaga "${title}"${dept} como cópia e preciso configurar as perguntas de triagem WSI.\n\nAs perguntas originais foram copiadas. Ajude-me a:\n1. Revisar se são adequadas para esta nova posição\n2. Sugerir ajustes alinhados às competências necessárias\n3. Garantir ao menos 3 perguntas para ativar a triagem\n\nVamos começar?`
+        )
+      }
+    }
+
+    if (tab === 'edit') {
+      setActiveTab('edit')
+      if (section) setInitialScreeningSection(section)
+    }
+
+    window.history.replaceState({}, '', window.location.pathname)
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional one-time mount effect
+  }, [])
+
   const viewMode = useKanbanStore((s) => s.viewMode)
   const setViewMode = useKanbanStore((s) => s.setViewMode)
   const activeTab = useKanbanStore((s) => s.activeTab)
@@ -103,6 +110,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const selectedCandidate = useKanbanStore((s) => s.selectedCandidate)
   const setSelectedCandidate = useKanbanStore((s) => s.setSelectedCandidate)
   const [selectedTriagemCandidate, setSelectedTriagemCandidate] = useState<Record<string, unknown> | null>(null)
+  const [initialScreeningSection, setInitialScreeningSection] = useState<string | null>(null)
   const showExpandedMetrics = useKanbanStore((s) => s.showExpandedMetrics)
   const setShowExpandedMetrics = useKanbanStore((s) => s.setShowExpandedMetrics)
 
@@ -254,6 +262,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setWsiInviteCandidate: uiModals.actions.setWsiInviteCandidate as unknown as Parameters<typeof useKanbanBulkActions>[0]["setWsiInviteCandidate"],
     setShowWSIInviteModal: uiModals.actions.setShowWSIInviteModal,
     setShowShareGestorModal: uiModals.actions.setShowShareGestorModal,
+    setShowAddToListModal: uiModals.actions.setShowAddToListModal,
     setCandidatesData: setCandidatesData as unknown as Parameters<typeof useKanbanBulkActions>[0]["setCandidatesData"],
   })
 
@@ -263,6 +272,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setTransitionInitialPrompt: uiModals.actions.setTransitionInitialPrompt,
     setTransitionAllowStageSelection: uiModals.actions.setTransitionAllowStageSelection,
     setLiaPromptValue: uiModals.actions.setLiaPromptValue,
+    setShowExpandedLIA: uiModals.actions.setShowExpandedLIA,
     setPreviewCandidate: uiModals.actions.setPreviewCandidate,
     setIsPreviewOpen: uiModals.actions.setIsPreviewOpen,
     setUnifiedModalCandidate: uiModals.actions.setUnifiedModalCandidate as unknown as Parameters<typeof useKanbanNavigation>[0]["setUnifiedModalCandidate"],
@@ -284,6 +294,9 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     setLiaMessages: uiModals.actions.setLiaMessages as unknown as Parameters<typeof useKanbanLIAHandlers>[0]["setLiaMessages"],
     setLiaPromptValue: uiModals.actions.setLiaPromptValue,
     setIsLiaLoading: uiModals.actions.setIsLiaLoading,
+    setShowExpandedLIA: uiModals.actions.setShowExpandedLIA,
+    setShowSuperChat: uiModals.actions.setShowSuperChat,
+    setUserCollapsedLIA: uiModals.actions.setUserCollapsedLIA,
     liaConversationId: uiModals.state.liaConversationId,
     setLiaConversationId: uiModals.actions.setLiaConversationId,
     currentJob,
@@ -310,7 +323,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     allTableCandidates: allTableCandidates as unknown as Parameters<typeof useKanbanLIASuggestions>[0]["allTableCandidates"],
     currentJob,
     liaMessages: uiModals.state.liaMessages,
-    companyId: _companyIdForSL ?? '',
+    companyId: _companyIdForSL,
     setLiaMessages: uiModals.actions.setLiaMessages as unknown as Parameters<typeof useKanbanLIASuggestions>[0]["setLiaMessages"],
   })
 
@@ -422,6 +435,7 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
     activeTab, setActiveTab,
     selectedCandidate, setSelectedCandidate,
     selectedTriagemCandidate, setSelectedTriagemCandidate,
+    initialScreeningSection,
     showExpandedMetrics, setShowExpandedMetrics,
     isClient, setIsClient,
     jobEditForm, setJobEditForm,

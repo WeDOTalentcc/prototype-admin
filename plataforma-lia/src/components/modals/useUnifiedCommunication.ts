@@ -27,6 +27,8 @@ interface UseUnifiedCommunicationParams {
   companyId: string
   selectedCandidates: Array<{ id: string; name: string; email?: string; phone?: string; avatar?: string }>
   explicitSituation?: TemplateSituation
+  initialVacancyId?: string
+  initialStage?: string
 }
 
 export function useUnifiedCommunication({
@@ -38,7 +40,9 @@ export function useUnifiedCommunication({
   onSend,
   companyId,
   selectedCandidates,
-  explicitSituation
+  explicitSituation,
+  initialVacancyId,
+  initialStage
 }: UseUnifiedCommunicationParams) {
   const isBulkMode = !propCandidate && selectedCandidates.length > 0
 
@@ -57,7 +61,6 @@ export function useUnifiedCommunication({
   const [isSending, setIsSending] = useState(false)
 
   const [interviewSettings, setInterviewSettings] = useState<InterviewSettings>({
-    interviewType: 'funcional',
     platform: 'zoom',
     duration: '60',
     date: '',
@@ -65,9 +68,9 @@ export function useUnifiedCommunication({
     interviewer: ''
   })
 
-  const [linkToVacancy, setLinkToVacancy] = useState(false)
-  const [selectedVacancyId, setSelectedVacancyId] = useState<string | null>(null)
-  const [selectedStage, setSelectedStage] = useState('triagem')
+  const [linkToVacancy, setLinkToVacancy] = useState(Boolean(initialVacancyId))
+  const [selectedVacancyId, setSelectedVacancyId] = useState<string | null>(initialVacancyId || null)
+  const [selectedStage, setSelectedStage] = useState(initialStage || 'sourcing')
   const [vacancies, setVacancies] = useState<JobVacancy[]>([])
   const [isLoadingVacancies, setIsLoadingVacancies] = useState(false)
   const [linkOnCompletionOnly, setLinkOnCompletionOnly] = useState(type === 'triagem')
@@ -83,6 +86,8 @@ export function useUnifiedCommunication({
         return 'agendamento'
       case 'feedback':
         return 'feedback_positivo'
+      case 'proposta':
+        return 'proposta'
       default:
         return undefined
     }
@@ -100,6 +105,8 @@ export function useUnifiedCommunication({
         return { title: 'Agendar Entrevista', description: 'Envie convite para agendar entrevista', icon: Calendar }
       case 'feedback':
         return { title: 'Enviar Feedback', description: 'Envie feedback sobre o processo seletivo', icon: CheckCircle }
+      case 'proposta':
+        return { title: 'Enviar Proposta', description: 'Envie a proposta de trabalho ao candidato', icon: FileText }
       default:
         return { title: 'Comunicação', description: '', icon: Mail }
     }
@@ -285,7 +292,7 @@ export function useUnifiedCommunication({
           candidate_name: safeCandidate.name,
           candidate_email: safeCandidate.email,
           candidate_phone: safeCandidate.phone,
-          communication_type: type,
+          communication_type: type as 'email' | 'whatsapp' | 'triagem' | 'agendamento' | 'feedback',
           channel: channel === 'both' ? 'email' : channel,
           direction: 'outbound',
           subject: (channel === 'email' || channel === 'both') ? subject : undefined,
@@ -299,7 +306,8 @@ export function useUnifiedCommunication({
           whatsapp: `Enviou WhatsApp para ${safeCandidate.name}`,
           triagem: `Convidou ${safeCandidate.name} para triagem`,
           agendamento: `Enviou convite de entrevista para ${safeCandidate.name}`,
-          feedback: `Enviou feedback para ${safeCandidate.name}`
+          feedback: `Enviou feedback para ${safeCandidate.name}`,
+          proposta: `Enviou proposta de trabalho para ${safeCandidate.name}`
         }
 
         await liaApi.createActivity({

@@ -26,13 +26,12 @@ interface KanbanCardInterviewButtonsProps {
   setTransitionInterviewAlert: (value: { name: string; date: string } | null) => void
   setTransitionAllowStageSelection: (value: boolean) => void
   setDecisionFlowCandidate: (candidate: unknown) => void
-  setDecisionFlowType: (type: "approve_to_triage" | "approve_to_interview" | "reject_pre_triage" | "reject_post_triage" | "request_urgency" | "reschedule_interview" | "confirm_hire") => void
+  setDecisionFlowType: (type: "approve_to_triage" | "approve_to_interview" | "reject_pre_triage" | "reject_post_triage" | "request_urgency" | "reschedule_interview" | "confirm_hire" | "offer_send" | "offer_rejected") => void
   setShowDecisionFlowModal: (value: boolean) => void
   onOpenDecisionFlowModal: (candidate: unknown, action: "approve" | "reject") => void
   onApproveFromScreening: (candidate: unknown) => void
   onRejectFromScreening: (candidate: unknown) => void
   openTransition: (candidates: unknown[], fromStage: string, toStage: string) => void
-  onManageProposal?: (candidate: unknown) => void
 }
 
 export function KanbanCardInterviewButtons({
@@ -48,7 +47,6 @@ export function KanbanCardInterviewButtons({
   onApproveFromScreening,
   onRejectFromScreening,
   openTransition,
-  onManageProposal,
 }: KanbanCardInterviewButtonsProps) {
   const t = useTranslations('kanban')
   const locale = useLocale()
@@ -156,7 +154,9 @@ export function KanbanCardInterviewButtons({
                       hour: "2-digit",
                       minute: "2-digit",
                     })
+                  const interviewId = (candidate as Record<string, unknown>).interviewId as string || ''
                   setTransitionInitialPrompt(
+                    `[ACTION:reschedule_interview]${interviewId ? `\n[interview_id:${interviewId}]` : ''}\n\n` +
                     t('reschedulePrompt', { name: candidate.name, date: dateStr })
                   )
                   setTransitionInterviewAlert({ name: candidate.name, date: dateStr })
@@ -224,16 +224,49 @@ export function KanbanCardInterviewButtons({
       )}
 
       {stageId === "offer" && (
-        <button
-          className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-full text-micro transition-colors motion-reduce:transition-none"
-          onClick={(e) => {
-            e.stopPropagation()
-            if (onManageProposal) onManageProposal(candidate)
-          }}
-        >
-          <FileText className="w-3 h-3" />
-          <span>{t('manageProposal')}</span>
-        </button>
+        <>
+          {(candidate as Record<string, unknown>).sub_status === "proposta_enviada" ? (
+            <div className="flex gap-1">
+              <button
+                className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setDecisionFlowCandidate(candidate)
+                  setDecisionFlowType("confirm_hire")
+                  setShowDecisionFlowModal(true)
+                }}
+              >
+                <Calendar className="w-3 h-3" aria-hidden="true" />
+                <span>{t('proposalAccepted')}</span>
+              </button>
+              <button
+                className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 bg-status-error hover:bg-status-error text-white rounded-full text-micro font-medium transition-colors motion-reduce:transition-none"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setDecisionFlowCandidate(candidate)
+                  setDecisionFlowType("offer_rejected")
+                  setShowDecisionFlowModal(true)
+                }}
+              >
+                <XCircle className="w-3 h-3" aria-hidden="true" />
+                <span>{t('proposalDeclinedBtn')}</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-full text-micro transition-colors motion-reduce:transition-none"
+              onClick={(e) => {
+                e.stopPropagation()
+                setDecisionFlowCandidate(candidate)
+                setDecisionFlowType("offer_send")
+                setShowDecisionFlowModal(true)
+              }}
+            >
+              <FileText className="w-3 h-3" />
+              <span>{t('manageProposal')}</span>
+            </button>
+          )}
+        </>
       )}
     </div>
   )}

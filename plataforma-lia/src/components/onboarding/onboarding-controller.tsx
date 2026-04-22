@@ -65,7 +65,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
         name: authUser.name || authUser.email,
         email: authUser.email,
         role: ('role' in authUser ? authUser.role : 'viewer') || 'viewer',
-        companyId: ('company_id' in authUser ? (authUser as any).company_id : '') || 'demo_company',
+        companyId: ('company_id' in authUser ? (authUser as any).company_id : '') || '',
         companyName: ('company' in authUser ? (authUser as any).company : '') || 'WeDO Talent',
         isFirstAccess: false,
         permissions: ('permissions' in authUser ? (authUser as any).permissions : []) || [],
@@ -83,7 +83,7 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
         name: 'Demo User',
         email: 'demo@wedotalent.com',
         role: 'recruiter',
-        companyId: 'demo_company',
+        companyId: process.env.NEXT_PUBLIC_DEV_COMPANY_ID || '',
         companyName: 'WeDO Talent',
         isFirstAccess: false,
         permissions: [],
@@ -162,12 +162,6 @@ export function OnboardingController({ children, forceOnboarding = false }: Onbo
 
   const handleStartWizard = () => {
     setShowSetupIntroModal(false)
-    if (typeof window !== "undefined") {
-      // Task #712: stop swallowing the setup intent — kick off the
-      // conversational onboarding flow (OnboardingChatPage) instead of
-      // dropping the user back into an empty dashboard.
-      window.location.href = "/onboarding"
-    }
   }
 
   const handleSkipSetup = () => {

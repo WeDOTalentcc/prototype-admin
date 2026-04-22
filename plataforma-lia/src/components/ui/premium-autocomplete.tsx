@@ -51,7 +51,7 @@ const CATEGORY_CONFIG = {
 
 export function PremiumAutocomplete({
   query,
-  companyId = "demo",
+  companyId = '',
   userId = "default_user",
   onSelect,
   isOpen,

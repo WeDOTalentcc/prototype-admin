@@ -1,11 +1,11 @@
 "use client"
 
-import React, { useState, useMemo } from"react"
+import React, { useState, useMemo, useEffect } from"react"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Label } from"@/components/ui/label"
 import { Checkbox } from"@/components/ui/checkbox"
-import { Chip } from "@/components/ui/chip"
+import { Badge } from"@/components/ui/badge"
 import { Textarea } from"@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import {
@@ -28,6 +28,7 @@ import {
   ChevronRight
 } from"lucide-react"
 import { InterviewSlot, InterviewSchedulingData } from"../types"
+import { useCompanyInterviewers } from"@/hooks/company/useCompanyInterviewers"
 
 interface PanelProps {
   initialData?: Record<string, unknown>
@@ -50,14 +51,6 @@ const DURATION_OPTIONS: { value: Duration; label: string }[] = [
   { value: 45, label:"45 minutos" },
   { value: 60, label:"1 hora" },
   { value: 90, label:"1h30" }
-]
-
-const MOCK_INTERVIEWERS = [
-  { id:"1", name:"Ana Silva", role:"Tech Lead" },
-  { id:"2", name:"Carlos Santos", role:"Engineering Manager" },
-  { id:"3", name:"Maria Oliveira", role:"HR Business Partner" },
-  { id:"4", name:"João Costa", role:"Senior Developer" },
-  { id:"5", name:"Fernanda Lima", role:"Product Manager" }
 ]
 
 const TIME_SLOTS = ["08:00","08:30","09:00","09:30","10:00","10:30","11:00","11:30","12:00","12:30","13:00","13:30","14:00","14:30","15:00","15:30","16:00","16:30","17:00","17:30","18:00"
@@ -90,6 +83,9 @@ export function InterviewSchedulingPanel({
 }: PanelProps) {
   const candidateName = (initialData.candidate_name as string) ||"Candidato"
   const candidateId = (initialData.candidate_id as string) ||""
+  const jobOwnerEmail = (initialData.job_owner_email as string) || ""
+
+  const { interviewers, loading: loadingInterviewers } = useCompanyInterviewers()
 
   const [selectedDate, setSelectedDate] = useState<Date>(() => {
     const tomorrow = new Date()
@@ -104,6 +100,13 @@ export function InterviewSchedulingPanel({
   const [interviewType, setInterviewType] = useState<InterviewType>("teams")
   const [selectedInterviewers, setSelectedInterviewers] = useState<string[]>([])
   const [notes, setNotes] = useState<string>("")
+
+  useEffect(() => {
+    if (jobOwnerEmail && interviewers.length > 0 && selectedInterviewers.length === 0) {
+      const owner = interviewers.find((i) => i.email === jobOwnerEmail)
+      if (owner) setSelectedInterviewers([owner.id])
+    }
+  }, [interviewers, jobOwnerEmail])
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
   const availableSlots = useMemo(() => {
@@ -393,27 +396,36 @@ export function InterviewSchedulingPanel({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          {MOCK_INTERVIEWERS.map((interviewer) => (
-            <div
-              key={interviewer.id}
-              className="flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-colors motion-reduce:transition-none dark:hover:bg-lia-bg-inverse"
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--lia-interactive-hover)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-            >
-              <Checkbox
-                id={`interviewer-${interviewer.id}`}
-                checked={selectedInterviewers.includes(interviewer.id)}
-                onCheckedChange={() => handleToggleInterviewer(interviewer.id)}
-              />
-              <label
-                htmlFor={`interviewer-${interviewer.id}`}
-                className="flex-1 cursor-pointer"
-              >
-                <p className="text-sm font-medium text-lia-text-primary">{interviewer.name}</p>
-                <p className="text-xs text-lia-text-tertiary">{interviewer.role}</p>
-              </label>
+          {loadingInterviewers ? (
+            <div className="flex items-center gap-2 py-4 text-xs text-lia-text-tertiary">
+              <Loader2 className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none" />
+              Carregando equipe...
             </div>
-          ))}
+          ) : interviewers.length === 0 ? (
+            <p className="text-xs text-lia-text-tertiary py-2">Nenhum usuário encontrado.</p>
+          ) : (
+            interviewers.map((interviewer) => (
+              <div
+                key={interviewer.id}
+                className="flex items-center gap-3 p-2 rounded-xl cursor-pointer transition-colors motion-reduce:transition-none dark:hover:bg-lia-bg-inverse"
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--lia-interactive-hover)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <Checkbox
+                  id={`interviewer-${interviewer.id}`}
+                  checked={selectedInterviewers.includes(interviewer.id)}
+                  onCheckedChange={() => handleToggleInterviewer(interviewer.id)}
+                />
+                <label
+                  htmlFor={`interviewer-${interviewer.id}`}
+                  className="flex-1 cursor-pointer"
+                >
+                  <p className="text-sm font-medium text-lia-text-primary">{interviewer.name}</p>
+                  <p className="text-xs text-lia-text-tertiary">{interviewer.role}</p>
+                </label>
+              </div>
+            ))
+          )}
           {selectedInterviewers.length > 0 && (
             <div className="pt-2 mt-3 border-t border-lia-border-subtle">
               <p className="text-xs text-lia-text-tertiary">
@@ -452,25 +464,25 @@ export function InterviewSchedulingPanel({
                   {formatDisplayDate(selectedDate)} às {selectedTime}
                 </p>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  <Chip
-                    variant="neutral" muted
+                  <Badge
+                    variant="secondary"
                     className="text-xs border-0 bg-lia-bg-tertiary text-lia-text-secondary"
                   >
                     {DURATION_OPTIONS.find((d) => d.value === duration)?.label}
-                  </Chip>
-                  <Chip
-                    variant="neutral" muted
+                  </Badge>
+                  <Badge
+                    variant="secondary"
                     className="text-xs border-0 bg-lia-bg-tertiary text-lia-text-secondary"
                   >
                     {INTERVIEW_TYPES.find((t) => t.value === interviewType)?.label}
-                  </Chip>
+                  </Badge>
                   {selectedInterviewers.length > 0 && (
-                    <Chip
-                      variant="neutral" muted
+                    <Badge
+                      variant="secondary"
                       className="text-xs border-0 bg-lia-bg-tertiary text-lia-text-secondary"
                     >
                       {selectedInterviewers.length} entrevistador(es)
-                    </Chip>
+                    </Badge>
                   )}
                 </div>
               </div>

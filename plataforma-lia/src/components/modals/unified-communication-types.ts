@@ -1,8 +1,8 @@
 import React from "react"
 import { TemplateSituation } from '@/hooks/chat/use-communication-templates'
-import { Briefcase, FileText, Users, Building, Video } from "lucide-react"
+import { Users, Building, Video } from "lucide-react"
 
-export type CommunicationType = 'email' | 'whatsapp' | 'triagem' | 'agendamento' | 'feedback'
+export type CommunicationType = 'email' | 'whatsapp' | 'triagem' | 'agendamento' | 'feedback' | 'proposta'
 export type CommunicationChannel = 'email' | 'whatsapp' | 'both'
 
 export interface Candidate {
@@ -28,6 +28,8 @@ export interface UnifiedCommunicationModalProps {
   companyId: string
   selectedCandidates?: Array<{ id: string; name: string; email?: string; phone?: string; avatar?: string }>
   situation?: TemplateSituation
+  initialVacancyId?: string
+  initialStage?: string
 }
 
 export interface CommunicationResult {
@@ -48,7 +50,6 @@ export interface Template {
 }
 
 export interface InterviewSettings {
-  interviewType: 'funcional' | 'tecnica' | 'completa' | 'cultural'
   platform: 'zoom' | 'teams' | 'meet' | 'presencial'
   duration: string
   date: string
@@ -65,19 +66,14 @@ export interface JobVacancy {
 }
 
 export const PIPELINE_STAGES = [
-  { value: 'novo', label: 'Novo' },
-  { value: 'triagem', label: 'Triagem' },
-  { value: 'entrevista', label: 'Entrevista' },
-  { value: 'avaliacao', label: 'Avaliação' },
-  { value: 'oferta', label: 'Oferta' }
+  { value: 'sourcing', label: 'Funil' },
+  { value: 'screening', label: 'Triagem' },
+  { value: 'interview_hr', label: 'Entrevista RH' },
+  { value: 'interview_technical', label: 'Entrevista Técnica' },
+  { value: 'interview_manager', label: 'Entrevista Gestor' },
+  { value: 'offer', label: 'Proposta' },
+  { value: 'hired', label: 'Contratado' },
 ]
-
-export const interviewTypes = [
-  { id: 'funcional', name: 'Funcional', description: 'Avaliação de competências da função', icon: Briefcase },
-  { id: 'tecnica', name: 'Técnica', description: 'Avaliação de skills técnicos', icon: FileText },
-  { id: 'completa', name: 'Completa', description: 'Avaliação abrangente', icon: Users },
-  { id: 'cultural', name: 'Cultural', description: 'Fit cultural e valores', icon: Building }
-] as const
 
 export const platforms = [
   { id: 'zoom', name: 'Zoom', icon: Video },
@@ -85,10 +81,3 @@ export const platforms = [
   { id: 'meet', name: 'Google Meet', icon: Video },
   { id: 'presencial', name: 'Presencial', icon: Building }
 ] as const
-
-export const interviewers = [
-  'Ana Silva - Recrutadora Sênior',
-  'Carlos Mendes - Tech Lead',
-  'Marina Costa - Gerente de Produto',
-  'Roberto Santos - RH'
-]

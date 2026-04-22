@@ -48,7 +48,7 @@ export function useAuthenticatedUserId(): UseAuthenticatedUserIdReturn {
  * Retorna `null` para forçar o caller a tratar o estado pré-auth explicitamente,
  * em vez de silenciosamente virar "default_user".
  */
-export function resolveUserId(user: AuthenticatedUser | null | undefined): string | null {
+export function resolveUserId(user: AuthenticatedUser | { id?: string; email?: string } | null | undefined): string | null {
   if (!user) return null
   const u = user as { id?: string; email?: string }
   return u.id || u.email || null

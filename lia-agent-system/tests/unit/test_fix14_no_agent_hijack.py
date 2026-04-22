@@ -44,14 +44,26 @@ class TestFix14NoAgentHijack:
         )
 
     def test_proactive_hints_still_reach_system_prompt(self):
-        """The hint-to-prompt path (_proactive_hints_text → extra_instructions)
-        must remain intact. This is the legitimate way for hints to reach LIA."""
+        """The hint-to-prompt path must remain intact. Hints reach the LLM
+        via extra_instructions, either directly OR merged with other context
+        (Onda 5.1.a introduced merge with ctx.extra['extra_instructions'])."""
         src = self._read_source()
-        assert "_proactive_hints_text" in src
-        assert "extra_instructions=_proactive_hints_text" in src, (
-            "Hints are no longer reaching the LLM via extra_instructions. "
-            "This means FIX 14 was over-applied — hints must continue flowing "
-            "through the prompt so LIA can mention onboarding proactively."
+        assert "_proactive_hints_text" in src, (
+            "_proactive_hints_text variable must exist and flow into prompt"
+        )
+        # After Onda 5.1.a, value may be merged into _merged_instructions
+        # before reaching extra_instructions kwarg. Either form preserves
+        # the behavioral guarantee.
+        direct_pass = "extra_instructions=_proactive_hints_text" in src
+        merged_pass = (
+            "_merged_instructions" in src
+            and "_proactive_hints_text" in src
+            and "extra_instructions=_merged_instructions" in src
+        )
+        assert direct_pass or merged_pass, (
+            "Hints no longer reach LLM via extra_instructions (direct or merged). "
+            "FIX 14 was over-applied — hints must flow to prompt so LIA can "
+            "mention onboarding proactively."
         )
 
     def test_proactive_hints_payload_still_goes_to_frontend(self):

@@ -252,11 +252,48 @@ export function useKanbanCandidateDecisions(ctx: KanbanCandidateDecisionsContext
 
     if (action === 'approve_to_triage' || action === 'approve_to_interview') {
       await handleApproveCandidate(candidate)
+    } else if (action === 'confirm_hire') {
+      setCandidatesData(prev => {
+        const currentStage = Object.keys(prev).find(stage =>
+          prev[stage]?.some((c: KanbanCandidate) => c.id === candidate.id)
+        )
+        if (!currentStage) return prev
+        const newData = { ...prev }
+        newData[currentStage] = newData[currentStage].filter((c: KanbanCandidate) => c.id !== candidate.id)
+        newData['hired'] = [...(newData['hired'] || []), { ...candidate, stage: 'hired' }]
+        return newData
+      })
+      toast.success('Candidato contratado!', { description: `${candidate.name} foi movido para Contratados.` })
+    } else if (action === 'offer_rejected') {
+      setCandidatesData(prev => {
+        const currentStage = Object.keys(prev).find(stage =>
+          prev[stage]?.some((c: KanbanCandidate) => c.id === candidate.id)
+        )
+        if (!currentStage) return prev
+        const newData = { ...prev }
+        newData[currentStage] = newData[currentStage].filter((c: KanbanCandidate) => c.id !== candidate.id)
+        newData['offer_declined'] = [...(newData['offer_declined'] || []), { ...candidate, stage: 'offer_declined' }]
+        return newData
+      })
+      toast.success('Proposta recusada registrada', { description: `${candidate.name} foi movido para Proposta Recusada.` })
     } else if (action.startsWith('reject')) {
       await handleRejectCandidate(candidate)
       if (action === 'reject_with_feedback' && feedbackMessage) {
         toast.success('Feedback enviado', { description: `Mensagem de feedback enviada para ${candidate.name} via ${channel === 'whatsapp' ? 'WhatsApp' : 'Email'}.` })
       }
+    } else if (action === 'reschedule_interview') {
+      setShowDecisionFlowModal(false)
+      setDecisionFlowCandidate(null)
+      const candidateExt = candidate as unknown as Record<string, unknown>
+      const stageId = (candidateExt.stageId as string) || (candidateExt.stage as string) || 'interview_hr'
+      const interviewId = (candidateExt.interviewId as string) || ''
+      setTransitionInitialPrompt(
+        `[ACTION:reschedule_interview]${interviewId ? `\n[interview_id:${interviewId}]` : ''}\n\nPreciso reagendar a entrevista de ${candidate.name}. Pode buscar horários disponíveis e enviar novo convite?`
+      )
+      openTransition([candidate], stageId, stageId)
+      return
+    } else if (action === 'request_urgency') {
+      toast.info('Urgência solicitada', { description: `LIA vai contatar ${candidate.name} com prioridade.` })
     }
 
     setShowDecisionFlowModal(false)
