@@ -1567,7 +1567,8 @@
       "unauthorizedMessage": "Sua sessão expirou. Faça login novamente para continuar.",
       "forbiddenMessage": "Você não tem permissão para ver esses candidatos.",
       "serverErrorMessage": "O servidor está com problemas no momento. Tente novamente em instantes.",
-      "networkErrorMessage": "Erro ao carregar candidatos. Tente novamente."
+      "networkErrorMessage": "Erro ao carregar candidatos. Tente novamente.",
+      "reconnecting": "Reconectando ao servidor…"
     },
     "emptyState": {
       "noResults": "Nenhum candidato encontrado. Tente outros filtros.",

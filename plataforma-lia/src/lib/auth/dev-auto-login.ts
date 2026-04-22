@@ -30,15 +30,39 @@ function logDevAutoLoginFailure(detail: string): void {
   )
 }
 
-export async function loginDemoUser(): Promise<DevLoginResult | null> {
-  const demoEmail = process.env.DEV_AUTO_LOGIN_EMAIL || 'demo@wedotalent.com'
-  const demoPassword = process.env.DEV_AUTO_LOGIN_PASSWORD || 'demo123'
+// Task #801 (C3): backend cold-start no Replit demora ~3-15s. Uma única
+// tentativa de login falha sob TypeError("Failed to fetch") e o front fica
+// sem token até o próximo focus(), gerando o sintoma "Funil sem candidatos".
+// Reententamos com backoff até ~31s.
+const DEV_LOGIN_BACKOFFS_MS = [1000, 2000, 4000, 8000, 16000] as const
 
+function isTransientFetchError(err: unknown): boolean {
+  if (err instanceof TypeError) {
+    const m = (err.message || '').toLowerCase()
+    return (
+      m.includes('failed to fetch') ||
+      m.includes('networkerror') ||
+      m.includes('load failed') ||
+      m.includes('fetch failed')
+    )
+  }
+  if (err instanceof DOMException && err.name === 'TimeoutError') return true
+  if (err && typeof err === 'object' && 'cause' in err) {
+    return isTransientFetchError((err as { cause?: unknown }).cause)
+  }
+  return false
+}
+
+async function attemptLogin(
+  url: string,
+  email: string,
+  password: string,
+): Promise<{ ok: true; data: any } | { ok: false; transient: boolean; detail: string }> {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/v1/auth/login`, {
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: demoEmail, password: demoPassword }),
+      body: JSON.stringify({ email, password }),
       signal: AbortSignal.timeout(15000),
     })
     if (!res.ok) {
@@ -49,28 +73,56 @@ export async function loginDemoUser(): Promise<DevLoginResult | null> {
       } catch {
         bodySnippet = '<unreadable body>'
       }
-      logDevAutoLoginFailure(
-        `backend ${BACKEND_URL}/api/v1/auth/login responded ${res.status} ${res.statusText} for ${demoEmail} (body: ${bodySnippet})`,
-      )
-      return null
+      return {
+        ok: false,
+        transient: res.status >= 500 || res.status === 502 || res.status === 503,
+        detail: `responded ${res.status} ${res.statusText} (body: ${bodySnippet})`,
+      }
     }
     const data = await res.json()
-    const accessToken = data.access_token || data?.data?.access_token
-    if (!accessToken) {
-      logDevAutoLoginFailure(
-        `backend response for ${demoEmail} is missing access_token (keys: ${Object.keys(data || {}).join(',') || 'none'})`,
-      )
-      return null
-    }
-    const refreshToken = data.refresh_token || data?.data?.refresh_token
-    return { accessToken, refreshToken }
+    return { ok: true, data }
   } catch (err) {
     const message = err instanceof Error ? `${err.name}: ${err.message}` : String(err)
-    logDevAutoLoginFailure(
-      `network error contacting ${BACKEND_URL}/api/v1/auth/login for ${demoEmail} (${message})`,
-    )
-    return null
+    return {
+      ok: false,
+      transient: isTransientFetchError(err),
+      detail: `network error (${message})`,
+    }
   }
+}
+
+export async function loginDemoUser(): Promise<DevLoginResult | null> {
+  const demoEmail = process.env.DEV_AUTO_LOGIN_EMAIL || 'demo@wedotalent.com'
+  const demoPassword = process.env.DEV_AUTO_LOGIN_PASSWORD || 'demo123'
+  const url = `${BACKEND_URL}/api/v1/auth/login`
+
+  let lastDetail = ''
+  for (let attempt = 0; attempt <= DEV_LOGIN_BACKOFFS_MS.length; attempt++) {
+    const result = await attemptLogin(url, demoEmail, demoPassword)
+    if (result.ok) {
+      const data = result.data
+      const accessToken = data.access_token || data?.data?.access_token
+      if (!accessToken) {
+        logDevAutoLoginFailure(
+          `backend response for ${demoEmail} is missing access_token (keys: ${Object.keys(data || {}).join(',') || 'none'})`,
+        )
+        return null
+      }
+      const refreshToken = data.refresh_token || data?.data?.refresh_token
+      return { accessToken, refreshToken }
+    }
+
+    lastDetail = result.detail
+    // Erro determinístico (4xx etc.) ou último attempt: desiste.
+    if (!result.transient || attempt === DEV_LOGIN_BACKOFFS_MS.length) break
+    const delay = DEV_LOGIN_BACKOFFS_MS[attempt]
+    await new Promise(r => setTimeout(r, delay))
+  }
+
+  logDevAutoLoginFailure(
+    `backend ${url} unreachable for ${demoEmail} after ${DEV_LOGIN_BACKOFFS_MS.length + 1} attempts: ${lastDetail}`,
+  )
+  return null
 }
 
 export async function getDevToken(): Promise<string | null> {

@@ -42,6 +42,10 @@ export interface UseCandidatesListReturn {
   updateFilter: <K extends keyof CandidatesListFilters>(key: K, value: CandidatesListFilters[K]) => void
   goToPage: (page: number) => void
   refresh: () => void
+  /** Task #801 (C1): true enquanto o hook está auto-retentando após erro
+   *  transiente de rede; consumidores podem renderizar um banner discreto
+   *  de "reconectando…" sem esconder a lista preservada. */
+  isTransientRetrying: boolean
 }
 
 export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCandidatesListReturn {
@@ -56,6 +60,13 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
   const [debouncedSearch, setDebouncedSearch] = useState(initialFilters?.search ?? "")
   const [fetchTrigger, setFetchTrigger] = useState(0)
   const requestIdRef = useRef(0)
+  // Task #801 (C1): contador de tentativa transparente para o consumidor.
+  // Não dispara re-render adicional além do triggered pelo backoff (setTimeout
+  // → setFetchTrigger). Persiste entre fetches para que possamos exibir
+  // "reconectando…" enquanto preservamos a lista atual.
+  const transientRetryRef = useRef(0)
+  const TRANSIENT_BACKOFFS_MS = [1000, 3000, 8000] as const
+  const [isTransientRetrying, setIsTransientRetrying] = useState(false)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -88,18 +99,57 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
         setCandidates(data.candidates as CandidateLocal[])
         setTotal(data.total ?? 0)
         setLoading(false)
+        setIsTransientRetrying(false)
+        transientRetryRef.current = 0
       })
-      .catch((err: Error & { status?: number }) => {
+      .catch((err: Error & { status?: number; transientNetworkError?: boolean }) => {
         if (requestIdRef.current !== thisRequestId) return
         console.error("[useCandidatesList] fetch error:", err)
         // Só classifica; a UI traduz via i18n. `error` fica com mensagem crua
         // como fallback para consumers legados.
         const status = typeof err?.status === "number" ? err.status : undefined
+        const isTransient =
+          err?.transientNetworkError === true ||
+          (status === 0) ||
+          (status === undefined && /network|failed to fetch|load failed/i.test(err?.message ?? ""))
         const kind: CandidatesErrorKind =
           status === 401 ? "unauthorized" :
           status === 403 ? "forbidden" :
           (status !== undefined && status >= 500) ? "server" :
           "network"
+
+        // Task #801 (C1): em erro transiente de rede (cold-start, HMR, DNS)
+        // **NÃO** zeramos a lista. O dev overlay e o usuário continuam vendo
+        // o último snapshot enquanto auto-retentamos com backoff. Só limpamos
+        // em erro definitivo (401/403/500+) onde mostrar dados stale seria
+        // enganoso.
+        if (isTransient) {
+          // Erro transiente: preserva snapshot SEMPRE (mesmo após esgotar
+          // budget de auto-retry). A regra invariante (CLAUDE.md §
+          // HMR-resilience) é "nunca zerar lista em transient". O usuário
+          // pode disparar refresh manual; sob mudança de filtro/página o
+          // budget é resetado pelo effect abaixo.
+          setError(err?.message || "candidates_fetch_failed")
+          setErrorKind("network")
+          setLoading(false)
+          if (transientRetryRef.current < TRANSIENT_BACKOFFS_MS.length) {
+            const delay = TRANSIENT_BACKOFFS_MS[transientRetryRef.current]
+            transientRetryRef.current += 1
+            setIsTransientRetrying(true)
+            setTimeout(() => {
+              if (requestIdRef.current === thisRequestId) {
+                setFetchTrigger(prev => prev + 1)
+              }
+            }, delay)
+          } else {
+            // Budget esgotado: para de auto-retentar mas mantém snapshot e
+            // banner discreto desligado para a UI mostrar `error` clássico
+            // (com botão "Tentar novamente").
+            setIsTransientRetrying(false)
+          }
+          return
+        }
+
         setError(err?.message || "candidates_fetch_failed")
         setErrorKind(kind)
         setCandidates([])
@@ -107,8 +157,18 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
         // (ex.: banner 401/500 mostrado com "Página 1 de 3" de listagem antiga).
         setTotal(0)
         setLoading(false)
+        setIsTransientRetrying(false)
+        transientRetryRef.current = 0
       })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.status, filters.tags, filters.seniority, filters.sort_by, filters.sort_order, debouncedSearch, currentPage, fetchTrigger])
+
+  // Cancela retry transiente quando filtros/página mudam — o próximo fetch
+  // recomeça do zero com a janela de backoff resetada.
+  useEffect(() => {
+    transientRetryRef.current = 0
+    setIsTransientRetrying(false)
+  }, [filters.status, filters.tags, filters.seniority, filters.sort_by, filters.sort_order, debouncedSearch, currentPage])
 
   const setFilters = useCallback(
     (newFilters: CandidatesListFilters) => {
@@ -173,5 +233,6 @@ export function useCandidatesList(initialFilters?: CandidatesListFilters): UseCa
     updateFilter,
     goToPage,
     refresh,
+    isTransientRetrying,
   }
 }

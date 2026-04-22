@@ -183,7 +183,8 @@ describe('fetchWithRetry', () => {
     )
     promise.catch(() => {}) // avoid unhandled-rejection from fake timers
     await vi.runAllTimersAsync()
-    await expect(promise).rejects.toThrow(/Failed to fetch/)
+    // Task #801 (C2): mensagem é fixa, original preservado em `cause`.
+    await expect(promise).rejects.toThrow(/network unavailable \(transient\)/i)
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
@@ -289,6 +290,22 @@ describe('fetchWithRetry — transient network failures (Task #728)', () => {
     })
     // The raw TypeError must NOT escape — it triggered the dev overlay.
     await expect(promise).rejects.not.toBeInstanceOf(TypeError)
+  })
+
+  it('Task #801 (C2): wrapped HttpError uses fixed message, not raw "Failed to fetch"', async () => {
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'))
+
+    const promise = fetchWithRetry('https://example.com', {}, { attempts: 1 })
+    promise.catch(() => {})
+    await vi.runAllTimersAsync()
+
+    let caught: unknown
+    try { await promise } catch (e) { caught = e }
+    expect(caught).toBeInstanceOf(HttpError)
+    expect((caught as Error).message).toBe('Network unavailable (transient)')
+    // Original is preserved in `cause` for diagnóstico, but never in message.
+    expect((caught as Error).message).not.toMatch(/failed to fetch/i)
+    expect((caught as Error & { cause?: Error }).cause).toBeInstanceOf(TypeError)
   })
 
   it('still retries on transient network errors before wrapping the final one', async () => {

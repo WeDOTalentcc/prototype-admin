@@ -14,7 +14,7 @@ import { useCandidatesList } from"@/hooks/candidates/use-candidates-list"
 import { useBulkSelection } from"@/hooks/candidates/use-bulk-selection"
 import { useTalentFunnel } from"@/hooks/candidates/use-talent-funnel"
 import { textStyles } from"@/lib/design-tokens"
-import { Search, Heart, Share2, Users, ChevronLeft, ChevronRight, AlertCircle, List, Bookmark, Database, Clock } from"lucide-react"
+import { Search, Heart, Share2, Users, ChevronLeft, ChevronRight, AlertCircle, List, Bookmark, Database, Clock, Loader2 } from"lucide-react"
 import type { Candidate, SortConfig } from"@/components/pages/candidates/types"
 import type { TableCandidate } from"@/components/tables"
 import type { CandidateLocal } from"@/services/lia-api"
@@ -107,6 +107,7 @@ export default function FunilDeTalentosPage() {
     updateFilter,
     goToPage,
     refresh,
+    isTransientRetrying,
   } = useCandidatesList()
 
   const {
@@ -358,6 +359,20 @@ const SENIORITY_OPTIONS = [
                   <LogIn className="h-3.5 w-3.5 mr-1.5" />
                   {t('auth.reloginCta')}
                 </Button>
+              </div>
+            ) : isTransientRetrying && candidates.length > 0 ? (
+              // Task #801 (C1/UX): banner discreto enquanto auto-retentamos.
+              // A lista preservada continua visível abaixo; só sinalizamos
+              // o estado para o usuário não achar que está vendo dados
+              // congelados.
+              <div
+                role="status"
+                aria-live="polite"
+                data-testid="funil-reconnecting-banner"
+                className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-700 dark:text-amber-400"
+              >
+                <Loader2 className="h-3.5 w-3.5 animate-spin flex-shrink-0" />
+                <span className="flex-1">{t('auth.reconnecting')}</span>
               </div>
             ) : error ? (
               <div

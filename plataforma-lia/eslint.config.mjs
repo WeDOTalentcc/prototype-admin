@@ -61,6 +61,58 @@ const eslintConfig = [...compat.extends("next/core-web-vitals", "next/typescript
       }
     ],
   },
+}, {
+  // ──────────────────────────────────────────────
+  // Task #801 (C4/sensor): proibir `fetch()` cru em hooks/components.
+  // Toda chamada deve ir por `liaApi.*` ou por `fetchWithRetry` para herdar
+  // retry, timeout e o wrapping HttpError(transientNetworkError) — sem isso
+  // erros de rede transientes (cold-start, HMR) zeram listas e disparam o
+  // dev-overlay. Allowlist: services/lia-api/**, app/api/**, tests, próprio
+  // base.ts.
+  // ──────────────────────────────────────────────
+  files: ["src/hooks/**/*.{ts,tsx}", "src/components/**/*.{ts,tsx}"],
+  ignores: [
+    "src/services/lia-api/**",
+    "src/app/api/**",
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+  ],
+  rules: {
+    "no-restricted-syntax": [
+      "warn",
+      // Re-declara as regras DS para não sobrescrevê-las neste escopo
+      // (flat config: o último bloco match vence, então precisamos repetir).
+      {
+        "selector": "JSXAttribute[name.name='className'][value.value=/transition-all/]",
+        "message": "[WeDo DS] Use transition-colors, transition-opacity ou transition-transform em vez de transition-all"
+      },
+      {
+        "selector": "JSXAttribute[name.name='className'][value.value=/rounded-2xl/]",
+        "message": "[WeDo DS] rounded-2xl não é canônico. Use rounded-xl (cards/modais) ou rounded-lg (inputs)"
+      },
+      {
+        "selector": "JSXAttribute[name.name='className'][value.value=/text-wedo-apoio/]",
+        "message": "[WeDo DS] Token wedo-apoio-* está deprecated. Use tokens lia-* ou status-* equivalentes"
+      },
+      {
+        "selector": "JSXAttribute[name.name='className'][value.value=/bg-wedo-apoio/]",
+        "message": "[WeDo DS] Token wedo-apoio-* está deprecated. Use tokens lia-* ou status-* equivalentes"
+      },
+      // Task #801: bare `fetch(...)`
+      {
+        "selector": "CallExpression[callee.type='Identifier'][callee.name='fetch']",
+        "message": "[Task #801] Não use `fetch()` cru em hooks/components — use `liaApi.*` ou `fetchWithRetry` (services/lia-api/base) para herdar retry, timeout e HttpError(transientNetworkError). Veja CLAUDE.md § HMR-resilience."
+      },
+      // Task #801: `window.fetch(...)` / `globalThis.fetch(...)` / `self.fetch(...)`
+      {
+        "selector": "CallExpression[callee.type='MemberExpression'][callee.property.name='fetch'][callee.object.name=/^(window|globalThis|self)$/]",
+        "message": "[Task #801] Não use `window.fetch()` cru em hooks/components — use `liaApi.*` ou `fetchWithRetry` (services/lia-api/base). Veja CLAUDE.md § HMR-resilience."
+      }
+    ],
+  },
 }, ...storybook.configs["flat/recommended"]];
 
 export default eslintConfig;

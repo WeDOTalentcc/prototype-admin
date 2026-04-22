@@ -202,9 +202,18 @@ export async function fetchWithRetry(
   // `TypeError: Failed to fetch` string and pops up during cold-start.
   // Real HTTP errors (5xx etc.) and AbortError are preserved verbatim.
   if (isTransientNetworkError(lastError)) {
-    const msg =
-      lastError instanceof Error ? lastError.message : 'Network unavailable'
-    throw new HttpError(0, msg, { transientNetworkError: true })
+    // Task #801 (C2): NUNCA propagar a string crua "Failed to fetch" — o
+    // dev-overlay do Next.js (e logs do console) reanexam à mensagem,
+    // ressuscitando o sintoma que a Task #728 quis suprimir. Usamos uma
+    // mensagem fixa, identificável por testes, e preservamos o original em
+    // `cause` para diagnóstico.
+    const err = new HttpError(0, 'Network unavailable (transient)', {
+      transientNetworkError: true,
+    })
+    if (lastError instanceof Error) {
+      ;(err as Error & { cause?: unknown }).cause = lastError
+    }
+    throw err
   }
 
   throw lastError instanceof Error

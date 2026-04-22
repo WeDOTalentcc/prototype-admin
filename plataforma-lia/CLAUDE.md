@@ -74,6 +74,37 @@
 | wedo-apoio-* | OPT-006 | Tokens deprecated — remover em próxima sprint |
 | spacing px arbitrário | OPT-022 | pl-[21px] etc. sem canônico Tailwind |
 
+## HMR-resilience (Task #801) — guide
+
+Resumo das 5 causas raiz tratadas (audit 2026-04-22):
+
+- **C1 (hook):** `useCandidatesList` agora preserva `candidates`/`total` em erro
+  transiente de rede e auto-retenta com backoff `[1s, 3s, 8s]`. Expõe
+  `isTransientRetrying` para a UI mostrar banner discreto sem esconder a lista.
+- **C2 (services/lia-api/base.ts):** `fetchWithRetry` propaga **mensagem fixa**
+  `"Network unavailable (transient)"` ao envelopar `TypeError("Failed to fetch")`,
+  preservando o original em `cause`. Nunca propague a string crua — o dev-overlay
+  do Next.js casa com ela e ressuscita o sintoma da Task #728.
+- **C3 (lib/auth/dev-auto-login.ts):** auto-login do demo retenta com backoff
+  `[1, 2, 4, 8, 16]s` (~31s total) durante cold-start do backend. Sem isso o
+  front-end fica órfão de token nos primeiros segundos.
+- **C4 (hooks):** todos os pollers (`use-hitl-pending`, `use-notifications` etc.)
+  devem usar `fetchWithRetry`, **não** `fetch()` cru. Enforçado via ESLint
+  `no-restricted-syntax` em `src/hooks/**` e `src/components/**`.
+- **C5 (rotas paralelas):** consolidação do proxy em `/api/backend-proxy/*` —
+  rota duplicada `/api/lia/[...path]` é tratada em Task #802.
+
+### Regras invioláveis
+
+1. **Nunca** zerar listas/contadores ao receber `transientNetworkError` ou
+   `status === 0` — preservar último snapshot e auto-retentar.
+2. **Nunca** chamar `fetch()` direto em `src/hooks/**` ou `src/components/**`.
+   Use `liaApi.*` (preferível) ou `fetchWithRetry` (para rotas custom).
+3. **Nunca** propagar `err.message` cru de erro transiente — wrappear em
+   `HttpError(0, 'Network unavailable (transient)', { transientNetworkError: true })`.
+4. UX em erro de rede: banner discreto (`aria-live="polite"`) + lista preservada;
+   só renderizar empty-state em 401/403/500+.
+
 ## Comandos úteis
 
 ```bash

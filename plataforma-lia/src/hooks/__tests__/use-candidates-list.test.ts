@@ -134,6 +134,40 @@ describe("useCandidatesList", () => {
     expect(result.current.errorKind).toBe("network")
   })
 
+  // Task #801 (C1): erro transiente NÃO zera lista preservada e auto-retenta.
+  it("Task #801 — preserva candidates em erro transiente e auto-retenta com backoff", async () => {
+    // Primeira chamada: sucesso (popula a lista)
+    // Segunda chamada (refresh): falha transiente
+    // Terceira chamada (auto-retry após 1s): sucesso
+    const transientErr = Object.assign(new Error("Network unavailable (transient)"), {
+      status: 0,
+      transientNetworkError: true,
+    })
+    mockGetCandidates
+      .mockResolvedValueOnce(MOCK_RESPONSE)
+      .mockRejectedValueOnce(transientErr)
+      .mockResolvedValueOnce(MOCK_RESPONSE)
+
+    const { result } = renderHook(() => useCandidatesList())
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.candidates).toHaveLength(2)
+
+    // Dispara refresh — vai falhar transiente
+    act(() => { result.current.refresh() })
+    await waitFor(() => expect(result.current.isTransientRetrying).toBe(true))
+
+    // CRÍTICO: lista preservada (não foi para [])
+    expect(result.current.candidates).toHaveLength(2)
+    expect(result.current.total).toBe(2)
+    expect(result.current.errorKind).toBe("network")
+
+    // Avança 1s para disparar o auto-retry
+    await act(async () => { vi.advanceTimersByTime(1000) })
+    await waitFor(() => expect(result.current.isTransientRetrying).toBe(false))
+    expect(result.current.candidates).toHaveLength(2)
+    expect(result.current.error).toBeNull()
+  })
+
   // Task #293 — classificação de errorKind por HTTP status.
   it.each([
     [401, "unauthorized"],
