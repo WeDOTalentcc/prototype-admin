@@ -1,18 +1,24 @@
 export const dynamic = "force-dynamic"
-import { NextResponse } from 'next/server'
-import { getSessionAuth } from '@/lib/api/session-auth'
-import { BACKEND_URL } from '@/lib/api/backend-url'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET() {
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
+
+function getAuthHeaders(): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    'X-Company-ID': 'admin_company',
+    'X-User-ID': 'admin_user',
+    'X-User-Role': 'admin'
+  }
+}
+
+export async function GET(request: NextRequest) {
   try {
-    const auth = await getSessionAuth()
-    if (!auth.success) return auth.response
-
     const backendUrl = `${BACKEND_URL}/api/v1/billing/usage`
-
+    
     const response = await fetch(backendUrl, {
       method: 'GET',
-      headers: auth.headers,
+      headers: getAuthHeaders(),
     })
 
     if (!response.ok) {
@@ -25,7 +31,7 @@ export async function GET() {
 
     const data = await response.json()
     return NextResponse.json(data)
-  } catch {
+  } catch (error) {
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

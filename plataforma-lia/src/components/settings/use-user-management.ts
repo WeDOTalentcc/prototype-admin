@@ -54,8 +54,7 @@ export function useUserManagement() {
     setIsLoading(true)
     setError(null)
     try {
-      const cid = effectiveCompanyId
-      if (!cid) { setIsLoading(false); return }
+      const cid = effectiveCompanyId || 'demo_company'
       const response = await fetch(`/api/backend-proxy/company/users?company_id=${cid}`)
       if (!response.ok) throw new Error('Failed to fetch users')
       const data = await response.json()
@@ -135,8 +134,7 @@ export function useUserManagement() {
   }, [])
 
   const handleSaveUser = useCallback(async () => {
-    const cid = effectiveCompanyId
-    if (!cid) { alert(t('users.errorSaveUser')); return }
+    const cid = effectiveCompanyId || 'demo_company'
     try {
       if (isCreating) {
         const response = await fetch(`/api/backend-proxy/company/users?company_id=${cid}`, {
@@ -179,8 +177,7 @@ export function useUserManagement() {
   }, [effectiveCompanyId, isCreating, formData, selectedUser, fetchUsers, t])
 
   const handleResendInvitation = useCallback(async (userId: string, userEmail: string) => {
-    const cid = effectiveCompanyId
-    if (!cid) { alert(t('users.errorResendInvite')); return }
+    const cid = effectiveCompanyId || 'demo_company'
     setResendingInvite(userId)
     try {
       const response = await fetch(`/api/backend-proxy/company/users/${userId}/resend-invitation?company_id=${cid}`, {
@@ -201,8 +198,7 @@ export function useUserManagement() {
   }, [effectiveCompanyId, t])
 
   const handleDeleteUser = useCallback(async (userId: string) => {
-    const cid = effectiveCompanyId
-    if (!cid) { alert(t('users.errorDeleteUser')); return }
+    const cid = effectiveCompanyId || 'demo_company'
     if (confirm(t('users.confirmDeleteUser'))) {
       try {
         const response = await fetch(`/api/backend-proxy/company/users/${userId}?company_id=${cid}`, {

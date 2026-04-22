@@ -12,7 +12,7 @@ import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
 import { Label } from"@/components/ui/label"
 import { Calendar, Loader2, Send, Brain, AlertTriangle } from"lucide-react"
-import { Badge } from"@/components/ui/badge"
+import { Chip } from "@/components/ui/chip"
 import { sanitizeHtml } from"@/lib/sanitize"
 
 
@@ -32,7 +32,6 @@ interface InterviewSchedulingModalProps {
   jobVacancyId?: string
   userName: string
   userEmail: string
-  stageId?: string
 }
 
 export function InterviewSchedulingModal({
@@ -45,7 +44,6 @@ export function InterviewSchedulingModal({
   jobVacancyId,
   userName,
   userEmail,
-  stageId,
 }: InterviewSchedulingModalProps) {
   const [isGeneratingEmail, setIsGeneratingEmail] = useState(false)
   const [isScheduling, setIsScheduling] = useState(false)
@@ -64,20 +62,17 @@ export function InterviewSchedulingModal({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
-  const interviewType = stageId === "interview_technical" ? "tecnica" : stageId === "interview_manager" ? "gestor" : "rh"
-
   const generateEmailTemplate = async () => {
     setIsGeneratingEmail(true)
     try {
-      const response = await fetch("/api/backend-proxy/interviews/generate-email-template", {
+      const response = await fetch("/api/v1/interviews/generate-email-template", {
         method:"POST",
-        credentials: "include",
         headers: {"Content-Type":"application/json" },
         body: JSON.stringify({
           candidate_name: candidateName,
           candidate_email: candidateEmail,
           job_title: jobTitle,
-          interview_type: interviewType,
+          interview_type:"técnica",
           user_name: userName,
         }),
       })
@@ -102,9 +97,8 @@ export function InterviewSchedulingModal({
     setError(null)
     
     try {
-      const response = await fetch("/api/backend-proxy/interviews/schedule-from-prompt", {
+      const response = await fetch("/api/v1/interviews/schedule-from-prompt", {
         method:"POST",
-        credentials: "include",
         headers: {"Content-Type":"application/json" },
         body: JSON.stringify({
           candidate_name: candidateName,
@@ -112,7 +106,7 @@ export function InterviewSchedulingModal({
           candidate_id: candidateId,
           job_title: jobTitle,
           job_vacancy_id: jobVacancyId,
-          interview_type: interviewType,
+          interview_type:"técnica",
           natural_language_prompt: schedulingPrompt,
           user_name: userName,
           user_email: userEmail,
@@ -186,10 +180,10 @@ export function InterviewSchedulingModal({
                   <Label className="text-xs font-medium text-lia-text-primary">
                     Email de Convite
                   </Label>
-                  <Badge className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
+                  <Chip variant="neutral" muted className="px-1.5 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
                     <Brain className="w-3 h-3 mr-1 text-wedo-cyan" />
                     Gerado por LIA
-                  </Badge>
+                  </Chip>
                 </div>
 
                 {isGeneratingEmail ? (

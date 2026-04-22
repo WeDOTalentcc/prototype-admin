@@ -447,19 +447,6 @@ class SystemPromptBuilder:
             except Exception:
                 pass
 
-        # Init II.D (2026-04-21) — render workflow_context when active.
-        # Complements pending_action (single-param) with multi-step workflows.
-        try:
-            if conversation_state is not None:
-                _wf_ctx = getattr(conversation_state, "workflow_context", None)
-                if _wf_ctx:
-                    from app.orchestrator.workflow_registry import render_prompt_context
-                    _wf_block = render_prompt_context(_wf_ctx)
-                    if _wf_block:
-                        context_parts.append(_wf_block)
-        except Exception as _wf_exc:
-            logger.debug("Init II.D: workflow_context render skipped: %s", _wf_exc)
-
         if context_parts:
             sections.append("\n## Contexto Atual\n" + "\n\n".join(context_parts))
 

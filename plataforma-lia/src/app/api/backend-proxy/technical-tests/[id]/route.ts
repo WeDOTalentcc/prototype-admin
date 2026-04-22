@@ -1,31 +1,38 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { validateParams, validateBody } from '@/lib/api/validate'
-import { getSessionAuth } from '@/lib/api/session-auth'
-import { BACKEND_URL } from '@/lib/api/backend-url'
 import { z } from 'zod'
+
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 const routeParamsSchema = z.object({
   id: z.string().min(1, 'id is required'),
 })
 
+
+function getAuthHeaders(request: NextRequest): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    'X-Company-ID': request.headers.get('X-Company-ID') || 'admin_company',
+    'X-User-ID': request.headers.get('X-User-ID') || 'admin_user',
+    'X-User-Role': request.headers.get('X-User-Role') || 'admin'
+  }
+}
+
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await getSessionAuth()
-    if (!auth.success) return auth.response
-
     const { id } = await params
     const paramValidation = validateParams({ id }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
-
+    
     const backendUrl = `${BACKEND_URL}/api/v1/technical-tests/${id}`
-
+    
     const response = await fetch(backendUrl, {
       method: 'GET',
-      headers: auth.headers,
+      headers: getAuthHeaders(request),
     })
 
     if (!response.ok) {
@@ -38,7 +45,7 @@ export async function GET(
 
     const data = await response.json()
     return NextResponse.json(data)
-  } catch {
+  } catch (error) {
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }
@@ -53,22 +60,20 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await getSessionAuth()
-    if (!auth.success) return auth.response
-
     const { id } = await params
     const paramValidation = validateParams({ id }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
     const bodyResult = await validateBody(request, _bodySchema)
+
     if (!bodyResult.success) return bodyResult.response
 
     const body = bodyResult.data
-
+    
     const backendUrl = `${BACKEND_URL}/api/v1/technical-tests/${id}`
-
+    
     const response = await fetch(backendUrl, {
       method: 'PUT',
-      headers: auth.headers,
+      headers: getAuthHeaders(request),
       body: JSON.stringify(body),
     })
 
@@ -82,7 +87,7 @@ export async function PUT(
 
     const data = await response.json()
     return NextResponse.json(data)
-  } catch {
+  } catch (error) {
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }
@@ -91,22 +96,19 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const auth = await getSessionAuth()
-    if (!auth.success) return auth.response
-
     const { id } = await params
     const paramValidation = validateParams({ id }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
-
+    
     const backendUrl = `${BACKEND_URL}/api/v1/technical-tests/${id}`
-
+    
     const response = await fetch(backendUrl, {
       method: 'DELETE',
-      headers: auth.headers,
+      headers: getAuthHeaders(request),
     })
 
     if (!response.ok) {
@@ -118,7 +120,7 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true })
-  } catch {
+  } catch (error) {
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

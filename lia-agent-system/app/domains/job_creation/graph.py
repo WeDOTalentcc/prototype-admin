@@ -692,13 +692,13 @@ def eligibility_node(state: JobCreationState) -> JobCreationState:
 
 
 def review_node(state: JobCreationState) -> JobCreationState:
-    """Apply company defaults from Settings (review stage).
+    """Readiness check + apply company defaults from Settings.
 
     Calls api_client.get_company_defaults() to load recruitment policies,
     default eligibility questions, screening mode defaults, etc.
     """
     t0 = time.time()
-    logger.info("[JobCreation:review] Starting review")
+    logger.info("[JobCreation:review] Starting readiness check")
 
     # Load company defaults if not already applied
     defaults_applied = list(state.get("company_defaults_applied", []))
@@ -721,8 +721,11 @@ def review_node(state: JobCreationState) -> JobCreationState:
         except Exception as e:
             logger.warning("[JobCreation:review] Failed to load company defaults: %s", e)
 
+    readiness = _build_readiness_check(state)
+
     updates: Dict[str, Any] = {
         "current_stage": "review",
+        "readiness_check": readiness,
         "company_defaults_applied": defaults_applied,
         "stage_history": (state.get("stage_history") or []) + ["review"],
         "completeness": calculate_completeness("review"),
@@ -731,6 +734,7 @@ def review_node(state: JobCreationState) -> JobCreationState:
             "type": "wizard_stage",
             "stage": "review",
             "data": {
+                "readiness": readiness,
                 "defaults_applied": defaults_applied,
             },
             "completeness": calculate_completeness("review"),
@@ -739,7 +743,7 @@ def review_node(state: JobCreationState) -> JobCreationState:
     }
 
     elapsed = (time.time() - t0) * 1000
-    logger.info("[JobCreation:review] %0.fms", elapsed)
+    logger.info("[JobCreation:review] ready=%s | %0.fms", readiness.get("ready"), elapsed)
     return {**state, **updates}
 
 
@@ -1047,9 +1051,13 @@ def route_after_questions(state: JobCreationState) -> str:
 
 
 def route_after_review(state: JobCreationState) -> str:
-    """After review: always proceed to publish."""
-    logger.info("[JobCreation:route] review -> publish")
-    return "publish"
+    """After review: check readiness."""
+    readiness = state.get("readiness_check", {})
+    if readiness.get("ready"):
+        logger.info("[JobCreation:route] review -> publish")
+        return "publish"
+    logger.info("[JobCreation:route] review -> END (not ready)")
+    return "end"
 
 
 def route_after_publish(state: JobCreationState) -> str:
@@ -1113,6 +1121,26 @@ def _get_question_distribution(mode: str, seniority: str) -> Dict[str, int]:
     )
 
     return table.get(seniority_key, table.get("pleno", {"technical": 5, "behavioral": 2}))
+
+
+def _build_readiness_check(state: JobCreationState) -> Dict[str, Any]:
+    """Check if all required fields are present for publishing."""
+    checks = {
+        "jd_approved": bool(state.get("jd_approved")),
+        "questions_approved": bool(state.get("questions_approved")),
+        "has_questions": len(state.get("wsi_questions", [])) > 0,
+        "has_seniority": bool(state.get("seniority_resolved")),
+        "quality_score_ok": (state.get("jd_quality_score", 0) >= 50),
+    }
+
+    ready = all(checks.values())
+    missing = [k for k, v in checks.items() if not v]
+
+    return {
+        "ready": ready,
+        "checks": checks,
+        "missing": missing,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -1196,8 +1224,15 @@ def create_job_creation_graph(checkpointer=None) -> StateGraph:
     # Eligibility -> Review
     builder.add_edge("eligibility", "review")
 
-    # Review -> Publish
-    builder.add_edge("review", "publish")
+    # Review: check readiness
+    builder.add_conditional_edges(
+        "review",
+        route_after_review,
+        {
+            "publish": "publish",
+            "end": END,
+        },
+    )
 
     # Publish -> Calibration
     builder.add_conditional_edges(

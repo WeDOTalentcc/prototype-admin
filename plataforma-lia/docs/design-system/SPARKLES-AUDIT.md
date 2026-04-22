@@ -35,6 +35,8 @@ Convenção da coluna **Decisão**:
 | 7 | `components/settings/OnboardingSettingsToggle.tsx:52` | Avatar do toggle "Onboarding com LIA". | 🧠 Brain | Toggle de feature da LIA. |
 | 8 | `components/candidate-preview/PipelineDecisionBar.tsx:570` | Marcador antes do resumo de candidato gerado pela LIA (estado sem job). | 🧠 Brain | Resumo gerado pela LIA. |
 | 9 | `components/candidate-preview/PipelineDecisionBar.tsx:655` | Marcador antes do resumo de candidato gerado pela LIA (estado normal). | 🧠 Brain | Idem 8. |
+| 10 | `components/pages/jobs/readiness/ReadinessHubCTA.tsx:44` | Banner CTA do Hub de Prontidão na página de Vagas. | 🧠 Brain | Hub é a esteira de preparação conduzida pela LIA. |
+| 11 | `components/pages/jobs/readiness/ReadinessHubPage.tsx:77` | Cabeçalho "Hub de Prontidão" na página inteira. | 🧠 Brain | Idem 10. |
 | 12 | `components/pages/jobs-page.tsx:131` | Botão "Prontidão" no header da página de Vagas. | 🧠 Brain | Atalho para o Hub da LIA. |
 | 13 | `components/pages/modules-page.tsx:96` | Mapa `STATUS_DISPLAY` — status `experimental`. | ✨ Manter | Indicador genérico de feature experimental, sem vínculo com LIA. |
 | 14 | `components/pages/modules-page.tsx:97` | Mapa `STATUS_DISPLAY` — status `beta`. | ✨ Manter | Indicador genérico de feature em beta. |

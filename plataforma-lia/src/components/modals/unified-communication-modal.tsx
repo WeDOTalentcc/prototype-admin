@@ -26,9 +26,7 @@ export function UnifiedCommunicationModal({
   onSend,
   companyId,
   selectedCandidates = [],
-  situation: explicitSituation,
-  initialVacancyId,
-  initialStage
+  situation: explicitSituation
 }: UnifiedCommunicationModalProps) {
   const {
     isBulkMode,
@@ -67,9 +65,7 @@ export function UnifiedCommunicationModal({
     onSend,
     companyId,
     selectedCandidates,
-    explicitSituation,
-    initialVacancyId,
-    initialStage
+    explicitSituation
   })
 
   if (!isOpen || (!candidate && selectedCandidates.length === 0)) return null
@@ -162,7 +158,6 @@ export function UnifiedCommunicationModal({
                 setLinkOnCompletionOnly={setLinkOnCompletionOnly}
                 isBulkMode={isBulkMode}
                 selectedCandidatesCount={selectedCandidates.length}
-                initialVacancyId={initialVacancyId}
               />
             </div>
           </div>

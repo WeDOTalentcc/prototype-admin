@@ -15,9 +15,10 @@ import type {
 } from "./unified-communication-types"
 import {
   PIPELINE_STAGES,
+  interviewTypes,
   platforms,
+  interviewers
 } from "./unified-communication-types"
-import { useCompanyInterviewers } from "@/hooks/company/useCompanyInterviewers"
 
 interface ChannelSelectorProps {
   channel: CommunicationChannel
@@ -91,14 +92,34 @@ interface InterviewSettingsSectionProps {
 }
 
 export function InterviewSettingsSection({ interviewSettings, setInterviewSettings }: InterviewSettingsSectionProps) {
-  const { interviewers } = useCompanyInterviewers()
-
   return (
     <div className={`space-y-4 p-4 ${cardStyles.flat}`}>
       <h4 className={`${textStyles.label} flex items-center gap-2`}>
         <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />
         Configurações da Entrevista
       </h4>
+
+      <div>
+        <label className={`${textStyles.caption} font-medium mb-1.5 block`}>Tipo de Entrevista</label>
+        <div className="grid grid-cols-2 gap-2">
+          {interviewTypes.map((iType) => (
+            <button
+              key={iType.id}
+              onClick={() => setInterviewSettings(prev => ({ ...prev, interviewType: iType.id as typeof prev.interviewType }))}
+              className={`p-2 rounded-md border text-left transition-colors motion-reduce:transition-none ${
+                interviewSettings.interviewType === iType.id
+                  ? 'border-lia-btn-primary-bg bg-lia-bg-secondary'
+                  : 'border-lia-border-subtle hover:border-lia-border-default'
+              }`}
+            >
+              <iType.icon className={`w-3.5 h-3.5 mb-1 ${
+                interviewSettings.interviewType === iType.id ? 'text-lia-text-primary' : 'text-lia-text-secondary'
+              }`} />
+              <div className="text-micro font-medium text-lia-text-primary">{iType.name}</div>
+            </button>
+          ))}
+        </div>
+      </div>
 
       <div>
         <label className={`${textStyles.caption} font-medium mb-1.5 block`}>Plataforma</label>
@@ -166,7 +187,7 @@ export function InterviewSettingsSection({ interviewSettings, setInterviewSettin
         >
           <option value="">Selecione...</option>
           {interviewers.map((person) => (
-            <option key={person.id} value={person.email}>{person.name} — {person.role}</option>
+            <option key={person} value={person}>{person}</option>
           ))}
         </select>
       </div>
@@ -188,7 +209,6 @@ interface VacancyLinkingSectionProps {
   setLinkOnCompletionOnly: (value: boolean) => void
   isBulkMode: boolean
   selectedCandidatesCount: number
-  initialVacancyId?: string
 }
 
 export function VacancyLinkingSection({
@@ -204,26 +224,22 @@ export function VacancyLinkingSection({
   linkOnCompletionOnly,
   setLinkOnCompletionOnly,
   isBulkMode,
-  selectedCandidatesCount,
-  initialVacancyId
+  selectedCandidatesCount
 }: VacancyLinkingSectionProps) {
-  const isLocked = Boolean(initialVacancyId)
   return (
     <div className={`${cardStyles.default} p-4`}>
       <div className="flex items-center justify-between mb-3">
         <h4 className={`${textStyles.label} flex items-center gap-2`}>
           <Briefcase className="w-4 h-4 text-lia-text-secondary" />
-          {isLocked ? "Vinculado à vaga atual" : "Vincular à Vaga"}
+          Vincular à Vaga
         </h4>
-        {!isLocked && (
-          <Switch
-            checked={linkToVacancy}
-            onCheckedChange={setLinkToVacancy}
-          />
-        )}
+        <Switch
+          checked={linkToVacancy}
+          onCheckedChange={setLinkToVacancy}
+        />
       </div>
 
-      {(linkToVacancy || isLocked) && (
+      {linkToVacancy && (
         <div className="space-y-3">
           <div>
             <label className={`${textStyles.caption} font-medium mb-1.5 block`}>
@@ -231,8 +247,8 @@ export function VacancyLinkingSection({
             </label>
             <select
               value={selectedVacancyId || ''}
-              onChange={(e) => !isLocked && setSelectedVacancyId(e.target.value || null)}
-              disabled={isLoadingVacancies || isLocked}
+              onChange={(e) => setSelectedVacancyId(e.target.value || null)}
+              disabled={isLoadingVacancies}
               className="w-full h-9 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 bg-lia-bg-primary disabled:bg-lia-bg-tertiary disabled:cursor-not-allowed"
             >
               <option value="">
@@ -254,9 +270,8 @@ export function VacancyLinkingSection({
             </label>
             <select
               value={selectedStage}
-              onChange={(e) => !isLocked && setSelectedStage(e.target.value)}
-              disabled={isLocked}
-              className="w-full h-9 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 bg-lia-bg-primary disabled:bg-lia-bg-tertiary disabled:cursor-not-allowed"
+              onChange={(e) => setSelectedStage(e.target.value)}
+              className="w-full h-9 text-xs border border-lia-border-subtle rounded-xl focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 bg-lia-bg-primary"
             >
               {PIPELINE_STAGES.map((stage) => (
                 <option key={stage.value} value={stage.value}>

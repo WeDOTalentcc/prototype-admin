@@ -2,6 +2,15 @@ import { formatBRL, CURRENCY_SYMBOL } from "@/lib/pricing"
 import type { Job, JobFilters } from "@/components/jobs"
 import type { JobVacancy } from "@/services/lia-api"
 import { getJobSeniority } from "@/lib/jobs/seniority"
+import { READINESS_STAGES_ORDER, type ReadinessStage } from "@/services/lia-api/readiness-api"
+
+const READINESS_STAGE_RANK: Record<string, number> = READINESS_STAGES_ORDER.reduce(
+  (acc, stage, index) => {
+    acc[stage] = index
+    return acc
+  },
+  {} as Record<string, number>,
+)
 
 const STATUS_RANK: Record<string, number> = [
   'Ativa', 'Aprovada', 'Aguardando aprovação', 'Reaberta',
@@ -83,6 +92,15 @@ export function compareJobsByColumn(
 ): number {
   if (!column) return 0
   switch (column) {
+    case "prontidao": {
+      const aStage = a.readinessStage as ReadinessStage | undefined
+      const bStage = b.readinessStage as ReadinessStage | undefined
+      return compareRanks(
+        aStage ? READINESS_STAGE_RANK[aStage] : undefined,
+        bStage ? READINESS_STAGE_RANK[bStage] : undefined,
+        direction,
+      )
+    }
     case "id":
       return compareNumbers(a.id, b.id, direction)
     case "vaga":

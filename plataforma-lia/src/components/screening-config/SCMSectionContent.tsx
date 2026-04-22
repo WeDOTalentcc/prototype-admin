@@ -8,7 +8,9 @@ import { CompanyBankQuestions } from './CompanyBankQuestions'
 import { CompanyDefaultQuestions } from './CompanyDefaultQuestions'
 import { CustomQuestions } from './CustomQuestions'
 import type { ScreeningQuestionItem } from './SCMScreeningTypes'
-import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables } from '@/components/jobs/jobsPageConstants'
+import { WSI_BLOCKS, WSI_AUTOMATIC_MESSAGES, formatMessageWithVariables } from '@/constants/wsi-blocks'
+import { normalizeTechnicalRequirement } from '@/lib/wsi/normalize-technical-requirement'
+import { getJobSeniority } from '@/lib/jobs/seniority'
 import { toast } from 'sonner'
 import { useScreeningConfigManagerCore } from "./hooks/useScreeningConfigManagerCore"
 import { SCMSectionConfiguracoes } from './SCMSectionConfiguracoes'
@@ -21,8 +23,10 @@ interface JobFields {
   requirements: string[]
   technicalRequirements: Array<Record<string, unknown>>
   behavioralCompetencies: Array<Record<string, unknown>>
-  level: string
-  seniority: string
+  /** @deprecated use `seniority` (canônico SSOT em job.schema.ts). Mantido por
+   * DTOs legacy ainda em uso em ~5 arquivos do monolito. */
+  level?: string
+  seniority?: string
   department: string
   description: string
   screeningQuestions: ScreeningQuestionItem[]
@@ -62,9 +66,16 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               className="!mx-0 !mt-0"
               jobTitle={job.title as string}
               responsibilities={(job.requirements as string[]) || []}
-              technicalSkills={(job.technicalRequirements || []).map((r: Record<string, unknown>) => r.technology || r.skill || r.name || (typeof r === 'string' ? r : '')).filter(Boolean) as string[]}
+              technicalSkills={
+                ((job.technicalRequirements || []) as unknown[])
+                  .map((r) => normalizeTechnicalRequirement(r))
+                  .filter((s): s is string => Boolean(s))
+              }
               behavioralCompetencies={(job.behavioralCompetencies || []).map((c: Record<string, unknown>) => c.competency || c.name || (typeof c === 'string' ? c : '')).filter(Boolean) as string[]}
-              seniority={(job.level || job.seniority) as string | undefined}
+              // Audit task #531 (G23-01) — leitura unificada via helper canônico
+              // `getJobSeniority` (precedência `seniority` → `level` legacy);
+              // substitui o fallback inline da rev. 20 sem mudar comportamento.
+              seniority={getJobSeniority(job as { seniority?: string | null; level?: string | null })}
               department={job.department as string | undefined}
               description={job.description as string | undefined}
               hasQuestions={((job.screeningQuestions as unknown[])?.length || 0) > 0}
@@ -92,9 +103,9 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                 onJobUpdate?.({ ...job, description: updates.description || job.description, requirements: updates.requirements || job.requirements, technicalRequirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })) || job.technicalRequirements, behavioralCompetencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) || job.behavioralCompetencies })
               }}
               isGenerating={props.isGeneratingWSI}
-              companyId={(job as Record<string, unknown>).company_id as string || (job as Record<string, unknown>).companyId as string || ''}
+              companyId={(job as Record<string, unknown>).companyId as string || ''}
               companyName={(job as Record<string, unknown>).companyName as string || undefined}
-              companyDescription={undefined}
+              companyDescription={(job as Record<string, unknown>).companyDescription as string | undefined}
               companyIndustry={(job as Record<string, unknown>).industry as string || undefined}
               benefits={(job.benefits as string[]) || []}
               interviewStages={((job as Record<string, unknown>).interviewStages as Array<Record<string, unknown>> || []).map((s: Record<string, unknown>) => typeof s === 'string' ? s : (s.stageName || s.name || '') as string)}

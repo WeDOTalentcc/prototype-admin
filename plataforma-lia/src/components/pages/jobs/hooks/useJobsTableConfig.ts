@@ -46,12 +46,12 @@ interface UseJobsTableConfigReturn {
 
 const DEFAULT_COLUMN_ORDER = [
   'checkbox', 'id', 'vaga', 'candidatos', 'performance', 'status',
-  'screeningStatus', 'recrutador', 'gestor', 'prazoTriagem', 'prazoShortlist', 'prazoEncerramento', 'acoes',
+  'screeningStatus', 'prontidao', 'recrutador', 'gestor', 'prazoTriagem', 'prazoShortlist', 'prazoEncerramento', 'acoes',
 ]
 
 const DEFAULT_COLUMN_WIDTHS: Record<string, number> = {
   id: 80, vaga: 200, candidatos: 100, performance: 180, status: 120,
-  recrutador: 140, gestor: 140, screeningStatus: 100, prazoTriagem: 100,
+  recrutador: 140, gestor: 140, screeningStatus: 100, prontidao: 140, prazoTriagem: 100,
   prazoShortlist: 100, prazoEncerramento: 100, roteiro: 100, acoes: 80,
 }
 
@@ -60,6 +60,7 @@ const HOOK_TO_TABLE_COLUMN_MAP: Record<string, string> = {
   'title': 'vaga', 'candidates': 'candidatos', 'performance': 'performance',
   'recruiter': 'recrutador', 'manager': 'gestor', 'deadlineScreening': 'prazoTriagem',
   'deadlineShortlist': 'prazoShortlist', 'deadlineClosing': 'prazoEncerramento',
+  'readiness': 'prontidao',
 }
 
 export function useJobsTableConfig(): UseJobsTableConfigReturn {

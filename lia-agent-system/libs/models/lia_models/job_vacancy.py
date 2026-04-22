@@ -205,11 +205,20 @@ class JobVacancy(Base):
     pipeline_config = Column(JSON, nullable=True)
     is_pipeline_customized = Column(Boolean, default=False, nullable=False)
 
-    # NOTE: Legacy Job Readiness Hub (Task #429) was removed in Task #791.
-    # The DB columns (readiness_stage, readiness_blockers, last_readiness_event_at,
-    # assigned_audience_policy) remain in job_vacancies via migration 086 for
-    # historical data preservation but are no longer mapped on the ORM model
-    # and are not read or written by the application.
+    # ── Job Readiness Hub (Task #429) ────────────────────────────────────────
+    # Pipeline canônico de prontidão de uma vaga importada do ATS para
+    # estar pronta para triagem com a LIA. Estágios (string enum):
+    #   importada, sem_jd, jd_rascunho, jd_enriquecido,
+    #   perguntas_triagem, pronta_disparo, em_triagem
+    # NULL = ainda não classificada (legado / pré-migration 086).
+    readiness_stage = Column(String(40), nullable=True, index=True)
+    # JSON list of blocker codes ex.: ["missing_jd", "missing_competencies"]
+    readiness_blockers = Column(JSON, default=list)
+    # Last time JobReadinessService transitioned this row.
+    last_readiness_event_at = Column(DateTime, nullable=True)
+    # Audience policy chosen for screening dispatch:
+    # "new_only" | "imported_untriaged" | "manual_selection"
+    assigned_audience_policy = Column(String(40), nullable=True)
 
     # Source System (Task #435) — dedicated marker of where this vacancy originated.
     # Replaces the heuristic over `additional_data` for ATS-imported flag.

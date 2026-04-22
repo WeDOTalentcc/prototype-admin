@@ -121,5 +121,5 @@ def test_metadata_block_present() -> None:
     """I.A traceability: metadata block with initiative ref must be present."""
     data = _load()
     md = data.get("metadata", {})
-    assert "I.A" in str(md.get("initiative", ""))
+    assert md.get("initiative") == "I.A"
     assert "roadmap" in str(md.get("reference", "")).lower() or "LIA_MATURITY" in str(md)

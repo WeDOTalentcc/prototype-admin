@@ -48,8 +48,7 @@ def test_active_filters_empty_does_not_add_empty_block() -> None:
         company_id="co-1",
         conversation_state=state,
     )
-    # II.A: runtime uses distinctive marker; FIX 35 persona doc has example "Filtros ativos:" (not a regression)
-    assert "Filtros ativos (aplicar" not in prompt
+    assert "Filtros ativos:" not in prompt and "Filtros ativos\n" not in prompt
 
 
 def test_pending_action_rendered_when_passed() -> None:

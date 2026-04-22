@@ -295,6 +295,13 @@ def rails_job_to_fork(data: dict) -> dict:
         "provider": data.get("provider"),
         "provider_job_id": data.get("provider_job_id"),
         "application_deadline": data.get("application_deadline"),
+        # Job readiness (LIA-local concept) — Rails does not own these fields;
+        # we surface defaults so the response shape is consistent and the
+        # Vagas list "Prontidão" column / drawer flow works uniformly across
+        # Rails and local DB modes (Task #448). Rails passthrough may include
+        # them when the upstream payload already carries the keys.
+        "readiness_stage": data.get("readiness_stage"),
+        "readiness_blockers": data.get("readiness_blockers") or [],
     }
 
 

@@ -879,6 +879,7 @@
       "screeningDeadline": "Prazo Triagem",
       "shortlistDeadline": "Prazo Short List",
       "closingDeadline": "Prazo Encerramento",
+      "readiness": "Prontidão",
       "actions": "Ações",
       "actionsScreenReader": "Ações"
     },
@@ -1023,6 +1024,21 @@
       "Cancelada": "Cancelada",
       "Concluída": "Concluída",
       "Arquivada": "Arquivada"
+    },
+    "readinessStages": {
+      "importada": "Importada",
+      "sem_jd": "Sem JD",
+      "jd_rascunho": "JD Rascunho",
+      "jd_enriquecido": "JD Enriquecido",
+      "perguntas_triagem": "Perguntas de Triagem",
+      "pronta_disparo": "Pronta para Disparo",
+      "em_triagem": "Em Triagem"
+    },
+    "readinessBlockers": {
+      "missing_jd": "Sem JD",
+      "missing_enrichment": "Sem enriquecimento",
+      "missing_competencies": "Sem competências",
+      "missing_questions": "Sem perguntas"
     }
   },
   "kanban": {
@@ -5388,6 +5404,7 @@
       },
       "internalMobility": {
         "talentMatching": "Correspondência de talentos internos",
+        "readinessScore": "Nota de prontidão por posição",
         "developmentPlan": "Plano de desenvolvimento individual",
         "successionMapping": "Mapeamento de sucessão"
       },

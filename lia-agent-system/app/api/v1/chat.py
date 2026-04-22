@@ -95,125 +95,6 @@ INTENT_TO_ACTIONABLE: dict[str, str] = {
 }
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Onda 4.1 (2026-04-21) — Tool schema helpers used by generate-with-tools path.
-#
-# Closes 16 pre-existing test failures in test_generate_with_tools_chat.py
-# where these helpers were imported but never implemented.
-#
-# Canonical-fix: single producer for ACTIONABLE_INTENT → Claude tool-use schema
-# conversion + LLM-driven param extraction. Self-contained in chat.py where
-# tests expect to find them.
-# ─────────────────────────────────────────────────────────────────────────────
-
-
-def _build_tool_schema_for_intent(action_id: str, config: dict) -> dict:
-    """Convert an ACTIONABLE_INTENT config into a Claude tool-use schema.
-
-    Args:
-        action_id: canonical action name (becomes `name` field).
-        config: intent config with required_params, optional_params,
-            param_labels, clarification_prompts.
-
-    Returns:
-        dict with shape:
-            {
-              "name": action_id,
-              "input_schema": {
-                "type": "object",
-                "properties": { param: {type, description} },
-                "required": [required_params only],
-              }
-            }
-
-    Description priority per param:
-        clarification_prompts[p] → param_labels[p] → p (bare name)
-    """
-    required = list(config.get("required_params") or [])
-    optional = list(config.get("optional_params") or [])
-    labels = config.get("param_labels") or {}
-    clarifications = config.get("clarification_prompts") or {}
-
-    properties: dict = {}
-    for param in required + optional:
-        description = (
-            clarifications.get(param)
-            or labels.get(param)
-            or param
-        )
-        properties[param] = {"type": "string", "description": description}
-
-    return {
-        "name": action_id,
-        "input_schema": {
-            "type": "object",
-            "properties": properties,
-            "required": list(required),
-        },
-    }
-
-
-async def _try_extract_params_with_llm(
-    user_message: str,
-    intent: str,
-    config: dict,
-    collected_params: dict,
-    missing: list,
-) -> dict | None:
-    """Invoke LLMService.generate_with_tools to extract missing params from user text.
-
-    Returns merged {collected_params ∪ extracted} dict when all REQUIRED params
-    are filled. Returns None on:
-      - non-tool-call LLM response
-      - exception during schema build or LLM call
-      - required params still missing after extraction
-
-    LLMService is imported lazily so this module stays side-effect free at import.
-    """
-    try:
-        schema = _build_tool_schema_for_intent(config.get("action_id", intent), config)
-
-        from app.services.llm import LLMService  # lazy import — see module docstring
-
-        llm = LLMService()
-        response = await llm.generate_with_tools(
-            user_message=user_message,
-            tools=[schema],
-            intent=intent,
-        )
-
-        if not getattr(response, "is_tool_call", False):
-            return None
-
-        tool_calls = getattr(response, "tool_calls", []) or []
-        if not tool_calls:
-            return None
-
-        extracted: dict = {}
-        for tc in tool_calls:
-            params = getattr(tc, "parameters", None) or {}
-            if isinstance(params, dict):
-                extracted.update(params)
-
-        merged = dict(collected_params or {})
-        merged.update(extracted)
-
-        # Gate: only return merged if all required params are now filled.
-        required = list(config.get("required_params") or [])
-        for req in required:
-            if req not in merged or merged[req] in (None, ""):
-                return None
-
-        return merged
-
-    except Exception as exc:
-        import logging
-        logging.getLogger(__name__).debug(
-            "[Onda 4.1] _try_extract_params_with_llm failed non-fatal: %s", exc,
-        )
-        return None
-
-
 def _flatten_entities(entities: dict) -> dict:
     flat = dict(entities)
     if "entidades" in entities and isinstance(entities["entidades"], dict):
@@ -547,18 +428,6 @@ async def send_message(
         if context_data:
             _meta["context_data"] = context_data
 
-        # Onda 4.10 (2026-04-22) — surface V.B citations + G3.B hitl_checkpoint
-        # on the API envelope. ChatAdapter (Onda 4.10.a) forwards these from
-        # MainOrchestrator.ChatResponse; here we expose them on message_metadata
-        # so the frontend can render citations tooltips and HITL approval UI.
-        _citations_payload = orch_result.get("citations")
-        if _citations_payload:
-            _meta["citations"] = _citations_payload
-            _meta["has_citations"] = bool(orch_result.get("has_citations", True))
-        _hitl_payload = orch_result.get("hitl_checkpoint")
-        if _hitl_payload:
-            _meta["hitl_checkpoint"] = _hitl_payload
-
         # Task #432: forward pipeline_rail payload (rich response in chat)
         _pipeline_rail = workflow_data.get("pipeline_rail") if isinstance(workflow_data, dict) else None
         if _pipeline_rail and isinstance(_pipeline_rail, dict):
@@ -749,18 +618,6 @@ async def send_message_with_attachments(
         }
         if context_data:
             _meta["context_data"] = context_data
-
-        # Onda 4.10 (2026-04-22) — surface V.B citations + G3.B hitl_checkpoint
-        # on the API envelope. ChatAdapter (Onda 4.10.a) forwards these from
-        # MainOrchestrator.ChatResponse; here we expose them on message_metadata
-        # so the frontend can render citations tooltips and HITL approval UI.
-        _citations_payload = orch_result.get("citations")
-        if _citations_payload:
-            _meta["citations"] = _citations_payload
-            _meta["has_citations"] = bool(orch_result.get("has_citations", True))
-        _hitl_payload = orch_result.get("hitl_checkpoint")
-        if _hitl_payload:
-            _meta["hitl_checkpoint"] = _hitl_payload
 
         # Task #432: forward pipeline_rail payload (rich response in chat)
         _pipeline_rail2 = workflow_data.get("pipeline_rail") if isinstance(workflow_data, dict) else None

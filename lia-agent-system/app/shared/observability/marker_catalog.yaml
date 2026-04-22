@@ -22,7 +22,7 @@ metadata:
   track: "3"
   initiative: "G2"
   created: "2026-04-21"
-  total_markers: 30
+  total_markers: 25
   reference: "docs/FINAL_AUDIT.md §G2"
 
 markers:
@@ -195,34 +195,6 @@ markers:
     purpose: "Prompt quality warning on LLM config save"
     origin: "app/api/v1/llm_config.py"
     severity: warning
-
-  # ── Cost / Latency (G4) ──────────────────────────────────────────────
-  LIA-COST:
-    category: cost
-    purpose: "Per-call LLM cost tracking (tokens in/out + estimated USD)"
-    origin: "app/shared/observability/cost_tracker.py"
-    severity: info
-
-  # ── HITL (G3) ────────────────────────────────────────────────────────
-  LIA-HITL:
-    category: governance
-    purpose: "HITL checkpoint built + surfaced to ChatResponse for frontend approval UI"
-    origin: "app/orchestrator/hitl.py"
-    severity: info
-
-  # ── Error Recovery (VII) ─────────────────────────────────────────────
-  LIA-ERRPOL:
-    category: reliability
-    purpose: "Error recovery policy applied (matched YAML policy for signal)"
-    origin: "app/orchestrator/error_policies.py"
-    severity: info
-
-  # ── Episodic Memory (III MVP) ────────────────────────────────────────
-  LIA-MEMSET:
-    category: memory
-    purpose: "Recruiter preference set (episodic memory). Also logs PII block events."
-    origin: "app/shared/memory/recruiter_preferences.py"
-    severity: info
 
 # ── FIX/Initiative markers (log prefixes, not [LIA-*] markers) ────────────
 # Track how FIX-level changes manifest in logs:

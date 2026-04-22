@@ -1,9 +1,9 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { validateBody } from '@/lib/api/validate'
-import { getSessionAuth } from '@/lib/api/session-auth'
-import { BACKEND_URL } from '@/lib/api/backend-url'
 import { z } from 'zod'
+
+const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 const DEFAULT_TECHNICAL_ALERTS = [
   {
@@ -58,21 +58,23 @@ const DEFAULT_TECHNICAL_ALERTS = [
   }
 ]
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const auth = await getSessionAuth()
-    if (!auth.success) return auth.response
-
+    const companyId = request.headers.get('X-Company-ID') || 'admin_company'
     const backendUrl = `${BACKEND_URL}/api/v1/alerts/config`
-
+    
     const response = await fetch(backendUrl, {
       method: 'GET',
-      headers: auth.headers,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Company-ID': companyId,
+      },
     })
 
     if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
       return NextResponse.json(
-        {
+        { 
           success: true,
           technicalAlerts: DEFAULT_TECHNICAL_ALERTS,
           briefing_frequency: 'daily'
@@ -83,16 +85,16 @@ export async function GET() {
 
     const data = await response.json()
     const technicalAlerts = data.alerts?.filter((a: { id: string }) => a.id?.startsWith('ta-')) || []
-
+    
     return NextResponse.json({
       success: true,
       technicalAlerts: technicalAlerts.length > 0 ? technicalAlerts : DEFAULT_TECHNICAL_ALERTS,
       alerts: data.alerts || [],
       briefing_frequency: data.briefing_frequency || 'daily'
     })
-  } catch {
+  } catch (error) {
     return NextResponse.json(
-      {
+      { 
         success: true,
         technicalAlerts: DEFAULT_TECHNICAL_ALERTS,
         briefing_frequency: 'daily'
@@ -106,19 +108,21 @@ const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function PUT(request: NextRequest) {
   try {
-    const auth = await getSessionAuth()
-    if (!auth.success) return auth.response
-
+    const companyId = request.headers.get('X-Company-ID') || 'admin_company'
     const bodyResult = await validateBody(request, _bodySchema)
+
     if (!bodyResult.success) return bodyResult.response
 
     const body = bodyResult.data
-
+    
     const backendUrl = `${BACKEND_URL}/api/v1/alerts/config`
-
+    
     const response = await fetch(backendUrl, {
       method: 'PUT',
-      headers: auth.headers,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Company-ID': companyId,
+      },
       body: JSON.stringify(body),
     })
 
@@ -135,7 +139,7 @@ export async function PUT(request: NextRequest) {
       success: true,
       ...data
     })
-  } catch {
+  } catch (error) {
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }

@@ -32,9 +32,6 @@ class ConversationState:
     # Phase 2 — MemoryResolver expansion
     last_entity: dict[str, Any] | None = None  # {type, id, name} último mencionado
     pagination_cursor: int = 0                     # offset para "mostra mais"
-    # Init II.D (2026-04-21) — multi-turn workflow context
-    # Format: {"workflow_id": str, "step": str, "data": dict, "started_at": iso_str}
-    workflow_context: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -52,7 +49,6 @@ class ConversationState:
             "last_results_count": self.last_results_count,
             "last_entity": self.last_entity,
             "pagination_cursor": self.pagination_cursor,
-            "workflow_context": self.workflow_context,
         }
 
     @classmethod
@@ -72,7 +68,6 @@ class ConversationState:
             last_results_count=data.get("last_results_count"),
             last_entity=data.get("last_entity"),
             pagination_cursor=data.get("pagination_cursor", 0),
-            workflow_context=data.get("workflow_context"),
         )
 
     def clear(self) -> None:

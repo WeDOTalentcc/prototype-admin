@@ -686,6 +686,8 @@ async def list_job_vacancies(
                     "affirmative_description": jv.affirmative_description,
                     "affirmative_document_required": jv.affirmative_document_required or False,
                     "affirmative_document_types": jv.affirmative_document_types or [],
+                    "readiness_stage": jv.readiness_stage,
+                    "readiness_blockers": jv.readiness_blockers or [],
                 }
                 for jv in job_vacancies
             ]

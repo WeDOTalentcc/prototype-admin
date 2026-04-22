@@ -1,7 +1,9 @@
 "use client"
 
-import React from"react"
+import React, { useState } from"react"
 import { useTranslations, useLocale } from 'next-intl'
+import { JobReadinessDrawer, StageBadge } from"@/components/pages/jobs/readiness/JobReadinessDrawer"
+import type { ReadinessStage } from"@/services/lia-api/readiness-api"
 import { SCREENING_STATUS_LABELS, type ScreeningStatus } from"@/types/screening"
 import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
@@ -64,10 +66,12 @@ const columnSortAlign: Record<string, { sortable: boolean; align: 'left' | 'cent
   prazoTriagem: { sortable: true, align: 'center', labelKey: 'screeningDeadline' },
   prazoShortlist: { sortable: true, align: 'center', labelKey: 'shortlistDeadline' },
   prazoEncerramento: { sortable: true, align: 'center', labelKey: 'closingDeadline' },
+  prontidao: { sortable: true, align: 'center', labelKey: 'readiness' },
   acoes: { sortable: false, align: 'center', labelKey: 'actions' }
 }
 
 export function JobsCompactTableView(props: JobsCompactTableViewProps) {
+  const [readinessJobId, setReadinessJobId] = useState<string | null>(null)
   const t = useTranslations('jobs')
   const tc = useTranslations('jobs.tableColumns')
   const ta = useTranslations('jobs.tableActions')
@@ -85,6 +89,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
     prazoTriagem: tc('screeningDeadline'),
     prazoShortlist: tc('shortlistDeadline'),
     prazoEncerramento: tc('closingDeadline'),
+    prontidao: tc('readiness'),
     acoes: tc('actions'),
   }
   const statusLabels: Record<string, string> = {
@@ -240,6 +245,7 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
 
   return (
     <>
+    <JobReadinessDrawer jobId={readinessJobId} onClose={() => setReadinessJobId(null)} />
     <div className="overflow-auto max-h-full border border-lia-border-subtle rounded-xl">
       <table className="w-full table-fixed">
         <thead className="sticky top-0 z-10 bg-lia-bg-primary">
@@ -701,6 +707,30 @@ export function JobsCompactTableView(props: JobsCompactTableViewProps) {
                                   ? new Date(job.deadline).toLocaleDateString(locale, { day: '2-digit', month: '2-digit' })
                                   : '—'}
                               </span>
+                            </td>
+                          )
+                        }
+
+                        if (columnId === 'prontidao') {
+                          const stage = (job.readinessStage as ReadinessStage | undefined)
+                          return (
+                            <td key={columnId} className="py-2 px-3 text-center" style={{width: `${width}px`}} /* dynamic */>
+                              {stage ? (
+                                <button
+                                  type="button"
+                                  data-testid={`job-readiness-${job.id}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setReadinessJobId(job.backendId)
+                                  }}
+                                  className="cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none"
+                                  title={ta('openJob', { title: job.title })}
+                                >
+                                  <StageBadge stage={stage} />
+                                </button>
+                              ) : (
+                                <span className="text-xs text-lia-text-tertiary">—</span>
+                              )}
                             </td>
                           )
                         }
