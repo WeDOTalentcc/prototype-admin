@@ -686,8 +686,7 @@ contract (sample, not exhaustive):
 - `tests/security/test_red_team_multi_tenant.py` — adversarial cross-tenant
   attempts
 - `tests/integration/test_multi_tenant_isolation.py`,
-  `tests/integration/test_candidates_tenant_isolation.py`,
-  `tests/integration/test_job_readiness_tenant_isolation.py`
+  `tests/integration/test_candidates_tenant_isolation.py`
 - `tests/contract/test_multi_tenant_isolation_contract.py`
 - `tests/e2e/test_tenant_isolation_e2e.py`
 - `tests/shared/test_tool_handler_isolation.py` — fail-closed semantics of
