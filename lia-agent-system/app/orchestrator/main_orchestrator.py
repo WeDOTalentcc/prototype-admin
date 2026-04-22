@@ -595,6 +595,24 @@ class MainOrchestrator:
                         except Exception as _cite_exc:
                             logger.debug("[V.B] citation build skipped: %s", _cite_exc)
 
+                        # Onda 4.6 G3.B (2026-04-21) — HITL checkpoint for frontend.
+                        # When tool execution surfaced pending_hitl_confirmation,
+                        # build canonical checkpoint so frontend renders approval UI.
+                        # Takes FIRST pending entry (multiple concurrent HITL rare).
+                        _hitl_checkpoint: dict[str, Any] | None = None
+                        if _hitl_pending:
+                            try:
+                                from app.orchestrator.hitl import build_hitl_checkpoint
+                                _first = _hitl_pending[0]
+                                _hitl_checkpoint = build_hitl_checkpoint(
+                                    tool_name=_first.get("tool_name", ""),
+                                    tool_params=_first.get("parameters") or {},
+                                    governance_tags=_first.get("governance_tags") or [],
+                                    reason=_first.get("message"),
+                                )
+                            except Exception as _hitl_exc:
+                                logger.debug("[G3.B] hitl checkpoint skipped: %s", _hitl_exc)
+
                         _resp = ChatResponse(
                             success=True,
                             content=_agentic_result["response"],
@@ -605,6 +623,7 @@ class MainOrchestrator:
                             structured_data=_structured_data,
                             citations=_citations,
                             has_citations=bool(_citations),
+                            hitl_checkpoint=_hitl_checkpoint,
                         )
                         if _soft_warnings:
                             _resp.fairness_warnings = _soft_warnings
