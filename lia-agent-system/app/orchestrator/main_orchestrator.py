@@ -99,6 +99,11 @@ class ChatResponse(BaseModel):
     pending_action_id: str | None = None
     fairness_warnings: list[str] = Field(default_factory=list)
     from_cache: bool = False
+    # Onda 2.4 Init V (2026-04-21) — Reasoning transparency
+    citations: list[dict[str, Any]] = Field(default_factory=list)
+    has_citations: bool = False
+    # Onda 3.2 G3 (2026-04-21) — HITL checkpoint surfacing
+    hitl_checkpoint: dict[str, Any] | None = None
 
     @classmethod
     def from_orchestrator_result(cls, result: dict[str, Any], conv_id: str) -> ChatResponse:
@@ -321,6 +326,43 @@ class MainOrchestrator:
                 except Exception as e:
                     logger.warning("[LIA-M01] Memory setup failed (non-blocking): %s", e)
 
+            # Onda 4.3 III.B (2026-04-21) — Hydrate recruiter preferences from
+            # conversation_summaries.user_preferences (episodic memory Init III MVP).
+            # Consumed downstream by persona rendering + routing heuristics.
+            try:
+                _prefs = await self._hydrate_recruiter_preferences(ctx, db)
+                if _prefs:
+                    ctx.extra["recruiter_prefs"] = _prefs
+                    # Onda 4.12 (2026-04-22): info-level for runtime observability
+                    logger.info(
+                        "[III.B] recruiter prefs hydrated user=%s keys=%s",
+                        ctx.user_id, list(_prefs.keys()),
+                    )
+            except Exception as _hydrate_exc:
+                logger.debug(
+                    "[III.B] hydrate skipped (non-fatal): %s", _hydrate_exc,
+                )
+
+            # Onda 4.4 IV.B (2026-04-21) — Proactive agenda briefing on greeting.
+            # When user message is a greeting pattern, fetch daily briefing
+            # (cached 5min) and inject summary into extra_instructions so the
+            # persona's ## Saudação Inicial section (FIX 29) surfaces it.
+            try:
+                _briefing_summary = await self._maybe_build_briefing_context(ctx, db)
+                if _briefing_summary:
+                    ctx.extra["briefing_context"] = _briefing_summary
+                    _existing = ctx.extra.get("extra_instructions", "") or ""
+                    _suffix = f"\n\nContexto pra saudação: {_briefing_summary}"
+                    ctx.extra["extra_instructions"] = (_existing + _suffix).strip()
+                    logger.info(
+                        "[IV.B] briefing injected user=%s len=%d",
+                        ctx.user_id, len(_briefing_summary),
+                    )
+            except Exception as _briefing_exc:
+                logger.debug(
+                    "[IV.B] briefing skipped (non-fatal): %s", _briefing_exc,
+                )
+
             # FIX 31 v2 (2026-04-21) — Wire memory_resolver BEFORE all phases.
             # Earlier wiring was inside _process_via_orchestrator (Phase 2) but
             # most chat turns trigger Phase 1.5 Agentic Loop (LIA-A04) which
@@ -466,6 +508,15 @@ class MainOrchestrator:
                         logger.debug("[PreConditionChecker] check skipped: %s", _pc_exc)
 
                     from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+                    # Onda 5.1.a (2026-04-22) — merge ctx.extra["extra_instructions"]
+                    # (briefing_context from IV.B, error recovery hints, etc.) with
+                    # proactive_hints so ALL upstream context reaches the LLM.
+                    # Before: only proactive hints → briefing silently dropped →
+                    # persona re-verified via tools → contradicted briefing.
+                    _pre_instructions = ctx.extra.get("extra_instructions", "") or ""
+                    _merged_instructions = "\n\n".join(
+                        s for s in (_pre_instructions, _proactive_hints_text or "") if s
+                    ).strip()
                     _system_prompt = SystemPromptBuilder.build(
                         agent_type=_agent_type,
                         company_id=_loop_company_id or "",
@@ -475,7 +526,7 @@ class MainOrchestrator:
                         conversation_history=ctx.extra.get("conversation_history", []),
                         conversation_state=ctx.conversation_state,
                         context_page=getattr(ctx, "context_page", "general") or "general",
-                        extra_instructions=_proactive_hints_text,
+                        extra_instructions=_merged_instructions,
                     )
                     # Onda 5.3.a (2026-04-22) — intent-scoped tool filtering.
                     # Heuristic classifier (regex + context_page → agent hints);
@@ -556,6 +607,37 @@ class MainOrchestrator:
                         if _hitl_pending:
                             _structured_data["hitl_pending"] = _hitl_pending
 
+                        # Onda 4.5 V.B (2026-04-21) — build citations from tool_calls
+                        # for ChatResponse.citations field. Reasoning transparency
+                        # producer (Init V) + consumer wiring = complete pipeline.
+                        _citations: list[dict[str, Any]] = []
+                        try:
+                            from app.orchestrator.citation_processor import build_citations_from_tool_calls
+                            _citations = build_citations_from_tool_calls(
+                                _tool_calls,
+                                response_text=_agentic_result.get("response", ""),
+                            )
+                        except Exception as _cite_exc:
+                            logger.debug("[V.B] citation build skipped: %s", _cite_exc)
+
+                        # Onda 4.6 G3.B (2026-04-21) — HITL checkpoint for frontend.
+                        # When tool execution surfaced pending_hitl_confirmation,
+                        # build canonical checkpoint so frontend renders approval UI.
+                        # Takes FIRST pending entry (multiple concurrent HITL rare).
+                        _hitl_checkpoint: dict[str, Any] | None = None
+                        if _hitl_pending:
+                            try:
+                                from app.orchestrator.hitl import build_hitl_checkpoint
+                                _first = _hitl_pending[0]
+                                _hitl_checkpoint = build_hitl_checkpoint(
+                                    tool_name=_first.get("tool_name", ""),
+                                    tool_params=_first.get("parameters") or {},
+                                    governance_tags=_first.get("governance_tags") or [],
+                                    reason=_first.get("message"),
+                                )
+                            except Exception as _hitl_exc:
+                                logger.debug("[G3.B] hitl checkpoint skipped: %s", _hitl_exc)
+
                         _resp = ChatResponse(
                             success=True,
                             content=_agentic_result["response"],
@@ -564,6 +646,9 @@ class MainOrchestrator:
                             action_executed=bool(_tool_calls),
                             needs_confirmation=bool(_hitl_pending),
                             structured_data=_structured_data,
+                            citations=_citations,
+                            has_citations=bool(_citations),
+                            hitl_checkpoint=_hitl_checkpoint,
                         )
                         if _soft_warnings:
                             _resp.fairness_warnings = _soft_warnings
@@ -612,6 +697,30 @@ class MainOrchestrator:
                 f"company={ctx.company_id} channel={ctx.channel}: {exc}",
                 exc_info=True,
             )
+            # Onda 4.7 VII.B (2026-04-21) — try error_policies first.
+            # If apply_policy matches a canonical policy (timeout/empty_result/
+            # enum_error/permission_denied/tenant_mismatch), use its PT-BR response
+            # template with retry_hint + severity in structured_data.
+            # Fallback: existing SystemPromptBuilder.build_error_response.
+            try:
+                from app.orchestrator.error_policies import apply_policy, resolve_policy
+                _matched_policy = resolve_policy(exc)
+                if _matched_policy is not None:
+                    _applied = apply_policy(exc)
+                    return ChatResponse(
+                        success=False,
+                        content=_applied["response"],
+                        intent_detected="error_recovery",
+                        conversation_id=conv_id,
+                        structured_data={
+                            "policy_id": _applied.get("policy_id"),
+                            "severity": _applied.get("severity"),
+                            "retry_hint": _applied.get("retry_hint"),
+                        },
+                    )
+            except Exception as _pol_exc:
+                logger.debug("[VII.B] error_policies apply skipped: %s", _pol_exc)
+
             from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
             _error_msg = SystemPromptBuilder.build_error_response(
                 user_name=getattr(ctx, "user_name", ""),
@@ -1432,6 +1541,87 @@ class MainOrchestrator:
             logger.debug("[MainOrchestrator] Module tasting hints skipped: %s", exc)
 
         return result
+
+    async def _hydrate_recruiter_preferences(self, ctx: Any, db: Any) -> dict[str, Any] | None:
+        """Onda 4.3 III.B — Read user_preferences from latest ConversationSummary.
+
+        Returns a dict with structured prefs (preferred_top_n, briefing_style,
+        communication_channel, etc.) — values filtered through the
+        recruiter_preferences get_preference API so PII/schema guards apply.
+
+        Returns None on: no user_id, query failure, empty row.
+        Fail-safe: never raises (caller wraps in try/except regardless).
+        """
+        if not ctx.user_id:
+            return None
+        try:
+            from app.shared.memory.recruiter_preferences import get_preference
+            from sqlalchemy import select as _select
+            from lia_models.conversation import Conversation, ConversationSummary
+
+            _stmt = (
+                _select(ConversationSummary)
+                .join(Conversation, ConversationSummary.conversation_id == Conversation.id)
+                .where(Conversation.user_id == ctx.user_id)
+                .order_by(ConversationSummary.created_at.desc())
+                .limit(1)
+            )
+            _res = await db.execute(_stmt)
+            _row = _res.scalar_one_or_none()
+            _raw = (_row.user_preferences if _row else {}) or {}
+            if not isinstance(_raw, dict):
+                return None
+
+            return {
+                "preferred_top_n": get_preference(_raw, "preferred_top_n", default=5),
+                "briefing_style": get_preference(_raw, "briefing_style", default="short"),
+                "communication_channel": get_preference(_raw, "communication_channel", default="email"),
+                "locale_preference": get_preference(_raw, "locale_preference", default="pt-BR"),
+                "favored_stages": get_preference(_raw, "favored_stages", default=[]),
+            }
+        except Exception as _e:
+            logger.debug("[III.B] _hydrate_recruiter_preferences failed: %s", _e)
+            return None
+
+    _GREETING_PATTERNS: set[str] = {
+        "oi", "olá", "ola", "hello", "hi",
+        "bom dia", "boa tarde", "boa noite",
+        "oi lia", "olá lia",
+    }
+
+    async def _maybe_build_briefing_context(self, ctx: Any, db: Any) -> str | None:
+        """Onda 4.4 IV.B — Return briefing summary when message is a greeting.
+
+        Returns None when:
+          - message is not a greeting pattern
+          - briefing service unavailable / exception
+          - briefing returns empty / formatted string empty
+        """
+        msg = (ctx.message or "").lower().strip().rstrip("!?.,")
+        if not msg:
+            return None
+        # Match whole-word greeting OR very short (≤12 chars) message containing greeting token
+        _is_greeting = (
+            msg in self._GREETING_PATTERNS
+            or (len(msg) <= 14 and any(g in msg for g in ("oi", "olá", "ola", "bom dia", "boa tarde", "boa noite")))
+        )
+        if not _is_greeting:
+            return None
+        try:
+            from app.domains.recruiter_assistant.services.lia_briefing_formatter import (
+                get_cached_briefing,
+                format_briefing_for_greeting,
+            )
+            _briefing = await get_cached_briefing(
+                user_id=str(ctx.user_id) if ctx.user_id else "",
+                company_id=str(ctx.company_id) if ctx.company_id else "",
+                db=db,
+            )
+            _summary = format_briefing_for_greeting(_briefing)
+            return _summary or None
+        except Exception as _e:
+            logger.debug("[IV.B] _maybe_build_briefing_context failed: %s", _e)
+            return None
 
 
 # ---------------------------------------------------------------------------

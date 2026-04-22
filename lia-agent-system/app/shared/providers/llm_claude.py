@@ -7,6 +7,19 @@ import time
 from app.shared.providers.llm_provider import LLMProviderABC, LLMResponse, LLMToolCall, LLMToolResponse
 from app.shared.resilience.circuit_breaker import ANTHROPIC_CIRCUIT, circuit_breaker_decorator
 
+# Onda 4.2 G4.B (2026-04-21) — cost tracking hook
+try:
+    from app.shared.observability.cost_tracker import record_call as _record_cost_call
+except ImportError:
+    def _record_cost_call(**_kwargs):  # noqa: ANN202 — fail-safe no-op
+        return {}
+
+try:
+    from app.shared.tenant_llm_context import get_current_llm_tenant as _get_tenant
+except ImportError:
+    def _get_tenant() -> str:  # noqa: ANN202
+        return ""
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -55,7 +68,10 @@ class ClaudeLLMProvider(LLMProviderABC):
 
     @circuit_breaker_decorator(ANTHROPIC_CIRCUIT)
     @_traceable(name="Claude Generate", run_type="llm")
-    async def generate(self, prompt, model=None, temperature=0.7, max_tokens=4096, **kwargs):
+    async def generate(self, prompt, model=None, temperature=0.7, max_tokens=4096, use_prompt_cache: bool = False, **kwargs):
+        """G4 (2026-04-21): use_prompt_cache kwarg enables Anthropic prompt caching
+        on the system prompt. Actual cache_control wiring deferred to call site
+        refactor — this exposes the mechanism at provider interface."""
         client = self._get_client()
         t_start = time.time()
         status = "success"
@@ -67,6 +83,17 @@ class ClaudeLLMProvider(LLMProviderABC):
                 messages=[{"role": "user", "content": prompt}],
             )
             text = response.content[0].text if response.content else ""
+            # G4.B: record cost (fail-safe — never raises on tracking error)
+            try:
+                _record_cost_call(
+                    tenant_id=_get_tenant() or None,
+                    model=model or self._default_model,
+                    input_tokens=int(getattr(response.usage, "input_tokens", 0) or 0),
+                    output_tokens=int(getattr(response.usage, "output_tokens", 0) or 0),
+                    latency_ms=(time.time() - t_start) * 1000,
+                )
+            except Exception as _cost_exc:
+                logger.debug("[G4.B] cost_tracker skipped: %s", _cost_exc)
             return LLMResponse(
                 text=text,
                 provider=self._provider_name,
@@ -97,6 +124,17 @@ class ClaudeLLMProvider(LLMProviderABC):
                 messages=[{"role": "user", "content": user_message}],
             )
             text = response.content[0].text if response.content else ""
+                        # G4.B: record cost (fail-safe)
+            try:
+                _record_cost_call(
+                    tenant_id=_get_tenant() or None,
+                    model=model or self._default_model,
+                    input_tokens=int(getattr(response.usage, "input_tokens", 0) or 0),
+                    output_tokens=int(getattr(response.usage, "output_tokens", 0) or 0),
+                    latency_ms=(time.time() - t_start) * 1000,
+                )
+            except Exception as _cost_exc:
+                logger.debug("[G4.B] cost_tracker skipped: %s", _cost_exc)
             return LLMResponse(
                 text=text,
                 provider=self._provider_name,
@@ -125,6 +163,17 @@ class ClaudeLLMProvider(LLMProviderABC):
             if system_prompt:
                 request_kwargs["system"] = system_prompt
             response = client.messages.create(**request_kwargs)
+            # Onda 4.13 (2026-04-22) G4.B — record cost for tools path (fail-safe)
+            try:
+                _record_cost_call(
+                    tenant_id=_get_tenant() or None,
+                    model=self._default_model,
+                    input_tokens=int(getattr(response.usage, "input_tokens", 0) or 0),
+                    output_tokens=int(getattr(response.usage, "output_tokens", 0) or 0),
+                    latency_ms=(time.time() - t_start) * 1000,
+                )
+            except Exception as _cost_exc:
+                logger.debug("[Onda 4.13] cost_tracker skipped (tools): %s", _cost_exc)
             tool_calls = []
             text_parts = []
             for block in response.content:

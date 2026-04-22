@@ -12,6 +12,7 @@ Usage:
     handler.addFilter(PIIMaskingFilter())
 """
 import logging
+import os as _os
 import re
 from re import Pattern
 
@@ -26,6 +27,96 @@ PII_PATTERNS: list[tuple[Pattern, str]] = [
     (PHONE_BR_PATTERN, "***PHONE***"),
     (NAME_IN_LOG_PATTERN, r"***NAME***"),
 ]
+
+# ────────────────────────────────────────────────────────────────────────────
+# Onda 2.1 G5 light (2026-04-21) — Response-boundary PII redaction with audit.
+#
+# Existing PII_PATTERNS are log-focused (mask_pii + PIIMaskingFilter) —
+# they mutate in place without telling the caller WHAT was redacted.
+# Response-boundary use case needs audit trail per LGPD Art. 12 + 13:
+# who saw what, when, under which control.
+#
+# Adds:
+#   - CNPJ pattern (PT-BR company tax id, missing from PII_PATTERNS)
+#   - Full-name heuristic (capitalized 2+ word runs — HIGH false-positive
+#     rate, opt-in via redact_response_with_audit strict_mode=True)
+#   - redact_response_with_audit(text) → (redacted, audit_log)
+# ────────────────────────────────────────────────────────────────────────────
+
+CNPJ_PATTERN = re.compile(r'\b\d{2}[.\-]?\d{3}[.\-]?\d{3}/?\d{4}[\-]?\d{2}\b')
+
+# Heuristic: PT-BR full name with accents (opt-in via strict_mode)
+# Matches 2+ capitalized words in sequence where each starts uppercase
+# and has accented-lowercase continuation.
+FULL_NAME_HEURISTIC = re.compile(
+    r'\b[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]{2,}(?:\s+[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]{2,}){1,}\b'
+)
+
+# Response-boundary patterns: higher signal than log-level (adds CNPJ + name heuristic).
+_RESPONSE_PATTERNS: list[tuple[Pattern, str, str]] = [
+    # (pattern, replacement, pii_type_label_for_audit)
+    (CPF_PATTERN, "[CPF REDACTED]", "cpf"),
+    (CNPJ_PATTERN, "[CNPJ REDACTED]", "cnpj"),
+    (EMAIL_PATTERN, "[EMAIL REDACTED]", "email"),
+    (PHONE_BR_PATTERN, "[PHONE REDACTED]", "phone"),
+]
+
+_RESPONSE_REDACTION_ENABLED = _os.environ.get(
+    "LIA_RESPONSE_PII_REDACTION_ENABLED", "true"
+).lower() == "true"
+
+
+def redact_response_with_audit(
+    text: str,
+    *,
+    strict_mode: bool = False,
+) -> tuple[str, list[dict]]:
+    """G5 light: redact response text + return per-match audit trail.
+
+    Args:
+        text: Raw response content from LLM.
+        strict_mode: When True, also applies FULL_NAME_HEURISTIC (higher
+            false-positive rate on names like \"Product Manager\" caps). Off by
+            default to avoid over-redacting headings.
+
+    Returns:
+        (redacted_text, audit_log). audit_log is a list of dicts:
+        [{"type": "cpf", "span": (start, end), "snippet": "123.456.789-00"},
+         {"type": "email", ...}]
+
+    Feature flag: env LIA_RESPONSE_PII_REDACTION_ENABLED (default "true").
+    When disabled, returns (text, []) — caller can still log but no mutation.
+    """
+    if not text or not _RESPONSE_REDACTION_ENABLED:
+        return text, []
+
+    audit_log: list[dict] = []
+    redacted = text
+
+    # Apply structured patterns (high precision)
+    for pattern, replacement, pii_type in _RESPONSE_PATTERNS:
+        for match in list(pattern.finditer(redacted)):
+            audit_log.append({
+                "type": pii_type,
+                "span": (match.start(), match.end()),
+                "snippet": match.group()[:40],  # truncated for audit log
+            })
+        redacted = pattern.sub(replacement, redacted)
+
+    # Strict mode only: full name heuristic (higher false-positive)
+    if strict_mode:
+        for match in list(FULL_NAME_HEURISTIC.finditer(redacted)):
+            audit_log.append({
+                "type": "full_name_heuristic",
+                "span": (match.start(), match.end()),
+                "snippet": match.group()[:40],
+            })
+        redacted = FULL_NAME_HEURISTIC.sub("[NAME REDACTED]", redacted)
+
+    return redacted, audit_log
+
+
+
 
 
 def mask_pii(text: str) -> str:
@@ -87,7 +178,6 @@ def install_global_pii_masking() -> None:
     logging.getLogger(__name__).info("[PII-MASKING] Global PII masking installed (logger + %d handler(s))", len(root_logger.handlers))
 
 
-import os as _os
 
 _LLM_PROMPT_PII_STRIPPING_ENABLED = _os.environ.get("LLM_PROMPT_PII_STRIPPING_ENABLED", "true").lower() == "true"
 
