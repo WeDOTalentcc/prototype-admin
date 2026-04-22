@@ -410,7 +410,7 @@ const SENIORITY_OPTIONS = [
                   >
                     <AlertCircle className="h-10 w-10 text-status-error/70 mb-3" />
                     <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary mb-3">
-                      {t('auth.serverErrorMessage')}
+                      {t('auth.networkErrorMessage')}
                     </p>
                     <Button
                       size="sm"

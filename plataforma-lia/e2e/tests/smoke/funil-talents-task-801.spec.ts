@@ -53,15 +53,21 @@ test.describe('@smoke Funil de Talentos — Task #801', () => {
     await expect(page.locator('[data-testid="funil-network-empty-state"]')).toHaveCount(0);
 
     // SLA do "happy-path" pós-warmup: precisamos de >=20 candidatos visíveis
-    // em <5s adicionais. (Page já pode estar em loading inicial; abrimos
-    // janela de 5s a partir de quando os stats aparecerem.)
+    // em <5s adicionais. Validamos tanto o contador quanto as linhas
+    // efetivamente renderizadas no <tbody> da CandidatesTable.
     await statsLocator.waitFor({ state: 'visible', timeout: 60_000 });
     await expect
       .poll(async () => {
         const txt = (await statsLocator.textContent()) ?? '';
         const m = txt.match(/(\d{1,4})/);
         return m ? Number(m[1]) : 0;
-      }, { timeout: 5_000, message: '>=20 candidatos esperados em <5s pós-stats' })
+      }, { timeout: 5_000, message: 'contador >=20 esperado em <5s pós-stats' })
+      .toBeGreaterThanOrEqual(20);
+
+    const tableRows = page.locator('[data-testid="candidates-table"] tbody tr');
+    await expect
+      .poll(async () => tableRows.count(),
+        { timeout: 5_000, message: '>=20 linhas renderizadas esperadas em <5s' })
       .toBeGreaterThanOrEqual(20);
 
     // Não deveria ter ressuscitado o sintoma da Task #728 no console.
