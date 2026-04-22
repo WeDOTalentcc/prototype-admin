@@ -194,8 +194,6 @@ export function useJobsData(): UseJobsDataReturn {
           publishedAt: (jv.published_at as string) || (jv.last_published_at as string) || undefined,
           closedAt: (jv.closed_at as string) || undefined,
           createdByEmail: (jv.created_by_email as string) || undefined,
-          readinessStage: (jv.readiness_stage as string) || undefined,
-          readinessBlockers: (jv.readiness_blockers as string[]) || [],
         } as unknown as Job
       } catch (itemErr) {
         console.warn(`[useJobsData] Failed to parse job at index ${index}`, itemErr instanceof Error ? itemErr.message : itemErr)

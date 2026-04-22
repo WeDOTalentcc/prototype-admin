@@ -56,7 +56,6 @@ const MODULE_FEATURE_KEYS: Record<string, string[]> = {
   ],
   internal_mobility: [
     "features.internalMobility.talentMatching",
-    "features.internalMobility.readinessScore",
     "features.internalMobility.developmentPlan",
     "features.internalMobility.successionMapping",
   ],

@@ -12,7 +12,7 @@ WSI Methodology mapping:
   competency_mapping-> F4+F5 (seniority + question distribution)
   wsi_questions     -> F6 (question generation)
   eligibility       -> pre-screening yes/no questions
-  review_publish    -> readiness check
+  review_publish    -> review
   publish_and_screen-> publish + auto-screening
   calibration       -> 3+ profile calibration
   handoff           -> navigate to job page
@@ -165,7 +165,6 @@ class JobCreationState(TypedDict, total=False):
     eligibility_questions: List[EligibilityQuestion]
 
     # --- Review ---
-    readiness_check: Optional[Dict[str, Any]]
     company_defaults_applied: List[str]  # which defaults from Settings were loaded
 
     # --- Publish ---

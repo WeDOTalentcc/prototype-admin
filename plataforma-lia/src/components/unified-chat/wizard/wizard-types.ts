@@ -158,11 +158,6 @@ export interface EligibilityQuestion {
 }
 
 export interface ReviewData {
-  readiness: {
-    ready: boolean
-    checks: Record<string, boolean>
-    missing: string[]
-  }
   defaults_applied: string[]
 }
 

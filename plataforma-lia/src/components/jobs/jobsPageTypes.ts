@@ -274,8 +274,6 @@ export interface Job {
   }
   is_published?: boolean
   published_channels?: string[]
-  readinessStage?: string
-  readinessBlockers?: string[]
 }
 
 export type ViewMode = 'compact' | 'expanded'

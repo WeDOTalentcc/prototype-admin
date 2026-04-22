@@ -30,7 +30,7 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
   const [showLiaInsights, setShowLiaInsights] = useState(true)
   interface LiaInsights {
     executiveSummary?: string
-    candidateStatus?: { priority?: string; readiness?: string; timeline?: string }
+    candidateStatus?: { priority?: string; timeline?: string }
     nextSteps?: Array<{ action?: string; priority?: string; timeframe?: string }>
     analysis?: { strengths?: string[]; concerns?: string[]; redFlags?: string[] }
     approachStrategy?: { primary?: string; timing?: string; talking_points?: string[]; tone?: string; focus?: string; urgency?: string }
@@ -70,7 +70,6 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
       // Status da candidatura
       candidateStatus: {
         priority: score >= 90 ? 'alta' : score >= 80 ? 'média' : 'baixa',
-        readiness: score >= 85 ? 'Pronto para próxima etapa' : 'Necessita avaliação adicional',
         timeline: score >= 90 ? 'Fast-track recomendado' : 'Timeline normal'
       },
 
@@ -248,7 +247,6 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                               {liaInsights.candidateStatus?.priority?.toUpperCase()}
                             </Chip>
                           </div>
-                          <div className="text-xs text-status-success">{liaInsights.candidateStatus?.readiness}</div>
                         </div>
                       </div>
 
