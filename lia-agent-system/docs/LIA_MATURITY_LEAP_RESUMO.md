@@ -145,21 +145,140 @@ Plus uma camada episódica: `user_preferences` na tabela `conversation_summaries
 
 ---
 
-## 7. O que está habilitado agora (mas ainda não ativado)
+## 7. O que está habilitado agora (mas ainda não 100% ativado) — detalhamento
 
-Essas são capabilities **prontas mas não 100% exercitadas** que o time pode plugar incrementalmente:
+Essas são capabilities **prontas mas não 100% exercitadas**. Regra geral: **todos os 6 têm o backend pronto e produzindo dado**. O que falta é **consumo/apresentação** (UI frontend OU infra de ops).
 
-1. **HITL UI** — Backend emite checkpoint estruturado. Falta o frontend renderizar modal de aprovação formal (hoje cai em texto conversational via FIX 35).
+---
 
-2. **Citations tooltip** — Backend entrega `citations[]` com metadata. Frontend pode mostrar tooltip "fonte desta informação" ao passar mouse. Hoje aparece só como footnote markdown no texto.
+### 🎨 Categoria 1 — Precisa trabalho de FRONTEND (time `ats_front`)
 
-3. **Filter chips** — Estado de filtros ativos disponível em `active_filters`. Frontend pode mostrar chips removíveis. Hoje cai em texto via FIX 35.
+#### 7.1 HITL UI modal
 
-4. **Capability toggle por tenant** — G6 funcional. Basta frontend expor UI de admin para empresa desligar (ex.: "não usamos WhatsApp").
+**O que existe (backend)**: Quando uma tool com `governance_tags=["destructive"]` é chamada (ex.: `close_job`, `send_mass_email`), o backend emite em `data.message.message_metadata.hitl_checkpoint`:
+```json
+{
+  "id": "hitl-123",
+  "tool_name": "close_job",
+  "tool_params": {"job_id": "v0040", "reason": "budget"},
+  "governance_tags": ["destructive"],
+  "reason": "requires approval"
+}
+```
 
-5. **Cost dashboard** — Dados em `[LIA-COST]` markers. Falta pipe para Grafana/Metabase. Grep em logs já funciona.
+**Por que não 100%**: Frontend precisa:
+- Detectar `hitl_checkpoint` no response
+- Renderizar modal "Aprovar / Rejeitar" com preview dos parâmetros
+- Chamar endpoints `/api/v1/hitl/approve` ou `/reject`
+- Desbloquear o fluxo pós-decisão
 
-6. **Eval dashboard** — CI roda eval em cada PR. Time pode montar dashboard histórico de drift.
+**Fallback atual**: FIX 35 garante que a LIA **pergunta em texto conversational** (*"Vou cancelar v0040 com reason=budget. 3 candidatos serão notificados. Confirma?"*). Funciona via UI de chat simples — só falta formalidade do modal governance.
+
+---
+
+#### 7.2 Citations tooltip visual
+
+**O que existe (backend)**: `data.message.message_metadata.citations[]` populado com `tool_name`, `tool_params`, `timestamp`, `confidence`. Plus `has_citations: true` como flag. Persona também emite markdown footnotes no texto (`[^1]: search_jobs(status=Ativa) às 14:32`) — **isso já renderiza** em qualquer markdown viewer padrão.
+
+**Por que não 100%**: Tooltip *interativo* ao passar mouse sobre o `[^1]` mostrando JSON estruturado (tool + params + timestamp exato) exige componente React que leia `message_metadata.citations[i]` e faça popover. Hoje o usuário vê a citation inline, mas não consegue clicar para drill-down.
+
+**Fallback atual**: Markdown footnote no fim da resposta já mostra `[^1]: search_jobs(...)`. 80% do valor sem o tooltip.
+
+---
+
+#### 7.3 Filter chips (removíveis)
+
+**O que existe (backend)**: `ConversationState.active_filters: dict` persiste entre turns no server-side. Persona (FIX 28 + FIX 35) **sempre cita** em texto: *"Filtros ativos: status=Ativa, departamento=Tecnologia. Remover algum (ex: 'remover status') ou aplicar outro?"*
+
+**Por que não 100%**: UI de "chip removível com X" (como o Gmail mostra filtros aplicados) exige componente React que consome `active_filters` e renderiza pills clicáveis. Ao clicar no X → dispatch `remove_filter` → nova mensagem → backend atualiza state.
+
+**Fallback atual**: User digita *"remover status"* → LIA entende (regex no persona prompt) → remove filtro. Mesmo resultado, menos ergonômico.
+
+---
+
+### 🔧 Categoria 2 — Precisa UI de ADMIN (frontend + backend)
+
+#### 7.4 Capability toggle admin por tenant
+
+**O que existe (backend)**: G6 funcional — `app/tools/tool_permissions.yaml` define overrides por tenant:
+```yaml
+tenants:
+  company-abc-123:
+    overrides:
+      universal:
+        remove: ["send_whatsapp", "create_campaign"]
+```
+`ToolPermissionsLoader.get_permissions(tenant_id).filter_tools(...)` já aplica. Se tenant NÃO tem WhatsApp configurado, LIA nem vê tools de WhatsApp no schema.
+
+**Por que não 100%**: Hoje configuração é **manual via YAML** (devops edita o arquivo). Falta página de **admin do tenant no frontend** onde empresa liga/desliga capabilities via toggle UI (*"Habilitar WhatsApp? ON/OFF"*), que grava em DB, e `ToolPermissionsLoader` lê do DB ao invés de YAML.
+
+**Status**: backend PRONTO. Precisa (a) migrar config de YAML para tabela DB, (b) endpoint CRUD, (c) página frontend de admin.
+
+---
+
+### 📊 Categoria 3 — Precisa INFRA / OPS (não é código de feature)
+
+#### 7.5 Cost dashboard Grafana
+
+**O que existe (backend)**: Cada LLM call emite log estruturado:
+```
+[LIA-COST] tenant=00000000-0000-4000-a000-000000000001 model=gemini-2.5-flash in=12369 out=49 usd=0.001128 total=0.0045 calls=3
+```
+Todos os dados necessários estão lá: tenant, model, tokens I/O, cost USD, latency, accumulator total.
+
+**Por que não 100%**: Falta **pipeline de observability**:
+- Stack de log ingestion (Loki / Elastic / Datadog)
+- Parser que extrai campos de `[LIA-COST]` linhas
+- Dashboard Grafana/Metabase com queries agregando por tenant/model/dia
+
+**Alternativa**: `grep '[LIA-COST]' logs | awk ...` já funciona para relatório manual. Dashboard é conveniência ops.
+
+---
+
+#### 7.6 Eval dashboard histórico
+
+**O que existe (backend)**: CI workflow `.github/workflows/lia-eval.yml` roda golden set em cada PR e gera `eval/eval_results_*.json` (já tem ~3 artifacts nesse formato no repo). Cada artifact tem scores por dimensão (grounding, clarity, actionability, tone, safety).
+
+**Por que não 100%**: Falta **consumer** — algo que colete os `eval_results_*.json` ao longo do tempo e plote tendência (*"score de grounding vs data: subiu ou caiu?"*). Opções:
+- Script Python simples que lê `eval/*.json` e gera HTML
+- Job que posta scores em DB + dashboard Grafana
+- Integrar com ferramenta tipo Langfuse / LangSmith (já tem hook no código via `_traceable`)
+
+**Status**: Dados gerados. Falta componente de visualização.
+
+---
+
+### 🎯 Padrão geral — por que ficou assim
+
+| # | Item | Backend | UI/Infra | Ação necessária |
+|---|------|---------|----------|-----------------|
+| 1 | HITL modal | ✅ emite payload | ❌ modal React | Task frontend |
+| 2 | Citations tooltip | ✅ metadata + footnote markdown | ⚠️ 80% (markdown já renderiza) | Task frontend (enhancement) |
+| 3 | Filter chips | ✅ active_filters + texto | ❌ chips React | Task frontend |
+| 4 | Capability admin | ✅ G6 YAML override | ❌ DB + admin page | Backend migração YAML→DB + frontend admin |
+| 5 | Cost dashboard | ✅ `[LIA-COST]` markers | ❌ Grafana setup | DevOps/SRE |
+| 6 | Eval dashboard | ✅ JSON artifacts | ❌ consumer/viewer | Script Python OU tool third-party |
+
+**Escopo desta sessão foi "producer-side" da camada IA**. Canonical-fix skill manda fixar no producer. Frontend surfaces e infra de ops são **produtos separados com owners separados**:
+
+- **Frontend** (ats_front) — time dedicado; seus próprios sprints; não faz parte do repo Python.
+- **Infra/Ops** (Grafana, log pipeline) — ops/SRE team; não é código de feature.
+- **Admin UI tenant** — produto (decide UX) + frontend + backend DB (não é só Python LIA).
+
+**O que a camada IA entregou**: **dados estruturados no payload** que tornam esses features implementáveis sem retrabalho. Cada um dos 6 pode ser construído em **1-3 sprints de frontend/ops**, sem tocar na camada IA.
+
+### Ordem de prioridade sugerida (valor ÷ esforço)
+
+| # | Item | Effort | Valor | Razão |
+|---|------|--------|-------|-------|
+| 🟢 1 | Filter chips | 1 sprint frontend | Alto | Uso frequente, UX claramente superior |
+| 🟢 2 | Citations tooltip | 1 sprint frontend | Médio-Alto | Markdown footnote já dá 80% — tooltip refina |
+| 🟡 3 | HITL modal | 2 sprints frontend + produto | Médio | Governance formal, baixa frequência de uso |
+| 🟡 4 | Cost dashboard | 1-2 sprints ops | Alto ao escalar | Visibilidade financeira ganha valor com tenants |
+| 🟠 5 | Capability admin | 3 sprints cross-stack | Baixo hoje | Poucos tenants; YAML resolve enquanto time é pequeno |
+| 🟠 6 | Eval dashboard | 1 sprint dev + produto definir KPI | Baixo hoje | Suite eval ainda crescendo; drift ainda baixo |
+
+**Recomendação**: puxar #1 (filter chips) e #2 (citations tooltip) primeiros — maior retorno perceptível ao recrutador, menor esforço.
 
 ---
 
