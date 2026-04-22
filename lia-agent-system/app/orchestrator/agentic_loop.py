@@ -45,13 +45,61 @@ class AgenticLoop:
     # Schema helpers
     # ------------------------------------------------------------------
 
-    def get_tool_schemas(self, provider: str = "claude") -> list[dict]:
-        """Get tool schemas in the format needed by the LLM provider."""
+    def get_tool_schemas(
+        self,
+        provider: str = "claude",
+        agent_hints: list[str] | None = None,
+    ) -> list[dict]:
+        """Get tool schemas, optionally scoped by agent_hints.
+
+        Onda 5.3.a (2026-04-22): intent-scoped filtering reduces prompt
+        footprint (~40-95% fewer tool schemas when hints are specific).
+
+        Args:
+            provider: "claude" or "gemini"
+            agent_hints: list of agent_type strings (e.g., ["sourcing",
+                "analyst_feedback"]) from intent_heuristic.classify_intent().
+                Empty/None → full catalog (current behavior).
+
+        Fail-safe contract:
+            - If LIA_TOOL_SCOPING_ENABLED=false → full catalog always
+            - If hints empty → full catalog
+            - If scoped result < LIA_MIN_SCOPED_TOOLS (default 3) → full
+              catalog with warning log
+        """
         self._ensure_deps()
-        tools = self._tool_registry.list_tools()
-        if not tools:
+        tools_list = self._tool_registry.list_tools()
+        if not tools_list:
             return []
-        return self._tool_registry.get_all_schemas(format=provider)
+
+        # Feature flag for instant rollback
+        scoping_enabled = os.getenv("LIA_TOOL_SCOPING_ENABLED", "true").lower() == "true"
+        min_scoped = int(os.getenv("LIA_MIN_SCOPED_TOOLS", "3"))
+
+        if not scoping_enabled or not agent_hints:
+            # Full catalog fallback (current behavior preserved)
+            if agent_hints and not scoping_enabled:
+                logger.debug("[LIA-SCOPE] flag disabled, using full catalog despite hints=%s", agent_hints)
+            return self._tool_registry.get_all_schemas(format=provider)
+
+        # Scoped filtering via registry union method
+        scoped = self._tool_registry.get_schemas_for_agents(agent_hints, format=provider)
+        total = len(tools_list)
+        scoped_count = len(scoped)
+
+        if scoped_count < min_scoped:
+            logger.warning(
+                "[LIA-SCOPE] fallback=low_count hints=%s scoped=%d min=%d total=%d",
+                agent_hints, scoped_count, min_scoped, total,
+            )
+            return self._tool_registry.get_all_schemas(format=provider)
+
+        pct_saved = int(100 * (1 - scoped_count / total)) if total else 0
+        logger.info(
+            "[LIA-SCOPE] scoped=true hints=%s tools=%d/%d saved=%d%%",
+            agent_hints, scoped_count, total, pct_saved,
+        )
+        return scoped
 
     # ------------------------------------------------------------------
     # Main loop
@@ -66,6 +114,7 @@ class AgenticLoop:
         user_id: str | None = None,
         provider: str = "gemini",
         max_iterations: int | None = None,
+        agent_hints: list[str] | None = None,
     ) -> dict:
         """
         Run the agentic loop.
@@ -80,7 +129,7 @@ class AgenticLoop:
         self._ensure_deps()
 
         max_iter = max_iterations or MAX_TOOL_ITERATIONS
-        tool_schemas = self.get_tool_schemas(provider)
+        tool_schemas = self.get_tool_schemas(provider, agent_hints=agent_hints)
 
         if not tool_schemas:
             logger.debug("[LIA-A04] No tools registered -- skipping agentic loop")

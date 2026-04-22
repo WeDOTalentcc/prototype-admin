@@ -477,6 +477,20 @@ class MainOrchestrator:
                         context_page=getattr(ctx, "context_page", "general") or "general",
                         extra_instructions=_proactive_hints_text,
                     )
+                    # Onda 5.3.a (2026-04-22) — intent-scoped tool filtering.
+                    # Heuristic classifier (regex + context_page → agent hints);
+                    # agentic_loop filters tool schemas to scope-relevant tools.
+                    # Feature flag LIA_TOOL_SCOPING_ENABLED=false for rollback.
+                    _agent_hints: list[str] = []
+                    try:
+                        from app.tools.intent_heuristic import classify_intent
+                        _agent_hints = classify_intent(
+                            user_message=ctx.message,
+                            context_page=getattr(ctx, "context_page", None),
+                        )
+                    except Exception as _hint_exc:
+                        logger.debug("[LIA-SCOPE] classify_intent skipped: %s", _hint_exc)
+
                     _agentic_result = await agentic_loop.run(
                         user_message=ctx.message,
                         system_prompt=_system_prompt,
@@ -484,6 +498,7 @@ class MainOrchestrator:
                         company_id=_loop_company_id,
                         user_id=getattr(ctx, "user_id", None),
                         provider=_agentic_provider,
+                        agent_hints=_agent_hints or None,
                     )
 
                     if _agentic_result and _agentic_result.get("response"):
