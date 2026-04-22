@@ -342,6 +342,26 @@ class MainOrchestrator:
                     "[III.B] hydrate skipped (non-fatal): %s", _hydrate_exc,
                 )
 
+            # Onda 4.4 IV.B (2026-04-21) — Proactive agenda briefing on greeting.
+            # When user message is a greeting pattern, fetch daily briefing
+            # (cached 5min) and inject summary into extra_instructions so the
+            # persona's ## Saudação Inicial section (FIX 29) surfaces it.
+            try:
+                _briefing_summary = await self._maybe_build_briefing_context(ctx, db)
+                if _briefing_summary:
+                    ctx.extra["briefing_context"] = _briefing_summary
+                    _existing = ctx.extra.get("extra_instructions", "") or ""
+                    _suffix = f"\n\nContexto pra saudação: {_briefing_summary}"
+                    ctx.extra["extra_instructions"] = (_existing + _suffix).strip()
+                    logger.info(
+                        "[IV.B] briefing injected user=%s len=%d",
+                        ctx.user_id, len(_briefing_summary),
+                    )
+            except Exception as _briefing_exc:
+                logger.debug(
+                    "[IV.B] briefing skipped (non-fatal): %s", _briefing_exc,
+                )
+
             # FIX 31 v2 (2026-04-21) — Wire memory_resolver BEFORE all phases.
             # Earlier wiring was inside _process_via_orchestrator (Phase 2) but
             # most chat turns trigger Phase 1.5 Agentic Loop (LIA-A04) which
@@ -1478,6 +1498,46 @@ class MainOrchestrator:
             }
         except Exception as _e:
             logger.debug("[III.B] _hydrate_recruiter_preferences failed: %s", _e)
+            return None
+
+    _GREETING_PATTERNS: set[str] = {
+        "oi", "olá", "ola", "hello", "hi",
+        "bom dia", "boa tarde", "boa noite",
+        "oi lia", "olá lia",
+    }
+
+    async def _maybe_build_briefing_context(self, ctx: Any, db: Any) -> str | None:
+        """Onda 4.4 IV.B — Return briefing summary when message is a greeting.
+
+        Returns None when:
+          - message is not a greeting pattern
+          - briefing service unavailable / exception
+          - briefing returns empty / formatted string empty
+        """
+        msg = (ctx.message or "").lower().strip().rstrip("!?.,")
+        if not msg:
+            return None
+        # Match whole-word greeting OR very short (≤12 chars) message containing greeting token
+        _is_greeting = (
+            msg in self._GREETING_PATTERNS
+            or (len(msg) <= 14 and any(g in msg for g in ("oi", "olá", "ola", "bom dia", "boa tarde", "boa noite")))
+        )
+        if not _is_greeting:
+            return None
+        try:
+            from app.domains.recruiter_assistant.services.lia_briefing_formatter import (
+                get_cached_briefing,
+                format_briefing_for_greeting,
+            )
+            _briefing = await get_cached_briefing(
+                user_id=str(ctx.user_id) if ctx.user_id else "",
+                company_id=str(ctx.company_id) if ctx.company_id else "",
+                db=db,
+            )
+            _summary = format_briefing_for_greeting(_briefing)
+            return _summary or None
+        except Exception as _e:
+            logger.debug("[IV.B] _maybe_build_briefing_context failed: %s", _e)
             return None
 
 
