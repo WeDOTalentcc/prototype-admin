@@ -24,9 +24,12 @@ function logDevAutoLoginFailure(detail: string): void {
   const now = Date.now()
   if (now - lastFailureLogAt < FAILURE_LOG_THROTTLE_MS) return
   lastFailureLogAt = now
+  // [Task #801 C3] degradado para `warn`: cold-start temporário de backend
+  // não é erro acionável (é retentado automaticamente). Mantemos throttle
+  // para sinalizar quando a indisponibilidade persiste >30s.
   // eslint-disable-next-line no-console
-  console.error(
-    `[dev-auto-login] DEMO USER LOGIN FAILED — ${detail}. Remediation: ${REMEDIATION_HINT}`,
+  console.warn(
+    `[dev-auto-login] demo user login unavailable — ${detail}. Remediation: ${REMEDIATION_HINT}`,
   )
 }
 

@@ -89,8 +89,11 @@ Resumo das 5 causas raiz tratadas (audit 2026-04-22):
   `[1, 2, 4, 8, 16]s` (~31s total) durante cold-start do backend. Sem isso o
   front-end fica órfão de token nos primeiros segundos.
 - **C4 (hooks):** todos os pollers (`use-hitl-pending`, `use-notifications` etc.)
-  devem usar `fetchWithRetry`, **não** `fetch()` cru. Enforçado via ESLint
-  `no-restricted-syntax` em `src/hooks/**` e `src/components/**`.
+  devem usar `fetchWithRetry`, **não** `fetch()` cru. Sinalizado via ESLint
+  `no-restricted-syntax` em `src/hooks/**` e `src/components/**` cobrindo tanto
+  `fetch(...)` quanto `window.fetch(...)` / `globalThis.fetch(...)`. Severidade
+  atual `warn` enquanto a Task #803 migra os ~250 hooks/components legados;
+  quando #803 fechar, elevar para `error`.
 - **C5 (rotas paralelas):** consolidação do proxy em `/api/backend-proxy/*` —
   rota duplicada `/api/lia/[...path]` é tratada em Task #802.
 

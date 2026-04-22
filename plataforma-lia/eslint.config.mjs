@@ -81,6 +81,9 @@ const eslintConfig = [...compat.extends("next/core-web-vitals", "next/typescript
     "**/*.spec.tsx",
   ],
   rules: {
+    // Severidade `warn` (não `error`) é intencional enquanto a Task #803
+    // migra os ~250 hooks/components legados que ainda usam `fetch()` cru.
+    // Quando #803 fechar, elevar para `"error"` e remover este comentário.
     "no-restricted-syntax": [
       "warn",
       // Re-declara as regras DS para não sobrescrevê-las neste escopo
