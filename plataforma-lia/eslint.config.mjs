@@ -127,6 +127,34 @@ const eslintConfig = [...compat.extends("next/core-web-vitals", "next/typescript
       }
     ],
   },
+}, {
+  // ──────────────────────────────────────────────
+  // Task #802: bloqueio global da rota proxy paralela `/api/lia/api/...`.
+  // Esta rota foi removida em 2026-04-22; toda chamada deve usar
+  // `/api/backend-proxy/...` (canônico) ou um helper de `services/lia-api/*`.
+  // Severidade `error` porque a migração já está 100% completa — qualquer
+  // ressurgimento da string é regressão. Cobre TODO o repo (.ts/.tsx),
+  // não só hooks/components.
+  // ──────────────────────────────────────────────
+  files: ["src/**/*.{ts,tsx}"],
+  ignores: [
+    // O proxy canônico e as próprias rotas internas podem mencionar a string
+    // em comentários explicativos; permitimos. O sensor pega Literal/Template,
+    // então strings em código serão pegas independentemente.
+  ],
+  rules: {
+    "no-restricted-syntax": [
+      "error",
+      {
+        "selector": "Literal[value=/api\\u002Flia\\u002Fapi/]",
+        "message": "[Task #802] A rota `/api/lia/[...path]` foi removida. Use `/api/backend-proxy/...` (canônico) ou um helper de `services/lia-api/*`."
+      },
+      {
+        "selector": "TemplateElement[value.raw=/api\\u002Flia\\u002Fapi/]",
+        "message": "[Task #802] A rota `/api/lia/[...path]` foi removida. Use `/api/backend-proxy/...` (canônico) ou um helper de `services/lia-api/*`."
+      }
+    ],
+  },
 }, ...storybook.configs["flat/recommended"]];
 
 export default eslintConfig;
