@@ -102,6 +102,78 @@ class AgenticLoop:
         return scoped
 
     # ------------------------------------------------------------------
+    # Onda 5.3.c — history compaction helper
+    # ------------------------------------------------------------------
+    def _compact_history(
+        self,
+        conversation_history: list | None,
+        conversation_summary: str | None = None,
+    ) -> list[dict]:
+        """Build messages list with optional compaction.
+
+        Contract:
+          - None/empty history → []
+          - LIA_HISTORY_COMPACTION_ENABLED=false → last-10 slice (legacy)
+          - len(history) <= COMPACT_THRESHOLD (default 5):
+              * prepend summary if present (short+summary case)
+              * else return history verbatim
+          - len(history) > threshold AND summary:
+              * prepend summary as system-like message
+              * keep last KEEP_RECENT messages (default 6)
+          - len(history) > threshold WITHOUT summary:
+              * fall back to last-10 slice (legacy, no regression)
+
+        Emits [LIA-HISTORY] marker when compaction applied.
+        """
+        if not conversation_history:
+            return []
+
+        enabled = os.getenv("LIA_HISTORY_COMPACTION_ENABLED", "true").lower() == "true"
+        threshold = int(os.getenv("LIA_HISTORY_COMPACT_THRESHOLD", "5"))
+        keep_recent = int(os.getenv("LIA_HISTORY_KEEP_RECENT", "6"))
+
+        def _to_msg(m):
+            return {"role": m.get("role", "user"), "content": m.get("content", "")}
+
+        # Feature flag off → legacy behavior (last-10)
+        if not enabled:
+            return [_to_msg(m) for m in conversation_history[-10:]]
+
+        total = len(conversation_history)
+
+        # Short conversation: include summary if present; else verbatim
+        if total <= threshold:
+            result = [_to_msg(m) for m in conversation_history]
+            if conversation_summary:
+                summary_msg = {
+                    "role": "system",
+                    "content": f"[Resumo da conversa anterior] {conversation_summary}",
+                }
+                logger.info(
+                    "[LIA-HISTORY] summary_only turns=%d summary_chars=%d",
+                    total, len(conversation_summary),
+                )
+                return [summary_msg] + result
+            return result
+
+        # Long + no summary → legacy last-10
+        if not conversation_summary:
+            logger.debug("[LIA-HISTORY] fallback=no_summary turns=%d", total)
+            return [_to_msg(m) for m in conversation_history[-10:]]
+
+        # Long + summary → compact: summary + last keep_recent
+        recent = [_to_msg(m) for m in conversation_history[-keep_recent:]]
+        summary_msg = {
+            "role": "system",
+            "content": f"[Resumo da conversa anterior] {conversation_summary}",
+        }
+        logger.info(
+            "[LIA-HISTORY] compacted turns=%d kept=%d summary_chars=%d",
+            total, keep_recent, len(conversation_summary),
+        )
+        return [summary_msg] + recent
+
+    # ------------------------------------------------------------------
     # Main loop
     # ------------------------------------------------------------------
 
@@ -115,6 +187,7 @@ class AgenticLoop:
         provider: str = "gemini",
         max_iterations: int | None = None,
         agent_hints: list[str] | None = None,
+        conversation_summary: str | None = None,
     ) -> dict:
         """
         Run the agentic loop.
@@ -135,12 +208,12 @@ class AgenticLoop:
             logger.debug("[LIA-A04] No tools registered -- skipping agentic loop")
             return {"response": None, "tool_calls_made": [], "iterations": 0}
 
-        # Build messages list for generate_with_tools
-        messages: list[dict] = []
-        if conversation_history:
-            for msg in conversation_history[-10:]:
-                role = msg.get("role", "user")
-                messages.append({"role": role, "content": msg.get("content", "")})
+        # Onda 5.3.c (2026-04-22) — history compaction with summary reuse.
+        # When conversation is long (>N turns) AND conversation_summary exists,
+        # prepend summary + keep last K full turns. Fallback: legacy last-10.
+        messages: list[dict] = self._compact_history(
+            conversation_history, conversation_summary=conversation_summary
+        )
         messages.append({"role": "user", "content": user_message})
 
         # Build security context for tool execution (tenant isolation)
