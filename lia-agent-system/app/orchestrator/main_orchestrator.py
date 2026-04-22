@@ -508,6 +508,15 @@ class MainOrchestrator:
                         logger.debug("[PreConditionChecker] check skipped: %s", _pc_exc)
 
                     from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+                    # Onda 5.1.a (2026-04-22) — merge ctx.extra["extra_instructions"]
+                    # (briefing_context from IV.B, error recovery hints, etc.) with
+                    # proactive_hints so ALL upstream context reaches the LLM.
+                    # Before: only proactive hints → briefing silently dropped →
+                    # persona re-verified via tools → contradicted briefing.
+                    _pre_instructions = ctx.extra.get("extra_instructions", "") or ""
+                    _merged_instructions = "\n\n".join(
+                        s for s in (_pre_instructions, _proactive_hints_text or "") if s
+                    ).strip()
                     _system_prompt = SystemPromptBuilder.build(
                         agent_type=_agent_type,
                         company_id=_loop_company_id or "",
@@ -517,7 +526,7 @@ class MainOrchestrator:
                         conversation_history=ctx.extra.get("conversation_history", []),
                         conversation_state=ctx.conversation_state,
                         context_page=getattr(ctx, "context_page", "general") or "general",
-                        extra_instructions=_proactive_hints_text,
+                        extra_instructions=_merged_instructions,
                     )
                     _agentic_result = await agentic_loop.run(
                         user_message=ctx.message,
