@@ -333,7 +333,8 @@ class MainOrchestrator:
                 _prefs = await self._hydrate_recruiter_preferences(ctx, db)
                 if _prefs:
                     ctx.extra["recruiter_prefs"] = _prefs
-                    logger.debug(
+                    # Onda 4.12 (2026-04-22): info-level for runtime observability
+                    logger.info(
                         "[III.B] recruiter prefs hydrated user=%s keys=%s",
                         ctx.user_id, list(_prefs.keys()),
                     )

@@ -60,10 +60,16 @@ def format_briefing_for_greeting(briefing: dict[str, Any] | None) -> str:
         label = "ações urgentes" if n_urgent != 1 else "ação urgente"
         parts.append(f"{n_urgent} {label}")
 
-    # 2. Pipeline signals (candidates stale, missing feedback)
-    pipeline = briefing.get("pipeline_summary") or {}
-    stale_candidates = pipeline.get("stale_candidates_count", 0) if isinstance(pipeline, dict) else 0
-    missing_feedback = pipeline.get("missing_feedback_count", 0) if isinstance(pipeline, dict) else 0
+    # 2. Pipeline signals — Onda 4.11 (2026-04-22): accept both the current
+    #    `pipeline` block from briefing_service AND the legacy
+    #    `pipeline_summary` contract (backward-compat).
+    pipeline_legacy = briefing.get("pipeline_summary") or {}
+    pipeline_current = briefing.get("pipeline") or {}
+    if isinstance(pipeline_legacy, dict):
+        stale_candidates = pipeline_legacy.get("stale_candidates_count", 0)
+        missing_feedback = pipeline_legacy.get("missing_feedback_count", 0)
+    else:
+        stale_candidates = missing_feedback = 0
 
     if stale_candidates and stale_candidates > 0:
         parts.append(f"{stale_candidates} candidato{'s' if stale_candidates != 1 else ''} parado{'s' if stale_candidates != 1 else ''} há >7 dias")
@@ -71,11 +77,21 @@ def format_briefing_for_greeting(briefing: dict[str, Any] | None) -> str:
     if missing_feedback and missing_feedback > 0:
         parts.append(f"{missing_feedback} entrevista{'s' if missing_feedback != 1 else ''} sem feedback")
 
-    # 3. Pending offers (from pending_tasks or alerts)
-    alerts = briefing.get("active_alerts") or []
+    # 3. Alerts — Onda 4.11: accept both `alerts` (current) and
+    #    `active_alerts` (legacy) keys.
+    alerts = briefing.get("alerts")
+    if alerts is None:
+        alerts = briefing.get("active_alerts") or []
     n_alerts = len(alerts) if isinstance(alerts, list) else 0
     if n_alerts > 0 and len(parts) < 3:
         parts.append(f"{n_alerts} alerta{'s' if n_alerts != 1 else ''}")
+
+    # 4. Onda 4.11: pipeline context fallback — when no urgent/stale/alert
+    #    signals, surface active_jobs count so greeting still has substance.
+    if not parts and isinstance(pipeline_current, dict):
+        n_jobs = pipeline_current.get("active_jobs", 0) or 0
+        if n_jobs > 0:
+            parts.append(f"{n_jobs} vaga{'s' if n_jobs != 1 else ''} ativa{'s' if n_jobs != 1 else ''}")
 
     if not parts:
         return ""
