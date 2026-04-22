@@ -99,6 +99,42 @@ jobs:
       #       --mode "${{ steps.mode.outputs.mode }}" \
       #       --max-cases "${{ steps.mode.outputs.max_cases }}"
 
+      - name: Init VIII.B — persona consistency check
+        working-directory: lia-agent-system
+        env:
+          LIA_SKIP_DB: "1"
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import sys
+          import yaml
+
+          sys.path.insert(0, '.')
+          from app.shared.quality.persona_validator import validate_response
+
+          rec_file = pathlib.Path('tests/persona_recordings.yaml')
+          if not rec_file.exists():
+              print('VIII.B — no recordings yet; skipping (validator ready, populate after smoke)')
+              raise SystemExit(0)
+
+          recordings = yaml.safe_load(rec_file.read_text()) or {}
+          if not recordings:
+              print('VIII.B — recordings file empty; skipping')
+              raise SystemExit(0)
+
+          failed = []
+          for sid, text in recordings.items():
+              v = validate_response(sid, text)
+              if v and not v.passed:
+                  failed.append((sid, v.failures))
+
+          if failed:
+              for sid, fs in failed:
+                  print(f'FAIL {sid}: {fs}')
+              raise SystemExit(1)
+          print(f'✓ VIII.B — {len(recordings)} persona scenarios passed')
+          PY
+
       - name: Upload eval artifacts
         if: always()
         uses: actions/upload-artifact@v4
