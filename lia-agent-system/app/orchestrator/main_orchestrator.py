@@ -672,6 +672,30 @@ class MainOrchestrator:
                 f"company={ctx.company_id} channel={ctx.channel}: {exc}",
                 exc_info=True,
             )
+            # Onda 4.7 VII.B (2026-04-21) — try error_policies first.
+            # If apply_policy matches a canonical policy (timeout/empty_result/
+            # enum_error/permission_denied/tenant_mismatch), use its PT-BR response
+            # template with retry_hint + severity in structured_data.
+            # Fallback: existing SystemPromptBuilder.build_error_response.
+            try:
+                from app.orchestrator.error_policies import apply_policy, resolve_policy
+                _matched_policy = resolve_policy(exc)
+                if _matched_policy is not None:
+                    _applied = apply_policy(exc)
+                    return ChatResponse(
+                        success=False,
+                        content=_applied["response"],
+                        intent_detected="error_recovery",
+                        conversation_id=conv_id,
+                        structured_data={
+                            "policy_id": _applied.get("policy_id"),
+                            "severity": _applied.get("severity"),
+                            "retry_hint": _applied.get("retry_hint"),
+                        },
+                    )
+            except Exception as _pol_exc:
+                logger.debug("[VII.B] error_policies apply skipped: %s", _pol_exc)
+
             from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
             _error_msg = SystemPromptBuilder.build_error_response(
                 user_name=getattr(ctx, "user_name", ""),
