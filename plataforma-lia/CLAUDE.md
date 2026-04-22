@@ -95,7 +95,18 @@ Resumo das 5 causas raiz tratadas (audit 2026-04-22):
   atual `warn` enquanto a Task #803 migra os ~250 hooks/components legados;
   quando #803 fechar, elevar para `error`.
 - **C5 (rotas paralelas):** consolidação do proxy em `/api/backend-proxy/*` —
-  rota duplicada `/api/lia/[...path]` é tratada em Task #802.
+  rota duplicada `/api/lia/[...path]` foi **removida** na Task #802. Os 22
+  callers legados em `services/lia-api/{glossary,misc,wsi}-api.ts`,
+  `hooks/ai/useCandidateSuggestions.ts`, `components/wsi/wsi-text-screening-modal.tsx`
+  e `components/pages/candidates/hooks/useLIAAICommands.ts` foram migrados.
+  ESLint sensor proíbe o retorno da string `/api/lia/api` em hooks/components.
+
+### Proxy canônico
+
+Toda chamada do front-end para o backend FastAPI deve usar
+`/api/backend-proxy/<path>` (definido em `src/app/api/backend-proxy/[...path]/route.ts`).
+A rota `/api/lia/chat/stream` é **endpoint próprio SSE**, não proxy genérico —
+preservada intencionalmente.
 
 ### Regras invioláveis
 

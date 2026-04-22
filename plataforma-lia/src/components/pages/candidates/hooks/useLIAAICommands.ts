@@ -168,7 +168,7 @@ async function buildCandidateAnalysisResponse(
     if (queryText && queryText.length > 0) jobTitleForApi = queryText
     else if (firstPosition && firstPosition.length > 0) jobTitleForApi = firstPosition
 
-    const response = await fetch('/api/lia/api/v1/analysis/candidates', {
+    const response = await fetch('/api/backend-proxy/api/v1/analysis/candidates', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ candidates: candidatesForApi, analysis_type: 'general', job_title: jobTitleForApi })

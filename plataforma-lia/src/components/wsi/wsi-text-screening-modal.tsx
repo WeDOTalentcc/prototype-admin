@@ -169,7 +169,7 @@ export function WSITextScreeningModal({
     try {
       setError(null)
 
-      const response = await fetch('/api/lia/api/v1/wsi/generate-questions', {
+      const response = await fetch('/api/backend-proxy/api/v1/wsi/generate-questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -227,7 +227,7 @@ export function WSITextScreeningModal({
         response_text: allAnswers[q.id] || ''
       }))
 
-      const response = await fetch('/api/lia/api/v1/wsi/complete-screening', {
+      const response = await fetch('/api/backend-proxy/api/v1/wsi/complete-screening', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

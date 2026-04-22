@@ -40,13 +40,13 @@ const DEFINITION_PAYLOAD = {
 function makeFetch() {
   return vi.fn(async (input: RequestInfo) => {
     const url = typeof input === "string" ? input : input.toString()
-    if (url === "/api/lia/api/v1/glossary/terms") {
+    if (url === "/api/backend-proxy/api/v1/glossary/terms") {
       return new Response(JSON.stringify(TERMS_PAYLOAD), {
         status: 200,
         headers: { "Content-Type": "application/json" },
       })
     }
-    if (url.startsWith("/api/lia/api/v1/glossary/terms/")) {
+    if (url.startsWith("/api/backend-proxy/api/v1/glossary/terms/")) {
       return new Response(JSON.stringify(DEFINITION_PAYLOAD), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -139,10 +139,10 @@ describe("GlossaryHighlightedText", () => {
   it("still opens the drawer via deep link when the terms list endpoint fails", async () => {
     const fetchImpl = vi.fn(async (input: RequestInfo) => {
       const url = typeof input === "string" ? input : input.toString()
-      if (url === "/api/lia/api/v1/glossary/terms") {
+      if (url === "/api/backend-proxy/api/v1/glossary/terms") {
         return new Response("boom", { status: 500 })
       }
-      if (url.startsWith("/api/lia/api/v1/glossary/terms/")) {
+      if (url.startsWith("/api/backend-proxy/api/v1/glossary/terms/")) {
         return new Response(JSON.stringify(DEFINITION_PAYLOAD), {
           status: 200,
           headers: { "Content-Type": "application/json" },

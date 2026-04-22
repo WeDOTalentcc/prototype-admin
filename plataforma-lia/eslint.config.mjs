@@ -113,6 +113,17 @@ const eslintConfig = [...compat.extends("next/core-web-vitals", "next/typescript
       {
         "selector": "CallExpression[callee.type='MemberExpression'][callee.property.name='fetch'][callee.object.name=/^(window|globalThis|self)$/]",
         "message": "[Task #801] Não use `window.fetch()` cru em hooks/components — use `liaApi.*` ou `fetchWithRetry` (services/lia-api/base). Veja CLAUDE.md § HMR-resilience."
+      },
+      // Task #802: rota proxy paralela `/api/lia/api/...` foi removida.
+      // Use `/api/backend-proxy/...` (canônico) ou, preferível, um helper em
+      // `services/lia-api/*`. Veja CLAUDE.md § proxy-canônico.
+      {
+        "selector": "Literal[value=/api\\u002Flia\\u002Fapi/]",
+        "message": "[Task #802] A rota `/api/lia/[...path]` foi removida. Use `/api/backend-proxy/...` (canônico) ou um helper de `services/lia-api/*`."
+      },
+      {
+        "selector": "TemplateElement[value.raw=/api\\u002Flia\\u002Fapi/]",
+        "message": "[Task #802] A rota `/api/lia/[...path]` foi removida. Use `/api/backend-proxy/...` (canônico) ou um helper de `services/lia-api/*`."
       }
     ],
   },

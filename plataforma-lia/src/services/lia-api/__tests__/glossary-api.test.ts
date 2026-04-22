@@ -40,7 +40,7 @@ describe("lookupGlossaryTerm", () => {
       )
     })
     const result = await lookupGlossaryTerm("WSI Final")
-    expect(calledUrl).toBe("/api/lia/api/v1/glossary/terms/WSI%20Final")
+    expect(calledUrl).toBe("/api/backend-proxy/api/v1/glossary/terms/WSI%20Final")
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.entry.sigla).toBe("WSI")
@@ -100,7 +100,7 @@ describe("listGlossaryTerms", () => {
       )
     })
     const terms = await listGlossaryTerms()
-    expect(calledUrl).toBe("/api/lia/api/v1/glossary/terms")
+    expect(calledUrl).toBe("/api/backend-proxy/api/v1/glossary/terms")
     expect(terms).toHaveLength(2)
     expect(terms[0].sigla).toBe("WSI")
   })

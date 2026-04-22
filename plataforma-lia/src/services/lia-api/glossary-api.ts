@@ -28,7 +28,7 @@ export async function listGlossaryTerms(): Promise<GlossaryEntryDTO[]> {
   if (pendingTerms) return pendingTerms
   pendingTerms = (async () => {
     try {
-      const resp = await fetch("/api/lia/api/v1/glossary/terms", {
+      const resp = await fetch("/api/backend-proxy/api/v1/glossary/terms", {
         method: "GET",
         headers: { "Accept": "application/json" },
       })
@@ -64,7 +64,7 @@ export async function lookupGlossaryTerm(term: string): Promise<GlossaryLookupRe
     return { ok: false, status: 422, message: "Informe um termo apos /definir." }
   }
   try {
-    const resp = await fetch(`/api/lia/api/v1/glossary/terms/${encodeURIComponent(cleaned)}`, {
+    const resp = await fetch(`/api/backend-proxy/api/v1/glossary/terms/${encodeURIComponent(cleaned)}`, {
       method: "GET",
       headers: { "Accept": "application/json" },
     })
