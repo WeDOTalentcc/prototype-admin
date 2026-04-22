@@ -255,7 +255,7 @@ async def get_public_vacancy(
             company_website=None,
             company_logo=None,
             is_confidential=is_confidential,
-            is_affirmative=job.is_affirmative,
+            is_affirmative=bool(job.is_affirmative),
             technical_requirements=tech_reqs,
             languages=languages,
             behavioral_competencies=competencies,

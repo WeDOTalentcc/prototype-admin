@@ -127,6 +127,10 @@ PUBLIC_PREFIXES = (
     "/api/v1/auth/invitation-info/",
     "/api/v1/wsi/async/",
     "/api/public/",
+    # Public job vacancy page (candidate-facing, no auth) — only the /p/{slug}
+    # GET/POST endpoints are mounted under this prefix; auth-protected admin
+    # actions live under /api/v1/job-vacancies/.
+    "/api/v1/public-vacancies/p/",
     "/docs/",
     "/static/",
     "/_next/",
