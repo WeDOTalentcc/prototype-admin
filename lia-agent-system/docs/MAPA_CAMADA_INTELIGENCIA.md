@@ -19,18 +19,18 @@
      - Diagrama Geral de Execucao (3 mecanismos)
   3. [Pontos de Contato da LIA](#3-pontos-de-contato-da-lia) (7 pontos)
   4. [Orquestrador](#4-orquestrador)
-     - ConversationGraph (47 nos, 4 subgrafos)
+     - `MainOrchestrator` + `CascadedRouter` (7 tiers — fase2c §3), `agentic_loop`, `precondition_checker`
      - Sistema de Actions (Closed-Loop), ACTIONABLE_INTENTS, Multi-turno, Confirmation Patterns
-  5. [Todos os Dominios](#5-todos-os-dominios) (**18 dominios**, 281 actions, 94 tools)
+  5. [Todos os Dominios](#5-todos-os-dominios) (**18 dominios registrados**, 281 actions, 94 tools — 62 dirs em `app/domains/` contam adapters/legacy/stubs catalogados em `app/domains/DOMAIN_CATALOG.md`)
      - Fluxos ponta-a-ponta: Perguntas WSI, Feedback Personalizado (§5.4), Triagem WhatsApp (§5.6), Agendamento (§5.7)
      - Domínio intent-routed (ADR-020): `job_creation` (§5.11)
      - Glossário completo de actions/tools: [`GLOSSARIO_ACTIONS_TOOLS.md`](./GLOSSARIO_ACTIONS_TOOLS.md)
-  6. [Catalogo Completo de Agentes](#6-catalogo-completo-de-agentes) (**34 agentes**: 30 ReAct + 2 LangGraph custom + 2 legacy ativos)
-  7. [Agentes ReAct em Detalhe](#7-agentes-react-em-detalhe) (7 agentes, 89 tools)
-     - ReActLoop (ciclo iterativo), Grafo JobWizardGraph (6 nos)
-  8. [Infraestrutura Compartilhada](#8-infraestrutura-compartilhada) (~118 arquivos)
-     - Compliance 3 Pilares, Auth/Multi-tenancy, EnhancedBaseAgent, Token Tracking, A/B Testing
-  9. [Catalogo de Servicos](#9-catalogo-de-servicos) (140 catalogados, ~330 arquivos)
+  6. [Catalogo Completo de Agentes](#6-catalogo-completo-de-agentes) (**34 agentes**: 15 ReAct principais + 15 sub-agentes + 2 LangGraph custom + 2 legacy ativos)
+  7. [Agentes ReAct em Detalhe](#7-agentes-react-em-detalhe) (15 principais, ~191 tools registradas — ver registries por domínio)
+     - `LangGraphReActBase` (libs/agents-core), Grafo JobWizardGraph (6 nos)
+  8. [Infraestrutura Compartilhada](#8-infraestrutura-compartilhada) (~305 arquivos em `app/shared/` + `libs/agents-core/`)
+     - Compliance 3 Pilares, Auth/Multi-tenancy, `LangGraphReActBase` + `EnhancedAgentMixin`, Token Tracking, A/B Testing
+  9. [Catalogo de Servicos](#9-catalogo-de-servicos) (recontado por domínio — ver §9)
   10. [Padroes de Codigo](#10-padroes-de-codigo) (9 padroes)
       - Logging, Prompt Registry, Error Handling
   11. [Guia Pratico "Onde Mexer"](#11-guia-pratico-onde-mexer) (16 cenarios)
@@ -611,49 +611,62 @@ Este mapa mostra ONDE a inteligencia artificial atua no produto.
 
 ```
 app/orchestrator/
-├── orchestrator.py          ← Ponto de entrada principal
-│                               Recebe mensagem → processa → retorna resposta
-├── cascaded_router.py       ← Router em 3 camadas (cache/regex/LLM)
-├── fast_router.py           ← Tier 2: classificacao por regex e keywords
-│                               Resolve ~80% das queries sem LLM
-├── intent_router.py         ← Tier 3: classificacao por LLM (Claude)
-│                               Para queries ambiguas ou novas
-├── action_executor.py       ← Executa acoes com confirmacao do usuario
-│                               Closed-loop: propoe → confirma → executa
+├── main_orchestrator.py     ← Ponto de entrada principal (substitui o antigo orchestrator.py)
+│                               Recebe mensagem → roteia → executa → retorna resposta
+├── orchestrator.py          ← Façade legacy mantida para compatibilidade
+├── cascaded_router.py       ← Router em 7 tiers (semantic cache → fast → LLM cascade → ReAct)
+│                               Detalhes em fase2c_domain_verification_report.md §3
+├── fast_router.py           ← Classificacao por regex/keywords (tier rápido)
+├── llm_cascade.py           ← Cascata de LLMs (Claude/Gemini/OpenAI) com fallback
+├── semantic_cache.py        ← Cache semântico de roteamento (tier 1)
+├── agentic_loop.py          ← Loop agentic externo ao agente (orquestrador → tool → agente)
+├── precondition_checker.py  ← Valida pré-condições antes de executar acoes
+├── action_executor/         ← Pacote de execução (closed-loop com confirmação)
+│   ├── executor.py          ←   Propõe → confirma → executa
+│   ├── intents_config.py    ←   Catalogo de ACTIONABLE_INTENTS
+│   └── action_types.py
+├── action_handlers/         ← Handlers especializados por dominio
+│   ├── job_actions.py, candidate_actions.py, pipeline_actions.py
+│   ├── interview_actions.py, sourcing_actions.py
+│   ├── communication_actions.py, analytics_actions.py
+│   └── _handler_hooks.py
 ├── pending_action.py        ← Estado de acoes pendentes (multi-turn)
-│                               Persiste entre mensagens
 ├── state_manager.py         ← Persistencia de estado de sessao
-│                               Salva/recupera contexto de conversacao
-├── policy_engine.py         ← Aplica politicas da empresa ao fluxo
-│                               CompanyHiringPolicy → regras de automacao
-└── task_planner.py          ← Planejamento de tarefas compostas
-                                Decomposicao de tarefas complexas
+├── policy_engine.py         ← Aplica `CompanyHiringPolicy` ao fluxo
+├── task_planner.py          ← Planejamento de tarefas compostas
+├── context_adapter.py       ← Normaliza contexto entre canais
+├── chat_adapter.py          ← Adapter para o canal de chat web
+├── citation_processor.py    ← Pós-processa citações nas respostas
+├── correction_detector.py   ← Detecta correções do usuário (turn-level)
+├── domain_mappings.py       ← `DomainRegistry.get_agent_aliases()` (auto-discovery do roteador)
+├── error_policies.py        ← Politicas de erro (+ error_policies.yaml)
+├── hitl.py                  ← Human-in-the-Loop hooks
+├── memory_resolver.py       ← Resolução de memória cross-session
+├── meta_question_detector.py ← Detecta perguntas sobre o próprio agente
+├── navigation_intent.py     ← Intents de navegação (UI hints)
+├── registry.py              ← Registry interno do orquestrador
+└── tasting_engine.py        ← A/B/sampling de prompts/agentes
 ```
 
-### Roteamento em 3 Camadas
+### Roteamento em 7 Tiers (CascadedRouter)
 
 ```
 Mensagem do usuario
      │
      v
-[Tier 1] Cache em memoria
-     │ Hash da mensagem → lookup O(1)
-     │ HIT → resposta imediata (sem custo LLM)
-     │ MISS ↓
+[Tier 1] SemanticCache (lookup por embedding)         ─ HIT → resposta cacheada
+[Tier 2] FastRouter (regex/keywords)                  ─ HIGH conf → roteia direto
+[Tier 3] PreconditionChecker                          ─ valida pré-requisitos
+[Tier 4] LLMCascade (Claude → Gemini → OpenAI)        ─ classifica intent + dominio
+[Tier 5] DomainRegistry alias resolution              ─ agent-type → domínio dono
+[Tier 6] AutonomousReActAgent (fallback cross-domain) ─ último recurso antes de clarificar
+[Tier 7] Clarification turn (pergunta ao usuário)     ─ gera pergunta de desambiguação
      v
-[Tier 2] FastRouter (regex/keywords)
-     │ Padroes regex por dominio
-     │ ~80% das queries resolvidas aqui
-     │ Alta confianca → roteia direto
-     │ Baixa confianca ↓
-     v
-[Tier 3] IntentRouter (LLM/Claude)
-     │ Classifica em 1 de 9+ dominios
-     │ Usa exemplos few-shot para acuracia
-     │ Custo: 1 chamada LLM (~0.01 USD)
-     v
-Agente do dominio identificado
+Agente ReAct do dominio (LangGraphReActBase)
 ```
+
+> Detalhamento dos 7 tiers, métricas de acerto e thresholds:
+> [`fase2c_domain_verification_report.md` §3 — CascadedRouter](./fase2c_domain_verification_report.md).
 
 ### Tabela de Roteamento
 
@@ -765,94 +778,28 @@ bloqueado. Isso garante resiliencia sem perder a experiencia conversacional.
 
 > Para detalhes completos do ciclo fechado, ver `PLANO_CICLO_FECHADO_LIA.md`.
 
-### ConversationGraph — Grafo Completo (47 nos)
+### Loops, Subgrafos e Graphs Stateful (substituto do antigo ConversationGraph)
 
-O `ConversationGraph` e o grafo principal LangGraph (`StateGraph`) que processa
-todas as mensagens do chat. Arquivo: `shared/agents/conversation.py`, funcao `create_conversation_graph()`.
+> **Nota de migração**: o `ConversationGraph` monolítico (47 nós, `shared/agents/conversation.py`)
+> foi **removido** durante a migração para `LangGraphReActBase` (libs/agents-core).
+> O fluxo atual é: `MainOrchestrator` → `CascadedRouter` → agente ReAct do domínio.
+> Estado conversacional vive em `MainOrchestrator.state_manager` + `WorkingMemory`.
 
-```
-ENTRY → classify_intent → extract_entities → decide_next_action
-                                                    │
-                    ┌───────────┬───────────┬───────┼───────┬────────────┬──────────┐
-                    v           v           v       v       v            v          v
-             execute_search  execute_  create_job  schedule  generate_  ask_      END
-             (local DB)      global    _vacancy    _interview response  clarif.
-                    │         (Pearch)      │           │       │          │
-                    v           │           v           v       v          v
-             generate_response ─┘    [Job Wizard]  [Interview] END       END
-                    │                  Subgrafo      Subgrafo
-                    v
-                   END
-```
+Os fluxos longos (wizard de vagas, agendamento, sourcing) hoje são **graphs LangGraph
+custom por domínio** ou **agentes ReAct com tools encadeadas**, não mais um grafo único:
 
-**Roteamento condicional** (`decide_next_action` — 7 destinos):
-
-| Condicao | Destino | Quando |
+| Fluxo Longo | Implementação Atual | Arquivo Real |
 |---|---|---|
-| `intent == "confirm_global_search"` | `execute_global` | Usuario confirmou busca paga |
-| `intent == "chitchat"` | `generate_response` | Conversa casual |
-| `confidence < 0.6` | `ask_question` | Intent ambiguo |
-| `intent == "search_candidates"` | `execute_search` | Busca de candidatos |
-| `intent == "create_job_vacancy"` | `create_job_vacancy` | Criacao de vaga |
-| `intent == "schedule_interview"` | `schedule_interview` | Agendamento |
-| fallback | `generate_response` | Demais intents |
+| Criação de vaga (wizard antigo, 6 estágios) | `JobWizardGraph` (LangGraph custom — 6 nós) | `app/domains/job_management/agents/job_wizard_graph.py` |
+| Wizard WSI completo (intent-routed — ADR-020) | `JobCreationGraph` (StateGraph custom) | `app/domains/job_creation/graph.py` |
+| Triagem WSI por candidato | `WSIScreeningPipeline.build_pipeline()` | `app/domains/cv_screening/services/wsi_screening_pipeline.py` |
+| Agendamento de entrevista | `SchedulingService` + `CommunicationReActAgent` (handoff) | `app/domains/interview_scheduling/services/scheduling_service.py` |
+| Sourcing & Engagement multi-step | `SourcingReActAgent` + 9 sub-agentes | `app/domains/sourcing/agents/` |
+| Pipeline (Kanban) com transições contextuais | `PipelineTransitionAgent` + 3 sub-agentes | `app/domains/pipeline_transition/agents/` |
 
-**4 Subgrafos integrados**:
-
-| Subgrafo | Nos | Entry Node | Fluxo |
-|---|---|---|---|
-| **Core** | ~6 | classify_intent | classify → extract → decide → search/response/clarification → END |
-| **Job Wizard** | ~18 | job_state_loader | loader → router → [13 collectors] → validator → frame_gen → response_planner → response |
-| **Interview** | ~6 | interview_state_loader | loader → router → details_collector → validator → scheduler → response_planner → response |
-| **Sourcing** | ~16 | sourcing_state_initializer | initializer → local_search → calibration → volume → global → contact → outreach → screening → feedback → report → decision → scheduling/rejection → placement → mass_feedback → response |
-
-**Job Wizard — 13 collectors** (loop via `job_router` + `decide_job_creation_next`):
-
-```
-job_state_loader → job_router ──┐
-       ▲                        │ decide_job_creation_next()
-       │                        v
-       │  ┌─ onboarding_node ──────────────────────┐
-       │  ├─ basics_collector                      │
-       │  ├─ remuneration_collector                │
-       │  ├─ org_structure_collector               │
-       │  ├─ technical_matrix_collector            │
-       │  ├─ sourcing_strategy_collector           │
-       │  ├─ wsi_competencies_collector            │
-       │  ├─ interview_flow_collector              │
-       │  ├─ governance_collector                  │
-       │  ├─ communication_templates_collector     │
-       │  ├─ job_description_generator             │
-       │  ├─ screening_collector                   │
-       │  └─ publication_node ─→ sourcing ou validator
-       │                                           │
-       └───────────────── loop ◄───────────────────┘
-                          │
-                validator → frame_generator → response_planner → generate_response → END
-```
-
-**Interview Scheduling — 6 nos**:
-
-```
-interview_state_loader → interview_router → interview_details_collector
-    → interview_validator ─┬─ ready → interview_scheduler_executor → interview_response_planner
-                           └─ not ready → interview_response_planner
-                                                    → generate_response → END
-```
-
-**Sourcing & Engagement — 16 nos** (Steps 14-27):
-
-```
-sourcing_state_initializer → local_search → calibration → [espera feedback]
-  → process_calibration_feedback → volume_assessment → global_expansion → [espera aprovacao]
-  → contact_approval → email_outreach → [espera respostas]
-  → async_screening → candidate_feedback → recruiter_report → [espera decisao]
-  → recruiter_decision ─┬─ aprovar → auto_scheduling
-                        └─ rejeitar → rejection_feedback
-  → placement → mass_feedback → generate_response → END
-```
-
-**Protecao contra loops**: `collection_attempts >= 3` redireciona para `response_planner` (pergunta ao usuario).
+**Protecao contra loops infinitos**: cada agente ReAct tem `max_iterations` configurado
+em `LangGraphReActBase` (default 10) e o `agentic_loop` externo tem orçamento próprio
+de turnos antes de devolver controle ao usuário com pergunta de clarificação.
 
 ---
 
@@ -1579,7 +1526,13 @@ Os agent-types do `CascadedRouter` (Tier 5 LLM) são auto-descobertos via `Domai
 
 ## 7. Agentes ReAct em Detalhe
 
-### ReActLoop — Ciclo Iterativo (shared/agents/react_loop.py)
+### LangGraphReActBase — Base Comum dos Agentes ReAct
+
+> **Nota de migração**: o antigo `ReActLoop` (`shared/agents/react_loop.py`) foi
+> **removido**. Todos os agentes ReAct herdam agora de `LangGraphReActBase` +
+> `EnhancedAgentMixin`, importados de `lia_agents_core` (pacote `libs/agents-core/`).
+> O loop reason-act-observe é provido pelo `create_react_agent()` do
+> `langgraph.prebuilt` com `PostgresSaver`/`MemorySaver` para persistência entre turnos.
 
 ```
 ┌─ REASON ─┐    ┌── ACT ──┐    ┌─ OBSERVE ─┐    ┌─ DECIDE ─┐
@@ -1591,19 +1544,25 @@ Os agent-types do `CascadedRouter` (Tier 5 LLM) são auto-descobertos via `Domai
                                                          ▼ final_answer
 ```
 
-**ReActConfig (parametros principais)**:
+**Componentes principais** (`libs/agents-core/lia_agents_core/`):
 
-| Parametro | Default | Descricao |
-|---|---|---|
-| `max_iterations` | 5 | Maximo de ciclos reason-act-observe antes de forcar resposta |
-| `domain` | (obrigatorio) | Dominio do agente (wizard, pipeline, talent, etc.) |
-| `guardrails` | [] | Acoes que exigem confirmacao do usuario antes de executar |
-| `model_provider` | "claude" | Provider LLM: "claude", "gemini" ou "openai" |
-| `model_name` | "claude-sonnet-4-20250514" | Modelo especifico para referencia/logging |
-| `temperature` | 0.3 | Temperatura de geracao do LLM |
-| `system_prompt` | (obrigatorio) | Prompt que define personalidade e instrucoes do agente |
+| Arquivo | Responsabilidade |
+|---|---|
+| `langgraph_base.py` | Classe-mãe `LangGraphBase` (interface comum de grafos) |
+| `langgraph_react_base.py` | `LangGraphReActBase` — usa `create_react_agent()` + `TimedToolNode` + `AuditCallback` |
+| `enhanced_agent_mixin.py` | `EnhancedAgentMixin` — adiciona memória, observabilidade e guardrails |
+| `working_memory.py` | `WorkingMemoryService` (estado de sessão) |
+| `long_term_memory.py` | `LongTermMemoryService` (memória cross-session) |
+| `react_agent_registry.py` | Registry singleton de agentes ReAct |
+| `agent_scaffold.py` | `AgentScaffold.generate()` — gera os 4 arquivos por agente |
+| `timed_tool_node.py` | Node LangGraph que mede latência por tool |
+| `streaming_callback.py`, `observability.py` | Telemetria e streaming |
+| `checkpointer.py` | Wrapper sobre `PostgresSaver`/`MemorySaver` |
 
-Usado por todos os 7 agentes ReAct (Wizard, Kanban, Talent, JobsMgmt, Policy, Sourcing, Pipeline), cada um com seu proprio `ReActConfig`.
+**Subclasses precisam implementar**: `domain_name`, `available_tools`, `_get_tools()`.
+
+Usado por todos os 15 agentes ReAct principais (+ 15 sub-agentes), cada um com sua
+própria configuração de model/provider/tools — definida no respectivo `*_react_agent.py`.
 
 ### Tabela de Arquivo por Tipo
 
@@ -1882,30 +1841,52 @@ app/domains/cv_screening/agents/
 
 ---
 
-## 8. Infraestrutura Compartilhada (~118 arquivos)
+## 8. Infraestrutura Compartilhada (~305 arquivos em `app/shared/` + `libs/agents-core/`)
+
+> **Nota arquitetural**: o core dos agentes mudou de lugar.
+> O que estava em `app/shared/agents/*` (ReActLoop, ConversationGraph, working_memory, etc.) **migrou** para o
+> pacote `libs/agents-core/lia_agents_core/` durante a unificação `LangGraphReActBase`.
+> Hoje `app/shared/agents/` contém apenas o sistema de **crews** (multi-agente cooperativo)
+> e o `agent_bus` (event bus inter-agente).
 
 ### Arvore Completa de `shared/`
 
 ```
+libs/agents-core/lia_agents_core/      ← (NOVO LOCAL) Core dos agentes ReAct
+├── agent_interface.py                 ← BaseAgent, AgentInput, AgentOutput, NavigationCommand
+├── langgraph_base.py                  ← LangGraphBase (interface comum de grafos)
+├── langgraph_react_base.py            ← LangGraphReActBase (ex-ReActLoop)
+├── enhanced_agent_mixin.py            ← EnhancedAgentMixin (memória + observabilidade)
+├── react_loop.py                      ← Stub de compatibilidade (legado em remoção)
+├── react_agent_registry.py            ← Registry singleton
+├── agent_scaffold.py                  ← AgentScaffold.generate() (4 arquivos)
+├── working_memory.py                  ← WorkingMemoryService (sessão)
+├── long_term_memory.py                ← LongTermMemoryService (cross-session)
+├── memory_integration.py              ← Ponte WorkingMemory ↔ LongTermMemory
+├── execution_log_store.py             ← Persiste reasoning chains
+├── observability.py                   ← Telemetria ReAct
+├── proactive_worker.py                ← Worker para sugestões proativas
+├── nodes.py, state_machine.py, base_state_machine.py ← Building blocks de grafos
+├── sourcing_engagement_nodes.py       ← Nós de engajamento sourcing
+├── learning_extractor.py              ← Extração de aprendizados
+├── autonomy_engine.py                 ← Engine de autonomia (auto-trigger)
+├── timed_tool_node.py                 ← Node LangGraph com métricas
+├── streaming_callback.py              ← Streaming de tokens
+├── checkpointer.py                    ← Wrapper Postgres/Memory saver
+├── tool_adapter.py                    ← Adapter dict→LangChain tool
+├── confidence.py, contracts.py        ← Tipos de confidence/contratos
+└── agent_bus.py                       ← Event bus (cópia exposta também via app/shared)
+
 app/shared/
-├── agents/                           ← Core dos agentes
-│   ├── agent_interface.py            ← BaseAgent, AgentInput, AgentOutput
-│   ├── react_loop.py                 ← ReActLoop, ReActConfig, ToolDefinition
-│   ├── working_memory.py             ← WorkingMemoryService (sessao)
-│   ├── long_term_memory.py           ← LongTermMemoryService (cross-session)
-│   ├── memory_integration.py         ← Ponte WorkingMemory ↔ LongTermMemory
-│   ├── react_agent_registry.py       ← ReactAgentRegistry (singleton)
-│   ├── agent_scaffold.py             ← AgentScaffold.generate() (4 arquivos)
-│   ├── execution_log_store.py        ← Persiste reasoning chains
-│   ├── observability.py              ← ReActObserver (telemetria)
-│   ├── proactive_worker.py           ← Worker para sugestoes proativas
-│   ├── enhanced_agent_mixin.py       ← Mixin com capacidades extras
-│   ├── conversation.py               ← Gestao de conversacao
-│   ├── nodes.py                      ← Nos genericos de grafo
-│   ├── state_machine.py              ← Maquina de estados
-│   ├── learning_extractor.py         ← Extracao de aprendizados
-│   ├── autonomy_engine.py            ← Engine de autonomia
-│   └── sourcing_engagement_nodes.py  ← Nos de engajamento sourcing
+├── agents/                            ← Apenas Crews + agent_bus (não-ReAct)
+│   ├── agent_bus.py                   ← Event bus inter-agente
+│   ├── agent_registry.py              ← Registry de agentes (não-ReAct)
+│   ├── agent_types.py                 ← Tipos compartilhados
+│   ├── crew_executor.py               ← Executor de crews multi-agente
+│   ├── crew_models.py                 ← Modelos Pydantic de crew
+│   ├── crew_context.py                ← Contexto compartilhado da crew
+│   ├── crew_audit.py                  ← Auditoria de crews
+│   └── crew_examples.py               ← Exemplos canônicos de crew
 │
 ├── compliance/                       ← Conformidade e etica
 │   ├── fairness_guard.py             ← FairnessGuard: check() + check_semantic()
@@ -2028,10 +2009,10 @@ app/shared/
 FairnessGuard ──→ WizardAgent, KanbanAgent, TalentAgent, JobsMgmtAgent, PolicyAgent
                   (check regex + check_semantic LLM + check_implicit_bias)
 
-ReActLoop ──────→ Todos os 7 agentes ReAct
-                  (ciclo autonomo de raciocinio)
+LangGraphReActBase ─→ Todos os 15 agentes ReAct principais (+ 15 sub-agentes)
+                      (ciclo autonomo via langgraph.prebuilt.create_react_agent)
 
-LLMFactory ─────→ ReActLoop, agentes legacy, servicos de geracao
+LLMFactory ─────→ LangGraphReActBase, agentes legacy, servicos de geracao
                   (Claude, Gemini, OpenAI)
 
 WorkingMemory ──→ Todos os agentes ReAct (memoria de sessao)
@@ -2052,11 +2033,11 @@ PIIMasking ─────→ Logs, respostas, exports
 - `check_semantic(text)`: Analise semantica via LLM para vies sutil
 - Usado por 5 agentes ReAct como guardrail obrigatorio
 
-**ReActLoop** (`agents/react_loop.py`):
-- Core do sistema de agentes autonomos
-- Configuravel via `ReActConfig` (max_iterations, tools, provider, guardrails)
-- Suporta observer para telemetria (`ReActObserver`)
-- 705 linhas de codigo
+**LangGraphReActBase** (`libs/agents-core/lia_agents_core/langgraph_react_base.py`):
+- Core do sistema de agentes autônomos (substitui o legado `ReActLoop`)
+- Usa `langgraph.prebuilt.create_react_agent()` + `TimedToolNode` + `AuditCallback`
+- Persistência de turno entre conversas via `PostgresSaver`/`MemorySaver`
+- Subclasses só precisam implementar `domain_name`, `available_tools`, `_get_tools()`
 
 **LLMProviderFactory** (`providers/llm_factory.py`):
 - Factory pattern para 3 providers (Claude, Gemini, OpenAI)
@@ -2126,7 +2107,11 @@ Todo dev que cria tools ou agentes DEVE garantir que:
 
 ## 9. Catalogo de Servicos
 
-### job_management (31 servicos)
+> **Nota de contagem**: os totais abaixo refletem `ls app/domains/<domínio>/services/*.py`
+> (excluindo `__init__.py`) na data desta auditoria (Task #805). Sub-providers/adapters
+> em pastas aninhadas (ex.: `email_providers/`, `ats_clients/`) são listados separadamente.
+
+### job_management (33 servicos)
 
 | Servico | O que faz |
 |---|---|
@@ -2162,7 +2147,7 @@ Todo dev que cria tools ou agentes DEVE garantir que:
 | ats_job_history_service | Historico de vagas do ATS |
 | recruitment_email_templates | Templates de email de recrutamento |
 
-### recruiter_assistant (10 servicos)
+### recruiter_assistant (14 servicos)
 
 | Servico | O que faz |
 |---|---|
@@ -2177,7 +2162,7 @@ Todo dev que cria tools ou agentes DEVE garantir que:
 | wizard_action_executor | Executor de acoes do wizard |
 | wizard_analytics_service | Analytics do wizard |
 
-### cv_screening (20 servicos)
+### cv_screening (41 servicos)
 
 | Servico | O que faz |
 |---|---|
@@ -2202,7 +2187,7 @@ Todo dev que cria tools ou agentes DEVE garantir que:
 | score_normalization_service | Normalizacao de scores |
 | personalized_feedback_service | Feedback personalizado |
 
-### sourcing (12 servicos)
+### sourcing (20 servicos)
 
 | Servico | O que faz |
 |---|---|
@@ -2219,7 +2204,7 @@ Todo dev que cria tools ou agentes DEVE garantir que:
 | apify_service | Integracao Apify |
 | apify_mcp_client | Cliente MCP Apify |
 
-### communication (26 servicos)
+### communication (35 servicos + sub-providers)
 
 | Servico | O que faz |
 |---|---|
@@ -2250,7 +2235,7 @@ Todo dev que cria tools ou agentes DEVE garantir que:
 | interpret_context_llm_service | Interpretacao por LLM |
 | return_event_service | Eventos de retorno |
 
-### interview_scheduling (4 servicos)
+### interview_scheduling (3 servicos)
 
 | Servico | O que faz |
 |---|---|
@@ -2259,7 +2244,7 @@ Todo dev que cria tools ou agentes DEVE garantir que:
 | deepgram_service | Transcricao Deepgram |
 | interview_transcript_analysis_service | Analise de transcricoes |
 
-### analytics (10 servicos)
+### analytics (34 servicos)
 
 | Servico | O que faz |
 |---|---|
@@ -2274,7 +2259,7 @@ Todo dev que cria tools ou agentes DEVE garantir que:
 | agent_monitoring_service | Monitoramento de agentes |
 | wsi_observability | Observabilidade WSI |
 
-### ats_integration (9 servicos)
+### ats_integration (4 servicos + 4 sub-clients)
 
 | Servico | O que faz |
 |---|---|
@@ -2287,7 +2272,7 @@ Todo dev que cria tools ou agentes DEVE garantir que:
 | ats_clients/pandape | Cliente Pandape |
 | ats_clients/merge | Cliente Merge.dev |
 
-### automation (18 servicos)
+### automation (17 servicos)
 
 | Servico | O que faz |
 |---|---|
@@ -2310,7 +2295,23 @@ Todo dev que cria tools ou agentes DEVE garantir que:
 | task_service | Servico de tarefas |
 | webhook_adapters | Adaptadores de webhook |
 
-**Total: 140 servicos catalogados** (incluindo sub-servicos e providers; o total de arquivos de servico no repositorio e ~330)
+### hiring_policy (1 servico)
+
+| Servico | O que faz |
+|---|---|
+| benchmark_service | Benchmarks de mercado para PolicyReActAgent (ABRH/GPTW/Gupy/Robert Half) |
+
+### Outros domínios com serviços
+
+Demais domínios (`talent_pool`, `recruitment_campaign`, `candidate_self_service`,
+`company_settings`, `agent_studio`, `digital_twin`, `pipeline_transition`,
+`job_creation`) expõem entre 0 e ~10 serviços específicos cada — consulte
+`app/domains/<domínio>/services/` ou o glossário em
+[`GLOSSARIO_ACTIONS_TOOLS.md`](./GLOSSARIO_ACTIONS_TOOLS.md).
+
+**Total catalogado nesta seção (somente domínios principais):**
+33 + 14 + 41 + 20 + 35 + 3 + 34 + 4 + 17 + 1 = **202 serviços de domínio**
+(`app/shared/services/` adiciona mais ~50 serviços compartilhados).
 
 ---
 
