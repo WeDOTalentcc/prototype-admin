@@ -214,11 +214,7 @@ async def orchestrate_wizard_message(
 
         if request.use_structured_outputs:
             from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
-            _base = SystemPromptBuilder.build(
-                agent_type="job_planner",
-                company_id=str(current_user.company_id) if getattr(current_user, "company_id", None) else "",
-                context_page="wizard",
-            )
+            _base = SystemPromptBuilder.build(agent_type="job_planner", context_page="wizard")
             system_prompt = f"""{_base}
 
 ## ETAPA ATUAL: {stage_info.get("name", request.current_stage)}

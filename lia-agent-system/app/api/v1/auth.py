@@ -36,7 +36,6 @@ from app.auth.security import (
     generate_secure_token,
     get_password_hash,
     verify_password,
-    blacklist_token,
 )
 from app.domains.auth.dependencies import get_user_repo
 from app.domains.auth.repositories.user_repository import UserRepository
@@ -604,30 +603,3 @@ async def accept_invitation(
     logger.info(f"Invitation accepted for: {user.id}")
 
     return {"message": "Conta ativada com sucesso! Você já pode fazer login."}
-
-
-@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout(
-    request: Request,
-    current_user: User = Depends(get_current_active_user),
-    audit_svc: AuditService = Depends(get_audit_service),
-):
-    """Revoke the current access token (JWT blacklist via Redis)."""
-    auth_header = request.headers.get("Authorization", "")
-    token = (
-        auth_header.removeprefix("Bearer ").strip()
-        if auth_header.startswith("Bearer ")
-        else ""
-    )
-    if token:
-        await blacklist_token(token)
-
-    await audit_svc.log_event(
-        action="user.logout",
-        actor_id=str(current_user.id),
-        company_id=current_user.company_id or "unknown",
-        resource_type="auth",
-        resource_id=str(current_user.id),
-        details={"email": str(current_user.id)},
-    )
-    return None

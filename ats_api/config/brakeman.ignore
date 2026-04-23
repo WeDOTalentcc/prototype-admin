@@ -1,0 +1,336 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "0b3c86f549d1516369748e47b3aa7e4ab362f87a225e3da1db81650b8a1b621e",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "0c0656d9108c9c64c5c41131627f56a9276377070f153a8dd2d1010866afe368",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "0db88b0d015c787ef85cd65c828c789bddfff213ec6d8ebc56dbd586acc66148",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "13f847cc9a4b5c16a9c8a5256d707c24ec91817b8f3fd94494ddfff1e089a4f2",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "1634e7fcc44662efbdccbb3a9e5e1b0c902deef148b5dcfb48eefa5801e94232",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "28349305e206851f9d2ec2bac84f4f242d3c4f091efd0a763177c70a5260c870",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "2a21820b4f3565a79c5bc0f32e36d4cdce14528c15564bb31497abe4ee9b67cc",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "2b9f1c8a49dfa126ecc870de36f4e049b02fc989f0074005dd5f25df22e539a9",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "316157ad8dd06fdf3a3f47cc283e5769fae6381dbd29cc22fedaaa0a382de898",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "31c6675bd640e73fc67f48037d8e5df53953ab83ee71d796135c11f2a135287d",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "36610d119bf912da42d7b7e2746a194169f8a65822b682c057cb7315a360636b",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "471d06905e13800fc3c8b9de679c4019cbb81a1e2ac79eff25cca6fd3668df1a",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "490e09a21bbc2b5a9aaf2dca03fd51b509488ccbf257a4217f03073770d4b93a",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "4ce843894d2d57dd8d47c2dcf6c9ee68ee13f06192e106db35c813d5ede1ba7c",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "55c01a56707fcd950daebd852bf43db3fc7afeebab84c378c0bda52a69871b67",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "5ea56e30ed307ab9e8da679387a4278d60dd997fd1166876786ada0ea96e820a",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "5faa5a24acbcacc025ccdcb1f210376b1105a92fdee67ae96a361b903d1d9601",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "651a2d907e2cccf07383a04d0b701ff083b537047d189ce97461f22d1ef34bd1",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "6982f1c195230785bdcffaaeedc8480d50ad20341236146d33c869043d4eacac",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "6a1233e7cdcd8c819106e29fdffd33268610af6273de87788af2e12354416e2f",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "6b3a22ddb4046a22939daad63907f0442135e311fa0d4f17abc76909c9990076",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "6cfe7335ae5b5b460a574398bf716aebf19916255f3c6c9cb47b62da46818ca9",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "6feeae9c0d770adf8e2f32d502b5fd523fb4918ccfd8193d2e3bbb6680d161a1",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "723d035fe8854396ee18c3766db266be08b5140c3b595e5641d52656d5ab779e",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "76fac0a2bb5ccf7d07594ca23d895d9b7324b8f497b4dee954566cd3bdc57004",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "781dcb0079144eb1e13901d310b43d5ddc78868a5f1b1cb0e4b64c01a54b6f18",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "7b8b3a497dfab930e3743f24ff448cb28aba3eeb7a52d6037ec1cb0923d42863",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "7f2f984d4d6160a49115e91c3b1c5e3bca7fe4b189b8ecfc4ffa37dd943af3b8",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "82273112d52bab577968306bf5ac5c1bf4787f3fd1f638ad3b6b7e09dfbbeaae",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "85aa095da1c64951dd7fc32808609fbe914650e9bde8d7f913dcfea9c5129864",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "86580042874a6c9ac5d6c0706811d6f9e4a84c29a2c4deb9f228f7a0712671fd",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "895562daa171b72ba1d6d6283f2d16b8d8c272bfeed97c10eb40daa69e27b9ec",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "91c705dccf921b0b45af8a05f04b72d1d684ea6d6da84e90256915ac33ccac72",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "91e9fd6b3c4420f1470fe996ccb82bf761c5bffff0ac22bfe1a9e8516f4252ea",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "938e745762cfe1f6be5e0a3782b4059ab5f3065cf430a967ac56741832c9ae23",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "a351b4dbd0d5c45ead2069e4d17cc9f8652e5902476968d744e8936c8e08bed7",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "ad9b9ab7183f5cd91b6ea4595260fadde6d07477fb561d1d5a99790b9fdae7a3",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "ae5f6634b5a72c5fc7a95614db171bfae0b2c2b5f8a5358839db21c9a4815b35",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "aec7df0d71fb23fa4d6d88ce96b734527fefc32b0cd7dc68e03fa934c400236f",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "b95e8a1831f9495a99b436ad4943b59d476ff85fa7d277ee6bbbbfa91374dc1d",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "beea01e76c0d99ebabd0610585bdae956fa035967f2947c01279fee9559dbbc7",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "c7727553a6692ea43f8dcac918d31d6947a903c22abf5b7d715b3470fae55dee",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "c77b3006876b2dc4feefe615ec287b5f02e7a2790df3a0f10c9393c5f29c6b86",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "d84924377155b41e094acae7404ec2e521629d86f97b0ff628e3d1b263f8101c",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "dee95a88ad3979ed5ed7f4ea9535d1d244b6b4b2241421ce47602e100188526b",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "e499a2edb2bf0c9eb4c867533feaeccc6e6ce74553dd148d2418a932f7843118",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "e6de7c880777698fdfcb93135c05115f40632edb64ca0163f364fc0ceb43032a",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "e737f7d8142d159065af0d97db1d1a079ab9f39aa31557807fe4932517bdb0d2",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "e8385b2b3415085dcddc90e83b161f910010aa9675cdf38dc5a79a3cf99b1b9a",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "e89c12edf54e912a438ea43678041c455c6aabe10943885315eacb4bde69397b",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "ef8320b744cd3addc6a6628e760bbfb8e01ae131651e07dbc135351c32206701",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "f229b33b00306161eee43977e933323aec895821ea58fb4b1e02939d723e2840",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "fbfc954e8e6c6fa88b5bacc019c16d3c31c5b1b67626a02ac5cd767faffd9f60",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning"
+    },
+    {
+      "fingerprint": "d72d27e431eb90e54fe69df01ee284dd36f8e22db93c66394cfc8ee7514ca353",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing warning - embedding_strategy raw SQL"
+    },
+    {
+      "fingerprint": "020ead1bc3d60b5f89146baced921d9cc03acbda1ff68a107a6a21f94882cda2",
+      "code": null,
+      "context": null,
+      "note": "Pre-existing mass assignment warning - jobs_controller permit"
+    }
+  ],
+  "updated": "2026-04-13",
+  "brakeman_version": "7.1.2"
+}

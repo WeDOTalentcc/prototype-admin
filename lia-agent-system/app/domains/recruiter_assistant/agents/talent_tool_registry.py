@@ -24,71 +24,75 @@ _fairness_guard = FairnessGuard()
 
 @tool_handler("talent")
 async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
-    """Search candidates by skills, experience, location.
-
-    Task #727: delega para o service canônico `candidate_search_service` em
-    vez de manter SQL própria. Mantém assinatura externa (query + filters dict)
-    e formato de resposta esperado pelo TalentReActAgent.
-    """
-    from app.domains.ai.services.candidate_search_service import (
-        search_candidates as _canonical_search,
-    )
-
+    """Search candidates by skills, experience, location."""
     query = kwargs.get("query", "")
-    filters = kwargs.get("filters", {}) or {}
-    company_id = kwargs.get("company_id", "")
+    filters = kwargs.get("filters", {})
+    kwargs.get("company_id", "")
     limit = int(kwargs.get("limit", 20))
     logger.info(f"[talent_tools] search_candidates called: query={query} filters={filters}")
 
-    location = filters.get("location") or None
-    min_exp_raw = filters.get("min_experience")
-    try:
-        min_exp = int(min_exp_raw) if min_exp_raw not in (None, "", 0) else None
-    except (TypeError, ValueError):
-        min_exp = None
-
-    if not query:
-        return {
-            "success": False,
-            "data": {"query": query, "filters": filters, "candidates_found": 0, "results": []},
-            "message": "Informe o critério de busca.",
-        }
-
-    canonical = await _canonical_search(
-        query=query,
-        company_id=str(company_id) if company_id else None,
-        scope="both" if company_id else "global",
-        limit=limit,
-        location=location,
-        min_experience=min_exp,
-    )
-
-    if canonical["status"] == "error":
-        logger.warning("[talent_tools] search_candidates failed: %s", canonical.get("error"))
-        return {
-            "success": False,
-            "data": {"query": query, "filters": filters, "candidates_found": 0, "results": []},
-            "message": f"Erro na busca: {canonical.get('error', 'desconhecido')}",
-        }
-
     results = []
-    for cand in canonical["candidates"]:
-        results.append({
-            "id": cand["id"],
-            "name": cand["name"],
-            "current_title": cand["current_title"],
-            "location": f"{cand['location_city'] or ''}, {cand['location_state'] or ''}".strip(", "),
-            "skills": cand["technical_skills"],
-            "years_of_experience": cand["years_of_experience"],
-            "lia_score": cand["lia_score"],
-            "match_percentage": cand["skills_match_percentage"],
-            "status": cand["status"],
-        })
-    total = canonical["total"]
+    total = 0
+    try:
+        async with get_tenant_aware_session() as session:
+            location = filters.get("location", "") if isinstance(filters, dict) else ""
+            min_exp = filters.get("min_experience", 0) if isinstance(filters, dict) else 0
 
-    msg = f"Busca realizada. {total} candidatos encontrados para '{query}'."
-    if canonical.get("fellback_to_global"):
-        msg += " (Empresa sem candidatos vinculados — mostrando pool global.)"
+            rows = await session.execute(
+                text("""
+                    SELECT id, name, current_title, location_city, location_state,
+                           technical_skills, years_of_experience, lia_score,
+                           skills_match_percentage, status
+                    FROM candidates
+                    WHERE is_active = true
+                      AND (:query = ''
+                           OR name ILIKE :qlike
+                           OR current_title ILIKE :qlike
+                           OR :query = ANY(technical_skills))
+                      AND (:location = '' OR location_city ILIKE :lloc OR location_state ILIKE :lloc)
+                      AND (years_of_experience IS NULL OR years_of_experience >= :min_exp)
+                    ORDER BY lia_score DESC NULLS LAST, created_at DESC
+                    LIMIT :lim
+                """),
+                {
+                    "query": query,
+                    "qlike": f"%{query}%",
+                    "location": location,
+                    "lloc": f"%{location}%",
+                    "min_exp": min_exp,
+                    "lim": limit,
+                },
+            )
+            for row in rows.mappings():
+                results.append({
+                    "id": str(row["id"]),
+                    "name": row["name"],
+                    "current_title": row["current_title"],
+                    "location": f"{row['location_city'] or ''}, {row['location_state'] or ''}".strip(", "),
+                    "skills": row["technical_skills"] or [],
+                    "years_of_experience": row["years_of_experience"],
+                    "lia_score": row["lia_score"],
+                    "match_percentage": row["skills_match_percentage"],
+                    "status": row["status"],
+                })
+
+            count_row = await session.execute(
+                text("""
+                    SELECT COUNT(*) AS total FROM candidates
+                    WHERE is_active = true
+                      AND (:query = ''
+                           OR name ILIKE :qlike
+                           OR current_title ILIKE :qlike
+                           OR :query = ANY(technical_skills))
+                      AND (:location = '' OR location_city ILIKE :lloc OR location_state ILIKE :lloc)
+                      AND (years_of_experience IS NULL OR years_of_experience >= :min_exp)
+                """),
+                {"query": query, "qlike": f"%{query}%", "location": location,
+                 "lloc": f"%{location}%", "min_exp": min_exp},
+            )
+            total = int((count_row.mappings().first() or {}).get("total", len(results)))
+    except Exception as e:
+        logger.warning(f"[talent_tools] search_candidates DB error: {e}")
 
     return {
         "success": True,
@@ -97,10 +101,8 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
             "filters": filters,
             "candidates_found": total,
             "results": results,
-            "scope_used": canonical["scope_used"],
-            "fellback_to_global": canonical["fellback_to_global"],
         },
-        "message": msg,
+        "message": f"Busca realizada. {total} candidatos encontrados para '{query}'.",
     }
 
 

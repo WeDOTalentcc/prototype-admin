@@ -491,7 +491,7 @@ class WizardStepService:
                 elif question_type == QuestionType.TIME_TO_FILL:
                     lia_message = await handle_time_to_fill_question(db, company_id, job_draft, request.user_input)
                 elif question_type == QuestionType.PROCESS:
-                    lia_message = await handle_process_question(request.user_input, llm_service, str(company_id) if company_id else "")
+                    lia_message = await handle_process_question(request.user_input, llm_service)
                 else:
                     import json as _json
                     prompt = (
@@ -555,7 +555,6 @@ class WizardStepService:
                         field_origins=field_origins,
                         confidence_service=confidence_service,
                         suggestions_data=suggestions_data,
-                        company_id=str(company_id) if company_id else "",
                     )
 
                 elif current_stage == 2:

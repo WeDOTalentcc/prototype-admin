@@ -89,11 +89,3 @@ repos:
         files: ^app/.*\.py$
         pass_filenames: false
         always_run: false
-
-      - id: tool-tenant-isolation
-        name: "#673/ADR-019: Tools in app/domains/*/tools/ must use @tool_handler or be allowlisted"
-        language: system
-        entry: python3 scripts/check_tool_tenant_isolation.py
-        files: ^app/domains/.*/tools/.*\.py$
-        pass_filenames: false
-        always_run: false

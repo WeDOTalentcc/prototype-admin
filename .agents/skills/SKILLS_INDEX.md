@@ -78,8 +78,6 @@ Detalhes completos: `.agents/skills/lia-orchestrator/SKILL.md` (Tabela 4).
 |---|---|
 | **canonical-fix** | Antes de qualquer bug fix, refactor ou edicao com risco de duplicata |
 | **feature-audit** | DEPOIS de implementar, ANTES de marcar concluido (14 dimensoes) |
-| **harness-engineering** | Meta-skill (Agent = Model + Harness): erro recorrente, revisao de CLAUDE.md/AGENTS.md, guardrail/lint customizado/tool permission, auditoria de agente, consolidacao de findings |
-| **progressive-disclosure** | Meta-skill obrigatoria: estruturar/refatorar skills LIA em 3 niveis (SKILL.md enxuto + references + deep-dives) e padronizar output dos agentes em camadas |
 
 ### G — Testes
 
@@ -136,25 +134,3 @@ Nao precisa lembrar nomes. O orchestrator decide. Mas se quiser sinalizar:
 | "refatora todo o modulo" | Modo REFACTOR |
 | "esta pronto?" | Modo AUDIT |
 | "vou subir para producao" | Modo DEPLOY |
-
----
-
-## Progressive Disclosure — status das skills
-
-Todas as skills LIA grandes foram migradas para o padrao 3-niveis (SKILL.md enxuto ~50-150 linhas + `references/` por dimensao/passo). A meta-skill `progressive-disclosure` define o padrao e e obrigatoria para criar/refatorar qualquer skill nova.
-
-| Skill | SKILL.md (linhas) | References |
-|---|---:|---:|
-| vue-vuetify-standardize | 69 | 17 |
-| feature-audit | 57 | 13 |
-| design-standardize | 59 | 11 |
-| design-patterns | 61 | 13 |
-| vue-migration-prep | 64 | 16 |
-| humanizer | 69 | 11 |
-| frontend-design | 59 | 12 |
-| canonical-fix | 53 | 9 |
-| lia-testing | 53 | 7 |
-| lia-compliance | 56 | 10 |
-| lia-planning | 56 | 12 |
-
-Skills pequenas (`harness-engineering`, `find-skills`, `agent-tools`, etc) nao precisaram refatorar — ja cabiam no orcamento de SKILL.md.

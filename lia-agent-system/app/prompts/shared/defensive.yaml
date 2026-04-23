@@ -68,9 +68,7 @@ prompts:
     - Gerar KPIs de recrutamento
     - Analisar funil de conversão
     - Detectar gargalos no processo
-    # FIX 24 (2026-04-21): replaced 'Previsão de fechamento' — no predictive tool exists.
-    # get_job_velocity returns historical velocity metrics, not forecasts.
-    - Análise de histórico de fechamento (vagas similares, via get_job_velocity)
+    - Previsão de fechamento de vaga
     - Gerar resumo semanal e briefing diário
 
     **Automação e Organização**

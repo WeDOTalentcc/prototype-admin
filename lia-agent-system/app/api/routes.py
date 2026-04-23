@@ -275,10 +275,6 @@ def register_all_routes(app: FastAPI) -> None:
     from app.api.v1 import internal_llm
     app.include_router(internal_llm.router, prefix="/api/v1")
 
-    # ── Glossary (canonical term lookup for chat tooltips/`/definir`) ─────────
-    from app.api.v1 import glossary as glossary_v1
-    app.include_router(glossary_v1.router, prefix="/api/v1/glossary", tags=["glossary"])
-
     # ── Core / Navigation ─────────────────────────────────────────────────────
     app.include_router(navigation_intent_router, prefix="/api/v1")
     app.include_router(chat.router, prefix="/api/v1")
@@ -567,8 +563,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(test_activities.router, prefix="/api/v1", tags=["testing"])
     app.include_router(bulk_actions.router, prefix="/api/v1", tags=["bulk-actions"])
     app.include_router(approvals.router, prefix="/api/v1", tags=["approvals"])
-    from app.api.v1 import offer_proposals as _offer_proposals
-    app.include_router(_offer_proposals.router, prefix="/api/v1", tags=["offer-proposals"])
     app.include_router(attachments.router, prefix="/api/v1", tags=["attachments"])
     app.include_router(file_analysis.router, prefix="/api/v1", tags=["file-analysis"])
     app.include_router(opinions.router, prefix="/api/v1", tags=["opinions"])

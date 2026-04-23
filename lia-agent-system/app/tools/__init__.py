@@ -80,7 +80,6 @@ __all__ = [
     "ToolCallRecord",
     "ToolCallResponse",
     "initialize_tools",
-    "sync_descriptions_from_yaml",
     "get_all_tool_schemas",
     "execute_tool",
     # G5 — YAML registry
@@ -126,125 +125,6 @@ def initialize_tools() -> None:
     import logging
     logger = logging.getLogger(__name__)
     logger.info(f"✅ Initialized {len(tool_registry.list_tools())} tools")
-    # P1.A — Sync enriched descriptions from YAML into Python ToolDefinitions.
-    # The YAML (tool_registry_metadata.yaml) has richer descriptions + when_to_use context
-    # that were not injected at registration time. This call bridges the gap so the LLM
-    # receives the enriched descriptions via to_claude_schema() / to_gemini_schema().
-    sync_descriptions_from_yaml()
-
-    # FIX 1 — Rebuild routing context with domain actions after tools are registered.
-    # Gives LLMCascadeRouter._actions_context knowledge of each domain's available
-    # actions so the routing prompt is more informative for intent disambiguation.
-    try:
-        from app.orchestrator.llm_cascade import llm_cascade_router
-        llm_cascade_router.rebuild_routing_context()
-    except Exception as _exc:
-        logger.warning("[initialize_tools] rebuild_routing_context failed (non-blocking): %s", _exc)
-
-
-def sync_descriptions_from_yaml() -> None:
-    """Sync enriched tool descriptions from YAML into live ToolDefinition objects.
-
-    Reads tool_registry_metadata.yaml and, for each tool that matches a registered
-    ToolDefinition, replaces the Python description with:
-      1. The YAML description (>=80 chars, rich context).
-      2. A USE WHEN: clause from when_to_use (if present).
-      3. A DO NOT USE WHEN: clause from when_not_to_use (if present).
-
-    ADR-016 compliance: called exclusively from initialize_tools() so it runs once
-    during startup after all tools are registered.
-    """
-    import logging as _logging
-
-    _logger = _logging.getLogger(__name__)
-
-    try:
-        metadata = load_tool_metadata()
-        if not metadata:
-            _logger.warning("[sync_yaml] No tool metadata loaded — skipping description sync")
-            return
-
-        synced = 0
-        skipped = 0
-        for tool_name, meta in metadata.items():
-            tool = tool_registry.get_tool(tool_name)
-            if tool is None:
-                skipped += 1
-                continue
-
-            yaml_description = meta.get("description", "").strip()
-            if not yaml_description:
-                skipped += 1
-                continue
-
-            enriched = yaml_description
-            when_to_use = meta.get("when_to_use", "").strip()
-            when_not_to_use = meta.get("when_not_to_use", "").strip()
-            if when_to_use:
-                enriched += f"\n\nUSE WHEN: {when_to_use}"
-            if when_not_to_use:
-                enriched += f"\nDO NOT USE WHEN: {when_not_to_use}"
-
-            tool.description = enriched
-
-            # FIX 3/4 — Populate governance_tags and related_tools from YAML
-            governance_tags = meta.get("governance_tags") or []
-            if isinstance(governance_tags, list):
-                tool.governance_tags = list(governance_tags)
-            related_tools = meta.get("related_tools") or []
-            if isinstance(related_tools, list):
-                tool.related_tools = list(related_tools)
-
-            # FIX 8 G2 — populate side_effects from YAML
-            side_effects = meta.get("side_effects") or []
-            if isinstance(side_effects, list):
-                tool.side_effects = list(side_effects)
-
-            synced += 1
-
-        _logger.info(
-            "[sync_yaml] Description sync complete — synced=%d skipped=%d total_yaml=%d",
-            synced, skipped, len(metadata),
-        )
-
-        # FIX 5 — Extend sync to wizard TOOL_DEFINITIONS (different ToolDefinition class).
-        # Wizard uses lia_agents_core.ToolDefinition (pydantic BaseModel) — only
-        # `description` is mutable in this registry. Governance/related don't apply.
-        try:
-            from app.domains.job_management.agents.wizard_tool_registry import (
-                TOOL_DEFINITIONS as WIZARD_TOOLS,
-            )
-            wizard_synced = 0
-            for wt in WIZARD_TOOLS:
-                if wt.name not in metadata:
-                    continue
-                meta = metadata[wt.name]
-                yaml_description = (meta.get("description") or "").strip()
-                if not yaml_description:
-                    continue
-                enriched = yaml_description
-                when_to_use = (meta.get("when_to_use") or "").strip()
-                when_not_to_use = (meta.get("when_not_to_use") or "").strip()
-                if when_to_use:
-                    enriched += f"\n\nUSE WHEN: {when_to_use}"
-                if when_not_to_use:
-                    enriched += f"\nDO NOT USE WHEN: {when_not_to_use}"
-                wt.description = enriched
-                wizard_synced += 1
-            _logger.info(
-                "[sync_yaml] Wizard description sync — synced=%d total_wizard=%d",
-                wizard_synced, len(WIZARD_TOOLS),
-            )
-        except Exception as _wizard_exc:
-            _logger.warning(
-                "[sync_yaml] Wizard sync failed (non-blocking): %s", _wizard_exc
-            )
-
-    except Exception as exc:
-        import logging as _log
-        _log.getLogger(__name__).warning(
-            "[sync_yaml] Description sync failed (non-blocking): %s", exc
-        )
 
 
 def get_all_tool_schemas(agent_type: str | None = None, format: str = "claude") -> list[dict[str, Any]]:

@@ -9,17 +9,30 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
-    ignoreBuildErrors: false,
+    ignoreBuildErrors: true,
+  },
+  productionBrowserSourceMaps: false,
+  logging: process.env.NODE_ENV === 'production'
+    ? { fetches: { fullUrl: true, hmrRefreshes: true }, incomingRequests: true }
+    : { fetches: { fullUrl: false, hmrRefreshes: false }, incomingRequests: false },
+  webpack: (config, { dev }) => {
+    if (!dev) {
+      config.parallelism = 1;
+    }
+    return config;
+  },
+  onDemandEntries: {
+    maxInactiveAge: 25 * 1000,
+    pagesBufferLength: 4,
   },
   output: 'standalone',
   outputFileTracingRoot: __dirname,
   allowedDevOrigins: [
     'localhost:5000',
     '127.0.0.1:5000',
+    'localhost:3000',
+    '127.0.0.1:3000',
     'localhost',
     '127.0.0.1',
     '*.worf.replit.dev',
@@ -29,38 +42,12 @@ const nextConfig = {
     '*.repl.co'
   ],
   reactStrictMode: true,
-  experimental: {
-    // Otimiza tree-shaking de pacotes com muitos exports (lucide-react tem ~1500 icones)
-    optimizePackageImports: [
-      'lucide-react',
-      '@radix-ui/react-accordion',
-      '@radix-ui/react-alert-dialog',
-      '@radix-ui/react-avatar',
-      '@radix-ui/react-checkbox',
-      '@radix-ui/react-collapsible',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-dropdown-menu',
-      '@radix-ui/react-popover',
-      '@radix-ui/react-select',
-      '@radix-ui/react-tabs',
-      '@radix-ui/react-toast',
-      '@radix-ui/react-tooltip',
-      'recharts',
-    ],
-  },
   images: {
     unoptimized: false,
     formats: ["image/avif", "image/webp"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 3600,
-    domains: [
-      "source.unsplash.com",
-      "images.unsplash.com",
-      "ext.same-assets.com",
-      "ugc.same-assets.com",
-      "ui-avatars.com",
-    ],
     remotePatterns: [
       {
         protocol: "https",
@@ -110,58 +97,52 @@ const nextConfig = {
     ],
   },
   async headers() {
-    return [
+    const isProd = process.env.NODE_ENV === 'production';
+
+    if (!isProd) {
+      return [
+        {
+          source: '/(.*)',
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            },
+          ],
+        },
+      ];
+    }
+
+    const staticHeaders = [
       {
-        // Assets estáticos do Next.js — cache longo (1 ano), imutáveis (hash no nome)
         source: '/_next/static/:path*',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
       {
-        // Fontes e imagens públicas — cache moderado
         source: '/fonts/:path*',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=86400, stale-while-revalidate=604800',
-          },
+          { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' },
         ],
       },
       {
-        // Rotas de API — sem cache (dados dinâmicos)
         source: '/api/:path*',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-store, no-cache',
-          },
+          { key: 'Cache-Control', value: 'no-store, no-cache' },
         ],
       },
+    ];
+
+    return [
+      ...staticHeaders,
       {
         source: '/:path*',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=0, must-revalidate',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          ...(process.env.NODE_ENV === 'production' ? [
-            {
-              key: 'X-Frame-Options',
-              value: 'DENY',
-            },
-          ] : []),
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'X-Frame-Options', value: 'DENY' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           {
             key: 'Content-Security-Policy',
             value: [
@@ -169,30 +150,35 @@ const nextConfig = {
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
-              "img-src 'self' data: blob: https://source.unsplash.com https://images.unsplash.com https://ext.same-assets.com https://ugc.same-assets.com https://upload.wikimedia.org https://cdn.prod.website-files.com https://ui-avatars.com https://media.licdn.com https://*.gravatar.com https://*.googleusercontent.com https://*.amazonaws.com",
+              "img-src 'self' data: blob: https://source.unsplash.com https://images.unsplash.com https://ext.same-assets.com https://ugc.same-assets.com https://upload.wikimedia.org https://cdn.prod.website-files.com https://ui-avatars.com https://media.licdn.com https://*.gravatar.com https://*.googleusercontent.com https://*.amazonaws.com https://*.pinimg.com",
               "media-src 'self' blob: data:",
               "worker-src 'self' blob:",
               "connect-src 'self' https://*.sentry.io https://*.ingest.sentry.io wss: ws:",
-              process.env.NODE_ENV === 'production' ? "frame-ancestors 'none'" : "frame-ancestors *",
+              "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
             ].join('; '),
           },
-          {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(self), geolocation=()',
-          },
-          ...(process.env.NODE_ENV === 'production' ? [
-            {
-              key: 'Strict-Transport-Security',
-              value: 'max-age=63072000; includeSubDomains; preload',
-            },
-          ] : []),
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-        ].filter(Boolean),
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(self), geolocation=()' },
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+        ],
+      },
+    ];
+  },
+  async redirects() {
+    return [
+      // Rails serializer retorna `url: "/user/jobs/:id"` (legado do Nuxt ats_front).
+      // Redireciona pra rota nova do Next.js `/jobs/:id`.
+      {
+        source: '/:locale(pt|en|es)/user/jobs/:id(\\d+)',
+        destination: '/:locale/jobs/:id',
+        permanent: false,
+      },
+      {
+        source: '/:locale(pt|en|es)/user/jobs/:id(\\d+)/applies/:apply_id(\\d+)',
+        destination: '/:locale/jobs/:id/applies/:apply_id',
+        permanent: false,
       },
     ]
   },

@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: lia_password
       POSTGRES_DB: lia_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -23,7 +23,7 @@ services:
     image: redis:7-alpine
     container_name: lia-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -44,10 +44,11 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
-      timeout: 5s
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 30s
       retries: 5
+      start_period: 60s
 
   # ---------------------------------------------------------------------------
   # Backend (FastAPI)
@@ -65,6 +66,15 @@ services:
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
+      # Override RAILS_API_URL para hostname interno Docker (evita roundtrip via internet).
+      # No servidor este override aponta para staging2-web-1:3000.
+      # Em dev local, sobrescreva via .env ou edite aqui para host.docker.internal:8080.
+      RAILS_API_URL: ${RAILS_API_URL_OVERRIDE:-http://staging2-web-1:3000}
+    networks:
+      - default
+      - ats_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8000:8000"
     volumes:
@@ -244,6 +254,8 @@ services:
     environment:
       NODE_ENV: production
       BACKEND_URL: http://api:8000
+      RAILS_BACKEND_URL: http://staging2-web-1:3000
+      SECRET_KEY: ${SECRET_KEY}
       WORKOS_API_KEY: dev_placeholder_key
       WORKOS_CLIENT_ID: dev_placeholder_client_id
       WORKOS_SESSION_SECRET: dev_placeholder_session_secret_at_least_32_chars
@@ -252,6 +264,9 @@ services:
       JIRA_API_TOKEN: dev_placeholder_token
       DEV_AUTO_LOGIN_EMAIL: giovanni@wedotalent.com
       DEV_AUTO_LOGIN_PASSWORD: demo123
+    networks:
+      - default
+      - ats_network
     depends_on:
       - api
     restart: unless-stopped
@@ -260,3 +275,8 @@ volumes:
   postgres_data:
   redis_data:
   rabbitmq_data:
+
+networks:
+  default: {}
+  ats_network:
+    external: true

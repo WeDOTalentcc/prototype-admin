@@ -756,7 +756,7 @@ async def create_job_vacancy(
             behavioral_competencies=job_data.behavioral_competencies or [],
             salary=job_data.salary,
             salary_range=job_data.salary_range,
-            benefits=normalize_benefits_payload(job_data.benefits),
+            benefits=job_data.benefits or [],
             manager=job_data.manager,
             manager_email=job_data.manager_email,
             recruiter=job_data.recruiter,
@@ -845,10 +845,6 @@ async def update_job_vacancy(
         db = repo.get_session()
 
         update_data = job_data.model_dump(exclude_unset=True, exclude_none=True)
-        # Task #765 — coerce mixed string/dict benefit payloads into the
-        # canonical JSONB shape before SQLAlchemy persists them.
-        if "benefits" in update_data:
-            update_data["benefits"] = normalize_benefits_payload(update_data["benefits"])
         # Task #478 / ADR 003 — drop duplicate update retries for the same
         # vacancy/payload before they execute audit + persistence twice.
         # Task #486 — `job_vacancy_id` is now in `_DUAL_ID_PARAM_RESOLVERS`

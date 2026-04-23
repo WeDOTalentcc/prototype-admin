@@ -23,6 +23,7 @@ ENV JIRA_HOST=https://placeholder.atlassian.net
 ENV JIRA_EMAIL=placeholder@example.com
 ENV JIRA_API_TOKEN=placeholder
 
+ENV NODE_OPTIONS=--max-old-space-size=3072
 RUN npm run build
 
 FROM base AS runner

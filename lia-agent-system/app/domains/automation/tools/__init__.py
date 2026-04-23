@@ -21,9 +21,66 @@ __all__ = [
 ]
 
 AUTOMATION_TOOLS = [
-    # Migrated to V2 DomainAction path (actions.py).
-    # Singleton instance pattern (.task_service.task_service.* etc.) is not
-    # resolvable via dynamic import. Routes handled via automation_tools.py.
+    {
+        "tool_id": "automation_create_task",
+        "name": "Criar Tarefa",
+        "description": "Cria uma nova tarefa para execução",
+        "handler": "app.domains.automation.services.task_service.task_service.create_task",
+    },
+    {
+        "tool_id": "automation_list_tasks",
+        "name": "Listar Tarefas",
+        "description": "Lista tarefas e seus status atuais",
+        "handler": "app.domains.automation.services.task_service.task_service.list_tasks",
+    },
+    {
+        "tool_id": "automation_complete_task",
+        "name": "Concluir Tarefa",
+        "description": "Marca uma tarefa como concluída",
+        "handler": "app.domains.automation.services.task_service.task_service.complete_task",
+    },
+    {
+        "tool_id": "automation_cancel_task",
+        "name": "Cancelar Tarefa",
+        "description": "Cancela uma tarefa pendente",
+        "handler": "app.domains.automation.services.task_service.task_service.cancel_task",
+    },
+    {
+        "tool_id": "automation_create_rule",
+        "name": "Criar Regra de Automação",
+        "description": "Cria uma nova regra de automação",
+        "handler": "app.domains.automation.services.automation_service.automation_service.create_automation",
+    },
+    {
+        "tool_id": "automation_list_rules",
+        "name": "Listar Regras de Automação",
+        "description": "Lista regras de automação configuradas",
+        "handler": "app.domains.automation.services.automation_service.automation_service.list_automations",
+    },
+    {
+        "tool_id": "automation_enable_rule",
+        "name": "Ativar Automação",
+        "description": "Ativa uma regra de automação",
+        "handler": "app.domains.automation.services.automation_service.automation_service.enable_automation",
+    },
+    {
+        "tool_id": "automation_disable_rule",
+        "name": "Desativar Automação",
+        "description": "Desativa uma regra de automação",
+        "handler": "app.domains.automation.services.automation_service.automation_service.disable_automation",
+    },
+    {
+        "tool_id": "automation_trigger",
+        "name": "Disparar Automação",
+        "description": "Dispara manualmente uma automação configurada",
+        "handler": "app.domains.automation.services.automation_trigger_service.automation_trigger_service.trigger",
+    },
+    {
+        "tool_id": "automation_view_log",
+        "name": "Ver Log de Execução",
+        "description": "Visualiza histórico de execução de automações",
+        "handler": "app.domains.automation.services.automation_service.automation_service.get_execution_log",
+    },
 ]
 
 

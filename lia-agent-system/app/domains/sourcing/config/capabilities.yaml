@@ -69,7 +69,3 @@ intent_keywords:
   adicionar à vaga: add_candidate_to_vacancy
   adicionar a vaga: add_candidate_to_vacancy
   vincular vaga: add_candidate_to_vacancy
-  estatísticas candidatos: get_candidate_stats
-  stats candidatos: get_candidate_stats
-  histórico candidato: get_candidate_history
-  historico candidato: get_candidate_history

@@ -1,8 +1,3 @@
-# tenant-isolation: manual — legacy tools authored before @tool_handler.
-# Each handler reads company_id from the injected `_context` (ToolExecutionContext)
-# and/or from kwargs populated by `app/tools/executor.py`. Migration to
-# @tool_handler is tracked under the ADR-018 / Task #673 backlog. Do NOT add
-# new functions here — author new tools via @tool_handler in a new module.
 """
 Candidate Tools - Tools for candidate actions in the recruitment pipeline.
 
@@ -52,9 +47,6 @@ async def update_candidate_stage(
         
     Returns:
         Result with success status and message
-
-    Side effects: db_write, email_sent, audit_trail
-    Governance: multi_tenant, pii, audit_trail
     """
     context = _extract_context(kwargs)
     company_id = context.company_id if context else None
@@ -387,9 +379,6 @@ async def reject_candidate(
         
     Returns:
         Result with success status, requires confirmation for dangerous action
-
-    Side effects: db_write, email_sent, audit_trail, write_destructive
-    Governance: multi_tenant, pii, hitl_required, fairness_guard, audit_trail, write_destructive
     """
     logger.info(f"❌ Rejecting candidate {candidate_id} from job {job_id}")
     
@@ -543,9 +532,6 @@ async def shortlist_candidate(
         
     Returns:
         Result with success status and message
-
-    Side effects: db_write, audit_trail
-    Governance: multi_tenant, pii, audit_trail
     """
     logger.info(f"⭐ Shortlisting candidate {candidate_id} for job {job_id}")
     
@@ -625,9 +611,6 @@ async def bulk_update_candidates_stage(
         
     Returns:
         Result with success counts and details
-
-    Side effects: db_write, email_sent, audit_trail
-    Governance: multi_tenant, pii, hitl_required, audit_trail
     """
     logger.info(f"🔄 Bulk moving {len(candidate_ids)} candidates to stage: {target_stage}")
     

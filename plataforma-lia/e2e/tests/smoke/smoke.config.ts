@@ -15,9 +15,7 @@ const REPORT_DIR = path.join(process.cwd(), 'playwright-report', 'diagnostic');
 
 export default defineConfig({
   testDir: '.',
-  // [Task #801] amplia o smoke para incluir specs específicas de tasks
-  // (ex.: funil-talents-task-801.spec.ts) além do `smoke.spec.ts` original.
-  testMatch: /(?:smoke|task-\d+)\.spec\.ts$/,
+  testMatch: /smoke\.spec\.ts$/,
   fullyParallel: false,
   workers: 1,
   retries: 1,

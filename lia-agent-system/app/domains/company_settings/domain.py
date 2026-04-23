@@ -41,8 +41,6 @@ COMPANY_SETTINGS_ACTIONS = [
         description="Configura dados institucionais da empresa (nome, CNPJ, website, etc.)",
         required_params=["company_id"],
         tags=["company", "profile"],
-    
-        examples=('configura perfil da empresa', 'edita dados institucionais'),
     ),
     DomainAction(
         action_id="configure_culture",
@@ -50,8 +48,6 @@ COMPANY_SETTINGS_ACTIONS = [
         description="Configura missao, visao, valores, cultura e proposta de valor",
         required_params=["company_id"],
         tags=["company", "culture"],
-    
-        examples=('configura cultura e valores', 'define missão e visão'),
     ),
     DomainAction(
         action_id="configure_tech_stack",
@@ -59,8 +55,6 @@ COMPANY_SETTINGS_ACTIONS = [
         description="Configura stack tecnologico e cultura de engenharia",
         required_params=["company_id"],
         tags=["company", "tech"],
-    
-        examples=('configura tech stack', 'define as tecnologias usadas'),
     ),
     DomainAction(
         action_id="configure_benefits",
@@ -68,8 +62,6 @@ COMPANY_SETTINGS_ACTIONS = [
         description="Configura pacote de beneficios da empresa",
         required_params=["company_id"],
         tags=["company", "benefits"],
-    
-        examples=('configura benefícios', 'define pacote de benefícios'),
     ),
     DomainAction(
         action_id="configure_workforce",
@@ -77,8 +69,6 @@ COMPANY_SETTINGS_ACTIONS = [
         description="Configura planejamento de contratacoes (workforce planning)",
         required_params=["company_id"],
         tags=["company", "workforce"],
-    
-        examples=('configura planejamento de contratações', 'define workforce planning'),
     ),
     DomainAction(
         action_id="analyze_website",
@@ -86,17 +76,6 @@ COMPANY_SETTINGS_ACTIONS = [
         description="Analisa website da empresa para extrair dados automaticamente",
         required_params=["company_id"],
         tags=["company", "analysis"],
-    
-        examples=('analisa nosso site pra extrair dados', 'olha no website e extrai info'),
-    ),
-    DomainAction(
-        action_id="manage_departments",
-        name="Gerenciar Departamentos",
-        description="Redireciona o recrutador para o hub 'Usuarios & Departamentos', hub canonico de departamentos.",
-        required_params=[],
-        tags=["company", "departments", "routing"],
-
-        examples=('quero criar um departamento', 'onde gerencio departamentos', 'cadastrar aprovador'),
     ),
     DomainAction(
         action_id="process_document",
@@ -104,8 +83,6 @@ COMPANY_SETTINGS_ACTIONS = [
         description="Processa documento enviado para extrair dados da empresa",
         required_params=["company_id"],
         tags=["company", "document"],
-    
-        examples=('processa este documento da empresa', 'extrai dados deste arquivo'),
     ),
 ]
 
@@ -167,7 +144,6 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
             "configure_benefits": self._handle_configure_benefits,
             "configure_workforce": self._handle_configure_workforce,
             "analyze_website": self._handle_analyze_website,
-            "manage_departments": self._handle_manage_departments,
             "process_document": self._handle_process_document,
         }
         handler = handler_map.get(action_id)
@@ -180,326 +156,39 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
             action_id=action_id,
         )
 
-    # WRITE conversacional — Task #712
-    # As tools `_wrap_save_company_section`, `_wrap_save_company_field` e
-    # `_wrap_import_workforce_plan` ja existem em
-    # `app.domains.company_settings.agents.company_tool_registry` e ja aplicam
-    # FairnessGuard + Audit + tier validation. Os 5 handlers abaixo apenas
-    # delegam para essas tools, transformando a resposta em DomainResponse e
-    # pedindo clarification quando faltam campos.
-
-    _SECTION_FIELD_HINTS: dict[str, dict[str, list[str]]] = {
-        "configure_profile": {
-            "section": "profile",
-            "fields": ["name", "trading_name", "cnpj", "website", "hr_email",
-                       "hr_phone", "address", "industry", "company_size",
-                       "employee_count", "founded_year", "linkedin_url", "logo_url"],
-            "label": "perfil da empresa",
-        },
-        "configure_culture": {
-            "section": "culture",
-            "fields": ["mission", "vision", "values", "core_competencies",
-                       "evp_bullets", "work_model", "employment_types",
-                       "team_dynamics", "leadership_style", "dei_initiatives",
-                       "sustainability", "social_impact"],
-            "label": "cultura e EVP",
-        },
-        "configure_tech_stack": {
-            "section": "culture",
-            "fields": ["tech_stack", "engineering_culture", "default_languages"],
-            "label": "tech stack",
-        },
-        # NOTA: configure_benefits NAO usa _delegate_section_write porque
-        # 'benefits' nao existe em VALID_CULTURE_FIELDS (tabela dedicada
-        # company_benefits). Tratado em _handle_configure_benefits abaixo.
-    }
-
-    def _extract_section_payload(self, action_id: str, params: dict[str, Any]) -> dict[str, Any]:
-        hints = self._SECTION_FIELD_HINTS.get(action_id, {})
-        allowed = set(hints.get("fields", []))
-        payload: dict[str, Any] = {}
-        if isinstance(params.get("data"), dict):
-            for k, v in params["data"].items():
-                if k in allowed and v not in (None, "", []):
-                    payload[k] = v
-        for k, v in params.items():
-            if k in allowed and v not in (None, "", []):
-                payload[k] = v
-        return payload
-
-    @staticmethod
-    def _resolve_tenant(
-        action_id: str,
-        params: dict[str, Any],
-        context: DomainContext,
-    ) -> tuple[str | None, DomainResponse | None]:
-        """Single source of truth: ALWAYS use context.tenant_id (the
-        authenticated tenant) — params.company_id is treated as untrusted
-        input from the LLM/tool args. If a different company_id is supplied,
-        we refuse and audit the attempt (defense in depth — tools also
-        re-scope by company_id, but the boundary check belongs here).
-        """
-        tenant = (context.tenant_id or "").strip()
-        if not tenant:
-            return None, DomainResponse.error_response(
-                error="company_id ausente — nao foi possivel identificar a empresa.",
-                domain_id="company_settings",
-                action_id=action_id,
-            )
-        supplied = (params.get("company_id") or "").strip()
-        if supplied and supplied != tenant:
-            logger.warning(
-                "[company_settings] tenant mismatch refused: action=%s "
-                "context.tenant_id=%s params.company_id=%s user=%s",
-                action_id, tenant, supplied, context.user_id,
-            )
-            return None, DomainResponse.error_response(
-                error=(
-                    "Operacao bloqueada: company_id informado nao corresponde "
-                    "ao tenant autenticado. Tentativa registrada."
-                ),
-                data={"forbidden": True, "reason": "tenant_mismatch"},
-                domain_id="company_settings",
-                action_id=action_id,
-            )
-        return tenant, None
-
-    async def _delegate_section_write(
-        self,
-        action_id: str,
-        params: dict[str, Any],
-        context: DomainContext,
-    ) -> DomainResponse:
-        hints = self._SECTION_FIELD_HINTS[action_id]
-        section = hints["section"]
-        label = hints["label"]
-        company_id, err = self._resolve_tenant(action_id, params, context)
-        if err is not None:
-            return err
-
-        payload = self._extract_section_payload(action_id, params)
-        if not payload:
-            return DomainResponse.clarification_response(
-                question=(
-                    f"Quais campos de {label} voce quer atualizar? "
-                    f"Posso salvar: {', '.join(hints['fields'][:6])}."
-                ),
-                domain_id=self.domain_id,
-                action_id=action_id,
-            )
-
-        try:
-            from app.domains.company_settings.agents.company_tool_registry import (
-                _wrap_save_company_section,
-            )
-            result = await _wrap_save_company_section(
-                company_id=company_id,
-                section=section,
-                data=payload,
-                user_id=context.user_id or "system",
-            )
-        except Exception as exc:
-            logger.exception("[company_settings] %s delegate failed: %s", action_id, exc)
-            return DomainResponse.error_response(
-                error=f"Falha ao salvar {label}: {exc}",
-                domain_id=self.domain_id,
-                action_id=action_id,
-            )
-
-        if not result.get("success"):
-            return DomainResponse.error_response(
-                error=result.get("message") or f"Falha ao salvar {label}.",
-                data=result.get("data") or {},
-                domain_id=self.domain_id,
-                action_id=action_id,
-            )
-
-        return DomainResponse.success_response(
-            message=result.get("message") or f"{label.capitalize()} atualizado(a).",
-            data={
-                **(result.get("data") or {}),
-                "navigation_hint": {"page": "Company Settings", "section": "minha-empresa"},
-            },
+    # Falha explicita: ainda NAO existe um servico de WRITE conversacional para
+    # cada bloco de configuracao da empresa (perfil/cultura/tech/beneficios/workforce).
+    # As leituras vivem em `CompanyConfigurationService` e os repositorios
+    # (`CompanyBenefitRepository` etc.) escrevem entidades isoladas, mas nao ha
+    # um orquestrador que receba campos parciais do chat e faca merge seguro
+    # com auditoria + invalidacao de cache.
+    # Retornamos error_response (sem mascarar com mensagem de sucesso falsa).
+    def _configure_unavailable(self, action_id: str, section: str) -> DomainResponse:
+        return DomainResponse.error_response(
+            error=(
+                f"Configuracao de '{section}' por chat ainda nao esta disponivel: "
+                "ainda nao existe um servico de escrita conversacional para esse bloco. "
+                "Use o painel de Configuracoes da empresa por enquanto."
+            ),
             domain_id=self.domain_id,
             action_id=action_id,
-            suggestions=["Abrir tela de Configuracoes", "Continuar onboarding"],
+            metadata={"navigation_hint": {"page": "Company Settings", "section": section}},
         )
 
     async def _handle_configure_profile(self, params, context):
-        return await self._delegate_section_write("configure_profile", params, context)
+        return self._configure_unavailable("configure_profile", "perfil")
 
     async def _handle_configure_culture(self, params, context):
-        return await self._delegate_section_write("configure_culture", params, context)
+        return self._configure_unavailable("configure_culture", "cultura")
 
     async def _handle_configure_tech_stack(self, params, context):
-        return await self._delegate_section_write("configure_tech_stack", params, context)
+        return self._configure_unavailable("configure_tech_stack", "tech_stack")
 
     async def _handle_configure_benefits(self, params, context):
-        # Delega para tool dedicada da tabela company_benefits.
-        # FairnessGuard L1 + Audit + tenant scoping rodam dentro da tool.
-        company_id, err = self._resolve_tenant("configure_benefits", params, context)
-        if err is not None:
-            return err
-
-        raw = params.get("benefits")
-        if raw is None and isinstance(params.get("data"), dict):
-            raw = params["data"].get("benefits")
-        if isinstance(raw, dict):
-            raw = [raw]
-        if not isinstance(raw, list) or not raw:
-            return DomainResponse.clarification_response(
-                question=(
-                    "Quais beneficios voce quer registrar? Me envie uma lista "
-                    "(ex.: 'Vale Refeicao', 'Plano de Saude', 'Gympass') ou "
-                    "objetos com {name, category, description}."
-                ),
-                domain_id=self.domain_id,
-                action_id="configure_benefits",
-                data={"navigation_hint": {
-                    "page": "Company Settings",
-                    "section": "minha-empresa",
-                    "subsection": "beneficios",
-                }},
-            )
-
-        # Aceita strings simples — converte em {name: ...}
-        normalized: list[dict[str, Any]] = []
-        for it in raw:
-            if isinstance(it, str):
-                normalized.append({"name": it.strip()})
-            elif isinstance(it, dict):
-                normalized.append(it)
-
-        mode = (params.get("mode") or "append").lower()
-
-        try:
-            from app.domains.company_settings.agents.company_tool_registry import (
-                _wrap_save_company_benefits,
-            )
-            result = await _wrap_save_company_benefits(
-                company_id=company_id,
-                benefits=normalized,
-                mode=mode,
-                user_id=context.user_id or "system",
-                source=params.get("source") or "chat",
-            )
-        except Exception as exc:
-            logger.exception("[company_settings] configure_benefits delegate failed: %s", exc)
-            return DomainResponse.error_response(
-                error=f"Falha ao salvar beneficios: {exc}",
-                domain_id=self.domain_id,
-                action_id="configure_benefits",
-            )
-
-        # Clarification-first (Task #766): when the wrapper detects missing
-        # required field pairs (value sem value_type, etc.), surface it to the
-        # chat layer as a clarification turn instead of a silent error.
-        if result.get("needs_clarification"):
-            return DomainResponse.clarification_response(
-                question=result.get("message")
-                or "Preciso de mais detalhes para gravar os beneficios.",
-                domain_id=self.domain_id,
-                action_id="configure_benefits",
-                data={
-                    **(result.get("data") or {}),
-                    "navigation_hint": {
-                        "page": "Company Settings",
-                        "section": "minha-empresa",
-                        "subsection": "beneficios",
-                    },
-                },
-            )
-
-        if not result.get("success"):
-            return DomainResponse.error_response(
-                error=result.get("message") or "Falha ao salvar beneficios.",
-                data=result.get("data") or {},
-                domain_id=self.domain_id,
-                action_id="configure_benefits",
-            )
-
-        return DomainResponse.success_response(
-            message=result.get("message") or "Beneficios atualizados.",
-            data={
-                **(result.get("data") or {}),
-                "navigation_hint": {
-                    "page": "Company Settings",
-                    "section": "minha-empresa",
-                    "subsection": "beneficios",
-                },
-            },
-            domain_id=self.domain_id,
-            action_id="configure_benefits",
-            suggestions=["Abrir Configuracoes > Beneficios", "Continuar onboarding"],
-        )
+        return self._configure_unavailable("configure_benefits", "beneficios")
 
     async def _handle_configure_workforce(self, params, context):
-        company_id, err = self._resolve_tenant("configure_workforce", params, context)
-        if err is not None:
-            return err
-        plan_data = params.get("plan_data") or params.get("plan") or []
-        if isinstance(plan_data, dict):
-            plan_data = [plan_data]
-        raw_text = params.get("raw_text") or params.get("text") or ""
-        input_mode = (params.get("input_mode") or ("spreadsheet" if plan_data else "")).lower()
-        approved = bool(params.get("approved", False))
-
-        if not plan_data and not raw_text:
-            return DomainResponse.clarification_response(
-                question=(
-                    "Como voce quer enviar o planejamento de contratacoes? "
-                    "Posso (1) receber uma planilha anexada, (2) interpretar "
-                    "uma descricao em texto livre ou (3) receber uma tabela "
-                    "colada. Em todos os casos preciso dos campos {role, "
-                    "quantity, deadline, seniority}. Departamentos sao "
-                    "gerenciados em 'Usuarios & Departamentos'."
-                ),
-                domain_id=self.domain_id,
-                action_id="configure_workforce",
-            )
-        try:
-            from app.domains.company_settings.agents.company_tool_registry import (
-                _wrap_import_workforce_plan,
-            )
-            result = await _wrap_import_workforce_plan(
-                company_id=company_id,
-                plan_data=plan_data,
-                raw_text=raw_text,
-                input_mode=input_mode or "spreadsheet",
-                approved=approved,
-                user_id=context.user_id or "system",
-            )
-        except Exception as exc:
-            logger.exception("[company_settings] configure_workforce delegate failed: %s", exc)
-            return DomainResponse.error_response(
-                error=f"Falha ao importar planejamento: {exc}",
-                domain_id=self.domain_id,
-                action_id="configure_workforce",
-            )
-        if not result.get("success"):
-            return DomainResponse.error_response(
-                error=result.get("message") or "Falha ao importar planejamento.",
-                data=result.get("data") or {},
-                domain_id=self.domain_id,
-                action_id="configure_workforce",
-            )
-        data = {
-            **(result.get("data") or {}),
-            "navigation_hint": {"page": "Company Settings", "section": "minha-empresa"},
-        }
-        if result.get("requires_human_approval"):
-            data["requires_human_approval"] = True
-        return DomainResponse.success_response(
-            message=result.get("message") or "Planejamento importado.",
-            data=data,
-            domain_id=self.domain_id,
-            action_id="configure_workforce",
-            suggestions=(
-                ["Aprovar plano proposto", "Ajustar itens antes de aprovar"]
-                if result.get("requires_human_approval")
-                else ["Revisar plano de contratacoes"]
-            ),
-        )
+        return self._configure_unavailable("configure_workforce", "workforce")
 
     @staticmethod
     def _is_safe_public_url(url: str) -> tuple[bool, str]:
@@ -543,147 +232,6 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
     async def _handle_analyze_website(
         self, params: dict[str, Any], context: DomainContext
     ) -> DomainResponse:
-        # ------------------------------------------------------------------
-        # PHASE 2 — persist after explicit human approval.
-        # The chat orchestrator (or the user via a follow-up turn) calls
-        # back with `confirm=True` + `confirmed_fields` (a dict with the
-        # values the operator approved from the scrape preview). We map
-        # them to the canonical sections (profile/culture/benefits) and
-        # write via the existing _wrap_save_company_section /
-        # _wrap_save_company_benefits tools — both of which already enforce
-        # FairnessGuard + Audit + tenant scoping. An extra audit entry
-        # `persist_website_extraction` flags the source of the writes.
-        # ------------------------------------------------------------------
-        if params.get("confirm") is True or params.get("persist") is True:
-            company_id, err = self._resolve_tenant("analyze_website", params, context)
-            if err is not None:
-                return err
-            confirmed = params.get("confirmed_fields") or {}
-            if not isinstance(confirmed, dict) or not confirmed:
-                return DomainResponse.clarification_response(
-                    question=(
-                        "Para confirmar a gravacao, me envie `confirmed_fields` "
-                        "como um objeto com os campos revisados pela pessoa "
-                        "(ex.: {mission, vision, values, tech_stack, ...})."
-                    ),
-                    domain_id=self.domain_id,
-                    action_id="analyze_website",
-                )
-            buckets: dict[str, dict[str, Any]] = {"profile": {}, "culture": {}}
-            for _action_key, hints in self._SECTION_FIELD_HINTS.items():
-                section = hints["section"]
-                for field in hints["fields"]:
-                    if field in confirmed and confirmed[field] not in (None, "", []):
-                        buckets[section][field] = confirmed[field]
-            benefits_payload = confirmed.get("benefits")
-            if isinstance(benefits_payload, list) and benefits_payload:
-                normalized_benefits = [
-                    {"name": b} if isinstance(b, str) else b
-                    for b in benefits_payload
-                    if (isinstance(b, str) and b.strip())
-                    or (isinstance(b, dict) and (b.get("name") or "").strip())
-                ]
-            else:
-                normalized_benefits = []
-            has_section_payload = any(payload for payload in buckets.values())
-            if not has_section_payload and not normalized_benefits:
-                # `confirmed_fields` was provided but nothing maps to a
-                # savable section/benefit list. Return clarification rather
-                # than success-with-empty `persisted_sections`.
-                known_fields = sorted({
-                    f
-                    for hints in self._SECTION_FIELD_HINTS.values()
-                    for f in hints["fields"]
-                } | {"benefits"})
-                return DomainResponse.clarification_response(
-                    question=(
-                        "Os campos confirmados nao correspondem a nenhuma "
-                        "secao gravavel (perfil/cultura/beneficios). "
-                        f"Use chaves como: {', '.join(known_fields)}."
-                    ),
-                    domain_id=self.domain_id,
-                    action_id="analyze_website",
-                )
-            try:
-                from app.domains.company_settings.agents.company_tool_registry import (
-                    _wrap_save_company_section,
-                    _wrap_save_company_benefits,
-                    _audit_log,
-                )
-                results = []
-                for section, payload in buckets.items():
-                    if not payload:
-                        continue
-                    res = await _wrap_save_company_section(
-                        company_id=company_id,
-                        section=section,
-                        data=payload,
-                        user_id=context.user_id or "system",
-                    )
-                    results.append({"section": section, "result": res})
-                if normalized_benefits:
-                    res_benefits = await _wrap_save_company_benefits(
-                        company_id=company_id,
-                        benefits=normalized_benefits,
-                        mode="append",
-                        user_id=context.user_id or "system",
-                    )
-                    results.append({"section": "benefits", "result": res_benefits})
-                try:
-                    await _audit_log(
-                        company_id,
-                        "persist_website_extraction",
-                        metadata={
-                            "user_id": context.user_id or "system",
-                            "sections": [r["section"] for r in results],
-                            "fields_count": sum(
-                                len((r["result"] or {}).get("data", {}).get("fields_saved", []))
-                                for r in results
-                            ),
-                            "source_url": (params.get("website") or params.get("url") or "") or None,
-                        },
-                    )
-                except Exception:
-                    logger.warning(
-                        "[company_settings] audit persist_website_extraction failed",
-                        exc_info=True,
-                    )
-            except Exception as exc:
-                logger.exception(
-                    "[company_settings] analyze_website persist failed: %s", exc
-                )
-                return DomainResponse.error_response(
-                    error=f"Falha ao gravar campos confirmados: {exc}",
-                    domain_id=self.domain_id,
-                    action_id="analyze_website",
-                )
-            saved_sections = [r["section"] for r in results
-                              if (r["result"] or {}).get("success")]
-            failed = [r for r in results if not (r["result"] or {}).get("success")]
-            if failed and not saved_sections:
-                return DomainResponse.error_response(
-                    error="Nenhuma secao foi gravada.",
-                    data={"failed": failed},
-                    domain_id=self.domain_id,
-                    action_id="analyze_website",
-                )
-            return DomainResponse.success_response(
-                message=(
-                    f"Campos do site gravados em: {', '.join(saved_sections)}. "
-                    "Voce pode revisar em Configuracoes > Minha Empresa."
-                ),
-                data={
-                    "persisted_sections": saved_sections,
-                    "results": results,
-                    "navigation_hint": {
-                        "page": "Company Settings", "section": "minha-empresa",
-                    },
-                },
-                domain_id=self.domain_id,
-                action_id="analyze_website",
-                suggestions=["Abrir Configuracoes > Minha Empresa", "Continuar onboarding"],
-            )
-
         url = (params.get("website") or params.get("url") or "").strip()
         if not url:
             return DomainResponse.clarification_response(
@@ -742,102 +290,12 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
 
         pages_scraped = result.get("pages_scraped") or len(result.get("pages") or [])
         content_preview = (result.get("content") or "")[:600]
-
-        # ── Build `pending_writes`: structured field suggestions extracted ──
-        # from the scraped content + the LinkedIn payload. The chat layer
-        # uses this to render a "preview + confirmar" card; persisting only
-        # happens on a follow-up turn carrying confirm=True (TIER 3 — human
-        # confirms). We never write here.
-        pending_writes: dict[str, Any] = {}
-        # Allowed savable keys = every field declared in _SECTION_FIELD_HINTS
-        # plus the dedicated "benefits" list (handled by _wrap_save_company_benefits).
-        # Filtering both extractor output AND linkedin payload by this set keeps
-        # the preview card aligned with what the confirm path can actually
-        # persist — avoids "preview shows X but save ignores X" UX mismatch.
-        allowed_savable_fields: set[str] = {"benefits"}
-        for hints in self._SECTION_FIELD_HINTS.values():
-            allowed_savable_fields.update(hints.get("fields", []))
-        try:
-            from app.domains.company_settings.agents.company_tool_registry import (
-                _structured_extract,
-            )
-            extracted_text = _structured_extract(
-                result.get("content") or "", "general"
-            )
-            for k, v in extracted_text.items():
-                if k in allowed_savable_fields and v not in (None, "", []):
-                    pending_writes[k] = v
-        except Exception:
-            logger.debug(
-                "[company_settings] structured extract from scrape failed",
-                exc_info=True,
-            )
-        # LinkedIn structured payload — promote a curated subset onto
-        # pending_writes (only fields recognised by _SECTION_FIELD_HINTS).
-        li_data = result.get("linkedin_data") or {}
-        if isinstance(li_data, dict):
-            for k, v in li_data.items():
-                if (
-                    k in allowed_savable_fields
-                    and v not in (None, "", [])
-                    and k not in pending_writes
-                ):
-                    pending_writes[k] = v
-
-        # Benefits in `pending_writes` come from the regex extractor as
-        # list[str] (apenas nomes). Para alinhar com o schema canonico
-        # (Task #766), promovemos cada nome para um dict {name, ...} e
-        # marcamos `expected_fields` que o humano deve revisar/preencher
-        # antes de confirmar (value, value_type, provider, is_mandatory...).
-        try:
-            from app.domains.company_settings.agents.company_tool_registry import (
-                BENEFIT_CLARIFICATION_FIELDS,
-            )
-        except Exception:
-            BENEFIT_CLARIFICATION_FIELDS = [
-                "name", "category", "description", "value", "value_type",
-                "percentage_value", "provider", "is_mandatory",
-                "waiting_period_days", "seniority_levels",
-            ]
-        benefit_expected_fields: list[str] = []
-        if isinstance(pending_writes.get("benefits"), list):
-            structured_benefits: list[dict[str, Any]] = []
-            for b in pending_writes["benefits"]:
-                if isinstance(b, str) and b.strip():
-                    structured_benefits.append({"name": b.strip()})
-                elif isinstance(b, dict) and (b.get("name") or "").strip():
-                    structured_benefits.append({"name": b["name"].strip(), **{
-                        k: v for k, v in b.items() if k != "name"
-                    }})
-            if structured_benefits:
-                pending_writes["benefits"] = structured_benefits
-                benefit_expected_fields = [
-                    f for f in BENEFIT_CLARIFICATION_FIELDS if f != "name"
-                ]
-            else:
-                pending_writes.pop("benefits", None)
-
-        if pending_writes:
-            preview_keys = ", ".join(list(pending_writes.keys())[:5])
-            msg = (
-                f"Analise concluida para {url} ({pages_scraped} pagina(s) lida(s)). "
-                f"Identifiquei {len(pending_writes)} campo(s) prontos para revisao: {preview_keys}. "
-                "Quer que eu salve agora? Confirme para gravar (TIER 3 — humano confirma)."
-            )
-            if benefit_expected_fields:
-                msg += (
-                    " Para os beneficios, complete antes de confirmar: "
-                    + ", ".join(benefit_expected_fields[:5]) + "."
-                )
-            suggestions = ["Sim, pode salvar", "Quero revisar antes", "Abrir tela de Configuracoes"]
-        else:
-            msg = (
-                f"Analise concluida para {url} ({pages_scraped} pagina(s) lida(s)). "
-                "Nao consegui extrair campos estruturados automaticamente — "
-                "abra Configuracoes > Minha Empresa para revisar o conteudo bruto."
-            )
-            suggestions = ["Revisar dados extraidos", "Atualizar perfil no painel"]
-
+        msg = (
+            f"Analise concluida para {url}. "
+            f"{pages_scraped} pagina(s) lida(s). "
+            "Os dados extraidos podem ser revisados antes de salvar no perfil "
+            "(a gravacao automatica no perfil ainda nao esta disponivel via chat)."
+        )
         return DomainResponse.success_response(
             message=msg,
             data={
@@ -845,285 +303,28 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
                 "pages_scraped": pages_scraped,
                 "pages": result.get("pages", []),
                 "linkedin_url": result.get("linkedin_url"),
-                "linkedin_data": li_data,
+                "linkedin_data": result.get("linkedin_data") or {},
                 "content_preview": content_preview,
                 "source": result.get("source"),
-                "pending_writes": pending_writes,
-                "requires_human_approval": bool(pending_writes),
-                "navigation_hint": {"page": "Company Settings", "section": "minha-empresa"},
             },
             domain_id=self.domain_id,
             action_id="analyze_website",
-            suggestions=suggestions,
-        )
-
-    async def _handle_manage_departments(
-        self, params: dict[str, Any], context: DomainContext
-    ) -> DomainResponse:
-        """Routing-only action: departments live in 'Usuarios & Departamentos' hub.
-
-        Nao cria, edita nem deleta departamentos aqui. Apenas orienta o recrutador
-        e devolve navigation_hint para o frontend abrir o hub canonico na aba
-        'departments'. Hub canonico: UsuariosDepartamentosHub -> DepartmentsTab.
-        """
-        del params, context
-        return DomainResponse.success_response(
-            message=(
-                "Departamentos são gerenciados em 'Usuários & Departamentos'. "
-                "Abra esse hub para criar, editar ou aprovar departamentos e aprovadores."
-            ),
-            data={
-                "navigation_hint": {
-                    "page": "Company Settings",
-                    "section": "usuarios-departamentos",
-                    "tab": "departments",
-                },
-            },
-            domain_id=self.domain_id,
-            action_id="manage_departments",
-            suggestions=[
-                "Abrir Usuários & Departamentos",
-                "Gerenciar aprovadores",
-            ],
+            suggestions=["Revisar dados extraidos", "Atualizar perfil no painel"],
         )
 
     async def _handle_process_document(
         self, params: dict[str, Any], context: DomainContext
     ) -> DomainResponse:
-        """Pipeline de processamento de documento institucional — Task #712.
-
-        Aceita texto pre-extraido (`document_text`) OU base64 de PDF/DOCX
-        (`document_b64` + `document_format`). Faz extracao de texto se
-        necessario, passa por FairnessGuard + PII via tool ja existente e
-        retorna campos esperados para revisao humana antes de gravar.
-        """
-        company_id, err = self._resolve_tenant("process_document", params, context)
-        if err is not None:
-            return err
-
-        # ------------------------------------------------------------------
-        # PHASE 2 — persist after explicit human approval.
-        # The chat layer calls back with `confirm=True` + `confirmed_fields`
-        # (a dict in the same shape returned by phase 1). We map them to the
-        # canonical sections (profile/culture) and write via the existing
-        # _wrap_save_company_section tool. Audit trail differentiates this
-        # operation as `persist_document_extraction`.
-        # ------------------------------------------------------------------
-        if params.get("confirm") is True or params.get("persist") is True:
-            confirmed = params.get("confirmed_fields") or {}
-            if not isinstance(confirmed, dict) or not confirmed:
-                return DomainResponse.clarification_response(
-                    question=(
-                        "Para confirmar a gravacao, me envie `confirmed_fields` "
-                        "como um objeto com os campos revisados pela pessoa "
-                        "(ex.: {name, mission, values, tech_stack, ...})."
-                    ),
-                    domain_id=self.domain_id,
-                    action_id="process_document",
-                )
-            # Particiona campos por seccao com base no _SECTION_FIELD_HINTS.
-            # `benefits` tem caminho dedicado (tabela company_benefits) e e
-            # roteado para _wrap_save_company_benefits — nunca via section.
-            buckets: dict[str, dict[str, Any]] = {"profile": {}, "culture": {}}
-            for action_key, hints in self._SECTION_FIELD_HINTS.items():
-                section = hints["section"]
-                for field in hints["fields"]:
-                    if field in confirmed and confirmed[field] not in (None, "", []):
-                        buckets[section][field] = confirmed[field]
-            benefits_payload = confirmed.get("benefits")
-            if isinstance(benefits_payload, list) and benefits_payload:
-                # Aceita list[str] (nomes) ou list[dict] (entradas completas).
-                normalized_benefits = [
-                    {"name": b} if isinstance(b, str) else b
-                    for b in benefits_payload
-                    if (isinstance(b, str) and b.strip())
-                    or (isinstance(b, dict) and (b.get("name") or "").strip())
-                ]
-            else:
-                normalized_benefits = []
-            try:
-                from app.domains.company_settings.agents.company_tool_registry import (
-                    _wrap_save_company_section,
-                    _wrap_save_company_benefits,
-                    _audit_log,
-                )
-                results = []
-                for section, payload in buckets.items():
-                    if not payload:
-                        continue
-                    res = await _wrap_save_company_section(
-                        company_id=company_id,
-                        section=section,
-                        data=payload,
-                        user_id=context.user_id or "system",
-                    )
-                    results.append({"section": section, "result": res})
-                if normalized_benefits:
-                    res_benefits = await _wrap_save_company_benefits(
-                        company_id=company_id,
-                        benefits=normalized_benefits,
-                        mode="append",
-                        user_id=context.user_id or "system",
-                    )
-                    results.append({"section": "benefits", "result": res_benefits})
-                # Audit extra: distingue persistencia oriunda de aprovacao humana
-                # de campos extraidos via process_document.
-                try:
-                    await _audit_log(
-                        company_id,
-                        "persist_document_extraction",
-                        metadata={
-                            "user_id": context.user_id or "system",
-                            "sections": [r["section"] for r in results],
-                            "fields_count": sum(
-                                len((r["result"] or {}).get("data", {}).get("fields_saved", []))
-                                for r in results
-                            ),
-                        },
-                    )
-                except Exception:
-                    logger.warning(
-                        "[company_settings] audit persist_document_extraction failed",
-                        exc_info=True,
-                    )
-            except Exception as exc:
-                logger.exception(
-                    "[company_settings] process_document persist failed: %s", exc
-                )
-                return DomainResponse.error_response(
-                    error=f"Falha ao gravar campos confirmados: {exc}",
-                    domain_id=self.domain_id,
-                    action_id="process_document",
-                )
-            saved_sections = [r["section"] for r in results
-                              if (r["result"] or {}).get("success")]
-            failed = [r for r in results if not (r["result"] or {}).get("success")]
-            if failed and not saved_sections:
-                return DomainResponse.error_response(
-                    error="Nenhuma secao foi gravada.",
-                    data={"failed": failed},
-                    domain_id=self.domain_id,
-                    action_id="process_document",
-                )
-            return DomainResponse.success_response(
-                message=(
-                    f"Campos confirmados gravados em: {', '.join(saved_sections)}. "
-                    "Voce pode revisar em Configuracoes > Minha Empresa."
-                ),
-                data={
-                    "persisted_sections": saved_sections,
-                    "results": results,
-                    "navigation_hint": {
-                        "page": "Company Settings", "section": "minha-empresa",
-                    },
-                },
-                domain_id=self.domain_id,
-                action_id="process_document",
-                suggestions=["Abrir Configuracoes > Minha Empresa", "Continuar onboarding"],
-            )
-
-        document_text = (params.get("document_text") or "").strip()
-        document_type = params.get("document_type") or "general"
-        if not document_text:
-            b64 = params.get("document_b64")
-            fmt = (params.get("document_format") or "").lower()
-            if b64 and fmt in ("pdf", "docx", "txt"):
-                try:
-                    import base64
-                    raw = base64.b64decode(b64)
-                    if fmt == "txt":
-                        document_text = raw.decode("utf-8", errors="ignore")
-                    elif fmt == "pdf":
-                        try:
-                            from pypdf import PdfReader
-                            from io import BytesIO
-                            reader = PdfReader(BytesIO(raw))
-                            document_text = "\n".join(
-                                (p.extract_text() or "") for p in reader.pages
-                            )
-                        except Exception as exc:
-                            return DomainResponse.error_response(
-                                error=f"Falha ao extrair texto do PDF: {exc}",
-                                domain_id=self.domain_id,
-                                action_id="process_document",
-                            )
-                    elif fmt == "docx":
-                        try:
-                            from docx import Document  # type: ignore
-                            from io import BytesIO
-                            doc = Document(BytesIO(raw))
-                            document_text = "\n".join(p.text for p in doc.paragraphs)
-                        except Exception as exc:
-                            return DomainResponse.error_response(
-                                error=f"Falha ao extrair texto do DOCX: {exc}",
-                                domain_id=self.domain_id,
-                                action_id="process_document",
-                            )
-                except Exception as exc:
-                    return DomainResponse.error_response(
-                        error=f"Documento invalido: {exc}",
-                        domain_id=self.domain_id,
-                        action_id="process_document",
-                    )
-            else:
-                return DomainResponse.clarification_response(
-                    question=(
-                        "Me envie o texto do documento (campo `document_text`) "
-                        "ou um arquivo base64 com `document_b64` + "
-                        "`document_format` (pdf, docx ou txt)."
-                    ),
-                    domain_id=self.domain_id,
-                    action_id="process_document",
-                )
-
-        if not document_text.strip():
-            return DomainResponse.error_response(
-                error="O documento nao contem texto extraivel.",
-                domain_id=self.domain_id,
-                action_id="process_document",
-            )
-
-        try:
-            from app.domains.company_settings.agents.company_tool_registry import (
-                _wrap_process_uploaded_document,
-            )
-            result = await _wrap_process_uploaded_document(
-                company_id=company_id,
-                document_text=document_text,
-                document_type=document_type,
-                user_id=context.user_id or "system",
-            )
-        except Exception as exc:
-            logger.exception("[company_settings] process_document delegate failed: %s", exc)
-            return DomainResponse.error_response(
-                error=f"Falha ao processar documento: {exc}",
-                domain_id=self.domain_id,
-                action_id="process_document",
-            )
-
-        if not result.get("success"):
-            return DomainResponse.error_response(
-                error=result.get("message") or "Falha ao processar documento.",
-                data=result.get("data") or {},
-                domain_id=self.domain_id,
-                action_id="process_document",
-            )
-
-        data = result.get("data") or {}
-        expected = data.get("expected_fields") or []
-        msg = (
-            f"{result.get('message') or 'Documento processado.'} "
-            f"Quer que eu salve {', '.join(expected[:5]) or 'os campos extraidos'}? "
-            "Confirme antes — gravacao requer aprovacao humana (LGPD Art. 8)."
-        )
-        return DomainResponse.success_response(
-            message=msg,
-            data={
-                **data,
-                "requires_human_approval": True,
-                "navigation_hint": {"page": "Company Settings", "section": "minha-empresa"},
-            },
+        # Nao existe servico backend para extrair dados estruturados de
+        # documentos institucionais (PDF/DOCX) e gravar no perfil. Falhamos
+        # explicitamente em vez de fingir sucesso.
+        return DomainResponse.error_response(
+            error=(
+                "Processamento de documentos institucionais por chat ainda nao "
+                "esta disponivel: nao ha pipeline de extracao + gravacao no "
+                "perfil da empresa. Anexe o documento no painel de Configuracoes."
+            ),
             domain_id=self.domain_id,
             action_id="process_document",
-            suggestions=["Revisar campos extraidos", "Confirmar gravacao"],
+            metadata={"navigation_hint": {"page": "Company Settings", "section": "documentos"}},
         )

@@ -162,52 +162,6 @@ class ToolExecutor:
         
         return type_mapping.get(schema_type, str)
     
-    # ------------------------------------------------------------------
-    # FIX 8 G1 — FairnessGuard helper
-    # ------------------------------------------------------------------
-
-    _TEXT_PARAM_NAMES = frozenset({
-        "text", "message", "description", "content", "query", "prompt",
-        "body", "notes", "comment", "comments", "search_query", "q",
-        "job_description", "jd", "filter", "requirements",
-    })
-
-    def _check_fairness(self, parameters: dict[str, Any]) -> dict[str, Any] | None:
-        """Return dict with bias info if any text param is explicitly biased.
-        Returns None if all text params pass FairnessGuard Layer 1.
-
-        Non-blocking if FairnessGuard is unavailable (import error, init fail).
-        """
-        try:
-            from app.shared.compliance.fairness_guard import FairnessGuard
-        except ImportError:
-            return None
-
-        try:
-            guard = FairnessGuard()
-        except Exception:
-            return None
-
-        for pname, pvalue in parameters.items():
-            if pname.startswith("_"):
-                continue  # internal flags (_context, _hitl_confirmed)
-            if pname not in self._TEXT_PARAM_NAMES:
-                continue
-            if not isinstance(pvalue, str) or not pvalue.strip():
-                continue
-            try:
-                result = guard.check(pvalue)
-            except Exception:
-                continue
-            if getattr(result, "is_blocked", False):
-                return {
-                    "blocked_terms": list(getattr(result, "blocked_terms", [])),
-                    "category": getattr(result, "category", None),
-                    "educational_message": getattr(result, "educational_message", None),
-                    "parameter": pname,
-                }
-        return None
-
     async def execute(
         self,
         tool_name: str,
@@ -251,50 +205,6 @@ class ToolExecutor:
                 success=False,
                 error=f"Agent '{agent_type}' not authorized for tool '{tool_name}'",
                 tool_name=tool_name
-            )
-            self._log_execution(tool_name, parameters, result, agent_type, conversation_id)
-            return result
-
-        governance_tags = getattr(tool, "governance_tags", []) or []
-
-        # FIX 8 G1 — FairnessGuard enforcement before execution.
-        # If the tool declares fairness_guard, scan text-shaped parameters for
-        # explicit bias (Layer 1 regex). Blocked queries return an educational
-        # message and never reach the handler. This is LGPD / CF Art. 5º compliance.
-        if "fairness_guard" in governance_tags:
-            _bias_result = self._check_fairness(parameters)
-            if _bias_result is not None:
-                result = ToolResult(
-                    success=False,
-                    error=f"FairnessGuard blocked: {_bias_result.get('blocked_terms')}",
-                    result={
-                        "blocked_by_fairness_guard": True,
-                        "blocked_terms": _bias_result.get("blocked_terms"),
-                        "category": _bias_result.get("category"),
-                        "educational_message": _bias_result.get("educational_message"),
-                        "tool_name": tool_name,
-                    },
-                    tool_name=tool_name,
-                )
-                self._log_execution(tool_name, parameters, result, agent_type, conversation_id)
-                return result
-
-        # FIX 3 — Check governance_tags for HITL requirement before executing.
-        if "requires_hitl" in governance_tags and not parameters.get("_hitl_confirmed"):
-            result = ToolResult(
-                success=True,
-                result={
-                    "status": "pending_hitl_confirmation",
-                    "requires_hitl": True,
-                    "tool_name": tool_name,
-                    "parameters": {k: v for k, v in parameters.items() if k != "_context"},
-                    "governance_tags": list(governance_tags),
-                    "message": (
-                        f"A ferramenta '{tool_name}' requer confirmação humana antes de executar "
-                        f"(governance_tags={governance_tags}). Confirme para prosseguir."
-                    ),
-                },
-                tool_name=tool_name,
             )
             self._log_execution(tool_name, parameters, result, agent_type, conversation_id)
             return result

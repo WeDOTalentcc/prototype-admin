@@ -74,171 +74,6 @@ JOB_ACTION_MAP: dict[str, str] = {
 
 SKIP_ACTION_INTENTS = {"create_job", "greeting", "general_question", "unknown", "search_candidates"}
 
-INTENT_TO_ACTIONABLE: dict[str, str] = {
-    "move_candidate": "mover_candidato",
-    "update_candidate_status": "atualizar_status_candidato",
-    "update_status": "atualizar_status_candidato",
-    "reject_candidate": "reprovar_candidato",
-    "approve_candidate": "aprovar_candidato",
-    "send_email": "enviar_email",
-    "send_message": "enviar_mensagem",
-    "schedule_interview": "agendar_entrevista",
-    "trigger_screening": "disparar_triagem",
-    "dispatch_screening": "disparar_triagem",
-    "start_screening": "iniciar_triagem",
-    "analyze_profile": "analisar_perfil",
-    "detailed_analysis": "analise_detalhada",
-    "pause_job": "pausar_vaga",
-    "close_job": "fechar_vaga",
-    "duplicate_job": "duplicar_vaga",
-    "reopen_job": "reabrir_vaga",
-}
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Onda 4.1 (2026-04-21) — Tool schema helpers used by generate-with-tools path.
-#
-# Closes 16 pre-existing test failures in test_generate_with_tools_chat.py
-# where these helpers were imported but never implemented.
-#
-# Canonical-fix: single producer for ACTIONABLE_INTENT → Claude tool-use schema
-# conversion + LLM-driven param extraction. Self-contained in chat.py where
-# tests expect to find them.
-# ─────────────────────────────────────────────────────────────────────────────
-
-
-def _build_tool_schema_for_intent(action_id: str, config: dict) -> dict:
-    """Convert an ACTIONABLE_INTENT config into a Claude tool-use schema.
-
-    Args:
-        action_id: canonical action name (becomes `name` field).
-        config: intent config with required_params, optional_params,
-            param_labels, clarification_prompts.
-
-    Returns:
-        dict with shape:
-            {
-              "name": action_id,
-              "input_schema": {
-                "type": "object",
-                "properties": { param: {type, description} },
-                "required": [required_params only],
-              }
-            }
-
-    Description priority per param:
-        clarification_prompts[p] → param_labels[p] → p (bare name)
-    """
-    required = list(config.get("required_params") or [])
-    optional = list(config.get("optional_params") or [])
-    labels = config.get("param_labels") or {}
-    clarifications = config.get("clarification_prompts") or {}
-
-    properties: dict = {}
-    for param in required + optional:
-        description = (
-            clarifications.get(param)
-            or labels.get(param)
-            or param
-        )
-        properties[param] = {"type": "string", "description": description}
-
-    return {
-        "name": action_id,
-        "input_schema": {
-            "type": "object",
-            "properties": properties,
-            "required": list(required),
-        },
-    }
-
-
-async def _try_extract_params_with_llm(
-    user_message: str,
-    intent: str,
-    config: dict,
-    collected_params: dict,
-    missing: list,
-) -> dict | None:
-    """Invoke LLMService.generate_with_tools to extract missing params from user text.
-
-    Returns merged {collected_params ∪ extracted} dict when all REQUIRED params
-    are filled. Returns None on:
-      - non-tool-call LLM response
-      - exception during schema build or LLM call
-      - required params still missing after extraction
-
-    LLMService is imported lazily so this module stays side-effect free at import.
-    """
-    try:
-        schema = _build_tool_schema_for_intent(config.get("action_id", intent), config)
-
-        from app.services.llm import LLMService  # lazy import — see module docstring
-
-        llm = LLMService()
-        response = await llm.generate_with_tools(
-            user_message=user_message,
-            tools=[schema],
-            intent=intent,
-        )
-
-        if not getattr(response, "is_tool_call", False):
-            return None
-
-        tool_calls = getattr(response, "tool_calls", []) or []
-        if not tool_calls:
-            return None
-
-        extracted: dict = {}
-        for tc in tool_calls:
-            params = getattr(tc, "parameters", None) or {}
-            if isinstance(params, dict):
-                extracted.update(params)
-
-        merged = dict(collected_params or {})
-        merged.update(extracted)
-
-        # Gate: only return merged if all required params are now filled.
-        required = list(config.get("required_params") or [])
-        for req in required:
-            if req not in merged or merged[req] in (None, ""):
-                return None
-
-        return merged
-
-    except Exception as exc:
-        import logging
-        logging.getLogger(__name__).debug(
-            "[Onda 4.1] _try_extract_params_with_llm failed non-fatal: %s", exc,
-        )
-        return None
-
-
-def _flatten_entities(entities: dict) -> dict:
-    flat = dict(entities)
-    if "entidades" in entities and isinstance(entities["entidades"], dict):
-        flat.update(entities["entidades"])
-    return flat
-
-
-def map_intent_to_actionable(intent: str, entities: dict) -> str | None:
-    """Restored from git history (regression fix). Maps intent+entities to an
-    ACTIONABLE_INTENTS key, handling EN→PT translation and update_job subtypes."""
-    if intent in SKIP_ACTION_INTENTS:
-        return None
-    flat = _flatten_entities(entities)
-    if intent == "update_job":
-        acao = (flat.get("ação") or flat.get("acao") or flat.get("action") or "").lower().strip()
-        return JOB_ACTION_MAP.get(acao)
-    mapped = INTENT_TO_ACTIONABLE.get(intent)
-    if mapped:
-        return mapped
-    if intent in ACTIONABLE_INTENTS:
-        return intent
-    return None
-
-
-
 
 async def resolve_candidate_by_name(
     candidate_name: str,
@@ -547,18 +382,6 @@ async def send_message(
         if context_data:
             _meta["context_data"] = context_data
 
-        # Onda 4.10 (2026-04-22) — surface V.B citations + G3.B hitl_checkpoint
-        # on the API envelope. ChatAdapter (Onda 4.10.a) forwards these from
-        # MainOrchestrator.ChatResponse; here we expose them on message_metadata
-        # so the frontend can render citations tooltips and HITL approval UI.
-        _citations_payload = orch_result.get("citations")
-        if _citations_payload:
-            _meta["citations"] = _citations_payload
-            _meta["has_citations"] = bool(orch_result.get("has_citations", True))
-        _hitl_payload = orch_result.get("hitl_checkpoint")
-        if _hitl_payload:
-            _meta["hitl_checkpoint"] = _hitl_payload
-
         # Task #432: forward pipeline_rail payload (rich response in chat)
         _pipeline_rail = workflow_data.get("pipeline_rail") if isinstance(workflow_data, dict) else None
         if _pipeline_rail and isinstance(_pipeline_rail, dict):
@@ -566,24 +389,6 @@ async def send_message(
             _meta.setdefault("context_data", {})
             if isinstance(_meta["context_data"], dict):
                 _meta["context_data"]["pipeline_rail"] = _pipeline_rail
-
-        # Task #716: forward analyze_website preview to the chat layer so the
-        # frontend can render a "review & confirm" card before the second-turn
-        # write. Backend never persists on this turn — `requires_human_approval`
-        # makes that contract explicit (TIER 3).
-        if isinstance(workflow_data, dict):
-            _pending_writes = workflow_data.get("pending_writes")
-            if isinstance(_pending_writes, dict) and _pending_writes:
-                _meta["pending_writes"] = _pending_writes
-                _meta["requires_human_approval"] = bool(
-                    workflow_data.get("requires_human_approval", True)
-                )
-                _nav_hint = workflow_data.get("navigation_hint")
-                if isinstance(_nav_hint, dict):
-                    _meta["navigation_hint"] = _nav_hint
-                _src_url = workflow_data.get("url")
-                if _src_url:
-                    _meta["source_url"] = _src_url
 
         # Update snapshot with orchestrator results
         _conv_snapshot["title"] = _conv_snapshot["title"] or message_data.content[:100]
@@ -749,18 +554,6 @@ async def send_message_with_attachments(
         }
         if context_data:
             _meta["context_data"] = context_data
-
-        # Onda 4.10 (2026-04-22) — surface V.B citations + G3.B hitl_checkpoint
-        # on the API envelope. ChatAdapter (Onda 4.10.a) forwards these from
-        # MainOrchestrator.ChatResponse; here we expose them on message_metadata
-        # so the frontend can render citations tooltips and HITL approval UI.
-        _citations_payload = orch_result.get("citations")
-        if _citations_payload:
-            _meta["citations"] = _citations_payload
-            _meta["has_citations"] = bool(orch_result.get("has_citations", True))
-        _hitl_payload = orch_result.get("hitl_checkpoint")
-        if _hitl_payload:
-            _meta["hitl_checkpoint"] = _hitl_payload
 
         # Task #432: forward pipeline_rail payload (rich response in chat)
         _pipeline_rail2 = workflow_data.get("pipeline_rail") if isinstance(workflow_data, dict) else None
@@ -995,7 +788,6 @@ async def _sse_event_generator(
 
     _system_prompt = SystemPromptBuilder.build(
         agent_type="orchestrator",
-        company_id=str(company_id) if company_id else "",
         tenant_context_snippet=tenant_context_snippet,
         user_name=user_name,
         user_role=user_role,
@@ -1394,12 +1186,7 @@ async def set_chat_context(
             detail=f"Unknown context_type '{ctx}'. Allowed: {sorted(_ALLOWED_CONTEXT_TYPES)}",
         )
 
-    domain = resolve_domain(
-        ctx,
-        tenant_id=str(getattr(current_user, "company_id", "") or "") or None,
-        user_id=str(getattr(current_user, "id", "") or "") or None,
-        conversation_id=payload.conversation_id,
-    )
+    domain = resolve_domain(ctx)
 
     # Persist context on the conversation if an ID was provided
     if payload.conversation_id:

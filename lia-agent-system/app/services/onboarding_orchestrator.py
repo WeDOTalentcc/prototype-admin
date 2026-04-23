@@ -496,7 +496,6 @@ class OnboardingOrchestrator:
         from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
         _onboarding_system = SystemPromptBuilder.build(
             agent_type="recruiter_assistant",
-            company_id=str(session.account_id) if getattr(session, "account_id", None) else "",
             user_name=session.user_name or "",
             extra_instructions="Você está no fluxo de onboarding. Seja acolhedora e guie o recrutador passo a passo.",
         )

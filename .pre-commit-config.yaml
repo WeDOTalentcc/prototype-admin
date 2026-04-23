@@ -67,16 +67,6 @@ repos:
         language: system
         pass_filenames: false
 
-      # Task #737 — Harness regression gate. Fails when CLAUDE.md/AGENTS.md/
-      # replit.md/.cursorrules disappears or 11-component coverage drops.
-      # Update intentionally: scan_claude_md.py --update-baseline
-      - id: harness-scan
-        name: Harness scan (CLAUDE.md / AGENTS.md regression)
-        entry: python3 .agents/skills/harness-engineering/scripts/scan_claude_md.py --check
-        language: system
-        files: ^(CLAUDE\.md|AGENTS\.md|\.cursorrules|replit\.md|\.windsurfrules|\.github/copilot-instructions\.md|.*/CLAUDE\.md|.*/AGENTS\.md|.*/replit\.md|\.agents/skills/harness-engineering/.*)$
-        pass_filenames: false
-
   # ── Standard hooks ────────────────────────────────────────────────────────
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0

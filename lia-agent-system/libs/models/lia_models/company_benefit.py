@@ -3,7 +3,7 @@ Company Benefits model for multi-tenant benefits management.
 """
 from datetime import datetime
 from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean, Float
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import UUID
 import uuid
 
 from lia_config.database import Base
@@ -15,33 +15,25 @@ class CompanyBenefit(Base):
     Multi-tenant model with company_id scoping.
     """
     __tablename__ = "company_benefits"
-
+    
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(255), nullable=False, index=True)
-
+    
     name = Column(String(255), nullable=False)
     category = Column(String(100), nullable=True)
     description = Column(Text, nullable=True)
     icon = Column(String(100), nullable=True)
-    provider = Column(String(255), nullable=True)
-
+    
     value = Column(Float, nullable=True)
     value_type = Column(String(50), default="informative")
-    percentage_value = Column(Float, nullable=True)
-    value_details = Column(Text, nullable=True)
-
-    seniority_levels = Column(JSONB, nullable=True)
-    waiting_period_days = Column(Integer, nullable=False, default=0)
-
+    
     is_active = Column(Boolean, default=True)
     is_highlighted = Column(Boolean, default=False)
-    is_mandatory = Column(Boolean, default=False)
-    is_discount = Column(Boolean, default=False)
     order = Column(Integer, default=0)
-
+    
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
+    
     def __repr__(self):
         return f"<CompanyBenefit {self.id} - {self.name}>"
 

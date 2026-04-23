@@ -255,7 +255,6 @@ async def _handle_jobs_management_query(
         )
         prompt = SystemPromptBuilder.build(
             agent_type="orchestrator",
-            company_id=str(company_id) if company_id else "",
             context_page="jobs",
             extra_instructions=f"{_extra}\n\n{_jobs_data}",
         )
@@ -266,7 +265,6 @@ async def _handle_jobs_management_query(
         logger.warning("[expanded-prompt/jobs] Erro ao buscar vagas: %s", exc)
         prompt = SystemPromptBuilder.build(
             agent_type="orchestrator",
-            company_id=str(company_id) if company_id else "",
             context_page="jobs",
             extra_instructions=(
                 f"O usuário é RECRUTADOR, não candidato.\n"
@@ -429,7 +427,6 @@ async def process_expanded_prompt(
             logger.warning(f"[expanded-prompt] Orchestrator error, falling back to LLM: {orch_err}")
             prompt = SystemPromptBuilder.build(
                 agent_type="orchestrator",
-                company_id=str(company_id) if company_id else "",
                 context_page=request.context_type or "general",
                 extra_instructions=(
                     f"Mensagem do recrutador: {request.message}\n"

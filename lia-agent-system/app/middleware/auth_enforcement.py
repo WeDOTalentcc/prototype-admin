@@ -127,10 +127,6 @@ PUBLIC_PREFIXES = (
     "/api/v1/auth/invitation-info/",
     "/api/v1/wsi/async/",
     "/api/public/",
-    # Public job vacancy page (candidate-facing, no auth) — only the /p/{slug}
-    # GET/POST endpoints are mounted under this prefix; auth-protected admin
-    # actions live under /api/v1/job-vacancies/.
-    "/api/v1/public-vacancies/p/",
     "/docs/",
     "/static/",
     "/_next/",
@@ -248,7 +244,26 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
 
         try:
             from app.auth.security import decode_token
-            payload = decode_token(token)
+            try:
+                payload = decode_token(token)
+            except Exception:
+                payload = None
+
+            # Fallback: Rails JWT (token assinado pelo ats_api, secret compartilhado)
+            if payload is None or not payload.get("sub"):
+                from app.auth.rails_jwt import fetch_rails_user_info, validate_rails_token_from_env
+                rails_payload = validate_rails_token_from_env(token)
+                if rails_payload:
+                    rails_info = await fetch_rails_user_info(token, rails_payload.user_id)
+                    if rails_info and rails_info.get("email"):
+                        payload = {
+                            "sub": rails_info["email"],  # placeholder; real user resolvido em get_current_user
+                            "company_id": str(rails_info.get("account_id") or ""),
+                            "role": "admin" if rails_info.get("is_admin") else "recruiter",
+                            "rails_user_id": rails_payload.user_id,
+                            "email": rails_info["email"],
+                        }
+
             if payload is None and _DEV_MODE:
                 rejection = _check_dev_api_key(request, path)
                 if rejection is not None:
@@ -261,6 +276,9 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 request.state.user_role = "admin"
                 logger.debug(f"[AuthEnforcement] DEV MODE: synthetic user for invalid token on {path}")
                 return await call_next(request)
+
+            if payload is None:
+                raise ValueError("Invalid or expired token")
 
             user_id = payload.get("sub")
             if not user_id:

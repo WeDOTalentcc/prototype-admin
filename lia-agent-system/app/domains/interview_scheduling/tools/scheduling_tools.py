@@ -26,13 +26,7 @@ async def check_interviewer_availability(
 ) -> dict:
     """Check calendar availability for an interviewer over a given date range.
 
-    Returns available and busy slots for scheduling decisions. Currently uses a
-    deterministic simulation stub — production requires Google Calendar / Outlook integration.
-
-    date_range format: 'YYYY-MM-DD to YYYY-MM-DD'
-    Side effects: external_api_call (mock_only in current version)
-    Governance: multi_tenant, pii — interviewer_id identifies a person
-    Use before: schedule_interview
+    date_range format: 'YYYY-MM-DD to YYYY-MM-DD'. Returns available and busy slots.
     """
     logger.info("check_interviewer_availability: interviewer=%s range=%s", interviewer_id, date_range)
     try:
@@ -77,15 +71,7 @@ async def schedule_interview(
 ) -> dict:
     """Schedule an interview slot between a candidate and an interviewer.
 
-    Creates an interview record and returns an interview_id and calendar link.
-    Does NOT send notifications — use send_interview_invitation after scheduling.
-    Currently simulated (calendar creation stub); real integration pending.
-
-    interview_type: 'technical' | 'behavioral' | 'cultural_fit' | 'final'
-    Side effects: db_write, mock_only (calendar), audit_trail
-    Governance: multi_tenant, pii, audit_trail
-    Use before: send_interview_invitation
-    Use after: check_interviewer_availability
+    interview_type must be one of: 'technical', 'behavioral', 'cultural_fit', 'final'.
     """
     logger.info(
         "schedule_interview: candidate=%s interviewer=%s datetime=%s type=%s",
@@ -112,16 +98,9 @@ async def send_interview_invitation(
     candidate_email: str = "",
     **kwargs: Any,
 ) -> dict:
-    """Send an interview invitation email to the candidate (simulated stub).
+    """Send an interview invitation email to the candidate (simulated).
 
-    Use after schedule_interview to notify the candidate. Returns a confirmation with
-    the dispatch timestamp. Currently simulated — real email delivery requires email
-    provider integration (SendGrid, SES, etc.).
-
-    LGPD Art. 12: candidate_email (PII) is not logged — only identifiers are recorded.
-    Side effects: email_sent (mock_only), audit_trail
-    Governance: multi_tenant, pii, audit_trail
-    Use after: schedule_interview
+    Returns confirmation with timestamp of when the email was dispatched.
     """
     # LGPD Art. 12: Do not log candidate_email (PII) — log only identifiers
     logger.info(
@@ -145,16 +124,9 @@ async def reschedule_interview(
     reason: str = "",
     **kwargs: Any,
 ) -> dict:
-    """Reschedule an existing interview to a new date/time, recording the reason.
+    """Reschedule an existing interview to a new date/time.
 
-    Use when the candidate or interviewer needs to change the previously agreed slot.
-    For outright cancellation, use cancel_interview instead.
-    Currently simulated — persistent state update requires full database integration.
-    old_datetime is recorded as 'N/A' in the simulation.
-
-    Side effects: db_write, email_sent (mock_only), audit_trail
-    Governance: multi_tenant, pii, audit_trail
-    Use instead of: cancel_interview (when a new time can be found)
+    Stores the old datetime as 'N/A' since this is a simulation without persistent state.
     """
     logger.info(
         "reschedule_interview: interview=%s new_datetime=%s reason=%s",
@@ -180,13 +152,6 @@ async def cancel_interview(
     """Cancel a scheduled interview and notify all participants.
 
     Records the cancellation reason and timestamp for audit purposes.
-    This is a write-destructive action — the interview slot is freed. Use
-    reschedule_interview instead if a new time is available.
-    Currently simulated — real calendar cancellation and notifications require integration.
-
-    Side effects: db_write, email_sent (mock_only), audit_trail, write_destructive
-    Governance: multi_tenant, pii, audit_trail, write_destructive
-    Use instead of: reschedule_interview (permanent cancellation only)
     """
     logger.info("cancel_interview: interview=%s reason=%s", interview_id, reason)
     return {
@@ -206,12 +171,6 @@ async def get_interview_status(
     """Retrieve the current status and details of an interview by its ID.
 
     Returns status as one of: 'scheduled', 'completed', 'cancelled', 'pending'.
-    Use before analyze_interview_recording to verify the interview is complete.
-    Currently uses a deterministic simulation — real status requires database integration.
-
-    Side effects: none (read-only, mock_only)
-    Governance: multi_tenant, pii
-    Use before: analyze_interview_recording
     """
     logger.info("get_interview_status: interview=%s", interview_id)
     statuses = ["scheduled", "completed", "cancelled", "pending"]

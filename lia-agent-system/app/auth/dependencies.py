@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.models import User, UserRole
-from app.auth.security import decode_token, is_token_blacklisted, get_password_hash
+from app.auth.security import decode_token, get_password_hash
 from app.core.database import get_db
 from app.core.tenant import DEMO_COMPANY_UUID, normalize_demo_company_id
 
@@ -104,14 +104,17 @@ async def get_current_user(
 ) -> User:
     """
     Dependency to get the current authenticated user.
-    
+
+    Aceita tokens FastAPI (payload com `sub`=UUID, `type`=access)
+    e tokens Rails (payload com `user_id`=int). Rails é tentado como fallback.
+
     Args:
         credentials: The HTTP bearer token credentials.
         db: The database session.
-        
+
     Returns:
         The authenticated user.
-        
+
     Raises:
         HTTPException: If authentication fails.
     """
@@ -120,42 +123,89 @@ async def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    
+
     token = credentials.credentials
 
-    if await is_token_blacklisted(token):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token revogado. Faça login novamente.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
+    # 1. Tenta FastAPI JWT
     try:
         payload = decode_token(token)
         user_id: str = payload.get("sub")
         token_type: str = payload.get("type")
-        
-        if user_id is None:
-            raise credentials_exception
-        
-        if token_type != "access":
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token type. Use access token.",
-                headers={"WWW-Authenticate": "Bearer"},
+
+        if user_id and token_type == "access":
+            result = await db.execute(
+                select(User).where(User.id == UUID(user_id))
             )
-            
+            user = result.scalar_one_or_none()
+            if user is not None:
+                return user
     except JWTError:
-        raise credentials_exception
-    
+        pass  # cai no Rails fallback
+    except Exception:
+        pass
+
+    # 2. Fallback: Rails JWT
+    user = await _resolve_rails_jwt_user(token, db)
+    if user is not None:
+        return user
+
+    raise credentials_exception
+
+
+async def _resolve_rails_jwt_user(token: str, db: AsyncSession) -> User | None:
+    """
+    Valida token Rails e resolve o User do FastAPI pelo email (via /v1/me).
+    Auto-provisiona o usuário FastAPI se não existir.
+    """
+    from app.auth.rails_jwt import fetch_rails_user_info, validate_rails_token_from_env
+    from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+
+    rails_payload = validate_rails_token_from_env(token)
+    if rails_payload is None:
+        return None
+
+    info = await fetch_rails_user_info(token, rails_payload.user_id)
+    if not info or not info.get("email"):
+        return None
+
+    email = info["email"]
+    email_hash = _sha256_hash(email)
+
     result = await db.execute(
-        select(User).where(User.id == UUID(user_id))
+        select(User).where(User.email_hash == email_hash)
     )
     user = result.scalar_one_or_none()
-    
-    if user is None:
-        raise credentials_exception
-    
+
+    raw_company_id = str(info.get("account_id") or "")
+
+    if user is not None:
+        # Update company_id/role if they're missing (auto-heal provisioning gaps)
+        updated = False
+        if not user.company_id and raw_company_id:
+            user.company_id = raw_company_id
+            updated = True
+        if info.get("is_admin") and user.role != UserRole.admin:
+            user.role = UserRole.admin
+            updated = True
+        if updated:
+            await db.commit()
+            await db.refresh(user)
+        return user
+
+    # Auto-provisiona usuário FastAPI mirrorando o Rails
+    from uuid import uuid4
+    user = User(
+        id=uuid4(),
+        email=email,
+        name=info.get("name") or email.split("@")[0],
+        password_hash="rails_sso_no_password",  # login real via Rails
+        role=UserRole.admin if info.get("is_admin") else UserRole.recruiter,
+        company_id=raw_company_id,
+        is_active=True,
+    )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
     return user
 
 
@@ -256,7 +306,7 @@ async def get_current_user_or_demo(
             payload = decode_token(credentials.credentials)
             user_id: str = payload.get("sub")
             token_type: str = payload.get("type")
-            
+
             if user_id and token_type == "access":
                 result = await db.execute(
                     select(User).where(User.id == UUID(user_id))
@@ -266,7 +316,12 @@ async def get_current_user_or_demo(
                     return user
         except (JWTError, Exception):
             pass
-    
+
+        # Fallback: Rails JWT
+        rails_user = await _resolve_rails_jwt_user(credentials.credentials, db)
+        if rails_user and rails_user.is_active:
+            return rails_user
+
     # Multi-tenancy: only allow demo user in development
     if not _is_dev_environment():
         raise HTTPException(
@@ -296,17 +351,22 @@ async def get_current_user_strict(
         headers={"WWW-Authenticate": "Bearer"},
     )
 
+    user: User | None = None
+
+    # 1. Tenta FastAPI JWT
     try:
         payload = decode_token(credentials.credentials)
         user_id: str = payload.get("sub")
         token_type: str = payload.get("type")
-        if user_id is None or token_type != "access":
-            raise credentials_exception
+        if user_id and token_type == "access":
+            result = await db.execute(select(User).where(User.id == UUID(user_id)))
+            user = result.scalar_one_or_none()
     except JWTError:
-        raise credentials_exception
+        pass
 
-    result = await db.execute(select(User).where(User.id == UUID(user_id)))
-    user = result.scalar_one_or_none()
+    # 2. Fallback: Rails JWT
+    if user is None:
+        user = await _resolve_rails_jwt_user(credentials.credentials, db)
 
     if user is None:
         raise credentials_exception

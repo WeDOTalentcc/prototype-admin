@@ -152,8 +152,6 @@ async def resolve_tenant(
         client = await tenant_repo.get_client_account(resolved_client_id)
         profile = await tenant_repo.get_company_by_client_account(resolved_client_id)
 
-        # If no company_profile exists yet (new tenant), use client_account_id as fallback
-        # so the frontend loads an empty settings page instead of showing an error banner.
         _profile_id = str(profile.id) if profile else (str(resolved_client_id) if resolved_client_id else None)
         _company_name = (client.name if client else None) or (profile.name if profile else None)
         return TenantResolutionResponse(
@@ -168,6 +166,7 @@ async def resolve_tenant(
     except Exception as e:
         logger.error(f"Error resolving tenant: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
 @router.post("/onboarding", response_model=None)
@@ -565,7 +564,7 @@ async def get_company_profile(
 
         if not effective_company_id:
             logger.warning("get_company_profile called without company_id and no auth context — rejecting")
-            raise HTTPException(status_code=400, detail="company_id is required. Use /api/v1/company/resolve-tenant to obtain your tenant ID.")
+            raise HTTPException(status_code=400, detail="company_id is required. Authenticate via JWT — tenant is derived from the session.")
 
         try:
             company_uuid = uuid.UUID(effective_company_id)

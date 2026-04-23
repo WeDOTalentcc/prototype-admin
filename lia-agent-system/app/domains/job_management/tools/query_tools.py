@@ -1,8 +1,3 @@
-# tenant-isolation: manual — legacy tools authored before @tool_handler.
-# Each handler reads company_id from the injected `_context` (ToolExecutionContext)
-# and/or from kwargs populated by `app/tools/executor.py`. Migration to
-# @tool_handler is tracked under the ADR-018 / Task #673 backlog. Do NOT add
-# new functions here — author new tools via @tool_handler in a new module.
 """
 Job Management Query Tools - Tools for job search, details, velocity, quality, and benchmarks.
 
@@ -46,7 +41,6 @@ async def search_jobs(
     urgent: bool | None = None,
     recruiter_id: str | None = None,
     limit: int = 20,
-    offset: int = 0,  # FIX 20 (2026-04-21): pagination support
     **kwargs
 ) -> dict[str, Any]:
     """
@@ -122,25 +116,10 @@ async def search_jobs(
             
             query = query.where(and_(*conditions))
             query = query.order_by(JobVacancy.created_at.desc())
-
-            # FIX 20 (2026-04-21): run COUNT before LIMIT/OFFSET so total_count
-            # reflects the true DB total. Before FIX 20, `total` in the response
-            # was len(jobs_list) (page size) — LIA reported "20 vagas" while
-            # user saw 50 in UI. See docs/LIA_MATURITY_ROADMAP.md Track 1 FIX 20.
-            from sqlalchemy import func as _fix20_func
-            _fix20_count_stmt = (
-                select(_fix20_func.count()).select_from(JobVacancy).where(and_(*conditions))
-            )
-            _fix20_total_count_result = await db.execute(_fix20_count_stmt)
-            total_count = int(_fix20_total_count_result.scalar() or 0)
-
-            query = query.limit(limit).offset(offset)
+            query = query.limit(limit)
             result = await db.execute(query)
             jobs = result.scalars().all()
-            logger.info(
-                f"🔍 search_jobs DB result: {len(jobs)} rows (offset={offset}, "
-                f"limit={limit}, total_count={total_count}), company_id={company_id}"
-            )
+            logger.info(f"🔍 search_jobs DB result: {len(jobs)} rows, company_id={company_id}")
             
             jobs_list = []
             for j in jobs:
@@ -161,47 +140,19 @@ async def search_jobs(
                 }
                 jobs_list.append(job_data)
             
-            # FIX 20 (2026-04-21): build pagination block + honest message.
-            returned_count = len(jobs_list)
-            has_more = (offset + returned_count) < total_count
-            next_offset = (offset + limit) if has_more else None
-
-            if has_more:
-                message = (
-                    f"✅ Mostrando {returned_count} de {total_count} vagas. "
-                    f"Use offset={next_offset} para ver as próximas."
-                )
-            elif offset > 0:
-                message = (
-                    f"✅ Mostrando {returned_count} vagas (offset {offset}) "
-                    f"de {total_count} totais."
-                )
-            else:
-                message = f"✅ Encontradas {total_count} vagas."
-
             return {
                 "success": True,
-                "message": message,
+                "message": f"✅ Encontradas {len(jobs_list)} vagas.",
                 "data": {
-                    # FIX 20: total_count is the truthful DB total (pre-limit/offset).
-                    "total_count": total_count,
-                    "returned_count": returned_count,
-                    # Backward-compat alias — same value now (was len(page)).
-                    "total": total_count,
+                    "total": len(jobs_list),
                     "jobs": jobs_list,
-                    "pagination": {
-                        "limit": limit,
-                        "offset": offset,
-                        "has_more": has_more,
-                        "next_offset": next_offset,
-                    },
                     "filters_applied": {
                         "status": status,
                         "department": department,
                         "seniority": seniority,
-                        "work_model": work_model,
-                    },
-                },
+                        "work_model": work_model
+                    }
+                }
             }
             
     except Exception as e:
@@ -827,7 +778,7 @@ def register_job_management_query_tools() -> None:
     
     tool_registry.register(ToolDefinition(
         name="search_jobs",
-        description="Buscar vagas com filtros (status, departamento, senioridade, modelo de trabalho, datas). Retorna `total_count` (total real na base) e `pagination.has_more`/`pagination.next_offset` para paginação. Use offset para buscar páginas seguintes quando has_more=True (FIX 20).",
+        description="Buscar vagas com filtros como status, departamento, senioridade, modelo de trabalho, data de criação. Use para listar vagas ou responder perguntas sobre as vagas da empresa.",
         parameters_schema={
             "type": "object",
             "properties": {
@@ -839,8 +790,7 @@ def register_job_management_query_tools() -> None:
                 "created_before": {"type": "string", "format": "date", "description": "Vagas criadas antes desta data (ISO format)"},
                 "urgent": {"type": "boolean", "description": "Filtrar vagas urgentes"},
                 "recruiter_id": {"type": "string", "description": "Filtrar por recrutador"},
-                "limit": {"type": "integer", "default": 20, "description": "Número máximo de resultados por página"},
-                "offset": {"type": "integer", "default": 0, "description": "FIX 20: offset para paginação. Use pagination.next_offset do resultado anterior para buscar próxima página."}
+                "limit": {"type": "integer", "default": 20, "description": "Número máximo de resultados"}
             }
         },
         handler=search_jobs,

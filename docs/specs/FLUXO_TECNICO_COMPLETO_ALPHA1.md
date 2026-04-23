@@ -1,20 +1,19 @@
 # Fluxo Técnico Completo — Plataforma LIA Alpha 1
 
-**Data:** abril/2026  
-**Versão:** 2.0  
+**Data:** 31/03/2026  
+**Versão:** 1.0  
 **Escopo:** Fluxo end-to-end Alpha 1 — desde Login até Scheduling/Feedback  
 **Formato:** Diagrama passo-a-passo por macro-etapa (estilo "11 STEPS" do WSI)  
-**Referência:** `ANALISE_ROADMAP_ALPHA1_vs_CODIGO.md` v6.3 (complementar)  
-**Auditado contra código em:** abril/2026
+**Referência:** `ANALISE_ROADMAP_ALPHA1_vs_CODIGO.md` v6.3 (complementar)
 
 ---
 
 ## COMO LER ESTE DOCUMENTO
 
-Cada macro-etapa do Alpha 1 (E0–E9B) é apresentada como um diagrama técnico passo-a-passo. Cada step mostra:
+Cada macro-etapa do Alpha 1 (E1–E9B) é apresentada como um diagrama técnico passo-a-passo, seguindo o formato visual dos "11 STEPS" do fluxo de triagem WSI (ver imagem de referência). Cada step mostra:
 
 1. **O request HTTP real** — endpoint, método, payload
-2. **O roteamento** — MainOrchestrator, CascadedRouter (6 tiers), domínio destino
+2. **O roteamento** — DomainOrchestrator, CascadedRouter (6 tiers), domínio destino
 3. **Os mixins/capabilities injetados** — EnhancedAgentMixin, AuditTrail, WorkingMemory, etc.
 4. **FairnessGuard** — quais camadas (L1 explicit, L2 implicit, L3 semantic) atuam ANTES e DEPOIS do LLM
 5. **PII Masking** — 4 camadas pré-LLM (CPF, nome, endereço, campos sensíveis)
@@ -35,98 +34,48 @@ Cada macro-etapa do Alpha 1 (E0–E9B) é apresentada como um diagrama técnico 
 | 🔒 | Camada de proteção/compliance |
 | 🧠 | Camada de inteligência/learning |
 
----
-
 ### Convenção de Agentes
-
-Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 
 | Rótulo | Classe no código | Domínio | LLM Provider |
 |--------|-----------------|---------|--------------|
 | Ag.0 | MainOrchestrator | orchestrator | Gemini (produção) |
-| Ag.0b | AutonomousReActAgent | orchestrator | Gemini (Tier 6 fallback) |
-| Ag.1 | SourcingReActAgent | sourcing | Gemini |
-| Ag.1a | SourcingPlannerAgent | sourcing | Gemini |
-| Ag.1b | SourcingSearchAgent | sourcing | Gemini |
-| Ag.1c | SourcingEnrichAgent | sourcing | Gemini |
-| Ag.1d | SourcingEngagementAgent | sourcing | Gemini |
-| Ag.1e | GithubSourcingAgent | sourcing | Gemini |
-| Ag.1f | StackOverflowSourcingAgent | sourcing | Gemini |
-| Ag.1g | DiversitySourcingAgent | sourcing | Gemini |
-| Ag.1h | ReferralAgent | sourcing | Gemini |
-| Ag.1i | PassivePipelineAgent | sourcing | Gemini |
-| Ag.1j | NurtureSequenceAgent | sourcing | Gemini |
-| Ag.2 | WSIInterviewGraph | cv_screening | Gemini |
-| Ag.3 | WSIService (scoring determinístico) | cv_screening | Sem LLM |
-| Ag.3a | VoiceScreeningOrchestrator | voice | PSTN: Gemini Flash 2.5 STT + OpenAI TTS; Web: OpenAI Whisper STT |
-| Ag.3b | WSIQuestionGeneratorService | cv_screening / job_creation | Gemini |
-| Ag.3c | WSIScreeningPipeline | cv_screening | Gemini |
-| Ag.3d | RubricEvaluationService | interview_intelligence | Gemini |
-| Ag.4 | PipelineTransitionAgent | pipeline | Gemini |
-| Ag.4a | PipelineDecisionAgent | pipeline | Gemini |
-| Ag.4b | PipelineContextAgent | pipeline | Gemini |
-| Ag.4c | PipelineActionAgent | pipeline | Gemini |
-| Ag.5 | KanbanReActAgent | recruiter_assistant | Gemini |
-| Ag.5a | KanbanSearchAgent | recruiter_assistant | Gemini |
-| Ag.5b | KanbanInsightAgent | recruiter_assistant | Gemini |
-| Ag.5c | KanbanActionAgent | recruiter_assistant | Gemini |
-| Ag.6 | WizardReActAgent + JobWizardGraph | job_management | Gemini |
-| Ag.6a | WizardOrchestratorService | job_management | Gemini |
-| Ag.7 | JobsManagementReActAgent | recruiter_assistant | Gemini |
-| Ag.8 | TalentReActAgent | recruiter_assistant | Gemini |
-| Ag.9 | PolicyReActAgent | hiring_policy | Gemini |
-| Ag.10 | CommunicationReActAgent | communication | Gemini |
-| Ag.10a | PersonalizedFeedbackService | cv_screening | Gemini |
-| Ag.10b | FeedbackGeneratorService | interview_intelligence | Gemini |
-| Ag.11 | ATSIntegrationReActAgent ● | ats_integration | Gemini |
-| Ag.12 | AnalyticsAgent | analytics | Gemini |
-| Ag.13 | AutomationReActAgent | automation | Gemini |
-| Ag.14 | InterviewGraph | interview_scheduling | Gemini |
-| Ag.14a | InterviewWSIService | interview_intelligence | Gemini |
+| Ag.2 | SourcingReActAgent | sourcing | Gemini |
+| Ag.3 | TriagemCurricular (CV Screening) | cv_screening | Gemini |
+| Ag.4 | WSIInterviewGraph | cv_screening | Gemini |
+| Ag.5 | WSIService (scoring) | cv_screening | Determinístico (sem LLM) |
+| Ag.6 | InterviewGraph | interview_scheduling | Gemini |
+| Ag.7 | CommunicationReActAgent / PersonalizedFeedbackService | communication / cv_screening | Gemini |
+| Ag.8 | ATSIntegrationReActAgent ⚠ PÓS-MVP | ats_integration | Gemini |
+| — | WSIQuestionGenerator / WSIScreeningQuestionGenerator | cv_screening | Gemini |
+| — | WSIScreeningPipeline | cv_screening | Gemini |
+| — | WSIVoiceOrchestrator | cv_screening | Gemini + Deepgram |
 | — | JobDescriptionGeneratorService | job_management | Claude (Anthropic) |
-| — | SkillsOntologyEngine | talent_intelligence | Gemini |
 
 ---
 
 ## GLOSSÁRIO DE COMPONENTES
+
+Para facilitar a leitura por qualquer pessoa — mesmo sem conhecimento da arquitetura — esta seção explica **o que é cada componente** mencionado ao longo do documento.
 
 ### Tipos de Componente
 
 | Tipo | O que é | Exemplo |
 |------|---------|---------|
 | **Domínio** | Uma área funcional da plataforma. Cada domínio agrupa um conjunto coeso de funcionalidades de negócio. É como um "departamento" da IA. | `sourcing` (busca de candidatos), `cv_screening` (triagem), `communication` (emails/mensagens), `job_management` (vagas), `interview_scheduling` (agendamento) |
-| **Agente (Ag.)** | Um "trabalhador IA" autônomo que executa tarefas complexas usando raciocínio passo-a-passo (loop ReAct). Cada agente pertence a um domínio e usa ferramentas (tools) para agir. | Ag.1 SourcingReActAgent (busca candidatos), Ag.2 WSIInterviewGraph (conduz entrevista de triagem) |
+| **Agente (Ag.)** | Um "trabalhador IA" autônomo que executa tarefas complexas usando raciocínio passo-a-passo (loop ReAct). Cada agente pertence a um domínio e usa ferramentas (tools) para agir. Pense nele como um especialista que analisa, decide e age. | Ag.2 SourcingReActAgent (busca candidatos), Ag.4 WSIInterviewGraph (conduz entrevista de triagem) |
 | **Serviço** | Um componente que executa uma função específica, geralmente sem raciocínio autônomo. Recebe um input, processa e devolve um resultado. | `JobDescriptionGeneratorService` (gera descrição de vaga), `WSIService` (calcula scores de triagem) |
 | **Tool (Ferramenta)** | Uma ação atômica que um agente pode executar. É como uma "mão" do agente — ele decide quando e como usar cada tool. | `search_candidates` (buscar), `send_email` (enviar email), `schedule_interview` (agendar) |
 | **Capability (Capacidade)** | Um módulo transversal que é injetado automaticamente em agentes e serviços para adicionar comportamentos de proteção ou inteligência. Não age sozinho — é uma camada que enriquece quem o usa. | FairnessGuard (anti-viés), PII Masking (proteção de dados), AuditTrail (registro auditável) |
-| **Orquestrador** | O componente central que recebe todas as requisições e decide qual domínio/agente deve processá-las. É o "recepcionista" que direciona cada pedido ao especialista certo. | `MainOrchestrator` + `CascadedRouter` (6 camadas de roteamento) |
+| **Orquestrador** | O componente central que recebe todas as requisições e decide qual domínio/agente deve processá-las. É o "recepcionista" que direciona cada pedido ao especialista certo. | `DomainOrchestrator` + `CascadedRouter` (6 camadas de roteamento) |
 | **Graph (Grafo)** | Um fluxo de trabalho estruturado em etapas (nós) conectadas. Diferente do agente ReAct que raciocina livremente, o graph segue uma sequência definida de passos. | `WSIInterviewGraph` (8 estágios da entrevista WSI), `InterviewGraph` (6 nós do agendamento) |
 | **Pipeline** | Uma sequência de processamento onde o output de uma etapa alimenta a próxima. Usado para processar dados em cadeia. | `WSIScreeningPipeline` (triagem curricular em cadeia) |
 | **Registry** | O catálogo centralizado de agentes. Quando o orquestrador precisa de um especialista, consulta o registry para encontrá-lo pelo nome. | `"sourcing"` → SourcingReActAgent, `"wizard"` → WizardReActAgent |
-
-### Glossário de Termos
-
-| Termo | Definição |
-|-------|-----------|
-| **Chat LIA** | Camada conversacional transversal que permite ao recrutador interagir com todos os domínios da plataforma via chat (SSE/WebSocket). Roteado pelo MainOrchestrator com fallback Tier 6 via AutonomousReActAgent. |
-| **AutomationEngine** | Motor de automação (domínio `automation`) que executa regras do tipo "quando candidato move para stage X → executar ação Y". Dispara triagens, envia alertas, executa transições sem intervenção manual. |
-| **SkillsOntologyEngine** | Serviço do domínio `talent_intelligence` que expande queries de busca usando ontologia semântica de skills. Exemplo: "Python" → inclui "FastAPI", "Django", "asyncio" automaticamente. |
-| **BARS / RubricEvaluation** | Behaviorally Anchored Rating Scales implementada via `RubricEvaluationService` (domínio `interview_intelligence`). Cada score WSI (0–10) ancorado em exemplos de comportamento observável. |
-| **AI Consumption Outbox** | Serviço de tracking de consumo de tokens LLM por tenant (migration 095). Alimenta o billing e dashboards de uso de IA. |
-| **DSR / Portal do Candidato** | Data Subject Requests — exercício de direitos LGPD pelo candidato. Portal público em `/portal/data-request/[token]` com verificação OTP. |
-| **Papel DPO** | Data Protection Officer — papel com acesso ao `/api/v1/admin/lgpd` para gestão de DSRs, relatórios de compliance e ações de cleanup. Criado via migration 093. |
-| **WSI 0–10** | Escala de score WSI normalizada de 0 a 10 (migration 090), substituindo a escala anterior. Cada dimensão (técnica, comportamental, situacional) pontuada de 0–10. |
-| **navigation_intent** | Serviço do orquestrador que detecta quando o recrutador quer navegar para uma página específica e emite `ui_action: "navigate_to"`. |
-| **Agent Studio** | ⚠ FORA DO ESCOPO ALPHA 1. Ferramenta para tenants customizarem system prompts de agentes. Código existe mas não exposto no Alpha 1. |
-| **Digital Twin / TwinInferenceService** | ⚠ FORA DO ESCOPO ALPHA 1. Réplica digital de candidatos para simulações preditivas. |
-| **Talent Pool** | ⚠ FORA DO ESCOPO ALPHA 1. Pool de candidatos passivos gerenciados no longo prazo. |
-| **Recruitment Campaign** | ⚠ FORA DO ESCOPO ALPHA 1. Campanhas de marketing de recrutamento. |
 
 ### Componentes Transversais (aparecem em várias etapas)
 
 | Componente | Tipo | O que faz | Em linguagem simples |
 |------------|------|-----------|----------------------|
-| **MainOrchestrator** | Orquestrador | Entry point único — pipeline: ConversationMemory → CascadedRouter (6 tiers) → DomainWorkflow → ReAct Agent. Arquivo: `app/orchestrator/main_orchestrator.py`. | Ponto de entrada único da LIA — processa toda mensagem via CascadedRouter e delega ao domínio correto |
+| **DomainOrchestrator** | Orquestrador | Recebe toda requisição e roteia para o domínio correto usando 6 camadas de cache/análise | "Recepcionista inteligente" — entende o que você pediu e direciona ao especialista certo |
 | **CascadedRouter** | Serviço (dentro do Orquestrador) | 6 camadas de roteamento: memória → cache local → cache Redis → busca vetorial → regex → LLM | "GPS de requisições" — tenta o caminho mais rápido primeiro, escala para análise mais profunda se necessário |
 | **FairnessGuard** | Capability (3 camadas) | L1: bloqueia viés explícito (350+ padrões). L2: alerta viés implícito. L3: análise semântica por LLM | "Guardião de equidade" — impede que a IA discrimine por gênero, idade, etnia ou qualquer categoria protegida |
 | **PII Masking** | Capability (4 camadas) | Remove dados pessoais antes de enviar ao LLM: CPF, nome, endereço, campos sensíveis | "Protetor de privacidade" — a IA nunca vê dados pessoais reais do candidato |
@@ -135,7 +84,6 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 | **BiasAuditSnapshot** | Capability | Aplica Four-Fifths Rule: detecta se um grupo demográfico é aprovado <80% em relação a outro | "Auditor estatístico" — detecta discriminação numérica mesmo que ninguém a tenha intencionado |
 | **ConfidenceNode** | Capability | Calibra scores para serem comparáveis entre candidatos e vagas diferentes | "Calibrador de notas" — garante que um 8 em uma vaga signifique o mesmo que um 8 em outra |
 | **LearningLoop** | Capability | Observa silenciosamente quando o recrutador aceita, modifica ou rejeita sugestões da IA e aprende com isso | "Aprendiz silencioso" — a IA melhora sem pedir feedback explícito |
-| **SkillsOntologyEngine** | Serviço | Expande queries de busca usando ontologia semântica de skills (domínio `talent_intelligence`) | "Tradutor de habilidades" — quando você busca "Python", ele entende que "FastAPI" e "asyncio" também são relevantes |
 | **SemanticSearch** | Serviço | Expande termos de busca usando vetores semânticos (embeddings 768-dim via Gemini) | "Tradutor de intenções" — quando você busca "Java", ele entende que "Spring Boot" e "JVM" também são relevantes |
 | **CircuitBreaker** | Capability | Protege contra falhas em cascata: se um serviço externo cai, para de chamá-lo temporariamente | "Disjuntor" — evita que a falha de um serviço derrube todo o sistema |
 | **PolicyEngine** | Serviço | Define regras por setor: nível de autonomia da IA, quando escalar para humano, limites de uso | "Regulador setorial" — em saúde a IA é mais cautelosa, em RPO tem mais autonomia |
@@ -144,149 +92,6 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 | **LongTermMemory** | Capability | Memória de longo prazo com compressão automática após 30 dias | "Memória institucional" — a IA lembra padrões de vagas e candidatos passados |
 | **ConversationMemory** | Capability | Tracking de entidades na sessão de chat (última vaga, último candidato, pronomes) | "Contexto de conversa" — quando você diz "ele", a IA sabe de quem está falando |
 | **ModelDrift** | Capability | Monitora se os scores e decisões da IA estão mudando ao longo do tempo (janela de 7 dias) | "Detector de desvios" — alerta se a IA começa a aprovar muito mais (ou muito menos) que o normal |
-| **AutomationEngine** | Serviço | Motor de regras de automação que dispara ações com base em eventos de pipeline | "Gatilho inteligente" — move candidatos, inicia triagens e envia alertas automaticamente |
-
----
-
-## DOMÍNIOS DO ALPHA 1
-
-### Domínios Ativos no Alpha 1
-
-| Domínio | Descrição | Status |
-|---------|-----------|--------|
-| `recruiter_assistant` | Chat LIA + Kanban + Talent + Jobs Management | ● |
-| `sourcing` | Busca de candidatos (local, Pearch, Apify, GitHub, StackOverflow, Diversidade) | ● |
-| `cv_screening` | Triagem WSI (web, WhatsApp, voz), scoring, perguntas | ● |
-| `interview_scheduling` | Agendamento de entrevistas com Google Calendar | ● |
-| `job_management` | Criação/edição de vagas, Wizard, JD Generator | ● |
-| `job_creation` | Geração de perguntas WSI, briefing de vaga | ● |
-| `pipeline` | Transições de estágio, decisões, contexto de candidato | ● |
-| `communication` | Emails (SendGrid/Resend), WhatsApp (Twilio), feedback | ● |
-| `ats_integration` | Sincronização com ATS externos via Merge.dev | ● |
-| `analytics` | KPIs, funil de conversão, predictive analytics | ● |
-| `hiring_policy` | Políticas de contratação por setor, HITL thresholds | ● |
-| `company_settings` | Configurações de empresa, cultura, benefícios | ● |
-| `automation` | Motor de automação, triggers de pipeline | ● |
-| `candidate_self_service` | Portal do candidato, status de aplicação, LGPD info | ● |
-| `voice` | Triagem por voz: (A) Twilio PSTN → Gemini Flash 2.5 STT + OpenAI TTS; (B) browser audio → OpenAI Whisper STT | ● |
-| `consent` | Gestão de consentimento granular por finalidade | ● |
-| `lgpd` | Limpeza de dados, DSR, políticas de retenção | ● |
-| `interview_intelligence` | BARS/Rubric evaluation, WSI service, feedback generator | ● |
-| `talent_intelligence` | SkillsOntologyEngine, análise de mercado | ● |
-| `agent_memory` | Memória de longo prazo de agentes, episódios comprimidos | ● |
-
-### Domínios FORA do Escopo Alpha 1
-
-| Domínio | Motivo de exclusão |
-|---------|--------------------|
-| `digital_twin` | Funcionalidade de réplica digital — fase posterior |
-| `agent_studio` | Customização de agentes por tenant — fase posterior |
-| `talent_pool` | Pool de candidatos passivos — fase posterior |
-| `recruitment_campaign` | Campanhas de marketing de recrutamento — fase posterior |
-
----
-
-## E0 — CHAT LIA (Assistente do Recrutador) — CAMADA TRANSVERSAL
-
-### O que acontece nesta etapa (visão do processo)
-
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│  PASSO A PASSO — E0 CHAT LIA (Assistente do Recrutador)                      │
-│                                                                               │
-│  • O recrutador acessa o chat da LIA em /chat (frontend Next.js)            │
-│  • Pode fazer qualquer pergunta em linguagem natural — a LIA entende         │
-│    e roteia para o especialista correto automaticamente                      │
-│  • Exemplos de comandos via chat:                                             │
-│    - "Crie uma vaga de Engenheiro Sênior para o setor financeiro"           │
-│    - "Busque candidatos com 5 anos de Python e experiência em AWS"          │
-│    - "Aprove todos os candidatos aprovados na triagem de ontem"              │
-│    - "Qual é o status do candidato João Silva?"                              │
-│    - "Inicie triagem em massa para a vaga 123"                               │
-│  • O MainOrchestrator roteia para o domínio correto usando                  │
-│    CascadedRouter (6 camadas de fallback)                                    │
-│  • Se o intent for navegação → navigation_intent emite ui_action            │
-│    → frontend navega automaticamente para a página correta                  │
-│  • Fallback Tier 6: AutonomousReActAgent (raciocínio livre) quando          │
-│    nenhum dos tiers anteriores consegue classificar o intent                 │
-│  • Respostas via SSE (Server-Sent Events) ou WebSocket                      │
-│                                                                               │
-│  Resultado: Recrutador consegue acionar qualquer etapa (E1–E9B) via chat     │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Detalhamento técnico
-
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│  LIA — Chat LIA (recruiter_assistant / orchestrator) — CAMADA TRANSVERSAL    │
-│  Conversa:  POST /api/v1/lia/conversational                                   │
-│  SSE:       POST /api/v1/chat/{session_id}/stream                             │
-│  SSE action: POST /api/v1/chat/action                                         │
-│  WebSocket: WS   /api/v1/ws/chat/{session_id}                                 │
-│  Frontend:  plataforma-lia/src/app/[locale]/chat/page.tsx                    │
-└──────────────────────────────────────────────────────────────────────────────┘
-
- 1  HTTP Request chega ao FastAPI
-    POST /api/v1/lia/conversational (sync) |
-    POST /api/v1/chat/{session_id}/stream (SSE) |
-    WS /api/v1/ws/chat/{session_id} (WebSocket)
-    Body: { message, conversation_id, context_type, entity_id }
-    Authorization: Bearer <jwt_token>
-    Frontend: plataforma-lia/src/app/[locale]/chat/page.tsx
-
- 2  SecurityPatterns pré-check
-    check_input_security: bloqueia prompt injection, exploits
-    Se bloqueado → retorna 403 sem processar
-
- 3  FairnessGuard pré-check (L1 + L2)
-    L1 Regex: bloqueia mensagens com viés explícito
-    L2 Implícito: soft warning sem bloquear
-    Warnings propagados na response final
-
- 4  TenantContext enrichment
-    TenantContextService.get_context(company_id, db)
-    Carrega: setor, policies, LLM provider do tenant
-    RecruiterPersonalizationService: estilo, verbosidade, foco
-
- 5  ConversationMemory setup (LIA-M01)
-    Persiste mensagem do usuário antes de qualquer fase
-    Carrega histórico de conversas anteriores
-    Entity tracking: última vaga, último candidato, pronomes
-
- 6  MainOrchestrator — pipeline de fases
-    Phase 0: PendingAction — ação aguardando confirmação?
-    Phase 1: ActionExecutor — intent detectável por padrão?
-    Phase 1.5: AgenticLoop (LLM function calling — LIA_AGENTIC_LOOP=true)
-    Phase 2: CascadedRouter → DomainWorkflow → ReAct Agent
-
- 7  CascadedRouter (6 tiers)
-    Tier 1: ConversationMemory (memória da sessão)
-    Tier 2: SemanticCache local (hash)
-    Tier 3: VectorSemanticCache (pgvector — similarity ≥ 0.85)
-    Tier 4: Regex patterns
-    Tier 5: LLM (Gemini) — classifica intent
-    Tier 6: AutonomousReActAgent (fallback — raciocínio livre)
-
- 8  navigation_intent post-process
-    detect_navigation_intent(message) → page + confidence
-    Se confidence ≥ 0.75 → ui_action = "navigate_to"
-    Frontend recebe {page, hint} e navega automaticamente
-
- 9  ConversationMemory persist (LIA-M02)
-    Resposta persistida independente de qual fase respondeu
-    Histórico disponível para o próximo turno
-
-┌──────────────────────────────────────────────────────────────────────────────┐
-│  PROTEÇÕES ATIVADAS NESTE FLUXO (E0)                                          │
-│  1. SecurityPatterns — prompt injection, exploits ●                          │
-│  2. FairnessGuard L1+L2 — pré-roteamento ●                                  │
-│  3. PII Masking — logs mascarados ●                                          │
-│  4. ConversationMemory — contexto persistido ●                               │
-│  5. TenantContext — isolamento por empresa ●                                 │
-│  6. RecruiterPersonalization — estilo e preferências ●                       │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
 
 ---
 
@@ -360,25 +165,27 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 │  PASSO A PASSO — E2 EDITAR/CRIAR VAGA                                        │
 │                                                                               │
 │  • O recrutador acessa a página de vagas WeDo no dashboard                   │
-│  • Opção A — EDITAR VAGA (importada do ATS via Merge.dev):                  │
+│  • Opção A — EDITAR VAGA (importada do ATS):                                 │
 │    - Seleciona uma vaga já existente (importada do sistema ATS do cliente)   │
 │    - NÃO cria a vaga na WeDo — apenas edita os dados que vieram do ATS      │
 │    - Define/ajusta requisitos, benefícios, faixa salarial, modelo de         │
 │      trabalho (presencial/remoto/híbrido)                                    │
-│    - Ag.11 ATSIntegrationReActAgent sincroniza dados do ATS via Merge.dev ● │
+│    - 🤖 Ag.8 ATSIntegrationReActAgent sincroniza dados do ATS ⚠ PÓS-MVP(IMPORTANTE)    │
 │  • Opção B — CRIAR VAGA MANUALMENTE na WeDo:                                │
 │    - Clica em "Criar Vaga" → seleciona "Criar Manualmente"                  │
 │    - Preenche todos os campos da vaga manualmente                           │
-│  • Opção C — CRIAR VAGA VIA WIZARD GUIADO (WizardReActAgent + JobWizardGraph):│
-│    - Fluxo guiado em 6 estágios: input → enrichment → salary → competencies │
-│      → wsi-questions → review-publish                                        │
-│    - POST /api/v1/lia_assistant/wizard                                       │
-│  • GERAR JD (Descrição de Vaga) com IA:                                     │
-│    - POST /api/v1/briefing/generate-jd                                       │
-│    - JobDescriptionGeneratorService [Serviço, job_management] usa Claude     │
-│    - SkillsOntologyEngine expande skills automaticamente (talent_intelligence)│
-│    - FairnessGuard valida o JD contra 13 categorias protegidas              │
-│  • Tudo é registrado no AuditTrail                                           │
+│  • GERAR JD (Descrição de Vaga) com IA:                           │
+│    - Utiliza o job description da vaga para gerar JD enriquecido 
+       Na sessão de Configuracao de triagem clica em "Gerar JD" no formulário da vaga  aproveitando JD já existente                            │
+│    - 🤖 JobDescriptionGeneratorService [Serviço, domínio job_management]      │
+│      gera/melhora a descrição automaticamente usando LLM (Claude)e seguindo 
+orientacoes do prompt desenvolvido (atende diversos pre requisitos, 
+inclusive fairness, lgpd etc(camada extra de seguranca para cliente nao publicar
+JD com problemas e a LIA não consumir JD com problemas))           │
+│    - A IA expande skills sugeridas usando busca semântica                    │         │
+│  • O FairnessGuard [Capability anti-viés] analisa a vaga e bloqueia          │
+│    requisitos discriminatórios (ex: "somente homens", "até 30 anos")                     │
+│  • Tudo é registrado no AuditTrail [Capability de auditoria]                 │
 │                                                                               │
 │  Resultado: Vaga criada/editada com JD de qualidade, sem viés,               │
 │  pronta para configurar o roteiro de triagem (E3)                            │
@@ -398,17 +205,17 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
     Body: { title, description, department, seniority_level, employment_type,
             work_model, location_city, salary_min, salary_max, required_skills }
     Authorization: Bearer <jwt_token>
-    Wizard guiado: POST /api/v1/lia_assistant/wizard (WizardReActAgent)
-    Gerar JD: POST /api/v1/briefing/generate-jd (JobDescriptionGeneratorService)
+    Se "Gerar JD" acionado: POST /api/v1/briefing/generate-jd
 
- 2  MainOrchestrator (CascadedRouter) roteia + GuardrailCheck
+ IMPORTANTE: ITENS 2, 3, 4 5 NÃO IMPLEMENTADOS. SOMENTE PÓS MVP
+ 2  DomainOrchestrator roteia + GuardrailCheck
     Identifica domínio = job_management
     GuardrailRepository (3 níveis): global → tenant → domain
     HiringPolicy carregado por company_id
     PromptInjectionGuard ativado
 
  3  EnhancedAgentMixin._setup_enhanced()
-    Capabilities injetadas automaticamente:
+    16 capabilities injetadas automaticamente:
     FairnessGuard (3 layers) | PII Masking (4 layers)
     AuditTrail | BiasAuditSnapshot | ConfidenceNode
     AntiSycophancy (FULL variant) | WorkingMemory | CircuitBreaker
@@ -430,27 +237,25 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
     Campos sensíveis strip via strip_pii_for_llm_prompt
     O LLM NUNCA vê dados pessoais reais
 
- 6  JobDescriptionGeneratorService + SkillsOntologyEngine (Claude LLM)
+CONTINUA DAQUI - ENRIQUECIMENTO DO JD COM LLM QUE SEGUE PROMPT DEFINIDO POR NOS
+ 6  JobDescriptionGeneratorService processa (Claude LLM)
     LLM recebe dados mascarados da vaga
     Gera JD estruturada em markdown:
     → Seções: Sobre, Responsabilidades, Requisitos, Benefícios, Diversidade
     → SEO title + tags
     Anti-sycophancy block (FULL variant) no system prompt
     CircuitBreaker: circuit "anthropic" (failure_threshold=5, recovery=30s)
-    SkillsOntologyEngine (talent_intelligence) expande skills sugeridas
-    via /api/v1/skills_catalog + ontologia semântica vetorial
+    LLM expande skills sugeridas (Gemini 768-dim)
 
  7  AuditTrail registra decisão
     🔒 audit_service.log_decision ativo em jd_generation.py
     Registro: LLM input mascarado, output gerado, FairnessGuard results
     Append-only, retenção 730-1825 dias (SOX)
-
+  
  8  Resposta ao recrutador (PII demasked)
     JD gerada com dados enriquecidos
     FairnessGuard warnings incluídos (se houver L2 alerts)
-    Frontend renderiza JD no modal de edição em configurações de triagem
-    ATS Integration: Ag.11 ATSIntegrationReActAgent sincroniza via Merge.dev
-    (suporta Greenhouse, Lever, e outros ATS via API unificada Merge.dev)
+    Frontend renderiza JD no modal de edição de JD em configuracoes de triagem
     Dados persistidos via save_job_draft
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -460,11 +265,10 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 │  3. AntiSycophancy FULL — verificação de premissas ●                         │
 │  4. CircuitBreaker — circuit "anthropic" ●                                   │
 │  5. AuditTrail — log de geração de JD ● (edições manuais ●)                │
-│  6. LearningLoop — captura silenciosa de edições ●                           │
-│  7. TemplateLearning — auto-template após 3 vagas similares ●                │
+│  6. LearningLoop — captura silenciosa de edições ● NÃO APLICAVEL AINDA                          │
+│  7. TemplateLearning — auto-template após 3 vagas similares ●  (NAO APLICAVEL AINDA)             │
 │  8. PredictiveAnalytics — predict TTF + salary ●                             │
-│  9. SemanticSearch + SkillsOntologyEngine — expansão de skills ●             │
-│ 10. ATSIntegration — sync via Merge.dev ●                                    │
+│  9. SemanticSearch — expansão de skills ●                                    │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -480,29 +284,33 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 │                                                                               │
 │  • A partir da vaga criada/editada na etapa anterior (E2), o recrutador      │
 │    precisa configurar as perguntas que serão usadas na triagem dos            │
-│    candidatos (WSI = Work Sample Interview)                                   │
+│    candidatos (WSI = Work Sample Interview — entrevista por amostra           │
+│    de trabalho)                                                               │
 │  • O recrutador acessa a TAB CONFIGURAÇÕES da vaga                           │
 │    → SEÇÃO PERGUNTAS de Triagem                                              │
-│  • Revisa/ajusta o JD (já enriquecido na E2)                                │
-│  • Clica em "Criar Roteiro" (modo compacto 7 ou completo 12 perguntas)      │
-│  • 🤖 WSIQuestionGeneratorService [Serviço, cv_screening / job_creation]     │
+│  • Primeiro, se necessário, revisa/ajusta o JD (Descrição de Vaga) QUE JÁ FOI ENRIQUECIDO NA ETAPA ANTERIOR DE EDITAR JD          │
+│    na aba de configurações da vaga                                           │
+│  • Depois, clica em "Criar Roteiro" (modo completo ou compacto 7 OU 12 PERGUNTAS)              │
+│    ou edita um roteiro existente                                             │
+│  • 🤖 WSIQuestionGeneratorService [Serviço, domínio cv_screening]             │
 │    gera perguntas WSI automaticamente usando o JD como base:                 │
-│    - Bloco Técnico (Bloom 1–6 + Dreyfus 1–5) — nível de profundidade        │
-│    - Bloco Comportamental (Big Five OCEAN) — traços de personalidade         │
-│    - Bloco Situacional — cenários práticos do dia-a-dia                     │
-│  • Escala WSI: 0–10 por dimensão (migration 090)                             │
-│  • RubricEvaluationService (interview_intelligence) aplica BARS:             │
-│    cada score ancorado em comportamentos observáveis                         │
-│  • FairnessGuard valida cada pergunta individualmente                        │
-│  • FactChecker valida coerência das perguntas com o JD                       │
+│    - Bloco Técnico (avalia conhecimento em 6 níveis de profundidade - BLOOM E DREYFUS)        │
+│    - Bloco Comportamental (avalia 5 traços de personalidade - Big Five)     │
+│    - Bloco Situacional (cenários práticos do dia-a-dia da vaga)             │
+│    -                │
+│  • O recrutador revisa as perguntas geradas, pode editar, remover           │
+│    ou adicionar perguntas manualmente                                        │
+│  • O FairnessGuard [Capability anti-viés] valida cada pergunta              │
+│    individualmente contra 13 categorias protegidas                           │
+│  • O FactChecker [Capability verificador de fatos] valida a                  │
+│    coerência das perguntas com o JD e requisitos                             │
 │                                                                               │
-│  IMPORTANTE: A triagem pode ser ativada na vaga. Candidatos que se           │
-│  inscrevem automaticamente recebem convite para triagem. Candidatos          │
-│  adicionados pelo recrutador (busca no funil) ou importados do ATS são       │
-│  convidados manualmente.                                                     │
-│                                                                               │
-│  Resultado: Roteiro WSI pronto com perguntas validadas, escala 0–10,         │
-│  BARS anchors, sem viés, para ser aplicado aos candidatos (E7)               │
+│  Resultado: Roteiro de triagem WSI pronto, com perguntas validadas           │
+│  e sem viés, para ser aplicado aos candidatos (E7)         
+
+A TRIAGEM PODE SER ATIVADA NA VAGA ECANDIDATOS QUE SE INSCREVEM AUTOMATICAMENTE RECEBEM CONVITE PARA TRIAGEM
+CANDIDATOS ADICIONADOS PELO RECRUTADOR - BUSCA NO FUNIL - OU IMPORTADOS DO ATS DO CLIENTE SAO CONVIDADOS MANUALMENTE.
+
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -516,71 +324,80 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
  1  HTTP Request chega ao FastAPI
     Consultor acessa TAB CONFIGURAÇÕES → SEÇÃO PERGUNTAS Triagem
     POST /api/v1/wsi/generate-questions
-    Body: { job_id, vacancy_id, mode: "compact"|"full", company_id }
+    Body: { job_id, mode: "complete"|"compact", job_description, requirements }
     Authorization: Bearer <jwt_token>
 
- 2  MainOrchestrator (CascadedRouter) roteia + GuardrailCheck
-    Identifica domínio = cv_screening / job_creation
-    GuardrailRepository (3 níveis) carregado
-    HiringPolicy: setor do cliente → regras de perguntas
+ 2  DomainOrchestrator roteia + GuardrailCheck
+    Identifica domínio = cv_screening
+    GuardrailRepository (3 níveis): global → tenant → domain
+    HiringPolicy (per-tenant) carregado
+    PromptInjectionGuard ativado
 
  3  EnhancedAgentMixin._setup_enhanced()
     Capabilities injetadas:
     FairnessGuard (3 layers) | PII Masking (4 layers)
-    AuditTrail | FactChecker | ConfidenceNode
+    AuditTrail | ConfidenceNode
     AntiSycophancy | WorkingMemory | CircuitBreaker
+    LearningLoop | ConversationMemory | SemanticSearch
 
- 4  FairnessGuard filtra perguntas
-    🔒 L1: Bloqueia perguntas discriminatórias (estado civil, filhos,
-       religião, saúde, etc.)
-    🔒 L2: Alerta perguntas proxy implicitamente enviesadas
-    check_fairness aplicado a cada pergunta gerada
+ 4  JobDescriptionGeneratorService (se JD ausente)
+    Se o JD não existe ou precisa ajuste, gera/melhora antes
+    Mesmo fluxo da E2 (Claude LLM, FG L1/L2, PII Masking)
+    Resultado: JD completa como base para perguntas WSI
 
- 5  PII Masking remove dados do JD
-    JD enviado ao LLM mascarado
-    Dados pessoais da vaga não expostos ao modelo
+ 5  FairnessGuard filtra ANTES do LLM
+    🔒 L1 Explicit: Valida cada pergunta candidata contra ~350 patterns
+    🔒 L2 Implicit: Detecta perguntas com proxy bias
+    check_fairness per-question em wsi_questions.py
+    Bloqueia perguntas que violem 13 categorias protegidas
 
- 6  WSIQuestionGeneratorService processa (Gemini LLM)
-    Analisa JD + requirements da vaga
-    Gera 7 perguntas (compacto) ou 12 (completo):
-    → Bloco Técnico: Bloom 1–6 + Dreyfus 1–5
-    → Bloco Comportamental: Big Five OCEAN
-    → Bloco Situacional: cenários práticos
-    Escala WSI 0–10 por dimensão (migration 090)
-    RubricEvaluationService (interview_intelligence):
-    → Cada pergunta recebe BARS anchors (exemplos de resposta 0/5/10)
-    → Metodologia: BARS (Behaviorally Anchored Rating Scales)
+ 6  PII Masking + strip do JD
+    strip_pii_for_llm_prompt aplica 4 camadas
+    JD enviado ao LLM sem dados identificáveis
 
- 7  FactChecker valida coerência
-    🔒 Verifica se perguntas são coerentes com o JD
-    🔒 Verifica se requisitos mencionados existem no JD
-    Inconsistências → flag de revisão ao recrutador
+ 7  WSIQuestionGenerator processa (Gemini LLM)
+    Recebe JD mascarada + requisitos da vaga
+    Gera perguntas WSI em blocos estruturados:
+    → Bloco 2: Técnico (Bloom 1-6, Dreyfus 1-5)
+    → Bloco 3: Comportamental (Big Five traits)
+    → Bloco 4: Situacional (cenários práticos)
+    → Bloco 5: Cultural Fit
+    Cada WSIQuestionBlock: block_id, block_type, question, competency,
+    bloom_level, dreyfus_level, big_five_trait, max_score, trait_weight
+    🧠 SemanticSearch expande competências sugeridas
 
- 8  AuditTrail registra decisão
+ 8  FactChecker verifica APÓS o LLM
+    🔒 4 tipos de verificação:
+    → Experiência declarada: claims vs dados de contexto
+    → Certificações: validade técnica
+    → Período na empresa: coerência temporal
+    → Habilidades técnicas: relevância para a vaga
+    Claim inconsistente → flag para revisão
+    enable_fact_checker=True por default em DomainWorkflow._post_check
+
+ 9  AuditTrail registra + Resposta ao consultor
     🔒 audit_service.log_decision ativo em wsi_questions.py
-    Registro: perguntas geradas, FairnessGuard results, FactChecker flags
+    Registro: perguntas geradas, FG results, fact-check flags
     Append-only, retenção SOX
-
- 9  Resposta ao recrutador
-    Lista de perguntas com: texto, bloco, bloom_level, dreyfus_level,
-    big_five_trait, BARS anchors, max_score=10.0
-    Recrutador pode editar, remover ou adicionar manualmente
-    Salvo em job_screening_questions (fonte da verdade para E7)
+    🧠 LearningLoop captura edições nas perguntas
+    Resposta: lista de perguntas WSI para revisão/ajuste no modal
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  PROTEÇÕES ATIVADAS NESTE FLUXO (E3)                                          │
-│  1. FairnessGuard L1/L2 — por pergunta individual ●                          │
-│  2. PII Masking — JD mascarado antes do LLM ●                                │
-│  3. FactChecker — coerência perguntas × JD ●                                 │
-│  4. AuditTrail — geração de perguntas WSI ● (ativado em wsi_questions.py)   │
-│  5. RubricEvaluationService — BARS anchors + escala 0–10 ●                  │
-│  6. CircuitBreaker — circuit "gemini" ●                                       │
+│  1. FairnessGuard L1/L2 — per-question check ●                              │
+│  2. PII Masking — 4 camadas pré-LLM ●                                       │
+│  3. FactChecker — 4 tipos de verificação pós-LLM ●                          │
+│  4. AuditTrail — log de geração de roteiro WSI ●                             │
+│  5. LearningLoop — captura edições de perguntas ●                            │
+│  6. SemanticSearch — expansão de competências ●                              │
+│  7. ConversationMemory — tracking da vaga ativa ●                            │
+│  STATUS: Compliance completo para esta etapa ✓                               │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## E4 — BUSCAR CANDIDATOS (Funil) — 10 STEPS
+## E4 — BUSCAR CANDIDATOS (Funil de Talentos) — 10 STEPS
 
 ### O que acontece nesta etapa (visão do processo)
 
@@ -588,28 +405,33 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  PASSO A PASSO — E4 BUSCAR CANDIDATOS (Funil de Talentos)                    │
 │                                                                               │
-│  • O recrutador acessa o Funil de Talentos e busca candidatos                │
-│  • Canais de sourcing disponíveis:                                           │
-│    - Local (banco interno LIA)                                               │
-│    - Pearch AI (enriquecimento com email e telefone)                         │
-│    - Apify (web scraping e enriquecimento externo)                           │
-│    - GitHub (perfis de desenvolvedores)                                      │
-│    - StackOverflow (perfis técnicos)                                         │
-│    - Diversidade (busca com foco em DEI)                                     │
-│  • Modos de busca disponíveis:                                               │
-│    - IA Natural (linguagem livre)                                            │
-│    - Boolean (operadores AND/OR/NOT)                                         │
-│    - Perfil Similar (a partir de candidato referência)                       │
-│    - Job Description (busca por JD colada/importada)                        │
-│    - Archetypes (perfis pré-configurados por área)                          │
-│  • SkillsOntologyEngine expande automaticamente a query de busca            │
-│    (ex: "Python" → inclui FastAPI, asyncio, Django na busca)                │
-│  • Sub-agentes de sourcing coordenados:                                     │
-│    Planner → Search → Enrich → Engagement                                   │
-│  • Tabela de candidatos: 10 por vez, botão "Carregar +10"                   │
+│  • O recrutador acessa o Funil de Talentos na plataforma                     │
+│  • Pode buscar candidatos de 5 formas diferentes:                            │
+│    - IA Natural: descreve o que precisa em linguagem livre                  │
+│      (ex: "desenvolvedor Python com 5 anos, remoto, São Paulo")             │
+│    - Boolean: busca avançada com operadores AND/OR/NOT                      │
+│    - Perfil Similar: encontra candidatos parecidos com um existente         │
+│    - Job Description: busca baseada no JD da vaga                           │
+│    - Archetypes: busca por perfis-tipo pré-definidos                        │
+│  • 🤖 Ag.2 SourcingReActAgent [Agente, domínio sourcing]                     │
+│    executa a busca em 2 camadas:                                             │
+│    - Local: banco de dados próprio (PostgreSQL, gratuito)                   │
+│    - Global: base Pearch AI com 190M+ perfis (pago)                         │
+│  • SemanticSearch [Serviço de busca semântica] expande os termos             │
+│    da busca: "Java" → encontra também "Spring Boot", "JVM", "Maven"          │
+│  • O FairnessGuard [Capability anti-viés] bloqueia buscas                    │
+│    discriminatórias (ex: "somente candidatos homens") e detecta              │
+│    termos com viés implícito (ex: "dinâmico" como proxy para idade)          │
+│  • Dados pessoais dos candidatos são mascarados antes de                     │
+│    qualquer análise pela IA                                                  │
+│  • Resultados aparecem em tabela com 10 candidatos por vez,                  │
+│    com preview inline (Perfil, Atividades, Arquivos, Pareceres)             │
+│  • O recrutador pode dar Like/Dislike em cada candidato,                     │
+│    e a IA aprende silenciosamente com essas preferências                     │
 │                                                                               │
-│  Resultado: Lista de candidatos ranqueados, com preview inline               │
-│  e análise da LIA disponível                                                 │
+│  Resultado: Lista de candidatos ranqueados por aderência à vaga,             │
+│  prontos para avaliação E PARA SEREM ADICIONADOS NA VAGA
+NA VAGA RECRUTADOR PODE DISPARAR TRIAGEM APÓS aprovação DO PERFIL NA COLUNA FUNI DE TALENTOS                                     │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -621,72 +443,74 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 └──────────────────────────────────────────────────────────────────────────────┘
 
  1  HTTP Request chega ao FastAPI
-    Consultor digita query no campo de busca do Funil
-    POST /api/v1/sourcing/search (busca principal)
-    POST /api/v1/rag-search (busca semântica RAG)
-    Body: { query, job_id, filters, mode, channels, page }
+    Consultor acessa Funil de Talentos
+    GET /api/v1/candidates/search?query=...&skills=...&location=...
+    Modos de busca: IA Natural | Boolean | Perfil Similar |
+                    Job Description | Archetypes
     Authorization: Bearer <jwt_token>
-    Channels: local | pearch | apify | github | stackoverflow | diversity
 
- 2  MainOrchestrator (CascadedRouter) roteia
-    Domínio = sourcing
-    GuardrailRepository (3 níveis) carregado
-    PolicyEngine: setor → autonomia + FG L3 configurado
+ 2  DomainOrchestrator roteia via CascadedRouter (6 tiers)
+    Tier 0: MemoryResolver — resolve pronomes ("ele", "essa vaga")
+    Tier 1: LRU in-process — hash MD5, O(1)
+    Tier 2: Redis hash cache — distribuído
+    Tier 3: VectorSemanticCache — pgvector, cosine ≥ 0.92
+    Tier 4: FastRouter — regex/keyword, confiança ≥ 0.7
+    Tier 5: LLM Cascade — Gemini (produção)
+    Domínio destino = sourcing
+    GuardrailRepository (3 níveis) + HiringPolicy carregado
 
  3  EnhancedAgentMixin._setup_enhanced()
-    Capabilities injetadas:
+    Capabilities completas injetadas:
     FairnessGuard (3 layers) | PII Masking (4 layers)
     AuditTrail | BiasAuditSnapshot | ConfidenceNode
-    AntiSycophancy OPERATIONAL | WorkingMemory | CircuitBreaker
-    LearningLoop | TemplateLearning | PredictiveAnalytics
-    SemanticSearch | ConversationMemory | ModelDrift
-    RoutingAdaptativo | Calibration | ScoreNormalization
+    AntiSycophancy OPERATIONAL | WorkingMemory | LongTermMemory
+    CircuitBreaker | LearningLoop | Calibration
+    ScoreNormalization | RoutingAdaptativo | ModelDrift
+    PredictiveAnalytics | ConversationMemory | SemanticSearch
 
  4  FairnessGuard filtra ANTES do LLM
-    🔒 L1+L2: query de busca analisada contra viés explícito e implícito
-    🔒 L3 (setor-aware): análise semântica em setores tech/financeiro/saude/rpo
-    check_with_sector() ativo na RAGPipelineService.search(**kwargs)
+    🔒 L1 Explicit: Bloqueia buscas discriminatórias (MainOrchestrator L35-47)
+    🔒 L2 Implicit: Alerta proxy terms na busca (MainOrchestrator L48-62)
+    🔒 L3 Semantic (setor-condicionada): Análise semântica profunda
+       Setores com L3 ativo: tech, financeiro, saude, rpo
+       check_with_sector() ativo em sourcing_agent, RAG pipeline
+    _LEARNING_PROTECTED_FIELDS bloqueia learning de: gender, age, ethnicity,
+    marital_status, photo, institution, address, religion, disability, cv_gaps
 
- 5  SkillsOntologyEngine + SemanticSearch
-    🧠 SkillsOntologyEngine (talent_intelligence):
-       Expande query com ontologia de skills
-       "Python" → ["FastAPI", "asyncio", "Django", "Flask", ...]
-    🧠 SemanticSearch: embeddings 768-dim (Gemini text-embedding-004)
-       EmbeddingCacheService (Redis) evita re-embedding
-    🧠 LLM Job Classification (gemini): classifica candidato × vaga
-       (com cache TTL 1h, max 500 entries)
+ 5  PII Masking + anonimização
+    4 camadas pré-LLM para candidatos
+    strip_pii_for_llm_prompt em todos os perfis
+    ToonService anonymize=True para modo anônimo (LGPD)
 
- 6  RAG Pipeline executa busca multi-fonte
-    Elasticsearch + PGVector + WRF (Weighted Rank Fusion)
-    ES Score Drop Analyzer + PGV Gap Analyzer (pré-WRF)
-    WRF Dynamic K: ajuste por nível de qualificação
-    Channels ativos:
-      Local DB → Pearch AI → Apify (enriquecimento)
-      GithubSourcingAgent → StackOverflowSourcingAgent
-      DiversitySourcingAgent (DEI-aware)
+ 6  Motor de Busca multi-tier
+    Busca 2-tier: Local (PostgreSQL, gratuito) → Global (Pearch AI 190M+, pago)
+    Elasticsearch + PGVector + WRF (Weighted Rank Fusion):
+    → ES Score Drop Analyzer + PGV Gap Analyzer (pré-WRF)
+    → WRF Dynamic K (ajuste por nível de qualificação)
+    → LLM Job Classification para otimização de K values
+    🧠 SemanticSearch: expansão semântica de skills/títulos/indústrias
+       (Gemini text-embedding-004, 768-dim, Redis cache)
+    CircuitBreaker: circuit "pearch" (failure_threshold=3, recovery=60s)
 
- 7  SourcingReActAgent coordena sub-agentes
-    Ag.1a SourcingPlannerAgent: estratégia de busca
-    Ag.1b SourcingSearchAgent: execução (ES + PgVector)
-    Ag.1c SourcingEnrichAgent: enriquecimento via Apify
-    Ag.1d SourcingEngagementAgent: outreach e engajamento
-    Ag.1e GithubSourcingAgent: perfis GitHub
-    Ag.1f StackOverflowSourcingAgent: perfis StackOverflow
-    Ag.1g DiversitySourcingAgent: candidatos DEI
-    Ag.1h ReferralAgent: indicações internas
-    Ag.1i PassivePipelineAgent: candidatos passivos
-    Ag.1j NurtureSequenceAgent: nurturing de longo prazo
-    max_iterations=5 | max_tool_calls=3
+ 7  Ag.2 SourcingReActAgent processa
+    ReAct loop: max_iterations=5, max_tool_calls=3
+    Tools: search_candidates, analyze_profile, score_candidate,
+           compare_candidates, rank_candidates, generate_message
+    WorkingMemory + LongTermMemory ativos
+    🧠 RoutingAdaptativo: confidence multipliers 0.8x-1.2x por domínio
 
  8  FactChecker + ConfidenceNode + BiasAuditSnapshot
     🔒 FactChecker: valida claims nas análises LIA
+       enable_fact_checker=True por default em DomainWorkflow._post_check
     🔒 ConfidenceNode: score calibrado para comparabilidade real
+       confidence_score = tool_success_ratio × 0.7 + completion_ratio × 0.3
     🔒 BiasAuditSnapshot: Four-Fifths Rule
+       Detecta se taxa de aprovação de grupo demográfico < 80% de outro
     🧠 ScoreNormalization: ajusta por difficulty_coefficient
     🧠 Calibration: feedback explícito/implícito sobre scores
 
  9  AuditTrail + Learning
-    🔒 Audit: log de buscas + scores ● (ativado em sourcing_react_agent.py)
+    🔒 Audit: log de buscas + scores ● (ativado via sourcing_react_agent.py)
     🧠 LearningLoop: captura accept/modify/reject de candidatos
     🧠 ModelDrift: monitora score_drift + approval_drift (7-day window)
     🧠 PredictiveAnalytics: predict_skill_success integrado
@@ -697,7 +521,6 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
     Like/Dislike feedback por candidato (otimiza busca)
     Prompt expandido da LIA (análise, comparação, ranking)
     Dados PII restaurados na response final
-    Email OBRIGATÓRIO | Telefone opcional
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  PROTEÇÕES ATIVADAS NESTE FLUXO (E4)                                          │
@@ -711,7 +534,7 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 │  8. LearningLoop — captura silenciosa ●                                      │
 │  9. Calibration — feedback dual (explícito + implícito) ●                    │
 │ 10. ModelDrift — 4 dimensões monitoradas ●                                   │
-│ 11. SkillsOntologyEngine + SemanticSearch — expansão multi-dimensional ●     │
+│ 11. SemanticSearch — expansão 768-dim ●                                      │
 │ 12. RoutingAdaptativo — confidence multipliers ●                             │
 │ 13. PredictiveAnalytics — predict_skill_success ●                            │
 └──────────────────────────────────────────────────────────────────────────────┘
@@ -728,6 +551,7 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 │  PASSO A PASSO — E5 APROVAR MAPEADOS (Gate 1)                                │
 │                                                                               │
 │  • O recrutador visualiza os candidatos mapeados no Kanban board             │
+│    (painel visual com colunas representando cada etapa do processo)           │
 │  • Para cada candidato, decide: APROVAR ou REPROVAR                          │
 │    - Aprovação individual: arrasta o card do candidato para a                │
 │      próxima coluna                                                          │
@@ -735,21 +559,22 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 │      todos de uma vez (máx. 100)                                             │
 │    - Drag-and-drop: pode mover manualmente para qualquer coluna             │
 │  • Se REPROVAR: precisa informar o motivo da rejeição                       │
-│    - FairnessGuard analisa o motivo contra 13 categorias protegidas         │
-│    - Se o motivo for discriminatório → BLOQUEADO automaticamente             │
-│  • Ag.4 PipelineTransitionAgent coordena as transições via sub-agentes:     │
-│    Decision → Context → Action → Transition                                  │
-│  • Automation Engine: regras podem mover candidatos automaticamente          │
-│    (ex: "se score WSI ≥ 8 → mover para APROVADO sem intervenção humana")   │
-│  • PolicyEngine define se a IA pode aprovar sozinha ou precisa HITL          │
-│  • Antes de contatar candidato, verifica consentimento LGPD                 │
-│  • Aprovados seguem para contato via email ou WhatsApp (E6)                 │
-│  • Reprovados recebem feedback personalizado (E9B)                           │
+│    - 🤖 FairnessGuard [Capability anti-viés] analisa o motivo               │
+│      da rejeição contra 13 categorias protegidas                             │
+│    - Se o motivo for discriminatório → BLOQUEADO OU AVISO automaticamente             │
+│  • 🤖 PolicyEngine [Serviço de políticas por setor] define:                  │
+│    - Se a IA pode aprovar sozinha ou precisa de confirmação humana           │
+│    - Exemplo: no setor financeiro, quase tudo precisa HITL (Human           │
+│      In The Loop); em RPO, a IA tem mais autonomia                           │
+│  • Antes de contatar candidato aprovado, verifica consentimento LGPD        │
+│    - Sem consentimento registrado → triagem não iniciada ou candidato bloqueado                        │
+│  • Aprovados seguem para contato via email ou whatsapp(E6)                              │
+│  • Reprovados recebem feedback personalizado elaborado pelos agentes de IA (LIA) (E9B)                           │
 │  • ⚡ Candidatos que se inscreveram pelo site PULAM esta etapa               │
 │    e vão direto para triagem automática                                      │
 │                                                                               │
 │  Resultado: Candidatos aprovados prontos para contato,                       │
-│  reprovados com feedback respeitoso                                           │
+│  reprovados com feedback respeitoso com base em perfil e performance (template construido para utilizacao da LLM)                                       │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -769,16 +594,13 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
     Drag-and-drop manual para qualquer coluna
     Authorization: Bearer <jwt_token>
 
- 2  MainOrchestrator (CascadedRouter) + PolicyEngine
+ 2  DomainOrchestrator + PolicyEngine
     Domínio = pipeline + kanban
     🔒 PolicyEngine: ALPHA1_SECTOR_RULES por setor
        Autonomy levels + HITL thresholds
        Determina se ação precisa confirmação humana
     SmartTransitionModal: etapas críticas pedem confirmação
     GuardrailRepository (3 níveis) carregado
-    Automation Engine verifica regras automáticas:
-    → POST /api/v1/automation/check (verifica triggers ativos)
-    → Se regra de auto-aprovação existe → executa sem HITL
 
  3  EnhancedAgentMixin._setup_enhanced()
     Capabilities injetadas:
@@ -795,11 +617,8 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
     13 categorias protegidas
     Se motivo discriminatório → BLOCK + alerta ao consultor
 
- 5  Pipeline sub-agentes coordenam transição
-    Ag.4 PipelineTransitionAgent (orquestrador)
-    Ag.4a PipelineDecisionAgent: decide aprovação/rejeição
-    Ag.4b PipelineContextAgent: agrega contexto do candidato
-    Ag.4c PipelineActionAgent: executa a ação efetiva
+ 5  PipelineTransitionAgent interpreta contexto
+    LangGraph ReAct (invocação direta, não via registry)
     POST /api/v1/pipeline/interpret-context
     Tools: validate_transition, get_candidate_profile,
            get_candidate_wsi_scores, suggest_sub_status,
@@ -830,12 +649,11 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
     Aprovados → LIA dispara contato (E6)
     Reprovados → LIA envia feedback (E9B)
     ⚡ Inscritos via web BYPASS Gate 1 → triagem automática
-    Kanban board atualizado em real-time (WebSocket)
-    ATSIntegrationReActAgent: sync status para ATS via Merge.dev ●
+    Kanban board atualizado em real-time (ActionCable/WebSocket)
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  PROTEÇÕES ATIVADAS NESTE FLUXO (E5)                                          │
-│  1. FairnessGuard — auto-check em rejeições + FG L3 pré-check ●              │
+│  1. FairnessGuard — auto-check em rejeções + FG L3 pré-check ●              │
 │  2. PolicyEngine — HITL thresholds por setor ●                               │
 │  3. LGPD — consent check antes de contato ●                                  │
 │  4. PII Masking — ativo globalmente ●                                        │
@@ -844,7 +662,6 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 │  7. LearningLoop — captura decisões ●                                        │
 │  8. Calibration — implicit feedback ●                                        │
 │  9. ModelDrift — approval_drift monitoring ●                                 │
-│ 10. AutomationEngine — regras de auto-transição ●                            │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -865,18 +682,19 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 │    - Link para a triagem via CHAT WEB (canal principal)                     │
 │    - Opção de informar número de celular para triagem via WhatsApp          │
 │    - Link obrigatório de opt-out (LGPD) para cancelar comunicações          │
-│  • Ag.10 CommunicationReActAgent personaliza e envia o email                 │
-│  • A/B Testing: variantes de template testadas automaticamente               │
-│    (feature ativa — 3 experimentos criados no startup)                       │
-│  • Cadência de follow-up:                                                    │
-│    - Re-envio automático a cada 2 dias se não houver abertura/clique        │
+│  • 🤖 Ag.7 CommunicationReActAgent [Agente, domínio communication]          │
+│    personaliza e envia o email                                               │
+│  • A IA testa variantes do template de email automaticamente                 │
+│    (A/B Testing) para descobrir qual versão gera mais respostas  (NAO PRIORITARIO - POS MVP)            │
+│  • Se o candidato NÃO abre/clica o email:                                    │
+│    - Re-envio automático a cada 24h durante A CADA 2 dias              │
 │    - Após 7 dias sem resposta → status "sem_resposta"                       │
-│    - O recrutador é notificado (Teams)                                       │
+│    - O recrutador é notificado via Teams                                     │
 │  • Se o candidato clicou no opt-out → canal de email bloqueado              │
 │    para futuras comunicações                                                 │
 │                                                                               │
 │  Resultado: Candidato contatado por email com link para triagem,             │
-│  com follow-up automático de 7 dias (cadência a cada 2 dias)                │
+│  com follow-up automático de 7 dias                                          │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -894,13 +712,13 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
             personalization: { candidate_name, job_title, screening_link } }
     Contato primário: SEMPRE email
 
- 2  MainOrchestrator (CascadedRouter) roteia
+ 2  DomainOrchestrator roteia
     Domínio = communication
     GuardrailRepository carregado
     Rate limiting verificado: RateLimitRule sliding window por empresa/dia
     CircuitBreaker: circuits "sendgrid" + "resend" (critical tier)
 
- 3  CommunicationReActAgent (Ag.10) processa
+ 3  CommunicationReActAgent (Ag.7) processa
     ReAct loop: max_iterations=5
     Tools registradas (communication_tool_registry.py):
     → send_email, send_whatsapp, get_communication_history,
@@ -922,14 +740,13 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
     A) Link para triagem via CHAT WEB (canal principal)
     B) Solicita nº celular → WhatsApp (canal secundário)
     🧠 A/B Testing: variantes de template de email
-       seed_email_ab_tests cria 3 experimentos no startup ●
-    🧠 TemplateLearning: templates de email aprendidos ●
-       (lê de message_queue UNION communication_logs)
+       seed_email_ab_tests cria 3 experimentos no startup
+    🧠 TemplateLearning: templates de email aprendidos
 
- 7  Follow-up automático (7 dias, cadência a cada 2 dias)
+ 7  Follow-up automático (7 dias)
     Se candidato NÃO abre/clica email:
-    → Re-envio automático a cada 2 dias
-    → Após 7 dias sem resposta (≈ 3–4 tentativas) → status "sem_resposta"
+    → Re-envio automático a cada 24h por 7 dias consecutivos
+    → Após 7 dias sem resposta → status "sem_resposta"
     → Consultor notificado (Teams)
     Celery Beat schedule para verificação periódica
 
@@ -944,16 +761,16 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 │  2. PII Masking — logs mascarados ●                                          │
 │  3. RateLimiting — sliding window por empresa/dia ●                          │
 │  4. CircuitBreaker — circuits "sendgrid" + "resend" ●                        │
-│  5. A/B Testing — variantes de template ● (3 experimentos ativos)            │
+│  5. A/B Testing — variantes de template ●                                    │
 │  6. TemplateLearning — templates aprendidos ●                                │
 │  7. AuditTrail — envios/opens/clicks ● (ativado)                            │
-│  8. Follow-up automático — 7 dias, cadência 2 dias, Celery Beat ●           │
+│  8. Follow-up automático — 7 dias, Celery Beat ●                             │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## E7 — TRIAGEM WSI — 11 STEPS
+## E7 — TRIAGEM WSI (cv_screening + WSI) — 11 STEPS
 
 ### O que acontece nesta etapa (visão do processo)
 
@@ -962,30 +779,32 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 │  PASSO A PASSO — E7 TRIAGEM WSI                                              │
 │                                                                               │
 │  • O candidato recebeu o email (E6) e clica no link de triagem               │
-│  • Existem 3 trilhas de triagem:                                             │
-│    TRILHA 1 — Chat Web (canal principal):                                    │
-│      Candidato acessa /triagem/[token] no navegador                         │
-│      Aceita o termo LGPD (checkbox obrigatório)                             │
-│      Responde perguntas WSI via interface de chat                           │
-│      Pode pausar e retomar a qualquer momento                               │
-│    TRILHA 2 — WhatsApp (canal secundário):                                   │
-│      Candidato informou número de celular                                    │
-│      LIA inicia conversa via WhatsApp (Twilio)                              │
-│      POST /api/v1/triagem/{token}/whatsapp-initiate                         │
-│    TRILHA 3 — Voz/Telefone (canal terciário — ver E7-VOZ):                  │
-│      Candidato solicita ligação ou recrutador inicia chamada                 │
-│      Stack: Twilio Voice + Gemini Flash 2.5 STT + OpenAI TTS                │
-│      POST /api/v1/triagem/{token}/request-call                              │
-│  • Ag.2 WSIInterviewGraph conduz a entrevista (8 estágios)                  │
-│  • Escala WSI 0–10 por dimensão (migration 090)                              │
-│  • RubricEvaluationService aplica BARS para scoring                          │
-│  • Ag.3 WSIService calcula score final de forma determinística               │
-│    (zero custo LLM, zero latência)                                           │
-│  • FactChecker valida claims das respostas                                   │
-│  • BiasAuditSnapshot aplica Four-Fifths Rule                                 │
-│  • Score final: "aprovado" | "aguardando" | "reprovado"                     │
+│  • Acessa a página de triagem pelo navegador (chat web)                      │
+│    ou pelo WhatsApp (se informou o número)                                   │
+│    ou por voz (Twilio/OpenMic.ai — canal terciário)                          │
+│  • Antes de começar, o candidato DEVE aceitar o termo LGPD                   │
+│    (checkbox obrigatório no WelcomeCard — sem aceitar, não avança)           │
+│  • 🤖 Ag.4 WSIInterviewGraph [Agente tipo Graph, domínio cv_screening]       │
+│    conduz a entrevista de triagem automaticamente:                            │
+│    - Faz perguntas técnicas (nível de profundidade progressivo,              │
+│      de básico a avançado — Bloom 1 a 6)                                     │
+│    - Faz perguntas comportamentais (avalia 5 traços de                       │
+│      personalidade — Big Five: OCEAN)                                        │
+│    - Faz perguntas situacionais (cenários práticos da vaga)                 │
+│  • A sessão pode durar de 5-10 minutos (modo quick) a 10-15M minutos             │
+│    (modo full), com salvamento automático do progresso                       │
+│  • O candidato pode pausar e retomar a qualquer momento se não for modo ligacao - se for whatsapp                    │
+│  • 🤖 Ag.5 WSIService [Serviço determinístico, domínio cv_screening]         │
+│    calcula o score final SEM usar LLM (zero custo, zero latência)            │
+│    com normalização por dificuldade do roteiro                               │
+│  • O FactChecker [Capability verificador de fatos] valida as                 │
+│    respostas: experiência declarada, certificações, períodos                 │
+│  • O BiasAuditSnapshot [Capability auditor estatístico] aplica               │
+│    Four-Fifths Rule para detectar discriminação numérica                     │
+│  • Ao final, a LIA gera um parecer com recomendação:                         │
+│    "aprovado" | "aguardando" | "reprovado"                                    │
 │                                                                               │
-│  Resultado: Candidato triado com score WSI 0–10, parecer da IA e            │
+│  Resultado: Candidato triado com score WSI, parecer da IA e                  │
 │  recomendação, aguardando decisão do recrutador (Gate 2 — E8)                │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -998,19 +817,19 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 └──────────────────────────────────────────────────────────────────────────────┘
 
  1  HTTP Request chega ao FastAPI
-    Frontend (Next.js 15) envia POST /api/chat ou acessa /triagem/[token]
+    Frontend (Next.js 15) envia POST /api/chat
     Request logado via middleware (X-Request-ID auto-gerado)
-    Canais: Chat web | WhatsApp (Twilio) | Voz PSTN (Twilio + Gemini Flash 2.5 STT) | Voz web (Whisper STT)
+    Canais: Chat web (link do email) | WhatsApp | Voz (Twilio/OpenMic.ai)
     Candidato clica link do email → página /triagem/[token]
 
- 2  MainOrchestrator (CascadedRouter) roteia + GuardrailCheck
+ 2  DomainOrchestrator roteia + GuardrailCheck
     Identifica domínio = cv_screening
     GuardrailRepository (3 níveis): global → tenant → domain
     HiringPolicy (per-tenant) carregado
     PromptInjectionGuard ativado
 
  3  EnhancedAgentMixin._setup_enhanced()
-    Capabilities injetadas automaticamente:
+    16 capabilities injetadas automaticamente:
     FairnessGuard (3 layers) | PII Masking (4 layers)
     AuditTrail | BiasAuditSnapshot | ConfidenceNode
     AntiSycophancy | WorkingMemory | CircuitBreaker
@@ -1028,25 +847,19 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
     nome → [NAME_1] | endereço → [ADDR_MASKED]
     O LLM NUNCA vê dados pessoais reais
 
- 6  WSI Interview Graph processa
-    8 stages: INIT → LOAD_CONTEXT → GENERATE_QUESTION → AWAIT_RESPONSE →
-    VALIDATE_RESPONSE → SCORE_RESPONSE → ADVANCE → COMPLETE
-    Bloom (1–6) + Dreyfus (1–5) + Big Five (OCEAN)
-    Escala WSI 0–10 (migration 090)
-    PostgresSaver checkpoint — sessões de 30–120 min via WebSocket
+ 6  WSI Interview Graph processa (1.141L)
+    8 stages: INIT → LOAD → GENERATE → AWAIT →
+    VALIDATE → SCORE → ADVANCE → COMPLETE
+    Bloom (1-6) + Dreyfus (1-5) + Big Five (OCEAN)
+    PostgresSaver checkpoint — sessões de 30-120 min via WebSocket
     interview_level: "quick" | "standard" | "full"
-    HITL: interrupt_before=["generate_feedback"]
-    FONTE DE PERGUNTAS: job_screening_questions (DB) → fallback pipeline
-    Verificação de consentimento LGPD (SEG-4) antes de iniciar
+    HITL: interrupt_before=["lg_generate_feedback"]
 
  7  Gemini/Claude processa (dados mascarados)
     LLM recebe [CPF_MASKED], [NAME_1], etc.
     Anti-sycophancy block no system prompt
     CircuitBreaker protege contra falha
     Temperature: 0.3 (LLM_AGENT_TEMPERATURE)
-    RubricEvaluationService (interview_intelligence):
-    → BARS anchors aplicados por pergunta
-    → Score 0–10 ancorado em comportamentos observáveis
 
  8  FactChecker verifica APÓS o LLM
     🔒 4 tipos: experiência declarada, certificações,
@@ -1065,66 +878,59 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
  10 AuditTrail registra TUDO (append-only)
     Registro imutável: request, fairness check, PII masks,
     LLM response, fact-check, scores, bias audit
-    Retenção: 730-1825 dias (SOX). Não pode ser alterado
+    Retenção: 7 anos (SOX). Não pode ser alterado
     🧠 LearningLoop: captura padrões de resposta por competência
     🧠 ModelDrift: monitora drift em scores WSI (7-day window)
-    audit_service.log_decision ativo (EU AI Act compliance)
 
  11 Resposta ao recrutador (PII demasked)
-    WSIFinalReport com recomendação + scores por dimensão:
-    technical_score | behavioral_score | situational_score | wsi_final_score
-    Escala 0–10 | Dados PII restaurados na resposta (nunca no audit)
+    WSIFinalReport com recomendação + 3 scores
+    (tech/behavioral) + wsi_final_score
+    Dados PII restaurados na resposta (nunca no audit)
     Recomendação: "aprovado" | "aguardando" | "reprovado"
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  PROTEÇÕES ATIVADAS NESTE FLUXO (E7)                                          │
-│  1. FairnessGuard L1/L2/L3 — por resposta + scoring ●                        │
-│  2. PII Masking — 4 camadas pré-LLM ●                                        │
-│  3. FactChecker — 4 tipos de verificação ●                                   │
-│  4. BiasAuditSnapshot — Four-Fifths Rule ●                                   │
-│  5. ConfidenceNode — calibração de score ●                                   │
-│  6. ScoreNormalization — difficulty_coefficient ●                             │
-│  7. AuditTrail — SOX-compliant, EU AI Act ●                                  │
-│  8. LearningLoop — captura padrões por competência ●                         │
-│  9. ModelDrift — drift em scores WSI ●                                       │
-│ 10. RubricEvaluationService — BARS + escala 0–10 ●                           │
-│ 11. LGPD Consent Check — SEG-4 antes de iniciar entrevista ●                 │
+│  1. PII nunca chega ao LLM — 4 camadas de mascaramento pré-LLM ●            │
+│  2. FairnessGuard 3 layers — bloqueia vieses explícitos e implícitos ●       │
+│  3. BiasAuditSnapshot — Four-Fifths Rule detecta discriminação estatística ● │
+│  4. ConfidenceNode — calibra scores para serem comparáveis e significativos ●│
+│  5. FactChecker pós-LLM — verifica claims factuais do candidato ●            │
+│  6. Audit Trail SOX — registro imutável, 7 anos, append-only ●              │
+│  7. WSI com Bloom+Dreyfus — progressão de dificuldade + cobertura ●          │
+│  8. LGPD consent — WelcomeCard com checkbox explícito obrigatório ●          │
+│  9. Anti-sycophancy — bloqueia concordância automática ●                     │
+│ 10. ScoreNormalization — difficulty_coefficient por versão de roteiro ●       │
+│ 11. Voice Analysis — STT Deepgram/Whisper + TTS OpenAI ●                    │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## E7-VOZ — TRIAGEM POR LIGAÇÃO TELEFÔNICA
+## E7A — TRIAGEM ABANDONADA — 5 STEPS
 
-### O que acontece nesta sub-etapa
+### O que acontece nesta etapa (visão do processo)
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  PASSO A PASSO — E7-VOZ TRIAGEM POR LIGAÇÃO TELEFÔNICA                       │
+│  PASSO A PASSO — E7A TRIAGEM ABANDONADA                                      │
 │                                                                               │
-│  • O candidato solicita triagem por telefone (ou recrutador inicia)         │
-│  • Stack técnica — DOIS pipelines de áudio:                                  │
-│    PIPELINE A — Twilio PSTN (E7-VOZ — ligação telefônica):                  │
-│    - Twilio Voice: telecomunicação (μ-law 8kHz)                            │
-│    - Gemini Flash 2.5: STT — mulaw_to_wav() → Gemini API → transcrição     │
-│    - OpenAI TTS: voz da LIA → mp3_to_mulaw() → Twilio                      │
-│    PIPELINE B — Áudio web (browser):                                         │
-│    - POST /api/v1/triagem/{token}/audio → VoiceService.transcribe_audio()  │
-│    - OpenAI Whisper (whisper-1): STT para áudio enviado via browser         │
-│    - OpenAI TTS: TTS para perguntas da LIA (mesmo provider)                 │
-│  • VoiceScreeningOrchestrator coordena todo o fluxo:                         │
-│    - Carrega perguntas WSI do banco de dados (job_screening_questions)      │
-│    - Verifica consentimento LGPD antes de iniciar                           │
-│    - Aplica perguntas sequencialmente por voz                               │
-│    - Transcreve respostas via Gemini Flash 2.5 STT                          │
-│    - Score determinístico (não usa LLM para scoring — zero custo)           │
-│    - Fallback determinístico se LLM falhar                                  │
-│  • RESTRIÇÕES:                                                               │
-│    - Não é permitido pausar/retomar em chamada ao vivo                      │
-│    - Progresso salvo automaticamente ao final da sessão                     │
-│  • Audit trail completo (EU AI Act) — transcrição mascarada de PII          │
+│  • O candidato iniciou a triagem WSI (E7) mas parou de responder             │
+│  • A plataforma detecta automaticamente a inatividade:                       │
+│    - Verificação automática a cada 4 horas (Celery Beat)                    │
+│  • Após 48h sem atividade → 1º lembrete automático                           │
+│    - Mensagem personalizada pelo mesmo canal da triagem                     │
+│    - Informa o progresso parcial ("você completou 60% da triagem")          │
+│  • Após mais 48h (96h total) → 2º lembrete automático                        │
+│    - Tom mais urgente, informa prazo limite                                  │
+│  • Se ainda não retorna → alerta ao recrutador via Teams                     │
+│    - Candidato marcado como "triagem_abandonada"                            │
+│    - O recrutador decide: tentar re-engajar ou descartar                    │
+│  • O progresso parcial NUNCA é perdido — fica salvo                          │
+│    - Se o recrutador re-enviar o link, o candidato retoma de onde parou     │
+│    - Scores parciais ficam visíveis para o recrutador                       │
 │                                                                               │
-│  Resultado: Candidato triado por voz com score WSI igual ao chat web         │
+│  Resultado: Candidato lembrado 2x; se não retorna, recrutador               │
+│  é notificado para decisão manual                                            │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -1132,237 +938,114 @@ Tabela completa dos agentes e sub-agentes registrados no código (abril/2026).
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  LIA — Triagem por Voz (voice) — VoiceScreeningOrchestrator                  │
-│  Arquivo: app/domains/voice/services/voice_screening_orchestrator.py          │
-│  Stream:  app/api/v1/twilio_voice.py  (WebSocket + TwiML webhooks)            │
-│  Web:     app/api/v1/triagem.py       (browser audio + VoIP fallback)         │
+│  LIA — Fluxo de Triagem Abandonada (cv_screening) — 5 STEPS                  │
 └──────────────────────────────────────────────────────────────────────────────┘
 
-ENDPOINTS — TWILIO VOICE (8 endpoints PSTN — app/api/v1/twilio_voice.py)
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ Método │ Caminho                                          │ Função           │
-├────────┼──────────────────────────────────────────────────┼──────────────────┤
-│ POST   │ /api/v1/twilio-voice/initiate                    │ Cria chamada     │
-│        │                                                  │ PSTN sob         │
-│        │                                                  │ TWILIO_VOICE_    │
-│        │                                                  │ CIRCUIT; se      │
-│        │                                                  │ aberto/sem       │
-│        │                                                  │ creds → status=  │
-│        │                                                  │ "fallback",      │
-│        │                                                  │ fallback_channel │
-│        │                                                  │ ="whatsapp"      │
-│ POST   │ /api/v1/twilio-voice/greeting                    │ TwiML inicial +  │
-│        │                                                  │ consentimento    │
-│ POST   │ /api/v1/twilio-voice/consent-response            │ Captura "sim/    │
-│        │                                                  │ não" do          │
-│        │                                                  │ candidato        │
-│ POST   │ /api/v1/twilio-voice/status                      │ Webhook de       │
-│        │                                                  │ CallStatus       │
-│ WS     │ /api/v1/twilio-voice/audio-stream?session_id=…   │ Bidirectional    │
-│        │                                                  │ Media Stream —   │
-│        │                                                  │ pipeline μ-law   │
-│ POST   │ /api/v1/twilio-voice/end-call/{session_id}       │ Encerra chamada  │
-│ GET    │ /api/v1/twilio-voice/sessions/{session_id}       │ Estado da sessão │
-│ GET    │ /api/v1/twilio-voice/health                      │ Health-check     │
-│        │                                                  │ (config + estado │
-│        │                                                  │ do circuit)      │
-└──────────────────────────────────────────────────────────────────────────────┘
-  (+ 2 endpoints auxiliares para o cliente VoIP do navegador:
-      POST /api/v1/twilio-voice/voip-token   — emite token JWT do Voice SDK
-      POST /api/v1/twilio-voice/voip-connect — TwiML que liga o cliente VoIP
-                                                ao mesmo /audio-stream)
+ 1  Detecção de abandono
+    Candidato inicia WSI mas para de responder
+    Celery Beat: task "wsi-abandoned-check" roda a cada 4h
+    Verifica WSIInterviewState: last_activity_at vs now()
+    Progresso parcial SALVO via PostgresSaver checkpoint
 
-ENDPOINTS — TRIAGEM VOICE (5 endpoints — app/api/v1/triagem.py)
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ Método │ Caminho                                          │ Função           │
-├────────┼──────────────────────────────────────────────────┼──────────────────┤
-│ POST   │ /api/v1/triagem/{token}/voip-start               │ Inicia sessão de │
-│        │                                                  │ voz no browser.  │
-│        │                                                  │ Provider:        │
-│        │                                                  │ Gemini Live      │
-│        │                                                  │ Audio (preferido,│
-│        │                                                  │ ~$0.065/triagem).│
-│        │                                                  │ Se Gemini Live   │
-│        │                                                  │ indisponível →   │
-│        │                                                  │ cai para o chat  │
-│        │                                                  │ (Twilio é PSTN-  │
-│        │                                                  │ only e não cobre │
-│        │                                                  │ este caminho).   │
-│ POST   │ /api/v1/triagem/{token}/audio                    │ Upload de áudio  │
-│        │                                                  │ do browser →     │
-│        │                                                  │ VoiceService.    │
-│        │                                                  │ transcribe_      │
-│        │                                                  │ audio() com      │
-│        │                                                  │ OpenAI Whisper-1 │
-│        │                                                  │ (apenas neste    │
-│        │                                                  │ caminho).        │
-│ POST   │ /api/v1/triagem/{token}/tts                      │ TTS sob demanda  │
-│        │                                                  │ no chat web      │
-│ POST   │ /api/v1/triagem/{token}/tts/{message_id}         │ TTS de uma       │
-│        │                                                  │ mensagem         │
-│        │                                                  │ específica       │
-│ GET    │ /api/v1/triagem/{token}/voice-status             │ Status atual da  │
-│        │                                                  │ sessão de voz    │
-└──────────────────────────────────────────────────────────────────────────────┘
-  (Os disparos /request-call e /whatsapp-initiate continuam descritos em
-   "Triggers de Triagem WSI" — não fazem processamento de áudio.)
+ 2  1º Lembrete (48h sem atividade)
+    Timeout: 48h sem atividade detectado
+    Ag.7 CommunicationReActAgent envia lembrete
+    Canal: mesmo da triagem (chat web, WhatsApp ou voz)
+    Mensagem personalizada com progresso parcial
 
-PIPELINE DE ÁUDIO EM TEMPO REAL (WebSocket /twilio-voice/audio-stream)
+ 3  2º Lembrete (+48h sem retorno)
+    96h total sem atividade
+    Segundo lembrete automático enviado
+    Tom mais urgente, informa deadline
 
-  ┌────────┐  base64    ┌──────────────┐  μ-law 8kHz  ┌──────────────────┐
-  │ Twilio │ ─────────▶ │ b64 decode + │ ───────────▶ │ mulaw_to_wav()   │
-  │ Media  │  payload   │ buffer 8000B │              │ (RIFF WAV header)│
-  │ Stream │            └──────────────┘              └────────┬─────────┘
-  └────────┘                                                   │ WAV mono
-       ▲                                                       ▼
-       │ base64                                       ┌──────────────────┐
-       │ μ-law                                        │ Gemini Flash 2.5 │
-  ┌────┴───────┐                                      │      (STT)       │
-  │ b64 encode │                                      │  — NÃO Whisper   │
-  └────────────┘                                      └────────┬─────────┘
-       ▲                                                       │ transcript
-       │ μ-law 8kHz                                            ▼
-  ┌────┴────────────┐                              ┌──────────────────────┐
-  │ mp3_to_mulaw()  │                              │ generate_lia_        │
-  │ (G.711 transc.) │                              │ response()           │
-  └─────────────────┘                              │  • PII masking       │
-       ▲                                           │  • FairnessGuard     │
-       │ MP3                                       │  • Gemini LLM        │
-  ┌────┴────────────┐                              │  • Scoring           │
-  │ OpenAI TTS      │ ◀────────────────────────────┤    determinístico    │
-  │ (voz da LIA)    │            texto da LIA      └──────────────────────┘
-  └─────────────────┘
+ 4  Alerta ao consultor
+    Após 2º lembrete sem retorno
+    Alerta via Teams ao consultor responsável
+    Candidato marcado como "triagem_abandonada"
+    Consultor decide: re-engajar ou descartar
 
-  Buffer: 8000 bytes (~1s a 8kHz μ-law) antes de chamar STT.
-  Persistência: _persist_session_state() a cada 2 turnos de fala.
-  Recuperação: get_or_restore_session() — pós-restart via PostgreSQL.
-
-NOTA SOBRE O PROVEDOR DE STT
-  • Pipeline Twilio em produção  → Gemini Flash 2.5 (μ-law → WAV → Gemini API)
-  • Upload de áudio do browser   → OpenAI Whisper-1 (POST /triagem/{token}/audio)
-  • Não há "Whisper genérico" no caminho da chamada telefônica — toda transcrição
-    em chamadas Twilio passa por Gemini Flash 2.5.
-
-CIRCUIT BREAKER E FALLBACK PARA WHATSAPP
-  • TWILIO_VOICE_CIRCUIT envolve a chamada Twilio em initiate_call().
-  • Estados:
-      closed     → chamada PSTN normal
-      open       → /initiate retorna status="fallback",
-                   fallback_channel="whatsapp" (CircuitBreakerError capturado)
-      unconfig.  → mesma resposta de fallback (sem credenciais Twilio)
-  • Caminhos alternativos quando o breaker abre / Twilio não está configurado:
-      1. WhatsApp        → POST /api/v1/triagem/{token}/whatsapp-initiate
-      2. Gemini Live no  → POST /api/v1/triagem/{token}/voip-start
-         navegador         (não usa rede telefônica — Twilio só cobre PSTN)
-      3. Chat web puro   → triagem padrão E7 (sem áudio)
-  • GEMINI_LIVE_CIRCUIT é independente: protege initiate_voip_session() do
-    caminho Gemini Live (browser). Quando aberto, /voip-start cai para chat.
-    Ele NÃO envolve o process_audio_chunk() do pipeline Twilio — naquele
-    caminho, falhas de STT são tratadas via try/except local e ficam sem
-    transcrição naquele turno.
-
-FLUXO INTERNO:
- 1  verify_consent(candidate_id, company_id)
-    ConsentCheckerService verifica consentimento para ai_screening.
-    Se revogado → não inicia chamada.
-
- 2  initiate_call(session, db)
-    TWILIO_VOICE_CIRCUIT.call(twilio.calls.create) cria a chamada PSTN.
-    Falha/circuit aberto → status="fallback", fallback_channel="whatsapp".
-
- 3  WebSocket /twilio-voice/audio-stream (pipeline acima)
-    process_audio_chunk(): μ-law → WAV → Gemini Flash 2.5 STT
-    generate_lia_response(): FairnessGuard + Gemini LLM
-    synthesize_lia_response(for_twilio_stream=True): TTS → MP3 → μ-law
-    Scoring por turno é DETERMINÍSTICO (sem LLM — zero latência/viés).
-    Observação: finalize_screening() pode acionar analyze_voice_screening
-    (análise LLM standalone) como fallback se a trilha WSI não estiver
-    disponível.
-
- 4  Persistência e logging
-    _persist_session_state() salva o estado da sessão a cada 2 turnos.
-    _mask_transcript_segments() mascara PII na transcrição (LGPD Art. 12).
-    Rastreamento via logger.info — sem AuditTrail estruturado por turno
-    nesta camada (o registro consolidado da sessão é gerado em
-    finalize_screening()/_register_wsi_session()).
-
- 5  Finalização
-    finalize_screening(): gera WSIFinalReport.
-    _register_wsi_session(): registra no sistema de triagem principal.
-    Webhook /api/v1/twilio-voice/status confirma fim da chamada.
-
-RESTRIÇÕES:
-  - Sem pause/resume durante chamada ao vivo
-  - Sessão não interrompível mid-call
-  - Score sempre determinístico (sem LLM path)
+ 5  Estado final
+    Progresso parcial permanece salvo
+    Scores parciais disponíveis para consultor
+    Candidato pode retomar se consultor re-enviar link
+    Audit: abandono registrado com timestamps
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  PROTEÇÕES ATIVADAS NESTE FLUXO (E7-VOZ)                                      │
-│  1. LGPD Consent Check — antes de iniciar chamada ●                          │
-│  2. PII Masking — transcrição mascarada (_mask_transcript_segments) ●        │
-│  3. FairnessGuard — check em cada resposta transcrita ●                      │
-│  4. Scoring determinístico — sem LLM (zero viés de geração) ●                │
-│  5. Persistência incremental — _persist_session_state a cada 2 turnos ●     │
-│  6. CircuitBreaker — TWILIO_VOICE_CIRCUIT (initiate → WhatsApp/chat) ●      │
-│  7. CircuitBreaker — GEMINI_LIVE_CIRCUIT (apenas no /voip-start, não no      │
-│     pipeline Twilio); STT do Twilio usa try/except local ●                   │
+│  PROTEÇÕES ATIVADAS NESTE FLUXO (E7A)                                         │
+│  1. Checkpoint — progresso parcial salvo (PostgresSaver) ●                   │
+│  2. Celery Beat — verificação automática a cada 4h ●                         │
+│  3. Notification — alerta ao consultor via Teams ●                            │
+│  4. LGPD — dados parciais com consentimento original ●                       │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## TABELA: TRIGGERS DE TRIAGEM WSI
+## E7B — FEEDBACK PÓS-TRIAGEM — 4 STEPS
 
-| # | Gatilho | Como | Endpoint | Automático? |
-|---|---------|------|----------|-------------|
-| 1 | Candidato se inscreve via web/portal | Aplicação criada | `POST /api/v1/applications` | ● Auto |
-| 2 | Convite manual pelo recrutador | Recrutador seleciona candidato | `POST /api/v1/triagem/invite` | Manual |
-| 3 | Bulk convite em massa | Recrutador seleciona N candidatos | `POST /api/v1/candidates/bulk/start-screening` | Manual |
-| 4 | Candidato solicita ligação | Candidato clica "Quero ser entrevistado por telefone" | `POST /api/v1/triagem/{token}/request-call` | Manual (candidato) |
-| 5 | Candidato inicia via WhatsApp | Candidato clica link WhatsApp | `POST /api/v1/triagem/{token}/whatsapp-initiate` | Manual (candidato) |
-| 6 | Automation Engine (regra de pipeline) | Regra automática disparada por evento de pipeline | `POST /api/v1/automation/execute-action` action=`triagem_wsi` | ● Auto |
-| 7 | Webhook ATS (evento externo) | ATS externo notifica novo candidato via Merge.dev | `POST /api/v1/automation/trigger-event` | ● Auto |
-
----
-
-## E7A — TRIAGEM ABANDONADA
-
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│  PASSO A PASSO — E7A TRIAGEM ABANDONADA                                      │
-│                                                                               │
-│  • Candidato inicia a triagem mas para de responder                          │
-│  • Timeout: 48h sem atividade → 1º lembrete automático (email ou WhatsApp) │
-│  • +48h sem retorno → 2º lembrete                                            │
-│  • Após 2º lembrete sem retorno → alerta ao consultor (Teams)               │
-│  • Progresso parcial SALVO via PostgresSaver checkpoint                      │
-│  • Candidato pode retomar de onde parou (exceto triagem por voz)            │
-│                                                                               │
-│  Resultado: Status "triagem_incompleta" — consultor pode cancelar            │
-│  ou aguardar retorno do candidato                                             │
-└──────────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## E7B — FEEDBACK PÓS-TRIAGEM
+### O que acontece nesta etapa (visão do processo)
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  PASSO A PASSO — E7B FEEDBACK PÓS-TRIAGEM                                   │
 │                                                                               │
-│  • Ag.2 WSIInterviewGraph: agradece ao candidato, dá feedback sobre          │
-│    o processo (não sobre aprovação/reprovação), informa próximos passos     │
-│  • Canal: mesmo da triagem (chat web, WhatsApp ou voz)                       │
-│  • PersonalizedFeedbackService gera parecer textual personalizado            │
-│  • Scores numéricos NÃO são enviados ao candidato                           │
-│    (PipelineFeedbackTool._remove_score_references strip numérico)           │
-│  • FeedbackGeneratorService (interview_intelligence) gera:                   │
-│    - Pontos fortes identificados                                             │
-│    - Áreas de desenvolvimento (sem discriminação)                           │
-│    - Próximos passos esperados                                               │
+│  • O candidato completou toda a triagem WSI (E7)                             │
+│  • 🤖 Ag.4 WSIInterviewGraph [Agente tipo Graph] gera o feedback:            │
+│    - Agradece a participação do candidato                                   │
+│    - Dá feedback construtivo sobre o desempenho CONFORME TEMPLATE - PROMPT PARA LLM                             │
+│    - Informa os próximos passos do processo seletivo                        │
+│  • O feedback é enviado pelo mesmo canal da triagem (chat, WhatsApp          │
+│    ou voz)                                                                   │
+│  • IMPORTANTE: o feedback NUNCA mostra scores numéricos ao candidato         │
+│    (scores são removidos automaticamente antes do envio)                      │
+│  • O FairnessGuard [Capability anti-viés] valida o texto do                  │
+│    feedback para garantir que não contém viés ou discriminação               │
+│  • O recrutador recebe alerta via Teams:                                     │
+│    "Triagem WSI concluída para [candidato]"                                  │
+│  • Score WSI + parecer da IA ficam disponíveis na plataforma                 │
+│    para o recrutador revisar antes da decisão Gate 2 (E8)       
+PARECER DA LIA - WSI TEM TEMPLATE DETERMINISTICO ONDE VARIAVEIS SAO SUBSTITUIDAS PARA EVITAR RISCOS│
 │                                                                               │
-│  Resultado: Candidato informado sobre próximos passos de forma respeitosa   │
+│  Resultado: Candidato recebe feedback respeitoso PERSONALIZADO CONFORME TEMPLATE/PROMPT DEFINIDO
+; recrutador é notificado e tem dados para decidir no Gate 2                             │
+└──────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Detalhamento técnico
+
+```
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  LIA — Fluxo de Feedback Pós-Triagem (cv_screening) — 4 STEPS                │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+ 1  Triagem WSI completa
+    Ag.4 WSIInterviewGraph atinge stage GENERATE_FEEDBACK
+    HITL: interrupt_before=["lg_generate_feedback"]
+    Score WSI calculado + recomendação gerada
+
+ 2  Feedback gerado ao candidato
+    Ag.4 agradece participação
+    Dá feedback construtivo sobre performance
+    Informa próximos passos do processo
+    Canal: mesmo da triagem (chat web, WhatsApp ou voz)
+
+ 3  FairnessGuard valida feedback
+    🔒 FG L1/L2 em rubric_evaluation.py
+    Feedback não pode conter viés ou dados discriminatórios
+    PipelineFeedbackTool._remove_score_references: strip scores numéricos
+    FairnessGuard sanitiza texto do feedback
+
+ 4  Notificação ao consultor
+    Alerta via Teams: "Triagem WSI concluída para [candidato]"
+    Score WSI + parecer LIA disponíveis na plataforma
+    Candidato aguarda decisão Gate 2
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PROTEÇÕES ATIVADAS NESTE FLUXO (E7B)                                         │
+│  1. FairnessGuard — feedback sem viés ●                                      │
+│  2. Score stripping — remove scores numéricos do feedback ●                  │
+│  3. HITL — interrupt_before para review humano ●                             │
+│  4. Notification — alerta ao consultor ●                                     │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -1376,18 +1059,31 @@ RESTRIÇÕES:
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  PASSO A PASSO — E8 APROVAR/REPROVAR TRIADOS (Gate 2)                        │
 │                                                                               │
-│  • Consultor recebeu alerta (Teams) sobre candidatos triados                 │
-│  • Revisa score WSI 0–10 + parecer LIA na plataforma                        │
-│  • Aprova → SHORT LIST | Reprova → FEEDBACK                                 │
-│  • Ag.10a PersonalizedFeedbackService gera parecer personalizado             │
-│    (sem scores numéricos para o candidato)                                   │
-│  • Ag.14a InterviewWSIService analisa contexto para entrevista               │
-│  • ATSIntegrationReActAgent sincroniza status para o ATS via Merge.dev ●    │
-│  • _generate_rediscovery_embedding: candidatos reprovados recebem            │
-│    embedding para rediscoberta futura (talent pool futuro)                   │
+│  • O recrutador recebeu o alerta de triagem concluída (E7B)                  │
+│  • Acessa o Kanban board e revisa os resultados:                             │
+│    - Score WSI do candidato (técnico + comportamental + final)               │
+│    - Parecer/recomendação da IA ("aprovado"/"aguardando"/"reprovado")        │
+│  • Para cada candidato triado, decide: APROVAR ou REPROVAR                   │
+│  • Se REPROVAR:                                                               │
+│    - Informa o motivo da rejeição                                           │
+│    - FairnessGuard [Capability anti-viés] valida o motivo contra             │
+│      13 categorias protegidas — se discriminatório → BLOQUEADO              │
+│    - 🤖 Ag.7 PersonalizedFeedbackService [Serviço, domínio cv_screening]     │
+│      gera feedback personalizado e construtivo para o candidato CONFORME PROMPT DEFINIDO PARA LLM CONSUMIR E EVITAR RISCOS              │
+│    - Um embedding do perfil é gerado para permitir                           │
+│      "re-discovery" — se uma vaga futura for compatível,                     │
+│      este candidato pode ser encontrado novamente                            │
+│  • Se APROVAR:                                                                │
+│    - Candidato vai para SHORT LIST (lista finalista)                        │
+│    - Segue para agendamento de entrevista (E9A)                              │
+│  • PolicyEngine [Serviço de políticas por setor] define se a IA              │
+│    pode decidir sozinha ou precisa de aprovação humana                        │
+│  • BiasAuditSnapshot [Capability auditor estatístico] verifica               │
+│    equidade estatística nas decisões do Gate 2                               │
 │                                                                               │
-│  Resultado: Aprovados → agendamento de entrevista (E9A)                      │
-│  Reprovados → feedback personalizado (E9B)                                   │
+│  Resultado: Candidatos finalistas na Short List para entrevista;             │
+│  reprovados com feedback personalizado e perfil salvo                        │
+│  para re-discovery futuro                                                    │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -1395,313 +1091,411 @@ RESTRIÇÕES:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  LIA — Fluxo de Gate 2 (pipeline) — 8 STEPS                                  │
+│  LIA — Fluxo de Aprovação Gate 2 (pipeline + kanban + analytics) — 8 STEPS    │
 └──────────────────────────────────────────────────────────────────────────────┘
 
  1  HTTP Request chega ao FastAPI
-    Consultor revisa candidatos triados no Kanban
-    POST /api/v1/pipeline/transition
-    Body: { candidate_ids, from_stage: "triado", to_stage: "aprovado"|"reprovado",
-            action: "approve"|"reject", reason, job_id }
-    Authorization: Bearer <jwt_token>
+    Consultor recebeu alerta Teams (E7B)
+    Acessa Kanban board: POST /api/v1/pipeline/transition
+    Body: { candidate_ids, from_stage: "triagem", to_stage: "shortlist"|"rejected",
+            action, reason, wsi_reviewed: true }
+    Revisa score WSI + parecer LIA antes de decidir
 
- 2  MainOrchestrator (CascadedRouter) + PolicyEngine
-    Domínio = pipeline
-    PolicyEngine: ALPHA1_SECTOR_RULES por setor
-    SmartTransitionModal: confirmação em etapas críticas
-    Automation Engine: verifica regras automáticas de Gate 2
+ 2  DomainOrchestrator + PolicyEngine
+    Domínio = pipeline + kanban + analytics
+    🔒 PolicyEngine: HITL thresholds por setor (ALPHA1_SECTOR_RULES)
+    Determina autonomia: AI pode decidir sozinha vs precisa HITL
 
- 3  PipelineTransitionAgent processa
-    Ag.4 PipelineTransitionAgent (orquestrador)
-    Ag.4b PipelineContextAgent: agrega contexto + scores WSI
-    Ag.4a PipelineDecisionAgent: valida a decisão
-    Ag.4c PipelineActionAgent: executa transição
+ 3  FairnessGuard valida rejeições
+    🔒 Auto-check em reject_candidate (candidate_tools.py)
+    🔒 FG L3 pré-check no PipelineTransitionAgent
+    Motivo de rejeição analisado contra 13 categorias
+    Se discriminatório → BLOCK + alerta
 
- 4  FairnessGuard valida rejeições
-    🔒 Auto-check em reject_candidate
-    🔒 check_rejection_fairness vs 13 categorias protegidas
-    Motivo discriminatório → BLOCK + alerta
+ 4  LGPD: Sanitização de dados para próxima etapa
+    🔒 PipelineFeedbackTool._remove_score_references: strip scores numéricos
+    🔒 FairnessGuard sanitiza feedback
+    🔒 ats_integration_stage_context.py: define campos internos vs ATS
+    Dados compartilhados com próxima etapa minimizados
 
- 5  PersonalizedFeedbackService gera parecer
-    Ag.10a PersonalizedFeedbackService (cv_screening):
-    → Parecer textual personalizado por candidato
-    → PipelineFeedbackTool._remove_score_references:
-      strip scores numéricos do feedback ao candidato
-    Ag.14a InterviewWSIService (interview_intelligence):
-    → Analisa pontos para entrevista presencial
+ 5  PersonalizedFeedbackService (Ag.7) gera parecer
+    Se REPROVADO: gera feedback personalizado para candidato
+    FairnessGuard valida feedback antes de enviar
+    Embedding do perfil gerado para re-discovery futuro
+    _generate_rediscovery_embedding via embedding_service.py
 
- 6  LGPD + Audit
-    🔒 PII Masking em logs
-    🔒 audit_service.log_decision (ativado em approvals.py)
-    Append-only, retenção SOX
-    BiasAuditSnapshot: dados coletados em Gate 2
+ 6  ConfidenceNode + BiasAuditSnapshot
+    🔒 Score calibrado para comparabilidade
+    🔒 Four-Fifths Rule: verifica equidade estatística Gate 2
+    Se anomalia → alerta ao consultor
 
- 7  Rediscovery Embedding
-    _generate_rediscovery_embedding(candidate_id, job_id):
-    Candidatos reprovados recebem embedding para rediscoberta futura
-    Permite busca semântica retroativa ("candidatos para vagas similares")
+ 7  AuditTrail + Learning
+    🔒 Audit: log de aprovação/rejeição Gate 2 ● (ativado em pipeline.py + approvals.py)
+    🧠 LearningLoop: feedback sobre decisões Gate 2
+    🧠 Calibration: implicit feedback (avançar low-WSI = sinal)
+    🧠 ModelDrift: monitora approval_drift Gate 2
+    🧠 RoutingAdaptativo: correções entre domínios
 
- 8  Resposta + Disparo de próxima etapa
-    Aprovados → LIA agenda entrevista (E9A)
-    Reprovados → LIA envia feedback (E9B)
-    ATSIntegrationReActAgent: sync status ATS via Merge.dev ●
-    Kanban board atualizado em real-time (WebSocket)
+ 8  Resultado + Disparo
+    Aprovados → SHORT LIST → E9A (agendar entrevista)
+    Reprovados → E9B (enviar feedback)
+    Kanban atualizado em real-time
+    🧠 LongTermMemory: episódio salvo para referência futura
 
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  PROTEÇÕES ATIVADAS NESTE FLUXO (E8)                                          │
-│  1. FairnessGuard — check em rejeições ●                                     │
-│  2. PII Masking — logs e feedback mascarados ●                               │
-│  3. AuditTrail — Gate 2 decisions ● (ativado em approvals.py)               │
-│  4. PolicyEngine — HITL thresholds ●                                         │
-│  5. ATSIntegration — sync via Merge.dev ●                                    │
-│  6. BiasAuditSnapshot — Four-Fifths Rule (acumulado Gates 1+2) ●             │
-│  7. Rediscovery Embedding — candidatos reprovados indexados ●                 │
+│  1. FairnessGuard — auto-check rejeções + FG L3 ●                           │
+│  2. PolicyEngine — HITL thresholds por setor ●                               │
+│  3. LGPD — data minimization + score stripping ●                             │
+│  4. BiasAuditSnapshot — Four-Fifths Rule Gate 2 ●                            │
+│  5. AuditTrail — aprovações Gate 2 ● (ativado)                              │
+│  6. LearningLoop + Calibration + ModelDrift ●                                │
+│  7. Embedding — rediscovery de candidatos reprovados ●                       │
+│  8. LongTermMemory — episódios salvos ●                                      │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## E9A — AGENDAR ENTREVISTA
+## E9A — AGENDAR ENTREVISTA — 7 STEPS
+
+### O que acontece nesta etapa (visão do processo)
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
 │  PASSO A PASSO — E9A AGENDAR ENTREVISTA                                      │
 │                                                                               │
-│  (Se APROVADO no Gate 2) LIA agenda entrevista                               │
-│  • Email + WhatsApp ao candidato (data/hora + link reunião)                  │
-│  • Ag.14 InterviewGraph [interview_scheduling] coordena:                      │
-│    - check_availability: verifica agenda do recrutador (Google Calendar)     │
-│    - schedule_interview: cria evento no calendário                           │
-│    - ICS Calendar: apenas dtstart/dtend/summary/location/attendee           │
-│      (sem dados sensíveis do candidato — data minimization)                 │
-│  • CircuitBreaker: "google_calendar"                                          │
-│  • Se NÃO encontra horário → alerta ao consultor via Teams                   │
-│  • InterviewWSIService (interview_intelligence):                              │
-│    analisa respostas WSI para sugerir perguntas de entrevista presencial     │
+│  • O candidato foi APROVADO no Gate 2 (E8) e está na Short List              │
+│  • A LIA dispara automaticamente o agendamento de entrevista                 │
+│  • 🤖 Ag.6 InterviewGraph [Agente tipo Graph, domínio                        │
+│    interview_scheduling] busca horários disponíveis:                          │
+│    - Consulta o Google Calendar do entrevistador                            │
+│    - Encontra os melhores horários disponíveis                              │
+│    - Se não encontra horário → alerta ao recrutador via Teams               │
+│  • O candidato recebe comunicação com data/hora + link da reunião            │
+│    por email E WhatsApp (duplo canal)                                        │
+│  • O convite de calendário (ICS) enviado contém SOMENTE                      │
+│    dados mínimos: data, hora, local e participantes                         │
+│    (LGPD: nenhum dado sensível do candidato no arquivo)                      │
+│  • Calendar invite é enviado a todos os participantes                        │
+│  • Status atualizado no Kanban board                                         │
 │                                                                               │
-│  Resultado: Entrevista agendada, candidato e recrutador notificados           │
+│  Resultado: Entrevista agendada, todos os participantes notificados,         │
+│  Kanban atualizado                                                           │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
----
-
-## E9B — ENVIAR FEEDBACK
+### Detalhamento técnico
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  PASSO A PASSO — E9B ENVIAR FEEDBACK (Reprovados)                            │
-│                                                                               │
-│  (Se REPROVADO no Gate 1 ou Gate 2) LIA envia feedback respeitoso           │
-│  • Ag.10a PersonalizedFeedbackService gera o feedback:                       │
-│    - Sem scores numéricos (strip obrigatório)                               │
-│    - Pontos fortes identificados durante o processo                         │
-│    - Recomendações de desenvolvimento (sem discriminação)                   │
-│    - Agradecimento pela participação                                         │
-│  • Ag.10b FeedbackGeneratorService (interview_intelligence):                 │
-│    gera feedback baseado nos dados da entrevista WSI                        │
-│  • Ag.10 CommunicationReActAgent envia via:                                  │
-│    - Email (obrigatório)                                                    │
-│    - WhatsApp (se consentimento registrado)                                 │
-│  • FairnessGuard L1+L2: valida feedback antes de enviar                     │
-│  • LGPD: opt-out link incluído                                               │
-│                                                                               │
-│  Resultado: Candidato recebe feedback respeitoso + recomendações             │
+│  LIA — Fluxo de Agendamento de Entrevista (interview_scheduling) — 7 STEPS    │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+ 1  HTTP Request chega ao FastAPI
+    Candidato APROVADO no Gate 2 → trigger automático
+    POST /api/v1/scheduling/create
+    Body: { candidate_id, job_id, interview_type, preferred_dates }
+    Authorization: Bearer <jwt_token>
+
+ 2  DomainOrchestrator roteia
+    Domínio = interview_scheduling
+    Ag.6 InterviewGraph ativado
+    GuardrailRepository carregado
+    CircuitBreaker: circuit "google_calendar" (recovery=60s)
+
+ 3  Ag.6 InterviewGraph processa
+    LangGraph StateGraph: 6 nós
+    Tools: schedule_interview, check_availability,
+           reschedule_interview, cancel_interview
+    Busca horários disponíveis no Google Calendar
+    Se NÃO encontra horário → alerta ao consultor via Teams
+
+ 4  LGPD: Data Minimization no ICS
+    🔒 SchedulingService.generate_ics_content:
+    Apenas dtstart/dtend/summary/location/attendee
+    SEM dados sensíveis do candidato no arquivo ICS
+    Mínimo necessário para o agendamento funcionar
+
+ 5  Comunicação multi-canal
+    Email + WhatsApp ao candidato (data/hora + link reunião)
+    Ag.7 CommunicationReActAgent envia por ambos canais
+    Template personalizado com dados da vaga e entrevistador
+
+ 6  AuditTrail + Learning
+    🔒 Audit: log de agendamento ● (ativado em scheduling.py)
+    🧠 LearningLoop: feedback sobre qualidade da sugestão
+    🧠 LongTermMemory: episódio salvo (EnhancedAgentMixin._post_loop_learning)
+
+ 7  Resposta ao consultor
+    Confirmação de agendamento + detalhes
+    Calendar invite enviado a todos os participantes
+    Status atualizado no Kanban
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  PROTEÇÕES ATIVADAS NESTE FLUXO (E9A)                                         │
+│  1. LGPD — data minimization no ICS ●                                        │
+│  2. CircuitBreaker — circuit "google_calendar" ●                             │
+│  3. PII Masking — ativo globalmente ●                                        │
+│  4. AuditTrail — agendamento ● (ativado)                                    │
+│  5. LongTermMemory — episódios salvos ●                                      │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## SEÇÃO TRANSVERSAL: PORTAL DO CANDIDATO + LGPD/DSR
+## E9B — ENVIAR FEEDBACK (Reprovado) — 6 STEPS
 
-### Portal do Candidato
+### O que acontece nesta etapa (visão do processo)
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  PORTAL DO CANDIDATO — LGPD/DSR                                              │
+│  PASSO A PASSO — E9B ENVIAR FEEDBACK (Reprovado)                             │
 │                                                                               │
-│  Frontend (Next.js 15):                                                       │
-│    /portal/data-request/[token]  → portal de DSR com verificação OTP        │
-│    /shared/[token]               → visualização compartilhada de perfil       │
+│  • O candidato foi REPROVADO no Gate 2 (E8)                                  │
+│  • 🤖 Ag.7 PersonalizedFeedbackService [Serviço, domínio cv_screening]       │
+│    gera feedback personalizado e construtivo COM BASE EM PROMPT DEFINIDO PARA EVITAR PROBLEMAS:                                 │
+│    - Analisa o perfil completo + scores WSI + motivo da rejeição            │
+│    - Gera texto respeitoso e útil para o candidato                          │
+│    - NUNCA inclui scores numéricos (removidos automaticamente)              │
+│  • O FairnessGuard [Capability anti-viés] valida o feedback:                 │
+│    - Verifica que não contém viés ou discriminação                          │
+│    - Sanitiza o texto antes do envio                                         │
+│  • O feedback é enviado ao candidato por:                                     │
+│    - Email (canal primário, sempre)                                          │
+│    - WhatsApp (se o número está disponível)                                  │
+│  • A IA testa variantes do template de feedback (A/B Testing)                │
+│    para descobrir qual formato gera melhor experiência                       │
+│  • Um embedding do perfil do candidato é gerado e salvo:                     │
+│    - Permite "re-discovery" futuro: se uma vaga compatível                  │
+│      aparecer no futuro, este candidato pode ser encontrado                 │
+│      automaticamente pela busca semântica                                    │
+│  • Status final do candidato atualizado no Kanban board                      │
+│  • Episódio completo salvo na memória de longo prazo da IA                   │
 │                                                                               │
-│  Domínio: candidate_self_service                                              │
-│  Ações disponíveis:                                                           │
-│    get_status     → status atual no pipeline + próximos passos               │
-│    get_interview_info → data/hora/formato da entrevista agendada             │
-│    get_feedback   → feedback WSI (se habilitado pela empresa)                │
-│    get_lgpd_info  → direitos LGPD Art. 20 (decisões automatizadas)          │
-│  Segurança: IDOR protection — usa user_id do JWT, não params da URL          │
-│                                                                               │
-│  Fluxo de DSR (Data Subject Request):                                        │
-│    POST /api/v1/data-subject-requests/              → criar solicitação      │
-│    GET  /api/v1/data-subject-requests/track/{id}   → status público          │
-│    GET  /api/v1/data-subject-requests/stats        → métricas (DPO/Admin)   │
-│    PUT  /api/v1/data-subject-requests/{id}/assign  → atribuir ao DPO        │
-│    PUT  /api/v1/data-subject-requests/{id}/verify-identity                   │
-│    PUT  /api/v1/data-subject-requests/{id}/complete → resolver + notificar  │
-│  SLA: 15 dias úteis (LGPD Art. 18)                                           │
-│                                                                               │
-│  Serviços LGPD:                                                               │
-│    dsr_export_service: exporta dados do candidato em JSON (portabilidade)   │
-│    lgpd_cleanup_service: deletar dados por retenção (90/180/365 dias)       │
-│    granular_consent_service: consentimento por finalidade (7 propósitos)    │
-│    ConsentCheckerService: verifica consentimento antes de processar          │
-│                                                                               │
-│  Endpoints de gestão:                                                         │
-│    POST /api/v1/data-subject-requests/         → DSR público                 │
-│    POST /api/v1/admin/lgpd/run-cleanup         → gestão DPO (cleanup)        │
-│    GET  /api/v1/admin/lgpd/cleanup-status      → status de pendências        │
-│    POST /api/v1/consent/...                    → consentimento geral          │
-│    POST /api/v1/consent/granular/...           → consentimento por finalidade │
-│                                                                               │
-│  Papel DPO (migration 093):                                                   │
-│    Acesso ao /api/v1/admin/lgpd                                               │
-│    Pode atribuir, resolver e notificar DSRs                                   │
-│    Relatórios de compliance LGPD                                              │
+│  Resultado: Candidato recebe feedback respeitoso e construtivo;              │
+│  perfil salvo para oportunidades futuras; processo encerrado                 │
+│  com dignidade                                                               │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Consentimento Granular
-
-```
-7 finalidades gerenciadas por granular_consent_service:
-  1. ai_screening     → processamento de triagem WSI (BLOQUEANTE se revogado)
-  2. ai_scoring       → scoring automático (BLOQUEANTE se revogado)
-  3. ai_video_analysis → análise de vídeo (BLOQUEANTE se revogado)
-  4. ai_comparison    → comparação com outros candidatos
-  5. data_retention   → retenção além do processo
-  6. marketing        → comunicações de marketing
-  7. analytics        → uso de dados em analytics agregado
-
-Fluxo de verificação:
-  ConsentCheckerService.check_candidate_consent(candidate_id, company_id, purpose)
-  → allowed: bool + reason: str + soft_warning: bool
-  Se propósito BLOQUEANTE revogado → operação cancelada + log de auditoria
-```
-
----
-
-## SEÇÃO TRANSVERSAL: AUTOMATION ENGINE
-
-### Automation Engine
+### Detalhamento técnico
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  AUTOMATION ENGINE — Motor de Regras de Pipeline                              │
-│                                                                               │
-│  Domínio: automation                                                          │
-│  Agente: AutomationReActAgent                                                 │
-│    app/domains/automation/agents/automation_react_agent.py                   │
-│  Serviço: automation_trigger_service                                          │
-│    app/domains/automation/services/automation_trigger_service.py             │
-│                                                                               │
-│  Conceito: Regras "quando X acontece → executar Y"                           │
-│  Exemplos:                                                                    │
-│    - "quando candidato chega ao stage FUNIL → iniciar triagem WSI"          │
-│    - "quando score WSI ≥ 8 → mover para SHORT LIST sem HITL"               │
-│    - "quando candidato abandonou triagem há 48h → enviar lembrete"          │
-│    - "quando novo candidato via ATS → convidar para triagem"                │
-│                                                                               │
-│  Endpoints:                                                                   │
-│    GET  /api/v1/automation/triggers        → listar triggers ativos          │
-│    POST /api/v1/automation/triggers/{id}  → habilitar/desabilitar trigger   │
-│    POST /api/v1/automation/check          → verificar e executar triggers    │
-│    GET  /api/v1/automation/status         → status do engine                 │
-│    GET  /api/v1/automation/stage-suggestions → sugestões por stage           │
-│    POST /api/v1/automation/execute-action → executar ação manual             │
-│    POST /api/v1/automation/screen-candidate → triagem via automation         │
-│    POST /api/v1/automation/trigger-event  → evento externo (ATS)             │
-│                                                                               │
-│  Ações disponíveis via execute-action:                                        │
-│    triagem_wsi      → iniciar triagem WSI automática                         │
-│    pipeline_move    → mover candidato de stage                               │
-│    send_alert       → enviar alerta ao recrutador                            │
-│    send_email       → enviar email ao candidato                              │
-│    ats_sync         → sincronizar status no ATS                              │
-│                                                                               │
-│  Interação com outras etapas:                                                 │
-│    E5 Gate 1: regras de auto-aprovação por score                             │
-│    E6 Follow-up: cadência automática                                         │
-│    E7 Triagem: triggers automáticos de convite                               │
-│    E8 Gate 2: regras de auto-aprovação pós-triagem                          │
+│  LIA — Fluxo de Feedback para Reprovado (communication) — 6 STEPS             │
 └──────────────────────────────────────────────────────────────────────────────┘
-```
 
----
+ 1  Trigger: Candidato REPROVADO no Gate 2
+    Ag.0 MainOrchestrator dispara feedback
+    Domínio = communication + cv_screening
 
-## SEÇÃO TRANSVERSAL: ADMIN & OBSERVABILIDADE
+ 2  PersonalizedFeedbackService (Ag.7) gera feedback
+    Analisa perfil + scores WSI + motivo de rejeição
+    Gera feedback construtivo e personalizado
+    🔒 FairnessGuard L1/L2: valida feedback antes de envio
+    PipelineFeedbackTool._remove_score_references: strip scores
 
-### Admin Platform + Monitoramento de Agentes
+ 3  PII Masking + FairnessGuard
+    🔒 PII: dados pessoais protegidos em logs
+    🔒 FG: feedback não contém viés ou discriminação
+    Texto sanitizado por FairnessGuard
 
-```
+ 4  CommunicationReActAgent envia
+    Email (primário) + WhatsApp (se número disponível)
+    Template personalizado com feedback construtivo
+    🧠 A/B Testing: variantes de template de feedback
+    🧠 TemplateLearning: templates aprendidos
+
+ 5  Embedding para rediscovery
+    🧠 _generate_rediscovery_embedding:
+    Gera embedding do perfil (Gemini text-embedding-004, 768-dim)
+    Salvo via embedding_cache_service.py
+    Permite re-discovery em vagas futuras similares
+
+ 6  AuditTrail + Response
+    🔒 Audit: log de feedback enviado ● (ativado em communication.py)
+    🧠 LearningLoop: feedback sobre qualidade do feedback gerado
+    Status final do candidato atualizado no Kanban
+    🧠 LongTermMemory: episódio completo salvo
+
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  ADMIN & OBSERVABILIDADE                                                      │
-│                                                                               │
-│  ADMIN PLATFORM                                                               │
-│    Endpoints: /api/v1/admin/...  (admin.py — prefix "/admin")                │
-│    Dashboard Next.js: visão executiva da plataforma                          │
-│    Métricas: candidatos processados, vagas ativas, score médio WSI           │
-│                                                                               │
-│  AGENT MONITORING                                                             │
-│    Endpoints: /api/v1/agent-monitoring/...  (prefix "/agent-monitoring")     │
-│    Monitoramento: latência por agente, erros, loop iterations                │
-│    Métricas Prometheus: login_attempts_total, fairness_blocks_total, etc.    │
-│    LangSmith/LangFuse: tracing de chamadas LLM                               │
-│    Sentry: error tracking com PII masking                                    │
-│    Model Drift: alertas automáticos (WARNING / URGENT)                       │
-│    Silent-fallback telemetry: agentes sem domínio mapeado detectados         │
-│      (GET /api/v1/orchestrator/health → get_fallback_stats())                │
-│                                                                               │
-│  FAIRNESS / BIAS ADMIN                                                        │
-│    GET /api/v1/admin/compliance/fairness/report  (prefix "/admin/compliance")│
-│    GET /api/v1/bias-audit/...                    (prefix "/bias-audit")      │
-│    Serviço: bias_detector_service (domínio compliance)                       │
-│    Visualização: Four-Fifths Rule por vaga/empresa/período                   │
-│    Exportação: relatórios de bias audit para auditoria externa               │
-│                                                                               │
-│  AI CONSUMPTION OUTBOX (migration 095)                                        │
-│    Endpoints: /api/v1/ai-consumption/...  (prefix "/ai-consumption")         │
-│    Tracking: tokens consumidos por tenant, por domínio, por agente           │
-│    Uso: billing, alertas de custo, otimização de prompts                     │
-│    Granularidade: por company_id, por modelo LLM, por período                │
-│                                                                               │
-│  CIRCUIT BREAKERS                                                             │
-│    GET  /api/v1/admin/circuit-breakers               → status de todos       │
-│    POST /api/v1/admin/circuit-breakers/{name}/reset  → reset manual          │
-│    POST /api/v1/admin/circuit-breakers/reset-all     → reset geral           │
+│  PROTEÇÕES ATIVADAS NESTE FLUXO (E9B)                                         │
+│  1. FairnessGuard L1/L2 — feedback sem viés ●                                │
+│  2. Score stripping — remove scores numéricos ●                              │
+│  3. PII Masking — dados protegidos ●                                         │
+│  4. A/B Testing — variantes de feedback ●                                    │
+│  5. TemplateLearning — templates aprendidos ●                                │
+│  6. Embedding — rediscovery futuro ●                                         │
+│  7. AuditTrail — feedback ● (ativado)                                       │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## SEÇÃO TRANSVERSAL: INTEGRAÇÕES EXTERNAS
+## SEÇÃO TRANSVERSAL: GOVERNANÇA TÉCNICA
 
-### Mapa de Integrações (abril/2026)
+### Policy Engine — Motor de Políticas por Setor
 
-| Serviço | Finalidade | CircuitBreaker | Status |
-|---------|------------|----------------|--------|
-| **Twilio Voice** | Chamadas de voz para triagem (E7-VOZ — pipeline PSTN) | "twilio" | ● |
-| **Gemini Flash 2.5** (STT) | STT via WAV — pipeline Twilio PSTN: μ-law→WAV→Gemini API | "gemini" | ● |
-| **OpenAI Whisper** (STT) | STT para áudio web: `POST /api/v1/triagem/{token}/audio` (upload de áudio do browser) | "openai" (shared) | ● |
-| **OpenAI TTS** | Text-to-Speech — voz da LIA (ambos os pipelines) | "openai_tts" | ● |
-| **OpenAI** (embeddings) | text-embedding-3-small (1536-dim) — VectorSemanticCache | "openai" | ● |
-| **Gemini** (Google) | LLM principal (produção) — todos os agentes | "gemini" | ● |
-| **Anthropic Claude** | JD Generator — geração de job descriptions | "anthropic" | ● |
-| **GitHub** | Sourcing de desenvolvedores (GithubSourcingAgent) | "github" | ● |
-| **Pearch AI** | Sourcing e enriquecimento de candidatos (email + telefone) | "pearch" | ● |
-| **Apify** | Web scraping e enriquecimento externo (SourcingEnrichAgent) | "apify" | ● |
-| **StackOverflow** | Sourcing de perfis técnicos (StackOverflowSourcingAgent) | "stackoverflow" | ● |
-| **Merge.dev** | ATS integration unificada (Greenhouse, Lever, etc.) | "merge" | ● |
-| **SendGrid** | Email transacional (primário) | "sendgrid" | ● |
-| **Resend** | Email transacional (fallback) | "resend" | ● |
-| **WhatsApp via Twilio** | Mensagens WhatsApp para triagem e follow-up | "twilio_whatsapp" | ● |
-| **Google Calendar** | Agendamento de entrevistas (InterviewGraph) | "google_calendar" | ● |
-| **WorkOS** | SSO corporativo (login enterprise) | "workos" | ● |
-| **Redis** | Cache de embeddings, rate limiting, session state | — | ● |
-| **LangSmith / LangFuse** | Tracing de chamadas LLM para observabilidade | — | ◐ |
+```
+Arquivo: app/services/policy_engine_service.py
+
+ALPHA1_SECTOR_RULES — Regras por setor:
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  Setor        │ Autonomy  │ HITL Threshold │ FG L3  │ Rate Limit │ Escalation│
+│──────────────┼───────────┼────────────────┼────────┼────────────┼───────────│
+│  tech         │ medium    │ medium         │ ativo  │ standard   │ ativo     │
+│  financeiro   │ low       │ high           │ ativo  │ strict     │ ativo     │
+│  saude        │ low       │ high           │ ativo  │ strict     │ ativo     │
+│  rpo          │ high      │ low            │ ativo  │ relaxed    │ ativo     │
+│  varejo       │ medium    │ medium         │ inativo│ standard   │ ativo     │
+│  logistica    │ medium    │ medium         │ inativo│ standard   │ ativo     │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Funcionalidades:
+- Autonomy Levels: low (tudo precisa HITL) | medium (ações críticas) | high (auto)
+- HITL Thresholds: % de confiança abaixo do qual AI escala para humano
+- trigger_escalation: quando AI confidence < threshold por setor
+- Rate Limiter: sliding window por empresa/dia/endpoint
+- Planos: Starter / Pro / Enterprise (tokens mensais, agentes, automações)
+  PLAN_LIMITS_ENFORCE=true
+```
+
+### CircuitBreaker — 14+1 Circuits
+
+```
+Arquivo: app/shared/resilience/circuit_breaker.py
+
+Padrão de 3 Estados: CLOSED → OPEN → HALF_OPEN → CLOSED
+  CLOSED: chamadas passam; cada falha incrementa contador
+  OPEN: todas rejeitadas com CircuitBreakerError + retry_after
+  HALF_OPEN: permite chamadas limitadas para testar recuperação
+
+14 circuits pré-configurados:
+┌──────────────────────────────────────────────────────────────────────────────┐
+│  Circuit         │ Failures │ Recovery │ Success │ Timeout │ Tier      │
+│─────────────────┼──────────┼──────────┼─────────┼─────────┼───────────│
+│  anthropic       │ 5        │ 30s      │ 2       │ 60s     │ critical  │
+│  openai          │ 5        │ 30s      │ 2       │ 60s     │ critical  │
+│  gemini          │ 5        │ 30s      │ 2       │ 60s     │ high      │
+│  pearch          │ 3        │ 60s      │ 2       │ 30s     │ high      │
+│  workos          │ 5        │ 30s      │ 2       │ 15s     │ critical  │
+│  merge           │ 5        │ 45s      │ 2       │ 30s     │ high      │
+│  google_calendar │ 5        │ 60s      │ 2       │ 30s     │ medium    │
+│  gupy            │ 5        │ 45s      │ 2       │ 30s     │ high      │
+│  pandape         │ 5        │ 45s      │ 2       │ 30s     │ high      │
+│  sendgrid        │ 5        │ 30s      │ 2       │ 30s     │ critical  │
+│  resend          │ 5        │ 30s      │ 2       │ 30s     │ high      │
+│  iugu            │ 3        │ 60s      │ 2       │ 30s     │ medium    │
+│  vindi           │ 3        │ 60s      │ 2       │ 30s     │ medium    │
+│  llm_react_reason│ 3        │ 60s      │ 2       │ 30s     │ (ReAct)   │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+Notificação de Circuit Open (COMP-3):
+  Redis dedup: máximo 1 alerta por circuit por hora
+  Canais: Bell (in-app) + Teams (webhook)
+  Mensagem: "⚡ Circuit Breaker ABERTO: {service_name}"
+  Prometheus: circuit_breaker_state (0=closed, 1=half_open, 2=open)
+
+Degraded Mode Responses (14 mensagens PT-BR):
+  Cada serviço tem mensagem amigável quando circuit OPEN
+  Fallback genérico: "Este serviço está temporariamente indisponível."
+```
+
+### PromptInjectionGuard
+
+```
+Ativado em todo request que chega ao DomainOrchestrator
+Detecta tentativas de prompt injection no input do usuário
+Bloqueia execução se injeção detectada
+Registra tentativa no audit log
+```
+
+### Anti-Sycophancy — 3 Variantes
+
+```
+Arquivo: app/shared/prompts/anti_sycophancy_block.py
+
+ANTI_SYCOPHANCY_OPERATIONAL → Talent, Kanban, Jobs Management
+  5 regras: não concordar com filtros discriminatórios,
+  verificar antes de confirmar, discordância com dados
+
+ANTI_SYCOPHANCY_FULL → Wizard, Policy
+  5 regras + VERIFICAÇÃO DE PREMISSAS (5 sub-regras)
+  Mais restritivo: verificar histórico, nunca mudar silenciosamente
+
+ANTI_SYCOPHANCY_ORCHESTRATOR → Orchestrator
+  Versão compacta (1 frase) — ponto de entrada global
+
+Crença #11 do Manifesto WeDOTalent:
+"Anti-sycophancy em 100% das interações IA."
+```
 
 ---
 
-## SEÇÃO TRANSVERSAL: COMPLIANCE
+## SEÇÃO TRANSVERSAL: COMPLIANCE TÉCNICO
+
+### FairnessGuard — 3 Camadas
+
+```
+Arquivo: app/shared/compliance/fairness_guard.py
+
+Layer 1: Explicit Bias Block
+  ~350+ patterns em 13 categorias:
+  gender, age, ethnicity, religion, disability, marital_status,
+  sexual_orientation, pregnancy, appearance, social_class,
+  political, nationality, health
+  Ação: BLOCK — impede processamento
+  Integração: MainOrchestrator (pré-roteamento)
+
+Layer 2: Implicit Bias Soft Warning
+  Proxy terms detectados:
+  "dinâmico" → age proxy | "boa aparência" → appearance proxy
+  Ação: WARN — permite com alerta (log only)
+  Integração: MainOrchestrator (pré-roteamento)
+
+Layer 3: Semantic Analysis (LLM-based)
+  Provider: Gemini (análise semântica profunda)
+  Ação: WARN ou BLOCK dependendo da severidade
+  Condicionada por setor: ALPHA1_SECTOR_RULES[sector].fairness_layer3_enabled
+  Ativo em: tech, financeiro, saude, rpo
+  Inativo em: varejo, logistica
+
+Protected Fields (Learning Loop):
+  _LEARNING_PROTECTED_FIELDS = {gender, age, ethnicity, marital_status,
+  photo, institution, address, religion, disability, cv_gaps}
+  validate_learning_batch() bloqueia patterns discriminatórios ANTES de persistir
+
+Pontos de integração:
+  - MainOrchestrator L35-62 (L1/L2 pré-roteamento)
+  - jd_generation.py (L1/L2 input+output)
+  - wsi_questions.py (per-question check)
+  - rubric_evaluation.py (reasoning check)
+  - candidate_tools.py (reject_candidate auto-check)
+  - PipelineTransitionAgent (L3 pré-check)
+  - sourcing_agent (L3 via check_with_sector)
+  - communication_tools (L3)
+  - RAG pipeline (L3)
+```
+
+### PII Masking — 4 Camadas
+
+```
+Arquivo: app/shared/pii_masking.py
+
+Camada 1: CPF → [CPF_MASKED]
+Camada 2: nome → [NAME_1], [NAME_2], etc.
+Camada 3: endereço → [ADDR_MASKED]
+Camada 4: campos sensíveis → [FIELD_MASKED]
+
+Função: strip_pii_for_llm_prompt (global)
+PIIMaskingFilter: filtro global de logs
+Presidio: opt-in para detecção avançada
+
+Regra absoluta: O LLM NUNCA vê dados pessoais reais
+Demasking: dados restaurados na response final ao recrutador
+Audit: dados mascarados no registro (nunca reais)
+```
 
 ### FactChecker — 4 Tipos de Verificação
 
@@ -1712,10 +1506,10 @@ Tipo 1: Experiência declarada — claims vs dados de contexto
 Tipo 2: Certificações — validade técnica
 Tipo 3: Período na empresa — coerência temporal
 Tipo 4: Habilidades técnicas — relevância para a vaga
-V5: verificações granulares adicionais (salary, count, %, date)
 
 Integração: DomainWorkflow._post_check (enable_fact_checker=True por default)
 Claim inconsistente → flag para revisão
+V5: verificações granulares adicionais (salary, count, %, date)
 
 Pontos de integração:
   - wsi_questions.py (valida claims nas perguntas)
@@ -1736,8 +1530,7 @@ BiasAuditSnapshot:
   Four-Fifths Rule: se taxa de aprovação de grupo demográfico < 80% de outro
   → alerta automático
   Dados coletados em cada Gate (1 e 2)
-  Dashboard de Bias Audit: /api/v1/bias-audit/... (●)
-  Acesso admin: /api/v1/admin/compliance/fairness/report (●)
+  Dashboard de Bias Audit: ○ (pendente — backend coleta dados)
 ```
 
 ### AuditTrail — SOX-Compliant
@@ -1763,7 +1556,7 @@ Status de ativação por etapa:
   ● Ativo em TODAS as etapas: auth.py, jd_generation.py,
     wsi_questions.py, sourcing_react_agent.py, pipeline.py,
     approvals.py, communication.py, rubric_evaluation.py,
-    scheduling.py, voice_screening_orchestrator.py
+    scheduling.py
 ```
 
 ---
@@ -1781,7 +1574,7 @@ Pattern Types: salary_preference, skill_preference, benefit_preference,
                jd_style_preference, source_trust
 Confidence: ≥20 samples=high, ≥10=medium, ≥5=low
 FairnessGuard: validate_learning_batch() bloqueia discriminação ANTES de persistir
-ModelDrift: trigger automático quando feedback rejected/ignored acumula
+ModelDrift: trigger automático quando feedback rejected/ignored
 Snapshot: learning_snapshot_service salva snapshot pré-learning (rollback Z2-01)
 
 Etapas ativas: E2, E3, E4, E5, E7, E8, E9
@@ -1796,7 +1589,7 @@ Estatísticas: z-score, p-value (erfc), 95% CI, improvement %
 Significância: p < 0.05 AND |improvement| > 5%
 Modelo: PromptVariant + ABTestResult
 API: GET/POST testes + GET variant via api/v1/ab_testing.py
-seed_email_ab_tests: 3 experimentos criados no startup ●
+seed_email_ab_tests: 3 experimentos criados no startup
 
 Etapas ativas: E2, E3, E4, E6, E7, E9
 ```
@@ -1808,7 +1601,6 @@ Arquivo: app/services/routing_learning_service.py
 Mecanismo: Quando recrutador corrige roteamento, ajusta multipliers
 Range: 0.8x (muitos erros) a 1.2x (alta precisão) por domínio
 Método: compute_domain_confidence_adjustments(company_id, db)
-Silent-fallback telemetry: get_fallback_stats() via /api/v1/orchestrator/health
 
 Etapas ativas: E4, E5, E8
 ```
@@ -1819,7 +1611,7 @@ Etapas ativas: E4, E5, E8
 Arquivo: app/shared/learning/template_learning_service.py
 Mecanismo: Após 3 vagas similares (mesmo setor/seniority), gera template
 Métodos: learn_from_job_creation(), suggest_templates_for_improvement()
-Data sources: UNION de message_queue e communication_logs (corrigido)
+UNION de fontes corrigida (email + JD + feedback)
 
 Etapas ativas: E2, E6, E9
 ```
@@ -1842,7 +1634,6 @@ Etapas ativas: E4, E5, E7, E8
 ```
 Arquivo: app/domains/cv_screening/services/score_normalization_service.py
 Mecanismo: Ajusta scores baseado no difficulty_coefficient da versão do questionário
-Escala: 0–10 (migration 090)
 Objetivo: Candidatos com versões mais difíceis não penalizados
 
 Etapas ativas: E4, E7
@@ -1890,50 +1681,32 @@ Recursos:
   Pronoun resolution ("conte mais sobre ele" → resolve)
   Active filters tracking (filtros persistem na sessão)
 
-Etapas ativas: E0, E2, E3, E4, E5, E6, E7
+Etapas ativas: E2, E3, E4, E5, E6, E7
 ```
 
-### 10. Semantic Search + SkillsOntologyEngine
+### 10. Semantic Search
 
 ```
-SemanticSearch:
-  Arquivo: app/shared/intelligence/semantic_search_service.py
-  Provider: Gemini text-embedding-004 (768 dimensões)
-  Cache: Redis para evitar re-embedding
-  Domínios: Skills, Job Titles, Industries, Locations
-
-SkillsOntologyEngine:
-  Arquivo: app/domains/talent_intelligence/services/skills_ontology_engine.py
-  API: /api/v1/skills_catalog + /api/v1/job_embeddings
-  Expande queries com ontologia semântica de skills
-  Integração: RAGPipelineService.search(**kwargs) — kwargs incluem job_title, sector
+Arquivo: app/shared/intelligence/semantic_search_service.py
+Provider: Gemini text-embedding-004 (768 dimensões)
+Cache: Redis para evitar re-embedding
+Domínios: Skills, Job Titles, Industries, Locations
+Métodos: expand_query(domain, query), expand_skills(), expand_job_titles()
+Embedding Service: app/shared/intelligence/embedding_service.py
 
 Etapas ativas: E2, E3, E4
 ```
 
-### 11. Voice Analysis (Stack Atual)
+### 11. Voice Analysis
 
 ```
-Arquivo: app/domains/voice/services/voice_screening_orchestrator.py
-         app/domains/voice/services/voice_service.py
-         app/domains/voice/services/gemini_live_audio_service.py
-
-Stack de voz — DOIS pipelines distintos:
-PIPELINE A — Twilio PSTN (voice_screening_orchestrator.py):
-  STT: Gemini Flash 2.5 (μ-law → WAV via mulaw_to_wav() → Gemini API)
-  TTS: OpenAI TTS (voice="nova" → mp3_to_mulaw() → Twilio)
-  Telecomunicação: Twilio Voice (chamadas telefônicas, μ-law 8kHz)
-PIPELINE B — Áudio web (triagem.py):
-  Endpoint: POST /api/v1/triagem/{token}/audio
-  STT: OpenAI Whisper (whisper-1) via VoiceService.transcribe_audio()
-  TTS: OpenAI TTS (voice="nova") para perguntas da LIA
-PIPELINE C (disponível): Gemini Live Audio (GeminiLiveAudioService — browser↔Gemini WebSocket direto)
-
+Arquivo: app/services/voice_service.py
+STT Providers: Deepgram (primário), Whisper (fallback)
+TTS Provider: OpenAI (voice="nova")
 Uso: Triagem WSI por voz — candidato responde por áudio
-VoiceScreeningOrchestrator: coordena triagem completa por voz
-Scoring: sempre determinístico (sem LLM para calcular scores)
+WSIVoiceOrchestrator: coordena triagem por voz
 
-Etapas ativas: E7-VOZ
+Etapas ativas: E7
 ```
 
 ### 12. Long-Term Memory
@@ -1956,15 +1729,12 @@ Etapas ativas: E4, E8, E9A, E9B
 ### Consent Flow
 
 ```
-Arquivos: app/api/v1/consent_management.py + communication_optout.py
-          app/api/v1/granular_consent.py
-          app/domains/lgpd/services/granular_consent_service.py
+Arquivo: app/api/v1/lgpd.py + communication_optout.py
 
-1. Consentimento para triagem WSI (SEG-4):
+1. Consentimento para triagem WSI:
    WelcomeCard com checkbox explícito obrigatório
    Botões desabilitados até aceite LGPD
    ConsentEvent auditável registrado
-   ConsentCheckerService verifica purpose="ai_screening" antes de iniciar
 
 2. Consentimento para contato:
    CandidateChannelSelector.select_channels verifica:
@@ -1977,38 +1747,19 @@ Arquivos: app/api/v1/consent_management.py + communication_optout.py
    Link obrigatório em todo email
    HMAC-signed tokens (anti-tampering)
    ConsentEvent auditável: revogação registrada
-
-4. Consentimento granular por finalidade:
-   7 finalidades gerenciadas por granular_consent_service
-   POST /api/v1/consent/granular → registrar por propósito
-   BLOQUEANTE para: ai_screening, ai_scoring, ai_video_analysis
 ```
 
 ### DSR — Data Subject Requests
 
 ```
-Endpoints:
-  POST /api/v1/data-subject-requests/               → criar DSR público
-  GET  /api/v1/data-subject-requests/track/{id}    → status público
-  GET  /api/v1/data-subject-requests/stats          → métricas DPO
-  PUT  /api/v1/data-subject-requests/{id}/assign    → atribuir DPO
-  PUT  /api/v1/data-subject-requests/{id}/verify-identity
-  PUT  /api/v1/data-subject-requests/{id}/complete  → resolver + notificar
+Endpoints LGPD (api/v1/lgpd.py):
+  GET /api/v1/lgpd/data-export/{candidate_id} — export completo
+  DELETE /api/v1/lgpd/data-delete/{candidate_id} — anonymize/delete
+  GET /api/v1/lgpd/consent/{candidate_id} — consultar consentimentos
+  POST /api/v1/lgpd/consent — registrar consentimento
+  Portal público: /portal/data-request/[token]
 
-Serviços:
-  dsr_export_service: exporta dados em JSON (portabilidade — LGPD Art. 18 V)
-  lgpd_cleanup_service: deleta por retenção (90/180/365 dias)
-  granular_consent_service: 7 propósitos de consentimento
-
-Portal público: /portal/data-request/[token]
-  Fluxo: loading → OTP verification → form → completed
-  Suporte a upload de documentos + submissão parcial
-
-SLA: 15 dias úteis (LGPD Art. 18) — implementado no DSR service
-
-Papel DPO (migration 093):
-  Acesso ao /api/v1/admin/lgpd
-  Gerência de DSRs, identity verification, relatórios
+Status: Endpoints existem ○ (pendente integração completa)
 ```
 
 ### Data Minimization
@@ -2017,14 +1768,13 @@ Papel DPO (migration 093):
 Princípios aplicados:
   1. ICS Calendar: apenas dtstart/dtend/summary/location/attendee
      Sem dados sensíveis do candidato
-  2. ATS Sync (Merge.dev): ATSSyncService filtra dados sensíveis (salário)
+  2. ATS Sync: ATSSyncService filtra dados sensíveis (salário)
      "Dado sensível - não sincronizar"
   3. Feedback: PipelineFeedbackTool._remove_score_references
      Strip scores numéricos do feedback ao candidato
   4. PII Masking: 4 camadas pré-LLM
      LLM nunca vê dados reais
   5. ToonService: anonymize=True para visualização anônima
-  6. Transcrição de voz: _mask_transcript_segments() mascara PII
 ```
 
 ### Retenção por Tipo de Dado
@@ -2036,17 +1786,12 @@ Princípios aplicados:
 │  Audit Trail (SOX)         │ 730-1825 dias   │ SOX compliance, Art. 12 LGPD │
 │  Scores WSI                │ Duração processo│ Legítimo interesse            │
 │  Dados de candidato (PII)  │ Até revogação   │ Consentimento                 │
-│  Candidatos rejeitados     │ 90 dias         │ lgpd_cleanup_service          │
-│  Mensagens de chat         │ 90 dias         │ lgpd_cleanup_service          │
-│  Notas de entrevista       │ 180 dias        │ lgpd_cleanup_service          │
-│  Logs de screening/IA      │ 365 dias        │ lgpd_cleanup_service          │
 │  Logs de comunicação       │ 365 dias        │ Legítimo interesse            │
 │  Embeddings de perfil      │ Indefinido      │ Anonimizados (sem PII)        │
 │  Learning patterns         │ Indefinido      │ Agregados (sem PII individual)│
 │  LLM prompts/responses     │ 90 dias         │ Auditoria + melhoria          │
 │  Conversation memory       │ Sessão          │ Efêmero                       │
 │  Long-term memory          │ Compressão 30d  │ Anonimizado                   │
-│  Transcrição de voz        │ 90 dias         │ Mascarada (sem PII)           │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -2056,147 +1801,115 @@ Princípios aplicados:
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
-│  MAPA DE AGENTES — ALPHA 1 (abril/2026)                                       │
+│  MAPA DE AGENTES — ALPHA 1                                                    │
 │                                                                               │
 │  Ag.0 MainOrchestrator                                                        │
 │    Classe: MainOrchestrator                                                   │
 │    Domínio: orchestrator                                                      │
-│    LLM: Gemini (CascadedRouter T5) | Fallback: AutonomousReActAgent (T6)    │
-│    Tools: CascadedRouter (6-tier), ActionExecutor, PendingAction,            │
-│           navigation_intent, AgenticLoop, PreconditionChecker                │
-│    Etapas: E0 (chat LIA), E5, E6, E7 (coordenação geral)                   │
+│    LLM: Gemini (CascadedRouter T5)                                           │
+│    Tools: CascadedRouter (6-tier), ActionExecutor, PendingAction             │
+│    Etapas: E5, E6, E7 (coordenação geral)                                   │
 │    FG: L1+L2 (pré-roteamento) | Anti-Sycophancy: ORCHESTRATOR               │
 │                                                                               │
-│  Ag.1 SourcingReActAgent + sub-agentes                                        │
+│  Ag.2 SourcingReActAgent                                                      │
 │    Classe: SourcingReActAgent (LangGraphReActBase + EnhancedAgentMixin)       │
-│    Sub-agentes: Planner, Search, Enrich, Engagement                          │
-│                 GitHub, StackOverflow, Diversity, Referral                   │
-│                 PassivePipeline, NurtureSequence                              │
 │    Domínio: sourcing                                                          │
+│    Registry: "sourcing"                                                       │
 │    LLM: Gemini | max_iterations: 5 | max_tool_calls: 3                      │
 │    Tools: 15 (search, analyze, compare, rank, outreach, generate_message)    │
 │    Etapas: E4 (busca de candidatos)                                          │
 │    FG: L1+L2+L3 | PII: ativo | Audit: ●                                    │
 │                                                                               │
-│  Ag.2 WSIInterviewGraph                                                       │
+│  Ag.3 TriagemCurricular (CV Screening)                                        │
+│    Domínio: cv_screening                                                      │
+│    LLM: Gemini                                                                │
+│    Etapas: E4 (triagem curricular na busca)                                  │
+│    FG: L1+L2+L3 | PII: ativo | Fact-Check: ativo | Audit: ●                │
+│                                                                               │
+│  Ag.4 WSIInterviewGraph                                                       │
 │    Classe: WSIInterviewGraph (LangGraph StateGraph)                          │
 │    Domínio: cv_screening                                                      │
-│    LLM: Gemini | 8 stages | Bloom+Dreyfus+BigFive | Escala 0–10              │
-│    HITL: interrupt_before=["generate_feedback"]                              │
+│    LLM: Gemini | 8 stages | Bloom+Dreyfus+BigFive                           │
+│    HITL: interrupt_before=["lg_generate_feedback"]                           │
 │    Checkpoint: PostgresSaver (sessões 30-120 min)                            │
 │    Etapas: E7 (conduz entrevista WSI), E7B (feedback pós-triagem)            │
 │    FG: L1+L2+L3 | PII: ativo | Fact-Check: ativo | Audit: ●                │
 │                                                                               │
-│  Ag.3 WSIService (Scoring)                                                    │
+│  Ag.5 WSIService (Scoring)                                                    │
 │    Classe: WSIService + WSIDeterministicScorer                                │
 │    Domínio: cv_screening                                                      │
 │    LLM: SEM LLM (determinístico — zero latência, zero custo)                 │
-│    Escala: 0–10 (migration 090)                                               │
 │    Etapas: E4 (score WSI na busca), E7 (calcula score final)                 │
 │    ScoreNormalization: difficulty_coefficient ativo                           │
 │                                                                               │
-│  Ag.3a VoiceScreeningOrchestrator                                             │
-│    Domínio: voice                                                             │
-│    Pipeline A (PSTN): Twilio Voice + Gemini Flash 2.5 STT + OpenAI TTS      │
-│    Pipeline B (web): POST /triagem/{token}/audio → OpenAI Whisper STT       │
-│    Scoring: DETERMINÍSTICO (sem LLM para scores)                             │
-│    Etapas: E7-VOZ (triagem por ligação telefônica)                           │
-│    Endpoints: /api/v1/triagem/{token}/request-call                           │
-│               /api/v1/twilio-voice/status  (webhook Twilio)                  │
-│                                                                               │
-│  Ag.3d RubricEvaluationService                                                │
-│    Domínio: interview_intelligence                                            │
-│    LLM: Gemini | BARS anchors por pergunta                                   │
-│    Etapas: E3 (anchors), E7 (scoring BARS), E8 (análise pós-triagem)        │
-│                                                                               │
-│  Ag.4 PipelineTransitionAgent + sub-agentes                                   │
-│    Classe: PipelineTransitionAgent (LangGraphReActBase + EnhancedAgentMixin) │
-│    Sub-agentes: PipelineDecisionAgent, PipelineContextAgent,                 │
-│                 PipelineActionAgent                                           │
-│    Domínio: pipeline | LLM: Gemini                                           │
-│    Invocação: POST /api/v1/pipeline/interpret-context (direta)               │
-│    Tools: 20 | Etapas: E5, E8 (transições de pipeline)                       │
-│                                                                               │
-│  Ag.5 KanbanReActAgent + sub-agentes                                          │
-│    Classe: KanbanReActAgent                                                   │
-│    Sub-agentes: KanbanSearchAgent, KanbanInsightAgent, KanbanActionAgent     │
-│    Registry: "kanban" | Domínio: recruiter_assistant | LLM: Gemini           │
-│    Tools: 22 (maior número) | Etapas: E5, E8 (Kanban board)                 │
-│                                                                               │
-│  Ag.6 WizardReActAgent + JobWizardGraph                                       │
-│    Registry: "wizard" | Domínio: job_management | LLM: Gemini               │
-│    6 stages: input-evaluation → jd-enrichment → salary → competencies →      │
-│              wsi-questions → review-publish                                   │
-│    Tools: 10 | Etapas: E2, E3 (criação/edição de vagas)                      │
-│    WizardOrchestratorService: coordena wizard multi-step                      │
-│                                                                               │
-│  Ag.7 JobsManagementReActAgent                                                │
-│    Registry: "jobs_management" | Domínio: recruiter_assistant | LLM: Gemini  │
-│    Etapas: E0 (operações de vagas via chat), E2                               │
-│                                                                               │
-│  Ag.8 TalentReActAgent                                                        │
-│    Registry: "talent" | Domínio: recruiter_assistant | LLM: Gemini           │
-│    Tools: 13 | Stages: discovery → analysis → action_planning               │
-│    Etapas: E4 (funil de talentos)                                            │
-│                                                                               │
-│  Ag.9 PolicyReActAgent                                                        │
-│    Registry: "policy" | Domínio: hiring_policy | LLM: Gemini                │
-│    Tools: 13 | Setup wizard por blocos                                       │
-│    Etapas: Transversal (configuração de políticas por setor)                 │
-│                                                                               │
-│  Ag.10 CommunicationReActAgent + serviços                                     │
-│    Classes: CommunicationReActAgent (ReAct)                                  │
-│             PersonalizedFeedbackService (Ag.10a)                             │
-│             FeedbackGeneratorService (Ag.10b, interview_intelligence)        │
-│    Domínios: communication + cv_screening + interview_intelligence           │
-│    LLM: Gemini | max_iterations: 5                                           │
-│    Etapas: E5 (feedback rejeição), E6 (contato email),                      │
-│            E8 (feedback Gate 2), E9B (feedback reprovado)                    │
-│    FG: L1+L2 | LGPD: opt-out obrigatório                                    │
-│                                                                               │
-│  Ag.11 ATSIntegrationReActAgent ●                                             │
-│    Classe: ATSIntegrationReActAgent                                           │
-│    Domínio: ats_integration | LLM: Gemini                                    │
-│    Integração: Merge.dev (Greenhouse, Lever, e outros ATS via API unificada) │
-│    Tools: sync_candidate_to_ats, fetch_candidate_from_ats, validate_fields   │
-│    Etapas: E2 (sync ATS), E5 (sync status), E8 (sync status)                │
-│    Status: ● Funcional via Merge.dev                                          │
-│                                                                               │
-│  Ag.12 AnalyticsAgent                                                         │
-│    Domínio: analytics | LLM: Gemini                                           │
-│    Etapas: Transversal (KPIs, funil, relatórios)                             │
-│    PredictiveAnalytics: TTF, salary, skill_success                           │
-│                                                                               │
-│  Ag.13 AutomationReActAgent                                                   │
-│    Classe: AutomationReActAgent                                               │
-│    Domínio: automation | LLM: Gemini                                          │
-│    Serviço: automation_trigger_service                                        │
-│    Etapas: E5, E6, E7, E8 (triggers automáticos)                             │
-│                                                                               │
-│  Ag.14 InterviewGraph + InterviewWSIService                                   │
+│  Ag.6 InterviewGraph                                                          │
 │    Classe: InterviewGraph (LangGraph StateGraph)                             │
-│    Domínio: interview_scheduling | LLM: Gemini | 6 nós                      │
+│    Domínio: interview_scheduling                                              │
+│    LLM: Gemini | 6 nós                                                       │
 │    Tools: schedule_interview, check_availability, reschedule, cancel         │
-│    InterviewWSIService (Ag.14a, interview_intelligence):                      │
-│    → analisa WSI para sugerir perguntas de entrevista presencial             │
 │    Etapas: E9A (agendar entrevista)                                          │
 │    CircuitBreaker: "google_calendar"                                         │
 │                                                                               │
-│  SERVIÇOS ESPECIALIZADOS (sem rótulo Ag.):                                   │
+│  Ag.7 CommunicationReActAgent + PersonalizedFeedbackService                  │
+│    Classes: CommunicationReActAgent (ReAct) + PersonalizedFeedbackService    │
+│    Domínios: communication + cv_screening                                    │
+│    LLM: Gemini | max_iterations: 5                                           │
+│    Tools: send_email, send_whatsapp, get_history, schedule_message           │
+│    Etapas: E5 (feedback rejeição Gate 1), E6 (contato email),               │
+│            E8 (feedback Gate 2), E9B (feedback reprovado)                    │
+│    FG: L1+L2 | LGPD: opt-out obrigatório                                    │
+│                                                                               │
+│  Ag.8 ATSIntegrationReActAgent ⚠ PÓS-MVP                                   │
+│    Classe: ATSIntegrationReActAgent                                           │
+│    Domínio: ats_integration                                                   │
+│    LLM: Gemini                                                                │
+│    Tools: sync_candidate_to_ats, fetch_candidate_from_ats, validate_fields   │
+│    Etapas: E2 (sync ATS), E5 (sync status), E8 (sync status)                │
+│    Status: Código existe, depende de credenciais de produção                 │
+│                                                                               │
+│  SERVIÇOS AUXILIARES (sem rótulo Ag.):                                        │
+│                                                                               │
+│  WSIQuestionGenerator / WSIScreeningQuestionGenerator                         │
+│    Domínio: cv_screening | LLM: Gemini                                       │
+│    Etapas: E3 (gera perguntas WSI)                                           │
+│                                                                               │
+│  WSIScreeningPipeline                                                         │
+│    Domínio: cv_screening | LLM: Gemini                                       │
+│    Etapas: E4 (triagem/screening na busca)                                   │
+│                                                                               │
+│  WSIVoiceOrchestrator                                                         │
+│    Domínio: cv_screening | LLM: Gemini + Deepgram + OpenAI TTS              │
+│    Etapas: E7 (triagem por voz)                                              │
 │                                                                               │
 │  JobDescriptionGeneratorService                                              │
 │    Domínio: job_management | LLM: Claude (Anthropic)                         │
 │    Etapas: E2 (gera JD), E3 (JD como base para WSI)                         │
-│    Endpoint: POST /api/v1/briefing/generate-jd                               │
 │                                                                               │
-│  SkillsOntologyEngine                                                         │
-│    Domínio: talent_intelligence                                               │
-│    Etapas: E2, E4 (expansão de skills)                                       │
-│    API: /api/v1/skills_catalog + /api/v1/job_embeddings                      │
+│  PipelineTransitionAgent                                                      │
+│    Classe: PipelineTransitionAgent (LangGraphReActBase + EnhancedAgentMixin) │
+│    Domínio: pipeline | LLM: Gemini                                           │
+│    Invocação: POST /api/v1/pipeline/interpret-context (direta)               │
+│    Tools: 20 | Etapas: E5, E8 (transições de pipeline)                       │
 │                                                                               │
-│  WSIScreeningPipeline                                                         │
-│    Domínio: cv_screening | LLM: Gemini                                       │
-│    Etapas: E4 (triagem/screening na busca), E7 (fallback de perguntas)      │
+│  WizardReActAgent                                                             │
+│    Registry: "wizard" | Domínio: job_management | LLM: Gemini               │
+│    6 stages: input-evaluation → jd-enrichment → salary → competencies →      │
+│              wsi-questions → review-publish                                   │
+│    Tools: 10 | Etapas: E2, E3 (criação/edição de vagas)                      │
+│                                                                               │
+│  KanbanReActAgent                                                             │
+│    Registry: "kanban" | Domínio: recruiter_assistant | LLM: Gemini           │
+│    Tools: 22 (maior número) | Etapas: E5, E8 (Kanban board)                 │
+│                                                                               │
+│  TalentReActAgent                                                             │
+│    Registry: "talent" | Domínio: recruiter_assistant | LLM: Gemini           │
+│    Tools: 13 | Stages: discovery → analysis → action_planning               │
+│    Etapas: E4 (funil de talentos)                                            │
+│                                                                               │
+│  PolicyReActAgent                                                             │
+│    Registry: "policy" | Domínio: hiring_policy | LLM: Gemini                │
+│    Tools: 13 | Setup wizard por blocos                                       │
+│    Etapas: Transversal (configuração de políticas)                           │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -2208,56 +1921,33 @@ Princípios aplicados:
                     │ Orchestrator │
                     └──────┬───────┘
                            │
-         ┌─────────────────┼─────────────────┐
-         │                 │                 │
-   ┌─────▼────┐    ┌───────▼───────┐  ┌──────▼─────┐
-   │  Ag.1    │    │    Ag.2       │  │   Ag.11    │
-   │ Sourcing │    │ WSIInterview  │  │    ATS     │
-   │ (10 sub) │    │    Graph      │  │ Merge.dev  │
-   └─────┬────┘    └───────┬───────┘  └──────┬─────┘
-         │                 │                 │
-   ┌─────▼────┐    ┌───────▼───────┐         │
-   │  Ag.8    │    │    Ag.3       │         │
-   │  Talent  │    │  WSIService   │         │
-   └──────────┘    │(determinístico│         │
-                   └───────┬───────┘         │
-                           │                 │
-               ┌───────────┼─────────────────┘
-               │           │
-         ┌─────▼────┐ ┌────▼──────┐
-         │  Ag.4    │ │  Ag.10    │
-         │ Pipeline │ │  Commun.  │
-         │ (4 sub)  │ │(feedback) │
-         └─────┬────┘ └────┬──────┘
-               │           │
-         ┌─────▼────┐ ┌────▼──────┐
-         │  Ag.5    │ │  Ag.14    │
-         │  Kanban  │ │Interview  │
-         │ (3 sub)  │ │Scheduling │
-         └──────────┘ └───────────┘
-
-         ┌─────────────────────────┐
-         │      Ag.13              │
-         │  AutomationEngine       │
-         │  (dispara E5/E6/E7/E8) │
-         └─────────────────────────┘
+              ┌────────────┼────────────┐
+              │            │            │
+        ┌─────▼────┐ ┌────▼─────┐ ┌────▼─────┐
+        │  Ag.2    │ │  Ag.4   │ │  Ag.8   │
+        │ Sourcing │ │Entrev.  │ │ ATS Int.│
+        └─────┬────┘ │  WSI    │ └────┬────┘
+              │      └────┬────┘      │
+              │           │           │
+        ┌─────▼────┐ ┌────▼─────┐    │
+        │  Ag.3    │ │  Ag.5   │    │
+        │ Triagem  │ │Avaliador│    │
+        │Curricular│ │  WSI    │    │
+        └──────────┘ └────┬────┘    │
+                          │         │
+                    ┌─────▼────┐    │
+                    │  Ag.7    │◄───┘
+                    │Analista  │
+                    │Feedback  │
+                    └─────┬────┘
+                          │
+                    ┌─────▼────┐
+                    │  Ag.6    │
+                    │Scheduling│
+                    └──────────┘
 ```
 
 ---
-
-## FORA DO ESCOPO ALPHA 1
-
-As seguintes funcionalidades têm código existente mas estão **explicitamente excluídas** do Alpha 1:
-
-| Funcionalidade | Domínio/Classe | Motivo |
-|----------------|---------------|--------|
-| **Agent Studio** | `agent_studio`, `AgentTemplate`, `_YamlDomainProxy` | Customização de agentes por tenant — fase posterior |
-| **Digital Twin** | `digital_twin`, `TwinInferenceService` | Réplica digital de candidatos — fase posterior |
-| **Talent Pool** | `talent_pool` | Pool gerenciado de candidatos passivos — fase posterior |
-| **Recruitment Campaign** | `recruitment_campaign` | Campanhas de marketing de recrutamento — fase posterior |
-
-> Nota: A infra de Agent Studio existe no código (`get_domain_for_company()` em `registry.py` consulta `AgentTemplate` publicados). Não está exposta no Alpha 1 mas é não-destrutiva — tenants sem templates publicados recebem o domínio padrão WeDO.
-
 ---
 
-*Documento gerado a partir do código real do lia-agent-system (Replit) e documentação specs existente. Complementa o `ANALISE_ROADMAP_ALPHA1_vs_CODIGO.md` com nível de detalhe técnico passo-a-passo por etapa. Última auditoria contra o código: abril/2026 (v2.0).*
+*Documento gerado a partir do código real do lia-agent-system (Replit) e documentação specs existente. Complementa o `ANALISE_ROADMAP_ALPHA1_vs_CODIGO.md` com nível de detalhe técnico passo-a-passo por etapa. Última atualização de status: 31/03/2026.*

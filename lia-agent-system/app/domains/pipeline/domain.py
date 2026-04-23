@@ -119,8 +119,6 @@ class PipelineTransitionDomain(ComplianceDomainPrompt):
                 requires_confirmation=True,
                 tags=["pipeline", "transition"],
                 is_async=True,
-            
-                examples=('move o candidato João pra entrevista', 'avança este candidato pra próxima etapa'),
             ),
             DomainAction(
                 action_id="interpret_context",
@@ -130,8 +128,6 @@ class PipelineTransitionDomain(ComplianceDomainPrompt):
                 optional_params=["candidate_name", "job_title", "prompt"],
                 tags=["pipeline", "ai", "context"],
                 is_async=True,
-            
-                examples=('interpreta o contexto desta transição', 'por que o candidato foi rejeitado?'),
             ),
             DomainAction(
                 action_id="predict_sub_status",
@@ -140,8 +136,6 @@ class PipelineTransitionDomain(ComplianceDomainPrompt):
                 required_params=["vacancy_candidate_id", "from_stage", "to_stage"],
                 tags=["pipeline", "prediction"],
                 is_async=True,
-            
-                examples=('prediz o melhor sub-status', 'qual sub-status faz mais sentido aqui?'),
             ),
             DomainAction(
                 action_id="suggest_next_action",
@@ -150,8 +144,6 @@ class PipelineTransitionDomain(ComplianceDomainPrompt):
                 required_params=["vacancy_candidate_id", "current_stage"],
                 tags=["pipeline", "suggestion"],
                 is_async=True,
-            
-                examples=('sugere próxima ação pra este candidato', 'o que devo fazer agora?'),
             ),
             DomainAction(
                 action_id="list_pipeline_stages",
@@ -160,8 +152,6 @@ class PipelineTransitionDomain(ComplianceDomainPrompt):
                 required_params=["company_id"],
                 tags=["pipeline", "stages"],
                 is_async=True,
-            
-                examples=('lista etapas do pipeline', 'quais são as etapas do processo?'),
             ),
         ]
 

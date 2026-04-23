@@ -176,7 +176,6 @@ global:
       action:
       - save_company_field
       - save_company_section
-      - save_company_benefits
       - analyze_company_website
       - process_uploaded_document
       - import_workforce_plan
@@ -240,7 +239,6 @@ restricted_tools:
   # Company settings (write operations)
   - save_company_field         # modify company profile data
   - save_company_section       # bulk modify company section
-  - save_company_benefits      # write to dedicated company_benefits table
   - analyze_company_website    # external HTTP call to scrape website
   - import_workforce_plan      # import workforce planning data
 

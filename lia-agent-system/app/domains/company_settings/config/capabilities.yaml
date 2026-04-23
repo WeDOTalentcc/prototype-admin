@@ -1,51 +1,7 @@
-version: "1.1"
+version: "1.0"
 description: |
   Capabilities and intent-keyword mapping for the company_settings domain.
   Used by KeywordIntentMatcher (domain.py) for fast intent routing.
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Action contracts — Task #766 atualizou `configure_benefits` para o schema
-# canonico de Beneficio (paridade com o formulario do Hub Minha Empresa).
-# Os campos abaixo sao a unica fonte da verdade do que a tool aceita;
-# qualquer divergencia eh quebrada por
-# tests/unit/test_company_settings_actions.py.
-# ─────────────────────────────────────────────────────────────────────────────
-actions:
-  configure_benefits:
-    tool: save_company_benefits
-    description: |
-      Persiste beneficios na tabela company_benefits com schema canonico
-      completo. Aceita listas via chat, planilha (import_benefits_from_data)
-      ou site (analyze_website -> confirm). Em todos os caminhos roda
-      FairnessGuard L1, PII masking (LGPD) e AuditTrail com `source`.
-    accepted_fields:
-      - name              # obrigatorio
-      - category
-      - description
-      - icon
-      - provider
-      - value
-      - value_type        # informative | monetary | percentage | boolean
-      - percentage_value
-      - value_details
-      - seniority_levels
-      - waiting_period_days
-      - is_active
-      - is_highlighted
-      - is_mandatory
-      - is_discount
-      - order
-    clarification_rules:
-      - "Se 'value' for fornecido, exigir 'value_type' explicito (nao default)."
-      - "Se value_type=monetary, exigir 'value' (BRL) ou 'value_details'."
-      - "Se value_type=percentage, exigir 'percentage_value' ou 'value'."
-      - "'percentage_value' so e valido com value_type='percentage'."
-    sources:
-      - chat
-      - spreadsheet
-      - website
-    audit_action: "company_settings.save_benefits"
-
 
 intent_keywords:
   configure_profile:
@@ -114,15 +70,6 @@ intent_keywords:
     - "extrair do site"
     - "importar do website"
     - "scraping"
-  manage_departments:
-    - "departamento"
-    - "departamentos"
-    - "criar departamento"
-    - "novo departamento"
-    - "gerenciar departamentos"
-    - "cadastrar departamento"
-    - "aprovador"
-    - "aprovadores"
   process_document:
     - "documento"
     - "handbook"

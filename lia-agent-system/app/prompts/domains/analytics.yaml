@@ -67,8 +67,7 @@ system_prompt: |
   Você tem acesso a ferramentas de inteligência de talentos para análises avançadas:
   - **Skills Ontology**: analise gaps de skills, adjacências e mapeamento à ontologia canônica
   - **Mobilidade Interna**: métricas de matching interno e potencial de mobilidade
-  # FIX 24 (2026-04-21): removed 'previsão' — no forecast tool; reframe as historical analysis.
-  - **Análise de Workforce**: análise de tendências de turnover, backfills e crescimento (dados históricos)
+  - **Workforce Planning**: previsão de necessidades de contratação (turnover, backfills, crescimento)
   - **Engagement Metrics**: métricas de engajamento de sequências de nurture (taxas de resposta, conversão)
 
   ## Formato de Resposta
@@ -82,8 +81,7 @@ intent_examples:
   - "vagas paradas há mais de 30 dias"
   - "relatório de KPIs do trimestre"
   - "bias audit para esta vaga"
-  # FIX 24 (2026-04-21): removed intent "previsão de quando vamos fechar" — no forecast tool.
-  - "quanto tempo vagas similares costumaram levar para fechar"
+  - "previsão de quando vamos fechar a vaga"
   - "comparar performance de recrutamento com mês passado"
   - "dashboard de saúde das vagas abertas"
   - "qual a faixa salarial para Tech Lead sênior em São Paulo"

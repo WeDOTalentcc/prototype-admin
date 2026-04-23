@@ -3,54 +3,275 @@ name: lia-planning
 description: "Metodologia de planning unificada para Plataforma LIA — combina GSD workflow (4 modos), spec-driven development (4 fases) e brainstorming estruturado. Use ao iniciar qualquer trabalho significativo, planejar sprints, diagnosticar bugs, especificar features ou quando o usuario pedir para seguir a metodologia. Triggers: gsd, metodologia, workflow, novo sprint, planejar feature, bug fix, especificar, brainstorming, como vamos trabalhar."
 ---
 
-  # LIA Planning — Metodologia Unificada
+# LIA Planning — Metodologia Unificada
 
-  Combina 3 abordagens: GSD workflow (modos operacionais), spec-driven development (fases de profundidade) e brainstorming estruturado (exploracao de ideias).
+Combina 3 abordagens: GSD workflow (modos operacionais), spec-driven development (fases de profundidade) e brainstorming estruturado (exploracao de ideias).
 
-  > Esta skill segue o padrao **progressive-disclosure** (ver `.agents/skills/progressive-disclosure/SKILL.md`). O SKILL.md serve para triagem rapida; o conteudo tecnico foi distribuido em `references/` por dimensao/passo/parte.
+## Principio Central: Auto-Sizing
 
-  ## Quando ativar
+A profundidade do processo adapta-se ao tamanho do trabalho:
 
-  Veja a `description` no frontmatter para os gatilhos completos. Em geral: ative quando o trabalho atual cair num dos topicos da tabela "Mapa de references" abaixo.
+| Escopo | Exemplo | Workflow |
+|--------|---------|----------|
+| **Micro** | Typo, 1 prop faltando | Fix direto, sem cerimonia |
+| **Small** | Bug isolado, <=3 arquivos | Bug Fix Mode (diagnosticar > isolar > corrigir > verificar) |
+| **Medium** | Feature clara, <10 tasks | Feature Mode (spec > impacto > implementar > testar > auditar) |
+| **Large** | Refactor multi-arquivo | Refactor Mode (medir > planejar > executar > medir de novo) |
+| **Sprint** | Conjunto coordenado | Sprint Mode (inventariar > decompor > priorizar > delegar > integrar) |
+| **Complex** | Ambiguidade, dominio novo | Brainstorming (explorar > propor > aprovar) + Feature Mode |
 
-  ## Quando NAO ativar
+## Arquivos de Estado
 
-  - Quando o trabalho ja foi coberto por outra skill mais especifica.
-  - Quando o escopo for trivial (typo, copy de UI sem logica, edicao isolada que nao ativa nenhum topico).
+```
+docs/specs/frontend/PLANO_IMPLEMENTACAO_v2.md  -> Master spec (metricas, sprints, score)
+replit.md                                       -> Memoria persistente (arquitetura, preferencias)
+.local/session_plan.md                          -> Plano da sessao atual (descartavel)
+```
 
-  ## Como usar
+**Regra**: `PLANO_IMPLEMENTACAO_v2.md` eh a fonte unica de verdade para metricas e progresso.
 
-  1. **Triagem** — leia este SKILL.md. Identifique quais topicos da tabela abaixo se aplicam ao trabalho.
-  2. **Diagnostico** — abra apenas as references relevantes (1-3 normalmente bastam).
-  3. **Execucao** — siga o procedimento descrito nas references abertas.
-  4. **Output em camadas** — entregue TL;DR -> resumo -> detalhe sob demanda (ver `progressive-disclosure`).
+---
 
-  ## Mapa de references
+## Modo 1: Bug Fix
 
-  | Topico | Arquivo |
-|--------|---------|
-| Principio Central: Auto-Sizing | `references/01-principio-central-auto-sizing.md` |
-| Arquivos de Estado | `references/02-arquivos-de-estado.md` |
-| Modo 1: Bug Fix | `references/03-modo-1-bug-fix.md` |
-| Modo 2: Feature | `references/04-modo-2-feature.md` |
-| Modo 3: Refactor | `references/05-modo-3-refactor.md` |
-| Modo 4: Sprint | `references/06-modo-4-sprint.md` |
-| Spec-Driven: 4 Fases Adaptativas | `references/07-spec-driven-4-fases-adaptativas.md` |
-| Regras Inegociaveis do Projeto | `references/08-regras-inegociaveis-do-projeto.md` |
-| Erros Pre-Existentes a Ignorar | `references/09-erros-pre-existentes-a-ignorar.md` |
-| Quality Gates | `references/10-quality-gates.md` |
-| Template de Session Plan | `references/11-template-de-session-plan.md` |
-| Comandos Rapidos | `references/12-comandos-rapidos.md` |
+Para crashs, erros de runtime, funcionalidades quebradas.
 
+```
+DIAGNOSTICAR -> ISOLAR -> CORRIGIR -> VERIFICAR
+```
 
-  ## Output esperado
+1. **Diagnosticar** (maximo 10 min)
+   - Reproduzir o erro (screenshot ou logs)
+   - Identificar arquivo e linha exatos
+   - Determinar causa raiz (nao o sintoma)
+   - Classificar: crash vs visual vs logica vs performance
+   - **Antes de propor o fix, rodar a skill `canonical-fix`** para confirmar qual arquivo e a fonte da verdade, mapear duplicatas/consumidores e evitar workaround no consumidor.
 
-  Ao terminar, responda na ordem:
+2. **Isolar**
+   - Verificar se eh pre-existente (lista de erros a ignorar no scratchpad)
+   - Identificar menor conjunto de arquivos afetados
+   - Verificar se a correcao pode causar regressao
 
-  1. **TL;DR** — 1-3 linhas com o veredicto/resultado.
-  2. **Resumo estruturado** — bullets ou mini-tabela cobrindo os topicos efetivamente aplicados.
-  3. **Detalhe por topico** — abrir apenas se houver bloqueio ou pedido explicito.
-  4. **Anexos** — comandos rodados, logs, diffs, sempre rotulados ao final.
+3. **Corrigir**
+   - Correcao minima necessaria
+   - Sem refactors oportunistas — fix apenas
+   - Sem adicionar features — fix apenas
 
-  Se voce abriu uma reference e nao aplicou nada dela, declare explicitamente "topico X verificado, sem acao necessaria".
-  
+4. **Verificar**
+   - Teste e2e com `runTest()` confirmando o fix
+   - Screenshot antes/depois quando visual
+   - Verificar que nao quebrou nada adjacente
+
+**Checklist:**
+- [ ] Causa raiz identificada (nao apenas sintoma)
+- [ ] Correcao minima aplicada
+- [ ] Nenhum debug log deixado no codigo
+- [ ] Teste e2e passou
+- [ ] Nenhuma regressao observada
+
+---
+
+## Modo 2: Feature
+
+Para funcionalidades novas ou melhorias significativas.
+
+```
+SPEC -> IMPACTO -> IMPLEMENTAR -> TESTAR -> AUDITAR
+```
+
+1. **Spec** (o que, nao como)
+   - Definir comportamento esperado em linguagem simples
+   - Listar criterios de aceite
+   - Identificar dependencias (APIs, componentes, dados)
+   - Perguntar ao usuario se o design/layout muda
+
+2. **Impacto** (usar skill `feature-impact` para features grandes)
+   - Mapear arquivos afetados
+   - Verificar impacto no Design System v4.2.1
+   - Checar se afeta preparacao para migracao Vue
+
+3. **Implementar**
+   - Seguir convencoes existentes do codebase
+   - `"use client"` sempre na primeira linha de client components
+   - Hooks em `.tsx` quando contiverem JSX
+   - Sem `any` — usar tipos especificos
+   - Sem inline styles — usar Tailwind
+
+4. **Testar**
+   - `runTest()` com plano detalhado
+   - Testar happy path E edge cases
+   - Testar responsividade quando UI
+
+5. **Auditar** (usar skill `feature-audit` para features medias/grandes)
+   - Code review com `architect()`
+   - Atualizar `PLANO_IMPLEMENTACAO_v2.md` com novas metricas
+
+### Brainstorming para Features Complexas
+
+Quando a feature tem ambiguidade ou multiplas abordagens possiveis, ANTES do Modo 2:
+
+1. **Explorar contexto** — verificar arquivos, docs, commits recentes
+2. **Perguntar** — uma pergunta por vez, preferir multipla escolha
+3. **Propor 2-3 abordagens** — com trade-offs e recomendacao
+4. **Apresentar design** — secoes proporcionais a complexidade, aprovar cada uma
+5. **Aprovar** — so implementar apos aprovacao do usuario
+
+**HARD-GATE:** NAO implementar ate ter design aprovado. Todo projeto passa por este processo. "Simples" eh onde suposicoes nao examinadas causam mais retrabalho.
+
+---
+
+## Modo 3: Refactor
+
+Para melhorias de qualidade sem mudanca de comportamento.
+
+```
+MEDIR -> PLANEJAR -> EXECUTAR -> MEDIR DE NOVO
+```
+
+1. **Medir** (antes) — contar metricas: `:any`, `as any`, inline styles, linhas
+2. **Planejar** — definir meta, listar arquivos alvo, estimar esforco
+3. **Executar** — um arquivo por vez, compilar e testar apos cada um
+4. **Medir de novo** — recontar, atualizar PLANO com delta
+
+### Comandos de Medicao
+
+```bash
+# Contar :any
+grep -r ": any" plataforma-lia/src --include="*.ts" --include="*.tsx" | grep -v node_modules | grep -v ".next/" | wc -l
+
+# Contar as any
+grep -r "as any" plataforma-lia/src --include="*.ts" --include="*.tsx" | grep -v node_modules | grep -v ".next/" | wc -l
+
+# Contar inline styles
+grep -rn "style={{" plataforma-lia/src --include="*.tsx" | grep -v node_modules | wc -l
+
+# Listar monolitos >1500 linhas
+find plataforma-lia/src -name "*.tsx" -o -name "*.ts" | grep -v node_modules | grep -v ".next" | xargs wc -l | sort -rn | head -20
+
+# Score de qualidade
+# Score = 10 - (any/100 * 1.5) - (as_any/50 * 1.0) - (inline/500 * 1.0) - (monolitos/5 * 0.5)
+```
+
+---
+
+## Modo 4: Sprint
+
+Para conjuntos coordenados de tarefas (Planning Mode do Replit).
+
+```
+INVENTARIAR -> DECOMPOR -> PRIORIZAR -> DELEGAR -> INTEGRAR
+```
+
+1. **Inventariar** — ler estado do PLANO, verificar tasks existentes
+2. **Decompor** — tasks atomicas com objetivo claro, arquivos alvo, criterio de aceite
+3. **Priorizar** — P0 crashs > P1 qualidade > P2 features > P3 polish > P4 performance
+4. **Delegar** — tasks isoladas em paralelo, tasks com dependencia em sequencia
+5. **Integrar** — verificar ambiente apos merge, rodar post_merge_setup, atualizar PLANO
+
+---
+
+## Spec-Driven: 4 Fases Adaptativas
+
+Para features grandes ou complexas, usar profundidade proporcional:
+
+```
+SPECIFY -> DESIGN -> TASKS -> EXECUTE
+(obrigatorio)  (opcional)  (opcional)  (obrigatorio)
+```
+
+| Escopo | Specify | Design | Tasks | Execute |
+|--------|---------|--------|-------|---------|
+| **Small** (<=3 arquivos) | Quick mode | - | - | Implementar direto |
+| **Medium** (<10 tasks) | Spec breve | Inline | Implicitas | Implementar + verificar |
+| **Large** (multi-componente) | Spec + IDs | Arquitetura + componentes | Breakdown + deps | Implementar + verificar por task |
+| **Complex** (ambiguidade) | Spec + brainstorming | Research + arquitetura | Breakdown + paralelo | Implementar + UAT interativa |
+
+**Safety valve:** Se ao listar steps no Execute surgirem >5 ou dependencias complexas, PARE e crie tasks formais.
+
+---
+
+## Regras Inegociaveis do Projeto
+
+1. **`"use client"` sempre primeira linha** em client components
+2. **Sem documentos de auditoria separados** — tudo no PLANO
+3. **Sem git commit/push manual** — o Replit gerencia
+4. **Perguntar antes de mudar design/layout** — o usuario avalia primeiro
+5. **Chat eh a interface principal** — botoes sao atalhos opcionais
+6. **Preparar para migracao Vue** — estrutura, naming, patterns
+7. **Design System v4.2.1** — border-radius, tipografia, tokens canonicos
+
+## Erros Pre-Existentes a Ignorar
+
+- `.next/types/` route errors
+- `exports/funil-candidatos-completo.tsx`
+- Admin/conformidade pages
+- `ScreeningConfigManager.tsx`
+- `AgentActivityDashboard/NPSDashboard`
+- `useChatPageCore.tsx` MESSAGE_COMPONENT_CONFIGS (lines 975-1069)
+
+---
+
+## Quality Gates
+
+### Gate 1: Funcional
+- [ ] Aplicacao compila sem novos erros
+- [ ] Feature/fix funciona conforme especificado
+- [ ] Teste e2e passou com `runTest()`
+
+### Gate 2: Codigo
+- [ ] Sem `console.log` de debug deixado
+- [ ] Sem `any` introduzido (ou justificativa documentada)
+- [ ] Sem inline styles introduzidos
+- [ ] Code review com `architect()` passou
+
+### Gate 3: Documentacao
+- [ ] `PLANO_IMPLEMENTACAO_v2.md` atualizado (se metricas mudaram)
+- [ ] `replit.md` atualizado (se arquitetura mudou)
+- [ ] Commit message descreve o que e por que
+
+---
+
+## Template de Session Plan
+
+```markdown
+# Objetivo
+[Uma frase clara do que sera feito]
+
+# Modo
+[Bug Fix | Feature | Refactor | Sprint]
+
+# Baseline (se refactor)
+- :any = X
+- as any = Y
+- inline styles = Z
+
+# Tasks
+
+### T001: [Nome descritivo]
+- **Blocked By**: []
+- **Arquivos**: [lista]
+- **Aceite**: [como verificar que esta pronto]
+
+### T002: [Nome descritivo]
+- **Blocked By**: [T001]
+- **Arquivos**: [lista]
+- **Aceite**: [como verificar que esta pronto]
+
+# Meta
+- [ ] Gate 1: Funcional
+- [ ] Gate 2: Codigo
+- [ ] Gate 3: Documentacao
+```
+
+---
+
+## Comandos Rapidos
+
+| Acao | Como |
+|------|------|
+| Rodar testes e2e | `runTest({ testPlan: "..." })` via code_execution |
+| Code review | `architect({ task, relevantFiles, includeGitDiff: true })` |
+| Ver metricas | Comandos bash na secao Refactor |
+| Criar task | Planning Mode -> skill `project_tasks` |
+| Verificar impacto | Skill `feature-impact` |
+| Auditoria completa | Skill `feature-audit` |

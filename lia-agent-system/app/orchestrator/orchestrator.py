@@ -441,7 +441,6 @@ class Orchestrator:
             extra = self._STRUCTURED_INTENT_ADDENDA.get(intent, "")
             system_prompt = SystemPromptBuilder.build(
                 agent_type="orchestrator",
-                company_id=str(ctx.get("company_id") or ""),
                 tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
                 user_name=ctx.get("user_name", ""),
                 user_role=ctx.get("user_role", ""),

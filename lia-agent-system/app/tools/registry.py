@@ -31,16 +31,6 @@ class ToolDefinition:
     parameters_schema: dict[str, Any]
     handler: Callable[..., Awaitable[dict[str, Any]]]
     allowed_agents: list[str] = field(default_factory=list)
-    # FIX 3 — Compliance/safety flags. Values: pii | fairness_guard | requires_hitl |
-    #         multi_tenant | audit_trail | credits_consumed | write_destructive
-    governance_tags: list[str] = field(default_factory=list)
-    # FIX 4 — Suggested follow-up tools (proactive suggestions after execution)
-    related_tools: list[str] = field(default_factory=list)
-    # FIX 8 G2 — Side effects classification. Values: none | db_write |
-    # external_api_call | credits_consumed | audit_trail | email_sent |
-    # webhook_fired | whatsapp_sent | write_destructive | mock_only
-    # Drives retry/idempotency/audit decisions downstream.
-    side_effects: list[str] = field(default_factory=list)
     
     def to_claude_schema(self) -> dict[str, Any]:
         """Convert to Claude's tool format."""
@@ -154,52 +144,6 @@ class ToolRegistry:
                 schemas.append(tool.to_claude_schema())
         return schemas
     
-    # ------------------------------------------------------------------
-    # Onda 5.3.a (2026-04-22) — multi-agent filtering for tool scoping
-    # ------------------------------------------------------------------
-    def get_tools_for_agents(self, agent_types: list[str]) -> list[ToolDefinition]:
-        """Union of tools visible to ANY of the given agent_types.
-
-        Canonical-fix producer: feeds intent-scoped prompts (~35-45% token
-        saving by filtering 96 tools → ~30-40 when scoped correctly).
-
-        Args:
-            agent_types: list of agent_type strings (e.g., ["sourcing",
-                "recruiter_assistant"]). Universal tools (no allowed_agents)
-                are always included.
-
-        Returns:
-            Deduplicated list of ToolDefinition. Empty list if agent_types
-            is empty OR nothing matches (caller should fall back to full).
-        """
-        if not agent_types:
-            return []
-        agent_set = set(agent_types)
-        seen: set[str] = set()
-        result: list[ToolDefinition] = []
-        for tool in self._tools.values():
-            is_universal = not tool.allowed_agents
-            is_allowed = bool(tool.allowed_agents and agent_set.intersection(tool.allowed_agents))
-            if (is_universal or is_allowed) and tool.name not in seen:
-                result.append(tool)
-                seen.add(tool.name)
-        return result
-
-    def get_schemas_for_agents(
-        self,
-        agent_types: list[str],
-        format: str = "claude",
-    ) -> list[dict[str, Any]]:
-        """Serialized schemas for union of agent_types (see get_tools_for_agents)."""
-        tools = self.get_tools_for_agents(agent_types)
-        schemas = []
-        for tool in tools:
-            if format == "gemini":
-                schemas.append(tool.to_gemini_schema())
-            else:
-                schemas.append(tool.to_claude_schema())
-        return schemas
-
     def list_tools(self) -> list[str]:
         """Get list of all registered tool names."""
         return list(self._tools.keys())

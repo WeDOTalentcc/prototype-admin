@@ -25,17 +25,9 @@ class CompanyBenefitCreate(BaseModel):
     category: str | None = None
     description: str | None = None
     icon: str | None = None
-    provider: str | None = None
     value: float | None = None
     value_type: str | None = "informative"
-    percentage_value: float | None = None
-    value_details: str | None = None
-    seniority_levels: list[str] | None = None
-    waiting_period_days: int = 0
     is_highlighted: bool = False
-    is_mandatory: bool = False
-    is_discount: bool = False
-    is_active: bool = True
     order: int = 0
 
 
@@ -44,17 +36,10 @@ class CompanyBenefitUpdate(BaseModel):
     category: str | None = None
     description: str | None = None
     icon: str | None = None
-    provider: str | None = None
     value: float | None = None
     value_type: str | None = None
-    percentage_value: float | None = None
-    value_details: str | None = None
-    seniority_levels: list[str] | None = None
-    waiting_period_days: int | None = None
     is_active: bool | None = None
     is_highlighted: bool | None = None
-    is_mandatory: bool | None = None
-    is_discount: bool | None = None
     order: int | None = None
 
 
@@ -65,17 +50,10 @@ class CompanyBenefitResponse(BaseModel):
     category: str | None = None
     description: str | None = None
     icon: str | None = None
-    provider: str | None = None
     value: float | None = None
     value_type: str | None = None
-    percentage_value: float | None = None
-    value_details: str | None = None
-    seniority_levels: list[str] = Field(default_factory=lambda: ["all"])
-    waiting_period_days: int = 0
     is_active: bool = True
     is_highlighted: bool = False
-    is_mandatory: bool = False
-    is_discount: bool = False
     order: int = 0
     created_at: str | None = None
     updated_at: str | None = None
@@ -85,9 +63,6 @@ class CompanyBenefitResponse(BaseModel):
 
 
 def _to_response(b) -> CompanyBenefitResponse:
-    seniority = b.seniority_levels if b.seniority_levels else ["all"]
-    if not isinstance(seniority, list):
-        seniority = ["all"]
     return CompanyBenefitResponse(
         id=str(b.id),
         company_id=b.company_id,
@@ -95,17 +70,10 @@ def _to_response(b) -> CompanyBenefitResponse:
         category=b.category,
         description=b.description,
         icon=b.icon,
-        provider=b.provider,
         value=b.value,
         value_type=b.value_type,
-        percentage_value=b.percentage_value,
-        value_details=b.value_details,
-        seniority_levels=seniority,
-        waiting_period_days=b.waiting_period_days or 0,
         is_active=b.is_active,
         is_highlighted=b.is_highlighted,
-        is_mandatory=bool(getattr(b, "is_mandatory", False)),
-        is_discount=bool(getattr(b, "is_discount", False)),
         order=b.order,
         created_at=b.created_at.isoformat() if b.created_at else None,
         updated_at=b.updated_at.isoformat() if b.updated_at else None,
@@ -134,30 +102,6 @@ async def list_company_benefits(
         return [_to_response(b) for b in benefits]
     except Exception as e:
         logger.error(f"Error listing company benefits: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/active", response_model=list[CompanyBenefitResponse])
-async def list_active_company_benefits(
-    company_id: str | None = Query(None),
-    category: str | None = Query(None),
-    search: str | None = Query(None),
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo),
-):
-    """List only active company benefits (convenience endpoint used by FE hook)."""
-    try:
-        effective_company_id = company_id or get_user_company_id(current_user)
-        repo = CompanyBenefitRepository(db)
-        benefits = await repo.list_for_company(
-            effective_company_id,
-            active_only=True,
-            category=category,
-            search=search,
-        )
-        return [_to_response(b) for b in benefits]
-    except Exception as e:
-        logger.error(f"Error listing active company benefits: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -288,22 +232,15 @@ async def seed_default_benefits(
 
 @router.get("/categories/list", response_model=None)
 async def list_benefit_categories():
-    """List available benefit categories (canonical enum shared with FE).
-
-    Keep this list in sync with `plataforma-lia/src/types/benefits.ts`
-    (`BenefitCategory`) and the `BENEFIT_CATEGORIES` constants in the
-    settings components.
-    """
+    """List available benefit categories."""
     return [
-        {"id": "health", "name": "Saúde & Bem-estar", "icon": "🏥"},
+        {"id": "health", "name": "Saúde", "icon": "🏥"},
         {"id": "food", "name": "Alimentação", "icon": "🍽️"},
         {"id": "transport", "name": "Transporte", "icon": "🚌"},
-        {"id": "education", "name": "Educação & Desenvolvimento", "icon": "📚"},
+        {"id": "education", "name": "Educação", "icon": "📚"},
         {"id": "wellness", "name": "Bem-estar", "icon": "💪"},
         {"id": "financial", "name": "Financeiro", "icon": "💰"},
-        {"id": "quality_life", "name": "Qualidade de Vida", "icon": "🏡"},
-        {"id": "family", "name": "Família", "icon": "👨\u200d👩\u200d👧"},
+        {"id": "family", "name": "Família", "icon": "👨‍👩‍👧"},
         {"id": "flexibility", "name": "Flexibilidade", "icon": "⏰"},
-        {"id": "security", "name": "Segurança", "icon": "🛡️"},
         {"id": "other", "name": "Outros", "icon": "📦"},
     ]

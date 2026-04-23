@@ -357,15 +357,10 @@ test.describe('05 · Ações do Card (Menu Dropdown)', () => {
       console.log(`  ✓ Menu items encontrados: ${count}`)
 
       // Verifica itens esperados
-      // Labels map to translations: 'shortlist' → 'Short List', 'wsi' → 'WSI'
-      const labelPatterns: Record<string, string> = {
-        'email': 'email', 'whatsapp': 'whatsapp', 'entrevista': 'entrevista|interview',
-        'wsi': 'wsi|triagem', 'feedback': 'feedback', 'shortlist': 'short.?list|shortlist',
-        'favorito': 'favorit'
-      }
       for (const label of ['email', 'whatsapp', 'entrevista', 'wsi', 'feedback', 'shortlist', 'favorito']) {
-        const pattern = labelPatterns[label] || label
-        const item = menu.locator(`[role="menuitem"]`).filter({ hasText: new RegExp(pattern, 'i') }).first()
+        const item = menu.locator(`[role="menuitem"]:has-text("${label}")`).or(
+          menu.locator(`[role="menuitem"] >> text=/${label}/i`)
+        ).first()
         const visible = await item.isVisible({ timeout: 500 }).catch(() => false)
         console.log(`  ${visible ? '✓' : '⚠️ '} MenuItem "${label}": ${visible ? 'OK' : 'NÃO ENCONTRADO'}`)
       }
@@ -520,7 +515,7 @@ test.describe('05 · Ações do Card (Menu Dropdown)', () => {
     const opened = await openCardDropdown(page)
     if (!opened) { test.skip() }
 
-    const shortlistItem = page.locator('[role="menuitem"]').filter({ hasText: /short.?list|shortlist/i }).first()
+    const shortlistItem = page.locator('[role="menuitem"]').filter({ hasText: /shortlist|short list/i }).first()
     if (await shortlistItem.isVisible({ timeout: 2000 }).catch(() => false)) {
       const textBefore = await shortlistItem.textContent()
       await shortlistItem.click()
@@ -528,7 +523,7 @@ test.describe('05 · Ações do Card (Menu Dropdown)', () => {
       console.log(`  ✓ Shortlist: texto antes="${textBefore?.trim()}"`)
       // Reabre dropdown para verificar toggle
       await openCardDropdown(page)
-      const textAfter = await page.locator('[role="menuitem"]').filter({ hasText: /short.?list|shortlist/i }).first().textContent().catch(() => '')
+      const textAfter = await page.locator('[role="menuitem"]').filter({ hasText: /shortlist/i }).first().textContent().catch(() => '')
       console.log(`  ✓ Shortlist: texto depois="${textAfter?.trim()}"`)
       const toggled = textBefore?.trim() !== textAfter?.trim()
       expect.soft(toggled, 'Texto do shortlist deve mudar após clique').toBe(true)

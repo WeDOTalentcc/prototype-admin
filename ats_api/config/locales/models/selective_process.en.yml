@@ -1,0 +1,19 @@
+en:
+  models:
+    selective_process:
+      statuses:
+        web_submission: "Web Submission"
+        screening: "Screening"
+        interview: "Interview"
+        rejected: "Rejected"
+        hired: "Hired"
+      attributes:
+        id: "ID"
+        name: "Name"
+        position: "Position"
+        status: "Status"
+        job_id: "Job ID"
+        uid: "UID"
+        sub_status: "Substatus"
+        created_at: "Created At"
+        updated_at: "Updated At"

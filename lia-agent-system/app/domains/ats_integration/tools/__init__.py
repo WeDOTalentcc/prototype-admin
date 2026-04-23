@@ -4,9 +4,66 @@ from typing import Any, Dict, List
 from app.domains.base import DomainContext
 
 ATS_INTEGRATION_TOOLS = [
-    # Migrated to V2 DomainAction path (actions.py).
-    # Singleton instance pattern (.ats_sync_service.ats_sync_service.*) is not
-    # resolvable via dynamic import. Routes handled by PipelineTransitionAgent.
+    {
+        "tool_id": "ats_sync_candidate",
+        "name": "Sincronizar Candidato",
+        "description": "Sincroniza dados de candidato com o ATS externo",
+        "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.sync_candidate",
+    },
+    {
+        "tool_id": "ats_sync_job",
+        "name": "Sincronizar Vaga",
+        "description": "Sincroniza dados de vaga com o ATS externo",
+        "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.sync_job",
+    },
+    {
+        "tool_id": "ats_pull_candidates",
+        "name": "Importar Candidatos",
+        "description": "Importa candidatos do ATS externo para o WedoTalent",
+        "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.pull_candidates",
+    },
+    {
+        "tool_id": "ats_pull_jobs",
+        "name": "Importar Vagas",
+        "description": "Importa vagas do ATS externo para o WedoTalent",
+        "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.pull_jobs",
+    },
+    {
+        "tool_id": "ats_check_status",
+        "name": "Verificar Status",
+        "description": "Verifica o status atual da sincronização com o ATS",
+        "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.check_sync_status",
+    },
+    {
+        "tool_id": "ats_list_connections",
+        "name": "Listar Conexões",
+        "description": "Lista conexões ATS configuradas",
+        "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.list_connections",
+    },
+    {
+        "tool_id": "ats_test_connection",
+        "name": "Testar Conexão",
+        "description": "Testa a saúde da conexão com o ATS externo",
+        "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.test_connection",
+    },
+    {
+        "tool_id": "ats_view_sync_log",
+        "name": "Ver Log de Sincronização",
+        "description": "Visualiza log de auditoria de sincronização",
+        "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.view_sync_log",
+    },
+    {
+        "tool_id": "ats_update_status",
+        "name": "Atualizar Status no ATS",
+        "description": "Envia atualização de status do candidato para o ATS",
+        "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.update_candidate_status",
+    },
+    {
+        "tool_id": "ats_send_score",
+        "name": "Enviar Score para ATS",
+        "description": "Envia score/parecer WSI do candidato para o ATS",
+        "handler": "app.domains.ats_integration.services.ats_sync_service.ats_sync_service.send_score",
+    },
 ]
 
 

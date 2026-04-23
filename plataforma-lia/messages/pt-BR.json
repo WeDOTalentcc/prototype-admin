@@ -34,8 +34,7 @@
       "ariaLabel": "Próximos passos possíveis",
       "nextStepsLabel": "Próximos passos",
       "nextInFunnel": "Próximo",
-      "close": "Fechar painel",
-      "thinking": "LIA está pensando…"
+      "close": "Fechar painel"
     },
     "funnel": {
       "createJob": "Vaga",
@@ -274,12 +273,16 @@
     "showPassword": "Mostrar senha",
     "hidePassword": "Ocultar senha",
     "invalidEmail": "Insira um email válido.",
-    "wrongPassword": "Senha incorreta. Verifique suas credenciais."
+    "wrongPassword": "Senha incorreta. Verifique suas credenciais.",
+    "loading": "Carregando...",
+    "redirecting": "Aguarde, carregando seu workspace..."
   },
   "chat": {
     "messageActions": {
       "copyTitle": "Copiar",
       "copyAriaLabel": "Copiar resposta",
+      "insertTitle": "Inserir no chat",
+      "insertAriaLabel": "Inserir esta resposta no campo de mensagem",
       "copiedTitle": "Copiado",
       "copiedAriaLabel": "Resposta copiada",
       "copiedToast": "Copiado",
@@ -304,9 +307,7 @@
         "hallucinated": "Inventou algo"
       },
       "regenerateTitle": "Gerar novamente",
-      "regenerateAriaLabel": "Gerar a resposta novamente",
-      "insertTitle": "Inserir no input",
-      "insertAriaLabel": "Inserir esta mensagem no campo de envio"
+      "regenerateAriaLabel": "Gerar a resposta novamente"
     },
     "workflowReels": {
       "scrollLeft": "Rolar para esquerda",
@@ -799,6 +800,7 @@
     "title": "Gestão de Vagas",
     "pageTitle": "Vagas",
     "newJob": "Nova Vaga",
+    "reload": "Recarregar",
     "loadingJob": "Carregando vaga...",
     "jobCreation": "Criação de Vaga",
     "inFunnel": "no funil",
@@ -1069,6 +1071,8 @@
     "closing": "Encerramento",
     "liaSuggestions": "{count, plural, one {# sugestão da LIA} other {# sugestões da LIA}}",
     "comingSoon": "Em breve",
+    "comingSoonStages": "Em breve: Configuração de etapas do funil",
+    "configureStages": "Configurar Etapas",
     "report": "Relatório",
     "shareMode": "Modo Compartilhamento",
     "shareModeDescription": "Todos os candidatos foram selecionados. Ajuste a seleção e clique em Compartilhar na barra de ações.",
@@ -1531,7 +1535,31 @@
       "close": "Fechar",
       "createNewTest": "Criar Novo Teste"
     },
-    "categoryTriagem": "Triagem"
+    "categoryTriagem": "Triagem",
+    "screeningTabLabel": "Triagem",
+    "agentsTabLabel": "Agentes",
+    "retry": "Tentar novamente",
+    "screeningTotal": "Total",
+    "screeningInProgress": "Em andamento",
+    "screeningCompleted": "Concluídas",
+    "screeningAbandoned": "Abandonadas",
+    "screeningAvgScore": "Score médio WSI",
+    "screeningAvgDuration": "Tempo médio",
+    "screeningFilterAll": "Todos os status",
+    "screeningFilterInProgress": "Em andamento",
+    "screeningFilterCompleted": "Concluída",
+    "screeningFilterAbandoned": "Abandonada",
+    "screeningFilterChannel": "Todos os canais",
+    "screeningRefresh": "Atualizar",
+    "screeningResultsCount": "resultados",
+    "screeningEmpty": "Nenhuma triagem encontrada para esta vaga",
+    "screeningColCandidate": "Candidato",
+    "screeningColStatus": "Status",
+    "screeningColScore": "Score WSI",
+    "screeningColDuration": "Duração",
+    "screeningColChannel": "Canal",
+    "agentsComingSoon": "Agentes IA",
+    "agentsComingSoonDesc": "Painel de agentes autônomos em breve"
   },
   "pipeline": {
     "title": "Funil de Talentos",
@@ -1567,8 +1595,7 @@
       "unauthorizedMessage": "Sua sessão expirou. Faça login novamente para continuar.",
       "forbiddenMessage": "Você não tem permissão para ver esses candidatos.",
       "serverErrorMessage": "O servidor está com problemas no momento. Tente novamente em instantes.",
-      "networkErrorMessage": "Erro ao carregar candidatos. Tente novamente.",
-      "reconnecting": "Reconectando ao servidor…"
+      "networkErrorMessage": "Erro ao carregar candidatos. Tente novamente."
     },
     "emptyState": {
       "noResults": "Nenhum candidato encontrado. Tente outros filtros.",
@@ -1755,52 +1782,7 @@
       "twins": {
         "cloneReasoning": "Clone o raciocínio dos seus melhores avaliadores",
         "cloneDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
-        "label": "Gêmeos Digitais",
-        "headerTitle": "Clone o raciocínio dos seus melhores avaliadores",
-        "headerDesc": "Capture como um especialista da equipe avalia candidatos. O Gêmeo Digital aprende os critérios e atua como segundo parecer automático na triagem.",
-        "createModal": {
-          "title": "Criar Gêmeo Digital",
-          "subtitle": "Capture o raciocínio de um especialista para usar como suporte automático de triagem",
-          "nameLabel": "Nome do gêmeo",
-          "namePlaceholder": "Ex.: Avaliador Sênior Backend",
-          "nameHelp": "Nomeie o especialista que este gêmeo irá representar",
-          "specialtyLabel": "Especialidades",
-          "specialtyPlaceholder": "Ex.: Backend, Python, AWS (separados por vírgula)",
-          "specialtyHelp": "Áreas em que este avaliador tem maior experiência",
-          "descLabel": "Descrição",
-          "descPlaceholder": "Ex.: Avaliador com 10+ anos em sistemas backend...",
-          "descHelp": "Resumo do perfil e estilo de avaliação do especialista",
-          "decisionsLabel": "Decisões anteriores (opcional)",
-          "decisionsUploadCta": "Clique para enviar um arquivo de decisões",
-          "decisionsFormats": ".csv, .json ou .txt",
-          "decisionsHelp": "Envie um arquivo com decisões passadas de aprovação/rejeição para acelerar a calibração",
-          "fileTooLargeTitle": "Arquivo muito grande",
-          "fileTooLargeDesc": "Tamanho máximo permitido é 5 MB",
-          "successTitle": "Gêmeo Digital criado!",
-          "successDesc": "O gêmeo começará a aprender com suas decisões.",
-          "errorTitle": "Erro ao criar gêmeo",
-          "errorDesc": "Tente novamente em alguns instantes.",
-          "cancel": "Cancelar",
-          "creating": "Criando...",
-          "create": "Criar Gêmeo"
-        },
-        "emptyState": {
-          "title": "Nenhum Gêmeo Digital criado",
-          "description": "Capture o raciocínio de um especialista para criar um gêmeo que atua como suporte automático de triagem.",
-          "createFirst": "Criar primeiro gêmeo",
-          "noExperience": "Não é necessária experiência prévia — o gêmeo aprende com seu feedback."
-        },
-        "onboarding": {
-          "stepLabel": "Passo {number}",
-          "step1Title": "Escolha um especialista",
-          "step1Desc": "Nomeie e descreva o avaliador que o gêmeo irá representar",
-          "step2Title": "Envie decisões anteriores",
-          "step2Desc": "Adicione decisões passadas de aprovação/rejeição para acelerar a calibração",
-          "step3Title": "Avalie perfis",
-          "step3Desc": "O gêmeo aprende com cada perfil que você avalia",
-          "step4Title": "Triagem automatizada",
-          "step4Desc": "O gêmeo atua como segundo parecer em cada nova triagem"
-        }
+        "label": "Gêmeos Digitais"
       },
       "search": {
         "multiStrategy": "Busca Multi-Estratégia",
@@ -2493,9 +2475,7 @@
       "fairnessGuardOk": "FairnessGuard OK",
       "piiStripOk": "Remoção PII OK",
       "auditLogOk": "Log de Auditoria OK",
-      "agentFallback": "Agente",
-      "defaultAgentName": "Novo Agente",
-      "toolsLabel": "Ferramentas"
+      "agentFallback": "Agente"
     },
     "digitalTwin": {
       "active": "Ativo",
@@ -2522,9 +2502,7 @@
       "evaluateCandidate": "Avaliar candidato",
       "manage": "Gerenciar",
       "digitalTwinEvaluation": "Avaliação Digital Twin",
-      "reevaluate": "Reavaliar",
-      "createNew": "Novo Gêmeo",
-      "twinCount": "{count} gêmeo(s) ativo(s)"
+      "reevaluate": "Reavaliar"
     },
     "candidateOrigin": {
       "origins": {
@@ -3435,7 +3413,6 @@
         "selectJob": "Selecione a Vaga",
         "loadingJobs": "Carregando vagas...",
         "noJobsAvailable": "Nenhuma vaga disponível",
-        "noChannelsEnabled": "Nenhum canal habilitado. Acesse as configurações para habilitar e-mail ou WhatsApp.",
         "selectAJob": "Selecione uma vaga...",
         "pipelineStage": "Etapa do Pipeline",
         "stageNew": "Novo",

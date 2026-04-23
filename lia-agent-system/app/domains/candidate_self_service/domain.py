@@ -32,8 +32,6 @@ CANDIDATE_SELF_SERVICE_ACTIONS = [
         description="Retorna etapa atual, data de entrada e próximos passos",
         required_params=["candidate_id", "vacancy_id"],
         tags=["status", "pipeline"],
-    
-        examples=('qual meu status no processo?', 'em que etapa estou?'),
     ),
     DomainAction(
         action_id="get_interview_info",
@@ -41,8 +39,6 @@ CANDIDATE_SELF_SERVICE_ACTIONS = [
         description="Retorna data, horário e formato da entrevista agendada (se houver)",
         required_params=["candidate_id", "vacancy_id"],
         tags=["interview", "scheduling"],
-    
-        examples=('quando é minha entrevista?', 'mostra detalhes da minha entrevista'),
     ),
     DomainAction(
         action_id="get_feedback",
@@ -50,8 +46,6 @@ CANDIDATE_SELF_SERVICE_ACTIONS = [
         description="Retorna feedback estruturado WSI se disponibilizado pela empresa",
         required_params=["candidate_id", "vacancy_id"],
         tags=["feedback", "wsi"],
-    
-        examples=('qual o feedback sobre mim?', 'teve retorno da entrevista?'),
     ),
     DomainAction(
         action_id="get_lgpd_info",
@@ -59,8 +53,6 @@ CANDIDATE_SELF_SERVICE_ACTIONS = [
         description="Informa sobre direito de explicação (LGPD Art. 20) e canal de contato",
         required_params=["candidate_id"],
         tags=["lgpd", "compliance"],
-    
-        examples=('quais dados vocês têm de mim?', 'mostra meus direitos LGPD'),
     ),
 ]
 

@@ -226,7 +226,6 @@ class _YamlDomainProxy:
             domain_yaml_additions = domain_yaml_additions.replace("{{" + key + "}}", str(value))
         return SystemPromptBuilder.build(
             agent_type=self.domain_id,
-            company_id=str(kwargs.get("company_id") or ""),
             extra_instructions=domain_yaml_additions,
             tenant_context_snippet=kwargs.get("tenant_context_snippet", ""),
             user_name=kwargs.get("user_name", ""),

@@ -40,7 +40,7 @@ Você vai me ajudar a aplicar o Design System LIA v4.1 no projeto WeDO Talent (R
 ### Cores:
 - **Botão Primary:** PRETO (bg-gray-900 hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900)
 - **Botão Secondary:** Border cinza (border border-gray-300 bg-white hover:bg-gray-50)
-- **Cyan (#60BED1):** APENAS para elementos LIA/IA (brain icon = identidade oficial; Bot icons; badges LIA). **Sparkles NÃO representa a LIA** — use o cérebro ciano (LIAIcon/Brain). Veja `docs/design-system/SPARKLES-AUDIT.md`.
+- **Cyan (#60BED1):** APENAS para elementos LIA/IA (brain icon, Sparkles, Bot icons, badges LIA)
 - **Filosofia:** 90% grays + 10% cores WeDo (apenas accents estratégicos)
 - **Status semânticos:** green (sucesso), amber (warning), red (erro) - apenas para indicadores
 
@@ -69,7 +69,7 @@ Você vai me ajudar a aplicar o Design System LIA v4.1 no projeto WeDO Talent (R
 4. ✅ Usar APENAS classes Tailwind do Design System
 5. ✅ Parar após cada fase para validação
 6. ✅ Se incompleto, NÃO prosseguir
-7. ✅ Cyan APENAS para elementos com ícones LIA (Brain/LIAIcon — Sparkles NÃO é LIA)
+7. ✅ Cyan APENAS para elementos com ícones LIA (Sparkles, Brain, Bot)
 8. ✅ Source Serif 4 APENAS em sidebar - NUNCA em cards ou headers
 9. ✅ Incluir variantes dark mode em todos os componentes
 

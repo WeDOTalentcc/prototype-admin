@@ -391,13 +391,11 @@ class CreditTransaction(Base):
 
 
 class ModuleStatus(str, enum.Enum):
-    EXPERIMENTAL = "experimental"
     BETA = "beta"
     TRIAL = "trial"
     ACTIVE = "active"
     EXPIRED = "expired"
     DISABLED = "disabled"
-    DEPRECATED = "deprecated"
     COMING_SOON = "coming_soon"
 
 
@@ -500,21 +498,7 @@ class CompanyModule(Base):
 
     @property
     def is_accessible(self) -> bool:
-        """
-        Returns True if the user can access this module.
-
-        Status semantics:
-        - experimental: treated like beta (accessible, badge shown by UI)
-        - beta / trial / active: accessible (subject to expiry check)
-        - expired / disabled / deprecated / coming_soon: NOT accessible
-        """
-        _accessible_statuses = (
-            ModuleStatus.EXPERIMENTAL.value,
-            ModuleStatus.BETA.value,
-            ModuleStatus.ACTIVE.value,
-            ModuleStatus.TRIAL.value,
-        )
-        if self.status in _accessible_statuses:
+        if self.status in (ModuleStatus.BETA.value, ModuleStatus.ACTIVE.value, ModuleStatus.TRIAL.value):
             if self.expires_at and self.expires_at < datetime.utcnow():
                 return False
             return True
@@ -522,13 +506,11 @@ class CompanyModule(Base):
 
 
 MODULE_STATUS_OPTIONS = [
-    {"value": ModuleStatus.EXPERIMENTAL.value, "label": "Experimental", "description": "Protótipo interno; pode mudar sem aviso"},
     {"value": ModuleStatus.BETA.value, "label": "BETA", "description": "Acesso gratuito durante período beta"},
     {"value": ModuleStatus.TRIAL.value, "label": "Trial", "description": "Período de avaliação"},
     {"value": ModuleStatus.ACTIVE.value, "label": "Ativo", "description": "Módulo ativo e pago"},
     {"value": ModuleStatus.EXPIRED.value, "label": "Expirado", "description": "Período expirado"},
     {"value": ModuleStatus.DISABLED.value, "label": "Desabilitado", "description": "Módulo desativado"},
-    {"value": ModuleStatus.DEPRECATED.value, "label": "Descontinuado", "description": "Módulo encerrado; migrar para substituto"},
     {"value": ModuleStatus.COMING_SOON.value, "label": "Em Breve", "description": "Módulo em desenvolvimento"},
 ]
 

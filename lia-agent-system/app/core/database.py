@@ -1313,15 +1313,6 @@ async def init_db():
         except Exception as e:
             logger.warning(f"Could not create unaccent extension: {e}")
         
-        # DEPRECATED — Task #729 schema-drift root cause. ``create_all`` runs
-        # every boot and silently emits whatever the in-memory models declare,
-        # bypassing Alembic. That is exactly how ``recruitment_campaigns``
-        # ended up in dev with the wrong columns (see migration 097 for the
-        # full investigation). Removal plan: a follow-up task will gate this
-        # behind ``ALEMBIC_AUTO_CREATE=false`` (default), then delete it once
-        # every environment has run ``alembic upgrade head``. Until then we
-        # keep the call so existing dev DBs still get bootstrapped, but new
-        # tables MUST be added through Alembic only.
         await conn.run_sync(Base.metadata.create_all)
     
     await setup_pgvector()

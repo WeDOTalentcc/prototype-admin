@@ -41,7 +41,7 @@ class PromptLoader:
         return data
 
     @classmethod
-    def get_domain_prompt(cls, domain_id: str, company_id: str = "") -> str:
+    def get_domain_prompt(cls, domain_id: str) -> str:
         """Get system prompt for a specific domain, composed with persona base."""
         data = cls.load(f"domains/{domain_id}")
         domain_specific = data.get("system_prompt", "")
@@ -49,7 +49,6 @@ class PromptLoader:
             from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
             return SystemPromptBuilder.build(
                 agent_type=domain_id,
-                company_id=company_id,
                 extra_instructions=domain_specific,
             )
         except Exception:

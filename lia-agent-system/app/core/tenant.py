@@ -8,13 +8,6 @@ DEMO_COMPANY_UUID = "00000000-0000-4000-a000-000000000001"
 # Dev/staging company_id aliases → mapped to DEMO_COMPANY_UUID in non-prod.
 # Add here when a new dev/staging environment uses a different ID format.
 # In production, WorkOS org IDs map directly — do NOT add prod IDs here.
-#
-# DELETION SLA — Task #673 / ADR-018 (closes #335):
-#   This shim is scheduled for removal on **2026-07-31**. By that date all dev
-#   tokens, staging seeds and Replit fixtures must emit the canonical
-#   `DEMO_COMPANY_UUID` directly. Per the `canonical-fix` skill, a feature flag
-#   without a deletion deadline is forbidden — when this comment is missing or
-#   the date passes, delete the alias set and `normalize_demo_company_id()`.
 DEMO_COMPANY_LEGACY_ALIASES = frozenset({
     "demo_company",
     "37",                                    # Rails integer ID in Replit dev

@@ -1,0 +1,152 @@
+{
+  "timestamp": "2026-02-07T11:32:05.547Z",
+  "phase1": {
+    "generalSearch": {
+      "total": 0,
+      "issues": []
+    },
+    "map002Search": {
+      "total": 0,
+      "issues": []
+    },
+    "map003Search": {
+      "total": 0,
+      "issues": []
+    }
+  },
+  "phase2": {
+    "updates": [
+      {
+        "cardCode": "MAP-002",
+        "jiraKey": "NOT_FOUND",
+        "status": "skipped",
+        "error": "Issue not found in Jira"
+      },
+      {
+        "cardCode": "MAP-003",
+        "jiraKey": "NOT_FOUND",
+        "status": "skipped",
+        "error": "Issue not found in Jira"
+      }
+    ],
+    "successCount": 0,
+    "errorCount": 2
+  },
+  "phase3": {
+    "creates": [
+      {
+        "cardCode": "MAP-007",
+        "jiraKey": "WT-1280",
+        "status": "success",
+        "labels": [
+          "lia-mvp",
+          "sprint-2",
+          "tipo-backend",
+          "epic-mapping",
+          "priority-critica",
+          "map-007",
+          "talent-funnel",
+          "quick-win"
+        ]
+      },
+      {
+        "cardCode": "MAP-008",
+        "jiraKey": "WT-1281",
+        "status": "success",
+        "labels": [
+          "lia-mvp",
+          "sprint-2",
+          "tipo-frontend",
+          "epic-mapping",
+          "priority-critica",
+          "map-008",
+          "talent-funnel",
+          "quick-win"
+        ]
+      },
+      {
+        "cardCode": "MAP-009",
+        "jiraKey": "WT-1282",
+        "status": "success",
+        "labels": [
+          "lia-mvp",
+          "sprint-2",
+          "tipo-backend",
+          "epic-mapping",
+          "priority-critica",
+          "map-009",
+          "talent-funnel",
+          "quick-win"
+        ]
+      },
+      {
+        "cardCode": "MAP-010",
+        "jiraKey": "WT-1283",
+        "status": "success",
+        "labels": [
+          "lia-mvp",
+          "sprint-2",
+          "tipo-backend",
+          "epic-mapping",
+          "priority-critica",
+          "map-010",
+          "talent-funnel",
+          "quick-win"
+        ]
+      },
+      {
+        "cardCode": "MAP-011",
+        "jiraKey": "WT-1284",
+        "status": "success",
+        "labels": [
+          "lia-mvp",
+          "sprint-2",
+          "tipo-backend",
+          "epic-mapping",
+          "priority-critica",
+          "map-011",
+          "talent-funnel",
+          "quick-win"
+        ]
+      },
+      {
+        "cardCode": "MAP-012",
+        "jiraKey": "WT-1285",
+        "status": "success",
+        "labels": [
+          "lia-mvp",
+          "sprint-2",
+          "tipo-frontend",
+          "epic-mapping",
+          "priority-alta",
+          "map-012",
+          "talent-funnel",
+          "quick-win"
+        ]
+      },
+      {
+        "cardCode": "MAP-013",
+        "jiraKey": "WT-1286",
+        "status": "success",
+        "labels": [
+          "lia-mvp",
+          "sprint-2",
+          "tipo-frontend",
+          "epic-mapping",
+          "priority-alta",
+          "map-013",
+          "talent-funnel",
+          "quick-win"
+        ]
+      }
+    ],
+    "successCount": 7,
+    "errorCount": 0
+  },
+  "summary": {
+    "totalFound": 0,
+    "totalUpdated": 0,
+    "totalCreated": 7,
+    "totalErrors": 2
+  }
+}

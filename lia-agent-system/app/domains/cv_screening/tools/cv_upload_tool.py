@@ -1,8 +1,3 @@
-# tenant-isolation: manual — legacy tools authored before @tool_handler.
-# Each handler reads company_id from the injected `_context` (ToolExecutionContext)
-# and/or from kwargs populated by `app/tools/executor.py`. Migration to
-# @tool_handler is tracked under the ADR-018 / Task #673 backlog. Do NOT add
-# new functions here — author new tools via @tool_handler in a new module.
 """
 CV Upload Tool — Phase 2
 

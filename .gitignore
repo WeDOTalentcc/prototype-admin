@@ -47,8 +47,6 @@ Thumbs.db
 # Logs
 *.log
 logs/
-# Next.js API route segments named logs are not log files
-!plataforma-lia/src/app/api/backend-proxy/**/logs/route.ts
 
 # Large assets - not for GitHub
 attached_assets/
@@ -78,8 +76,6 @@ lia-agent-system/audit_logs/
 !.agents/skills/feature-audit/**
 !.agents/skills/lia-planning/
 !.agents/skills/lia-planning/**
-!.agents/skills/harness-engineering/
-!.agents/skills/harness-engineering/**
 
 # Storybook assets (large PNGs)
 plataforma-lia/src/stories/assets/*.png
@@ -97,4 +93,3 @@ dump.rdb
 .coverage
 .coverage
 =155
-eval/agentic/runs/*.json

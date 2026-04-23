@@ -10,7 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
-from lia_models import Candidate, JobVacancy
+from lia_models.job_vacancy import JobVacancy
+from lia_models.candidate import VacancyCandidate
 
 from ._shared import (
     SuggestionCard,
@@ -101,10 +102,10 @@ async def get_dynamic_suggestions(
                 metadata={"total_jobs": len(active_jobs)}
             ))
 
-        recent_candidates_query = select(func.count(Candidate.id)).where(
+        recent_candidates_query = select(func.count(VacancyCandidate.candidate_id)).where(
             and_(
-                Candidate.company_id == company_id,
-                Candidate.created_at >= datetime.utcnow() - timedelta(days=7)
+                VacancyCandidate.company_id == company_id,
+                VacancyCandidate.created_at >= datetime.utcnow() - timedelta(days=7)
             )
         )
         recent_result = await db.execute(recent_candidates_query)

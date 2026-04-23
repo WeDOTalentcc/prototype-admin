@@ -58,7 +58,7 @@ Guia de domínios kanban/pipeline:
   pipeline_context: perfil do candidato, scores WSI, salário, disponibilidade
   pipeline_decision: validar transição, sub-status, preferências do recrutador
   pipeline_action: atualizar candidato, cancelar/reagendar entrevista, fairness
-{actions_context}
+
 Mensagem: {message}
 
 Responda SOMENTE com o JSON, sem texto extra."""
@@ -230,19 +230,7 @@ class LLMCascadeRouter:
           qualquer outro → provider="claude"
         """
         base_prompt = system_prompt_override or _ROUTING_PROMPT
-        # FIX 11 / G5 — Substitute {actions_context} in the PROMPT BODY (not appended).
-        # Placement before {message} ensures the LLM weighs domain actions while
-        # interpreting the user query — not after the "respond with JSON" directive.
-        actions_ctx = getattr(self, "_actions_context", "")
-        if system_prompt_override:
-            # Override path — no actions_context injection (respects caller's prompt)
-            prompt = base_prompt.replace("{message}", message[:500])
-        else:
-            prompt = (
-                base_prompt
-                .replace("{actions_context}", actions_ctx or "")
-                .replace("{message}", message[:500])
-            )
+        prompt = base_prompt.replace("{message}", message[:500])
         tokens_est = len(prompt) // 4
         provider: LLMProvider = self._provider_for_model(model_name)
 
@@ -331,45 +319,6 @@ class LLMCascadeRouter:
                 logger.warning("[LLMCascade] %s", warning)
         except Exception as exc:
             logger.debug("[LLMCascade] record_tokens_multi falhou: %s", exc)
-
-
-    def rebuild_routing_context(self) -> None:
-        """Build _actions_context from all registered domains for enriched routing.
-
-        Called from initialize_tools() after all domains are registered.
-        Iterates DomainRegistry and builds a compact action listing per domain
-        that is prepended to the routing prompt on each route() call.
-
-        Safe to call multiple times (idempotent) — replaces _actions_context.
-        """
-        try:
-            from app.domains.registry import DomainRegistry
-            registry = DomainRegistry()
-            domain_ids = registry.list_domains()
-            if not domain_ids:
-                self._actions_context = ""
-                logger.warning("[LLMCascade] rebuild_routing_context: no domains registered")
-                return
-
-            lines = ["\n## Ações disponíveis por domínio (referência para roteamento)"]
-            for domain_id in sorted(domain_ids):
-                instance = registry.get_instance(domain_id)
-                if instance is None:
-                    continue
-                actions_text = instance.get_actions_for_prompt(max_actions=5)
-                if actions_text:
-                    lines.append(f"\n{domain_id}:")
-                    lines.append(actions_text)
-
-            self._actions_context = "\n".join(lines)
-            logger.info(
-                "[LLMCascade] rebuild_routing_context: %d domains, %d chars",
-                len(domain_ids), len(self._actions_context),
-            )
-        except Exception as exc:
-            # Non-blocking — routing still works with static prompt
-            self._actions_context = ""
-            logger.warning("[LLMCascade] rebuild_routing_context failed (non-blocking): %s", exc)
 
 
 # Singleton compartilhado

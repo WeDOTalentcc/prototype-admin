@@ -30,26 +30,6 @@ variants:
         pipeline_decision: validar transição, sub-status, preferências do recrutador
         pipeline_action: atualizar candidato, cancelar/reagendar entrevista, fairness
 
-      META-PERGUNTAS vs COMANDOS (Task #726):
-      Mensagens que começam com "consegue", "você sabe", "tem como",
-      "dá pra/para", "é possível" e perguntam sobre uma capacidade SEM
-      filtro concreto (skill, localização, ID de vaga, nome próprio) são
-      meta-perguntas — devolva domain="recruiter_assistant" com
-      confidence baixa (≤0.4) para que o gate de meta-question responda
-      de forma informativa sem executar a ação.
-
-      Exemplos:
-        "consegue buscar candidatos no banco local ou global?"
-          → meta-pergunta (recruiter_assistant)
-        "busque candidatos React em São Paulo"
-          → comando real (sourcing_search)
-        "você sabe agendar entrevista?"
-          → meta-pergunta (recruiter_assistant)
-        "agenda entrevista com Marco amanhã às 14h"
-          → comando real (scheduling)
-        "tem como exportar candidatos?"
-          → meta-pergunta (recruiter_assistant)
-
       Mensagem: {message}
 
       Responda SOMENTE com o JSON, sem texto extra.

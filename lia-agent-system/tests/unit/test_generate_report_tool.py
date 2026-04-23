@@ -1,9 +1,6 @@
 """
 P3-B — Testes: generate_report em todos os agentes
 
-Onda 5.2.c (2026-04-22) — mocks updated: tool uses
-get_tenant_aware_session() not AsyncSessionLocal.
-
 Cobre:
 1. talent — retorna success=True com summary de applications
 2. sourcing — retorna success=True com shortlisted/contacted
@@ -39,7 +36,7 @@ async def test_talent_generate_report_success():
     mock_ctx.__aenter__ = AsyncMock(return_value=mock_session)
     mock_ctx.__aexit__ = AsyncMock(return_value=False)
 
-    with patch("app.domains.recruiter_assistant.agents.talent_tool_registry.get_tenant_aware_session", return_value=mock_ctx):
+    with patch("app.domains.recruiter_assistant.agents.talent_tool_registry.AsyncSessionLocal", return_value=mock_ctx):
         result = await _wrap_generate_report(report_type="summary", period="month", company_id="c1")
 
     assert result["success"] is True
@@ -58,7 +55,7 @@ async def test_talent_generate_report_db_error_still_success():
     mock_ctx.__aenter__ = AsyncMock(return_value=mock_session)
     mock_ctx.__aexit__ = AsyncMock(return_value=False)
 
-    with patch("app.domains.recruiter_assistant.agents.talent_tool_registry.get_tenant_aware_session", return_value=mock_ctx):
+    with patch("app.domains.recruiter_assistant.agents.talent_tool_registry.AsyncSessionLocal", return_value=mock_ctx):
         result = await _wrap_generate_report(company_id="c1")
 
     assert result["success"] is True
@@ -120,7 +117,7 @@ async def test_pipeline_generate_report_success():
     mock_ctx.__aenter__ = AsyncMock(return_value=mock_session)
     mock_ctx.__aexit__ = AsyncMock(return_value=False)
 
-    with patch("app.domains.pipeline.agents.pipeline_tool_registry.get_tenant_aware_session", return_value=mock_ctx):
+    with patch("app.domains.pipeline.agents.pipeline_tool_registry.AsyncSessionLocal", return_value=mock_ctx):
         result = await _wrap_generate_report(report_type="funnel", period="month", company_id="c4")
 
     assert result["success"] is True
@@ -147,7 +144,7 @@ async def test_invalid_period_defaults_to_30_days():
     mock_ctx.__aenter__ = AsyncMock(return_value=mock_session)
     mock_ctx.__aexit__ = AsyncMock(return_value=False)
 
-    with patch("app.domains.recruiter_assistant.agents.talent_tool_registry.get_tenant_aware_session", return_value=mock_ctx):
+    with patch("app.domains.recruiter_assistant.agents.talent_tool_registry.AsyncSessionLocal", return_value=mock_ctx):
         await _wrap_generate_report(period="invalid_period", company_id="c1")
 
     assert captured_params.get("days") == 30
@@ -164,7 +161,7 @@ async def test_report_id_unique_per_call():
     mock_ctx.__aenter__ = AsyncMock(return_value=mock_session)
     mock_ctx.__aexit__ = AsyncMock(return_value=False)
 
-    with patch("app.domains.recruiter_assistant.agents.talent_tool_registry.get_tenant_aware_session", return_value=mock_ctx):
+    with patch("app.domains.recruiter_assistant.agents.talent_tool_registry.AsyncSessionLocal", return_value=mock_ctx):
         r1 = await _wrap_generate_report(company_id="c1")
         r2 = await _wrap_generate_report(company_id="c1")
 

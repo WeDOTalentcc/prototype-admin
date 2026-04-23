@@ -495,7 +495,6 @@ class LangGraphReActBase(LangGraphBase):
         ctx = input.context or {}
         base = SystemPromptBuilder.build(
             agent_type=self.domain_name,
-            company_id=str(ctx.get("company_id") or ""),
             tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
             user_name=ctx.get("user_name", ""),
             user_role=ctx.get("user_role", ""),

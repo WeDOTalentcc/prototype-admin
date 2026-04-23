@@ -22,13 +22,11 @@ from app.domains.automation.agents.automation_system_prompt import AUTOMATION_DO
 from app.domains.automation.agents.automation_tool_registry import (
     get_automation_tools,
 )
-from app.shared.agents.agent_registry import register_agent
 from app.shared.services.confidence_policy_service import confidence_policy_service
 
 logger = logging.getLogger(__name__)
 
 
-@register_agent("automation", aliases=["task_planning"])
 class AutomationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     DOMAIN_INSTRUCTIONS = AUTOMATION_DOMAIN_SPECIFIC
 

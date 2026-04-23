@@ -4,9 +4,66 @@ from typing import Any, Dict, List
 from app.domains.base import DomainContext
 
 RECRUITER_ASSISTANT_TOOLS = [
-    # Migrated to V2 DomainAction path.
-    # Singleton instance pattern not resolvable via dynamic import.
-    # Routes handled by KanbanAgent and PolicyAgent.
+    {
+        "tool_id": "assistant_pipeline_health",
+        "name": "Saúde do Pipeline",
+        "description": "Verifica a saúde geral do pipeline de recrutamento",
+        "handler": "app.domains.recruiter_assistant.services.pipeline_service.pipeline_service.get_stale_candidates",
+    },
+    {
+        "tool_id": "assistant_stale_candidates",
+        "name": "Candidatos Parados",
+        "description": "Encontra candidatos inativos/parados no pipeline",
+        "handler": "app.domains.recruiter_assistant.services.pipeline_service.pipeline_service.get_stale_candidates",
+    },
+    {
+        "tool_id": "assistant_move_candidate",
+        "name": "Mover Candidato",
+        "description": "Move candidato para uma etapa diferente do pipeline",
+        "handler": "app.domains.recruiter_assistant.services.pipeline_stage_service.pipeline_stage_service.transition_candidate",
+    },
+    {
+        "tool_id": "assistant_search_context",
+        "name": "Buscar Contexto",
+        "description": "Busca no histórico de conversas por contexto relevante",
+        "handler": "app.domains.recruiter_assistant.services.memory_service.memory_service.search_similar_messages",
+    },
+    {
+        "tool_id": "assistant_save_memory",
+        "name": "Salvar Memória",
+        "description": "Salva informação importante na memória persistente",
+        "handler": "app.domains.recruiter_assistant.services.memory_service.memory_service.store_message",
+    },
+    {
+        "tool_id": "assistant_recall_memory",
+        "name": "Recuperar Memória",
+        "description": "Recupera informação da memória persistente via busca semântica",
+        "handler": "app.domains.recruiter_assistant.services.memory_service.memory_service.search_similar_messages",
+    },
+    {
+        "tool_id": "assistant_conversation_summary",
+        "name": "Resumo da Conversa",
+        "description": "Gera resumo da conversa atual",
+        "handler": "app.domains.recruiter_assistant.services.conversation_memory.conversation_memory.update_summary",
+    },
+    {
+        "tool_id": "assistant_kanban_analysis",
+        "name": "Análise do Kanban",
+        "description": "Análise por IA do quadro Kanban de recrutamento",
+        "handler": "app.domains.recruiter_assistant.services.kanban_assistant_service.kanban_assistant_service.process_command",
+    },
+    {
+        "tool_id": "assistant_send_notification",
+        "name": "Enviar Notificação",
+        "description": "Envia notificação proativa para o recrutador",
+        "handler": "app.services.notification_service.notification_service.send_proactive_notification",
+    },
+    {
+        "tool_id": "assistant_track_goals",
+        "name": "Acompanhar Metas",
+        "description": "Acompanha progresso das metas de recrutamento",
+        "handler": "app.services.goal_service.goal_service.get_user_goals",
+    },
 ]
 
 

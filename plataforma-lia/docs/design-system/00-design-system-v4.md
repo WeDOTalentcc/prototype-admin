@@ -1455,24 +1455,6 @@ O **ícone de cérebro ciano** é o elemento visual chave que representa a LIA e
 └── Com efeitos de sombra/glow
 ```
 
-#### ⚠️ Sparkles ≠ LIA
-
-O ícone **`Sparkles` (✨) NÃO representa a LIA**. Sempre que o contexto for
-"a LIA fala", "sugestão da LIA", "analisado pela IA da LIA", "onboarding com
-LIA" ou similar, o ícone correto é o **cérebro ciano** (`LIAIcon` /
-`<Brain className="text-wedo-cyan" />`).
-
-`Sparkles` continua válido apenas para:
-- Badges genéricos de "novo / experimental / beta".
-- Categorias de catálogo não-LIA (ex.: estágios de funil, categorias de workflow).
-- Mapeamento literal de ícones recebidos do backend.
-
-A regra `SPARKLES_NEAR_LIA` em `scripts/design-system-validator.py` (Fase 7)
-alerta automaticamente quando um `<Sparkles>` aparece próximo a textos como
-`LIA`, `assistente`, `sugestão da LIA`, `analisado pela IA`, etc.
-
-Auditoria completa em [`SPARKLES-AUDIT.md`](./SPARKLES-AUDIT.md).
-
 ### 1.11.6 Exemplos de Implementação
 
 ```tsx

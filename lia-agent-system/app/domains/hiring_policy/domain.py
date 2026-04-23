@@ -31,8 +31,6 @@ HIRING_POLICY_ACTIONS = [
         description="Configura regras gerais da política de contratação da empresa",
         required_params=["company_id"],
         tags=["policy", "setup"],
-    
-        examples=('configura política de contratação', 'define regras gerais do processo'),
     ),
     DomainAction(
         action_id="configure_pipeline",
@@ -40,8 +38,6 @@ HIRING_POLICY_ACTIONS = [
         description="Define regras de pipeline e etapas do processo seletivo",
         required_params=["company_id"],
         tags=["policy", "pipeline"],
-    
-        examples=('configura o pipeline', 'define etapas do processo seletivo'),
     ),
     DomainAction(
         action_id="configure_scheduling",
@@ -49,8 +45,6 @@ HIRING_POLICY_ACTIONS = [
         description="Define regras de agendamento de entrevistas",
         required_params=["company_id"],
         tags=["policy", "scheduling"],
-    
-        examples=('configura regras de agendamento', 'define políticas de entrevista'),
     ),
     DomainAction(
         action_id="configure_communication",
@@ -58,8 +52,6 @@ HIRING_POLICY_ACTIONS = [
         description="Define regras de comunicação com candidatos",
         required_params=["company_id"],
         tags=["policy", "communication"],
-    
-        examples=('configura comunicação com candidatos', 'define templates de resposta'),
     ),
     DomainAction(
         action_id="configure_screening",
@@ -67,8 +59,6 @@ HIRING_POLICY_ACTIONS = [
         description="Define regras de triagem e avaliação de candidatos",
         required_params=["company_id"],
         tags=["policy", "screening"],
-    
-        examples=('configura triagem', 'define critérios de avaliação'),
     ),
     DomainAction(
         action_id="configure_automation",
@@ -76,8 +66,6 @@ HIRING_POLICY_ACTIONS = [
         description="Define nível de autonomia da LIA e regras de automação",
         required_params=["company_id"],
         tags=["policy", "automation"],
-    
-        examples=('configura nível de automação', 'define autonomia da LIA'),
     ),
     DomainAction(
         action_id="validate_compliance",
@@ -85,8 +73,6 @@ HIRING_POLICY_ACTIONS = [
         description="Valida se a política atual está em conformidade com regras de fairness e LGPD",
         required_params=["company_id"],
         tags=["policy", "compliance"],
-    
-        examples=('valida compliance da política', 'checa se está dentro da LGPD'),
     ),
     DomainAction(
         action_id="get_progress",
@@ -94,8 +80,6 @@ HIRING_POLICY_ACTIONS = [
         description="Retorna o progresso atual da configuração da política",
         required_params=["company_id"],
         tags=["policy", "progress"],
-    
-        examples=('mostra progresso da configuração', 'quanto já configuramos?'),
     ),
     DomainAction(
         action_id="configure_candidate_portal",
@@ -103,8 +87,6 @@ HIRING_POLICY_ACTIONS = [
         description="Ativa e configura o Portal do Candidato (WhatsApp + link web) para candidatos consultarem seu status no processo seletivo",
         required_params=["company_id"],
         tags=["policy", "candidate_portal", "communication"],
-    
-        examples=('configura portal do candidato', 'ativa link pra candidato consultar status'),
     ),
 ]
 

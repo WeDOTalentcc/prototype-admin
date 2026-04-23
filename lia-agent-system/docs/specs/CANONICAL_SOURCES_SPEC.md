@@ -39,7 +39,6 @@ and re-fragmentation.
 | Token budget enforcement | `app.shared.observability.token_budget_service` |
 | WSI-specific observability | `app.shared.observability.wsi_observability` |
 | LangSmith configuration | `app.shared.observability.langsmith` |
-| Tool call + HITL metrics | `app.shared.observability.tool_metrics` |
 
 ### 1.2 Forbidden legacy paths (deleted; CI-blocked)
 
@@ -62,7 +61,6 @@ shims. `scripts/check_forbidden_imports.py` rejects any reintroduction.
 - `app.domains.analytics.services.agent_monitoring_service`
 - `app.domains.credits.services.token_budget_service`
 - `app.config.langsmith`
-- `app.core.observability` (migrated to `app.shared.observability.tool_metrics` in FIX 13)
 
 ### 1.3 Cross-references
 
@@ -110,60 +108,4 @@ shims. `scripts/check_forbidden_imports.py` rejects any reintroduction.
 
 ---
 
-
-
-## 6. Governance enforcement — `ToolDefinition.governance_tags` (ADR-019)
-
-- **Canonical dataclass:** `app/tools/registry.py::ToolDefinition`
-- **Campos canônicos (pós FIX 3+4+8):**
-  - `governance_tags: list[str]` — compliance/safety flags
-  - `related_tools: list[str]` — proactive suggestions after execution
-  - `side_effects: list[str]` — retry/idempotency classification
-- **Fonte da verdade dos valores:** `app/tools/tool_registry_metadata.yaml`
-- **Enforcement:** `app/tools/executor.py::ToolExecutor.execute()`
-  - `"requires_hitl"` → retorna `ToolResult(result={"status": "pending_hitl_confirmation"})` sem chamar handler (pode ser bypassed com `parameters["_hitl_confirmed"]=True`)
-  - `"fairness_guard"` → `_check_fairness()` invoca `FairnessGuard.check()` em text params (ver ADR-019)
-- **FairnessGuard canonical:** `app/shared/compliance/fairness_guard.py::FairnessGuard`
-- See **ADR-019** (`docs/specs/ai/ADR-019-governance-and-observability.md`).
-
-### 6.1 Forbidden patterns
-
-- Fairness check chamado via import de `app/shared/compliance/fairness_guard_middleware.py` DENTRO de tool handlers → proibido; o middleware é para endpoints FastAPI, não para handlers. Handlers devem relying no executor.
-- Reimplementar check de `requires_hitl` em domain handlers (duplicação) — proibido; enforcement é no `ToolExecutor`.
-
----
-
-## 7. Tool call observability — `app.shared.observability.tool_metrics` (ADR-019)
-
-- **Canonical module:** `app/shared/observability/tool_metrics.py`
-- **Funções públicas:**
-  - `emit_tool_call(**kwargs)` — structured log + opcional LangSmith forward
-  - `emit_hitl_pending(**kwargs)` — audit trail de HITL
-- **LangSmith gating:** delegado a `app.shared.observability.langsmith.is_langsmith_enabled()` — fonte única de verdade para "tracing está on?"
-- See **ADR-019**.
-
-### 7.1 Forbidden patterns
-
-- `from app.core.observability import emit_tool_call` → **FORBIDDEN** (migrated to canonical path in FIX 13)
-- Redefinir `emit_tool_call` em outros módulos → duplicação (Section 1 rule)
-- Invocar `langsmith.Client()` diretamente → usar o gating de `app.shared.observability.langsmith.is_langsmith_enabled()`
-
----
-
-## 8. Intent confirmation resolver — `intents_config.resolve_requires_confirmation` (ADR-019)
-
-- **Canonical:** `app/orchestrator/action_executor/intents_config.py::resolve_requires_confirmation(intent, action_id)`
-- **Precedência:** `ACTIONABLE_INTENTS[intent]["requires_confirmation"]` → `DomainAction.requires_confirmation` → `False`
-- **Fontes vivas (não consolidar):**
-  - `ACTIONABLE_INTENTS[intent]["requires_confirmation"]` (intent-level, contexto de invocação)
-  - `DomainAction.requires_confirmation` (action-level, dangerousness inerente)
-- **Uso:** callers que precisam saber "esta invocação exige confirmação?" devem chamar o resolver, NÃO as duas fontes diretamente.
-
-### 8.1 Forbidden patterns
-
-- `if ACTIONABLE_INTENTS[intent]["requires_confirmation"]: ...` fora do resolver → duplica lógica de precedência
-- Ler `DomainAction.requires_confirmation` diretamente no orchestrator sem fallback para intent → perde contexto
-
----
-
-*Atualizado: 2026-04-21 (FIX 1-12, ADR-019). Última atualização anterior: 2026-04-17 (Tarefa #372).*
+*Last updated: 2026-04-17 — Tarefa #372 (observability doc refresh, closing residual from Tarefa #343).*

@@ -4,22 +4,6 @@
 > Pre-commit hooks enforce G1, G2, G4.
 > See also: REFACTOR_PLAN.md, HARDENING_PLAN.md
 
-## Documentos relacionados
-
-Cada documento abaixo tem um propósito distinto — eles **não** se substituem:
-
-| Documento | Propósito |
-|---|---|
-| **ARCHITECTURE.md** *(este arquivo)* | ADRs normativos com regras enforçadas por CI. Fonte da verdade do "como pode" e "como não pode". |
-| [`docs/MAPA_CAMADA_INTELIGENCIA.md`](./docs/MAPA_CAMADA_INTELIGENCIA.md) | Mapa de onboarding: stack, fluxos ponta-a-ponta, organograma, "onde mexer". É o guia de leitura humana da camada de IA. |
-| [`docs/fase2c_domain_verification_report.md`](./docs/fase2c_domain_verification_report.md) | Auditoria viva (gerada por `scripts/audit_chat_capabilities.py`) — domínios, actions, tools, gaps, padrões arquiteturais por domínio, inventário de agentes. |
-| [`docs/GLOSSARIO_ACTIONS_TOOLS.md`](./docs/GLOSSARIO_ACTIONS_TOOLS.md) | Glossário das 281 actions e 94 tools (gerado por `scripts/generate_glossario_actions_tools.py`) — 1 frase por entrada cobrindo "o que faz / o que resolve / como atua". |
-| [`docs/DEVELOPER_HANDOFF.md`](./docs/DEVELOPER_HANDOFF.md) | Onboarding operacional para devs (setup, fluxos de trabalho, comandos). |
-| [`LLM_FACTORY_HANDOFF_v2.md`](./LLM_FACTORY_HANDOFF_v2.md) | Operação da camada LLM (BYOK, quality tiers, fallback) — referência viva do ADR-018. |
-
-ADRs específicos apontam para a seção correspondente do MAPA quando há fluxo completo (ver ADR-020 abaixo, que aponta para §5 — `job_creation`).
-
-
 ---
 
 ## ADR-001: Repository Pattern (2026-04-06) [ENFORCED by CI]
@@ -488,6 +472,82 @@ updates in `docs/specs/CANONICAL_SOURCES_SPEC.md` and the root
 
 ---
 
+## ADR-017: Canonical Observability Layer (2026-04-17) [ENFORCED by CI]
+
+**Rule:** All tracing, structured logging, LLM callbacks, agent monitoring,
+drift detection, token tracking/budget, and LangSmith configuration live in
+**one** package: `app/shared/observability/`. There is no other valid home.
+
+**Background.** Task #343 collapsed eleven scattered modules — previously
+spread across `app/shared/tracing.py`, `app/shared/llm/callbacks.py`,
+`app/shared/governance/`, `app/shared/services/`,
+`app/domains/{ai,lgpd,analytics,credits}/services/`, and
+`app/config/langsmith.py` — into a single canonical package. The legacy
+files and the five re-export shims that briefly bridged the move were then
+deleted to leave a single source of truth.
+
+**Canonical layout — `app/shared/observability/`:**
+
+| Concern | Module |
+|---|---|
+| Sentry / OpenTelemetry tracing | `tracing.py` |
+| Structured logging (structlog) | `structured_logging.py` |
+| LangChain LLM callback handlers | `callbacks.py` |
+| Agent monitoring service | `agent_monitoring_service.py` |
+| Agent health alerting | `agent_health_alert_service.py` |
+| Model drift detection | `model_drift_service.py` |
+| Drift alerting | `drift_alert_service.py` |
+| Token usage tracking | `token_tracking_service.py` |
+| Token / spend budget | `token_budget_service.py` |
+| WSI-specific observability | `wsi_observability.py` |
+| LangSmith configuration | `langsmith.py` |
+
+**Correct imports:**
+```python
+from app.shared.observability.tracing import setup_tracing
+from app.shared.observability.callbacks import LIACallbackHandler
+from app.shared.observability.langsmith import configure_langsmith
+from app.shared.observability.agent_monitoring_service import AgentMonitoringService
+from app.shared.observability.token_tracking_service import TokenTrackingService
+from app.shared.observability.token_budget_service import TokenBudgetService
+from app.shared.observability.model_drift_service import ModelDriftService
+from app.shared.observability.drift_alert_service import DriftAlertService
+from app.shared.observability.wsi_observability import WSIObservability
+```
+
+**Forbidden — every legacy path is rejected by CI:**
+- `from app.shared.tracing …`
+- `from app.shared.structured_logging …`
+- `from app.shared.llm.callbacks …`
+- `from app.shared.governance.agent_monitoring_service …`
+- `from app.shared.services.{agent_health_alert_service,model_drift_service,drift_alert_service,token_tracking_service,token_budget_service} …`
+- `from app.domains.ai.services.model_drift_service …`
+- `from app.domains.lgpd.services.drift_alert_service …`
+- `from app.domains.analytics.services.{token_tracking_service,wsi_observability,agent_monitoring_service} …`
+- `from app.domains.credits.services.token_budget_service …`
+- `from app.config.langsmith …`
+
+**Enforcement:** `scripts/check_forbidden_imports.py` (pre-commit hook **G5**
++ CI). The script's `FORBIDDEN_PATTERNS` list pins all 11 legacy paths; any
+new code reintroducing them fails the build with an actionable diff.
+
+**See also:** `docs/CANONICAL_SOURCES_SPEC.md` for the full module-level
+mapping and the rationale behind the consolidation.
+
+---
+
+*Last updated: 2026-04-17 | ADR-017: canonical observability layer*
+
+
+
+---
+
+## ADR-018: LLM Factory — Choose Your AI / BYOK Contract
+
+**Status**: Implementado (2026-04-19)
+
+### Decisão
+
 O sistema de LLM opera via **LLM Factory**, composto por três camadas canônicas:
 
 | Camada | Classe | Responsabilidade |
@@ -513,334 +573,4 @@ O sistema de LLM opera via **LLM Factory**, composto por três camadas canônica
 
 Ver `LLM_FACTORY_HANDOFF_v2.md` para: tabela de gaps, constantes de referência (`QUALITY_TIERS`, `TASK_MINIMUM_TIER`), guia de logs, env vars e matriz Provider × Capacidade × Tier.
 
----
-
-## ADR-019: Chat-Capabilities Audit Gate & Domain-Resolver Observability (2026-04-18) [ENFORCED by CI]
-
-**Rule:** Any new `DomainRegistry` entry or `ToolRegistry` change MUST pass the automated capabilities audit before PR merge. 
-
-**Infrastructure:**
-- `scripts/audit_chat_capabilities.py`: Main auditor (scans registry + tools + prompts).
-- `docs/fase2c_domain_verification_report.md`: Live audit report (generated by script).
-- `app/shared/observability/domain_resolver_logger.py`: Canonical logger for routing decisions.
-
-**Constraint:**
-1. Zero `UNKNOWN_DOMAIN` errors in `chat_capabilities_audit.json`.
-2. Every action/tool MUST have a `description` > 20 chars.
-3. Every routing decision MUST be logged via `domain_resolver_logger` with `intent_id` and `confidence_score`.
-
-**Enforcement:** `scripts/check_audit_passing.py` (CI job "S8.1: Chat Audit Gate").
-
----
-
-## ADR-020: Intent-Routed Domains for Stateful Wizards (2026-04-19)
-
-**Rule:** Complex stateful flows (e.g. `job_creation`, `interview_design`) MUST use the **Intent-Routed Domain** pattern. 
-
-**Pattern:**
-1. **Entry:** `IntentClassifier` maps user message to a top-level intent (e.g. `intent:create_job`).
-2. **Dispatch:** `DomainRouter` hands off control to the specific Domain Orchestrator.
-3. **State:** The Domain Orchestrator owns the wizard state (Redis/DB) and only returns to the main loop when the wizard is `finished` or `cancelled`.
-4. **HITL:** All wizard stage transitions MUST check `hiring_policy` or `tenant_settings` before proceeding.
-
-**Example (Correct):**
-`app/domains/job_creation/orchestrator.py` manages the 5-step flow. The main `AgentChat` only sees `intent:job_creation` and delegates.
-
-**Forbidden:**
-- Hardcoding wizard logic (step 1, step 2...) inside the main `AgentChat` loop.
-- Bypassing the `IntentClassifier` for domain-specific entry points.
-
-**Enforcement:** `scripts/audit_chat_capabilities.py` (flags domains with stateful actions not using an Orchestrator).
-
----
-
-## Documentos de Status por Dir (2026-04-20)
-
-**Regra:** dirs estratégicos em `app/domains/` devem ter um `STATUS.md` na
-raiz que serve como **fonte de verdade** do estado, dono, classificação,
-plano de evolução e regra anti-deleção do dir. Esses arquivos são
-referenciados pelo relatório `docs/fase2c_domain_verification_report.md`.
-
-**Cobertura inicial (task #670):** os 8 dirs abaixo têm `STATUS.md`
-obrigatório. **NÃO** podem ser deletados nem ter o `STATUS.md` removido sem
-PR explícito que atualize também o relatório Fase 2C:
-
-- `app/domains/ai/STATUS.md` — Infra LLM Core (>25 importadores)
-- `app/domains/autonomous/STATUS.md` — Tier 6 do CascadedRouter
-- `app/domains/interview_intelligence/STATUS.md` — Feature REST candidata
-- `app/domains/journey_mapping/STATUS.md` — Feature REST candidata
-- `app/domains/pipeline/STATUS.md` — `pipeline_transition` (já registrado)
-- `app/domains/policy/STATUS.md` — Engine + agente (17 endpoints)
-- `app/domains/workforce/STATUS.md` — Feature REST (29 endpoints)
-- `app/domains/technical_tests/STATUS.md` — Feature REST (11 endpoints)
-
-Ao adicionar novos dirs estratégicos, criar `STATUS.md` seguindo o template
-desses 8 e listar aqui.
-
-*Last updated: 2026-04-20 | Documentos de Status por Dir (task #670)*
-
----
-
-<<<<<<< HEAD
-## ADR-019: Chat-Capabilities Audit Gate + Domain-Resolver Observability (2026-04-20) [ENFORCED by CI]
-
-Closes Fase 2C P0-2 (silent fallback) and P2-4 (regression guard) — Task #672.
-
-### Domain resolver — silent-fallback observability (P0-2)
-
-`app.orchestrator.domain_mappings.resolve_domain` is the **canonical** resolver
-for agent-type → domain. When the Tier 5 LLM emits an `agent_type` that is not
-in `AGENT_TYPE_TO_DOMAIN`, the resolver still returns `DEFAULT_DOMAIN`
-(`recruiter_assistant`) **and** now:
-
-- emits a structured `logger.warning(...)` with `extra={agent_type_received,
-  fallback_domain, tenant_id, user_id, conversation_id}`;
-- increments an in-process counter exposed via
-  `get_fallback_stats()`, surfaced at `GET /api/v1/orchestrator/health` under
-  `domain_resolver_fallbacks` as **aggregated counts only** (`total` +
-  `by_intent`). Per-request identifiers (`tenant_id`, `user_id`,
-  `conversation_id`) live in the structured log and are intentionally **not**
-  echoed in the health payload, so the public telemetry surface never carries
-  per-conversation or per-user data.
-
-Callers that have tenant/user/conversation context (`cascaded_router._intent_to_domain`,
-`/api/v1/chat/context`) pass it through so each warning is actionable.
-
-### CI gate — chat-capabilities audit (P2-4)
-
-`scripts/audit_chat_capabilities.py` writes
-`docs/chat_capabilities_audit.json`. The thin gate
-`scripts/ci_audit_gate.py` runs the auditor and fails the build if **any** of
-these regress:
-
-- `global_summary.domains_with_gaps`
-- `global_summary.broken_handlers`
-- `global_summary.actions_no_handler`
-- `global_summary.orphan_tools`
-- `global_summary.broken_mappings`
-- `agent_types_pointing_to_unknown_domain` (top-level list)
-- `global_summary.total_registered < 18` (baseline — protects against an
-  accidental `@register_domain` deletion; bump intentionally via
-  `--baseline-domains` when adding a new domain)
-
-Reproduce locally:
-
-```bash
-cd lia-agent-system
-python3 scripts/audit_chat_capabilities.py   # writes docs/chat_capabilities_audit.json
-python3 scripts/ci_audit_gate.py             # parses + enforces
-```
-
-Enforcement: `.github/workflows/ci-audit-gate.yml` (job "Audit Gate — chat
-capabilities"). The full Fase 2C audit appendix lives in
-`docs/fase2c_domain_verification_report.md`.
-
-*Last updated: 2026-04-20 | ADR-019: chat-capabilities audit gate + resolver observability*
-<<<<<<< HEAD
->>>>>>> c634fcbdc (Task #672 — DEFAULT_DOMAIN routing warning + chat-capabilities CI gate)
-=======
-## ADR-019: Tenant Isolation in Tool Handlers (2026-04-20) [ENFORCED by CI]
-
-**Decision.** Every public function defined under `app/domains/*/tools/` MUST
-either (a) carry the `@tool_handler(...)` decorator from
-`app/shared/tool_handler.py` or (b) live in a file that declares
-`# tenant-isolation: manual: <reason>` in its header AND is grandfathered into
-`MANUAL_ALLOWLIST` inside `scripts/check_tool_tenant_isolation.py`. New
-modules MUST take path (a). Path (b) exists only so the legacy hand-rolled
-`_extract_context(kwargs)` files written before `@tool_handler` can be
-migrated incrementally without leaving the rule unenforced in the meantime.
-
-**Why.** The Phase 2C audit flagged P0-1 ("handlers without `@tool_handler`
-can leak data cross-tenant") as the highest-priority residual. Five separate
-tasks were tracking pieces of the same problem (#329 tenant-isolation guard,
-#335 retire legacy demo-tenant shim, #336 demo-tenant column UUID, #359 fix
-demo company id in auth guard, #361 CI check for new tools skipping tenant
-isolation). They mutated the same auth/middleware/tools surface and were
-collapsed into Task #673; this ADR is the consolidated outcome.
-
-**Inventory.** `scripts/audit_tenant_isolation_handlers.py` produces the full
-classification (`decorator` / `manual` / `register_helper` / `private` /
-`UNPROTECTED`). Snapshot at adoption (2026-04-20):
-`docs/audits/tenant_isolation_handlers_2026-04-20.md`. Result: 0
-`UNPROTECTED` handlers, 48 on `@tool_handler`, 77 in 23 grandfathered files
-under the `manual` annotation. The grandfathered count is expected to fall to
-zero as each file is migrated; do not add new entries to `MANUAL_ALLOWLIST`.
-
-**Demo company contract.**
-- Canonical id: `DEMO_COMPANY_UUID = "00000000-0000-4000-a000-000000000001"`,
-  defined in `app/core/tenant.py` and consumed by `ensure_demo_user`
-  (ADR-013). Closes #359.
-- The legacy alias map (`DEMO_COMPANY_LEGACY_ALIASES` +
-  `normalize_demo_company_id`) is dev/staging only and carries a hard
-  deletion deadline of **2026-07-31** in the source. After that date the
-  shim and its callers must be removed. Closes #335.
-- The `Company.id` column is already `UUID(as_uuid=True)` in `lia_models.company`,
-  so no migration is required for #336 — confirmed by the audit and recorded
-  here so it does not get re-opened.
-
-**Cross-tenant regression coverage.** Existing pytest modules pin the
-contract (sample, not exhaustive):
-
-- `tests/security/test_tenant_isolation.py` — `get_verified_company_id` JWT
-  vs header/query reconciliation
-- `tests/security/test_red_team_multi_tenant.py` — adversarial cross-tenant
-  attempts
-- `tests/integration/test_multi_tenant_isolation.py`,
-  `tests/integration/test_candidates_tenant_isolation.py`,
-  `tests/integration/test_job_readiness_tenant_isolation.py`
-- `tests/contract/test_multi_tenant_isolation_contract.py`
-- `tests/e2e/test_tenant_isolation_e2e.py`
-- `tests/shared/test_tool_handler_isolation.py` — fail-closed semantics of
-  the decorator itself
-
-**Enforcement.** `scripts/check_tool_tenant_isolation.py` (pre-commit hook
-`tool-tenant-isolation` + CI). Companion guards already in place:
-`check_require_company_exemptions.py` (F8 — every `require_company=False`
-needs a `kept:` comment + doc entry) and `check_no_legacy_tool_decorator.py`
-(S7.3 — no `from langchain_core.tools import tool` in domain tools).
-
-```bash
-python3 scripts/check_tool_tenant_isolation.py
-python3 scripts/audit_tenant_isolation_handlers.py
-python3 scripts/audit_tenant_isolation_handlers.py --markdown > docs/audits/...
-```
-
-*Closes tasks #329, #335, #336, #359, #361.*
-
-*Last updated: 2026-04-20 | ADR-019: Tenant isolation consolidation (Task #673)*
->>>>>>> e14118576 (Task #673: Consolidate tenant-isolation residual (closes #329, #335, #336, #359, #361))
-=======
-
----
-
-## ADR-020: Intent-Routed Domains for Stateful Wizards (2026-04-20)
-
-**Rule:** Domínios cuja experiência é um **wizard conversacional multi-turno**
-(várias etapas sequenciais, gates de aprovação humana entre elas, estado
-persistente entre mensagens) DEVEM expor sua execução via
-`process_intent + _route_by_stage` em vez do par `_ACTION_TOOL_MAP` +
-`execute_<domain>_tool` usado pelos demais domínios.
-
-A action ainda existe no `get_allowed_actions()` (para o auditor, para o
-roteador e para o glossário), mas o `execute_action` despacha internamente
-para o nó apropriado de um `StateGraph` customizado em vez de chamar uma
-tool. Cada estágio do wizard mapeia para uma família de actions, e a
-classificação da mensagem do usuário acontece **dentro do domínio** (com
-contexto do estágio atual) — não no `CascadedRouter`.
-
-### Quando aplicar
-
-- Fluxo é estritamente sequencial e tem `current_stage` no estado
-  conversacional (ex.: `intake → jd_enrichment → salary → competency → wsi_questions → eligibility → review → publish → calibration`).
-- Existem **gates HITL** entre estágios (recrutador aprova/rejeita uma
-  proposta antes de avançar — JD, perguntas WSI, publicação).
-- A mesma frase (`"aprovo"`, `"refaz"`, `"sim"`) deve ser interpretada de
-  forma diferente conforme o estágio em que o wizard está parado.
-- O fluxo é proprietário do domínio (não é "uma operação a mais" no
-  catálogo) — é o **único** caminho de execução do domínio.
-
-### Quando NÃO aplicar
-
-- Operações stateless (CRUD, busca, envio de mensagem, sincronização) —
-  permanecem com `_ACTION_TOOL_MAP` por exigirem tenant check, scope HITL
-  e governança via `@tool_handler` (ADR-015 / ADR-016).
-- Domínios com múltiplas operações independentes (sourcing, communication,
-  analytics) — o intent-routing aqui esconderia capabilities do auditor,
-  do FastRouter e do glossário.
-- Wizards que só têm 1–2 estágios determinísticos (use uma única action
-  com sub-parâmetros).
-
-### Exemplo canônico — `job_creation` (Wizard WSI)
-
-`app/domains/job_creation/domain.py:JobCreationDomain` declara 11 actions
-no registry (`start_wizard`, `approve_jd`, `set_salary`, `set_screening_mode`,
-`approve_questions`, `set_eligibility`, `configure_publish`, `publish_job`,
-`calibrate`, `wizard_status`, `help`) mas **não** declara
-`_ACTION_TOOL_MAP`. O caminho de execução é:
-
-```
-chat → CascadedRouter → resolve_domain("job_creation")
-     → JobCreationDomain.process_intent(user_query, context)
-         → ler context.metadata["wizard_state"]["current_stage"]
-         → _route_by_stage(query, current_stage, context)
-         → escolher action_id (ex.: "approve_jd" durante stage "jd_enrichment")
-     → JobCreationDomain.execute_action(action_id, params, context)
-         → JobCreationGraph (LangGraph StateGraph customizado, em
-           app/domains/job_creation/graph.py) executa o nó do estágio
-```
-
-Fluxo completo do wizard, diagramas do StateGraph, regras WSI absolutas e
-ordem dos estágios estão em
-[`docs/MAPA_CAMADA_INTELIGENCIA.md` §5 — `job_creation`](./docs/MAPA_CAMADA_INTELIGENCIA.md#5-todos-os-dominios).
-
-### Layers
-
-```
-chat → CascadedRouter (Tier 4–5)            ← roteia até o DOMÍNIO, não a action
-     → DomainPrompt.process_intent(...)     ← ESCOLHE a action olhando o stage
-     → DomainPrompt.execute_action(...)     ← DESPACHA para o nó do StateGraph
-     → StateGraph custom (app/domains/<d>/graph.py)
-```
-
-### Forbidden
-
-```python
-# ❌ Misturar os dois padrões no mesmo domínio
-class JobCreationDomain(ComplianceDomainPrompt):
-    _ACTION_TOOL_MAP = {"start_wizard": "some_tool"}     # NUNCA — wizard é intent-routed
-    def process_intent(self, q, ctx): return self._route_by_stage(...)
-```
-
-```python
-# ❌ Roteamento de estágio fora do domínio (no CascadedRouter)
-if "aprovo" in message: return RouteResult(domain_id="job_creation", action_id="approve_jd")
-# O router não sabe se o wizard está em jd_enrichment ou wsi_questions.
-```
-
-### Correct
-
-```python
-# ✅ Domain-owned intent routing
-@register_domain
-class JobCreationDomain(ComplianceDomainPrompt):
-    domain_id = "job_creation"
-
-    def get_allowed_actions(self) -> list[DomainAction]:
-        return [DomainAction(action_id="approve_jd", ...), ...]
-
-    def process_intent(self, user_query, context):
-        stage = context.metadata.get("wizard_state", {}).get("current_stage")
-        return self._route_by_stage(user_query, stage, context)
-
-    async def execute_action(self, action_id, params, context):
-        return await self.graph.ainvoke({"action_id": action_id, ...})
-```
-
-### Enforcement
-
-O auditor `scripts/audit_chat_capabilities.py` mantém o set
-`_INTENT_ROUTED_DOMAINS = {"job_creation"}` e **isenta** esses domínios das
-checagens `_ACTION_TOOL_MAP` / `actions_without_tool_or_handler`. Para
-adicionar um novo wizard intent-routed:
-
-1. Incluir o `domain_id` em `_INTENT_ROUTED_DOMAINS` no auditor.
-2. Apontar este ADR no docstring do `domain.py` correspondente.
-3. Documentar o fluxo completo em `docs/MAPA_CAMADA_INTELIGENCIA.md` §5.
-4. Atualizar a tabela "Padrão Arquitetural por Domínio" em
-   `docs/fase2c_domain_verification_report.md` §2-bis.
-
-### Por que não usar `_ACTION_TOOL_MAP` em wizards
-
-- Tools são **stateless por contrato** (ADR-016 / S7.4). Um wizard precisa
-  de estado persistente entre turns; embuti-lo numa tool quebraria o
-  contrato e bypass-aria o checkpoint do StateGraph.
-- O FastRouter (Tier 4) não tem visibilidade do `current_stage`; uma
-  action de wizard mapeada para uma keyword (`"aprovo"`) seria roteada
-  para o domínio errado quando o usuário usa o mesmo verbo num contexto
-  diferente.
-- HITL gates fora do StateGraph perdem a trilha de auditoria de "quem
-  aprovou o quê em qual estágio" — o `JobCreationGraph` registra cada
-  decisão por estágio.
-
-*Last updated: 2026-04-20 | ADR-020: Intent-routed domains for stateful wizards*
->>>>>>> 3ed94bd93 (docs: ADR-019 + glossário 281 actions/94 tools + MAPA 18 domínios)
+*Last updated: 2026-04-19 | ADR-018: LLM Factory / Choose Your AI BYOK contract*

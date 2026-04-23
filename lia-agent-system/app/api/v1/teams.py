@@ -1043,27 +1043,14 @@ async def teams_sso_callback(
             emoji="✅",
         )
 
-        # Try to send card to the conversation using stored service_url
+        # Try to send card to the conversation
         try:
             from app.domains.communication.services.teams_simple import simple_teams_bot
-            repo = TeamsRepository(db)
-            conv = await repo.get_conversation_by_conversation_id(conversation_id) if conversation_id else None
-            service_url = getattr(conv, "service_url", "") if conv else ""
-            if not service_url:
-                logger.warning(
-                    f"[Teams SSO callback] No service_url found for conversation_id={conversation_id}; cannot deliver confirmation card."
-                )
-            if service_url and conversation_id:
-                await simple_teams_bot.send_adaptive_card(
-                    service_url=service_url,
-                    conversation_id=conversation_id,
-                    card_payload=confirm_card,
-                )
-            else:
-                logger.info(
-                    f"[TeamsSSO] No stored service_url for conversation={conversation_id}; "
-                    "confirmation card not sent (user already sees the success page)."
-                )
+            await simple_teams_bot.send_adaptive_card(
+                service_url="",  # Will need stored service_url
+                conversation_id=conversation_id,
+                card=confirm_card,
+            )
         except Exception as send_err:
             logger.warning(f"[TeamsSSO] Could not send confirmation card: {send_err}")
 
@@ -1191,32 +1178,11 @@ async def get_teams_manifest():
     except Exception:
         platform_domain = "wedotalent.cc"
 
-    # TEAMS_APP_ID must be a stable UUID set in env. Generating a fresh one each
-    # request would break Teams Admin Center installs (it identifies the app by id).
-    teams_app_id = os.environ.get("TEAMS_APP_ID", "").strip()
-    if not teams_app_id:
-        if settings.APP_ENV == "production":
-            logger.error("[Teams Manifest] TEAMS_APP_ID is not set in production. Refusing to generate a random id.")
-            raise HTTPException(
-                status_code=503,
-                detail="TEAMS_APP_ID environment variable is required in production. Set it once to a stable UUID and redeploy.",
-            )
-        teams_app_id = str(uuid.uuid4())
-        logger.warning(f"[Teams Manifest] TEAMS_APP_ID not set; generated ephemeral id {teams_app_id} (development only).")
-
-    azure_client_id = os.environ.get("AZURE_CLIENT_ID", "").strip()
-    if not azure_client_id and settings.APP_ENV == "production":
-        logger.error("[Teams Manifest] AZURE_CLIENT_ID is not set in production. SSO would silently fail; refusing to serve manifest.")
-        raise HTTPException(
-            status_code=503,
-            detail="AZURE_CLIENT_ID is required in production to enable SSO. Configure the Azure AD app registration and redeploy.",
-        )
-
     manifest = {
         "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
         "manifestVersion": "1.17",
         "version": "1.0.0",
-        "id": teams_app_id,
+        "id": os.environ.get("TEAMS_APP_ID", str(uuid.uuid4())),
         "packageName": "com.wedotalent.wedo",
         "developer": {
             "name": "WeDOTalent",
@@ -1232,7 +1198,7 @@ async def get_teams_manifest():
         },
         "accentColor": "#000000",
         "bots": [{
-            "botId": (os.environ.get("TEAMS_BOT_APP_ID") or os.environ.get("MICROSOFT_APP_ID") or "").strip(),
+            "botId": os.environ.get("TEAMS_BOT_APP_ID", os.environ.get("TEAMS_APP_ID", os.environ.get("MICROSOFT_APP_ID", ""))),
             "scopes": ["personal", "team", "groupChat"],
             "supportsFiles": True,
             "isNotificationOnly": False,
@@ -1263,6 +1229,10 @@ async def get_teams_manifest():
         }],
         "permissions": ["identity", "messageTeamMembers"],
         "validDomains": [platform_domain, "token.botframework.com", "login.microsoftonline.com"],
+        "webApplicationInfo": {
+            "id": os.environ.get("AZURE_CLIENT_ID", ""),
+            "resource": f"api://{platform_domain}/{os.environ.get('AZURE_CLIENT_ID', '')}",
+        },
         "authorization": {
             "permissions": {
                 "resourceSpecific": [
@@ -1273,16 +1243,6 @@ async def get_teams_manifest():
             }
         },
     }
-
-    # webApplicationInfo is required for SSO; only emit when AZURE_CLIENT_ID is configured.
-    # Emitting an empty resource (api://domain/) makes Teams reject SSO silently.
-    if azure_client_id:
-        manifest["webApplicationInfo"] = {
-            "id": azure_client_id,
-            "resource": f"api://{platform_domain}/{azure_client_id}",
-        }
-    else:
-        logger.warning("[Teams Manifest] AZURE_CLIENT_ID not set — webApplicationInfo omitted; SSO will not work.")
 
     return JSONResponse(
         content=manifest,
@@ -1317,30 +1277,9 @@ async def download_teams_manifest_zip():
     except Exception:
         platform_domain = "ai.wedotalent.cc"
 
-    bot_id = (
-        os.environ.get("TEAMS_BOT_APP_ID")
-        or os.environ.get("MICROSOFT_APP_ID")
-        or ""
-    ).strip()
-    app_id = os.environ.get("TEAMS_APP_ID", "").strip()
-    if not app_id:
-        if settings.APP_ENV == "production":
-            logger.error("[Teams Manifest ZIP] TEAMS_APP_ID is not set in production. Refusing to generate a random id.")
-            raise HTTPException(
-                status_code=503,
-                detail="TEAMS_APP_ID environment variable is required in production. Set it once to a stable UUID and redeploy.",
-            )
-        app_id = str(uuid.uuid4())
-        logger.warning(f"[Teams Manifest ZIP] TEAMS_APP_ID not set; generated ephemeral id {app_id} (development only).")
-    if not bot_id:
-        logger.warning("[Teams Manifest ZIP] No bot id found (TEAMS_BOT_APP_ID/MICROSOFT_APP_ID); bot will not work.")
-    azure_client_id = os.environ.get("AZURE_CLIENT_ID", "").strip()
-    if not azure_client_id and settings.APP_ENV == "production":
-        logger.error("[Teams Manifest ZIP] AZURE_CLIENT_ID is not set in production. SSO would silently fail; refusing to serve manifest.")
-        raise HTTPException(
-            status_code=503,
-            detail="AZURE_CLIENT_ID is required in production to enable SSO. Configure the Azure AD app registration and redeploy.",
-        )
+    bot_id = os.environ.get("TEAMS_BOT_APP_ID", os.environ.get("TEAMS_APP_ID", os.environ.get("MICROSOFT_APP_ID", "")))
+    app_id = os.environ.get("TEAMS_APP_ID", str(uuid.uuid4()))
+    azure_client_id = os.environ.get("AZURE_CLIENT_ID", "")
 
     manifest = {
         "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",

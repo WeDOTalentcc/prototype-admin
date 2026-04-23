@@ -29,54 +29,6 @@ logger = get_masked_logger(__name__)
 router = APIRouter(prefix="/approvals", tags=["approvals"])
 
 
-async def _sync_offer_proposal_status(db, approval) -> None:
-    """Best-effort callback: when a generic approval is approved/rejected via
-    this router, propagate the decision to any OfferProposal that references
-    it via ``approval_request_id``. Keeps the offer status in sync with the
-    canonical approvals workflow regardless of which UI path the approver
-    used (offer-specific endpoint vs. generic approvals UI).
-    """
-    try:
-        from sqlalchemy import select as _select
-        from lia_models.offer_proposal import OfferProposal, OfferStatus
-
-        result = await db.execute(
-            _select(OfferProposal).where(OfferProposal.approval_request_id == approval.id)
-        )
-        proposal = result.scalar_one_or_none()
-        if proposal is None:
-            return
-        if approval.status == "approved":
-            proposal.status = OfferStatus.APPROVED.value
-            round_type = "approval"
-        elif approval.status == "rejected":
-            proposal.status = OfferStatus.REJECTED.value
-            round_type = "rejection"
-        else:
-            return
-
-        # Mirror the decision into ``rounds`` so the per-round audit trail
-        # stays complete even when the approver acted via the generic
-        # approvals UI instead of /offer-proposals/{id}/approval/decision.
-        from app.services.offer_letter_service import offer_letter_service as _svc
-
-        proposal.rounds = _svc.append_round(
-            list(proposal.rounds or []),
-            round_type=round_type,
-            actor="approver",
-            actor_name=approval.approver_name,
-            actor_email=approval.approver_email,
-            message=(
-                f"[generic_approvals_api] "
-                + (approval.approval_notes or "" if approval.status == "approved" else approval.rejection_reason or "")
-            ).strip(),
-        )
-        proposal.updated_at = datetime.utcnow()
-        await db.flush()
-    except Exception as sync_err:  # pragma: no cover - defensive
-        logger.warning(f"OfferProposal sync skipped for approval {approval.id}: {sync_err}")
-
-
 class ApprovalRequestCreate(BaseModel):
     request_type: str = "vacancy_approval"
     requester_name: str
@@ -325,8 +277,6 @@ async def approve_request(
 
         approval = await repo.flush_and_refresh(approval)
 
-        await _sync_offer_proposal_status(repo.db, approval)
-
         try:
             await send_approval_result_email(repo.db, approval, approved=True, email_svc=email_svc)
             approval.notification_sent = True
@@ -403,8 +353,6 @@ async def reject_request(
         approval.updated_at = datetime.utcnow()
 
         approval = await repo.flush_and_refresh(approval)
-
-        await _sync_offer_proposal_status(repo.db, approval)
 
         try:
             await send_approval_result_email(repo.db, approval, approved=False, email_svc=email_svc)

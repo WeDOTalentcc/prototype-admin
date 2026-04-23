@@ -66,7 +66,7 @@ _CONFIRMATION_WORDS = {
 
 from app.shared.agents.agent_registry import register_agent
 
-@register_agent("wizard", aliases=["job_management", "job_mgmt"])
+@register_agent("wizard")
 class WizardReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     DOMAIN_INSTRUCTIONS = WIZARD_DOMAIN_SPECIFIC + "\n\n" + WIZARD_REASONING_PROMPT.format(memory_summary="", stage_context="")
 

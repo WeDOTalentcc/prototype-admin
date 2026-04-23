@@ -278,12 +278,9 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         builder_agent_type = domain_map.get(agent_type, "recruiter_assistant")
 
         # === context_level routing ===
-        _company_id = str(self._company_id) if getattr(self, "_company_id", None) else str(ctx.get("company_id") or "")
-
         if self._context_level == "minimal":
             base = SystemPromptBuilder.build(
                 agent_type=builder_agent_type,
-                company_id=_company_id,
                 extra_instructions=(
                     f"{intelligence_floor}\n\n"
                     f"INSTRUCOES ADICIONAIS DO OPERADOR:\n{self._system_prompt_template}"
@@ -294,7 +291,6 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         if self._context_level == "standard":
             base = SystemPromptBuilder.build(
                 agent_type=builder_agent_type,
-                company_id=_company_id,
                 tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
                 user_name=ctx.get("user_name", ""),
                 user_role=ctx.get("user_role", ""),
@@ -309,7 +305,6 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         # Full: everything (default)
         base = SystemPromptBuilder.build(
             agent_type=builder_agent_type,
-            company_id=_company_id,
             tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
             user_name=ctx.get("user_name", ""),
             user_role=ctx.get("user_role", ""),

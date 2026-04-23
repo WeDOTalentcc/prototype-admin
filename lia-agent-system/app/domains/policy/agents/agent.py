@@ -303,7 +303,6 @@ class PolicySetupAgent(LangGraphReActBase, EnhancedAgentMixin):
         try:
             return SystemPromptBuilder.build(
                 agent_type=self.domain_name,
-                company_id=str(session.company_id) if getattr(session, "company_id", None) else "",
                 tenant_context_snippet=f"company_id={session.company_id}",
                 user_role="hiring_manager",
                 context_page="policy_setup",

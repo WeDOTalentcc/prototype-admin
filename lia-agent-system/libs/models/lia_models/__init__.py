@@ -75,7 +75,6 @@ from lia_models.candidate_attachment import (
 )
 from lia_models.audit_log import AuditLog, DecisionType
 from lia_models.approval import ApprovalRequest, ApprovalStatus, ApprovalType
-from lia_models.offer_proposal import OfferProposal, OfferRoundType, OfferStatus
 from lia_models.journey_mapping import (
     JourneyBlueprint,
     JourneyStep,

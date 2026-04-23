@@ -203,72 +203,8 @@ async def _wrap_rag_search(**kwargs: Any) -> dict[str, Any]:
 
 @tool_handler("autonomous")
 async def _wrap_auto_search_candidates(**kwargs: Any) -> dict[str, Any]:
-    """Search candidates matching given criteria.
-
-    Task #727: routed through canonical candidate_search_service to
-    eliminate parallel candidate-search SQL paths. Same canonical
-    function used by sourcing_actions and talent_tool_registry.
-    """
-    from app.domains.ai.services.candidate_search_service import (
-        search_candidates as _canonical_search,
-    )
-
-    query = (kwargs.get("query") or kwargs.get("q") or "").strip()
-    company_id = kwargs.get("company_id") or kwargs.get("tenant_id")
-    try:
-        limit = int(kwargs.get("limit", 10) or 10)
-    except (TypeError, ValueError):
-        limit = 10
-    raw_scope = kwargs.get("scope", "both" if company_id else "global")
-    scope = raw_scope if raw_scope in {"local", "global", "both"} else "both"
-    # Consistency with sourcing/talent wrappers: without a tenant, can't
-    # do local search — force global scope to avoid canonical validation error.
-    if not company_id and scope in {"local", "both"}:
-        scope = "global"
-    location = kwargs.get("location")
-    min_experience = kwargs.get("min_experience")
-
-    if not query:
-        return {
-            "success": False,
-            "error": "query parameter is required",
-            "data": {"candidates": [], "total": 0},
-        }
-
-    try:
-        result = await _canonical_search(
-            query=query,
-            company_id=company_id,
-            scope=scope,
-            limit=limit,
-            location=location,
-            min_experience=min_experience,
-        )
-        if result.get("status") == "error":
-            return {
-                "success": False,
-                "error": result.get("error", "search failed"),
-                "data": {
-                    "candidates": result.get("candidates", []),
-                    "total": result.get("total", 0),
-                },
-            }
-        return {
-            "success": True,
-            "data": result,
-            "scope_used": result.get("scope_used"),
-            "fellback_to_global": result.get("fellback_to_global", False),
-        }
-    except Exception as exc:  # noqa: BLE001
-        import logging as _log
-        _log.getLogger(__name__).warning(
-            "[autonomous_tools] _wrap_auto_search_candidates error: %s", exc
-        )
-        return {
-            "success": False,
-            "error": str(exc),
-            "data": {"candidates": [], "total": 0},
-        }
+    """Search candidates matching given criteria."""
+    return await _delegate_sourcing(fn_name="search_candidates", **kwargs)
 
 
 @tool_handler("autonomous")

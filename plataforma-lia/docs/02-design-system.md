@@ -323,12 +323,6 @@ const getStatusColor = (status: string) => {
 
 ### 2.6 Identidade Visual LIA (Brain)
 
-> ⚠️ **Sparkles (✨) NÃO é o ícone da LIA.** A identidade visual da LIA é
-> **exclusivamente** o cérebro ciano (`Brain` em `text-wedo-cyan`, exposto via
-> `LIAIcon`). Use `Sparkles` apenas para badges genéricos de "novo/beta",
-> categorias não-LIA e mapeamentos literais de backend. Veja a auditoria em
-> [`design-system/SPARKLES-AUDIT.md`](./design-system/SPARKLES-AUDIT.md).
-
 **TODAS as referências visuais à inteligência LIA usam:**
 
 | Atributo | Valor |
@@ -791,16 +785,12 @@ Menu items:            text-[11px] font-medium (0.6875rem)
 
 ### 5.4 Ícones LIA
 
-> A LIA é representada **somente** por `Brain` / `BrainCircuit` em ciano.
-> `Sparkles` listado abaixo é apenas para uso **não-LIA** (badges "novo/beta",
-> categorias roxas neutras), nunca como avatar/marcador da LIA.
-
 ```tsx
 import { Brain, BrainCircuit, Sparkles } from 'lucide-react'
 
-<Brain className="w-4 h-4 text-wedo-cyan" />            // ✅ LIA
-<BrainCircuit className="w-5 h-5 text-wedo-cyan" />     // ✅ LIA
-<Sparkles className="w-4 h-4 text-wedo-purple" />       // ⚠️ apenas badges "novo/beta", nunca LIA
+<Brain className="w-4 h-4 text-wedo-cyan" />
+<BrainCircuit className="w-5 h-5 text-wedo-cyan" />
+<Sparkles className="w-4 h-4 text-wedo-purple" />
 ```
 
 ---

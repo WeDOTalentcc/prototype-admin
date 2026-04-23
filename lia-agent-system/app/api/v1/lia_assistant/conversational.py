@@ -43,12 +43,10 @@ def _build_conversational_prompt(
     conversation_context: str,
     user_name: str = "",
     tenant_context_snippet: str = "",
-    company_id: str = "",
 ) -> str:
     from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
     system = SystemPromptBuilder.build(
         agent_type="orchestrator",
-        company_id=company_id,
         user_name=user_name,
         tenant_context_snippet=tenant_context_snippet,
         conversation_summary=conversation_context if conversation_context != "Início da conversa" else "",
@@ -261,7 +259,6 @@ Solicitação: {request.message}"""
             conversation_context=conversation_context_text,
             user_name=_conv_user_name or "",
             tenant_context_snippet=_conv_tenant_snippet,
-            company_id=str(_company_id) if _company_id else "",
         )
         response_text = await llm_svc.generate(prompt, provider="gemini")
 
