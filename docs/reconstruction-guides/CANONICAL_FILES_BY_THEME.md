@@ -115,6 +115,31 @@ Gaps P0/P1 ainda em aberto (exigem mudança de código ou endpoint, fora do esco
 
 Rastreamento completo: `COMPLIANCE_RECONSTRUCTION_GUIDE.md` §10.8.
 
+### Bundles de YAMLs Canônicos (2026-04-24)
+
+> Entregues como fonte verbatim para replicação offline + context file para
+> Claude Code / Cursor. Zero paráfrase — cada byte lido direto de
+> `lia-agent-system/` no Replit.
+
+| Bundle | YAMLs | Tamanho | Arquivo |
+|--------|:-----:|:-------:|---------|
+| **LIA** (persona + especialização) | 30 | 224K (4.583L) | `LIA_YAMLS_CANONICAL_BUNDLE.md` |
+| **Compliance** (protected_attributes + fairness_post_check) | 2 | 12K (284L) | `COMPLIANCE_YAMLS_CANONICAL_BUNDLE.md` |
+| **Infrastructure** (tool_permissions + domain_routing) | 2 | 28K (737L) | `INFRASTRUCTURE_YAMLS_CANONICAL_BUNDLE.md` |
+| **Total** | **34** | **264K** | (3 arquivos) |
+
+Alinhamento 1:1 com os cards Jira: cada card anexa o bundle correspondente
+(Card 1 → LIA, Card 2 → Compliance, Card 3 → Infrastructure). Card 4
+(Resilience) e Card 5 (Frontend) não têm bundle — Resilience é 100% código
+Python; Frontend não consome YAMLs diretamente.
+
+Cada bundle contém:
+- Cabeçalho com instruções de uso em Claude Code (via `CLAUDE.md`) e
+  Cursor (via `.cursor/rules/*.mdc`)
+- Índice tabular com path canônico / linhas / versão / updated_at / formato
+- Verbatim de cada YAML em bloco ```yaml
+- Cross-references para os bundles irmãos
+
 ### Execução Plano P0/P1 concluída em 2026-04-23
 
 Todos os itens do plano `esse-front-end-rustling-lollipop.md` foram executados em uma única janela:

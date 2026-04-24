@@ -201,8 +201,9 @@ assert len(prompt) > 2000      # persona + platform + compliance todos injetados
 ## Referências
 
 - **Manual técnico:** `INFRASTRUCTURE_RECONSTRUCTION_GUIDE.md` (72K) — contém verbatim de todos os componentes, 10 blocos (A-J) com código exato
+- **Bundle verbatim dos 2 YAMLs técnicos de infra:** `INFRASTRUCTURE_YAMLS_CANONICAL_BUNDLE.md` (28K, 737 linhas — novo 2026-04-24). Contém `tool_permissions.yaml` + `domain_routing.yaml` verbatim. Use como **context file** em Claude Code (`CLAUDE.md`) ou Cursor (`.cursor/rules/infrastructure-yamls.mdc`). Instruções de setup no próprio bundle.
 - **Mapa:** `CANONICAL_FILES_BY_THEME.md` temas 5-10 (Observabilidade, Infra de Agentes, Orquestração, LLM Providers, Multi-tenancy, Tool Permissions)
-- **Persona (dependente):** `LIA_DEV_HANDOFF_2026-04-23.md` + `LIA_PERSONA_RECONSTRUCTION_GUIDE.md` Parte 9
+- **Persona (dependente):** `LIA_DEV_HANDOFF_2026-04-23.md` + `LIA_PERSONA_RECONSTRUCTION_GUIDE.md` Parte 9 + `LIA_YAMLS_CANONICAL_BUNDLE.md` (cross-ref: `agent_prompts.yaml` vive nesse bundle)
 
 ---
 

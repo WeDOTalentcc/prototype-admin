@@ -184,7 +184,10 @@ Nenhum desses bloqueia a replicação do código — são trilhos regulatórios 
 3. `COMPLIANCE_RECONSTRUCTION_GUIDE.md` §10 (arquitetura 8 camadas) + §11 (plano) — manual completo
 4. Abrir cada arquivo canônico listado acima conforme for implementando
 
-**Fonte única de verdade durante implementação:** `COMPLIANCE_RECONSTRUCTION_GUIDE.md`. Se divergir do código canônico no Replit, **o código é a verdade** — abrir issue para atualizar guia.
+**Fonte única de verdade durante implementação:**
+- **Manual navegável:** `COMPLIANCE_RECONSTRUCTION_GUIDE.md` — arquitetura, auditoria, plano P0/P1. Se divergir do código canônico no Replit, **o código é a verdade** — abrir issue para atualizar guia.
+- **Bundle verbatim dos 2 YAMLs técnicos de compliance:** `COMPLIANCE_YAMLS_CANONICAL_BUNDLE.md` (12K, 284 linhas — novo 2026-04-24). Contém `protected_attributes.yaml` (SSoT dos 14 atributos) + `fairness_post_check.yaml` verbatim. Use como **context file** em Claude Code (`CLAUDE.md`) ou Cursor (`.cursor/rules/compliance-yamls.mdc`). Instruções de setup no próprio bundle.
+- **YAMLs cross-referenciados** (`compliance_block.yaml`, `guardrails_block.yaml`) → ver `LIA_YAMLS_CANONICAL_BUNDLE.md`.
 
 ---
 

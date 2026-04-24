@@ -173,7 +173,8 @@ Todos os 5 cenários "antes/depois" do handoff anterior (contexto da conversa, e
 
 ### Fonte única de verdade
 
-`LIA_PERSONA_RECONSTRUCTION_GUIDE.md` (2.493 linhas) — quando tiver dúvida sobre como algo funciona, comece pela Parte 9 (camada de prompt injection completa). Para compliance, `COMPLIANCE_RECONSTRUCTION_GUIDE.md` §10 (arquitetura 8 camadas) e §11 (plano de ação P0/P1).
+- **Manual técnico navegável:** `LIA_PERSONA_RECONSTRUCTION_GUIDE.md` (2.493 linhas) — quando tiver dúvida sobre como algo funciona, comece pela Parte 9 (camada de prompt injection completa). Para compliance, `COMPLIANCE_RECONSTRUCTION_GUIDE.md` §10 (arquitetura 8 camadas) e §11 (plano de ação P0/P1).
+- **Bundle verbatim dos 30 YAMLs da persona:** `LIA_YAMLS_CANONICAL_BUNDLE.md` (224K, 4.583 linhas — novo 2026-04-24). Use como **context file** em Claude Code (via `CLAUDE.md`) ou Cursor (via `.cursor/rules/lia-yamls.mdc`) — dev pede "replica o `cv_screening.yaml`" e AI assistant tem o texto exato. Instruções de setup no próprio bundle.
 
 ---
 
