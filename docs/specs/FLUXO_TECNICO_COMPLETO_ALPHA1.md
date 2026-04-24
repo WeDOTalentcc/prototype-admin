@@ -6,6 +6,8 @@
 **Formato:** Diagrama passo-a-passo por macro-etapa (estilo "11 STEPS" do WSI)  
 **Referência:** `ANALISE_ROADMAP_ALPHA1_vs_CODIGO.md` v6.3 (complementar)
 
+> 📋 **Checklists do time no final do documento:** [MVP — Roadmap Alpha 1](#checklist-pragmático-mvp--roadmap-alpha-1) (devs, PO, QA) · [Product Readiness — Go-Live](#checklist-product-readiness--go-live) (Ops, PM, Suporte, Legal, Billing).
+
 ---
 
 ## COMO LER ESTE DOCUMENTO
@@ -1946,6 +1948,202 @@ Princípios aplicados:
                     │Scheduling│
                     └──────────┘
 ```
+
+---
+
+## CHECKLIST PRAGMÁTICO MVP — ROADMAP ALPHA 1
+
+### Para quem é esta seção
+Time de feature: devs, PO, QA. Lista o que falta construir, ativar ou integrar para o fluxo E1 → E9B funcionar end-to-end. Para itens de operação/legal/billing, ver a próxima seção (Product Readiness — Go-Live).
+
+### Como usar
+Cada item usa `- [ ]` (markdown checkbox) e referencia a etapa (E1, E2, …, E9B) ou camada transversal de origem (Compliance, Inteligência, Governança, LGPD). Itens vindos do corpo do documento mantêm o símbolo original (⚠ bloqueante · ○ a implementar · ◐ a configurar/ativar). Itens identificados nesta consolidação têm tag `(novo)` para o time saber que vieram da auditoria e não estão no corpo do documento.
+
+### Índice
+- [1. Pré-MVP — Bloqueantes](#1-pré-mvp--bloqueantes)
+- [2. MVP por Etapa (E1 → E9B)](#2-mvp-por-etapa-e1--e9b)
+- [3. Camadas Transversais](#3-camadas-transversais)
+- [4. Pós-MVP](#4-pós-mvp)
+- [5. QA & Testes](#5-qa--testes)
+
+### 1. Pré-MVP — Bloqueantes
+Sem isso o MVP não pode subir.
+
+- [ ] **(novo · E0/Pré-Login) Onboarding de tenant + RBAC + isolamento multi-tenant verificável** — fluxo para criar uma empresa nova na plataforma, com papéis (admin, recrutador, operador), separação dos dados de cada cliente comprovada por teste. Sem isso não dá para receber o primeiro cliente real.
+- [ ] **(novo · Compliance) Bias Audit Dashboard (UI)** — o backend já coleta o `BiasAuditSnapshot` (Four-Fifths Rule), mas falta a tela onde recrutador/PO veem se algum grupo demográfico está sendo aprovado <80% que outro. (ver também: Product Readiness · Transparência IA)
+- [ ] **(novo · LGPD) Portal público DSR ponta-a-ponta** — `/portal/data-request/[token]` precisa funcionar de verdade: candidato consegue pedir cópia, correção ou exclusão dos próprios dados sem depender de email manual. Endpoints existem mas integração está pendente (○ na seção LGPD).
+- [ ] **(novo · LGPD) Verificação automática de retenção de dados** — rotina (cron/Celery Beat) que aplica os prazos da tabela "Retenção por Tipo de Dado" (audit 730-1825d, logs 365d, prompts 90d, etc.) e apaga/anonimiza o que vencer. Sem isso a tabela é só intenção.
+- [ ] **(E5/E8 · ⚠ FairnessGuard L3 obrigatório por setor)** ALPHA1_SECTOR_RULES exige L3 ativo para tech, financeiro, saúde e RPO — confirmar que o pré-check do `PipelineTransitionAgent` realmente bloqueia (não só alerta) nas rejeições desses setores antes do go-live do MVP.
+
+### 2. MVP por Etapa (E1 → E9B)
+
+#### E1 — Login
+- [ ] **(novo) Onboarding self-service básico de tenant** — sem isso, cada cliente novo precisa de provisionamento manual no primeiro login. (ver também: Product Readiness · Cliente & Suporte)
+- [ ] **(novo) Mensagem clara de erro quando WorkOS SSO está fora** — circuit "workos" abre (failure_threshold=5) e o usuário precisa entender o que aconteceu. Hoje só temos a degraded message genérica.
+
+#### E2 — Editar/Criar Vaga
+- [ ] **(⚠ PÓS-MVP — confirmar fora do MVP) Ag.8 ATSIntegrationReActAgent sincroniza dados do ATS** (linhas 173 e 1862) — está fora do escopo Alpha 1; manter desligado e bloquear UI que dependa disso.
+- [ ] **(IMPORTANTE — NÃO IMPLEMENTADO, só PÓS-MVP) Steps 2, 3, 4, 5 do detalhamento técnico de E2** (linha 210) — DomainOrchestrator routing + GuardrailCheck para job_management, EnhancedAgentMixin com 16 capabilities, FairnessGuard pré-LLM no JD, PII Masking pré-LLM. Hoje a geração de JD funciona "à parte" sem passar por essas camadas. Sem isso o JD pode subir com viés ou vazar PII para o LLM.
+- [ ] **(◐/●) LearningLoop em E2 — captura silenciosa de edições do recrutador no JD** — listado como ● mas marcado "NÃO APLICAVEL AINDA" (linha 268). Decidir se fica ou se sai do MVP de E2.
+- [ ] **(◐/●) TemplateLearning — auto-template após 3 vagas similares** — listado como ● mas marcado "(NAO APLICAVEL AINDA)" (linha 269). Decidir se fica ou se sai do MVP de E2.
+
+#### E3 — Configurar Roteiro WSI
+- [ ] **(MVP) Roteiro completo (≈12 perguntas) e compacto (≈7 perguntas) testados ponta-a-ponta** — confirmar que ambos os modos geram blocos Técnico (Bloom 1-6 + Dreyfus 1-5), Comportamental (Big Five), Situacional e Cultural Fit conforme `wsi_constants.py`.
+- [ ] **(MVP) FactChecker e FairnessGuard L1/L2 efetivamente bloqueiam perguntas ruins** — não só alertam. Garantir que pergunta com viés ou claim incoerente nunca chega ao candidato.
+
+#### E4 — Buscar Candidatos (Funil de Talentos)
+- [ ] **(MVP) Like/Dislike por candidato realmente alimenta LearningLoop e RoutingAdaptativo** — verificar que o sinal chega aos serviços (`learning_loop_service`, `routing_learning_service`) e altera ranking nas próximas buscas.
+- [ ] **(MVP) Os 5 modos de busca funcionam (IA Natural, Boolean, Perfil Similar, Job Description, Archetypes)** — cobertura mínima E2E por modo.
+- [ ] **(novo) Mensagens claras de fallback quando Pearch (circuit "pearch") está aberto** — usuário precisa entender que está vendo só a base local naquele momento.
+
+#### E5 — Aprovar Mapeados (Gate 1)
+- [ ] **(MVP) Aprovação em massa (até 100) respeita PolicyEngine + LGPDConsent + opt-out** — testar com lote real, não só caso unitário.
+- [ ] **(MVP) Bypass automático de candidatos inscritos via web (⚡ Inscritos via web BYPASS Gate 1) sem perder consentimento LGPD nem rate limit.**
+- [ ] **(⚠ PÓS-MVP) Ag.8 ATSIntegrationReActAgent — sync de status de volta ao ATS** — manter fora do MVP, mas confirmar que UI não tenta acionar.
+
+#### E6 — Contato via Email + Follow-up
+- [ ] **(◐) Follow-up automático de 7 dias (re-envio cada 24h, status "sem_resposta")** — confirmar Celery Beat rodando em produção e mensagem para consultor disparando via Teams.
+- [ ] **(◐) A/B Testing de templates de email já seedado no startup (3 experimentos)** — verificar que o `seed_email_ab_tests` rodou e que `record_result` está sendo chamado nos eventos de open/click/reply.
+- [ ] **(novo · UX) Acessibilidade WCAG e responsividade mobile do email/chat WSI** — candidato pode estar respondendo do celular; testar a régua mínima A/AA.
+
+#### E7 — Triagem WSI
+- [ ] **(MVP) Sessão WSI de 30-120 min sobrevive a desconexão via PostgresSaver checkpoint** — testar retomada real (refresh, fechar aba, voltar pelo link).
+- [ ] **(novo) Backup do PostgresSaver — política de snapshot dos checkpoints WSI** — sessões longas não podem ser perdidas se o Postgres tiver hiccup.
+- [ ] **(MVP) Triagem por voz (WSIVoiceOrchestrator + Deepgram + OpenAI TTS) testada nos 3 canais** (chat web, WhatsApp, voz) com fallback Whisper.
+- [ ] **(MVP) FactChecker (4 tipos) e BiasAuditSnapshot (Four-Fifths) ativos pós-LLM em todas as triagens.**
+- [ ] **(novo · UX) Acessibilidade WCAG na página `/triagem/[token]` revisada para AA** — `aria-live`, `aria-label`, `motion-reduce` já existem (Audit Fase 6), mas falta passada formal.
+
+#### E7A — Triagem Abandonada
+- [ ] **(MVP) 1º lembrete em 48h sem atividade + 2º lembrete em +48h + alerta ao consultor** — confirmar Celery Beat e canal Teams.
+- [ ] **(MVP) Progresso parcial salvo de verdade** — candidato volta exatamente do ponto onde parou.
+
+#### E7B — Feedback Pós-Triagem
+- [ ] **(MVP) Score numérico nunca aparece no feedback enviado ao candidato** — confirmar `PipelineFeedbackTool._remove_score_references` no caminho real.
+- [ ] **(MVP) HITL `interrupt_before=["lg_generate_feedback"]` está ativo e o consultor consegue revisar antes do envio.**
+
+#### E8 — Aprovar/Reprovar Triados (Gate 2)
+- [ ] **(MVP) FG L3 + auto-check de `reject_candidate` realmente bloqueiam motivos discriminatórios em rejeição (não só alertam).**
+- [ ] **(MVP) Embedding de re-discovery do reprovado é gerado e indexado para futuras vagas.**
+- [ ] **(⚠ PÓS-MVP) Ag.8 sync de status Gate 2 → ATS** — fora do MVP.
+
+#### E9A — Agendar Entrevista
+- [ ] **(MVP) Ag.6 InterviewGraph: 6 nós funcionando, fallback Teams quando Google Calendar não tem horário.**
+- [ ] **(MVP) ICS Calendar invite gerado com data minimization (só dtstart/dtend/summary/location/attendee — sem PII do candidato).**
+- [ ] **(MVP) Comunicação multi-canal (email + WhatsApp) com confirmação de entrega.**
+
+#### E9B — Enviar Feedback (Reprovado)
+- [ ] **(MVP) PersonalizedFeedbackService gera feedback construtivo seguindo o template determinístico (linhas 1007 e 1072) — sem alucinar dados, sem score numérico.**
+- [ ] **(MVP) FairnessGuard sanitiza o texto antes do envio.**
+- [ ] **(MVP) Embedding de perfil salvo via `embedding_cache_service.py` para re-discovery futuro.**
+
+### 3. Camadas Transversais
+
+#### Compliance — FairnessGuard, PII, FactChecker, BiasAudit, AuditTrail
+- [ ] **(◐ → ●) Ativar FairnessGuard L3 em 100% dos setores listados como `ativo` em `ALPHA1_SECTOR_RULES`** (tech, financeiro, saude, rpo) e confirmar fallback explícito em varejo/logística.
+- [ ] **(◐) Cobertura PII Masking — auditar que 100% das chamadas LLM passam por `strip_pii_for_llm_prompt`** — pré-condição para LGPD. (ver também: Product Readiness · Segurança Operacional)
+- [ ] **(○) Bias Audit Dashboard — UI de visualização do BiasAuditSnapshot** (linha 1533: "○ pendente — backend coleta dados"). (ver também: Product Readiness · Transparência IA)
+- [ ] **(MVP) AuditTrail SOX-compliant ativo nos 9 endpoints já listados** (auth, jd_generation, wsi_questions, sourcing_react_agent, pipeline, approvals, communication, rubric_evaluation, scheduling).
+- [ ] **(MVP) PromptInjectionGuard ativo em todo request que chega ao DomainOrchestrator** — confirmar logs de tentativa.
+
+#### Inteligência — Learning, A/B, Calibration, Drift, Memória, Semantic, Voice
+- [ ] **(MVP) Learning Loop — `validate_learning_batch()` bloqueia patterns discriminatórios ANTES de persistir** — `_LEARNING_PROTECTED_FIELDS` cobre gender, age, ethnicity, marital_status, photo, institution, address, religion, disability, cv_gaps.
+- [ ] **(MVP) Model Drift batch diário (06h Brasília) ativo nas 4 dimensões** (score, approval, cost, latency) com alerta Bell + Teams.
+- [ ] **(MVP) Calibration dual feedback (explícito + implícito) gerando `CalibrationSuggestion` legível para o recrutador.**
+- [ ] **(MVP) Long-Term Memory — compressão LLM após 30 dias rodando como Celery task.**
+- [ ] **(MVP) Semantic Search (Gemini text-embedding-004 768-dim) com cache Redis funcional.**
+
+#### Governança — Policy Engine, CircuitBreaker, PromptInjection, AntiSycophancy
+- [ ] **(MVP) Policy Engine — `ALPHA1_SECTOR_RULES` carregado para 6 setores** (tech, financeiro, saude, rpo, varejo, logistica) com autonomia/HITL/L3/rate limit/escalation por setor.
+- [ ] **(MVP) Os 14 circuits do CircuitBreaker (anthropic, openai, gemini, pearch, workos, merge, google_calendar, gupy, pandape, sendgrid, resend, iugu, vindi, llm_react_reason) com mensagem PT-BR de degraded mode.**
+- [ ] **(MVP) Anti-Sycophancy — 3 variantes (OPERATIONAL, FULL, ORCHESTRATOR) injetadas nos system prompts dos agentes corretos** (Crença #11 do Manifesto WeDOTalent).
+- [ ] **(novo) Feature flags / rollout por setor** — habilitar/desabilitar regras por tech/financeiro/saúde/RPO conforme `ALPHA1_SECTOR_RULES` sem precisar de deploy.
+
+#### LGPD — Consent, DSR técnico, Data Min, Retenção
+- [ ] **(MVP) Consentimento WSI obrigatório no WelcomeCard** — botão desabilitado até checkbox marcado, `ConsentEvent` auditável registrado.
+- [ ] **(MVP) Opt-out HMAC-signed em 100% dos emails** com `ConsentEvent` registrando revogação.
+- [ ] **(○) DSR endpoints (`/api/v1/lgpd/data-export`, `data-delete`, `consent`) integrados ao portal público** (linha 1762: "○ pendente integração completa"). (ver também: Product Readiness · Legal & Compliance)
+- [ ] **(MVP) Data Minimization aplicada em ICS, ATS sync, feedback, PII Masking, ToonService anonymize.**
+- [ ] **(novo) Verificação automática dos prazos da tabela "Retenção por Tipo de Dado"** — sem isso é só promessa.
+- [ ] **(novo · Observabilidade básica) Prometheus dashboards por etapa + alertas configurados** — base para qualquer SLA. (ver também: Product Readiness · Confiabilidade & Operação)
+
+### 4. Pós-MVP
+Itens explicitamente marcados no documento como pós-MVP — manter visíveis mas FORA do escopo Alpha 1.
+
+- [ ] **(⚠ PÓS-MVP) Ag.8 ATSIntegrationReActAgent** completo (E2 sync de dados, E5 sync de status, E8 sync de status) — linhas 48, 173, 1862.
+- [ ] **(NÃO IMPLEMENTADO, só PÓS-MVP) Steps técnicos 2-5 do fluxo E2** com DomainOrchestrator/EnhancedAgentMixin/FairnessGuard/PII Masking integrados ao job_management — linha 210.
+- [ ] **(NAO PRIORITARIO — POS MVP) A/B Testing avançado de templates de email em E6** — linha 688. O básico (seed_email_ab_tests) já está in.
+- [ ] **(NAO APLICAVEL AINDA) TemplateLearning auto-template após 3 vagas similares em E2** — linha 269.
+- [ ] **(NAO APLICAVEL AINDA) LearningLoop captura silenciosa de edições em E2** — linha 268.
+
+### 5. QA & Testes
+- [ ] **(novo) Plano consolidado de testes E2E por etapa (E1 a E9B)** — um cenário "happy path" + um cenário "fairness block" + um cenário "circuit breaker open" por etapa, no mínimo.
+- [ ] **(MVP) Teste E2E de E7 (Triagem WSI)** — sessão de 30-120 min com PostgresSaver, abandono e retomada, finalização com score.
+- [ ] **(MVP) Teste E2E de E5 + E8 (Gates)** — aprovação individual, em massa (≤100), drag-and-drop, rejeição com motivo discriminatório (deve bloquear).
+- [ ] **(MVP) Teste E2E de E6** — envio, abertura, clique, opt-out, follow-up de 7 dias.
+- [ ] **(MVP) Teste E2E de E4** — busca nos 5 modos com Like/Dislike alimentando LearningLoop.
+- [ ] **(MVP) Teste E2E de E9A** — agendamento com Google Calendar, ICS sem PII, comunicação dual canal.
+- [ ] **(MVP) Teste de regressão de FairnessGuard L1/L2/L3 + PII Masking + AuditTrail** — qualquer mudança em capability transversal precisa quebrar este conjunto se a cobertura cair.
+
+---
+
+## CHECKLIST PRODUCT READINESS — GO-LIVE
+
+### Para quem é esta seção
+Time de operação: SRE/Plataforma, PM, Suporte, Legal, Financeiro, Comercial. Lista o que precisa estar pronto para operar em produção com clientes pagantes — independente das features do fluxo, que estão na seção MVP acima.
+
+### Como usar
+Cada item usa `- [ ]` (markdown checkbox). Itens vindos desta consolidação têm tag `(novo)` para o time saber que vieram da auditoria e não estão no corpo do documento. Estes itens são para operar/atender/cobrar/cumprir contrato — não são features do fluxo E1 → E9B.
+
+### Índice
+- [1. Confiabilidade & Operação](#1-confiabilidade--operação)
+- [2. Cliente & Suporte](#2-cliente--suporte)
+- [3. Comercial & Billing](#3-comercial--billing)
+- [4. Legal, Compliance & Transparência IA](#4-legal-compliance--transparência-ia)
+- [5. Segurança Operacional](#5-segurança-operacional)
+
+### 1. Confiabilidade & Operação
+
+- [ ] **(novo) SLO/SLA por etapa definidos e publicados** — pelo menos: P95 latência E7 (triagem WSI), disponibilidade E1 (login), P95 E4 (busca), P95 E6 (envio de email). Sem isso, suporte e comercial não conseguem prometer nada.
+- [ ] **(novo) On-call rotation + escalation policy ativa** — quem é chamado de madrugada, qual a ferramenta de paging (PagerDuty/Opsgenie), qual o tempo de resposta esperado.
+- [ ] **(novo) Incident response: template de post-mortem + war-room runbook + comunicação ao cliente** — formato padrão para escrever post-mortem público sem entrar em pânico.
+- [ ] **(novo) Runbooks operacionais por circuit breaker** — um runbook curto ("o que fazer quando o circuit X abre") para cada um dos 14 circuits: anthropic, openai, gemini, pearch, workos, merge, google_calendar, gupy, pandape, sendgrid, resend, iugu, vindi, llm_react_reason.
+- [ ] **(novo) Runbook de recuperação WSI** — passo-a-passo para retomar checkpoint WSI interrompido (PostgresSaver) e re-engajar candidato sem perder a sessão.
+- [ ] **(novo) Disaster Recovery: RTO/RPO definidos + teste periódico de restore** — não basta ter backup, precisa ter o ensaio. Sem isso o cliente não confia no SLA.
+- [ ] **(novo) Logs centralizados — agregador único, retenção definida e busca rápida** — hoje os logs estão por workflow; em produção precisam estar agregados (ex: Loki, ELK, Datadog) com retenção compatível com a tabela LGPD (audit 730-1825d, logs comunicação 365d).
+- [ ] **(novo) Capacity planning + load test executado e registrado** — número de tenants suportados, P95 sob carga, throughput de triagens WSI por minuto.
+- [ ] **(novo) Status page pública + assinatura por cliente** — clientes precisam ver "estou caindo ou é só eu?" sem ligar para suporte.
+
+### 2. Cliente & Suporte
+
+- [ ] **(novo) Onboarding self-service de novo tenant** — criar empresa, importar primeira vaga, primeiro convite ao recrutador, sem intervenção manual.
+- [ ] **(novo) Suporte ao cliente — canais (email/chat/Teams), SLA de primeira resposta, base de conhecimento navegável.**
+- [ ] **(novo) Treinamento de recrutadores — materiais escritos + vídeo curto + onboarding do consultor** — quem nunca usou a LIA precisa virar produtivo em 1 sessão.
+- [ ] **(novo) Documentação pública — API docs versionada (OpenAPI / Swagger UI hospedado) + help center** com FAQ e troubleshooting.
+- [ ] **(novo) Quota e consumo visíveis ao cliente no painel** — quantos tokens, quantos agentes, quantas automações já consumiu vs limite do plano.
+
+### 3. Comercial & Billing
+
+- [ ] **(novo) Billing real por plano Starter / Pro / Enterprise** — `PLAN_LIMITS_ENFORCE=true` já bloqueia consumo, mas falta cobrar de verdade (Iugu/Vindi via circuit breakers já existentes na arquitetura).
+- [ ] **(novo) Visibilidade de custo por tenant (interno)** — quanto cada cliente está custando em LLM (Gemini, Claude), Pearch, Deepgram, OpenAI TTS — sem isso a margem é cega.
+- [ ] **(novo) Versionamento de API + política de deprecation** — semver na rota (`/api/v1`, `/api/v2`) + janela mínima de descontinuação anunciada com antecedência. Pré-requisito para Ag.8 ATS integrar com clientes pós-MVP.
+- [ ] **(novo) Entrega confiável de webhooks — DLQ, retry exponencial, assinatura HMAC, dashboard de falhas** — importante especialmente quando Ag.8 ATSIntegrationReActAgent for ativado pós-MVP.
+
+### 4. Legal, Compliance & Transparência IA
+
+- [ ] **(novo) Termos de Uso + Política de Privacidade aceitos no signup** — necessários antes do primeiro cliente pagante.
+- [ ] **(novo) DPA (Data Processing Agreement) disponível para clientes corporativos** — exigência legal para B2B, especialmente em saúde e financeiro.
+- [ ] **(novo) Página de Transparência IA — EU AI Act art. 13/14 + LGPD art. 20** — explicar para o candidato que ele está interagindo com IA, qual a lógica das decisões automatizadas e como pedir revisão humana. (ver também: MVP · Compliance · Bias Audit Dashboard)
+- [ ] **(novo) Model cards dos LLMs em uso (Gemini, Claude, Deepgram, OpenAI TTS)** — capacidades, limitações, vieses conhecidos. Pré-requisito de transparência para EU AI Act.
+- [ ] **(novo) Data residency declarada no contrato (BR / US)** — onde os dados ficam fisicamente armazenados. LGPD exige clareza.
+- [ ] **(novo) Pen-test executado e relatório arquivado** antes do go-live.
+- [ ] **(novo) Roadmap formal SOC2 / ISO 27001** — não precisa estar certificado no go-live, precisa ter o plano por escrito para responder a RFP de Enterprise.
+- [ ] **(novo) DSR público (`/portal/data-request/[token]`) operacional** — interface visível ao titular dos dados, com SLA de resposta. (ver também: MVP · LGPD · DSR técnico)
+
+### 5. Segurança Operacional
+
+- [ ] **(novo) Rotação de secrets — política e calendário** para LLM keys (Gemini, Claude, OpenAI), JWT secret, WorkOS, Pearch, SendGrid, Resend, Twilio.
+- [ ] **(novo) Kill-switch e feature flags com auditoria de mudança** — quem ligou/desligou o quê, quando, por quê. Pré-requisito para rollback rápido em produção.
+- [ ] **(novo) Auditoria de cobertura de PII Masking em 100% das chamadas LLM** — script periódico que confirma que toda chamada LLM passou por `strip_pii_for_llm_prompt`. Sem isso o "regra absoluta: o LLM NUNCA vê dados pessoais reais" é só intenção. (ver também: MVP · Compliance)
 
 ---
 ---
