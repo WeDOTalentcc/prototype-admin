@@ -1410,3 +1410,135 @@ assert score2 < 0.7  # baixa aceitação reduz
 *Documento gerado em 2026-04-23 a partir de leitura direta dos arquivos canônicos.*
 *Todos os blocos de código foram extraídos com Read tool — zero conteúdo inventado.*
 *Guias completos: COMPLIANCE + INFRASTRUCTURE + RESILIENCE_LEARNING*
+
+---
+
+## Adendo (2026-04-23) — Ativação de FairnessGuard Layer 3 em produção + runbook
+
+> Esta seção documenta uma mudança operacional aplicada em produção em
+> 2026-04-23: ativação da Layer 3 (LLM semântico) do FairnessGuard. É exemplo
+> canônico de como uma feature flag interage com o circuit breaker do Anthropic
+> e como o fallback lenient é projetado.
+
+### B.1 Ativação da flag
+
+**Antes (estado original):**
+- `libs/config/lia_config/config.py` → `FAIRNESS_LAYER3_ENABLED: bool = False`
+- `.env` em produção → `FAIRNESS_LAYER3_ENABLED=false`
+- Comportamento: L1 (regex 19 categorias) + L2 (43 termos PT/EN) ativos; L3
+  (semântico via `claude-haiku-4-5-20251001`) desligado
+
+**Depois (estado atual desde 2026-04-23):**
+- `.env` em produção → `FAIRNESS_LAYER3_ENABLED=true`
+- L3 ativada para `HIGH_IMPACT_ACTIONS` (rejection, shortlist, wsi_score)
+- Cache Redis 1h para resultados de `check_semantic()`
+
+**Validação runtime após deploy:**
+
+```bash
+# No Replit
+cd /home/runner/workspace/lia-agent-system
+python3 -c "from lia_config.config import settings; print(settings.FAIRNESS_LAYER3_ENABLED)"
+# Deve retornar: True
+```
+
+### B.2 Interação com circuit breaker do Anthropic
+
+`fairness_guard.py:911-970` mostra o padrão canônico de fallback lenient quando
+a Layer 3 falha por exceção (incluindo circuit breaker aberto):
+
+```python
+# Layer 3 — LLM semântico com Haiku — respeitando feature flag
+_layer3_enabled = False
+try:
+    from lia_config.config import settings as _settings
+    _layer3_enabled = getattr(_settings, "FAIRNESS_LAYER3_ENABLED", False)
+except Exception:
+    pass
+
+if not _layer3_enabled:
+    # Retorna resultado de L1+L2 sem invocar L3
+    return FairnessCheckResult(
+        is_blocked=base_result.is_blocked,
+        blocked_terms=base_result.blocked_terms,
+        category=base_result.category,
+        educational_message=base_result.educational_message,
+        original_query=text,
+        confidence=base_result.confidence,
+        soft_warnings=implicit_warnings,
+    )
+
+try:
+    semantic_result = await self.check_semantic(
+        text,
+        context=context or "",
+        model="claude-haiku-4-5-20251001",
+    )
+    # Cache Redis 1h
+    ...
+    return semantic_result
+except Exception as exc:
+    logger.debug("[FairnessGuard] Layer 3 skipped: %s", exc)
+    # Fallback lenient — não bloqueia, mas mantém soft_warnings de L2
+    return FairnessCheckResult(
+        is_blocked=False,
+        blocked_terms=[],
+        category=None,
+        educational_message=None,
+        original_query=text,
+        confidence=0.5,
+        soft_warnings=implicit_warnings,
+    )
+```
+
+**Princípio de design:** quando provider externo falha (circuit aberto, timeout,
+rate limit), L1 + L2 continuam válidos e `soft_warnings` são preservados.
+Nunca bloqueia silenciosamente; nunca passa silenciosamente. Sempre registra.
+
+### B.3 Métricas a monitorar (7 dias após ativação)
+
+| Métrica | Alvo | Como medir | Ação se fora |
+|---------|------|------------|--------------|
+| Custos Anthropic (claude-haiku-4-5) | < USD 5/dia | Dashboard billing | Se > USD 10/dia: investigar cache miss |
+| Cache hit rate Redis | > 60% | `redis-cli --stat` em `fairness_layer3:*` | Se < 40%: revisar key (collision?) ou aumentar TTL |
+| Latência P95 endpoints de decisão | < 800 ms | APM | Se > 1200ms: considerar L3 só em fluxo assíncrono |
+| Novos `soft_warnings` em `fairness_audit_log` | Sem pico abrupto | `SELECT COUNT(*) FROM fairness_audit_log WHERE created_at > '2026-04-23' AND soft_warnings IS NOT NULL` | Se +500%: revisar false positives do L3 |
+| Erros L3 (exceções capturadas) | < 1% | log `[FairnessGuard] Layer 3 skipped: ...` | Se > 5%: problema de conectividade Anthropic |
+
+### B.4 Rollback
+
+Se métricas estourarem consistentemente por 48h:
+
+```bash
+ssh replit-wedo
+sed -i 's/^FAIRNESS_LAYER3_ENABLED=true$/FAIRNESS_LAYER3_ENABLED=false/' \
+  /home/runner/workspace/lia-agent-system/.env
+```
+
+**Efeito imediato:** próximas chamadas usam só L1+L2 (sem deploy necessário —
+arquivo é lido runtime).
+
+### B.5 Runbook completo
+
+Arquivo `docs/operations/FAIRNESS_LAYER3_RUNBOOK.md` (4.5K) tem o protocolo
+operacional completo: o que muda, métricas de 7 dias, rollback, testes
+automatizados (`tests/test_sprint2_fairness_agent.py`), responsáveis.
+
+### B.6 Lição arquitetural (canônica para o produto novo)
+
+Quando implementar feature flags que interagem com circuit breakers:
+
+1. **Default seguro:** flag `False` por padrão no código (`bool = False`)
+2. **Recomendação documentada:** `.env.production.example` com comentário
+   `# [RECOMMENDED] in production`
+3. **Fallback lenient:** quando provider externo falha, retornar estado neutro
+   (não bloquear silenciosamente, não passar silenciosamente)
+4. **Cache Redis** para reduzir custo + latência em chamadas repetidas
+5. **Audit log** de toda escolha (L1 só / L2 só / L3 chamado / L3 falhou)
+6. **Testes cobrem ambos os estados** (`patch.dict("os.environ", {"FLAG": "1"})`)
+7. **Runbook publicado** antes de ativar em produção
+
+---
+
+*Adendo gerado em 2026-04-23 — documenta ativação aplicada em produção naquela
+data. Não substitui o conteúdo principal acima.*

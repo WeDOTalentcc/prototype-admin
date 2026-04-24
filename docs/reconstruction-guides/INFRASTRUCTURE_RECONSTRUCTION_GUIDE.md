@@ -2013,3 +2013,129 @@ assert stats["total"] >= 1
 *Documento gerado em 2026-04-23 a partir de leitura direta dos arquivos canônicos.*
 *Todos os blocos de código foram extraídos com Read tool — zero conteúdo inventado.*
 *Próximo guia: `RESILIENCE_LEARNING_RECONSTRUCTION_GUIDE.md` (Temas 11-12)*
+
+---
+
+## Adendo (2026-04-23) — Endpoint candidate-facing + tool nova
+
+> Esta seção documenta adições à camada de infraestrutura aplicadas em produção
+> em 2026-04-23. Não é mudança arquitetural — é exemplo canônico de como
+> estender a camada para casos candidate-facing (vs. recruiter-facing).
+
+### A.1 Novo endpoint: `/api/v1/candidate/decisions/explain`
+
+**Arquivo:** `app/api/v1/candidate_portal_explanation.py` (~120 linhas).
+
+Implementa o direito de explicação do candidato (EU AI Act Art. 86 + LGPD Art. 20).
+É **endpoint-ponte** que reusa a lógica de `decision_explanation.py` (que serve
+operadores via `get_current_user`) mas com:
+
+- Auth via `candidate_token` JWT (não `recruiter_token`) — `CANDIDATE_PORTAL_JWT_SECRET`
+- `company_id` derivado do token (anti-IDOR)
+- Rate limit reusando `CandidateStatusService.check_rate_limit()` (10/h, 30/d)
+- Sanitização via `_sanitize_decision()` — nunca expõe `wsi_score`, `lia_score`,
+  `confidence`, `factors.weight`, `calibration_weights_used`, `red_flags`
+- Audit log via `CandidateSelfServiceRepository.log_portal_access()`
+- Aviso `art_86_notice` injetado em todo response
+
+**Padrão arquitetural reutilizável:** quando criar novo endpoint candidate-facing:
+
+```python
+@router.get("/<endpoint>", response_model=APIResponse)
+async def candidate_endpoint(candidate_token: str = Query(...), ...):
+    # 1. Validar token (reusar CandidateStatusService.validate_token)
+    token_data = await CandidateStatusService().validate_token(candidate_token, _JWT_SECRET)
+    if not token_data:
+        raise HTTPException(401, "Token inválido ou expirado.")
+
+    # 2. company_id SEMPRE do token, nunca do payload
+    candidate_id = token_data["candidate_id"]
+    company_id = token_data["company_id"]  # anti-IDOR
+
+    # 3. Rate limit
+    rate = await service.check_rate_limit(candidate_id)
+    if not rate["allowed"]:
+        raise HTTPException(429, "Limite de consultas atingido.")
+
+    # 4. Lógica de negócio com sanitização
+    try:
+        result = await tool_function(candidate_id=candidate_id, company_id=company_id, ...)
+        return APIResponse.ok(data=sanitize_for_candidate(result))
+    finally:
+        # 5. Audit log (sempre, mesmo em erro)
+        async for db in get_db():
+            await CandidateSelfServiceRepository(db).log_portal_access(...)
+            break
+```
+
+### A.2 Tool nova: `explain_candidate_decision`
+
+**Arquivo:** `app/domains/candidate_self_service/tools/explain_candidate_decision.py`.
+
+Registrada via `@tool_handler("candidate_self_service", require_company=True)`.
+Adicionada à whitelist em `candidate_tool_registry.py` (3 → 4 tools):
+
+```python
+_CANDIDATE_TOOLS: list[ToolDefinition] = [
+    get_application_status,
+    get_interview_info,
+    get_wsi_feedback,
+    explain_candidate_decision,  # NOVO 2026-04-23
+]
+```
+
+Define `_FORBIDDEN_FIELDS` como `frozenset` com 19 campos sensíveis — **SSoT** que
+qualquer outra tool/endpoint candidate-facing deve consultar antes de retornar
+dados.
+
+### A.3 Atualização de `app/api/routes.py`
+
+```python
+# Import adicional
+from app.api.v1.candidate_portal_explanation import (
+    router as candidate_portal_explanation_router,
+)
+
+# Registro
+app.include_router(
+    candidate_portal_explanation_router,
+    tags=["candidate-portal-explanation"],
+)
+```
+
+### A.4 Validação executada no Replit (5 sanity checks)
+
+Todos passaram em 2026-04-23:
+
+1. `_sanitize_decision()` remove os 19 forbidden fields ✅
+2. Router registrado em `/api/v1/candidate/decisions/explain` ✅
+3. `candidate_tool_registry.get_candidate_tools()` retorna 4 tools incluindo
+   `explain_candidate_decision` ✅
+4. `app.api.routes` importa `candidate_portal_explanation_router` ✅
+5. `candidate_self_service.yaml` tem regra 8 em `behavioral_rules` mencionando
+   Art. 86 ✅
+
+### A.5 Teste contratual
+
+**Arquivo:** `tests/test_candidate_portal_explanation.py`. Cenários cobertos:
+
+- Token inválido → 401
+- Rate limit excedido → 429
+- Token válido → 200 com payload sanitizado (assertion recursiva sobre keys)
+- Tentativa de IDOR (candidate_id ≠ token) → bloqueada
+- `_sanitize_decision()` remove todos os 19 campos proibidos
+
+### A.6 Quando criar tool candidate-facing nova (checklist)
+
+- [ ] Tool registrada via `@tool_handler("<domain>", require_company=True)`
+- [ ] Adicionada ao `tool_registry.py` da whitelist do domínio
+- [ ] Sanitização via `_FORBIDDEN_FIELDS` antes do return
+- [ ] Audit log via `log_portal_access` ou equivalente
+- [ ] Tests contractuais (token inválido, rate limit, sanitização, IDOR)
+- [ ] YAML do agente atualizado com regra de quando chamar
+- [ ] Sem expor: scoring bruto, confidence numérica, weights, red flags, PII
+
+---
+
+*Adendo gerado em 2026-04-23 — documenta adições aplicadas em produção naquela
+data. Não substitui o conteúdo principal acima.*
