@@ -16,6 +16,9 @@ from app.api.public import shared_searches as public_shared_searches
 # ── Lazy imports (originally inline in main.py) ───────────────────────────────
 
 from app.api.v1.candidate_portal import router as candidate_portal_router
+from app.api.v1.candidate_portal_explanation import (
+    router as candidate_portal_explanation_router,
+)
 from app.api.v1 import (
     ab_testing,
     activities,
@@ -633,6 +636,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(whatsapp_webhook_router, tags=["whatsapp"])
 
     app.include_router(candidate_portal_router, prefix="/api/v1", tags=["candidate-self-service"])
+    app.include_router(candidate_portal_explanation_router, tags=["candidate-portal-explanation"])
     app.include_router(rh_dashboard_router, prefix="/api/v1", tags=["rh-dashboard"])
     # ── Public (no /api/v1 prefix) ────────────────────────────────────────────
     app.include_router(candidate_portal.router, tags=["candidate-portal"])

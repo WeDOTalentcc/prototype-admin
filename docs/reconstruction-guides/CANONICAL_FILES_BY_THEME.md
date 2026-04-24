@@ -17,13 +17,33 @@ Para replicar a infraestrutura completa em outro produto, use os **4 guias de re
 ```
 CANONICAL_FILES_BY_THEME.md                       ← este arquivo (índice rápido por tema)
 │
-├── LIA_PERSONA_RECONSTRUCTION_GUIDE.md           ← Persona + System Prompts + LangGraph Base + Camada Completa de Prompt Injection
-│   Temas cobertos: persona YAML, guardrails YAML, compliance YAML, SystemPromptBuilder,
-│                   LangGraphReActBase, ciclo de 8 passos de reconstrução.
-│                   Parte 9 (2026-04-23): agent_prompts.yaml verbatim (11 agent_types),
-│                   defensive.yaml, anti_sycophancy_block.py, interaction_patterns.py,
-│                   intelligence_floor.yaml, ordem real de injeção de 9 passos, mapa
-│                   dos 24 domain YAMLs, arquitetura candidate_portal.py + candidate_self_service
+├── responsible-ai/                               ← NOVO 2026-04-23 (publicação pública pendente)
+│   ├── eu-ai-act-technical-documentation-pt.md  ← Documentação técnica Art. 11 em PT-BR
+│   │                                               (13 seções + 4 apêndices + benchmark + roadmap)
+│   ├── eu-ai-act-technical-documentation-en.md  ← English version
+│   └── fact-sheets/                              ← 5 AI Fact Sheets × 2 idiomas + README
+│       ├── README.md
+│       ├── cv-screening-fact-sheet-{pt,en}.md
+│       ├── wsi-evaluation-fact-sheet-{pt,en}.md
+│       ├── pipeline-transition-fact-sheet-{pt,en}.md
+│       ├── ranking-shortlist-fact-sheet-{pt,en}.md
+│       └── sourcing-boolean-fact-sheet-{pt,en}.md
+│
+├── operations/
+│   └── FAIRNESS_LAYER3_RUNBOOK.md                ← NOVO 2026-04-23 — runbook da flag L3 em prod
+│
+├── reconstruction-guides/
+│   ├── LIA_PERSONA_RECONSTRUCTION_GUIDE.md       ← Persona + Prompts + LangGraph + Camada Completa
+│   │   Temas cobertos: persona YAML, guardrails YAML, compliance YAML, SystemPromptBuilder,
+│   │                   LangGraphReActBase, ciclo de 8 passos de reconstrução.
+│   │                   Parte 9 (2026-04-23): agent_prompts.yaml verbatim (11 agent_types),
+│   │                   defensive.yaml, anti_sycophancy_block.py, interaction_patterns.py,
+│   │                   intelligence_floor.yaml, ordem real de injeção de 9 passos, mapa
+│   │                   dos 24 domain YAMLs, arquitetura candidate_portal.py + candidate_self_service.
+│   │                   §9.11: verbatim dos 5 YAMLs Formato C/D pequenos + wsi_layer2_extraction
+│   │                   (Formato E — extração LLM determinística) + seções singulares do Formato B
+│   │                   (counter_argumentation, escalation, company_calibration, learning_rules,
+│   │                   communication_transparency, config_blocks, reasoning_rules)
 │
 ├── COMPLIANCE_RECONSTRUCTION_GUIDE.md            ← Fairness + LGPD + C3B + Segurança + PII + Auditoria Enterprise + Plano de Ação
 │   Temas cobertos: FairnessGuard (3 camadas), AuditService, PII masking, prompt injection,
@@ -31,9 +51,11 @@ CANONICAL_FILES_BY_THEME.md                       ← este arquivo (índice ráp
 │                   Seção 10 (2026-04-23): auditoria exaustiva vs. EU AI Act / LGPD / NIST AI RMF,
 │                   benchmark enterprise (Workday, HiPeople, Eightfold, LinkedIn), arquitetura
 │                   de defesa em 8 camadas (C1-C8), matriz de cobertura dos 22 domain YAMLs.
-│                   Seção 11 (2026-04-23): plano de ação estruturado para P0.1 (endpoint Art. 86),
-│                   P1.1 (FAIRNESS_LAYER3_ENABLED), P1.2 (bias audit independente 9 semanas),
-│                   P1.3 (5 AI Fact Sheets), P2.1 (documentação técnica Art. 11)
+│                   Seção 11 (2026-04-23): plano de ação estruturado para P0.1 (endpoint Art. 86
+│                   ✅ IMPLEMENTADO), P1.1 (FAIRNESS_LAYER3_ENABLED ✅ ATIVADO),
+│                   P1.2 (bias audit independente 9 semanas - deferido Q3/2026),
+│                   P1.3 (5 AI Fact Sheets ✅ PUBLICADAS PT+EN), P2.1 (documentação técnica
+│                   Art. 11 ✅ PUBLICADA PT+EN em docs/responsible-ai/)
 │
 ├── INFRASTRUCTURE_RECONSTRUCTION_GUIDE.md        ← Agentes + Tools + Orquestração + LLM
 │   Temas cobertos: AgentType enum, @tool_handler decorator, Observability facade,
@@ -92,6 +114,31 @@ Gaps P0/P1 ainda em aberto (exigem mudança de código ou endpoint, fora do esco
 - Formalização de classificação EU AI Act Anexo III
 
 Rastreamento completo: `COMPLIANCE_RECONSTRUCTION_GUIDE.md` §10.8.
+
+### Execução Plano P0/P1 concluída em 2026-04-23
+
+Todos os itens do plano `esse-front-end-rustling-lollipop.md` foram executados em uma única janela:
+
+| Fase | Entrega | Artefato | Local |
+|------|---------|----------|-------|
+| 1 | Ativação FairnessGuard Layer 3 em produção | `.env` + `FAIRNESS_LAYER3_RUNBOOK.md` | `lia-agent-system/.env` + `docs/operations/` |
+| 2 | Parte 9 do LIA_PERSONA ampliada com YAMLs pequenos + formato E + seções singulares Formato B | `LIA_PERSONA_RECONSTRUCTION_GUIDE.md` §9.11 | `docs/reconstruction-guides/` |
+| 3 | Endpoint EU AI Act Art. 86 direto-ao-candidato implementado e validado | `candidate_portal_explanation.py` + `explain_candidate_decision.py` + YAML regra 8 + teste | `app/api/v1/` + `app/domains/candidate_self_service/` |
+| 4 | Documentação técnica EU AI Act Art. 11 completa (PT + EN) | `eu-ai-act-technical-documentation-pt.md` + `-en.md` | `docs/responsible-ai/` |
+| 5 | 5 AI Fact Sheets (PT + EN) + README | `fact-sheets/*.md` (11 arquivos) | `docs/responsible-ai/fact-sheets/` |
+
+**Descobertas importantes durante a execução:**
+- O suposto gap P0 do `PolicyAgent` estava incorreto — o agente real em `app/domains/policy/agents/agent.py` já tem FairnessGuard implementado. O P0 real era `autonomous.yaml` (corrigido).
+- LIA **já tinha** 80% da infraestrutura candidate-facing (`candidate_portal.py` + `candidate_self_service.yaml` + `CandidateStatusService`). O que faltava era apenas a ponte entre `decision_explanation.py` (operador-facing) e o candidato — resolvida pelo novo endpoint + tool.
+- `FAIRNESS_LAYER3_ENABLED=true` já estava recomendado em `.env.production.example` — só faltava aplicar.
+- Score de compliance WeDOTalent subiu de 6/10 (pré-2026-04-23) para 7/10 após esta janela.
+
+**Ainda pendente (deferido pelo Paulo):**
+- Item 2c — bias audit independente com publicação (Q3/2026, 9 semanas, 3 sprints em COMPLIANCE §11.3)
+- Revisão jurídica externa dos docs `responsible-ai/` antes de publicação pública
+- Frontend + rota final em `wedotalent.cc/responsible-ai/`
+- Certificação ISO/IEC 42001:2023 (roadmap 2027)
+- Registro no EU AI Act database (pós 02/08/2026)
 
 ---
 
