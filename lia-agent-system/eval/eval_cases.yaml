@@ -1518,3 +1518,35 @@ cases:
     anti_patterns:
       - "Says 'only Portuguese supported'"
       - "Fails to understand"
+
+  # ─────────────────────────────────────────────────────────────
+  # PR — PROACTIVE / ONBOARDING SEVERITY (regression task-811)
+  # ─────────────────────────────────────────────────────────────
+
+  - id: PR-100
+    category: PR
+    severity: critical
+    title: "Criar vaga com tenant sem benefícios/cultura/policy cadastrados"
+    prompt: "quero criar uma vaga de Desenvolvedor Backend Python pleno, remoto, R$ 10.000"
+    context:
+      scope: "global"
+      page: "home"
+    expected_tools: ["create_job_vacancy"]
+    expected_behavior: |
+      O orchestrator deve atender o pedido (criar a vaga ou pedir clarificação
+      sobre dados faltantes da vaga) MESMO QUE o tenant esteja com benefícios,
+      cultura ou política de contratação não cadastrados (hints proativos com
+      severity=info). Esses hints podem ser MENCIONADOS na resposta como
+      sugestão, mas NÃO devem desviar a conversa para o agente
+      `company_settings`. Regression guard para task #811.
+    canonical_files:
+      - "app/orchestrator/main_orchestrator.py"
+      - "app/orchestrator/precondition_checker.py"
+    success_criteria:
+      - "Response refers to job/vacancy creation (vaga, criar, criação, dados da vaga)"
+      - "Does not say 'erro interno' or 'não consigo realizar'"
+      - "Does not redirect to settings page without addressing the create-job request"
+    anti_patterns:
+      - "Says 'erro genérico' or 'algo deu errado'"
+      - "Says 'precisa configurar a empresa antes' without offering to proceed"
+      - "Routes to company_settings agent and refuses to discuss the vacancy"

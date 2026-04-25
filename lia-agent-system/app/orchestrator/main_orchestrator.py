@@ -59,17 +59,21 @@ _CACHE_TTL_BY_DOMAIN: dict[str, int] = {
     "pipeline_context": 60,
 }
 
-# ── Severity-based delegation (canonical-fix, ref task-811) ─────────────────
+# ── Severity- + intent-based delegation (canonical-fix, ref task-811) ───────
 # Quando o PreConditionChecker emite ProactiveHints, decidimos se mantemos a
 # intenção primária (criar vaga, buscar candidato, etc) ou se desviamos para o
-# agente `company_settings`. Critério adotado:
+# agente `company_settings`. Critério adotado, em ordem de precedência:
 #
-#   - severity in {"warning", "critical"} E type em _ONBOARDING_HINT_TYPES
-#       → delega para company_settings (configuração da empresa é pré-requisito
-#         real para a ação que o usuário pediu).
-#   - severity == "info" (qualquer onboarding type)
-#       → mantém orchestrator. Hint é anexado ao prompt como sugestão proativa,
-#         mas a intenção primária do usuário é executada normalmente.
+#   1. Intent explícito de configuração de empresa
+#      (ex.: classifier devolveu "company_settings", "configure_company",
+#      "settings_config" ou "hiring_policy") → delega independente de hints.
+#      O usuário PEDIU explicitamente para configurar; não há motivo para
+#      manter o orquestrador genérico.
+#   2. Hint com severity ∈ {"warning","critical"} E type em
+#      _ONBOARDING_HINT_TYPES → delega (pré-requisito real para a ação).
+#   3. Hint com severity == "info" (qualquer onboarding type)
+#      → mantém orchestrator. Hint é anexado ao prompt como sugestão proativa,
+#        mas a intenção primária do usuário é executada normalmente.
 #
 # Antes desta mudança, o conjunto inteiro de _ONBOARDING_HINT_TYPES disparava
 # delegação independentemente da severidade — o que fazia "criar vaga" ser
@@ -85,33 +89,49 @@ _ONBOARDING_HINT_TYPES: frozenset[str] = frozenset({
     "hiring_policy_missing",
 })
 _BLOCKING_HINT_SEVERITIES: frozenset[str] = frozenset({"warning", "critical"})
+# Intents (do classifier) que indicam pedido explícito de configuração da
+# empresa. Reflete os mesmos valores usados em `_DOMAIN_SPECIFIC_CONTEXTS`
+# para `ctx.context_type`, mas aplicado ao intent classificado.
+_COMPANY_SETTINGS_INTENTS: frozenset[str] = frozenset({
+    "company_settings",
+    "configure_company",
+    "settings_config",
+    "hiring_policy",
+})
 
 
 def _decide_agent_type_from_hints(
     hints: list,
+    *,
+    intent: str | None = None,
     onboarding_hint_types: frozenset[str] = _ONBOARDING_HINT_TYPES,
     blocking_severities: frozenset[str] = _BLOCKING_HINT_SEVERITIES,
+    company_settings_intents: frozenset[str] = _COMPANY_SETTINGS_INTENTS,
 ) -> tuple[str, list, list]:
-    """Decide qual agente atende o turno com base na severidade dos hints.
+    """Decide qual agente atende o turno com base em intent + severidade.
 
     Pure function — sem efeitos colaterais, totalmente testável.
 
     Args:
         hints: lista de ``ProactiveHint`` retornada pelo ``PreConditionChecker``.
+        intent: intent classificado para a mensagem do usuário (ou ``None``).
         onboarding_hint_types: tipos de hint que sinalizam onboarding incompleto.
         blocking_severities: severidades que bloqueiam a intenção primária.
+        company_settings_intents: intents que pedem explicitamente configuração
+            de empresa.
 
     Returns:
         Tupla ``(agent_type, blocking_hints, informational_hints)``:
 
-        * ``agent_type`` — ``"company_settings"`` se houver pelo menos um hint
-          de onboarding com severidade bloqueante; caso contrário
-          ``"orchestrator"``.
-        * ``blocking_hints`` — subconjunto que justifica a delegação.
+        * ``agent_type`` — ``"company_settings"`` se intent for explícito de
+          configuração OU se houver hint de onboarding com severidade
+          bloqueante; caso contrário ``"orchestrator"``.
+        * ``blocking_hints`` — subconjunto que justifica a delegação por
+          severidade (lista vazia quando a delegação é apenas por intent).
         * ``informational_hints`` — hints de onboarding ``info`` (anexados ao
           prompt mas não trocam o agente).
 
-    Compliance: a regra é determinística (Crença #10 — Inteligência vs
+    Compliance: regra determinística (Crença #10 — Inteligência vs
     Determinismo). FairnessGuard, PII masking e ConfidencePolicy não são
     afetados — a função apenas escolhe roteamento de agente, não classifica
     candidatos nem altera scoring.
@@ -126,7 +146,9 @@ def _decide_agent_type_from_hints(
         if getattr(h, "type", None) in onboarding_hint_types
         and getattr(h, "severity", "info") not in blocking_severities
     ]
-    agent_type = "company_settings" if blocking else "orchestrator"
+    intent_norm = (intent or "").strip().lower()
+    intent_match = intent_norm in company_settings_intents
+    agent_type = "company_settings" if (intent_match or blocking) else "orchestrator"
     return agent_type, blocking, informational
 
 _perf_metrics: dict[str, list[float]] = {}
@@ -466,14 +488,20 @@ class MainOrchestrator:
                                 "Voce DEVE mencionar estas proativamente se relevantes ao que o recrutador pediu:\n\n"
                                 + "\n".join(f"- [{h.severity}] {h.message}" for h in _hints)
                             )
+                            _ctx_intent = (getattr(ctx, "intent", "") or "").strip().lower()
                             _agent_type, _blocking_hints, _informational_hints = (
-                                _decide_agent_type_from_hints(_hints)
+                                _decide_agent_type_from_hints(_hints, intent=_ctx_intent)
                             )
-                            if _blocking_hints:
+                            if _agent_type == "company_settings":
+                                if _blocking_hints:
+                                    _decision_reason = "blocking_severity_present"
+                                else:
+                                    _decision_reason = "explicit_company_settings_intent"
                                 logger.info(
                                     "[PreConditionChecker] Delegating to company_settings agent",
                                     extra={
                                         "company_id": _loop_company_id,
+                                        "intent": _ctx_intent,
                                         "blocking_hints": [
                                             (h.type, h.severity) for h in _blocking_hints
                                         ],
@@ -481,7 +509,7 @@ class MainOrchestrator:
                                             (h.type, h.severity) for h in _informational_hints
                                         ],
                                         "total_hints": len(_hints),
-                                        "decision_reason": "blocking_severity_present",
+                                        "decision_reason": _decision_reason,
                                     },
                                 )
                             elif _informational_hints:
@@ -489,6 +517,7 @@ class MainOrchestrator:
                                     "[PreConditionChecker] Onboarding hints detected but informational — keeping orchestrator",
                                     extra={
                                         "company_id": _loop_company_id,
+                                        "intent": _ctx_intent,
                                         "informational_hints": [
                                             (h.type, h.severity) for h in _informational_hints
                                         ],
@@ -549,13 +578,6 @@ class MainOrchestrator:
                                 if isinstance(tc, dict) and tc.get("name")
                             }
                             if not (_tools_called & _expected_tools):
-                                # Telemetria de diagnóstico: este branch só roda quando
-                                # _agent_type já foi resolvido para "company_settings",
-                                # logo _blocking_hints existe e não está vazio. Usamos
-                                # locals().get(...) defensivamente para evitar NameError
-                                # caso alguém futuramente reorganize o fluxo.
-                                _blocking_for_log = locals().get("_blocking_hints", []) or []
-                                _info_for_log = locals().get("_informational_hints", []) or []
                                 logger.warning(
                                     "[Onboarding] LLM did NOT call any onboarding tool despite delegate",
                                     extra={
@@ -563,10 +585,10 @@ class MainOrchestrator:
                                         "tools_called": list(_tools_called),
                                         "expected_any_of": list(_expected_tools),
                                         "blocking_hints": [
-                                            (h.type, h.severity) for h in _blocking_for_log
+                                            (h.type, h.severity) for h in _blocking_hints
                                         ],
                                         "informational_hints": [
-                                            (h.type, h.severity) for h in _info_for_log
+                                            (h.type, h.severity) for h in _informational_hints
                                         ],
                                     },
                                 )

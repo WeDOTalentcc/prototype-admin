@@ -1,11 +1,11 @@
-"""Tests for severity-based delegation in MainOrchestrator (task-811).
+"""Tests for severity- + intent-based delegation in MainOrchestrator (task-811).
 
 Cobertura dos quatro cenários definidos no plano da task:
 
   (a) pedido + hints só `info`              → mantém orchestrator
   (b) pedido + hint `warning|critical`      → delega para company_settings
-  (c) pedido com hint `missing_company_id`  → delega (severity warning)
-  (d) sem hints                             → comportamento atual preservado
+  (c) intent explícito de configuração      → delega (independente de hints)
+  (d) sem hints e sem intent                → comportamento atual preservado
 
 Os testes batem direto na função pura `_decide_agent_type_from_hints`,
 extraída do orquestrador justamente para deixar essa decisão testável sem
@@ -17,6 +17,7 @@ import pytest
 
 from app.orchestrator.main_orchestrator import (
     _BLOCKING_HINT_SEVERITIES,
+    _COMPANY_SETTINGS_INTENTS,
     _ONBOARDING_HINT_TYPES,
     _decide_agent_type_from_hints,
 )
@@ -233,3 +234,106 @@ def test_severity_decision_matrix(hint_specs, expected_agent):
     hints = [_hint(t, s) for t, s in hint_specs]
     agent_type, _, _ = _decide_agent_type_from_hints(hints)
     assert agent_type == expected_agent
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# (c) Intent explícito de configuração da empresa → delega
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_company_settings_intents_set_is_well_formed():
+    assert "company_settings" in _COMPANY_SETTINGS_INTENTS
+    assert "configure_company" in _COMPANY_SETTINGS_INTENTS
+    assert "settings_config" in _COMPANY_SETTINGS_INTENTS
+    assert "hiring_policy" in _COMPANY_SETTINGS_INTENTS
+    # Sanity: criar vaga, listar vagas, etc. NÃO devem estar no conjunto
+    assert "create_job_vacancy" not in _COMPANY_SETTINGS_INTENTS
+    assert "list_jobs" not in _COMPANY_SETTINGS_INTENTS
+    assert "search_candidates" not in _COMPANY_SETTINGS_INTENTS
+
+
+def test_intent_company_settings_delegates_without_hints():
+    """Cenário (c): usuário pede explicitamente 'configurar empresa' →
+    delega mesmo sem nenhum hint emitido."""
+    agent_type, blocking, informational = _decide_agent_type_from_hints(
+        [], intent="company_settings"
+    )
+    assert agent_type == "company_settings"
+    assert blocking == []
+    assert informational == []
+
+
+def test_intent_configure_company_delegates_with_only_info_hints():
+    """Cenário (c) variante: intent explícito + hints info → delega.
+    Aqui a delegação vem do INTENT, não dos hints (que são só informativos)."""
+    hints = [
+        _hint("benefits_catalog_empty", "info"),
+        _hint("hiring_policy_missing", "info"),
+    ]
+    agent_type, blocking, informational = _decide_agent_type_from_hints(
+        hints, intent="configure_company"
+    )
+    assert agent_type == "company_settings"
+    assert blocking == [], (
+        "Quando a delegação é por intent, blocking_hints deve ficar vazio "
+        "para o telemetry distinguir as duas razões de delegação."
+    )
+    assert {h.type for h in informational} == {
+        "benefits_catalog_empty",
+        "hiring_policy_missing",
+    }
+
+
+@pytest.mark.parametrize(
+    "intent",
+    ["company_settings", "configure_company", "settings_config", "hiring_policy"],
+)
+def test_all_company_settings_intents_delegate(intent):
+    agent_type, _, _ = _decide_agent_type_from_hints([], intent=intent)
+    assert agent_type == "company_settings"
+
+
+@pytest.mark.parametrize(
+    "intent",
+    [
+        "create_job_vacancy",
+        "list_jobs",
+        "search_candidates",
+        "wsi_screening",
+        "analytics",
+        "",
+        None,
+    ],
+)
+def test_non_company_settings_intent_keeps_orchestrator_when_no_blocking(intent):
+    """Intents NÃO relacionados a configuração + sem hints bloqueantes
+    → preservam orchestrator. Cobre o caso real do bug original
+    ('create_job_vacancy' + hints info)."""
+    hints = [
+        _hint("benefits_catalog_empty", "info"),
+        _hint("culture_profile_missing", "info"),
+    ]
+    agent_type, blocking, informational = _decide_agent_type_from_hints(
+        hints, intent=intent
+    )
+    assert agent_type == "orchestrator"
+    assert blocking == []
+    assert len(informational) == 2
+
+
+def test_intent_normalization_is_case_insensitive():
+    """Classifier pode devolver intent em case variado — normalizar."""
+    for variant in ("Company_Settings", "COMPANY_SETTINGS", "  company_settings  "):
+        agent_type, _, _ = _decide_agent_type_from_hints([], intent=variant)
+        assert agent_type == "company_settings", f"Failed for variant {variant!r}"
+
+
+def test_blocking_hint_wins_over_non_settings_intent():
+    """Mesmo com intent não-relacionado a configuração, hint warning ainda delega."""
+    hints = [_hint("missing_company_id", "warning")]
+    agent_type, blocking, _ = _decide_agent_type_from_hints(
+        hints, intent="create_job_vacancy"
+    )
+    assert agent_type == "company_settings"
+    assert len(blocking) == 1
+    assert blocking[0].type == "missing_company_id"
