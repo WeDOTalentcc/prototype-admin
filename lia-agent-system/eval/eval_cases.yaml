@@ -1550,3 +1550,59 @@ cases:
       - "Says 'erro genérico' or 'algo deu errado'"
       - "Says 'precisa configurar a empresa antes' without offering to proceed"
       - "Routes to company_settings agent and refuses to discuss the vacancy"
+
+  # ─────────────────────────────────────────────────────────────
+  # CS-OP — COMPANY SETTINGS atende intenções operacionais (Task #812)
+  # ─────────────────────────────────────────────────────────────
+
+  - id: CS-OP-001
+    category: CM
+    severity: high
+    title: "Criar vaga rascunho dentro do agente company_settings"
+    prompt: "antes de continuar configurando a empresa, abre uma vaga rascunho de Engenheiro de Dados pleno"
+    context:
+      scope: "Configurações da empresa"
+      page: "company-settings"
+      entity_type: "company"
+    expected_tools: ["create_job_vacancy"]
+    expected_behavior: |
+      O agente company_settings deve atender a intenção operacional explícita
+      chamando `create_job_vacancy` com title "Engenheiro de Dados". Pode
+      mencionar uma pendência de configuração como sugestão complementar,
+      mas NÃO deve bloquear a ação para forçar onboarding.
+    canonical_files:
+      - "app/domains/company_settings/agents/company_tool_registry.py"
+      - "app/prompts/domains/company_settings.yaml"
+    success_criteria:
+      - "Calls create_job_vacancy with the requested title"
+      - "Confirms the draft was created (mentions ID or 'rascunho')"
+      - "Does not refuse the request citing 'apenas configuração'"
+    anti_patterns:
+      - "Says 'só posso configurar dados da empresa, não vagas'"
+      - "Asks user to switch to recruiter chat"
+      - "Calls only get_company_profile and ignores the create request"
+
+  - id: CS-OP-002
+    category: CM
+    severity: medium
+    title: "Listar vagas a partir do chat de configurações"
+    prompt: "lista as vagas abertas que já temos cadastradas"
+    context:
+      scope: "Configurações da empresa"
+      page: "company-settings"
+      entity_type: "company"
+    expected_tools: ["list_jobs"]
+    expected_behavior: |
+      Mesmo no agente company_settings, ao receber uma intenção operacional
+      clara de listagem, o agente deve chamar `list_jobs` (ToolDefinition
+      reaproveitada do registry canônico de jobs_mgmt) e devolver a lista
+      ao recrutador, sem desviar para onboarding.
+    canonical_files:
+      - "app/domains/company_settings/agents/company_tool_registry.py"
+      - "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    success_criteria:
+      - "Calls list_jobs"
+      - "Returns the list (even if empty)"
+    anti_patterns:
+      - "Refuses listing because 'este chat é só sobre configuração'"
+      - "Hallucinates a list without calling the tool"

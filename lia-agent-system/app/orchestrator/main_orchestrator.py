@@ -583,32 +583,55 @@ class MainOrchestrator:
 
                     if _agentic_result and _agentic_result.get("response"):
                         # P2#7 — Onboarding enforcement telemetry
+                        # Task #812: agora aceitamos que o agente company_settings
+                        # atenda intenções operacionais (criar/listar vagas,
+                        # buscar candidatos). Só logamos warning quando o LLM
+                        # não chamou NEM tool de onboarding NEM operacional —
+                        # isto é, devolveu apenas texto ignorando a delegação.
                         if _agent_type == "company_settings":
-                            _expected_tools = {
+                            from app.domains.company_settings.agents.company_tool_registry import (
+                                OPERATIONAL_TOOL_NAMES as _OPERATIONAL_TOOLS,
+                            )
+                            _onboarding_tools = {
                                 "check_company_completeness",
                                 "analyze_company_website",
                                 "suggest_recruiting_policy",
                                 "import_benefits_from_data",
                                 "save_company_field",
                                 "save_company_section",
+                                "get_company_profile",
+                                "get_company_completion",
+                                "process_uploaded_document",
+                                "import_workforce_plan",
                             }
+                            _acceptable_tools = _onboarding_tools | set(_OPERATIONAL_TOOLS)
                             _tools_called = {
                                 tc.get("name") for tc in (_agentic_result.get("tool_calls_made") or [])
                                 if isinstance(tc, dict) and tc.get("name")
                             }
-                            if not (_tools_called & _expected_tools):
+                            if not (_tools_called & _acceptable_tools):
                                 logger.warning(
-                                    "[Onboarding] LLM did NOT call any onboarding tool despite delegate",
+                                    "[Onboarding] LLM did NOT call any onboarding/operational tool despite delegate",
                                     extra={
                                         "company_id": _loop_company_id,
                                         "tools_called": list(_tools_called),
-                                        "expected_any_of": list(_expected_tools),
+                                        "expected_any_of": sorted(_acceptable_tools),
                                         "blocking_hints": [
                                             (h.type, h.severity) for h in _blocking_hints
                                         ],
                                         "informational_hints": [
                                             (h.type, h.severity) for h in _informational_hints
                                         ],
+                                    },
+                                )
+                            elif _tools_called & set(_OPERATIONAL_TOOLS):
+                                logger.info(
+                                    "[Onboarding] company_settings agent handled operational intent",
+                                    extra={
+                                        "company_id": _loop_company_id,
+                                        "operational_tools_called": sorted(
+                                            _tools_called & set(_OPERATIONAL_TOOLS)
+                                        ),
                                     },
                                 )
                         logger.info(
