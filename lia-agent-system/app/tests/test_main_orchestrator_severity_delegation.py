@@ -1,0 +1,235 @@
+"""Tests for severity-based delegation in MainOrchestrator (task-811).
+
+Cobertura dos quatro cenários definidos no plano da task:
+
+  (a) pedido + hints só `info`              → mantém orchestrator
+  (b) pedido + hint `warning|critical`      → delega para company_settings
+  (c) pedido com hint `missing_company_id`  → delega (severity warning)
+  (d) sem hints                             → comportamento atual preservado
+
+Os testes batem direto na função pura `_decide_agent_type_from_hints`,
+extraída do orquestrador justamente para deixar essa decisão testável sem
+mockar o `PreConditionChecker`, o `LLMService` e o `agentic_loop`.
+"""
+from __future__ import annotations
+
+import pytest
+
+from app.orchestrator.main_orchestrator import (
+    _BLOCKING_HINT_SEVERITIES,
+    _ONBOARDING_HINT_TYPES,
+    _decide_agent_type_from_hints,
+)
+from app.orchestrator.precondition_checker import ProactiveHint
+
+
+def _hint(type_: str, severity: str) -> ProactiveHint:
+    return ProactiveHint(type=type_, message=f"hint {type_}", severity=severity)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sanity checks on the rule sets themselves
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_blocking_severities_contains_warning_and_critical():
+    assert "warning" in _BLOCKING_HINT_SEVERITIES
+    assert "critical" in _BLOCKING_HINT_SEVERITIES
+    assert "info" not in _BLOCKING_HINT_SEVERITIES
+
+
+def test_onboarding_hint_types_match_precondition_checker():
+    """Os 6 tipos cobertos batem com o que `PreConditionChecker` emite."""
+    assert _ONBOARDING_HINT_TYPES == frozenset({
+        "missing_company_id",
+        "incomplete_company_profile",
+        "company_website_missing",
+        "culture_profile_missing",
+        "benefits_catalog_empty",
+        "hiring_policy_missing",
+    })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# (d) Sem hints → orchestrator
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_no_hints_keeps_orchestrator():
+    agent_type, blocking, informational = _decide_agent_type_from_hints([])
+    assert agent_type == "orchestrator"
+    assert blocking == []
+    assert informational == []
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# (a) Apenas hints info → orchestrator
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_info_only_hints_keep_orchestrator():
+    """Bug original: 3 hints info disparavam delegação indevida.
+
+    `benefits_catalog_empty`, `culture_profile_missing` e
+    `hiring_policy_missing` são todos emitidos como `info` pelo
+    `PreConditionChecker`. Antes da correção, qualquer um deles trocava o
+    `_agent_type` para `company_settings` mesmo quando o usuário pediu para
+    criar uma vaga.
+    """
+    hints = [
+        _hint("benefits_catalog_empty", "info"),
+        _hint("culture_profile_missing", "info"),
+        _hint("hiring_policy_missing", "info"),
+    ]
+    agent_type, blocking, informational = _decide_agent_type_from_hints(hints)
+    assert agent_type == "orchestrator", (
+        "Hints info nunca devem desviar a intenção primária — eles viram "
+        "sugestão proativa anexada ao prompt."
+    )
+    assert blocking == []
+    assert {h.type for h in informational} == {
+        "benefits_catalog_empty",
+        "culture_profile_missing",
+        "hiring_policy_missing",
+    }
+
+
+def test_incomplete_company_profile_info_keeps_orchestrator():
+    """`incomplete_company_profile` é info por padrão → não delega."""
+    hints = [_hint("incomplete_company_profile", "info")]
+    agent_type, blocking, informational = _decide_agent_type_from_hints(hints)
+    assert agent_type == "orchestrator"
+    assert blocking == []
+    assert len(informational) == 1
+
+
+def test_company_website_missing_info_keeps_orchestrator():
+    hints = [_hint("company_website_missing", "info")]
+    agent_type, _, informational = _decide_agent_type_from_hints(hints)
+    assert agent_type == "orchestrator"
+    assert len(informational) == 1
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# (b) e (c) Hint bloqueante → delega
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_missing_company_id_warning_delegates():
+    """`missing_company_id` é warning — sem company_id, criar vaga é
+    impossível, então faz sentido desviar para configuração."""
+    hints = [_hint("missing_company_id", "warning")]
+    agent_type, blocking, informational = _decide_agent_type_from_hints(hints)
+    assert agent_type == "company_settings"
+    assert len(blocking) == 1 and blocking[0].type == "missing_company_id"
+    assert informational == []
+
+
+def test_critical_severity_delegates():
+    """Severity `critical` também bloqueia."""
+    hints = [_hint("incomplete_company_profile", "critical")]
+    agent_type, blocking, _ = _decide_agent_type_from_hints(hints)
+    assert agent_type == "company_settings"
+    assert len(blocking) == 1
+
+
+def test_mixed_blocking_and_info_delegates():
+    """Quando coexistem hints bloqueantes e info, a presença de qualquer
+    bloqueante delega — e os info ainda são reportados separadamente."""
+    hints = [
+        _hint("missing_company_id", "warning"),
+        _hint("benefits_catalog_empty", "info"),
+        _hint("culture_profile_missing", "info"),
+    ]
+    agent_type, blocking, informational = _decide_agent_type_from_hints(hints)
+    assert agent_type == "company_settings"
+    assert {h.type for h in blocking} == {"missing_company_id"}
+    assert {h.type for h in informational} == {
+        "benefits_catalog_empty",
+        "culture_profile_missing",
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Hints fora do escopo de onboarding nunca participam da decisão
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_non_onboarding_warning_does_not_delegate():
+    """`vacancy_no_screening_questions` é warning mas NÃO está em
+    `_ONBOARDING_HINT_TYPES` — esse hint é tratado em outro fluxo
+    (sugestão de perguntas de triagem) e não deve trocar o agente."""
+    hints = [_hint("vacancy_no_screening_questions", "warning")]
+    agent_type, blocking, informational = _decide_agent_type_from_hints(hints)
+    assert agent_type == "orchestrator"
+    assert blocking == []
+    assert informational == []
+
+
+def test_non_onboarding_critical_does_not_delegate():
+    hints = [_hint("candidates_missing_contact", "critical")]
+    agent_type, blocking, _ = _decide_agent_type_from_hints(hints)
+    assert agent_type == "orchestrator"
+    assert blocking == []
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Robustez: hints malformados não devem quebrar a decisão (fail-open)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_hint_without_severity_treated_as_info():
+    class BareHint:
+        type = "benefits_catalog_empty"
+
+    agent_type, blocking, informational = _decide_agent_type_from_hints([BareHint()])
+    assert agent_type == "orchestrator"
+    assert blocking == []
+    assert len(informational) == 1
+
+
+def test_hint_without_type_is_ignored():
+    class TypelessHint:
+        severity = "warning"
+
+    agent_type, blocking, informational = _decide_agent_type_from_hints([TypelessHint()])
+    assert agent_type == "orchestrator"
+    assert blocking == []
+    assert informational == []
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Parametrização do cenário completo
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+@pytest.mark.parametrize(
+    "hint_specs,expected_agent",
+    [
+        ([], "orchestrator"),
+        ([("benefits_catalog_empty", "info")], "orchestrator"),
+        ([("culture_profile_missing", "info")], "orchestrator"),
+        ([("hiring_policy_missing", "info")], "orchestrator"),
+        ([("missing_company_id", "warning")], "company_settings"),
+        ([("incomplete_company_profile", "warning")], "company_settings"),
+        (
+            [
+                ("benefits_catalog_empty", "info"),
+                ("culture_profile_missing", "info"),
+                ("hiring_policy_missing", "info"),
+            ],
+            "orchestrator",
+        ),
+        (
+            [
+                ("benefits_catalog_empty", "info"),
+                ("missing_company_id", "warning"),
+            ],
+            "company_settings",
+        ),
+    ],
+)
+def test_severity_decision_matrix(hint_specs, expected_agent):
+    hints = [_hint(t, s) for t, s in hint_specs]
+    agent_type, _, _ = _decide_agent_type_from_hints(hints)
+    assert agent_type == expected_agent

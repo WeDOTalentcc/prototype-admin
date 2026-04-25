@@ -59,6 +59,76 @@ _CACHE_TTL_BY_DOMAIN: dict[str, int] = {
     "pipeline_context": 60,
 }
 
+# ── Severity-based delegation (canonical-fix, ref task-811) ─────────────────
+# Quando o PreConditionChecker emite ProactiveHints, decidimos se mantemos a
+# intenção primária (criar vaga, buscar candidato, etc) ou se desviamos para o
+# agente `company_settings`. Critério adotado:
+#
+#   - severity in {"warning", "critical"} E type em _ONBOARDING_HINT_TYPES
+#       → delega para company_settings (configuração da empresa é pré-requisito
+#         real para a ação que o usuário pediu).
+#   - severity == "info" (qualquer onboarding type)
+#       → mantém orchestrator. Hint é anexado ao prompt como sugestão proativa,
+#         mas a intenção primária do usuário é executada normalmente.
+#
+# Antes desta mudança, o conjunto inteiro de _ONBOARDING_HINT_TYPES disparava
+# delegação independentemente da severidade — o que fazia "criar vaga" ser
+# desviado para `company_settings` sempre que faltasse benefits/culture/policy
+# (todos `info`), causando resposta genérica de "erro interno" porque
+# `company_settings` não tem a tool `create_job_vacancy` no toolset.
+_ONBOARDING_HINT_TYPES: frozenset[str] = frozenset({
+    "missing_company_id",
+    "incomplete_company_profile",
+    "company_website_missing",
+    "culture_profile_missing",
+    "benefits_catalog_empty",
+    "hiring_policy_missing",
+})
+_BLOCKING_HINT_SEVERITIES: frozenset[str] = frozenset({"warning", "critical"})
+
+
+def _decide_agent_type_from_hints(
+    hints: list,
+    onboarding_hint_types: frozenset[str] = _ONBOARDING_HINT_TYPES,
+    blocking_severities: frozenset[str] = _BLOCKING_HINT_SEVERITIES,
+) -> tuple[str, list, list]:
+    """Decide qual agente atende o turno com base na severidade dos hints.
+
+    Pure function — sem efeitos colaterais, totalmente testável.
+
+    Args:
+        hints: lista de ``ProactiveHint`` retornada pelo ``PreConditionChecker``.
+        onboarding_hint_types: tipos de hint que sinalizam onboarding incompleto.
+        blocking_severities: severidades que bloqueiam a intenção primária.
+
+    Returns:
+        Tupla ``(agent_type, blocking_hints, informational_hints)``:
+
+        * ``agent_type`` — ``"company_settings"`` se houver pelo menos um hint
+          de onboarding com severidade bloqueante; caso contrário
+          ``"orchestrator"``.
+        * ``blocking_hints`` — subconjunto que justifica a delegação.
+        * ``informational_hints`` — hints de onboarding ``info`` (anexados ao
+          prompt mas não trocam o agente).
+
+    Compliance: a regra é determinística (Crença #10 — Inteligência vs
+    Determinismo). FairnessGuard, PII masking e ConfidencePolicy não são
+    afetados — a função apenas escolhe roteamento de agente, não classifica
+    candidatos nem altera scoring.
+    """
+    blocking = [
+        h for h in hints
+        if getattr(h, "type", None) in onboarding_hint_types
+        and getattr(h, "severity", "info") in blocking_severities
+    ]
+    informational = [
+        h for h in hints
+        if getattr(h, "type", None) in onboarding_hint_types
+        and getattr(h, "severity", "info") not in blocking_severities
+    ]
+    agent_type = "company_settings" if blocking else "orchestrator"
+    return agent_type, blocking, informational
+
 _perf_metrics: dict[str, list[float]] = {}
 
 
@@ -378,17 +448,15 @@ class MainOrchestrator:
                             pass  # Fail-open: use claude default
 
                     # D10 — Pre-condition check for proactive assistance
+                    #
+                    # Severity-based delegation (canonical-fix, ref task-811):
+                    # ver _decide_agent_type_from_hints() no topo do módulo
+                    # para o critério completo. Resumo: hints `info` mantêm o
+                    # orchestrator e viram sugestão; hints `warning|critical`
+                    # de onboarding desviam para `company_settings`.
                     _proactive_hints_text = ""
                     _proactive_hints_payload: list[dict] = []
                     _agent_type = "orchestrator"
-                    _ONBOARDING_HINT_TYPES = {
-                        "missing_company_id",
-                        "incomplete_company_profile",
-                        "company_website_missing",
-                        "culture_profile_missing",
-                        "benefits_catalog_empty",
-                        "hiring_policy_missing",
-                    }
                     try:
                         from app.orchestrator.precondition_checker import precondition_checker
                         _hints = await precondition_checker.check(ctx)
@@ -398,16 +466,34 @@ class MainOrchestrator:
                                 "Voce DEVE mencionar estas proativamente se relevantes ao que o recrutador pediu:\n\n"
                                 + "\n".join(f"- [{h.severity}] {h.message}" for h in _hints)
                             )
-                            # Gap 4: delegate to company_settings agent when onboarding hints emitted
-                            _onboarding_hints_detected = [h.type for h in _hints if h.type in _ONBOARDING_HINT_TYPES]
-                            if _onboarding_hints_detected:
-                                _agent_type = "company_settings"
+                            _agent_type, _blocking_hints, _informational_hints = (
+                                _decide_agent_type_from_hints(_hints)
+                            )
+                            if _blocking_hints:
                                 logger.info(
                                     "[PreConditionChecker] Delegating to company_settings agent",
                                     extra={
                                         "company_id": _loop_company_id,
-                                        "onboarding_hints": _onboarding_hints_detected,
+                                        "blocking_hints": [
+                                            (h.type, h.severity) for h in _blocking_hints
+                                        ],
+                                        "informational_hints": [
+                                            (h.type, h.severity) for h in _informational_hints
+                                        ],
                                         "total_hints": len(_hints),
+                                        "decision_reason": "blocking_severity_present",
+                                    },
+                                )
+                            elif _informational_hints:
+                                logger.info(
+                                    "[PreConditionChecker] Onboarding hints detected but informational — keeping orchestrator",
+                                    extra={
+                                        "company_id": _loop_company_id,
+                                        "informational_hints": [
+                                            (h.type, h.severity) for h in _informational_hints
+                                        ],
+                                        "total_hints": len(_hints),
+                                        "decision_reason": "non_blocking_severity",
                                     },
                                 )
                             # Structured payload for frontend rendering (NavigationHintCard / proactive-insight-card)
