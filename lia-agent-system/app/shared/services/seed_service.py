@@ -17,7 +17,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any
 
-from sqlalchemy import delete, func, select
+from sqlalchemy import delete, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.tenant import DEMO_COMPANY_UUID
@@ -1668,29 +1668,39 @@ async def seed_demo_company_settings(db: AsyncSession) -> dict[str, Any]:
         await db.rollback()
         raise
 
-    # Post-seed validation: confirma que os 3 hints alvo do PreConditionChecker
-    # foram silenciados. Canonical-fix: se algum hint persistir, lança erro
-    # explícito (não engole). Import local evita ciclo de import no topo.
-    from app.orchestrator.precondition_checker import PreConditionChecker
-    checker = PreConditionChecker()
-    hint_status = {
-        "benefits_catalog_empty": await checker._benefits_catalog_empty(DEMO_COMPANY_UUID),
-        "culture_profile_missing": await checker._culture_profile_missing(DEMO_COMPANY_UUID),
-        "hiring_policy_missing": await checker._hiring_policy_missing(DEMO_COMPANY_UUID),
+    # Post-seed validation STRICT (canonical-fix): query direta às tabelas
+    # alvo, sem reuso do PreConditionChecker (que é fail-open por design e
+    # poderia mascarar falhas reais de DB). Lança RuntimeError se algum
+    # invariante não for satisfeito após o seed — sem fallback silencioso.
+    invariants = {
+        "company_benefits": (
+            "SELECT COUNT(*) FROM company_benefits "
+            "WHERE company_id = :c AND is_active = TRUE"
+        ),
+        "company_culture_profiles": (
+            "SELECT COUNT(*) FROM company_culture_profiles WHERE company_id = CAST(:c AS uuid)"
+        ),
+        "company_hiring_policies": (
+            "SELECT COUNT(*) FROM company_hiring_policies WHERE company_id = :c"
+        ),
     }
-    still_active = [name for name, active in hint_status.items() if active]
-    if still_active:
+    failures: list[str] = []
+    for table, sql in invariants.items():
+        count = await db.scalar(text(sql), {"c": DEMO_COMPANY_UUID})
+        if not count or count < 1:
+            failures.append(f"{table} (count={count})")
+    if failures:
         logger.error(
-            "❌ [demo seed] post-seed validation FALHOU: hints ainda ativos para %s: %s",
-            DEMO_COMPANY_UUID, still_active,
+            "❌ [demo seed] post-seed validation FALHOU para %s: %s",
+            DEMO_COMPANY_UUID, failures,
         )
         raise RuntimeError(
-            f"Post-seed validation falhou: hints {still_active} ainda ativos "
-            f"para o tenant demo {DEMO_COMPANY_UUID} após o seed."
+            f"Post-seed validation falhou: tabelas sem dados após o seed "
+            f"para o tenant demo {DEMO_COMPANY_UUID}: {failures}."
         )
     logger.info(
-        "✅ [demo seed] post-seed validation OK: 3 hints alvo silenciados (%s)",
-        list(hint_status.keys()),
+        "✅ [demo seed] post-seed validation OK: %s populadas para %s",
+        list(invariants.keys()), DEMO_COMPANY_UUID,
     )
 
     summary = {
