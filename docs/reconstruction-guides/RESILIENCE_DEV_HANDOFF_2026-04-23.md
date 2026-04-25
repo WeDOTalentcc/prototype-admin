@@ -226,3 +226,15 @@ for _ in range(10):
 ---
 
 *Handoff gerado em 2026-04-23 | Próxima revisão: quando novo LLM provider, broker ou integração externa for adicionada*
+
+---
+
+## Receitas Executáveis — Thematic Operational Docs
+
+Para implementar qualquer tema deste handoff no v5, consulte os docs operacionais em:
+
+**Mac:** `/Users/paulomoraes/Documents/Python/themes/`
+**Replit:** `docs/reconstruction-guides/themes/`
+**Índice:** `themes/README.md`
+
+Temas mais relevantes para este handoff: R1 (Circuit Breakers), R2 (Learning Loop + A/B), R3 (Messaging & Events), R4 (Background Jobs), O2 (Config + Flags), O3 (External Integrations)

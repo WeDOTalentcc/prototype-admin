@@ -1391,3 +1391,36 @@ Consumer RabbitMQ que recebe eventos do sistema Rails (ATS legado) e sincroniza 
 ---
 
 *Lista gerada em 2026-04-23 | 52 canônicos identificados em 12 temas | Atualizar após cada sprint que introduzir novos canônicos.*
+
+---
+
+## Thematic Operational Docs (31 receitas executáveis)
+
+Para cada tema abaixo, existe um doc completo em `themes/` com código verificado, lógica IN/OUT, instruções para Claude Code/Cursor, checklists P0/P1/P2 e testes obrigatórios.
+
+**Índice master:** `themes/README.md` (Mac: `/Users/paulomoraes/Documents/Python/themes/README.md`)
+
+### Compliance Layer (C1-C8)
+
+| Doc | Localização Mac |
+|-----|----------------|
+| C1 Fairness & Anti-Discrimination | `themes/compliance/C1_FAIRNESS_AND_ANTI_DISCRIMINATION.md` |
+| C2 LGPD PII & Data Minimization | `themes/compliance/C2_LGPD_PII_AND_DATA_MINIMIZATION.md` |
+| C3 LGPD Consent & Data Subject Rights | `themes/compliance/C3_LGPD_CONSENT_AND_DATA_SUBJECT.md` |
+| C4 LGPD Art.20 Right to Contest | `themes/compliance/C4_LGPD_ART20_RIGHT_TO_CONTEST.md` |
+| C5 Multi-tenancy & Isolation | `themes/compliance/C5_MULTI_TENANCY_AND_ISOLATION.md` |
+| C6 Prompt Injection & Encryption | `themes/compliance/C6_PROMPT_INJECTION_AND_ENCRYPTION.md` |
+| C7 Audit Trail & Compliance Lint | `themes/compliance/C7_AUDIT_TRAIL_AND_COMPLIANCE_LINT.md` |
+| C8 Policy Engine & Governance | `themes/compliance/C8_POLICY_ENGINE_AND_GOVERNANCE.md` |
+
+### Infrastructure Layer (I1-I11) | Persona (P1-P4) | Resilience (R1-R4) | Agent Studio (AS1) | Operational (O1-O3)
+
+| Doc | Localização Mac |
+|-----|----------------|
+| I1-I11 (Infrastructure) | `themes/infrastructure/I{1-11}_*.md` |
+| P1-P4 (Persona) | `themes/persona/P{1-4}_*.md` |
+| R1-R4 (Resilience) | `themes/resilience/R{1-4}_*.md` |
+| AS1 (Custom Agents) | `themes/agent_studio/AS1_CUSTOM_AGENTS.md` |
+| O1-O3 (Operational) | `themes/operational/O{1-3}_*.md` |
+
+**Replit:** todos em `docs/reconstruction-guides/themes/` (sincronizados via SCP + MD5 verificado)

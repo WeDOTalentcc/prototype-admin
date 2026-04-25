@@ -219,3 +219,15 @@ assert len(prompt) > 2000      # persona + platform + compliance todos injetados
 ---
 
 *Handoff gerado em 2026-04-23 | Próxima revisão: quando novo AgentType ou LLM provider for adicionado*
+
+---
+
+## Receitas Executáveis — Thematic Operational Docs
+
+Para implementar qualquer tema deste handoff no v5, consulte os docs operacionais em:
+
+**Mac:** `/Users/paulomoraes/Documents/Python/themes/`
+**Replit:** `docs/reconstruction-guides/themes/`
+**Índice:** `themes/README.md`
+
+Temas mais relevantes para este handoff: I1 (Agent Arch), I2 (Tool Arch), I3 (Orchestration), I4 (LLM Providers), I5 (Observability), I6 (API), I7 (Intent), I8 (Auth), I9 (Data), I10 (Middleware), I11 (RAG)

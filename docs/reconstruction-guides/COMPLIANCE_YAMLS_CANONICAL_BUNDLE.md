@@ -34,11 +34,7 @@ conteúdo exato deste bundle.
 Invocar na chat via: `@compliance-yamls replica o <nome>.yaml`
 
 ### Manual (ctrl+F)
-Busque pelo nome do YAML (ex.: `cv_screening.yaml`). Cada YAML tem header com:
-- Path canônico no Replit
-- Linhas / bytes / versão / data de atualização
-- Formato estrutural (A/B/C/D/E) para domain YAMLs
-- Bloco ```yaml com verbatim completo
+Busque pelo nome do YAML (ex.: `cv_screening.yaml`). Cada YAML tem header com path canônico + linhas + bloco ```yaml verbatim.
 
 ---
 
@@ -54,15 +50,14 @@ Busque pelo nome do YAML (ex.: `cv_screening.yaml`). Cada YAML tem header com:
 ## Princípios de fidelidade
 
 - Todo byte de YAML foi lido direto de `lia-agent-system/` (Replit) em 2026-04-24. Zero paráfrase, zero invenção.
-- **Código é fonte de verdade.** Se divergir do bundle, abrir issue para atualizar o bundle (bug de staleness).
+- **Código é fonte de verdade.** Se divergir do bundle, abrir issue para atualizar o bundle.
 - Atualização: triggered por mudança em YAML canônico + revisão trimestral.
-- Cross-reference para outros bundles: ver sessão inicial.
 
 ## Cross-references com outros bundles
 
-- **Persona + Agent prompts** (lia_persona, compliance_block, guardrails_block, agent_prompts, defensive + 24 domain prompts + intelligence_floor) → `LIA_YAMLS_CANONICAL_BUNDLE.md`
+- **Persona + Agent prompts + Platform manifest + Agent templates + Intelligence floor** → `LIA_YAMLS_CANONICAL_BUNDLE.md`
 - **Compliance técnico** (protected_attributes, fairness_post_check) → `COMPLIANCE_YAMLS_CANONICAL_BUNDLE.md`
-- **Infraestrutura** (tool_permissions, domain_routing) → `INFRASTRUCTURE_YAMLS_CANONICAL_BUNDLE.md`
+- **Infraestrutura** (tool_permissions, domain_routing, agents_registry, tool_registry_metadata, 17 capabilities) → `INFRASTRUCTURE_YAMLS_CANONICAL_BUNDLE.md`
 
 ---
 
@@ -72,7 +67,7 @@ Technical config consumido pelo FairnessGuard, audit_service e validadores. Não
 
 ### Arquivo canônico: `app/config/protected_attributes.yaml`
 
-**Linhas:** 158  |  **Bytes:** 5597  |  **Versão:** 6
+**Linhas:** 158  |  **Bytes:** 5597
 
 ```yaml
 # Protected Attributes — Single Source of Truth
@@ -281,4 +276,4 @@ ranking_fields:
 
 ---
 
-*Bundle gerado em 2026-04-24 | Próxima revisão: triggered por mudança em YAML canônico ou trimestral | Fonte: `lia-agent-system/` no Replit*
+*Bundle gerado em 2026-04-24 | Fonte: `lia-agent-system/` no Replit | MD5 sincronizado Mac ↔ Replit*

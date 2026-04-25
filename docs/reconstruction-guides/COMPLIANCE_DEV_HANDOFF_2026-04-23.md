@@ -203,3 +203,15 @@ Nenhum desses bloqueia a replicação do código — são trilhos regulatórios 
 ---
 
 *Handoff gerado em 2026-04-23 | Próxima revisão: trimestral ou triggered por mudança no `protected_attributes.yaml` ou EU AI Act*
+
+---
+
+## Receitas Executáveis — Thematic Operational Docs
+
+Para implementar qualquer tema deste handoff no v5, consulte os docs operacionais em:
+
+**Mac:** `/Users/paulomoraes/Documents/Python/themes/`
+**Replit:** `docs/reconstruction-guides/themes/`
+**Índice:** `themes/README.md`
+
+Temas mais relevantes para este handoff: C1 (Fairness), C2 (LGPD PII), C3 (Consent), C4 (Art.20), C5 (Multi-tenancy), C6 (Injection), C7 (Audit), C8 (Policy Engine)

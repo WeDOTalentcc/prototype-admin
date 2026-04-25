@@ -269,3 +269,15 @@ docs/
 ---
 
 *Handoff atualizado em 2026-04-23 | Substitui versão anterior (pré-auditoria enterprise) | Próxima revisão: após bias audit Q3/2026*
+
+---
+
+## Receitas Executáveis — Thematic Operational Docs
+
+Para implementar qualquer tema deste handoff no v5, consulte os docs operacionais em:
+
+**Mac:** `/Users/paulomoraes/Documents/Python/themes/`
+**Replit:** `docs/reconstruction-guides/themes/`
+**Índice:** `themes/README.md`
+
+Temas mais relevantes para este handoff: P1, P2, P3, P4 (Persona), I1 (Agentes), I3 (Orchestration), C1 (Fairness), AS1 (Custom Agents)
