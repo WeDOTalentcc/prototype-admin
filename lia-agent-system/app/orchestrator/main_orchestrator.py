@@ -549,13 +549,25 @@ class MainOrchestrator:
                                 if isinstance(tc, dict) and tc.get("name")
                             }
                             if not (_tools_called & _expected_tools):
+                                # Telemetria de diagnóstico: este branch só roda quando
+                                # _agent_type já foi resolvido para "company_settings",
+                                # logo _blocking_hints existe e não está vazio. Usamos
+                                # locals().get(...) defensivamente para evitar NameError
+                                # caso alguém futuramente reorganize o fluxo.
+                                _blocking_for_log = locals().get("_blocking_hints", []) or []
+                                _info_for_log = locals().get("_informational_hints", []) or []
                                 logger.warning(
                                     "[Onboarding] LLM did NOT call any onboarding tool despite delegate",
                                     extra={
                                         "company_id": _loop_company_id,
                                         "tools_called": list(_tools_called),
                                         "expected_any_of": list(_expected_tools),
-                                        "onboarding_hints": _onboarding_hints_detected if "_onboarding_hints_detected" in dir() else [],
+                                        "blocking_hints": [
+                                            (h.type, h.severity) for h in _blocking_for_log
+                                        ],
+                                        "informational_hints": [
+                                            (h.type, h.severity) for h in _info_for_log
+                                        ],
                                     },
                                 )
                         logger.info(
