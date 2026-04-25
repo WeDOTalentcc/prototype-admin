@@ -11,7 +11,7 @@
 
 Este documento define **o que é "configuração mínima viável" para um tenant da Plataforma LIA**: o conjunto canônico de tabelas, defaults e políticas que precisam estar populadas para que o chat com a LIA opere sem ser sequestrado por hints de onboarding, e para que os agentes principais (criação de vaga, sourcing, triagem, pipeline) executem suas intents primárias sem fricção.
 
-**Por que existe?** A Task #813 populou o tenant demo (`DEMO_COMPANY_UUID = 00000000-0000-4000-a000-000000000001`) com 8 tabelas críticas via `seed_demo_company_settings(db)`. Isso resolveu o sintoma local — a demo deixou de emitir 3 hints `info` repetidamente — mas **o problema é geral**: qualquer tenant novo (real ou de homologação) chega com essas tabelas vazias, dispara as mesmas hints e, dependendo da severidade, pode ser desviado para o agente `company_settings` perdendo a intent original do usuário (ex.: "criar vaga" virando "configurar empresa").
+**Por que existe?** A Task #813 populou o tenant demo (`DEMO_COMPANY_UUID = 00000000-0000-4000-a000-000000000001`) via `seed_demo_company_settings(db)`. Esse seed grava em **9 tabelas** (descritas como "8 críticas" no commit original porque o helper `_seed_demo_skills_catalog` toca 2 tabelas — `company_skills_catalog` + `behavioral_competencies_catalog`). Isso resolveu o sintoma local — a demo deixou de emitir 3 hints `info` repetidamente — mas **o problema é geral**: qualquer tenant novo (real ou de homologação) chega com essas tabelas vazias, dispara as mesmas hints e, dependendo da severidade, pode ser desviado para o agente `company_settings` perdendo a intent original do usuário (ex.: "criar vaga" virando "configurar empresa"). Nas demais seções deste doc, **"9 tabelas" é a contagem canônica**.
 
 Este doc é o **contrato** para qualquer tarefa futura de seeding/onboarding/bootstrap de tenant. Implementação fica em tarefas separadas (ver §8).
 
@@ -162,13 +162,13 @@ Default: usar `HIRING_POLICY_DEFAULTS` em `lia_models.company_hiring_policy` com
 - `fairness_audit_enabled = true` (Inegociável #3)
 - `pii_masking_enabled = true` (Inegociável #4)
 
-**Validação obrigatória pré-persistência:** `await FairnessGuard().check(policy_dict)` — se falhar, abortar seed (sem fallback silencioso).
+**Validação obrigatória pré-persistência:** rodar `FairnessGuard().check(text)` (síncrono, recebe string — ver §1 nota de implementação) sobre cada campo textual da policy serializado: descrição da política, lista de critérios, prompts de aprovação automática, mensagens de feedback. Qualquer resultado bloqueante aborta o seed (sem fallback silencioso). Se a implementação preferir uma interface estruturada, ela é pré-requisito da tarefa #818 (ver §8 item 1) e não invalida o contrato.
 
 ### 5.5 `company_compliance_controls`
 
-Default: 5 controles por framework × {LGPD, SOX, ISO_27001} = 15 rows, copiados de `ComplianceControlLibrary` filtrando por framework. Status inicial: `"not_assessed"` (não fingir que está implementado).
+Default: até 5 controles por framework × {LGPD, SOX, ISO_27001} (máximo 15 rows; pode ser menos se `ComplianceControlLibrary` tiver menos itens), copiados filtrando por framework. Status inicial: `"not_started"` (valor real usado em `seed_service.py:1472` — não fingir que está implementado).
 
-**Justificativa:** dashboard `admin/compliance/auditoria/bias` precisa de rows para renderizar; status honesto é "not_assessed" até auditoria humana.
+**Justificativa:** dashboard `admin/compliance/auditoria/bias` precisa de rows para renderizar; status honesto é `"not_started"` até auditoria humana avaliar cada controle.
 
 ### 5.6 `company_responsibilities` / `company_skills_catalog` / `behavioral_competencies_catalog`
 
