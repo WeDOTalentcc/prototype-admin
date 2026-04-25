@@ -167,7 +167,25 @@ comportamento UX-correto (renderiza pulse com counts zero).
 - `chat-workflow-reels-pulse.test.ts` — 9 cenários no consumer
   (`null`, `undefined`, `stages` ausente, `stages` null, `stages` objeto,
   array vazio, payload válido, entradas malformadas no array, primitivos).
-- `pipeline-pulse/route.test.ts` — 7 cenários no validador do proxy.
+- `pipeline-pulse/__tests__/route.test.ts` — **2 camadas, 12 cenários**:
+  - Camada 1 (validador puro, 7): payload válido vazio, payload válido
+    completo, primitivos/null/undefined, payload sem `stages`, `stages`
+    não-array, `total` ausente/não-numérico, stage individual malformado.
+  - Camada 2 (handler `GET` real importado, 5): backend 200 OK + payload
+    válido → 200, backend 200 OK + shape inválido → 502
+    `invalid_pulse_payload` (ADR-0817-2), backend 200 OK + `stages: null`
+    (causa raiz reportada) → 502, backend 4xx propaga status original,
+    falha de rede → 500 estruturado. Garante que o validador está
+    plugado no caminho real, não só no espelho.
+- `ws-token/__tests__/route.test.ts` — **9 cenários no handler `GET` real**
+  (Task #817): modo 1 (JWT cookie → 200 jwt-cookie), defesa
+  `_sso_session_` placeholder, modo 2 (workos válido → 200 workos),
+  modo 2 falha (workos corrompido → 401 invalid_workos_session +
+  no-store), modo 3 (dev-auto-login on + token → 200 + Set-Cookie
+  httpOnly), modo 3 falha (dev-auto-login on + sem token → 503 + no-store),
+  modo 4 (sem credenciais → 401 no_credentials + no-store), prioridade
+  JWT > workos, prioridade workos > dev-auto-login. Cobre os 4 desfechos
+  canônicos que o `useChatSocket` pode encontrar antes de cada retry.
 
 ---
 

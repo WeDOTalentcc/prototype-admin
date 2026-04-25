@@ -5,13 +5,20 @@
  * `{stages: PipelinePulseStage[], total: number}` em respostas 2xx OU
  * propagar erro estruturado. Nunca pode vazar payload corrompido com 200.
  *
- * Estratégia: testar diretamente a função `isValidPulsePayload` redeclarada
- * aqui, espelhando 1:1 a do route handler. (O route handler depende de
- * NextRequest/NextResponse + getAuthHeaders + fetch, custoso de e2e-mockar
- * em jsdom — a regressão crítica é a validação do shape.)
+ * Estratégia em 2 camadas:
+ *   1. Validador puro `isValidPulsePayload` (espelho 1:1 do route)
+ *   2. Integração: importa o `GET` real do route.ts e exercita os 5 caminhos
+ *      canônicos com `fetch` mockado (200 ok, 200 com shape inválido, 4xx,
+ *      5xx, falha de rede). Garante que a validação de shape (ADR-0817-2)
+ *      está plugada no caminho real, não só no espelho.
  */
 
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
+import type { NextRequest } from "next/server"
+
+vi.mock("@/lib/api/auth-headers", () => ({
+  getAuthHeaders: () => ({ "Content-Type": "application/json" }),
+}))
 
 interface PipelinePulseStage {
   macro_stage: string
@@ -87,5 +94,108 @@ describe("pipeline-pulse proxy — isValidPulsePayload (Task #817)", () => {
     expect(
       isValidPulsePayload({ stages: [null], total: 0 }),
     ).toBe(false)
+  })
+})
+
+// ─── Camada 2: integração — exercita o GET real do route handler ──────────
+// Confirma que `isValidPulsePayload` está plugado no caminho real, não só
+// duplicado no teste. Cobre os 5 desfechos canônicos que `useChatWorkflowReels`
+// pode encontrar em runtime.
+describe("pipeline-pulse proxy — GET handler integrado (Task #817)", () => {
+  let originalFetch: typeof globalThis.fetch
+  const fakeRequest = {} as unknown as NextRequest
+
+  beforeEach(() => {
+    originalFetch = globalThis.fetch
+  })
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch
+    vi.restoreAllMocks()
+  })
+
+  async function loadRoute() {
+    return await import("../route")
+  }
+
+  it("200 OK + payload válido → 200 + repassa body", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({ stages: [{ macro_stage: "sourcing", count: 3 }], total: 3 }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    ) as typeof globalThis.fetch
+
+    const { GET } = await loadRoute()
+    const res = await GET(fakeRequest)
+    const body = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(body).toEqual({
+      stages: [{ macro_stage: "sourcing", count: 3 }],
+      total: 3,
+    })
+  })
+
+  it("200 OK + shape inválido → 502 invalid_pulse_payload (ADR-0817-2)", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ unexpected: "shape" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    ) as typeof globalThis.fetch
+
+    const { GET } = await loadRoute()
+    const res = await GET(fakeRequest)
+    const body = await res.json()
+
+    expect(res.status).toBe(502)
+    expect(body).toMatchObject({
+      error: "invalid_pulse_payload",
+      detail: expect.stringContaining("PipelinePulseResponse"),
+    })
+  })
+
+  it("200 OK + stages null (causa raiz reportada) → 502, não vaza payload", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ stages: null, total: 0 }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    ) as typeof globalThis.fetch
+
+    const { GET } = await loadRoute()
+    const res = await GET(fakeRequest)
+
+    expect(res.status).toBe(502)
+  })
+
+  it("backend 4xx/5xx → propaga status original com body de erro", async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ detail: "Unauthorized" }), {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }),
+    ) as typeof globalThis.fetch
+
+    const { GET } = await loadRoute()
+    const res = await GET(fakeRequest)
+    const body = await res.json()
+
+    expect(res.status).toBe(401)
+    expect(body).toEqual({ detail: "Unauthorized" })
+  })
+
+  it("falha de rede no fetch → 500 estruturado, não throw", async () => {
+    globalThis.fetch = vi
+      .fn()
+      .mockRejectedValue(new Error("ECONNREFUSED")) as typeof globalThis.fetch
+
+    const { GET } = await loadRoute()
+    const res = await GET(fakeRequest)
+    const body = await res.json()
+
+    expect(res.status).toBe(500)
+    expect(body).toEqual({ error: "Failed to connect to backend" })
   })
 })
