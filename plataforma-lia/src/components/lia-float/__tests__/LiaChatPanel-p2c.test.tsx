@@ -19,7 +19,7 @@
 
 import React from "react"
 import { render, screen, fireEvent, waitFor } from "@testing-library/react"
-import { vi, describe, it, expect, beforeEach } from "vitest"
+import { vi, describe, it, expect, beforeEach, afterEach } from "vitest"
 
 // jsdom não implementa scrollIntoView — mockar globalmente
 window.HTMLElement.prototype.scrollIntoView = vi.fn()
@@ -227,6 +227,20 @@ describe("P2-C — LiaChatPanel: Novo Chat / Limpar / Histórico", () => {
     _hoisted.msgs.length = 0
     _recentStore.items = []
     localStorageMock.clear()
+    // Stub global fetch — LiaChatMessageList chama
+    // /api/backend-proxy/lia/context-suggestions no mount, gerando stderr
+    // sem este mock. Cada chamada recebe um Response novo (Response.json()
+    // só pode ser consumido uma vez), evitando "Body has already been read".
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
+      new Response(JSON.stringify({ suggestions: [] }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    )
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it("1. botão Novo Chat presente no header", () => {
