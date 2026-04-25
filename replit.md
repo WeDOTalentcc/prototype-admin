@@ -40,6 +40,7 @@ The platform uses Next.js, React, and TypeScript for the frontend, styled with R
 - **Recursive RAG Chunking**: Implements a `RecursiveTextSplitter` strategy for hierarchical document chunking.
 - **CrewAI-Style Delegation on AgentBus**: A formal multi-agent delegation system built on AgentBus with `AgentCrew`, `CrewPlan`, and `CrewPlanExecutor` for task orchestration.
 - **Database Migrations**: Uses Alembic, with versions managed in `lia-agent-system/alembic/versions/`. Migrations are automated with `scripts/post-merge.sh` and ensure schema consistency.
+- **Demo Tenant Seed Estendido (Task #813)**: `app/shared/services/seed_service.py` expõe `seed_demo_company_settings(db)`, função idempotente (skip-if-exists) e restrita ao tenant demo (`DEMO_COMPANY_UUID`) que popula 8 tabelas críticas — `company_benefits` (25 BR padrão), `company_culture_profiles`, `company_hiring_policies`, `company_compliance_controls` (5 controles × 3 frameworks), `company_responsibilities`, `company_skills_catalog` + `behavioral_competencies_catalog`, `company_retention_policies`, `company_screening_questions`. Garante a row canônica em `company_profiles` (id = DEMO_COMPANY_UUID) para satisfazer FK de culture profile. Após esse seed, os hints `benefits_catalog_empty`, `culture_profile_missing` e `hiring_policy_missing` do `PreConditionChecker` passam a retornar False para o tenant demo. Plugado dentro de `seed_demo_data` no entry point `/api/v1/admin/seed-data/demo`.
 
 # External Dependencies
 - Anthropic (Claude API)

@@ -10,21 +10,102 @@ All seed data is clearly marked with '[DEMO]' prefix for easy identification.
 # RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
 # Will be deleted after ats-api-rails handoff is complete.
 # Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
+import hashlib
 import logging
 import random
 import uuid
 from datetime import datetime, timedelta
 from typing import Any
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.tenant import DEMO_COMPANY_UUID
 from lia_models.candidate import Candidate, CandidateEducation, CandidateExperience, VacancyCandidate
+from lia_models.company_benefit import CompanyBenefit, DEFAULT_BRAZILIAN_BENEFITS
+from lia_models.company_culture import CompanyCultureProfile
+from lia_models.company_hiring_policy import (
+    ALL_DEFAULTS as HIRING_POLICY_DEFAULTS,
+    CompanyHiringPolicy,
+)
+from lia_models.company_learning import CompanyResponsibility, LearningSource
 from lia_models.job_vacancy import JobVacancy
+from lia_models.observability import CompanyComplianceControl, ComplianceControlLibrary
+from lia_models.retention_policy import CompanyRetentionPolicy
+from lia_models.screening_question import (
+    DEFAULT_SCREENING_QUESTIONS,
+    CompanyScreeningQuestion,
+)
+from lia_models.skills_catalog import BehavioralCompetencyCatalog, CompanySkillsCatalog
 
 logger = logging.getLogger(__name__)
 
 COMPANY_ID: str | None = None
+
+
+# Defaults para popular o tenant demo (`DEMO_COMPANY_UUID`) com configs mínimas
+# que silenciam os hints proativos `benefits_catalog_empty`,
+# `culture_profile_missing` e `hiring_policy_missing` do PreConditionChecker.
+# Origem: WeDO Talent Guide v3.3 + DEFAULT_BRAZILIAN_BENEFITS / DEFAULT_SCREENING_QUESTIONS.
+
+_DEMO_CULTURE_PROFILE: dict[str, Any] = {
+    "mission": "Transformar a forma como empresas atraem e contratam talentos no Brasil.",
+    "vision": "Ser a plataforma de recrutamento inteligente de referência na América Latina.",
+    "values": ["Transparência", "Diversidade", "Excelência", "Foco no candidato", "Aprendizado contínuo"],
+    "evp_bullets": [
+        "Cultura colaborativa e remote-first",
+        "Plano de carreira claro com revisões semestrais",
+        "Pacote de benefícios completo + PLR",
+        "Investimento em educação continuada",
+    ],
+    "core_competencies": ["Comunicação", "Pensamento Analítico", "Colaboração", "Adaptabilidade"],
+    "culture_description": "Empresa demo da plataforma LIA — perfil cultural sintético usado para desenvolvimento e demonstrações.",
+    "website_url": "https://demo.lia.local",
+    "industry": "Recursos Humanos / Tecnologia",
+    "employee_count": "51-200",
+    "company_size": "Medium",
+    "headquarters": "São Paulo, SP — Brasil",
+    "work_model": "Hybrid",
+    "default_languages": [{"code": "pt-BR", "label": "Português (Brasil)"}],
+    "openness_score": 75,
+    "conscientiousness_score": 70,
+    "extraversion_score": 60,
+    "agreeableness_score": 80,
+    "stability_score": 65,
+    "source": "demo_seed",
+    "confidence_score": 1.0,
+}
+
+_DEMO_RESPONSIBILITIES: list[dict[str, Any]] = [
+    {"description": "Conduzir entrevistas de triagem com candidatos", "category": "Recrutamento"},
+    {"description": "Manter pipeline de candidatos atualizado no Kanban", "category": "Recrutamento"},
+    {"description": "Avaliar compatibilidade técnica e cultural via metodologia WSI", "category": "Avaliação"},
+    {"description": "Negociar pacote de remuneração com candidatos finalistas", "category": "Hiring"},
+    {"description": "Garantir compliance com LGPD em todo o ciclo de seleção", "category": "Compliance"},
+]
+
+_DEMO_TECHNICAL_SKILLS: list[dict[str, Any]] = [
+    {"skill_name": "Python", "category": "technical", "subcategory": "Linguagem", "default_level": "Avançado", "default_weight": 4},
+    {"skill_name": "SQL", "category": "technical", "subcategory": "Database", "default_level": "Intermediário", "default_weight": 4},
+    {"skill_name": "React", "category": "technical", "subcategory": "Frontend", "default_level": "Intermediário", "default_weight": 3},
+    {"skill_name": "AWS", "category": "technical", "subcategory": "Cloud", "default_level": "Intermediário", "default_weight": 3},
+    {"skill_name": "Git", "category": "technical", "subcategory": "Tooling", "default_level": "Intermediário", "default_weight": 3},
+    {"skill_name": "Docker", "category": "technical", "subcategory": "DevOps", "default_level": "Intermediário", "default_weight": 3},
+]
+
+_DEMO_BEHAVIORAL_COMPETENCIES: list[dict[str, Any]] = [
+    {"name": "Comunicação", "description": "Clareza ao expressar ideias e escuta ativa", "category": "interpessoal", "default_weight": 4},
+    {"name": "Resolução de Problemas", "description": "Capacidade de analisar e propor soluções", "category": "cognitiva", "default_weight": 4},
+    {"name": "Trabalho em Equipe", "description": "Colaboração efetiva em times multidisciplinares", "category": "interpessoal", "default_weight": 4},
+    {"name": "Adaptabilidade", "description": "Flexibilidade frente a mudanças e ambiguidade", "category": "comportamental", "default_weight": 3},
+    {"name": "Aprendizado Contínuo", "description": "Curiosidade e busca ativa por desenvolvimento", "category": "comportamental", "default_weight": 3},
+]
+
+# Frameworks priorizados para o seed demo de compliance — aderente ao 3-pilar
+# (LGPD/SOX/EU AI Act) descrito em replit.md. Limita 5 controles por framework
+# para manter o seed enxuto.
+_DEMO_COMPLIANCE_FRAMEWORKS: tuple[str, ...] = ("LGPD", "SOX", "ISO_27001")
+_DEMO_COMPLIANCE_LIMIT_PER_FRAMEWORK: int = 5
 
 def get_seed_company_id() -> str:
     if not COMPANY_ID:
@@ -1228,6 +1309,340 @@ def generate_vacancy_candidates(job_ids: list[str], candidate_ids: list[str]) ->
     return result
 
 
+# ---------------------------------------------------------------------------
+# Demo tenant configuration seed (Task #813)
+#
+# Popula tabelas críticas do tenant `DEMO_COMPANY_UUID` para silenciar os
+# hints proativos `benefits_catalog_empty`, `culture_profile_missing` e
+# `hiring_policy_missing` do `PreConditionChecker`, e para fornecer dados
+# realistas em catálogos auxiliares (skills, responsibilities, screening
+# questions, retention policy, compliance controls).
+#
+# Princípios canônicos:
+#   - Idempotente: cada função verifica COUNT e pula se já existe.
+#   - Restrito ao tenant demo: usa `DEMO_COMPANY_UUID` explicitamente.
+#   - Sem fallback silencioso: exceções sobem, não são engolidas.
+# ---------------------------------------------------------------------------
+
+
+async def _seed_demo_company_benefits(db: AsyncSession) -> int:
+    """Popula `company_benefits` com os 25 benefícios brasileiros padrão."""
+    existing = await db.scalar(
+        select(func.count()).select_from(CompanyBenefit).where(
+            CompanyBenefit.company_id == DEMO_COMPANY_UUID
+        )
+    )
+    if existing:
+        logger.info("📦 [demo seed] company_benefits: %s registros já existem, pulando", existing)
+        return 0
+    inserted = 0
+    for benefit_data in DEFAULT_BRAZILIAN_BENEFITS:
+        db.add(CompanyBenefit(
+            company_id=DEMO_COMPANY_UUID,
+            is_active=True,
+            value_type="informative",
+            **benefit_data,
+        ))
+        inserted += 1
+    await db.flush()
+    logger.info("📦 [demo seed] company_benefits: %s benefícios padrão inseridos", inserted)
+    return inserted
+
+
+async def _ensure_demo_company_profile(db: AsyncSession) -> bool:
+    """
+    Garante que existe uma row em `company_profiles` com `id = DEMO_COMPANY_UUID`.
+
+    A FK `company_culture_profiles.company_id → company_profiles.id` exige essa
+    row para o tenant demo. O profile "real" do demo usa `client_account_id`
+    (não `id`), então criamos um profile canônico companion identificado pelo
+    UUID canônico do tenant. Idempotente via ON CONFLICT DO NOTHING.
+    """
+    from sqlalchemy import text
+    result = await db.execute(
+        text(
+            """
+            INSERT INTO company_profiles (id, name, trading_name, headquarters_country,
+                                          is_active, is_default, created_by)
+            VALUES (CAST(:cid AS uuid), :name, :trading, 'Brasil', true, false, 'demo_seed')
+            ON CONFLICT (id) DO NOTHING
+            """
+        ),
+        {
+            "cid": DEMO_COMPANY_UUID,
+            "name": "[DEMO] WeDo Talent (tenant canônico)",
+            "trading": "WeDo Talent Demo",
+        },
+    )
+    created = (result.rowcount or 0) > 0
+    if created:
+        logger.info("🏢 [demo seed] company_profiles: row canônica criada para tenant demo")
+    else:
+        logger.info("🏢 [demo seed] company_profiles: row canônica já existe, ok")
+    return created
+
+
+async def _seed_demo_culture_profile(db: AsyncSession) -> int:
+    """Popula `company_culture_profiles` com o perfil cultural sintético do tenant demo."""
+    await _ensure_demo_company_profile(db)
+    existing = await db.scalar(
+        select(func.count()).select_from(CompanyCultureProfile).where(
+            CompanyCultureProfile.company_id == uuid.UUID(DEMO_COMPANY_UUID)
+        )
+    )
+    if existing:
+        logger.info("🎭 [demo seed] company_culture_profiles: %s registros já existem, pulando", existing)
+        return 0
+    db.add(CompanyCultureProfile(
+        company_id=uuid.UUID(DEMO_COMPANY_UUID),
+        **_DEMO_CULTURE_PROFILE,
+    ))
+    await db.flush()
+    logger.info("🎭 [demo seed] company_culture_profiles: 1 perfil cultural inserido")
+    return 1
+
+
+async def _seed_demo_hiring_policy(db: AsyncSession) -> int:
+    """Popula `company_hiring_policies` com os 5 blocos default (pipeline, scheduling, etc)."""
+    existing = await db.scalar(
+        select(func.count()).select_from(CompanyHiringPolicy).where(
+            CompanyHiringPolicy.company_id == DEMO_COMPANY_UUID
+        )
+    )
+    if existing:
+        logger.info("📋 [demo seed] company_hiring_policies: %s registros já existem, pulando", existing)
+        return 0
+    db.add(CompanyHiringPolicy(
+        company_id=DEMO_COMPANY_UUID,
+        pipeline_rules=dict(HIRING_POLICY_DEFAULTS["pipeline_rules"]),
+        scheduling_rules=dict(HIRING_POLICY_DEFAULTS["scheduling_rules"]),
+        communication_rules=dict(HIRING_POLICY_DEFAULTS["communication_rules"]),
+        screening_rules=dict(HIRING_POLICY_DEFAULTS["screening_rules"]),
+        automation_rules=dict(HIRING_POLICY_DEFAULTS["automation_rules"]),
+        pipeline_templates=[],
+        learned_patterns=[],
+        answered_questions=[],
+        setup_progress=0,
+        created_by="demo_seed",
+    ))
+    await db.flush()
+    logger.info("📋 [demo seed] company_hiring_policies: 1 política default inserida")
+    return 1
+
+
+async def _seed_demo_compliance_controls(db: AsyncSession) -> int:
+    """Popula `company_compliance_controls` com 5 controles por framework prioritário."""
+    existing = await db.scalar(
+        select(func.count()).select_from(CompanyComplianceControl).where(
+            CompanyComplianceControl.company_id == uuid.UUID(DEMO_COMPANY_UUID)
+        )
+    )
+    if existing:
+        logger.info("🛡️  [demo seed] company_compliance_controls: %s registros já existem, pulando", existing)
+        return 0
+
+    inserted = 0
+    for framework in _DEMO_COMPLIANCE_FRAMEWORKS:
+        rows = (await db.execute(
+            select(ComplianceControlLibrary.id)
+            .where(ComplianceControlLibrary.framework == framework)
+            .order_by(ComplianceControlLibrary.control_id)
+            .limit(_DEMO_COMPLIANCE_LIMIT_PER_FRAMEWORK)
+        )).scalars().all()
+        for control_library_id in rows:
+            db.add(CompanyComplianceControl(
+                company_id=uuid.UUID(DEMO_COMPANY_UUID),
+                control_library_id=control_library_id,
+                status="not_started",
+                owner_name="Demo Compliance Officer",
+                owner_email="compliance@demo.lia.local",
+                notes=f"Controle inicializado pelo demo seed ({framework}).",
+            ))
+            inserted += 1
+    if inserted:
+        await db.flush()
+        logger.info("🛡️  [demo seed] company_compliance_controls: %s controles iniciais inseridos", inserted)
+    else:
+        # Sem fallback silencioso: alerta explicitamente que a master library
+        # está vazia. Não falha — esse seed roda em ambiente dev onde a
+        # biblioteca pode ainda não ter sido populada via migration de seed.
+        logger.warning(
+            "🛡️  [demo seed] company_compliance_controls: 0 inseridos — "
+            "compliance_control_library vazia para frameworks %s. "
+            "Rode o seed da biblioteca antes para popular controles do tenant demo.",
+            list(_DEMO_COMPLIANCE_FRAMEWORKS),
+        )
+    return inserted
+
+
+async def _seed_demo_responsibilities(db: AsyncSession) -> int:
+    """Popula `company_responsibilities` com responsabilidades-base de RH."""
+    existing = await db.scalar(
+        select(func.count()).select_from(CompanyResponsibility).where(
+            CompanyResponsibility.company_id == DEMO_COMPANY_UUID
+        )
+    )
+    if existing:
+        logger.info("📝 [demo seed] company_responsibilities: %s registros já existem, pulando", existing)
+        return 0
+    inserted = 0
+    for resp in _DEMO_RESPONSIBILITIES:
+        description_hash = hashlib.sha256(
+            resp["description"].strip().lower().encode("utf-8")
+        ).hexdigest()
+        db.add(CompanyResponsibility(
+            company_id=DEMO_COMPANY_UUID,
+            description=resp["description"],
+            category=resp.get("category"),
+            description_hash=description_hash,
+            source=LearningSource.IMPORTED.value,
+            confidence_score=0.9,
+            created_by="demo_seed",
+        ))
+        inserted += 1
+    await db.flush()
+    logger.info("📝 [demo seed] company_responsibilities: %s responsabilidades inseridas", inserted)
+    return inserted
+
+
+async def _seed_demo_skills_catalog(db: AsyncSession) -> tuple[int, int]:
+    """Popula `company_skills_catalog` (técnicos) e `behavioral_competencies_catalog`."""
+    skills_inserted = 0
+    behaviors_inserted = 0
+
+    existing_skills = await db.scalar(
+        select(func.count()).select_from(CompanySkillsCatalog).where(
+            CompanySkillsCatalog.company_id == DEMO_COMPANY_UUID
+        )
+    )
+    if existing_skills:
+        logger.info("🛠️  [demo seed] company_skills_catalog: %s registros já existem, pulando", existing_skills)
+    else:
+        for skill in _DEMO_TECHNICAL_SKILLS:
+            db.add(CompanySkillsCatalog(
+                company_id=DEMO_COMPANY_UUID,
+                source="demo_seed",
+                is_active=True,
+                **skill,
+            ))
+            skills_inserted += 1
+        if skills_inserted:
+            await db.flush()
+        logger.info("🛠️  [demo seed] company_skills_catalog: %s skills técnicas inseridas", skills_inserted)
+
+    existing_behaviors = await db.scalar(
+        select(func.count()).select_from(BehavioralCompetencyCatalog).where(
+            BehavioralCompetencyCatalog.company_id == DEMO_COMPANY_UUID
+        )
+    )
+    if existing_behaviors:
+        logger.info("🧠 [demo seed] behavioral_competencies_catalog: %s registros já existem, pulando", existing_behaviors)
+    else:
+        for comp in _DEMO_BEHAVIORAL_COMPETENCIES:
+            db.add(BehavioralCompetencyCatalog(
+                company_id=DEMO_COMPANY_UUID,
+                source="demo_seed",
+                is_active=True,
+                **comp,
+            ))
+            behaviors_inserted += 1
+        if behaviors_inserted:
+            await db.flush()
+        logger.info("🧠 [demo seed] behavioral_competencies_catalog: %s competências inseridas", behaviors_inserted)
+
+    return skills_inserted, behaviors_inserted
+
+
+async def _seed_demo_retention_policy(db: AsyncSession) -> int:
+    """Popula `company_retention_policies` com política LGPD opt-in (auto_anonymize=False)."""
+    existing = await db.scalar(
+        select(func.count()).select_from(CompanyRetentionPolicy).where(
+            CompanyRetentionPolicy.company_id == DEMO_COMPANY_UUID
+        )
+    )
+    if existing:
+        logger.info("🗄️  [demo seed] company_retention_policies: %s registros já existem, pulando", existing)
+        return 0
+    db.add(CompanyRetentionPolicy(
+        id=str(uuid.uuid4()),
+        company_id=DEMO_COMPANY_UUID,
+        retention_months=24,
+        auto_anonymize=False,
+    ))
+    await db.flush()
+    logger.info("🗄️  [demo seed] company_retention_policies: 1 política (24m, opt-in) inserida")
+    return 1
+
+
+async def _seed_demo_screening_questions(db: AsyncSession) -> int:
+    """Popula `company_screening_questions` com as 8 perguntas padrão brasileiras."""
+    existing = await db.scalar(
+        select(func.count()).select_from(CompanyScreeningQuestion).where(
+            CompanyScreeningQuestion.company_id == DEMO_COMPANY_UUID
+        )
+    )
+    if existing:
+        logger.info("❓ [demo seed] company_screening_questions: %s registros já existem, pulando", existing)
+        return 0
+    inserted = 0
+    for q in DEFAULT_SCREENING_QUESTIONS:
+        db.add(CompanyScreeningQuestion(
+            company_id=DEMO_COMPANY_UUID,
+            is_active=True,
+            **q,
+        ))
+        inserted += 1
+    await db.flush()
+    logger.info("❓ [demo seed] company_screening_questions: %s perguntas padrão inseridas", inserted)
+    return inserted
+
+
+async def seed_demo_company_settings(db: AsyncSession) -> dict[str, Any]:
+    """
+    Popular tabelas de configuração do tenant demo (`DEMO_COMPANY_UUID`).
+
+    Cobre 8 tabelas críticas para silenciar hints proativos do PreConditionChecker
+    (`benefits_catalog_empty`, `culture_profile_missing`, `hiring_policy_missing`)
+    e para fornecer dados realistas em catálogos auxiliares.
+
+    Idempotente: cada tabela é populada apenas se estiver vazia para o tenant demo.
+    Restrito ao tenant demo: NÃO popula configs para outros company_id.
+    Sem fallback silencioso: exceções sobem para o caller (não engole erros).
+    """
+    logger.info("⚙️  Iniciando seed de configurações do tenant demo (%s)", DEMO_COMPANY_UUID)
+
+    try:
+        benefits = await _seed_demo_company_benefits(db)
+        culture = await _seed_demo_culture_profile(db)
+        hiring_policy = await _seed_demo_hiring_policy(db)
+        compliance_controls = await _seed_demo_compliance_controls(db)
+        responsibilities = await _seed_demo_responsibilities(db)
+        skills, behaviors = await _seed_demo_skills_catalog(db)
+        retention = await _seed_demo_retention_policy(db)
+        screening = await _seed_demo_screening_questions(db)
+
+        await db.commit()
+    except Exception:
+        # Sem fallback silencioso: rollback explícito para limpar a sessão
+        # antes de propagar a exceção ao caller (evita session "dirty").
+        await db.rollback()
+        raise
+
+    summary = {
+        "company_benefits": benefits,
+        "company_culture_profiles": culture,
+        "company_hiring_policies": hiring_policy,
+        "company_compliance_controls": compliance_controls,
+        "company_responsibilities": responsibilities,
+        "company_skills_catalog": skills,
+        "behavioral_competencies_catalog": behaviors,
+        "company_retention_policies": retention,
+        "company_screening_questions": screening,
+    }
+    logger.info("✅ Seed de configurações do tenant demo concluído: %s", summary)
+    return summary
+
+
 async def seed_demo_data(db: AsyncSession) -> dict[str, Any]:
     """
     Seed the database with demo data.
@@ -1321,12 +1736,18 @@ async def seed_demo_data(db: AsyncSession) -> dict[str, Any]:
     
     await db.commit()
     logger.info(f"✅ Created {len(vacancy_candidates_data)} vacancy-candidate relationships")
-    
+
+    # Task #813 — popula configs do tenant demo (benefits, culture, hiring policy,
+    # compliance controls, responsibilities, skills catalog, retention policy,
+    # screening questions). Idempotente, restrito ao DEMO_COMPANY_UUID.
+    settings_summary = await seed_demo_company_settings(db)
+
     return {
         "success": True,
         "jobs_created": len(jobs_data),
         "candidates_created": len(candidates_data),
         "relationships_created": len(vacancy_candidates_data),
+        "demo_company_settings": settings_summary,
         "message": "Demo data seeded successfully. All records are marked with [DEMO] prefix."
     }
 
