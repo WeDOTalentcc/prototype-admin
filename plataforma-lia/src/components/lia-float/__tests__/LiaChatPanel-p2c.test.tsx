@@ -48,23 +48,12 @@ const mockWsConnect = vi.fn()
 const mockSendApproval = vi.fn()
 const mockWsSend = vi.fn()
 
-vi.mock("@/hooks/ai/use-float-streaming", () => ({
-  useFloatStreaming: () => ({
-    isConnected: false,
-    isStreaming: false,
-    isReconnecting: false,
-    reconnectAttempt: 0,
-    streamingContent: "",
-    error: null,
-    hitlPending: null,
-    fairnessWarnings: [],
-    dismissFairnessWarnings: vi.fn(),
-    sendMessage: mockWsSend,
-    sendApproval: mockSendApproval,
-    connect: mockWsConnect,
-    disconnect: mockWsDisconnect,
-  }),
-}))
+// Task #817: hook `@/hooks/ai/use-float-streaming` removido (código morto, 0
+// consumidores em produção). O mock era órfão — `LiaChatPanel` consome chat
+// via `useLiaChatContext`, não diretamente via streaming hook. Mantemos os
+// stubs locais (`mockWsDisconnect`, `mockWsConnect`, `mockSendApproval`,
+// `mockWsSend`) caso testes futuros precisem injetá-los pelo contexto.
+void mockWsDisconnect; void mockWsConnect; void mockSendApproval; void mockWsSend;
 
 const mockSetMessages = vi.fn()
 const mockSetConversationId = vi.fn()

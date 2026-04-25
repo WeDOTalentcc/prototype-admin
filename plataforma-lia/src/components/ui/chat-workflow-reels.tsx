@@ -45,9 +45,18 @@ function usePipelinePulse() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data: PipelinePulseData | null) => {
         if (cancelled || !data) return
+        // Task #817 (canonical-fix, defesa em profundidade): mesmo com o
+        // backend declarando `PipelinePulseResponse{stages, total}` via
+        // Pydantic, o proxy pode retornar 200 OK com payload divergente em
+        // cenários transitórios (cache stale, HMR em dev, response 200 com
+        // body vazio quando o backend reinicia). Defensivo: tratar
+        // `stages` ausente/não-array como "sem dados", não como crash.
+        const stages = Array.isArray(data?.stages) ? data.stages : []
         const map: Record<string, number> = {}
-        for (const s of data.stages) {
-          map[s.macro_stage] = s.count
+        for (const s of stages) {
+          if (s && typeof s.macro_stage === "string" && typeof s.count === "number") {
+            map[s.macro_stage] = s.count
+          }
         }
         setPulse(map)
       })
