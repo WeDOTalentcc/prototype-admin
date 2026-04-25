@@ -1326,17 +1326,18 @@ def generate_vacancy_candidates(job_ids: list[str], candidate_ids: list[str]) ->
 
 
 async def _seed_demo_company_benefits(db: AsyncSession) -> int:
-    """Popula `company_benefits` com os 25 benefícios brasileiros padrão."""
-    existing = await db.scalar(
-        select(func.count()).select_from(CompanyBenefit).where(
-            CompanyBenefit.company_id == DEMO_COMPANY_UUID
-        )
-    )
-    if existing:
-        logger.info("📦 [demo seed] company_benefits: %s registros já existem, pulando", existing)
-        return 0
+    """Popula `company_benefits` com os 25 benefícios brasileiros padrão.
+
+    Idempotência per-record (chave natural: `name`). Reruns só inserem
+    benefícios que ainda não existem para o tenant demo.
+    """
+    existing_names = set((await db.execute(
+        select(CompanyBenefit.name).where(CompanyBenefit.company_id == DEMO_COMPANY_UUID)
+    )).scalars().all())
     inserted = 0
     for benefit_data in DEFAULT_BRAZILIAN_BENEFITS:
+        if benefit_data["name"] in existing_names:
+            continue
         db.add(CompanyBenefit(
             company_id=DEMO_COMPANY_UUID,
             is_active=True,
@@ -1344,8 +1345,12 @@ async def _seed_demo_company_benefits(db: AsyncSession) -> int:
             **benefit_data,
         ))
         inserted += 1
-    await db.flush()
-    logger.info("📦 [demo seed] company_benefits: %s benefícios padrão inseridos", inserted)
+    if inserted:
+        await db.flush()
+    logger.info(
+        "📦 [demo seed] company_benefits: %s inseridos / %s já existiam",
+        inserted, len(existing_names),
+    )
     return inserted
 
 
@@ -1431,17 +1436,25 @@ async def _seed_demo_hiring_policy(db: AsyncSession) -> int:
 
 
 async def _seed_demo_compliance_controls(db: AsyncSession) -> int:
-    """Popula `company_compliance_controls` com 5 controles por framework prioritário."""
-    existing = await db.scalar(
-        select(func.count()).select_from(CompanyComplianceControl).where(
-            CompanyComplianceControl.company_id == uuid.UUID(DEMO_COMPANY_UUID)
+    """Popula `company_compliance_controls` com 5 controles por framework prioritário.
+
+    Idempotência per-record (chave natural: `control_library_id`). Reruns só
+    inserem controles que ainda não foram vinculados ao tenant demo.
+
+    Fail-fast (canonical-fix): se a `compliance_control_library` estiver vazia
+    para TODOS os frameworks alvo E ainda não houver nenhum controle vinculado
+    ao tenant demo, lança `RuntimeError`. Isso evita o cenário onde o seed
+    "passa" silenciosamente sem popular `company_compliance_controls`.
+    """
+    demo_uuid = uuid.UUID(DEMO_COMPANY_UUID)
+    existing_library_ids = set((await db.execute(
+        select(CompanyComplianceControl.control_library_id).where(
+            CompanyComplianceControl.company_id == demo_uuid
         )
-    )
-    if existing:
-        logger.info("🛡️  [demo seed] company_compliance_controls: %s registros já existem, pulando", existing)
-        return 0
+    )).scalars().all())
 
     inserted = 0
+    available_in_library = 0
     for framework in _DEMO_COMPLIANCE_FRAMEWORKS:
         rows = (await db.execute(
             select(ComplianceControlLibrary.id)
@@ -1449,9 +1462,12 @@ async def _seed_demo_compliance_controls(db: AsyncSession) -> int:
             .order_by(ComplianceControlLibrary.control_id)
             .limit(_DEMO_COMPLIANCE_LIMIT_PER_FRAMEWORK)
         )).scalars().all()
+        available_in_library += len(rows)
         for control_library_id in rows:
+            if control_library_id in existing_library_ids:
+                continue
             db.add(CompanyComplianceControl(
-                company_id=uuid.UUID(DEMO_COMPANY_UUID),
+                company_id=demo_uuid,
                 control_library_id=control_library_id,
                 status="not_started",
                 owner_name="Demo Compliance Officer",
@@ -1459,37 +1475,44 @@ async def _seed_demo_compliance_controls(db: AsyncSession) -> int:
                 notes=f"Controle inicializado pelo demo seed ({framework}).",
             ))
             inserted += 1
+
+    if available_in_library == 0 and not existing_library_ids:
+        # Fail-fast canonical: a master library está vazia e o tenant demo
+        # não tem nenhum controle. Sem isso, o seed reportaria sucesso com
+        # uma tabela crítica vazia — exatamente o "fallback silencioso"
+        # que o canonical-fix proíbe.
+        raise RuntimeError(
+            "compliance_control_library vazia para frameworks "
+            f"{list(_DEMO_COMPLIANCE_FRAMEWORKS)}. Popule a master library "
+            "(seed da biblioteca de compliance) antes de rodar o demo seed."
+        )
+
     if inserted:
         await db.flush()
-        logger.info("🛡️  [demo seed] company_compliance_controls: %s controles iniciais inseridos", inserted)
-    else:
-        # Sem fallback silencioso: alerta explicitamente que a master library
-        # está vazia. Não falha — esse seed roda em ambiente dev onde a
-        # biblioteca pode ainda não ter sido populada via migration de seed.
-        logger.warning(
-            "🛡️  [demo seed] company_compliance_controls: 0 inseridos — "
-            "compliance_control_library vazia para frameworks %s. "
-            "Rode o seed da biblioteca antes para popular controles do tenant demo.",
-            list(_DEMO_COMPLIANCE_FRAMEWORKS),
-        )
+    logger.info(
+        "🛡️  [demo seed] company_compliance_controls: %s inseridos / %s já vinculados",
+        inserted, len(existing_library_ids),
+    )
     return inserted
 
 
 async def _seed_demo_responsibilities(db: AsyncSession) -> int:
-    """Popula `company_responsibilities` com responsabilidades-base de RH."""
-    existing = await db.scalar(
-        select(func.count()).select_from(CompanyResponsibility).where(
+    """Popula `company_responsibilities` com responsabilidades-base de RH.
+
+    Idempotência per-record (chave natural: `description_hash` sha256).
+    """
+    existing_hashes = set((await db.execute(
+        select(CompanyResponsibility.description_hash).where(
             CompanyResponsibility.company_id == DEMO_COMPANY_UUID
         )
-    )
-    if existing:
-        logger.info("📝 [demo seed] company_responsibilities: %s registros já existem, pulando", existing)
-        return 0
+    )).scalars().all())
     inserted = 0
     for resp in _DEMO_RESPONSIBILITIES:
         description_hash = hashlib.sha256(
             resp["description"].strip().lower().encode("utf-8")
         ).hexdigest()
+        if description_hash in existing_hashes:
+            continue
         db.add(CompanyResponsibility(
             company_id=DEMO_COMPANY_UUID,
             description=resp["description"],
@@ -1500,55 +1523,66 @@ async def _seed_demo_responsibilities(db: AsyncSession) -> int:
             created_by="demo_seed",
         ))
         inserted += 1
-    await db.flush()
-    logger.info("📝 [demo seed] company_responsibilities: %s responsabilidades inseridas", inserted)
+    if inserted:
+        await db.flush()
+    logger.info(
+        "📝 [demo seed] company_responsibilities: %s inseridos / %s já existiam",
+        inserted, len(existing_hashes),
+    )
     return inserted
 
 
 async def _seed_demo_skills_catalog(db: AsyncSession) -> tuple[int, int]:
-    """Popula `company_skills_catalog` (técnicos) e `behavioral_competencies_catalog`."""
+    """Popula `company_skills_catalog` (técnicos) e `behavioral_competencies_catalog`.
+
+    Idempotência per-record (chaves naturais: `skill_name` e `name`).
+    """
     skills_inserted = 0
     behaviors_inserted = 0
 
-    existing_skills = await db.scalar(
-        select(func.count()).select_from(CompanySkillsCatalog).where(
+    existing_skill_names = set((await db.execute(
+        select(CompanySkillsCatalog.skill_name).where(
             CompanySkillsCatalog.company_id == DEMO_COMPANY_UUID
         )
+    )).scalars().all())
+    for skill in _DEMO_TECHNICAL_SKILLS:
+        if skill["skill_name"] in existing_skill_names:
+            continue
+        db.add(CompanySkillsCatalog(
+            company_id=DEMO_COMPANY_UUID,
+            source="demo_seed",
+            is_active=True,
+            **skill,
+        ))
+        skills_inserted += 1
+    if skills_inserted:
+        await db.flush()
+    logger.info(
+        "🛠️  [demo seed] company_skills_catalog: %s inseridos / %s já existiam",
+        skills_inserted, len(existing_skill_names),
     )
-    if existing_skills:
-        logger.info("🛠️  [demo seed] company_skills_catalog: %s registros já existem, pulando", existing_skills)
-    else:
-        for skill in _DEMO_TECHNICAL_SKILLS:
-            db.add(CompanySkillsCatalog(
-                company_id=DEMO_COMPANY_UUID,
-                source="demo_seed",
-                is_active=True,
-                **skill,
-            ))
-            skills_inserted += 1
-        if skills_inserted:
-            await db.flush()
-        logger.info("🛠️  [demo seed] company_skills_catalog: %s skills técnicas inseridas", skills_inserted)
 
-    existing_behaviors = await db.scalar(
-        select(func.count()).select_from(BehavioralCompetencyCatalog).where(
+    existing_behavior_names = set((await db.execute(
+        select(BehavioralCompetencyCatalog.name).where(
             BehavioralCompetencyCatalog.company_id == DEMO_COMPANY_UUID
         )
+    )).scalars().all())
+    for comp in _DEMO_BEHAVIORAL_COMPETENCIES:
+        if comp["name"] in existing_behavior_names:
+            continue
+        db.add(BehavioralCompetencyCatalog(
+            company_id=DEMO_COMPANY_UUID,
+            source="demo_seed",
+            is_active=True,
+            **comp,
+        ))
+        behaviors_inserted += 1
+    if behaviors_inserted:
+        await db.flush()
+    logger.info(
+        "🧠 [demo seed] behavioral_competencies_catalog: %s inseridos / %s já existiam",
+        behaviors_inserted, len(existing_behavior_names),
     )
-    if existing_behaviors:
-        logger.info("🧠 [demo seed] behavioral_competencies_catalog: %s registros já existem, pulando", existing_behaviors)
-    else:
-        for comp in _DEMO_BEHAVIORAL_COMPETENCIES:
-            db.add(BehavioralCompetencyCatalog(
-                company_id=DEMO_COMPANY_UUID,
-                source="demo_seed",
-                is_active=True,
-                **comp,
-            ))
-            behaviors_inserted += 1
-        if behaviors_inserted:
-            await db.flush()
-        logger.info("🧠 [demo seed] behavioral_competencies_catalog: %s competências inseridas", behaviors_inserted)
 
     return skills_inserted, behaviors_inserted
 
@@ -1575,25 +1609,31 @@ async def _seed_demo_retention_policy(db: AsyncSession) -> int:
 
 
 async def _seed_demo_screening_questions(db: AsyncSession) -> int:
-    """Popula `company_screening_questions` com as 8 perguntas padrão brasileiras."""
-    existing = await db.scalar(
-        select(func.count()).select_from(CompanyScreeningQuestion).where(
+    """Popula `company_screening_questions` com as 8 perguntas padrão brasileiras.
+
+    Idempotência per-record (chave natural: `question_text`).
+    """
+    existing_questions = set((await db.execute(
+        select(CompanyScreeningQuestion.question_text).where(
             CompanyScreeningQuestion.company_id == DEMO_COMPANY_UUID
         )
-    )
-    if existing:
-        logger.info("❓ [demo seed] company_screening_questions: %s registros já existem, pulando", existing)
-        return 0
+    )).scalars().all())
     inserted = 0
     for q in DEFAULT_SCREENING_QUESTIONS:
+        if q["question_text"] in existing_questions:
+            continue
         db.add(CompanyScreeningQuestion(
             company_id=DEMO_COMPANY_UUID,
             is_active=True,
             **q,
         ))
         inserted += 1
-    await db.flush()
-    logger.info("❓ [demo seed] company_screening_questions: %s perguntas padrão inseridas", inserted)
+    if inserted:
+        await db.flush()
+    logger.info(
+        "❓ [demo seed] company_screening_questions: %s inseridas / %s já existiam",
+        inserted, len(existing_questions),
+    )
     return inserted
 
 
@@ -1627,6 +1667,31 @@ async def seed_demo_company_settings(db: AsyncSession) -> dict[str, Any]:
         # antes de propagar a exceção ao caller (evita session "dirty").
         await db.rollback()
         raise
+
+    # Post-seed validation: confirma que os 3 hints alvo do PreConditionChecker
+    # foram silenciados. Canonical-fix: se algum hint persistir, lança erro
+    # explícito (não engole). Import local evita ciclo de import no topo.
+    from app.orchestrator.precondition_checker import PreConditionChecker
+    checker = PreConditionChecker()
+    hint_status = {
+        "benefits_catalog_empty": await checker._benefits_catalog_empty(DEMO_COMPANY_UUID),
+        "culture_profile_missing": await checker._culture_profile_missing(DEMO_COMPANY_UUID),
+        "hiring_policy_missing": await checker._hiring_policy_missing(DEMO_COMPANY_UUID),
+    }
+    still_active = [name for name, active in hint_status.items() if active]
+    if still_active:
+        logger.error(
+            "❌ [demo seed] post-seed validation FALHOU: hints ainda ativos para %s: %s",
+            DEMO_COMPANY_UUID, still_active,
+        )
+        raise RuntimeError(
+            f"Post-seed validation falhou: hints {still_active} ainda ativos "
+            f"para o tenant demo {DEMO_COMPANY_UUID} após o seed."
+        )
+    logger.info(
+        "✅ [demo seed] post-seed validation OK: 3 hints alvo silenciados (%s)",
+        list(hint_status.keys()),
+    )
 
     summary = {
         "company_benefits": benefits,
