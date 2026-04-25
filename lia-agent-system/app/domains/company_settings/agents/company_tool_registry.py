@@ -42,19 +42,22 @@ OPERATIONAL_TOOL_NAMES: frozenset[str] = frozenset({
 
 
 def _pick_tool_definitions(
-    source: list[ToolDefinition], names: set[str]
+    source: list[ToolDefinition], names: list[str] | tuple[str, ...]
 ) -> list[ToolDefinition]:
-    """Retorna ToolDefinitions com nomes em `names`, falhando alto se algum
-    estiver ausente — evita silently-missing tools quando o registry de
-    origem mudar."""
+    """Retorna ToolDefinitions com nomes em `names`, preservando a ordem do
+    iterável de entrada (determinismo na apresentação ao LLM). Falha alto se
+    algum nome estiver ausente — evita silently-missing tools quando o
+    registry de origem mudar.
+    """
     by_name = {td.name: td for td in source}
-    missing = names - by_name.keys()
+    requested = list(names)
+    missing = [n for n in requested if n not in by_name]
     if missing:
         raise LookupError(
             "Tool definitions ausentes no registry de origem: "
             f"{sorted(missing)} — verifique jobs_mgmt/talent registries."
         )
-    return [by_name[n] for n in names]
+    return [by_name[n] for n in requested]
 
 TIER_1_FIELDS = {"cnpj", "name"}
 TIER_2_FIELDS = {"website", "mission", "vision", "values", "core_competencies", "evp_bullets"}
@@ -660,8 +663,8 @@ def _build_operational_tool_definitions() -> list[ToolDefinition]:
         TOOL_DEFINITIONS as _TALENT_TOOLS,
     )
 
-    job_tools = _pick_tool_definitions(_JOBS_MGMT_TOOLS, {"list_jobs", "view_job_details"})
-    talent_tools = _pick_tool_definitions(_TALENT_TOOLS, {"search_candidates"})
+    job_tools = _pick_tool_definitions(_JOBS_MGMT_TOOLS, ["list_jobs", "view_job_details"])
+    talent_tools = _pick_tool_definitions(_TALENT_TOOLS, ["search_candidates"])
 
     create_tool = ToolDefinition(
         name="create_job_vacancy",
