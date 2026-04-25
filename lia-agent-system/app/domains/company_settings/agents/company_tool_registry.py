@@ -588,19 +588,19 @@ async def _wrap_get_company_completion(**kwargs: Any) -> dict[str, Any]:
 
 @tool_handler("company_settings")
 async def _wrap_create_job_vacancy(**kwargs: Any) -> dict[str, Any]:
-    """Cria vaga via service canônico `JobVacancyLifecycleService.create`.
+    """Cria vaga delegando ao handler canônico `app.tools.job_tools.create_job_vacancy`.
 
-    Usado pelo agente `company_settings` quando o recrutador interrompe o
-    onboarding com intenção operacional explícita ("antes de configurar tudo,
-    quero cadastrar uma vaga rascunho"). Sem fallback silencioso: erros de
-    validação ou de tenant viram resposta estruturada com `success=False`.
+    Caminho de produção: o `@tool_handler` resolve `company_id` (via kwargs
+    explícito ou contextvar `get_current_llm_tenant`) e nós o repassamos
+    como `_tenant_id` ao handler canônico — que extrai/valida e delega ao
+    `JobVacancyLifecycleService.create`. Assim o agente `company_settings`
+    reusa exatamente a mesma lógica do executor de chat (sem duplicar
+    serviço, sem fallback silencioso).
     """
-    from app.domains.job_management.services.job_vacancy_lifecycle_service import (
-        job_vacancy_lifecycle_service,
-    )
+    from app.tools.job_tools import create_job_vacancy as _canonical_create
 
     company_id = kwargs.pop("company_id", "") or ""
-    title = (kwargs.pop("title", "") or "").strip()
+    title = (kwargs.get("title", "") or "").strip()
     if not title:
         return {
             "success": False,
@@ -610,30 +610,14 @@ async def _wrap_create_job_vacancy(**kwargs: Any) -> dict[str, Any]:
         }
 
     payload = {k: v for k, v in kwargs.items() if not k.startswith("_") and v is not None}
+    payload["_tenant_id"] = str(company_id)
+
     try:
-        result = await job_vacancy_lifecycle_service.create(
-            company_id=str(company_id),
-            title=title,
-            **payload,
-        )
-        msg = (
-            f"Vaga '{result.get('title', title)}' criada como "
-            f"{result.get('status', 'Rascunho')} (ID: {result.get('id')})."
-        )
-        return {**result, "message": msg}
-    except (ValueError, LookupError) as exc:
-        code = "validation_error" if isinstance(exc, ValueError) else "not_found"
-        logger.warning("[company_settings] create_job_vacancy %s: %s", code, exc)
-        return {
-            "success": False,
-            "operation": "create_job_vacancy",
-            "error": code,
-            "message": str(exc),
-        }
+        result = await _canonical_create(**payload)
     except Exception as exc:  # noqa: BLE001 — fronteira do tool: mapear, não mascarar
-        # LIA-812-1: erro inesperado (ex: DBAPIError) é propagado como resposta
-        # estruturada com `success=False` e logado com stacktrace completo,
-        # para que o agente reporte falha real em vez de afirmar sucesso.
+        # Erro inesperado (ex: DBAPIError) é logado com stack e devolvido
+        # como resposta estruturada — para que o agente reporte falha real
+        # em vez de afirmar sucesso.
         logger.exception("[company_settings] create_job_vacancy erro inesperado")
         return {
             "success": False,
@@ -644,6 +628,22 @@ async def _wrap_create_job_vacancy(**kwargs: Any) -> dict[str, Any]:
                 f"{type(exc).__name__}: {str(exc)[:200]}"
             ),
         }
+
+    if isinstance(result, dict) and result.get("success") is False:
+        # Já vem estruturado do handler canônico (validation_error/not_found).
+        logger.warning(
+            "[company_settings] create_job_vacancy retornou erro estruturado: %s",
+            result.get("error"),
+        )
+        return result
+
+    job_title = (result or {}).get("title", title)
+    job_status = (result or {}).get("status", "Rascunho")
+    job_id = (result or {}).get("id")
+    return {
+        **(result or {}),
+        "message": f"Vaga '{job_title}' criada como {job_status} (ID: {job_id}).",
+    }
 
 
 def _build_operational_tool_definitions() -> list[ToolDefinition]:

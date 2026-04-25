@@ -14,6 +14,9 @@ Validam, sem subir o backend, que:
   5. O system_prompt do YAML inclui o bloco "Atendimento de intenções
      operacionais (Task #812)" e o `scope_in` agora menciona as tools
      operacionais.
+  6. O `SystemPromptBuilder.build(agent_type='company_settings')` — caminho
+     REAL de produção usado pelo `MainOrchestrator` — injeta a guidance
+     operacional (mapping de tools + regra de não-bloqueio).
 
 Executar:
     python3 lia-agent-system/tests/standalone/test_task812_company_settings_operational.py
@@ -209,6 +212,48 @@ def test_prompt_yaml_updated() -> None:
     assert "intenção operacional clara" in raw
 
 
+# ──────────────────────────────────────────────────────────────────────
+# 6) SystemPromptBuilder (caminho de produção do orchestrator)
+# ──────────────────────────────────────────────────────────────────────
+def test_system_prompt_builder_injects_operational_guidance() -> None:
+    """Garante que o caminho REAL usado pelo `MainOrchestrator`
+    (`SystemPromptBuilder.build(agent_type='company_settings')`) injeta a
+    guidance operacional. Cobre o defeito de wiring identificado no code
+    review: editar `app/prompts/domains/company_settings.yaml` não chega ao
+    LLM em produção; o builder lê `app/prompts/shared/agent_prompts.yaml`.
+    """
+    # Limpa cache do lru_cache para garantir leitura fresca após edição
+    from app.shared.prompts import system_prompt_builder as spb
+    spb._load_domain_additions.cache_clear()
+
+    prompt = spb.SystemPromptBuilder.build(agent_type="company_settings")
+
+    # Bloco operacional injetado
+    assert "Atendimento de intenções operacionais (Task #812)" in prompt, (
+        "SystemPromptBuilder NÃO injetou o bloco operacional — "
+        "agent_prompts.yaml provavelmente não tem a chave company_settings."
+    )
+
+    # Mapping explícito das 4 tools operacionais
+    for tool_name in (
+        "create_job_vacancy",
+        "list_jobs",
+        "view_job_details",
+        "search_candidates",
+    ):
+        assert tool_name in prompt, (
+            f"Mapping da tool {tool_name!r} ausente do prompt de produção."
+        )
+
+    # Regra de não-bloqueio explícita
+    assert "NÃO bloqueie" in prompt or "não bloqueie" in prompt.lower(), (
+        "Regra de não bloquear intenção operacional ausente do prompt."
+    )
+
+    # A especialização do agente foi anexada (heurística pelo header)
+    assert "Especialização do Agente (company_settings)" in prompt
+
+
 def main() -> int:
     os.environ.setdefault("LIA_TEST_MODE", "1")
 
@@ -218,6 +263,10 @@ def main() -> int:
     _run("create_job_vacancy exige title", test_create_job_vacancy_requires_title)
     _run("telemetria aceita tools operacionais", test_telemetry_accepts_operational_tools)
     _run("YAML do prompt atualizado", test_prompt_yaml_updated)
+    _run(
+        "SystemPromptBuilder injeta guidance operacional",
+        test_system_prompt_builder_injects_operational_guidance,
+    )
 
     print()
     if _FAILS:
