@@ -337,3 +337,96 @@ def test_blocking_hint_wins_over_non_settings_intent():
     assert agent_type == "company_settings"
     assert len(blocking) == 1
     assert blocking[0].type == "missing_company_id"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Wiring regression guard (orchestrator-level) — task #811 follow-up
+#
+# A função _decide_agent_type_from_hints DEVE ser chamada SEMPRE no fluxo do
+# MainOrchestrator, nunca apenas dentro de um `if _hints:` (regressão real
+# detectada na 2ª rodada de code review). Caso contrário, intents explícitos
+# como "company_settings" são silenciosamente ignorados quando o
+# PreConditionChecker devolve lista vazia de hints.
+#
+# Como o conftest async/DB do projeto trava a coleta do pytest quando se
+# importa MainOrchestrator de verdade, este teste usa AST estático para
+# validar a estrutura do código (rápido, determinístico, ~30ms).
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def test_decide_agent_type_from_hints_is_called_outside_if_hints_block():
+    """Garante que a chamada ao helper NÃO está aninhada dentro de
+    `if _hints:`. Se alguém regredir essa wiring, o teste quebra com uma
+    mensagem explicativa em vez de só falhar no E2E."""
+    import ast
+    import pathlib
+
+    src_path = pathlib.Path(__file__).resolve().parents[2] / "app" / "orchestrator" / "main_orchestrator.py"
+    tree = ast.parse(src_path.read_text())
+
+    HELPER_NAME = "_decide_agent_type_from_hints"
+
+    def _collect_calls(node, inside_if_hints: bool):
+        results: list[bool] = []
+        for child in ast.walk(node):
+            if isinstance(child, ast.Call):
+                fn = child.func
+                if isinstance(fn, ast.Name) and fn.id == HELPER_NAME:
+                    results.append(inside_if_hints)
+        return results
+
+    # Procura If com test == `_hints` (truthiness check) E coleta chamadas
+    # dentro do body desse If.
+    calls_inside_if_hints: list[bool] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.If):
+            test = node.test
+            is_if_hints = (
+                isinstance(test, ast.Name) and test.id == "_hints"
+            )
+            if is_if_hints:
+                # Marca todas as chamadas em body/orelse desse If como "dentro"
+                for sub in node.body:
+                    calls_inside_if_hints.extend(_collect_calls(sub, True))
+                for sub in node.orelse:
+                    calls_inside_if_hints.extend(_collect_calls(sub, True))
+
+    # Total de chamadas no módulo todo
+    all_calls: list[ast.Call] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            fn = node.func
+            if isinstance(fn, ast.Name) and fn.id == HELPER_NAME:
+                all_calls.append(node)
+
+    # Pelo menos uma chamada existe (o orchestrator USA o helper)
+    assert len(all_calls) >= 1, (
+        f"Esperava encontrar pelo menos 1 chamada a {HELPER_NAME} no "
+        "MainOrchestrator, mas não encontrei nenhuma. O fix da task #811 "
+        "foi revertido?"
+    )
+
+    # NENHUMA dessas chamadas deve estar dentro de `if _hints:`
+    nested_count = sum(calls_inside_if_hints)
+    assert nested_count == 0, (
+        f"REGRESSÃO de wiring (task #811): {nested_count} chamada(s) a "
+        f"{HELPER_NAME} estão DENTRO de `if _hints:`. Isso faz com que "
+        "intents explícitos de configuração ('company_settings', "
+        "'configure_company', etc) sejam ignorados quando o "
+        "PreConditionChecker devolve lista vazia. Mova a chamada para "
+        "FORA do bloco — ela deve rodar sempre."
+    )
+
+
+def test_decide_agent_type_handles_empty_hints_with_explicit_intent():
+    """Documenta o contrato que o teste estrutural acima protege:
+    com lista vazia + intent explícito → ainda delega."""
+    agent_type, blocking, informational = _decide_agent_type_from_hints(
+        [], intent="company_settings"
+    )
+    assert agent_type == "company_settings"
+    assert blocking == [] and informational == []
+
+    # E sem intent → preserva orchestrator
+    agent_type2, _, _ = _decide_agent_type_from_hints([], intent=None)
+    assert agent_type2 == "orchestrator"

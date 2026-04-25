@@ -471,76 +471,95 @@ class MainOrchestrator:
 
                     # D10 — Pre-condition check for proactive assistance
                     #
-                    # Severity-based delegation (canonical-fix, ref task-811):
-                    # ver _decide_agent_type_from_hints() no topo do módulo
-                    # para o critério completo. Resumo: hints `info` mantêm o
-                    # orchestrator e viram sugestão; hints `warning|critical`
-                    # de onboarding desviam para `company_settings`.
+                    # Severity- + intent-based delegation (canonical-fix,
+                    # ref task-811): ver _decide_agent_type_from_hints() no
+                    # topo do módulo para o critério completo. Resumo:
+                    #   - intent explícito de configuração → delega
+                    #     (mesmo com lista de hints vazia);
+                    #   - hints `warning|critical` de onboarding → delega;
+                    #   - hints `info` (apenas) → mantêm o orchestrator e
+                    #     viram sugestão proativa anexada ao prompt.
+                    #
+                    # IMPORTANTE: a chamada ao helper acontece SEMPRE,
+                    # independente de existirem hints. Caso contrário, intent
+                    # explícito de configuração seria ignorado quando o
+                    # checker devolve lista vazia (regressão da regressão).
                     _proactive_hints_text = ""
                     _proactive_hints_payload: list[dict] = []
                     _agent_type = "orchestrator"
+                    _hints: list = []
+                    _blocking_hints: list = []
+                    _informational_hints: list = []
+                    _ctx_intent = (getattr(ctx, "intent", "") or "").strip().lower()
                     try:
                         from app.orchestrator.precondition_checker import precondition_checker
-                        _hints = await precondition_checker.check(ctx)
-                        if _hints:
-                            _proactive_hints_text = (
-                                "## Sugestoes Proativas (detectadas pelo sistema)\n"
-                                "Voce DEVE mencionar estas proativamente se relevantes ao que o recrutador pediu:\n\n"
-                                + "\n".join(f"- [{h.severity}] {h.message}" for h in _hints)
-                            )
-                            _ctx_intent = (getattr(ctx, "intent", "") or "").strip().lower()
-                            _agent_type, _blocking_hints, _informational_hints = (
-                                _decide_agent_type_from_hints(_hints, intent=_ctx_intent)
-                            )
-                            if _agent_type == "company_settings":
-                                if _blocking_hints:
-                                    _decision_reason = "blocking_severity_present"
-                                else:
-                                    _decision_reason = "explicit_company_settings_intent"
-                                logger.info(
-                                    "[PreConditionChecker] Delegating to company_settings agent",
-                                    extra={
-                                        "company_id": _loop_company_id,
-                                        "intent": _ctx_intent,
-                                        "blocking_hints": [
-                                            (h.type, h.severity) for h in _blocking_hints
-                                        ],
-                                        "informational_hints": [
-                                            (h.type, h.severity) for h in _informational_hints
-                                        ],
-                                        "total_hints": len(_hints),
-                                        "decision_reason": _decision_reason,
-                                    },
-                                )
-                            elif _informational_hints:
-                                logger.info(
-                                    "[PreConditionChecker] Onboarding hints detected but informational — keeping orchestrator",
-                                    extra={
-                                        "company_id": _loop_company_id,
-                                        "intent": _ctx_intent,
-                                        "informational_hints": [
-                                            (h.type, h.severity) for h in _informational_hints
-                                        ],
-                                        "total_hints": len(_hints),
-                                        "decision_reason": "non_blocking_severity",
-                                    },
-                                )
-                            # Structured payload for frontend rendering (NavigationHintCard / proactive-insight-card)
-                            _proactive_hints_payload = [
-                                {
-                                    "type": h.type,
-                                    "message": h.message,
-                                    "severity": h.severity,
-                                    "action": h.action,
-                                    "metadata": h.metadata,
-                                }
-                                for h in _hints
-                            ]
-                            # Save for downstream WebSocket emitter
-                            ctx.extra["proactive_hints"] = _proactive_hints_payload
-                            logger.info("[PreConditionChecker] %d proactive hint(s) generated", len(_hints))
+                        _hints = await precondition_checker.check(ctx) or []
                     except Exception as _pc_exc:
                         logger.debug("[PreConditionChecker] check skipped: %s", _pc_exc)
+                        _hints = []
+
+                    # Decisão de roteamento — sempre executada, mesmo com
+                    # _hints == []. É o que garante que intent explícito
+                    # ("company_settings", "configure_company", etc) seja
+                    # honrado mesmo na ausência de hints proativos.
+                    _agent_type, _blocking_hints, _informational_hints = (
+                        _decide_agent_type_from_hints(_hints, intent=_ctx_intent)
+                    )
+
+                    if _hints:
+                        _proactive_hints_text = (
+                            "## Sugestoes Proativas (detectadas pelo sistema)\n"
+                            "Voce DEVE mencionar estas proativamente se relevantes ao que o recrutador pediu:\n\n"
+                            + "\n".join(f"- [{h.severity}] {h.message}" for h in _hints)
+                        )
+                        # Structured payload for frontend rendering (NavigationHintCard / proactive-insight-card)
+                        _proactive_hints_payload = [
+                            {
+                                "type": h.type,
+                                "message": h.message,
+                                "severity": h.severity,
+                                "action": h.action,
+                                "metadata": h.metadata,
+                            }
+                            for h in _hints
+                        ]
+                        # Save for downstream WebSocket emitter
+                        ctx.extra["proactive_hints"] = _proactive_hints_payload
+                        logger.info("[PreConditionChecker] %d proactive hint(s) generated", len(_hints))
+
+                    if _agent_type == "company_settings":
+                        if _blocking_hints:
+                            _decision_reason = "blocking_severity_present"
+                        else:
+                            _decision_reason = "explicit_company_settings_intent"
+                        logger.info(
+                            "[PreConditionChecker] Delegating to company_settings agent",
+                            extra={
+                                "company_id": _loop_company_id,
+                                "intent": _ctx_intent,
+                                "blocking_hints": [
+                                    (h.type, h.severity) for h in _blocking_hints
+                                ],
+                                "informational_hints": [
+                                    (h.type, h.severity) for h in _informational_hints
+                                ],
+                                "total_hints": len(_hints),
+                                "decision_reason": _decision_reason,
+                            },
+                        )
+                    elif _informational_hints:
+                        logger.info(
+                            "[PreConditionChecker] Onboarding hints detected but informational — keeping orchestrator",
+                            extra={
+                                "company_id": _loop_company_id,
+                                "intent": _ctx_intent,
+                                "informational_hints": [
+                                    (h.type, h.severity) for h in _informational_hints
+                                ],
+                                "total_hints": len(_hints),
+                                "decision_reason": "non_blocking_severity",
+                            },
+                        )
 
                     from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
                     _system_prompt = SystemPromptBuilder.build(
