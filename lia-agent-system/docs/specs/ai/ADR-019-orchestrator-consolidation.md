@@ -168,6 +168,72 @@ Detalhes: ver `Documents/Python/ORCHESTRATOR_MIGRATION_MASTER_PLAN.md` Anexo A-E
 
 ---
 
+## Acceptance Criteria — Promotion Gate (Proposed → Accepted)
+
+Este ADR está em status **Proposed** durante Sprints I-IV. Promove a **Accepted** apenas quando TODOS os critérios abaixo estiverem verdes:
+
+### Gates obrigatórios (P0)
+
+1. **Characterization tests 100% pass rate**
+   - 50+ testes em `tests/characterization/` passando 3 runs consecutivas (zero flake)
+   - Cobertura dos 12 métodos V1 listados em Anexo H do MASTER_PLAN
+   - Verificação: `pytest tests/characterization/ --no-cov` retorna 0 failures
+
+2. **Multi-tenancy isolation preservada**
+   - Zero vazamento de `company_id` entre tenants em integration tests
+   - Audit log mostra `tenant.company_id` em 100% dos eventos pós-migração
+   - Property test em produção: 0 violações em 1 semana de canary
+
+3. **LGPD compliance preservada**
+   - FairnessGuard ativo em 100% dos prompts de ranking (Sprint III canary)
+   - Zero atributos protegidos em spans OTLP (validado via grep diário em staging)
+   - Audit trail completo: nenhum drop de evento de compliance
+
+### Gates de qualidade (P1)
+
+4. **Services extraídos com cobertura ≥ 90%**
+   - `PlanOrchestrationService`, `FallbackReActService`, `PolicyGateService`
+   - Cada um com mínimo 8 unit tests + 2 integration tests
+   - Coverage report: ≥ 90% lines, ≥ 80% branches
+
+5. **Canary 100% estável por 1 semana**
+   - Sprint III: stages 5% → 25% → 50% → 100% sem rollback automático
+   - Após 100%: 7 dias consecutivos sem alertas críticos
+   - Métricas observadas: error rate, latência p95, token usage por tenant
+
+6. **Latência preserved**
+   - p95 do `MainOrchestrator.process()` não degrada > 10% vs baseline V1
+   - Comparação documentada em `docs/migrations/latency-comparison-pre-post.md`
+   - Baseline em `MIGRATION_REGRESSION_BASELINE.md` Section 2
+
+### Gates operacionais (P2)
+
+7. **Log review limpo**
+   - Zero CRITICAL alerts relacionados a "V1/V2 misrouting" em staging por 7 dias
+   - Zero "deprecated path used in new code" warnings em CI
+
+8. **OTLP traces visíveis**
+   - Spans `orchestrator.v2.*` aparecem em Honeycomb/Datadog
+   - Atributos obrigatórios (`tenant.company_id`, etc.) presentes em 100% dos spans
+   - Helper `validate_span_attributes()` em CI rejeita spans malformados
+
+### Sign-off necessário
+
+Para promoção a **Accepted**:
+- ✅ Backend lead aprova items 1-6 com evidências (links a dashboards/PRs)
+- ✅ Paulo (founder/produto) aprova items 7-8 com sign-off explícito
+- ✅ ADR atualizado com data de promoção + commit hash de Sprint III final
+
+### Critérios para rollback completo (abort migration)
+
+Se QUALQUER item abaixo ocorrer durante Sprints III-V, abortar e reverter para status quo:
+- Comportamento crítico do V1 não pode ser preservado em V2
+- Compliance LGPD em risco (regressão em audit log ou multi-tenancy)
+- Stakeholder externo bloqueia (cliente reporta breakage)
+- Latência p95 ≥ +20% durante 24h consecutivas
+
+---
+
 ## References
 
 - `app/orchestrator/orchestrator.py` (V1 atual, 668 LoC)

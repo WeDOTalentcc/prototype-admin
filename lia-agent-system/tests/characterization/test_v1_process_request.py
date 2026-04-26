@@ -22,58 +22,6 @@ import pytest
 # (V1 instancia ~10 services no __init__; mockar tudo é frágil. Estratégia:
 # instanciar real, patchar pontos específicos por test.)
 # ─────────────────────────────────────────────────────────────────────────────
-@pytest.fixture
-def v1_with_mocked_deps():
-    """
-    Cria Orchestrator V1 com dependencies internas mockadas.
-
-    Mockamos os pontos de I/O externo (LLM, DB, cache) e mantemos o resto
-    instanciado para testar o fluxo de orquestração real.
-    """
-    from app.orchestrator.orchestrator import Orchestrator
-
-    mock_llm = MagicMock()
-    mock_llm.complete = AsyncMock(return_value={"content": "ok", "tokens": 5})
-
-    with patch("app.orchestrator.orchestrator.response_cache_service") as mock_cache:
-        mock_cache.is_enabled.return_value = False
-        mock_cache.get_stats.return_value = {"hits": 0, "misses": 0}
-
-        v1 = Orchestrator(llm_service=mock_llm, db_service=None)
-        # Patch state_manager para evitar DB real
-        v1.state_manager = MagicMock()
-        v1.state_manager.get_state.return_value = None
-        v1.state_manager.create_conversation.return_value = "conv-test-1"
-        v1.state_manager.add_message = MagicMock()
-        v1.state_manager.update_state = MagicMock()
-        # Patch policy_engine para retornar allowed por padrão
-        v1.policy_engine = MagicMock()
-        v1.policy_engine.validate_request = AsyncMock(
-            return_value={"allowed": True, "constraints": {}}
-        )
-        # Patch cascaded_router para retorno previsível
-        from app.orchestrator.cascaded_router import RouteResult
-        v1._cascaded_router = MagicMock()
-        v1._cascaded_router.route = AsyncMock(
-            return_value=RouteResult(
-                domain_id="recruiter_assistant",
-                confidence=0.9,
-                source="test",
-                intent_details={"raw_intent": "test_intent"},
-            )
-        )
-        v1._domain_workflow = MagicMock()
-        v1._domain_workflow.execute = AsyncMock(
-            return_value=DomainResponseStub(
-                success=True,
-                message="domain workflow response",
-                data={"items": []},
-            )
-        )
-        v1._plan_detector = MagicMock()
-        v1._plan_detector.detect.return_value = None  # No plan by default
-
-        yield v1
 
 
 class DomainResponseStub:
@@ -94,9 +42,9 @@ class TestProcessRequestHappyPath:
     """Verifica que retorno tem shape correto em happy path."""
 
     @pytest.mark.asyncio
-    async def test_returns_dict_with_required_keys(self, v1_with_mocked_deps):
+    async def test_returns_dict_with_required_keys(self, v1_with_all_internal_mocks):
         """Contract: process_request deve retornar dict com chaves essenciais."""
-        result = await v1_with_mocked_deps.process_request(
+        result = await v1_with_all_internal_mocks.process_request(
             user_id="user-1",
             message="Quais candidatos temos para a vaga X?",
             conversation_id=None,
@@ -115,8 +63,8 @@ class TestProcessRequestCancellation:
     """Contract: mensagem de cancelamento retorna early sem chamar LLM/router."""
 
     @pytest.mark.asyncio
-    async def test_cancel_message_returns_cancelled_flag(self, v1_with_mocked_deps):
-        result = await v1_with_mocked_deps.process_request(
+    async def test_cancel_message_returns_cancelled_flag(self, v1_with_all_internal_mocks):
+        result = await v1_with_all_internal_mocks.process_request(
             user_id="user-1",
             message="cancelar",
             conversation_id="conv-1",
@@ -125,18 +73,18 @@ class TestProcessRequestCancellation:
         assert result.get("cancelled") is True
         assert result.get("success") is True
         # Cascaded router NÃO deve ter sido chamado (early return)
-        v1_with_mocked_deps._cascaded_router.route.assert_not_called()
+        v1_with_all_internal_mocks._cascaded_router.route.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_restart_message_clears_state(self, v1_with_mocked_deps):
-        result = await v1_with_mocked_deps.process_request(
+    async def test_restart_message_clears_state(self, v1_with_all_internal_mocks):
+        result = await v1_with_all_internal_mocks.process_request(
             user_id="user-1",
             message="recomeçar",
             conversation_id="conv-1",
             context={"company_id": "company-a"},
         )
         assert result.get("restarted") is True
-        v1_with_mocked_deps.state_manager.clear_state.assert_called_once_with("conv-1")
+        v1_with_all_internal_mocks.state_manager.clear_state.assert_called_once_with("conv-1")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -146,15 +94,15 @@ class TestProcessRequestMultiTenant:
     """P0 LGPD: company_id deve ser propagado em todas as chamadas internas."""
 
     @pytest.mark.asyncio
-    async def test_company_id_propagated_to_router(self, v1_with_mocked_deps):
-        await v1_with_mocked_deps.process_request(
+    async def test_company_id_propagated_to_router(self, v1_with_all_internal_mocks):
+        await v1_with_all_internal_mocks.process_request(
             user_id="user-1",
             message="lista candidatos",
             conversation_id="conv-1",
             context={"company_id": "company-tenant-a"},
         )
         # Cascaded router deve ter recebido o context
-        call_args = v1_with_mocked_deps._cascaded_router.route.call_args
+        call_args = v1_with_all_internal_mocks._cascaded_router.route.call_args
         assert call_args is not None
         # Segundo argumento posicional é o context
         ctx_passed = call_args.args[1] if len(call_args.args) > 1 else call_args.kwargs.get("context")
@@ -169,29 +117,29 @@ class TestProcessRequestContextOverride:
     """V1 tem hardcoded mapping context_type → domain (Anexo H Sprint II.4)."""
 
     @pytest.mark.asyncio
-    async def test_company_settings_context_overrides_routing(self, v1_with_mocked_deps):
+    async def test_company_settings_context_overrides_routing(self, v1_with_all_internal_mocks):
         """context_type=company_settings deve forçar domain=company_settings."""
         # Para este teste, não queremos que cascaded_router seja chamado.
         # O override deve interceptar antes.
         # Mock o domain_workflow para responder também
-        await v1_with_mocked_deps.process_request(
+        await v1_with_all_internal_mocks.process_request(
             user_id="user-1",
             message="configurar empresa",
             conversation_id="conv-1",
             context={"company_id": "company-a", "context_type": "company_settings"},
         )
         # Cascaded router NÃO foi chamado (override interceptou)
-        v1_with_mocked_deps._cascaded_router.route.assert_not_called()
+        v1_with_all_internal_mocks._cascaded_router.route.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_hiring_policy_context_overrides_routing(self, v1_with_mocked_deps):
-        await v1_with_mocked_deps.process_request(
+    async def test_hiring_policy_context_overrides_routing(self, v1_with_all_internal_mocks):
+        await v1_with_all_internal_mocks.process_request(
             user_id="user-1",
             message="política de contratação",
             conversation_id="conv-1",
             context={"company_id": "company-a", "context_type": "hiring_policy"},
         )
-        v1_with_mocked_deps._cascaded_router.route.assert_not_called()
+        v1_with_all_internal_mocks._cascaded_router.route.assert_not_called()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -201,11 +149,11 @@ class TestProcessRequestPolicyDenied:
     """Quando policy_engine bloqueia, retorna success=False com reason."""
 
     @pytest.mark.asyncio
-    async def test_policy_denied_returns_failure(self, v1_with_mocked_deps):
-        v1_with_mocked_deps.policy_engine.validate_request = AsyncMock(
+    async def test_policy_denied_returns_failure(self, v1_with_all_internal_mocks):
+        v1_with_all_internal_mocks.policy_engine.validate_request = AsyncMock(
             return_value={"allowed": False, "reason": "Action blocked by policy"}
         )
-        result = await v1_with_mocked_deps.process_request(
+        result = await v1_with_all_internal_mocks.process_request(
             user_id="user-1",
             message="ação bloqueada",
             conversation_id="conv-1",
@@ -222,13 +170,13 @@ class TestProcessRequestNewConversation:
     """Quando conversation_id é None, V1 cria uma nova via state_manager."""
 
     @pytest.mark.asyncio
-    async def test_new_conversation_calls_create(self, v1_with_mocked_deps):
-        v1_with_mocked_deps.state_manager.create_conversation.return_value = "new-conv-uuid"
+    async def test_new_conversation_calls_create(self, v1_with_all_internal_mocks):
+        v1_with_all_internal_mocks.state_manager.create_conversation.return_value = "new-conv-uuid"
         # Mock domain_workflow para retornar algo
-        v1_with_mocked_deps._domain_workflow.execute = AsyncMock(
+        v1_with_all_internal_mocks._domain_workflow.execute = AsyncMock(
             return_value=DomainResponseStub(success=True, message="ok")
         )
-        await v1_with_mocked_deps.process_request(
+        await v1_with_all_internal_mocks.process_request(
             user_id="user-1",
             message="primeira mensagem",
             conversation_id=None,
@@ -245,22 +193,22 @@ class TestProcessRequestPlanDetection:
     """Quando PlanDetector encontra plan, V1 delega para PlanExecutor."""
 
     @pytest.mark.asyncio
-    async def test_no_plan_detected_uses_normal_flow(self, v1_with_mocked_deps):
+    async def test_no_plan_detected_uses_normal_flow(self, v1_with_all_internal_mocks):
         """Default fixture: plan_detector retorna None → fluxo normal."""
-        v1_with_mocked_deps._plan_detector.detect.return_value = None
-        v1_with_mocked_deps._domain_workflow.execute = AsyncMock(
+        v1_with_all_internal_mocks._plan_detector.detect.return_value = None
+        v1_with_all_internal_mocks._domain_workflow.execute = AsyncMock(
             return_value=DomainResponseStub(success=True, message="normal flow")
         )
-        result = await v1_with_mocked_deps.process_request(
+        result = await v1_with_all_internal_mocks.process_request(
             user_id="user-1",
             message="mensagem normal",
             conversation_id="conv-1",
             context={"company_id": "company-a"},
         )
         # PlanDetector foi chamado mas retornou None
-        v1_with_mocked_deps._plan_detector.detect.assert_called()
+        v1_with_all_internal_mocks._plan_detector.detect.assert_called()
         # Não deve ter chamado plan_executor
-        assert not hasattr(v1_with_mocked_deps, "_plan_executor_was_called")
+        assert not hasattr(v1_with_all_internal_mocks, "_plan_executor_was_called")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -270,9 +218,9 @@ class TestProcessRequestAutonomousIntercept:
     """V1 tem fast-path para domain=autonomous (Tier 6 do CascadedRouter)."""
 
     @pytest.mark.asyncio
-    async def test_autonomous_domain_returns_response_from_route(self, v1_with_mocked_deps):
+    async def test_autonomous_domain_returns_response_from_route(self, v1_with_all_internal_mocks):
         from app.orchestrator.cascaded_router import RouteResult
-        v1_with_mocked_deps._cascaded_router.route = AsyncMock(
+        v1_with_all_internal_mocks._cascaded_router.route = AsyncMock(
             return_value=RouteResult(
                 domain_id="autonomous",
                 confidence=0.95,
@@ -285,7 +233,7 @@ class TestProcessRequestAutonomousIntercept:
                 },
             )
         )
-        result = await v1_with_mocked_deps.process_request(
+        result = await v1_with_all_internal_mocks.process_request(
             user_id="user-1",
             message="ação cross-domain",
             conversation_id="conv-1",

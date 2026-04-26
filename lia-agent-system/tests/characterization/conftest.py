@@ -7,12 +7,28 @@ See: Documents/Python/ORCHESTRATOR_MIGRATION_SPRINT_I.md
 Lições aplicadas:
 - harness-engineering: sensors before guides — testes existem para CAPTURAR comportamento, não validar regras
 - production-quality P0: cada fixture cobre multi-tenant + LGPD edge cases por padrão
+
+## Fixtures de orquestrador
+
+Há DUAS estratégias de mocking. Escolha conforme o tipo de test:
+
+1. `v1_with_minimal_mocks` — só LLM + cache mockados, resto é real
+   Use para: testes de métodos PUROS (heurísticas, getters, métodos sem I/O)
+
+2. `v1_with_all_internal_mocks` — mocka policy_engine, state_manager, router, etc.
+   Use para: testes de FLUXO (process_request, transições de estado, contracts)
+
+## Convenção LGPD
+
+Atributos protegidos NUNCA aparecem em fixtures. `lgpd_protected_attributes`
+é a lista canônica que tests usam para validar que código não vaza esses
+atributos em prompts/logs/spans.
 """
 from __future__ import annotations
 
 import warnings
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -111,8 +127,17 @@ def mock_llm_service() -> MagicMock:
 
 @pytest.fixture
 def mock_db_session() -> MagicMock:
-    """DB session mockada."""
+    """DB session mockada (síncrona)."""
     return MagicMock()
+
+
+@pytest.fixture
+def async_db() -> MagicMock:
+    """DB session com commit/rollback async (para process_request_with_memory)."""
+    db = MagicMock()
+    db.commit = AsyncMock()
+    db.rollback = AsyncMock()
+    return db
 
 
 @pytest.fixture
@@ -125,33 +150,117 @@ def mock_audit_service() -> MagicMock:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# V1 Orchestrator factory (lazy import to avoid loading at collection time)
+# CANONICAL ORCHESTRATOR V1 FIXTURES — escolha conforme tipo de test
 # ─────────────────────────────────────────────────────────────────────────────
+
+
 @pytest.fixture
-def orchestrator_v1_factory():
+def v1_with_minimal_mocks():
     """
-    Factory que cria instâncias de V1 Orchestrator com dependencies mockadas.
+    V1 Orchestrator com mocks MÍNIMOS — apenas LLM + cache.
 
-    Uso:
-        async def test_xyz(orchestrator_v1_factory, mock_llm_service):
-            v1 = orchestrator_v1_factory(llm_service=mock_llm_service)
-            result = await v1.process_request(...)
+    Use quando o teste exercita lógica PURA do V1 (heurísticas, getters,
+    métodos sem I/O DB). Os componentes reais (`TaskPlanner`, `PolicyEngine`,
+    `StateManager`, `CascadedRouter`, `DomainWorkflow`) são instanciados.
 
-    NOTA: A assinatura exata de Orchestrator.__init__ pode mudar — fixture deve
-    ser ajustada conforme `app/orchestrator/orchestrator.py` evoluir durante
-    Sprint I. Por enquanto retorna factory que aceita kwargs e tenta delegar.
+    Exemplos de uso adequado:
+        - test_is_technical_response (heurística pura)
+        - test_is_cv_matching_request (heurística pura)
+        - test_get_metrics (getter)
+        - test_get_cache_stats (getter delegando para cache mockado)
+        - test_get_scope_system_prompt (lookup determinístico)
+        - test_is_tool_allowed (lookup com tool_registry real)
+        - test_get_available_tools (filtro com tool_registry real)
     """
+    from app.orchestrator.orchestrator import Orchestrator
 
-    def _factory(**overrides):
-        # Lazy import — V1 só é carregado quando teste roda
-        from app.orchestrator.orchestrator import Orchestrator
+    mock_llm = MagicMock()
+    mock_llm.complete = AsyncMock(return_value={"content": "ok", "tokens": 5})
 
-        # NOTE: V1 emite DeprecationWarning no __init__, suppressed pelo autouse fixture.
-        # Os kwargs reais devem ser descobertos durante implementação dos tests
-        # individuais (test_v1_process_request.py etc).
-        return Orchestrator(**overrides)
+    with patch("app.orchestrator.orchestrator.response_cache_service") as mock_cache:
+        mock_cache.is_enabled.return_value = False
+        mock_cache.get_stats.return_value = {"hits": 0, "misses": 0, "size": 0}
+        v1 = Orchestrator(llm_service=mock_llm, db_service=None)
+    return v1
 
-    return _factory
+
+@pytest.fixture
+def v1_with_all_internal_mocks():
+    """
+    V1 Orchestrator com TODOS os componentes internos mockados.
+
+    Use quando o teste exercita FLUXO completo do `process_request` ou
+    `process_request_with_memory` — onde policy/state/router/domain são
+    chamados em sequência. Mockar tudo dá controle previsível sobre o flow.
+
+    Componentes mockados:
+        - llm_service (já no fixture base)
+        - response_cache_service (já patched)
+        - state_manager (MagicMock — sem DB)
+        - policy_engine (validate_request retorna allowed=True por padrão)
+        - _cascaded_router (route retorna RouteResult test estável)
+        - _domain_workflow (execute retorna DomainResponseStub)
+        - _plan_detector (detect retorna None — sem plan)
+
+    Exemplos de uso adequado:
+        - test_returns_dict_with_required_keys (process_request happy path)
+        - test_cancel_message_returns_cancelled_flag (early return)
+        - test_company_id_propagated_to_router (multi-tenant flow)
+        - test_context_overrides_routing (hardcoded mapping)
+        - test_policy_denied_returns_failure (policy gate)
+    """
+    from app.orchestrator.orchestrator import Orchestrator
+
+    mock_llm = MagicMock()
+    mock_llm.complete = AsyncMock(return_value={"content": "ok", "tokens": 5})
+
+    with patch("app.orchestrator.orchestrator.response_cache_service") as mock_cache:
+        mock_cache.is_enabled.return_value = False
+        mock_cache.get_stats.return_value = {"hits": 0, "misses": 0}
+
+        v1 = Orchestrator(llm_service=mock_llm, db_service=None)
+
+        # state_manager — sem DB
+        v1.state_manager = MagicMock()
+        v1.state_manager.get_state.return_value = None
+        v1.state_manager.create_conversation.return_value = "conv-test-1"
+        v1.state_manager.add_message = MagicMock()
+        v1.state_manager.update_state = MagicMock()
+        v1.state_manager.clear_state = MagicMock()
+
+        # policy_engine — allowed por padrão
+        v1.policy_engine = MagicMock()
+        v1.policy_engine.validate_request = AsyncMock(
+            return_value={"allowed": True, "constraints": {}}
+        )
+
+        # cascaded_router — RouteResult previsível
+        from app.orchestrator.cascaded_router import RouteResult
+        v1._cascaded_router = MagicMock()
+        v1._cascaded_router.route = AsyncMock(
+            return_value=RouteResult(
+                domain_id="recruiter_assistant",
+                confidence=0.9,
+                source="test",
+                intent_details={"raw_intent": "test_intent"},
+            )
+        )
+
+        # domain_workflow — DomainResponseStub-like
+        v1._domain_workflow = MagicMock()
+        _stub = MagicMock()
+        _stub.success = True
+        _stub.message = "domain workflow response"
+        _stub.data = {"items": []}
+        _stub.suggestions = []
+        _stub.next_actions = []
+        v1._domain_workflow.execute = AsyncMock(return_value=_stub)
+
+        # plan_detector — sem plano por padrão
+        v1._plan_detector = MagicMock()
+        v1._plan_detector.detect.return_value = None
+
+        yield v1
 
 
 # ─────────────────────────────────────────────────────────────────────────────

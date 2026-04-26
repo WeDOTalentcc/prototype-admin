@@ -24,35 +24,20 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 
-@pytest.fixture
-def v1_minimal():
-    """V1 com apenas LLM mockado — para tests de métodos puros que não tocam DB."""
-    from app.orchestrator.orchestrator import Orchestrator
-
-    mock_llm = MagicMock()
-    mock_llm.complete = AsyncMock(return_value={"content": "ok", "tokens": 5})
-
-    with patch("app.orchestrator.orchestrator.response_cache_service") as mock_cache:
-        mock_cache.is_enabled.return_value = False
-        mock_cache.get_stats.return_value = {"hits": 0, "misses": 0}
-        v1 = Orchestrator(llm_service=mock_llm, db_service=None)
-    return v1
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # _is_technical_response — heurística (Sprint II.3 → heuristics/)
 # ─────────────────────────────────────────────────────────────────────────────
 class TestIsTechnicalResponse:
     """Captura a heurística atual para detecção de respostas técnicas."""
 
-    def test_method_exists_and_returns_bool(self, v1_minimal):
+    def test_method_exists_and_returns_bool(self, v1_with_minimal_mocks):
         """Contract: método existe e retorna bool."""
-        result = v1_minimal._is_technical_response("qualquer resposta")
+        result = v1_with_minimal_mocks._is_technical_response("qualquer resposta")
         assert isinstance(result, bool)
 
-    def test_short_natural_response_handled(self, v1_minimal):
+    def test_short_natural_response_handled(self, v1_with_minimal_mocks):
         """Resposta curta natural — captura comportamento atual."""
-        result = v1_minimal._is_technical_response("Olá! Posso ajudar?")
+        result = v1_with_minimal_mocks._is_technical_response("Olá! Posso ajudar?")
         assert isinstance(result, bool)
 
 
@@ -62,13 +47,13 @@ class TestIsTechnicalResponse:
 class TestIsCvMatchingRequest:
     """Captura heurística atual para detecção de requests de CV matching."""
 
-    def test_method_exists_and_returns_bool(self, v1_minimal):
-        result = v1_minimal._is_cv_matching_request("qualquer mensagem")
+    def test_method_exists_and_returns_bool(self, v1_with_minimal_mocks):
+        result = v1_with_minimal_mocks._is_cv_matching_request("qualquer mensagem")
         assert isinstance(result, bool)
 
-    def test_explicit_cv_match_message(self, v1_minimal):
+    def test_explicit_cv_match_message(self, v1_with_minimal_mocks):
         """Mensagem explícita de CV matching: capturar comportamento atual."""
-        result = v1_minimal._is_cv_matching_request(
+        result = v1_with_minimal_mocks._is_cv_matching_request(
             "Compare o currículo desse candidato com a vaga"
         )
         assert isinstance(result, bool)
@@ -82,10 +67,10 @@ class TestHandleDirectly:
     """Captura comportamento de fallback LLM com tool binding."""
 
     @pytest.mark.asyncio
-    async def test_method_returns_dict(self, v1_minimal):
+    async def test_method_returns_dict(self, v1_with_minimal_mocks):
         """Contract: retorna dict (com chaves observáveis)."""
         # Mock LLM para retornar resposta sem tool calls
-        v1_minimal.llm_service.complete = AsyncMock(
+        v1_with_minimal_mocks.llm_service.complete = AsyncMock(
             return_value={"content": "fallback response", "tokens": 8, "tools_used": []}
         )
 
@@ -93,7 +78,7 @@ class TestHandleDirectly:
         with patch("app.orchestrator.orchestrator.tool_registry") as mock_registry:
             mock_registry.list_tools.return_value = []
             with patch("app.orchestrator.orchestrator.get_all_tool_schemas", return_value=[]):
-                result = await v1_minimal._handle_directly(
+                result = await v1_with_minimal_mocks._handle_directly(
                     intent="general_chat",
                     message="oi tudo bem",
                     entities={},
@@ -110,9 +95,9 @@ class TestHandleCvScreeningWithRubric:
     """Captura caminho específico de CV screening rubric."""
 
     @pytest.mark.asyncio
-    async def test_method_returns_dict(self, v1_minimal):
+    async def test_method_returns_dict(self, v1_with_minimal_mocks):
         """Contract: retorna dict (success=True/False)."""
-        result = await v1_minimal._handle_cv_screening_with_rubric(
+        result = await v1_with_minimal_mocks._handle_cv_screening_with_rubric(
             message="CV check",
             context={"company_id": "company-a"},
         )
@@ -127,31 +112,31 @@ class TestHandleCvScreeningWithRubric:
 class TestIsToolAllowed:
     """Verifica controle de acesso a tools por prompt_context."""
 
-    def test_returns_bool(self, v1_minimal):
+    def test_returns_bool(self, v1_with_minimal_mocks):
         """Contract: retorna bool."""
-        result = v1_minimal.is_tool_allowed(tool_name="any_tool", prompt_context="general")
+        result = v1_with_minimal_mocks.is_tool_allowed(tool_name="any_tool", prompt_context="general")
         assert isinstance(result, bool)
 
-    def test_unknown_tool_returns_false_or_default(self, v1_minimal):
+    def test_unknown_tool_returns_false_or_default(self, v1_with_minimal_mocks):
         """Tool desconhecida não deve dar erro."""
-        result = v1_minimal.is_tool_allowed(
+        result = v1_with_minimal_mocks.is_tool_allowed(
             tool_name="nonexistent_tool_xyz_123", prompt_context="recruiter_assistant"
         )
         assert isinstance(result, bool)
 
-    def test_global_context_allows_more(self, v1_minimal):
+    def test_global_context_allows_more(self, v1_with_minimal_mocks):
         """prompt_context global tipicamente permite mais tools."""
         from app.tools import tool_registry
         tools = tool_registry.list_tools()
         if not tools:
             pytest.skip("No tools registered in test environment")
         first_tool = tools[0]
-        result = v1_minimal.is_tool_allowed(tool_name=first_tool, prompt_context="global")
+        result = v1_with_minimal_mocks.is_tool_allowed(tool_name=first_tool, prompt_context="global")
         assert isinstance(result, bool)
 
-    def test_specific_context_filters_tools(self, v1_minimal):
+    def test_specific_context_filters_tools(self, v1_with_minimal_mocks):
         """prompt_context específico filtra tools."""
-        result = v1_minimal.is_tool_allowed(
+        result = v1_with_minimal_mocks.is_tool_allowed(
             tool_name="some_tool", prompt_context="talent_funnel"
         )
         assert isinstance(result, bool)
@@ -164,16 +149,16 @@ class TestIsToolAllowed:
 class TestGetScopeSystemPrompt:
     """Verifica retorno de prompt addition por prompt_context."""
 
-    def test_general_context_returns_string(self, v1_minimal):
-        result = v1_minimal.get_scope_system_prompt(prompt_context="general")
+    def test_general_context_returns_string(self, v1_with_minimal_mocks):
+        result = v1_with_minimal_mocks.get_scope_system_prompt(prompt_context="general")
         assert isinstance(result, str)
 
-    def test_talent_funnel_context_returns_string(self, v1_minimal):
-        result = v1_minimal.get_scope_system_prompt(prompt_context="talent_funnel")
+    def test_talent_funnel_context_returns_string(self, v1_with_minimal_mocks):
+        result = v1_with_minimal_mocks.get_scope_system_prompt(prompt_context="talent_funnel")
         assert isinstance(result, str)
 
-    def test_job_table_context_returns_string(self, v1_minimal):
-        result = v1_minimal.get_scope_system_prompt(prompt_context="job_table")
+    def test_job_table_context_returns_string(self, v1_with_minimal_mocks):
+        result = v1_with_minimal_mocks.get_scope_system_prompt(prompt_context="job_table")
         assert isinstance(result, str)
 
 
@@ -184,10 +169,10 @@ class TestGetScopeSystemPrompt:
 class TestGetAvailableTools:
     """Verifica retorno de tool schemas."""
 
-    def test_no_agent_type_returns_list(self, v1_minimal):
-        result = v1_minimal.get_available_tools()
+    def test_no_agent_type_returns_list(self, v1_with_minimal_mocks):
+        result = v1_with_minimal_mocks.get_available_tools()
         assert isinstance(result, list)
 
-    def test_with_agent_type_returns_list(self, v1_minimal):
-        result = v1_minimal.get_available_tools(agent_type="recruiter_assistant")
+    def test_with_agent_type_returns_list(self, v1_with_minimal_mocks):
+        result = v1_with_minimal_mocks.get_available_tools(agent_type="recruiter_assistant")
         assert isinstance(result, list)
