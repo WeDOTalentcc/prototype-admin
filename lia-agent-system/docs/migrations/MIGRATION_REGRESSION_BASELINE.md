@@ -22,48 +22,73 @@ Este documento captura o **comportamento atual de produção** do sistema antes 
 
 ---
 
-## 2. BASELINE METRICS (preencher no Sprint I)
+## 2. BASELINE METRICS — Conservative Defaults (2026-04-26)
 
-### 2.1 — Latência por flow
+> **Decisão de produto (Paulo)**: prosseguir com baseline conservador SEM coleta
+> de dados de produção. Os valores abaixo são **defaults defensivos** baseados
+> em SLOs típicos de chat-bots LLM enterprise. **Auto-rollback dispara em
+> qualquer violação** — favoreço falsos positivos a deixar regressão passar.
+>
+> **Quando substituir por dados reais**: assim que houver acesso ao Sentry/
+> Datadog/Honeycomb, atualizar esta seção com `latency-p95-real-2026-XX-XX`
+> commits dedicados.
 
-| Flow | Endpoint | p50 atual | p95 atual | p99 atual | Limiar regressão |
-|------|----------|-----------|-----------|-----------|------------------|
-| Chat REST | `POST /chat/message` | _TBD_ ms | _TBD_ ms | _TBD_ ms | +10% |
-| Chat WS | `WS /chat/ws` | _TBD_ ms | _TBD_ ms | _TBD_ ms | +10% |
-| Chat SSE | `SSE /chat/stream` | _TBD_ ms | _TBD_ ms | _TBD_ ms | +10% |
-| Orchestrated Job Chat | `POST /jobs/chat` | _TBD_ ms | _TBD_ ms | _TBD_ ms | +10% |
-| Orchestrated Talent Chat | `POST /talent/chat` | _TBD_ ms | _TBD_ ms | _TBD_ ms | +10% |
-| Orchestrated Jobs Mgmt | `POST /jobs/manage/command` | _TBD_ ms | _TBD_ ms | _TBD_ ms | +10% |
-| Wizard Job Graph | `POST /job-wizard/graph-orchestrate` | _TBD_ ms | _TBD_ ms | _TBD_ ms | +10% |
-| Legacy Orchestrator | `POST /api/orchestrator/process` | _TBD_ ms | _TBD_ ms | _TBD_ ms | +10% |
+### 2.1 — Latência absoluta máxima (auto-rollback se ultrapassar)
 
-**Como coletar**: Sentry/Datadog dashboard, últimos 7 dias, peak hour.
+| Flow | Endpoint | p50 max | p95 max | p99 max |
+|------|----------|---------|---------|---------|
+| Chat REST | `POST /chat/message` | 1500 ms | 5000 ms | 10000 ms |
+| Chat WS | `WS /chat/ws` | 1500 ms | 5000 ms | 10000 ms |
+| Chat SSE | `SSE /chat/stream` | 1500 ms | 5000 ms | 10000 ms |
+| Orchestrated Job Chat | `POST /jobs/chat` | 2000 ms | 6000 ms | 12000 ms |
+| Orchestrated Talent Chat | `POST /talent/chat` | 2000 ms | 6000 ms | 12000 ms |
+| Orchestrated Jobs Mgmt | `POST /jobs/manage/command` | 2000 ms | 6000 ms | 12000 ms |
+| Wizard Job Graph | `POST /job-wizard/graph-orchestrate` | 3000 ms | 8000 ms | 15000 ms |
+| Legacy Orchestrator | `POST /api/orchestrator/process` | 2000 ms | 6000 ms | 12000 ms |
 
-### 2.2 — Error rate
+**Justificativa dos valores**:
+- p95 5-8s = SLO típico de chat com LLM (Claude Sonnet média 2-4s, com tools 4-8s)
+- Wizard mais permissivo (cria vagas — operação mais pesada)
+- Esses valores são **teto absoluto**, não baseline relativo. Se V2 ficar mais lento
+  que isso → rollback. Não comparamos vs "antes" porque não temos baseline real.
 
-| Flow | Error rate atual | Limiar regressão |
-|------|------------------|------------------|
-| Chat REST | _TBD_% | +0.5% |
-| Chat WS | _TBD_% | +0.5% |
-| Chat SSE | _TBD_% | +0.5% |
-| Orchestrated Job Chat | _TBD_% | +0.5% |
-| Orchestrated Talent Chat | _TBD_% | +0.5% |
-| Orchestrated Jobs Mgmt | _TBD_% | +0.5% |
-| Wizard Job Graph | _TBD_% | +0.5% |
+### 2.2 — Error rate absoluto máximo
 
-### 2.3 — Throughput
+| Flow | Error rate max |
+|------|----------------|
+| Chat REST | 2% (1 erro em 50 requests) |
+| Chat WS | 2% |
+| Chat SSE | 2% |
+| Orchestrated Job Chat | 1.5% |
+| Orchestrated Talent Chat | 1.5% |
+| Orchestrated Jobs Mgmt | 1.5% |
+| Wizard Job Graph | 3% (operação complexa, tolerância maior) |
 
-| Flow | RPS médio | RPS peak | Limiar regressão |
-|------|-----------|----------|------------------|
-| Chat REST | _TBD_ | _TBD_ | -10% |
-| Orchestrated Job Chat | _TBD_ | _TBD_ | -10% |
-| Orchestrated Talent Chat | _TBD_ | _TBD_ | -10% |
+**Justificativa**: SLO típico de SaaS é 99% uptime (1% error). Valores acima são
+**teto pessimista** considerando que LLM upstream pode falhar. Se V2 piorar isso
+→ rollback.
+
+### 2.3 — Throughput mínimo absoluto (regressão se cair abaixo)
+
+Sem dados reais, é difícil estabelecer threshold absoluto. Estratégia:
+
+> **Coletar baseline durante Sprint III.E primeiro estágio (5%)**: rodar 24h em
+> staging com flags ON, capturar RPS médio, definir baseline relativo (-10% =
+> regressão). Os primeiros 5% do canary servem como auto-baseline.
+
+Procedimento documentado em `SPRINT_III_E_CANARY_PLAN.md` Estágio 1.
 
 ### 2.4 — Token usage por tenant (top 10)
 
-| Tenant | Tokens/dia (média 7d) | Limiar regressão |
-|--------|----------------------|------------------|
-| _TBD_ | _TBD_ | +5% |
+Sem acesso ao LLM cost center, impossível fixar threshold absoluto.
+
+> **Estratégia alternativa**: monitorar via OTLP span attribute `tokens_used` por
+> request. Se média de tokens por request crescer > 20% em qualquer tenant
+> durante canary → manual review (não rollback automático).
+
+Implementação requer adicionar `span.set_attribute("tokens_used", N)` em
+`fallback_react_service.py` e `plan_orchestration_service.py`. **Postponed para
+Sprint III.E pré-trabalho** (não bloqueia merge da branch atual).
 
 ---
 

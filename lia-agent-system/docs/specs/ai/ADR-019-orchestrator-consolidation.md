@@ -1,6 +1,6 @@
 # ADR-019 — Orchestrator V1→V2 Consolidation (LIA-D06 Cleanup)
 
-**Status**: Proposed (Sprint I — initial draft, will be promoted to Accepted after Sprint III canary)
+**Status**: Implementation Complete — Awaiting Production Validation (2026-04-26)
 **Date**: 2026-04-26
 **Owner**: Backend lead (a designar) + Paulo (founder/produto)
 **Related**:
