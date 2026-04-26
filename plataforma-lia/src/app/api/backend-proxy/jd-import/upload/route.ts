@@ -5,7 +5,19 @@ import { validateQuery } from '@/lib/api/validate'
 import { getAuthHeadersForForm } from '@/lib/api/auth-headers'
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
-const MAX_FILE_SIZE = 10 * 1024 * 1024
+
+// SSOT compartilhado com o backend (Audit M-12 / Task #858).
+// `UPLOAD_JD_MAX_BYTES` é a mesma variável lida em
+// `lia-agent-system/app/shared/upload_limits.py`. Default: 10 MiB.
+function resolveMaxFileSize(): number {
+  const raw = process.env.UPLOAD_JD_MAX_BYTES
+  if (!raw) return 10 * 1024 * 1024
+  const parsed = Number(raw)
+  if (!Number.isFinite(parsed) || parsed <= 0) return 10 * 1024 * 1024
+  return Math.floor(parsed)
+}
+const MAX_FILE_SIZE = resolveMaxFileSize()
+const MAX_FILE_SIZE_MB = Math.max(1, Math.floor(MAX_FILE_SIZE / (1024 * 1024)))
 
 const uploadQuerySchema = z.object({
   title: z.string().optional().default(''),
@@ -13,6 +25,11 @@ const uploadQuerySchema = z.object({
     .enum(['true', 'false', '1', '0'])
     .optional()
     .transform((v) => v === 'true' || v === '1'),
+  // Audit B-02 / Task #858 — id da sessão WebSocket que receberá os
+  // `background_task_update` enquanto o worker processa o upload de forma
+  // assíncrona. Opcional; quando omitido o backend simplesmente não publica
+  // progresso e o cliente precisa consultar status por outro canal.
+  session_id: z.string().min(1).max(128).optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -38,15 +55,18 @@ export async function POST(request: NextRequest) {
     const file = formData.get("file") as File
     if (file && file instanceof File && file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { success: false, error: "File too large (max 10MB)" },
+        { success: false, error: `File too large (max ${MAX_FILE_SIZE_MB}MB)` },
         { status: 413 }
       )
     }
 
-    const { title, consent_acknowledged } = queryValidation.data
+    const { title, consent_acknowledged, session_id } = queryValidation.data
     const url = new URL(`${BACKEND_URL}/api/v1/import/upload-file`)
     if (title) url.searchParams.set("title", title)
     if (consent_acknowledged) url.searchParams.set("consent_acknowledged", "true")
+    // Forward session_id so the worker can publish background_task_update
+    // events back to the requesting WS session (Audit B-02 / Task #858).
+    if (session_id) url.searchParams.set("session_id", session_id)
 
     const response = await fetch(url.toString(), {
       method: "POST",
@@ -62,8 +82,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Backend now returns 202 + task_id (Audit B-02 / Task #858) — preserve
+    // the upstream status so clients can route on `queued` vs `created`.
     const data = await response.json()
-    return NextResponse.json(data)
+    return NextResponse.json(data, { status: response.status })
   } catch (error) {
     return NextResponse.json(
       { success: false, error: "Erro de conexão com o backend" },

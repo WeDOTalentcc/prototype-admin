@@ -487,7 +487,7 @@ async def get_jd_upload_consent_status(
     return {"has_consent": bool(has_consent)}
 
 
-@router.post("/import/upload-file", response_model=dict[str, Any])
+@router.post("/import/upload-file", status_code=202)
 async def upload_jd_file(
     file: UploadFile = File(..., description="Arquivo JD (.txt, .pdf, .docx, .md)"),
     title: str = Query("", description="Título da vaga (opcional, extraído do arquivo se vazio)"),
@@ -499,27 +499,45 @@ async def upload_jd_file(
             "previamente são liberadas automaticamente."
         ),
     ),
-    db: AsyncSession = Depends(get_db),
+    session_id: str = Query(
+        "",
+        description=(
+            "ID da sessão WebSocket que receberá `background_task_update` "
+            "com o progresso. Opcional — se omitido, o cliente precisa "
+            "consultar status por outro canal."
+        ),
+    ),
     current_user: User = Depends(get_current_user_strict),
-    service: JDImportService = Depends(get_jd_import_service),
 ) -> dict[str, Any]:
     """
-    Importa uma Job Description a partir de upload de arquivo (P3-2).
+    Aceita o upload de uma Job Description e enfileira o parse para um worker
+    Celery (Audit B-02). O endpoint só faz validações leves (auth, consent,
+    magic number, tamanho) — a extração PDF/DOCX e o `JDImportService.import_jd`
+    rodam fora do request loop.
 
-    Suporta: .txt, .md, .pdf (extrai texto via pypdf se disponível), .docx (extrai via python-docx).
-    O texto extraído é passado para JDImportService.import_jd() para parse estruturado.
-
-    Privacidade & auditoria (Task #838):
+    Privacidade & auditoria (Task #838 / #858):
     - Autenticação estrita: o modo demo está desabilitado (M-09).
     - Consentimento granular explícito uma vez por empresa, com bypass em
       sessões subsequentes a partir do registro imutável (M-01).
+    - Validação por **magic number** antes de qualquer parse (A-02).
+    - Limite de tamanho compartilhado com o proxy Next.js (M-12) via
+      `UPLOAD_JD_MAX_BYTES`.
     - Cada upload grava `user_id`, `company_id`, `filename_hash`, `size_bytes`,
-      `uuid` e `timestamp` em `audit_logs` (M-10).
+      `uuid` e `timestamp` em `audit_logs` (M-10) — feito pelo worker.
 
     Returns:
-        JD importada e parseada com campos extraídos (título, skills, requisitos, benefícios).
+        ``202 {task_id, status: "queued", ...}``. O frontend acompanha o
+        progresso via WS `background_task_update` (canal já existente).
     """
-    # Identidade do solicitante — necessária para consent + audit antes do parse
+    from app.jobs.tasks.jd_upload import (
+        jd_upload_process_file_task,
+        new_task_id,
+        stage_payload,
+    )
+    from app.shared.upload_limits import JD_UPLOAD_MAX_BYTES, jd_upload_max_mb
+    from app.shared.upload_validators import UnsupportedFileTypeError, validate_upload
+
+    # Identidade do solicitante — necessária para consent + enfileiramento
     company_id = parse_company_id(get_user_company_id(current_user))
     user_id = str(current_user.id) if getattr(current_user, "id", None) else None
 
@@ -541,140 +559,64 @@ async def upload_jd_file(
                 },
             )
 
-    # Validar tipo de arquivo
-    allowed_extensions = {".txt", ".md", ".pdf", ".docx"}
-    filename = file.filename or ""
-    ext = "." + filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
-    if ext not in allowed_extensions:
+    # M-12: Limite de tamanho idêntico ao proxy Next.js (env UPLOAD_JD_MAX_BYTES,
+    # default 10 MiB). Lê os bytes uma vez e bloqueia antes de qualquer parse.
+    content = await file.read()
+    if len(content) > JD_UPLOAD_MAX_BYTES:
         raise HTTPException(
-            status_code=400,
-            detail=f"Tipo de arquivo não suportado: '{ext}'. Use: {', '.join(sorted(allowed_extensions))}",
+            status_code=413,
+            detail=f"Arquivo muito grande. Máximo: {jd_upload_max_mb()}MB",
         )
 
-    # Validar tamanho (máx 5MB)
-    content = await file.read()
-    if len(content) > 5 * 1024 * 1024:
-        raise HTTPException(status_code=413, detail="Arquivo muito grande. Máximo: 5MB")
+    filename = file.filename or ""
 
-    # Extrair texto conforme tipo
-    raw_text: str = ""
-    if ext in {".txt", ".md"}:
-        raw_text = content.decode("utf-8", errors="replace")
-    elif ext == ".pdf":
-        try:
-            import io
-
-            import pypdf  # type: ignore[import]
-            reader = pypdf.PdfReader(io.BytesIO(content))
-            raw_text = "\n".join(page.extract_text() or "" for page in reader.pages)
-        except ImportError:
-            # pypdf não instalado — retorna texto vazio com aviso
-            raise HTTPException(
-                status_code=422,
-                detail="Parse de PDF não disponível neste ambiente. Use .txt ou .docx.",
-            )
-        except Exception as exc:
-            raise HTTPException(status_code=422, detail=f"Erro ao ler PDF: {exc}")
-    elif ext == ".docx":
-        try:
-            import io
-
-            import docx  # type: ignore[import]
-            doc = docx.Document(io.BytesIO(content))
-            raw_text = "\n".join(p.text for p in doc.paragraphs if p.text.strip())
-        except ImportError:
-            raise HTTPException(
-                status_code=422,
-                detail="Parse de DOCX não disponível neste ambiente. Use .txt.",
-            )
-        except Exception as exc:
-            raise HTTPException(status_code=422, detail=f"Erro ao ler DOCX: {exc}")
-
-    if not raw_text.strip():
-        raise HTTPException(status_code=422, detail="Arquivo vazio ou sem texto extraível.")
-
-    # LGPD: minimizar PII antes de processar (CPF, email, telefone, endereço)
+    # A-02: Validação por magic number antes de aceitar a fila.
     try:
-        from app.shared.pii_masking import strip_pii_for_llm_prompt
-        raw_text = strip_pii_for_llm_prompt(raw_text)
-    except Exception:
-        pass  # fail-safe: prosseguir sem stripping se módulo indisponível
+        validated = validate_upload(filename, content)
+    except UnsupportedFileTypeError as exc:
+        # Distingue extensão whitelist (400) de bytes que não batem (415).
+        from app.shared.upload_validators import _ALLOWED_EXTENSIONS  # type: ignore
 
-    # FairnessGuard: detectar linguagem discriminatória no JD antes de importar
-    fairness_warnings: list[str] = []
+        status_code = 400 if (exc.declared_ext or "") not in _ALLOWED_EXTENSIONS else 415
+        raise HTTPException(status_code=status_code, detail=str(exc))
+
+    # Stage do payload em Redis (TTL 10 min) — mantém o body fora da fila.
+    task_id = new_task_id()
+    await stage_payload(task_id, content)
+
+    # Enfileiramento — soft/hard timeout e rlimits são aplicados dentro do worker.
     try:
-        from app.shared.compliance.fairness_guard import FairnessGuard
-        _fg = FairnessGuard()
-        _result = _fg.check(raw_text[:2000])  # checar amostra inicial
-        if _result.is_blocked:
-            raise HTTPException(
-                status_code=422,
-                detail=(
-                    f"Job description contém linguagem discriminatória e não pode ser importada. "
-                    f"{_result.educational_message or 'Revise o conteúdo e remova critérios protegidos.'}"
-                ),
-            )
-        if _result.soft_warnings:
-            fairness_warnings = _result.soft_warnings
-            logger.warning(
-                "[jd-import/upload] FairnessGuard soft_warnings company=%s filename_hash=%s: %s",
-                company_id, _hash_filename(filename), _result.soft_warnings,
-            )
-    except HTTPException:
-        raise
-    except Exception:
-        pass  # fail-safe
+        jd_upload_process_file_task.apply_async(
+            kwargs={
+                "task_id": task_id,
+                "company_id": str(company_id),
+                "user_id": user_id,
+                "filename": filename,
+                "extension": validated.extension,
+                "title": title,
+                "consent_acknowledged": consent_acknowledged,
+                "session_id": session_id or None,
+            },
+            task_id=task_id,
+        )
+    except Exception as exc:
+        logger.error("[jd-import/upload] enqueue failed: %s", exc)
+        raise HTTPException(
+            status_code=503,
+            detail="Fila de processamento indisponível. Tente novamente em instantes.",
+        )
 
-    # Importar via JDImportService
-    jd_data = {
-        "title": title or filename.rsplit(".", 1)[0],
-        "description": raw_text,
-        "source_file": filename,
-    }
-
-    imported = await service.import_jd(
-        db=db,
-        company_id=company_id,
-        jd_data=jd_data,
-        source="file_upload",
-        parse_immediately=True,
-    )
-
-    # M-10: Auditoria imutável em `audit_logs` (substitui logger.info anterior)
-    upload_uuid = str(_uuid_mod.uuid4())
-    filename_hash = _hash_filename(filename)
-    await _record_jd_upload_audit(
-        company_id=company_id,
-        user_id=user_id,
-        upload_uuid=upload_uuid,
-        filename_hash=filename_hash,
-        size_bytes=len(content),
-        extension=ext,
-        fairness_warnings_count=len(fairness_warnings),
-    )
-
-    # M-01: registrar consentimento granular em primeira concessão (idempotente
-    # para a empresa). Posteriores uploads detectam o registro e não pedem de novo.
-    if consent_acknowledged:
-        try:
-            already = await _company_has_jd_upload_consent(company_id)
-            if not already:
-                await _record_jd_upload_consent(company_id, user_id)
-        except Exception as exc:
-            logger.warning("[jd-import/upload] failed to persist consent: %s", exc)
-
-    result = {
-        **imported.to_dict(),
-        "source_filename": filename,
+    return {
+        "success": True,
+        "task_id": task_id,
+        "status": "queued",
+        "message": "Upload aceito. Acompanhe o progresso via WebSocket.",
         "audit": {
-            "uuid": upload_uuid,
-            "filename_hash": filename_hash,
+            "uuid": task_id,
+            "filename_hash": _hash_filename(filename),
             "size_bytes": len(content),
         },
     }
-    if fairness_warnings:
-        result["fairness_warnings"] = fairness_warnings
-    return result
 
 
 @router.get("/data-coverage", response_model=DataCoverageResponse)

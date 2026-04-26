@@ -217,6 +217,7 @@ celery_app.conf.update(
         # Vagas / wizard
         "agents.wizard.*":               {"queue": "vagas_normal",      "priority": 5},
         "agents.kanban.*":               {"queue": "vagas_normal",      "priority": 4},
+        "vagas.jd_upload.*":             {"queue": "vagas_normal",      "priority": 6},
         "agents.automation.*":           {"queue": "vagas_normal",      "priority": 4},
         # Baixa prioridade
         "agents.policy.*":               {"queue": "onboarding_low",    "priority": 3},

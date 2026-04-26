@@ -75,10 +75,12 @@ describe("jd-import/upload proxy — auth forwarding (Task #838)", () => {
       new Response(
         JSON.stringify({
           success: true,
-          imported_jd: { id: "jd-1", title: "Eng" },
-          audit: { uuid: "abc", filename_hash: "hash", size_bytes: 18 },
+          task_id: "task-uuid-123",
+          status: "queued",
+          message: "Upload aceito.",
+          audit: { uuid: "task-uuid-123", filename_hash: "hash", size_bytes: 18 },
         }),
-        { status: 200, headers: { "Content-Type": "application/json" } },
+        { status: 202, headers: { "Content-Type": "application/json" } },
       ),
     )
     globalThis.fetch = fetchMock as typeof globalThis.fetch
@@ -98,7 +100,7 @@ describe("jd-import/upload proxy — auth forwarding (Task #838)", () => {
     const req = buildRequest({ authorization: "Bearer real-user-token" })
 
     const res = await POST(req)
-    expect(res.status).toBe(200)
+    expect(res.status).toBe(202)
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
     const [calledUrl, init] = fetchMock.mock.calls[0]
@@ -114,7 +116,7 @@ describe("jd-import/upload proxy — auth forwarding (Task #838)", () => {
     const req = buildRequest({ cookies: { lia_access_token: "cookie-jwt" } })
 
     const res = await POST(req)
-    expect(res.status).toBe(200)
+    expect(res.status).toBe(202)
 
     const init = fetchMock.mock.calls[0][1]
     const sentHeaders = init?.headers as Record<string, string>
@@ -131,6 +133,22 @@ describe("jd-import/upload proxy — auth forwarding (Task #838)", () => {
     const body = await res.json()
     expect(body).toMatchObject({ success: false, error: "Authentication required" })
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it("encaminha session_id para o backend para roteamento dos WS background_task_update (Task #858 / B-02)", async () => {
+    const { POST } = await loadRoute()
+    const req = buildRequest({
+      authorization: "Bearer real-user-token",
+      query: "?consent_acknowledged=true&session_id=ws-session-abc-123",
+    })
+
+    const res = await POST(req)
+    expect(res.status).toBe(202)
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    const calledUrl = String(fetchMock.mock.calls[0][0])
+    expect(calledUrl).toContain("session_id=ws-session-abc-123")
+    expect(calledUrl).toContain("consent_acknowledged=true")
   })
 
   it("propaga status 4xx do backend (ex.: 428 consent_required) sem mascarar", async () => {
