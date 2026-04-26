@@ -127,21 +127,16 @@ class Orchestrator:
                 if state:
                     ctx.update({k: state.get(k) for k in ("last_agent", "current_job", "current_candidate")})
 
-            _ctx_type = ctx.get("context_type", "")
-            _CONTEXT_TYPE_DOMAIN_OVERRIDE = {
-                "company_settings": "company_settings",
-                "hiring_policy": "hiring_policy",
-            }
-            _domain_override = _CONTEXT_TYPE_DOMAIN_OVERRIDE.get(_ctx_type)
-            if _domain_override:
-                from app.orchestrator.cascaded_router import RouteResult
-                route = RouteResult(
-                    domain_id=_domain_override,
-                    confidence=1.0,
-                    source="context_type_override",
-                    intent_details={"raw_intent": _domain_override},
+            # Delegação canônica para context_type_override service (Sprint II.4, ADR-019).
+            # Mantém log com mesmo formato do V1 para compat com observabilidade existente.
+            from app.orchestrator.services.context_type_override import try_override_route
+            route = try_override_route(ctx)
+            if route is not None:
+                logger.info(
+                    "[Orchestrator] context_type override: %s → domain=%s",
+                    ctx.get("context_type", ""),
+                    route.domain_id,
                 )
-                logger.info("[Orchestrator] context_type override: %s → domain=%s", _ctx_type, _domain_override)
             else:
                 route = await self._cascaded_router.route(sanitized, ctx, session_id=conversation_id)
             domain_id, confidence = route.domain_id, route.confidence
