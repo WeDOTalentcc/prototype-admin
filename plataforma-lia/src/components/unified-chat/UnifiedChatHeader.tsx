@@ -3,7 +3,8 @@
 import React, { useState, useRef, useEffect } from "react"
 import {
   Brain, X, Maximize2, PanelRight, MessageSquare, Minimize2,
-  Plus, MoreHorizontal, ChevronDown, Pencil, Trash2, ArrowRightLeft
+  Plus, MoreHorizontal, ChevronDown, Pencil, Trash2, ArrowRightLeft,
+  CheckCircle2, Briefcase
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useTranslations } from 'next-intl'
@@ -24,6 +25,22 @@ interface Props {
   onRename?: (newTitle: string) => void
   onDelete?: () => void
   activeTaskLabel?: string | null
+  /**
+   * Auto-save hint shown next to the active-task pill while the wizard
+   * is running (e.g. "Salvo agora", "Salvo há 2 min", "Salvando…"). The
+   * UnifiedChat owner derives the label from the latest wizard_stage
+   * payload — null hides the indicator.
+   */
+  autoSaveLabel?: string | null
+  /**
+   * When true, render a "Ver vaga" shortcut next to the active-task pill
+   * so the recruiter can re-open the right-side panel after dismissing
+   * it mid-wizard. The owner is responsible for deciding when there is a
+   * panel to re-open.
+   */
+  showOpenJobButton?: boolean
+  /** Fired when the user clicks the "Ver vaga" shortcut. */
+  onOpenJob?: () => void
 }
 
 export function UnifiedChatHeader({
@@ -39,6 +56,9 @@ export function UnifiedChatHeader({
   onRename,
   onDelete,
   activeTaskLabel,
+  autoSaveLabel,
+  showOpenJobButton,
+  onOpenJob,
 }: Props) {
   const t = useTranslations('chat.header')
   const [showModeMenu, setShowModeMenu] = useState(false)
@@ -170,6 +190,36 @@ export function UnifiedChatHeader({
             <span className="text-xs truncate">{activeTaskLabel}</span>
             <ArrowRightLeft className="w-3 h-3 flex-shrink-0 opacity-60" aria-hidden="true" />
           </button>
+        )}
+
+        {/* "Ver vaga" — re-open the right-side wizard panel after the
+            recruiter dismissed it mid-wizard. Owner controls visibility
+            (only shows when there's a panel to restore). */}
+        {showOpenJobButton && onOpenJob && (
+          <button
+            onClick={onOpenJob}
+            className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-wedo-cyan/40 bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20 transition-colors motion-reduce:transition-none flex-shrink-0"
+            title="Reabrir o painel da vaga em criação"
+            aria-label="Reabrir o painel lateral da vaga em criação"
+            data-testid="open-job-panel-button"
+          >
+            <Briefcase className="w-3 h-3" aria-hidden="true" />
+            <span className="text-xs font-medium">Ver vaga</span>
+          </button>
+        )}
+
+        {/* Auto-save hint — refreshed every minute by the owner. Hidden
+            when no wizard is active or the timestamp is unknown. */}
+        {autoSaveLabel && (
+          <span
+            className="hidden sm:flex items-center gap-1 text-[11px] text-lia-text-tertiary flex-shrink-0"
+            aria-live="polite"
+            aria-atomic="true"
+            data-testid="wizard-autosave-indicator"
+          >
+            <CheckCircle2 className="w-3 h-3 text-status-success" aria-hidden="true" />
+            <span className="truncate max-w-[120px]">{autoSaveLabel}</span>
+          </span>
         )}
       </div>
 

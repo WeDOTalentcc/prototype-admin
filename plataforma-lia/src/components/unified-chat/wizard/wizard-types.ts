@@ -221,10 +221,33 @@ export const STAGE_LABELS: Record<WizardStage, string> = {
   calibration: "Calibracao",
   handoff: "Pagina da vaga",
   done: "Concluido",
+  scheduling: "Agendamento",
+}
+
+/**
+ * Pill-style labels rendered on the chat header, the workflow rail, and
+ * any other surface that needs the long "Criando vaga · X" prefix. Kept
+ * next to STAGE_LABELS so we have a single source of truth — every
+ * surface that shows a wizard stage name imports from here.
+ */
+export const STAGE_PILL_LABELS: Record<WizardStage, string> = {
+  intake: "Criando vaga · Início",
+  jd_enrichment: "Criando vaga · Descrição",
+  bigfive: "Criando vaga · Perfil",
+  salary: "Criando vaga · Salário",
+  competency: "Criando vaga · Competências",
+  wsi_questions: "Criando vaga · Triagem",
+  eligibility: "Criando vaga · Elegibilidade",
+  review: "Criando vaga · Revisão",
+  publish: "Criando vaga · Publicação",
+  calibration: "Calibrando · Candidatos",
+  handoff: "Criando vaga · Finalização",
+  done: "Vaga criada",
+  scheduling: "Agendando · Entrevistas",
 }
 
 export const STAGE_ORDER: WizardStage[] = [
   "intake", "jd_enrichment", "bigfive", "salary", "competency",
   "wsi_questions", "eligibility", "review", "publish", "calibration",
-  "handoff", "done",
+  "handoff", "done", "scheduling",
 ]

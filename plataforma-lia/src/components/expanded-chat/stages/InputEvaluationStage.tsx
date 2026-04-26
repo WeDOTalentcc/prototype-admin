@@ -8,7 +8,7 @@
 
 import { Settings, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { FastTrackSuggestions } from "@/components/job-wizard/FastTrackSuggestions"
+import { FastTrackSuggestions } from "@/components/expanded-chat/FastTrackSuggestions"
 import type { FastTrackSuggestion } from "@/hooks/recruitment/useFastTrack"
 
 type CriteriaItem = {

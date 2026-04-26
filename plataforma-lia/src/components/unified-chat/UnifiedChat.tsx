@@ -8,7 +8,7 @@ import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
 import { useAuthStore } from "@/stores/auth-store"
 import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard"
 import { DynamicContextPanel, SPLIT_STAGES } from "./wizard/DynamicContextPanel"
-import type { WizardStage } from "./wizard/wizard-types"
+import { STAGE_PILL_LABELS, type WizardStage } from "./wizard/wizard-types"
 import { SwitchTaskModal } from "@/components/lia-float/SwitchTaskModal"
 import { useNavigationIntent } from "@/hooks/shared/use-navigation-intent"
 import { useWizardIntegration } from "./wizard/useWizardIntegration"
@@ -25,25 +25,19 @@ import {
   formatGlossaryEntryMarkdown,
   lookupGlossaryTerm,
 } from "@/services/lia-api/glossary-api"
+import { SLASH_COMMANDS } from "./slash-commands"
 
 const DEFINIR_REGEX = /^\/(?:definir|glossario|glossário)(?:\s+(.+))?$/i
+const AJUDA_REGEX = /^\/ajuda\s*$/i
 
 const MODE_STORAGE_KEY = "lia-chat-mode"
 
-const WIZARD_STAGE_LABELS: Record<string, string> = {
-  intake: "Criando vaga · Início",
-  jd_enrichment: "Criando vaga · Descrição",
-  bigfive: "Criando vaga · Perfil",
-  salary: "Criando vaga · Salário",
-  competency: "Criando vaga · Competências",
-  wsi_questions: "Criando vaga · Triagem",
-  eligibility: "Criando vaga · Elegibilidade",
-  review: "Criando vaga · Revisão",
-  publish: "Criando vaga · Publicação",
-  calibration: "Calibrando · Candidatos",
-  handoff: "Criando vaga · Finalização",
-  done: "Vaga criada",
-}
+// `STAGE_PILL_LABELS` is the single source of truth for the long
+// "Criando vaga · X" strings shown on the chat header and the workflow
+// rail. Importing instead of duplicating keeps both surfaces in sync
+// when a stage is renamed or added in the backend graph.
+const WIZARD_STAGE_LABELS = STAGE_PILL_LABELS as Record<string, string>
+
 const WIDTH_STORAGE_KEY = "lia-chat-width"
 const DEFAULT_WIDTH = 380
 const MIN_WIDTH = 300
@@ -125,6 +119,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     close,
     contextPage,
     dynamicPanel,
+    openDynamicPanel,
     closeDynamicPanel,
   } = useLiaFloat()
 
@@ -171,6 +166,53 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   } = wizard
   const wizardActive =
     wizardStage !== null && wizardStage !== "done" && wizardStage !== "handoff"
+
+  // Auto-save hint — every wizard_stage payload from the backend means
+  // the in-flight job draft was just persisted server-side, so we treat
+  // the arrival of a new stage as the wizard's "saved at" timestamp.
+  // The header re-renders the relative label every minute. We skip the
+  // first render (rehydrate from localStorage) to avoid a misleading
+  // "Salvando…" flash when nothing was actually persisted just now.
+  const [wizardSavedAt, setWizardSavedAt] = useState<Date | null>(null)
+  const [, setSavedTick] = useState(0)
+  const wizardSavedHydratedRef = useRef(false)
+  useEffect(() => {
+    if (!wizardStage) return
+    if (!wizardSavedHydratedRef.current) {
+      wizardSavedHydratedRef.current = true
+      return
+    }
+    setWizardSavedAt(new Date())
+  }, [wizardStage, wizardCompleteness])
+  useEffect(() => {
+    if (!wizardActive) return
+    const id = setInterval(() => setSavedTick((n) => n + 1), 30_000)
+    return () => clearInterval(id)
+  }, [wizardActive])
+  const wizardSavedLabel = (() => {
+    if (!wizardActive || !wizardSavedAt) return null
+    const diff = Date.now() - wizardSavedAt.getTime()
+    if (diff < 5_000) return "Salvando…"
+    const minutes = Math.floor(diff / 60_000)
+    if (minutes < 1) return "Salvo agora"
+    if (minutes === 1) return "Salvo há 1 min"
+    if (minutes < 60) return `Salvo há ${minutes} min`
+    const hours = Math.floor(minutes / 60)
+    if (hours === 1) return "Salvo há 1 hora"
+    return `Salvo há ${hours} horas`
+  })()
+
+  // Track last-seen dynamic panel so we can re-open it after the user
+  // dismisses the right-side panel mid-wizard (Task #836 — botão "Ver vaga").
+  const lastDynamicPanelRef = useRef<typeof dynamicPanel>(null)
+  useEffect(() => {
+    if (dynamicPanel) lastDynamicPanelRef.current = dynamicPanel
+  }, [dynamicPanel])
+  const reopenLastPanel = useCallback(() => {
+    if (lastDynamicPanelRef.current) {
+      openDynamicPanel(lastDynamicPanelRef.current)
+    }
+  }, [openDynamicPanel])
   // Plan card + published-job card are owned by `useWizardChatCards`
   // (Task A2) — extracted from this file so the same behaviour is shared
   // with `expanded-chat-modal` and unit-tested in isolation. Comments on
@@ -236,6 +278,33 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           prev.map((m) => (m.id === pendingId ? { ...m, content: replyContent } : m)),
         )
       })
+      return
+    }
+
+    // `/ajuda` is answered locally with a card listing every dropdown
+    // command — no point round-tripping the backend agent for static help
+    // text (Task #836). Mirrors the `/definir` local-resolution pattern.
+    if (AJUDA_REGEX.test(text)) {
+      const now = new Date().toISOString()
+      const userMsg = {
+        id: `user-${Date.now()}`,
+        sender: "user" as const,
+        content: text,
+        timestamp: now,
+      }
+      const lines = SLASH_COMMANDS
+        .filter((c) => c.showInDropdown)
+        .map((c) => `- **${c.primary}** — ${c.subtitle}`)
+        .join("\n")
+      const helpMsg = {
+        id: `lia-${Date.now()}-ajuda`,
+        sender: "lia" as const,
+        content: `Comandos disponíveis:\n\n${lines}\n\n_Dica: digite \`/\` para ver o menu rápido._`,
+        timestamp: now,
+      }
+      setChatMessages((prev) => [...prev, userMsg, helpMsg])
+      setInputText("")
+      setAttachedFile(null)
       return
     }
 
@@ -433,6 +502,16 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           transportMode={chatTransportMode}
           isReconnecting={chatIsReconnecting}
           activeTaskLabel={activeTaskLabel}
+          autoSaveLabel={wizardSavedLabel}
+          showOpenJobButton={
+            wizardActive &&
+            !hasDynamicPanel &&
+            !!lastDynamicPanelRef.current &&
+            SPLIT_STAGES.includes(
+              (lastDynamicPanelRef.current.stage as WizardStage)
+            )
+          }
+          onOpenJob={reopenLastPanel}
         />
 
         {/* Wizard progress bar — sticky at the top of the feed while the
@@ -450,6 +529,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
               currentStage={wizardStage}
               completeness={wizardCompleteness}
               stageHistory={wizardHistory}
+              compact={effectiveMode === "floating"}
             />
           </div>
         )}
