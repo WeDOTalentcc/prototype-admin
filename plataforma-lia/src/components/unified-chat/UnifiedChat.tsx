@@ -12,6 +12,15 @@ import type { WizardStage } from "./wizard/wizard-types"
 import { SwitchTaskModal } from "@/components/lia-float/SwitchTaskModal"
 import { useNavigationIntent } from "@/hooks/shared/use-navigation-intent"
 import { useWizardIntegration } from "./wizard/useWizardIntegration"
+import { useWizardFlow } from "./wizard/useWizardFlow"
+import { WizardProgressBar } from "./wizard/WizardProgressBar"
+import {
+  WIZARD_PLAN_MESSAGE_ID,
+  WIZARD_PLAN_TITLE,
+  buildPlanFlowSteps,
+  planStepsEqual,
+} from "./wizard/wizard-plan-card"
+import type { FlowStep } from "@/components/workflow-rail/FlowStepMessage"
 import { ProgressiveDisclosure } from "./wizard/ProgressiveDisclosure"
 import { UnifiedChatHeader } from "./UnifiedChatHeader"
 import { UnifiedChatInput } from "./UnifiedChatInput"
@@ -153,6 +162,56 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     currentStage: dynamicPanel?.stage ?? null,
     sendMessage: sendChatMessage,
   })
+
+  // Canonical wizard state on the chat surface — listens to the same
+  // `lia:wizard-stage-payload` window event that powers `WizardContext` for
+  // the right-side panel. Reusing the hook avoids a parallel state channel.
+  const wizard = useWizardFlow()
+  const {
+    currentStage: wizardStage,
+    completeness: wizardCompleteness,
+    stageHistory: wizardHistory,
+  } = wizard
+  const wizardActive =
+    wizardStage !== null && wizardStage !== "done" && wizardStage !== "handoff"
+  const planCardInsertedRef = useRef(false)
+
+  // Insert the non-persisted "Plano de trabalho" assistant card into the feed
+  // the first time the wizard reports stage=`intake`, then keep its
+  // `flowSteps` in sync as new stages stream in. Removed when the wizard
+  // resets so a fresh run can re-emit it cleanly.
+  useEffect(() => {
+    if (!wizardStage) {
+      planCardInsertedRef.current = false
+      return
+    }
+    const flowSteps = buildPlanFlowSteps(wizardStage)
+    setChatMessages((prev) => {
+      const exists = prev.some((m) => m.id === WIZARD_PLAN_MESSAGE_ID)
+      if (!exists) {
+        if (planCardInsertedRef.current) return prev
+        planCardInsertedRef.current = true
+        const planMsg = {
+          id: WIZARD_PLAN_MESSAGE_ID,
+          sender: "lia" as const,
+          content: WIZARD_PLAN_TITLE,
+          timestamp: new Date().toISOString(),
+          metadata: { type: "wizard_plan", flowSteps },
+        }
+        return [...prev, planMsg]
+      }
+      // Update existing card without forcing a new array if nothing changed.
+      let changed = false
+      const next = prev.map((m) => {
+        if (m.id !== WIZARD_PLAN_MESSAGE_ID) return m
+        const prevSteps = (m.metadata?.flowSteps as FlowStep[] | undefined) ?? []
+        if (planStepsEqual(prevSteps, flowSteps)) return m
+        changed = true
+        return { ...m, metadata: { ...(m.metadata ?? {}), type: "wizard_plan", flowSteps } }
+      })
+      return changed ? next : prev
+    })
+  }, [wizardStage, setChatMessages])
 
   // Persist mode preference
   useEffect(() => {
@@ -407,6 +466,25 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
           isReconnecting={chatIsReconnecting}
           activeTaskLabel={activeTaskLabel}
         />
+
+        {/* Wizard progress bar — sticky at the top of the feed while the
+            "Criar nova vaga" wizard is active. Mounts on the first
+            `wizard_stage` event and unmounts at `done`/`handoff`. */}
+        {wizardActive && (
+          <div
+            className="border-b border-lia-border-subtle"
+            role="status"
+            aria-live="polite"
+            aria-label="Progresso do wizard de criação de vaga"
+            data-testid="wizard-progress-bar"
+          >
+            <WizardProgressBar
+              currentStage={wizardStage}
+              completeness={wizardCompleteness}
+              stageHistory={wizardHistory}
+            />
+          </div>
+        )}
 
         {/* Content area */}
         {hasMessages ? (

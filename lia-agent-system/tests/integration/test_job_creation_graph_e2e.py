@@ -232,6 +232,49 @@ def test_full_wizard_run_emits_single_job_creation_audit(initial_state):
     assert "screening_mode=compact" in reasoning_blob
 
 
+def test_first_turn_emits_intake_ws_stage_payload(initial_state):
+    """Task #826 — guarantee that the very first turn of "Criar uma nova vaga"
+    emits a ``ws_stage_payload`` whose ``stage == 'intake'``. This is the
+    canonical signal that powers the chat-feed wizard plan card and the
+    top-of-feed ``WizardProgressBar`` on the frontend, so it must keep
+    working.
+
+    Completeness on a bare opener may be 0.0 (the user has not provided
+    any job details yet) — what matters for the chat surface is that the
+    stage event arrives at all so the bar can mount.
+    """
+    from app.domains.job_creation import graph as job_graph
+
+    # Run a single intake_node call — no LLM, no API client needed for this
+    # node — and inspect the wizard payload it sets on state.
+    raw_state = {
+        "session_id": THREAD_ID + "-intake",
+        "user_id": "recruiter-1",
+        "workspace_id": COMPANY_ID,
+        "user_query": "Criar uma nova vaga",
+        "raw_input": "Criar uma nova vaga",
+        "stage_history": [],
+    }
+
+    new_state = job_graph.intake_node(raw_state)
+
+    payload = new_state.get("ws_stage_payload")
+    assert payload is not None, "intake_node must emit ws_stage_payload"
+    assert payload.get("type") == "wizard_stage"
+    assert payload.get("stage") == "intake", (
+        f"first turn must emit stage='intake', got {payload.get('stage')!r}"
+    )
+    assert payload.get("requires_approval") is False
+    completeness = payload.get("completeness")
+    assert isinstance(completeness, (int, float)), (
+        "completeness must be numeric so the frontend bar can render a "
+        "deterministic progress value"
+    )
+    assert 0.0 <= completeness <= 1.0, (
+        f"completeness must be a [0,1] ratio, got {completeness!r}"
+    )
+
+
 def test_resume_after_hitl_does_not_duplicate_audit(initial_state):
     """A wizard that pauses at the HITL points and resumes must still
     emit exactly one audit row — never zero, never duplicated."""

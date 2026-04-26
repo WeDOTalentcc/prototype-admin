@@ -154,6 +154,22 @@ export function useWizardFlow() {
     persistState(state)
   }, [state])
 
+  // Subscribe to the canonical `lia:wizard-stage-payload` window event so the
+  // hook is self-sufficient when mounted on the chat surface. The event is
+  // emitted by `useChatSocket` for every backend `ws_stage_payload`. We update
+  // local state directly via `dispatch` here (no re-dispatch) to avoid the
+  // feedback loop with `handleStagePayload` below.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    function handle(event: Event) {
+      const payload = (event as CustomEvent).detail as WizardStagePayload | undefined
+      if (!payload || payload.type !== "wizard_stage" || typeof payload.stage !== "string") return
+      dispatch({ type: "STAGE_UPDATE", payload })
+    }
+    window.addEventListener("lia:wizard-stage-payload", handle as EventListener)
+    return () => window.removeEventListener("lia:wizard-stage-payload", handle as EventListener)
+  }, [])
+
   const handleStagePayload = useCallback((payload: WizardStagePayload) => {
     dispatch({ type: "STAGE_UPDATE", payload })
     if (typeof window !== "undefined") {
