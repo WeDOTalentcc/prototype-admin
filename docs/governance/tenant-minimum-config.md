@@ -52,7 +52,7 @@ Fonte da verdade: `lia-agent-system/app/orchestrator/precondition_checker.py` (D
 | # | `type` | Severity | Tabela alvo | Query do checker | Bloqueia rota? | Coberto pela #813? |
 |---|--------|----------|-------------|------------------|----------------|--------------------|
 | 1 | `missing_company_id` | **warning** | `company_profiles` (presença do company_id no contexto) | `getattr(ctx, "company_id", None)` — não chega ao DB | **SIM** (único bloqueante "always-on") | N/A — é checagem de contexto, não de schema |
-| 2 | `incomplete_company_profile` | info | `company_profiles` | `SELECT name, industry, company_size, website FROM company_profiles WHERE id::text=:cid OR client_account_id::text=:cid LIMIT 1` | Não | **Parcial** — #813 garante a row em `company_profiles(id=DEMO_COMPANY_UUID)` mas não preenche os 4 campos canônicos |
+| 2 | `incomplete_company_profile` | info | `company_profiles` | `SELECT name, industry, company_size FROM company_profiles WHERE id::text=:cid OR client_account_id::text=:cid LIMIT 1` | Não | **SIM** — #813 garante a row, #819 preenche `name/industry/company_size` na própria row e remove `website` da query (website tem hint dedicada #4 — evita duplicar o sinal) |
 | 3 | `vacancy_no_screening_questions` | warning | `screening_questions` | `SELECT COUNT(*) FROM screening_questions WHERE vacancy_id=:vid AND company_id=:cid` | **SIM** (mas só dispara se `intent ∈ {screening, wsi, tria, triagem}` E `vacancy_id` presente) | Não — é por-vaga, não por-tenant. #813 popula `company_screening_questions` (catálogo), não `screening_questions` (por vaga) |
 | 4 | `company_website_missing` | info | `company_profiles.website` | `SELECT website FROM company_profiles WHERE id::text=:cid OR client_account_id::text=:cid LIMIT 1` | Não | **Não** — #813 não escreve website na row canônica de `company_profiles`; o site `https://demo.lia.local` está apenas dentro do payload de `company_culture_profiles` |
 | 5 | `culture_profile_missing` | info | `company_culture_profiles` | `SELECT COUNT(*) FROM company_culture_profiles WHERE company_id::text=:cid` | Não | **SIM** — `_seed_demo_culture_profile(db)` insere row completa para DEMO_COMPANY_UUID |
@@ -94,10 +94,13 @@ Fonte da verdade: `lia-agent-system/app/orchestrator/precondition_checker.py` (D
 
 ### 4.1 Gaps remanescentes vs §3
 
-Mesmo com a #813 aplicada, estas hints continuam podendo aparecer no tenant demo:
+Após #813 + #819 aplicadas, apenas uma hint `info` ainda aparece no tenant demo, e isso é por design:
 
-- **`incomplete_company_profile`** (info): #813 garante a row `company_profiles(id=DEMO_COMPANY_UUID)` mas não preenche `name`, `industry`, `company_size`, `website` na própria row. O perfil cultural tem esses dados mas em outra tabela. → **gap controlado** (info, não bloqueia), mas resolver fortalece o contrato.
-- **`company_website_missing`** (info): mesma causa anterior — `company_profiles.website` segue vazio. → **gap controlado**.
+- **`company_website_missing`** (info): `company_profiles.website` segue NULL deliberadamente (§5.1). É o sinal legítimo que dispara o offer `analyze_company_website`. Preencher com placeholder mascararia uma feature do produto. → **gap intencional**.
+
+`incomplete_company_profile` está coberto pela #819 em duas frentes complementares:
+1. `_ensure_demo_company_profile` agora escreve `name`, `industry` e `company_size` na row canônica via `ON CONFLICT DO UPDATE` + `COALESCE/NULLIF` (idempotente, não sobrescreve dados de admin) e usa `RETURNING (xmax = 0)` para distinguir insert real de update.
+2. `_check_company_profile_completeness` removeu `website` da query e da lista de campos faltantes — o sinal de website fica exclusivamente em `company_website_missing` (hint #4), evitando emitir o mesmo gap em duas hints diferentes.
 
 `missing_company_id` está coberto pelo provisioning de tenant (fora deste seed), e `vacancy_no_screening_questions` + `candidates_missing_contact` são contextuais por turno — não fazem parte do mínimo do tenant.
 
@@ -272,8 +275,8 @@ Este doc não cria tarefas — apenas as enumera para serem propostas ao usuári
 3. **Endpoint `POST /api/v1/admin/tenants/{id}/bootstrap-defaults`**
    Re-trigger manual do `ensure_tenant_minimum_config` para tenants já criados pré-spec. Idempotente. Retorna summary de tabelas tocadas (parecido com retorno atual de `seed_demo_company_settings`).
 
-4. **Fechar gaps `incomplete_company_profile` e `company_website_missing` no demo**
-   Atualizar `_seed_demo_culture_profile` para também escrever `name/industry/company_size/website` na row de `company_profiles` (não só no payload do culture profile). Resolve as 2 hints `info` que ainda aparecem no tenant demo apesar da #813.
+4. ~~**Fechar gaps `incomplete_company_profile` e `company_website_missing` no demo**~~ — **CONCLUÍDO na #819**
+   Duas frentes complementares: (a) `_ensure_demo_company_profile` preenche `name/industry/company_size` na row canônica via `ON CONFLICT DO UPDATE` + `COALESCE/NULLIF` (idempotente, não sobrescreve dados de admin), com `RETURNING (xmax = 0)` para distinguir insert real de update; (b) `_check_company_profile_completeness` removeu `website` da query — o sinal fica exclusivamente em `company_website_missing` (hint #4), evitando duplicar o mesmo gap em duas hints. `website` permanece NULL deliberadamente (§5.1).
 
 5. **Bias audit baseline pós-bootstrap** (Production Readiness #9)
    Após cada `ensure_tenant_minimum_config`, rodar `BiasAuditService.establish_baseline(company_id)` para que comparações de drift tenham referência inicial.

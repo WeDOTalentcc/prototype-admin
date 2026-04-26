@@ -1356,34 +1356,69 @@ async def _seed_demo_company_benefits(db: AsyncSession) -> int:
 
 async def _ensure_demo_company_profile(db: AsyncSession) -> bool:
     """
-    Garante que existe uma row em `company_profiles` com `id = DEMO_COMPANY_UUID`.
+    Garante que existe uma row em `company_profiles` com `id = DEMO_COMPANY_UUID`
+    e que os campos canônicos checados pelo `PreConditionChecker`
+    (`name`, `industry`, `company_size`) estão preenchidos.
 
     A FK `company_culture_profiles.company_id → company_profiles.id` exige essa
     row para o tenant demo. O profile "real" do demo usa `client_account_id`
     (não `id`), então criamos um profile canônico companion identificado pelo
-    UUID canônico do tenant. Idempotente via ON CONFLICT DO NOTHING.
+    UUID canônico do tenant.
+
+    Idempotência:
+      - Insert via ON CONFLICT (id) DO UPDATE com COALESCE/NULLIF: preenche
+        os campos canônicos apenas quando estão NULL ou vazios — nunca
+        sobrescreve dados que um admin tenha completado posteriormente.
+      - `website` permanece NULL deliberadamente (Task #819 / contrato §5.1):
+        é o sinal legítimo que dispara o offer `analyze_company_website`.
+        Preencher com placeholder mascararia uma feature do produto.
     """
     from sqlalchemy import text
+    industry = _DEMO_CULTURE_PROFILE.get("industry") or "Recursos Humanos / Tecnologia"
+    company_size = _DEMO_CULTURE_PROFILE.get("company_size") or "Medium"
+    # `RETURNING (xmax = 0) AS inserted` distingue insert real (xmax=0) de
+    # update via DO UPDATE (xmax != 0). Isso é necessário porque com
+    # ON CONFLICT DO UPDATE o `rowcount` vale 1 em ambos os casos, então
+    # não dá para inferir "criado" só pelo rowcount (review da #819).
+    # Nota: `xmax` é uma system column do PostgreSQL — esta query NÃO é
+    # portável para outros engines. O projeto já assume Postgres em todo
+    # o backend (RLS, UUID nativo, JSONB), então a dependência é coerente.
     result = await db.execute(
         text(
             """
-            INSERT INTO company_profiles (id, name, trading_name, headquarters_country,
+            INSERT INTO company_profiles (id, name, trading_name, industry,
+                                          company_size, headquarters_country,
                                           is_active, is_default, created_by)
-            VALUES (CAST(:cid AS uuid), :name, :trading, 'Brasil', true, false, 'demo_seed')
-            ON CONFLICT (id) DO NOTHING
+            VALUES (CAST(:cid AS uuid), :name, :trading, :industry,
+                    :company_size, 'Brasil', true, false, 'demo_seed')
+            ON CONFLICT (id) DO UPDATE SET
+                name = COALESCE(NULLIF(company_profiles.name, ''), EXCLUDED.name),
+                industry = COALESCE(NULLIF(company_profiles.industry, ''), EXCLUDED.industry),
+                company_size = COALESCE(NULLIF(company_profiles.company_size, ''), EXCLUDED.company_size),
+                updated_at = NOW()
+            RETURNING (xmax = 0) AS inserted
             """
         ),
         {
             "cid": DEMO_COMPANY_UUID,
             "name": "[DEMO] WeDo Talent (tenant canônico)",
             "trading": "WeDo Talent Demo",
+            "industry": industry,
+            "company_size": company_size,
         },
     )
-    created = (result.rowcount or 0) > 0
+    row = result.first()
+    created = bool(row and row[0])
     if created:
-        logger.info("🏢 [demo seed] company_profiles: row canônica criada para tenant demo")
+        logger.info(
+            "🏢 [demo seed] company_profiles: row canônica criada "
+            "(name/industry/company_size preenchidos; website intencionalmente NULL)"
+        )
     else:
-        logger.info("🏢 [demo seed] company_profiles: row canônica já existe, ok")
+        logger.info(
+            "🏢 [demo seed] company_profiles: row canônica já existia — "
+            "backfill de name/industry/company_size aplicado quando necessário"
+        )
     return created
 
 
