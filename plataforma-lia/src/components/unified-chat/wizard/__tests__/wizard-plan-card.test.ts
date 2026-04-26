@@ -11,6 +11,8 @@ import { describe, it, expect } from "vitest"
 import {
   PLAN_VISIBLE_STAGES,
   WIZARD_CLOSING_STAGES,
+  WIZARD_PLAN_COMPLETED_SUFFIX,
+  WIZARD_PLAN_COMPLETED_TITLE,
   WIZARD_PLAN_MESSAGE_ID,
   WIZARD_PLAN_TITLE,
   WIZARD_PUBLISHED_MESSAGE_ID,
@@ -18,6 +20,7 @@ import {
   buildPlanFlowSteps,
   buildPublishedJobCard,
   isWizardClosingStage,
+  planCardTitleForStage,
   planStepsEqual,
   publishedJobCardsEqual,
 } from "../wizard-plan-card"
@@ -63,6 +66,46 @@ describe("buildPlanFlowSteps", () => {
     // Every visible stage before calibration should be completed.
     const before = steps.filter((s) => s.id !== "calibration")
     expect(before.every((s) => s.status === "completed")).toBe(true)
+  })
+
+  // Task #830 — terminal stages must mark every visible step as completed
+  // so the chat-feed plan card stops looking like calibration is still
+  // running once the wizard reaches `done`/`handoff`.
+  it("marks every visible step as completed at the terminal `done` stage", () => {
+    const steps = buildPlanFlowSteps("done")
+    expect(steps).toHaveLength(6)
+    expect(steps.map((s) => s.id)).toEqual([...PLAN_VISIBLE_STAGES])
+    expect(steps.every((s) => s.status === "completed")).toBe(true)
+  })
+
+  it("marks every visible step as completed at the terminal `handoff` stage", () => {
+    const steps = buildPlanFlowSteps("handoff")
+    expect(steps).toHaveLength(6)
+    expect(steps.every((s) => s.status === "completed")).toBe(true)
+    // Calibration must not stay frozen on `in_progress` here — that was
+    // the exact regression Task #830 fixes.
+    const cal = steps.find((s) => s.id === "calibration")
+    expect(cal?.status).toBe("completed")
+  })
+})
+
+describe("planCardTitleForStage", () => {
+  it("returns the canonical title for null and any non-terminal stage", () => {
+    expect(planCardTitleForStage(null)).toBe(WIZARD_PLAN_TITLE)
+    expect(planCardTitleForStage("intake")).toBe(WIZARD_PLAN_TITLE)
+    expect(planCardTitleForStage("calibration")).toBe(WIZARD_PLAN_TITLE)
+  })
+
+  it("returns the 'Concluído' variant for terminal stages", () => {
+    expect(planCardTitleForStage("done")).toBe(WIZARD_PLAN_COMPLETED_TITLE)
+    expect(planCardTitleForStage("handoff")).toBe(WIZARD_PLAN_COMPLETED_TITLE)
+  })
+
+  it("composes the completed title from the canonical pieces (no parallel literal)", () => {
+    expect(WIZARD_PLAN_COMPLETED_SUFFIX).toBe("Concluído")
+    expect(WIZARD_PLAN_COMPLETED_TITLE).toBe(
+      `${WIZARD_PLAN_TITLE} — ${WIZARD_PLAN_COMPLETED_SUFFIX}`,
+    )
   })
 })
 

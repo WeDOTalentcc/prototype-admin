@@ -39,14 +39,38 @@ export const WIZARD_PLAN_MESSAGE_ID = "lia-wizard-plan-card"
 export const WIZARD_PLAN_TITLE = "Plano de trabalho"
 
 /**
+ * Final wizard stages that should trigger the closing summary card AND
+ * the "all completed" rendering of the plan card. Both `done` and
+ * `handoff` are accepted because the backend currently emits `handoff`
+ * as the terminal stage, while `done` is reserved for a future explicit
+ * completion step (and unit tests dispatch it).
+ */
+export const WIZARD_CLOSING_STAGES: readonly WizardStage[] = ["handoff", "done"] as const
+
+export function isWizardClosingStage(stage: WizardStage | null): boolean {
+  return stage !== null && (WIZARD_CLOSING_STAGES as readonly string[]).includes(stage)
+}
+
+/**
  * Map the wizard's `currentStage` onto the 6 visible plan steps.
  *
  *  - `completed`: stage strictly precedes the current stage in `STAGE_ORDER`
  *  - `in_progress`: the current stage itself
  *  - `pending`: any stage after the current one (or all of them if the
  *    current stage is unknown / hasn't reached the visible window yet)
+ *
+ * Special case — terminal stages (`handoff`, `done`): every visible step
+ * is marked `completed` so the chat-feed plan card reflects "concluído"
+ * instead of staying frozen on calibration's "in progress" pill (Task #830).
  */
 export function buildPlanFlowSteps(currentStage: WizardStage | null): FlowStep[] {
+  if (isWizardClosingStage(currentStage)) {
+    return PLAN_VISIBLE_STAGES.map((stage) => ({
+      id: stage,
+      label: STAGE_LABELS[stage],
+      status: "completed",
+    }))
+  }
   const currentIdx =
     currentStage !== null ? STAGE_ORDER.indexOf(currentStage) : -1
   return PLAN_VISIBLE_STAGES.map((stage) => {
@@ -57,6 +81,26 @@ export function buildPlanFlowSteps(currentStage: WizardStage | null): FlowStep[]
     else status = "pending"
     return { id: stage, label: STAGE_LABELS[stage], status }
   })
+}
+
+/**
+ * User-facing suffix appended to the plan card title once the wizard
+ * reaches a terminal stage (Task #830). Kept as a constant so the unit
+ * tests, the chat surface, and any future Vue port stay in sync.
+ */
+export const WIZARD_PLAN_COMPLETED_SUFFIX = "Concluído"
+export const WIZARD_PLAN_COMPLETED_TITLE =
+  `${WIZARD_PLAN_TITLE} — ${WIZARD_PLAN_COMPLETED_SUFFIX}`
+
+/**
+ * Title to render at the top of the plan card given the current stage.
+ * Switches to the "concluído" variant on terminal stages so the recruiter
+ * sees a clear "this finished" signal instead of a frozen progress card.
+ */
+export function planCardTitleForStage(currentStage: WizardStage | null): string {
+  return isWizardClosingStage(currentStage)
+    ? WIZARD_PLAN_COMPLETED_TITLE
+    : WIZARD_PLAN_TITLE
 }
 
 /**
@@ -82,18 +126,6 @@ export function planStepsEqual(a: FlowStep[], b: FlowStep[]): boolean {
  */
 export const WIZARD_PUBLISHED_MESSAGE_ID = "lia-wizard-published-card"
 export const WIZARD_PUBLISHED_TITLE = "Vaga publicada"
-
-/**
- * Final wizard stages that should trigger the closing summary card.
- * Both `done` and `handoff` are accepted because the backend currently
- * emits `handoff` as the terminal stage, while `done` is reserved for
- * a future explicit completion step (and unit tests dispatch it).
- */
-export const WIZARD_CLOSING_STAGES: readonly WizardStage[] = ["handoff", "done"] as const
-
-export function isWizardClosingStage(stage: WizardStage | null): boolean {
-  return stage !== null && (WIZARD_CLOSING_STAGES as readonly string[]).includes(stage)
-}
 
 /**
  * Plain data the chat-feed closing card consumes. Keeping it as a small

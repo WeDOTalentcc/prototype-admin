@@ -16,12 +16,12 @@ import { useWizardFlow } from "./wizard/useWizardFlow"
 import { WizardProgressBar } from "./wizard/WizardProgressBar"
 import {
   WIZARD_PLAN_MESSAGE_ID,
-  WIZARD_PLAN_TITLE,
   WIZARD_PUBLISHED_MESSAGE_ID,
   WIZARD_PUBLISHED_TITLE,
   buildPlanFlowSteps,
   buildPublishedJobCard,
   isWizardClosingStage,
+  planCardTitleForStage,
   planStepsEqual,
   publishedJobCardsEqual,
   type WizardPublishedJobCardData,
@@ -185,13 +185,16 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const publishedCardInsertedRef = useRef(false)
 
   // Insert the non-persisted "Plano de trabalho" assistant card into the feed
-  // the first time the wizard reports stage=`intake`, then keep its
-  // `flowSteps` in sync as new stages stream in. Removed when the wizard
-  // resets (no stage) OR reaches a terminal stage (`done`/`handoff`) so the
-  // card and the WizardProgressBar disappear together — the contract
-  // surfaced in Task #828: "ao chegar em publish/done, ambos desmontam".
+  // the first time the wizard reports a stage, then keep its `flowSteps` and
+  // title in sync as new stages stream in. Removed only when the wizard
+  // resets (no stage). At terminal stages (`done`/`handoff`) the card stays
+  // visible with all 6 steps marked completed and the title flipped to
+  // "Plano de trabalho — Concluído", so the recruiter sees a clear "this
+  // finished" signal instead of a frozen "Calibração — em progresso" pill
+  // (Task #830). The sticky `WizardProgressBar` still tears down at
+  // done/handoff because `wizardActive` flips to false there.
   useEffect(() => {
-    if (!wizardStage || wizardStage === "done" || wizardStage === "handoff") {
+    if (!wizardStage) {
       planCardInsertedRef.current = false
       setChatMessages((prev) => {
         const exists = prev.some((m) => m.id === WIZARD_PLAN_MESSAGE_ID)
@@ -201,6 +204,8 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
       return
     }
     const flowSteps = buildPlanFlowSteps(wizardStage)
+    const planTitle = planCardTitleForStage(wizardStage)
+    const completed = isWizardClosingStage(wizardStage)
     setChatMessages((prev) => {
       const exists = prev.some((m) => m.id === WIZARD_PLAN_MESSAGE_ID)
       if (!exists) {
@@ -209,9 +214,9 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
         const planMsg = {
           id: WIZARD_PLAN_MESSAGE_ID,
           sender: "lia" as const,
-          content: WIZARD_PLAN_TITLE,
+          content: planTitle,
           timestamp: new Date().toISOString(),
-          metadata: { type: "wizard_plan", flowSteps },
+          metadata: { type: "wizard_plan", flowSteps, completed },
         }
         return [...prev, planMsg]
       }
@@ -220,18 +225,35 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
       const next = prev.map((m) => {
         if (m.id !== WIZARD_PLAN_MESSAGE_ID) return m
         const prevSteps = (m.metadata?.flowSteps as FlowStep[] | undefined) ?? []
-        if (planStepsEqual(prevSteps, flowSteps)) return m
+        const prevCompleted = m.metadata?.completed === true
+        if (
+          m.content === planTitle &&
+          prevCompleted === completed &&
+          planStepsEqual(prevSteps, flowSteps)
+        ) {
+          return m
+        }
         changed = true
-        return { ...m, metadata: { ...(m.metadata ?? {}), type: "wizard_plan", flowSteps } }
+        return {
+          ...m,
+          content: planTitle,
+          metadata: {
+            ...(m.metadata ?? {}),
+            type: "wizard_plan",
+            flowSteps,
+            completed,
+          },
+        }
       })
       return changed ? next : prev
     })
   }, [wizardStage, setChatMessages])
 
   // Inject the non-persisted "Vaga publicada" closing card into the feed
-  // when the wizard reaches `done`/`handoff`. The plan card and progress
-  // bar both unmount at that point, so without this card the conclusion
-  // is silent — recruiters lose track of the job they just published.
+  // when the wizard reaches `done`/`handoff`. The progress bar unmounts
+  // at that point and the plan card flips to "Concluído"; this card adds
+  // the actionable summary (job link, share link) right below them so the
+  // recruiter doesn't lose track of the job they just published.
   useEffect(() => {
     // Reset the dedupe latch on any non-closing stage (including null and a
     // brand-new `intake` after a previous run reached `handoff`). This way a

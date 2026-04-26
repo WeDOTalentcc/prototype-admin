@@ -21,9 +21,12 @@
  *     → UnifiedChat injects the "Plano de trabalho" assistant card
  *     → WizardProgressBar mounts above the message list (does not scroll
  *       with it because it sits in the column above `overflow-y-auto`)
- *     → on the terminal `done` payload BOTH the bar and the plan card
- *       unmount (UnifiedChat removes the card from `chatMessages` when
- *       wizardStage hits `done`/`handoff`).
+ *     → on the terminal `done` payload the progress bar unmounts AND the
+ *       plan card flips to "Plano de trabalho — Concluído" with all 6
+ *       visible steps marked completed (Task #830). The card itself
+ *       stays in the feed so the recruiter sees a clear "this finished"
+ *       signal instead of the previous frozen "calibração — em
+ *       progresso" state.
  *
  * SCOPE NOTE — backend completion path
  * -----------------------------------
@@ -54,7 +57,7 @@ const CHAT_URL = '/pt/chat';
 // well below the suite's 120s budget so a regression fails loudly.
 const FIRST_TURN_TIMEOUT_MS = 60_000;
 
-test.describe('Cartão "Plano de trabalho" + WizardProgressBar — e2e (Task #828)', () => {
+test.describe('Cartão "Plano de trabalho" + WizardProgressBar — e2e (Task #828, #830)', () => {
   test.beforeEach(async ({ authenticatedPage }) => {
     if (!authenticatedPage.url().includes(CHAT_URL)) {
       await authenticatedPage.goto(CHAT_URL, { waitUntil: 'load', timeout: 30_000 });
@@ -65,7 +68,7 @@ test.describe('Cartão "Plano de trabalho" + WizardProgressBar — e2e (Task #82
       .waitFor({ state: 'visible', timeout: 20_000 });
   });
 
-  test('mounts plan card + progress bar after intake; bar stays put when feed scrolls; both unmount on `done`', async ({ authenticatedPage }) => {
+  test('mounts plan card + progress bar after intake; bar stays put when feed scrolls; bar unmounts and plan card flips to Concluído on `done`', async ({ authenticatedPage }) => {
     const planCard = authenticatedPage.locator('[data-testid="wizard-plan-card"]').first();
     const progressBar = authenticatedPage.locator('[data-testid="wizard-progress-bar"]').first();
 
@@ -185,10 +188,12 @@ test.describe('Cartão "Plano de trabalho" + WizardProgressBar — e2e (Task #82
       );
     });
 
-    // (4) BOTH surfaces must unmount at the terminal stage. UnifiedChat
-    // removes the plan card from `chatMessages` when wizardStage hits
-    // `done`/`handoff`, and `wizardActive` flips to false so the
-    // WizardProgressBar tears down its DOM.
+    // (4) The progress bar must tear down at the terminal stage
+    // (`wizardActive` flips to false), but the plan card MUST stay in
+    // the feed and visually flip to "Concluído" with every visible step
+    // marked completed (Task #830). Before this fix the plan card
+    // unmounted alongside the bar, leaving the recruiter wondering
+    // whether the wizard had actually finished.
     await expect(
       progressBar,
       'progress bar must unmount once the wizard reaches `done`',
@@ -196,8 +201,31 @@ test.describe('Cartão "Plano de trabalho" + WizardProgressBar — e2e (Task #82
 
     await expect(
       planCard,
-      'plan card must unmount once the wizard reaches `done`',
-    ).toHaveCount(0, { timeout: 10_000 });
+      'plan card must STAY visible once the wizard reaches `done` (Task #830)',
+    ).toBeVisible({ timeout: 10_000 });
+
+    await expect(
+      planCard.getByText('Concluído', { exact: false }),
+      'plan card title must surface the "Concluído" label at the terminal stage',
+    ).toBeVisible({ timeout: 10_000 });
+
+    // Every visible step in the plan card must be completed — no chip
+    // can still show the "in progress" spinner once the wizard is done.
+    await expect
+      .poll(
+        async () => {
+          return planCard.evaluate((card) => {
+            const spinners = card.querySelectorAll('svg.animate-spin');
+            return spinners.length;
+          });
+        },
+        {
+          message:
+            'plan card must not render any in-progress (spinning) chip after `done`',
+          timeout: 10_000,
+        },
+      )
+      .toBe(0);
 
     await authenticatedPage.screenshot({
       path: 'e2e/screenshots/wizard-plan-card-003-done.png',
