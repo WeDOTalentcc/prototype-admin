@@ -17,13 +17,26 @@ TTL padrão: SEMANTIC_CACHE_TTL (86400s = 24h).
 import hashlib
 import json
 import logging
+import os
 import sys
+import time
 
 
 logger = logging.getLogger(__name__)
 
 _REDIS_PREFIX = "emb:"
 _REDIS_TTL_DEFAULT = 86400  # 24h — alinhado com SEMANTIC_CACHE_TTL
+
+# Cap entries kept in the in-memory fallback. Embeddings are large vectors
+# (~1536 floats * 8 bytes ≈ 12 KB each), so an unbounded dict can pin tens
+# of MiB on a long-running pod that lost Redis. Crossing this threshold
+# triggers a sweep + oldest-first eviction. (Task #871)
+_LOCAL_MAX_ENTRIES = int(os.environ.get("EMBEDDING_CACHE_MAX_LOCAL", "1024"))
+
+
+def _now() -> float:
+    """Indirection over ``time.monotonic`` so tests can fast-forward."""
+    return time.monotonic()
 
 
 class EmbeddingCacheService:
@@ -35,11 +48,28 @@ class EmbeddingCacheService:
     """
 
     def __init__(self):
-        self._local: dict[str, list[float]] = {}   # fallback in-memory
+        # Each entry is ``(embedding, monotonic_expires_at)`` so abandoned
+        # cache entries are evicted after ``_REDIS_TTL_DEFAULT`` even when
+        # Redis is unreachable, mirroring its ``setex`` semantics. The dict
+        # is also bounded by ``_LOCAL_MAX_ENTRIES`` to defend against the
+        # large per-entry footprint (~12 KB per 1536-dim vector). (Task #871)
+        self._local: dict[str, tuple[list[float], float]] = {}
         self._redis = None
         self._redis_ok: bool = False
         self._warmed_up = False
         self._warm_up_job_count = 0
+
+    def _sweep_local(self) -> None:
+        """Evict expired entries; if still over the cap, drop oldest first."""
+        now = _now()
+        expired = [k for k, (_, exp) in self._local.items() if exp <= now]
+        for key in expired:
+            self._local.pop(key, None)
+        if len(self._local) > _LOCAL_MAX_ENTRIES:
+            ordered = sorted(self._local.items(), key=lambda kv: kv[1][1])
+            overflow = len(self._local) - _LOCAL_MAX_ENTRIES
+            for key, _ in ordered[:overflow]:
+                self._local.pop(key, None)
 
     # ------------------------------------------------------------------
     # Redis — lazy init
@@ -79,7 +109,16 @@ class EmbeddingCacheService:
                     return json.loads(raw)
             except Exception as exc:
                 logger.debug("[EmbeddingCache] Redis get falhou: %s", exc)
-        return self._local.get(key)
+        # Local fallback honours TTL on read so stale embeddings don't leak
+        # past their effective expiry.
+        entry = self._local.get(key)
+        if entry is None:
+            return None
+        embedding, expires_at = entry
+        if expires_at <= _now():
+            self._local.pop(key, None)
+            return None
+        return embedding
 
     async def cache_embedding(
         self,
@@ -97,8 +136,11 @@ class EmbeddingCacheService:
                 await redis.setex(key, ttl, serialized)
             except Exception as exc:
                 logger.debug("[EmbeddingCache] Redis set falhou: %s", exc)
-        # Write-through para local (acesso instantâneo sem rede)
-        self._local[key] = embedding
+        # Write-through para local (acesso instantâneo sem rede). Each entry
+        # carries its own expiry so abandoned embeddings are evicted instead
+        # of pinning ~12 KiB each forever. (Task #871)
+        self._local[key] = (embedding, _now() + ttl)
+        self._sweep_local()
 
     async def warm_up(self, db_session) -> None:
         """
@@ -143,11 +185,12 @@ class EmbeddingCacheService:
     def get_stats(self) -> dict:
         """Estatísticas para observabilidade."""
         local_bytes = sys.getsizeof(self._local)
-        for k, v in self._local.items():
-            local_bytes += sys.getsizeof(k) + sys.getsizeof(v)
+        for k, (vec, _exp) in self._local.items():
+            local_bytes += sys.getsizeof(k) + sys.getsizeof(vec)
         return {
             "backend": "redis" if self._redis_ok else "in-memory",
             "local_entries": len(self._local),
+            "local_max_entries": _LOCAL_MAX_ENTRIES,
             "warmed_up": self._warmed_up,
             "warm_up_job_count": self._warm_up_job_count,
             "local_memory_mb": round(local_bytes / 1024 / 1024, 4),

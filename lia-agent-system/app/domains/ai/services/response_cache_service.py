@@ -70,13 +70,20 @@ class CacheConfig:
 class InMemoryCache:
     """
     In-memory cache with TTL support for environments without Redis.
-    
+
     Features:
-    - Automatic expiration of entries based on TTL
+    - Automatic expiration of entries based on TTL (checked on read; full
+      sweep available via ``cleanup_expired``)
     - Pattern-based key matching for invalidation
-    - Bounded size with LRU-like eviction
+    - Bounded size with LRU-like eviction (``_evict_oldest`` runs on every
+      ``set`` once ``max_size`` is reached)
+
+    Memory-leak audit (Task #871): bounded growth is guaranteed by the
+    ``max_size`` cap + LRU eviction in ``set``, so this fallback does **not**
+    need additional TTL-based eviction beyond what ``get`` / ``cleanup_expired``
+    already do. Documented here so future audits don't have to re-derive it.
     """
-    
+
     def __init__(self, max_size: int = 1000):
         self._cache: dict[str, dict[str, Any]] = {}
         self._access_times: dict[str, float] = {}

@@ -15,12 +15,18 @@ Fallback: in-memory dict quando Redis indisponível (dev local / testes).
 """
 import json
 import logging
+import time
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 LIST_TTL_SECONDS = 1800  # 30 minutos
 KEY_PREFIX = "candidate_list:"
+
+
+def _now() -> float:
+    """Indirection over ``time.monotonic`` so tests can fast-forward."""
+    return time.monotonic()
 
 try:
     import redis.asyncio as aioredis
@@ -43,9 +49,21 @@ class CandidateListStore:
     """
 
     def __init__(self) -> None:
-        self._memory: dict[str, list[dict[str, Any]]] = {}
+        # In-process fallback when Redis is unavailable. Each entry is a
+        # ``(candidates, monotonic_expires_at)`` tuple so abandoned conversations
+        # are evicted on the next access instead of pinning candidate payloads
+        # in memory until process restart. The TTL mirrors ``LIST_TTL_SECONDS``
+        # (30 min) used on the Redis side. (Task #871)
+        self._memory: dict[str, tuple[list[dict[str, Any]], float]] = {}
         self._redis: Any | None = None
         self._redis_available = False
+
+    def _sweep_memory(self) -> None:
+        """Drop entries from the fallback store whose TTL has elapsed."""
+        now = _now()
+        expired = [k for k, (_, exp) in self._memory.items() if exp <= now]
+        for key in expired:
+            self._memory.pop(key, None)
 
     async def _get_redis(self) -> Any | None:
         if not _AIOREDIS_AVAILABLE:
@@ -83,8 +101,9 @@ class CandidateListStore:
                 return
             except Exception as exc:
                 logger.warning("[CandidateListStore] Redis set failed (%s), falling back", exc)
-        # Fallback: guarda no dict in-memory (sem TTL, expira com o processo)
-        self._memory[conv_id] = candidates
+        # Fallback in-memory: TTL-aware (mirrors Redis ``LIST_TTL_SECONDS``)
+        self._sweep_memory()
+        self._memory[conv_id] = (candidates, _now() + LIST_TTL_SECONDS)
 
     async def get(self, conv_id: str) -> list[dict[str, Any]] | None:
         """Recupera a lista completa de candidatos. Retorna None se não encontrada/expirada."""
@@ -99,7 +118,17 @@ class CandidateListStore:
                 return None
             except Exception as exc:
                 logger.warning("[CandidateListStore] Redis get failed (%s), falling back", exc)
-        return self._memory.get(conv_id)
+        # Fallback in-memory: enforce TTL on read so stale entries are dropped
+        # even if no further ``set`` call sweeps them.
+        self._sweep_memory()
+        entry = self._memory.get(conv_id)
+        if entry is None:
+            return None
+        candidates, expires_at = entry
+        if expires_at <= _now():
+            self._memory.pop(conv_id, None)
+            return None
+        return candidates
 
     async def get_by_position(
         self, conv_id: str, position: int
@@ -129,6 +158,7 @@ class CandidateListStore:
                 return
             except Exception as exc:
                 logger.warning("[CandidateListStore] Redis delete failed (%s)", exc)
+        self._sweep_memory()
         self._memory.pop(conv_id, None)
 
     async def get_ttl(self, conv_id: str) -> int | None:
