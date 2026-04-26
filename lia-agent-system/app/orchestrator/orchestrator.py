@@ -91,6 +91,9 @@ class Orchestrator:
         # (lazy init via hasattr criava 2 instâncias quando 2 requests chegavam simultaneamente)
         from app.orchestrator.services.fallback_react_service import FallbackReActService
         self._fallback_react_service = FallbackReActService(llm_service=llm_service)
+        # Sprint IV: rubric dispatch para BARS CV match (extraído de _handle_cv_screening_with_rubric)
+        from app.domains.cv_screening.services.rubric_dispatch import RubricDispatchService
+        self._rubric_dispatch_service = RubricDispatchService(llm_service=llm_service)
         logger.info("Orchestrator initialized with CascadedRouter + DomainWorkflow")
 
     def _init_cascaded_router(self):
@@ -431,89 +434,21 @@ class Orchestrator:
         message: str,
         context: dict[str, Any],
     ) -> dict[str, Any]:
+        """Sprint IV — delegação canônica ao RubricDispatchService.
+
+        Service em app/domains/cv_screening/services/rubric_dispatch.py
+        substitui implementação inline do V1 com:
+        - Mesmo fluxo: entity extraction (LLM) + BARS rubric tool dispatch
+        - Mesmo shape de retorno (V1-compatible)
+        - Multi-tenant isolation preservada (company_id em ToolExecutionContext)
+        - Graceful degradation: any exception -> {"success": False}
+
+        Comportamento idêntico ao V1 inline — verificado via 18 unit tests
+        em tests/unit/domains/cv_screening/test_rubric_dispatch.py.
+
+        Reference: ADR-019 — Sprint IV
         """
-        Opção B: Extract candidate/vacancy from message and invoke the BARS rubric tool.
-
-        Uses the LLM for entity extraction only, then delegates scoring to
-        CVScoringService (deterministic BARS methodology — not LLM free-text).
-        Falls back gracefully so _handle_directly can use the LLM addendum instead.
-        """
-        try:
-            import json
-            import re
-
-            from app.tools.executor import ToolExecutionContext, tool_executor
-
-            # ── Entity extraction ─────────────────────────────────────────────
-            extraction_prompt = (
-                "Extraia do texto abaixo as informações de candidato e vaga para análise de CV. "
-                "Retorne SOMENTE um JSON válido (sem markdown) com as chaves: "
-                'candidate_id, candidate_name, vacancy_id, vacancy_title. '
-                "Use null quando não encontrar. Não invente IDs — somente use se mencionados "
-                "explicitamente como UUID.\n\n"
-                f"Texto: {message}"
-            )
-
-            raw = await self.llm_service.generate(extraction_prompt, provider="gemini")
-
-            # Strip potential markdown fences
-            raw = re.sub(r"```(?:json)?", "", raw).strip().strip("`")
-            match = re.search(r"\{.*?\}", raw, re.DOTALL)
-            if not match:
-                logger.debug("[cv_screening rubric] No JSON in extraction response")
-                return {"success": False}
-
-            params = json.loads(match.group())
-            # Remove null / empty values
-            params = {k: v for k, v in params.items() if v not in (None, "", "null")}
-
-            if not params.get("candidate_id") and not params.get("candidate_name"):
-                logger.debug("[cv_screening rubric] No candidate found in message")
-                return {"success": False}
-
-            # ── Build execution context ───────────────────────────────────────
-            exec_context = ToolExecutionContext(
-                user_id=context.get("user_id", "system"),
-                company_id=context.get("company_id"),
-                session_id=context.get("session_id"),
-            )
-
-            # ── Execute tool ─────────────────────────────────────────────────
-            tool_result = await tool_executor.execute(
-                tool_name="analyze_cv_match",
-                parameters=params,
-                agent_type="orchestrator",
-                context=exec_context,
-            )
-
-            if tool_result.success and tool_result.result:
-                data = tool_result.result
-                return {
-                    "success": True,
-                    "message": data.get("message", "Análise de CV concluída."),
-                    "data": data,
-                    "requires_user_input": False,
-                    "suggested_prompts": [
-                        "Mover candidato para próxima etapa",
-                        "Ver outros candidatos para esta vaga",
-                        "Enviar feedback ao candidato",
-                    ],
-                    "next_actions": [],
-                    "agent_used": "CV Match Tool (BARS Rubric)",
-                    "agent_type": "tool",
-                    # C-05 structured fields surfaced at top level
-                    "match_score": data.get("match_score"),
-                    "matched_skills": data.get("matched_skills", []),
-                    "missing_skills": data.get("missing_skills", []),
-                    "recommendation": data.get("recommendation"),
-                }
-
-            logger.warning("[cv_screening rubric] Tool returned failure: %s", tool_result.error)
-            return {"success": False}
-
-        except Exception as exc:
-            logger.warning("[cv_screening rubric] Tool invocation failed (%s), falling back to LLM", exc)
-            return {"success": False}
+        return await self._rubric_dispatch_service.dispatch(message, context)
 
     def get_available_tools(self, agent_type: str | None = None) -> list[dict[str, Any]]:
         return get_all_tool_schemas(agent_type=agent_type, format="claude")
