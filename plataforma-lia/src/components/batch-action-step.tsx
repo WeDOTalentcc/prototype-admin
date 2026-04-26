@@ -14,7 +14,7 @@ import {
   getScoreColor,
   type BatchApprovalAction,
   type BatchApprovalCandidate,
-} from"./useBatchApproval"
+} from"@/hooks/candidates/use-batch-approval"
 
 const ICON_MAP = {
   CheckCircle,

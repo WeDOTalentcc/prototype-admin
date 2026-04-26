@@ -13,7 +13,7 @@ import { textStyles } from"@/lib/design-tokens"
 import {
   SourceMetricItem, StatusBreakdownItem,
   generateTimeSeriesData,
-} from"./useMetricsCalculations"
+} from"@/hooks/ui/use-metrics-calculations"
 
 interface MetricsDetailedSectionsProps {
   contactRate: number

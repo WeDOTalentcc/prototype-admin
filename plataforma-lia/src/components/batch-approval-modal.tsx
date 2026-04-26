@@ -9,7 +9,7 @@ import {
   type BatchApprovalModalProps,
   type BatchApprovalCandidate,
   type BatchApprovalAction,
-} from "./useBatchApproval"
+} from "@/hooks/candidates/use-batch-approval"
 import { BatchSelectionStep } from "./batch-selection-step"
 import { BatchActionStep, BatchReviewStep } from "./batch-action-step"
 import { BatchProcessingStep, BatchCompleteStep } from "./batch-results-step"

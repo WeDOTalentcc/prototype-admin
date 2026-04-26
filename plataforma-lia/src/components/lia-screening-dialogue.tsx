@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import {
   X, Brain, Settings, Send, Loader2
 } from "lucide-react"
-import { useLiaScreeningDialogue, type ScreeningData } from "./useLiaScreeningDialogue"
+import { useLiaScreeningDialogue, type ScreeningData } from "@/hooks/ai/use-lia-screening-dialogue"
 import { LiaScreeningRightPanel } from "./LiaScreeningRightPanel"
 
 interface JobData {
