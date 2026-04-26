@@ -211,25 +211,76 @@ class TeamsOrchestratorBridge:
         teams_user_id: str,
         tenant_id: str,
         db: AsyncSession | None = None,
-    ) -> str:
+    ) -> str | None:
         """
-        Resolve company_id from Teams user/tenant.
-        Checks stored conversation reference first, then falls back.
-        """
-        if db:
-            try:
-                from lia_models.teams import TeamsConversation
-                stmt = select(TeamsConversation).where(
-                    TeamsConversation.user_id == teams_user_id
-                ).limit(1)
-                result = await db.execute(stmt)
-                row = result.scalar_one_or_none()
-                if row and getattr(row, "company_id", None):
-                    return row.company_id
-            except Exception:
-                pass
+        Resolve company_id for the Teams user.
 
-        return None
+        Strategy (P0-1 fix — auditoria 2026-04-26):
+        1. Read stored TeamsConversation.company_id (populated at write-time
+           via _store_conversation_reference → User.company_id lookup).
+        2. Fallback for pre-backfill rows: lookup User by user_aad_object_id
+           on the conversation row (if available).
+        3. Returns None if neither path resolves a company.
+
+        Logs an explicit warning when None is returned (harness sensor —
+        helps detect drift between Teams identity and platform User mapping).
+
+        Why direct attribute access (not defensive fallback): the previous version
+        used defensive coding that masked a missing schema column silently.
+        See AUDITORIA_TEAMS_2026-04-26.md (P0-1) for context. After Migration 097,
+        the column always exists, so direct access fails fast if schema regresses.
+        """
+        if not db:
+            logger.warning(
+                "[TeamsOrchestratorBridge] _resolve_company_id called without db session — "
+                "returning None (multi-tenant context unavailable for teams_user=%s)",
+                teams_user_id,
+            )
+            return None
+
+        try:
+            from app.domains.communication.repositories.teams_repository import (
+                TeamsRepository,
+            )
+            from lia_models.teams import TeamsConversation
+
+            stmt = select(TeamsConversation).where(
+                TeamsConversation.user_id == teams_user_id
+            ).limit(1)
+            result = await db.execute(stmt)
+            row = result.scalar_one_or_none()
+
+            if row and row.company_id:
+                return row.company_id
+
+            # Fallback: row exists but company_id not backfilled — derive from User
+            if row and row.user_aad_object_id:
+                repo = TeamsRepository(db)
+                user = await repo.get_user_by_aad_object_id(row.user_aad_object_id)
+                if user and user.company_id:
+                    # Opportunistic backfill on this row (next requests skip the lookup)
+                    row.company_id = user.company_id
+                    logger.info(
+                        "[TeamsOrchestratorBridge] backfilled company_id=%s on TeamsConversation %s "
+                        "via aad_object_id lookup",
+                        user.company_id, row.conversation_id,
+                    )
+                    return user.company_id
+
+            # Sentinel: no resolution — log so we can spot drift in production
+            logger.warning(
+                "[TeamsOrchestratorBridge] could not resolve company_id for teams_user=%s "
+                "(row_found=%s, aad_object_id=%s) — orchestrator will run without tenant context",
+                teams_user_id, bool(row), row.user_aad_object_id if row else None,
+            )
+            return None
+
+        except Exception as exc:
+            logger.error(
+                "[TeamsOrchestratorBridge] _resolve_company_id error for teams_user=%s: %s",
+                teams_user_id, exc, exc_info=True,
+            )
+            return None
 
 
 teams_orchestrator_bridge = TeamsOrchestratorBridge()

@@ -73,11 +73,15 @@ class TeamsRepository:
         user_aad_object_id: str | None,
         conversation_reference: dict,
         last_message_at: datetime | None,
+        company_id: str | None = None,
     ) -> TeamsConversation:
         existing = await self.get_conversation_by_conversation_id(conversation_id)
         if existing:
             existing.last_message_at = last_message_at
             existing.conversation_reference = conversation_reference
+            # Backfill company_id on update if it was missing (legacy rows)
+            if company_id and not existing.company_id:
+                existing.company_id = company_id
             return existing
         conv = TeamsConversation(
             conversation_id=conversation_id,
@@ -89,9 +93,10 @@ class TeamsRepository:
             user_aad_object_id=user_aad_object_id,
             conversation_reference=conversation_reference,
             last_message_at=last_message_at,
+            company_id=company_id,
         )
         self.db.add(conv)
-        logger.info(f"Stored new Teams conversation: {conversation_id}")
+        logger.info(f"Stored new Teams conversation: {conversation_id} (company_id={company_id})")
         return conv
 
     async def create_conversation(self, data: dict) -> TeamsConversation:

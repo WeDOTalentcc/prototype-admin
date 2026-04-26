@@ -27,6 +27,11 @@ class TeamsConversation(Base):
     user_id = Column(String(255), nullable=False, index=True)
     user_name = Column(String(255), nullable=True)
     user_aad_object_id = Column(String(255), nullable=True)
+
+    # Multi-tenant boundary — populated from User.company_id via aad_object_id lookup.
+    # P0-1 fix (auditoria 2026-04-26): bridge _resolve_company_id depended on this column;
+    # without it, getattr fallback masked schema bug silently. Same shape as User.company_id.
+    company_id = Column(String(255), nullable=True, index=True, default=None)
     
     # Conversation reference (for proactive messaging)
     conversation_reference = Column(JSON, nullable=False)

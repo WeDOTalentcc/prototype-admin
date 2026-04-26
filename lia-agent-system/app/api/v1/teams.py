@@ -706,12 +706,33 @@ def _parse_teams_timestamp(ts: str | None) -> datetime | None:
 
 
 async def _store_conversation_reference(activity: dict[str, Any], db: AsyncSession):
-    """Store conversation reference for proactive messaging."""
+    """Store conversation reference for proactive messaging.
+
+    P0-1 fix (auditoria 2026-04-26): derive company_id from aad_object_id lookup
+    so multi-tenant boundary is established at write-time. Bridge reads it back
+    on every message for orchestrator context.
+    """
     try:
         conversation_id = activity.get("conversation", {}).get("id")
         from_user = activity.get("from", {})
         last_msg_at = _parse_teams_timestamp(activity.get("timestamp"))
+        aad_object_id = from_user.get("aadObjectId")
         repo = TeamsRepository(db)
+
+        # Derive company_id from User via aad_object_id (multi-tenant boundary)
+        company_id: str | None = None
+        if aad_object_id:
+            try:
+                user = await repo.get_user_by_aad_object_id(aad_object_id)
+                if user and user.company_id:
+                    company_id = user.company_id
+            except Exception as user_lookup_exc:
+                logger.warning(
+                    "[TEAMS] User lookup by aad_object_id=%s failed: %s — "
+                    "conversation will be stored without company_id",
+                    aad_object_id, user_lookup_exc,
+                )
+
         await repo.upsert_conversation(
             conversation_id=conversation_id,
             service_url=activity.get("serviceUrl", ""),
@@ -719,9 +740,10 @@ async def _store_conversation_reference(activity: dict[str, Any], db: AsyncSessi
             channel_id=activity.get("channelId"),
             user_id=from_user.get("id", ""),
             user_name=from_user.get("name"),
-            user_aad_object_id=from_user.get("aadObjectId"),
+            user_aad_object_id=aad_object_id,
             conversation_reference=activity,
             last_message_at=last_msg_at,
+            company_id=company_id,
         )
     except Exception as e:
         logger.error(f"Error storing conversation reference: {e}", exc_info=True)
