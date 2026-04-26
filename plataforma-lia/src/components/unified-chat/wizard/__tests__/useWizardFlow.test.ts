@@ -5,6 +5,7 @@
  */
 
 import { renderHook, act } from "@testing-library/react-hooks"
+import { getWizardStorageKey } from "../useWizardFlow"
 // Note: adjust import path based on your test setup
 // import { useWizardFlow } from "../useWizardFlow"
 
@@ -158,6 +159,21 @@ describe("CalibrationPanel enforcement", () => {
     const threshold = 3
     const canAdvance = approvedCount >= threshold
     expect(canAdvance).toBe(true)
+  })
+})
+
+describe("getWizardStorageKey (LGPD multi-tenant namespace)", () => {
+  it("namespaces the localStorage key by userId so recruiters don't share state on a shared browser", () => {
+    expect(getWizardStorageKey("user-123")).toBe("lia-wizard-state-user-123")
+    expect(getWizardStorageKey("user-456")).toBe("lia-wizard-state-user-456")
+    expect(getWizardStorageKey("user-123")).not.toBe(getWizardStorageKey("user-456"))
+  })
+
+  it("returns null (no persistence) when userId is absent so anonymous sessions never bleed", () => {
+    expect(getWizardStorageKey(null)).toBeNull()
+    expect(getWizardStorageKey(undefined)).toBeNull()
+    expect(getWizardStorageKey("")).toBeNull()
+    expect(getWizardStorageKey("   ")).toBeNull()
   })
 })
 

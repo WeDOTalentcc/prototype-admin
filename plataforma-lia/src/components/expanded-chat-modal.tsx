@@ -12,6 +12,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
   import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
   import { PromptSuggestionsDock } from "@/components/ui/prompt-suggestions-dock"
   import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
+  import { useAuthStore } from "@/stores/auth-store"
   import { useWizardFlow as useCanonicalWizardFlow } from "@/components/unified-chat/wizard/useWizardFlow"
   import { WizardProgressBar } from "@/components/unified-chat/wizard/WizardProgressBar"
   import { WizardPlanFeedCard } from "@/components/unified-chat/wizard/WizardPlanFeedCard"
@@ -47,7 +48,10 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
     const { contextPage } = useLiaFloat()
     const { chatHitlPending, sendApproval } = useLiaChatContext()
 
-    const canonicalWizard = useCanonicalWizardFlow()
+    // `userId` namespaces the wizard's localStorage key so recruiter A's
+    // in-flight job doesn't bleed to recruiter B on a shared browser (LGPD).
+    const authUserId = useAuthStore((s) => s.user?.id)
+    const canonicalWizard = useCanonicalWizardFlow({ userId: authUserId })
     const canonicalStage = canonicalWizard.currentStage
     const canonicalCompleteness = canonicalWizard.completeness
     const canonicalHistory = canonicalWizard.stageHistory

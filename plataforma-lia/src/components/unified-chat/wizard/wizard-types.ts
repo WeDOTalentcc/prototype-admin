@@ -167,7 +167,7 @@ export interface ReviewData {
 }
 
 export interface PublishData {
-  job_id: number | null
+  job_id: number | string | null
   platforms: string[]
   sourcing_mode: "local" | "global" | "hybrid" | null
   contact_channels: string[]
@@ -194,7 +194,13 @@ export interface CalibrationCandidate {
 }
 
 export interface HandoffData {
-  job_id: number | null
+  /**
+   * Job identifier emitted by the backend at handoff. Accepts both
+   * `number` (current Rails int IDs) and `string` (UUIDs / slugs) so a
+   * future ID-format migration on the backend doesn't silently drop the
+   * ID from the closing card. `null` when publication failed.
+   */
+  job_id: number | string | null
   job_title?: string | null
   handoff_url: string | null
   share_link: string | null

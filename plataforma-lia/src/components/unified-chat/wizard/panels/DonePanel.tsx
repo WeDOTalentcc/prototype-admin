@@ -11,7 +11,7 @@ interface Props {
  * DonePanel — final wizard stage. Shows success state with links.
  */
 export function DonePanel({ data }: Props) {
-  const jobId = data.job_id as number | null
+  const jobId = data.job_id as number | string | null
   const handoffUrl = data.handoff_url as string | null
   const shareLink = data.share_link as string | null
   const jobTitle = data.job_title as string | null

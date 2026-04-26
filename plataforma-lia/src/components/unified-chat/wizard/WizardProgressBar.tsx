@@ -4,6 +4,7 @@ import React from "react"
 import { cn } from "@/lib/utils"
 import { Check } from "lucide-react"
 import { STAGE_LABELS, STAGE_ORDER, type WizardStage } from "./wizard-types"
+import { PLAN_VISIBLE_STAGES } from "./wizard-plan-card"
 
 interface Props {
   currentStage: WizardStage | null
@@ -11,13 +12,10 @@ interface Props {
   stageHistory: WizardStage[]
 }
 
-const VISIBLE_STAGES: WizardStage[] = [
-  "jd_enrichment", "competency", "wsi_questions", "review", "publish", "calibration",
-]
-
 /**
  * WizardProgressBar — compact step indicator for the wizard.
- * Shows 6 key stages as dots/labels with active highlight.
+ * Shows the same 6 visible stages the chat-feed plan card uses
+ * (single source of truth: `PLAN_VISIBLE_STAGES` in `wizard-plan-card`).
  * Design: wedo-cyan accent, lia-border-subtle, Open Sans.
  */
 export function WizardProgressBar({ currentStage, completeness, stageHistory }: Props) {
@@ -37,7 +35,7 @@ export function WizardProgressBar({ currentStage, completeness, stageHistory }: 
 
       {/* Stage dots */}
       <div className="flex items-center justify-between">
-        {VISIBLE_STAGES.map((stage) => {
+        {PLAN_VISIBLE_STAGES.map((stage) => {
           const stageIdx = STAGE_ORDER.indexOf(stage)
           const isCompleted = stageIdx < currentIdx
           const isCurrent = stage === currentStage

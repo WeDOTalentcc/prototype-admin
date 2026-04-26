@@ -208,12 +208,30 @@ describe("buildPublishedJobCard", () => {
     expect(card).toEqual({ jobId: null, title: null, url: null, shareLink: null })
   })
 
-  it("ignores non-string fields without throwing", () => {
+  it("accepts string job_id (UUID/slug) so future backend ID format changes don't drop the ID", () => {
     const card = buildPublishedJobCard("handoff", {
-      job_id: "9" as unknown as number, // backend should send number; defend against drift
+      job_id: "uuid-abc-123",
+      job_title: "Engenheiro de Dados",
+    })
+    expect(card).toEqual({
+      jobId: "uuid-abc-123",
+      title: "Engenheiro de Dados",
+      url: "/jobs/uuid-abc-123",
+      shareLink: null,
+    })
+  })
+
+  it("collapses empty/whitespace string job_id to null instead of building /jobs/", () => {
+    const card = buildPublishedJobCard("handoff", { job_id: "   " })
+    expect(card).toEqual({ jobId: null, title: null, url: null, shareLink: null })
+  })
+
+  it("ignores non-string non-number job_title without throwing", () => {
+    const card = buildPublishedJobCard("handoff", {
+      job_id: 7,
       job_title: 42 as unknown as string,
     })
-    expect(card).toEqual({ jobId: null, title: null, url: null, shareLink: null })
+    expect(card).toEqual({ jobId: 7, title: null, url: "/jobs/7", shareLink: null })
   })
 })
 

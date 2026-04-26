@@ -1,12 +1,34 @@
 "use client"
 
 import React from "react"
-import Link from "next/link"
+import NextLink from "next/link"
 import { CheckCircle2, ExternalLink, Hash } from "lucide-react"
 import type { WizardPublishedJobCardData } from "./wizard-plan-card"
 
+/**
+ * Minimum surface a link component must implement so this card can be
+ * rendered against either `next/link` (default, app/web), a plain `<a>`
+ * intrinsic, or any framework-specific component (Vue/Vuetify port,
+ * Storybook, isolated tests). `React.ElementType` is used here instead
+ * of `React.ComponentType` so callers can pass the string `"a"` (the
+ * documented escape hatch) and TypeScript will still accept it.
+ */
+export type WizardPublishedLinkComponent = React.ElementType<{
+  href: string
+  className?: string
+  "data-testid"?: string
+  children?: React.ReactNode
+}>
+
 interface Props {
   data: WizardPublishedJobCardData
+  /**
+   * Override the `<Link>` implementation used for the internal job-page
+   * link. Defaults to `next/link`. Pass `"a"` (or any component) to
+   * decouple the card from Next when porting to Vue/Vuetify or when
+   * rendering inside a non-Next surface.
+   */
+  LinkComponent?: WizardPublishedLinkComponent
 }
 
 /**
@@ -20,7 +42,10 @@ interface Props {
  * Tokens follow DS LIA v4.2.1 (no hex colors, no ad-hoc grays). Dark mode
  * inherits from the same CSS variables, so contrast stays WCAG AA.
  */
-export function WizardPublishedJobCard({ data }: Props) {
+export function WizardPublishedJobCard({
+  data,
+  LinkComponent = NextLink,
+}: Props) {
   const { jobId, title, url, shareLink } = data
   const headline = title ?? "Vaga publicada"
 
@@ -57,14 +82,14 @@ export function WizardPublishedJobCard({ data }: Props) {
       {(url || shareLink) && (
         <div className="mt-3 flex flex-col gap-1.5">
           {url && (
-            <Link
+            <LinkComponent
               href={url}
               data-testid="wizard-published-job-link"
               className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-wedo-cyan/10 px-3 py-1.5 text-xs font-medium text-wedo-cyan transition-colors hover:bg-wedo-cyan/20 motion-reduce:transition-none"
             >
               <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
               Abrir página da vaga
-            </Link>
+            </LinkComponent>
           )}
           {shareLink && (
             <a

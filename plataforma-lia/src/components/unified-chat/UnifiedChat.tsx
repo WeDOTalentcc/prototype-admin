@@ -13,20 +13,8 @@ import { SwitchTaskModal } from "@/components/lia-float/SwitchTaskModal"
 import { useNavigationIntent } from "@/hooks/shared/use-navigation-intent"
 import { useWizardIntegration } from "./wizard/useWizardIntegration"
 import { useWizardFlow } from "./wizard/useWizardFlow"
+import { useWizardChatCards } from "./wizard/useWizardChatCards"
 import { WizardProgressBar } from "./wizard/WizardProgressBar"
-import {
-  WIZARD_PLAN_MESSAGE_ID,
-  WIZARD_PUBLISHED_MESSAGE_ID,
-  WIZARD_PUBLISHED_TITLE,
-  buildPlanFlowSteps,
-  buildPublishedJobCard,
-  isWizardClosingStage,
-  planCardTitleForStage,
-  planStepsEqual,
-  publishedJobCardsEqual,
-  type WizardPublishedJobCardData,
-} from "./wizard/wizard-plan-card"
-import type { FlowStep } from "@/components/workflow-rail/FlowStepMessage"
 import { ProgressiveDisclosure } from "./wizard/ProgressiveDisclosure"
 import { UnifiedChatHeader } from "./UnifiedChatHeader"
 import { UnifiedChatInput } from "./UnifiedChatInput"
@@ -172,7 +160,9 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   // Canonical wizard state on the chat surface — listens to the same
   // `lia:wizard-stage-payload` window event that powers `WizardContext` for
   // the right-side panel. Reusing the hook avoids a parallel state channel.
-  const wizard = useWizardFlow()
+  // `userId` namespaces the wizard's localStorage key so recruiter A's
+  // in-flight job doesn't bleed to recruiter B on a shared browser (LGPD).
+  const wizard = useWizardFlow({ userId: authUser?.id })
   const {
     currentStage: wizardStage,
     stageData: wizardStageData,
@@ -181,120 +171,15 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   } = wizard
   const wizardActive =
     wizardStage !== null && wizardStage !== "done" && wizardStage !== "handoff"
-  const planCardInsertedRef = useRef(false)
-  const publishedCardInsertedRef = useRef(false)
-
-  // Insert the non-persisted "Plano de trabalho" assistant card into the feed
-  // the first time the wizard reports a stage, then keep its `flowSteps` and
-  // title in sync as new stages stream in. Removed only when the wizard
-  // resets (no stage). At terminal stages (`done`/`handoff`) the card stays
-  // visible with all 6 steps marked completed and the title flipped to
-  // "Plano de trabalho — Concluído", so the recruiter sees a clear "this
-  // finished" signal instead of a frozen "Calibração — em progresso" pill
-  // (Task #830). The sticky `WizardProgressBar` still tears down at
-  // done/handoff because `wizardActive` flips to false there.
-  useEffect(() => {
-    if (!wizardStage) {
-      planCardInsertedRef.current = false
-      setChatMessages((prev) => {
-        const exists = prev.some((m) => m.id === WIZARD_PLAN_MESSAGE_ID)
-        if (!exists) return prev
-        return prev.filter((m) => m.id !== WIZARD_PLAN_MESSAGE_ID)
-      })
-      return
-    }
-    const flowSteps = buildPlanFlowSteps(wizardStage)
-    const planTitle = planCardTitleForStage(wizardStage)
-    const completed = isWizardClosingStage(wizardStage)
-    setChatMessages((prev) => {
-      const exists = prev.some((m) => m.id === WIZARD_PLAN_MESSAGE_ID)
-      if (!exists) {
-        if (planCardInsertedRef.current) return prev
-        planCardInsertedRef.current = true
-        const planMsg = {
-          id: WIZARD_PLAN_MESSAGE_ID,
-          sender: "lia" as const,
-          content: planTitle,
-          timestamp: new Date().toISOString(),
-          metadata: { type: "wizard_plan", flowSteps, completed },
-        }
-        return [...prev, planMsg]
-      }
-      // Update existing card without forcing a new array if nothing changed.
-      let changed = false
-      const next = prev.map((m) => {
-        if (m.id !== WIZARD_PLAN_MESSAGE_ID) return m
-        const prevSteps = (m.metadata?.flowSteps as FlowStep[] | undefined) ?? []
-        const prevCompleted = m.metadata?.completed === true
-        if (
-          m.content === planTitle &&
-          prevCompleted === completed &&
-          planStepsEqual(prevSteps, flowSteps)
-        ) {
-          return m
-        }
-        changed = true
-        return {
-          ...m,
-          content: planTitle,
-          metadata: {
-            ...(m.metadata ?? {}),
-            type: "wizard_plan",
-            flowSteps,
-            completed,
-          },
-        }
-      })
-      return changed ? next : prev
-    })
-  }, [wizardStage, setChatMessages])
-
-  // Inject the non-persisted "Vaga publicada" closing card into the feed
-  // when the wizard reaches `done`/`handoff`. The progress bar unmounts
-  // at that point and the plan card flips to "Concluído"; this card adds
-  // the actionable summary (job link, share link) right below them so the
-  // recruiter doesn't lose track of the job they just published.
-  useEffect(() => {
-    // Reset the dedupe latch on any non-closing stage (including null and a
-    // brand-new `intake` after a previous run reached `handoff`). This way a
-    // back-to-back wizard run still re-emits its closing card.
-    if (!wizardStage || !isWizardClosingStage(wizardStage)) {
-      publishedCardInsertedRef.current = false
-      return
-    }
-    const cardData = buildPublishedJobCard(wizardStage, wizardStageData)
-    if (!cardData) return
-    setChatMessages((prev) => {
-      const idx = prev.findIndex((m) => m.id === WIZARD_PUBLISHED_MESSAGE_ID)
-      if (idx === -1) {
-        if (publishedCardInsertedRef.current) return prev
-        publishedCardInsertedRef.current = true
-        const publishedMsg = {
-          id: WIZARD_PUBLISHED_MESSAGE_ID,
-          sender: "lia" as const,
-          content: WIZARD_PUBLISHED_TITLE,
-          timestamp: new Date().toISOString(),
-          metadata: { type: "wizard_published_job", publishedJob: cardData },
-        }
-        return [...prev, publishedMsg]
-      }
-      // Same payload re-emitted — keep the existing card to avoid churn.
-      const existing = prev[idx]
-      const prevData =
-        (existing.metadata?.publishedJob as WizardPublishedJobCardData | undefined) ?? null
-      if (publishedJobCardsEqual(prevData, cardData)) return prev
-      const next = prev.slice()
-      next[idx] = {
-        ...existing,
-        metadata: {
-          ...(existing.metadata ?? {}),
-          type: "wizard_published_job",
-          publishedJob: cardData,
-        },
-      }
-      return next
-    })
-  }, [wizardStage, wizardStageData, setChatMessages])
+  // Plan card + published-job card are owned by `useWizardChatCards`
+  // (Task A2) — extracted from this file so the same behaviour is shared
+  // with `expanded-chat-modal` and unit-tested in isolation. Comments on
+  // when each card appears/updates live in the hook itself.
+  useWizardChatCards({
+    wizardStage,
+    wizardStageData,
+    setChatMessages,
+  })
 
   // Persist mode preference
   useEffect(() => {

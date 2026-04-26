@@ -133,7 +133,7 @@ export const WIZARD_PUBLISHED_TITLE = "Vaga publicada"
  * port to Vue/Vuetify later.
  */
 export interface WizardPublishedJobCardData {
-  jobId: number | null
+  jobId: number | string | null
   title: string | null
   url: string | null
   shareLink: string | null
@@ -154,7 +154,15 @@ export function buildPublishedJobCard(
 ): WizardPublishedJobCardData | null {
   if (!isWizardClosingStage(stage)) return null
   const d = (data ?? {}) as Partial<HandoffData> & Record<string, unknown>
-  const jobId = typeof d.job_id === "number" ? d.job_id : null
+  // Accept both number (current Rails int IDs) and string (UUIDs/slugs)
+  // so a backend ID-format change can't silently strip the ID from the
+  // closing card. Empty strings still collapse to null.
+  let jobId: number | string | null = null
+  if (typeof d.job_id === "number") {
+    jobId = d.job_id
+  } else if (typeof d.job_id === "string" && d.job_id.trim() !== "") {
+    jobId = d.job_id
+  }
   const title = typeof d.job_title === "string" && d.job_title.trim() !== ""
     ? d.job_title
     : null
