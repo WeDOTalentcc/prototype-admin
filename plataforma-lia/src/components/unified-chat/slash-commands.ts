@@ -193,9 +193,9 @@ export interface AjudaChatMessages {
 
 /**
  * Build the user-echo + LIA-help message pair for an in-chat `/ajuda`
- * resolution. Centralised here so every chat surface (UnifiedChat,
- * ExpandedChatModal, future popovers) renders identical bubbles and we
- * can unit-test the wiring without rendering the full chat component.
+ * resolution. Centralised here so every chat surface (UnifiedChat and
+ * any future popovers) renders identical bubbles and we can unit-test
+ * the wiring without rendering the full chat component.
  *
  * `now` is injected so tests get deterministic timestamps; production
  * callers can omit it and rely on the default `Date.now()`/`new Date()`.

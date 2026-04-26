@@ -13,12 +13,12 @@
  *      (job link, share link). Re-emissions of the same payload are
  *      deduped to avoid React churn.
  *
- * Extracted from `UnifiedChat.tsx` (Task A2) so both `UnifiedChat` and
- * `expanded-chat-modal` can share the exact same chat-feed behaviour and
- * the logic is testable in isolation. The hook is parameterized on the
- * caller's chat-state setter so it remains agnostic to whether the
- * messages live in `LiaFloatContext` or anywhere else that exposes the
- * same `LiaChatMessage[]` shape.
+ * Extracted from `UnifiedChat.tsx` (Task A2) so the chat-feed behaviour is
+ * testable in isolation and stays portable across surfaces. The hook is
+ * parameterized on the caller's chat-state setter so it remains agnostic
+ * to whether the messages live in `LiaFloatContext` or anywhere else that
+ * exposes the same `LiaChatMessage[]` shape. (Originally also fed the
+ * deprecated `expanded-chat-modal` surface — removed in Task #860.)
  *
  * Dedupe latches are kept in `useRef` so back-to-back wizard runs on the
  * same surface still re-emit their cards (the latch is reset whenever the

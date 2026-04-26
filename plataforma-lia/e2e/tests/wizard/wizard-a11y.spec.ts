@@ -7,14 +7,13 @@
  * runs `@axe-core/playwright` on the live wizard surface and fails the build on
  * any SERIOUS or CRITICAL violation — anchoring Inegociável WeDO #8.
  *
- * Focus-trap behavior (A-08) is exercised deterministically at the component
- * level in `src/components/__tests__/expanded-chat-focus-lock.test.tsx`,
- * because the `ExpandedChatModal` wrapper is not yet mounted from any
- * production route (defensive surface; see `scripts/jira-create-cards.ts`).
- * Adding a Playwright keyboard smoke against an unmounted modal would either
- * skip silently or fail spuriously — the jsdom test mirrors the exact
- * `react-focus-lock` invocation used by the modal and gives us regression
- * coverage now.
+ * Focus-trap behavior (A-08) was originally guarded by a jsdom test
+ * (`src/components/__tests__/expanded-chat-focus-lock.test.tsx`) tied to
+ * the deprecated `expanded-chat-modal` wrapper. That surface was removed
+ * in Task #860 (A-01); the canonical `UnifiedChat` does not own its own
+ * modal wrapper today, so focus-trap is no longer a stand-alone contract.
+ * If the next chat surface that owns a modal wrapper lands, re-introduce a
+ * jsdom smoke against the new component before relying on it for A-08.
  */
 import AxeBuilder from '@axe-core/playwright'
 

@@ -4,7 +4,7 @@ export { LIAFeedbackWidget } from "./lia-feedback-widget"
 // Shared calibration card
 export { CalibrationCandidateCard } from "./CalibrationCandidateCard"
 export type { CalibrationCandidateCardProps } from "./CalibrationCandidateCard"
-export { fromAgentStudio, fromExpandedChat } from "./adapters"
+export { fromAgentStudio } from "./adapters"
 export type { AgentStudioCandidate } from "./adapters"
 export type {
   NormalizedCandidate,

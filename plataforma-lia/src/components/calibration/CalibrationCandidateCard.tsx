@@ -7,8 +7,9 @@
  *   Left:  Candidate profile (avatar, title, competências, experience, education)
  *   Right: Match criteria analysis + action buttons (approve/reject)
  *
- * Both CalibrationCardModal and CalibrationProfileModal use this component
- * via their respective adapter functions (fromAgentStudio / fromExpandedChat).
+ * CalibrationCardModal uses this component via the `fromAgentStudio` adapter.
+ * (The legacy `fromExpandedChat` adapter was removed with the deprecated
+ * `expanded-chat-modal` surface — Task #860 — A-01.)
  *
  * Design system: Open Sans, rounded-md, 90% mono + 10% WeDo accent (#60BED1).
  */

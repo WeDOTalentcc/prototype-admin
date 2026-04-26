@@ -146,9 +146,9 @@ export function useWizardIntegration({
 
     // `/ajuda` is a fully-local command — no backend round-trip. The help
     // text is built from the canonical SLASH_COMMANDS list so every chat
-    // surface (UnifiedChat, ExpandedChatModal, future popovers) renders
-    // identical copy. Surfaces that don't pass `onLocalCommand` fall
-    // through to backend dispatch, preserving prior behaviour.
+    // surface (UnifiedChat and any future popovers) renders identical
+    // copy. Surfaces that don't pass `onLocalCommand` fall through to
+    // backend dispatch, preserving prior behaviour.
     if (AJUDA_REGEX.test(cmd)) {
       if (onLocalCommand) {
         onLocalCommand("ajuda", {

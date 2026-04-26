@@ -218,9 +218,9 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     }
   }, [openDynamicPanel])
   // Plan card + published-job card are owned by `useWizardChatCards`
-  // (Task A2) — extracted from this file so the same behaviour is shared
-  // with `expanded-chat-modal` and unit-tested in isolation. Comments on
-  // when each card appears/updates live in the hook itself.
+  // (Task A2) — extracted from this file so the same behaviour can be
+  // unit-tested in isolation. Comments on when each card appears/updates
+  // live in the hook itself.
   useWizardChatCards({
     wizardStage,
     wizardStageData,

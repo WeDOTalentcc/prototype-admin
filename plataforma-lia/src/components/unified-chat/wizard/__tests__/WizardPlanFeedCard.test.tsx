@@ -1,14 +1,15 @@
 /**
- * Task #835 — guards the inline "Plano de trabalho" card rendered above
- * the message feed in the expanded chat modal (`expanded-chat-modal.tsx`).
+ * Task #835 — guards the inline "Plano de trabalho" `WizardPlanFeedCard`
+ * component (originally rendered by the deprecated `expanded-chat-modal`,
+ * which was removed in Task #860 — A-01).
  *
- * Before this task the expanded surface gated the card on
+ * The historical bug: the legacy expanded surface gated the card on
  * `canonicalWizardActive` — i.e. it disappeared the moment the wizard
- * reached `done`/`handoff`. The main `/pt/chat` (UnifiedChat) had already
- * been fixed in Task #830 to keep the card visible at terminal stages
- * with all six steps marked completed and the title flipped to
- * "Plano de trabalho — Concluído". This test pins the same behaviour
- * for the expanded chat surface so the two paths can never drift again.
+ * reached `done`/`handoff`. The fix keeps the card visible at terminal
+ * stages with all six steps marked completed and the title flipped to
+ * "Plano de trabalho — Concluído". The same behaviour was applied to the
+ * canonical `/pt/chat` (UnifiedChat) surface in Task #830. This test pins
+ * the component's behaviour so future callers can't regress it.
  *
  * The component is a thin wrapper over `buildPlanFlowSteps` +
  * `planCardTitleForStage`; the helper logic itself is covered by
