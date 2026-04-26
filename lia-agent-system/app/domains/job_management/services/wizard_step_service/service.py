@@ -13,8 +13,8 @@ from lia_models.job_draft import ChangeType, JobDraft, JobDraftStatus
 from app.shared.services.confidence_policy_service import ConfidencePolicyService
 from app.shared.services.config_completeness_service import ConfigCompletenessService
 from app.shared.services.context_aggregator_service import context_aggregator
-from app.shared.services.enhanced_intent_classifier import EnhancedIntentType, enhanced_intent_classifier
-from app.shared.services.intent_classifier import IntentType, intent_classifier_service
+from app.domains.ai.services.enhanced_intent_classifier import EnhancedIntentType, enhanced_intent_classifier
+from app.domains.ai.services.intent_classifier import IntentType, intent_classifier_service
 from app.shared.services.knowledge_base_service import knowledge_base
 from app.shared.services.learning_hub_service import learning_hub_service
 from app.shared.services.organization_catalog_service import OrganizationCatalogService

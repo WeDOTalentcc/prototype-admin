@@ -25,11 +25,11 @@ from lia_models.structured_responses import (
     SalaryAnalysis,
     WizardOrchestrationResult,  # noqa: F401
 )
-from app.shared.services.enhanced_intent_classifier import (
+from app.domains.ai.services.enhanced_intent_classifier import (
     EnhancedIntentType,  # noqa: F401
     enhanced_intent_classifier,  # noqa: F401
 )
-from app.shared.services.intent_classifier import (
+from app.domains.ai.services.intent_classifier import (
     ClassificationResult,
 )
 from app.domains.ai.services.llm import LLMService, llm_service

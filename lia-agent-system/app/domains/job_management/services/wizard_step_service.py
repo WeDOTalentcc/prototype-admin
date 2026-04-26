@@ -15,8 +15,8 @@ import logging
 from lia_models.job_draft import JobDraft, DraftFieldHistory, JobDraftStatus, ChangeType
 from lia_models.candidate import Candidate
 from lia_models import JobVacancy
-from app.shared.services.intent_classifier import intent_classifier_service, IntentType
-from app.shared.services.enhanced_intent_classifier import (
+from app.domains.ai.services.intent_classifier import intent_classifier_service, IntentType
+from app.domains.ai.services.enhanced_intent_classifier import (
     enhanced_intent_classifier, EnhancedIntentType,
 )
 from app.shared.services.context_aggregator_service import context_aggregator

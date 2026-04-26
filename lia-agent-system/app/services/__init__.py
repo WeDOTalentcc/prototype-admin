@@ -75,7 +75,7 @@ from app.shared.services.confidence_policy_service import (
     confidence_policy_service,
 )
 from app.shared.services.explainability_service import ExplainabilityService, explainability_service
-from app.shared.services.intent_classifier import (
+from app.domains.ai.services.intent_classifier import (
     ClassificationResult,
     IntentClassifierService,
     IntentType,

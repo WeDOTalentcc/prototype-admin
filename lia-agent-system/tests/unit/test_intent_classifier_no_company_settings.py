@@ -15,11 +15,14 @@ company_settings". A auditoria provou que:
    `.strip().lower()`, caiam nesse conjunto — logo o roteamento para
    `company_settings` só dispara quando código upstream (ex.: contexto de
    página /settings/*) seta ctx.intent explicitamente.
-4) Os shims em `app.shared.services.{intent_classifier,enhanced_intent_classifier}`
-   apenas re-exportam os módulos canônicos em `app.domains.ai.services`.
 
 Estes testes congelam essas garantias: se alguém adicionar um valor ao enum
 que (pós-lower) colida com `_COMPANY_SETTINGS_INTENTS`, regressão pega.
+
+Nota (Task #821): os shims em `app.shared.services.{intent_classifier,
+enhanced_intent_classifier}` foram removidos após todos os consumidores
+migrarem para o caminho canônico em `app.domains.ai.services`. Os testes
+da seção 2 que validavam o re-export do shim foram removidos junto.
 """
 
 from __future__ import annotations
@@ -94,30 +97,22 @@ def test_enhanced_intent_type_does_not_collide_with_company_settings():
 
 
 # ──────────────────────────────────────────────────────────────────────────
-# 2. Shims em app.shared.services apenas re-exportam o canônico
+# 2. (Removido em Task #821) Shims em app.shared.services foram removidos.
+#    Os testes que validavam o re-export do shim canônico não fazem mais
+#    sentido — os consumidores importam direto de app.domains.ai.services.
 # ──────────────────────────────────────────────────────────────────────────
 
 
-def test_shared_intent_classifier_shim_reexports_canonical():
-    from app.shared.services import intent_classifier as shim
-    from app.domains.ai.services import intent_classifier as canonical
+def test_shared_services_intent_classifier_shim_removed():
+    """Garantia de não-regressão: os shims legados não devem ressuscitar."""
+    import importlib
 
-    assert shim.IntentType is canonical.IntentType, (
-        "Shim em app.shared.services.intent_classifier deve re-exportar a "
-        "classe canônica (mesma identidade Python). Se foi clonada, é uma "
-        "duplicata real — restaurar `from … import *`."
-    )
-    assert shim.IntentClassifierService is canonical.IntentClassifierService
-
-
-def test_shared_enhanced_intent_classifier_shim_reexports_canonical():
-    from app.shared.services import enhanced_intent_classifier as shim
-    from app.domains.ai.services import enhanced_intent_classifier as canonical
-
-    assert shim.EnhancedIntentType is canonical.EnhancedIntentType, (
-        "Shim em app.shared.services.enhanced_intent_classifier deve "
-        "re-exportar a classe canônica."
-    )
+    for legacy in (
+        "app.shared.services.intent_classifier",
+        "app.shared.services.enhanced_intent_classifier",
+    ):
+        with pytest.raises(ModuleNotFoundError):
+            importlib.import_module(legacy)
 
 
 # ──────────────────────────────────────────────────────────────────────────
