@@ -12,6 +12,13 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
   import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
   import { PromptSuggestionsDock } from "@/components/ui/prompt-suggestions-dock"
   import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
+  import { useWizardFlow as useCanonicalWizardFlow } from "@/components/unified-chat/wizard/useWizardFlow"
+  import { WizardProgressBar } from "@/components/unified-chat/wizard/WizardProgressBar"
+  import {
+    WIZARD_PLAN_TITLE,
+    buildPlanFlowSteps,
+  } from "@/components/unified-chat/wizard/wizard-plan-card"
+  import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
   import {
     AlertDialog,
     AlertDialogContent,
@@ -43,6 +50,17 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
 
     const { contextPage } = useLiaFloat()
     const { chatHitlPending, sendApproval } = useLiaChatContext()
+
+    const canonicalWizard = useCanonicalWizardFlow()
+    const canonicalStage = canonicalWizard.currentStage
+    const canonicalCompleteness = canonicalWizard.completeness
+    const canonicalHistory = canonicalWizard.stageHistory
+    const canonicalWizardActive =
+      canonicalStage !== null && canonicalStage !== "done" && canonicalStage !== "handoff"
+    const canonicalPlanSteps = React.useMemo(
+      () => buildPlanFlowSteps(canonicalStage),
+      [canonicalStage],
+    )
 
     const {
       activeInputTab, addCalibrationCriterion, addCustomQuestion, addNewBenefit, addNewCompetency, addNewSkill, analytics, approvedCandidates,
@@ -195,6 +213,16 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
             </div>
           </div>
 
+        {canonicalWizardActive && (
+          <div className="px-4 pt-2 pb-1 flex-shrink-0 bg-lia-bg-primary">
+            <WizardProgressBar
+              currentStage={canonicalStage}
+              completeness={canonicalCompleteness}
+              stageHistory={canonicalHistory}
+            />
+          </div>
+        )}
+
         {/* Main Content - Split for job-creation, Full for general */}
         <div className="flex-1 flex overflow-hidden bg-lia-bg-primary min-h-0 h-full">
           {/* Chat Section */}
@@ -220,6 +248,18 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                     onSelect={(command) => setInputValue(command)}
                     isEmpty={true}
                   />
+                </div>
+              )}
+
+              {canonicalWizardActive && canonicalPlanSteps.length > 0 && (
+                <div
+                  data-testid="wizard-plan-card"
+                  className="mb-4 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary px-4 py-3"
+                >
+                  <p className="text-sm font-semibold text-lia-text-primary mb-2">
+                    {WIZARD_PLAN_TITLE}
+                  </p>
+                  <FlowStepMessage steps={canonicalPlanSteps} compact />
                 </div>
               )}
 
