@@ -18,7 +18,7 @@ export function LgpdConsentDialog({ isOpen, fileName, onConfirm, onCancel }: Pro
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-lia-bg-primary rounded-xl border border-lia-border-subtle w-[400px] max-w-[90vw] overflow-hidden">
+      <div className="bg-lia-bg-primary rounded-md border border-lia-border-subtle w-[400px] max-w-[90vw] overflow-hidden">
         <div className="flex items-center justify-between px-5 py-3.5">
           <div className="flex items-center gap-2">
             <Shield className="w-4.5 h-4.5 text-wedo-cyan" />
@@ -53,7 +53,7 @@ export function LgpdConsentDialog({ isOpen, fileName, onConfirm, onCancel }: Pro
             </li>
           </ul>
 
-          <div className="p-2.5 rounded-xl bg-wedo-cyan/5 border border-wedo-cyan/20">
+          <div className="p-2.5 rounded-md bg-wedo-cyan/5 border border-wedo-cyan/20">
             <p className="text-[10px] text-wedo-cyan">
               {t('retentionNote')}
             </p>
@@ -63,7 +63,7 @@ export function LgpdConsentDialog({ isOpen, fileName, onConfirm, onCancel }: Pro
         <div className="flex items-center gap-2 px-5 py-3 border-t border-lia-border-subtle">
           <button
             onClick={onCancel}
-            className="flex-1 px-3 py-2 rounded-xl border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+            className="flex-1 px-3 py-2 rounded-md border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
           >
             {t('cancel')}
           </button>

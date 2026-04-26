@@ -26,7 +26,7 @@ export function TastingInsightCard({ insights }: TastingInsightCardProps) {
         <div
           key={`${insight.module_name}-${i}`}
           className={cn(
-            "rounded-lg border border-wedo-purple/20 bg-wedo-purple/5",
+            "rounded-md border border-wedo-purple/20 bg-wedo-purple/5",
             "dark:border-wedo-purple/30 dark:bg-wedo-purple/10",
             "p-3 transition-colors"
           )}

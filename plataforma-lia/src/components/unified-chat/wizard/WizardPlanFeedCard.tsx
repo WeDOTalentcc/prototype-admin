@@ -41,7 +41,7 @@ export function WizardPlanFeedCard({ currentStage }: WizardPlanFeedCardProps) {
   return (
     <div
       data-testid="wizard-plan-card"
-      className="mb-4 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary px-4 py-3"
+      className="mb-4 rounded-md border border-lia-border-subtle bg-lia-bg-secondary px-4 py-3"
     >
       <p className="text-sm font-semibold text-lia-text-primary mb-2">
         {title}

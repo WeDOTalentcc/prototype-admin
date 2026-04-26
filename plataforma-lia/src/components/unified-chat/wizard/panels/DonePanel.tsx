@@ -40,7 +40,7 @@ export function DonePanel({ data }: Props) {
             onClick={() => window.dispatchEvent(new CustomEvent("lia:navigation-hint", {
               detail: { page: "vagas", hint: `Vaga ${jobTitle || jobId}` },
             }))}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20 transition-colors text-sm font-medium"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20 transition-colors text-sm font-medium"
           >
             <ExternalLink className="w-4 h-4" />
             Ir para a vaga
@@ -52,7 +52,7 @@ export function DonePanel({ data }: Props) {
             onClick={() => {
               navigator.clipboard.writeText(shareLink)
             }}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-lia-bg-secondary text-lia-text-primary hover:bg-lia-interactive-hover transition-colors text-sm"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md bg-lia-bg-secondary text-lia-text-primary hover:bg-lia-interactive-hover transition-colors text-sm"
           >
             <ExternalLink className="w-4 h-4 text-lia-text-secondary" />
             Copiar link de compartilhamento
@@ -63,7 +63,7 @@ export function DonePanel({ data }: Props) {
           onClick={() => window.dispatchEvent(new CustomEvent("lia:prefill-message", {
             detail: { message: "Criar nova vaga" },
           }))}
-          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-lia-bg-secondary text-lia-text-primary hover:bg-lia-interactive-hover transition-colors text-sm"
+          className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md bg-lia-bg-secondary text-lia-text-primary hover:bg-lia-interactive-hover transition-colors text-sm"
         >
           <Plus className="w-4 h-4 text-lia-text-secondary" />
           Criar outra vaga
@@ -72,7 +72,7 @@ export function DonePanel({ data }: Props) {
 
       {/* Summary stats */}
       {jobId && (
-        <div className="rounded-xl bg-lia-bg-secondary p-2.5 text-[11px] text-lia-text-disabled text-center">
+        <div className="rounded-md bg-lia-bg-secondary p-2.5 text-[11px] text-lia-text-disabled text-center">
           Job ID: {jobId}
         </div>
       )}

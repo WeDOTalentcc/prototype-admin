@@ -80,9 +80,9 @@ export function UnifiedChatEmptyState({ mode, onSuggestionClick, contextType }: 
             <button
               key={chip.command}
               onClick={() => onSuggestionClick(chip.command)}
-              className="flex items-center gap-3 p-3 rounded-xl text-left border border-lia-border-subtle bg-lia-bg-primary hover:bg-lia-bg-secondary hover:border-wedo-cyan/30 transition-all"
+              className="flex items-center gap-3 p-3 rounded-md text-left border border-lia-border-subtle bg-lia-bg-primary hover:bg-lia-bg-secondary hover:border-wedo-cyan/30 transition-all"
             >
-              <div className="p-1.5 rounded-lg bg-wedo-cyan/10 text-wedo-cyan flex-shrink-0">
+              <div className="p-1.5 rounded-md bg-wedo-cyan/10 text-wedo-cyan flex-shrink-0">
                 <chip.icon className="w-4 h-4" />
               </div>
               <span className="text-sm font-medium text-lia-text-primary">{chip.label}</span>

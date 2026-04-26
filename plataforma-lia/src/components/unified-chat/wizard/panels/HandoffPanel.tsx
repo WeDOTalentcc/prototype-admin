@@ -32,7 +32,7 @@ export function HandoffPanel({ data }: Props) {
       {d.handoff_url && (
         <a
           href={d.handoff_url}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-wedo-cyan text-white text-sm font-medium hover:bg-wedo-cyan/90 transition-colors motion-reduce:transition-none"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-wedo-cyan text-white text-sm font-medium hover:bg-wedo-cyan/90 transition-colors motion-reduce:transition-none"
         >
           <ExternalLink className="w-4 h-4" />
           Ir para a vaga
@@ -40,7 +40,7 @@ export function HandoffPanel({ data }: Props) {
       )}
 
       {d.share_link && (
-        <div className="w-full p-2.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle">
+        <div className="w-full p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
           <div className="flex items-center gap-1.5 mb-1">
             <Link2 className="w-3.5 h-3.5 text-wedo-cyan" />
             <span className="text-xs font-medium text-lia-text-secondary">

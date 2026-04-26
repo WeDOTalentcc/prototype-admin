@@ -9,8 +9,8 @@ interface Props {
 }
 
 const TRAIT_CONFIG: Record<string, { label: string; color: string }> = {
-  openness: { label: "Abertura", color: "bg-purple-500" },
-  conscientiousness: { label: "Conscienciosidade", color: "bg-blue-500" },
+  openness: { label: "Abertura", color: "bg-wedo-purple" },
+  conscientiousness: { label: "Conscienciosidade", color: "bg-wedo-cyan" },
   extraversion: { label: "Extroversao", color: "bg-amber-500" },
   agreeableness: { label: "Amabilidade", color: "bg-green-500" },
   stability: { label: "Estabilidade", color: "bg-teal-500" },
@@ -89,7 +89,7 @@ export function BigFivePanel({ data }: Props) {
 
       {/* Ranked summary */}
       {rankings.length > 0 && (
-        <div className="rounded-xl bg-lia-bg-secondary p-2.5">
+        <div className="rounded-md bg-lia-bg-secondary p-2.5">
           <p className="text-[11px] text-lia-text-secondary">
             Traits prioritarios para esta vaga:{" "}
             <span className="text-lia-text-primary font-medium">

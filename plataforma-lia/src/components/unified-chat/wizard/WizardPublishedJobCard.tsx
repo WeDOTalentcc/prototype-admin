@@ -54,7 +54,7 @@ export function WizardPublishedJobCard({
       role="status"
       aria-live="polite"
       data-testid="wizard-published-card"
-      className="mt-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-3"
+      className="mt-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary p-3"
     >
       <div className="flex items-start gap-2.5">
         <div
@@ -85,7 +85,7 @@ export function WizardPublishedJobCard({
             <LinkComponent
               href={url}
               data-testid="wizard-published-job-link"
-              className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-wedo-cyan/10 px-3 py-1.5 text-xs font-medium text-wedo-cyan transition-colors hover:bg-wedo-cyan/20 motion-reduce:transition-none"
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-wedo-cyan/10 px-3 py-1.5 text-xs font-medium text-wedo-cyan transition-colors hover:bg-wedo-cyan/20 motion-reduce:transition-none"
             >
               <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
               Abrir página da vaga
@@ -96,7 +96,7 @@ export function WizardPublishedJobCard({
               href={shareLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-lia-border-subtle px-3 py-1.5 text-xs text-lia-text-primary transition-colors hover:bg-lia-interactive-hover motion-reduce:transition-none"
+              className="inline-flex w-full items-center justify-center gap-1.5 rounded-md border border-lia-border-subtle px-3 py-1.5 text-xs text-lia-text-primary transition-colors hover:bg-lia-interactive-hover motion-reduce:transition-none"
             >
               <ExternalLink className="h-3.5 w-3.5 text-lia-text-secondary" aria-hidden="true" />
               Link de compartilhamento

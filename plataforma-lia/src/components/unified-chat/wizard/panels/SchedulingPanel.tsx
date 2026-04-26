@@ -83,10 +83,10 @@ export function SchedulingPanel({ data, onApprove }: Props) {
         <div className="w-10 h-10 rounded-full bg-status-success/10 flex items-center justify-center">
           <Check className="w-5 h-5 text-status-success" />
         </div>
-        <p className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+        <p className="text-sm font-semibold text-lia-text-primary">
           {totalInterviews === 1 ? "Entrevista agendada!" : `${totalInterviews} entrevistas agendadas!`}
         </p>
-        <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
+        <p className="text-xs text-lia-text-secondary">
           Os convites serão enviados por email.
         </p>
       </div>
@@ -112,7 +112,7 @@ export function SchedulingPanel({ data, onApprove }: Props) {
                 )}
               />
             ))}
-            <span className="ml-auto text-[10px] text-lia-text-disabled font-['Open_Sans',sans-serif]">
+            <span className="ml-auto text-[10px] text-lia-text-disabled">
               {currentIdx + 1}/{totalInterviews}
             </span>
           </div>
@@ -120,7 +120,7 @@ export function SchedulingPanel({ data, onApprove }: Props) {
         <div className="flex items-start gap-2">
           <CalendarDays className="w-4 h-4 text-wedo-cyan mt-0.5 flex-shrink-0" aria-hidden="true" />
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-lia-text-primary font-['Open_Sans',sans-serif] truncate">
+            <p className="text-sm font-semibold text-lia-text-primary truncate">
               {currentInterview.title}
               {totalInterviews > 1 && (
                 <span className="text-lia-text-secondary font-normal ml-1">
@@ -128,7 +128,7 @@ export function SchedulingPanel({ data, onApprove }: Props) {
                 </span>
               )}
             </p>
-            <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] truncate">
+            <p className="text-xs text-lia-text-secondary truncate">
               {currentInterview.candidate_name || candidateName || jobTitle}
             </p>
           </div>
@@ -155,7 +155,7 @@ export function SchedulingPanel({ data, onApprove }: Props) {
 
       {/* Week grid */}
       <div className="flex-1 overflow-x-auto overflow-y-auto px-4 py-3">
-        <table className="w-full border-collapse text-xs font-['Open_Sans',sans-serif]">
+        <table className="w-full border-collapse text-xs">
           <thead>
             <tr>
               <th className="w-12 pb-2 text-left text-lia-text-disabled font-normal" />
@@ -215,7 +215,7 @@ export function SchedulingPanel({ data, onApprove }: Props) {
           onClick={handleConfirm}
           disabled={!selectedSlot}
           className={cn(
-            "w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]",
+            "w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-md text-sm font-medium transition-colors motion-reduce:transition-none",
             selectedSlot
               ? "bg-gray-900 text-white hover:bg-gray-800"
               : "bg-lia-bg-tertiary text-lia-text-disabled cursor-not-allowed"
@@ -225,7 +225,7 @@ export function SchedulingPanel({ data, onApprove }: Props) {
           <ChevronRight className="w-4 h-4" aria-hidden="true" />
         </button>
         {!selectedSlot && (
-          <p className="text-center text-[10px] text-lia-text-disabled mt-1.5 font-['Open_Sans',sans-serif]">
+          <p className="text-center text-[10px] text-lia-text-disabled mt-1.5">
             Selecione um horário para continuar
           </p>
         )}
@@ -251,7 +251,7 @@ function NativeSelect({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-label={ariaLabel}
-        className="appearance-none pl-2 pr-5 py-0.5 rounded-md border border-lia-border-subtle bg-lia-bg-primary text-xs text-lia-text-primary font-['Open_Sans',sans-serif] focus:outline-none focus:border-lia-border-default transition-colors motion-reduce:transition-none cursor-pointer"
+        className="appearance-none pl-2 pr-5 py-0.5 rounded-md border border-lia-border-subtle bg-lia-bg-primary text-xs text-lia-text-primary focus:outline-none focus:border-lia-border-default transition-colors motion-reduce:transition-none cursor-pointer"
       >
         {options.map((o) => (
           <option key={o} value={o}>{o}</option>

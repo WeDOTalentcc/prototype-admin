@@ -13,7 +13,7 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
     return (
       <div className="flex items-center gap-2 px-1 py-2">
         <Loader2 className="w-3.5 h-3.5 animate-spin text-wedo-cyan" aria-hidden="true" />
-        <span className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
+        <span className="text-xs text-lia-text-secondary">
           Pensando...
         </span>
       </div>
@@ -21,7 +21,7 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
   }
 
   return (
-    <div className="animate-fade-in-up rounded-xl border border-lia-border-subtle bg-lia-bg-secondary px-3 py-2.5 max-w-[85%] space-y-1.5">
+    <div className="animate-fade-in-up rounded-md border border-lia-border-subtle bg-lia-bg-secondary px-3 py-2.5 max-w-[85%] space-y-1.5">
       {steps.map((step, i) => {
         const isActive = i === steps.length - 1
 
@@ -40,7 +40,7 @@ export function ThinkingStepsCard({ steps }: ThinkingStepsCardProps) {
             )}
             <span
               className={cn(
-                "text-xs leading-5 font-['Open_Sans',sans-serif]",
+                "text-xs leading-5",
                 isActive
                   ? "text-lia-text-primary font-medium"
                   : "text-lia-text-secondary"

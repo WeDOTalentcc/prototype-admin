@@ -26,12 +26,12 @@ export function ChatImageMessage({ src, caption, alt }: Props) {
       <div className="my-2 max-w-[280px]">
         <button
           onClick={() => setZoomed(true)}
-          className="relative group rounded-lg overflow-hidden border border-lia-border-subtle hover:border-wedo-cyan/40 transition-colors"
+          className="relative group rounded-md overflow-hidden border border-lia-border-subtle hover:border-wedo-cyan/40 transition-colors"
         >
           <img
             src={src}
             alt={alt || caption || "Screenshot"}
-            className="w-full h-auto rounded-lg"
+            className="w-full h-auto rounded-md"
             loading="lazy"
           />
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
@@ -54,7 +54,7 @@ export function ChatImageMessage({ src, caption, alt }: Props) {
           <img
             src={src}
             alt={alt || caption || "Screenshot"}
-            className="max-w-full max-h-full rounded-lg shadow-2xl"
+            className="max-w-full max-h-full rounded-md shadow-2xl"
           />
         </div>
       )}

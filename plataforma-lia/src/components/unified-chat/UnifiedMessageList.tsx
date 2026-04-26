@@ -211,7 +211,7 @@ export function UnifiedMessageList({
                         key={opt.value}
                         type="button"
                         onClick={() => onChipClick?.(opt.value)}
-                        className="px-3 py-1 text-[12px] rounded-lg border border-lia-border-default text-lia-text-primary hover:bg-lia-interactive-hover transition-colors"
+                        className="px-3 py-1 text-[12px] rounded-md border border-lia-border-default text-lia-text-primary hover:bg-lia-interactive-hover transition-colors"
                       >
                         {opt.label}
                       </button>
@@ -242,7 +242,7 @@ export function UnifiedMessageList({
             ) : (
               /* User message — Notion style: dark pill, right-aligned */
               <div className="max-w-[80%]">
-                <div className="inline-block px-4 py-2.5 rounded-xl bg-lia-bg-inverse dark:bg-lia-bg-tertiary text-white dark:text-lia-text-primary">
+                <div className="inline-block px-4 py-2.5 rounded-md bg-lia-bg-inverse dark:bg-lia-bg-tertiary text-white dark:text-lia-text-primary">
                   <p className="text-[13px]">
                     {message.content}
                   </p>

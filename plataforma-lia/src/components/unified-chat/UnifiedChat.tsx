@@ -445,12 +445,12 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
       className={cn(
         "flex bg-lia-bg-primary relative overflow-hidden",
         isInline
-          ? "flex-shrink-0 border border-lia-border-subtle rounded-xl h-full"
+          ? "flex-shrink-0 border border-lia-border-subtle rounded-md h-full"
           : mode === "fullscreen"
             ? "fixed inset-0 z-50"
             : mode === "sidebar"
-              ? "fixed top-2 right-2 bottom-2 z-40 border border-lia-border-subtle rounded-xl shadow-xl"
-              : "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-xl border border-lia-border-subtle shadow-xl",
+              ? "fixed top-2 right-2 bottom-2 z-40 border border-lia-border-subtle rounded-md"
+              : "fixed bottom-4 right-4 w-[360px] h-[520px] z-30 rounded-md border border-lia-border-subtle",
         className
       )}
       style={isInline ? { width: `${inlineWidth}px` } : (!isInline && mode === "sidebar") ? { width: `${sidebarWidthPx + dynamicPanelWidth}px` } : undefined}
@@ -556,7 +556,7 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
         {/* Fullscreen suggestion hint (once when wizard starts in non-fullscreen) */}
         {showFullscreenHint && (
           <div className="px-4 pb-1">
-            <div className="flex items-center justify-between px-3 py-2 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary">
+            <div className="flex items-center justify-between px-3 py-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary">
               <span className="text-xs text-lia-text-secondary">
                 Tela cheia melhora a experiência do wizard
               </span>

@@ -183,7 +183,7 @@ export function UnifiedChatHeader({
         {activeTaskLabel && (
           <button
             onClick={onSwitchTask}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none flex-shrink-0 max-w-[200px]"
+            className="flex items-center gap-1 px-2 py-0.5 rounded-md border border-lia-border-subtle bg-lia-bg-secondary text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none flex-shrink-0 max-w-[200px]"
             title={`${activeTaskLabel} — trocar conversa (⌘K)`}
             aria-label={`Tarefa ativa: ${activeTaskLabel}. Clique para trocar`}
           >
@@ -198,7 +198,7 @@ export function UnifiedChatHeader({
         {showOpenJobButton && onOpenJob && (
           <button
             onClick={onOpenJob}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-lg border border-wedo-cyan/40 bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20 transition-colors motion-reduce:transition-none flex-shrink-0"
+            className="flex items-center gap-1 px-2 py-0.5 rounded-md border border-wedo-cyan/40 bg-wedo-cyan/10 text-wedo-cyan hover:bg-wedo-cyan/20 transition-colors motion-reduce:transition-none flex-shrink-0"
             title="Reabrir o painel da vaga em criação"
             aria-label="Reabrir o painel lateral da vaga em criação"
             data-testid="open-job-panel-button"
@@ -259,7 +259,7 @@ export function UnifiedChatHeader({
           {showModeMenu && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowModeMenu(false)} />
-              <div className="absolute right-0 top-full mt-1 z-50 w-40 rounded-xl border border-lia-border-subtle bg-lia-bg-primary py-1">
+              <div className="absolute right-0 top-full mt-1 z-50 w-40 rounded-md border border-lia-border-subtle bg-lia-bg-primary py-1">
                 {MODE_OPTIONS.map((opt) => (
                   <button
                     key={opt.mode}
@@ -311,7 +311,7 @@ export function UnifiedChatHeader({
           {showOptionsMenu && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setShowOptionsMenu(false)} />
-              <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-xl border border-lia-border-subtle bg-lia-bg-primary py-1">
+              <div className="absolute right-0 top-full mt-1 z-50 w-44 rounded-md border border-lia-border-subtle bg-lia-bg-primary py-1">
                 <button
                   onClick={handleStartRename}
                   className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary"

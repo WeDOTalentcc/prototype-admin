@@ -62,7 +62,7 @@ export function ChatSuggestionsPanel({
   return (
     <div className={cn(
       "absolute bottom-full left-0 right-0 z-30 mb-1",
-      "bg-lia-bg-primary border border-lia-border-subtle rounded-xl overflow-hidden shadow-lia-lg",
+      "bg-lia-bg-primary border border-lia-border-subtle rounded-md overflow-hidden shadow-lia-lg",
       panelHeight
     )}>
       <div className="flex items-center justify-between px-3 py-2 border-b border-lia-border-subtle">
@@ -77,7 +77,7 @@ export function ChatSuggestionsPanel({
       </div>
 
       <div className="px-3 py-2 border-b border-lia-border-subtle">
-        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-lia-bg-secondary border border-lia-border-subtle">
+        <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
           <Search className="w-3.5 h-3.5 text-lia-text-tertiary flex-shrink-0" />
           <input
             type="text"
@@ -103,7 +103,7 @@ export function ChatSuggestionsPanel({
         <button
           onClick={() => setActiveCategory(null)}
           className={cn(
-            "px-2 py-1 rounded-lg text-[10px] font-medium transition-colors whitespace-nowrap",
+            "px-2 py-1 rounded-md text-[10px] font-medium transition-colors whitespace-nowrap",
             !activeCategory
               ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
               : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-hover border border-lia-border-subtle"
@@ -118,7 +118,7 @@ export function ChatSuggestionsPanel({
               key={key}
               onClick={() => setActiveCategory(activeCategory === key ? null : key)}
               className={cn(
-                "inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-medium transition-colors whitespace-nowrap",
+                "inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium transition-colors whitespace-nowrap",
                 activeCategory === key
                   ? "bg-lia-btn-primary-bg text-lia-btn-primary-text"
                   : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-hover border border-lia-border-subtle"
@@ -139,7 +139,7 @@ export function ChatSuggestionsPanel({
             <button
               key={query.id}
               onClick={() => handleSelectQuery(query.question)}
-              className="w-full px-2.5 py-2 text-left transition-colors motion-reduce:transition-none rounded-lg group flex items-center gap-2 hover:bg-lia-bg-secondary border border-transparent hover:border-lia-border-subtle"
+              className="w-full px-2.5 py-2 text-left transition-colors motion-reduce:transition-none rounded-md group flex items-center gap-2 hover:bg-lia-bg-secondary border border-transparent hover:border-lia-border-subtle"
             >
               <div className="p-1 rounded-md flex-shrink-0 bg-lia-bg-tertiary">
                 <query.icon className="w-3 h-3 text-lia-text-tertiary" />
