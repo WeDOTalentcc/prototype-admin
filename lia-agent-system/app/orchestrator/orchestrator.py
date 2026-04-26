@@ -13,6 +13,9 @@ import logging
 import os
 from typing import Any
 
+from app.orchestrator._observability import V1_SPANS
+from app.shared.observability.tracing import trace_span
+
 
 from app.core.config import settings
 from app.domains.base import DomainContext, DomainResponse
@@ -114,6 +117,7 @@ class Orchestrator:
             return await self._response_cache.invalidate_for_company(entity_id)
         return await self._response_cache.invalidate_by_pattern(f"*{entity_type}*{entity_id}*")
 
+    @trace_span(V1_SPANS.PROCESS_REQUEST)
     async def process_request(self, user_id: str, message: str,
                               conversation_id: str | None = None,
                               context: dict[str, Any] | None = None) -> dict[str, Any]:

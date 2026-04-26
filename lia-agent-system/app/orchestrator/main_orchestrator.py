@@ -21,6 +21,9 @@ from __future__ import annotations
 
 import os
 
+from app.orchestrator._observability import V2_SPANS
+from app.shared.observability.tracing import trace_span
+
 import logging
 import time
 import uuid
@@ -319,6 +322,7 @@ class MainOrchestrator:
         self._fallback_react_service = fallback_react_service
         self._policy_gate_service = policy_gate_service
 
+    @trace_span(V2_SPANS.PROCESS)
     async def process(
         self,
         ctx: UniversalContext,
@@ -1080,6 +1084,7 @@ class MainOrchestrator:
     # Phase 2 — Pipeline consolidado (sem delegação intermediária)
     # ------------------------------------------------------------------
 
+    @trace_span(V2_SPANS.PHASE_2_VIA_ORCHESTRATOR)
     async def _process_via_orchestrator(
         self,
         ctx: UniversalContext,
@@ -1242,6 +1247,7 @@ class MainOrchestrator:
             logger.warning("[MainOrchestrator] ConversationMemory setup failed — conversation history lost: %s", _mem_exc)
             return None, conv_id
 
+    @trace_span(V2_SPANS.ROUTE_WITH_TENANT_LLM)
     async def _route_with_tenant_llm(
         self,
         ctx: UniversalContext,
@@ -1315,6 +1321,7 @@ class MainOrchestrator:
 
         return result
 
+    @trace_span(V2_SPANS.PLAN_DETECT)
     async def _try_plan_via_service(
         self,
         ctx: Any,
