@@ -11,18 +11,25 @@ Endpoints:
 - GET /suggestions/{field} - Get suggestions for a wizard field
 - GET /similar-jobs - Find similar jobs for Fast Track
 """
+import hashlib
 import logging
-from datetime import datetime
+import uuid as _uuid_mod
+from datetime import datetime, timedelta
 from typing import Any, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel, Field
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
+from app.auth.dependencies import (
+    get_current_user_or_demo,
+    get_current_user_strict,
+    get_user_company_id,
+)
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import AsyncSessionLocal, get_db
 from app.domains.job_management.services.jd_import_service import JDImportService, get_jd_import_service
 
 
@@ -344,12 +351,156 @@ async def get_similar_jobs(
     return await service.get_similar_jobs(db, context, limit)
 
 
+# ---------------------------------------------------------------------------
+# Task #838 — JD upload privacy & audit hardening
+# ---------------------------------------------------------------------------
+# Records consent + each upload event in `audit_logs` (immutable) instead of
+# the previous best-effort `logger.info`. Filename is hashed (SHA-256) before
+# persistence so plaintext PII never reaches the audit trail (mitigates M-13).
+# ---------------------------------------------------------------------------
+
+JD_UPLOAD_CONSENT_AGENT = "jd_upload_consent"
+JD_UPLOAD_AUDIT_AGENT = "jd_upload"
+
+
+def _hash_filename(filename: str) -> str:
+    """Return a stable SHA-256 hex digest of the filename (avoids logging PII)."""
+    return hashlib.sha256((filename or "").encode("utf-8", errors="replace")).hexdigest()
+
+
+async def _company_has_jd_upload_consent(company_id: UUID) -> bool:
+    """Return True if the company has previously granted JD upload consent."""
+    from lia_models.audit_log import AuditLog
+
+    try:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                select(AuditLog.id)
+                .where(
+                    and_(
+                        AuditLog.company_id == str(company_id),
+                        AuditLog.agent_name == JD_UPLOAD_CONSENT_AGENT,
+                        AuditLog.decision == "granted",
+                    )
+                )
+                .limit(1)
+            )
+            return result.scalar_one_or_none() is not None
+    except Exception as exc:  # pragma: no cover — fail-closed when DB unreachable
+        logger.warning("[jd-import/upload] consent lookup failed: %s", exc)
+        return False
+
+
+async def _record_jd_upload_consent(company_id: UUID, user_id: str | None) -> None:
+    """Persist a one-shot JD-upload consent record per company (LGPD Art. 7/8)."""
+    from lia_models.audit_log import AuditLog
+
+    try:
+        async with AsyncSessionLocal() as session:
+            log = AuditLog(
+                id=str(_uuid_mod.uuid4()),
+                company_id=str(company_id),
+                agent_name=JD_UPLOAD_CONSENT_AGENT,
+                # decision_type is a free-form String(100) on AuditLog; using a
+                # dedicated value keeps governance dashboards able to filter
+                # consent grants without colliding with feedback audits.
+                decision_type="consent_granted",
+                action="jd_upload_consent",
+                decision="granted",
+                reasoning=[
+                    "purpose=jd_processing",
+                    "legal_basis=LGPD Art. 7º, II",
+                    "scope=company",
+                ],
+                criteria_used=["consent_purpose:jd_processing"],
+                criteria_ignored=[],
+                actor_user_id=user_id,
+                retention_until=datetime.utcnow() + timedelta(days=1825),
+            )
+            session.add(log)
+            await session.commit()
+    except Exception as exc:
+        logger.warning("[jd-import/upload] consent persistence failed: %s", exc)
+
+
+async def _record_jd_upload_audit(
+    *,
+    company_id: UUID,
+    user_id: str | None,
+    upload_uuid: str,
+    filename_hash: str,
+    size_bytes: int,
+    extension: str,
+    fairness_warnings_count: int,
+) -> None:
+    """Persist an immutable upload record (M-10): user, company, hash, size, uuid, ts."""
+    from lia_models.audit_log import AuditLog
+
+    try:
+        async with AsyncSessionLocal() as session:
+            log = AuditLog(
+                id=upload_uuid,
+                company_id=str(company_id),
+                agent_name=JD_UPLOAD_AUDIT_AGENT,
+                decision_type="job_creation",
+                action="jd_file_upload",
+                decision="imported",
+                reasoning=[
+                    f"filename_hash={filename_hash}",
+                    f"size_bytes={size_bytes}",
+                    f"extension={extension}",
+                    f"fairness_warnings={fairness_warnings_count}",
+                ],
+                criteria_used=["filename_hash", "size_bytes", "extension"],
+                criteria_ignored=[],
+                actor_user_id=user_id,
+                retention_until=datetime.utcnow() + timedelta(days=1825),
+            )
+            session.add(log)
+            await session.commit()
+    except Exception as exc:
+        # Audit failure should not silently lose the upload trail. Re-raise so
+        # the request fails closed and the operator is alerted.
+        logger.error("[jd-import/upload] audit persistence failed: %s", exc)
+        raise HTTPException(
+            status_code=500,
+            detail="Falha ao registrar auditoria do upload. Tente novamente.",
+        )
+
+
+@router.get("/import/jd-upload/consent-status", response_model=dict[str, bool])
+async def get_jd_upload_consent_status(
+    current_user: User = Depends(get_current_user_strict),
+) -> dict[str, bool]:
+    """
+    Preflight para o gate LGPD de upload de JD (Task #838 / M-01).
+
+    Devolve `{has_consent: bool}` para a empresa do usuário autenticado.
+    O frontend usa essa resposta para suprimir o diálogo de consentimento
+    quando a empresa já consentiu em sessão anterior — concretizando o
+    requisito "bypass para domínios já consentidos".
+
+    Não tem efeito colateral: read-only sobre `audit_logs`.
+    """
+    company_id = parse_company_id(get_user_company_id(current_user))
+    has_consent = await _company_has_jd_upload_consent(company_id)
+    return {"has_consent": bool(has_consent)}
+
+
 @router.post("/import/upload-file", response_model=dict[str, Any])
 async def upload_jd_file(
     file: UploadFile = File(..., description="Arquivo JD (.txt, .pdf, .docx, .md)"),
     title: str = Query("", description="Título da vaga (opcional, extraído do arquivo se vazio)"),
+    consent_acknowledged: bool = Query(
+        False,
+        description=(
+            "LGPD Art. 7: o usuário confirma o consentimento granular para "
+            "processamento da JD nesta sessão. Empresas que já consentiram "
+            "previamente são liberadas automaticamente."
+        ),
+    ),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo),
+    current_user: User = Depends(get_current_user_strict),
     service: JDImportService = Depends(get_jd_import_service),
 ) -> dict[str, Any]:
     """
@@ -358,9 +509,38 @@ async def upload_jd_file(
     Suporta: .txt, .md, .pdf (extrai texto via pypdf se disponível), .docx (extrai via python-docx).
     O texto extraído é passado para JDImportService.import_jd() para parse estruturado.
 
+    Privacidade & auditoria (Task #838):
+    - Autenticação estrita: o modo demo está desabilitado (M-09).
+    - Consentimento granular explícito uma vez por empresa, com bypass em
+      sessões subsequentes a partir do registro imutável (M-01).
+    - Cada upload grava `user_id`, `company_id`, `filename_hash`, `size_bytes`,
+      `uuid` e `timestamp` em `audit_logs` (M-10).
+
     Returns:
         JD importada e parseada com campos extraídos (título, skills, requisitos, benefícios).
     """
+    # Identidade do solicitante — necessária para consent + audit antes do parse
+    company_id = parse_company_id(get_user_company_id(current_user))
+    user_id = str(current_user.id) if getattr(current_user, "id", None) else None
+
+    # M-01: Consentimento granular explícito (com bypass para empresas já consentidas)
+    if not consent_acknowledged:
+        already_consented = await _company_has_jd_upload_consent(company_id)
+        if not already_consented:
+            raise HTTPException(
+                status_code=428,
+                detail={
+                    "error": "consent_required",
+                    "message": (
+                        "Para enviar a Job Description, confirme o consentimento "
+                        "granular LGPD para processamento desta JD."
+                    ),
+                    "purpose": "jd_processing",
+                    "consent_param": "consent_acknowledged",
+                    "legal_basis": "LGPD Art. 7º, II / EU AI Act Art. 13",
+                },
+            )
+
     # Validar tipo de arquivo
     allowed_extensions = {".txt", ".md", ".pdf", ".docx"}
     filename = file.filename or ""
@@ -437,8 +617,8 @@ async def upload_jd_file(
         if _result.soft_warnings:
             fairness_warnings = _result.soft_warnings
             logger.warning(
-                "[jd-import/upload] FairnessGuard soft_warnings company=%s file=%s: %s",
-                get_user_company_id(current_user), filename, _result.soft_warnings,
+                "[jd-import/upload] FairnessGuard soft_warnings company=%s filename_hash=%s: %s",
+                company_id, _hash_filename(filename), _result.soft_warnings,
             )
     except HTTPException:
         raise
@@ -446,8 +626,6 @@ async def upload_jd_file(
         pass  # fail-safe
 
     # Importar via JDImportService
-    company_id = parse_company_id(get_user_company_id(current_user))
-
     jd_data = {
         "title": title or filename.rsplit(".", 1)[0],
         "description": raw_text,
@@ -462,17 +640,38 @@ async def upload_jd_file(
         parse_immediately=True,
     )
 
-    # Audit log estruturado (LGPD/SOX rastreabilidade)
-    logger.info(
-        "[jd-import/upload] imported company=%s file=%s size_bytes=%d title=%s fairness_warnings=%d",
-        company_id,
-        filename,
-        len(content),
-        jd_data["title"],
-        len(fairness_warnings),
+    # M-10: Auditoria imutável em `audit_logs` (substitui logger.info anterior)
+    upload_uuid = str(_uuid_mod.uuid4())
+    filename_hash = _hash_filename(filename)
+    await _record_jd_upload_audit(
+        company_id=company_id,
+        user_id=user_id,
+        upload_uuid=upload_uuid,
+        filename_hash=filename_hash,
+        size_bytes=len(content),
+        extension=ext,
+        fairness_warnings_count=len(fairness_warnings),
     )
 
-    result = {**imported.to_dict(), "source_filename": filename}
+    # M-01: registrar consentimento granular em primeira concessão (idempotente
+    # para a empresa). Posteriores uploads detectam o registro e não pedem de novo.
+    if consent_acknowledged:
+        try:
+            already = await _company_has_jd_upload_consent(company_id)
+            if not already:
+                await _record_jd_upload_consent(company_id, user_id)
+        except Exception as exc:
+            logger.warning("[jd-import/upload] failed to persist consent: %s", exc)
+
+    result = {
+        **imported.to_dict(),
+        "source_filename": filename,
+        "audit": {
+            "uuid": upload_uuid,
+            "filename_hash": filename_hash,
+            "size_bytes": len(content),
+        },
+    }
     if fairness_warnings:
         result["fairness_warnings"] = fairness_warnings
     return result

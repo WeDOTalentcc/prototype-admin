@@ -1,13 +1,14 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 /**
  * Smart File Upload — C.1 Phase C.
  *
  * Routes uploaded files to the correct pipeline:
  * - CV → screening pipeline (with LGPD consent check)
- * - JD → wizard intake (auto-starts job creation)
+ * - JD → wizard intake (auto-starts job creation, requires LGPD consent
+ *   once per session — Task #838 / M-01)
  * - Generic → file analysis
  *
  * Reuses existing file input from UnifiedChatInput.tsx.
@@ -20,6 +21,48 @@ interface FileRouting {
   action: string
   description: string
   requiresConsent: boolean
+}
+
+// Session-scoped flag (Task #838): once a recruiter explicitly accepts the
+// granular JD-upload consent, subsequent JD uploads in the same browser tab
+// skip the dialog. Server-side, repeat consents are also bypassed for any
+// company that has already granted it (recorded in audit_logs).
+const JD_CONSENT_SESSION_KEY = "lia-jd-upload-consent"
+
+function hasSessionJdConsent(): boolean {
+  if (typeof window === "undefined") return false
+  try {
+    return window.sessionStorage.getItem(JD_CONSENT_SESSION_KEY) === "1"
+  } catch {
+    return false
+  }
+}
+
+function rememberSessionJdConsent(): void {
+  if (typeof window === "undefined") return
+  try {
+    window.sessionStorage.setItem(JD_CONSENT_SESSION_KEY, "1")
+  } catch {
+    /* ignore quota / privacy mode */
+  }
+}
+
+// Preflight contra `/api/backend-proxy/jd-import/consent-status`. Fail-open
+// conservador: qualquer erro/rede → assume "sem consent" e o diálogo será
+// mostrado. NUNCA assumir consent em caso de falha.
+async function fetchBackendJdConsent(signal: AbortSignal): Promise<boolean> {
+  try {
+    const res = await fetch("/api/backend-proxy/jd-import/consent-status", {
+      method: "GET",
+      credentials: "include",
+      signal,
+    })
+    if (!res.ok) return false
+    const data = await res.json()
+    return data && typeof data.has_consent === "boolean" ? data.has_consent : false
+  } catch {
+    return false
+  }
 }
 
 // Filename heuristics (mirrors backend file_router.py)
@@ -52,7 +95,10 @@ function getRouting(type: FileType): FileRouting {
         type: "jd",
         action: "wizard_intake",
         description: "JD detectado. Iniciando criacao de vaga...",
-        requiresConsent: false,
+        // LGPD Art. 7º — consentimento granular pedido uma vez por sessão
+        // (bypass via sessionStorage; back-end também libera empresas que já
+        // têm registro de consentimento em audit_logs).
+        requiresConsent: !hasSessionJdConsent(),
       }
     default:
       return {
@@ -69,6 +115,36 @@ export function useSmartFileUpload() {
   const [error, setError] = useState<string | null>(null)
   const [showConsentDialog, setShowConsentDialog] = useState(false)
   const [pendingFile, setPendingFile] = useState<File | null>(null)
+  const [pendingType, setPendingType] = useState<FileType | null>(null)
+
+  // Task #838 / M-01 — preflight de bypass: consulta o backend (audit_logs)
+  // uma única vez por mount. Se a empresa do usuário já consentiu, espelha
+  // o flag em sessionStorage para que `getRouting('jd')` (síncrono) também
+  // pule o diálogo. Não invalida o sessionStorage existente.
+  const preflightDoneRef = useRef(false)
+  useEffect(() => {
+    if (preflightDoneRef.current) return
+    if (typeof window === "undefined") return
+    if (hasSessionJdConsent()) {
+      preflightDoneRef.current = true
+      return
+    }
+    const ctrl = new AbortController()
+    fetchBackendJdConsent(ctrl.signal).then((granted) => {
+      if (granted) rememberSessionJdConsent()
+      preflightDoneRef.current = true
+    })
+    return () => ctrl.abort()
+  }, [])
+
+  function dispatchJdPrefill(file: File) {
+    window.dispatchEvent(new CustomEvent("lia:prefill-message", {
+      detail: { message: `Criar vaga a partir do arquivo: ${file.name}` },
+    }))
+    window.dispatchEvent(new CustomEvent("lia:file-upload-confirmed", {
+      detail: { file, type: "jd", consentAcknowledged: true },
+    }))
+  }
 
   const processFile = useCallback((file: File) => {
     setError(null)
@@ -95,18 +171,17 @@ export function useSmartFileUpload() {
     const route = getRouting(type)
     setRouting(route)
 
-    // LGPD consent check for CVs
+    // LGPD consent check
     if (route.requiresConsent) {
       setPendingFile(file)
+      setPendingType(type)
       setShowConsentDialog(true)
       return route
     }
 
-    // Auto-start wizard for JD files
+    // Auto-start wizard for JD files (consent already granted in this session)
     if (type === "jd") {
-      window.dispatchEvent(new CustomEvent("lia:prefill-message", {
-        detail: { message: `Criar vaga a partir do arquivo: ${file.name}` },
-      }))
+      dispatchJdPrefill(file)
     }
 
     return route
@@ -115,17 +190,24 @@ export function useSmartFileUpload() {
   const confirmConsent = useCallback(() => {
     setShowConsentDialog(false)
     if (pendingFile) {
-      // Proceed with CV screening after consent
-      window.dispatchEvent(new CustomEvent("lia:file-upload-confirmed", {
-        detail: { file: pendingFile, type: "cv" },
-      }))
+      if (pendingType === "jd") {
+        rememberSessionJdConsent()
+        dispatchJdPrefill(pendingFile)
+      } else {
+        // Proceed with CV screening after consent
+        window.dispatchEvent(new CustomEvent("lia:file-upload-confirmed", {
+          detail: { file: pendingFile, type: "cv", consentAcknowledged: true },
+        }))
+      }
       setPendingFile(null)
+      setPendingType(null)
     }
-  }, [pendingFile])
+  }, [pendingFile, pendingType])
 
   const cancelConsent = useCallback(() => {
     setShowConsentDialog(false)
     setPendingFile(null)
+    setPendingType(null)
     setRouting(null)
   }, [])
 
@@ -134,6 +216,7 @@ export function useSmartFileUpload() {
     routing,
     error,
     showConsentDialog,
+    pendingType,
     confirmConsent,
     cancelConsent,
   }

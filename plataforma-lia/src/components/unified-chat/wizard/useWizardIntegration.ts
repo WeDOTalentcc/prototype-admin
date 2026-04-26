@@ -50,8 +50,15 @@ export function useWizardIntegration({
   // D.1: File upload → wizard intake
   useEffect(() => {
     function handleFileConfirmed(e: CustomEvent) {
-      const { file, type } = e.detail || {}
+      const { file, type, consentAcknowledged } = e.detail || {}
       if (type === "jd" && file?.name) {
+        // Task #838 / M-01: ao confirmar consentimento aqui (mesma sessao),
+        // memoriza no sessionStorage para que `useSmartFileUpload` nao volte a
+        // perguntar nas proximas JDs do mesmo tab. Isso e defesa em profundidade
+        // alem do preflight contra `/jd-import/consent-status`.
+        if (consentAcknowledged === true && typeof window !== "undefined") {
+          try { window.sessionStorage.setItem("lia-jd-upload-consent", "1") } catch { /* quota */ }
+        }
         // JD file auto-starts wizard
         sendMessage(`Criar vaga a partir do arquivo: ${file.name}`)
       }
