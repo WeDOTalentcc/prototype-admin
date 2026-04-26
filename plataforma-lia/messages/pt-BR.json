@@ -773,17 +773,6 @@
       "q32": "Qual departamento contrata mais rápido?",
       "q33": "Compare a qualidade dos candidatos entre fontes"
     },
-    "lgpd": {
-      "title": "Consentimento LGPD",
-      "fileIdentified": "O arquivo {fileName} foi identificado como curriculo.",
-      "legalBasis": "De acordo com a LGPD (Lei 13.709/2018), o processamento de dados pessoais de candidatos requer base legal. Ao prosseguir, voce confirma que:",
-      "consent1": "O candidato autorizou o uso do curriculo para esta vaga",
-      "consent2": "Os dados serao usados exclusivamente para triagem",
-      "consent3": "O candidato pode solicitar exclusao a qualquer momento",
-      "retentionNote": "Os dados serao processados pela IA para triagem e descartados apos o periodo de retencao configurado nas politicas da empresa.",
-      "cancel": "Cancelar",
-      "confirmProcess": "Confirmar e processar"
-    },
     "bubble": {
       "openLia": "Abrir LIA ({shortcut}) — clique para abrir, arraste para mover",
       "openLiaLabel": "Abrir chat com a LIA. Clique para abrir, arraste para mover, use as setas para reposicionar."

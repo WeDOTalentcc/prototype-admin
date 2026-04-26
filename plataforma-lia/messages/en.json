@@ -773,17 +773,6 @@
       "q32": "Which department hires fastest?",
       "q33": "Compare candidate quality across sources"
     },
-    "lgpd": {
-      "title": "LGPD Consent",
-      "fileIdentified": "The file {fileName} has been identified as a resume.",
-      "legalBasis": "According to the LGPD (Law 13.709/2018), processing candidate personal data requires a legal basis. By proceeding, you confirm that:",
-      "consent1": "The candidate authorized the use of the resume for this position",
-      "consent2": "The data will be used exclusively for screening",
-      "consent3": "The candidate can request deletion at any time",
-      "retentionNote": "The data will be processed by AI for screening and discarded after the retention period configured in company policies.",
-      "cancel": "Cancel",
-      "confirmProcess": "Confirm and process"
-    },
     "bubble": {
       "openLia": "Open LIA ({shortcut}) — click to open, drag to move",
       "openLiaLabel": "Open chat with LIA. Click to open, drag to move, use arrow keys to reposition."
