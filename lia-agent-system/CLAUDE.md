@@ -72,3 +72,34 @@ Toda nova regra adicionada aqui DEVE:
 2. Ter sensor computacional correspondente (linter, teste, hook)
 3. Ter mensagem de erro otimizada para LLM (não só humano)
 4. Princípio Hashimoto: nunca mais aquele erro específico
+
+
+## Débito harness conhecido (G6 — 24 matches detectados em 2026-04-26)
+
+O sensor `G6: no-getattr-on-models` descobriu 24 ocorrências do anti-pattern
+`getattr(<model_row>, "<column>", <default>)` em produção. Cada uma é potencialmente
+um bug do tipo P0-1 (mascara coluna ausente / quebrada). Hook está em **warn-only**
+até cleanup. Ordem sugerida (alta → baixa criticidade):
+
+| Path | Ocorrências | Wave alvo |
+|---|---|---|
+| `app/api/v1/auth.py` | 3× user.company_id | W1.6 (multi-tenant auth) |
+| `app/api/v1/teams.py:1499` | 1× user.company_id | W1.2 (Teams) |
+| `app/api/v1/rails_sync.py` | 3× | W1.7 (rails sync) |
+| `app/api/v1/bulk_actions.py` | 1× | W1.7 |
+| `app/api/v1/candidates/candidates_crud.py` | 1× candidate.company_id | W1.6 |
+| `app/jobs/tasks/communication.py` | 1× user.company_id | W1.6 |
+| `app/domains/sourcing/services/sourcing_pipeline_service.py` | 2× job.company_id | W1.6 |
+| `app/domains/sourcing/tools/query_tools.py` | 1× | W1.6 |
+| `app/domains/job_management/tools/job_tools.py` | 1× | W1.6 |
+| `app/domains/cv_screening/services/personalized_feedback_service.py` | 2× | W1.6 |
+| `app/domains/cv_screening/tools/candidate_tools.py` | 2× candidate.company_id | W1.6 |
+| `app/domains/communication/services/teams_sso_service.py` | 2× conv.* | W1.2 (Teams) |
+| `app/domains/analytics/services/predictive_analytics_service.py` | 1× | W1.6 |
+| `app/domains/recruiter_assistant/services/conversation_memory.py` | 1× | W1.6 |
+| `app/shared/channels/adapters/email_adapter.py` | 2× message.company_id | W1.6 |
+
+Quando o cleanup completar (cada wave fixa o seu subset), promover G6 para
+**block-only** removendo `|| true` do `entry:` em `.pre-commit-config.yaml`.
+
+Princípio Hashimoto: nunca mais P0-1 em modelo nenhum.
