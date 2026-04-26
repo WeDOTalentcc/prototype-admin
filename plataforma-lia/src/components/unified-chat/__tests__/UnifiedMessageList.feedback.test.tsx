@@ -5,13 +5,24 @@
  *  1. The thumbs-down popover renders the three reason categories
  *     (`inaccurate`, `wrong_tone`, `hallucinated`) plus the textarea —
  *     the audit's UX requirement for qualitative signals.
- *  2. Clicking the regenerate button calls the parent handler with the
+ *  2. Persisted thumbs hydrate from `LiaChatMessage.thumbs` so a refresh
+ *     doesn't blank out the user's prior rating (audit gap F3).
+ *  3. Clicking the regenerate button calls the parent handler with the
  *     assistant message id (the supersede handshake's entry point).
+ *
+ * The component calls `useTranslations('chat.messageActions')` (see
+ * `messages/{en,pt-BR}.json` → "chat.messageActions"). Each interaction below
+ * is documented with the bare key name `t(<key>)` reads — the mock turns
+ * those into raw strings so the assertions can match by identity.
  */
 import React from "react"
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent } from "@testing-library/react"
 
+// `useTranslations(namespace)` returns a function that takes a key and
+// resolves to the translated string. The mock collapses both into the bare
+// key (no namespace prefix) so the tests assert on the exact key used in
+// the component, e.g. `t('thumbsDownReasonTitle')` → `"thumbsDownReasonTitle"`.
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string) => key,
 }))

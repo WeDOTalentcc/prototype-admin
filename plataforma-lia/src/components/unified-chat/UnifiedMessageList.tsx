@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useRef, useEffect } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useTranslations } from "next-intl"
-import { Copy, Plus, ThumbsUp, ThumbsDown, Loader2 } from "lucide-react"
+import { Copy, Plus, ThumbsUp, ThumbsDown, RotateCcw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
 import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
@@ -19,6 +19,16 @@ import { TastingInsightCard } from "./TastingInsightCard"
 import { WeeklyDigestChatMessage } from "@/components/notifications/weekly-digest-chat-message"
 import type { WeeklyDigestData } from "@/components/notifications/weekly-digest-notification"
 import type { ChatMode } from "./unified-chat-types"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Textarea } from "@/components/ui/textarea"
+
+/**
+ * Task #570 audit — qualitative reason categories surfaced in the thumbs-down
+ * popover. Keys must match `chat.messageActions.thumbsDownCategory.*` in
+ * `messages/{en,pt-BR}.json` and the backend's `category` enum.
+ */
+const THUMBS_DOWN_CATEGORIES = ["inaccurate", "wrong_tone", "hallucinated"] as const
+type ThumbsDownCategory = (typeof THUMBS_DOWN_CATEGORIES)[number]
 
 function isWeeklyDigestMeta(meta: Record<string, unknown> | undefined): meta is Record<string, unknown> & { digest: WeeklyDigestData; recruiterName?: string } {
   if (!meta || meta.type !== "weekly_digest") return false
@@ -40,18 +50,91 @@ interface Props {
    * The handler typically forwards the chip's `value` to sendChatMessage.
    */
   onChipClick?: (value: string) => void
+  /**
+   * Task #570 P1 — invoked with the assistant message id when the user
+   * presses the regenerate button. The parent forwards it to
+   * `requestRegeneration` + `sendMessage(prevUserText, …, { regenerateOf })`.
+   */
+  onRegenerate?: (messageId: string) => void
 }
 
 function MessageActions({
   messageId,
   content,
   conversationId,
+  initialThumbs,
+  onRegenerate,
 }: {
   messageId: string
   content: string
   conversationId?: string | null
+  /**
+   * Audit gap F3 — hydrated from `LiaChatMessage.thumbs` (which itself
+   * is fed by `/lia/feedback/by-conversation`). Lets the action row reflect
+   * a prior rating on first render so a refresh doesn't blank it out.
+   */
+  initialThumbs?: "up" | "down" | null
+  onRegenerate?: (messageId: string) => void
 }) {
   const t = useTranslations('chat.messageActions')
+  const [thumbsState, setThumbsState] = useState<"up" | "down" | null>(initialThumbs ?? null)
+  const [downOpen, setDownOpen] = useState(false)
+  const [downCategory, setDownCategory] = useState<ThumbsDownCategory | null>(null)
+  const [downText, setDownText] = useState("")
+
+  // `useChatMessages` populates `LiaChatMessage.thumbs` asynchronously after
+  // the history fetch + `/lia/feedback/by-conversation` resolves, which lands
+  // *after* this component's first render. Sync local state when the
+  // hydrated value flips, but only when the user hasn't already clicked
+  // (we never want a late hydration to overwrite a fresh in-flight click).
+  const hydratedRef = useRef(initialThumbs ?? null)
+  useEffect(() => {
+    const next = initialThumbs ?? null
+    if (next === hydratedRef.current) return
+    hydratedRef.current = next
+    setThumbsState((prev) => (prev == null ? next : prev))
+  }, [initialThumbs])
+
+  const handleThumbsUp = () => {
+    if (thumbsState === "up") return
+    setThumbsState("up")
+    if (conversationId) {
+      submitThumbsFeedback(conversationId, messageId, "up").catch(() => {
+        setThumbsState(initialThumbs ?? null)
+      })
+    }
+  }
+
+  const handleThumbsDownClick = () => {
+    // Record the immediate "down" signal once; the popover collects extra
+    // qualitative context (category / free text) which is sent on submit.
+    if (thumbsState !== "down") {
+      setThumbsState("down")
+      if (conversationId) {
+        submitThumbsFeedback(conversationId, messageId, "down").catch(() => {
+          setThumbsState(initialThumbs ?? null)
+        })
+      }
+    }
+    setDownOpen(true)
+  }
+
+  const submitDownDetails = () => {
+    if (conversationId && (downCategory || downText.trim())) {
+      submitThumbsFeedback(conversationId, messageId, "down", {
+        category: downCategory ?? undefined,
+        feedbackText: downText.trim() || undefined,
+      }).catch(() => {
+        // Swallow: the "down" signal was already persisted on the first click;
+        // a follow-up failure shouldn't roll back the user's rating.
+      })
+    }
+    setDownOpen(false)
+  }
+
+  const isUpActive = thumbsState === "up"
+  const isDownActive = thumbsState === "down"
+
   return (
     <div className="flex items-center gap-0.5 mt-1 opacity-0 group-hover:opacity-100 transition-opacity motion-reduce:transition-none">
       <button
@@ -79,29 +162,93 @@ function MessageActions({
         <Plus className="w-3.5 h-3.5" />
       </button>
       <button
-        className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
-        title={t('helpfulTitle')}
-        aria-label={t('helpfulAriaLabel')}
-        onClick={() => {
-          if (conversationId) {
-            submitThumbsFeedback(conversationId, messageId, "up")
-          }
-        }}
+        className={cn(
+          "p-1 rounded hover:bg-lia-interactive-hover hover:text-lia-text-secondary",
+          isUpActive ? "text-status-success" : "text-lia-text-disabled",
+        )}
+        title={isUpActive ? t('helpfulActiveTitle') : t('helpfulTitle')}
+        aria-label={isUpActive ? t('helpfulActiveAriaLabel') : t('helpfulAriaLabel')}
+        aria-pressed={isUpActive}
+        onClick={handleThumbsUp}
       >
         <ThumbsUp className="w-3.5 h-3.5" />
       </button>
-      <button
-        className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
-        title={t('notHelpfulTitle')}
-        aria-label={t('notHelpfulAriaLabel')}
-        onClick={() => {
-          if (conversationId) {
-            submitThumbsFeedback(conversationId, messageId, "down")
-          }
-        }}
-      >
-        <ThumbsDown className="w-3.5 h-3.5" />
-      </button>
+      <Popover open={downOpen} onOpenChange={setDownOpen}>
+        <PopoverTrigger asChild>
+          <button
+            className={cn(
+              "p-1 rounded hover:bg-lia-interactive-hover hover:text-lia-text-secondary",
+              isDownActive ? "text-status-error" : "text-lia-text-disabled",
+            )}
+            title={isDownActive ? t('notHelpfulActiveTitle') : t('notHelpfulTitle')}
+            aria-label={isDownActive ? t('notHelpfulActiveAriaLabel') : t('notHelpfulAriaLabel')}
+            aria-pressed={isDownActive}
+            onClick={handleThumbsDownClick}
+          >
+            <ThumbsDown className="w-3.5 h-3.5" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80 p-3" align="start" sideOffset={8}>
+          <div className="flex flex-col gap-3">
+            <span className="text-xs font-medium text-lia-text-primary">
+              {t('thumbsDownReasonTitle')}
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {THUMBS_DOWN_CATEGORIES.map((cat) => {
+                const active = downCategory === cat
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setDownCategory(active ? null : cat)}
+                    className={cn(
+                      "px-2 py-1 text-[12px] rounded-md border transition-colors",
+                      active
+                        ? "bg-lia-interactive-hover border-lia-border-medium text-lia-text-primary"
+                        : "border-lia-border-default text-lia-text-secondary hover:bg-lia-interactive-hover",
+                    )}
+                    aria-pressed={active}
+                  >
+                    {t(`thumbsDownCategory.${cat}`)}
+                  </button>
+                )
+              })}
+            </div>
+            <Textarea
+              value={downText}
+              onChange={(e) => setDownText(e.target.value)}
+              placeholder={t('thumbsDownPlaceholder')}
+              className="min-h-16 text-xs"
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setDownOpen(false)}
+                className="px-2 py-1 text-[12px] rounded-md text-lia-text-secondary hover:bg-lia-interactive-hover"
+              >
+                {t('thumbsDownCancel')}
+              </button>
+              <button
+                type="button"
+                onClick={submitDownDetails}
+                className="px-2 py-1 text-[12px] rounded-md bg-lia-btn-primary-bg text-lia-btn-primary-text hover:opacity-90"
+              >
+                {t('thumbsDownSubmit')}
+              </button>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+      {onRegenerate && (
+        <button
+          className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-disabled hover:text-lia-text-secondary"
+          title={t('regenerateTitle')}
+          aria-label={t('regenerateAriaLabel')}
+          onClick={() => onRegenerate(messageId)}
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+        </button>
+      )}
     </div>
   )
 }
@@ -116,6 +263,7 @@ export function UnifiedMessageList({
   userName,
   conversationId,
   onChipClick,
+  onRegenerate,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -237,6 +385,8 @@ export function UnifiedMessageList({
                   messageId={message.id}
                   content={message.content}
                   conversationId={conversationId}
+                  initialThumbs={message.thumbs ?? null}
+                  onRegenerate={onRegenerate}
                 />
               </div>
             ) : (
