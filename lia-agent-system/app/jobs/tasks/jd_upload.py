@@ -31,6 +31,7 @@ import logging
 import os
 import resource
 import sys
+import time
 import uuid as _uuid
 from datetime import datetime, timedelta
 from typing import Any
@@ -103,7 +104,8 @@ async def stage_payload(task_id: str, content: bytes) -> bool:
         return True
     except Exception as exc:
         logger.warning("[jd_upload] Redis staging failed (%s) — using in-mem fallback", exc)
-        _LOCAL_STAGE[task_id] = content
+        _sweep_local_stage()
+        _LOCAL_STAGE[task_id] = (content, _now() + _STAGE_TTL_SECONDS)
         return True
 
 
@@ -121,11 +123,37 @@ async def fetch_payload(task_id: str) -> bytes | None:
             return data
     except Exception as exc:
         logger.warning("[jd_upload] Redis fetch failed: %s", exc)
-    # in-mem fallback
-    return _LOCAL_STAGE.pop(task_id, None)
+    # in-mem fallback — drop expired entries before serving so a crashed
+    # worker cannot leave staged bytes pinned in memory forever.
+    _sweep_local_stage()
+    entry = _LOCAL_STAGE.pop(task_id, None)
+    if entry is None:
+        return None
+    content, expires_at = entry
+    if expires_at <= _now():
+        return None
+    return content
 
 
-_LOCAL_STAGE: dict[str, bytes] = {}
+# In-process fallback when Redis is unavailable. Each entry is a
+# ``(payload, monotonic_expires_at)`` tuple so abandoned uploads (e.g. a
+# Celery worker that crashed between ``stage_payload`` and ``fetch_payload``)
+# are evicted on the next access instead of leaking until the process
+# restarts. The TTL mirrors the Redis path's ``_STAGE_TTL_SECONDS``.
+_LOCAL_STAGE: dict[str, tuple[bytes, float]] = {}
+
+
+def _now() -> float:
+    """Indirection over ``time.monotonic`` so tests can fast-forward."""
+    return time.monotonic()
+
+
+def _sweep_local_stage() -> None:
+    """Drop expired entries from the in-process fallback store."""
+    now = _now()
+    expired = [key for key, (_, exp) in _LOCAL_STAGE.items() if exp <= now]
+    for key in expired:
+        _LOCAL_STAGE.pop(key, None)
 
 
 # --------------------------------------------------------------------------- #

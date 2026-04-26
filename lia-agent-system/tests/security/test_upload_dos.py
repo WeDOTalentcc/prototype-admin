@@ -72,6 +72,56 @@ class TestStagingFallback:
         result = asyncio.run(jd_upload_module.fetch_payload("never-staged"))
         assert result is None
 
+    def test_local_fallback_evicts_after_ttl(self, monkeypatch):
+        """Abandoned uploads (worker crashed before fetch) must not pin
+        memory forever. After ``_STAGE_TTL_SECONDS`` the entry is gone,
+        mirroring Redis' own TTL-based cleanup."""
+        import app.core.redis_client as redis_client
+
+        async def _broken_redis():
+            raise RuntimeError("redis offline")
+
+        monkeypatch.setattr(redis_client, "get_redis", _broken_redis)
+
+        # Drive the module's monotonic clock manually so the test is fast
+        # and deterministic.
+        clock = {"value": 1000.0}
+        monkeypatch.setattr(jd_upload_module, "_now", lambda: clock["value"])
+        # Make sure the dict starts clean across test runs.
+        jd_upload_module._LOCAL_STAGE.clear()
+
+        asyncio.run(jd_upload_module.stage_payload("ghost-task", b"abandoned"))
+        assert "ghost-task" in jd_upload_module._LOCAL_STAGE
+
+        # Jump just past the TTL; the entry must be swept and fetch must
+        # report nothing instead of returning stale bytes.
+        clock["value"] += jd_upload_module._STAGE_TTL_SECONDS + 1
+        result = asyncio.run(jd_upload_module.fetch_payload("ghost-task"))
+        assert result is None
+        assert "ghost-task" not in jd_upload_module._LOCAL_STAGE
+
+    def test_local_fallback_sweeps_other_expired_entries_on_stage(
+        self, monkeypatch
+    ):
+        """Even if the abandoned task_id is never fetched, the next stage
+        call sweeps it so memory does not creep on long-running dev pods."""
+        import app.core.redis_client as redis_client
+
+        async def _broken_redis():
+            raise RuntimeError("redis offline")
+
+        monkeypatch.setattr(redis_client, "get_redis", _broken_redis)
+        clock = {"value": 5000.0}
+        monkeypatch.setattr(jd_upload_module, "_now", lambda: clock["value"])
+        jd_upload_module._LOCAL_STAGE.clear()
+
+        asyncio.run(jd_upload_module.stage_payload("old-task", b"old"))
+        clock["value"] += jd_upload_module._STAGE_TTL_SECONDS + 1
+        asyncio.run(jd_upload_module.stage_payload("new-task", b"new"))
+
+        assert "old-task" not in jd_upload_module._LOCAL_STAGE
+        assert "new-task" in jd_upload_module._LOCAL_STAGE
+
 
 # --------------------------------------------------------------------------- #
 # Magic + size still gate before the queue
