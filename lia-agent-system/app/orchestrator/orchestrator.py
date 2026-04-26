@@ -84,6 +84,10 @@ class Orchestrator:
         self._init_cascaded_router()
         self._cacheable_intents = {intent.value for intent in CacheableIntent}
         self._initialize_tools()
+        # Sprint II.2 + III audit: init no __init__ evita race condition em concurrent calls
+        # (lazy init via hasattr criava 2 instâncias quando 2 requests chegavam simultaneamente)
+        from app.orchestrator.services.fallback_react_service import FallbackReActService
+        self._fallback_react_service = FallbackReActService(llm_service=llm_service)
         logger.info("Orchestrator initialized with CascadedRouter + DomainWorkflow")
 
     def _init_cascaded_router(self):
@@ -409,11 +413,8 @@ class Orchestrator:
             if rubric_result.get("success"):
                 return rubric_result
 
-        # 2. Delegação canônica para o service (Sprint II.2, ADR-019)
-        if not hasattr(self, "_fallback_react_service"):
-            from app.orchestrator.services.fallback_react_service import FallbackReActService
-            self._fallback_react_service = FallbackReActService(llm_service=self.llm_service)
-
+        # 2. Delegação canônica para o service (Sprint II.2 + III audit fix, ADR-019)
+        # Service criado no __init__ — sem race condition em concurrent.
         return await self._fallback_react_service.handle_directly(
             intent=intent,
             message=message,
