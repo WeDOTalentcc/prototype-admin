@@ -924,6 +924,16 @@ def handoff_node(state: JobCreationState) -> JobCreationState:
     share_link = state.get("share_link")
     handoff_url = f"/jobs/{job_id}" if job_id else None
 
+    # Surface the canonical job title in the closing payload so the chat
+    # surface can render a "Vaga publicada" card with the title without
+    # peeking at intermediate stage data (which it never sees).
+    jd_enriched = state.get("jd_enriched") or {}
+    job_title = (
+        jd_enriched.get("titulo_padronizado")
+        or state.get("parsed_title")
+        or None
+    )
+
     updates: Dict[str, Any] = {
         "current_stage": "handoff",
         "handoff_url": handoff_url,
@@ -935,6 +945,7 @@ def handoff_node(state: JobCreationState) -> JobCreationState:
             "stage": "handoff",
             "data": {
                 "job_id": job_id,
+                "job_title": job_title,
                 "handoff_url": handoff_url,
                 "share_link": share_link,
             },

@@ -195,6 +195,7 @@ export interface CalibrationCandidate {
 
 export interface HandoffData {
   job_id: number | null
+  job_title?: string | null
   handoff_url: string | null
   share_link: string | null
 }

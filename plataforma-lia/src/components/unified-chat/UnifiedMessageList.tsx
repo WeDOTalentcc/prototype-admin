@@ -8,6 +8,8 @@ import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan
 import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
 import { ThinkingStepsCard } from "./ThinkingStepsCard"
 import { OutreachCard } from "./OutreachCard"
+import { WizardPublishedJobCard } from "./wizard/WizardPublishedJobCard"
+import type { WizardPublishedJobCardData } from "./wizard/wizard-plan-card"
 import { renderMarkdown } from "@/lib/render-markdown"
 import { submitThumbsFeedback } from "@/services/lia-api/feedback-api"
 import type { LiaChatMessage } from "@/hooks/chat/use-lia-chat-connection"
@@ -142,6 +144,8 @@ export function UnifiedMessageList({
         const hasTastingInsights = Array.isArray(meta?.tasting_insights) && (meta!.tasting_insights as unknown[]).length > 0
         const weeklyDigestMeta = isWeeklyDigestMeta(meta)
         const hasOutreach = meta?.type === "outreach_message" && meta?.outreach != null
+        const hasPublishedJob =
+          meta?.type === "wizard_published_job" && meta?.publishedJob != null
 
         return (
           <div
@@ -216,6 +220,14 @@ export function UnifiedMessageList({
                 {/* Outreach card — inline multi-channel approval before sending */}
                 {hasOutreach && (
                   <OutreachCard data={meta!.outreach as import("./OutreachCard").OutreachData} />
+                )}
+
+                {/* Closing card — "Vaga publicada" injected when the wizard
+                    reaches done/handoff so the conclusion isn't silent. */}
+                {hasPublishedJob && (
+                  <WizardPublishedJobCard
+                    data={meta!.publishedJob as WizardPublishedJobCardData}
+                  />
                 )}
 
                 {/* Notion-style action icons */}

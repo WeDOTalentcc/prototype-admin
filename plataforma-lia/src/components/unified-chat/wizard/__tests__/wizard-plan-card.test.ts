@@ -10,10 +10,16 @@
 import { describe, it, expect } from "vitest"
 import {
   PLAN_VISIBLE_STAGES,
+  WIZARD_CLOSING_STAGES,
   WIZARD_PLAN_MESSAGE_ID,
   WIZARD_PLAN_TITLE,
+  WIZARD_PUBLISHED_MESSAGE_ID,
+  WIZARD_PUBLISHED_TITLE,
   buildPlanFlowSteps,
+  buildPublishedJobCard,
+  isWizardClosingStage,
   planStepsEqual,
+  publishedJobCardsEqual,
 } from "../wizard-plan-card"
 import { STAGE_LABELS } from "../wizard-types"
 
@@ -97,5 +103,105 @@ describe("plan-card constants", () => {
       "publish",
       "calibration",
     ])
+  })
+})
+
+describe("isWizardClosingStage", () => {
+  it("recognises both terminal stages emitted by the backend", () => {
+    expect(isWizardClosingStage("handoff")).toBe(true)
+    expect(isWizardClosingStage("done")).toBe(true)
+  })
+
+  it("returns false for null and for any non-terminal stage", () => {
+    expect(isWizardClosingStage(null)).toBe(false)
+    expect(isWizardClosingStage("intake")).toBe(false)
+    expect(isWizardClosingStage("publish")).toBe(false)
+    expect(isWizardClosingStage("calibration")).toBe(false)
+  })
+
+  it("keeps the closing-stage list in sync with the constant export", () => {
+    expect([...WIZARD_CLOSING_STAGES]).toEqual(["handoff", "done"])
+  })
+})
+
+describe("buildPublishedJobCard", () => {
+  it("returns null for non-closing stages so the chat surface skips injection", () => {
+    expect(buildPublishedJobCard(null, {})).toBeNull()
+    expect(buildPublishedJobCard("intake", { job_id: 42 })).toBeNull()
+    expect(buildPublishedJobCard("publish", { job_id: 42 })).toBeNull()
+  })
+
+  it("extracts title, id, url and share link from a handoff payload", () => {
+    const card = buildPublishedJobCard("handoff", {
+      job_id: 7,
+      job_title: "Engenheiro de Software Pleno",
+      handoff_url: "/jobs/7",
+      share_link: "https://wedo.example/share/abc",
+    })
+    expect(card).toEqual({
+      jobId: 7,
+      title: "Engenheiro de Software Pleno",
+      url: "/jobs/7",
+      shareLink: "https://wedo.example/share/abc",
+    })
+  })
+
+  it("derives an internal /jobs/<id> link when the backend omits handoff_url", () => {
+    const card = buildPublishedJobCard("done", {
+      job_id: 12,
+      job_title: "Designer de Produto",
+    })
+    expect(card?.url).toBe("/jobs/12")
+    expect(card?.shareLink).toBeNull()
+  })
+
+  it("returns null fields rather than blanks/undefined so the UI can hide them safely", () => {
+    const card = buildPublishedJobCard("handoff", {
+      job_id: null,
+      job_title: "   ",
+      handoff_url: "",
+      share_link: undefined,
+    })
+    expect(card).toEqual({ jobId: null, title: null, url: null, shareLink: null })
+  })
+
+  it("ignores non-string fields without throwing", () => {
+    const card = buildPublishedJobCard("handoff", {
+      job_id: "9" as unknown as number, // backend should send number; defend against drift
+      job_title: 42 as unknown as string,
+    })
+    expect(card).toEqual({ jobId: null, title: null, url: null, shareLink: null })
+  })
+})
+
+describe("publishedJobCardsEqual", () => {
+  it("returns true for structurally identical cards", () => {
+    const a = buildPublishedJobCard("handoff", { job_id: 1, job_title: "X", handoff_url: "/jobs/1" })
+    const b = buildPublishedJobCard("handoff", { job_id: 1, job_title: "X", handoff_url: "/jobs/1" })
+    expect(publishedJobCardsEqual(a, b)).toBe(true)
+  })
+
+  it("returns false when any visible field changes", () => {
+    const a = buildPublishedJobCard("handoff", { job_id: 1, job_title: "X", handoff_url: "/jobs/1" })
+    const b = buildPublishedJobCard("handoff", { job_id: 1, job_title: "Y", handoff_url: "/jobs/1" })
+    expect(publishedJobCardsEqual(a, b)).toBe(false)
+  })
+
+  it("treats null and a card as different (so the very first emit triggers a render)", () => {
+    const a = buildPublishedJobCard("handoff", { job_id: 1 })
+    expect(publishedJobCardsEqual(null, a)).toBe(false)
+    expect(publishedJobCardsEqual(a, null)).toBe(false)
+    expect(publishedJobCardsEqual(null, null)).toBe(true)
+  })
+})
+
+describe("published-card constants", () => {
+  it("exposes a stable virtual-message id distinct from the plan card", () => {
+    expect(WIZARD_PUBLISHED_MESSAGE_ID).toBe("lia-wizard-published-card")
+    expect(WIZARD_PUBLISHED_MESSAGE_ID).not.toBe(WIZARD_PLAN_MESSAGE_ID)
+  })
+
+  it("exposes the user-facing closing title", () => {
+    expect(WIZARD_PUBLISHED_TITLE).toBe("Vaga publicada")
   })
 })

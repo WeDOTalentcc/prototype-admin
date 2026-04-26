@@ -11,7 +11,12 @@
  * from `wizard-types.ts`. We never duplicate the labels here.
  */
 import type { FlowStep } from "@/components/workflow-rail/FlowStepMessage"
-import { STAGE_LABELS, STAGE_ORDER, type WizardStage } from "./wizard-types"
+import {
+  STAGE_LABELS,
+  STAGE_ORDER,
+  type HandoffData,
+  type WizardStage,
+} from "./wizard-types"
 
 /**
  * Stages surfaced in the chat-feed plan card and the top-of-feed
@@ -65,4 +70,86 @@ export function planStepsEqual(a: FlowStep[], b: FlowStep[]): boolean {
     if (a[i].id !== b[i].id || a[i].status !== b[i].status) return false
   }
   return true
+}
+
+// ---------------------------------------------------------------------------
+// Closing card — "Vaga publicada" injected into the feed at done/handoff
+// ---------------------------------------------------------------------------
+
+/**
+ * Stable id for the non-persisted closing card so re-emits of the
+ * same final stage update the existing card in place instead of stacking.
+ */
+export const WIZARD_PUBLISHED_MESSAGE_ID = "lia-wizard-published-card"
+export const WIZARD_PUBLISHED_TITLE = "Vaga publicada"
+
+/**
+ * Final wizard stages that should trigger the closing summary card.
+ * Both `done` and `handoff` are accepted because the backend currently
+ * emits `handoff` as the terminal stage, while `done` is reserved for
+ * a future explicit completion step (and unit tests dispatch it).
+ */
+export const WIZARD_CLOSING_STAGES: readonly WizardStage[] = ["handoff", "done"] as const
+
+export function isWizardClosingStage(stage: WizardStage | null): boolean {
+  return stage !== null && (WIZARD_CLOSING_STAGES as readonly string[]).includes(stage)
+}
+
+/**
+ * Plain data the chat-feed closing card consumes. Keeping it as a small
+ * record (no React imports) makes the helper trivial to unit-test and
+ * port to Vue/Vuetify later.
+ */
+export interface WizardPublishedJobCardData {
+  jobId: number | null
+  title: string | null
+  url: string | null
+  shareLink: string | null
+}
+
+/**
+ * Build the closing-card data from a wizard stage payload's `data` field.
+ * Returns `null` when the stage isn't a closing stage so the chat surface
+ * can decide whether to inject the card.
+ *
+ * The card is intentionally lenient: it renders even when only one of
+ * (title, jobId, url) is present — the wizard is "done" the moment the
+ * backend says so, even if the publish step couldn't fetch every detail.
+ */
+export function buildPublishedJobCard(
+  stage: WizardStage | null,
+  data: Record<string, unknown> | null | undefined,
+): WizardPublishedJobCardData | null {
+  if (!isWizardClosingStage(stage)) return null
+  const d = (data ?? {}) as Partial<HandoffData> & Record<string, unknown>
+  const jobId = typeof d.job_id === "number" ? d.job_id : null
+  const title = typeof d.job_title === "string" && d.job_title.trim() !== ""
+    ? d.job_title
+    : null
+  const handoffUrl = typeof d.handoff_url === "string" && d.handoff_url.trim() !== ""
+    ? d.handoff_url
+    : null
+  const url = handoffUrl ?? (jobId !== null ? `/jobs/${jobId}` : null)
+  const shareLink = typeof d.share_link === "string" && d.share_link.trim() !== ""
+    ? d.share_link
+    : null
+  return { jobId, title, url, shareLink }
+}
+
+/**
+ * Cheap structural equality so the closing card doesn't churn when the
+ * wizard re-emits the same `handoff` payload (e.g. resume after refresh).
+ */
+export function publishedJobCardsEqual(
+  a: WizardPublishedJobCardData | null,
+  b: WizardPublishedJobCardData | null,
+): boolean {
+  if (a === b) return true
+  if (a === null || b === null) return false
+  return (
+    a.jobId === b.jobId &&
+    a.title === b.title &&
+    a.url === b.url &&
+    a.shareLink === b.shareLink
+  )
 }

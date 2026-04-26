@@ -17,8 +17,14 @@ import { WizardProgressBar } from "./wizard/WizardProgressBar"
 import {
   WIZARD_PLAN_MESSAGE_ID,
   WIZARD_PLAN_TITLE,
+  WIZARD_PUBLISHED_MESSAGE_ID,
+  WIZARD_PUBLISHED_TITLE,
   buildPlanFlowSteps,
+  buildPublishedJobCard,
+  isWizardClosingStage,
   planStepsEqual,
+  publishedJobCardsEqual,
+  type WizardPublishedJobCardData,
 } from "./wizard/wizard-plan-card"
 import type { FlowStep } from "@/components/workflow-rail/FlowStepMessage"
 import { ProgressiveDisclosure } from "./wizard/ProgressiveDisclosure"
@@ -169,12 +175,14 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   const wizard = useWizardFlow()
   const {
     currentStage: wizardStage,
+    stageData: wizardStageData,
     completeness: wizardCompleteness,
     stageHistory: wizardHistory,
   } = wizard
   const wizardActive =
     wizardStage !== null && wizardStage !== "done" && wizardStage !== "handoff"
   const planCardInsertedRef = useRef(false)
+  const publishedCardInsertedRef = useRef(false)
 
   // Insert the non-persisted "Plano de trabalho" assistant card into the feed
   // the first time the wizard reports stage=`intake`, then keep its
@@ -212,6 +220,52 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
       return changed ? next : prev
     })
   }, [wizardStage, setChatMessages])
+
+  // Inject the non-persisted "Vaga publicada" closing card into the feed
+  // when the wizard reaches `done`/`handoff`. The plan card and progress
+  // bar both unmount at that point, so without this card the conclusion
+  // is silent — recruiters lose track of the job they just published.
+  useEffect(() => {
+    // Reset the dedupe latch on any non-closing stage (including null and a
+    // brand-new `intake` after a previous run reached `handoff`). This way a
+    // back-to-back wizard run still re-emits its closing card.
+    if (!wizardStage || !isWizardClosingStage(wizardStage)) {
+      publishedCardInsertedRef.current = false
+      return
+    }
+    const cardData = buildPublishedJobCard(wizardStage, wizardStageData)
+    if (!cardData) return
+    setChatMessages((prev) => {
+      const idx = prev.findIndex((m) => m.id === WIZARD_PUBLISHED_MESSAGE_ID)
+      if (idx === -1) {
+        if (publishedCardInsertedRef.current) return prev
+        publishedCardInsertedRef.current = true
+        const publishedMsg = {
+          id: WIZARD_PUBLISHED_MESSAGE_ID,
+          sender: "lia" as const,
+          content: WIZARD_PUBLISHED_TITLE,
+          timestamp: new Date().toISOString(),
+          metadata: { type: "wizard_published_job", publishedJob: cardData },
+        }
+        return [...prev, publishedMsg]
+      }
+      // Same payload re-emitted — keep the existing card to avoid churn.
+      const existing = prev[idx]
+      const prevData =
+        (existing.metadata?.publishedJob as WizardPublishedJobCardData | undefined) ?? null
+      if (publishedJobCardsEqual(prevData, cardData)) return prev
+      const next = prev.slice()
+      next[idx] = {
+        ...existing,
+        metadata: {
+          ...(existing.metadata ?? {}),
+          type: "wizard_published_job",
+          publishedJob: cardData,
+        },
+      }
+      return next
+    })
+  }, [wizardStage, wizardStageData, setChatMessages])
 
   // Persist mode preference
   useEffect(() => {
