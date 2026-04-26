@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { CheckCircle2, AlertCircle, ArrowRight, Search, FileSearch, Mail } from "lucide-react"
+import { CheckCircle2, AlertCircle, ArrowRight, Search, FileSearch, Mail, FileUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { BackgroundTask } from "./BackgroundAgentsStatus"
 
@@ -10,6 +10,10 @@ const TASK_ICONS: Record<string, React.ElementType> = {
   screening: FileSearch,
   communication: Mail,
   analysis: FileSearch,
+  // Wizard JD upload progress (Audit B-02 / Task #865) — uses an upload
+  // glyph instead of the generic search icon so users immediately know
+  // which lane is reporting the success/failure.
+  wizard: FileUp,
 }
 
 export interface BackgroundTaskNotificationProps {

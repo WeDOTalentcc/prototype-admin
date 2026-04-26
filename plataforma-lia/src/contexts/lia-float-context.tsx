@@ -127,6 +127,11 @@ interface LiaFloatContextType extends LiaFloatState {
   chatBackgroundTasks: BackgroundTaskEvent[]
   clearBackgroundTask: (taskId: string) => void
   resetBackgroundTasks: () => void
+  /** Stable WS session id used by the chat socket — exposed so callers
+   *  that POST a server-side background job (e.g. JD upload) can forward
+   *  it as `?session_id=` and have the worker publish updates back. */
+  chatSessionId: string
+  seedBackgroundTask: (event: BackgroundTaskEvent) => void
   chatIsCreating: boolean
   chatIsFetchingHistory: boolean
   chatIsThinking: boolean
@@ -474,6 +479,8 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     chatBackgroundTasks: connection.backgroundTasks,
     clearBackgroundTask: connection.clearBackgroundTask,
     resetBackgroundTasks: connection.resetBackgroundTasks,
+    chatSessionId: sessionId,
+    seedBackgroundTask: connection.seedBackgroundTask,
     chatIsCreating: connection.isCreating,
     chatIsFetchingHistory: connection.isFetchingHistory,
     chatIsThinking: connection.isThinking,
@@ -512,6 +519,8 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     connection.backgroundTasks,
     connection.clearBackgroundTask,
     connection.resetBackgroundTasks,
+    sessionId,
+    connection.seedBackgroundTask,
     connection.isCreating,
     connection.isFetchingHistory,
     connection.isThinking,
@@ -565,6 +574,8 @@ export function useLiaChatContext() {
     chatBackgroundTasks: ctx.chatBackgroundTasks,
     clearBackgroundTask: ctx.clearBackgroundTask,
     resetBackgroundTasks: ctx.resetBackgroundTasks,
+    chatSessionId: ctx.chatSessionId,
+    seedBackgroundTask: ctx.seedBackgroundTask,
     chatIsCreating: ctx.chatIsCreating,
     chatIsFetchingHistory: ctx.chatIsFetchingHistory,
     chatIsThinking: ctx.chatIsThinking,

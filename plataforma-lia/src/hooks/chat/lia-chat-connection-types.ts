@@ -49,9 +49,15 @@ export interface PanelUpdateEvent {
 
 export interface BackgroundTaskEvent {
   task_id: string
-  task_type: "sourcing" | "screening" | "communication" | "analysis"
+  // `wizard` was added by the async JD-upload worker (Audit B-02 / Task #865)
+  // so the chat surface can render the import progress alongside the
+  // pre-existing sourcing/screening/communication/analysis lanes.
+  task_type: "sourcing" | "screening" | "communication" | "analysis" | "wizard"
   label: string
-  status: "running" | "completed" | "failed"
+  // `queued` is the initial state seeded right after the proxy returns 202
+  // and before the Celery worker fires its first `running` update — without
+  // it the UI would jump from "nothing" to "running" or "failed".
+  status: "queued" | "running" | "completed" | "failed"
   progress?: number
   message?: string
   result?: Record<string, unknown>
@@ -104,6 +110,13 @@ export interface UseLiaChatConnectionResult {
   dismissFairnessWarnings: () => void
   clearBackgroundTask: (taskId: string) => void
   resetBackgroundTasks: () => void
+  /**
+   * Seed (or overwrite by `task_id`) a single `BackgroundTaskEvent` into
+   * the chat surface — used by callers that kick off a server-side
+   * background job and want to render an immediate `queued` row before
+   * the worker emits its first WS update (Audit B-02 / Task #865).
+   */
+  seedBackgroundTask: (event: BackgroundTaskEvent) => void
   initConversation: (firstMessage: string, contextType?: string) => Promise<string | null>
   loadHistory: (id: string) => Promise<LiaChatMessage[]>
   connect: () => void

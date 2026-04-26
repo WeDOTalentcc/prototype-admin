@@ -12,6 +12,7 @@ import { STAGE_PILL_LABELS, type WizardStage } from "./wizard/wizard-types"
 import { SwitchTaskModal } from "@/components/lia-float/SwitchTaskModal"
 import { useNavigationIntent } from "@/hooks/shared/use-navigation-intent"
 import { useWizardIntegration } from "./wizard/useWizardIntegration"
+import { useJdUploadProgress } from "./useJdUploadProgress"
 import { useWizardFlow } from "./wizard/useWizardFlow"
 import { useWizardChatCards } from "./wizard/useWizardChatCards"
 import { WizardProgressBar } from "./wizard/WizardProgressBar"
@@ -141,7 +142,23 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     chatIsThinking,
     chatThinkingSteps,
     chatHitlPending,
+    chatBackgroundTasks,
+    chatSessionId,
+    seedBackgroundTask,
+    clearBackgroundTask,
   } = useLiaChatContext()
+
+  // Task #865 — wizard JD upload step subscribes to the new async backend.
+  // The hook owns the entire JD lifecycle (POST → seed queued → terminal
+  // event) so `useWizardIntegration` no longer needs to fire the
+  // "Criar vaga…" message itself.
+  useJdUploadProgress({
+    chatSessionId,
+    chatBackgroundTasks,
+    seedBackgroundTask,
+    clearBackgroundTask,
+    appendChatMessage: (msg) => setChatMessages((prev) => [...prev, msg]),
+  })
 
   const { detect: detectNavIntent } = useNavigationIntent()
 

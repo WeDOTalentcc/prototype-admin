@@ -59,8 +59,11 @@ export function useWizardIntegration({
         if (consentAcknowledged === true && typeof window !== "undefined") {
           try { window.sessionStorage.setItem("lia-jd-upload-consent", "1") } catch { /* quota */ }
         }
-        // JD file auto-starts wizard
-        sendMessage(`Criar vaga a partir do arquivo: ${file.name}`)
+        // Task #865 — actually starting the wizard now happens AFTER the
+        // async worker reports `completed` (see `useJdUploadProgress`).
+        // Firing `sendMessage("Criar vaga…")` here would race with the
+        // upload, so this branch only persists the consent flag now and
+        // lets the upload hook drive the wizard from the WS event.
       }
     }
 
