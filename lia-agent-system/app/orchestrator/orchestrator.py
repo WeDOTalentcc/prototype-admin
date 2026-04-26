@@ -386,27 +386,6 @@ class Orchestrator:
         from app.orchestrator.heuristics import is_cv_matching_request
         return is_cv_matching_request(message)
 
-    # Structured-output additions injected per intent (fix C-05 / C-06)
-    _STRUCTURED_INTENT_ADDENDA = {
-        "cv_screening": (
-            "\n\nRegra de saída estruturada (C-05): sempre que responder a uma análise de "
-            "compatibilidade ou match de CV, inclua ao final da resposta um bloco JSON no formato:\n"
-            "```json\n"
-            "{\"match_score\": <0-100>, \"matched_skills\": [\"skill1\", \"skill2\"], "
-            "\"missing_skills\": [\"skill3\"], \"recommendation\": \"APROVADO|EM_ANALISE|REPROVADO\"}\n"
-            "```\n"
-            "O match_score deve ser um número inteiro de 0 a 100."
-        ),
-        "salary_benchmark": (
-            "\n\nRegra de saída salarial (C-06): sempre inclua faixas salariais no formato "
-            "R$ XX.XXX - R$ XX.XXX mensais (CLT). Estruture a resposta com:\n"
-            "- Faixa mínima: R$ X.XXX\n"
-            "- Faixa máxima: R$ X.XXX\n"
-            "- Mediana: R$ X.XXX\n"
-            "Use ponto como separador de milhar (ex: R$ 12.000)."
-        ),
-    }
-
     async def _handle_directly(
         self,
         intent: str,
@@ -414,81 +393,33 @@ class Orchestrator:
         entities: dict[str, Any],
         context: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
+        """Sprint II.2 — delegação canônica ao FallbackReActService (LIA-A04).
+
+        Pre-flight CV screening rubric mantém-se aqui (domain-specific),
+        mas a lógica core do fallback ReAct foi extraída ao service.
+
+        Estrutura:
+        1. Tenta CV rubric primeiro (se intent ou heurística sinaliza CV match)
+        2. Delega ao FallbackReActService.handle_directly para LLM + tools
+        """
+        # 1. Pre-flight CV rubric — domain-specific, fica em V1 por enquanto.
+        #    Sprint III: caller (V2) decide se quer essa pre-flight via cv_screening domain.
         if intent == "cv_screening" or self._is_cv_matching_request(message):
             rubric_result = await self._handle_cv_screening_with_rubric(message, context or {})
             if rubric_result.get("success"):
                 return rubric_result
 
-        ctx = context or {}
-        try:
-            from langchain_core.prompts import ChatPromptTemplate
-            extra = self._STRUCTURED_INTENT_ADDENDA.get(intent, "")
-            system_prompt = SystemPromptBuilder.build(
-                agent_type="orchestrator",
-                tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
-                user_name=ctx.get("user_name", ""),
-                user_role=ctx.get("user_role", ""),
-                conversation_summary=ctx.get("conversation_summary", ""),
-                conversation_history=ctx.get("conversation_history"),
-                context_page=ctx.get("context_page", "general"),
-                entity_type=ctx.get("entity_type"),
-                intent=intent,
-                entities=entities,
-                extra_instructions=extra,
-            )
-            # LIA-M03: Include conversation history as real message turns
-            messages = [("system", system_prompt)]
+        # 2. Delegação canônica para o service (Sprint II.2, ADR-019)
+        if not hasattr(self, "_fallback_react_service"):
+            from app.orchestrator.services.fallback_react_service import FallbackReActService
+            self._fallback_react_service = FallbackReActService(llm_service=self.llm_service)
 
-            # Add conversation history as actual turns (last 10 messages max)
-            conversation_history = ctx.get("conversation_history", [])
-            if conversation_history and isinstance(conversation_history, list):
-                recent_history = conversation_history[-10:]
-                for msg in recent_history:
-                    role = msg.get("role", "")
-                    content = msg.get("content", "")
-                    if role == "user":
-                        messages.append(("human", content))
-                    elif role == "assistant":
-                        messages.append(("ai", content))
-
-            messages.append(("human", "{message}"))
-            prompt = ChatPromptTemplate.from_messages(messages)
-
-            # LIA-A04 (Fase 4): bind tools in fallback path so LIA can act, not just talk.
-            # ReAct agents already have tools via create_react_agent; this gives the
-            # _handle_directly fallback path the same agentic capability.
-            llm = self.llm_service.get_audited_model()
-            _bind_tools_enabled = os.environ.get("LIA_FALLBACK_BIND_TOOLS", "true").lower() in ("1", "true", "yes")
-            if _bind_tools_enabled:
-                try:
-                    from app.tools import get_all_tool_schemas
-                    tool_schemas = get_all_tool_schemas(agent_type="orchestrator", format="claude")
-                    if tool_schemas:
-                        llm = llm.bind_tools(tool_schemas)
-                        logger.debug("[LIA-A04] _handle_directly bound %d tools", len(tool_schemas))
-                except Exception as _bind_exc:
-                    logger.warning("[LIA-A04] bind_tools failed (continuing without): %s", _bind_exc)
-
-            chain = prompt | llm
-            response = await chain.ainvoke({"message": message})
-
-            # Extract content (string) from response (which may have tool_calls)
-            response_content = response.content if hasattr(response, "content") else str(response)
-            response_tools_used = []
-            if hasattr(response, "tool_calls") and response.tool_calls:
-                response_tools_used = [tc.get("name") if isinstance(tc, dict) else getattr(tc, "name", "") for tc in response.tool_calls]
-                logger.info("[LIA-A04] _handle_directly LLM requested %d tool(s): %s", len(response_tools_used), response_tools_used)
-
-            return {"message": response_content, "success": True, "data": {"tool_calls_requested": response_tools_used},
-                    "requires_user_input": True, "suggested_prompts": [], "next_actions": [],
-                    "agent_used": "LIA Orchestrator", "agent_type": "orchestrator"}
-        except Exception:
-            user_name = ctx.get("user_name", "")
-            error_msg = SystemPromptBuilder.build_error_response(user_name=user_name)
-            return {"message": error_msg,
-                    "success": True, "requires_user_input": True,
-                    "suggested_prompts": [],
-                    "agent_used": "LIA Orchestrator", "agent_type": "orchestrator"}
+        return await self._fallback_react_service.handle_directly(
+            intent=intent,
+            message=message,
+            entities=entities,
+            context=context,
+        )
 
     async def _handle_cv_screening_with_rubric(
         self,
