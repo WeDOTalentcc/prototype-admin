@@ -14,7 +14,7 @@ HITL points:
 
 import logging
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, Optional
 
 from langgraph.graph import StateGraph, END
 
@@ -41,6 +41,9 @@ from app.domains.job_creation.compliance import (
     emit_job_creation_audit,
     mask_pii_for_llm,
 )
+from app.orchestrator._observability import WIZARD_SPANS
+from app.shared.observability.span_validation import wizard_traced_node
+from app.shared.observability.tracing import finish_span, get_tracer
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +98,7 @@ def _get_api_client(state: dict) -> JobCreationAPIClient:
 # Node implementations
 # ---------------------------------------------------------------------------
 
+@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_INTAKE)
 def intake_node(state: JobCreationState) -> JobCreationState:
     """Pre-F1: Run the canonical IntakeExtractor on the recruiter's free text.
 
@@ -175,6 +179,7 @@ def intake_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
+@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_JD_ENRICHMENT)
 def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
     """F1: Call JdEnrichmentService to enrich JD + calculate quality score.
 
@@ -319,6 +324,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
+@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_BIGFIVE)
 def bigfive_node(state: JobCreationState) -> JobCreationState:
     """F2+F3: Extract Big Five profile from enriched JD + rank traits.
 
@@ -432,6 +438,7 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
+@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_SALARY)
 def salary_node(state: JobCreationState) -> JobCreationState:
     """Validate salary range vs market benchmark."""
     t0 = time.time()
@@ -462,6 +469,7 @@ def salary_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
+@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_COMPETENCY)
 def competency_node(state: JobCreationState) -> JobCreationState:
     """F4+F5: Resolve seniority + calculate question distribution.
 
@@ -551,6 +559,7 @@ def competency_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
+@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_WSI_QUESTIONS)
 def wsi_questions_node(state: JobCreationState) -> JobCreationState:
     """F6: Generate WSI screening questions via LLM.
 
@@ -733,6 +742,7 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
+@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_ELIGIBILITY)
 def eligibility_node(state: JobCreationState) -> JobCreationState:
     """Pre-screening: yes/no eliminatory questions configured by recruiter."""
     t0 = time.time()
@@ -759,6 +769,7 @@ def eligibility_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
+@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_REVIEW)
 def review_node(state: JobCreationState) -> JobCreationState:
     """Readiness check + apply company defaults from Settings.
 
@@ -815,6 +826,7 @@ def review_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
+@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_PUBLISH)
 def publish_node(state: JobCreationState) -> JobCreationState:
     """Publish job via Rails API + save screening config + get share link.
 
@@ -922,6 +934,7 @@ def publish_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
+@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_CALIBRATION)
 def calibration_node(state: JobCreationState) -> JobCreationState:
     """Present 3+ candidates for calibration (approve/reject).
 
@@ -983,6 +996,7 @@ def calibration_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
+@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_HANDOFF)
 def handoff_node(state: JobCreationState) -> JobCreationState:
     """Navigate recruiter to job page. Inform share link. Chat becomes job assistant."""
     t0 = time.time()
@@ -1423,6 +1437,26 @@ class JobCreationGraph:
             logger.warning("[JobCreationGraph] AuditCallback unavailable: %s", exc)
             return None
 
+    @staticmethod
+    def _entry_span_attrs(state: Mapping[str, Any], thread_id: str) -> Dict[str, str]:
+        """Build the canonical wizard entry/exit span attributes.
+
+        We accept thread_id as the conversation correlator when state.session_id
+        is missing — invoke()/resume() always have a thread_id, so this keeps
+        the `conversation.id` attribute populated even on a fresh state.
+        """
+        return {
+            "service.name": "wizard",
+            "wizard.graph": "job_creation",
+            "wizard.stage": str(state.get("current_stage") or "entry"),
+            "tenant.company_id": str(
+                state.get("workspace_id") or state.get("company_id") or ""
+            ),
+            "user.id": str(state.get("user_id") or state.get("recruiter_id") or ""),
+            "conversation.id": str(state.get("session_id") or thread_id or ""),
+            "orchestrator.version": "wizard",
+        }
+
     def invoke(self, state: JobCreationState, thread_id: str) -> JobCreationState:
         """Invoke the graph for a wizard session.
 
@@ -1437,7 +1471,28 @@ class JobCreationGraph:
         cb = self._build_audit_callback(state, thread_id)
         if cb is not None:
             config["callbacks"] = [cb]
-        return self._graph.invoke(state, config=config)
+
+        tracer = get_tracer()
+        attrs = self._entry_span_attrs(state, thread_id)
+        span = tracer.create_span(
+            WIZARD_SPANS.JOB_CREATION_ENTRY, attributes=attrs, _start_otel=True,
+        )
+        try:
+            result = self._graph.invoke(state, config=config)
+        except Exception as exc:
+            finish_span(span, status="error", error=exc)
+            raise
+        # Refresh stage from terminal node so the entry span reports where we
+        # actually paused (e.g. `jd_enrichment` waiting for HITL approval).
+        try:
+            if isinstance(result, Mapping):
+                span.set_attribute(
+                    "wizard.stage", str(result.get("current_stage") or "entry"),
+                )
+        except Exception:  # pragma: no cover — defensive
+            pass
+        finish_span(span, status="ok")
+        return result
 
     def resume(
         self,
@@ -1459,7 +1514,26 @@ class JobCreationGraph:
         cb = self._build_audit_callback(merged, thread_id)
         if cb is not None:
             config["callbacks"] = [cb]
-        return self._graph.invoke(merged, config=config)
+
+        tracer = get_tracer()
+        attrs = self._entry_span_attrs(merged, thread_id)
+        span = tracer.create_span(
+            WIZARD_SPANS.JOB_CREATION_RESUME, attributes=attrs, _start_otel=True,
+        )
+        try:
+            result = self._graph.invoke(merged, config=config)
+        except Exception as exc:
+            finish_span(span, status="error", error=exc)
+            raise
+        try:
+            if isinstance(result, Mapping):
+                span.set_attribute(
+                    "wizard.stage", str(result.get("current_stage") or "resume"),
+                )
+        except Exception:  # pragma: no cover — defensive
+            pass
+        finish_span(span, status="ok")
+        return result
 
 
 def get_job_creation_graph() -> JobCreationGraph:

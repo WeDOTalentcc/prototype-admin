@@ -318,22 +318,57 @@ def _subagent_for_pipeline(message: str) -> str:
     return "pipeline_context"
 
 
-def _get_agent(domain: str) -> Any | None:
+def _get_agent(
+    domain: str,
+    *,
+    company_id: str | int | None = None,
+    session_id: str | None = None,
+    user_id: str | int | None = None,
+) -> Any | None:
     """Retorna instancia do agente para o dominio solicitado.
 
     Fase 3a (Wave 2): Delegates to AgentRegistry. The 21-branch if/elif
     was replaced — each agent class is decorated with @register_agent(id).
     Fallback to "talent" preserved for unknown domain.
+
+    Task #861 (N-07): Each call emits a `wizard.agent_chat.get_agent` span so
+    the WS dispatcher path is debuggable in OTLP. Callers should pass
+    `company_id`/`session_id`/`user_id` so the span carries the canonical
+    tenant attributes — they default to empty strings when missing, and the
+    surrounding gate (`validate_span_attributes`) flags such cases in CI.
     """
+    from app.orchestrator._observability import WIZARD_SPANS
+    from app.shared.observability.tracing import finish_span, get_tracer
+
+    tracer = get_tracer()
+    attrs = {
+        "service.name": "wizard",
+        "wizard.graph": "agent_chat",
+        "wizard.stage": "get_agent",
+        "domain": str(domain or ""),
+        "tenant.company_id": str(company_id or ""),
+        "user.id": str(user_id or ""),
+        "conversation.id": str(session_id or ""),
+        "orchestrator.version": "wizard",
+    }
+    span = tracer.create_span(
+        WIZARD_SPANS.AGENT_CHAT_GET_AGENT, attributes=attrs, _start_otel=True,
+    )
     try:
         # Trigger agent module imports (one-time, idempotent) so decorators run.
         # Each import registers the class in AgentRegistry.
         _ensure_agents_loaded()
 
         from app.shared.agents.agent_registry import AgentRegistry
-        return AgentRegistry().get_or_fallback(domain, fallback_id="talent")
+        agent = AgentRegistry().get_or_fallback(domain, fallback_id="talent")
+        span.set_attribute(
+            "agent.resolved_id", type(agent).__name__ if agent is not None else "",
+        )
+        finish_span(span, status="ok")
+        return agent
     except Exception as exc:
         logger.error("[AgentChatWS] Falha ao carregar agente domain=%s: %s", domain, exc)
+        finish_span(span, status="error", error=exc)
         return None
 
 
@@ -610,7 +645,12 @@ async def agent_chat_ws(
                                         await ws_mgr.send_to_session(session_id, _wiz_stage_payload)
                                     conversation_history.append({"role": "assistant", "content": _wiz_msg})
                                 else:
-                                    resume_agent = _get_agent(resume_domain)
+                                    resume_agent = _get_agent(
+                                        resume_domain,
+                                        company_id=company_id,
+                                        session_id=session_id,
+                                        user_id=user_id,
+                                    )
                                     if resume_agent:
                                         from lia_agents_core.agent_interface import AgentInput
                                         resume_agent_input = AgentInput(
@@ -900,7 +940,12 @@ async def agent_chat_ws(
                 active_domain = _subagent_for_sourcing(content)
                 logger.debug("[AgentChatWS][Z2] sourcing → %s", active_domain)
 
-            agent = _get_agent(active_domain)
+            agent = _get_agent(
+                active_domain,
+                company_id=company_id,
+                session_id=session_id,
+                user_id=user_id,
+            )
             if agent is None:
                 await ws_mgr.send_to_session(session_id, serialize_error(
                     f"Agente '{active_domain}' indisponível.", "agent_unavailable",
@@ -1210,7 +1255,12 @@ async def http_chat_message(req: HTTPChatRequest, request: Request):
         active_domain = _subagent_for_sourcing(content)
         logger.debug("[HTTPChat][Z2] sourcing → %s", active_domain)
 
-    agent = _get_agent(active_domain)
+    agent = _get_agent(
+        active_domain,
+        company_id=company_id,
+        session_id=session_id,
+        user_id=user_id,
+    )
     if agent is None:
         return HTTPChatResponse(
             content=f"Agente '{active_domain}' indisponível.",

@@ -208,14 +208,39 @@ Este ADR está em status **Proposed** durante Sprints I-IV. Promove a **Accepted
 
 ### Gates operacionais (P2)
 
-7. **Log review limpo**
+7. **Log review limpo** — ✅ **RESOLVIDO** (Task #861, 2026-04-26)
    - Zero CRITICAL alerts relacionados a "V1/V2 misrouting" em staging por 7 dias
    - Zero "deprecated path used in new code" warnings em CI
+   - **N-07 (Wizard observability gap) fechada**: cada nó do `JobCreationGraph`
+     emite span `wizard.job_creation.<stage>` via decorador
+     `@wizard_traced_node` em `app/shared/observability/span_validation.py`.
+     `agent_chat_ws._get_agent` agora aceita `company_id`/`session_id`/`user_id`
+     como kwargs e emite span `wizard.agent_chat.get_agent` em todos os 3
+     call-sites (WS resume, WS dispatch, HTTP fallback).
+     Cobertura: `tests/observability/test_wizard_spans.py` (7 testes) +
+     `tests/ci/test_wizard_span_attributes.py` (15 testes — gate AST que
+     também verifica que TODOS os call-sites de `_get_agent(...)` propagam
+     os kwargs de tenant + verificação runtime dos spans emitidos).
+   - **Nota sobre `JOB_CREATION_EXIT` / `JOB_CREATION_ERROR`**: as constantes
+     existem em `WizardSpans` mas hoje **não emitem spans separados**;
+     sucesso/falha é codificado no campo `status` do mesmo span entry/resume
+     (via `finish_span(status="ok"|"error")`). Constantes ficam reservadas
+     para uma fase futura (e.g. telemetria de rollback) que crie spans
+     dedicados.
 
-8. **OTLP traces visíveis**
+8. **OTLP traces visíveis** — ✅ **RESOLVIDO** (Task #861, 2026-04-26)
    - Spans `orchestrator.v2.*` aparecem em Honeycomb/Datadog
    - Atributos obrigatórios (`tenant.company_id`, etc.) presentes em 100% dos spans
-   - Helper `validate_span_attributes()` em CI rejeita spans malformados
+   - **N-08 (`validate_span_attributes()` ausente) fechada**: helper publicado em
+     `app/shared/observability/span_validation.py`, com 19 testes unitários
+     em `tests/observability/test_validate_span_attributes.py` cobrindo:
+     happy-path, missing key, valor `None`/string vazia, sentinel "tenant zero"
+     (`"0"`/`0`/`"0.0"`/`"None"`/`"null"`), `raise_on_missing=True`, atributos
+     extras, atributo proibido por LGPD, mapping aceito sem objeto Span,
+     attribute mapping puro, lista `required` customizada (orquestrador), e
+     detecção tokenizada case-insensitive (impede falso-positivo `traceback`).
+     CI gate em `tests/ci/test_wizard_span_attributes.py` rejeita PRs que
+     remover o decorator de qualquer nó ou regredirem o sinal `_get_agent`.
 
 ### Sign-off necessário
 
@@ -246,4 +271,8 @@ Se QUALQUER item abaixo ocorrer durante Sprints III-V, abortar e reverter para s
 
 **Histórico de mudanças deste ADR**:
 - 2026-04-26 — v1 inicial (Sprint I-F)
+- 2026-04-26 — Task #861: N-07 (wizard observability gap) e
+  N-08 (`validate_span_attributes()` ausente) marcados como **RESOLVIDO**.
+  Itens 7 e 8 do Promotion Gate (P2) atualizados com referência aos
+  testes e ao decorador `@wizard_traced_node`.
 - _A próxima atualização ocorrerá ao final do Sprint III (canary 100%)._

@@ -91,6 +91,50 @@ V2_SPANS = V2Spans()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Wizard Span Names (Job Creation Wizard — N-07 follow-up)
+# Closes the observability gap left by Sprint III.C: V1/V2 are instrumented
+# but JobCreationGraph nodes and agent_chat_ws._get_agent had no spans.
+# Reference: task #861, ADR-019 §Promotion Gate #8.
+# ─────────────────────────────────────────────────────────────────────────────
+class WizardSpans:
+    """Span names for the Job Creation Wizard (LangGraph + WS dispatcher)."""
+
+    # Top-level entry/exit (emitted by JobCreationGraph.invoke / .resume).
+    #
+    # Only ENTRY and RESUME are emitted as standalone spans — EXIT and ERROR
+    # are encoded as the `status` field on the same entry/resume span (status
+    # is set by `finish_span(status="ok"|"error")`). The constants below stay
+    # reserved so dashboards can filter by them when we later switch to
+    # separate exit/error spans (e.g. when adding rollback telemetry).
+    JOB_CREATION_ENTRY: Final[str] = "wizard.job_creation.entry"
+    JOB_CREATION_RESUME: Final[str] = "wizard.job_creation.resume"
+    # Reserved for future use — currently encoded as span.status on entry/resume.
+    JOB_CREATION_EXIT: Final[str] = "wizard.job_creation.exit"
+    JOB_CREATION_ERROR: Final[str] = "wizard.job_creation.error"
+
+    # Per-node spans — must match node function names so trace payloads stay
+    # legible in Honeycomb/Datadog without an extra mapping doc.
+    JOB_CREATION_INTAKE: Final[str] = "wizard.job_creation.intake"
+    JOB_CREATION_JD_ENRICHMENT: Final[str] = "wizard.job_creation.jd_enrichment"
+    JOB_CREATION_BIGFIVE: Final[str] = "wizard.job_creation.bigfive"
+    JOB_CREATION_SALARY: Final[str] = "wizard.job_creation.salary"
+    JOB_CREATION_COMPETENCY: Final[str] = "wizard.job_creation.competency"
+    JOB_CREATION_WSI_QUESTIONS: Final[str] = "wizard.job_creation.wsi_questions"
+    JOB_CREATION_ELIGIBILITY: Final[str] = "wizard.job_creation.eligibility"
+    JOB_CREATION_REVIEW: Final[str] = "wizard.job_creation.review"
+    JOB_CREATION_PUBLISH: Final[str] = "wizard.job_creation.publish"
+    JOB_CREATION_CALIBRATION: Final[str] = "wizard.job_creation.calibration"
+    JOB_CREATION_HANDOFF: Final[str] = "wizard.job_creation.handoff"
+
+    # WS dispatcher — agent registry lookup that routes a chat turn to the
+    # right specialist agent (4 call-sites in agent_chat_ws.py).
+    AGENT_CHAT_GET_AGENT: Final[str] = "wizard.agent_chat.get_agent"
+
+
+WIZARD_SPANS = WizardSpans()
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Mandatory Span Attributes (P0 LGPD — applied in Sprint III)
 # ─────────────────────────────────────────────────────────────────────────────
 # Every orchestrator span MUST include these attributes for observability:
