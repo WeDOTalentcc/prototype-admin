@@ -271,10 +271,35 @@ class MainOrchestrator:
     controlados aqui.
     """
 
-    def __init__(self, orchestrator: Any) -> None:
+    def __init__(
+        self,
+        orchestrator: Any,
+        *,
+        plan_service: Any | None = None,
+        fallback_react_service: Any | None = None,
+        policy_gate_service: Any | None = None,
+    ) -> None:
+        """V2 MainOrchestrator.
+
+        Args:
+            orchestrator: V1 Orchestrator instance (Phase 2 delegation — current default).
+            plan_service: Optional PlanOrchestrationService (Sprint III.B feature flag).
+            fallback_react_service: Optional FallbackReActService (Sprint III.B).
+            policy_gate_service: Optional PolicyGateService (Sprint III.B).
+
+        Sprint III.A:
+            Services são injetados mas NÃO usados ainda. V1 delegation continua
+            sendo o caminho default em _route_with_tenant_llm. Sprint III.B
+            implementa _route_via_services() alternativo controlado por
+            feature flag (default OFF — backward compatible).
+        """
         self._orchestrator = orchestrator
         self._fairness_guard = FairnessGuard()
         self._tenant_context_service = TenantContextService()
+        # Sprint III.A: services canônicos via DI (sem uso ainda — Sprint III.B ativa)
+        self._plan_service = plan_service
+        self._fallback_react_service = fallback_react_service
+        self._policy_gate_service = policy_gate_service
 
     async def process(
         self,
