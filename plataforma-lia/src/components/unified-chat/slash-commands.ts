@@ -162,6 +162,25 @@ export const SLASH_COMMANDS: readonly SlashCommand[] = [
 ]
 
 /**
+ * Build the markdown card body shown when the user types `/ajuda`.
+ * Lives here (single source of truth) so any chat surface can render
+ * the same help text without duplicating the SLASH_COMMANDS filter.
+ */
+export function buildAjudaHelpMarkdown(): string {
+  const lines = SLASH_COMMANDS
+    .filter((c) => c.showInDropdown)
+    .map((c) => `- **${c.primary}** — ${c.subtitle}`)
+    .join("\n")
+  return `Comandos disponíveis:\n\n${lines}\n\n_Dica: digite \`/\` para ver o menu rápido._`
+}
+
+/**
+ * Match `/ajuda` (case-insensitive, no args). Exported so any surface
+ * can detect the local-help command consistently.
+ */
+export const AJUDA_REGEX = /^\/ajuda\s*$/i
+
+/**
  * Find a command by either its `primary` token or one of its `aliases`.
  * Returns `undefined` when nothing matches.
  */

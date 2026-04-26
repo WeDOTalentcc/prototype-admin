@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect } from "react"
 import {
+  AJUDA_REGEX,
+  buildAjudaHelpMarkdown,
   findSlashCommandByToken,
   findSlashCommandByVerb,
 } from "../slash-commands"
@@ -23,6 +25,13 @@ interface Props {
   isWizardActive: boolean
   currentStage: string | null
   sendMessage: (text: string) => void
+  /**
+   * Called when a slash command is fully resolved on the client (no
+   * backend round-trip). Today only `/ajuda` uses this; keeping the
+   * surface as a generic `(commandId, payload)` tuple lets future local
+   * commands like `/definir` migrate here without changing the contract.
+   */
+  onLocalCommand?: (commandId: string, payload: { responseMarkdown: string; rawInput: string }) => void
 }
 
 // Type-safe custom event helper
@@ -35,6 +44,7 @@ export function useWizardIntegration({
   isWizardActive,
   currentStage,
   sendMessage,
+  onLocalCommand,
 }: Props) {
 
   // D.1: File upload → wizard intake
@@ -126,6 +136,22 @@ export function useWizardIntegration({
   // as the single source of truth for product, docs and tests.
   const handleSlashCommand = useCallback((command: string) => {
     const cmd = command.trim()
+
+    // `/ajuda` is a fully-local command — no backend round-trip. The help
+    // text is built from the canonical SLASH_COMMANDS list so every chat
+    // surface (UnifiedChat, ExpandedChatModal, future popovers) renders
+    // identical copy. Surfaces that don't pass `onLocalCommand` fall
+    // through to backend dispatch, preserving prior behaviour.
+    if (AJUDA_REGEX.test(cmd)) {
+      if (onLocalCommand) {
+        onLocalCommand("ajuda", {
+          responseMarkdown: buildAjudaHelpMarkdown(),
+          rawInput: cmd,
+        })
+        return true
+      }
+      return false
+    }
 
     // Bare command, e.g. "/criar vaga", "/job", "/pipeline".
     const bareMatch = cmd.match(/^\/[\w\u00C0-\u017F][\w\u00C0-\u017F\s]*$/i)

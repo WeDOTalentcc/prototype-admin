@@ -25,10 +25,8 @@ import {
   formatGlossaryEntryMarkdown,
   lookupGlossaryTerm,
 } from "@/services/lia-api/glossary-api"
-import { SLASH_COMMANDS } from "./slash-commands"
 
 const DEFINIR_REGEX = /^\/(?:definir|glossario|glossário)(?:\s+(.+))?$/i
-const AJUDA_REGEX = /^\/ajuda\s*$/i
 
 const MODE_STORAGE_KEY = "lia-chat-mode"
 
@@ -145,11 +143,31 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
 
   const { detect: detectNavIntent } = useNavigationIntent()
 
-  // Wire wizard integration (file→wizard, question events, slash commands)
+  // Wire wizard integration (file→wizard, question events, slash commands).
+  // `onLocalCommand` lets `useWizardIntegration` resolve `/ajuda` (and any
+  // future client-only command) without UnifiedChat re-implementing the
+  // SLASH_COMMANDS filtering / help-text formatting itself.
   const { handleSlashCommand } = useWizardIntegration({
     isWizardActive: !!dynamicPanel,
     currentStage: dynamicPanel?.stage ?? null,
     sendMessage: sendChatMessage,
+    onLocalCommand: (commandId, payload) => {
+      if (commandId !== "ajuda") return
+      const now = new Date().toISOString()
+      const userMsg = {
+        id: `user-${Date.now()}`,
+        sender: "user" as const,
+        content: payload.rawInput,
+        timestamp: now,
+      }
+      const helpMsg = {
+        id: `lia-${Date.now()}-ajuda`,
+        sender: "lia" as const,
+        content: payload.responseMarkdown,
+        timestamp: now,
+      }
+      setChatMessages((prev) => [...prev, userMsg, helpMsg])
+    },
   })
 
   // Canonical wizard state on the chat surface — listens to the same
@@ -281,36 +299,12 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
       return
     }
 
-    // `/ajuda` is answered locally with a card listing every dropdown
-    // command — no point round-tripping the backend agent for static help
-    // text (Task #836). Mirrors the `/definir` local-resolution pattern.
-    if (AJUDA_REGEX.test(text)) {
-      const now = new Date().toISOString()
-      const userMsg = {
-        id: `user-${Date.now()}`,
-        sender: "user" as const,
-        content: text,
-        timestamp: now,
-      }
-      const lines = SLASH_COMMANDS
-        .filter((c) => c.showInDropdown)
-        .map((c) => `- **${c.primary}** — ${c.subtitle}`)
-        .join("\n")
-      const helpMsg = {
-        id: `lia-${Date.now()}-ajuda`,
-        sender: "lia" as const,
-        content: `Comandos disponíveis:\n\n${lines}\n\n_Dica: digite \`/\` para ver o menu rápido._`,
-        timestamp: now,
-      }
-      setChatMessages((prev) => [...prev, userMsg, helpMsg])
-      setInputText("")
-      setAttachedFile(null)
-      return
-    }
-
-    // Intercept slash commands before sending to backend
+    // Intercept slash commands before sending to backend. `/ajuda` and the
+    // other client-only commands resolve inside `useWizardIntegration`
+    // (single source of truth) — see `onLocalCommand` wiring above.
     if (text.startsWith("/") && handleSlashCommand(text)) {
       setInputText("")
+      setAttachedFile(null)
       return
     }
     sendChatMessage(text)

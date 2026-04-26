@@ -3,12 +3,18 @@ import { renderHook } from "@testing-library/react"
 import { useWizardIntegration } from "../useWizardIntegration"
 
 describe("useWizardIntegration.handleSlashCommand", () => {
-  function setup() {
+  function setup(opts: { withLocalCommand?: boolean } = {}) {
     const sendMessage = vi.fn()
+    const onLocalCommand = opts.withLocalCommand ? vi.fn() : undefined
     const { result } = renderHook(() =>
-      useWizardIntegration({ isWizardActive: false, currentStage: null, sendMessage }),
+      useWizardIntegration({
+        isWizardActive: false,
+        currentStage: null,
+        sendMessage,
+        onLocalCommand,
+      }),
     )
-    return { sendMessage, handle: result.current.handleSlashCommand }
+    return { sendMessage, onLocalCommand, handle: result.current.handleSlashCommand }
   }
 
   it("intercepts /criar vaga and /job (alias)", () => {
@@ -32,6 +38,26 @@ describe("useWizardIntegration.handleSlashCommand", () => {
   it("returns false for unknown bare commands", () => {
     const { sendMessage, handle } = setup()
     expect(handle("/desconhecido")).toBe(false)
+    expect(sendMessage).not.toHaveBeenCalled()
+  })
+
+  it("resolves /ajuda locally via onLocalCommand (no backend round-trip)", () => {
+    const { sendMessage, onLocalCommand, handle } = setup({ withLocalCommand: true })
+    expect(handle("/ajuda")).toBe(true)
+    expect(sendMessage).not.toHaveBeenCalled()
+    expect(onLocalCommand).toHaveBeenCalledTimes(1)
+    const [commandId, payload] = onLocalCommand!.mock.calls[0]
+    expect(commandId).toBe("ajuda")
+    // The shared builder always lists at least the visible commands and ends
+    // with the input-discovery hint — guards copy regressions across surfaces.
+    expect(payload.responseMarkdown).toMatch(/Comandos disponíveis/)
+    expect(payload.responseMarkdown).toMatch(/\/ajuda/)
+    expect(payload.rawInput).toBe("/ajuda")
+  })
+
+  it("falls through when onLocalCommand is absent (backend handles /ajuda)", () => {
+    const { sendMessage, handle } = setup()
+    expect(handle("/ajuda")).toBe(false)
     expect(sendMessage).not.toHaveBeenCalled()
   })
 })
