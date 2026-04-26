@@ -522,13 +522,17 @@ class TestIntakeNodeMultiSourceWiring:
 
 class TestStreamJobWizardRetired:
     """`stream_job_wizard()` targeted the retired legacy graph and has
-    no callers. Guard against silent failure if a future caller is
-    wired up — must raise NotImplementedError with a clear migration
-    message instead of dispatching to the removed graph.
+    no callers. Task #857 (N-01): guard against silent failure if a
+    future caller is wired up — must raise an HTTP 410 Gone with the
+    canonical migration payload instead of leaking the legacy
+    NotImplementedError as a 500.
     """
 
-    def test_stream_job_wizard_raises_with_migration_message(self):
+    def test_stream_job_wizard_raises_410_gone(self):
         import asyncio
+
+        from fastapi import HTTPException
+
         from app.domains.ai.services.graph_runner import GraphRunnerService
 
         service = GraphRunnerService()
@@ -545,11 +549,16 @@ class TestStreamJobWizardRetired:
 
         try:
             asyncio.run(_drive())
-        except NotImplementedError as exc:
-            assert "JobCreationGraph" in str(exc)
-            assert "agent_chat_ws" in str(exc) or "run_job_wizard" in str(exc)
+        except HTTPException as exc:
+            assert exc.status_code == 410
+            assert exc.detail == {
+                "error": (
+                    "Endpoint deprecated. Use WS /ws/agent-chat with "
+                    "domain=job_creation."
+                ),
+            }
         else:
-            raise AssertionError("expected NotImplementedError")
+            raise AssertionError("expected HTTPException(410)")
 
 
 class TestIntakeExtractorFallback:

@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
+from fastapi import HTTPException
 from lia_agents_core.state_machine import JobWizardState, WizardStage, create_initial_state
 from sqlalchemy import and_, select, update
 
@@ -390,12 +391,23 @@ class GraphRunnerService:
         legacy graph.
         """
         if self.graph is None:
-            raise NotImplementedError(
-                "stream_job_wizard() targeted the retired legacy "
-                "JobWizardGraph (Task #850). The canonical "
-                "JobCreationGraph does not expose a streaming interface; "
-                "use the WS layer (agent_chat_ws) for recruiter UI "
-                "streaming or call run_job_wizard() for a unary response."
+            self.logger.info(
+                "wizard.legacy.deprecated_call",
+                extra={
+                    "tenant.company_id": str(company_id) if company_id else None,
+                    "caller": "GraphRunnerService.stream_job_wizard",
+                    "path": "app.domains.ai.services.graph_runner:stream_job_wizard",
+                    "session_id": session_id,
+                },
+            )
+            raise HTTPException(
+                status_code=410,
+                detail={
+                    "error": (
+                        "Endpoint deprecated. Use WS /ws/agent-chat with "
+                        "domain=job_creation."
+                    ),
+                },
             )
         self.logger.info(f"Streaming job wizard for session {session_id}")
 
