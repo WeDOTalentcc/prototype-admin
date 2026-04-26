@@ -19,6 +19,8 @@ Consolida a lógica que antes estava espalhada em:
 """
 from __future__ import annotations
 
+import os
+
 import logging
 import time
 import uuid
@@ -98,6 +100,22 @@ _COMPANY_SETTINGS_INTENTS: frozenset[str] = frozenset({
     "settings_config",
     "hiring_policy",
 })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sprint III.B — Feature flags granulares para migração V1→V2
+# Cada flag controla 1 service. Default OFF (V1 delegation continua).
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def _is_plan_service_enabled() -> bool:
+    """Sprint III.B: ativa PlanOrchestrationService no V2 quando True.
+
+    Env var `LIA_V2_USE_PLAN_SERVICE` controla. Default OFF (V1 delegation).
+    Tipos aceitos: "1", "true", "yes" (case-insensitive) → True.
+    """
+    raw = os.environ.get("LIA_V2_USE_PLAN_SERVICE", "false").lower()
+    return raw in ("1", "true", "yes")
 
 
 def _decide_agent_type_from_hints(
@@ -1268,6 +1286,23 @@ class MainOrchestrator:
             except Exception as _tenant_exc:
                 logger.debug("[MainOrchestrator] Tenant LLM resolution failed for %s: %s — using global", _tenant_id, _tenant_exc)
 
+        # Sprint III.B: try plan_service path BEFORE V1 delegation (feature flag)
+        plan_result_dict = None
+        if _is_plan_service_enabled() and self._plan_service is not None:
+            plan_result_dict = await self._try_plan_via_service(
+                ctx, conv_id, orchestrator_context
+            )
+
+        if plan_result_dict is not None:
+            # Plan service handled — skip V1 delegation
+            try:
+                return plan_result_dict
+            finally:
+                if _llm_svc:
+                    _llm_svc._tenant_container = _original_container
+                    _llm_svc._current_tenant = _original_tenant
+
+        # Default path: V1 delegation (Sprint III.C+ migrarão outros paths)
         try:
             result = await self._orchestrator.process_request(
                 user_id=ctx.user_id, message=ctx.message,
@@ -1279,6 +1314,62 @@ class MainOrchestrator:
                 _llm_svc._current_tenant = _original_tenant
 
         return result
+
+    async def _try_plan_via_service(
+        self,
+        ctx: Any,
+        conv_id: str,
+        orchestrator_context: dict[str, Any],
+    ) -> dict[str, Any] | None:
+        """Sprint III.B: tenta executar via PlanOrchestrationService.
+
+        Retorna dict V1-compatible se plan detected + executed, ou None.
+        Em None, caller faz V1 delegation (caminho atual).
+
+        Mantém shape de retorno compatível com V1.process_request para
+        downstream code (persist, audit, navigation hints) funcionar.
+        """
+        try:
+            detected_plan = self._plan_service.detect(ctx.message)
+            if detected_plan is None:
+                return None
+
+            logger.info(
+                "[MainOrchestrator] Sprint III.B plan detected via service: %s",
+                getattr(detected_plan, "detected_pattern", "unknown"),
+            )
+
+            plan_result = await self._plan_service.execute(
+                detected_plan,
+                user_id=ctx.user_id,
+                session_id=conv_id,
+                tenant_id=str(ctx.company_id) if ctx.company_id else None,
+                base_context=orchestrator_context,
+            )
+
+            # Convert PlanExecutionResult to V1-compatible dict
+            return {
+                "success": plan_result.success,
+                "conversation_id": conv_id,
+                "intent": f"plan:{plan_result.pattern}",
+                "agent": "plan_executor",
+                "agent_type": "execution_plan",
+                "confidence": 1.0,
+                "message": plan_result.message,
+                "result": {"message": plan_result.message, "data": plan_result.data},
+                "execution_plan": plan_result.summary,
+                "requires_user_input": False,
+                "suggested_prompts": plan_result.suggestions,
+                "next_actions": [],
+                "policy_constraints": {},
+            }
+        except Exception as e:
+            # P1 graceful: plan service failure não bloqueia request — fallback V1
+            logger.warning(
+                "[MainOrchestrator] Sprint III.B plan_service failed (fallback to V1): %s",
+                e,
+            )
+            return None
 
     async def _persist_response(
         self, ctx: UniversalContext, conv_id: str, conv: Any, result: dict[str, Any], db: Any
