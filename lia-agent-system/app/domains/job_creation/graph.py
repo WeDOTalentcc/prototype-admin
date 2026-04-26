@@ -39,7 +39,14 @@ from app.domains.job_creation.compliance import (
     check_input_fairness,
     check_output_fairness,
     emit_job_creation_audit,
+    emit_policy_block_audit,
     mask_pii_for_llm,
+)
+from app.domains.job_creation.policy_gate import (
+    PolicyDecision,
+    WizardIntent,
+    evaluate as evaluate_wizard_policy,
+    record_decision_in_state,
 )
 from app.orchestrator._observability import WIZARD_SPANS
 from app.shared.observability.span_validation import wizard_traced_node
@@ -341,8 +348,52 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
 
     generator = _get_wsi_generator()
     bigfive_warnings: list = []
+    bigfive_pending_confirmation = False
 
     if enriched:
+        # --- Policy gate: protected criteria are about to be inferred (N-09 / M-06) ---
+        # Confidence proxy: jd_quality_score (0..100) → 0..1.
+        # NOTE: ``is not None`` not truthiness — `0.0` is a *valid* score
+        # (means "no quality at all") and must NOT be coerced to None,
+        # otherwise the confidence-driven HITL escalation is skipped.
+        _bf_raw_score = state.get("jd_quality_score")
+        _bf_score = float(_bf_raw_score) / 100.0 if _bf_raw_score is not None else None
+        _bf_decision = evaluate_wizard_policy(
+            WizardIntent.SET_PROTECTED_CRITERIA,
+            state,
+            score=_bf_score,
+        )
+        record_decision_in_state(state, _bf_decision, stage="bigfive")
+        if _bf_decision.decision == PolicyDecision.DENY:
+            logger.warning(
+                "[JobCreation:bigfive] PolicyGate DENY | rationale=%s",
+                _bf_decision.rationale,
+            )
+            emit_policy_block_audit(state, stage="bigfive", decision=_bf_decision)
+            updates: Dict[str, Any] = {
+                "current_stage": "bigfive",
+                "bigfive_profile": state.get("bigfive_profile"),
+                "trait_rankings": state.get("trait_rankings", []),
+                "stage_history": (state.get("stage_history") or []) + ["bigfive"],
+                "completeness": calculate_completeness("bigfive"),
+                "requires_approval": False,
+                "error": f"Big Five bloqueado pela política da LIA: {_bf_decision.rationale}",
+                "policy_decisions": list(state.get("policy_decisions") or []),
+                "ws_stage_payload": {
+                    "type": "wizard_stage",
+                    "stage": "bigfive",
+                    "data": {
+                        "policy_decision": _bf_decision.to_audit_dict(stage="bigfive"),
+                        "policy_blocked": True,
+                    },
+                    "completeness": calculate_completeness("bigfive"),
+                    "requires_approval": False,
+                },
+            }
+            return {**state, **updates}
+        if _bf_decision.decision == PolicyDecision.HITL_REQUIRED:
+            bigfive_pending_confirmation = True
+
         # --- Compliance gate: PII mask + FairnessGuard pre-check on enriched JD ---
         bigfive_input_text = " ".join(filter(None, [
             jd_enriched_dict.get("about_role", ""),
@@ -414,22 +465,28 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
         bigfive_profile = state.get("bigfive_profile")
         trait_rankings = state.get("trait_rankings", [])
 
+    _bf_payload_data: Dict[str, Any] = {
+        "bigfive_profile": bigfive_profile,
+        "trait_rankings": trait_rankings,
+    }
+    _bf_history = list(state.get("policy_decisions") or [])
+    if _bf_history:
+        _bf_payload_data["policy_decision"] = _bf_history[-1]
     updates: Dict[str, Any] = {
         "current_stage": "bigfive",
         "bigfive_profile": bigfive_profile,
         "trait_rankings": trait_rankings,
         "stage_history": (state.get("stage_history") or []) + ["bigfive"],
         "completeness": calculate_completeness("bigfive"),
-        "requires_approval": False,
+        "requires_approval": bigfive_pending_confirmation,
+        "pending_human_confirmation": bigfive_pending_confirmation,
+        "policy_decisions": _bf_history,
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "bigfive",
-            "data": {
-                "bigfive_profile": bigfive_profile,
-                "trait_rankings": trait_rankings,
-            },
+            "data": _bf_payload_data,
             "completeness": calculate_completeness("bigfive"),
-            "requires_approval": False,
+            "requires_approval": bigfive_pending_confirmation,
         },
     }
 
@@ -579,6 +636,49 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
     # doesn't carry over stale fairness warnings.
     dropped_questions: list[Dict[str, Any]] = []
     input_block: Optional[Dict[str, Any]] = None
+    wsi_pending_confirmation = False
+
+    # --- Policy gate: WSI questions are about to be generated (N-09 / M-06) ---
+    # The score proxy is `jd_quality_score` (0..100) → 0..1 — when low, the
+    # gate forces recruiter confirmation via ConfidencePolicyService.
+    # ``is not None`` not truthiness — `0.0` is a valid score.
+    _wsi_raw_score = state.get("jd_quality_score")
+    _wsi_score = float(_wsi_raw_score) / 100.0 if _wsi_raw_score is not None else None
+    _wsi_decision = evaluate_wizard_policy(
+        WizardIntent.GENERATE_WSI,
+        state,
+        score=_wsi_score,
+    )
+    record_decision_in_state(state, _wsi_decision, stage="wsi_questions")
+    if _wsi_decision.decision == PolicyDecision.DENY:
+        logger.warning(
+            "[JobCreation:wsi_questions] PolicyGate DENY | rationale=%s",
+            _wsi_decision.rationale,
+        )
+        emit_policy_block_audit(state, stage="wsi_questions", decision=_wsi_decision)
+        updates: Dict[str, Any] = {
+            "current_stage": "wsi_questions",
+            "wsi_questions": [],
+            "wsi_dropped_questions": [],
+            "stage_history": (state.get("stage_history") or []) + ["wsi_questions"],
+            "completeness": calculate_completeness("wsi_questions"),
+            "requires_approval": False,
+            "error": f"Geração de perguntas WSI bloqueada: {_wsi_decision.rationale}",
+            "policy_decisions": list(state.get("policy_decisions") or []),
+            "ws_stage_payload": {
+                "type": "wizard_stage",
+                "stage": "wsi_questions",
+                "data": {
+                    "policy_decision": _wsi_decision.to_audit_dict(stage="wsi_questions"),
+                    "policy_blocked": True,
+                },
+                "completeness": calculate_completeness("wsi_questions"),
+                "requires_approval": False,
+            },
+        }
+        return {**state, **updates}
+    if _wsi_decision.decision == PolicyDecision.HITL_REQUIRED:
+        wsi_pending_confirmation = True
 
     # If already approved, skip re-generation (resume path). Preserve any
     # previously surfaced drop log so the recruiter can still see why the
@@ -708,6 +808,17 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
     has_any_question = bool(questions_data)
     requires_approval = has_any_question
 
+    _wsi_history = list(state.get("policy_decisions") or [])
+    _wsi_payload_data: Dict[str, Any] = {
+        "questions": questions_data,
+        "screening_mode": state.get("screening_mode"),
+        "distribution": state.get("question_distribution"),
+        "dropped_questions": dropped_questions,
+        "fairness_warning": fairness_warning,
+    }
+    if _wsi_history:
+        _wsi_payload_data["policy_decision"] = _wsi_history[-1]
+
     updates: Dict[str, Any] = {
         "current_stage": "wsi_questions",
         "wsi_questions": questions_data,
@@ -715,16 +826,12 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
         "stage_history": (state.get("stage_history") or []) + ["wsi_questions"],
         "completeness": calculate_completeness("wsi_questions"),
         "requires_approval": requires_approval,
+        "pending_human_confirmation": wsi_pending_confirmation,
+        "policy_decisions": _wsi_history,
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "wsi_questions",
-            "data": {
-                "questions": questions_data,
-                "screening_mode": state.get("screening_mode"),
-                "distribution": state.get("question_distribution"),
-                "dropped_questions": dropped_questions,
-                "fairness_warning": fairness_warning,
-            },
+            "data": _wsi_payload_data,
             "completeness": calculate_completeness("wsi_questions"),
             "requires_approval": requires_approval,
         },
@@ -847,6 +954,100 @@ def publish_node(state: JobCreationState) -> JobCreationState:
     job_uid = state.get("job_uid")
     share_link = state.get("share_link")
     error = None
+    publish_pending_confirmation = False
+
+    # --- Policy gate: about to publish a job (N-09 / M-06) ---
+    # No native confidence score for the publish action — we use the JD
+    # quality as a proxy so that a low-quality JD requires explicit
+    # recruiter confirmation before going live.
+    # ``is not None`` not truthiness — `0.0` is a valid score.
+    _pub_raw_score = state.get("jd_quality_score")
+    _pub_score = float(_pub_raw_score) / 100.0 if _pub_raw_score is not None else None
+    _pub_decision = evaluate_wizard_policy(
+        WizardIntent.PUBLISH_JOB,
+        state,
+        score=_pub_score,
+    )
+    record_decision_in_state(state, _pub_decision, stage="publish")
+    if _pub_decision.decision == PolicyDecision.DENY:
+        logger.warning(
+            "[JobCreation:publish] PolicyGate DENY | rationale=%s",
+            _pub_decision.rationale,
+        )
+        emit_policy_block_audit(state, stage="publish", decision=_pub_decision)
+        updates: Dict[str, Any] = {
+            "current_stage": "publish",
+            "job_id": job_id,
+            "job_uid": job_uid,
+            "share_link": share_link,
+            "error": f"Publicação bloqueada pela política da LIA: {_pub_decision.rationale}",
+            "stage_history": (state.get("stage_history") or []) + ["publish"],
+            "completeness": calculate_completeness("publish"),
+            "requires_approval": False,
+            "policy_decisions": list(state.get("policy_decisions") or []),
+            "ws_stage_payload": {
+                "type": "wizard_stage",
+                "stage": "publish",
+                "data": {
+                    "job_id": job_id,
+                    "policy_decision": _pub_decision.to_audit_dict(stage="publish"),
+                    "policy_blocked": True,
+                    "error": _pub_decision.rationale,
+                },
+                "completeness": calculate_completeness("publish"),
+                "requires_approval": False,
+            },
+        }
+        return {**state, **updates}
+    if _pub_decision.decision == PolicyDecision.HITL_REQUIRED:
+        # Side-effecting action: do NOT call Rails until the recruiter
+        # explicitly confirms. Pause the wizard with the rationale and
+        # confidence band visible in the payload so the UI can prompt.
+        # When the recruiter confirms, the front-end sets
+        # ``policy_confirmed_publish`` on the next turn and we re-enter
+        # this node; the gate is then bypassed for that single turn.
+        if not state.get("policy_confirmed_publish"):
+            publish_pending_confirmation = True
+            logger.warning(
+                "[JobCreation:publish] PolicyGate HITL_REQUIRED — "
+                "skipping Rails publish until recruiter confirmation | "
+                "rationale=%s confidence=%s",
+                _pub_decision.rationale,
+                _pub_decision.confidence_band,
+            )
+            emit_policy_block_audit(state, stage="publish", decision=_pub_decision)
+            updates: Dict[str, Any] = {
+                "current_stage": "publish",
+                "job_id": job_id,
+                "job_uid": job_uid,
+                "share_link": share_link,
+                "error": None,
+                "stage_history": (state.get("stage_history") or []) + ["publish"],
+                "completeness": calculate_completeness("publish"),
+                "requires_approval": True,
+                "pending_human_confirmation": True,
+                "policy_decisions": list(state.get("policy_decisions") or []),
+                "ws_stage_payload": {
+                    "type": "wizard_stage",
+                    "stage": "publish",
+                    "data": {
+                        "job_id": job_id,
+                        "policy_decision": _pub_decision.to_audit_dict(stage="publish"),
+                        "policy_pending_confirmation": True,
+                        "rationale": _pub_decision.rationale,
+                        "confidence_band": _pub_decision.confidence_band,
+                    },
+                    "completeness": calculate_completeness("publish"),
+                    "requires_approval": True,
+                },
+            }
+            return {**state, **updates}
+        # Recruiter explicitly confirmed — proceed with publish, but log
+        # the override into state so the audit trail captures it.
+        logger.info(
+            "[JobCreation:publish] PolicyGate HITL bypassed by explicit "
+            "recruiter confirmation (policy_confirmed_publish=True)",
+        )
 
     try:
         from app.shared.services.circuit_breaker import circuit_breaker_call, CircuitBreakerOpenError
@@ -903,6 +1104,19 @@ def publish_node(state: JobCreationState) -> JobCreationState:
         error = str(e)
         logger.error("[JobCreation:publish] Error: %s", e)
 
+    _pub_history = list(state.get("policy_decisions") or [])
+    _pub_payload_data: Dict[str, Any] = {
+        "job_id": job_id,
+        "platforms": state.get("publish_platforms", []),
+        "sourcing_mode": state.get("sourcing_mode"),
+        "contact_channels": state.get("contact_channels", []),
+        "share_link": share_link,
+        "auto_screen": state.get("auto_screen_enabled", True),
+        "error": error,
+    }
+    if _pub_history:
+        _pub_payload_data["policy_decision"] = _pub_history[-1]
+
     updates: Dict[str, Any] = {
         "current_stage": "publish",
         "job_id": job_id,
@@ -911,21 +1125,15 @@ def publish_node(state: JobCreationState) -> JobCreationState:
         "error": error,
         "stage_history": (state.get("stage_history") or []) + ["publish"],
         "completeness": calculate_completeness("publish"),
-        "requires_approval": False,
+        "requires_approval": publish_pending_confirmation,
+        "pending_human_confirmation": publish_pending_confirmation,
+        "policy_decisions": _pub_history,
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "publish",
-            "data": {
-                "job_id": job_id,
-                "platforms": state.get("publish_platforms", []),
-                "sourcing_mode": state.get("sourcing_mode"),
-                "contact_channels": state.get("contact_channels", []),
-                "share_link": share_link,
-                "auto_screen": state.get("auto_screen_enabled", True),
-                "error": error,
-            },
+            "data": _pub_payload_data,
             "completeness": calculate_completeness("publish"),
-            "requires_approval": False,
+            "requires_approval": publish_pending_confirmation,
         },
     }
 

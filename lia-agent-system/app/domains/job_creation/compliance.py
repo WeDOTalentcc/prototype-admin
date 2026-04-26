@@ -160,6 +160,75 @@ def _run_async(coro, *, timeout: float = 5.0) -> None:
         )
 
 
+def emit_policy_block_audit(
+    state: Dict[str, Any],
+    *,
+    stage: str,
+    decision: Any,
+) -> None:
+    """Write a per-turn audit row for a blocked wizard turn (DENY or
+    HITL pause on a side-effecting action). Required by the EU AI Act
+    high-risk flow contract: every gate decision that prevents a
+    sensitive operation must be traceable in the audit log even when
+    the wizard never reaches the final ``handoff_node``.
+
+    ``decision`` is a ``WizardPolicyResult`` (kept loose to avoid an
+    import cycle).
+    """
+    company_id = _resolve_company_id(state)
+    if not company_id:
+        logger.debug(
+            "[JobCreation:Audit] policy_block skipped — no company_id/workspace_id"
+        )
+        return
+
+    decision_kind = getattr(getattr(decision, "decision", None), "value", "unknown")
+    rationale = getattr(decision, "rationale", "") or ""
+    intent = getattr(decision, "intent", "") or ""
+    band = getattr(decision, "confidence_band", "n/a")
+
+    reasoning: List[Any] = [
+        f"stage={stage}",
+        f"intent={intent}",
+        f"policy_decision={decision_kind}",
+        f"confidence_band={band}",
+        f"rationale={rationale}",
+    ]
+
+    try:
+        from app.shared.compliance.audit_service import AuditService
+
+        service = AuditService()
+        coro = service.log_decision(
+            company_id=company_id,
+            agent_name="job_creation_wizard",
+            decision_type="job_creation_policy_block",
+            action=intent or f"wizard.{stage}",
+            decision=decision_kind,
+            reasoning=reasoning,
+            criteria_used=["policy_gate", "confidence_policy"],
+            job_vacancy_id=str(state.get("job_id")) if state.get("job_id") else None,
+            confidence=(
+                float(state.get("jd_quality_score")) / 100.0
+                if state.get("jd_quality_score") is not None
+                else 0.0
+            ),
+            human_review_required=bool(
+                getattr(decision, "requires_human_confirmation", False)
+            ),
+            criteria_ignored=None,
+        )
+        _run_async(coro)
+        logger.info(
+            "[JobCreation:Audit] policy_block stage=%s decision=%s rationale=%s",
+            stage, decision_kind, rationale,
+        )
+    except Exception as exc:
+        logger.warning(
+            "[JobCreation:Audit] failed to emit policy_block audit row: %s", exc
+        )
+
+
 def emit_job_creation_audit(
     state: Dict[str, Any],
     *,
@@ -201,6 +270,13 @@ def emit_job_creation_audit(
         reasoning.extend(extra_reasoning)
     if fairness_blocked:
         reasoning.append({"fairness_blocked": fairness_blocked})
+
+    # Per-turn wizard policy decisions (resolves N-09 + M-06): each entry
+    # already carries policy_decision, confidence_band and rationale —
+    # surface them in the audit row so AI Governance can replay the run.
+    policy_decisions = state.get("policy_decisions") or []
+    if policy_decisions:
+        reasoning.append({"policy_decisions": list(policy_decisions)})
 
     job_id = state.get("job_id")
     job_vacancy_id = str(job_id) if job_id else None
