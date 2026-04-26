@@ -13,6 +13,7 @@ import type { WizardPublishedJobCardData } from "./wizard/wizard-plan-card"
 import { renderMarkdown } from "@/lib/render-markdown"
 import { submitThumbsFeedback } from "@/services/lia-api/feedback-api"
 import type { LiaChatMessage } from "@/hooks/chat/use-lia-chat-connection"
+import { WIZARD_PLAN_MESSAGE_ID } from "./wizard/wizard-plan-card"
 import { NavigationHintCard } from "./NavigationHintCard"
 import { TastingInsightCard } from "./TastingInsightCard"
 import { WeeklyDigestChatMessage } from "@/components/notifications/weekly-digest-chat-message"
@@ -150,6 +151,7 @@ export function UnifiedMessageList({
         return (
           <div
             key={message.id}
+            data-testid={message.id === WIZARD_PLAN_MESSAGE_ID ? "wizard-plan-card" : undefined}
             className={cn(
               "group",
               isLia ? "" : "flex justify-end"

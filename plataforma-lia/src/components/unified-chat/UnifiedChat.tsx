@@ -187,10 +187,17 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
   // Insert the non-persisted "Plano de trabalho" assistant card into the feed
   // the first time the wizard reports stage=`intake`, then keep its
   // `flowSteps` in sync as new stages stream in. Removed when the wizard
-  // resets so a fresh run can re-emit it cleanly.
+  // resets (no stage) OR reaches a terminal stage (`done`/`handoff`) so the
+  // card and the WizardProgressBar disappear together — the contract
+  // surfaced in Task #828: "ao chegar em publish/done, ambos desmontam".
   useEffect(() => {
-    if (!wizardStage) {
+    if (!wizardStage || wizardStage === "done" || wizardStage === "handoff") {
       planCardInsertedRef.current = false
+      setChatMessages((prev) => {
+        const exists = prev.some((m) => m.id === WIZARD_PLAN_MESSAGE_ID)
+        if (!exists) return prev
+        return prev.filter((m) => m.id !== WIZARD_PLAN_MESSAGE_ID)
+      })
       return
     }
     const flowSteps = buildPlanFlowSteps(wizardStage)
