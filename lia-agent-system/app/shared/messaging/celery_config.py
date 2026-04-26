@@ -9,17 +9,11 @@ DOMAIN_QUEUES mapeia domínio de agente para:
 from typing import Any
 
 DOMAIN_QUEUES: dict[str, dict[str, Any]] = {
-    # Domínios com SLA curto (interação direta com recrutador)
-    "wizard": {
-        "queue": "vagas_normal",
-        "priority": 5,
-        "task": "agents.wizard.execute",
-    },
-    "job_management": {
-        "queue": "vagas_normal",
-        "priority": 5,
-        "task": "agents.wizard.execute",
-    },
+    # Task #850: `wizard` and `job_management` rows were removed —
+    # they're sync domains (see `SYNC_DOMAINS` below) and the underlying
+    # Celery task `agents.wizard.execute` was retired. The dispatcher
+    # never publishes for sync domains; if a misrouted call ever does
+    # land here, `get_domain_config()` falls back to the kanban queue.
     # Pipeline / triagem (feedback esperado em 5-15s)
     "pipeline": {
         "queue": "evaluation_normal",

@@ -104,7 +104,8 @@ from app.api.v1 import (
     jd_generation,
     wizard_analytics,
     wizard_suggestions,
-    wizard_smart_orchestrator,
+    # `wizard_smart_orchestrator` removed in Task #850 — JobCreationGraph
+    # is now the canonical job-creation path.
     wsi_observability,
     wsi_screening_pipeline_endpoint,
     orchestrated_job_chat,
@@ -134,7 +135,7 @@ app.include_router(jd_import.router, prefix="/api/v1", tags=["jd_import"])
 app.include_router(jd_generation.router, prefix="/api/v1", tags=["jd_generation"])
 app.include_router(wizard_analytics.router, prefix="/api/v1", tags=["wizard_analytics"])
 app.include_router(wizard_suggestions.router, prefix="/api/v1", tags=["wizard_suggestions"])
-app.include_router(wizard_smart_orchestrator.router, prefix="/api/v1", tags=["wizard_smart_orchestrator"])
+# `wizard_smart_orchestrator.router` removed in Task #850.
 app.include_router(wsi_v1.router, tags=["wsi"])
 # NOTE: `wsi_questions` and `wsi_question_adjust` standalone routers were
 # merged into `app/api/v1/wsi/questions.py` (above via `wsi_v1.router`)

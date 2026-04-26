@@ -552,7 +552,7 @@ cases:
     expected_tools: ["configure_wsi_questions"]
     expected_behavior: "Generates and configures WSI questions specific to DevOps/Kubernetes/CI-CD"
     canonical_files:
-      - "app/domains/job_management/agents/wizard_tool_registry.py"
+      - "app/domains/job_creation/services/intake_extractor.py"
       - "app/domains/voice_screening/services/wsi_question_generation_service.py"
     success_criteria:
       - "Returns relevant technical questions"
@@ -952,8 +952,8 @@ cases:
     expected_tools: ["create_job_draft", "extract_job_requirements"]
     expected_behavior: "Starts wizard flow: extracts requirements, suggests salary, creates draft for review"
     canonical_files:
-      - "app/domains/job_management/agents/wizard_react_agent.py"
-      - "app/domains/job_management/agents/wizard_tool_registry.py"
+      - "app/domains/job_creation/graph.py"
+      - "app/domains/job_creation/services/intake_extractor.py"
     success_criteria:
       - "Extracts DevOps/Kubernetes/AWS/CI-CD as requirements"
       - "Sets modality as remote"
@@ -974,7 +974,7 @@ cases:
     expected_tools: ["generate_job_description"]
     expected_behavior: "Generates professional JD with requirements, responsibilities, benefits for PM role"
     canonical_files:
-      - "app/domains/job_management/agents/wizard_tool_registry.py"
+      - "app/domains/job_creation/services/intake_extractor.py"
     success_criteria:
       - "Generates structured JD"
       - "Includes agile methodologies"
@@ -993,7 +993,7 @@ cases:
     expected_tools: ["suggest_salary_range"]
     expected_behavior: "Returns salary range based on market benchmark for the role/seniority/location"
     canonical_files:
-      - "app/domains/job_management/agents/wizard_tool_registry.py"
+      - "app/domains/job_creation/services/intake_extractor.py"
       - "app/domains/analytics/services/salary_benchmark_service.py"
     success_criteria:
       - "Returns salary range with min/max"
@@ -1032,7 +1032,7 @@ cases:
     expected_tools: ["set_pipeline_template"]
     expected_behavior: "Configures the 5-stage pipeline template, shows it for approval"
     canonical_files:
-      - "app/domains/job_management/agents/wizard_tool_registry.py"
+      - "app/domains/job_creation/services/intake_extractor.py"
     success_criteria:
       - "Creates all 5 stages in order"
       - "Asks for approval"
@@ -1222,7 +1222,7 @@ cases:
     expected_tools: ["create_job_draft", "configure_wsi_questions", "search_candidates"]
     expected_behavior: "Shows 3-step plan, creates job, configures WSI, sources candidates — sequential with approvals"
     canonical_files:
-      - "app/domains/job_management/agents/wizard_tool_registry.py"
+      - "app/domains/job_creation/services/intake_extractor.py"
       - "app/domains/sourcing/agents/sourcing_tool_registry.py"
     success_criteria:
       - "Executes all 3 tasks"

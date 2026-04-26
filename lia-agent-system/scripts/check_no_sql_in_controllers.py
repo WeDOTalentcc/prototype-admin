@@ -152,7 +152,8 @@ PENDING_MIGRATION = {
     "app/api/v1/user_agent_preferences.py",
     "app/api/v1/webhooks.py",
     "app/api/v1/whatsapp.py",
-    "app/api/v1/wizard_smart_orchestrator.py",
+    # wizard_smart_orchestrator.py removed in Task #850 (canonical
+    # JobCreationGraph replaced the legacy wizard).
     "app/api/v1/wizard_suggestions.py",
     "app/api/v1/workforce_planning.py",
     "app/api/v1/wsi/evaluation.py",

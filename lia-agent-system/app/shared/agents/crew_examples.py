@@ -133,15 +133,16 @@ def get_production_handlers() -> dict[str, Any]:
     return handlers
 
 
-_job_wizard_graph = None
+_job_creation_graph = None
 _JOB_DOMAIN_AVAILABLE = False
 
 try:
-    from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
+    # Task #850 — JobCreationGraph is the canonical job-creation path.
+    from app.domains.job_creation.graph import JobCreationGraph
     _JOB_DOMAIN_AVAILABLE = True
 except ImportError as exc:
-    logger.info("JobWizardGraph not available (missing deps): %s", exc)
-    JobWizardGraph = None  # type: ignore[misc, assignment]
+    logger.info("JobCreationGraph not available (missing deps): %s", exc)
+    JobCreationGraph = None  # type: ignore[misc, assignment]
 
 
 _SOURCING_DOMAIN_AVAILABLE = False
@@ -160,46 +161,41 @@ async def handler_create_job_opening(
     params: dict[str, Any],
     crew_ctx: CrewContext,
 ) -> dict[str, Any]:
-    """Create a job opening via JobWizardGraph.
+    """Create a job opening via the canonical JobCreationGraph.
 
-    Delegates to the real ``JobWizardGraph.invoke()`` when the domain is
-    available.  Falls back to a minimal stub otherwise.
+    Delegates to the canonical job-creation StateGraph when the domain is
+    available. Falls back to a minimal stub otherwise (test mode only).
     """
     import uuid
 
     job_title = params.get("job_title", "Untitled")
     company_id = params.get("company_id", "")
 
-    if _JOB_DOMAIN_AVAILABLE and JobWizardGraph is not None:
-        global _job_wizard_graph
-        if _job_wizard_graph is None:
-            _job_wizard_graph = JobWizardGraph()
+    if _JOB_DOMAIN_AVAILABLE and JobCreationGraph is not None:
+        global _job_creation_graph
+        if _job_creation_graph is None:
+            _job_creation_graph = JobCreationGraph()
 
         state = {
-            "user_message": f"Criar vaga: {job_title}",
+            "user_query": f"Criar vaga: {job_title}",
             "company_id": company_id,
             "session_id": f"crew:{uuid.uuid4().hex[:8]}",
-            "current_stage": "initial_input",
-            "job_data": {
-                "title": job_title,
-                **{k: v for k, v in params.items() if k not in ("job_title", "company_id", "crew_execution_id")},
-            },
+            "current_stage": "intake",
         }
 
-        result_state = await _job_wizard_graph.invoke(state)
+        result_state = await _job_creation_graph.invoke(state)
 
-        job_data = result_state.get("job_data", {})
         return {
-            "job_id": job_data.get("id", uuid.uuid4().hex[:8]),
-            "job_title": job_data.get("title", job_title),
+            "job_id": result_state.get("job_id", uuid.uuid4().hex[:8]),
+            "job_title": job_title,
             "status": result_state.get("current_stage", "draft"),
-            "requirements": job_data.get("requirements", params.get("requirements", [])),
-            "message": result_state.get("response", f"Job '{job_title}' created via JobWizardGraph"),
-            "source": "job_wizard_graph",
+            "requirements": params.get("requirements", []),
+            "message": f"Job '{job_title}' created via JobCreationGraph",
+            "source": "job_creation_graph",
         }
 
     if not _JOB_DOMAIN_AVAILABLE:
-        logger.warning("[handler_create_job_opening] JobWizardGraph unavailable — using stub (test mode only)")
+        logger.warning("[handler_create_job_opening] JobCreationGraph unavailable — using stub (test mode only)")
 
     job_id = uuid.uuid4().hex[:8]
     return {

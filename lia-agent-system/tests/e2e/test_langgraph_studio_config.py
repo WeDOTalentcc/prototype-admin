@@ -27,16 +27,17 @@ PROJECT_ROOT = os.path.join(os.path.dirname(__file__), "../..")
 LANGGRAPH_JSON_PATH = os.path.join(PROJECT_ROOT, "langgraph.json")
 
 EXPECTED_GRAPHS = {
-    "wizard_graph",
+    "job_creation_graph",
     "wsi_interview_graph",
     "interview_graph",
 }
 
 # Mapeamento esperado: nome → (módulo_relativo, atributo)
+# Task #850: `wizard_graph` was replaced by canonical `job_creation_graph`.
 EXPECTED_GRAPH_MODULES = {
-    "wizard_graph": (
-        "app/domains/job_management/agents/job_wizard_graph.py",
-        "job_wizard_graph",
+    "job_creation_graph": (
+        "app/domains/job_creation/graph.py",
+        "job_creation_graph",
     ),
     "wsi_interview_graph": (
         "app/domains/cv_screening/agents/wsi_interview_graph.py",

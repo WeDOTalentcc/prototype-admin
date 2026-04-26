@@ -59,7 +59,7 @@ ALLOW_LIST: set[str] = {
     "app/domains/analytics/tools/analytics_query_tools/registry.py",
     "app/domains/recruiter_assistant/tools/pipeline_tools.py",
     "app/domains/communication/tools/communication_tools.py",
-    "app/domains/job_management/tools/job_wizard_tools.py",
+    # `job_wizard_tools.py` removed in Task #850 (legacy WizardReActAgent path).
     "app/domains/job_management/tools/job_tools.py",
     "app/domains/job_management/tools/query_tools.py",
     "app/domains/cv_screening/tools/cv_upload_tool.py",

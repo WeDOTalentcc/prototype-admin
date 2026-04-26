@@ -28,6 +28,12 @@ from app.domains.cv_screening.services.seniority_resolver import (
 )
 from app.domains.job_creation.services.jd_enrichment import JdEnrichmentService
 from app.domains.job_creation.services.wsi_question_generator import WSIQuestionGenerator
+from app.domains.job_creation.services.intake_extractor import (
+    IntakeExtractor,
+    NEVER_PRECOMPLETED,
+    compute_precompleted_stages,
+    get_intake_extractor,
+)
 from app.domains.job_creation.api_client import JobCreationAPIClient
 from app.domains.job_creation.compliance import (
     check_input_fairness,
@@ -42,6 +48,17 @@ logger = logging.getLogger(__name__)
 _jd_service: Optional[JdEnrichmentService] = None
 _wsi_generator: Optional[WSIQuestionGenerator] = None
 _api_client: Optional[JobCreationAPIClient] = None
+
+
+def _is_precompleted(state: JobCreationState, stage: str) -> bool:
+    """Return True if `stage` was marked pre-completed by `intake_node`.
+
+    HITL stages (`jd_enrichment`, `wsi_questions`) are NEVER pre-completed
+    — methodology requires recruiter approval at those points.
+    """
+    if stage in NEVER_PRECOMPLETED:
+        return False
+    return stage in (state.get("precompleted_stages") or [])
 
 
 def _get_jd_service() -> JdEnrichmentService:
@@ -79,24 +96,75 @@ def _get_api_client(state: dict) -> JobCreationAPIClient:
 # ---------------------------------------------------------------------------
 
 def intake_node(state: JobCreationState) -> JobCreationState:
-    """Pre-F1: Parse user input to extract job title, department, seniority, location."""
+    """Pre-F1: Run the canonical IntakeExtractor on the recruiter's free text.
+
+    Produces:
+      * `intake_payload` — the structured `JobIntakePayload` (per-field
+        confidence + source).
+      * `precompleted_stages` — stages downstream that can be skipped
+        because the recruiter already provided enough data. HITL 1
+        (`jd_enrichment`) and HITL 2 (`wsi_questions`) are NEVER included.
+      * `parsed_title`/`parsed_seniority`/`parsed_department`/`raw_input` —
+        kept for backwards compatibility with downstream nodes that still
+        read these flat fields.
+    """
     t0 = time.time()
     query = state.get("user_query", "") or state.get("raw_input", "")
-    logger.info("[JobCreation:intake] query=%s", query[:80])
+    # Multi-source intake — Task #850 canonical contract. The recruiter
+    # may provide data through three channels, merged in priority order
+    # `right_panel_form > user_text > attached_file`:
+    #   * `user_query` / `raw_input`  → free-text chat message
+    #   * `right_panel_form`          → structured form fields
+    #   * `attached_file_text`        → JD/PDF text the recruiter pasted
+    right_panel_form = state.get("right_panel_form") or None
+    attached_file_text = state.get("attached_file_text") or ""
+    logger.info("[JobCreation:intake] query=%s", (query or "")[:80])
 
-    # LLM structured extraction will be implemented in B.1
-    # For now, pass through to jd_enrichment with raw input
+    extractor = get_intake_extractor()
+    if right_panel_form or attached_file_text:
+        payload = extractor.extract_from_sources(
+            user_text=query,
+            right_panel_form=right_panel_form,
+            attached_file_text=attached_file_text,
+        )
+    else:
+        payload = extractor.extract(query)
+    payload_dict = payload.model_dump()
+
+    precompleted = sorted(compute_precompleted_stages(payload))
+
+    # Backwards-compatible flat fields used by jd_enrichment / wsi nodes.
+    parsed_title = payload.title.value or ""
+    parsed_seniority = payload.seniority.value or ""
+    parsed_department = payload.department.value or ""
+
+    logger.info(
+        "[JobCreation:intake] confidence=%.2f precompleted=%s blocked=%s",
+        payload.overall_confidence, precompleted, payload.fairness_blocked,
+    )
+
     updates: Dict[str, Any] = {
         "current_stage": "intake",
         "raw_input": query,
-        "intake_confidence": 0.0,
+        "parsed_title": parsed_title,
+        "parsed_seniority": parsed_seniority,
+        "parsed_department": parsed_department,
+        "intake_confidence": payload.overall_confidence,
+        "intake_payload": payload_dict,
+        "precompleted_stages": precompleted,
         "stage_history": (state.get("stage_history") or []) + ["intake"],
         "completeness": calculate_completeness("intake"),
         "requires_approval": False,
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "intake",
-            "data": {"raw_input": query},
+            "data": {
+                "raw_input": query,
+                "intake_payload": payload_dict,
+                "precompleted_stages": precompleted,
+                "fairness_blocked": payload.fairness_blocked,
+                "fairness_message": payload.fairness_message,
+            },
             "completeness": calculate_completeness("intake"),
             "requires_approval": False,
         },
@@ -1027,6 +1095,31 @@ def route_after_jd(state: JobCreationState) -> str:
     return "bigfive"
 
 
+def route_after_bigfive(state: JobCreationState) -> str:
+    """After bigfive: skip salary if the recruiter already provided a range
+    at intake time (precompleted). Always falls through to competency
+    otherwise. HITL stages are never affected by this routing.
+    """
+    if _is_precompleted(state, "salary"):
+        logger.info("[JobCreation:route] bigfive -> competency (salary precompleted)")
+        return "competency"
+    return "salary"
+
+
+def route_after_salary(state: JobCreationState) -> str:
+    """After salary: skip competency if the recruiter already enumerated
+    both technical and behavioral skills at intake time (precompleted).
+    """
+    if _is_precompleted(state, "competency"):
+        if not state.get("screening_mode"):
+            # Still need recruiter to pick a screening mode — emit competency
+            # so the WS message that requests the choice is sent.
+            return "competency"
+        logger.info("[JobCreation:route] salary -> wsi_questions (competency precompleted)")
+        return "wsi_questions"
+    return "competency"
+
+
 def route_after_competency(state: JobCreationState) -> str:
     """After competency: need screening_mode chosen to proceed."""
     if not state.get("screening_mode"):
@@ -1207,9 +1300,23 @@ def create_job_creation_graph(checkpointer=None) -> StateGraph:
         },
     )
 
-    # F2+F3 -> salary -> F4+F5
-    builder.add_edge("bigfive", "salary")
-    builder.add_edge("salary", "competency")
+    # F2+F3 -> salary -> F4+F5 (precompletion may skip salary or competency)
+    builder.add_conditional_edges(
+        "bigfive",
+        route_after_bigfive,
+        {
+            "salary": "salary",
+            "competency": "competency",
+        },
+    )
+    builder.add_conditional_edges(
+        "salary",
+        route_after_salary,
+        {
+            "competency": "competency",
+            "wsi_questions": "wsi_questions",
+        },
+    )
 
     # F4+F5: needs screening mode
     builder.add_conditional_edges(
@@ -1357,3 +1464,8 @@ class JobCreationGraph:
 
 def get_job_creation_graph() -> JobCreationGraph:
     return JobCreationGraph()
+
+
+# Module-level singleton — Task #850 canonical entry point.
+# Consumed by langgraph.json, health_langgraph, and the WS resume path.
+job_creation_graph = JobCreationGraph()

@@ -186,6 +186,18 @@ class JobCreationState(TypedDict, total=False):
     # --- Handoff ---
     handoff_url: Optional[str]  # URL to the job page
 
+    # --- Pre-completion bookkeeping ---
+    # Stages that the recruiter already provided enough information for
+    # at intake time and which can be skipped by the routing functions.
+    # NEVER includes HITL stages (`jd_enrichment`, `wsi_questions`).
+    # Populated by `intake_node` from the canonical IntakeExtractor.
+    precompleted_stages: List[WizardStage]
+    # Canonical structured intake payload. Source-of-truth for what the
+    # recruiter said up-front. Each field carries (value, confidence,
+    # source). Schema: `JobIntakePayload` in
+    # `app/domains/job_creation/services/intake_extractor.py`.
+    intake_payload: Optional[Dict[str, Any]]
+
     # --- WS protocol fields ---
     ws_stage_payload: Optional[Dict[str, Any]]  # last wizard_stage WS message sent
     requires_approval: bool  # current stage needs HITL

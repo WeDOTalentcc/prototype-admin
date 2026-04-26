@@ -198,7 +198,7 @@ from app.api.v1 import (
     webhooks,
     whatsapp,
     wizard_analytics,
-    wizard_smart_orchestrator,
+    # `wizard_smart_orchestrator` removed in Task #850 — replaced by canonical JobCreationGraph (WS `wizard_graph` channel).
     wizard_suggestions,
     workforce,
     workforce_planning,
@@ -477,7 +477,8 @@ def register_all_routes(app: FastAPI) -> None:
 
     # ── Wizard ────────────────────────────────────────────────────────────────
     app.include_router(wizard_suggestions.router, prefix="/api/v1/wizard", tags=["wizard-suggestions"])
-    app.include_router(wizard_smart_orchestrator.router, prefix="/api/v1/wizard", tags=["wizard-smart-orchestrator"])
+    # `wizard_smart_orchestrator.router` removed in Task #850 — JobCreationGraph
+    # is exposed via the WebSocket `wizard_graph` channel and HITL endpoints.
 
     # ── Orchestrator ──────────────────────────────────────────────────────────
     app.include_router(orchestrator_routes.router)

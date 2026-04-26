@@ -23,7 +23,7 @@ from typing import Any
 # ---------------------------------------------------------------------------
 
 REACT_AGENTS = [
-    ("app.domains.job_management.agents.wizard_react_agent", "WizardReActAgent"),
+    # WizardReActAgent removed in Task #850 — replaced by JobCreationGraph.
     ("app.domains.cv_screening.agents.pipeline_react_agent", "PipelineReActAgent"),
     ("app.domains.sourcing.agents.sourcing_react_agent", "SourcingReActAgent"),
     ("app.domains.recruiter_assistant.agents.talent_react_agent", "TalentReActAgent"),
@@ -35,7 +35,7 @@ REACT_AGENTS = [
 ]
 
 GRAPH_AGENTS = [
-    ("app.domains.job_management.agents.job_wizard_graph", "JobWizardGraph"),
+    # JobWizardGraph removed in Task #850 — replaced by JobCreationGraph.
     ("app.domains.cv_screening.agents.wsi_interview_graph", "WSIInterviewGraph"),
     ("app.domains.interview_scheduling.agents.interview_graph", "InterviewGraph"),
 ]
@@ -139,45 +139,9 @@ class TestReActAgentsLangGraphNativeE2E:
 # Seção 2: Graph Agents — invoke()/start() com compiled mockado
 # ---------------------------------------------------------------------------
 
-class TestJobWizardGraphE2E:
-
-    def test_job_wizard_graph_instantiates(self):
-        from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-        g = JobWizardGraph()
-        assert g is not None
-
-    def test_job_wizard_graph_has_invoke_method(self):
-        from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-        g = JobWizardGraph()
-        assert callable(getattr(g, "invoke", None))
-
-    def test_job_wizard_graph_has_build_langgraph(self):
-        from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-        g = JobWizardGraph()
-        assert callable(getattr(g, "_build_langgraph", None))
-
-    @pytest.mark.asyncio
-    async def test_job_wizard_invoke_with_mock_compiled(self):
-        """invoke() com _compiled mockado não lança exceção."""
-        from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-        g = JobWizardGraph()
-        state = {
-            "session_id": "sess-wiz-e2e",
-            "company_id": "company-e2e",
-            "intent": "",
-            "message": "Criar vaga de dev senior",
-            "response": "",
-            "tool_calls": [],
-            "should_continue": True,
-            "error": None,
-        }
-        mock_compiled = MagicMock()
-        mock_compiled.ainvoke = AsyncMock(return_value={**state, "response": "Vaga criada"})
-        g._compiled_lg = mock_compiled
-
-        result = await g._invoke_langgraph(state)
-        assert result is not None
-        assert result.get("response")
+# TestJobWizardGraphE2E removed in Task #850 — JobWizardGraph deleted.
+# Equivalent E2E coverage for the canonical pipeline lives in
+# `tests/test_domains/test_job_creation_graph.py` (JobCreationGraph).
 
 
 class TestWSIInterviewGraphE2E:

@@ -340,6 +340,71 @@ def _get_agent(domain: str) -> Any | None:
 _AGENTS_LOADED = False
 
 
+def _resume_wizard_canonical(
+    thread_id: str,
+    resume_input_dict: dict,
+) -> tuple[str, dict]:
+    """Resume a paused JobCreationGraph after HITL approval.
+
+    Task #850: this replaces the legacy `wiz_g._graph.ainvoke(None, ...)`
+    pattern that read response from `response`/`user_message` keys
+    (which JobCreationGraph does not emit). We now:
+
+      1. Pull `prior_state` from the LangGraph checkpointer.
+      2. Merge recruiter approval payload + `hitl_approved=True` flag.
+      3. Call the canonical `JobCreationGraph.resume(thread_id, prior,
+         updates)` so the audit callback stays wired.
+      4. Extract recruiter-facing message from the canonical
+         `ws_stage_payload.data` with stage-aware fallback.
+
+    Returns:
+        (message, ws_stage_payload) — both safe to pass directly to the
+        WS layer. `ws_stage_payload` may be empty dict if the resumed
+        node didn't emit one.
+    """
+    from app.domains.job_creation.graph import job_creation_graph as wiz_g
+
+    config = {"configurable": {"thread_id": thread_id}}
+    try:
+        prior_snapshot = wiz_g._graph.get_state(config)
+        prior_state = dict(prior_snapshot.values or {})
+    except Exception:  # checkpointer miss — fall back to empty seed
+        prior_state = {}
+
+    resume_context = (resume_input_dict or {}).get("context") or {}
+    approval_payload = (resume_input_dict or {}).get("approval_payload") or {}
+    updates: dict = {
+        "hitl_approved": True,
+        **approval_payload,
+    }
+    # Carry recruiter context (e.g. updated draft fields) if the HITL
+    # step accumulated any — keeps the canonical domain contract.
+    if isinstance(resume_context, dict):
+        for k in ("draft", "intake_payload", "jd_enriched", "wsi_questions"):
+            if k in resume_context and resume_context[k] is not None:
+                updates[k] = resume_context[k]
+
+    result = wiz_g.resume(thread_id, prior_state, updates)
+
+    if not isinstance(result, dict):
+        return ("Vaga atualizada após aprovação.", {})
+
+    stage_payload = result.get("ws_stage_payload") or {}
+    stage_data = stage_payload.get("data") or {}
+    current_stage = result.get("current_stage", "") or ""
+    message = (
+        stage_data.get("message")
+        or stage_data.get("response_text")
+        or {
+            "intake": "Captei a vaga. Vou seguir para o próximo passo.",
+            "jd_enrichment": "Descrição da vaga enriquecida — preciso da sua aprovação.",
+            "wsi_questions": "Perguntas de triagem WSI sugeridas — preciso da sua aprovação.",
+            "completed": "Vaga criada com sucesso.",
+        }.get(current_stage, f"Etapa atual: {current_stage or 'wizard'}.")
+    )
+    return (message, stage_payload)
+
+
 def _ensure_agents_loaded() -> None:
     """Import all agent modules once to trigger @register_agent decorators.
 
@@ -351,7 +416,7 @@ def _ensure_agents_loaded() -> None:
 
     try:
         # Top-level ReAct agents
-        from app.domains.job_management.agents.wizard_react_agent import WizardReActAgent  # noqa: F401
+        # WizardReActAgent removed in Task #850 — JobCreationGraph replaces it.
         from app.domains.cv_screening.agents.pipeline_react_agent import PipelineReActAgent  # noqa: F401
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent  # noqa: F401
         from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent  # noqa: F401
@@ -515,21 +580,21 @@ async def agent_chat_ws(
                                         source="hitl_resume",
                                     ))
                                     conversation_history.append({"role": "assistant", "content": _wsi_msg})
-                                # wizard (JobWizardGraph) usa ainvoke(None) direto — grafo pausado
+                                # wizard (JobCreationGraph) — Task #850 canonical
+                                # path. Use the canonical `resume(thread_id,
+                                # prior_state, updates)` API: pulls prior state
+                                # from the checkpointer, merges recruiter
+                                # approval payload, and re-invokes the graph
+                                # with the audit callback wired (no bypass of
+                                # the canonical domain contract).
                                 elif resume_domain == "wizard":
-                                    from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-                                    wiz_g = JobWizardGraph()
-                                    if wiz_g._compiled_lg is None:
-                                        wiz_g._compiled_lg = wiz_g._build_langgraph()
-                                    _wiz_config = {"configurable": {"thread_id": ws_thread_id}}
-                                    _wiz_result = await asyncio.wait_for(
-                                        wiz_g._compiled_lg.ainvoke(None, config=_wiz_config),
+                                    _wiz_msg, _wiz_stage_payload = await asyncio.wait_for(
+                                        asyncio.to_thread(
+                                            _resume_wizard_canonical,
+                                            ws_thread_id,
+                                            resume_input_dict,
+                                        ),
                                         timeout=_AGENT_TIMEOUT,
-                                    )
-                                    _wiz_msg = (
-                                        _wiz_result.get("response", "") or
-                                        _wiz_result.get("user_message", "Vaga criada com sucesso.")
-                                        if isinstance(_wiz_result, dict) else "Vaga criada com sucesso."
                                     )
                                     _wiz_msg = _strip_react_json(_wiz_msg)
                                     await ws_mgr.send_to_session(session_id, serialize_message(
@@ -538,6 +603,11 @@ async def agent_chat_ws(
                                         domain="wizard",
                                         source="hitl_resume",
                                     ))
+                                    # Forward the canonical wizard stage payload
+                                    # to the UI so the right-panel form / stage
+                                    # cards stay in sync with the graph.
+                                    if _wiz_stage_payload:
+                                        await ws_mgr.send_to_session(session_id, _wiz_stage_payload)
                                     conversation_history.append({"role": "assistant", "content": _wiz_msg})
                                 else:
                                     resume_agent = _get_agent(resume_domain)

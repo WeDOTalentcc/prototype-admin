@@ -9,7 +9,21 @@ from typing import Any
 
 from app.orchestrator.action_handlers._handler_hooks import log_action_audit, sync_to_rails
 from app.orchestrator.action_executor import ActionResult
-from app.domains.job_management.agents.wizard_tool_registry import _fetch_market_range
+# Task #850: `wizard_tool_registry` was removed. The legacy
+# `_fetch_market_range` helper is replaced by a thin local wrapper that
+# returns an empty range so callers fall through to their no-data
+# message. The canonical pipeline (JobCreationGraph) calls
+# `salary_benchmark_service` directly via SalaryBenchmarkNode.
+async def _fetch_market_range(job_title: str, seniority: str, location: str) -> dict:
+    try:
+        from app.domains.analytics.services.salary_benchmark_service import (
+            salary_benchmark_service,
+        )
+        return await salary_benchmark_service.get_market_range(
+            job_title=job_title, seniority=seniority, location=location
+        )
+    except Exception:
+        return {}
 
 logger = logging.getLogger(__name__)
 
@@ -507,8 +521,12 @@ async def _generate_jd_direct(params: dict, context: dict):
         # Try to call the enrichment service first
         company_id = context.get("company_id") if context else None
         try:
-            from app.domains.job_management.agents.wizard_tool_registry import _wrap_generate_enriched_jd
-            enriched = await _wrap_generate_enriched_jd(
+            # Task #850: `wizard_tool_registry._wrap_generate_enriched_jd` was
+            # removed; call the canonical JD enrichment service directly.
+            from app.domains.job_management.services.jd_enrichment_service import (
+                jd_enrichment_service,
+            )
+            enriched = await jd_enrichment_service.generate_enriched_jd(
                 title=title,
                 seniority=seniority,
                 detected_skills=skills,
