@@ -14,11 +14,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
   import { useLiaFloat, useLiaChatContext } from "@/contexts/lia-float-context"
   import { useWizardFlow as useCanonicalWizardFlow } from "@/components/unified-chat/wizard/useWizardFlow"
   import { WizardProgressBar } from "@/components/unified-chat/wizard/WizardProgressBar"
-  import {
-    WIZARD_PLAN_TITLE,
-    buildPlanFlowSteps,
-  } from "@/components/unified-chat/wizard/wizard-plan-card"
-  import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
+  import { WizardPlanFeedCard } from "@/components/unified-chat/wizard/WizardPlanFeedCard"
   import {
     AlertDialog,
     AlertDialogContent,
@@ -55,12 +51,12 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
     const canonicalStage = canonicalWizard.currentStage
     const canonicalCompleteness = canonicalWizard.completeness
     const canonicalHistory = canonicalWizard.stageHistory
+    // Progress bar still tears down at the terminal stages — it represents
+    // "wizard in flight". The plan card itself stays visible at
+    // `done`/`handoff` and flips to "Concluído" via `WizardPlanFeedCard`
+    // (Task #835), matching UnifiedChat's behaviour fixed in Task #830.
     const canonicalWizardActive =
       canonicalStage !== null && canonicalStage !== "done" && canonicalStage !== "handoff"
-    const canonicalPlanSteps = React.useMemo(
-      () => buildPlanFlowSteps(canonicalStage),
-      [canonicalStage],
-    )
 
     const {
       activeInputTab, addCalibrationCriterion, addCustomQuestion, addNewBenefit, addNewCompetency, addNewSkill, analytics, approvedCandidates,
@@ -251,17 +247,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
                 </div>
               )}
 
-              {canonicalWizardActive && canonicalPlanSteps.length > 0 && (
-                <div
-                  data-testid="wizard-plan-card"
-                  className="mb-4 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary px-4 py-3"
-                >
-                  <p className="text-sm font-semibold text-lia-text-primary mb-2">
-                    {WIZARD_PLAN_TITLE}
-                  </p>
-                  <FlowStepMessage steps={canonicalPlanSteps} compact />
-                </div>
-              )}
+              <WizardPlanFeedCard currentStage={canonicalStage} />
 
               <ChatMessageList
                 messages={messages}
