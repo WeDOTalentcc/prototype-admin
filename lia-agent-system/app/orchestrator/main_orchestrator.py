@@ -121,6 +121,17 @@ def _is_plan_service_enabled() -> bool:
     return raw in ("1", "true", "yes")
 
 
+def _is_fallback_react_enabled() -> bool:
+    """Sprint III.D: ativa FallbackReActService late-intercept quando True.
+
+    Env var `LIA_V2_USE_FALLBACK_REACT` controla. Default OFF (V1 fallback).
+    Quando ON: se V1 retorna resposta classificada como técnica (router
+    artifact), V2 substitui via fallback_react_service.handle_directly().
+    """
+    raw = os.environ.get("LIA_V2_USE_FALLBACK_REACT", "false").lower()
+    return raw in ("1", "true", "yes")
+
+
 def _decide_agent_type_from_hints(
     hints: list,
     *,
@@ -1319,6 +1330,12 @@ class MainOrchestrator:
                 _llm_svc._tenant_container = _original_container
                 _llm_svc._current_tenant = _original_tenant
 
+        # Sprint III.D: late-intercept FallbackReActService (feature flag default OFF)
+        if _is_fallback_react_enabled() and self._fallback_react_service is not None:
+            result = await self._try_fallback_react_substitute(
+                result, ctx, orchestrator_context
+            )
+
         return result
 
     @trace_span(V2_SPANS.PLAN_DETECT)
@@ -1377,6 +1394,78 @@ class MainOrchestrator:
                 e,
             )
             return None
+
+    @trace_span(V2_SPANS.FALLBACK_REACT_HANDLE)
+    async def _try_fallback_react_substitute(
+        self,
+        v1_result: dict[str, Any],
+        ctx: Any,
+        orchestrator_context: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Sprint III.D: late-intercept FallbackReActService.
+
+        Se V1 retornou resposta "técnica" (router fallback artifact) e flag ON
+        e fallback_react_service injected → substitui resposta via service.
+
+        Detecção via heuristics.is_technical_response. Se substituição falha,
+        retorna v1_result original (graceful degradation).
+
+        Args:
+            v1_result: Dict retornado pelo V1.process_request.
+            ctx: UniversalContext da request.
+            orchestrator_context: Context dict passado ao V1.
+
+        Returns:
+            Dict com mesma shape do v1_result. Mensagem pode ter sido
+            substituída pelo fallback service se aplicável.
+        """
+        try:
+            from app.orchestrator.heuristics import is_technical_response
+
+            v1_message = v1_result.get("message", "") or ""
+            if not is_technical_response(v1_message):
+                # Resposta V1 é OK, não substituir
+                return v1_result
+
+            logger.info(
+                "[MainOrchestrator] Sprint III.D: V1 technical response detected, "
+                "trying fallback_react_service substitute"
+            )
+
+            intent = v1_result.get("intent") or "general_chat"
+            entities = (v1_result.get("result") or {}).get("data", {}).get("entities", {})
+
+            fallback_result = await self._fallback_react_service.handle_directly(
+                intent=intent,
+                message=ctx.message,
+                entities=entities or {},
+                context=orchestrator_context,
+            )
+
+            if fallback_result and fallback_result.get("success"):
+                # Substitui campos relevantes preservando metadata V1
+                substituted = dict(v1_result)
+                substituted["message"] = fallback_result.get("message", v1_message)
+                if "data" in fallback_result:
+                    substituted["data"] = fallback_result["data"]
+                substituted["agent_used"] = fallback_result.get("agent_used", "LIA Orchestrator")
+                substituted["agent_type"] = fallback_result.get("agent_type", "orchestrator")
+                substituted["_fallback_substituted"] = True  # marker para audit
+                logger.info(
+                    "[MainOrchestrator] Sprint III.D: V1 response substituted via fallback service"
+                )
+                return substituted
+
+            # Fallback service não conseguiu substituir — usa V1 original
+            return v1_result
+
+        except Exception as e:
+            # P1 graceful: any exception preserva resposta V1
+            logger.warning(
+                "[MainOrchestrator] Sprint III.D fallback substitute failed (using V1): %s",
+                e,
+            )
+            return v1_result
 
     async def _persist_response(
         self, ctx: UniversalContext, conv_id: str, conv: Any, result: dict[str, Any], db: Any
