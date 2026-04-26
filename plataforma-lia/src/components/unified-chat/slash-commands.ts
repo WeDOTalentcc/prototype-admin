@@ -181,6 +181,39 @@ export function buildAjudaHelpMarkdown(): string {
 export const AJUDA_REGEX = /^\/ajuda\s*$/i
 
 /**
+ * Shape of the in-chat messages emitted when `/ajuda` resolves locally.
+ * Mirrors the chat surface's `Message` contract loosely so consumers can
+ * spread the result straight into their `setMessages` reducer without
+ * coupling slash-commands to a chat-specific type.
+ */
+export interface AjudaChatMessages {
+  userMsg: { id: string; sender: "user"; content: string; timestamp: string }
+  helpMsg: { id: string; sender: "lia"; content: string; timestamp: string }
+}
+
+/**
+ * Build the user-echo + LIA-help message pair for an in-chat `/ajuda`
+ * resolution. Centralised here so every chat surface (UnifiedChat,
+ * ExpandedChatModal, future popovers) renders identical bubbles and we
+ * can unit-test the wiring without rendering the full chat component.
+ *
+ * `now` is injected so tests get deterministic timestamps; production
+ * callers can omit it and rely on the default `Date.now()`/`new Date()`.
+ */
+export function buildAjudaChatMessages(
+  rawInput: string,
+  responseMarkdown: string,
+  now: Date = new Date(),
+): AjudaChatMessages {
+  const ts = now.toISOString()
+  const ms = now.getTime()
+  return {
+    userMsg: { id: `user-${ms}`, sender: "user", content: rawInput, timestamp: ts },
+    helpMsg: { id: `lia-${ms}-ajuda`, sender: "lia", content: responseMarkdown, timestamp: ts },
+  }
+}
+
+/**
  * Find a command by either its `primary` token or one of its `aliases`.
  * Returns `undefined` when nothing matches.
  */

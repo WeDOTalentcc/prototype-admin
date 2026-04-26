@@ -25,6 +25,7 @@ import {
   formatGlossaryEntryMarkdown,
   lookupGlossaryTerm,
 } from "@/services/lia-api/glossary-api"
+import { buildAjudaChatMessages } from "./slash-commands"
 
 const DEFINIR_REGEX = /^\/(?:definir|glossario|glossário)(?:\s+(.+))?$/i
 
@@ -153,19 +154,10 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     sendMessage: sendChatMessage,
     onLocalCommand: (commandId, payload) => {
       if (commandId !== "ajuda") return
-      const now = new Date().toISOString()
-      const userMsg = {
-        id: `user-${Date.now()}`,
-        sender: "user" as const,
-        content: payload.rawInput,
-        timestamp: now,
-      }
-      const helpMsg = {
-        id: `lia-${Date.now()}-ajuda`,
-        sender: "lia" as const,
-        content: payload.responseMarkdown,
-        timestamp: now,
-      }
+      const { userMsg, helpMsg } = buildAjudaChatMessages(
+        payload.rawInput,
+        payload.responseMarkdown,
+      )
       setChatMessages((prev) => [...prev, userMsg, helpMsg])
     },
   })
