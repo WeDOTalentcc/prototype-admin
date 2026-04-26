@@ -11,6 +11,24 @@ effort: high
 
 **Purpose**: Detect, suggest, and evaluate Gang of Four (GoF) design patterns in TypeScript/JavaScript codebases with stack-aware adaptations.
 
+## Quando ativar
+
+- Quando o usuário disser "que pattern usar aqui?", "aplica singleton", "aplica factory", "aplica observer", "extrai estratégia" ou "qual GoF cabe nisso?"
+- Ao refatorar código com code smell estrutural (god class, switch grande sobre tipo, lógica condicional duplicada em N arquivos)
+- Antes de escolher abordagem de composição para componente complexo (compound components, render props, HOC, hooks)
+- Ao revisar PR que introduz nova abstração estrutural (factory, builder, mediator)
+- Ao decidir entre Provider/Context vs prop drilling vs state global (Pinia/Redux/Zustand)
+- Ao desenhar service backend que precisa de múltiplas implementações intercambiáveis (LLM providers, payment gateways)
+- Quando o usuário perguntar se há alternativa nativa do framework (React, Angular, NestJS, Vue) ao GoF clássico
+- Ao avaliar qualidade de implementação de pattern existente (review de pattern já em uso)
+
+## Quando NÃO ativar
+
+- Padronização visual de componente UI -> usar `design-standardize` ou `vue-vuetify-standardize`
+- Definição de intenção estética de tela nova -> usar `frontend-design`
+- Bug pontual sem decisão de arquitetura -> usar `canonical-fix`
+- Padrões de teste (mocks, stubs, fakes, fixtures) -> usar `lia-testing`
+
 ## Core Capabilities
 
 1. **Stack Detection**: Identify primary framework/library (React, Angular, NestJS, Vue, Express, RxJS, Redux, ORMs)

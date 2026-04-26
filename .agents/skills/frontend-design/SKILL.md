@@ -10,18 +10,24 @@ Esta skill guia a criacao de interfaces frontend distintivas e production-grade 
 > **Origem:** Adaptada de [anthropics/claude-code frontend-design](https://github.com/anthropics/claude-code/blob/main/plugins/frontend-design/skills/frontend-design/SKILL.md)
 > **Integracao LIA:** Funciona em conjunto com `design-standardize` (DS v4.2.1) — esta skill define a intencao estetica, `design-standardize` garante conformidade com tokens e regras do DS.
 
-## Quando Usar
+## Quando ativar
 
-- Criar componentes, paginas ou aplicacoes web novas
-- Quando o usuario pede algo "bonito", "diferente", "marcante" ou "profissional"
-- Ao criar telas de entrada/branding (login, onboarding, landing)
-- Prototipar variantes visuais no canvas (mockup-sandbox)
-- Quando a interface precisa se destacar (pitch, demo, showcase)
+- Quando o usuario disser "quero algo bonito", "quero algo diferente", "marcante", "profissional", "wow" ou "que se destaque"
+- Ao criar tela de entrada ou branding (login, onboarding, landing, hero, pitch deck visual)
+- Ao prototipar variantes visuais no canvas (mockup-sandbox) antes de comprometer-se com uma direcao
+- Ao decidir tom estetico ANTES de implementar (atua como PASSO 0 do `design-standardize`)
+- Quando a interface precisa se destacar (demo para cliente, showcase, apresentacao publica)
+- Ao escolher direcao tipografica, cromatica ou de motion para componente especial (animacao, transicao, easter egg)
+- Ao criar componente de marketing dentro do app (banner promocional, tour interativo)
 
-## Quando NAO Usar Sozinha
+## Quando NAO ativar
 
-- Para interfaces internas da plataforma (Kanban, tabelas, settings) -> usar `design-standardize` como principal, esta skill apenas como complemento de intencao estetica
-- Quando ha regras rigidas do DS v4.2.1 -> esta skill sugere a direcao, `design-standardize` aplica os tokens
+- Interface interna repetitiva (Kanban, tabela, settings, formulario CRUD) -> `design-standardize` e principal
+- Componente que tem regra rigida do DS v4.2.1 (botao primario, card padrao) -> `design-standardize` aplica direto
+- Refactor de tela existente sem nova intencao estetica -> `design-standardize`
+- Padronizacao visual em projeto Vue/Vuetify -> `vue-vuetify-standardize` (esta skill so complementa intencao)
+- Quando o usuario pediu padronizacao ("aplica DS"), nao criacao distintiva
+
 
 ## Integracao com Ecossistema LIA
 

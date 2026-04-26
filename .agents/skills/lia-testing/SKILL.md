@@ -7,6 +7,25 @@ description: "Estrategia de testes unificada para Plataforma LIA — TDD (Red/Gr
 
 Combina TDD workflow, piramide de 5 camadas e evals para agentes IA num unico ponto de referencia.
 
+## Quando ativar
+
+- Ao implementar feature nova — escrever teste ANTES (TDD Red/Green/Refactor)
+- Ao corrigir bug — escrever teste que reproduz o bug, depois corrigir
+- Ao refatorar codigo — rede de testes garante zero regressao antes de mexer
+- Quando o usuario disser "escreve teste", "cobre com teste", "TDD nisso", "valida com teste" ou "garante que nao quebra"
+- Ao criar agente IA (LangGraph) — escrever golden dataset e LLM-as-judge antes do prompt final
+- Ao revisar cobertura de teste em codigo existente (auditoria de cobertura)
+- Antes de marcar feature complexa como pronta (rodar piramide de 5 camadas)
+- Ao introduzir nova integracao externa (API, banco, fila) — testes de contrato e mock
+
+## Quando NAO ativar
+
+- Mudanca de copy/texto sem logica
+- Mockup ou prototipo no sandbox sem intencao de producao
+- Configuracao de ambiente (dotfiles, env vars) sem mudanca de codigo
+- Quando o usuario pediu fix urgente com prazo apertado e prometeu teste em task separada
+- Script descartavel de uso unico (migracao manual, exploracao)
+
 ---
 
 ## PARTE 1: TDD — Red / Green / Refactor

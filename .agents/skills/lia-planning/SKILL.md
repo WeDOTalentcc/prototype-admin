@@ -7,6 +7,24 @@ description: "Metodologia de planning unificada para Plataforma LIA — combina 
 
 Combina 3 abordagens: GSD workflow (modos operacionais), spec-driven development (fases de profundidade) e brainstorming estruturado (exploracao de ideias).
 
+## Quando ativar
+
+- Ao iniciar trabalho significativo (feature nova, refactor amplo, sprint, debug com causa nao obvia)
+- Quando o usuario disser "planeja", "vamos seguir a metodologia", "como vamos trabalhar?", "GSD", "novo sprint" ou "spec disso"
+- Ao diagnosticar bug com causa nao obvia -> Modo Bug Fix (diagnosticar > isolar > corrigir > verificar)
+- Ao especificar feature nova -> Modo Feature (spec > impacto > implementar > testar > auditar)
+- Ao planejar refactor com metricas -> Modo Refactor (medir > planejar > executar > medir de novo)
+- Ao decompor sprint em tasks atomicas -> Modo Sprint (inventariar > decompor > priorizar > delegar > integrar)
+- Quando ha ambiguidade ou multiplas abordagens possiveis -> Brainstorming antes do Modo
+- Antes de delegar conjunto de tarefas para subagents (decomposicao formal)
+
+## Quando NAO ativar
+
+- Typo trivial ou ajuste micro (1 prop, 1 string literal)
+- Pergunta direta do usuario que nao envolve implementacao
+- Usuario ja forneceu plano completo e so pediu execucao linear
+- Continuacao imediata de tarefa em andamento sem mudanca de escopo
+
 ## Principio Central: Auto-Sizing
 
 A profundidade do processo adapta-se ao tamanho do trabalho:

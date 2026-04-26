@@ -7,14 +7,24 @@ description: "Auditoria completa de features, ajustes e correções na Plataform
 
 Esta skill é uma auditoria obrigatória de **14 dimensões** que deve ser executada antes de marcar qualquer feature, ajuste ou correção como concluído. Ela garante que nada fique desconectado, parcialmente implementado, invisível ao usuário, ou em violação ao Design System / arquitetura de IA.
 
-## Quando Usar
+## Quando ativar
 
-- **SEMPRE** antes de marcar uma tarefa como `completed` ou `completed_pending_review`
-- Após implementar qualquer feature nova (componente, hook, endpoint, modal, agente, prompt, etc.)
-- Após fazer ajustes ou correções em código existente
-- Quando o usuário pedir auditoria, revisão ou validação
-- Quando integrar componentes de diferentes camadas (frontend ↔ backend ↔ IA ↔ banco)
-- Quando criar ou modificar agentes IA, prompts, intents ou integrações externas
+- Quando o usuário disser "audita", "revisa", "valida", "checa", "passa o pente fino" ou "vê se tá tudo certo"
+- **SEMPRE** antes de marcar tarefa como `completed` ou `completed_pending_review`
+- Após implementar feature nova (componente, hook, endpoint, modal, agente, prompt, intent)
+- Após corrigir bug ou aplicar refactor que toca múltiplas camadas
+- Ao integrar mudanças entre frontend ↔ backend ↔ IA ↔ banco (qualquer cruzamento de camada)
+- Ao criar ou modificar agentes IA, prompts, intents ou integrações externas (APIs de terceiros)
+- Ao final de qualquer modo BUILD/REFACTOR/AUDIT do `lia-orchestrator`
+- Antes de PR que adiciona/altera dimensão de governança, fairness, LGPD ou WSI
+
+## Quando NÃO ativar
+
+- Mudança puramente de copy/texto em arquivo de tradução ou i18n (sem lógica)
+- Typo trivial em string literal (sem impacto funcional)
+- Workaround temporário com prazo já documentado como dívida técnica
+- Antes de implementar — auditoria é POST-implementação; para fase PRE use `feature-impact`
+- Configuração de ambiente (`.env`, dotfiles) sem mudança de código
 
 ## Filosofia
 

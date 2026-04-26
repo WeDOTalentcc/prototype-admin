@@ -9,15 +9,23 @@ Skill unificada de compliance. 4 secoes navegaveis por contexto.
 
 > **Referencia canonica:** `attached_assets/WEDOTALENT_GUIA_COMPLETO_v3.3_PT.md`
 
-## Quando Usar
+## Quando ativar
 
-| Contexto | Secao |
-|----------|-------|
-| Feature nova, agente, integracao | PARTE 1: Governanca |
-| Pipeline screening, scoring WSI, calibracao | PARTE 2: Screening |
-| Avaliacao, ranking, filtragem de candidatos | PARTE 3: DEI/Fairness |
-| Dados pessoais, consentimento, retencao | PARTE 4: LGPD |
-| Deploy para producao | PARTE 1 secao 6 (Production Readiness Gate) |
+- Ao criar feature, agente IA ou integracao externa nova (PARTE 1: Governanca — 13 Crencas, 8 Inegociaveis)
+- Ao mexer em pipeline de screening, scoring WSI, calibracao ou BARS (PARTE 2)
+- Ao criar/alterar logica de avaliacao, ranking ou filtragem de candidatos (PARTE 3: DEI/Fairness — Four-Fifths Rule, FairnessGuard 3 camadas)
+- Ao manipular dados pessoais, consentimento, retencao, anonimizacao ou DSR (PARTE 4: LGPD — 6 pilares, PII Masking)
+- Antes de deploy para producao (Production Readiness Gate, PARTE 1 secao 6 — 18 itens)
+- Quando o usuario disser "passa pelas 13 crencas", "checa fairness", "audita LGPD", "valida WSI" ou "tem PII aqui?"
+- Ao revisar prompt que toma decisao sobre candidato (anti-vies, calibracao BARS)
+- Ao integrar provedor LLM novo (OpenAI, Anthropic, Gemini) — verificar retencao, residencia de dados, EU AI Act
+
+## Quando NAO ativar
+
+- Mudanca puramente visual sem dados de candidato -> `design-standardize`
+- Bug isolado sem implicacao etica/legal/regulatoria -> `canonical-fix`
+- Refactor mecanico de tipos sem mudanca de comportamento -> sem skill especifica
+- Componente de UI interna que nao toca dados pessoais nem decisoes IA
 
 ---
 

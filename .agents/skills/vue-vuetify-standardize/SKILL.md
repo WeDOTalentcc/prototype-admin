@@ -15,14 +15,24 @@ Workflow de 10 passos + 1 pre-step (PASSO 0) para padronizacao, conversao e audi
 > **Stack:** Vue 3 (Composition API) + Vuetify 3 + Nuxt 3 + Pinia + TypeScript
 > **Skill autocontida:** Todos os tokens, cores, mapeamentos e regras necessarios estao inline neste documento. Nao depende de acesso a nenhum outro repositorio ou skill.
 
-## Quando Usar
+## Quando ativar
 
-- Criar ou refatorar componente Vue/Vuetify no projeto v5
-- Converter componente React+Tailwind para Vue+Vuetify
-- Auditar conformidade visual de telas Vue existentes
-- Configurar tema Vuetify para novo projeto
-- Antes de merge em PR que toca UI no v5
-- Quando o usuario pedir "padronizar Vue", "adequar ao DS" ou "auditar frontend v5"
+- Quando o usuario disser "padroniza no Vue", "aplica DS no v5", "audita esse componente Vue" ou "adequa ao design system Vuetify"
+- Ao criar tela, componente ou layout novo em `recruiter_agent_v5` (Vue 3 + Vuetify 3 + Nuxt 3)
+- Ao converter componente React+Tailwind do `plataforma-lia` para Vue+Vuetify (porte React->Vue)
+- Ao revisar PR que toca arquivos `.vue`, `app.vue`, `nuxt.config.ts` ou tema Vuetify no v5
+- Ao auditar conformidade visual de tela Vue existente (cores, tipografia Open Sans/Inter/JetBrains, border-radius)
+- Ao tokenizar hex literais (`#000`, `bg-blue-500`, `color: red`) restantes em arquivo `.vue`
+- Ao quebrar monolito Vue (>1500 linhas) em sub-componentes
+- Ao configurar tema Vuetify do zero ou ao atualizar `vuetify.options.ts`
+
+## Quando NAO ativar
+
+- Componente React+Tailwind no `plataforma-lia` -> usar `design-standardize`
+- Preparacao de codigo React para futura migracao Vue (sem tocar arquivo `.vue` ainda) -> usar `vue-migration-prep`
+- Decidir intencao estetica de tela nova de entrada/branding -> usar `frontend-design` antes
+- Escolher pattern de composicao (factory, observer, strategy) no codigo Vue -> usar `design-patterns`
+- Mudanca de copy/texto em arquivo i18n sem alteracao visual
 
 ## Filosofia
 

@@ -11,11 +11,24 @@ Aplica o Design System LIA v4.2.1 em componentes React+Tailwind novos ou existen
 > **Tokens TS:** `plataforma-lia/src/lib/design-tokens.ts`
 > **Tokens CSS:** `plataforma-lia/src/styles/design-tokens.css`
 
-## Quando Usar
+## Quando ativar
 
-- Criar/refatorar componente, tela, modal, botão ou qualquer elemento visual
-- Quando o usuário pedir "padronizar" ou "adequar ao design system"
-- Após receber feedback de que algo "não está com a cara certa"
+- Quando o usuário disser "padroniza", "aplica DS", "adequa ao design system", "deixa com a cara da LIA" ou "aplica DS no botão X"
+- Ao criar componente, tela, modal, drawer ou botão novo no `plataforma-lia` (React+Tailwind)
+- Ao receber feedback como "não está com a cara certa", "tá feio", "fora do padrão" ou "destoa"
+- Ao introduzir cor, tipografia, espaçamento ou border-radius novos em componente existente
+- Como parte do fluxo de auditoria (D3 UI/DS no `feature-audit`)
+- Antes de capturar screenshot para conversão Figma ou para apresentação a cliente
+- Quando o usuário pedir dark mode (ou toggle dark/light) em tela existente
+- Ao migrar hex literais (`#000`, `bg-blue-500`) para tokens canônicos do DS
+
+## Quando NÃO ativar
+
+- Componente Vue/Vuetify no `recruiter_agent_v5` -> usar `vue-vuetify-standardize`
+- Decidir intenção estética de tela nova de entrada/branding -> usar `frontend-design` antes
+- Escolher padrão de composição de componente (factory, render props, compound) -> usar `design-patterns`
+- Mudança de copy/texto sem alteração visual
+
 
 ## Filosofia
 

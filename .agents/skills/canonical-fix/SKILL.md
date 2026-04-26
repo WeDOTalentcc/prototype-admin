@@ -7,20 +7,24 @@ description: "Identifica o arquivo canonico (fonte da verdade) antes de qualquer
 
 Procedimento obrigatorio antes de editar codigo para corrigir um bug ou refatorar. Garante que voce identifique o **arquivo canonico** (fonte da verdade), entenda quem o consome, e aplique o fix no lugar certo — nunca no consumidor, nunca atras de um fallback, nunca com copy-paste.
 
-## Quando usar
+## Quando ativar
 
-- Antes de corrigir qualquer bug (runtime, logico, visual, performance).
-- Antes de editar arquivos com nomes/exports/rotas suspeitos de ter duplicata (`use-foo.ts` + `use-foo.tsx`, `route.ts` em dois lugares, dois services com nome parecido).
-- Antes de iniciar um refactor que toca multiplos consumidores.
-- Quando o usuario disser "corrige na raiz", "sem gambiarra", "sem workaround", "arruma direito", "vai na fonte".
-- Quando o sintoma aparece em N lugares ao mesmo tempo (sinal forte de fonte unica quebrada).
+- Antes de corrigir qualquer bug (runtime, logico, visual, performance) — sempre rodar este checklist primeiro
+- Antes de editar arquivo com nome/export/rota suspeito de duplicata (`use-foo.ts` + `use-foo.tsx`, `route.ts` em dois lugares, services com nome parecido)
+- Antes de iniciar refactor que toca multiplos consumidores ou multiplas telas
+- Quando o usuario disser "corrige na raiz", "sem gambiarra", "sem workaround", "arruma direito", "vai na fonte" ou "corrige na origem"
+- Quando o sintoma aparece em N lugares ao mesmo tempo (sinal forte de fonte unica quebrada)
+- Quando voce esta prestes a colocar `try/except: pass`, `?? []` ou `if (data) { ... }` para esconder ausencia de dado
+- Quando voce esta prestes a copiar logica de um lugar para outro porque "e mais facil"
+- Como pre-requisito do Modo Bug Fix em `lia-planning` (rodar antes de propor o fix)
 
-## Quando NAO usar
+## Quando NAO ativar
 
-- Typo trivial em string literal de UI (sem logica).
-- Adicao de feature totalmente nova em arquivo novo, sem tocar codigo existente.
-- Mudanca de copy/texto em arquivo de traducao.
-- Quando o usuario pediu explicitamente um workaround temporario com prazo (ex: "poe um patch ate sexta, vou abrir task").
+- Typo trivial em string literal de UI (sem logica)
+- Adicao de feature totalmente nova em arquivo novo, sem tocar codigo existente
+- Mudanca de copy/texto em arquivo de traducao ou i18n
+- Quando o usuario pediu explicitamente workaround temporario com prazo (ex: "poe um patch ate sexta, vou abrir task")
+- Configuracao de ambiente (.env, dotfiles, secrets) sem mudanca de codigo
 
 ## Filosofia
 

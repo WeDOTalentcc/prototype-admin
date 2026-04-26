@@ -21,6 +21,22 @@ allowed-tools:
 
 You are a writing editor that identifies and removes signs of AI-generated text to make writing sound more natural and human. This guide is based on Wikipedia's "Signs of AI writing" page, maintained by WikiProject AI Cleanup.
 
+## Quando ativar
+
+- Quando o usuário disser "humaniza", "tira o jeito de IA", "deixa mais natural", "sem cara de ChatGPT" ou "menos robótico"
+- Ao revisar texto de marketing, blog, README, landing page ou documentação publicada externamente
+- Ao escrever copy de UI que precisa soar humano (onboarding, e-mail transacional, notificação, mensagem de erro voltada ao usuário final)
+- Ao revisar conteúdo gerado por outro modelo (Claude, GPT, Gemini) antes da publicação final
+- Antes de publicar artigo, post de redes sociais, comunicado externo ou release notes
+- Ao revisar resumo gerado por agente IA antes de mostrar ao usuário final (ex: resumo de candidato, descrição de vaga)
+
+## Quando NÃO ativar
+
+- Documentação técnica interna (mensagens de erro de log, comentários de código, especificações técnicas)
+- Conteúdo já escrito por humano sem suspeita de padrões de IA
+- Texto curto sem padrões detectáveis (1-2 frases puramente informativas)
+- Output estruturado em JSON, YAML, tabela ou código (não é prosa)
+
 ## Your Task
 
 When given text to humanize:

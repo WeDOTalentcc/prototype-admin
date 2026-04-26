@@ -11,6 +11,24 @@ Garante que código React+Tailwind está estruturado para facilitar futura conve
 > **Stack futura:** Vue 3 + Vuetify 3 + Nuxt 3 + Pinia
 > **DS oficial:** `plataforma-lia/docs/design-system/00-design-system-v4.md` (inclui Vuetify mapping)
 
+## Quando ativar
+
+- Ao criar componente React (`.tsx`) novo no `plataforma-lia` (a estrutura precisa nascer portável)
+- Ao refatorar componente React existente, especialmente os que serão migrados em breve
+- Ao criar hook, store, slice ou serviço de frontend (separação lógica/template para vir Composition API)
+- Quando o usuário disser "prepara pra migração Vue", "deixa portável", "evita React-only" ou "usa só padrão que dá pra converter"
+- Ao escrever prop interface de componente novo (preferir interface explícita sobre `React.FC`)
+- Ao introduzir state management novo (preferir padrão portável a Pinia ao invés de hooks React-only)
+- Como parte do fluxo padrão: após implementar feature, antes de `feature-audit`
+- Ao revisar componente existente para portabilidade ("isso vai dar pra converter pro Vue?")
+
+## Quando NÃO ativar
+
+- Componente já é Vue/Vuetify no `recruiter_agent_v5` -> usar `vue-vuetify-standardize`
+- Padronização visual ao DS v4.2.1 em React -> usar `design-standardize`
+- Lógica de pattern de composição (factory, observer, strategy) -> usar `design-patterns`
+- Bug pontual sem refactor estrutural -> usar `canonical-fix`
+
 ## Caminhos de Conversão
 
 A migração acontece por **dois caminhos** — a skill prepara para ambos:
