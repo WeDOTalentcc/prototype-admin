@@ -89,3 +89,11 @@ repos:
         files: ^app/.*\.py$
         pass_filenames: false
         always_run: false
+      - id: no-getattr-on-models
+        name: "G6: No getattr fallback on SQLAlchemy model rows (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_no_getattr_on_models.py 2>&1 || true"
+        files: ^(app|libs)/.*\\.py$
+        pass_filenames: false
+        always_run: false
+
