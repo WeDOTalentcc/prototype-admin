@@ -26,6 +26,7 @@ import {
   lookupGlossaryTerm,
 } from "@/services/lia-api/glossary-api"
 import { buildAjudaChatMessages } from "./slash-commands"
+import { formatWizardSavedLabel } from "./wizard/wizard-saved-label"
 
 const DEFINIR_REGEX = /^\/(?:definir|glossario|glossário)(?:\s+(.+))?$/i
 
@@ -199,18 +200,11 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     const id = setInterval(() => setSavedTick((n) => n + 1), 30_000)
     return () => clearInterval(id)
   }, [wizardActive])
-  const wizardSavedLabel = (() => {
-    if (!wizardActive || !wizardSavedAt) return null
-    const diff = Date.now() - wizardSavedAt.getTime()
-    if (diff < 5_000) return "Salvando…"
-    const minutes = Math.floor(diff / 60_000)
-    if (minutes < 1) return "Salvo agora"
-    if (minutes === 1) return "Salvo há 1 min"
-    if (minutes < 60) return `Salvo há ${minutes} min`
-    const hours = Math.floor(minutes / 60)
-    if (hours === 1) return "Salvo há 1 hora"
-    return `Salvo há ${hours} horas`
-  })()
+  const wizardSavedLabel = formatWizardSavedLabel(
+    wizardSavedAt,
+    new Date(),
+    wizardActive,
+  )
 
   // Track last-seen dynamic panel so we can re-open it after the user
   // dismisses the right-side panel mid-wizard (Task #836 — botão "Ver vaga").
