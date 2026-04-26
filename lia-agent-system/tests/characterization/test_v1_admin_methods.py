@@ -105,59 +105,78 @@ class TestProcessAnalyticsRequest:
 
     @pytest.mark.asyncio
     async def test_returns_dict_with_success_key(self, v1_with_minimal_mocks):
-        """Contract: sempre retorna dict com 'success' key."""
-        with patch("app.orchestrator.orchestrator.job_analytics_prompt_service") as mock_svc:
-            mock_svc.execute_command = AsyncMock(
-                return_value=MagicMock(
-                    command="analyze", agent_used="analytics_agent", response="ok",
-                    data={}, charts=[], suggestions=[], metadata={},
-                )
+        """Contract: sempre retorna dict com success key.
+
+        Pos-extracao: V1 delega ao AnalyticsDispatchService.
+        """
+        mock_svc = MagicMock()
+        mock_svc.execute_command = AsyncMock(
+            return_value=MagicMock(
+                command="analyze", agent_used="analytics_agent", response="ok",
+                data={}, charts=[], suggestions=[], metadata={},
             )
-            mock_svc.analyze_natural_query = AsyncMock(
-                return_value=MagicMock(
-                    command="natural", agent_used="analytics_agent", response="ok",
-                    data={}, charts=[], suggestions=[], metadata={},
-                )
+        )
+        mock_svc.analyze_natural_query = AsyncMock(
+            return_value=MagicMock(
+                command="natural", agent_used="analytics_agent", response="ok",
+                data={}, charts=[], suggestions=[], metadata={},
             )
-            with patch("app.orchestrator.orchestrator.COMMAND_TEMPLATES", {"test_cmd": {}}):
-                result = await v1_with_minimal_mocks.process_analytics_request(
-                    user_id="user-1", command="natural query",
-                    context={"company_id": "company-a"}, conversation_id="conv-1",
-                )
-                assert isinstance(result, dict)
-                assert "success" in result
+        )
+        v1_with_minimal_mocks._analytics_dispatch_service._service = mock_svc
+        v1_with_minimal_mocks._analytics_dispatch_service._templates = {"test_cmd": {}}
+
+        result = await v1_with_minimal_mocks.process_analytics_request(
+            user_id="user-1", command="natural query",
+            context={"company_id": "company-a"}, conversation_id="conv-1",
+        )
+        assert isinstance(result, dict)
+        assert "success" in result
 
     @pytest.mark.asyncio
     async def test_handles_exception_gracefully(self, v1_with_minimal_mocks):
-        """Exception em analytics service retorna success=False."""
-        with patch("app.orchestrator.orchestrator.job_analytics_prompt_service") as mock_svc:
-            mock_svc.analyze_natural_query = AsyncMock(side_effect=Exception("svc fail"))
-            with patch("app.orchestrator.orchestrator.COMMAND_TEMPLATES", {}):
-                result = await v1_with_minimal_mocks.process_analytics_request(
-                    user_id="user-1", command="bad query",
-                    context={"company_id": "company-a"},
-                )
-                assert result["success"] is False
-                assert "error" in result
+        """Exception em analytics service retorna success=False.
+
+        Pos-extracao (Sprint IV follow-up): V1 delega ao AnalyticsDispatchService.
+        Patcha o service injetado no V1 para simular falha.
+        """
+        # Patcha o analytics service injetado no V1 (nao mais o module-level direto)
+        v1_with_minimal_mocks._analytics_dispatch_service._service = MagicMock()
+        v1_with_minimal_mocks._analytics_dispatch_service._service.analyze_natural_query = (
+            AsyncMock(side_effect=Exception("svc fail"))
+        )
+        v1_with_minimal_mocks._analytics_dispatch_service._templates = {}  # nada matches
+
+        result = await v1_with_minimal_mocks.process_analytics_request(
+            user_id="user-1", command="bad query",
+            context={"company_id": "company-a"},
+        )
+        assert result["success"] is False
+        assert "error" in result
 
     @pytest.mark.asyncio
     async def test_command_in_templates_uses_execute_command(self, v1_with_minimal_mocks):
-        """Quando command está em COMMAND_TEMPLATES, usa execute_command (não natural)."""
-        with patch("app.orchestrator.orchestrator.job_analytics_prompt_service") as mock_svc:
-            mock_svc.execute_command = AsyncMock(
-                return_value=MagicMock(
-                    command="known_cmd", agent_used="agent", response="r",
-                    data={}, charts=[], suggestions=[], metadata={},
-                )
+        """Quando command esta em COMMAND_TEMPLATES, usa execute_command (nao natural).
+
+        Pos-extracao: V1 delega ao service. Patcha service injetado.
+        """
+        mock_svc = MagicMock()
+        mock_svc.execute_command = AsyncMock(
+            return_value=MagicMock(
+                command="known_cmd", agent_used="agent", response="r",
+                data={}, charts=[], suggestions=[], metadata={},
             )
-            mock_svc.analyze_natural_query = AsyncMock()
-            with patch("app.orchestrator.orchestrator.COMMAND_TEMPLATES", {"known_cmd": {}}):
-                await v1_with_minimal_mocks.process_analytics_request(
-                    user_id="user-1", command="known_cmd",
-                    context={"company_id": "company-a"},
-                )
-                mock_svc.execute_command.assert_called_once()
-                mock_svc.analyze_natural_query.assert_not_called()
+        )
+        mock_svc.analyze_natural_query = AsyncMock()
+        # Substitui service injetado no V1
+        v1_with_minimal_mocks._analytics_dispatch_service._service = mock_svc
+        v1_with_minimal_mocks._analytics_dispatch_service._templates = {"known_cmd": {}}
+
+        await v1_with_minimal_mocks.process_analytics_request(
+            user_id="user-1", command="known_cmd",
+            context={"company_id": "company-a"},
+        )
+        mock_svc.execute_command.assert_called_once()
+        mock_svc.analyze_natural_query.assert_not_called()
 
 
 # ─────────────────────────────────────────────────────────────────────────────

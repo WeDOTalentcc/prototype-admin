@@ -94,6 +94,12 @@ class Orchestrator:
         # Sprint IV: rubric dispatch para BARS CV match (extraído de _handle_cv_screening_with_rubric)
         from app.domains.cv_screening.services.rubric_dispatch import RubricDispatchService
         self._rubric_dispatch_service = RubricDispatchService(llm_service=llm_service)
+        # Extraction follow-up: analytics dispatch (extraído de process_analytics_request)
+        from app.domains.analytics.services.analytics_dispatch import AnalyticsDispatchService
+        self._analytics_dispatch_service = AnalyticsDispatchService(
+            analytics_service=job_analytics_prompt_service,
+            command_templates=COMMAND_TEMPLATES,
+        )
         logger.info("Orchestrator initialized with CascadedRouter + DomainWorkflow")
 
     def _init_cascaded_router(self):
@@ -507,17 +513,20 @@ class Orchestrator:
     async def process_analytics_request(self, user_id: str, command: str,
                                         context: dict[str, Any],
                                         conversation_id: str | None = None) -> dict[str, Any]:
-        try:
-            if command in COMMAND_TEMPLATES:
-                result = await job_analytics_prompt_service.execute_command(command, context)
-            else:
-                result = await job_analytics_prompt_service.analyze_natural_query(command, context)
-            if conversation_id:
-                self.state_manager.update_state(conversation_id, {
-                    "last_analytics_command": command, "last_analytics_result": result.command})
-            return {"success": True, "command": result.command, "agent_used": result.agent_used,
-                    "response": result.response, "data": result.data, "charts": result.charts,
-                    "suggestions": result.suggestions, "metadata": result.metadata}
-        except Exception as e:
-            logger.error(f"Analytics request failed: {e}")
-            return {"success": False, "error": str(e)}
+        """Delegação canônica ao AnalyticsDispatchService (extraction follow-up).
+
+        State manager update fica em V1 (V1-specific session lifecycle).
+        Service handle the dispatch + response shaping.
+
+        Reference: ADR-019 — process_analytics_request extraction
+        """
+        result = await self._analytics_dispatch_service.dispatch(command, context)
+
+        # State manager update (V1-specific — não passou para service)
+        if result.get("success") and conversation_id:
+            self.state_manager.update_state(conversation_id, {
+                "last_analytics_command": command,
+                "last_analytics_result": result.get("command"),
+            })
+
+        return result
