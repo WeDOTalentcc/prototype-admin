@@ -112,7 +112,8 @@ export function SchedulingPanel({ data, onApprove }: Props) {
                 )}
               />
             ))}
-            <span className="ml-auto text-[10px] text-lia-text-disabled">
+            {/* A-09 / WCAG 2.1 AA 1.4.3: was `text-[10px] text-lia-text-disabled`. */}
+            <span className="ml-auto text-xs text-lia-text-secondary">
               {currentIdx + 1}/{totalInterviews}
             </span>
           </div>
@@ -225,7 +226,8 @@ export function SchedulingPanel({ data, onApprove }: Props) {
           <ChevronRight className="w-4 h-4" aria-hidden="true" />
         </button>
         {!selectedSlot && (
-          <p className="text-center text-[10px] text-lia-text-disabled mt-1.5">
+          // A-09 / WCAG 2.1 AA 1.4.3: was `text-[10px] text-lia-text-disabled`.
+          <p className="text-center text-xs text-lia-text-secondary mt-1.5">
             Selecione um horário para continuar
           </p>
         )}

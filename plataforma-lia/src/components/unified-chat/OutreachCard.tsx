@@ -109,8 +109,13 @@ export function OutreachCard({ data }: Props) {
       </div>
 
       {/* VoIP extra info */}
+      {/*
+        A-09 / WCAG 2.1 AA 1.4.3: previously `text-[10px] text-lia-text-disabled`
+        (~9 px after Tailwind base, ~2.85:1 contrast). Promoted to `text-xs`
+        (12 px) and `text-lia-text-secondary` (#6B7280, ≥4.5:1 on white).
+      */}
       {data.channel === "voip" && data.extension && (
-        <div className="px-3 pb-2 text-[10px] text-lia-text-disabled">
+        <div className="px-3 pb-2 text-xs text-lia-text-secondary">
           Ramal: {data.extension} · Gravação: {data.recording ? "Ativada" : "Desativada"}
         </div>
       )}
@@ -182,8 +187,10 @@ function WhatsAppContent({
 }) {
   return (
     <div className="space-y-1">
+      {/* A-09 / WCAG 2.1 AA 1.4.3: phone & template promoted from
+          `text-[10px] text-lia-text-disabled` to `text-xs text-lia-text-secondary`. */}
       {phone && (
-        <p className="text-[10px] text-lia-text-disabled">{phone}</p>
+        <p className="text-xs text-lia-text-secondary">{phone}</p>
       )}
       {message && (
         <p className="text-xs text-lia-text-secondary leading-relaxed">
@@ -191,7 +198,7 @@ function WhatsAppContent({
         </p>
       )}
       {template && (
-        <p className="text-[10px] text-lia-text-disabled">
+        <p className="text-xs text-lia-text-secondary">
           Template: {template}
         </p>
       )}
@@ -202,8 +209,10 @@ function WhatsAppContent({
 function ScriptContent({ script, duration }: { script?: string[]; duration?: string }) {
   return (
     <div className="space-y-1">
+      {/* A-09 / WCAG 2.1 AA 1.4.3: duration & step counters promoted from
+          `text-[10px] text-lia-text-disabled` to `text-xs text-lia-text-secondary`. */}
       {duration && (
-        <p className="text-[10px] text-lia-text-disabled">
+        <p className="text-xs text-lia-text-secondary">
           Duração estimada: {duration}
         </p>
       )}
@@ -211,12 +220,12 @@ function ScriptContent({ script, duration }: { script?: string[]; duration?: str
         <ol className="space-y-0.5 pl-0">
           {script.slice(0, 4).map((step, i) => (
             <li key={i} className="flex items-start gap-1.5 text-xs text-lia-text-secondary">
-              <span className="text-lia-text-disabled flex-shrink-0 mt-0.5">{i + 1}.</span>
+              <span className="text-lia-text-secondary flex-shrink-0 mt-0.5">{i + 1}.</span>
               {step}
             </li>
           ))}
           {script.length > 4 && (
-            <li className="text-[10px] text-lia-text-disabled pl-4">
+            <li className="text-xs text-lia-text-secondary pl-4">
               +{script.length - 4} pontos...
             </li>
           )}

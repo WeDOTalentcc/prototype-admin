@@ -2,6 +2,7 @@
 import { ThinkingDots } from "@/components/ui/thinking-dots"
 
   import React from "react"
+  import FocusLock from "react-focus-lock"
   import { X, Search, Minimize2, Maximize2, Brain, FileText, ChevronLeft, Upload } from "lucide-react"
   import { Button } from "@/components/ui/button"
   import { MultimodalUpload } from "@/components/chat/multimodal-upload"
@@ -102,6 +103,20 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
         }
       }}
     >
+      {/*
+        Focus trap (A-08, Inegociável WeDO #8 / WCAG 2.1 AA 2.1.2 + 2.4.3):
+        `react-focus-lock` cycles Tab/Shift+Tab inside the modal and restores
+        focus to the originating trigger when the dialog unmounts. Only enabled
+        for the floating dialog mode (`!inline`); the inline embedding lives
+        within the page tab order so trapping focus there would harm UX.
+      */}
+      <FocusLock
+        as="div"
+        disabled={inline}
+        returnFocus
+        autoFocus
+        className="contents"
+      >
       <div 
         className={contentClasses}
         role="dialog"
@@ -572,6 +587,7 @@ import { ThinkingDots } from "@/components/ui/thinking-dots"
         </div>
         </>
       </div>
+      </FocusLock>
 
       {/* Modal: Add Technical Skill */}
       <AddTechnicalSkillModal

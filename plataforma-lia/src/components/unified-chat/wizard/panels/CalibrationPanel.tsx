@@ -91,7 +91,8 @@ export function CalibrationPanel({ data, onApprove, onReject }: Props) {
         <div className="px-4 py-2.5 border-b border-lia-border-subtle space-y-2">
           {mustHaves.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold text-lia-text-disabled uppercase tracking-wide mb-1">
+              {/* A-09 / WCAG 2.1 AA 1.4.3: was `text-[10px] text-lia-text-disabled`. */}
+              <p className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-1">
                 Must-haves (eliminatórios)
               </p>
               <div className="flex flex-wrap gap-1">
@@ -108,7 +109,8 @@ export function CalibrationPanel({ data, onApprove, onReject }: Props) {
           )}
           {sourcingConstraints.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold text-lia-text-disabled uppercase tracking-wide mb-1">
+              {/* A-09 / WCAG 2.1 AA 1.4.3: was `text-[10px] text-lia-text-disabled`. */}
+              <p className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-1">
                 Preferências (sourcing)
               </p>
               <div className="flex flex-wrap gap-1">

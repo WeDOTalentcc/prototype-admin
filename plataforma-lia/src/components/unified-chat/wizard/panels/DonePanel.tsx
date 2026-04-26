@@ -71,8 +71,9 @@ export function DonePanel({ data }: Props) {
       </div>
 
       {/* Summary stats */}
+      {/* A-09 / WCAG 2.1 AA 1.4.3: was `text-[11px] text-lia-text-disabled`. */}
       {jobId && (
-        <div className="rounded-md bg-lia-bg-secondary p-2.5 text-[11px] text-lia-text-disabled text-center">
+        <div className="rounded-md bg-lia-bg-secondary p-2.5 text-xs text-lia-text-secondary text-center">
           Job ID: {jobId}
         </div>
       )}
