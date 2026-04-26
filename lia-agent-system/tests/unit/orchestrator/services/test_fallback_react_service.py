@@ -219,6 +219,86 @@ class TestHandleDirectlySuccess:
             "rank_candidates",
         ]
 
+    @pytest.mark.asyncio
+    async def test_response_content_none_falls_back_to_str(self, monkeypatch):
+        """P1 fix: response.content None nao gera message=None."""
+        monkeypatch.setenv(TOOL_BIND_ENV_VAR, "false")
+        service = FallbackReActService(llm_service=_make_mock_llm_service())
+
+        with patch(
+            "app.orchestrator.services.fallback_react_service.SystemPromptBuilder.build",
+            return_value="prompt",
+        ):
+            with patch(
+                "langchain_core.prompts.ChatPromptTemplate.from_messages"
+            ) as mock_tpl:
+                mock_response = MagicMock()
+                mock_response.content = None  # P1 edge case
+                mock_response.tool_calls = []
+                mock_chain = MagicMock()
+                mock_chain.ainvoke = AsyncMock(return_value=mock_response)
+                mock_prompt = MagicMock()
+                mock_prompt.__or__ = MagicMock(return_value=mock_chain)
+                mock_tpl.return_value = mock_prompt
+
+                result = await service.handle_directly(
+                    intent="x", message="m", entities={}, context={}
+                )
+
+        # Message NAO eh None — fallback para str(response)
+        assert result["message"] is not None
+        assert isinstance(result["message"], str)
+
+    @pytest.mark.asyncio
+    async def test_tool_calls_filters_empty_names(self, monkeypatch):
+        """P1 fix: empty/None tool names sao filtrados (nao adicionados a lista)."""
+        monkeypatch.setenv(TOOL_BIND_ENV_VAR, "false")
+        service = FallbackReActService(llm_service=_make_mock_llm_service())
+
+        with patch(
+            "app.orchestrator.services.fallback_react_service.SystemPromptBuilder.build",
+            return_value="prompt",
+        ):
+            with patch(
+                "langchain_core.prompts.ChatPromptTemplate.from_messages"
+            ) as mock_tpl:
+                mock_response = MagicMock()
+                mock_response.content = "result"
+                # Mix: nome valido, nome vazio, nome None
+                mock_response.tool_calls = [
+                    {"name": "valid_tool"},
+                    {"name": ""},
+                    {"name": None},
+                    {},  # sem name
+                ]
+                mock_chain = MagicMock()
+                mock_chain.ainvoke = AsyncMock(return_value=mock_response)
+                mock_prompt = MagicMock()
+                mock_prompt.__or__ = MagicMock(return_value=mock_chain)
+                mock_tpl.return_value = mock_prompt
+
+                result = await service.handle_directly(
+                    intent="x", message="m", entities={}, context={}
+                )
+
+        # Apenas o tool valido aparece — empty/None filtrados
+        assert result["data"]["tool_calls_requested"] == ["valid_tool"]
+
+    @pytest.mark.asyncio
+    async def test_cancelled_error_propagates(self, monkeypatch):
+        """P1 fix: asyncio.CancelledError nao eh capturada — propaga para caller."""
+        import asyncio as _asyncio
+
+        monkeypatch.setenv(TOOL_BIND_ENV_VAR, "false")
+        llm_svc = MagicMock()
+        llm_svc.get_audited_model = MagicMock(side_effect=_asyncio.CancelledError())
+        service = FallbackReActService(llm_service=llm_svc)
+
+        with pytest.raises(_asyncio.CancelledError):
+            await service.handle_directly(
+                intent="x", message="m", entities={}, context={}
+            )
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # FallbackReActService — error handling

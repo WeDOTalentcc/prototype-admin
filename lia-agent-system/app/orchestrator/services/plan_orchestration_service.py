@@ -123,7 +123,15 @@ class PlanOrchestrationService:
             plan_executor: Instância de PlanExecutor (orquestra tasks).
             ws_manager: WebSocket manager opcional. Se ausente, progresso
                 não é emitido (mas execução continua normalmente).
+
+        Raises:
+            TypeError: Se ws_manager fornecido mas não tem método send_to_session.
         """
+        # P1: validate ws_manager early (duck typing fail-fast).
+        if ws_manager is not None and not hasattr(ws_manager, "send_to_session"):
+            raise TypeError(
+                f"ws_manager must have send_to_session method, got {type(ws_manager).__name__}"
+            )
         self._detector = plan_detector
         self._executor = plan_executor
         self._ws_manager = ws_manager

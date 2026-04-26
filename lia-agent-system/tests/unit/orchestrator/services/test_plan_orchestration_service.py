@@ -421,3 +421,66 @@ class TestWebSocketCallback:
             await callback("step_started", {"step": 1})
         except ConnectionError:
             pytest.fail("WS failure should be caught — plan execution must not block")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Fix #6 & WSManagerProtocol validation
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class TestExecutorExceptionPropagation:
+    """P1 fix: PlanExecutor.execute exception propaga para caller."""
+
+    @pytest.mark.asyncio
+    async def test_executor_exception_propagates(self):
+        """Service nao captura RuntimeError do executor — propaga."""
+        executor = MagicMock()
+        executor.execute = AsyncMock(side_effect=RuntimeError("executor crash"))
+
+        service = PlanOrchestrationService(
+            plan_detector=MagicMock(), plan_executor=executor
+        )
+
+        with pytest.raises(RuntimeError, match="executor crash"):
+            await service.execute(
+                detected_plan=MagicMock(),
+                user_id="u1",
+                session_id="s1",
+                tenant_id="t1",
+                base_context={},
+            )
+
+
+class TestWSManagerValidation:
+    """P1 fix: WSManagerProtocol validation no __init__."""
+
+    def test_invalid_ws_manager_raises_typeerror(self):
+        """Objeto sem send_to_session leva a TypeError — fail-fast."""
+        invalid_ws = object()  # sem send_to_session method
+
+        with pytest.raises(TypeError, match="send_to_session"):
+            PlanOrchestrationService(
+                plan_detector=MagicMock(),
+                plan_executor=MagicMock(),
+                ws_manager=invalid_ws,
+            )
+
+    def test_none_ws_manager_is_ok(self):
+        """ws_manager None nao gera erro (e o default)."""
+        service = PlanOrchestrationService(
+            plan_detector=MagicMock(),
+            plan_executor=MagicMock(),
+            ws_manager=None,
+        )
+        assert service._ws_manager is None
+
+    def test_valid_ws_manager_accepted(self):
+        """WS manager com send_to_session method e aceito."""
+        ws = MagicMock()
+        ws.send_to_session = AsyncMock()
+        service = PlanOrchestrationService(
+            plan_detector=MagicMock(),
+            plan_executor=MagicMock(),
+            ws_manager=ws,
+        )
+        assert service._ws_manager is ws

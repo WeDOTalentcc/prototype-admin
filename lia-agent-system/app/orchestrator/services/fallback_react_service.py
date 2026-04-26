@@ -32,6 +32,7 @@ ADR-019 — Sprint II.2
 """
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 from typing import Any, Final
@@ -152,8 +153,12 @@ class FallbackReActService:
 
         try:
             return await self._invoke_llm(intent, message, entities, ctx)
+        except asyncio.CancelledError:
+            # P1: respeitar cancelamento (não capturar) — propaga para caller
+            raise
         except Exception:
-            # P1 graceful degradation — usuário sempre recebe resposta amigável
+            # P1 graceful degradation — usuário sempre recebe resposta amigável.
+            # CancelledError é re-raised acima para preservar semantica asyncio.
             logger.exception("[LIA-A04] FallbackReActService.handle_directly failed")
             return self._build_error_response(ctx)
 
@@ -241,24 +246,27 @@ class FallbackReActService:
     @staticmethod
     def _build_success_response(response: Any) -> dict[str, Any]:
         """Extrai content + tool_calls do retorno do LangChain LLM."""
-        # Content extraction (defensive for non-standard responses)
-        response_content = (
-            response.content if hasattr(response, "content") else str(response)
-        )
+        # Content extraction — handle None content (some LLMs return None when only tool_calls)
+        # P1 fix: response.content can legitimately be None — fallback to str(response).
+        raw_content = response.content if hasattr(response, "content") else None
+        response_content = raw_content if raw_content else str(response)
 
         # Tool calls extraction (LangChain returns them in response.tool_calls)
+        # P1 fix: filter out empty/None names to avoid corrupted tool list.
         response_tools_used: list[str] = []
         if hasattr(response, "tool_calls") and response.tool_calls:
             for tc in response.tool_calls:
                 name = (
-                    tc.get("name") if isinstance(tc, dict) else getattr(tc, "name", "")
+                    tc.get("name") if isinstance(tc, dict) else getattr(tc, "name", None)
                 )
-                response_tools_used.append(name or "")
-            logger.info(
-                "[LIA-A04] _handle_directly LLM requested %d tool(s): %s",
-                len(response_tools_used),
-                response_tools_used,
-            )
+                if name:  # filter empty string and None
+                    response_tools_used.append(name)
+            if response_tools_used:
+                logger.info(
+                    "[LIA-A04] _handle_directly LLM requested %d tool(s): %s",
+                    len(response_tools_used),
+                    response_tools_used,
+                )
 
         return {
             "message": response_content,
