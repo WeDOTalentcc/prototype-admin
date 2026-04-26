@@ -372,35 +372,24 @@ class Orchestrator:
             return {"success": False, "error": str(e), "conversation_id": conversation_id,
                     "message": SystemPromptBuilder.build_error_response()}
 
-    _TECHNICAL_PATTERNS = (
-        "Keyword heuristic matched",
-        "Ferramenta '",
-        "Ação '",
-        "encaminhada para o agente",
-        "executada para ação",
-    )
-
     def _is_technical_response(self, message: str) -> bool:
-        if message == "Processado com sucesso.":
-            return True
-        return any(p in message for p in self._TECHNICAL_PATTERNS)
+        """Delegação canônica para heuristics module (Sprint II.3, ADR-019).
 
-    # CV matching keywords — used to trigger rubric tool regardless of classified intent
-    _CV_MATCHING_PATTERNS = (
-        "analise o cv", "analisa o cv", "analisar o cv", "análise do cv",
-        "compatibilidade do candidato", "compatibilidade de candidato",
-        "match do candidato", "match de cv", "match score",
-        "triagem de cv", "triagem do candidato",
-        "score do candidato", "avaliar cv", "avalie o cv",
-        "analise a compatibilidade", "análise de compatibilidade",
-        "quanto o candidato", "como o candidato se encaixa",
-        "candidato para a vaga", "candidato está alinhado",
-    )
+        Mantido como método para preservar API interna do V1. Comportamento
+        é idêntico ao implementado no módulo canônico — verificado via
+        `tests/unit/orchestrator/heuristics/test_heuristics.py::TestEquivalenceWithV1`.
+        """
+        from app.orchestrator.heuristics import is_technical_response
+        return is_technical_response(message)
 
     def _is_cv_matching_request(self, message: str) -> bool:
-        """Check if message requests CV/candidate analysis regardless of classified intent."""
-        msg_lower = message.lower()
-        return any(p in msg_lower for p in self._CV_MATCHING_PATTERNS)
+        """Delegação canônica para heuristics module (Sprint II.3, ADR-019).
+
+        Check if message requests CV/candidate analysis regardless of classified intent.
+        Comportamento idêntico ao módulo canônico (validado em characterization tests).
+        """
+        from app.orchestrator.heuristics import is_cv_matching_request
+        return is_cv_matching_request(message)
 
     # Structured-output additions injected per intent (fix C-05 / C-06)
     _STRUCTURED_INTENT_ADDENDA = {
