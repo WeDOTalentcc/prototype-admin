@@ -156,3 +156,48 @@ def test_try_hint_route_none_quando_metadata_invalida():
     """Metadata presente mas inválida (sem source rail_a) → None."""
     context = {"metadata": {"domain_hint": "job_management"}}
     assert try_hint_route(context) is None
+
+
+# ─── CascadedRouter Tier 0.0 (cobertura SSE/REST que bypassa orchestrator) ─
+
+
+def test_cascaded_router_tier_0_0_curto_circuita_com_hint_valido(monkeypatch):
+    """Tier 0.0 do CascadedRouter retorna RouteResult sem percorrer tiers 0-4.
+
+    Garante que os transports que chamam ``CascadedRouter.route()`` direto
+    (ex.: ``agent_chat_sse``, ``agent_chat_ws`` quando bypassam o
+    MainOrchestrator) também respeitem os hints do Rail A.
+    """
+    import asyncio
+    from app.domains.registry import DomainRegistry
+    monkeypatch.setattr(
+        DomainRegistry, "list_domains", lambda self: ["job_management"]
+    )
+    from app.orchestrator.cascaded_router import CascadedRouter
+
+    router = CascadedRouter()
+    context = {
+        "metadata": {
+            "source": TRUSTED_SOURCE,
+            "card_id": "create-job",
+            "domain_hint": "job_management",
+            "intent_hint": "create_job",
+        },
+    }
+    # Mensagem absurda (sem keyword) — sem hint, fastrouter cairia em fallback.
+    route = asyncio.run(router.route("xyzzy plugh nonsense", context=context))
+    assert route.domain_id == "job_management"
+    assert route.source == OVERRIDE_SOURCE
+    assert route.confidence == 0.99
+
+
+def test_cascaded_router_sem_hint_segue_tiers_normalmente(monkeypatch):
+    """Sem hint válido, CascadedRouter cai nos tiers 0-4 normalmente."""
+    import asyncio
+    from app.orchestrator.cascaded_router import CascadedRouter
+
+    router = CascadedRouter()
+    # Keyword forte → fastrouter resolve para job_management
+    route = asyncio.run(router.route("criar nova vaga de desenvolvedor"))
+    # Não exigimos um domain específico — só que NÃO seja override do Rail A
+    assert route.source != OVERRIDE_SOURCE
