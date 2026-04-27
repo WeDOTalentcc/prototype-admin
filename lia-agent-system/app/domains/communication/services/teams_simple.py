@@ -20,6 +20,20 @@ from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
+# ── W8.7 Slash command constant (module-level so manifest + adapter share) ──
+TEAMS_SLASH_COMMANDS: dict[str, str] = {
+    "/buscar": "Buscar candidatos na plataforma",
+    "/triagem": "Ver status da triagem de candidatos",
+    "/relatorio": "Gerar relatório de recrutamento",
+    "/vaga": "Consultar informações sobre uma vaga",
+    "/agendar": "Agendar entrevista com candidato",
+    "/pipeline": "Ver pipeline de candidatos",
+    "/aprovar": "Aprovar candidato para próxima etapa",
+    "/reprovar": "Reprovar candidato",
+    "/ajuda": "Ver comandos disponíveis",
+}
+# ─────────────────────────────────────────────────────────────────────────────
+
 
 class SimpleTeamsBot:
     """

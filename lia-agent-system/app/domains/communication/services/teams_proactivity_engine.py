@@ -309,6 +309,76 @@ class TeamsProactivityEngine:
             logger.warning(f"[ProactivityEngine] _send_card_to_ref error: {e}")
             return False
 
+    # ── W9.1 Group/channel proactive flow ────────────────────────────────────
+
+    async def _get_channel_refs_for_company(
+        self, company_id: str | None, tenant_id: str | None = None
+    ) -> list[dict[str, Any]]:
+        """Get stored group/channel conversation refs for proactive broadcasting.
+        Channel refs have user_id starting with 'channel:'.
+        """
+        try:
+            from sqlalchemy import text
+
+            from app.core.database import AsyncSessionLocal
+
+            async with AsyncSessionLocal() as db:
+                q = text("""
+                    SELECT tc.service_url, tc.conversation_id, tc.user_id
+                    FROM teams_conversations tc
+                    WHERE tc.user_id LIKE 'channel:%'
+                      AND (:tenant_id IS NULL OR tc.tenant_id = :tenant_id)
+                    ORDER BY tc.created_at DESC
+                    LIMIT 10
+                """)
+                result = await db.execute(q, {
+                    "tenant_id": tenant_id,
+                })
+                rows = result.fetchall()
+                return [
+                    {
+                        "service_url": r.service_url,
+                        "conversation_id": r.conversation_id,
+                        "user_id": r.user_id,
+                    }
+                    for r in rows
+                ]
+        except Exception as e:
+            logger.warning(f"[ProactivityEngine] _get_channel_refs_for_company: {e}")
+            return []
+
+    async def broadcast_to_channels(
+        self,
+        card: dict[str, Any],
+        company_id: str | None = None,
+        tenant_id: str | None = None,
+    ) -> int:
+        """Broadcast an Adaptive Card to all known group/channel conversations.
+        Returns number of successful sends.
+        """
+        refs = await self._get_channel_refs_for_company(company_id, tenant_id)
+        if not refs:
+            logger.info("[ProactivityEngine] No channel refs found for broadcast.")
+            return 0
+        sent = 0
+        for ref in refs:
+            try:
+                ok = await self._send_card_to_ref(card, ref)
+                if ok:
+                    sent += 1
+                    logger.info(
+                        "[ProactivityEngine] W9.1 channel broadcast ok: conv=%s",
+                        ref["conversation_id"],
+                    )
+            except Exception as e:
+                logger.warning(
+                    "[ProactivityEngine] W9.1 channel broadcast failed for %s: %s",
+                    ref["conversation_id"], e,
+                )
+        return sent
+
+    # ─────────────────────────────────────────────────────────────────────────
+
 
     async def send_daily_digest(self, company_id: str | None = None) -> int:
         """

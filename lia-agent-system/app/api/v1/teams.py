@@ -816,6 +816,16 @@ async def receive_teams_message(
         if activity.get("type") == "message":
             await _store_conversation_reference(activity, db)
 
+        # ── W9.1 Group/channel: store channel ref when bot joins group/channel ──
+        elif activity.get("type") == "conversationUpdate":
+            members_added = activity.get("membersAdded") or []
+            bot_id = (activity.get("recipient") or {}).get("id", "")
+            if any(m.get("id") == bot_id for m in members_added):
+                conv_type = (activity.get("conversation") or {}).get("conversationType", "")
+                if conv_type in ("groupChat", "channel"):
+                    await _store_channel_conversation_reference(activity, db)
+        # ──────────────────────────────────────────────────────────────────────
+
         # Log the message
         await _log_teams_message(activity, db)
 
@@ -858,6 +868,44 @@ def _parse_teams_timestamp(ts: str | None) -> datetime | None:
         return datetime.fromisoformat(ts_clean)
     except Exception:
         return datetime.utcnow()
+
+
+async def _store_channel_conversation_reference(activity: dict[str, Any], db: AsyncSession):
+    """Store group/channel conversation reference for W9.1 proactive messaging to groups."""
+    try:
+        from app.domains.communication.repositories.teams_repository import TeamsRepository
+        conv = activity.get("conversation") or {}
+        channel_data = activity.get("channelData") or {}
+        conversation_id = conv.get("id")
+        service_url = activity.get("serviceUrl", "")
+        tenant_id = conv.get("tenantId")
+        channel_id = activity.get("channelId")
+        team_id = (channel_data.get("team") or {}).get("id", "")
+        channel_name = (channel_data.get("channel") or {}).get("name", "General")
+
+        if not conversation_id or not service_url:
+            return
+
+        repo = TeamsRepository(db)
+        # user_id prefix "channel:" distinguishes from personal 1:1 refs
+        await repo.upsert_conversation(
+            conversation_id=conversation_id,
+            service_url=service_url,
+            tenant_id=tenant_id,
+            channel_id=channel_id,
+            user_id=f"channel:{team_id or channel_id or conversation_id}",
+            user_name=channel_name,
+            user_aad_object_id=None,
+            conversation_reference=activity,
+            last_message_at=None,
+            company_id=None,
+        )
+        logger.info(
+            "[Teams] W9.1 stored channel conv ref: conv=%s team=%s channel=%s tenant=%s",
+            conversation_id, team_id, channel_name, tenant_id,
+        )
+    except Exception as e:
+        logger.warning("[Teams] W9.1 _store_channel_conversation_reference failed: %s", e)
 
 
 async def _store_conversation_reference(activity: dict[str, Any], db: AsyncSession):
