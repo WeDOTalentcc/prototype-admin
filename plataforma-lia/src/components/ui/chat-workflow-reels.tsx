@@ -1,18 +1,10 @@
 "use client";
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
-  BarChart3,
-  Briefcase,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  FileText,
-  Search,
-  Settings,
-  Sparkles,
-  TrendingUp,
-  UserCheck,
-} from "lucide-react";
+  getCanonicalStage,
+  type CanonicalStageColor,
+} from "@/components/workflow-rail/canonicalFunnelStages";
 import { useTranslations } from "next-intl";
 import React, {
   useState,
@@ -153,12 +145,7 @@ export interface WorkflowReelStage {
   shortLabel: string;
   icon: React.ElementType;
   pulseStageId?: string;
-  color: {
-    accent: string;
-    accentBg: string;
-    nodeBorder: string;
-    cardBorder: string;
-  };
+  color: CanonicalStageColor;
   suggestions: WorkflowReelSuggestion[];
 }
 
@@ -210,127 +197,26 @@ function usePipelinePulse() {
   return { pulse, loading };
 }
 
+/** Chat-reels-specific stage data. Icon + color come from canonicalFunnelStages. */
 interface StageStructure {
   id: string;
-  icon: React.ElementType;
   pulseStageId?: string;
-  color: {
-    accent: string;
-    accentBg: string;
-    nodeBorder: string;
-    cardBorder: string;
-  };
   suggestionIds: string[];
 }
 
 const STAGE_STRUCTURES: StageStructure[] = [
-  {
-    id: "definir-vaga",
-    icon: Briefcase,
-    color: {
-      accent: "var(--wedo-cyan, #60BED1)",
-      accentBg: "rgba(96, 190, 209, 0.10)",
-      nodeBorder: "var(--wedo-cyan, #60BED1)",
-      cardBorder: "rgba(96, 190, 209, 0.25)",
-    },
-    suggestionIds: ["create-job", "job-template"],
-  },
-  {
-    id: "sourcing",
-    icon: Search,
-    pulseStageId: "sourcing",
-    color: {
-      accent: "var(--wedo-green, #5DA47A)",
-      accentBg: "rgba(93, 164, 122, 0.10)",
-      nodeBorder: "var(--wedo-green, #5DA47A)",
-      cardBorder: "rgba(93, 164, 122, 0.25)",
-    },
-    suggestionIds: ["search-candidates", "add-candidate", "talent-pool"],
-  },
-  {
-    id: "triagem",
-    icon: UserCheck,
-    pulseStageId: "triagem",
-    color: {
-      accent: "var(--wedo-green, #5DA47A)",
-      accentBg: "rgba(93, 164, 122, 0.10)",
-      nodeBorder: "var(--wedo-green, #5DA47A)",
-      cardBorder: "rgba(93, 164, 122, 0.25)",
-    },
-    suggestionIds: ["candidate-info", "update-status"],
-  },
-  {
-    id: "entrevista",
-    icon: Calendar,
-    pulseStageId: "entrevista",
-    color: {
-      accent: "var(--wedo-orange, #D19960)",
-      accentBg: "rgba(209, 153, 96, 0.10)",
-      nodeBorder: "var(--wedo-orange, #D19960)",
-      cardBorder: "rgba(209, 153, 96, 0.25)",
-    },
-    suggestionIds: ["schedule-interview", "reschedule-interview"],
-  },
-  {
-    id: "oferta",
-    icon: FileText,
-    pulseStageId: "oferta",
-    color: {
-      accent: "var(--wedo-purple, #9860D1)",
-      accentBg: "rgba(152, 96, 209, 0.10)",
-      nodeBorder: "var(--wedo-purple, #9860D1)",
-      cardBorder: "rgba(152, 96, 209, 0.25)",
-    },
-    suggestionIds: ["send-offer", "compare-candidates"],
-  },
-  {
-    id: "contratacao",
-    icon: TrendingUp,
-    pulseStageId: "contratacao",
-    color: {
-      accent: "var(--wedo-purple, #9860D1)",
-      accentBg: "rgba(152, 96, 209, 0.10)",
-      nodeBorder: "var(--wedo-purple, #9860D1)",
-      cardBorder: "rgba(152, 96, 209, 0.25)",
-    },
-    suggestionIds: ["register-hire", "close-vacancy"],
-  },
+  { id: "definir-vaga", suggestionIds: ["create-job", "job-template"] },
+  { id: "sourcing", pulseStageId: "sourcing", suggestionIds: ["search-candidates", "add-candidate", "talent-pool"] },
+  { id: "triagem", pulseStageId: "triagem", suggestionIds: ["candidate-info", "update-status"] },
+  { id: "entrevista", pulseStageId: "entrevista", suggestionIds: ["schedule-interview", "reschedule-interview"] },
+  { id: "oferta", pulseStageId: "oferta", suggestionIds: ["send-offer", "compare-candidates"] },
+  { id: "contratacao", pulseStageId: "contratacao", suggestionIds: ["register-hire", "close-vacancy"] },
 ];
 
 const UTILITY_STRUCTURES: StageStructure[] = [
-  {
-    id: "analytics",
-    icon: BarChart3,
-    color: {
-      accent: "var(--wedo-amber, #D1A960)",
-      accentBg: "rgba(209, 169, 96, 0.10)",
-      nodeBorder: "var(--wedo-amber, #D1A960)",
-      cardBorder: "rgba(209, 169, 96, 0.25)",
-    },
-    suggestionIds: ["job-report", "daily-briefing", "hiring-predictions"],
-  },
-  {
-    id: "ia-automacoes",
-    icon: Sparkles,
-    color: {
-      accent: "var(--wedo-cyan, #60BED1)",
-      accentBg: "rgba(96, 190, 209, 0.10)",
-      nodeBorder: "var(--wedo-cyan, #60BED1)",
-      cardBorder: "rgba(96, 190, 209, 0.25)",
-    },
-    suggestionIds: ["configure-automations", "wsi-screening", "ai-suggestions"],
-  },
-  {
-    id: "configuracoes",
-    icon: Settings,
-    color: {
-      accent: "var(--lia-text-secondary, #8A8F98)",
-      accentBg: "rgba(138, 143, 152, 0.10)",
-      nodeBorder: "var(--lia-text-secondary, #8A8F98)",
-      cardBorder: "rgba(138, 143, 152, 0.25)",
-    },
-    suggestionIds: ["ai-credits", "hiring-policy", "email-templates"],
-  },
+  { id: "analytics", suggestionIds: ["job-report", "daily-briefing", "hiring-predictions"] },
+  { id: "ia-automacoes", suggestionIds: ["configure-automations", "wsi-screening", "ai-suggestions"] },
+  { id: "configuracoes", suggestionIds: ["ai-credits", "hiring-policy", "email-templates"] },
 ];
 
 function useTranslatedStages(
@@ -340,25 +226,33 @@ function useTranslatedStages(
   const tsg = useTranslations("chat.workflowReels.suggestions");
   return useMemo(
     () =>
-      structures.map((s) => ({
-        id: s.id,
-        label: ts(`${s.id}.label` as `definir-vaga.label`),
-        shortLabel: ts(`${s.id}.shortLabel` as `definir-vaga.shortLabel`),
-        icon: s.icon,
-        pulseStageId: s.pulseStageId,
-        color: s.color,
-        suggestions: s.suggestionIds.map((sid) => {
-          const hint = SUGGESTION_HINTS[sid];
-          return {
-            id: sid,
-            title: tsg(`${sid}.title` as `create-job.title`),
-            description: tsg(`${sid}.description` as `create-job.description`),
-            command: tsg(`${sid}.command` as `create-job.command`),
-            domain_hint: hint?.domain_hint,
-            intent_hint: hint?.intent_hint,
-          };
-        }),
-      })),
+      structures.map((s) => {
+        const canonical = getCanonicalStage(s.id);
+        return {
+          id: s.id,
+          label: ts(`${s.id}.label` as `definir-vaga.label`),
+          shortLabel: ts(`${s.id}.shortLabel` as `definir-vaga.shortLabel`),
+          icon: canonical?.Icon ?? (() => null),
+          pulseStageId: s.pulseStageId,
+          color: canonical?.color ?? {
+            accent: "var(--lia-text-secondary)",
+            accentBg: "rgba(138, 143, 152, 0.10)",
+            nodeBorder: "var(--lia-text-secondary)",
+            cardBorder: "rgba(138, 143, 152, 0.25)",
+          },
+          suggestions: s.suggestionIds.map((sid) => {
+            const hint = SUGGESTION_HINTS[sid];
+            return {
+              id: sid,
+              title: tsg(`${sid}.title` as `create-job.title`),
+              description: tsg(`${sid}.description` as `create-job.description`),
+              command: tsg(`${sid}.command` as `create-job.command`),
+              domain_hint: hint?.domain_hint,
+              intent_hint: hint?.intent_hint,
+            };
+          }),
+        };
+      }),
     [ts, tsg, structures],
   );
 }
