@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
   getCanonicalStage,
   type CanonicalStageColor,
@@ -23,6 +24,8 @@ export interface WorkflowReelSuggestion {
   domain_hint?: string;
   /** PR-A: hint de action/intent dentro do domínio. */
   intent_hint?: string;
+  /** PR-K: quando definido, navega diretamente (sem detour pelo chat). */
+  navigate_url?: string;
 }
 
 /**
@@ -123,6 +126,17 @@ export const SUGGESTION_HINTS: Record<
     domain_hint: "communication",
     intent_hint: "create_template",
   },
+};
+
+/**
+ * PR-K: Cards 9.x navegam diretamente para a página de destino em vez de
+ * passar pelo chat. Evita o detour conversacional para funcionalidades de
+ * configuração que têm páginas dedicadas.
+ */
+export const NAVIGATION_OVERRIDES: Record<string, string> = {
+  "ai-credits": "/configuracoes/ai-credits",
+  "hiring-policy": "/configuracoes?section=pipeline",
+  "email-templates": "/configuracoes?section=templates-assinatura",
 };
 
 export function buildSuggestionMetadata(
@@ -249,6 +263,7 @@ function useTranslatedStages(
               command: tsg(`${sid}.command` as `create-job.command`),
               domain_hint: hint?.domain_hint,
               intent_hint: hint?.intent_hint,
+              navigate_url: NAVIGATION_OVERRIDES[sid],
             };
           }),
         };
@@ -407,6 +422,7 @@ export function ChatWorkflowReels({
   stages: stagesProp,
   utilityNodes: utilityNodesProp,
 }: ChatWorkflowReelsProps) {
+  const router = useRouter();
   const t = useTranslations("chat.workflowReels");
   const defaultStages = useTranslatedStages(STAGE_STRUCTURES);
   const defaultUtility = useTranslatedStages(UTILITY_STRUCTURES);
@@ -586,12 +602,16 @@ export function ChatWorkflowReels({
             {activeStage.suggestions.map((suggestion) => (
               <button
                 key={suggestion.id}
-                onClick={() =>
-                  onSelect(
-                    suggestion.command,
-                    buildSuggestionMetadata(suggestion.id, activeStage.id),
-                  )
-                }
+                onClick={() => {
+                  if (suggestion.navigate_url) {
+                    router.push(suggestion.navigate_url);
+                  } else {
+                    onSelect(
+                      suggestion.command,
+                      buildSuggestionMetadata(suggestion.id, activeStage.id),
+                    );
+                  }
+                }}
                 className="flex items-start gap-3 p-4 text-left rounded-xl bg-lia-bg-primary border transition-all duration-150 hover:-translate-y-0.5 group flex-1 min-w-[180px]"
                 style={{
                   borderColor: activeStage.color.cardBorder,
@@ -810,12 +830,16 @@ function CompactReels({
           {activeStage.suggestions.map((suggestion) => (
             <button
               key={suggestion.id}
-              onClick={() =>
-                onSelect(
-                  suggestion.command,
-                  buildSuggestionMetadata(suggestion.id, activeStage.id),
-                )
-              }
+              onClick={() => {
+                if (suggestion.navigate_url) {
+                  router.push(suggestion.navigate_url);
+                } else {
+                  onSelect(
+                    suggestion.command,
+                    buildSuggestionMetadata(suggestion.id, activeStage.id),
+                  );
+                }
+              }}
               className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left border transition-colors"
               style={{
                 borderColor: activeStage.color.cardBorder,
