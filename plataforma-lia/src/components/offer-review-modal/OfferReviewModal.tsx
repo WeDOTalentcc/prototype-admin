@@ -98,14 +98,14 @@ export function OfferReviewModal() {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleCancel() }}>
       <DialogContent
-        className="max-w-3xl w-full max-h-[90vh] flex flex-col p-0"
+        className="max-w-6xl w-full max-h-[90vh] flex flex-col p-0"
         aria-label={`Carta-oferta para ${candidateName}`}
       >
         <DialogHeader className="px-6 pt-5 pb-3 border-b border-border">
-          <DialogTitle className="text-base font-semibold">
+          <DialogTitle className="text-[14px] font-semibold">
             Carta-Oferta — {candidateName}
           </DialogTitle>
-          <p className="text-xs text-muted-foreground">{jobTitle}</p>
+          <p className="text-[11px] text-muted-foreground">{jobTitle}</p>
         </DialogHeader>
 
         {/* 2-column body */}
@@ -127,7 +127,7 @@ export function OfferReviewModal() {
 
         {/* Send result toast */}
         {sendResult && (
-          <div className={`mx-6 mb-2 text-xs px-3 py-2 rounded-md ${sendResult.success ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
+          <div className={`mx-6 mb-2 text-[11px] px-3 py-2 rounded-md ${sendResult.success ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
             {sendResult.message}
           </div>
         )}
@@ -150,7 +150,7 @@ export function OfferReviewModal() {
               size="sm"
               onClick={handleSendAuto}
               disabled={isSaving || isSending || !draft.offered_salary}
-              className="bg-gray-900 text-white hover:bg-gray-800"
+              className="bg-gray-800 text-white hover:bg-gray-700"
             >
               {isSending ? "Enviando..." : "Enviar Proposta"}
             </Button>
