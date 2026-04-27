@@ -11,7 +11,7 @@ Gerado por `scripts/audit_agent_compliance.py` v2 (W3.3 refinado 2026-04-27).
 |---|---|---|
 | Inheritance | 🟢 13/13 (100%) | Class extends LangGraphReActBase |
 | EnhancedMixin | 🟢 13/13 (100%) | Class extends EnhancedAgentMixin |
-| @register_agent | 🟢 11/13 (84%) | Decorator @register_agent applied |
+| @register_agent | 🟢 13/13 (100%) | Decorator @register_agent applied |
 | FairnessGuard | 🟢 13/13 (100%) | FAR-2 — discriminatory language guard (auto via base + extra explicit) |
 | AuditService | 🟢 13/13 (100%) | ACH-026 — decision audit (orchestrator wraps via log_output) |
 | PII strip | 🟢 13/13 (100%) | LGPD — PII redaction before LLM (auto via LangGraphReActBase) |
@@ -27,8 +27,8 @@ Gerado por `scripts/audit_agent_compliance.py` v2 (W3.3 refinado 2026-04-27).
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | `analytics` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
 | `ats_integration` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
-| `automation` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
-| `autonomous` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| `automation` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| `autonomous` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
 | `candidate_self_service` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `communication` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `company_settings` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
@@ -43,7 +43,6 @@ Gerado por `scripts/audit_agent_compliance.py` v2 (W3.3 refinado 2026-04-27).
 
 - **HITL gate** — 9 agents sem cobertura (70% gap)
 - **System YAML** — 5 agents sem cobertura (39% gap)
-- **@register_agent** — 2 agents sem cobertura (16% gap)
 - **Tool registry** — 1 agents sem cobertura (8% gap)
 
 ## Próximos passos
