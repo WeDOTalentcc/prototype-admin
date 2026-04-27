@@ -108,35 +108,52 @@ class TeamsActionAuditLogSchema(BaseModel):
 
 
 def _verify_teams_webhook_signature(payload: bytes, signature: str | None) -> bool:
-    """
-    Verify webhook signature from Teams.
-    
-    Uses HMAC-SHA256 with TEAMS_WEBHOOK_SECRET.
-    In production, TEAMS_WEBHOOK_SECRET is required and webhook without valid signature is rejected.
-    In development, if no secret is configured, allows all requests.
-    
+    """Verify webhook signature from Teams using HMAC-SHA256.
+
+    P1-5 fix (auditoria 2026-04-26): 3-state hardening removes the
+    "non-production = open door" anti-pattern. Old behavior allowed all
+    requests when APP_ENV != production AND TEAMS_WEBHOOK_SECRET empty —
+    APP_ENV typo would silently disable auth.
+
+    States:
+      1. production: TEAMS_WEBHOOK_SECRET required -> 403 if missing.
+      2. non-production WITH TEAMS_WEBHOOK_DEV_BYPASS=true: allow all,
+         log error so bypass is visible in operations.
+      3. non-production without bypass flag: secret required -> 403.
+
     Raises:
-        HTTPException: 403 if in production and secret is not configured
-        HTTPException: 401 if signature is invalid in production
+        HTTPException: 403 if secret missing AND no explicit dev bypass.
     """
+    import os
     teams_webhook_secret = settings.TEAMS_WEBHOOK_SECRET
     is_production = settings.APP_ENV == "production"
-    
-    # Production security check: require TEAMS_WEBHOOK_SECRET
-    if is_production and not teams_webhook_secret:
+    dev_bypass = os.environ.get("TEAMS_WEBHOOK_DEV_BYPASS", "").lower() == "true"
+
+    if not teams_webhook_secret:
+        if is_production:
+            logger.error(
+                "[TEAMS WEBHOOK SECURITY] TEAMS_WEBHOOK_SECRET not configured in production! "
+                "Webhook authentication is disabled. This is a security risk."
+            )
+            raise HTTPException(
+                status_code=403,
+                detail="Webhook security not configured. TEAMS_WEBHOOK_SECRET is required in production."
+            )
+        if dev_bypass:
+            logger.error(
+                "[TEAMS WEBHOOK SECURITY] DEV BYPASS active (TEAMS_WEBHOOK_DEV_BYPASS=true). "
+                "Signature verification SKIPPED — only safe in local development."
+            )
+            return True
         logger.error(
-            "[TEAMS WEBHOOK SECURITY] TEAMS_WEBHOOK_SECRET not configured in production! "
-            "Webhook authentication is disabled. This is a security risk."
+            "[TEAMS WEBHOOK SECURITY] TEAMS_WEBHOOK_SECRET not configured. "
+            "Set TEAMS_WEBHOOK_DEV_BYPASS=true to bypass in local development only."
         )
         raise HTTPException(
             status_code=403,
-            detail="Webhook security not configured. TEAMS_WEBHOOK_SECRET is required in production."
+            detail="Webhook security not configured. Set TEAMS_WEBHOOK_SECRET or TEAMS_WEBHOOK_DEV_BYPASS=true."
         )
-    
-    # Development mode: if no secret, allow all requests
-    if not teams_webhook_secret:
-        logger.warning("[TEAMS WEBHOOK] TEAMS_WEBHOOK_SECRET not configured, skipping signature verification (development mode only)")
-        return True
+
     
     if not signature:
         logger.warning("[TEAMS WEBHOOK] Missing signature header")
