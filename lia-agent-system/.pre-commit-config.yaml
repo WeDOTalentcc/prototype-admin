@@ -90,16 +90,16 @@ repos:
         pass_filenames: false
         always_run: false
       - id: no-getattr-on-models
-        name: "G6: No getattr fallback on SQLAlchemy model rows (warn-only)"
+        name: "G6: No getattr fallback on SQLAlchemy model rows"
         language: system
-        entry: bash -c "python3 scripts/check_no_getattr_on_models.py 2>&1 || true"
+        entry: python3 scripts/check_no_getattr_on_models.py
         files: ^(app|libs)/.*\\.py$
         pass_filenames: false
         always_run: false
       - id: agent-compliance
-        name: "G7: Canonical agent compliance (warn-only)"
+        name: "G7: Canonical agent compliance"
         language: system
-        entry: bash -c "python3 scripts/check_agent_compliance.py 2>&1 || true"
+        entry: python3 scripts/check_agent_compliance.py
         files: ^app/domains/.*/agents/.*_react_agent\.py$
         pass_filenames: false
         always_run: false
