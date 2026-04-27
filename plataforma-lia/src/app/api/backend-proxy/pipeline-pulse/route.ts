@@ -13,6 +13,8 @@ interface PipelinePulseStage {
 interface PipelinePulsePayload {
   stages: PipelinePulseStage[]
   total: number
+  /** PR-M: count of active (status=Ativa) job vacancies for the Vaga pulse badge. */
+  active_jobs?: number
 }
 
 function isValidPulsePayload(value: unknown): value is PipelinePulsePayload {

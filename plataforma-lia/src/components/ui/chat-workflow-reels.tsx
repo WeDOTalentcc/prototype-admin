@@ -166,6 +166,8 @@ export interface WorkflowReelStage {
 interface PipelinePulseData {
   stages: Array<{ macro_stage: string; count: number }>;
   total: number;
+  /** PR-M: active job vacancies count for the Vaga node pulse badge. */
+  active_jobs?: number;
 }
 
 function usePipelinePulse() {
@@ -195,6 +197,10 @@ function usePipelinePulse() {
             map[s.macro_stage] = s.count;
           }
         }
+        // PR-M: wire active_jobs count for the Vaga node pulse badge.
+        if (typeof data.active_jobs === "number" && data.active_jobs > 0) {
+          map["definir-vaga"] = data.active_jobs;
+        }
         setPulse(map);
       })
       .catch((err) => {
@@ -219,7 +225,7 @@ interface StageStructure {
 }
 
 const STAGE_STRUCTURES: StageStructure[] = [
-  { id: "definir-vaga", suggestionIds: ["create-job", "job-template"] },
+  { id: "definir-vaga", pulseStageId: "definir-vaga", suggestionIds: ["create-job", "job-template"] },
   { id: "sourcing", pulseStageId: "sourcing", suggestionIds: ["search-candidates", "add-candidate", "talent-pool"] },
   { id: "triagem", pulseStageId: "triagem", suggestionIds: ["candidate-info", "update-status"] },
   { id: "entrevista", pulseStageId: "entrevista", suggestionIds: ["schedule-interview", "reschedule-interview"] },

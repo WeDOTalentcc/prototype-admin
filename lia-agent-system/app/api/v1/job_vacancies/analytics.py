@@ -1035,6 +1035,8 @@ class PipelinePulseStage(BaseModel):
 class PipelinePulseResponse(BaseModel):
     stages: list[PipelinePulseStage]
     total: int
+    active_jobs: int = 0
+
 
 STAGE_TO_MACRO = {
     "Novo": "sourcing",
@@ -1100,7 +1102,12 @@ async def get_pipeline_pulse(
         for m in order
     ]
 
-    return PipelinePulseResponse(stages=stages, total=total)
+    try:
+        active_jobs = await repo.get_active_jobs_count(company_id)
+    except Exception:
+        active_jobs = 0
+
+    return PipelinePulseResponse(stages=stages, total=total, active_jobs=active_jobs)
 
 
 @router.get("/pipeline-overview", response_model=PipelineOverviewResponse)

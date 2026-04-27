@@ -421,3 +421,14 @@ class JobVacanciesAnalyticsRepository:
             {"co": company_id, "limit": candidates_per_stage},
         )
         return result.fetchall()
+
+    async def get_active_jobs_count(self, company_id: str) -> int:
+        """Return count of active (status=Ativa) job vacancies for the company."""
+        from sqlalchemy import func as sa_func
+        result = await self.db.execute(
+            select(sa_func.count(JobVacancy.id)).where(
+                JobVacancy.company_id == company_id,
+                JobVacancy.status == "Ativa",
+            )
+        )
+        return int(result.scalar() or 0)
