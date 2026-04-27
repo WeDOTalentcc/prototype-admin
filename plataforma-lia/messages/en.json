@@ -5470,6 +5470,28 @@
       "nextStepsAria": "Next steps",
       "close": "Close",
       "closeAria": "Close screening"
+    },
+    "errorCard": {
+      "title": {
+        "TOKEN_INVALID": "Invalid link",
+        "TOKEN_EXPIRED": "Link expired",
+        "SESSION_COMPLETED": "Screening already completed",
+        "RATE_LIMITED": "Too many attempts",
+        "SERVER_ERROR": "Server error",
+        "fallback": "Error"
+      }
+    },
+    "phoneCallDone": {
+      "title": "Call requested",
+      "description": "You'll receive a call from LIA shortly. Keep an eye on your phone.",
+      "voipPrompt": "Or call directly from your browser:"
+    },
+    "lgpdFooter": {
+      "privacyPolicy": "Privacy Policy",
+      "privacyPolicyAria": "Learn more about AI assessment"
+    },
+    "messagesList": {
+      "ariaLabel": "Screening messages"
     }
   }
 }

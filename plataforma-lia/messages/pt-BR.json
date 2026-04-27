@@ -5470,6 +5470,28 @@
       "nextStepsAria": "Próximos passos",
       "close": "Fechar",
       "closeAria": "Fechar triagem"
+    },
+    "errorCard": {
+      "title": {
+        "TOKEN_INVALID": "Link inválido",
+        "TOKEN_EXPIRED": "Link expirado",
+        "SESSION_COMPLETED": "Triagem já concluída",
+        "RATE_LIMITED": "Muitas tentativas",
+        "SERVER_ERROR": "Erro no servidor",
+        "fallback": "Erro"
+      }
+    },
+    "phoneCallDone": {
+      "title": "Ligação solicitada",
+      "description": "Você receberá uma ligação da LIA em instantes. Fique atento ao seu telefone.",
+      "voipPrompt": "Ou ligue diretamente pelo navegador:"
+    },
+    "lgpdFooter": {
+      "privacyPolicy": "Política de Privacidade",
+      "privacyPolicyAria": "Saiba mais sobre avaliação por IA"
+    },
+    "messagesList": {
+      "ariaLabel": "Mensagens da triagem"
     }
   }
 }

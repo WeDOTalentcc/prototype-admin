@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import { useTranslations } from "next-intl"
 import { ChatContainer } from "@/components/triagem/ChatContainer"
 import { MessageBubble } from "@/components/triagem/MessageBubble"
 import { InputBar } from "@/components/triagem/InputBar"
@@ -39,6 +40,7 @@ function LoadingSkeleton() {
 }
 
 function ErrorCard({ code, message }: { code: string; message: string }) {
+  const t = useTranslations("triagem.errorCard")
   const iconMap: Record<string, React.ReactNode> = {
     TOKEN_INVALID: <Link2Off className="w-8 h-8 text-lia-text-tertiary dark:text-lia-text-secondary" />,
     TOKEN_EXPIRED: <Clock className="w-8 h-8 text-lia-text-tertiary dark:text-lia-text-secondary" />,
@@ -47,13 +49,8 @@ function ErrorCard({ code, message }: { code: string; message: string }) {
     SERVER_ERROR: <ServerCrash className="w-8 h-8 text-status-error" />,
   }
 
-  const titleMap: Record<string, string> = {
-    TOKEN_INVALID: "Link inválido",
-    TOKEN_EXPIRED: "Link expirado",
-    SESSION_COMPLETED: "Triagem já concluída",
-    RATE_LIMITED: "Muitas tentativas",
-    SERVER_ERROR: "Erro no servidor",
-  }
+  const knownTitleKeys: readonly string[] = ["TOKEN_INVALID", "TOKEN_EXPIRED", "SESSION_COMPLETED", "RATE_LIMITED", "SERVER_ERROR"]
+  const titleKey = knownTitleKeys.includes(code) ? `title.${code}` : "title.fallback"
 
   return (
     <ChatContainer>
@@ -61,7 +58,7 @@ function ErrorCard({ code, message }: { code: string; message: string }) {
         <div className="w-full max-w-sm bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl shadow-lia-sm p-6 text-center space-y-4">
           <div className="flex justify-center">{iconMap[code] || iconMap.SERVER_ERROR}</div>
           <h2 className="text-base font-semibold text-lia-text-primary dark:text-lia-text-primary">
-            {titleMap[code] || "Erro"}
+            {t(titleKey)}
           </h2>
           <p className="text-sm text-lia-text-secondary dark:text-lia-text-tertiary">
             {message}
@@ -121,6 +118,7 @@ function MessageRenderer({
 }
 
 function LGPDFooter() {
+  const t = useTranslations("triagem.lgpdFooter")
   return (
     <div className="py-3 px-4 text-center">
       <p className="text-micro text-lia-text-tertiary dark:text-lia-text-secondary">
@@ -130,9 +128,9 @@ function LGPDFooter() {
           target="_blank"
           rel="noopener noreferrer"
           className="underline hover:text-lia-text-primary dark:hover:text-lia-text-tertiary transition-colors motion-reduce:transition-none"
-          aria-label="Saiba mais sobre avaliação por IA"
+          aria-label={t("privacyPolicyAria")}
         >
-          Política de Privacidade
+          {t("privacyPolicy")}
         </a>
       </p>
     </div>
@@ -140,6 +138,8 @@ function LGPDFooter() {
 }
 
 export function TriagemFlow({ hook }: TriagemFlowProps) {
+  const tPhoneCall = useTranslations("triagem.phoneCallDone")
+  const tMessages = useTranslations("triagem.messagesList")
   const [whatsappModalOpen, setWhatsappModalOpen] = useState(false)
   const {
     token,
@@ -202,15 +202,15 @@ export function TriagemFlow({ hook }: TriagemFlowProps) {
                 </div>
               </div>
               <h2 className="text-base font-semibold text-lia-text-primary">
-                Ligação solicitada
+                {tPhoneCall("title")}
               </h2>
               <p className="text-sm text-lia-text-secondary leading-relaxed">
-                Você receberá uma ligação da LIA em instantes. Fique atento ao seu telefone.
+                {tPhoneCall("description")}
               </p>
               {showVoipButton && (
                 <div className="pt-2">
                   <p className="text-xs text-lia-text-tertiary mb-3">
-                    Ou ligue diretamente pelo navegador:
+                    {tPhoneCall("voipPrompt")}
                   </p>
                   <VoIPCallButton
                     token={token}
@@ -307,7 +307,7 @@ export function TriagemFlow({ hook }: TriagemFlowProps) {
         className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
         role="log"
         aria-live="polite"
-        aria-label="Mensagens da triagem"
+        aria-label={tMessages("ariaLabel")}
       >
         {messages.map((msg, idx) => (
           <MessageRenderer
