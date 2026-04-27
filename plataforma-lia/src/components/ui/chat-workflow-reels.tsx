@@ -602,7 +602,12 @@ export function ChatWorkflowReels({
             {activeStage.suggestions.map((suggestion) => (
               <button
                 key={suggestion.id}
+                data-rail-a-card={suggestion.id}
+                data-rail-a-stage={activeStage.id}
                 onClick={() => {
+                  window.dispatchEvent(new CustomEvent("lia:rail-a-card-click", {
+                    detail: { card_id: suggestion.id, stage_id: activeStage.id, navigate: !!suggestion.navigate_url },
+                  }));
                   if (suggestion.navigate_url) {
                     router.push(suggestion.navigate_url);
                   } else {
@@ -797,6 +802,7 @@ function CompactReels({
               onClick={() =>
                 handleNodeClick(stage.id, stage.suggestions.length > 0)
               }
+              pulseCount={stage.pulseStageId ? pulse[stage.pulseStageId] : undefined}
             />
             {idx < stages.length - 1 && (
               <div className="h-px w-4 flex-shrink-0 bg-lia-border-subtle" />
@@ -815,6 +821,7 @@ function CompactReels({
                   onClick={() =>
                     handleNodeClick(node.id, node.suggestions.length > 0)
                   }
+                  pulseCount={node.pulseStageId ? pulse[node.pulseStageId] : undefined}
                 />
                 {idx < utilityNodes.length - 1 && (
                   <div className="w-1 flex-shrink-0" />
@@ -830,7 +837,12 @@ function CompactReels({
           {activeStage.suggestions.map((suggestion) => (
             <button
               key={suggestion.id}
+              data-rail-a-card={suggestion.id}
+              data-rail-a-stage={activeStage.id}
               onClick={() => {
+                window.dispatchEvent(new CustomEvent("lia:rail-a-card-click", {
+                  detail: { card_id: suggestion.id, stage_id: activeStage.id, navigate: !!suggestion.navigate_url },
+                }));
                 if (suggestion.navigate_url) {
                   router.push(suggestion.navigate_url);
                 } else {
@@ -879,46 +891,62 @@ function CompactNode({
   stage,
   isActive,
   onClick,
+  pulseCount,
 }: {
   stage: WorkflowReelStage;
   isActive: boolean;
   onClick: () => void;
+  pulseCount?: number;
 }) {
   const Icon = stage.icon;
   const hasSuggestions = stage.suggestions.length > 0;
+  const showPulse = pulseCount !== undefined && pulseCount > 0;
 
   return (
     <button
       onClick={onClick}
       disabled={!hasSuggestions}
-      className="flex-shrink-0 flex flex-col items-center gap-1 px-1 disabled:cursor-default"
+      className="flex-shrink-0 flex flex-col items-center gap-0.5 px-1 disabled:cursor-default"
       title={stage.label}
     >
-      <div
-        className="w-7 h-7 rounded-full flex items-center justify-center border transition-colors"
-        style={{
-          backgroundColor: isActive
-            ? stage.color.accent
-            : hasSuggestions
-              ? stage.color.accentBg
-              : "var(--lia-bg-tertiary)",
-          borderColor: isActive
-            ? stage.color.accent
-            : hasSuggestions
-              ? stage.color.nodeBorder
-              : "var(--lia-border-subtle)",
-        }}
-      >
-        <Icon
-          className="w-3 h-3"
+      <div className="relative">
+        <div
+          className="w-7 h-7 rounded-full flex items-center justify-center border transition-colors"
           style={{
-            color: isActive
-              ? "var(--lia-text-on-accent, #fff)"
+            backgroundColor: isActive
+              ? stage.color.accent
               : hasSuggestions
-                ? stage.color.accent
-                : "var(--lia-text-disabled)",
+                ? stage.color.accentBg
+                : "var(--lia-bg-tertiary)",
+            borderColor: isActive
+              ? stage.color.accent
+              : hasSuggestions
+                ? stage.color.nodeBorder
+                : "var(--lia-border-subtle)",
           }}
-        />
+        >
+          <Icon
+            className="w-3 h-3"
+            style={{
+              color: isActive
+                ? "var(--lia-text-on-accent, #fff)"
+                : hasSuggestions
+                  ? stage.color.accent
+                  : "var(--lia-text-disabled)",
+            }}
+          />
+        </div>
+        {showPulse && (
+          <span
+            className="absolute -top-1 -right-1.5 min-w-[14px] h-3.5 text-[9px] font-bold rounded-full flex items-center justify-center px-0.5"
+            style={{
+              backgroundColor: stage.color.accent,
+              color: "var(--lia-text-on-accent, #fff)",
+            }}
+          >
+            {pulseCount! > 99 ? "99+" : pulseCount}
+          </span>
+        )}
       </div>
       <span
         className="text-micro font-medium whitespace-nowrap"
