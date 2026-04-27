@@ -5492,6 +5492,75 @@
     },
     "messagesList": {
       "ariaLabel": "Mensagens da triagem"
+    },
+    "confirmationCard": {
+      "ariaLabel": "Confirmação de finalização",
+      "title": "Chegamos ao final!",
+      "subtitle": "Quer revisar algo antes de concluir?",
+      "questionsAnswered": "{count} perguntas respondidas",
+      "minutesSummary": "{count} minutos",
+      "reviewLabel": "Quero revisar",
+      "reviewAria": "Quero revisar minhas respostas",
+      "confirmLabel": "Finalizar Triagem",
+      "confirmLoading": "Finalizando...",
+      "confirmAria": "Finalizar triagem"
+    },
+    "multipleChoiceCard": {
+      "groupAria": "Opções de múltipla escolha"
+    },
+    "likertScaleCard": {
+      "groupAria": "Escala Likert",
+      "valueAria": "{value} - {label}",
+      "defaultLabels": {
+        "stronglyDisagree": "Discordo totalmente",
+        "disagree": "Discordo",
+        "neutral": "Neutro",
+        "agree": "Concordo",
+        "stronglyAgree": "Concordo totalmente"
+      }
+    },
+    "phoneConfirmModal": {
+      "whatsappTitle": "Continuar pelo WhatsApp",
+      "phoneTitle": "Receber Ligação",
+      "whatsappDescription": "Confirme seu número de WhatsApp. Vamos abrir uma conversa para você continuar a triagem por mensagem.",
+      "phoneDescription": "Informe seu telefone para receber uma ligação da LIA. A triagem será conduzida por voz.",
+      "whatsappCtaIdle": "Abrir WhatsApp",
+      "phoneCtaIdle": "Solicitar Ligação",
+      "whatsappCtaLoading": "Abrindo...",
+      "phoneCtaLoading": "Ligando...",
+      "close": "Fechar",
+      "phoneLabel": "Telefone (com DDD)",
+      "phonePlaceholder": "(11) 99999-9999"
+    },
+    "voipCallButton": {
+      "callIdle": "Ligar pelo navegador",
+      "callIdleTitle": "Iniciar chamada de voz pelo navegador",
+      "callIdleAria": "Iniciar chamada de voz",
+      "connecting": "Conectando...",
+      "connectingAria": "Conectando chamada de voz...",
+      "muteOn": "Ativar microfone",
+      "muteOff": "Silenciar microfone",
+      "endCall": "Encerrar",
+      "endCallTitle": "Encerrar chamada",
+      "endCallAria": "Encerrar chamada de voz",
+      "newCall": "Nova chamada",
+      "newCallTitle": "Iniciar nova chamada de voz",
+      "newCallAria": "Iniciar nova chamada de voz",
+      "retry": "Tentar novamente",
+      "retryTitle": "Tentar novamente",
+      "retryAria": "Tentar chamada de voz novamente",
+      "unavailable": "Voz indisponível",
+      "unavailableTitle": "Chamada por voz não disponível neste momento",
+      "unavailableAria": "Chamada por voz indisponível",
+      "errors": {
+        "microphoneUnavailable": "Microfone não disponível. Verifique as permissões do navegador.",
+        "voipStartFailed": "Não foi possível iniciar sessão de voz",
+        "voipUnavailable": "Chamada de voz não disponível. Use o chat de texto.",
+        "networkError": "Erro de rede ao iniciar sessão de voz",
+        "voipSessionError": "Erro na sessão de voz",
+        "voipConnectionError": "Erro na conexão de voz",
+        "voipStartError": "Erro ao iniciar sessão de voz"
+      }
     }
   }
 }

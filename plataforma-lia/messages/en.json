@@ -5492,6 +5492,75 @@
     },
     "messagesList": {
       "ariaLabel": "Screening messages"
+    },
+    "confirmationCard": {
+      "ariaLabel": "Completion confirmation",
+      "title": "We've reached the end!",
+      "subtitle": "Want to review anything before finishing?",
+      "questionsAnswered": "{count} questions answered",
+      "minutesSummary": "{count} minutes",
+      "reviewLabel": "Review answers",
+      "reviewAria": "Review my answers",
+      "confirmLabel": "Finish Screening",
+      "confirmLoading": "Finishing...",
+      "confirmAria": "Finish screening"
+    },
+    "multipleChoiceCard": {
+      "groupAria": "Multiple-choice options"
+    },
+    "likertScaleCard": {
+      "groupAria": "Likert scale",
+      "valueAria": "{value} - {label}",
+      "defaultLabels": {
+        "stronglyDisagree": "Strongly disagree",
+        "disagree": "Disagree",
+        "neutral": "Neutral",
+        "agree": "Agree",
+        "stronglyAgree": "Strongly agree"
+      }
+    },
+    "phoneConfirmModal": {
+      "whatsappTitle": "Continue on WhatsApp",
+      "phoneTitle": "Receive a Call",
+      "whatsappDescription": "Confirm your WhatsApp number. We'll open a conversation so you can continue the screening by message.",
+      "phoneDescription": "Enter your phone number to receive a call from LIA. The screening will be conducted by voice.",
+      "whatsappCtaIdle": "Open WhatsApp",
+      "phoneCtaIdle": "Request Call",
+      "whatsappCtaLoading": "Opening...",
+      "phoneCtaLoading": "Calling...",
+      "close": "Close",
+      "phoneLabel": "Phone (Brazilian number, with area code)",
+      "phonePlaceholder": "(11) 99999-9999"
+    },
+    "voipCallButton": {
+      "callIdle": "Call from browser",
+      "callIdleTitle": "Start voice call from the browser",
+      "callIdleAria": "Start voice call",
+      "connecting": "Connecting...",
+      "connectingAria": "Connecting voice call...",
+      "muteOn": "Unmute microphone",
+      "muteOff": "Mute microphone",
+      "endCall": "End",
+      "endCallTitle": "End call",
+      "endCallAria": "End voice call",
+      "newCall": "New call",
+      "newCallTitle": "Start a new voice call",
+      "newCallAria": "Start a new voice call",
+      "retry": "Try again",
+      "retryTitle": "Try again",
+      "retryAria": "Try voice call again",
+      "unavailable": "Voice unavailable",
+      "unavailableTitle": "Voice call not available right now",
+      "unavailableAria": "Voice call unavailable",
+      "errors": {
+        "microphoneUnavailable": "Microphone unavailable. Check your browser permissions.",
+        "voipStartFailed": "Could not start voice session",
+        "voipUnavailable": "Voice call unavailable. Please use the text chat.",
+        "networkError": "Network error while starting voice session",
+        "voipSessionError": "Voice session error",
+        "voipConnectionError": "Voice connection error",
+        "voipStartError": "Error starting voice session"
+      }
     }
   }
 }

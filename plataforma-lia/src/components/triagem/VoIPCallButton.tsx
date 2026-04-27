@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import { Phone, PhoneOff, Mic, MicOff, Loader2, Volume2, WifiOff } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -33,6 +34,8 @@ export function VoIPCallButton({
   onCallEnded,
   onError,
 }: VoIPCallButtonProps) {
+  const t = useTranslations("triagem.voipCallButton")
+  const tErrors = useTranslations("triagem.voipCallButton.errors")
   const [voipState, _setVoIPState] = useState<VoIPState>("idle")
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [callDuration, setCallDuration] = useState(0)
@@ -148,7 +151,7 @@ export function VoIPCallButton({
       })
       mediaStreamRef.current = stream
     } catch {
-      const msg = "Microfone não disponível. Verifique as permissões do navegador."
+      const msg = tErrors("microphoneUnavailable")
       setErrorMessage(msg)
       setVoIPState("error")
       onError?.(msg)
@@ -170,7 +173,7 @@ export function VoIPCallButton({
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        const msg = data.detail || "Não foi possível iniciar sessão de voz"
+        const msg = data.detail || tErrors("voipStartFailed")
         setErrorMessage(msg)
         setVoIPState("error")
         onError?.(msg)
@@ -180,7 +183,7 @@ export function VoIPCallButton({
       sessionRes = await res.json()
 
       if (!sessionRes.success) {
-        const fallbackMsg = sessionRes.message || "Chamada de voz não disponível. Use o chat de texto."
+        const fallbackMsg = sessionRes.message || tErrors("voipUnavailable")
         setErrorMessage(fallbackMsg)
         setVoIPState("unavailable")
         stopAudio()
@@ -188,7 +191,7 @@ export function VoIPCallButton({
       }
 
       if (!sessionRes.gemini_available) {
-        const fallbackMsg = sessionRes.message || "Chamada de voz não disponível. Use o chat de texto."
+        const fallbackMsg = sessionRes.message || tErrors("voipUnavailable")
         setErrorMessage(fallbackMsg)
         setVoIPState("unavailable")
         stopAudio()
@@ -196,7 +199,7 @@ export function VoIPCallButton({
       }
       sessionIdRef.current = sessionRes.session_id
     } catch {
-      const msg = "Erro de rede ao iniciar sessão de voz"
+      const msg = tErrors("networkError")
       setErrorMessage(msg)
       setVoIPState("error")
       onError?.(msg)
@@ -268,7 +271,7 @@ export function VoIPCallButton({
           }
 
           if (data.type === "error") {
-            const msg = data.message || "Erro na sessão de voz"
+            const msg = data.message || tErrors("voipSessionError")
             setErrorMessage(msg)
             setVoIPState("error")
             clearTimer()
@@ -279,7 +282,7 @@ export function VoIPCallButton({
       }
 
       ws.onerror = () => {
-        const msg = "Erro na conexão de voz"
+        const msg = tErrors("voipConnectionError")
         setErrorMessage(msg)
         setVoIPState("error")
         clearTimer()
@@ -297,13 +300,13 @@ export function VoIPCallButton({
         }
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Erro ao iniciar sessão de voz"
+      const msg = err instanceof Error ? err.message : tErrors("voipStartError")
       setErrorMessage(msg)
       setVoIPState("error")
       onError?.(msg)
       stopAudio()
     }
-  }, [disabled, voipState, token, clearTimer, stopAudio, playAudioChunk, onCallStarted, onCallEnded, onError, setVoIPState])
+  }, [disabled, voipState, token, clearTimer, stopAudio, playAudioChunk, onCallStarted, onCallEnded, onError, setVoIPState, tErrors])
 
   const endCall = useCallback(() => {
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
@@ -353,15 +356,15 @@ export function VoIPCallButton({
         <button
           type="button"
           disabled
-          title="Chamada por voz não disponível neste momento"
-          aria-label="Chamada por voz indisponível"
+          title={t("unavailableTitle")}
+          aria-label={t("unavailableAria")}
           className={cn(
             "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-disabled text-sm font-medium opacity-50 cursor-not-allowed",
             className
           )}
         >
           <WifiOff className="w-4 h-4" />
-          Voz indisponível
+          {t("unavailable")}
         </button>
         {errorMessage && (
           <p className="text-xs text-lia-text-secondary text-center leading-snug px-1">
@@ -378,15 +381,15 @@ export function VoIPCallButton({
         <button
           type="button"
           onClick={reset}
-          title="Tentar novamente"
-          aria-label="Tentar chamada de voz novamente"
+          title={t("retryTitle")}
+          aria-label={t("retryAria")}
           className={cn(
             "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-status-error/40 text-status-error text-sm font-medium hover:bg-status-error/10 transition-colors",
             className
           )}
         >
           <Phone className="w-4 h-4" />
-          Tentar novamente
+          {t("retry")}
         </button>
         {errorMessage && (
           <p className="text-xs text-status-error text-center leading-snug px-1">
@@ -402,27 +405,28 @@ export function VoIPCallButton({
       <button
         type="button"
         onClick={reset}
-        title="Iniciar nova chamada de voz"
-        aria-label="Iniciar nova chamada de voz"
+        title={t("newCallTitle")}
+        aria-label={t("newCallAria")}
         className={cn(
           "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-secondary text-sm font-medium hover:bg-lia-bg-tertiary transition-colors",
           className
         )}
       >
         <Phone className="w-4 h-4" />
-        Nova chamada
+        {t("newCall")}
       </button>
     )
   }
 
   if (voipState === "connected" || voipState === "muted") {
+    const muteLabel = voipState === "muted" ? t("muteOn") : t("muteOff")
     return (
       <div className="flex gap-2">
         <button
           type="button"
           onClick={toggleMute}
-          title={voipState === "muted" ? "Ativar microfone" : "Silenciar microfone"}
-          aria-label={voipState === "muted" ? "Ativar microfone" : "Silenciar microfone"}
+          title={muteLabel}
+          aria-label={muteLabel}
           className={cn(
             "h-11 flex items-center justify-center gap-2 px-3 rounded-lg border text-sm font-medium transition-colors",
             voipState === "muted"
@@ -437,12 +441,12 @@ export function VoIPCallButton({
         <button
           type="button"
           onClick={endCall}
-          title="Encerrar chamada"
-          aria-label="Encerrar chamada de voz"
+          title={t("endCallTitle")}
+          aria-label={t("endCallAria")}
           className="h-11 flex items-center justify-center gap-2 px-4 rounded-lg bg-status-error text-white text-sm font-medium hover:bg-status-error/90 transition-colors"
         >
           <PhoneOff className="w-4 h-4" />
-          Encerrar
+          {t("endCall")}
         </button>
       </div>
     )
@@ -453,14 +457,14 @@ export function VoIPCallButton({
       <button
         type="button"
         disabled
-        aria-label="Conectando chamada de voz..."
+        aria-label={t("connectingAria")}
         className={cn(
           "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-secondary text-sm font-medium opacity-70 cursor-not-allowed",
           className
         )}
       >
         <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none" />
-        Conectando...
+        {t("connecting")}
       </button>
     )
   }
@@ -470,15 +474,15 @@ export function VoIPCallButton({
       type="button"
       onClick={startCall}
       disabled={disabled}
-      title="Iniciar chamada de voz pelo navegador"
-      aria-label="Iniciar chamada de voz"
+      title={t("callIdleTitle")}
+      aria-label={t("callIdleAria")}
       className={cn(
         "h-11 flex items-center justify-center gap-2 px-4 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none",
         className
       )}
     >
       <Volume2 className="w-4 h-4" />
-      Ligar pelo navegador
+      {t("callIdle")}
     </button>
   )
 }

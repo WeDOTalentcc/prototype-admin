@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState, useCallback } from "react"
+import React, { useState, useCallback, useMemo } from "react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 
 interface LikertScaleCardProps {
@@ -11,22 +12,30 @@ interface LikertScaleCardProps {
   className?: string
 }
 
-const DEFAULT_LABELS = [
-  "Discordo totalmente",
-  "Discordo",
-  "Neutro",
-  "Concordo",
-  "Concordo totalmente",
-]
-
 export function LikertScaleCard({
   question,
-  labels = DEFAULT_LABELS,
+  labels,
   onSelect,
   disabled = false,
   className,
 }: LikertScaleCardProps) {
+  const t = useTranslations("triagem.likertScaleCard")
+  const tDefaults = useTranslations("triagem.likertScaleCard.defaultLabels")
   const [selectedValue, setSelectedValue] = useState<number | null>(null)
+
+  const effectiveLabels = useMemo(
+    () =>
+      labels && labels.length > 0
+        ? labels
+        : [
+            tDefaults("stronglyDisagree"),
+            tDefaults("disagree"),
+            tDefaults("neutral"),
+            tDefaults("agree"),
+            tDefaults("stronglyAgree"),
+          ],
+    [labels, tDefaults]
+  )
 
   const handleSelect = useCallback(
     (value: number) => {
@@ -37,6 +46,8 @@ export function LikertScaleCard({
     [disabled, selectedValue, onSelect]
   )
 
+  const groupAria = question || t("groupAria")
+
   return (
     <div
       className={cn(
@@ -44,11 +55,13 @@ export function LikertScaleCard({
         className
       )}
       role="group"
-      aria-label={question}
+      aria-label={groupAria}
     >
-      <p className="text-sm text-lia-text-secondary">
-        {question}
-      </p>
+      {question && (
+        <p className="text-sm text-lia-text-secondary">
+          {question}
+        </p>
+      )}
 
       <div className="flex items-center justify-between gap-2">
         {[1, 2, 3, 4, 5].map((value) => {
@@ -60,7 +73,7 @@ export function LikertScaleCard({
               onClick={() => handleSelect(value)}
               disabled={disabled || (selectedValue !== null && !isSelected)}
               aria-pressed={isSelected}
-              aria-label={`${value} - ${labels[value - 1] || ""}`}
+              aria-label={t("valueAria", { value, label: effectiveLabels[value - 1] || "" })}
               className={cn(
  "flex-1 min-w-[44px] h-11 flex items-center justify-center rounded-lg text-sm font-semibold font-['Inter',sans-serif] transition-colors duration-200 focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none",
                 isSelected
@@ -77,10 +90,10 @@ export function LikertScaleCard({
 
       <div className="flex justify-between">
         <span className="text-micro text-lia-text-disabled">
-          {labels[0]}
+          {effectiveLabels[0]}
         </span>
         <span className="text-micro text-lia-text-disabled">
-          {labels[labels.length - 1]}
+          {effectiveLabels[effectiveLabels.length - 1]}
         </span>
       </div>
     </div>
