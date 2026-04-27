@@ -1574,13 +1574,31 @@ async def teams_tab_auth(
 async def teams_tab_events(
     payload: TabEventRequest,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Receive a behavioral event from the Teams Tab iframe tracker.
 
+    P1-8 fix (auditoria 2026-04-26): endpoint requires authentication and
+    validates that payload.platform_user_id matches the authenticated user.
+    Sem isso, atacante poderia chamar este endpoint direto (ignorando o
+    proxy) e disparar Adaptive Card proativo para qualquer outro user
+    fornecendo aad_object_id forjado.
+
     If the event represents a complex action, sends a proactive Adaptive
     Card to the recruiter's Teams chat with a deep link to the platform.
     """
+    # P1-8 hardening: if client sent platform_user_id, it MUST match the
+    # authenticated user. Block forging events for someone else.
+    if payload.platform_user_id and str(payload.platform_user_id) != str(current_user.id):
+        logger.warning(
+            "[TeamsTabEvents] platform_user_id mismatch: payload=%s != current=%s — refusing",
+            payload.platform_user_id, current_user.id,
+        )
+        raise HTTPException(
+            status_code=403,
+            detail="platform_user_id does not match authenticated user",
+        )
 
     from app.domains.communication.services.teams_simple import SimpleTeamsBot
     from app.domains.communication.services.teams_tab_trigger import get_trigger_engine
