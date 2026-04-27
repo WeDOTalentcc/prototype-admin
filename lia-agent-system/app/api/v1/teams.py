@@ -820,7 +820,8 @@ async def _log_teams_message(activity: dict[str, Any], db: AsyncSession):
 @router.post("/send-notification", response_model=None)
 async def send_proactive_notification(
     notification_data: dict[str, Any],
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Send proactive notification to Teams user.
@@ -926,6 +927,7 @@ def _create_notification_card(notification_type: str, data: dict[str, Any]) -> d
 async def run_proactivity_checks(
     company_id: str | None = None,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Run proactivity checks (stalled pipelines, deadlines). Call periodically."""
     try:
@@ -950,6 +952,7 @@ async def notify_new_candidate(
     vacancy_title: str,
     company_id: str,
     estimated_score: float | None = None,
+    current_user: User = Depends(get_current_user),
 ):
     """Notify recruiters when new candidate applies."""
     try:
@@ -978,6 +981,7 @@ async def notify_screening_complete(
     recommendation: str,
     company_id: str,
     recruiter_teams_id: str | None = None,
+    current_user: User = Depends(get_current_user),
 ):
     """Notify recruiters when a screening (WSI/BARS) completes."""
     try:
@@ -1001,6 +1005,7 @@ async def notify_screening_complete(
 async def send_daily_digest(
     company_id: str | None = None,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Trigger the daily digest card for all Teams recruiters.
@@ -1172,6 +1177,7 @@ class ScheduleInterviewRequest(BaseModel):
 async def schedule_interview_via_teams(
     request: ScheduleInterviewRequest,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Schedule an interview via Microsoft Graph Calendar.
@@ -1218,6 +1224,7 @@ async def cancel_interview_via_teams(
     organizer_email: str,
     message: str | None = None,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """Cancel a previously scheduled interview event."""
     from app.domains.communication.services.teams_calendar_service import teams_calendar_service
