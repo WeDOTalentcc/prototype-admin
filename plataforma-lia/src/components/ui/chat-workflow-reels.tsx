@@ -50,7 +50,7 @@ export interface ChatSuggestionMetadata {
  * em 2026-04-26. Atualizar aqui quando novos cards forem adicionados ao Rail A
  * ou quando capabilities mudarem.
  *
- * Card 6.1 (register-hire) fica com hint provisório até PR-C criar a action dedicada.
+ * Card 6.1 (register-hire) usa register_hire action (PR-C).
 
  */
 export const SUGGESTION_HINTS: Record<
@@ -90,7 +90,7 @@ export const SUGGESTION_HINTS: Record<
     domain_hint: "sourcing",
     intent_hint: "compare_candidates",
   },
-  "register-hire": { domain_hint: "pipeline", intent_hint: "move_candidate" }, // PR-C dará ação dedicada
+  "register-hire": { domain_hint: "pipeline", intent_hint: "register_hire" },
   "close-vacancy": { domain_hint: "job_management", intent_hint: "close_job" },
   // Utilitárias (9)
   "job-report": {
