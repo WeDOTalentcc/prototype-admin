@@ -58,19 +58,18 @@ Para cada nova entrega:
 
 Antes de propor qualquer mudança não-trivial, agentes IA DEVEM ler `docs/BRANCH_MAP.md` para identificar tema, milestones e docs canônicos cruzados (templates de prompt no Apêndice A do mapa).
 
-### Sensor — pre-commit check (TODO, computacional)
+### Sensor — branch-map-theme-check (ativo, computacional)
 
-A implementar: hook `.git/hooks/pre-commit` que bloqueia se:
-- Branch ativa = sprint genérica (ex: `feat/orch-migration-sprint-I`) E
-- Commit toca arquivo de tema novo (não previsto em `BRANCH_MAP.md` §1-19)
+Implementado como hook commit-msg via pre-commit framework. Bloqueia commits
+em branches genéricas (sprint accumulators) cujo tema declarado no commit
+prefix não aparece em `docs/BRANCH_MAP.md`.
 
-Mensagem de erro otimizada para LLM:
-```
-Branch ativa é sprint genérica e este commit toca tema fora de BRANCH_MAP.md.
-Opções:
-1. Crie branch própria: git checkout -b feat/<tema>-<descricao> milestone/<base>
-2. Adicione seção §N a docs/BRANCH_MAP.md mapeando o tema novo, depois recommit.
-```
+- **Script:** `scripts/check_branch_map.py`
+- **Config:** `.pre-commit-config.yaml`
+- **Doc:** `scripts/README_HOOKS.md`
+- **Instalação (1x por dev):** `pip install pre-commit && pre-commit install --hook-type commit-msg`
+
+Bypass intencional (apenas em urgência): `git commit --no-verify`.
 
 
 ## TDD obrigatório para fixes de P0/P1
