@@ -19,13 +19,12 @@ intent_keywords:
   comunicação: configure_communication
   comunicacao: configure_communication
   communication: configure_communication
-  email: configure_communication
-  whatsapp: configure_communication
-  triagem: configure_screening
-  screening: configure_screening
-  automação: configure_automation
-  automacao: configure_automation
-  automation: configure_automation
+  frequência de comunicação: configure_communication
+  canal de comunicação: configure_communication
+  regras de triagem: configure_screening
+  critérios de triagem: configure_screening
+  nível de automação: configure_automation
+  política de automação: configure_automation
   autonomia: configure_automation
   compliance: validate_compliance
   conformidade: validate_compliance
