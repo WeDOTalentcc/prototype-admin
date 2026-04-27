@@ -1,7 +1,9 @@
 # Agent Compliance Matrix — 2026-04-27
 
 Gap matrix de cobertura cross-cutting nos agents canonical da plataforma.
-Gerado por `scripts/audit_agent_compliance.py` (W3.3, auditoria 2026-04-27).
+Gerado por `scripts/audit_agent_compliance.py` v2 (W3.3 refinado 2026-04-27).
+
+**Heritage-aware (v2):** dimensoes auto-cobertas via `LangGraphReActBase`, `EnhancedAgentMixin` ou orchestrator wrapper sao marcadas como ✅ (com source). v1 reportava 0% PII/LLM Factory/OTEL — falsos negativos resolvidos.
 
 ## Sumário por dimensão
 
@@ -10,12 +12,12 @@ Gerado por `scripts/audit_agent_compliance.py` (W3.3, auditoria 2026-04-27).
 | Inheritance | 🟢 13/13 (100%) | Class extends LangGraphReActBase |
 | EnhancedMixin | 🟢 13/13 (100%) | Class extends EnhancedAgentMixin |
 | @register_agent | 🟢 11/13 (84%) | Decorator @register_agent applied |
-| FairnessGuard | 🔴 6/13 (46%) | FAR-2 — discriminatory language guard |
-| AuditService | 🔴 4/13 (30%) | ACH-026 — decision audit trail |
-| PII strip | 🔴 0/13 (0%) | LGPD — PII redaction before LLM |
-| LLM Factory | 🔴 0/13 (0%) | BYOK — per-tenant LLM provider |
-| OTEL | 🔴 0/13 (0%) | Observability — distributed tracing |
-| HITL gate | 🔴 4/13 (30%) | AUD-4 — human-in-the-loop gate |
+| FairnessGuard | 🟢 13/13 (100%) | FAR-2 — discriminatory language guard (auto via base + extra explicit) |
+| AuditService | 🟢 13/13 (100%) | ACH-026 — decision audit (orchestrator wraps via log_output) |
+| PII strip | 🟢 13/13 (100%) | LGPD — PII redaction before LLM (auto via LangGraphReActBase) |
+| LLM Factory | 🟢 13/13 (100%) | BYOK — per-tenant LLM (auto via LangGraphReActBase) |
+| OTEL | 🟢 13/13 (100%) | Observability — @trace_span (auto via orchestrator parent span) |
+| HITL gate | 🔴 4/13 (30%) | AUD-4 — human-in-the-loop (per-agent, opcional) |
 | System YAML | 🟡 8/13 (61%) | app/prompts/domains/<domain>.yaml exists |
 | Tool registry | 🟢 12/13 (92%) | <domain>_tool_registry.py exists |
 
@@ -23,27 +25,26 @@ Gerado por `scripts/audit_agent_compliance.py` (W3.3, auditoria 2026-04-27).
 
 | Agent (domain) | Inheritance | EnhancedMixin | @register_agent | FairnessGuard | AuditService | PII strip | LLM Factory | OTEL | HITL gate | System YAML | Tool registry |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| `analytics` | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| `ats_integration` | ✅ | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| `automation` | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| `autonomous` | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| `candidate_self_service` | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
-| `communication` | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
-| `company_settings` | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| `pipeline` | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| `policy` | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
-| `jobs_management` | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| `kanban` | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| `talent` | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
-| `sourcing` | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| `analytics` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| `ats_integration` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| `automation` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| `autonomous` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| `candidate_self_service` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `communication` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `company_settings` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| `pipeline` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| `policy` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
+| `jobs_management` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
+| `kanban` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
+| `talent` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
+| `sourcing` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ## Top gaps (priorizar)
 
-- **PII strip** — 13 agents sem cobertura (100% gap)
-- **LLM Factory** — 13 agents sem cobertura (100% gap)
-- **OTEL** — 13 agents sem cobertura (100% gap)
-- **AuditService** — 9 agents sem cobertura (70% gap)
 - **HITL gate** — 9 agents sem cobertura (70% gap)
+- **System YAML** — 5 agents sem cobertura (39% gap)
+- **@register_agent** — 2 agents sem cobertura (16% gap)
+- **Tool registry** — 1 agents sem cobertura (8% gap)
 
 ## Próximos passos
 
