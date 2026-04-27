@@ -158,3 +158,42 @@ class TeamsActionAuditLog(Base):
             "details": self.details,
             "created_at": self.created_at.isoformat() if self.created_at is not None else None,
         }
+
+
+class TeamsFeedback(Base):
+    """User feedback (thumbs up/down) on Teams Adaptive Cards.
+
+    P1-7 fix (auditoria 2026-04-26): /feedback endpoint previously logged
+    only ('# TODO: persist to feedback table'). This model + the matching
+    Migration 098 close that gap. Used downstream for LIA quality metrics
+    and training feedback loop.
+    """
+
+    __tablename__ = "teams_feedback"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+
+    # Feedback content
+    feedback_type = Column(String(50), nullable=False, index=True)  # thumbs_up, thumbs_down, etc
+    feedback_text = Column(Text, nullable=True)
+
+    # Actor (multi-tenant boundary)
+    user_id = Column(String(255), nullable=False, index=True)
+    company_id = Column(String(255), nullable=True, index=True)
+
+    # Context — what card/action generated this feedback
+    card_context = Column(JSON, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+    def to_dict(self) -> dict:
+        return {
+            "id": str(self.id),
+            "feedback_type": self.feedback_type,
+            "feedback_text": self.feedback_text,
+            "user_id": self.user_id,
+            "company_id": self.company_id,
+            "card_context": self.card_context,
+            "created_at": self.created_at.isoformat() if self.created_at is not None else None,
+        }
+

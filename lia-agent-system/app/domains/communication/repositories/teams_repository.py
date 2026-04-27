@@ -10,7 +10,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.teams import TeamsActionAuditLog, TeamsConversation, TeamsMessage
+from lia_models.teams import TeamsActionAuditLog, TeamsConversation, TeamsFeedback, TeamsMessage
 
 logger = logging.getLogger(__name__)
 
@@ -210,6 +210,33 @@ class TeamsRepository:
             query = query.where(TeamsActionAuditLog.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar() or 0
+
+    # ── TeamsFeedback ───────────────────────────────────────────────────
+
+    async def create_feedback(
+        self,
+        *,
+        feedback_type: str,
+        user_id: str,
+        company_id: str | None = None,
+        feedback_text: str | None = None,
+        card_context: dict | None = None,
+    ) -> TeamsFeedback:
+        """Persist Teams Adaptive Card feedback (P1-7 fix).
+
+        Returns the saved TeamsFeedback row. Caller is responsible for
+        committing the session (FastAPI dependency does this on success).
+        """
+        entry = TeamsFeedback(
+            feedback_type=feedback_type,
+            feedback_text=feedback_text,
+            user_id=user_id,
+            company_id=company_id,
+            card_context=card_context or {},
+        )
+        self.db.add(entry)
+        await self.db.flush()
+        return entry
 
     # ── SSO / Tab auth (teams.py Phase 2) ───────────────────────────────
 

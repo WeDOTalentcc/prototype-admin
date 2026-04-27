@@ -895,13 +895,41 @@ async def send_proactive_notification(
     """
     try:
         user_id = notification_data.get("user_id")
-        
+
         # Get conversation reference
         repo = TeamsRepository(db)
         teams_conv = await repo.get_conversation_by_user_id(user_id)
-        
+
         if not teams_conv:
             raise HTTPException(status_code=404, detail="Teams conversation not found")
+
+        # P1 hardening (auditoria 2026-04-27): IDOR / cross-tenant guard.
+        # Without this, any authenticated recruiter could send proactive
+        # notifications to ANY Teams user by enumerating user_ids. We require
+        # the target conversation to belong to the caller's company (or the
+        # caller to be admin).
+        own_company = (
+            str(current_user.company_id) if current_user.company_id else None
+        )
+        conv_company = (
+            str(teams_conv.company_id) if teams_conv.company_id else None
+        )
+        if current_user.role != UserRole.admin and (
+            own_company is None or conv_company != own_company
+        ):
+            logger.warning(
+                "[Teams] cross-tenant send_proactive_notification blocked",
+                extra={
+                    "caller_user_id": str(current_user.id),
+                    "caller_company_id": own_company,
+                    "target_user_id": user_id,
+                    "target_conversation_company_id": conv_company,
+                },
+            )
+            raise HTTPException(
+                status_code=403,
+                detail="cross-tenant notification is not allowed for this user",
+            )
         
         # Send notification via adaptive card
         from app.domains.communication.services.teams_simple import SimpleTeamsBot
@@ -1084,17 +1112,38 @@ async def send_daily_digest(
 async def receive_card_feedback(
     payload: dict[str, Any],
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
     Receive 👍👎 feedback from Teams Adaptive Card buttons.
-    Logs the feedback for LIA quality improvement.
+
+    P1-7 fix (auditoria 2026-04-26): persists to teams_feedback table for
+    LIA quality metrics and training feedback loop. Auth + tenant boundary
+    enforced via Depends(get_current_user).
     """
     feedback_type = payload.get("feedback", "unknown")
-    feedback_text = payload.get("feedback_text", "")
-    user_id = payload.get("user_id", "unknown")
-    logger.info(f"[Teams Feedback] type={feedback_type} user={user_id} text={feedback_text[:80]!r}")
-    # TODO: persist to feedback table for LIA training
-    return {"status": "received", "feedback": feedback_type}
+    feedback_text = payload.get("feedback_text") or None
+    card_context = payload.get("card_context") or {
+        # Best-effort context if caller did not send card_context explicitly
+        "raw_payload_keys": list(payload.keys()),
+    }
+
+    logger.info(
+        "[Teams Feedback] type=%s user=%s company=%s text=%s",
+        feedback_type, current_user.id, current_user.company_id,
+        (feedback_text or "")[:80],
+    )
+
+    repo = TeamsRepository(db)
+    entry = await repo.create_feedback(
+        feedback_type=feedback_type,
+        user_id=str(current_user.id),
+        company_id=current_user.company_id,
+        feedback_text=feedback_text,
+        card_context=card_context,
+    )
+    await db.commit()
+    return {"status": "received", "feedback": feedback_type, "id": str(entry.id)}
 
 
 # ============================================================================
