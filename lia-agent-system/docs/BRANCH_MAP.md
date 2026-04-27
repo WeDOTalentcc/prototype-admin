@@ -109,11 +109,17 @@ git log --oneline --grep="Task #8" feat/orch-migration-sprint-I
 - **Commits:** `82009b0c8` → `42d5dbb7b`
 - **Tag:** `milestone/lia-maturity-track1`
 - **Grep:** `git log --grep="feat(lia)\|fix(lia)\|FIX [0-9]"`
+- **Documentação canônica:**
+  - [`docs/HANDOFF_LIA_MATURITY_PROGRAM_COMPLETE.md`](HANDOFF_LIA_MATURITY_PROGRAM_COMPLETE.md) — 740 linhas, 33 referências aos FIX, 81 commit hashes citados
+  - [`docs/LIA_MATURITY_ROADMAP.md`](LIA_MATURITY_ROADMAP.md) — 289 linhas, source of truth do programa, 19 referências aos FIX
+  - [`docs/LIA_MATURITY_LEAP_RESUMO.md`](LIA_MATURITY_LEAP_RESUMO.md) — 319 linhas, resumo explicativo para o time
 
 **O que foi implementado:**
 - FIX 1–28: grounded capability catalog, DomainActions, FairnessGuard, HITL, briefing, memory, proactive hints, cost tracker, persona consistency, error recovery
 - Ondas 2.x–5.x: episodic memory, citation, workflow_context, history compaction
 - Eval golden set + CI workflow
+
+**Nota:** os 3 docs acima foram apagados acidentalmente pelo commit `f7627f1bf "Saved progress at the end of the loop"` (auto-commit do Replit Agent) e recuperados via `git cat-file` em `014ea00a8`.
 
 ---
 
