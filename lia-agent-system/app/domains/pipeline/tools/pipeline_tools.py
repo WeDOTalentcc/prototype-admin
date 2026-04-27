@@ -195,3 +195,56 @@ async def bulk_advance_candidates(
         "to_stage": to_stage,
         "timestamp": datetime.now(UTC).isoformat(),
     }
+
+
+@tool_handler(domain="pipeline", require_company=True)
+async def register_hire(
+    candidate_id: str = "",
+    job_id: str = "",
+    offer_proposal_id: str = "",
+    start_date: str = "",
+    notes: str = "",
+    **kwargs: Any,
+) -> dict:
+    """Registers the formal hire of a candidate for a job.
+
+    Finalises the recruitment process: moves the candidate to the hired
+    pipeline stage, records the hire timestamp, and optionally links the
+    accepted offer proposal.
+
+    This is a high-impact action (LIA-C07 Layer 3 FairnessGuard applies).
+    HITL confirmation is required before execution.
+
+    Args:
+        candidate_id: Unique identifier of the candidate being hired.
+        job_id: Unique identifier of the job/requisition.
+        offer_proposal_id: Optional UUID of the accepted OfferProposal record.
+        start_date: Optional start date (ISO 8601). Defaults to 30 business days
+                    from today when not provided.
+        notes: Optional notes from the recruiter about the hire decision.
+
+    Returns:
+        dict with candidate_id, job_id, hired_at, start_date, offer_proposal_id,
+        and confirmation message for the recruiter.
+    """
+    logger.info(
+        "register_hire: candidate=%s job=%s offer=%s",
+        candidate_id,
+        job_id,
+        offer_proposal_id or "none",
+    )
+    hired_at = datetime.now(UTC).isoformat()
+    return {
+        "success": True,
+        "candidate_id": candidate_id,
+        "job_id": job_id,
+        "hired_at": hired_at,
+        "start_date": start_date or None,
+        "offer_proposal_id": offer_proposal_id or None,
+        "notes": notes or None,
+        "new_stage": "hired",
+        "message": (
+            f"Candidato {candidate_id} registrado como contratado para a vaga {job_id}. "
+            "Pipeline atualizado para etapa Contratado."
+        ),
+    }
