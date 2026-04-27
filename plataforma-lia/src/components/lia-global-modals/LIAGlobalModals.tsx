@@ -1,10 +1,12 @@
 "use client"
 
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { AddCandidateModal } from "@/components/modals/add-candidate-modal"
 import { InterviewSchedulingModal } from "@/components/ui/interview-scheduling-modal"
 import { CandidateCompareModal } from "@/components/modals/candidate-compare-modal"
 import { useModalOpenListener } from "@/hooks/chat/useModalOpenListener"
+import { useOfferReviewFlow } from "@/hooks/offers/useOfferReviewFlow"
 
 /**
  * LIAGlobalModals — listens for `lia:open_modal` events (dispatched by useUIAction)
@@ -12,6 +14,9 @@ import { useModalOpenListener } from "@/hooks/chat/useModalOpenListener"
  *
  * PR-J dual-path: Rail A cards that are not chat_executable open these modals
  * directly instead of running a chat loop.
+ *
+ * PR-B: also listens to `lia:open_offer_review` (Trigger A — Rail A Card 5.1
+ * from any surface) and delegates to useOfferReviewFlow.
  *
  * Add new modal_id cases here as new capabilities are added to capability_map.yaml.
  */
@@ -35,6 +40,25 @@ export function LIAGlobalModals() {
   }>("candidate_compare")
 
   const stageTransition = useModalOpenListener<{ page?: string }>("stage_transition")
+
+  // PR-B Trigger A: Rail A Card 5.1 sends ui_action="open_offer_review".
+  // useUIAction dispatches `lia:open_offer_review` CustomEvent — handled here
+  // so the modal works from any page (chat home, lateral, floating).
+  const { openOfferReview } = useOfferReviewFlow()
+  useEffect(() => {
+    function handleOfferReview(e: Event) {
+      const detail = (e as CustomEvent<{ candidate_id?: string; job_id?: string; draft_id?: string }>).detail
+      if (detail?.candidate_id && detail?.job_id) {
+        openOfferReview({
+          candidateId: detail.candidate_id,
+          jobId: detail.job_id,
+          draftId: detail.draft_id,
+        })
+      }
+    }
+    window.addEventListener("lia:open_offer_review", handleOfferReview)
+    return () => window.removeEventListener("lia:open_offer_review", handleOfferReview)
+  }, [openOfferReview])
 
   return (
     <>
