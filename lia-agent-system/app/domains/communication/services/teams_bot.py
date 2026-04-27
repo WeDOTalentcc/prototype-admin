@@ -1,10 +1,20 @@
-"""
-Microsoft Teams Bot Service using Bot Framework.
+"""Microsoft Teams - Bot Framework SDK proactive client (canonical for ConversationReference flow).
 
-Provides proactive notifications for key recruitment events:
+When to use: proactive notification in an existing conversation where you have
+a stored ConversationReference (wsi_abandoned, interview_scheduling, triagem_completion).
+Auth: app credentials.
+Tech: botbuilder.core BotFrameworkAdapter.continue_conversation.
+
+Proactive events handled:
 - Triagem completed
 - Scheduling confirmed
 - Candidate timeout alerts
+
+For full decision tree, see:
+lia-agent-system/CLAUDE.md "Teams send paths - when to use which" (W5.5).
+
+Do NOT use this without a stored ConversationReference - it is a hard prerequisite
+for continue_conversation. For broadcasts without bot, use teams_service.py.
 """
 import logging
 from datetime import datetime

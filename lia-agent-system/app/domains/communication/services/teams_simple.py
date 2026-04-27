@@ -1,6 +1,14 @@
-"""
-Simplified Microsoft Teams integration without Bot Framework SDK.
-Handles webhooks directly from Teams.
+"""Microsoft Teams - RESTful Bot Framework client (canonical for /messages webhook).
+
+When to use: response to /messages webhook (chat 1:1 with bot).
+Auth: app credentials (MICROSOFT_APP_ID / MICROSOFT_APP_PASSWORD).
+Tech: httpx direct calls to Bot Framework REST.
+
+For full decision tree of which Teams send path to use, see:
+lia-agent-system/CLAUDE.md "Teams send paths - when to use which" (W5.5).
+
+Do NOT use this for proactive sends without webhook context - use teams_bot.py
+(BotFrameworkAdapter.continue_conversation) instead.
 """
 import logging
 from datetime import datetime

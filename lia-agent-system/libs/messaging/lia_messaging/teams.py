@@ -1,10 +1,15 @@
-"""
-lia_messaging.teams — Microsoft Teams notification interface.
+"""lia_messaging.teams - low-level Teams Incoming Webhook helper (canonical for domain abstractions).
 
-Sends Adaptive Card messages via an Incoming Webhook URL.
+When to use: domain-level abstractions (capabilities.yaml, domain.py, actions.py)
+that need a thin send-to-Teams primitive. Used internally by TeamsService.
+Auth: TEAMS_WEBHOOK_URL env var.
+Tech: httpx wrapper, MessageCard format.
 
-Environment variables:
-    TEAMS_WEBHOOK_URL   → default webhook (can be overridden per-call)
+For full decision tree of which Teams send path to use, see:
+lia-agent-system/CLAUDE.md "Teams send paths - when to use which" (W5.5).
+
+Do NOT use this directly from API endpoints - use teams_simple/teams_bot/teams_service
+instead, which provide higher-level semantics.
 """
 from __future__ import annotations
 

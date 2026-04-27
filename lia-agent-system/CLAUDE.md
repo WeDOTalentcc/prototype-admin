@@ -432,3 +432,49 @@ python scripts/audit_agent_compliance.py
 # Output: AGENT_COMPLIANCE_MATRIX_<date>.md
 # Linhas: cada agent | Colunas: cada cross-cutting | ✅/⚠️/❌
 ```
+
+
+## Teams send paths — when to use which (W5.5 canonical doc)
+
+A plataforma tem **4 paths complementares** para enviar mensagens ao Microsoft Teams, com nichos distintos. **NÃO são drift** — cada um resolve um caso de uso específico. Use o correto:
+
+### Decision tree
+
+```
+Você precisa enviar algo ao Teams?
+│
+├─ É resposta a um webhook /messages do Bot Framework?
+│   → use simple_teams_bot (teams_simple.py)
+│
+├─ É proativo (sem ter recebido webhook), mas você TEM ConversationReference armazenada?
+│   → use teams_bot (teams_bot.py) — usa BotFrameworkAdapter.continue_conversation
+│
+├─ É broadcast / notificação para um channel sem bot (via Incoming Webhook URL)?
+│   → use TeamsService (teams_service.py) — MessageCard format
+│
+└─ É integração baixo-nível em domain.py / actions.py / capabilities.yaml?
+    → use lia_messaging.teams.send_teams_message (libs/messaging) — helper canon
+```
+
+### Detalhamento por path
+
+| Path | Localização | Tecnologia | Quando usar | Auth |
+|---|---|---|---|---|
+| **`simple_teams_bot`** ⭐ canonical de resposta a webhook | `app/domains/communication/services/teams_simple.py` | httpx + Bot Framework REST | Resposta a `/messages` webhook (chat 1:1) | App credentials (MICROSOFT_APP_ID/PASSWORD) |
+| **`teams_bot`** ⭐ canonical de proativo via ConversationReference | `app/domains/communication/services/teams_bot.py` | botbuilder.core SDK (`continue_conversation`) | Notificação proativa em conversa existente armazenada (wsi_abandoned, scheduling_service, triagem_completion) | Idem |
+| **`TeamsService`** ⭐ canonical de broadcast Incoming Webhook | `app/domains/communication/services/teams_service.py` | httpx + Incoming Webhook URL | Broadcasts em channels sem bot (jobs/integrations/notifications/weekly_digest). MessageCard format. | TEAMS_WEBHOOK_URL |
+| **`lia_messaging.teams`** ⭐ helper baixo nível | `libs/messaging/lia_messaging/teams.py` | httpx wrapper | Usado por `TeamsService` e domain abstractions canonical (capabilities.yaml, domain.py, actions.py) | TEAMS_WEBHOOK_URL |
+
+### Anti-patterns
+
+- ❌ **Não importe `simple_teams_bot` em service de domain (não-API)** — use `teams_bot` ou `TeamsService` conforme caso
+- ❌ **Não use `teams_service`/Incoming Webhook para chat 1:1 com bot** — Incoming Webhook é só channel-broadcast
+- ❌ **Não use `BotFrameworkAdapter` (teams_bot) sem ter ConversationReference** — ele depende disso
+- ❌ **Não criar quinto path** — se aparecer caso novo, valide aqui antes de criar nova abstração
+
+### Convergência futura (não obrigatória, mas opção)
+
+Se time decidir consolidar, pattern alternativo seria:
+- Único `MSTeamsChannelAdapter` em `app/shared/channels/adapters/teams_adapter.py` (já existe!) que internamente escolhe o path correto via feature detection (webhook vs ConversationReference vs Incoming Webhook URL).
+- Nesse caso, todos os 4 viram implementations privadas atrás do adapter.
+- Decisão arquitetural pendente — não fazer agora.

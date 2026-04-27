@@ -1,12 +1,17 @@
-"""
-Microsoft Teams Service - Incoming Webhook integration.
+"""Microsoft Teams - Incoming Webhook client (canonical for channel broadcasts without bot).
 
-This service handles sending messages to Microsoft Teams channels using Incoming Webhooks.
-Different from the Bot Framework integration (teams_simple.py), this uses simple HTTP POST
-to Teams Incoming Webhook URLs for channel notifications.
+When to use: broadcast notifications to a Teams channel via Incoming Webhook URL,
+without needing a registered bot (jobs notifications, integrations alerts, weekly digest).
+Auth: TEAMS_WEBHOOK_URL env var (per-channel).
+Tech: httpx POST + MessageCard format.
 
-Environment Variables:
-- TEAMS_WEBHOOK_URL: Default Teams Incoming Webhook URL for notifications
+Different from the Bot Framework path (teams_simple.py / teams_bot.py): this uses simple
+HTTP POST to Teams Incoming Webhook URLs. NO bot identity required.
+
+For full decision tree, see:
+lia-agent-system/CLAUDE.md "Teams send paths - when to use which" (W5.5).
+
+Do NOT use this for chat 1:1 with bot - Incoming Webhook is broadcast-only.
 """
 import logging
 import os
