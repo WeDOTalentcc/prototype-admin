@@ -32,6 +32,47 @@ Estas regras vêm do CLAUDE.md global do usuário. **Aplicam a 100% do código.*
 - **Não duplicar.** Antes de criar função/serviço novo, `grep` por nome similar. Reuso > NIH.
 - **Não inventar tipos.** `String(255), nullable=True, indexed` em `User.company_id`? Replicar exato em outras colunas tenant.
 
+## Regras de organização de branch e BRANCH_MAP
+
+### Guide 1 — Branch por tema (feedforward, computacional)
+
+Todo novo tema/feature/épico abre branch própria a partir de `main`:
+- Padrão: `feat/<tema>-<descricao-curta>` ou `fix/<tema>-<descricao-curta>`
+- **Proibido acumular temas distintos** em uma única branch de sprint
+- Exceção: bug fix dentro do tema atual da branch ativa
+- Após merge: branch de feature pode ser deletada; tag `milestone/<descricao>` preserva o ponto
+
+Exemplos válidos: `feat/teams-integration`, `feat/pr-a-rail-a-metadata`, `fix/wsi-scoring-cast`
+
+Exemplo proibido: commitar Teams + LIA Maturity + Rail features na mesma branch de sprint (caso histórico de `feat/orch-migration-sprint-I` — não repetir).
+
+### Guide 2 — `docs/BRANCH_MAP.md` é canônico (feedforward, computacional)
+
+`docs/BRANCH_MAP.md` é o **mapa canônico do repositório**. Toda mudança que adiciona tema novo OU milestone significativo OBRIGA atualização do mapa antes do commit final do tema.
+
+Para cada nova entrega:
+1. Adicionar nova seção §N em `docs/BRANCH_MAP.md` (se for tema novo)
+2. Criar tag `milestone/<descricao>` se a entrega fechar um marco
+3. Atualizar tabela de Cross-references se um doc canônico novo foi criado em `docs/`
+4. Commit message do mapa: `docs(nav): BRANCH_MAP — <descrição>`
+
+Antes de propor qualquer mudança não-trivial, agentes IA DEVEM ler `docs/BRANCH_MAP.md` para identificar tema, milestones e docs canônicos cruzados (templates de prompt no Apêndice A do mapa).
+
+### Sensor — pre-commit check (TODO, computacional)
+
+A implementar: hook `.git/hooks/pre-commit` que bloqueia se:
+- Branch ativa = sprint genérica (ex: `feat/orch-migration-sprint-I`) E
+- Commit toca arquivo de tema novo (não previsto em `BRANCH_MAP.md` §1-19)
+
+Mensagem de erro otimizada para LLM:
+```
+Branch ativa é sprint genérica e este commit toca tema fora de BRANCH_MAP.md.
+Opções:
+1. Crie branch própria: git checkout -b feat/<tema>-<descricao> milestone/<base>
+2. Adicione seção §N a docs/BRANCH_MAP.md mapeando o tema novo, depois recommit.
+```
+
+
 ## TDD obrigatório para fixes de P0/P1
 
 Padrão: red → green → refactor. Toda fix de P0/P1 da auditoria DEVE incluir teste que falha antes da fix e passa depois. Sem teste = fix não foi feita.
