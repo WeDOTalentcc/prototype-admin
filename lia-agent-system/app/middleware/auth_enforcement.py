@@ -126,6 +126,7 @@ PUBLIC_PREFIXES = (
     "/api/v1/teams/",
     "/api/v1/auth/invitation-info/",
     "/api/v1/wsi/async/",
+    "/api/v1/public-vacancies/",
     "/api/public/",
     "/docs/",
     "/static/",
