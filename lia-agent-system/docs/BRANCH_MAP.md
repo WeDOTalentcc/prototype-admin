@@ -25,6 +25,8 @@
 
 Use `git show <tag>` para ver o commit de cada marco.
 
+### Janela recente (commits à frente de `main`)
+
 | Tag | Commit | O que marca |
 |---|---|---|
 | `milestone/teams-integration-complete` | `8656f5e9c` | Teams Wave 1-9 + docs handoff completos |
@@ -32,6 +34,18 @@ Use `git show <tag>` para ver o commit de cada marco.
 | `milestone/lia-maturity-track1` | `42d5dbb7b` | LIA Maturity Program Track 1 (FIX 1-28) completo |
 | `milestone/rail-features-sprint1` | `710adfcef` | Rail features PR-A→PR-O Sprint 1 base |
 | `teams/wave1-start` | `f7f972882` | Primeiro commit Teams (P0-1 multi-tenancy) |
+
+### Janela anterior (já em `main` — Tasks #574–#712)
+
+| Tag | Commit | O que marca |
+|---|---|---|
+| `milestone/teams-task706-validation` | `4a7191d99` | Task #706 — primeira validação prod do Teams (pré Wave 1) |
+| `milestone/glossary-canonical-281` | `6e9287f50` | ADR-019 + glossário canônico 281 actions / 94 tools / 18 domínios |
+| `milestone/domains-production-ready` | `f05db64d8` | Task #691 — padronização de domínios em evolução para production-ready |
+| `milestone/chat-saneamento-fase1-p0` | `421cfdb99` | Task #580 — saneamento P0 da cadeia de execução do chat unificado |
+| `milestone/funil-unificado-fase2` | `f3ddab57b` | Task #592 — especificação Fase 2 do funil unificado |
+| `milestone/workflow-rail-ux7` | `c07d3d5dc` | UX-7 — WorkflowRail compact single-line bar com hover popovers |
+| `milestone/candidate-portal-rails-spec` | `1b0ca9629` | Spec completa do Candidate Portal (Rails + Replit) |
 
 ---
 
@@ -143,6 +157,103 @@ git log --oneline --grep="Task #8" feat/orch-migration-sprint-I
 - **Grep:** `git log --grep="Task #"`
 - Sem branch separado — todos em `feat/orch-migration-sprint-I`
 - Temas cobertos: onboarding proativo, wizard vagas, benefícios, WSI/Bloom terms, triagem, funil de candidatos, multi-tenancy
+
+---
+
+## Janela anterior — Tasks #574–#712 (já em `main`)
+
+### 6. Chat Unificado — Saneamento Fase 1 + Funil Unificado
+- **Tag base:** `milestone/chat-saneamento-fase1-p0`
+- **Tasks principais:** #580, #582, #583, #584, #591, #592
+- **Grep:** `git log --grep="chat unificado\|Saneamento\|Funil unificado"`
+
+**O que foi implementado:**
+- Saneamento P0 da cadeia de execução do chat unificado (Task #580)
+- Phase 2 chat sanitization para 5 domínios P1 (Task #582)
+- Zero actions sem tool nem handler no chat unificado (Task #583)
+- Auto-discovery de `AGENT_TYPE_TO_DOMAIN` (Task #584)
+- Funil unificado Fase 1 educativa (Task #592) + spec Fase 2 (`f3ddab57b`)
+- Stub→real handlers em todo o chat (Task #602)
+
+---
+
+### 7. WorkflowRail UX Redesign (Sprints UX-1 a UX-7)
+- **Tag final:** `milestone/workflow-rail-ux7`
+- **Spec técnica:** `a39b48d5f docs(ux): UX_REDESIGN_COMPETITIVO_SPEC.md`
+- **Grep:** `git log --grep="WorkflowRail\|workflow-rail\|UX-[0-9]"`
+
+**O que foi implementado:**
+- 5 iterações de design da WorkflowRail (compact, scrollable, popovers, theme toggle)
+- Coexistência WorkflowRail × Chat sem poluição (Task #617)
+- Tracking de next-step clicks e panel toggles (Task #589)
+- Thinking pulse dentro do popover (Task #655)
+
+---
+
+### 8. Domínios Production-Ready + Glossário Canônico
+- **Tags:** `milestone/domains-production-ready`, `milestone/glossary-canonical-281`
+- **Tasks:** #687, #690, #691, #692
+- **Grep:** `git log --grep="glossário\|production-ready\|execute_action\|ADR-019"`
+
+**O que foi implementado:**
+- ADR-019 + glossário central: **281 actions / 94 tools / 18 domínios** (`6e9287f50`)
+- `execute_action` coverage para todos os 11 domínios (Task #687)
+- Padronização de domínios em evolução (Task #691)
+- Glossário Central + sync automático + CI guard (Task #692)
+- Enriquecimento de descrições de actions e tools (Task #690)
+
+---
+
+### 9. DEFAULT_DOMAIN + Tenant Isolation
+- **Tasks:** #670, #672, #673
+- **Grep:** `git log --grep="DEFAULT_DOMAIN\|tenant-isolation\|tenant_id"`
+
+**O que foi implementado:**
+- DEFAULT_DOMAIN routing warning + chat-capabilities CI gate (Task #672)
+- Consolidate tenant-isolation residual — fecha #329, #335, #336, #359, #361 (Task #673)
+- Proteção de 8 dirs estratégicos + recategorização (Task #670)
+- WSI tenant id forwarding (Task #334)
+
+---
+
+### 10. Teams — Validação Inicial (pré-Wave 1)
+- **Tag:** `milestone/teams-task706-validation`
+- **Task:** #706
+- **Grep:** `git log --grep="Teams\|microsoft"`
+
+**O que foi implementado:**
+- Configuração e validação inicial do LIA Microsoft Teams app para produção (`4a7191d99`)
+- Base que mais tarde foi expandida nas Waves 1-9
+
+---
+
+### 11. Candidate Portal (Spec + Research)
+- **Tag:** `milestone/candidate-portal-rails-spec`
+- **Tasks:** #574, #576
+- **Grep:** `git log --grep="candidate.*portal\|chat candidato"`
+- **Documentação:** `docs/CANDIDATE_PORTAL_RAILS_SPEC.md`
+
+**O que foi implementado:**
+- Auditoria técnica do chat candidato pós-aplicação (Task #574)
+- Proposta de construção do chat candidato pós-aplicação (Task #576)
+- Spec Rails + Replit completa (`1b0ca9629`)
+- Market research — chat candidato pós-aplicação
+
+---
+
+### 12. DEVELOPER_HANDOFF — PARTES A–I
+- **Documentação:** `DEVELOPER_HANDOFF.md`
+- **Grep:** `git log --grep="docs(handoff): PARTE"`
+
+**Estrutura cumulativa do handoff principal:**
+- PARTE A–E: `fc76b0a88 — guia completo PARTES A-E`
+- PARTE F: `3722e7b38 — conversational UX + P2/P3 hardening`
+- PARTE G: `04ff86a65 — LIA Eval 62→70/73, 15 fixes`
+- PARTE H: `6aa9492fb — chat ReAct, stub→real, scheduling, WSI tenant, WorkflowRail UX, IDOR`
+- PARTE I: `df34f5707 — BETA badge polish, hide chat/rail on auth routes, e2e fixes`
+- PARTE J: `97ac557f1 — A Jornada Completa (narrativa)`
+- PARTE K: `49464a0c6 — FIX 14-17 conversation continuity layer`
+- PARTE L: `ba28c86ff — runtime-inert gaps pattern`
 
 ---
 
