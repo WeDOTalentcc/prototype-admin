@@ -106,7 +106,13 @@ interface LiaFloatContextType extends LiaFloatState {
   switchChatContext: (newType: ChatContextType, options?: { conversationId?: string | null; continuePrevious?: boolean }) => string | null
   previousConversationId: string | null
 
-  sendChatMessage: (content: string, domain?: string, scope?: string) => Promise<void>
+  sendChatMessage: (
+    content: string,
+    domain?: string,
+    scope?: string,
+    /** PR-A: metadata estruturada de origem do command (Rail A, slash, etc). */
+    metadata?: Record<string, unknown>,
+  ) => Promise<void>
   sendOrchestratedMessage: (
     message: string,
     apiCall: (conversationId: string | null) => Promise<{ content: string; conversation_id?: string | null; [key: string]: unknown }>,
@@ -303,14 +309,19 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     return nextId
   }, [connection])
 
-  const sendChatMessage = useCallback(async (content: string, domain?: string, scope?: string) => {
+  const sendChatMessage = useCallback(async (
+    content: string,
+    domain?: string,
+    scope?: string,
+    metadata?: Record<string, unknown>,
+  ) => {
     addChatMessage({
       id: `user-${Date.now()}`,
       sender: "user",
       content,
       timestamp: formatMessageTime(),
     })
-    await connection.sendMessage(content, domain, scope)
+    await connection.sendMessage(content, domain, scope, metadata)
   }, [connection, addChatMessage])
 
   const sendOrchestratedMessage = useCallback(async (

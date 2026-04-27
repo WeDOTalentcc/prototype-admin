@@ -52,7 +52,13 @@ export interface UseChatMessagesReturn {
   setConversationId: (id: string | null) => void
   isCreating: boolean
   isFetchingHistory: boolean
-  sendMessage: (content: string, domain?: string, scope?: string) => Promise<void>
+  /** PR-A: 4º arg `metadata` carrega hints de routing (source, card_id, intent_hint, domain_hint). */
+  sendMessage: (
+    content: string,
+    domain?: string,
+    scope?: string,
+    metadata?: Record<string, unknown>,
+  ) => Promise<void>
   sendApproval: (approved: boolean) => void
   initConversation: (firstMessage: string, contextType?: string) => Promise<string | null>
   loadHistory: (id: string) => Promise<LiaChatMessage[]>
@@ -261,7 +267,12 @@ export function useChatMessages({
     return 8000
   }, [])
 
-  const sendMessage = useCallback(async (content: string, domain = "", scope?: string) => {
+  const sendMessage = useCallback(async (
+    content: string,
+    domain = "",
+    scope?: string,
+    metadata?: Record<string, unknown>,
+  ) => {
     clearTokens()
     // BUG-13: acender "LIA digitando" imediatamente — no caminho WS isso seria
     // feito pelo evento "thinking", mas em REST/SSE (e até a primeira resposta
@@ -270,6 +281,12 @@ export function useChatMessages({
     const context: Record<string, unknown> = scope ? { scope } : {}
     if (conversationId) {
       context.conversation_id = conversationId
+    }
+    // PR-A: anexa metadata de origem (Rail A) ao context. O orchestrator
+    // lê `context.metadata.domain_hint` / `intent_hint` como guide para
+    // routing determinístico (FE-H03 do audit enterprise).
+    if (metadata) {
+      context.metadata = metadata
     }
 
     const pageContext = getPageContext()

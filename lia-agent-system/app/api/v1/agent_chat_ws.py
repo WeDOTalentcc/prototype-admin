@@ -440,6 +440,67 @@ def _resume_wizard_canonical(
     return (message, stage_payload)
 
 
+async def _resume_wizard_canonical_streaming(
+    thread_id: str,
+    resume_input_dict: dict,
+    on_token: Any,
+) -> tuple[str, dict, int]:
+    """Token-streaming variant of :func:`_resume_wizard_canonical`.
+
+    PM-02 (Audit Rev 4): drives ``JobCreationGraph.stream_invoke`` so
+    each LLM token surfaces as a WS ``token`` frame while still
+    returning the canonical recruiter-facing message + stage payload.
+
+    Falls back transparently to a single ``invoke()`` call if the graph
+    instance does not expose ``stream_invoke`` (e.g. older deploys).
+    """
+    from app.domains.job_creation.graph import job_creation_graph as wiz_g
+
+    config = {"configurable": {"thread_id": thread_id}}
+    try:
+        prior_snapshot = wiz_g._graph.get_state(config)
+        prior_state = dict(prior_snapshot.values or {})
+    except Exception:
+        prior_state = {}
+
+    resume_context = (resume_input_dict or {}).get("context") or {}
+    approval_payload = (resume_input_dict or {}).get("approval_payload") or {}
+    updates: dict = {"hitl_approved": True, **approval_payload}
+    if isinstance(resume_context, dict):
+        for k in ("draft", "intake_payload", "jd_enriched", "wsi_questions"):
+            if k in resume_context and resume_context[k] is not None:
+                updates[k] = resume_context[k]
+
+    merged_state = {**prior_state, **updates}
+    tokens_emitted = 0
+    if hasattr(wiz_g, "stream_invoke"):
+        result, tokens_emitted = await wiz_g.stream_invoke(
+            merged_state, thread_id, on_token=on_token,
+        )
+    else:  # pragma: no cover — defensive fallback
+        result = await asyncio.to_thread(
+            wiz_g.resume, thread_id, prior_state, updates,
+        )
+
+    if not isinstance(result, dict):
+        return ("Vaga atualizada após aprovação.", {}, tokens_emitted)
+
+    stage_payload = result.get("ws_stage_payload") or {}
+    stage_data = stage_payload.get("data") or {}
+    current_stage = result.get("current_stage", "") or ""
+    message = (
+        stage_data.get("message")
+        or stage_data.get("response_text")
+        or {
+            "intake": "Captei a vaga. Vou seguir para o próximo passo.",
+            "jd_enrichment": "Descrição da vaga enriquecida — preciso da sua aprovação.",
+            "wsi_questions": "Perguntas de triagem WSI sugeridas — preciso da sua aprovação.",
+            "completed": "Vaga criada com sucesso.",
+        }.get(current_stage, f"Etapa atual: {current_stage or 'wizard'}.")
+    )
+    return (message, stage_payload, tokens_emitted)
+
+
 def _ensure_agents_loaded() -> None:
     """Import all agent modules once to trigger @register_agent decorators.
 
@@ -534,11 +595,21 @@ async def agent_chat_ws(
     conversation_history: list = []
 
     try:
-        await ws_mgr.send_to_session(session_id, {
-            "type": "connected",
-            "session_id": session_id,
-            "domain": domain,
-        })
+        # PM-03 (Audit Rev 4): announce protocol version on connect so
+        # the client can probe for MAJOR compatibility.
+        from app.shared.websocket.ws_message_schemas import (
+            LIA_WS_PROTOCOL_VERSION,
+            WSConnectedMessage,
+            is_protocol_compatible,
+        )
+
+        await ws_mgr.send_to_session(
+            session_id,
+            WSConnectedMessage(
+                session_id=session_id,
+                domain=domain,
+            ).model_dump(),
+        )
 
         while True:
             try:
@@ -558,6 +629,36 @@ async def agent_chat_ws(
 
             if msg_type == "ping":
                 await ws_mgr.send_to_session(session_id, {"type": "pong"})
+                continue
+
+            # PM-03 (Audit Rev 4): client → server handshake. The client
+            # may send `{"type": "hello", "protocol_version": "X.Y"}` to
+            # announce its supported MAJOR. We close the socket with code
+            # 4400 (RFC-compliant private range) on MAJOR mismatch so the
+            # client can surface a "please update" error to the user.
+            if msg_type == "hello":
+                client_version = str(msg.get("protocol_version") or "").strip()
+                if not is_protocol_compatible(client_version):
+                    logger.warning(
+                        "[AgentChatWS] Protocol mismatch session=%s "
+                        "client=%r server=%r — closing 4400",
+                        session_id, client_version, LIA_WS_PROTOCOL_VERSION,
+                    )
+                    await ws_mgr.send_to_session(session_id, serialize_error(
+                        f"Protocol version {client_version!r} incompatible with "
+                        f"server {LIA_WS_PROTOCOL_VERSION!r}",
+                        "protocol_mismatch",
+                    ))
+                    try:
+                        await websocket.close(code=4400, reason="protocol_mismatch")
+                    except Exception:  # pragma: no cover — best-effort close
+                        pass
+                    break
+                # Echo the server's version so the client can confirm.
+                await ws_mgr.send_to_session(session_id, {
+                    "type": "hello_ack",
+                    "protocol_version": LIA_WS_PROTOCOL_VERSION,
+                })
                 continue
 
             if msg_type == "abort":
@@ -623,14 +724,52 @@ async def agent_chat_ws(
                                 # with the audit callback wired (no bypass of
                                 # the canonical domain contract).
                                 elif resume_domain == "wizard":
-                                    _wiz_msg, _wiz_stage_payload = await asyncio.wait_for(
-                                        asyncio.to_thread(
-                                            _resume_wizard_canonical,
-                                            ws_thread_id,
-                                            resume_input_dict,
-                                        ),
-                                        timeout=_AGENT_TIMEOUT,
+                                    # PM-02 (Audit Rev 4): when token streaming
+                                    # is enabled, drive the canonical wizard
+                                    # graph via `astream_events("v2")` so each
+                                    # LLM chunk surfaces as a `token` frame in
+                                    # real time. Falls back to the historical
+                                    # threaded `invoke()` path otherwise — the
+                                    # contract (final message + stage payload)
+                                    # is unchanged.
+                                    from app.api.v1._ws_stream_helpers import (
+                                        is_token_streaming_enabled,
                                     )
+                                    if is_token_streaming_enabled():
+                                        async def _on_wiz_token(chunk: str) -> None:
+                                            try:
+                                                await ws_mgr.send_to_session(
+                                                    session_id,
+                                                    {"type": "token", "content": chunk, "domain": "wizard"},
+                                                )
+                                            except Exception:  # pragma: no cover — fail-silent
+                                                pass
+
+                                        await ws_mgr.send_to_session(
+                                            session_id,
+                                            {"type": "token_stream_start", "domain": "wizard"},
+                                        )
+                                        _wiz_msg, _wiz_stage_payload, _wiz_tokens = await asyncio.wait_for(
+                                            _resume_wizard_canonical_streaming(
+                                                ws_thread_id,
+                                                resume_input_dict,
+                                                _on_wiz_token,
+                                            ),
+                                            timeout=_AGENT_TIMEOUT,
+                                        )
+                                        await ws_mgr.send_to_session(
+                                            session_id,
+                                            {"type": "token_stream_end", "domain": "wizard", "tokens": _wiz_tokens},
+                                        )
+                                    else:
+                                        _wiz_msg, _wiz_stage_payload = await asyncio.wait_for(
+                                            asyncio.to_thread(
+                                                _resume_wizard_canonical,
+                                                ws_thread_id,
+                                                resume_input_dict,
+                                            ),
+                                            timeout=_AGENT_TIMEOUT,
+                                        )
                                     _wiz_msg = _strip_react_json(_wiz_msg)
                                     await ws_mgr.send_to_session(session_id, serialize_message(
                                         content=_wiz_msg,

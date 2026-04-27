@@ -13,6 +13,73 @@ export interface WorkflowReelSuggestion {
   title: string
   description: string
   command: string
+  /** PR-A: hint de domínio para routing determinístico no orchestrator. */
+  domain_hint?: string
+  /** PR-A: hint de action/intent dentro do domínio. */
+  intent_hint?: string
+}
+
+/**
+ * PR-A — metadata enviada ao chat quando o usuário clica num card do Rail A.
+ *
+ * Consumida pelo `main_orchestrator.py` (`_prefer_hints_before_keyword_match`)
+ * como guide computacional (per harness-engineering): rota determinística
+ * antes do fallback keyword-based. Resolve FE-H03 do audit enterprise.
+ */
+export interface ChatSuggestionMetadata {
+  source: "rail_a"
+  card_id: string
+  stage: string
+  domain_hint?: string
+  intent_hint?: string
+}
+
+/**
+ * Mapa card_id → { domain_hint, intent_hint }. Fonte única de roteamento.
+ *
+ * Cada entrada foi validada contra `app/domains/<domain>/config/capabilities.yaml`
+ * em 2026-04-26. Atualizar aqui quando novos cards forem adicionados ao Rail A
+ * ou quando capabilities mudarem.
+ *
+ * Cards 5.1 (send-offer) e 6.1 (register-hire) ficam sem `intent_hint` ou
+ * com hint provisório até PR-B/PR-C criarem as actions dedicadas.
+ */
+export const SUGGESTION_HINTS: Record<string, { domain_hint?: string; intent_hint?: string }> = {
+  // Funil (13)
+  "create-job":           { domain_hint: "job_management",       intent_hint: "create_job" },
+  "job-template":         { domain_hint: "job_management",       intent_hint: "create_from_template" },
+  "search-candidates":    { domain_hint: "sourcing",             intent_hint: "search_candidates" },
+  "add-candidate":        { domain_hint: "sourcing",             intent_hint: "add_candidate" },
+  "talent-pool":          { domain_hint: "talent_pool",          intent_hint: "list_talent_pools" },
+  "candidate-info":       { domain_hint: "recruiter_assistant",  intent_hint: "quick_question" },
+  "update-status":        { domain_hint: "pipeline",             intent_hint: "move_candidate" },
+  "schedule-interview":   { domain_hint: "interview_scheduling", intent_hint: "schedule_interview" },
+  "reschedule-interview": { domain_hint: "interview_scheduling", intent_hint: "reschedule_interview" },
+  "send-offer":           { domain_hint: "communication" }, // intent_hint: PR-B (send_offer action)
+  "compare-candidates":   { domain_hint: "sourcing",             intent_hint: "compare_candidates" },
+  "register-hire":        { domain_hint: "pipeline",             intent_hint: "move_candidate" }, // PR-C dará ação dedicada
+  "close-vacancy":        { domain_hint: "job_management",       intent_hint: "close_job" },
+  // Utilitárias (9)
+  "job-report":           { domain_hint: "analytics",            intent_hint: "generate_job_report" },
+  "daily-briefing":       { domain_hint: "recruiter_assistant",  intent_hint: "daily_briefing" },
+  "hiring-predictions":   { domain_hint: "analytics",            intent_hint: "forecast" },
+  "configure-automations":{ domain_hint: "automation",           intent_hint: "create_automation" },
+  "wsi-screening":        { domain_hint: "interview_scheduling", intent_hint: "start_wsi_interview" },
+  "ai-suggestions":       { domain_hint: "recruiter_assistant",  intent_hint: "suggest_action" },
+  "ai-credits":           { domain_hint: "agent_studio",         intent_hint: "get_studio_consumption" },
+  "hiring-policy":        { domain_hint: "hiring_policy",        intent_hint: "configure_policy" },
+  "email-templates":      { domain_hint: "communication",        intent_hint: "create_template" },
+}
+
+export function buildSuggestionMetadata(cardId: string, stageId: string): ChatSuggestionMetadata {
+  const hint = SUGGESTION_HINTS[cardId]
+  return {
+    source: "rail_a",
+    card_id: cardId,
+    stage: stageId,
+    ...(hint?.domain_hint ? { domain_hint: hint.domain_hint } : {}),
+    ...(hint?.intent_hint ? { intent_hint: hint.intent_hint } : {}),
+  }
 }
 
 export interface WorkflowReelStage {
@@ -101,17 +168,26 @@ function useTranslatedStages(structures: StageStructure[]): WorkflowReelStage[] 
     icon: s.icon,
     pulseStageId: s.pulseStageId,
     color: s.color,
-    suggestions: s.suggestionIds.map(sid => ({
-      id: sid,
-      title: tsg(`${sid}.title` as `create-job.title`),
-      description: tsg(`${sid}.description` as `create-job.description`),
-      command: tsg(`${sid}.command` as `create-job.command`),
-    })),
+    suggestions: s.suggestionIds.map(sid => {
+      const hint = SUGGESTION_HINTS[sid]
+      return {
+        id: sid,
+        title: tsg(`${sid}.title` as `create-job.title`),
+        description: tsg(`${sid}.description` as `create-job.description`),
+        command: tsg(`${sid}.command` as `create-job.command`),
+        domain_hint: hint?.domain_hint,
+        intent_hint: hint?.intent_hint,
+      }
+    }),
   })), [ts, tsg, structures])
 }
 
 interface ChatWorkflowReelsProps {
-  onSelect: (command: string) => void
+  /**
+   * Callback disparado ao clicar num card. PR-A: além do `command` em PT-BR,
+   * recebe `metadata` com hints de routing para o orchestrator.
+   */
+  onSelect: (command: string, metadata?: ChatSuggestionMetadata) => void
   compact?: boolean
   stages?: WorkflowReelStage[]
   utilityNodes?: WorkflowReelStage[]
@@ -405,7 +481,7 @@ export function ChatWorkflowReels({
             {activeStage.suggestions.map((suggestion) => (
               <button
                 key={suggestion.id}
-                onClick={() => onSelect(suggestion.command)}
+                onClick={() => onSelect(suggestion.command, buildSuggestionMetadata(suggestion.id, activeStage.id))}
                 className="flex items-start gap-3 p-4 text-left rounded-xl bg-lia-bg-primary border transition-all duration-150 hover:-translate-y-0.5 group flex-1 min-w-[180px]"
                 style={{
                   borderColor: activeStage.color.cardBorder,
@@ -549,7 +625,7 @@ function CompactReels({
 }: {
   stages: WorkflowReelStage[]
   utilityNodes: WorkflowReelStage[]
-  onSelect: (command: string) => void
+  onSelect: (command: string, metadata?: ChatSuggestionMetadata) => void
 }) {
   const allNodes = [...stages, ...utilityNodes]
   const nodesWithSuggestions = allNodes.filter((s) => s.suggestions.length > 0)
@@ -602,7 +678,7 @@ function CompactReels({
           {activeStage.suggestions.map((suggestion) => (
             <button
               key={suggestion.id}
-              onClick={() => onSelect(suggestion.command)}
+              onClick={() => onSelect(suggestion.command, buildSuggestionMetadata(suggestion.id, activeStage.id))}
               className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left border transition-colors"
               style={{
                 borderColor: activeStage.color.cardBorder,

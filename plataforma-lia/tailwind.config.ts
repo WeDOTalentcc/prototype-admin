@@ -218,6 +218,10 @@ export default {
         'slide-in-up':      'slide-in-up 0.3s ease-out',
       },
       fontFamily: {
+        // DS v4.2.1: `font-sans` → Open Sans (fonte primária 85% do produto).
+        // Mantido como `font-open-sans` também por compat com componentes
+        // legados; ambos resolvem para a mesma stack.
+        'sans': ['var(--font-open-sans)', 'sans-serif'],
         'inter': ['var(--font-inter)', 'sans-serif'],
         'open-sans': ['var(--font-open-sans)', 'sans-serif'],
         'crimson': ['var(--font-crimson)', 'serif'],

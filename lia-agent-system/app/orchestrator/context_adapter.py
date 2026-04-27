@@ -223,6 +223,14 @@ class ContextAdapter:
         context_type = PAGE_TO_CONTEXT_TYPE.get(domain, "general")
         entity_id = context.get("entity_id") or context.get("sourcing_id") or context.get("job_id")
 
+        # PR-A: metadata estruturada vinda do Rail A (FE) — usada pelo
+        # MainOrchestrator._resolve_domain_hint para routing determinístico
+        # antes do FastRouter (FE-H03 do audit enterprise).
+        ws_metadata = context.get("metadata") or {}
+        extra: dict[str, Any] = {"domain": domain, "ws_session_id": session_id}
+        if ws_metadata:
+            extra["metadata"] = ws_metadata
+
         return UniversalContext(
             message=message_frame.get("content", ""),
             user_id=user_id,
@@ -235,7 +243,7 @@ class ContextAdapter:
             candidates=context.get("candidates", []),
             job_context=context.get("job_context"),
             search_context=context.get("search_context"),
-            extra={"domain": domain, "ws_session_id": session_id},
+            extra=extra,
         )
 
     # ------------------------------------------------------------------

@@ -1,0 +1,158 @@
+"""
+PR-A — Rail A metadata routing (BE)
+
+Testa o pipeline FE→BE para hints de routing emitidos pelo Rail A:
+
+1. ``ContextAdapter.from_ws`` extrai ``context.metadata`` do payload WS
+   para ``UniversalContext.extra["metadata"]``.
+2. ``rail_a_hint_override.try_hint_route`` retorna RouteResult quando hint
+   válido (source=rail_a + domain registrado), senão None (fallback).
+3. Hint inválido (domínio não-registrado) é rejeitado para preservar
+   LIA-C01 compliance enforcement.
+4. Metadata sem source=rail_a é ignorada (defensivo contra prompt
+   injection via context arbitrário).
+
+Skill: lia-testing PARTE 1 (TDD red→green) + harness-engineering
+(computational guide canônico).
+"""
+from app.orchestrator.context_adapter import ContextAdapter
+from app.orchestrator.services.rail_a_hint_override import (
+    OVERRIDE_SOURCE,
+    TRUSTED_SOURCE,
+    get_hint_domain,
+    try_hint_route,
+)
+
+
+# ─── ContextAdapter.from_ws — extração de metadata ──────────────────────
+
+
+def test_from_ws_extrai_metadata_para_extra():
+    """Payload WS com ``context.metadata`` deve popular ``extra["metadata"]``."""
+    frame = {
+        "type": "message",
+        "content": "Criar uma nova vaga",
+        "context": {
+            "metadata": {
+                "source": "rail_a",
+                "card_id": "create-job",
+                "stage": "definir-vaga",
+                "domain_hint": "job_management",
+                "intent_hint": "create_job",
+            },
+        },
+        "domain": "general",
+    }
+    jwt = {"sub": "user-1", "company_id": "co-1"}
+    ctx = ContextAdapter.from_ws(session_id="sess-1", message_frame=frame, jwt_payload=jwt)
+    assert ctx.extra.get("metadata") == frame["context"]["metadata"]
+    assert ctx.extra["metadata"]["domain_hint"] == "job_management"
+    assert ctx.extra["metadata"]["intent_hint"] == "create_job"
+
+
+def test_from_ws_sem_metadata_funciona_normalmente():
+    """Payload sem ``metadata`` não deve quebrar nem inserir chave fantasma."""
+    frame = {"type": "message", "content": "Olá", "context": {}, "domain": "general"}
+    jwt = {"sub": "user-1", "company_id": "co-1"}
+    ctx = ContextAdapter.from_ws(session_id="sess-1", message_frame=frame, jwt_payload=jwt)
+    assert ctx.extra.get("metadata") is None
+
+
+# ─── rail_a_hint_override.get_hint_domain ───────────────────────────────
+
+
+def test_get_hint_domain_retorna_tupla_quando_hint_valido(monkeypatch):
+    """Hint para domínio registrado deve retornar (domain_id, intent_id)."""
+    # Monkeypatch DomainRegistry para evitar dependência de domains carregados.
+    from app.domains.registry import DomainRegistry
+    monkeypatch.setattr(
+        DomainRegistry,
+        "list_domains",
+        lambda self: ["job_management", "sourcing", "communication"],
+    )
+
+    metadata = {
+        "source": TRUSTED_SOURCE,
+        "domain_hint": "job_management",
+        "intent_hint": "create_job",
+    }
+    resolved = get_hint_domain(metadata)
+    assert resolved == ("job_management", "create_job")
+
+
+def test_get_hint_domain_aceita_so_domain_hint(monkeypatch):
+    """Card pré-PR-B (5.1 send-offer) só especifica domain_hint."""
+    from app.domains.registry import DomainRegistry
+    monkeypatch.setattr(
+        DomainRegistry, "list_domains", lambda self: ["communication"]
+    )
+    metadata = {"source": TRUSTED_SOURCE, "domain_hint": "communication"}
+    resolved = get_hint_domain(metadata)
+    assert resolved == ("communication", None)
+
+
+def test_get_hint_domain_none_sem_metadata():
+    assert get_hint_domain(None) is None
+    assert get_hint_domain({}) is None
+    assert get_hint_domain({"other": "x"}) is None
+
+
+def test_get_hint_domain_none_sem_source_rail_a():
+    """Defensivo: metadata sem source=rail_a é ignorada (anti prompt injection)."""
+    metadata = {"domain_hint": "job_management", "intent_hint": "create_job"}
+    assert get_hint_domain(metadata) is None
+    metadata_outra = {
+        "source": "untrusted",
+        "domain_hint": "job_management",
+    }
+    assert get_hint_domain(metadata_outra) is None
+
+
+def test_get_hint_domain_none_para_dominio_invalido(monkeypatch):
+    """Hint para domínio NÃO registrado é rejeitado (preserva LIA-C01)."""
+    from app.domains.registry import DomainRegistry
+    monkeypatch.setattr(
+        DomainRegistry, "list_domains", lambda self: ["job_management"]
+    )
+    metadata = {
+        "source": TRUSTED_SOURCE,
+        "domain_hint": "nonexistent_domain_xyz",
+        "intent_hint": "fake",
+    }
+    assert get_hint_domain(metadata) is None
+
+
+# ─── rail_a_hint_override.try_hint_route ────────────────────────────────
+
+
+def test_try_hint_route_retorna_route_result_para_hint_valido(monkeypatch):
+    """try_hint_route compõe RouteResult com confidence=0.99 e source override."""
+    from app.domains.registry import DomainRegistry
+    monkeypatch.setattr(
+        DomainRegistry, "list_domains", lambda self: ["analytics"]
+    )
+    context = {
+        "metadata": {
+            "source": TRUSTED_SOURCE,
+            "card_id": "job-report",
+            "domain_hint": "analytics",
+            "intent_hint": "generate_job_report",
+        },
+    }
+    route = try_hint_route(context)
+    assert route is not None
+    assert route.domain_id == "analytics"
+    assert route.confidence == 0.99
+    assert route.source == OVERRIDE_SOURCE
+    assert (route.intent_details or {}).get("raw_intent") == "generate_job_report"
+
+
+def test_try_hint_route_none_quando_context_vazio():
+    assert try_hint_route(None) is None
+    assert try_hint_route({}) is None
+
+
+def test_try_hint_route_none_quando_metadata_invalida():
+    """Metadata presente mas inválida (sem source rail_a) → None."""
+    context = {"metadata": {"domain_hint": "job_management"}}
+    assert try_hint_route(context) is None

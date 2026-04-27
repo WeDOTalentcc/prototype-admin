@@ -4,25 +4,76 @@ WebSocket Message Schemas — Pydantic schemas para mensagens do protocolo WS.
 Define o contrato de mensagens entre cliente e servidor:
 
 Cliente → Servidor:
+  WSHelloMessage    : handshake inicial (negocia protocol_version)
   WSUserMessage     : mensagem de chat do usuário
   WSPingMessage     : keepalive ping
   WSAbortMessage    : abortar processamento
 
 Servidor → Cliente:
-  WSConnectedMessage    : confirmação de conexão
+  WSConnectedMessage    : confirmação de conexão (anuncia protocol_version)
   WSThinkingMessage     : agente iniciou processamento
-  WSTokenMessage        : chunk de streaming (LangGraph .astream())
+  WSTokenMessage        : chunk de streaming (LangGraph .astream_events("v2"))
   WSResponseMessage     : resposta final completa
   WSErrorMessage        : erro
   WSPongMessage         : resposta ao ping
+
+Versionamento (PM-03, Auditoria Rev 4):
+  `LIA_WS_PROTOCOL_VERSION` é o contrato canônico (semver MAJOR.MINOR).
+  Mudanças MAJOR são incompatíveis (ex.: rename de campo obrigatório);
+  MINOR são aditivas (ex.: novo campo opcional). O servidor envia a versão
+  no `WSConnectedMessage`; o cliente pode mandar `WSHelloMessage` com a
+  versão que entende — divergência MAJOR fecha o socket com 4400.
 """
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
+# ─────────────────────────────────────────────────────────────────────────────
+# PM-03 (Audit Rev 4) — versão canônica do contrato WS.
+# Bump MAJOR quando houver breaking change; MINOR quando for aditivo.
+# ─────────────────────────────────────────────────────────────────────────────
+LIA_WS_PROTOCOL_VERSION: str = "1.0"
+
+
+def is_protocol_compatible(client_version: str | None) -> bool:
+    """Retorna True se `client_version` é compatível com o servidor.
+
+    Regras (semver simples):
+      * `None` ou string vazia → True (cliente legacy, assume MAJOR atual).
+      * MAJOR igual ao do servidor → True.
+      * MAJOR diferente → False (servidor deve fechar com 4400).
+    """
+    if not client_version:
+        return True
+    try:
+        client_major = client_version.split(".", 1)[0]
+        server_major = LIA_WS_PROTOCOL_VERSION.split(".", 1)[0]
+    except Exception:
+        return False
+    return client_major == server_major
+
 # ---------------------------------------------------------------------------
 # Cliente → Servidor
 # ---------------------------------------------------------------------------
+
+class WSHelloMessage(BaseModel):
+    """Handshake inicial cliente → servidor (PM-03).
+
+    Permite ao cliente anunciar a versão do contrato WS que ele entende.
+    Servidor responde com `WSConnectedMessage` carregando sua versão e
+    fecha a conexão (close 4400) se houver mismatch de MAJOR.
+    """
+
+    type: Literal["hello"] = "hello"
+    protocol_version: str = Field(
+        default=LIA_WS_PROTOCOL_VERSION,
+        description="Versão do contrato WS que o cliente entende (semver).",
+    )
+    client: str = Field(
+        default="",
+        description="Identificador do cliente (ex.: 'web@1.4.2').",
+    )
+
 
 class WSUserMessage(BaseModel):
     """Mensagem de chat enviada pelo cliente ao servidor."""
@@ -56,6 +107,10 @@ class WSConnectedMessage(BaseModel):
     session_id: str
     domain: str
     timestamp: str = ""
+    protocol_version: str = Field(
+        default=LIA_WS_PROTOCOL_VERSION,
+        description="Versão do contrato WS suportada pelo servidor (PM-03).",
+    )
 
 
 class WSThinkingMessage(BaseModel):

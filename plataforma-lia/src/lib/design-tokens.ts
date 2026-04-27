@@ -202,49 +202,49 @@ export const borderRadius = {
  */
 export const textStyles = {
   // DS v4.1: Títulos com Open Sans
-  h1: "font-['Open_Sans',sans-serif] text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary",
-  h2: "font-['Open_Sans',sans-serif] text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary",
-  h3: "font-['Open_Sans',sans-serif] text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary",
-  h4: "font-['Open_Sans',sans-serif] text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary",
+  h1: "font-sans text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary",
+  h2: "font-sans text-lg font-semibold text-lia-text-primary dark:text-lia-text-primary",
+  h3: "font-sans text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary",
+  h4: "font-sans text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary",
   
   // Aliases para compatibilidade
-  title: "font-['Open_Sans',sans-serif] text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary",
-  titleLarge: "font-['Open_Sans',sans-serif] text-base font-semibold text-lia-text-primary dark:text-lia-text-primary",
-  titleXl: "font-['Open_Sans',sans-serif] text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary",
+  title: "font-sans text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary",
+  titleLarge: "font-sans text-base font-semibold text-lia-text-primary dark:text-lia-text-primary",
+  titleXl: "font-sans text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary",
   
   // v4: Subtítulos
-  subtitle: "font-['Open_Sans',sans-serif] text-xs font-medium text-lia-text-primary dark:text-lia-text-primary",
-  subtitleMuted: "font-['Open_Sans',sans-serif] text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary",
+  subtitle: "font-sans text-xs font-medium text-lia-text-primary dark:text-lia-text-primary",
+  subtitleMuted: "font-sans text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary",
   
   // v4: Corpo de texto
-  body: "font-['Open_Sans',sans-serif] text-xs font-normal text-lia-text-primary dark:text-lia-text-primary",
-  bodySmall: "font-['Open_Sans',sans-serif] text-xs font-normal text-lia-text-primary dark:text-lia-text-primary",
-  bodyLarge: "font-['Open_Sans',sans-serif] text-base-ui font-normal text-lia-text-primary dark:text-lia-text-primary",
+  body: "font-sans text-xs font-normal text-lia-text-primary dark:text-lia-text-primary",
+  bodySmall: "font-sans text-xs font-normal text-lia-text-primary dark:text-lia-text-primary",
+  bodyLarge: "font-sans text-base-ui font-normal text-lia-text-primary dark:text-lia-text-primary",
   
   // v4: Descrições secundárias
-  description: "font-['Open_Sans',sans-serif] text-xs font-normal text-lia-text-secondary dark:text-lia-text-secondary",
+  description: "font-sans text-xs font-normal text-lia-text-secondary dark:text-lia-text-secondary",
   
   // v4: Captions e labels
-  caption: "font-['Open_Sans',sans-serif] text-micro font-normal text-lia-text-secondary dark:text-lia-text-secondary",
-  captionBold: "font-['Open_Sans',sans-serif] text-micro font-medium text-lia-text-primary dark:text-lia-text-primary",
+  caption: "font-sans text-micro font-normal text-lia-text-secondary dark:text-lia-text-secondary",
+  captionBold: "font-sans text-micro font-medium text-lia-text-primary dark:text-lia-text-primary",
   
   // v4: Labels
-  label: "font-['Open_Sans',sans-serif] text-xs font-medium text-lia-text-primary dark:text-lia-text-primary",
-  labelSmall: "font-['Open_Sans',sans-serif] text-micro font-medium text-lia-text-primary dark:text-lia-text-primary",
+  label: "font-sans text-xs font-medium text-lia-text-primary dark:text-lia-text-primary",
+  labelSmall: "font-sans text-micro font-medium text-lia-text-primary dark:text-lia-text-primary",
   
   // v4: Métricas com Inter
-  metric: "font-['Inter',sans-serif] text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
-  metricLarge: "font-['Inter',sans-serif] text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
-  metricSmall: "font-['Inter',sans-serif] text-xs font-medium text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+  metric: "font-inter text-sm font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+  metricLarge: "font-inter text-2xl font-semibold text-lia-text-primary dark:text-lia-text-primary tabular-nums",
+  metricSmall: "font-inter text-xs font-medium text-lia-text-primary dark:text-lia-text-primary tabular-nums",
   
   // DS v4.1: Sidebar com Open Sans (Source Serif 4 removido)
-  sidebarTitle: "font-['Open_Sans',sans-serif] text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary",
-  sidebarItem: "font-['Open_Sans',sans-serif] text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary",
-  sidebarItemActive: "font-['Open_Sans',sans-serif] text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary",
+  sidebarTitle: "font-sans text-base-ui font-semibold text-lia-text-primary dark:text-lia-text-primary",
+  sidebarItem: "font-sans text-xs font-medium text-lia-text-secondary dark:text-lia-text-secondary",
+  sidebarItemActive: "font-sans text-xs font-semibold text-lia-text-primary dark:text-lia-text-primary",
   
   // v4: Links (cyan para LIA/IA)
-  link: "font-['Open_Sans',sans-serif] text-xs font-medium text-wedo-cyan hover:text-wedo-cyan-dark transition-colors",
-  linkSubtle: "font-['Open_Sans',sans-serif] text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors",
+  link: "font-sans text-xs font-medium text-wedo-cyan hover:text-wedo-cyan-dark transition-colors",
+  linkSubtle: "font-sans text-xs font-medium text-lia-text-secondary hover:text-lia-text-primary dark:text-lia-text-secondary dark:hover:text-lia-text-inverse transition-colors",
 } as const
 
 /**
@@ -343,8 +343,8 @@ export const tabStyles = {
   tabDisabled: 'px-4 py-2 text-xs font-medium text-lia-text-disabled cursor-not-allowed',
   
   pillContainer: 'flex gap-1 p-1 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-lg w-fit',
-  pill: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] text-lia-text-secondary hover:bg-lia-bg-tertiary dark:text-lia-text-secondary dark:hover:bg-lia-btn-primary-hover",
-  pillActive: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer font-['Open_Sans',sans-serif] bg-lia-bg-primary text-lia-text-primary shadow-sm dark:bg-lia-bg-primary dark:text-lia-text-primary",
+  pill: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer font-sans text-lia-text-secondary hover:bg-lia-bg-tertiary dark:text-lia-text-secondary dark:hover:bg-lia-btn-primary-hover",
+  pillActive: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer font-sans bg-lia-bg-primary text-lia-text-primary shadow-sm dark:bg-lia-bg-primary dark:text-lia-text-primary",
   pillIcon: 'w-3.5 h-3.5',
 } as const
 
@@ -411,15 +411,15 @@ export const kanbanColumnHeaderStyles = {
     md: 'w-3 h-3',
   },
   title: {
-    sm: "font-['Open_Sans',sans-serif] font-medium text-xs text-lia-text-primary dark:text-lia-text-primary",
-    md: "font-['Open_Sans',sans-serif] font-medium text-sm text-lia-text-primary dark:text-lia-text-primary",
+    sm: "font-sans font-medium text-xs text-lia-text-primary dark:text-lia-text-primary",
+    md: "font-sans font-medium text-sm text-lia-text-primary dark:text-lia-text-primary",
   },
   count: {
     sm: 'inline-flex items-center text-micro text-lia-text-primary bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-1.5 py-0.5 rounded-full',
     md: 'inline-flex items-center text-micro text-lia-text-secondary bg-lia-bg-tertiary dark:bg-lia-bg-secondary px-2 py-0.5 rounded-full ml-1',
   },
   subtitle:
-    "mt-1 font-['Open_Sans',sans-serif] text-micro font-normal text-lia-text-secondary dark:text-lia-text-secondary",
+    "mt-1 font-sans text-micro font-normal text-lia-text-secondary dark:text-lia-text-secondary",
 } as const
 
 /**
@@ -452,21 +452,21 @@ export const kanbanCardStyles = {
   },
   title: {
     comfortable:
-      "font-['Open_Sans',sans-serif] font-medium text-sm text-lia-text-primary dark:text-lia-text-primary truncate",
+      "font-sans font-medium text-sm text-lia-text-primary dark:text-lia-text-primary truncate",
     compact:
-      "font-['Open_Sans',sans-serif] font-medium text-xs text-lia-text-primary dark:text-lia-text-primary truncate",
+      "font-sans font-medium text-xs text-lia-text-primary dark:text-lia-text-primary truncate",
   },
   subtitle: {
     comfortable:
-      "font-['Open_Sans',sans-serif] text-xs text-gray-700 dark:text-gray-300 truncate",
+      "font-sans text-xs text-gray-700 dark:text-gray-300 truncate",
     compact:
-      "font-['Open_Sans',sans-serif] text-xs text-gray-700 dark:text-gray-300 truncate",
+      "font-sans text-xs text-gray-700 dark:text-gray-300 truncate",
   },
   tertiary: {
     comfortable:
-      "font-['Open_Sans',sans-serif] text-xs text-gray-600 dark:text-gray-400 truncate",
+      "font-sans text-xs text-gray-600 dark:text-gray-400 truncate",
     compact:
-      "font-['Open_Sans',sans-serif] text-xs text-gray-600 dark:text-gray-400 truncate",
+      "font-sans text-xs text-gray-600 dark:text-gray-400 truncate",
   },
   // Divisor inferior (footer)
   divider:
@@ -556,7 +556,7 @@ export const modalStyles = {
   overlay: 'fixed inset-0 bg-lia-overlay backdrop-blur-[1px] z-50',
   container: 'bg-lia-bg-primary border border-lia-border-subtle rounded-md',
   header: 'px-6 py-4 border-b border-lia-border-subtle',
-  headerTitle: "font-['Open_Sans',sans-serif] text-base font-semibold text-lia-text-primary",
+  headerTitle: "font-sans text-base font-semibold text-lia-text-primary",
   body: 'px-6 py-4',
   footer: 'px-6 py-4 border-t border-lia-border-subtle flex justify-end gap-3',
 } as const
@@ -566,10 +566,10 @@ export const modalStyles = {
  */
 export const formStyles = {
   fieldGroup: 'space-y-1.5',
-  label: "font-['Open_Sans',sans-serif] text-xs font-medium text-lia-text-secondary",
-  labelRequired: "font-['Open_Sans',sans-serif] text-xs font-medium text-lia-text-secondary after:content-['*'] after:ml-0.5 after:text-status-error",
-  helperText: "font-['Open_Sans',sans-serif] text-micro font-normal text-lia-text-tertiary mt-1",
-  errorText: "font-['Open_Sans',sans-serif] text-micro font-normal text-status-error mt-1",
+  label: "font-sans text-xs font-medium text-lia-text-secondary",
+  labelRequired: "font-sans text-xs font-medium text-lia-text-secondary after:content-['*'] after:ml-0.5 after:text-status-error",
+  helperText: "font-sans text-micro font-normal text-lia-text-tertiary mt-1",
+  errorText: "font-sans text-micro font-normal text-status-error mt-1",
 } as const
 
 /**

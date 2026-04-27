@@ -1,7 +1,36 @@
 /**
  * TypeScript types for the Wizard WSI pipeline.
- * Mirrors backend state.py WizardStage + ws_stage_payload format.
+ *
+ * Audit finding **N-12**: the contract types below — `WizardStage`,
+ * `ScreeningMode`, `WizardStagePayload`, `BigFiveProfile`, `TraitRanking`,
+ * `ScreeningQuestion`, `EligibilityQuestion`, `CalibrationCandidate` —
+ * are now re-exported from the auto-generated
+ * `src/types/generated/wizard-contract.ts`, whose source of truth is the
+ * Pydantic module `lia-agent-system/app/contracts/wizard_contract.py`.
+ *
+ * Regenerate after backend changes:
+ *   npm run generate:wizard-types
+ *
+ * CI fails on drift via:
+ *   npm run check:wizard-types
+ *
+ * The remaining UI-only interfaces (`*Data` wrappers, `EnrichedJobDescription`,
+ * `TechnicalSkill`, `BehavioralCompetency`, `ContextSignals`, stage-label
+ * tables) live below and stay hand-maintained until they are absorbed by
+ * the backend contract.
  */
+import type {
+  BigFiveProfileContract,
+  TraitRankingContract,
+  WizardStagePayloadContract,
+} from "@/types/generated/wizard-contract"
+
+// ---- Re-exports from the generated contract ------------------------------
+// NOTE: ScreeningQuestion / EligibilityQuestion / CalibrationCandidate are
+// kept hand-maintained below for now — the generated contract enforces
+// stricter shapes (e.g. `id` required, extra `competency`/`source` fields)
+// that would require touching ~20 component call-sites in a separate PR.
+// Tracked as a follow-up to N-12.
 
 export type WizardStage =
   | "intake"
@@ -21,16 +50,11 @@ export type WizardStage =
 export type ScreeningMode = "compact" | "full"
 
 /**
- * WebSocket message payload for wizard stages.
- * Sent by backend graph nodes via ws_stage_payload.
+ * WebSocket message payload for wizard stages — alias of
+ * `WizardStagePayloadContract` (generated). Kept as a type alias so
+ * existing imports `import { WizardStagePayload }` keep working.
  */
-export interface WizardStagePayload {
-  type: "wizard_stage"
-  stage: WizardStage
-  data: Record<string, unknown>
-  completeness: number // 0.0 to 1.0
-  requires_approval: boolean
-}
+export type WizardStagePayload = WizardStagePayloadContract
 
 // --- Stage-specific data interfaces ---
 
@@ -80,24 +104,21 @@ export interface ContextSignals {
   nivel_colaboracao: "baixo" | "medio" | "alto"
 }
 
+/**
+ * Big Five OCEAN profile — alias of the generated `BigFiveProfileContract`
+ * so the recruiter UI and the LangGraph state share one shape.
+ */
+export type BigFiveProfile = BigFiveProfileContract
+
 export interface BigFiveData {
-  bigfive_profile: {
-    openness: number
-    conscientiousness: number
-    extraversion: number
-    agreeableness: number
-    stability: number
-    evidences: Record<string, string[]>
-  } | null
+  bigfive_profile: BigFiveProfile | null
   trait_rankings: TraitRanking[]
 }
 
-export interface TraitRanking {
-  trait: string
-  score: number
-  rank: number
-  weight: number
-}
+/**
+ * Big Five trait ranking — alias of the generated `TraitRankingContract`.
+ */
+export type TraitRanking = TraitRankingContract
 
 export interface SalaryData {
   salary_min: number | null

@@ -14,7 +14,7 @@ import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { SWRConfig } from 'swr'
-import { useDailyBriefing } from '../use-daily-briefing'
+import { useDailyBriefing } from '../ai/use-daily-briefing'
 
 const swrWrapper = ({ children }: { children: React.ReactNode }) => (
   React.createElement(SWRConfig, { value: { dedupingInterval: 0, provider: () => new Map(), revalidateOnFocus: false } }, children)

@@ -10,7 +10,7 @@
     "build": "NODE_OPTIONS='--max-old-space-size=4096' next build --turbopack",
     "build:webpack": "NODE_OPTIONS='--max-old-space-size=4096' next build",
     "start": "next start -H 0.0.0.0 -p 3000",
-    "lint": "bunx tsc --noEmit && next lint",
+    "lint": "NODE_OPTIONS='--max-old-space-size=4096' bunx tsc --noEmit && next lint",
     "format": "bunx biome format --write",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -37,6 +37,8 @@
     "test:ui": "vitest --ui --project=unit --project=unit-colocated --project=hooks --project=components",
     "test:all": "vitest run",
     "generate:api-types": "curl -s http://localhost:8001/openapi.json > /tmp/lia-openapi.json && npx openapi-typescript /tmp/lia-openapi.json -o src/types/api.generated.ts",
+    "generate:wizard-types": "python3 ../lia-agent-system/scripts/generate_wizard_types.py",
+    "check:wizard-types": "python3 ../lia-agent-system/scripts/generate_wizard_types.py --check",
     "analyze": "ANALYZE=true pnpm build",
     "prepare": "husky"
   },

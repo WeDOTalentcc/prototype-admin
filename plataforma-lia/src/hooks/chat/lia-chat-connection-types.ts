@@ -105,7 +105,13 @@ export interface UseLiaChatConnectionResult {
   backgroundTasks: BackgroundTaskEvent[]
   planProgressSteps: Array<{ task_id: string; action_id: string; domain_id: string; status: string }>
   activePlanId: string | null
-  sendMessage: (content: string, domain?: string, scope?: string) => Promise<void>
+  /** PR-A: aceita `metadata` opcional com hints de routing (Rail A). */
+  sendMessage: (
+    content: string,
+    domain?: string,
+    scope?: string,
+    metadata?: Record<string, unknown>,
+  ) => Promise<void>
   sendApproval: (approved: boolean) => void
   dismissFairnessWarnings: () => void
   clearBackgroundTask: (taskId: string) => void

@@ -1702,6 +1702,113 @@ class JobCreationGraph:
         finish_span(span, status="ok")
         return result
 
+    async def stream_invoke(
+        self,
+        state: JobCreationState,
+        thread_id: str,
+        on_token: Any | None = None,
+        max_tokens: int | None = None,
+    ) -> tuple[JobCreationState, int]:
+        """Token-streaming counterpart to :meth:`invoke`.
+
+        PM-02 (Audit Rev 4): drives the compiled LangGraph through
+        ``astream_events("v2")`` so callers can render incremental LLM
+        output in real time. The terminal state is reconstructed from
+        the ``on_chain_end`` event of the top-level graph (matching what
+        ``invoke()`` would have returned).
+
+        Args:
+            state: Current wizard state (accumulated across invocations).
+            thread_id: Unique session ID for checkpointer persistence.
+            on_token: Optional async callback ``(chunk: str) -> None``.
+                Token extraction errors and callback failures are
+                isolated — they MUST NOT break the wizard run.
+            max_tokens: Optional cap; the stream still drains so the
+                final state is materialized, but ``on_token`` stops
+                receiving chunks past this count.
+
+        Returns:
+            ``(final_state, tokens_emitted)`` — ``tokens_emitted`` counts
+            successful ``on_token`` invocations (parity with
+            :func:`stream_wizard_tokens`).
+        """
+        # Local import: keep the compiled graph + helper coupling
+        # contained to the streaming path so non-streaming callers
+        # don't pay the import cost.
+        from app.api.v1._ws_stream_helpers import stream_wizard_tokens
+
+        config: Dict[str, Any] = {"configurable": {"thread_id": thread_id}}
+        cb = self._build_audit_callback(state, thread_id)
+        if cb is not None:
+            config["callbacks"] = [cb]
+
+        tracer = get_tracer()
+        attrs = self._entry_span_attrs(state, thread_id)
+        attrs["wizard.stream_mode"] = "astream_events_v2"
+        span = tracer.create_span(
+            WIZARD_SPANS.JOB_CREATION_ENTRY, attributes=attrs, _start_otel=True,
+        )
+
+        final_state: JobCreationState = state
+        tokens_emitted = 0
+
+        async def _capture_terminal_state(events):
+            """Tee the event stream: forward to `stream_wizard_tokens`
+            (which extracts LLM chunks) AND materialize the final state
+            from the top-level ``on_chain_end`` event.
+
+            Detection strategy (resilient to LangGraph naming changes):
+              1. Primary: ``parent_ids`` is empty → root run.
+              2. Secondary: name in {"LangGraph","job_creation_graph"}
+                 (legacy fallback for older LangGraph releases that did
+                 not set ``parent_ids``).
+              3. Tertiary: last seen ``on_chain_end`` payload that looks
+                 like a wizard state (has ``current_stage``).
+            """
+            nonlocal final_state
+            last_state_like: Mapping[str, Any] | None = None
+            async for ev in events:
+                if ev.get("event") == "on_chain_end":
+                    out = (ev.get("data") or {}).get("output")
+                    parent_ids = ev.get("parent_ids")
+                    name = ev.get("name") or ""
+                    is_root = (
+                        (isinstance(parent_ids, list) and len(parent_ids) == 0)
+                        or name in ("LangGraph", "job_creation_graph")
+                    )
+                    if is_root and isinstance(out, Mapping):
+                        final_state = dict(out)  # type: ignore[assignment]
+                    elif isinstance(out, Mapping) and "current_stage" in out:
+                        last_state_like = out
+                yield ev
+            # Tertiary fallback: if no root event reached us but we saw a
+            # state-shaped payload, prefer it over the seed state.
+            if final_state is state and last_state_like is not None:
+                final_state = dict(last_state_like)  # type: ignore[assignment]
+
+        try:
+            stream = self._graph.astream_events(state, config=config, version="v2")
+            tokens_emitted = await stream_wizard_tokens(
+                _capture_terminal_state(stream),
+                on_token=on_token,
+                max_tokens=max_tokens,
+            )
+        except Exception as exc:
+            finish_span(span, status="error", error=exc)
+            raise
+
+        try:
+            if isinstance(final_state, Mapping):
+                span.set_attribute(
+                    "wizard.stage",
+                    str(final_state.get("current_stage") or "entry"),
+                )
+                span.set_attribute("wizard.tokens_emitted", str(tokens_emitted))
+        except Exception:  # pragma: no cover — defensive
+            pass
+        finish_span(span, status="ok")
+        return final_state, tokens_emitted
+
     def resume(
         self,
         thread_id: str,

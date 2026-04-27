@@ -20,6 +20,7 @@ import { ProgressiveDisclosure } from "./wizard/ProgressiveDisclosure"
 import { UnifiedChatHeader } from "./UnifiedChatHeader"
 import { UnifiedChatInput } from "./UnifiedChatInput"
 import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState"
+import type { ChatSuggestionMetadata } from "@/components/ui/chat-workflow-reels"
 import { UnifiedMessageList } from "./UnifiedMessageList"
 import type { ChatMode } from "./unified-chat-types"
 import {
@@ -326,10 +327,17 @@ export function UnifiedChat({ renderMode = "overlay", initialMode, className }: 
     })
   }, [inputText, sendChatMessage, detectNavIntent, handleSlashCommand])
 
-  const handleSuggestionClick = useCallback((prompt: string) => {
+  const handleSuggestionClick = useCallback((prompt: string, metadata?: ChatSuggestionMetadata) => {
     setInputText(prompt)
+    // setTimeout 100ms é workaround para renderizar setInputText antes do
+    // send (evita race com input que ainda não recebeu o valor visualmente).
     setTimeout(() => {
-      sendChatMessage(prompt)
+      // PR-A (FE-H03): quando vem do Rail A, passa `domain_hint` como
+      // `domain` e a metadata completa como 4º arg. O orchestrator usa
+      // `context.metadata.intent_hint` como guide para routing determinístico.
+      // Chamadas sem metadata (slash, mention, manual) seguem inalteradas.
+      const domain = metadata?.domain_hint
+      sendChatMessage(prompt, domain, undefined, metadata as Record<string, unknown> | undefined)
       setInputText("")
     }, 100)
   }, [sendChatMessage])

@@ -4,13 +4,17 @@ import React, { useEffect } from "react"
 import { Brain, Building, FileSpreadsheet, Globe } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { ChatMode } from "./unified-chat-types"
-import { ChatWorkflowReels } from "@/components/ui/chat-workflow-reels"
+import { ChatWorkflowReels, type ChatSuggestionMetadata } from "@/components/ui/chat-workflow-reels"
 import { useTranslations } from 'next-intl'
 import type { ChatContextType } from "@/contexts/lia-float-context"
 
 interface Props {
   mode: ChatMode
-  onSuggestionClick: (prompt: string) => void
+  /**
+   * PR-A: aceita opcionalmente `metadata` com hints de routing emitidos pelo
+   * Rail A. Consumidores antigos que ignoram o 2º arg seguem funcionando.
+   */
+  onSuggestionClick: (prompt: string, metadata?: ChatSuggestionMetadata) => void
   contextType?: ChatContextType
 }
 

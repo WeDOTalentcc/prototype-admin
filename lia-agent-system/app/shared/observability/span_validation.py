@@ -23,10 +23,61 @@ from __future__ import annotations
 import functools
 import logging
 import re
+import time
 from dataclasses import dataclass, field
 from typing import Any, Callable, Mapping, Sequence
 
 from app.shared.observability.tracing import finish_span, get_tracer
+
+# ─────────────────────────────────────────────────────────────────────────────
+# N-14 (Audit Rev 4) — `wizard_node_latency_seconds` OTLP histogram
+# Lazy-singleton to keep the import boundary cheap (matches the rationale in
+# the module-header NOTE). On first call, attempt to create a real OTLP
+# histogram; if the OTel SDK is missing or no provider is configured we
+# fall back to a no-op stub so the decorator stays side-effect-free in
+# unit tests that do not boot the metrics pipeline.
+# ─────────────────────────────────────────────────────────────────────────────
+_WIZARD_NODE_LATENCY_HIST: Any = None
+# Histogram-bucket boundaries chosen to match Production Readiness Gate #14
+# (P95 < 5s) — finer resolution below 1s, coarser above 5s.
+_WIZARD_LATENCY_BUCKETS_MS: tuple[float, ...] = (
+    25, 50, 100, 250, 500, 1000, 2500, 5000, 10_000, 30_000,
+)
+
+
+class _NoopHistogram:
+    """Fallback histogram used when OpenTelemetry metrics is not wired."""
+
+    def record(self, value: float, attributes: Mapping[str, Any] | None = None) -> None:  # noqa: D401
+        return None
+
+
+def _get_wizard_node_latency_histogram() -> Any:
+    """Return the wizard node latency histogram (singleton)."""
+    global _WIZARD_NODE_LATENCY_HIST
+    if _WIZARD_NODE_LATENCY_HIST is not None:
+        return _WIZARD_NODE_LATENCY_HIST
+    try:
+        from opentelemetry import metrics as _otel_metrics
+
+        meter = _otel_metrics.get_meter("lia.wizard")
+        _WIZARD_NODE_LATENCY_HIST = meter.create_histogram(
+            name="wizard_node_latency_seconds",
+            unit="s",
+            description=(
+                "Latency of each JobCreationGraph node "
+                "(Rev 4 N-14, Production Readiness Gate #14)"
+            ),
+        )
+    except Exception:  # pragma: no cover — defensive: OTel optional in tests
+        _WIZARD_NODE_LATENCY_HIST = _NoopHistogram()
+    return _WIZARD_NODE_LATENCY_HIST
+
+
+def _reset_wizard_node_latency_histogram_for_tests() -> None:
+    """Test-only helper: reset the lazy singleton so a test can inject a fake."""
+    global _WIZARD_NODE_LATENCY_HIST
+    _WIZARD_NODE_LATENCY_HIST = None
 
 # NOTE on import boundary: we deliberately DO NOT import the constants from
 # `app.orchestrator._observability` because that triggers the orchestrator
@@ -253,11 +304,28 @@ def wizard_traced_node(span_name: str) -> Callable:
             tracer = get_tracer()
             attrs = _attrs_from_state(state or {}, stage)
             span = tracer.create_span(span_name, attributes=attrs, _start_otel=True)
+            # N-14 (Rev 4): also record per-node latency in a histogram so
+            # dashboards can break-down P50/P95/P99 by node without parsing
+            # spans. Histogram emits even on error so a regressing node
+            # shows up in alerts.
+            histogram = _get_wizard_node_latency_histogram()
+            t0 = time.perf_counter()
+            metric_attrs: dict[str, Any] = {
+                "node": stage,
+                "wizard.stage": stage,
+                "tenant.company_id": str(attrs.get("tenant.company_id", "")),
+            }
             try:
                 result = fn(state, *args, **kwargs)
             except Exception as exc:
+                elapsed = time.perf_counter() - t0
+                try:
+                    histogram.record(elapsed, attributes={**metric_attrs, "status": "error"})
+                except Exception:  # pragma: no cover — never break the node on telemetry
+                    pass
                 finish_span(span, status="error", error=exc)
                 raise
+            elapsed = time.perf_counter() - t0
             # Refresh attrs from the result state so spans reflect the value
             # the node actually wrote (e.g. `current_stage` may change).
             try:
@@ -266,6 +334,10 @@ def wizard_traced_node(span_name: str) -> Callable:
                     for key, value in refreshed.items():
                         span.set_attribute(key, value)
             except Exception:  # pragma: no cover — defensive
+                pass
+            try:
+                histogram.record(elapsed, attributes={**metric_attrs, "status": "ok"})
+            except Exception:  # pragma: no cover
                 pass
             finish_span(span, status="ok")
             return result
