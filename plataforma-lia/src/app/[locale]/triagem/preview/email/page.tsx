@@ -1,10 +1,11 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { screeningDefaultTemplates } from "@/data/screening-email-templates"
+import { useLocale } from "next-intl"
+import { getPreviewTemplate } from "@/data/screening-email-templates"
 import { sanitizeEmailHtml } from "@/lib/sanitize"
 
-const PREVIEW_VARS: Record<string, string> = {
+const PREVIEW_VARS_PT: Record<string, string> = {
   candidate_name: "Mariana Souza",
   job_title: "Analista de Customer Success Pleno",
   company_name: "Lumina Tecnologia",
@@ -13,70 +14,118 @@ const PREVIEW_VARS: Record<string, string> = {
   recruiter_name: "Camila Ribeiro",
 }
 
+const PREVIEW_VARS_EN: Record<string, string> = {
+  candidate_name: "Mary Smith",
+  job_title: "Mid-Level Customer Success Analyst",
+  company_name: "Lumina Tech",
+  screening_link: "https://app.wedotalent.com/en/triagem/preview-token-mary",
+  total_questions: "20",
+  recruiter_name: "Camille Rivers",
+}
+
+type EnvelopeCopy = {
+  inbox: string
+  from: string
+  to: string
+  date: string
+  loading: string
+  staticPreview: (templateName: string) => string
+  notFound: string
+  emailFrom: string
+  emailTo: string
+  emailDate: string
+}
+
+const COPY: Record<"pt" | "en", EnvelopeCopy> = {
+  pt: {
+    inbox: "Caixa de entrada",
+    from: "De:",
+    to: "Para:",
+    date: "Data:",
+    loading: "Carregando email...",
+    staticPreview: (name) =>
+      `Visualização estática do template "${name}" — apenas para captura de tela.`,
+    notFound: 'Template "tpl-voice-screening-invite" não encontrado.',
+    emailFrom: "Camila Ribeiro <camila.ribeiro@luminatec.com.br>",
+    emailTo: "mariana.souza@email.com",
+    emailDate: "27 de abril de 2026, 14:32",
+  },
+  en: {
+    inbox: "Inbox",
+    from: "From:",
+    to: "To:",
+    date: "Date:",
+    loading: "Loading email...",
+    staticPreview: (name) =>
+      `Static preview of the "${name}" template — for screenshots only.`,
+    notFound: 'Template "tpl-voice-screening-invite" not found.',
+    emailFrom: "Camille Rivers <camille.rivers@luminatech.com>",
+    emailTo: "mary.smith@example.com",
+    emailDate: "April 27, 2026, 2:32 PM",
+  },
+}
+
 function fillTemplate(template: string, vars: Record<string, string>): string {
   return template.replace(/\{\{\s*([\w_]+)\s*\}\}/g, (_match, key: string) => {
     return vars[key] ?? ""
   })
 }
 
-const EMAIL_FROM = "Camila Ribeiro <camila.ribeiro@luminatec.com.br>"
-const EMAIL_TO = "mariana.souza@email.com"
-const EMAIL_DATE = "27 de abril de 2026, 14:32"
-
 export default function TriagemPreviewEmail() {
-  const template = screeningDefaultTemplates.find(
-    (t) => t.id === "tpl-voice-screening-invite"
-  )
+  const locale = useLocale()
+  const isEn = locale === "en"
+  const copy = isEn ? COPY.en : COPY.pt
+  const previewVars = isEn ? PREVIEW_VARS_EN : PREVIEW_VARS_PT
+
+  const template = getPreviewTemplate("tpl-voice-screening-invite", locale)
 
   const [safeBody, setSafeBody] = useState<string | null>(null)
 
   useEffect(() => {
     if (!template) return
-    const filled = fillTemplate(template.body, PREVIEW_VARS)
+    const filled = fillTemplate(template.body, previewVars)
     setSafeBody(sanitizeEmailHtml(filled))
-  }, [template])
+  }, [template, previewVars])
 
   if (!template) {
     return (
       <main className="min-h-screen bg-gray-100 px-4 py-10">
-        <p className="text-center text-sm text-gray-700">
-          Template &quot;tpl-voice-screening-invite&quot; não encontrado.
-        </p>
+        <p className="text-center text-sm text-gray-700">{copy.notFound}</p>
       </main>
     )
   }
 
-  const subject = fillTemplate(template.subject, PREVIEW_VARS)
+  const subject = fillTemplate(template.subject, previewVars)
 
   return (
     <main className="min-h-screen bg-gray-100 px-4 py-10">
       <div className="mx-auto bg-white shadow-md rounded-lg overflow-hidden" style={{ maxWidth: 600 }}>
         <div className="border-b border-gray-200 px-6 py-4 bg-gray-50">
           <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">
-            Caixa de entrada
+            {copy.inbox}
           </div>
           <h1 className="text-base font-semibold text-gray-900 leading-snug mb-3">
             {subject}
           </h1>
           <dl className="text-xs text-gray-600 space-y-1">
             <div className="flex gap-2">
-              <dt className="font-medium text-gray-700 w-16 flex-shrink-0">De:</dt>
-              <dd>{EMAIL_FROM}</dd>
+              <dt className="font-medium text-gray-700 w-16 flex-shrink-0">{copy.from}</dt>
+              <dd>{copy.emailFrom}</dd>
             </div>
             <div className="flex gap-2">
-              <dt className="font-medium text-gray-700 w-16 flex-shrink-0">Para:</dt>
-              <dd>{EMAIL_TO}</dd>
+              <dt className="font-medium text-gray-700 w-16 flex-shrink-0">{copy.to}</dt>
+              <dd>{copy.emailTo}</dd>
             </div>
             <div className="flex gap-2">
-              <dt className="font-medium text-gray-700 w-16 flex-shrink-0">Data:</dt>
-              <dd>{EMAIL_DATE}</dd>
+              <dt className="font-medium text-gray-700 w-16 flex-shrink-0">{copy.date}</dt>
+              <dd>{copy.emailDate}</dd>
             </div>
           </dl>
         </div>
 
         <div className="px-6 py-6 text-sm" suppressHydrationWarning>
           {safeBody === null ? (
-            <p className="text-gray-400 text-sm">Carregando email...</p>
+            <p className="text-gray-400 text-sm">{copy.loading}</p>
           ) : (
             <div dangerouslySetInnerHTML={{ __html: safeBody }} />
           )}
@@ -84,7 +133,7 @@ export default function TriagemPreviewEmail() {
       </div>
 
       <p className="text-center text-xs text-gray-500 mt-6">
-        Visualização estática do template &quot;{template.name}&quot; — apenas para captura de tela.
+        {copy.staticPreview(template.name)}
       </p>
     </main>
   )

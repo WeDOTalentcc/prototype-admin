@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import { useLocale } from "next-intl"
 import { cn } from "@/lib/utils"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import { Clock, Shield, CheckSquare, Square, MapPin, Briefcase, DollarSign, Gift, Phone } from "lucide-react"
@@ -16,24 +17,85 @@ interface WelcomeCardProps {
   className?: string
 }
 
-function formatSalary(range: { min?: number; max?: number; currency?: string }): string {
-  const currency = range.currency || "BRL"
+function formatSalary(range: { min?: number; max?: number; currency?: string }, isEn: boolean): string {
+  const currency = range.currency || (isEn ? "USD" : "BRL")
+  const intlLocale = isEn ? "en-US" : "pt-BR"
   const fmt = (v: number) =>
-    v.toLocaleString("pt-BR", { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    v.toLocaleString(intlLocale, { style: "currency", currency, minimumFractionDigits: 0, maximumFractionDigits: 0 })
   if (range.min && range.max) return `${fmt(range.min)} - ${fmt(range.max)}`
-  if (range.min) return `A partir de ${fmt(range.min)}`
-  if (range.max) return `Até ${fmt(range.max)}`
+  if (range.min) return isEn ? `From ${fmt(range.min)}` : `A partir de ${fmt(range.min)}`
+  if (range.max) return isEn ? `Up to ${fmt(range.max)}` : `Até ${fmt(range.max)}`
   return ""
 }
 
-const WORK_MODEL_LABELS: Record<string, string> = {
+const WORK_MODEL_LABELS_PT: Record<string, string> = {
   remoto: "Remoto",
   "híbrido": "Híbrido",
   presencial: "Presencial",
 }
 
+const WORK_MODEL_LABELS_EN: Record<string, string> = {
+  remoto: "Remote",
+  "híbrido": "Hybrid",
+  presencial: "On-site",
+}
+
 export function WelcomeCard({ config, onStart, onRequestCall, onRequestWhatsapp, isStarting = false, className }: WelcomeCardProps) {
+  const locale = useLocale()
+  const isEn = locale === "en"
   const [consentChecked, setConsentChecked] = useState(false)
+
+  const t = isEn
+    ? {
+        logoAlt: (name: string) => `${name} logo`,
+        greeting: (name: string) => `Hi ${name}, I'm LIA.`,
+        defaultWelcome:
+          "I'll guide you through your screening for this role. The conversation will cover your experience and skills in an objective way.",
+        estimatedTime: "Estimated time:",
+        minutes: "minutes",
+        consentText: "I agree to the processing of my personal data for the purposes of this screening, in line with the",
+        privacyPolicyLink: "Privacy Policy",
+        consentSuffix: "and applicable data protection laws.",
+        noChannels:
+          "This screening doesn't have any contact channel enabled. Please ask the recruiter to review the configuration.",
+        chatStarting: "Starting...",
+        chatStart: "Start Chat Conversation",
+        chatStartAria: "Start chat screening conversation",
+        whatsapp: "Continue on WhatsApp",
+        whatsappAria: "Continue the screening on WhatsApp",
+        phone: "Receive an Automated Call",
+        phoneAria: "Request an automated phone call",
+        voice: "Voice in Browser",
+        voiceAria: "Start voice conversation in the browser",
+        privacyFooter: "Privacy Policy",
+        privacyFooterAria: "Privacy policy",
+      }
+    : {
+        logoAlt: (name: string) => `Logo ${name}`,
+        greeting: (name: string) => `Olá, ${name}. Eu sou a LIA.`,
+        defaultWelcome:
+          "Vou conduzir sua triagem para esta vaga. A conversa abordará sua experiência e habilidades de forma objetiva.",
+        estimatedTime: "Tempo estimado:",
+        minutes: "minutos",
+        consentText: "Concordo com o tratamento dos meus dados pessoais para fins desta triagem, conforme a",
+        privacyPolicyLink: "Política de Privacidade",
+        consentSuffix: "e a Lei Geral de Proteção de Dados (LGPD).",
+        noChannels:
+          "Esta triagem não tem nenhum canal de contato habilitado. Por favor, peça ao recrutador para revisar a configuração.",
+        chatStarting: "Iniciando...",
+        chatStart: "Iniciar Conversa por Chat",
+        chatStartAria: "Iniciar conversa de triagem por chat",
+        whatsapp: "Continuar pelo WhatsApp",
+        whatsappAria: "Continuar a triagem pelo WhatsApp",
+        phone: "Receber Ligação Automática",
+        phoneAria: "Solicitar ligação telefônica automática",
+        voice: "Voz no Navegador",
+        voiceAria: "Iniciar conversa por voz no navegador",
+        privacyFooter: "Política de Privacidade",
+        privacyFooterAria: "Política de privacidade",
+      }
+
+  const workModelLabels = isEn ? WORK_MODEL_LABELS_EN : WORK_MODEL_LABELS_PT
 
   const hasJobDetails = config.jobDescription || config.location || config.workModel
   const hasSalary = config.showSalary && config.salaryRange && (config.salaryRange.min || config.salaryRange.max)
@@ -51,7 +113,7 @@ export function WelcomeCard({ config, onStart, onRequestCall, onRequestWhatsapp,
           {config.companyLogoUrl ? (
             <img
               src={config.companyLogoUrl}
-              alt={`Logo ${config.companyName}`}
+              alt={t.logoAlt(config.companyName)}
               className="h-12 object-contain"
             />
           ) : (
@@ -78,7 +140,7 @@ export function WelcomeCard({ config, onStart, onRequestCall, onRequestWhatsapp,
             {config.workModel && (
               <span className="flex items-center gap-1">
                 <Briefcase className="w-3.5 h-3.5 flex-shrink-0" />
-                {WORK_MODEL_LABELS[config.workModel] || config.workModel}
+                {workModelLabels[config.workModel] || config.workModel}
               </span>
             )}
           </div>
@@ -95,7 +157,7 @@ export function WelcomeCard({ config, onStart, onRequestCall, onRequestWhatsapp,
             {hasSalary && config.salaryRange && (
               <div className="flex items-center gap-2 text-xs text-lia-text-tertiary">
                 <DollarSign className="w-3.5 h-3.5 flex-shrink-0" />
-                <span>{formatSalary(config.salaryRange)}</span>
+                <span>{formatSalary(config.salaryRange, isEn)}</span>
               </div>
             )}
             {hasBenefits && config.benefits && (
@@ -111,17 +173,17 @@ export function WelcomeCard({ config, onStart, onRequestCall, onRequestWhatsapp,
           <LIAIcon size="sm" className="flex-shrink-0 bg-wedo-cyan/10" />
           <div className="text-sm text-lia-text-secondary leading-relaxed">
             <p className="font-semibold text-lia-text-primary mb-1">
-              Olá, {config.candidateName}. Eu sou a LIA.
+              {t.greeting(config.candidateName)}
             </p>
-            <p>{config.welcomeMessage || "Vou conduzir sua triagem para esta vaga. A conversa abordará sua experiência e habilidades de forma objetiva."}</p>
+            <p>{config.welcomeMessage || t.defaultWelcome}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-lia-text-tertiary">
           <Clock className="w-3.5 h-3.5" />
           <span>
-            Tempo estimado:{" "}
-            <span className="font-['Inter',sans-serif] font-medium">~{config.estimatedMinutes}</span> minutos
+            {t.estimatedTime}{" "}
+            <span className="font-['Inter',sans-serif] font-medium">~{config.estimatedMinutes}</span> {t.minutes}
           </span>
         </div>
 
@@ -144,7 +206,7 @@ export function WelcomeCard({ config, onStart, onRequestCall, onRequestWhatsapp,
             )}
           </button>
           <span className="text-xs text-lia-text-secondary leading-relaxed select-none">
-            Concordo com o tratamento dos meus dados pessoais para fins desta triagem, conforme a{" "}
+            {t.consentText}{" "}
             <a
               href={config.privacyPolicyUrl}
               target="_blank"
@@ -152,9 +214,9 @@ export function WelcomeCard({ config, onStart, onRequestCall, onRequestWhatsapp,
               className="underline text-lia-text-primary hover:text-wedo-cyan transition-colors"
               onClick={(e) => e.stopPropagation()}
             >
-              Política de Privacidade
+              {t.privacyPolicyLink}
             </a>{" "}
-            e a Lei Geral de Proteção de Dados (LGPD).
+            {t.consentSuffix}
           </span>
         </label>
 
@@ -171,7 +233,7 @@ export function WelcomeCard({ config, onStart, onRequestCall, onRequestWhatsapp,
           if (noChannels) {
             return (
               <div className="rounded-lg border border-status-error/30 bg-status-error/10 p-3 text-xs text-status-error">
-                Esta triagem não tem nenhum canal de contato habilitado. Por favor, peça ao recrutador para revisar a configuração.
+                {t.noChannels}
               </div>
             )
           }
@@ -182,10 +244,10 @@ export function WelcomeCard({ config, onStart, onRequestCall, onRequestWhatsapp,
                   type="button"
                   onClick={() => onStart(false)}
                   disabled={isStarting || !consentChecked}
-                  aria-label="Iniciar conversa de triagem por chat"
+                  aria-label={t.chatStartAria}
                   className="w-full h-11 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
                 >
-                  {isStarting ? "Iniciando..." : "Iniciar Conversa por Chat"}
+                  {isStarting ? t.chatStarting : t.chatStart}
                 </button>
               )}
               {whatsappOn && onRequestWhatsapp && (
@@ -193,10 +255,10 @@ export function WelcomeCard({ config, onStart, onRequestCall, onRequestWhatsapp,
                   type="button"
                   onClick={onRequestWhatsapp}
                   disabled={isStarting || !consentChecked}
-                  aria-label="Continuar a triagem pelo WhatsApp"
+                  aria-label={t.whatsappAria}
                   className="w-full h-11 flex items-center justify-center gap-2 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
                 >
-                  Continuar pelo WhatsApp
+                  {t.whatsapp}
                 </button>
               )}
               {phoneOn && onRequestCall && (
@@ -204,11 +266,11 @@ export function WelcomeCard({ config, onStart, onRequestCall, onRequestWhatsapp,
                   type="button"
                   onClick={onRequestCall}
                   disabled={isStarting || !consentChecked}
-                  aria-label="Solicitar ligação telefônica automática"
+                  aria-label={t.phoneAria}
                   className="w-full h-11 flex items-center justify-center gap-2 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
                 >
                   <Phone className="w-4 h-4" />
-                  Receber Ligação Automática
+                  {t.phone}
                 </button>
               )}
               {voiceWebOn && (
@@ -216,11 +278,11 @@ export function WelcomeCard({ config, onStart, onRequestCall, onRequestWhatsapp,
                   type="button"
                   onClick={() => onStart(true)}
                   disabled={isStarting || !consentChecked}
-                  aria-label="Iniciar conversa por voz no navegador"
+                  aria-label={t.voiceAria}
                   className="w-full h-11 flex items-center justify-center gap-2 rounded-lg border border-lia-border-subtle text-lia-text-primary text-sm font-medium hover:bg-lia-bg-tertiary disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
                 >
                   <Phone className="w-4 h-4" />
-                  Voz no Navegador
+                  {t.voice}
                 </button>
               )}
             </div>
@@ -232,10 +294,10 @@ export function WelcomeCard({ config, onStart, onRequestCall, onRequestWhatsapp,
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-1.5 text-xs text-lia-text-disabled hover:text-lia-text-secondary transition-colors motion-reduce:transition-none"
-          aria-label="Política de privacidade"
+          aria-label={t.privacyFooterAria}
         >
           <Shield className="w-3 h-3" />
-          Política de Privacidade
+          {t.privacyFooter}
         </a>
       </div>
     </div>

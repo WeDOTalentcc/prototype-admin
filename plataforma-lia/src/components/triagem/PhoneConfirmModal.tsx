@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useCallback, useEffect } from "react"
+import { useLocale } from "next-intl"
 import { Phone, X, Loader2 } from "lucide-react"
 
 interface PhoneConfirmModalProps {
@@ -53,13 +54,44 @@ export function PhoneConfirmModal({
   initialPhone = null,
   mode = "phone",
 }: PhoneConfirmModalProps) {
+  const locale = useLocale()
+  const isEn = locale === "en"
   const isWhatsapp = mode === "whatsapp"
-  const title = isWhatsapp ? "Continuar pelo WhatsApp" : "Receber Ligação"
-  const description = isWhatsapp
-    ? "Confirme seu número de WhatsApp. Vamos abrir uma conversa para você continuar a triagem por mensagem."
-    : "Informe seu telefone para receber uma ligação da LIA. A triagem sera conduzida por voz."
-  const ctaIdle = isWhatsapp ? "Abrir WhatsApp" : "Solicitar Ligação"
-  const ctaLoading = isWhatsapp ? "Abrindo..." : "Ligando..."
+  const t = isEn
+    ? {
+        whatsappTitle: "Continue on WhatsApp",
+        phoneTitle: "Receive a Call",
+        whatsappDescription:
+          "Confirm your WhatsApp number. We'll open a conversation so you can continue the screening by message.",
+        phoneDescription:
+          "Enter your phone number to receive a call from LIA. The screening will be conducted by voice.",
+        whatsappCtaIdle: "Open WhatsApp",
+        phoneCtaIdle: "Request Call",
+        whatsappCtaLoading: "Opening...",
+        phoneCtaLoading: "Calling...",
+        close: "Close",
+        phoneLabel: "Phone (Brazilian number, with area code)",
+        phonePlaceholder: "(11) 99999-9999",
+      }
+    : {
+        whatsappTitle: "Continuar pelo WhatsApp",
+        phoneTitle: "Receber Ligação",
+        whatsappDescription:
+          "Confirme seu número de WhatsApp. Vamos abrir uma conversa para você continuar a triagem por mensagem.",
+        phoneDescription:
+          "Informe seu telefone para receber uma ligação da LIA. A triagem sera conduzida por voz.",
+        whatsappCtaIdle: "Abrir WhatsApp",
+        phoneCtaIdle: "Solicitar Ligação",
+        whatsappCtaLoading: "Abrindo...",
+        phoneCtaLoading: "Ligando...",
+        close: "Fechar",
+        phoneLabel: "Telefone (com DDD)",
+        phonePlaceholder: "(11) 99999-9999",
+      }
+  const title = isWhatsapp ? t.whatsappTitle : t.phoneTitle
+  const description = isWhatsapp ? t.whatsappDescription : t.phoneDescription
+  const ctaIdle = isWhatsapp ? t.whatsappCtaIdle : t.phoneCtaIdle
+  const ctaLoading = isWhatsapp ? t.whatsappCtaLoading : t.phoneCtaLoading
   const [phone, setPhone] = useState(() => initialPhone ? formatPhoneInput(initialPhone) : "")
 
   useEffect(() => {
@@ -106,7 +138,7 @@ export function PhoneConfirmModal({
             onClick={onClose}
             disabled={isLoading}
             className="p-1 rounded-md text-lia-text-tertiary hover:text-lia-text-primary transition-colors"
-            aria-label="Fechar"
+            aria-label={t.close}
             data-dismiss="true"
           >
             <X className="w-5 h-5" />
@@ -123,7 +155,7 @@ export function PhoneConfirmModal({
               htmlFor="phone-input"
               className="block text-xs font-medium text-lia-text-secondary mb-1.5"
             >
-              Telefone (com DDD)
+              {t.phoneLabel}
             </label>
             <div className="flex items-center gap-2 px-3 py-2.5 border border-lia-border-subtle rounded-lg bg-lia-bg-primary dark:bg-lia-bg-elevated focus-within:ring-2 focus-within:ring-lia-btn-primary-bg/20">
               <Phone className="w-4 h-4 text-lia-text-tertiary flex-shrink-0" />
@@ -132,7 +164,7 @@ export function PhoneConfirmModal({
                 type="tel"
                 value={phone}
                 onChange={handleChange}
-                placeholder="(11) 99999-9999"
+                placeholder={t.phonePlaceholder}
                 autoFocus
                 disabled={isLoading}
                 className="flex-1 bg-transparent text-sm text-lia-text-primary placeholder:text-lia-text-disabled outline-none font-['Inter',sans-serif]"

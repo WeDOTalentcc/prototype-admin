@@ -611,6 +611,122 @@ Qualquer dúvida, estamos à disposição! 💬`,
   }
 ]
 
+/**
+ * English-language variants of the templates referenced by the static
+ * preview pages under `/[locale]/triagem/preview/...`. They are intentionally
+ * scoped to the previews so that production seeding (which still consumes
+ * `screeningDefaultTemplates`) keeps shipping only the Portuguese defaults.
+ *
+ * If you add a new preview that depends on another template, add the
+ * matching English version here so `getPreviewTemplate(id, 'en')` can find
+ * it instead of silently falling back to Portuguese.
+ */
+export const screeningPreviewTemplatesEn: ScreeningDefaultTemplate[] = [
+  {
+    id: 'tpl-voice-screening-invite',
+    name: 'Voice Screening Invitation',
+    category: 'email',
+    subject: 'Next step: voice screening for {{job_title}}',
+    body: `<div style="font-family: 'Open Sans', sans-serif; color: #374151; line-height: 1.6;">
+  <p>Hi <strong>{{candidate_name}}</strong>,</p>
+
+  <p>Congratulations on advancing in the selection process for the <strong>{{job_title}}</strong> role at <strong>{{company_name}}</strong>!</p>
+
+  <p>Your next step is a quick voice screening, where you can tell us more about your experience and motivations. The screening takes about 5–7 minutes and can be completed at any time.</p>
+
+  <div style="background: #F0F9FA; border-left: 4px solid #60BED1; padding: 16px; margin: 20px 0; border-radius: 4px;">
+    <strong style="color: #60BED1;">To start your screening:</strong>
+    <ol style="margin: 10px 0 0 0; padding-left: 20px;">
+      <li>Open the link: <a href="{{screening_link}}" style="color: #60BED1;">{{screening_link}}</a></li>
+      <li>Make sure you are in a quiet environment</li>
+      <li>Answer the {{total_questions}} questions at your own pace</li>
+    </ol>
+  </div>
+
+  <p style="font-size: 13px; color: #2D2D2D;">Just so you know, your answers will be analysed by our AI to keep the process fair and efficient.</p>
+
+  <p>If you have any questions, please reach out.</p>
+
+  <p>Best regards,<br/>
+  <strong>{{recruiter_name}}</strong><br/>
+  {{company_name}}</p>
+</div>`,
+    variables: ['candidate_name', 'job_title', 'company_name', 'screening_link', 'total_questions', 'recruiter_name'],
+    status: 'active',
+    metadata: {
+      templateType: 'screening',
+      triggerEvent: 'screening_invite_sent',
+      recipientType: 'candidate'
+    }
+  },
+  {
+    id: 'tpl-voice-screening-reminder',
+    name: 'Reminder: Voice Screening Pending',
+    category: 'email',
+    subject: 'Reminder: complete your voice screening for {{job_title}}',
+    body: `<div style="font-family: 'Open Sans', sans-serif; color: #374151; line-height: 1.6;">
+  <p>Hi <strong>{{candidate_name}}</strong>,</p>
+
+  <p>We noticed that you haven't finished your voice screening for the <strong>{{job_title}}</strong> role yet.</p>
+
+  <p>The screening takes only 5–7 minutes and is an important step to keep your application moving forward.</p>
+
+  <div style="text-align: center; margin: 24px 0;">
+    <a href="{{screening_link}}" style="display: inline-block; background: #60BED1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">Complete screening</a>
+  </div>
+
+  <p style="font-size: 13px; color: #2D2D2D;">If you run into any technical issues or need more time, please let us know.</p>
+
+  <p>Best regards,<br/>
+  <strong>{{recruiter_name}}</strong><br/>
+  {{company_name}}</p>
+</div>`,
+    variables: ['candidate_name', 'job_title', 'screening_link', 'recruiter_name', 'company_name'],
+    status: 'active',
+    metadata: {
+      templateType: 'reminder',
+      triggerEvent: 'screening_reminder_24h',
+      recipientType: 'candidate'
+    }
+  },
+  {
+    id: 'tpl-screening-complete-whatsapp',
+    name: 'Screening Completed (WhatsApp)',
+    category: 'whatsapp',
+    subject: 'Screening received',
+    body: `Hi {{candidate_name}}! ✅
+
+We've received your voice screening for *{{job_title}}*.
+
+Our team will review it and get back to you soon with the next steps.
+
+Thank you! 🙏`,
+    variables: ['candidate_name', 'job_title'],
+    status: 'active',
+    metadata: {
+      templateType: 'feedback',
+      triggerEvent: 'screening_completed',
+      recipientType: 'candidate'
+    }
+  }
+]
+
+/**
+ * Returns the screening template matching `id` for the given locale, used by
+ * the static preview pages. Falls back to the Portuguese default when no
+ * English variant has been authored for the requested template.
+ */
+export function getPreviewTemplate(
+  id: string,
+  locale: string
+): ScreeningDefaultTemplate | undefined {
+  if (locale === 'en') {
+    const enTemplate = screeningPreviewTemplatesEn.find((t) => t.id === id)
+    if (enTemplate) return enTemplate
+  }
+  return screeningDefaultTemplates.find((t) => t.id === id)
+}
+
 export const screeningTemplateCategories: Record<ScreeningTemplateType, { label: string; color: string; icon: string }> = {
   screening: { label: 'Triagem', color: 'var(--wedo-cyan)', icon: '🎤' },
   interview: { label: 'Entrevista', color: 'var(--wedo-cyan)', icon: '🎥' },

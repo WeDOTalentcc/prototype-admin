@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useCallback, useRef, useEffect, memo } from "react"
+import { useLocale } from "next-intl"
 import { cn } from "@/lib/utils"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import { AudioPlayer } from "@/components/ui/audio-player"
@@ -26,10 +27,11 @@ function getInitials(name: string): string {
     .toUpperCase()
 }
 
-function formatTimestamp(iso: string): string {
+function formatTimestamp(iso: string, locale: string): string {
   try {
     const d = new Date(iso)
-    return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    const intlLocale = locale === "en" ? "en-US" : "pt-BR"
+    return d.toLocaleTimeString(intlLocale, { hour: "2-digit", minute: "2-digit" })
   } catch {
     return ""
   }
@@ -78,6 +80,12 @@ const MessageBubble = memo(function MessageBubble({
   autoPlayAudio = false,
   ttsToken,
 }: MessageBubbleProps) {
+  const locale = useLocale()
+  const isEn = locale === "en"
+  const liaMsgAria = isEn ? "Message from LIA" : "Mensagem da LIA"
+  const myMsgAria = isEn ? "Your message" : "Sua mensagem"
+  const playAria = isEn ? "Play message" : "Ouvir mensagem"
+  const pauseAria = isEn ? "Pause audio" : "Pausar áudio"
   const isLia = message.role === "lia"
   const [isAudioPlaying, setIsAudioPlaying] = useState(false)
   const [isTtsLoading, setIsTtsLoading] = useState(false)
@@ -193,7 +201,7 @@ const MessageBubble = memo(function MessageBubble({
         isLia ? "justify-start" : "justify-end",
         className
       )}
-      aria-label={isLia ? "Mensagem da LIA" : "Sua mensagem"}
+      aria-label={isLia ? liaMsgAria : myMsgAria}
     >
       {isLia && (
         <div className="flex-shrink-0 mt-0.5">
@@ -210,7 +218,7 @@ const MessageBubble = memo(function MessageBubble({
           <div className="flex items-center gap-1.5 px-1">
             <span className="text-xs font-bold text-lia-text-primary font-['Inter',sans-serif]">LIA</span>
             <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums">
-              {formatTimestamp(message.timestamp)}
+              {formatTimestamp(message.timestamp, locale)}
             </span>
           </div>
         )}
@@ -229,7 +237,7 @@ const MessageBubble = memo(function MessageBubble({
               type="button"
               onClick={handleTtsPlay}
               disabled={isTtsLoading}
-              aria-label={isAudioPlaying ? "Pausar áudio" : "Ouvir mensagem"}
+              aria-label={isAudioPlaying ? pauseAria : playAria}
               className={cn(
                 "flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-full transition-colors",
                 ttsFailed
@@ -260,7 +268,7 @@ const MessageBubble = memo(function MessageBubble({
         )}
         {!isLia && (
           <span className="text-xs text-lia-text-disabled font-['Inter',sans-serif] tabular-nums px-1">
-            {formatTimestamp(message.timestamp)}
+            {formatTimestamp(message.timestamp, locale)}
           </span>
         )}
       </div>
