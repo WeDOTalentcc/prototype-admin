@@ -318,7 +318,7 @@ class TeamsProactivityEngine:
         """
         from datetime import datetime, timedelta
 
-        from sqlalchemy import and_, func, select
+        from sqlalchemy import and_, func, select, text
 
         from app.domains.communication.services.teams_card_renderer import teams_card_renderer
         from lia_models import Candidate, JobVacancy
@@ -343,7 +343,7 @@ class TeamsProactivityEngine:
                 expiring_q = select(func.count(JobVacancy.id)).where(
                     and_(
                         JobVacancy.status.in_(["open", "active", "Open", "Active"]),
-                        JobVacancy.deadline is not None,
+                        JobVacancy.deadline.isnot(None),  # P1-1 W2.1: SQLAlchemy IS NOT NULL (not Python truthy)
                         JobVacancy.deadline <= week_ahead,
                     )
                 )
@@ -360,7 +360,8 @@ class TeamsProactivityEngine:
                 new_candidates = (await db.execute(cands_q)).scalar() or 0
 
                 # Stalled pipelines (reuse existing check)
-                stalled = await self._find_stalled_pipelines(db, company_id)
+                # P1-1 W2.1: signature is (self, company_id, stalled_days=5) — db not passed
+                stalled = await self._find_stalled_pipelines(company_id)
 
                 # Build digest card
                 from datetime import datetime as _dt
@@ -403,8 +404,9 @@ class TeamsProactivityEngine:
                     # Broader query — all refs for company
                     try:
                         async for db2 in self._get_db():
+                            # P1-1 W2.1: wrap raw SQL in sqlalchemy.text() (SQLAlchemy 2.x requirement)
                             result = await db2.execute(
-                                "SELECT DISTINCT service_url, conversation_id FROM teams_conversations WHERE company_id = :cid LIMIT 50",
+                                text("SELECT DISTINCT service_url, conversation_id FROM teams_conversations WHERE company_id = :cid LIMIT 50"),
                                 {"cid": company_id}
                             )
                             refs = [{"service_url": r.service_url, "conversation_id": r.conversation_id} for r in result]
