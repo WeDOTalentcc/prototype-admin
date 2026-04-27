@@ -752,24 +752,50 @@ async def receive_teams_message(
                     from app.domains.communication.services.teams_card_renderer import teams_card_renderer
                     from app.domains.communication.services.teams_orchestrator_bridge import teams_orchestrator_bridge
 
-                    cv_result = await teams_orchestrator_bridge.process_cv_attachment(
-                        activity, file_attachments[0], db=db
-                    )
-                    cv_card = teams_card_renderer.render(cv_result)
-                    if cv_card:
+                    # ── W9.3 multimedia dispatch — route by MIME type ──────────────────
+                    att = file_attachments[0]
+                    ct = (att.get("contentType") or "").lower()
+                    name = (att.get("name") or "").lower()
+
+                    if ct == "application/pdf" or name.endswith(".pdf"):
+                        att_result = await teams_orchestrator_bridge.process_cv_attachment(
+                            activity, att, db=db
+                        )
+                    elif ct.startswith("image/"):
+                        att_result = await teams_orchestrator_bridge.process_image_attachment(
+                            activity, att, db=db
+                        )
+                    elif ct.startswith("video/") or ct.startswith("audio/"):
+                        att_result = {
+                            "success": False,
+                            "message": (
+                                "📹 Arquivo de vídeo/áudio recebido. "
+                                "O processamento de áudio (transcrição automática) "
+                                "estará disponível em breve. "
+                                "Por enquanto, envie o CV do candidato em PDF."
+                            ),
+                        }
+                    else:
+                        att_result = await teams_orchestrator_bridge.process_general_document(
+                            activity, att, db=db
+                        )
+                    # ─────────────────────────────────────────────────────────────────
+
+                    att_card = teams_card_renderer.render(att_result)
+                    if att_card:
                         await simple_teams_bot.send_adaptive_card(
                             service_url=service_url,
                             conversation_id=conversation_id,
-                            card_payload=cv_card,
+                            card_payload=att_card,
                         )
                     else:
                         await simple_teams_bot.send_message(
                             service_url=service_url,
                             conversation_id=conversation_id,
-                            text=cv_result.get("message", "CV processado."),
+                            text=att_result.get("message", "Arquivo processado."),
                         )
                 except Exception as cv_err:
-                    logger.error(f"[Teams] CV attachment processing error: {cv_err}", exc_info=True)
+                    logger.error(f"[Teams] attachment processing error: {cv_err}", exc_info=True)
                     await simple_teams_bot.send_message(
                         service_url=service_url,
                         conversation_id=conversation_id,

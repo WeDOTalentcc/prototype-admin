@@ -52,6 +52,11 @@ def _detect_platform_route(text: str) -> str:
 
 
 
+_IMAGE_TYPES = frozenset({
+    'image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp', 'image/bmp'
+})
+
+
 class TeamsOrchestratorBridge:
     """
     Routes Teams text messages through the LIA orchestrator.
@@ -223,6 +228,108 @@ class TeamsOrchestratorBridge:
         except Exception as e:
             logger.error(f"[TeamsOrchestratorBridge] CV processing error: {e}", exc_info=True)
             return {"success": False, "message": f"Erro ao processar CV: {str(e)}"}
+
+    async def process_image_attachment(
+        self,
+        activity: dict[str, Any],
+        attachment: dict[str, Any],
+        db: "AsyncSession | None" = None,
+    ) -> dict[str, Any]:
+        """W9.3: Process image attachment via Gemini Vision for recruitment context."""
+        import httpx
+
+        content_url = attachment.get("contentUrl", "")
+        content_type = (attachment.get("contentType") or "image/jpeg").lower()
+        filename = attachment.get("name", "image.jpg")
+
+        try:
+            from app.domains.communication.services.teams_simple import simple_teams_bot
+            token = await simple_teams_bot.get_access_token()
+
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    content_url,
+                    headers={"Authorization": f"Bearer {token}"},
+                    timeout=30.0,
+                )
+                image_bytes = resp.content
+
+            if not image_bytes:
+                return {"success": False, "message": "Imagem vazia ou inacessivel."}
+
+            try:
+                from google.genai import types as _gtypes
+                from app.domains.ai.services.llm import llm_service
+
+                prompt = (
+                    "Descreva esta imagem no contexto de recrutamento e RH. "
+                    "O que a imagem mostra? Como poderia ser usada num processo seletivo? "
+                    "Seja objetivo, em portugues, maximo 3 linhas."
+                )
+                contents = [
+                    _gtypes.Part.from_bytes(data=image_bytes, mime_type=content_type),
+                    prompt,
+                ]
+                response = await llm_service.generate_native_gemini(
+                    contents=contents,
+                    model="gemini-2.5-flash",
+                )
+                description = response.text if hasattr(response, "text") else str(response)
+                msg = f"Imagem recebida: {filename}\n\n{description}\n\nPara usar na plataforma, acesse o painel web."
+                return {"success": True, "message": msg}
+            except Exception as vision_err:
+                logger.warning("[TeamsOrchestratorBridge] Gemini Vision error: %s", vision_err)
+                img_size_kb = len(image_bytes) // 1024
+                msg = f"Imagem recebida: {filename} ({img_size_kb} KB). Para usar na plataforma, acesse o painel web."
+                return {"success": True, "message": msg}
+
+        except Exception as e:
+            logger.error("[TeamsOrchestratorBridge] process_image_attachment error: %s", e)
+            return {"success": False, "message": "Erro ao processar a imagem. Tente novamente."}
+
+    async def process_general_document(
+        self,
+        activity: dict[str, Any],
+        attachment: dict[str, Any],
+        db: "AsyncSession | None" = None,
+    ) -> dict[str, Any]:
+        """W9.3: Process generic documents (txt, csv) — extract text and route via orchestrator."""
+        import httpx
+
+        content_url = attachment.get("contentUrl", "")
+        filename = attachment.get("name", "document")
+        content_type = (attachment.get("contentType") or "").lower()
+
+        try:
+            from app.domains.communication.services.teams_simple import simple_teams_bot
+            token = await simple_teams_bot.get_access_token()
+
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    content_url,
+                    headers={"Authorization": f"Bearer {token}"},
+                    timeout=30.0,
+                )
+                raw_bytes = resp.content
+
+            if content_type in ("text/plain", "text/csv") or filename.endswith((".txt", ".csv")):
+                doc_text = raw_bytes.decode("utf-8", errors="ignore")
+                if doc_text.strip():
+                    excerpt = doc_text[:1000]
+                    fake_activity = {**activity, "text": f"[Documento: {filename}]\n\n{excerpt}"}
+                    return await self.process_message(fake_activity, db=db)
+
+            doc_size_kb = len(raw_bytes) // 1024
+            msg = (
+                f"Documento recebido: {filename} ({doc_size_kb} KB). "
+                "Para formatos .docx/.xlsx, use a plataforma web para importar dados."
+            )
+            return {"success": True, "message": msg}
+
+        except Exception as e:
+            logger.error("[TeamsOrchestratorBridge] process_general_document error: %s", e)
+            return {"success": False, "message": "Erro ao processar o documento."}
+
 
     async def _resolve_company_id(
         self,
