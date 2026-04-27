@@ -95,20 +95,41 @@ def _check_file(path: Path) -> list[str]:
             "`from app.shared.pii_masking import strip_pii_for_llm_prompt`."
         )
 
-    # System prompt yaml
-    if declared_domain:
-        yaml_path = _PROMPTS_DIR / f"{declared_domain}.yaml"
-        if not yaml_path.exists():
-            # fallback: check if file references a module-level constant pointing
-            # to a yaml; if domain != filename, look for any matching prompt yaml
-            stem = path.stem.replace("_react_agent", "")
-            alt = _PROMPTS_DIR / f"{stem}.yaml"
-            if not alt.exists():
-                violations.append(
-                    f"missing system prompt YAML at app/prompts/domains/{declared_domain}.yaml "
-                    f"— every domain DEVE ter prompt canônico. Crie o YAML usando o template "
-                    f"das outras domains (ex: app/prompts/domains/communication.yaml)."
-                )
+    # System prompt yaml — v4 accepts: agent_id, aliases, dir-name, content-source-comment
+    yaml_resolved = False
+    if declared_domain and (_PROMPTS_DIR / f"{declared_domain}.yaml").exists():
+        yaml_resolved = True
+    if not yaml_resolved:
+        alias_match = re.search(
+            r"@register_agent\([\'\"]\w+[\'\"]\s*,\s*aliases\s*=\s*\[([^\]]*)\]",
+            src,
+        )
+        if alias_match:
+            for alias in re.findall(r"[\'\"](\w+)[\'\"]", alias_match.group(1)):
+                if (_PROMPTS_DIR / f"{alias}.yaml").exists():
+                    yaml_resolved = True
+                    break
+    if not yaml_resolved:
+        stem = path.stem.replace("_react_agent", "")
+        if (_PROMPTS_DIR / f"{stem}.yaml").exists():
+            yaml_resolved = True
+    if not yaml_resolved:
+        domain_dir_name = path.parents[1].name
+        if (_PROMPTS_DIR / f"{domain_dir_name}.yaml").exists():
+            yaml_resolved = True
+    if not yaml_resolved:
+        sysp = path.parent / path.name.replace("_react_agent.py", "_system_prompt.py")
+        if sysp.exists():
+            sysp_src = sysp.read_text(errors="ignore")
+            cs = re.search(r"Content source:\s*app/prompts/domains/(\w+)\.yaml", sysp_src)
+            if cs and (_PROMPTS_DIR / f"{cs.group(1)}.yaml").exists():
+                yaml_resolved = True
+    if not yaml_resolved:
+        violations.append(
+            f"missing system prompt YAML — tried agent_id ({declared_domain}.yaml), "
+            f"aliases, dir-name, and content-source comment in _system_prompt.py. "
+            f"Create app/prompts/domains/<name>.yaml using template of communication.yaml."
+        )
 
     # Matching tool registry
     expected_registry = path.parent / path.name.replace("_react_agent.py", "_tool_registry.py")

@@ -62,14 +62,41 @@ def _check_dimension(dim_key: str | re.Pattern, agent_path: Path, src: str) -> b
     """Check whether the dimension is satisfied for this agent file."""
     if isinstance(dim_key, str):
         if dim_key == "__yaml_check__":
+            # v4: aceita 4 patterns:
+            # 1. agent_id literal
+            # 2. agent aliases declarados em @register_agent
+            # 3. domain dir name
+            # 4. "Content source: app/prompts/domains/X.yaml" comment em _system_prompt.py
             m = _REGISTER_AGENT.search(src)
             if m:
                 yaml_path = _PROMPTS_DIR / f"{m.group(1)}.yaml"
                 if yaml_path.exists():
                     return True
-                # fallback: filename-based
+                # aliases?
+                alias_match = re.search(
+                    r"@register_agent\([\'\"]\w+[\'\"]\s*,\s*aliases\s*=\s*\[([^\]]*)\]",
+                    src,
+                )
+                if alias_match:
+                    for alias in re.findall(r"[\'\"](\w+)[\'\"]", alias_match.group(1)):
+                        if (_PROMPTS_DIR / f"{alias}.yaml").exists():
+                            return True
+            # filename-based
             stem = agent_path.stem.replace("_react_agent", "")
-            return (_PROMPTS_DIR / f"{stem}.yaml").exists()
+            if (_PROMPTS_DIR / f"{stem}.yaml").exists():
+                return True
+            # parent domain dir
+            domain_dir_name = agent_path.parents[1].name
+            if (_PROMPTS_DIR / f"{domain_dir_name}.yaml").exists():
+                return True
+            # content source comment in adjacent _system_prompt.py
+            sysp = agent_path.parent / agent_path.name.replace("_react_agent.py", "_system_prompt.py")
+            if sysp.exists():
+                sysp_src = sysp.read_text(errors="ignore")
+                cs = re.search(r"Content source:\s*app/prompts/domains/(\w+)\.yaml", sysp_src)
+                if cs and (_PROMPTS_DIR / f"{cs.group(1)}.yaml").exists():
+                    return True
+            return False
         if dim_key == "__tool_registry__":
             # v3: accept either same-folder registry OR a cross-domain import
             expected = agent_path.parent / agent_path.name.replace(
