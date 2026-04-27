@@ -90,6 +90,36 @@ class WSUserMessage(BaseModel):
     )
 
 
+class RailASuggestionMetadata(BaseModel):
+    """PR-A — metadata estruturada emitida pelo Rail A (chat-workflow-reels.tsx).
+
+    Validada strict no boundary WS (`ContextAdapter.from_ws`) para evitar
+    prompt injection via context arbitrário e drift de schema entre FE/BE.
+
+    Skill canônica: harness-engineering [sensor no boundary].
+    """
+
+    source: Literal["rail_a"] = Field(
+        ..., description="Fonte da metadata. APENAS 'rail_a' é honrado."
+    )
+    card_id: str = Field(..., min_length=1, max_length=64, description="ID do card clicado.")
+    stage: str = Field(..., min_length=1, max_length=64, description="ID do stage do card.")
+    domain_hint: str | None = Field(
+        default=None,
+        max_length=64,
+        description="Domínio sugerido pelo card. Validado contra DomainRegistry.",
+    )
+    intent_hint: str | None = Field(
+        default=None,
+        max_length=64,
+        description="Action/intent sugerida dentro do domínio.",
+    )
+
+    model_config = {
+        "extra": "ignore",  # campos extras são silenciosamente descartados
+    }
+
+
 class WSPingMessage(BaseModel):
     type: Literal["ping"] = "ping"
 

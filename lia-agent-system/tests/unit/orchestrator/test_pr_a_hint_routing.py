@@ -58,6 +58,71 @@ def test_from_ws_sem_metadata_funciona_normalmente():
     assert ctx.extra.get("metadata") is None
 
 
+def test_from_ws_descarta_metadata_invalida_via_pydantic():
+    """Metadata sem campos obrigatórios é descartada com warning (fail-safe)."""
+    frame = {
+        "type": "message",
+        "content": "Olá",
+        "context": {
+            "metadata": {
+                # falta 'source' (literal "rail_a"), 'card_id' e 'stage'
+                "domain_hint": "job_management",
+            },
+        },
+        "domain": "general",
+    }
+    jwt = {"sub": "user-1", "company_id": "co-1"}
+    ctx = ContextAdapter.from_ws(session_id="sess-1", message_frame=frame, jwt_payload=jwt)
+    # Metadata inválida deve ser descartada — chave 'metadata' não aparece em extra
+    assert "metadata" not in ctx.extra
+
+
+def test_from_ws_descarta_metadata_com_source_diferente():
+    """Metadata com source != 'rail_a' é descartada (anti prompt injection)."""
+    frame = {
+        "type": "message",
+        "content": "Olá",
+        "context": {
+            "metadata": {
+                "source": "untrusted_origin",
+                "card_id": "create-job",
+                "stage": "definir-vaga",
+                "domain_hint": "job_management",
+                "intent_hint": "create_job",
+            },
+        },
+        "domain": "general",
+    }
+    jwt = {"sub": "user-1", "company_id": "co-1"}
+    ctx = ContextAdapter.from_ws(session_id="sess-1", message_frame=frame, jwt_payload=jwt)
+    assert "metadata" not in ctx.extra
+
+
+def test_from_ws_drop_extra_fields_da_metadata():
+    """Campos extras na metadata são silenciosamente descartados (model_config)."""
+    frame = {
+        "type": "message",
+        "content": "Criar uma nova vaga",
+        "context": {
+            "metadata": {
+                "source": "rail_a",
+                "card_id": "create-job",
+                "stage": "definir-vaga",
+                "domain_hint": "job_management",
+                "intent_hint": "create_job",
+                "evil_field": "<script>alert(1)</script>",  # campo extra malicioso
+            },
+        },
+        "domain": "general",
+    }
+    jwt = {"sub": "user-1", "company_id": "co-1"}
+    ctx = ContextAdapter.from_ws(session_id="sess-1", message_frame=frame, jwt_payload=jwt)
+    md = ctx.extra.get("metadata")
+    assert md is not None
+    assert "evil_field" not in md
+    assert md["card_id"] == "create-job"
+
+
 # ─── rail_a_hint_override.get_hint_domain ───────────────────────────────
 
 
