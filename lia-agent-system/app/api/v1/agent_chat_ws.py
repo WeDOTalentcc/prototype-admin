@@ -916,6 +916,21 @@ async def agent_chat_ws(
             context.setdefault("user_id", user_id)
             active_domain = msg.get("domain", domain)
 
+            # PR-J: Rail A capability gate (Phase 0.5)
+            try:
+                from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+                _cap_payload = await check_rail_a_capability(
+                    context=context,
+                    message=content,
+                    company_id=company_id,
+                    db=None,
+                )
+                if _cap_payload is not None:
+                    await ws_mgr.send_to_session(session_id, _cap_payload)
+                    continue
+            except Exception as _prj_exc:
+                logger.debug("[PR-J] Capability check skipped: %s", _prj_exc)
+
             _c3b_result = await pre_compliance(content, company_id, active_domain)
             if _c3b_result.fairness_blocked:
                 await ws_mgr.send_to_session(session_id, {"type": "error", "code": "fairness_block", "message": _c3b_result.block_reason})
