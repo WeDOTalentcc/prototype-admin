@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useCallback, useEffect } from "react"
-import { useLocale } from "next-intl"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { Send, Volume2, VolumeX } from "lucide-react"
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
@@ -31,28 +31,8 @@ export function InputBar({
   onToggleAutoPlayVoice,
   transcriptionUrl,
 }: InputBarProps) {
-  const locale = useLocale()
-  const isEn = locale === "en"
-  const labels = isEn
-    ? {
-        placeholder: "Type your reply...",
-        autoplayOn: "Disable auto-play",
-        autoplayOff: "Enable auto-play",
-        autoplayOnTitle: "Auto-play enabled",
-        autoplayOffTitle: "Auto-play disabled",
-        textareaAria: "Reply field",
-        sendAria: "Send message",
-      }
-    : {
-        placeholder: "Digite sua resposta...",
-        autoplayOn: "Desativar leitura automática",
-        autoplayOff: "Ativar leitura automática",
-        autoplayOnTitle: "Leitura automática ativada",
-        autoplayOffTitle: "Leitura automática desativada",
-        textareaAria: "Campo de resposta",
-        sendAria: "Enviar mensagem",
-      }
-  const effectivePlaceholder = placeholder ?? labels.placeholder
+  const t = useTranslations("triagem.inputBar")
+  const effectivePlaceholder = placeholder ?? t("placeholder")
   const [text, setText] = useState("")
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -112,8 +92,8 @@ export function InputBar({
           <button
             type="button"
             onClick={onToggleAutoPlayVoice}
-            aria-label={autoPlayVoice ? labels.autoplayOn : labels.autoplayOff}
-            title={autoPlayVoice ? labels.autoplayOnTitle : labels.autoplayOffTitle}
+            aria-label={autoPlayVoice ? t("autoplayOn") : t("autoplayOff")}
+            title={autoPlayVoice ? t("autoplayOnTitle") : t("autoplayOffTitle")}
             className={cn(
               "flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg transition-colors",
               autoPlayVoice
@@ -133,7 +113,7 @@ export function InputBar({
           placeholder={effectivePlaceholder}
           disabled={isDisabled}
           rows={1}
-          aria-label={labels.textareaAria}
+          aria-label={t("textareaAria")}
           className="flex-1 resize-none w-full px-3 py-2 text-sm border border-lia-border-default dark:border-lia-border-default rounded-lg bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-primary placeholder-lia-input-placeholder dark:placeholder-lia-input-placeholder focus:border-lia-input-border-focus dark:focus:border-lia-input-border-focus focus:ring-2 focus:ring-wedo-cyan/20 focus:outline-none disabled:opacity-50"
         />
 
@@ -149,7 +129,7 @@ export function InputBar({
           type="button"
           onClick={handleSend}
           disabled={isDisabled || !text.trim()}
-          aria-label={labels.sendAria}
+          aria-label={t("sendAria")}
           className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
         >
           <Send className="w-4 h-4" />

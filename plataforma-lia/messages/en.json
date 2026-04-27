@@ -1115,7 +1115,7 @@
     "mappedByLIA": "Mapped by LIA",
     "addedManually": "Added manually",
     "liaWillStartScreening": "LIA will start screening",
-    "screeningCompleted": "Screening completed",
+    "screeningCompleted": "Completed",
     "pendingDecision": "Pending decision",
     "clickToSeeFullAnalysis": "Click to see full analysis",
     "respondingNow": "Responding now",
@@ -1530,7 +1530,6 @@
     "retry": "Retry",
     "screeningTotal": "Total",
     "screeningInProgress": "In Progress",
-    "screeningCompleted": "Completed",
     "screeningAbandoned": "Abandoned",
     "screeningAvgScore": "Avg WSI Score",
     "screeningAvgDuration": "Avg Duration",
@@ -5405,6 +5404,72 @@
         "retentionScore": "Team retention score",
         "proactiveAlerts": "Proactive turnover alerts"
       }
+    }
+  },
+  "triagem": {
+    "container": {
+      "ariaLabel": "Screening chat"
+    },
+    "welcomeCard": {
+      "logoAlt": "{name} logo",
+      "greeting": "Hi {name}, I'm LIA.",
+      "defaultWelcome": "I'll guide you through your screening for this role. The conversation will cover your experience and skills in an objective way.",
+      "estimatedTime": "Estimated time:",
+      "minutes": "minutes",
+      "consentText": "I agree to the processing of my personal data for the purposes of this screening, in line with the",
+      "privacyPolicyLink": "Privacy Policy",
+      "consentSuffix": "and applicable data protection laws.",
+      "noChannels": "This screening doesn't have any contact channel enabled. Please ask the recruiter to review the configuration.",
+      "chatStarting": "Starting...",
+      "chatStart": "Start Chat Conversation",
+      "chatStartAria": "Start chat screening conversation",
+      "whatsapp": "Continue on WhatsApp",
+      "whatsappAria": "Continue the screening on WhatsApp",
+      "phone": "Receive an Automated Call",
+      "phoneAria": "Request an automated phone call",
+      "voice": "Voice in Browser",
+      "voiceAria": "Start voice conversation in the browser",
+      "privacyFooter": "Privacy Policy",
+      "privacyFooterAria": "Privacy policy",
+      "workModel": {
+        "remoto": "Remote",
+        "híbrido": "Hybrid",
+        "presencial": "On-site"
+      },
+      "salary": {
+        "from": "From {value}",
+        "upTo": "Up to {value}"
+      }
+    },
+    "progressBar": {
+      "step": "Step",
+      "of": "of",
+      "progressAria": "{stepLabel} {current} {ofLabel} {total}: {blockName}"
+    },
+    "inputBar": {
+      "placeholder": "Type your reply...",
+      "autoplayOn": "Disable auto-play",
+      "autoplayOff": "Enable auto-play",
+      "autoplayOnTitle": "Auto-play enabled",
+      "autoplayOffTitle": "Auto-play disabled",
+      "textareaAria": "Reply field",
+      "sendAria": "Send message"
+    },
+    "messageBubble": {
+      "liaMessageAria": "Message from LIA",
+      "myMessageAria": "Your message",
+      "playAria": "Play message",
+      "pauseAria": "Pause audio"
+    },
+    "completionCard": {
+      "title": "Screening successfully completed!",
+      "thanks": "Thank you, {name}! Your responses have been recorded.",
+      "questionsAnswered": "{count} questions answered",
+      "minutesSummary": "{count} minutes",
+      "nextStepsLabel": "Next steps:",
+      "nextStepsAria": "Next steps",
+      "close": "Close",
+      "closeAria": "Close screening"
     }
   }
 }

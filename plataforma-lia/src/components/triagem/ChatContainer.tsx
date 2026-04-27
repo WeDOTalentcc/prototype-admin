@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { useLocale } from "next-intl"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 
 interface ChatContainerProps {
@@ -10,8 +10,7 @@ interface ChatContainerProps {
 }
 
 export function ChatContainer({ children, className }: ChatContainerProps) {
-  const locale = useLocale()
-  const ariaLabel = locale === "en" ? "Screening chat" : "Chat de triagem"
+  const t = useTranslations("triagem.container")
   return (
     <div
       className={cn(
@@ -19,7 +18,7 @@ export function ChatContainer({ children, className }: ChatContainerProps) {
         className
       )}
       role="main"
-      aria-label={ariaLabel}
+      aria-label={t("ariaLabel")}
     >
       {children}
     </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useCallback, useRef, useEffect, memo } from "react"
-import { useLocale } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { LIAIcon } from "@/components/ui/lia-icon"
 import { AudioPlayer } from "@/components/ui/audio-player"
@@ -81,11 +81,11 @@ const MessageBubble = memo(function MessageBubble({
   ttsToken,
 }: MessageBubbleProps) {
   const locale = useLocale()
-  const isEn = locale === "en"
-  const liaMsgAria = isEn ? "Message from LIA" : "Mensagem da LIA"
-  const myMsgAria = isEn ? "Your message" : "Sua mensagem"
-  const playAria = isEn ? "Play message" : "Ouvir mensagem"
-  const pauseAria = isEn ? "Pause audio" : "Pausar áudio"
+  const t = useTranslations("triagem.messageBubble")
+  const liaMsgAria = t("liaMessageAria")
+  const myMsgAria = t("myMessageAria")
+  const playAria = t("playAria")
+  const pauseAria = t("pauseAria")
   const isLia = message.role === "lia"
   const [isAudioPlaying, setIsAudioPlaying] = useState(false)
   const [isTtsLoading, setIsTtsLoading] = useState(false)

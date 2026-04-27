@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { useLocale } from "next-intl"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import type { WSIProgress } from "@/components/triagem/types"
 
@@ -11,10 +11,9 @@ interface ProgressBarProps {
 }
 
 export function ProgressBar({ progress, className }: ProgressBarProps) {
-  const locale = useLocale()
-  const isEn = locale === "en"
-  const stepLabel = isEn ? "Step" : "Etapa"
-  const ofLabel = isEn ? "of" : "de"
+  const t = useTranslations("triagem.progressBar")
+  const stepLabel = t("step")
+  const ofLabel = t("of")
   const percentage = Math.round((progress.currentBlock / progress.totalBlocks) * 100)
 
   return (
@@ -27,7 +26,13 @@ export function ProgressBar({ progress, className }: ProgressBarProps) {
       aria-valuenow={progress.currentBlock}
       aria-valuemin={0}
       aria-valuemax={progress.totalBlocks}
-      aria-label={`${stepLabel} ${progress.currentBlock} ${ofLabel} ${progress.totalBlocks}: ${progress.currentBlockName}`}
+      aria-label={t("progressAria", {
+        stepLabel,
+        current: progress.currentBlock,
+        ofLabel,
+        total: progress.totalBlocks,
+        blockName: progress.currentBlockName,
+      })}
     >
       <div className="flex items-center justify-between mb-2">
         <span className="text-xs font-medium text-lia-text-secondary">

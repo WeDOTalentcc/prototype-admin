@@ -1115,7 +1115,7 @@
     "mappedByLIA": "Mapeado pela LIA",
     "addedManually": "Adicionado manual",
     "liaWillStartScreening": "LIA iniciará triagem",
-    "screeningCompleted": "Triagem concluída",
+    "screeningCompleted": "Concluídas",
     "pendingDecision": "Decisão pendente",
     "clickToSeeFullAnalysis": "Clique para ver análise completa",
     "respondingNow": "Respondendo agora",
@@ -1530,7 +1530,6 @@
     "retry": "Tentar novamente",
     "screeningTotal": "Total",
     "screeningInProgress": "Em andamento",
-    "screeningCompleted": "Concluídas",
     "screeningAbandoned": "Abandonadas",
     "screeningAvgScore": "Score médio WSI",
     "screeningAvgDuration": "Tempo médio",
@@ -5405,6 +5404,72 @@
         "retentionScore": "Nota de retenção por equipe",
         "proactiveAlerts": "Alertas proativos de rotatividade"
       }
+    }
+  },
+  "triagem": {
+    "container": {
+      "ariaLabel": "Chat de triagem"
+    },
+    "welcomeCard": {
+      "logoAlt": "Logo {name}",
+      "greeting": "Olá, {name}. Eu sou a LIA.",
+      "defaultWelcome": "Vou conduzir sua triagem para esta vaga. A conversa abordará sua experiência e habilidades de forma objetiva.",
+      "estimatedTime": "Tempo estimado:",
+      "minutes": "minutos",
+      "consentText": "Concordo com o tratamento dos meus dados pessoais para fins desta triagem, conforme a",
+      "privacyPolicyLink": "Política de Privacidade",
+      "consentSuffix": "e a Lei Geral de Proteção de Dados (LGPD).",
+      "noChannels": "Esta triagem não tem nenhum canal de contato habilitado. Por favor, peça ao recrutador para revisar a configuração.",
+      "chatStarting": "Iniciando...",
+      "chatStart": "Iniciar Conversa por Chat",
+      "chatStartAria": "Iniciar conversa de triagem por chat",
+      "whatsapp": "Continuar pelo WhatsApp",
+      "whatsappAria": "Continuar a triagem pelo WhatsApp",
+      "phone": "Receber Ligação Automática",
+      "phoneAria": "Solicitar ligação telefônica automática",
+      "voice": "Voz no Navegador",
+      "voiceAria": "Iniciar conversa por voz no navegador",
+      "privacyFooter": "Política de Privacidade",
+      "privacyFooterAria": "Política de privacidade",
+      "workModel": {
+        "remoto": "Remoto",
+        "híbrido": "Híbrido",
+        "presencial": "Presencial"
+      },
+      "salary": {
+        "from": "A partir de {value}",
+        "upTo": "Até {value}"
+      }
+    },
+    "progressBar": {
+      "step": "Etapa",
+      "of": "de",
+      "progressAria": "{stepLabel} {current} {ofLabel} {total}: {blockName}"
+    },
+    "inputBar": {
+      "placeholder": "Digite sua resposta...",
+      "autoplayOn": "Desativar leitura automática",
+      "autoplayOff": "Ativar leitura automática",
+      "autoplayOnTitle": "Leitura automática ativada",
+      "autoplayOffTitle": "Leitura automática desativada",
+      "textareaAria": "Campo de resposta",
+      "sendAria": "Enviar mensagem"
+    },
+    "messageBubble": {
+      "liaMessageAria": "Mensagem da LIA",
+      "myMessageAria": "Sua mensagem",
+      "playAria": "Ouvir mensagem",
+      "pauseAria": "Pausar áudio"
+    },
+    "completionCard": {
+      "title": "Triagem concluída com sucesso!",
+      "thanks": "Obrigada, {name}! Suas respostas foram registradas.",
+      "questionsAnswered": "{count} perguntas respondidas",
+      "minutesSummary": "{count} minutos",
+      "nextStepsLabel": "Próximos passos:",
+      "nextStepsAria": "Próximos passos",
+      "close": "Fechar",
+      "closeAria": "Fechar triagem"
     }
   }
 }
