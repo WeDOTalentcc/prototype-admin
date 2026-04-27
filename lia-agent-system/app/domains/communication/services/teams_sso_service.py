@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 AZURE_CLIENT_ID = os.environ.get("AZURE_CLIENT_ID", "")
 AZURE_CLIENT_SECRET = os.environ.get("AZURE_CLIENT_SECRET", "")
 AZURE_TENANT_ID = os.environ.get("AZURE_TENANT_ID", "")
-PLATFORM_URL = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.com").rstrip("/")
+PLATFORM_URL = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.cc").rstrip("/")
 
 
 class TeamsSSOService:

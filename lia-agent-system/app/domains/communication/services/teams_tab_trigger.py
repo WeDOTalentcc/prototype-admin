@@ -65,7 +65,7 @@ class TeamsTabTriggerEngine:
     Teams message redirecting the recruiter to the full platform.
     """
 
-    PLATFORM_URL_DEFAULT = "https://app.wedotalent.com"
+    PLATFORM_URL_DEFAULT = "https://app.wedotalent.cc"
 
     def __init__(self, platform_url: str | None = None):
         import os

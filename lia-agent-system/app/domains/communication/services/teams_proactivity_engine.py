@@ -385,7 +385,7 @@ class TeamsProactivityEngine:
                     {"type": "Action.Submit", "title": "📊 Ver pipeline", "data": {"message": "Como está a saúde geral do pipeline?"}},
                     {"type": "Action.Submit", "title": "👥 Candidatos aguardando", "data": {"message": "Quais candidatos estão aguardando triagem ou retorno?"}},
                     {"type": "Action.Submit", "title": "⚠️ Vagas críticas", "data": {"message": "Quais vagas estão em estado crítico?"}},
-                    {"type": "Action.OpenUrl", "title": "🔗 Abrir plataforma", "url": "https://app.wedotalent.com"},
+                    {"type": "Action.OpenUrl", "title": "🔗 Abrir plataforma", "url": "https://app.wedotalent.cc"},
                 ]
 
                 card = teams_card_renderer.render_notification_card(

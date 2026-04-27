@@ -56,7 +56,7 @@ class SimpleTeamsBot:
             or "botframework.com"
         )
         token_url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
-        logger.info(f"[Teams] Acquiring token via {token_url}")
+        logger.debug(f"[Teams] Acquiring token via {token_url}")
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -91,7 +91,7 @@ class SimpleTeamsBot:
                 payload_b64 = self._access_token.split(".")[1]
                 payload_b64 += "=" * (4 - len(payload_b64) % 4)
                 claims = _json.loads(base64.b64decode(payload_b64))
-                logger.info(
+                logger.debug(
                     f"[Teams] Token claims: appid={claims.get('appid')} "
                     f"tid={claims.get('tid')} aud={claims.get('aud')} "
                     f"iss={claims.get('iss', '')[:60]}"
@@ -125,19 +125,9 @@ class SimpleTeamsBot:
         
         return None
     
-    # ── Slash command definitions ────────────────────────────────────────────
+    # ── Slash command definitions (module-level constant TEAMS_SLASH_COMMANDS) ─
 
-    _SLASH_COMMANDS = {
-        "/ajuda": "Quais são todas as funcionalidades que você pode me ajudar?",
-        "/help":  "Quais são todas as funcionalidades que você pode me ajudar?",
-        "/buscar": "Busca os melhores candidatos para a vaga mais recente",
-        "/triagem": "Quais candidatos ainda precisam de triagem WSI?",
-        "/relatorio": "Gera o relatório semanal de recrutamento",
-        "/pipeline": "Como está a saúde geral do pipeline de recrutamento?",
-        "/vagas": "Quais são as vagas ativas e seus status?",
-        "/candidatos": "Quais candidatos estão aguardando triagem ou retorno?",
-        "/resumo": "Me dê um resumo das atividades e alertas de hoje",
-    }
+    _SLASH_COMMANDS = TEAMS_SLASH_COMMANDS
 
     def _parse_slash_command(self, text: str) -> str:
         """Convert slash command to a natural language prompt."""
@@ -302,7 +292,7 @@ class SimpleTeamsBot:
                     )
                     return False
                 
-                logger.info("Message sent successfully to Teams")
+                logger.debug("Message sent successfully to Teams")
                 return True
                 
         except Exception as e:
@@ -368,7 +358,7 @@ class SimpleTeamsBot:
                     )
                     return False
                 
-                logger.info("Adaptive card sent successfully to Teams")
+                logger.debug("Adaptive card sent successfully to Teams")
                 return True
                 
         except Exception as e:

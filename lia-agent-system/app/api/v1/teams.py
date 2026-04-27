@@ -1255,7 +1255,7 @@ async def teams_sso_callback(
             <html>
             <body style="font-family:sans-serif;text-align:center;padding:40px">
               <h1>✅ Autenticado com sucesso!</h1>
-              <p>Olá, <strong>{profile.get("display_name","")}</strong>!</p>
+              <p>Olá, <strong>{html.escape(profile.get("display_name",""))}</strong>!</p>
               <p>Você pode fechar esta janela e voltar ao Teams.</p>
               <script>setTimeout(() => window.close(), 3000);</script>
             </body>

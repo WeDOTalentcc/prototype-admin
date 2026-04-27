@@ -17,7 +17,7 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-PLATFORM_URL = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.com").rstrip("/")
+PLATFORM_URL = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.cc").rstrip("/")
 
 
 class TeamsCalendarService:
