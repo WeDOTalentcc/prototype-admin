@@ -16,6 +16,16 @@ const PREVIEWS = [
     title: "Email de convite",
     description: "Renderizacao do email de convite para triagem por voz, dentro de uma caixa de email simulada.",
   },
+  {
+    href: "preview/email-reminder",
+    title: "Email de lembrete",
+    description: "Lembrete enviado quando o candidato ainda nao completou a triagem, na mesma caixa de email simulada.",
+  },
+  {
+    href: "preview/whatsapp",
+    title: "Mensagem de WhatsApp",
+    description: "Aviso de triagem recebida em uma janela de conversa do WhatsApp, com balao verde e cabecalho do contato.",
+  },
 ] as const
 
 export default async function TriagemPreviewIndex({
