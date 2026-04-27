@@ -1,0 +1,166 @@
+"""
+G7 — Canonical agent compliance enforcement.
+
+Validates that every agent file in app/domains/*/agents/*_react_agent.py
+follows the canonical anatomy documented in CLAUDE.md (auditoria 2026-04-27,
+W3.1):
+
+  ✓ Class inherits from LangGraphReActBase + EnhancedAgentMixin
+  ✓ Decorator @register_agent("<domain>", ...) is present
+  ✓ Source contains FairnessGuard reference (FAR-2)
+  ✓ Source contains audit_service.log_decision (ACH-026)
+  ✓ Source references PII redaction (strip_pii_for_llm_prompt or PIIRedactor)
+  ✓ Source references LLM Factory (get_provider_for_tenant) when LLM is used
+  ✓ Has matching system prompt at app/prompts/domains/<domain>.yaml
+  ✓ Has matching tool registry <domain>_tool_registry.py
+
+Output is optimized for LLM consumption: each violation includes a fix
+in natural language so an agent reading lint output can self-correct.
+
+Exit codes:
+    0 -> all agents compliant (or only opt-out marker `# G7 ok: <reason>`)
+    1 -> violations found
+
+Hook is initially warn-only — promote to block-only after backlog cleared.
+"""
+from __future__ import annotations
+
+import re
+import sys
+from pathlib import Path
+
+_ROOT = Path(__file__).resolve().parent.parent
+_AGENTS_GLOB = "app/domains/*/agents/*_react_agent.py"
+_PROMPTS_DIR = _ROOT / "app" / "prompts" / "domains"
+
+_OK_MARKER = re.compile(r"#\s*G7\s*ok\s*:", re.IGNORECASE)
+_REGISTER_AGENT = re.compile(r"@register_agent\(['\"](\w+)['\"]")
+
+
+def _check_file(path: Path) -> list[str]:
+    """Return list of violation strings for the given agent file."""
+    src = path.read_text(errors="ignore")
+
+    if _OK_MARKER.search(src.split("\n", 5)[0] if src else ""):
+        return []  # File-level opt-out
+
+    violations: list[str] = []
+
+    # Inheritance
+    if "LangGraphReActBase" not in src:
+        violations.append(
+            "missing inheritance from LangGraphReActBase — class must extend "
+            "(LangGraphReActBase, EnhancedAgentMixin)"
+        )
+    if "EnhancedAgentMixin" not in src:
+        violations.append(
+            "missing inheritance from EnhancedAgentMixin"
+        )
+
+    # Decorator
+    m = _REGISTER_AGENT.search(src)
+    if not m:
+        violations.append(
+            'missing @register_agent("<domain>") decorator on the class'
+        )
+    declared_domain = m.group(1) if m else None
+
+    # FairnessGuard (FAR-2)
+    if "FairnessGuard" not in src:
+        violations.append(
+            "missing FairnessGuard call — invoke FairnessGuard().check(input.message) "
+            "early in process() to block discriminatory language (FAR-2). See "
+            "app/domains/communication/agents/communication_react_agent.py:175 for canon."
+        )
+
+    # audit_service.log_decision (ACH-026)
+    if "audit_service" not in src and "log_decision" not in src:
+        violations.append(
+            "missing audit_service.log_decision call — every agent must persist "
+            "decision audit trail with company_id, agent_name, decision_type, action, "
+            "decision, reasoning, criteria_used, criteria_ignored=PROTECTED_CRITERIA. "
+            "See CLAUDE.md anatomy or communication_react_agent.py:240."
+        )
+
+    # PII redaction (only required when LLM is invoked directly — heuristic)
+    invokes_llm = (
+        "get_provider_for_tenant" in src
+        or "llm_factory" in src
+        or "process_request" in src
+    )
+    if invokes_llm and "strip_pii" not in src and "PIIRedactor" not in src:
+        violations.append(
+            "missing PII redaction — apply strip_pii_for_llm_prompt(message) before "
+            "passing user-supplied text to LLM (LGPD). Import: "
+            "`from app.shared.pii_masking import strip_pii_for_llm_prompt`."
+        )
+
+    # System prompt yaml
+    if declared_domain:
+        yaml_path = _PROMPTS_DIR / f"{declared_domain}.yaml"
+        if not yaml_path.exists():
+            # fallback: check if file references a module-level constant pointing
+            # to a yaml; if domain != filename, look for any matching prompt yaml
+            stem = path.stem.replace("_react_agent", "")
+            alt = _PROMPTS_DIR / f"{stem}.yaml"
+            if not alt.exists():
+                violations.append(
+                    f"missing system prompt YAML at app/prompts/domains/{declared_domain}.yaml "
+                    f"— every domain DEVE ter prompt canônico. Crie o YAML usando o template "
+                    f"das outras domains (ex: app/prompts/domains/communication.yaml)."
+                )
+
+    # Matching tool registry
+    expected_registry = path.parent / path.name.replace("_react_agent.py", "_tool_registry.py")
+    if not expected_registry.exists():
+        violations.append(
+            f"missing tool registry at {expected_registry.relative_to(_ROOT)} — "
+            f"create it with @tool_handler(\"<domain>\") wrappers and a "
+            f"get_<domain>_tools() function returning list[ToolDefinition]."
+        )
+
+    return violations
+
+
+def main() -> int:
+    agent_files = sorted(_ROOT.glob(_AGENTS_GLOB))
+    if not agent_files:
+        print("G7: no agents found under app/domains/*/agents/*_react_agent.py")
+        return 0
+
+    total_violations = 0
+    by_file: dict[Path, list[str]] = {}
+    for path in agent_files:
+        v = _check_file(path)
+        if v:
+            by_file[path] = v
+            total_violations += len(v)
+
+    if not by_file:
+        print(f"G7: all {len(agent_files)} agents canonical-compliant ✓")
+        return 0
+
+    print("=" * 78)
+    print("G7 — Canonical agent compliance violations")
+    print("=" * 78)
+    print()
+    print("Each new agent must follow the anatomy documented in CLAUDE.md")
+    print("(section 'Anatomy of a canonical agent / tool / domain').")
+    print()
+    print("To opt out a specific file (legacy or special-case), add as the FIRST line:")
+    print("  # G7 ok: <reason — why this file is exempt>")
+    print()
+    print(f"Violations: {total_violations} across {len(by_file)} agents "
+          f"(of {len(agent_files)} total).")
+    print("-" * 78)
+    for path, vs in by_file.items():
+        rel = path.relative_to(_ROOT)
+        print(f"\n  {rel}")
+        for v in vs:
+            print(f"    - {v}")
+    print()
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -96,4 +96,11 @@ repos:
         files: ^(app|libs)/.*\\.py$
         pass_filenames: false
         always_run: false
+      - id: agent-compliance
+        name: "G7: Canonical agent compliance (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_agent_compliance.py 2>&1 || true"
+        files: ^app/domains/.*/agents/.*_react_agent\.py$
+        pass_filenames: false
+        always_run: false
 
