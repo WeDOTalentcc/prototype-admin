@@ -33,8 +33,10 @@ async def check_rail_a_capability(
         dict  — WS response payload to send directly (caller must `continue`)
         None  — normal processing should proceed
     """
-    intent_hint: str | None = context.get("intent_hint")
-    source: str = context.get("source", "")
+    # PR-A sends metadata nested: context = { metadata: { intent_hint, source, ... } }
+    _meta: dict = context.get("metadata") or {}
+    intent_hint: str | None = _meta.get("intent_hint") or context.get("intent_hint")
+    source: str = _meta.get("source") or context.get("source", "")
 
     if not intent_hint or source != "rail_a":
         return None
