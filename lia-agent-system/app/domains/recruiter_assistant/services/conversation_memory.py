@@ -381,7 +381,7 @@ class ConversationMemory:
         # não preencheu, mantendo o billing por empresa quando company_id é
         # fornecido externamente.
         _resolved_tracking = dict(tracking_context or {})
-        if "user_id" not in _resolved_tracking and getattr(conversation, "user_id", None):
+        if "user_id" not in _resolved_tracking and conversation.user_id:
             _resolved_tracking["user_id"] = conversation.user_id
         summary_text = await self._generate_summary(
             messages, tracking_context=_resolved_tracking or None,

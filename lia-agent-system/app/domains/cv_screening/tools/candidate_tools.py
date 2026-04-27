@@ -332,7 +332,7 @@ async def _generate_rediscovery_embedding(
             except Exception:
                 pass
 
-        company_id = str(getattr(candidate, "company_id", None)) if candidate else None
+        company_id = str(candidate.company_id) if candidate else None
 
         candidate_embedding_id = str(_uuid.uuid5(
             _uuid.NAMESPACE_DNS,
@@ -433,7 +433,7 @@ async def reject_candidate(
                                 candidate_id=candidate_id,
                                 job_id=job_id,
                                 reason=reason,
-                                company_id=str(candidate.company_id) if getattr(candidate, 'company_id', None) else None,
+                                company_id=str(candidate.company_id) if candidate.company_id else None,
                             )
                             logger.info("Dispatched rejection feedback for candidate %s", candidate_id)
                         except Exception as fb_exc:

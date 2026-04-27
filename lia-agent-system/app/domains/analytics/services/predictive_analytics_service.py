@@ -544,7 +544,7 @@ class PredictiveAnalyticsService:
                     "wsi_score": getattr(candidate, 'wsi_score', None),
                     "experience_years": getattr(candidate, 'experience_years', 0),
                     "skills": getattr(candidate, 'skills', []) or [],
-                    "status": getattr(candidate, 'status', 'active'),
+                    "status": (candidate.status or 'active'),
                 }
         except Exception as e:
             logger.warning(f"Could not fetch candidate {candidate_id}: {e}")

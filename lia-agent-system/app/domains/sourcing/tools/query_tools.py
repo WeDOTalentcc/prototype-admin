@@ -345,7 +345,7 @@ async def get_candidate_details(
                 "linkedin": getattr(candidate, 'linkedin_url', None),
                 "location": getattr(candidate, 'location', None),
                 "seniority": getattr(candidate, 'seniority_level', None),
-                "status": getattr(candidate, 'status', None),
+                "status": candidate.status,
                 "lia_score": getattr(candidate, 'lia_score', None),
                 "wsi_score": getattr(candidate, 'wsi_score', None),
                 "fit_score": getattr(candidate, 'fit_score', None),

@@ -423,7 +423,7 @@ async def close_job(
                 
                 try:
                     from app.domains.job_management.services.outcome_tracker import outcome_tracker
-                    company_id = getattr(job, 'company_id', 'demo_company')
+                    company_id = (job.company_id or 'demo_company')
                     await outcome_tracker.record_job_close(
                         job_id=job_id,
                         company_id=company_id,

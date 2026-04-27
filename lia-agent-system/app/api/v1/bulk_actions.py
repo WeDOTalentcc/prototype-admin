@@ -941,7 +941,7 @@ async def bulk_delete_candidates(
                     ))
                     continue
 
-                previous_status = getattr(candidate, "status", None)
+                previous_status = candidate.status
                 if request.permanent:
                     await repo.delete_candidate(candidate)
                 else:

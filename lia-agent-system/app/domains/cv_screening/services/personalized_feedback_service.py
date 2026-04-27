@@ -1242,7 +1242,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
 
             try:
                 await audit_service.log_decision(
-                    company_id=getattr(record, "company_id", None),
+                    company_id=record.company_id,
                     agent_name="personalized_feedback",
                     decision_type="send_message",
                     action="feedback_sent",
@@ -1255,7 +1255,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                         f"Send result: {send_result.get('message_id', 'N/A') if isinstance(send_result, dict) else 'N/A'}",
                     ],
                     criteria_used=["feedback_status", "channel_availability", "approval_status"],
-                    candidate_id=getattr(record, "candidate_id", None),
+                    candidate_id=record.candidate_id,
                     job_vacancy_id=getattr(record, "job_vacancy_id", None),
                     human_review_required=False,
                 )

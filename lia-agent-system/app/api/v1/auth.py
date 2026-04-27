@@ -133,7 +133,7 @@ async def login(
             detail="User account is inactive"
         )
 
-    _user_company_id = getattr(user, "company_id", None)
+    _user_company_id = user.company_id
     _token_company_id = normalize_demo_company_id(
         str(_user_company_id) if _user_company_id is not None else None,
         context="auth.login",
@@ -148,7 +148,7 @@ async def login(
     logger.info(f"User logged in: {user.id}")
 
     try:
-        _company = getattr(user, "company_id", None)
+        _company = user.company_id
         await audit_svc.log_decision(
             company_id=str(_company) if _company else None,
             agent_name="auth_module",
@@ -221,7 +221,7 @@ async def refresh_token(
             detail="User account is inactive"
         )
 
-    _user_company_id = getattr(user, "company_id", None)
+    _user_company_id = user.company_id
     _token_company_id = normalize_demo_company_id(
         str(_user_company_id) if _user_company_id is not None else None,
         context="auth.refresh",
