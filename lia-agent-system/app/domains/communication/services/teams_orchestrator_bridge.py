@@ -331,6 +331,92 @@ class TeamsOrchestratorBridge:
             return {"success": False, "message": "Erro ao processar o documento."}
 
 
+    async def process_voice_attachment(
+        self,
+        activity: dict[str, Any],
+        attachment: dict[str, Any],
+        db: "AsyncSession | None" = None,
+    ) -> dict[str, Any]:
+        """W9.2: Transcribe audio/video via Gemini STT and route transcript through orchestrator."""
+        import httpx
+
+        _MAX_AUDIO_BYTES = 20 * 1024 * 1024  # 20 MB Gemini inline limit
+
+        content_url = attachment.get("contentUrl", "")
+        content_type = (attachment.get("contentType") or "audio/mpeg").lower()
+        filename = attachment.get("name", "audio_file")
+
+        try:
+            from app.domains.communication.services.teams_simple import simple_teams_bot
+            token = await simple_teams_bot.get_access_token()
+
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    content_url,
+                    headers={"Authorization": f"Bearer {token}"},
+                    timeout=60.0,
+                )
+                audio_bytes = resp.content
+
+            if not audio_bytes:
+                return {"success": False, "message": "Arquivo de audio vazio ou inacessivel."}
+
+            if len(audio_bytes) > _MAX_AUDIO_BYTES:
+                size_mb = len(audio_bytes) // (1024 * 1024)
+                return {
+                    "success": True,
+                    "message": (
+                        f"Arquivo {filename} ({size_mb} MB) e grande demais para transcricao automatica (limite: 20 MB). "
+                        "Para arquivos maiores, use a plataforma web ou envie um trecho menor."
+                    ),
+                }
+
+            try:
+                from google.genai import types as _gtypes
+                from app.domains.ai.services.llm import llm_service
+
+                prompt = (
+                    "Transcreva este audio em portugues com precisao. "
+                    "Forneca apenas a transcricao, sem introducao ou explicacoes. "
+                    "Se for uma mensagem de voz de candidato ou recrutador em contexto de RH, "
+                    "mantenha o conteudo original fiel."
+                )
+                contents = [
+                    _gtypes.Part.from_bytes(data=audio_bytes, mime_type=content_type),
+                    prompt,
+                ]
+                response = await llm_service.generate_native_gemini(
+                    contents=contents,
+                    model="gemini-2.5-flash",
+                )
+                transcription = response.text.strip() if (hasattr(response, "text") and response.text) else ""
+
+                if transcription:
+                    fake_activity = {**activity, "text": f"[Audio: {filename}]\n\n{transcription}"}
+                    return await self.process_message(fake_activity, db=db)
+                else:
+                    return {
+                        "success": True,
+                        "message": f"Audio recebido: {filename}. Nao foi possivel transcrever o conteudo.",
+                    }
+
+            except Exception as stt_err:
+                logger.warning("[TeamsOrchestratorBridge] STT error for %s: %s", filename, stt_err)
+                size_kb = len(audio_bytes) // 1024
+                return {
+                    "success": True,
+                    "message": (
+                        f"Audio recebido: {filename} ({size_kb} KB). "
+                        "A transcricao automatica nao esta disponivel no momento. "
+                        "Envie a mensagem em texto para continuar."
+                    ),
+                }
+
+        except Exception as e:
+            logger.error("[TeamsOrchestratorBridge] process_voice_attachment error: %s", e)
+            return {"success": False, "message": "Erro ao processar o audio. Tente novamente."}
+
+
     async def _resolve_company_id(
         self,
         teams_user_id: str,

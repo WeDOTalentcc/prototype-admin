@@ -766,15 +766,9 @@ async def receive_teams_message(
                             activity, att, db=db
                         )
                     elif ct.startswith("video/") or ct.startswith("audio/"):
-                        att_result = {
-                            "success": False,
-                            "message": (
-                                "📹 Arquivo de vídeo/áudio recebido. "
-                                "O processamento de áudio (transcrição automática) "
-                                "estará disponível em breve. "
-                                "Por enquanto, envie o CV do candidato em PDF."
-                            ),
-                        }
+                        att_result = await teams_orchestrator_bridge.process_voice_attachment(
+                            activity, att, db=db
+                        )
                     else:
                         att_result = await teams_orchestrator_bridge.process_general_document(
                             activity, att, db=db
