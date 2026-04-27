@@ -146,10 +146,6 @@ class Orchestrator:
 
             # Delegação canônica para context_type_override service (Sprint II.4, ADR-019).
             # Mantém log com mesmo formato do V1 para compat com observabilidade existente.
-            #
-            # PR-A: rail_a_hint override é avaliado dentro do CascadedRouter (Tier 0.0,
-            # canonical-fix: uma fonte da verdade). context_type override permanece aqui
-            # para preservar precedência V1 (context_type > CascadedRouter tiers).
             from app.orchestrator.services.context_type_override import try_override_route
             route = try_override_route(ctx)
             if route is not None:

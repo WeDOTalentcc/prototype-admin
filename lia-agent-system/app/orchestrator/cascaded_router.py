@@ -182,28 +182,6 @@ class CascadedRouter:
 
         _tracer = get_tracer()
 
-        # PR-A Tier 0.0 — Rail A hint override (FE-H03 do audit enterprise).
-        # Cobre TODOS os transports: WS via MainOrchestrator + SSE/REST que
-        # chamam CascadedRouter direto. Curto-circuita os tiers 0-4 quando
-        # FE forneceu metadata estruturada com domain_hint válido.
-        # Skill canônica: harness-engineering [guide computacional].
-        if context:
-            try:
-                from app.orchestrator.services.rail_a_hint_override import try_hint_route
-                _hint_route = try_hint_route(context)
-                if _hint_route is not None:
-                    logger.info(
-                        "[CascadedRouter] rail_a_hint override: card=%s → domain=%s intent=%s",
-                        (context.get("metadata") or {}).get("card_id", "?"),
-                        _hint_route.domain_id,
-                        (_hint_route.intent_details or {}).get("raw_intent", "?"),
-                    )
-                    if _hit_counter:
-                        _hit_counter.labels(tier="rail_a_hint").inc()
-                    return _hint_route
-            except Exception as _hint_exc:
-                logger.debug("[CascadedRouter] rail_a_hint check skipped: %s", _hint_exc)
-
         # Tier 0 — Resolver pronomes/referências via WorkingMemory antes de rotear
         if session_id:
             async with _tracer.start_span("router.tier0_memory_resolve", attributes={

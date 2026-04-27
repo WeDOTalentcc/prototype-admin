@@ -1,15 +1,5 @@
-"use client";
+"use client"
 
-import {
-  type BackgroundTaskEvent,
-  type HITLPending,
-  type LiaChatMessage,
-  type PanelUpdateEvent,
-  type TransportMode,
-  formatMessageTime,
-} from "@/hooks/chat/lia-chat-connection-types";
-import type { FloatMessage } from "@/hooks/chat/use-float-conversation";
-import { useLiaChatConnection } from "@/hooks/chat/use-lia-chat-connection";
 import React, {
   createContext,
   useContext,
@@ -18,20 +8,30 @@ import React, {
   useEffect,
   useMemo,
   useRef,
-  type ReactNode,
-} from "react";
+  ReactNode,
+} from "react"
+import type { FloatMessage } from "@/hooks/chat/use-float-conversation"
+import { useLiaChatConnection } from "@/hooks/chat/use-lia-chat-connection"
+import {
+  formatMessageTime,
+  type LiaChatMessage,
+  type HITLPending,
+  type PanelUpdateEvent,
+  type BackgroundTaskEvent,
+  type TransportMode,
+} from "@/hooks/chat/lia-chat-connection-types"
 
 export interface SplitViewState {
-  active: boolean;
-  page: string | null;
-  conversationId: string | null;
+  active: boolean
+  page: string | null
+  conversationId: string | null
 }
 
 export interface EntityContext {
-  type: "candidate" | "job" | null;
-  id?: string | number;
-  name?: string;
-  meta?: Record<string, unknown>;
+  type: "candidate" | "job" | null
+  id?: string | number
+  name?: string
+  meta?: Record<string, unknown>
 }
 
 export type DynamicPanelType =
@@ -42,14 +42,14 @@ export type DynamicPanelType =
   | "scheduling"
   | "agent_creation_preview"
   | "agent_details"
-  | "agent_metrics";
+  | "agent_metrics"
 
 export interface DynamicPanelData {
-  panelType: DynamicPanelType;
-  data: Record<string, unknown>;
-  title?: string;
-  stage?: string | null;
-  requires_approval?: boolean;
+  panelType: DynamicPanelType
+  data: Record<string, unknown>
+  title?: string
+  stage?: string | null
+  requires_approval?: boolean
 }
 
 export type ChatContextType =
@@ -59,131 +59,97 @@ export type ChatContextType =
   | "kanban_chat"
   | "candidates_chat"
   | "agent_studio"
-  | "settings_config";
+  | "settings_config"
 
 interface LiaFloatState {
-  isOpen: boolean;
-  isExpanded: boolean;
-  conversationId: string | null;
-  splitView: SplitViewState;
-  contextPage: string | null;
-  entityContext: EntityContext | null;
-  dynamicPanel: DynamicPanelData | null;
-  hasInlineChat: boolean;
+  isOpen: boolean
+  isExpanded: boolean
+  conversationId: string | null
+  splitView: SplitViewState
+  contextPage: string | null
+  entityContext: EntityContext | null
+  dynamicPanel: DynamicPanelData | null
+  hasInlineChat: boolean
 }
 
 interface LiaFloatContextType extends LiaFloatState {
-  open: (conversationId?: string) => void;
-  close: () => void;
-  toggle: () => void;
-  expand: () => void;
-  collapse: () => void;
-  closeAll: () => void;
-  navigateToChat: (conversationId?: string) => void;
-  setContextPage: (page: string | null) => void;
-  setEntityContext: (ctx: EntityContext | null) => void;
-  openWithEntity: (entity: EntityContext) => void;
-  openSplitView: (page: string, conversationId?: string) => void;
-  closeSplitView: () => void;
-  setHasInlineChat: (active: boolean) => void;
-  openDynamicPanel: (panel: DynamicPanelData) => void;
-  closeDynamicPanel: () => void;
-  updateDynamicPanelData: (data: Record<string, unknown>) => void;
+  open: (conversationId?: string) => void
+  close: () => void
+  toggle: () => void
+  expand: () => void
+  collapse: () => void
+  closeAll: () => void
+  navigateToChat: (conversationId?: string) => void
+  setContextPage: (page: string | null) => void
+  setEntityContext: (ctx: EntityContext | null) => void
+  openWithEntity: (entity: EntityContext) => void
+  openSplitView: (page: string, conversationId?: string) => void
+  closeSplitView: () => void
+  setHasInlineChat: (active: boolean) => void
+  openDynamicPanel: (panel: DynamicPanelData) => void
+  closeDynamicPanel: () => void
+  updateDynamicPanelData: (data: Record<string, unknown>) => void
 
-  sharedMessages: FloatMessage[];
-  addSharedMessage: (msg: FloatMessage) => void;
-  setSharedMessages: React.Dispatch<React.SetStateAction<FloatMessage[]>>;
-  sharedConversationId: string | null;
-  setSharedConversationId: (id: string | null) => void;
+  sharedMessages: FloatMessage[]
+  addSharedMessage: (msg: FloatMessage) => void
+  setSharedMessages: React.Dispatch<React.SetStateAction<FloatMessage[]>>
+  sharedConversationId: string | null
+  setSharedConversationId: (id: string | null) => void
 
-  chatMessages: LiaChatMessage[];
-  addChatMessage: (msg: LiaChatMessage) => void;
-  setChatMessages: React.Dispatch<React.SetStateAction<LiaChatMessage[]>>;
-  chatConversationId: string | null;
-  setChatConversationId: (id: string | null) => void;
-  chatContextType: ChatContextType;
-  setChatContextType: (type: ChatContextType) => void;
-  switchChatContext: (
-    newType: ChatContextType,
-    options?: { conversationId?: string | null; continuePrevious?: boolean },
-  ) => string | null;
-  previousConversationId: string | null;
+  chatMessages: LiaChatMessage[]
+  addChatMessage: (msg: LiaChatMessage) => void
+  setChatMessages: React.Dispatch<React.SetStateAction<LiaChatMessage[]>>
+  chatConversationId: string | null
+  setChatConversationId: (id: string | null) => void
+  chatContextType: ChatContextType
+  setChatContextType: (type: ChatContextType) => void
+  switchChatContext: (newType: ChatContextType, options?: { conversationId?: string | null; continuePrevious?: boolean }) => string | null
+  previousConversationId: string | null
 
-  sendChatMessage: (
-    content: string,
-    domain?: string,
-    scope?: string,
-    /** PR-A: metadata estruturada de origem do command (Rail A, slash, etc). */
-    metadata?: Record<string, unknown>,
-  ) => Promise<void>;
+  sendChatMessage: (content: string, domain?: string, scope?: string) => Promise<void>
   sendOrchestratedMessage: (
     message: string,
-    apiCall: (
-      conversationId: string | null,
-    ) => Promise<{
-      content: string;
-      conversation_id?: string | null;
-      [key: string]: unknown;
-    }>,
+    apiCall: (conversationId: string | null) => Promise<{ content: string; conversation_id?: string | null; [key: string]: unknown }>,
     options?: {
-      extractResponseMetadata?: (response: {
-        content: string;
-        conversation_id?: string | null;
-        [key: string]: unknown;
-      }) => Record<string, unknown>;
-      conversationId?: string | null;
+      extractResponseMetadata?: (response: { content: string; conversation_id?: string | null; [key: string]: unknown }) => Record<string, unknown>
+      conversationId?: string | null
     },
-  ) => Promise<{
-    content: string;
-    conversation_id?: string | null;
-    [key: string]: unknown;
-  }>;
-  initChatConversation: (firstMessage: string) => Promise<string | null>;
-  loadChatHistory: (id: string) => Promise<LiaChatMessage[]>;
-  sendApproval: (approved: boolean) => void;
-  chatIsConnected: boolean;
-  chatTransportMode: TransportMode;
-  chatIsReconnecting: boolean;
-  chatIsStreaming: boolean;
-  chatStreamingContent: string;
-  chatHitlPending: HITLPending | null;
-  chatBackgroundTasks: BackgroundTaskEvent[];
-  clearBackgroundTask: (taskId: string) => void;
-  resetBackgroundTasks: () => void;
+  ) => Promise<{ content: string; conversation_id?: string | null; [key: string]: unknown }>
+  initChatConversation: (firstMessage: string) => Promise<string | null>
+  loadChatHistory: (id: string) => Promise<LiaChatMessage[]>
+  sendApproval: (approved: boolean) => void
+  chatIsConnected: boolean
+  chatTransportMode: TransportMode
+  chatIsReconnecting: boolean
+  chatIsStreaming: boolean
+  chatStreamingContent: string
+  chatHitlPending: HITLPending | null
+  chatBackgroundTasks: BackgroundTaskEvent[]
+  clearBackgroundTask: (taskId: string) => void
+  resetBackgroundTasks: () => void
   /** Stable WS session id used by the chat socket — exposed so callers
    *  that POST a server-side background job (e.g. JD upload) can forward
    *  it as `?session_id=` and have the worker publish updates back. */
-  chatSessionId: string;
-  seedBackgroundTask: (event: BackgroundTaskEvent) => void;
-  chatIsCreating: boolean;
-  chatIsFetchingHistory: boolean;
-  chatIsThinking: boolean;
-  chatThinkingSteps: string[];
-  chatPlanProgressSteps: Array<{
-    task_id: string;
-    action_id: string;
-    domain_id: string;
-    status: string;
-  }>;
-  chatActivePlanId: string | null;
-  chatFairnessWarnings: string[];
-  dismissFairnessWarnings: () => void;
-  connectChat: () => void;
-  disconnectChat: () => void;
+  chatSessionId: string
+  seedBackgroundTask: (event: BackgroundTaskEvent) => void
+  chatIsCreating: boolean
+  chatIsFetchingHistory: boolean
+  chatIsThinking: boolean
+  chatThinkingSteps: string[]
+  chatPlanProgressSteps: Array<{ task_id: string; action_id: string; domain_id: string; status: string }>
+  chatActivePlanId: string | null
+  chatFairnessWarnings: string[]
+  dismissFairnessWarnings: () => void
+  connectChat: () => void
+  disconnectChat: () => void
 }
 
-const LiaFloatContext = createContext<LiaFloatContextType | undefined>(
-  undefined,
-);
+const LiaFloatContext = createContext<LiaFloatContextType | undefined>(undefined)
 
-const INITIAL_SPLIT_VIEW: SplitViewState = {
-  active: false,
-  page: null,
-  conversationId: null,
-};
+const INITIAL_SPLIT_VIEW: SplitViewState = { active: false, page: null, conversationId: null }
 
 function generateSessionId(): string {
-  return `lia-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  return `lia-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }
 
 export function LiaFloatProvider({ children }: { children: ReactNode }) {
@@ -196,110 +162,94 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     entityContext: null,
     dynamicPanel: null,
     hasInlineChat: false,
-  });
+  })
 
-  const [sharedConversationId, setSharedConversationId] = useState<
-    string | null
-  >(null);
+  const [sharedConversationId, setSharedConversationId] = useState<string | null>(null)
 
-  const [chatMessages, setChatMessages] = useState<LiaChatMessage[]>([]);
-  const sharedMessages = chatMessages;
-  const setSharedMessages = setChatMessages;
+  const [chatMessages, setChatMessages] = useState<LiaChatMessage[]>([])
+  const sharedMessages = chatMessages
+  const setSharedMessages = setChatMessages
   const addSharedMessage = useCallback((msg: FloatMessage) => {
-    setChatMessages((prev) => [...prev, msg]);
-  }, []);
+    setChatMessages(prev => [...prev, msg])
+  }, [])
 
-  const [chatContextType, setChatContextType] =
-    useState<ChatContextType>("general");
-  const chatContextTypeRef = useRef<ChatContextType>("general");
-  const [previousConversationId, setPreviousConversationId] = useState<
-    string | null
-  >(null);
-  const contextConversationMapRef = useRef<Map<ChatContextType, string>>(
-    new Map(),
-  );
+  const [chatContextType, setChatContextType] = useState<ChatContextType>("general")
+  const chatContextTypeRef = useRef<ChatContextType>("general")
+  const [previousConversationId, setPreviousConversationId] = useState<string | null>(null)
+  const contextConversationMapRef = useRef<Map<ChatContextType, string>>(new Map())
 
-  const [sessionId] = useState(() => generateSessionId());
+  const [sessionId] = useState(() => generateSessionId())
 
-  const handleMessageComplete = useCallback(
-    (
-      content: string,
-      executionPlan?: Record<string, unknown>,
-      extras?: {
-        options?: Array<{ label: string; value: string }>;
-        isClarification?: boolean;
-      },
-    ) => {
-      const msg: LiaChatMessage = {
-        id: `lia-${Date.now()}`,
-        sender: "lia" as const,
-        content,
-        timestamp: formatMessageTime(),
-      };
-      if (executionPlan) {
-        msg.executionPlan = executionPlan;
-      }
-      if (extras?.options && extras.options.length > 0) {
-        msg.options = extras.options;
-      }
-      if (extras?.isClarification) {
-        msg.isClarification = true;
-      }
-      setChatMessages((prev) => [...prev, msg]);
-    },
-    [],
-  );
+  const handleMessageComplete = useCallback((
+    content: string,
+    executionPlan?: Record<string, unknown>,
+    extras?: { options?: Array<{ label: string; value: string }>; isClarification?: boolean },
+  ) => {
+    const msg: LiaChatMessage = {
+      id: `lia-${Date.now()}`,
+      sender: "lia" as const,
+      content,
+      timestamp: formatMessageTime(),
+    }
+    if (executionPlan) {
+      msg.executionPlan = executionPlan
+    }
+    if (extras?.options && extras.options.length > 0) {
+      msg.options = extras.options
+    }
+    if (extras?.isClarification) {
+      msg.isClarification = true
+    }
+    setChatMessages(prev => [...prev, msg])
+  }, [])
 
   const handlePanelUpdate = useCallback((event: PanelUpdateEvent) => {
     if (event.action === "open" || event.action === "update") {
-      setState((prev) => ({
+      setState(prev => ({
         ...prev,
         dynamicPanel: {
           panelType: event.panel_type as DynamicPanelType,
           data: event.panel_data,
           title: event.panel_title,
         },
-      }));
+      }))
     } else if (event.action === "close") {
-      setState((prev) => ({ ...prev, dynamicPanel: null }));
+      setState(prev => ({ ...prev, dynamicPanel: null }))
     }
-  }, []);
+  }, [])
 
   const connection = useLiaChatConnection({
     sessionId,
     onMessageComplete: handleMessageComplete,
     onPanelUpdate: handlePanelUpdate,
-  });
+  })
 
-  const chatConversationId = connection.conversationId;
-  const chatConversationIdRef = useRef(chatConversationId);
-  chatContextTypeRef.current = chatContextType;
-  chatConversationIdRef.current = chatConversationId;
-  const setChatConversationId = useCallback(
-    (id: string | null) => {
-      chatConversationIdRef.current = id;
-      connection.setConversationId(id);
-    },
-    [connection],
-  );
+  const chatConversationId = connection.conversationId
+  const chatConversationIdRef = useRef(chatConversationId)
+  chatContextTypeRef.current = chatContextType
+  chatConversationIdRef.current = chatConversationId
+  const setChatConversationId = useCallback((id: string | null) => {
+    chatConversationIdRef.current = id
+    connection.setConversationId(id)
+  }, [connection])
 
   const addChatMessage = useCallback((msg: LiaChatMessage) => {
-    setChatMessages((prev) => [...prev, msg]);
-  }, []);
+    setChatMessages(prev => [...prev, msg])
+  }, [])
 
   // Bidirectional sync (Task #712): UI saves in any settings hub broadcast
   // `lia:settings-updated`. We absorb that into the chat as a silent system
   // note so LIA's next turn knows the user just changed something via UI.
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined") return
     const onUpdated = (e: Event) => {
       const detail = ((e as CustomEvent).detail || {}) as {
-        actionId?: string;
-        section?: string;
-        url?: string;
-        method?: string;
-        ts?: number;
-      };
+        actionId?: string
+        section?: string
+        url?: string
+        method?: string
+        ts?: number
+      }
       const note: LiaChatMessage = {
         id: `sys-settings-${detail.ts || Date.now()}`,
         sender: "lia",
@@ -312,404 +262,294 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
           section: detail.section,
           silent: true,
         },
-      };
-      setChatMessages((prev) => [...prev, note]);
-    };
-    window.addEventListener("lia:settings-updated", onUpdated);
-    return () => window.removeEventListener("lia:settings-updated", onUpdated);
-  }, []);
-
-  const switchChatContext = useCallback(
-    (
-      newType: ChatContextType,
-      options?: { conversationId?: string | null; continuePrevious?: boolean },
-    ): string | null => {
-      const prevType = chatContextTypeRef.current;
-      const isActualSwitch =
-        prevType !== newType || options?.conversationId !== undefined;
-
-      if (!isActualSwitch) {
-        return chatConversationIdRef.current;
       }
+      setChatMessages(prev => [...prev, note])
+    }
+    window.addEventListener("lia:settings-updated", onUpdated)
+    return () => window.removeEventListener("lia:settings-updated", onUpdated)
+  }, [])
 
-      const currentConvId = chatConversationIdRef.current;
-      if (currentConvId) {
-        contextConversationMapRef.current.set(prevType, currentConvId);
-      }
-      setPreviousConversationId(currentConvId);
+  const switchChatContext = useCallback((newType: ChatContextType, options?: { conversationId?: string | null; continuePrevious?: boolean }): string | null => {
+    const prevType = chatContextTypeRef.current
+    const isActualSwitch = prevType !== newType || options?.conversationId !== undefined
 
-      let nextId: string | null = null;
-      if (options?.conversationId !== undefined) {
-        nextId = options.conversationId;
-      } else if (options?.continuePrevious) {
-        nextId = contextConversationMapRef.current.get(newType) ?? null;
-      }
+    if (!isActualSwitch) {
+      return chatConversationIdRef.current
+    }
 
-      connection.setConversationId(nextId);
-      chatConversationIdRef.current = nextId;
-      chatContextTypeRef.current = newType;
-      setChatContextType(newType);
+    const currentConvId = chatConversationIdRef.current
+    if (currentConvId) {
+      contextConversationMapRef.current.set(prevType, currentConvId)
+    }
+    setPreviousConversationId(currentConvId)
 
-      const isLoadingExistingConversation = options?.conversationId != null;
-      if (!options?.continuePrevious && !isLoadingExistingConversation) {
-        setChatMessages([]);
-      }
+    let nextId: string | null = null
+    if (options?.conversationId !== undefined) {
+      nextId = options.conversationId
+    } else if (options?.continuePrevious) {
+      nextId = contextConversationMapRef.current.get(newType) ?? null
+    }
 
-      return nextId;
+    connection.setConversationId(nextId)
+    chatConversationIdRef.current = nextId
+    chatContextTypeRef.current = newType
+    setChatContextType(newType)
+
+    const isLoadingExistingConversation = options?.conversationId != null
+    if (!options?.continuePrevious && !isLoadingExistingConversation) {
+      setChatMessages([])
+    }
+
+    return nextId
+  }, [connection])
+
+  const sendChatMessage = useCallback(async (content: string, domain?: string, scope?: string) => {
+    addChatMessage({
+      id: `user-${Date.now()}`,
+      sender: "user",
+      content,
+      timestamp: formatMessageTime(),
+    })
+    await connection.sendMessage(content, domain, scope)
+  }, [connection, addChatMessage])
+
+  const sendOrchestratedMessage = useCallback(async (
+    message: string,
+    apiCall: (conversationId: string | null) => Promise<{ content: string; conversation_id?: string | null; [key: string]: unknown }>,
+    options?: {
+      extractResponseMetadata?: (response: { content: string; conversation_id?: string | null; [key: string]: unknown }) => Record<string, unknown>
+      conversationId?: string | null
     },
-    [connection],
-  );
+  ) => {
+    const ts = formatMessageTime()
+    addChatMessage({ id: `user-${Date.now()}`, sender: "user", content: message, timestamp: ts })
+    const effectiveConvId = options?.conversationId !== undefined ? options.conversationId : chatConversationIdRef.current
+    const response = await apiCall(effectiveConvId)
+    if (response.conversation_id) {
+      setChatConversationId(response.conversation_id)
+    }
+    const metadata = options?.extractResponseMetadata?.(response)
+    addChatMessage({
+      id: `lia-${Date.now()}`,
+      sender: "lia",
+      content: response.content,
+      timestamp: formatMessageTime(),
+      metadata,
+    })
+    return response
+  }, [setChatConversationId, addChatMessage])
 
-  const sendChatMessage = useCallback(
-    async (
-      content: string,
-      domain?: string,
-      scope?: string,
-      metadata?: Record<string, unknown>,
-    ) => {
-      addChatMessage({
-        id: `user-${Date.now()}`,
-        sender: "user",
-        content,
-        timestamp: formatMessageTime(),
-      });
-      await connection.sendMessage(content, domain, scope, metadata);
-    },
-    [connection, addChatMessage],
-  );
+  const initChatConversation = useCallback(async (firstMessage: string) => {
+    return connection.initConversation(firstMessage, chatContextType)
+  }, [connection, chatContextType])
 
-  const sendOrchestratedMessage = useCallback(
-    async (
-      message: string,
-      apiCall: (
-        conversationId: string | null,
-      ) => Promise<{
-        content: string;
-        conversation_id?: string | null;
-        [key: string]: unknown;
-      }>,
-      options?: {
-        extractResponseMetadata?: (response: {
-          content: string;
-          conversation_id?: string | null;
-          [key: string]: unknown;
-        }) => Record<string, unknown>;
-        conversationId?: string | null;
-      },
-    ) => {
-      const ts = formatMessageTime();
-      addChatMessage({
-        id: `user-${Date.now()}`,
-        sender: "user",
-        content: message,
-        timestamp: ts,
-      });
-      const effectiveConvId =
-        options?.conversationId !== undefined
-          ? options.conversationId
-          : chatConversationIdRef.current;
-      const response = await apiCall(effectiveConvId);
-      if (response.conversation_id) {
-        setChatConversationId(response.conversation_id);
-      }
-      const metadata = options?.extractResponseMetadata?.(response);
-      addChatMessage({
-        id: `lia-${Date.now()}`,
-        sender: "lia",
-        content: response.content,
-        timestamp: formatMessageTime(),
-        metadata,
-      });
-      return response;
-    },
-    [setChatConversationId, addChatMessage],
-  );
-
-  const initChatConversation = useCallback(
-    async (firstMessage: string) => {
-      return connection.initConversation(firstMessage, chatContextType);
-    },
-    [connection, chatContextType],
-  );
-
-  const loadChatHistory = useCallback(
-    async (id: string) => {
-      const history = await connection.loadHistory(id);
-      if (history.length > 0) {
-        setChatMessages(history);
-      }
-      return history;
-    },
-    [connection],
-  );
+  const loadChatHistory = useCallback(async (id: string) => {
+    const history = await connection.loadHistory(id)
+    if (history.length > 0) {
+      setChatMessages(history)
+    }
+    return history
+  }, [connection])
 
   const open = useCallback((conversationId?: string) => {
-    setState((prev) => ({
+    setState(prev => ({
       ...prev,
       isOpen: true,
       isExpanded: false,
       conversationId: conversationId ?? prev.conversationId,
-    }));
-  }, []);
+    }))
+  }, [])
 
   const close = useCallback(() => {
-    setState((prev) => ({
-      ...prev,
-      isOpen: false,
-      entityContext: null,
-      dynamicPanel: null,
-    }));
-  }, []);
+    setState(prev => ({ ...prev, isOpen: false, entityContext: null, dynamicPanel: null }))
+  }, [])
 
   const toggle = useCallback(() => {
-    setState((prev) => ({ ...prev, isOpen: !prev.isOpen }));
-  }, []);
+    setState(prev => ({ ...prev, isOpen: !prev.isOpen }))
+  }, [])
 
   const expand = useCallback(() => {
-    setState((prev) => ({ ...prev, isOpen: false, isExpanded: true }));
-  }, []);
+    setState(prev => ({ ...prev, isOpen: false, isExpanded: true }))
+  }, [])
 
   const collapse = useCallback(() => {
-    setState((prev) => ({ ...prev, isExpanded: false, isOpen: true }));
-  }, []);
+    setState(prev => ({ ...prev, isExpanded: false, isOpen: true }))
+  }, [])
 
   const closeAll = useCallback(() => {
-    setState((prev) => ({
+    setState(prev => ({
       ...prev,
       isOpen: false,
       isExpanded: false,
       entityContext: null,
       dynamicPanel: null,
-    }));
-  }, []);
+    }))
+  }, [])
 
   const openSplitView = useCallback((page: string, conversationId?: string) => {
-    setState((prev) => ({
+    setState(prev => ({
       ...prev,
       isOpen: false,
       isExpanded: false,
-      splitView: {
-        active: true,
-        page,
-        conversationId: conversationId ?? prev.conversationId,
-      },
-    }));
-  }, []);
+      splitView: { active: true, page, conversationId: conversationId ?? prev.conversationId },
+    }))
+  }, [])
 
   const closeSplitView = useCallback(() => {
-    setState((prev) => ({ ...prev, splitView: INITIAL_SPLIT_VIEW }));
-  }, []);
+    setState(prev => ({ ...prev, splitView: INITIAL_SPLIT_VIEW }))
+  }, [])
 
   const setContextPage = useCallback((page: string | null) => {
-    setState((prev) => ({ ...prev, contextPage: page }));
-  }, []);
+    setState(prev => ({ ...prev, contextPage: page }))
+  }, [])
 
   const setEntityContext = useCallback((ctx: EntityContext | null) => {
-    setState((prev) => ({ ...prev, entityContext: ctx }));
-  }, []);
+    setState(prev => ({ ...prev, entityContext: ctx }))
+  }, [])
 
   const openWithEntity = useCallback((entity: EntityContext) => {
-    setState((prev) => ({
-      ...prev,
-      isOpen: true,
-      isExpanded: false,
-      entityContext: entity,
-    }));
-  }, []);
+    setState(prev => ({ ...prev, isOpen: true, isExpanded: false, entityContext: entity }))
+  }, [])
 
-  const inlineChatCountRef = React.useRef(0);
+  const inlineChatCountRef = React.useRef(0)
   const setHasInlineChat = useCallback((active: boolean) => {
-    inlineChatCountRef.current += active ? 1 : -1;
-    if (inlineChatCountRef.current < 0) inlineChatCountRef.current = 0;
-    setState((prev) => ({
-      ...prev,
-      hasInlineChat: inlineChatCountRef.current > 0,
-    }));
-  }, []);
+    inlineChatCountRef.current += active ? 1 : -1
+    if (inlineChatCountRef.current < 0) inlineChatCountRef.current = 0
+    setState(prev => ({ ...prev, hasInlineChat: inlineChatCountRef.current > 0 }))
+  }, [])
 
   const openDynamicPanel = useCallback((panel: DynamicPanelData) => {
-    setState((prev) => ({ ...prev, dynamicPanel: panel }));
-  }, []);
+    setState(prev => ({ ...prev, dynamicPanel: panel }))
+  }, [])
 
   const closeDynamicPanel = useCallback(() => {
-    setState((prev) => ({ ...prev, dynamicPanel: null }));
-  }, []);
+    setState(prev => ({ ...prev, dynamicPanel: null }))
+  }, [])
 
-  const updateDynamicPanelData = useCallback(
-    (data: Record<string, unknown>) => {
-      setState((prev) => {
-        if (!prev.dynamicPanel) return prev;
-        return {
-          ...prev,
-          dynamicPanel: {
-            ...prev.dynamicPanel,
-            data: { ...prev.dynamicPanel.data, ...data },
-          },
-        };
-      });
-    },
-    [],
-  );
+  const updateDynamicPanelData = useCallback((data: Record<string, unknown>) => {
+    setState(prev => {
+      if (!prev.dynamicPanel) return prev
+      return {
+        ...prev,
+        dynamicPanel: { ...prev.dynamicPanel, data: { ...prev.dynamicPanel.data, ...data } },
+      }
+    })
+  }, [])
 
   const navigateToChat = useCallback((conversationId?: string) => {
-    setState((prev) => ({
+    setState(prev => ({
       ...prev,
       isOpen: false,
       isExpanded: false,
       splitView: INITIAL_SPLIT_VIEW,
-    }));
-    const convParam = conversationId
-      ? `&conversation_id=${encodeURIComponent(conversationId)}`
-      : "";
+    }))
+    const convParam = conversationId ? `&conversation_id=${encodeURIComponent(conversationId)}` : ""
     if (document.querySelector("[data-dashboard-shell]")) {
-      window.dispatchEvent(
-        new CustomEvent("lia:navigate-chat-page", {
-          detail: { conversationId },
-        }),
-      );
+      window.dispatchEvent(new CustomEvent("lia:navigate-chat-page", { detail: { conversationId } }))
     } else {
-      window.location.href = `/?page=chat-lia${convParam}`;
+      window.location.href = `/?page=chat-lia${convParam}`
     }
-  }, []);
+  }, [])
 
-  const value = useMemo<LiaFloatContextType>(
-    () => ({
-      ...state,
-      open,
-      close,
-      toggle,
-      expand,
-      collapse,
-      closeAll,
-      navigateToChat,
-      setContextPage,
-      setEntityContext,
-      openWithEntity,
-      openSplitView,
-      closeSplitView,
-      setHasInlineChat,
-      openDynamicPanel,
-      closeDynamicPanel,
-      updateDynamicPanelData,
-      sharedMessages,
-      addSharedMessage,
-      setSharedMessages,
-      sharedConversationId,
-      setSharedConversationId,
-      chatMessages,
-      addChatMessage,
-      setChatMessages,
-      chatConversationId,
-      setChatConversationId,
-      chatContextType,
-      setChatContextType,
-      switchChatContext,
-      previousConversationId,
-      sendChatMessage,
-      sendOrchestratedMessage,
-      initChatConversation,
-      loadChatHistory,
-      sendApproval: connection.sendApproval,
-      chatIsConnected: connection.isConnected,
-      chatTransportMode: connection.transportMode,
-      chatIsReconnecting: connection.isReconnecting,
-      chatIsStreaming: connection.isStreaming,
-      chatStreamingContent: connection.streamingContent,
-      chatHitlPending: connection.hitlPending,
-      chatBackgroundTasks: connection.backgroundTasks,
-      clearBackgroundTask: connection.clearBackgroundTask,
-      resetBackgroundTasks: connection.resetBackgroundTasks,
-      chatSessionId: sessionId,
-      seedBackgroundTask: connection.seedBackgroundTask,
-      chatIsCreating: connection.isCreating,
-      chatIsFetchingHistory: connection.isFetchingHistory,
-      chatIsThinking: connection.isThinking,
-      chatThinkingSteps: connection.thinkingSteps,
-      chatPlanProgressSteps: connection.planProgressSteps,
-      chatActivePlanId: connection.activePlanId,
-      chatFairnessWarnings: connection.fairnessWarnings,
-      dismissFairnessWarnings: connection.dismissFairnessWarnings,
-      connectChat: connection.connect,
-      disconnectChat: connection.disconnect,
-    }),
-    [
-      state,
-      open,
-      close,
-      toggle,
-      expand,
-      collapse,
-      closeAll,
-      navigateToChat,
-      setContextPage,
-      setEntityContext,
-      openWithEntity,
-      openSplitView,
-      closeSplitView,
-      setHasInlineChat,
-      openDynamicPanel,
-      closeDynamicPanel,
-      updateDynamicPanelData,
-      sharedMessages,
-      addSharedMessage,
-      sharedConversationId,
-      chatMessages,
-      addChatMessage,
-      chatConversationId,
-      setChatConversationId,
-      chatContextType,
-      switchChatContext,
-      previousConversationId,
-      sendChatMessage,
-      sendOrchestratedMessage,
-      initChatConversation,
-      loadChatHistory,
-      connection.sendApproval,
-      connection.isConnected,
-      connection.transportMode,
-      connection.isReconnecting,
-      connection.isStreaming,
-      connection.streamingContent,
-      connection.hitlPending,
-      connection.backgroundTasks,
-      connection.clearBackgroundTask,
-      connection.resetBackgroundTasks,
-      sessionId,
-      connection.seedBackgroundTask,
-      connection.isCreating,
-      connection.isFetchingHistory,
-      connection.isThinking,
-      connection.thinkingSteps,
-      connection.planProgressSteps,
-      connection.activePlanId,
-      connection.fairnessWarnings,
-      connection.dismissFairnessWarnings,
-      connection.connect,
-      connection.disconnect,
-      setSharedMessages,
-    ],
-  );
+  const value = useMemo<LiaFloatContextType>(() => ({
+    ...state,
+    open, close, toggle, expand, collapse, closeAll,
+    navigateToChat, setContextPage, setEntityContext, openWithEntity,
+    openSplitView, closeSplitView,
+    setHasInlineChat,
+    openDynamicPanel, closeDynamicPanel, updateDynamicPanelData,
+    sharedMessages, addSharedMessage, setSharedMessages,
+    sharedConversationId, setSharedConversationId,
+    chatMessages, addChatMessage, setChatMessages,
+    chatConversationId, setChatConversationId,
+    chatContextType, setChatContextType,
+    switchChatContext,
+    previousConversationId,
+    sendChatMessage,
+    sendOrchestratedMessage,
+    initChatConversation,
+    loadChatHistory,
+    sendApproval: connection.sendApproval,
+    chatIsConnected: connection.isConnected,
+    chatTransportMode: connection.transportMode,
+    chatIsReconnecting: connection.isReconnecting,
+    chatIsStreaming: connection.isStreaming,
+    chatStreamingContent: connection.streamingContent,
+    chatHitlPending: connection.hitlPending,
+    chatBackgroundTasks: connection.backgroundTasks,
+    clearBackgroundTask: connection.clearBackgroundTask,
+    resetBackgroundTasks: connection.resetBackgroundTasks,
+    chatSessionId: sessionId,
+    seedBackgroundTask: connection.seedBackgroundTask,
+    chatIsCreating: connection.isCreating,
+    chatIsFetchingHistory: connection.isFetchingHistory,
+    chatIsThinking: connection.isThinking,
+    chatThinkingSteps: connection.thinkingSteps,
+    chatPlanProgressSteps: connection.planProgressSteps,
+    chatActivePlanId: connection.activePlanId,
+    chatFairnessWarnings: connection.fairnessWarnings,
+    dismissFairnessWarnings: connection.dismissFairnessWarnings,
+    connectChat: connection.connect,
+    disconnectChat: connection.disconnect,
+  }), [
+    state,
+    open, close, toggle, expand, collapse, closeAll,
+    navigateToChat, setContextPage, setEntityContext, openWithEntity,
+    openSplitView, closeSplitView,
+    setHasInlineChat,
+    openDynamicPanel, closeDynamicPanel, updateDynamicPanelData,
+    sharedMessages, addSharedMessage,
+    sharedConversationId,
+    chatMessages, addChatMessage,
+    chatConversationId, setChatConversationId,
+    chatContextType,
+    switchChatContext,
+    previousConversationId,
+    sendChatMessage,
+    sendOrchestratedMessage,
+    initChatConversation,
+    loadChatHistory,
+    connection.sendApproval,
+    connection.isConnected,
+    connection.transportMode,
+    connection.isReconnecting,
+    connection.isStreaming,
+    connection.streamingContent,
+    connection.hitlPending,
+    connection.backgroundTasks,
+    connection.clearBackgroundTask,
+    connection.resetBackgroundTasks,
+    sessionId,
+    connection.seedBackgroundTask,
+    connection.isCreating,
+    connection.isFetchingHistory,
+    connection.isThinking,
+    connection.thinkingSteps,
+    connection.planProgressSteps,
+    connection.activePlanId,
+    connection.fairnessWarnings,
+    connection.dismissFairnessWarnings,
+    connection.connect,
+    connection.disconnect,
+    setSharedMessages,
+  ])
 
   return (
     <LiaFloatContext.Provider value={value}>
       {children}
     </LiaFloatContext.Provider>
-  );
+  )
 }
 
 export function useLiaFloat(): LiaFloatContextType {
-  const ctx = useContext(LiaFloatContext);
-  if (!ctx)
-    throw new Error("useLiaFloat deve ser usado dentro de LiaFloatProvider");
-  return ctx;
+  const ctx = useContext(LiaFloatContext)
+  if (!ctx) throw new Error("useLiaFloat deve ser usado dentro de LiaFloatProvider")
+  return ctx
 }
 
 export function useLiaChatContext() {
-  const ctx = useContext(LiaFloatContext);
-  if (!ctx)
-    throw new Error(
-      "useLiaChatContext deve ser usado dentro de LiaFloatProvider",
-    );
+  const ctx = useContext(LiaFloatContext)
+  if (!ctx) throw new Error("useLiaChatContext deve ser usado dentro de LiaFloatProvider")
   return {
     chatMessages: ctx.chatMessages,
     addChatMessage: ctx.addChatMessage,
@@ -753,5 +593,5 @@ export function useLiaChatContext() {
     expand: ctx.expand,
     collapse: ctx.collapse,
     navigateToChat: ctx.navigateToChat,
-  };
+  }
 }
