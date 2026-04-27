@@ -1,6 +1,7 @@
 "use client"
 
 import dynamic from "next/dynamic"
+import { LIAGlobalModals } from "@/components/lia-global-modals/LIAGlobalModals"
 
 const UnifiedChatConditional = dynamic(
   () => import("@/components/unified-chat").then((m) => ({ default: m.UnifiedChatConditional })),
@@ -26,6 +27,7 @@ export default function DeferredLayoutClients() {
       <WorkflowRailWrapper />
       <UnifiedChatConditional />
       <WeeklyDigestChatProvider />
+      <LIAGlobalModals />
     </>
   )
 }
