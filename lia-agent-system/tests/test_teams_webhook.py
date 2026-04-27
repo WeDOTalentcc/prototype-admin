@@ -66,6 +66,14 @@ except ImportError:
     pass
 
 
+@pytest.fixture(autouse=True)
+def _enable_webhook_dev_bypass(monkeypatch):
+    """After W2.6.b, signature verification requires TEAMS_WEBHOOK_DEV_BYPASS=true
+    for non-production bypass. Tests in this file patch TEAMS_WEBHOOK_SECRET=None
+    and expect bypass — set the explicit flag here."""
+    monkeypatch.setenv("TEAMS_WEBHOOK_DEV_BYPASS", "true")
+
+
 @pytest.fixture
 def _mock_recruiter_lookup():
     """Patch TeamsRepository.get_user_by_platform_id to return a tenant-resolving User.
