@@ -47,6 +47,18 @@ Use `git show <tag>` para ver o commit de cada marco.
 | `milestone/workflow-rail-ux7` | `c07d3d5dc` | UX-7 — WorkflowRail compact single-line bar com hover popovers |
 | `milestone/candidate-portal-rails-spec` | `1b0ca9629` | Spec completa do Candidate Portal (Rails + Replit) |
 
+### Janela 3 (Tasks #494–#570 — fundações WSI + BYOK + Persona)
+
+| Tag | Commit | O que marca |
+|---|---|---|
+| `milestone/parte-d-complete` | `8314d3517` | PARTE D entregue (D0-D5: Apify gateway, LIA tools, PreConditionChecker, Manifest, onboarding) |
+| `milestone/byok-llm-factory-adr-018` | `aa6d38cd1` | LLM Factory + BYOK compliance + Quality Tier Guard + audit trail (ADR-018) |
+| `milestone/wsi-scale-0-10-atomic-flip` | `689b90885` | Task #497 PR2 — flip atômico WSI escala 0-5 → 0-10 (engine + DB + Pydantic) |
+| `milestone/wsi-eu-ai-act-compliance` | `6ac807839` | Task #511 — Compliance EU AI Act WSI (audit trail + response_hash + endpoint) |
+| `milestone/lia-persona-diagnostic` | `e4e06c10d` | Task #527 — Diagnóstico de persona da LIA automatizado (120 sondas) |
+| `milestone/wsi-phase2-remediation` | `1513a89ef` | Phase 2 WSI/Screening remediation — G1 + G2 entregues |
+| `milestone/canonical-fix-skill` | `0a4170019` | Task #495 — Skill `canonical-fix` criada (corrigir na origem, sem workaround) |
+
 ---
 
 ## Navegação por tema em `feat/orch-migration-sprint-I`
@@ -254,6 +266,119 @@ git log --oneline --grep="Task #8" feat/orch-migration-sprint-I
 - PARTE J: `97ac557f1 — A Jornada Completa (narrativa)`
 - PARTE K: `49464a0c6 — FIX 14-17 conversation continuity layer`
 - PARTE L: `ba28c86ff — runtime-inert gaps pattern`
+
+---
+
+## Janela 3 — Tasks #494–#570 (fundações WSI + BYOK + Persona)
+
+### 13. PARTE D — Foundation Stack (D0-D5)
+- **Tag:** `milestone/parte-d-complete`
+- **Grep:** `git log --grep="parte-d\|feat(.*): D[0-9]"`
+
+**O que foi implementado:**
+- D0 — Apify gateway com enforced tracking + budget check per tenant (`a2b2310fb`)
+- D1 — LIA tools enrichment + company settings tools (`eee514587`)
+- D2 — PreConditionChecker + 5 new proactive checks (`08a912340`)
+- D4 — Platform Manifest: single source of truth para pages, methodology, capabilities (`f4106776c`)
+- D5 — Guided onboarding flow no `company_settings` agent (`3464e6021`)
+- Close 4 PARTE D gaps — full tracking + canonical schema + manifest wiring + proactive UI (`8314d3517`)
+
+---
+
+### 14. LLM Factory + BYOK + Quality Tier Guard
+- **Tag:** `milestone/byok-llm-factory-adr-018`
+- **ADR:** `f4462e2ab — ADR-018 LLM Factory / BYOK contract`
+- **Grep:** `git log --grep="byok\|llm-factory\|BYOK"`
+
+**O que foi implementado:**
+- LLM Factory canonical com BYOK compliance (`aa6d38cd1`)
+- Quality Tier Guard (impede downgrade de modelo via BYOK do tenant)
+- Audit trail per LLM call (response_hash + session_id)
+- Frontend UI BYOK (seções 9+10)
+- Auditoria E2E + correção de 4 bugs P0 de audit trail e BYOK bypass
+- BUG-07 — WSI analyze-response BYOK + Quality Tier Guard
+- Mapa completo de **54 consumidores LLM** auditados (`5d34569ef`)
+
+---
+
+### 15. WSI — Métrica + Compliance EU AI Act + Transparência
+- **Tags:** `milestone/wsi-scale-0-10-atomic-flip`, `milestone/wsi-eu-ai-act-compliance`, `milestone/wsi-phase2-remediation`
+- **ADR:** `51a09caec — ADR-017 (Phase 1 audit + selos rev. 5)`
+- **Grep:** `git log --grep="wsi\|WSI\|Bloom\|Dreyfus"`
+
+**O que foi implementado:**
+- Phase 1 remediação WSI (ADR-017) — selos rev. 5
+- Phase 2 remediação — G1 + G2 entregues; G3 promovido a tasks
+- Task #495 — skill `canonical-fix` criada (princípio: corrigir na origem)
+- Task #496 — extrair `transcript_extractor` do orchestrator
+- Task #497 — flip atômico escala WSI 0-5 → 0-10 (PR1: extract constants, PR2: atomic flip, PR3: frontend)
+- Task #498 — split tech/behav 100% determinístico via category explícita
+- Task #510 — Correções metodológicas WSI scorer (M02 Bloom + M07 Dreyfus + M08 Gates)
+- Task #511 — Compliance EU AI Act WSI (audit_trail + response_hash + endpoint)
+- Task #512 — frontend escala 0-10
+- Task #523 — refactor 23 consumidores WSI /5 → /10 (audit rev. 14)
+- Task #528 — Backend WSI: expor transparência granular (G23-02/G23-03)
+- Task #529 — UI Modal Triagem: banner degraded + breakdown granular
+- Task #530 — Kanban: indicador visual de modo degradado no score WSI
+- Task #534 — Backfill `transparency_extras` para legacy WSI response analyses
+- Task #535 — Tests UI wsi-modal LGPD/EU AI Act
+- Task #538 — "Apenas modo degradado" toggle no job kanban
+- Task #541 — WSICompactPipeline LLM call regression tests
+
+---
+
+### 16. LIA Persona Diagnostic + Identity Override
+- **Tag:** `milestone/lia-persona-diagnostic`
+- **Grep:** `git log --grep="persona\|identity\|diagnóstico"`
+
+**O que foi implementado:**
+- Diagnóstico manual de persona da LIA (roteiro + harness Playwright) — `5a7205e44`
+- Task #527 — automate LIA persona diagnostic (120 sondas)
+- LIA identity override — prevent Gemini from leaking model identity (`881aef9d0`)
+- Phase 1 intercept para identity questions — LIA never calls Gemini for "quem é você" (`44e381ce5`)
+- Persona Diagnostic cross-check probes really hit the intended specialised agent
+- Fix 23 falhas críticas do diagnóstico de persona (`32cd180b4`)
+
+---
+
+### 17. Eval Framework — Iterative Hardening
+- **Grep:** `git log --grep="fix(eval):"`
+
+**O que foi implementado (em ondas iterativas, ~30 commits `fix(eval):`):**
+- UnboundLocalError no executor + short job_id em query_tools
+- UUID/varchar JOIN mismatch no candidate/sourcing pipeline
+- CM-001/CM-003 — remove all wrong CAST uuid on varchar
+- CO-002 — offer letter generation instruction no communication domain
+- KB-005/006 — UUID guard + WZ-002/003 keywords + MT-002 job_title extraction
+- Salary benchmark em analytics + offer ID rule + negation cancel pattern
+- Portuguese-aware criteria matching para WZ-002/003 agile/data/location checks
+- list_jobs routing + duplica keyword
+- name resolution + implicit job context + wizard tenant scope
+- Task #563 — agentic eval framework + canonical-fix consolidation
+
+---
+
+### 18. Senioridade + Job Migration
+- **Tasks:** #531, #539, #559, #560, #562
+- **Grep:** `git log --grep="seniority\|senioridade\|level"`
+
+**O que foi implementado:**
+- Task #531 — Migração `job.level` → `seniority` (write-both + leitura unificada)
+- Task #539 — Remove legacy `level` field do Job type
+- Task #559 — Show "Senioridade não informada" instead of guessing "Pleno"
+- Task #560 — cobertura E2E de edição de senioridade
+- Task #562 — Padronizar e enriquecer card do Kanban de Vagas
+
+---
+
+### 19. Chat Unificado — Hardening + Auditoria de Ações
+- **Tasks:** #569, #570
+- **Grep:** `git log --grep="hardening\|aprendizado\|Task #569\|Task #570"`
+
+**O que foi implementado:**
+- Task #569 — Auditoria das ações de mensagem do chat unificado e loop de aprendizado
+- Task #570 — Hardening P0/P1 das ações do chat unificado
+- Fix mensagens copy/thumbs
 
 ---
 
