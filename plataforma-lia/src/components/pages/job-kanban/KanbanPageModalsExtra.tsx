@@ -19,6 +19,7 @@ const CloseVacancyModal = dynamic(() => import("@/components/modals/close-vacanc
 const JobStatusModal = dynamic(() => import("@/components/modals/job-status-modal").then(m => ({ default: m.JobStatusModal })), { ssr: false, loading: () => <LoadingModal /> })
 const ShareSearchModal = dynamic(() => import("@/components/modals/share-search-modal").then(m => ({ default: m.ShareSearchModal })), { ssr: false, loading: () => <LoadingModal /> })
 const BulkActionModal = dynamic(() => import("@/components/modals/bulk-action-modal").then(m => ({ default: m.BulkActionModal })), { ssr: false, loading: () => <LoadingModal /> })
+const OfferReviewModal = dynamic(() => import("@/components/offer-review-modal/OfferReviewModal").then(m => ({ default: m.OfferReviewModal })), { ssr: false })
 
 export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
   const t = useTranslations('kanban')
@@ -294,6 +295,8 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
           setSelectedCandidates(new Set())
         }}
       />
+      {/* PR-B: OfferReviewModal — controlado pelo useOfferDraftStore, sem props */}
+      <OfferReviewModal />
     </>
   )
 }

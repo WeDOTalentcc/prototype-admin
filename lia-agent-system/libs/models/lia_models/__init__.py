@@ -18,6 +18,7 @@ from lia_models.ats_integration import (
     SyncStatus
 )
 from lia_models.email_template import EmailTemplate, EmailLog
+from lia_models.offer_proposal import OfferProposal
 from lia_models.task import Task, TaskTemplate, TaskPriority, TaskStatus, TaskType
 from lia_models.planned_task import (
     PlannedTask,

@@ -116,6 +116,11 @@ def _is_plan_service_enabled() -> bool:
 
     Env var `LIA_V2_USE_PLAN_SERVICE` controla. Default OFF (V1 delegation).
     Tipos aceitos: "1", "true", "yes" (case-insensitive) → True.
+
+    REMOVE: 2026-07-01 — após canary completar a promoção 5% → 25% → 100%
+    descrita em ADR-019 §Promotion Gate, esta flag deve ser deletada e o
+    código que ela protege passa a ser o caminho default (V2 sempre).
+    Ref.: Auditoria Rev 4 §N-10. Owner: orchestrator team.
     """
     raw = os.environ.get("LIA_V2_USE_PLAN_SERVICE", "false").lower()
     return raw in ("1", "true", "yes")
@@ -127,6 +132,10 @@ def _is_fallback_react_enabled() -> bool:
     Env var `LIA_V2_USE_FALLBACK_REACT` controla. Default OFF (V1 fallback).
     Quando ON: se V1 retorna resposta classificada como técnica (router
     artifact), V2 substitui via fallback_react_service.handle_directly().
+
+    REMOVE: 2026-07-01 — promoção pareada com `LIA_V2_USE_PLAN_SERVICE`
+    (mesma janela de canary). Ver ADR-019 §Promotion Gate. Owner:
+    orchestrator team.
     """
     raw = os.environ.get("LIA_V2_USE_FALLBACK_REACT", "false").lower()
     return raw in ("1", "true", "yes")
@@ -1186,9 +1195,16 @@ class MainOrchestrator:
         try:
             from app.domains.ai.services.response_cache_service import response_cache_service
             from app.orchestrator.fast_router import FastRouter
-            _fast = FastRouter()
-            _fast_match = _fast.match(ctx.message or "")
-            _detected_domain = _fast_match.domain_id if _fast_match else None
+            from app.orchestrator.services.rail_a_hint_override import try_hint_route
+
+            # PR-A: prefere hint do Rail A (FE-H03) antes do pattern matcher.
+            _hint_route = try_hint_route(ctx.to_orchestrator_context())
+            if _hint_route is not None:
+                _detected_domain = _hint_route.domain_id
+            else:
+                _fast = FastRouter()
+                _fast_match = _fast.match(ctx.message or "")
+                _detected_domain = _fast_match.domain_id if _fast_match else None
             if not (_detected_domain and _detected_domain in _CACHEABLE_DOMAINS):
                 return None
             _cache_context = {

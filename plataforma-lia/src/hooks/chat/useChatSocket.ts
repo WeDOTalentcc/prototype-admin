@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 /**
  * useChatSocket — WebSocket connection management and event handling for LIA chat.
@@ -7,64 +7,78 @@
  * background tasks, plan progress, thinking steps, fairness warnings).
  */
 
-import { useState, useRef, useCallback, useEffect } from "react"
-import { useAgentStreaming, type StreamingEvent } from "@/hooks/ai/use-agent-streaming"
-import type { TransportMode } from "./useChatTransport"
+import {
+  type StreamingEvent,
+  useAgentStreaming,
+} from "@/hooks/ai/use-agent-streaming";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
-  HITLPending,
-  PanelUpdateEvent,
   BackgroundTaskEvent,
+  HITLPending,
   MessageCompleteExtras,
-} from "./lia-chat-connection-types"
+  PanelUpdateEvent,
+} from "./lia-chat-connection-types";
+import type { TransportMode } from "./useChatTransport";
 
 export interface UseChatSocketOptions {
-  sessionId: string
+  sessionId: string;
   onMessageComplete?: (
     content: string,
     executionPlan?: Record<string, unknown>,
     extras?: MessageCompleteExtras,
-  ) => void
-  onPanelUpdate?: (event: PanelUpdateEvent) => void
+  ) => void;
+  onPanelUpdate?: (event: PanelUpdateEvent) => void;
 }
 
 export interface UseChatSocketReturn {
-  tokens: string
-  isStreaming: boolean
-  isConnected: boolean
-  isReconnecting: boolean
-  reconnectAttempt: number
-  error: string | null
-  transportMode: TransportMode
-  connect: () => void
-  disconnect: () => void
-  wsSend: (content: string, context: Record<string, unknown>, domain: string) => boolean
-  sendRaw: (data: Record<string, unknown>) => void
+  tokens: string;
+  isStreaming: boolean;
+  isConnected: boolean;
+  isReconnecting: boolean;
+  reconnectAttempt: number;
+  error: string | null;
+  transportMode: TransportMode;
+  connect: () => void;
+  disconnect: () => void;
+  wsSend: (
+    content: string,
+    context: Record<string, unknown>,
+    domain: string,
+  ) => boolean;
+  sendRaw: (data: Record<string, unknown>) => void;
   /** Task #383 (F2): bumped on every WS event recebido. useChatMessages usa
    *  pra detectar "send aceito mas zero respostas" e cair pro REST. */
-  wsEventTickRef: React.MutableRefObject<number>
-  clearTokens: () => void
+  wsEventTickRef: React.MutableRefObject<number>;
+  clearTokens: () => void;
   sendMessageViaSSE: (
     sessionId: string,
     message: string,
     domain?: string,
     context?: Record<string, unknown>,
     conversationId?: string | null,
-  ) => void
+  ) => void;
 
-  hitlPending: HITLPending | null
-  hitlRef: React.MutableRefObject<HITLPending | null>
-  setHitlPending: React.Dispatch<React.SetStateAction<HITLPending | null>>
-  thinkingSteps: string[]
-  isThinking: boolean
-  setIsThinking: React.Dispatch<React.SetStateAction<boolean>>
-  fairnessWarnings: string[]
-  setFairnessWarnings: React.Dispatch<React.SetStateAction<string[]>>
-  backgroundTasks: BackgroundTaskEvent[]
-  setBackgroundTasks: React.Dispatch<React.SetStateAction<BackgroundTaskEvent[]>>
-  planProgressSteps: Array<{ task_id: string; action_id: string; domain_id: string; status: string }>
-  activePlanId: string | null
+  hitlPending: HITLPending | null;
+  hitlRef: React.MutableRefObject<HITLPending | null>;
+  setHitlPending: React.Dispatch<React.SetStateAction<HITLPending | null>>;
+  thinkingSteps: string[];
+  isThinking: boolean;
+  setIsThinking: React.Dispatch<React.SetStateAction<boolean>>;
+  fairnessWarnings: string[];
+  setFairnessWarnings: React.Dispatch<React.SetStateAction<string[]>>;
+  backgroundTasks: BackgroundTaskEvent[];
+  setBackgroundTasks: React.Dispatch<
+    React.SetStateAction<BackgroundTaskEvent[]>
+  >;
+  planProgressSteps: Array<{
+    task_id: string;
+    action_id: string;
+    domain_id: string;
+    status: string;
+  }>;
+  activePlanId: string | null;
 
-  conversationIdFromWs: string | null
+  conversationIdFromWs: string | null;
 }
 
 export function useChatSocket({
@@ -72,62 +86,86 @@ export function useChatSocket({
   onMessageComplete,
   onPanelUpdate,
 }: UseChatSocketOptions): UseChatSocketReturn {
-  const [hitlPending, setHitlPending] = useState<HITLPending | null>(null)
-  const hitlRef = useRef<HITLPending | null>(null)
-  const onCompleteRef = useRef(onMessageComplete)
-  const onPanelUpdateRef = useRef(onPanelUpdate)
+  const [hitlPending, setHitlPending] = useState<HITLPending | null>(null);
+  const hitlRef = useRef<HITLPending | null>(null);
+  const onCompleteRef = useRef(onMessageComplete);
+  const onPanelUpdateRef = useRef(onPanelUpdate);
 
-  const [planProgressSteps, setPlanProgressSteps] = useState<Array<{ task_id: string; action_id: string; domain_id: string; status: string }>>([])
-  const [activePlanId, setActivePlanId] = useState<string | null>(null)
-  const [thinkingSteps, setThinkingSteps] = useState<string[]>([])
-  const [isThinking, setIsThinking] = useState(false)
-  const [fairnessWarnings, setFairnessWarnings] = useState<string[]>([])
-  const [backgroundTasks, setBackgroundTasks] = useState<BackgroundTaskEvent[]>([])
-  const [wsAuthToken, setWsAuthToken] = useState<string | undefined>(undefined)
-  const [conversationIdFromWs, setConversationIdFromWs] = useState<string | null>(null)
+  const [planProgressSteps, setPlanProgressSteps] = useState<
+    Array<{
+      task_id: string;
+      action_id: string;
+      domain_id: string;
+      status: string;
+    }>
+  >([]);
+  const [activePlanId, setActivePlanId] = useState<string | null>(null);
+  const [thinkingSteps, setThinkingSteps] = useState<string[]>([]);
+  const [isThinking, setIsThinking] = useState(false);
+  const [fairnessWarnings, setFairnessWarnings] = useState<string[]>([]);
+  const [backgroundTasks, setBackgroundTasks] = useState<BackgroundTaskEvent[]>(
+    [],
+  );
+  const [wsAuthToken, setWsAuthToken] = useState<string | undefined>(undefined);
+  const [conversationIdFromWs, setConversationIdFromWs] = useState<
+    string | null
+  >(null);
   // Task #383 (F2): contador monotônico bumpado a cada evento WS recebido.
   // useChatMessages tira snapshot antes do wsSend e checa após N segundos —
   // se o tick não mudou, o send foi engolido e ele cai pro REST.
-  const wsEventTickRef = useRef(0)
+  const wsEventTickRef = useRef(0);
 
   useEffect(() => {
     // BUG-AUDIT #277 / H2a+H4: o ws-token pode demorar (cold-start backend do
     // dev-auto-login até 15s) ou cair em 503 transitório — sem retry o header
     // Authorization ficava undefined pra sempre nessa instância, bloqueando
     // WS e SSE. Fazemos retry curto com backoff; enquanto isso o REST cobre.
-    let cancelled = false
-    const maxAttempts = 3
-    const baseDelay = 1500
+    let cancelled = false;
+    const maxAttempts = 3;
+    const baseDelay = 1500;
 
     const attempt = async (n: number): Promise<void> => {
-      if (cancelled) return
+      if (cancelled) return;
       try {
-        const r = await fetch("/api/auth/ws-token")
-        if (cancelled) return
+        const r = await fetch("/api/auth/ws-token");
+        if (cancelled) return;
         if (r.ok) {
-          const data = await r.json() as { token?: string }
+          const data = (await r.json()) as { token?: string };
           if (!cancelled && data?.token) {
-            setWsAuthToken(data.token)
-            return
+            setWsAuthToken(data.token);
+            return;
           }
         }
         // 401 definitivo → não insistir (sem credenciais)
-        if (r.status === 401) return
+        if (r.status === 401) return;
       } catch (err) {
-        if (cancelled) return
-        console.warn('[useChatSocket] ws-token fetch failed (attempt', n + 1, ')', err)
+        if (cancelled) return;
+        console.warn(
+          "[useChatSocket] ws-token fetch failed (attempt",
+          n + 1,
+          ")",
+          err,
+        );
       }
       if (n + 1 < maxAttempts && !cancelled) {
-        setTimeout(() => { void attempt(n + 1) }, baseDelay * Math.pow(2, n))
+        setTimeout(() => {
+          void attempt(n + 1);
+        }, baseDelay * Math.pow(2, n));
       }
-    }
+    };
 
-    void attempt(0)
-    return () => { cancelled = true }
-  }, [])
+    void attempt(0);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  useEffect(() => { onCompleteRef.current = onMessageComplete }, [onMessageComplete])
-  useEffect(() => { onPanelUpdateRef.current = onPanelUpdate }, [onPanelUpdate])
+  useEffect(() => {
+    onCompleteRef.current = onMessageComplete;
+  }, [onMessageComplete]);
+  useEffect(() => {
+    onPanelUpdateRef.current = onPanelUpdate;
+  }, [onPanelUpdate]);
 
   const handleEvent = useCallback((event: StreamingEvent) => {
     // Task #383 (F2): só contam eventos que provam que o backend RECEBEU e
@@ -146,54 +184,54 @@ export function useChatSocket({
       "plan_progress",
       "panel_update",
       "background_task_update",
-    ])
+    ]);
     if (RESPONSE_RELEVANT_EVENTS.has(event.type)) {
-      wsEventTickRef.current += 1
+      wsEventTickRef.current += 1;
     }
     switch (event.type as string) {
       case "thinking":
-        setIsThinking(true)
+        setIsThinking(true);
         if (event.content) {
-          setThinkingSteps(prev => [...prev, event.content as string])
+          setThinkingSteps((prev) => [...prev, event.content as string]);
         }
-        break
+        break;
 
       case "plan_progress": {
-        const planEvent = event as unknown as Record<string, unknown>
-        const planEventType = planEvent.event as string
+        const planEvent = event as unknown as Record<string, unknown>;
+        const planEventType = planEvent.event as string;
         if (planEventType === "plan_started") {
-          setActivePlanId(planEvent.plan_id as string || null)
-          setPlanProgressSteps([])
+          setActivePlanId((planEvent.plan_id as string) || null);
+          setPlanProgressSteps([]);
         } else if (
           planEventType === "step_running" ||
           planEventType === "step_completed" ||
           planEventType === "step_skipped"
         ) {
-          setPlanProgressSteps(prev => {
-            const taskId = planEvent.task_id as string
-            const existing = prev.findIndex(s => s.task_id === taskId)
+          setPlanProgressSteps((prev) => {
+            const taskId = planEvent.task_id as string;
+            const existing = prev.findIndex((s) => s.task_id === taskId);
             const step = {
               task_id: taskId,
-              action_id: planEvent.action_id as string || "",
-              domain_id: planEvent.domain_id as string || "",
+              action_id: (planEvent.action_id as string) || "",
+              domain_id: (planEvent.domain_id as string) || "",
               status:
                 planEventType === "step_running"
                   ? "running"
                   : planEventType === "step_skipped"
                     ? "skipped"
-                    : (planEvent.status as string || "completed"),
-            }
+                    : (planEvent.status as string) || "completed",
+            };
             if (existing >= 0) {
-              const updated = [...prev]
-              updated[existing] = step
-              return updated
+              const updated = [...prev];
+              updated[existing] = step;
+              return updated;
             }
-            return [...prev, step]
-          })
+            return [...prev, step];
+          });
         } else if (planEventType === "plan_completed") {
-          setActivePlanId(null)
+          setActivePlanId(null);
         }
-        break
+        break;
       }
 
       case "approval_required": {
@@ -203,29 +241,33 @@ export function useChatSocket({
           action: event.action ?? "",
           description: event.description ?? "",
           data: event.data ?? {},
-        }
-        hitlRef.current = pending
-        setHitlPending(pending)
-        window.dispatchEvent(new CustomEvent("hitl:approval_required", {
-          detail: {
-            pending_id: event.pending_id,
-            thread_id: event.thread_id,
-            action: event.action,
-            description: event.description,
-            data: event.data,
-            domain: (event as Record<string, unknown>).domain ?? "",
-            ws_session_id: sessionId,
-            requested_at: new Date().toISOString(),
-          },
-        }))
-        break
+        };
+        hitlRef.current = pending;
+        setHitlPending(pending);
+        window.dispatchEvent(
+          new CustomEvent("hitl:approval_required", {
+            detail: {
+              pending_id: event.pending_id,
+              thread_id: event.thread_id,
+              action: event.action,
+              description: event.description,
+              data: event.data,
+              domain: (event as Record<string, unknown>).domain ?? "",
+              ws_session_id: sessionId,
+              requested_at: new Date().toISOString(),
+            },
+          }),
+        );
+        break;
       }
 
       case "approval_confirmed":
-        window.dispatchEvent(new CustomEvent("hitl:approval_resolved", {
-          detail: { pending_id: event.pending_id },
-        }))
-        break
+        window.dispatchEvent(
+          new CustomEvent("hitl:approval_resolved", {
+            detail: { pending_id: event.pending_id },
+          }),
+        );
+        break;
 
       case "wizard_stage": {
         // Bridge backend wizard stage payloads (ws_stage_payload) to the
@@ -234,7 +276,7 @@ export function useChatSocket({
         // FairnessGuard `dropped_questions` / `fairness_warning` so the
         // wizard banner reflects what the backend actually sent.
         if (typeof window !== "undefined") {
-          const wsEvent = event as unknown as Record<string, unknown>
+          const wsEvent = event as unknown as Record<string, unknown>;
           window.dispatchEvent(
             new CustomEvent("lia:wizard-stage-payload", {
               detail: {
@@ -245,97 +287,129 @@ export function useChatSocket({
                 requires_approval: Boolean(wsEvent.requires_approval),
               },
             }),
-          )
+          );
         }
-        break
+        break;
       }
 
       case "panel_update": {
-        const panelEvent = event as unknown as Record<string, unknown>
+        const panelEvent = event as unknown as Record<string, unknown>;
         onPanelUpdateRef.current?.({
           panel_type: (panelEvent.panel_type as string) || "",
           panel_data: (panelEvent.panel_data as Record<string, unknown>) || {},
           panel_title: panelEvent.panel_title as string | undefined,
           action: (panelEvent.action as "open" | "update" | "close") || "open",
-        })
-        break
+        });
+        break;
       }
 
       case "background_task_update": {
-        const bgEvent = event as unknown as Record<string, unknown>
+        const bgEvent = event as unknown as Record<string, unknown>;
         const taskUpdate: BackgroundTaskEvent = {
           task_id: (bgEvent.task_id as string) || "",
-          task_type: (bgEvent.task_type as BackgroundTaskEvent["task_type"]) || "analysis",
+          task_type:
+            (bgEvent.task_type as BackgroundTaskEvent["task_type"]) ||
+            "analysis",
           label: (bgEvent.label as string) || "",
-          status: (bgEvent.status as BackgroundTaskEvent["status"]) || "running",
+          status:
+            (bgEvent.status as BackgroundTaskEvent["status"]) || "running",
           progress: bgEvent.progress as number | undefined,
           message: bgEvent.message as string | undefined,
           result: bgEvent.result as Record<string, unknown> | undefined,
-        }
-        setBackgroundTasks(prev => {
-          const idx = prev.findIndex(t => t.task_id === taskUpdate.task_id)
+        };
+        setBackgroundTasks((prev) => {
+          const idx = prev.findIndex((t) => t.task_id === taskUpdate.task_id);
           if (idx >= 0) {
-            const updated = [...prev]
-            updated[idx] = taskUpdate
-            return updated
+            const updated = [...prev];
+            updated[idx] = taskUpdate;
+            return updated;
           }
-          return [...prev, taskUpdate]
-        })
-        break
+          return [...prev, taskUpdate];
+        });
+        break;
       }
 
       case "message":
-        setIsThinking(false)
-        hitlRef.current = null
-        setHitlPending(null)
-        if ((event as any).conversation_id && typeof (event as any).conversation_id === "string") {
-          setConversationIdFromWs((event as any).conversation_id)
+        setIsThinking(false);
+        hitlRef.current = null;
+        setHitlPending(null);
+        if (
+          (event as any).conversation_id &&
+          typeof (event as any).conversation_id === "string"
+        ) {
+          setConversationIdFromWs((event as any).conversation_id);
         }
-        if (event.fairness_warnings && (event.fairness_warnings as string[]).length > 0) {
-          setFairnessWarnings(event.fairness_warnings as string[])
+        if (
+          event.fairness_warnings &&
+          (event.fairness_warnings as string[]).length > 0
+        ) {
+          setFairnessWarnings(event.fairness_warnings as string[]);
         } else {
-          setFairnessWarnings([])
+          setFairnessWarnings([]);
         }
         if (event.content) {
-          const execPlan = (event as unknown as Record<string, unknown>).execution_plan as Record<string, unknown> | undefined
-          onCompleteRef.current?.(event.content, execPlan)
+          const eventRec = event as unknown as Record<string, unknown>;
+          const execPlan = eventRec.execution_plan as
+            | Record<string, unknown>
+            | undefined;
+          // PR-D — extrai ui_action / ui_action_params do payload WS para
+          // que `lia-float-context` possa despachar via `useUIAction`.
+          const uiAction =
+            typeof eventRec.ui_action === "string"
+              ? eventRec.ui_action
+              : undefined;
+          const uiActionParams =
+            eventRec.ui_action_params &&
+            typeof eventRec.ui_action_params === "object"
+              ? (eventRec.ui_action_params as Record<string, unknown>)
+              : undefined;
+          const extras =
+            uiAction || uiActionParams
+              ? { ui_action: uiAction, ui_action_params: uiActionParams }
+              : undefined;
+          onCompleteRef.current?.(event.content, execPlan, extras);
         }
-        break
+        break;
 
       case "error":
         // BUG-AUDIT #277 / H7: garantir que "LIA digitando" sai quando
         // qualquer caminho (WS, SSE) reporta erro — sem isso o indicador
         // ficava preso ligado quando o stream quebrava antes do primeiro
         // evento "message".
-        setIsThinking(false)
-        break
+        setIsThinking(false);
+        break;
 
       case "clarification": {
         // Tier 8 fallback from cascaded_router — backend sends:
         // { type: "clarification", question: string, options: string[] | {label,value}[] }
-        setIsThinking(false)
+        setIsThinking(false);
         const evt = event as unknown as {
-          question?: string
-          options?: Array<string | { label?: string; value?: string }>
-        }
-        const question = evt.question ?? ""
-        const optionsArr = (evt.options ?? []).map((opt) => {
-          if (typeof opt === "string") return { label: opt, value: opt }
-          return { label: opt.label ?? opt.value ?? "", value: opt.value ?? opt.label ?? "" }
-        }).filter((o) => o.label && o.value)
+          question?: string;
+          options?: Array<string | { label?: string; value?: string }>;
+        };
+        const question = evt.question ?? "";
+        const optionsArr = (evt.options ?? [])
+          .map((opt) => {
+            if (typeof opt === "string") return { label: opt, value: opt };
+            return {
+              label: opt.label ?? opt.value ?? "",
+              value: opt.value ?? opt.label ?? "",
+            };
+          })
+          .filter((o) => o.label && o.value);
         if (question) {
           onCompleteRef.current?.(question, undefined, {
             options: optionsArr,
             isClarification: true,
-          })
+          });
         }
-        break
+        break;
       }
 
       default:
-        break
+        break;
     }
-  }, [])
+  }, []);
 
   const {
     tokens,
@@ -351,15 +425,15 @@ export function useChatSocket({
     sendRaw,
     clearTokens,
     sendMessageViaSSE,
-  } = useAgentStreaming(sessionId, { authToken: wsAuthToken }, handleEvent)
+  } = useAgentStreaming(sessionId, { authToken: wsAuthToken }, handleEvent);
 
   useEffect(() => {
     if (wsAuthToken && isConnected) {
-      disconnect()
-      setTimeout(() => connect(), 50)
+      disconnect();
+      setTimeout(() => connect(), 50);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wsAuthToken])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wsAuthToken]);
 
   return {
     tokens,
@@ -389,5 +463,5 @@ export function useChatSocket({
     activePlanId,
     conversationIdFromWs,
     setIsThinking, // expor para que useChatMessages dispare o indicador "LIA digitando" também no caminho REST/SSE (BUG-13)
-  }
+  };
 }

@@ -640,5 +640,9 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(candidate_portal_explanation_router, tags=["candidate-portal-explanation"])
     app.include_router(rh_dashboard_router, prefix="/api/v1", tags=["rh-dashboard"])
     # ── Public (no /api/v1 prefix) ────────────────────────────────────────────
+    # ── Offer Proposals (PR-B) ──────────────────────────────────────────────
+    from app.api.v1.offers import router as _offers_router
+    app.include_router(_offers_router, prefix="/api/v1", tags=["offers"])
+
     app.include_router(candidate_portal.router, tags=["candidate-portal"])
     app.include_router(public_shared_searches.router, prefix="/api", tags=["public-shared-searches"])
