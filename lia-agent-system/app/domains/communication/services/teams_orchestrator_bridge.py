@@ -74,6 +74,24 @@ class TeamsOrchestratorBridge:
         if not text:
             return {"message": "Não entendi sua mensagem. Pode repetir?", "success": False}
 
+        # ── W7.2 PromptInjectionGuard — defense-in-depth antes do orchestrator ──
+        try:
+            from app.shared.robustness.security_patterns import check_input_security, get_block_response
+            _sec = check_input_security(text)
+            if _sec.is_blocked:
+                logger.warning(
+                    "[TeamsOrchestratorBridge] SecurityPatterns blocked: risk=%s categories=%s",
+                    _sec.risk_level, _sec.threat_categories,
+                )
+                return {
+                    "message": get_block_response(_sec, language="pt"),
+                    "success": False,
+                    "blocked_reason": "security_patterns",
+                }
+        except Exception as _sec_exc:
+            logger.debug("[TeamsOrchestratorBridge] security check skipped: %s", _sec_exc)
+        # ─────────────────────────────────────────────────────────────────────
+
         teams_user_id = activity.get("from", {}).get("id", "unknown")
         teams_user_name = activity.get("from", {}).get("name", "")
         conversation_id = activity.get("conversation", {}).get("id", "")

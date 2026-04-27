@@ -182,6 +182,30 @@ class CascadedRouter:
 
         _tracer = get_tracer()
 
+        # ── W7.2 PromptInjectionGuard — guard all callers (direct SSE/REST + orchestrator) ──
+        try:
+            from app.shared.robustness.security_patterns import check_input_security, get_block_response
+            _sec = check_input_security(message)
+            if _sec.is_blocked:
+                logger.warning(
+                    "[CascadedRouter] SecurityPatterns blocked routing: risk=%s categories=%s",
+                    _sec.risk_level, _sec.threat_categories,
+                )
+                return RouteResult(
+                    domain_id="recruiter_assistant",
+                    confidence=1.0,
+                    source="security_blocked",
+                    intent_details={
+                        "blocked": True,
+                        "risk_level": _sec.risk_level,
+                        "threat_categories": list(_sec.threat_categories or []),
+                        "block_response": get_block_response(_sec, language="pt"),
+                    },
+                )
+        except Exception as _sec_exc:
+            logger.debug("[CascadedRouter] security check skipped: %s", _sec_exc)
+        # ─────────────────────────────────────────────────────────────────────
+
         # PR-A Tier 0.0 — Rail A hint override (FE-H03 do audit enterprise).
         # Cobre TODOS os transports: WS via MainOrchestrator + SSE/REST que
         # chamam CascadedRouter direto. Curto-circuita os tiers 0-4 quando
