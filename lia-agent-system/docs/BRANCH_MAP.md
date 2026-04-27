@@ -1,7 +1,99 @@
 # Branch Map — lia-agent-system (Replit)
 
-> Guia de navegação para o time. Atualizado: 2026-04-27.
+> **Mapa de navegação canônico do repositório.** Atualizado: 2026-04-27.
 > Branch de trabalho ativa: `feat/orch-migration-sprint-I`
+> Cobertura: ~600 commits organizados em 18 milestones e 19 seções temáticas.
+
+---
+
+## Índice rápido por tema
+
+| # | Tema | Tag de milestone |
+|---|---|---|
+| §1 | Teams Integration (Wave 1–9) | `milestone/teams-integration-complete` |
+| §2 | Harness / Orchestrator Migration | `milestone/harness-orchestrator-v1` |
+| §3 | LIA Maturity Program (FIX 1-28) | `milestone/lia-maturity-track1` |
+| §4 | Rail Features (PR-A → PR-O) | `milestone/rail-features-sprint1` |
+| §5 | Tasks #712–#886 | — |
+| §6 | Chat Unificado — Saneamento Fase 1 | `milestone/chat-saneamento-fase1-p0` |
+| §7 | WorkflowRail UX Redesign (UX-1 a UX-7) | `milestone/workflow-rail-ux7` |
+| §8 | Domínios Production-Ready + Glossário | `milestone/domains-production-ready`, `milestone/glossary-canonical-281` |
+| §9 | DEFAULT_DOMAIN + Tenant Isolation | — |
+| §10 | Teams — Validação Inicial (pré-Wave 1) | `milestone/teams-task706-validation` |
+| §11 | Candidate Portal (Spec + Research) | `milestone/candidate-portal-rails-spec` |
+| §12 | DEVELOPER_HANDOFF — PARTES A–L | — |
+| §13 | PARTE D — Foundation Stack (D0-D5) | `milestone/parte-d-complete` |
+| §14 | LLM Factory + BYOK + Quality Tier Guard | `milestone/byok-llm-factory-adr-018` |
+| §15 | WSI — Métrica + Compliance + Transparência | `milestone/wsi-scale-0-10-atomic-flip`, `milestone/wsi-eu-ai-act-compliance`, `milestone/wsi-phase2-remediation` |
+| §16 | LIA Persona Diagnostic + Identity Override | `milestone/lia-persona-diagnostic` |
+| §17 | Eval Framework — Iterative Hardening | — |
+| §18 | Senioridade + Job Migration | — |
+| §19 | Chat Unificado — Hardening de Ações | — |
+
+---
+
+## Como usar este documento com IA (Claude Code, Cursor, agentes)
+
+Este documento foi escrito para ser **consumível por LLM** além de humanos. Para que sua IA aproveite ao máximo:
+
+### 1. Inclua-o no contexto da sessão
+- **Claude Code:** mencione `@docs/BRANCH_MAP.md` na primeira mensagem da sessão.
+- **Cursor:** adicione como `@Doc` permanente do workspace, ou inclua no `.cursorrules`.
+- **Claude API direta:** prefixe o system prompt com o conteúdo deste arquivo.
+
+### 2. Padrão de prompt recomendado
+
+```
+Quero trabalhar em <tema>. Antes de qualquer mudança:
+1. Leia BRANCH_MAP.md e identifique a seção relevante (1-19).
+2. Liste os milestones e docs canônicos cruzados.
+3. Rode os comandos `git log --grep` listados para ver o histórico.
+4. Só então proponha a mudança.
+```
+
+### 3. Cross-references obrigatórias por tema
+
+Quando trabalhar em um tema da seção 1-19, **sempre** cruze este BRANCH_MAP com os docs canônicos abaixo:
+
+| Tema | Doc canônico raiz | Doc específico |
+|---|---|---|
+| Geral / qualquer mudança | [`CLAUDE.md`](../../CLAUDE.md) | — |
+| Arquitetura | [`ARCHITECTURE.md`](../../ARCHITECTURE.md), [`ARCHITECTURE_TARGET.md`](../../ARCHITECTURE_TARGET.md) | [`docs/architecture/AI_AGENT_AUDIT_REPORT.md`](architecture/AI_AGENT_AUDIT_REPORT.md) |
+| Handoff principal | [`DEVELOPER_HANDOFF.md`](../../DEVELOPER_HANDOFF.md) | (PARTES A–L, ver §12) |
+| Teams | — | [`docs/DOC_HANDOFF_TEAMS.md`](DOC_HANDOFF_TEAMS.md), [`docs/CONTRATO_RAILS_TEAMS.md`](CONTRATO_RAILS_TEAMS.md), [`docs/TEAMS_ENDPOINTS_AND_DIAGRAM.md`](TEAMS_ENDPOINTS_AND_DIAGRAM.md) |
+| LIA Maturity | — | [`docs/HANDOFF_LIA_MATURITY_PROGRAM_COMPLETE.md`](HANDOFF_LIA_MATURITY_PROGRAM_COMPLETE.md), [`docs/LIA_MATURITY_ROADMAP.md`](LIA_MATURITY_ROADMAP.md), [`docs/LIA_MATURITY_LEAP_RESUMO.md`](LIA_MATURITY_LEAP_RESUMO.md) |
+| LLM Factory / BYOK | [`LLM_FACTORY_HANDOFF_v2.md`](../../LLM_FACTORY_HANDOFF_v2.md) | ADR-018 |
+| Hardening / Segurança | [`HARDENING_PLAN.md`](../../HARDENING_PLAN.md) | [`docs/PRODUCTION_READINESS_GAPS.md`](PRODUCTION_READINESS_GAPS.md), [`docs/PRODUCTION_READINESS_REPORT.md`](PRODUCTION_READINESS_REPORT.md) |
+| Multi-tenancy / RLS | — | [`docs/RLS_CONTRACT.md`](RLS_CONTRACT.md), [`docs/CANONICAL_SOURCES_SPEC.md`](CANONICAL_SOURCES_SPEC.md) |
+| Compliance EU AI Act | — | [`docs/FRIA_EU_AI_ACT.md`](FRIA_EU_AI_ACT.md), [`docs/FAIRNESS_GUARD_COVERAGE.md`](FAIRNESS_GUARD_COVERAGE.md) |
+| Conceitos de IA | — | [`docs/CONCEITOS_IA_WEDOTALENT.md`](CONCEITOS_IA_WEDOTALENT.md), [`docs/MAPA_CAMADA_INTELIGENCIA.md`](MAPA_CAMADA_INTELIGENCIA.md) |
+| Histórico de tasks | — | [`docs/HISTORICO_TASKS_IMPLEMENTADAS.md`](HISTORICO_TASKS_IMPLEMENTADAS.md) |
+| Runbooks operacionais | — | [`docs/RUNBOOK_INCIDENT_PLAYBOOKS.md`](RUNBOOK_INCIDENT_PLAYBOOKS.md), [`docs/RUNBOOK_DEGRADATION.md`](RUNBOOK_DEGRADATION.md), [`docs/RUNBOOK_BACKUP_RECOVERY.md`](RUNBOOK_BACKUP_RECOVERY.md) |
+| Rails contract | — | [`docs/RAILS_GAPS.md`](RAILS_GAPS.md), [`docs/AUDIT_FORK_VS_RAILS_2026-04-05.md`](AUDIT_FORK_VS_RAILS_2026-04-05.md) |
+| API | [`API_REFERENCE.md`](../../API_REFERENCE.md), [`API_EXAMPLES.md`](../../API_EXAMPLES.md) | [`docs/API_REFERENCE.md`](API_REFERENCE.md) |
+
+### 4. Fluxos de trabalho prontos
+
+| Pergunta da IA / dev | Resposta com este map |
+|---|---|
+| "Onde está o código de Teams?" | §1 (Teams Integration) + grep `(teams)` + `git checkout milestone/teams-integration-complete` |
+| "O que é PARTE D?" | §13 + `DEVELOPER_HANDOFF.md` PARTE D + `git show milestone/parte-d-complete` |
+| "Como o BYOK funciona?" | §14 + `LLM_FACTORY_HANDOFF_v2.md` + ADR-018 + tag `milestone/byok-llm-factory-adr-018` |
+| "Por que escala WSI 0-10?" | §15 + Task #497 PR1/PR2/PR3 + ADR-017 |
+| "Eval framework está quebrado, o que tentar?" | §17 — 30 commits `fix(eval):` documentam padrões já corrigidos |
+| "Persona da LIA inconsistente?" | §16 + Task #527 (120 sondas automatizadas) |
+
+### 5. Convenções de commit que este map aproveita
+
+- `feat(<dominio>):` — feature em domínio específico (teams, lia, wsi, harness…)
+- `fix(<dominio>):` — bug fix
+- `docs(handoff): PARTE X` — adição cumulativa ao DEVELOPER_HANDOFF.md
+- `Task #NNN` — task numerada do backlog
+- `FIX N` — correção numerada do programa LIA Maturity
+- `Wave N.M` — entrega Teams (W1.1, W2.3, W9.2…)
+- `feat(orch-migration): Sprint N` — sprint de migração do orquestrador
+
+Use `git log --grep="<padrão>"` para isolar qualquer um deles.
 
 ---
 
@@ -409,3 +501,102 @@ git checkout -b fix/teams-<descricao> milestone/teams-integration-complete
 # Ver o que mudou em Teams desde o milestone
 git diff milestone/teams-integration-complete HEAD -- app/api/v1/teams.py
 ```
+
+---
+
+## Apêndice A — Templates de prompt para IA
+
+Cole estes prompts diretamente no Claude Code, Cursor ou qualquer agente para acelerar onboarding.
+
+### Template 1 — Onboarding em tema desconhecido
+
+```
+Estou começando a trabalhar em <tema>. Preciso entender:
+
+1. Lê docs/BRANCH_MAP.md e identifica em qual seção §1-19 cai esse tema.
+2. Lista as tags milestone correspondentes.
+3. Lista os docs canônicos cruzados (DEVELOPER_HANDOFF, ADR, MATURITY, etc.)
+4. Roda `git log --grep` para os 20 commits mais relevantes.
+5. Para cada commit relevante, mostra o subject e o autor.
+6. Resume em até 10 bullets o que entender do tema antes de eu propor mudança.
+
+NÃO escreve código ainda. Só me devolve esse mapa.
+```
+
+### Template 2 — Investigar bug em tema mapeado
+
+```
+Bug observado: <descrição>
+
+Antes de propor fix:
+1. Identifica em docs/BRANCH_MAP.md qual seção §1-19 cobre esse tema.
+2. Lê o último milestone do tema com `git show <tag>`.
+3. Procura nos últimos 50 commits do tema (grep do BRANCH_MAP) por
+   regressões similares ou commits que tocaram o arquivo afetado.
+4. Cita 2-3 commits que parecem relacionados.
+5. Propõe hipótese de causa-raiz baseada nessa cronologia.
+6. SÓ depois propõe fix — alinhado a `canonical-fix` skill (corrigir na origem).
+```
+
+### Template 3 — Estender feature de tema existente
+
+```
+Quero adicionar <feature> ao tema <tema>.
+
+1. Confirma em docs/BRANCH_MAP.md a seção e milestones do tema.
+2. Verifica se há branch de feature ativo (ex: `feat/pr-X-<...>`).
+   Se sim, criar a partir dele. Se não, criar branch novo seguindo
+   o padrão `feat/<tema>-<descricao-curta>`.
+3. Lê o doc canônico do tema (Teams → DOC_HANDOFF_TEAMS, BYOK → ADR-018, etc.)
+   antes de qualquer linha de código.
+4. Aplica skills production-quality + harness-engineering + canonical-fix.
+5. Commit atomic ao final, mensagem `feat(<tema>): <descricao>`.
+6. NÃO faz git push.
+```
+
+### Template 4 — Hotfix de produção urgente
+
+```
+Hotfix urgente: <descrição do incidente>
+
+1. Identifica o tema em docs/BRANCH_MAP.md.
+2. Cria branch a partir do último milestone estável do tema:
+   `git checkout -b fix/hotfix-<...>  milestone/<tag>`
+3. Aplica fix mínimo (não refatora).
+4. Atualiza o RUNBOOK relevante em docs/RUNBOOK_*.md se for incidente recorrente.
+5. Commit: `fix(<tema>): hotfix <descricao>` + nota no DEVELOPER_HANDOFF.md
+   na PARTE atual.
+6. NÃO faz push.
+```
+
+---
+
+## Apêndice B — Manutenção deste documento
+
+Quando este BRANCH_MAP fica desatualizado, ele perde valor rápido. Manter assim:
+
+1. **A cada PR mergeado em `feat/orch-migration-sprint-I`:** se for um tema novo (não cabe em §1-19), adicionar nova seção numerada.
+2. **A cada milestone significativo:** criar tag `milestone/<descricao>` e adicionar à tabela de Milestones.
+3. **A cada novo doc canônico em `docs/`:** adicionar linha à tabela "Cross-references obrigatórias por tema" (seção "Como usar").
+4. **A cada nova convenção de commit prefix:** adicionar à seção "Convenções de commit".
+
+Atualizações a este arquivo devem usar commit message:
+```
+docs(nav): BRANCH_MAP — <descrição da atualização>
+```
+
+Para verificar quem atualizou por último:
+```bash
+git log --oneline -- docs/BRANCH_MAP.md
+```
+
+---
+
+## Apêndice C — Estatísticas
+
+- **Branches ativas:** 9 (1 ativa, 3 prontas para PR, 3 integradas, 2 históricas)
+- **Milestones:** 18 tags `milestone/*`
+- **Seções temáticas:** 19 (§1–§19)
+- **Commits cobertos:** ~600 commits (3 janelas de ~200)
+- **Docs canônicos cruzados:** 24 (root + docs/ + docs/architecture/)
+- **Última atualização:** 2026-04-27
