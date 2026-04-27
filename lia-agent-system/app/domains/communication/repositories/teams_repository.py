@@ -31,15 +31,6 @@ class TeamsRepository:
         )
         return result.scalar_one_or_none()
 
-    async def get_conversation_by_teams_id(self, teams_conversation_id: str) -> TeamsConversation | None:
-        """Legacy alias — uses teams_conversation_id field."""
-        result = await self.db.execute(
-            select(TeamsConversation).where(
-                TeamsConversation.teams_conversation_id == teams_conversation_id
-            )
-        )
-        return result.scalar_one_or_none()
-
     async def get_conversation_by_user_id(
         self, user_id: str
     ) -> TeamsConversation | None:
@@ -219,19 +210,6 @@ class TeamsRepository:
             query = query.where(TeamsActionAuditLog.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar() or 0
-
-    # ── Legacy compat ───────────────────────────────────────────────────
-
-    async def get_conversation_by_candidate(
-        self, candidate_id: str, vacancy_id: str | None = None
-    ) -> TeamsConversation | None:
-        q = select(TeamsConversation).where(
-            TeamsConversation.candidate_id == candidate_id
-        )
-        if vacancy_id:
-            q = q.where(TeamsConversation.vacancy_id == vacancy_id)
-        result = await self.db.execute(q)
-        return result.scalar_one_or_none()
 
     # ── SSO / Tab auth (teams.py Phase 2) ───────────────────────────────
 

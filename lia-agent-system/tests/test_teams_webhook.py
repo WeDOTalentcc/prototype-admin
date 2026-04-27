@@ -66,6 +66,29 @@ except ImportError:
     pass
 
 
+@pytest.fixture
+def _mock_recruiter_lookup():
+    """Patch TeamsRepository.get_user_by_platform_id to return a tenant-resolving User.
+
+    After W1.2 (P0-2) the webhook resolves company_id server-side from
+    payload.recruiter_id via TeamsRepository.get_user_by_platform_id. Tests
+    that exercise the happy-path without a real DB need to mock this lookup;
+    otherwise the W1.2 hardening (fail-closed on unresolved tenant) returns 403.
+    """
+    from unittest.mock import patch, AsyncMock, MagicMock
+    from app.domains.communication.repositories.teams_repository import TeamsRepository
+
+    fake_user = MagicMock()
+    fake_user.company_id = "comp_test_resolved"
+    fake_user.id = "user_uuid"
+    with patch.object(
+        TeamsRepository,
+        "get_user_by_platform_id",
+        AsyncMock(return_value=fake_user),
+    ):
+        yield fake_user
+
+
 def _generate_signature(payload: dict, secret: str) -> str:
     """Generate HMAC-SHA256 signature for testing."""
     payload_bytes = json.dumps(payload).encode("utf-8")
@@ -223,9 +246,9 @@ class TestTeamsWebhookEndpoint:
         assert "audit_id" in data
 
     @patch("app.api.v1.teams.settings.TEAMS_WEBHOOK_SECRET", None)
-    async def test_invalid_action_returns_400(self):
+    async def test_invalid_action_returns_400(self, _mock_recruiter_lookup):
         """Test that invalid action returns 400 error."""
-        payload = {"action": "invalid_action", "candidate_id": "cand_test_123"}
+        payload = {"action": "invalid_action", "candidate_id": "cand_test_123", "recruiter_id": "recruiter_test"}
 
         async with AsyncClient(
             transport=ASGITransport(app=_test_app), base_url=BASE_URL
@@ -465,13 +488,14 @@ class TestTeamsWebhookPayloadValidation:
     """Tests for payload validation in Teams webhook."""
 
     @patch("app.api.v1.teams.settings.TEAMS_WEBHOOK_SECRET", None)
-    async def test_action_is_case_insensitive(self):
+    async def test_action_is_case_insensitive(self, _mock_recruiter_lookup):
         """Test that action field is case-insensitive."""
         for action in ["APPROVE", "Approve", "aPpRoVe"]:
             payload = {
                 "action": action,
                 "candidate_id": "cand_test_123",
                 "candidate_name": "Test User",
+            "recruiter_id": "recruiter_test",  # W1.2 hardening: required
             }
 
             async with AsyncClient(
@@ -484,12 +508,13 @@ class TestTeamsWebhookPayloadValidation:
             assert data["action"] == "approve"
 
     @patch("app.api.v1.teams.settings.TEAMS_WEBHOOK_SECRET", None)
-    async def test_company_id_from_header(self):
+    async def test_company_id_from_header(self, _mock_recruiter_lookup):
         """Test that company_id can come from X-Company-ID header."""
         payload = {
             "action": "reject",
             "candidate_id": "cand_test_123",
             "candidate_name": "Test User",
+            "recruiter_id": "recruiter_test",  # W1.2 hardening: required
         }
 
         async with AsyncClient(
@@ -504,12 +529,13 @@ class TestTeamsWebhookPayloadValidation:
         assert response.status_code == 200
 
     @patch("app.api.v1.teams.settings.TEAMS_WEBHOOK_SECRET", None)
-    async def test_metadata_field_is_optional(self):
+    async def test_metadata_field_is_optional(self, _mock_recruiter_lookup):
         """Test that metadata field is optional."""
         payload = {
             "action": "reject",
             "candidate_id": "cand_test_123",
             "candidate_name": "Test User",
+            "recruiter_id": "recruiter_test",  # W1.2 hardening: required
         }
 
         async with AsyncClient(
@@ -520,12 +546,13 @@ class TestTeamsWebhookPayloadValidation:
         assert response.status_code == 200
 
     @patch("app.api.v1.teams.settings.TEAMS_WEBHOOK_SECRET", None)
-    async def test_metadata_field_with_extra_data(self):
+    async def test_metadata_field_with_extra_data(self, _mock_recruiter_lookup):
         """Test that metadata field accepts extra data."""
         payload = {
             "action": "reject",
             "candidate_id": "cand_test_123",
             "candidate_name": "Test User",
+            "recruiter_id": "recruiter_test",  # W1.2 hardening: required
             "metadata": {
                 "source": "teams_notification",
                 "channel_id": "19:abc123",
