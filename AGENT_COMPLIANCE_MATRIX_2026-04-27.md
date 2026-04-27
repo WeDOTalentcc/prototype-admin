@@ -19,7 +19,7 @@ Gerado por `scripts/audit_agent_compliance.py` v2 (W3.3 refinado 2026-04-27).
 | OTEL | 🟢 13/13 (100%) | Observability — @trace_span (auto via orchestrator parent span) |
 | HITL gate | 🔴 4/13 (30%) | AUD-4 — human-in-the-loop (per-agent, opcional) |
 | System YAML | 🟡 8/13 (61%) | app/prompts/domains/<domain>.yaml exists |
-| Tool registry | 🟢 12/13 (92%) | <domain>_tool_registry.py exists |
+| Tool registry | 🟢 13/13 (100%) | <domain>_tool_registry.py exists |
 
 ## Matriz por agent
 
@@ -32,7 +32,7 @@ Gerado por `scripts/audit_agent_compliance.py` v2 (W3.3 refinado 2026-04-27).
 | `candidate_self_service` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `communication` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `company_settings` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
-| `pipeline` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| `pipeline` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
 | `policy` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
 | `jobs_management` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
 | `kanban` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
@@ -43,7 +43,6 @@ Gerado por `scripts/audit_agent_compliance.py` v2 (W3.3 refinado 2026-04-27).
 
 - **HITL gate** — 9 agents sem cobertura (70% gap)
 - **System YAML** — 5 agents sem cobertura (39% gap)
-- **Tool registry** — 1 agents sem cobertura (8% gap)
 
 ## Próximos passos
 

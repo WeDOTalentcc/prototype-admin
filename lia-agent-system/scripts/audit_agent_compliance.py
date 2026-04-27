@@ -71,10 +71,16 @@ def _check_dimension(dim_key: str | re.Pattern, agent_path: Path, src: str) -> b
             stem = agent_path.stem.replace("_react_agent", "")
             return (_PROMPTS_DIR / f"{stem}.yaml").exists()
         if dim_key == "__tool_registry__":
+            # v3: accept either same-folder registry OR a cross-domain import
             expected = agent_path.parent / agent_path.name.replace(
                 "_react_agent.py", "_tool_registry.py"
             )
-            return expected.exists()
+            if expected.exists():
+                return True
+            # cross-domain: import like 
+            if re.search(r"from app\.domains\.[\w]+\.agents\.\w+_tool_registry import", src):
+                return True
+            return False
         # plain substring (treated as regex though)
         return bool(re.search(dim_key, src))
     return bool(dim_key.search(src))

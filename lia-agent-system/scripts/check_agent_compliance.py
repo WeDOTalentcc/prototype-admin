@@ -112,11 +112,16 @@ def _check_file(path: Path) -> list[str]:
 
     # Matching tool registry
     expected_registry = path.parent / path.name.replace("_react_agent.py", "_tool_registry.py")
-    if not expected_registry.exists():
+    has_local_registry = expected_registry.exists()
+    has_cross_domain_registry = bool(re.search(
+        r"from app\.domains\.[\w]+\.agents\.\w+_tool_registry import", src
+    ))
+    if not has_local_registry and not has_cross_domain_registry:
         violations.append(
-            f"missing tool registry at {expected_registry.relative_to(_ROOT)} — "
-            f"create it with @tool_handler(\"<domain>\") wrappers and a "
-            f"get_<domain>_tools() function returning list[ToolDefinition]."
+            f"missing tool registry — either create local at "
+            f"{expected_registry.relative_to(_ROOT)} OR import from another domain via "
+            f" (G7 v3 "
+            f"accepts cross-domain)."
         )
 
     return violations
