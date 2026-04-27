@@ -21,6 +21,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.auth.dependencies import get_current_user
+from app.auth.models import User
 from app.core.database import get_db
 from app.domains.communication.repositories.teams_repository import TeamsRepository
 from app.domains.communication.services.teams_auth import bot_auth
@@ -541,23 +543,37 @@ async def get_teams_audit_logs(
     limit: int = 50,
     action: str | None = None,
     candidate_id: str | None = None,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
     """
-    Retrieve Teams webhook audit logs from database.
-    
+    Retrieve Teams webhook audit logs scoped to the caller tenant.
+
+    P0-3 fix (auditoria 2026-04-26): endpoint requires authentication and
+    filters by current_user.company_id to enforce multi-tenant boundary.
+    Sem isso, qualquer caller autenticado listava logs de TODAS as empresas.
+
     Query parameters:
     - limit: Maximum number of logs to return (default 50)
     - action: Filter by action type
     - candidate_id: Filter by candidate ID
-    
-    Returns paginated audit logs ordered by most recent first.
+    Tenant scoping is implicit via the bearer token — caller cannot list
+    audit logs of another tenant.
     """
     try:
         repo = TeamsRepository(db)
-        logs = await repo.list_audit_logs(action=action, candidate_id=candidate_id, limit=limit)
-        total_count = await repo.count_audit_logs(action=action, candidate_id=candidate_id)
-        
+        logs = await repo.list_audit_logs(
+            action=action,
+            candidate_id=candidate_id,
+            company_id=current_user.company_id,
+            limit=limit,
+        )
+        total_count = await repo.count_audit_logs(
+            action=action,
+            candidate_id=candidate_id,
+            company_id=current_user.company_id,
+        )
+
         return {
             "count": len(logs),
             "total": total_count,

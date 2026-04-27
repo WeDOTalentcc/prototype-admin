@@ -46,6 +46,26 @@ async def _mock_db():
 _test_app.dependency_overrides[get_db] = _mock_db
 
 
+def _mock_current_user():
+    """Mock authenticated user for tests after W1.3 (P0-3 enforce tenant filter)."""
+    from unittest.mock import MagicMock
+    user = MagicMock()
+    user.id = "mock-user-id"
+    user.company_id = "mock-company-id"
+    user.email = "mock@test.com"
+    return user
+
+
+# Override get_current_user so audit-logs endpoint passes auth gate.
+# Tests focus on routing/response shape; tenant filter mechanics are covered
+# in tests/integration/test_teams_audit_logs_tenant_filter_w1_3.py.
+try:
+    from app.auth.dependencies import get_current_user
+    _test_app.dependency_overrides[get_current_user] = _mock_current_user
+except ImportError:
+    pass
+
+
 def _generate_signature(payload: dict, secret: str) -> str:
     """Generate HMAC-SHA256 signature for testing."""
     payload_bytes = json.dumps(payload).encode("utf-8")

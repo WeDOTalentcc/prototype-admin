@@ -180,13 +180,23 @@ class TeamsRepository:
         *,
         action: str | None = None,
         candidate_id: str | None = None,
+        company_id: str | None = None,
         limit: int = 50,
     ) -> list[TeamsActionAuditLog]:
+        """List audit logs with optional filters.
+
+        P0-3 fix (auditoria 2026-04-26): company_id filter is the multi-tenant
+        boundary. Caller (endpoint) MUST pass current_user.company_id to avoid
+        cross-tenant leak. None is allowed only for admin/diagnostic contexts
+        where caller has explicitly opted in.
+        """
         query = select(TeamsActionAuditLog)
         if action:
             query = query.where(TeamsActionAuditLog.action == action)
         if candidate_id:
             query = query.where(TeamsActionAuditLog.candidate_id == candidate_id)
+        if company_id:
+            query = query.where(TeamsActionAuditLog.company_id == company_id)
         query = query.order_by(TeamsActionAuditLog.created_at.desc()).limit(limit)
         result = await self.db.execute(query)
         return list(result.scalars().all())
@@ -196,13 +206,17 @@ class TeamsRepository:
         *,
         action: str | None = None,
         candidate_id: str | None = None,
+        company_id: str | None = None,
     ) -> int:
+        """Count audit logs with optional filters. See list_audit_logs for tenant rules."""
         from sqlalchemy import func
         query = select(func.count(TeamsActionAuditLog.id))
         if action:
             query = query.where(TeamsActionAuditLog.action == action)
         if candidate_id:
             query = query.where(TeamsActionAuditLog.candidate_id == candidate_id)
+        if company_id:
+            query = query.where(TeamsActionAuditLog.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar() or 0
 
