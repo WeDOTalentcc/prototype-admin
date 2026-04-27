@@ -26,6 +26,7 @@ from app.auth.models import User, UserRole
 from app.core.database import get_db
 from app.domains.communication.repositories.teams_repository import TeamsRepository
 from app.domains.communication.services.teams_auth import bot_auth
+from app.domains.communication.services.consent_gate import CommunicationConsentGate
 from app.domains.communication.services.teams_simple import simple_teams_bot
 from lia_models.teams import TeamsActionAuditLog, TeamsConversation, TeamsMessage
 
@@ -344,6 +345,44 @@ async def _handle_approve_action(
             candidate_id=payload.candidate_id
         )
     
+    # ── W7.3 LGPD: verify WhatsApp consent before initiating screening ─────────
+    if payload.candidate_id and company_id:
+        consent_result = await CommunicationConsentGate(db).check(
+            candidate_id=payload.candidate_id,
+            company_id=company_id,
+            channel="whatsapp",
+        )
+        if not consent_result.allowed:
+            _CONSENT_REASON_MSG: dict[str, str] = {
+                "revoked":     "candidato revogou o consentimento para contato via WhatsApp",
+                "absent":      "candidato não forneceu consentimento para contato via WhatsApp (LGPD Art. 7)",
+                "check_error": "não foi possível verificar consentimento LGPD — tente novamente",
+            }
+            reason_msg = _CONSENT_REASON_MSG.get(consent_result.reason or "", consent_result.reason or "erro")
+            await _log_teams_action_audit(
+                action="approve_blocked_lgpd_consent",
+                result="blocked",
+                actor_id=payload.recruiter_id,
+                actor_name=payload.recruiter_name,
+                candidate_id=payload.candidate_id,
+                vacancy_id=payload.vacancy_id,
+                company_id=company_id,
+                details={
+                    "lgpd_reason": consent_result.reason,
+                    "consent_type": consent_result.consent_type,
+                    "channel": "whatsapp",
+                },
+                db=db,
+            )
+            return TeamsWebhookResponse(
+                success=False,
+                action="approve",
+                message=f"Triagem bloqueada: {reason_msg}.",
+                screening_initiated=False,
+                candidate_id=payload.candidate_id,
+            )
+    # ─────────────────────────────────────────────────────────────────────────
+
     screening_result = await _start_whatsapp_screening(
         candidate_id=payload.candidate_id or "",
         candidate_name=payload.candidate_name or "Candidato",
