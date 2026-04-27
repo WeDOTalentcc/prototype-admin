@@ -22,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.auth.dependencies import get_current_user
-from app.auth.models import User
+from app.auth.models import User, UserRole
 from app.core.database import get_db
 from app.domains.communication.repositories.teams_repository import TeamsRepository
 from app.domains.communication.services.teams_auth import bot_auth
@@ -32,6 +32,49 @@ from lia_models.teams import TeamsActionAuditLog, TeamsConversation, TeamsMessag
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/teams", tags=["teams"])
+
+
+def _enforce_company_id_scope(
+    requested: str | None,
+    current_user: User,
+    *,
+    allow_none: bool = False,
+) -> str | None:
+    """Cross-tenant guard for endpoints that accept ``company_id`` from the request.
+
+    P1 hardening (auditoria 2026-04-27): the Teams proactivity endpoints
+    historically trusted the ``company_id`` query parameter, which let any
+    authenticated recruiter trigger Teams notifications/digests for *another*
+    company. We now enforce: non-admin users may only operate on their own
+    ``company_id``; admins may pass any value (including ``None`` when the
+    endpoint supports a fan-out).
+
+    Returns the resolved ``company_id`` (string), or ``None`` only if
+    ``allow_none`` is ``True`` and the caller is admin AND no value was sent.
+    Raises 403 on cross-tenant attempts.
+    """
+    own = str(current_user.company_id) if current_user.company_id else None
+    is_admin = current_user.role == UserRole.admin
+
+    if requested is None:
+        if is_admin and allow_none:
+            return None
+        if own is None:
+            raise HTTPException(
+                status_code=403,
+                detail="company_id could not be resolved from authenticated user",
+            )
+        return own
+
+    requested_str = str(requested)
+    if is_admin:
+        return requested_str
+    if own is not None and requested_str == own:
+        return requested_str
+    raise HTTPException(
+        status_code=403,
+        detail="cross-tenant company_id is not allowed for this user",
+    )
 
 
 def get_teams_repo(db: AsyncSession = Depends(get_db)) -> TeamsRepository:
@@ -947,6 +990,7 @@ async def run_proactivity_checks(
     current_user: User = Depends(get_current_user),
 ):
     """Run proactivity checks (stalled pipelines, deadlines). Call periodically."""
+    company_id = _enforce_company_id_scope(company_id, current_user, allow_none=True)
     try:
         from app.domains.communication.services.teams_proactivity_engine import teams_proactivity_engine
         stalled_sent = await teams_proactivity_engine.check_stalled_pipelines(company_id)
@@ -972,6 +1016,7 @@ async def notify_new_candidate(
     current_user: User = Depends(get_current_user),
 ):
     """Notify recruiters when new candidate applies."""
+    company_id = _enforce_company_id_scope(company_id, current_user) or company_id
     try:
         from app.domains.communication.services.teams_proactivity_engine import teams_proactivity_engine
         sent = await teams_proactivity_engine.on_candidate_applied(
@@ -1001,6 +1046,7 @@ async def notify_screening_complete(
     current_user: User = Depends(get_current_user),
 ):
     """Notify recruiters when a screening (WSI/BARS) completes."""
+    company_id = _enforce_company_id_scope(company_id, current_user) or company_id
     try:
         from app.domains.communication.services.teams_proactivity_engine import teams_proactivity_engine
         sent = await teams_proactivity_engine.on_screening_complete(
@@ -1028,6 +1074,7 @@ async def send_daily_digest(
     Trigger the daily digest card for all Teams recruiters.
     Should be called by a cron job at 08:00 every weekday.
     """
+    company_id = _enforce_company_id_scope(company_id, current_user, allow_none=True)
     from app.domains.communication.services.teams_proactivity_engine import teams_proactivity_engine
     sent = await teams_proactivity_engine.send_daily_digest(company_id=company_id)
     return {"sent": sent, "status": "ok"}

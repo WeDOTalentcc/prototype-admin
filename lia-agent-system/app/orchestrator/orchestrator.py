@@ -144,28 +144,22 @@ class Orchestrator:
                 if state:
                     ctx.update({k: state.get(k) for k in ("last_agent", "current_job", "current_candidate")})
 
-            # PR-A: hint override do Rail A (FE-H03 do audit enterprise 2026-04-26).
-            # Precedência: rail_a_hint > context_type > CascadedRouter.
-            from app.orchestrator.services.rail_a_hint_override import try_hint_route
+            # Delegação canônica para context_type_override service (Sprint II.4, ADR-019).
+            # Mantém log com mesmo formato do V1 para compat com observabilidade existente.
+            #
+            # PR-A: rail_a_hint override é avaliado dentro do CascadedRouter (Tier 0.0,
+            # canonical-fix: uma fonte da verdade). context_type override permanece aqui
+            # para preservar precedência V1 (context_type > CascadedRouter tiers).
             from app.orchestrator.services.context_type_override import try_override_route
-            route = try_hint_route(ctx)
+            route = try_override_route(ctx)
             if route is not None:
                 logger.info(
-                    "[Orchestrator] rail_a_hint override: card=%s → domain=%s intent=%s",
-                    (ctx.get("metadata") or {}).get("card_id", "?"),
+                    "[Orchestrator] context_type override: %s → domain=%s",
+                    ctx.get("context_type", ""),
                     route.domain_id,
-                    (route.intent_details or {}).get("raw_intent", "?"),
                 )
             else:
-                route = try_override_route(ctx)
-                if route is not None:
-                    logger.info(
-                        "[Orchestrator] context_type override: %s → domain=%s",
-                        ctx.get("context_type", ""),
-                        route.domain_id,
-                    )
-                else:
-                    route = await self._cascaded_router.route(sanitized, ctx, session_id=conversation_id)
+                route = await self._cascaded_router.route(sanitized, ctx, session_id=conversation_id)
             domain_id, confidence = route.domain_id, route.confidence
             intent = (route.intent_details or {}).get("raw_intent") or route.domain_id
             if intent in self._cacheable_intents and self._response_cache.is_enabled():
