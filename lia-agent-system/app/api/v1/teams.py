@@ -488,10 +488,27 @@ async def teams_adaptive_card_webhook(
                 payload.recruiter_id, _exc,
             )
     if not resolved_company_id:
-        logger.warning(
-            "[TEAMS WEBHOOK] could not resolve company_id (recruiter_id=%s) — "
-            "action proceeds but tenant boundary is unenforced",
-            payload.recruiter_id,
+        # Fail-closed (security review, Audit Rev 4): never execute a
+        # privileged action (approve/reject/schedule/request_info)
+        # without a verifiable tenant boundary. Returning 403 prevents
+        # cross-tenant data leakage from a forged or stale recruiter_id.
+        logger.error(
+            "[TEAMS WEBHOOK] tenant boundary unresolved (recruiter_id=%s) — refusing action=%s",
+            payload.recruiter_id, payload.action,
+        )
+        await _log_teams_action_audit(
+            action=payload.action.lower(),
+            result="tenant_unresolved",
+            actor_id=payload.recruiter_id,
+            actor_name=payload.recruiter_name,
+            candidate_id=payload.candidate_id,
+            vacancy_id=payload.vacancy_id,
+            details={"reason": "company_id could not be resolved from recruiter_id"},
+            db=db,
+        )
+        raise HTTPException(
+            status_code=403,
+            detail="Tenant boundary could not be verified; action refused.",
         )
 
     action = payload.action.lower()
