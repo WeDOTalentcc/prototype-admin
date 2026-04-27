@@ -53,7 +53,9 @@ class TeamsWebhookPayload(BaseModel):
     candidate_phone: str | None = Field(None, description="Candidate phone number")
     vacancy_id: str | None = Field(None, description="Job vacancy ID")
     vacancy_title: str | None = Field(None, description="Job vacancy title")
-    company_id: str | None = Field(None, description="Company ID")
+    # company_id REMOVED (P0-2 fix, auditoria 2026-04-26): server-side
+    # resolution via recruiter_id -> User.company_id lookup. Aceitar do
+    # cliente seria multi-tenant violation (CLAUDE.md global non-negotiable).
     recruiter_id: str | None = Field(None, description="Recruiter user ID who performed the action")
     recruiter_name: str | None = Field(None, description="Recruiter name")
     notes: str | None = Field(None, description="Optional notes from recruiter")
@@ -62,6 +64,8 @@ class TeamsWebhookPayload(BaseModel):
     metadata: dict[str, Any] | None = Field(default_factory=dict, description="Additional metadata")
     
     class Config:
+        # P0-2: silently drop any client-sent company_id (extra="ignore").
+        extra = "ignore"
         json_schema_extra = {
             "example": {
                 "action": "approve",
@@ -70,7 +74,7 @@ class TeamsWebhookPayload(BaseModel):
                 "candidate_phone": "+5511999999999",
                 "vacancy_id": "vac_456",
                 "vacancy_title": "Desenvolvedor Python Senior",
-                "company_id": "comp_789"
+                "recruiter_id": "user_001"
             }
         }
 
@@ -266,7 +270,8 @@ Você está disponível para começar agora? Responda *SIM* para iniciar ou *DEP
 
 async def _handle_approve_action(
     payload: TeamsWebhookPayload,
-    db: AsyncSession
+    company_id: str | None,
+    db: AsyncSession,
 ) -> TeamsWebhookResponse:
     """Handle approve action from Teams Adaptive Card."""
     if not payload.candidate_phone:
@@ -283,7 +288,7 @@ async def _handle_approve_action(
         candidate_phone=payload.candidate_phone,
         vacancy_id=payload.vacancy_id,
         vacancy_title=payload.vacancy_title,
-        company_id=payload.company_id,
+        company_id=company_id,
         recruiter_name=payload.recruiter_name,
         db=db
     )
@@ -295,7 +300,7 @@ async def _handle_approve_action(
         actor_name=payload.recruiter_name,
         candidate_id=payload.candidate_id,
         vacancy_id=payload.vacancy_id,
-        company_id=payload.company_id,
+        company_id=company_id,
         details={
             "screening_initiated": screening_result.get("success", False),
             "message_id": screening_result.get("message_id"),
@@ -328,7 +333,8 @@ async def _handle_approve_action(
 
 async def _handle_reject_action(
     payload: TeamsWebhookPayload,
-    db: AsyncSession
+    company_id: str | None,
+    db: AsyncSession,
 ) -> TeamsWebhookResponse:
     """Handle reject action from Teams Adaptive Card."""
     audit_id = await _log_teams_action_audit(
@@ -338,7 +344,7 @@ async def _handle_reject_action(
         actor_name=payload.recruiter_name,
         candidate_id=payload.candidate_id,
         vacancy_id=payload.vacancy_id,
-        company_id=payload.company_id,
+        company_id=company_id,
         details={
             "notes": payload.notes,
             "reason": payload.metadata.get("reason") if payload.metadata else None
@@ -362,7 +368,8 @@ async def _handle_reject_action(
 
 async def _handle_schedule_action(
     payload: TeamsWebhookPayload,
-    db: AsyncSession
+    company_id: str | None,
+    db: AsyncSession,
 ) -> TeamsWebhookResponse:
     """Handle schedule/reschedule action from Teams Adaptive Card."""
     action_type = payload.action
@@ -374,7 +381,7 @@ async def _handle_schedule_action(
         actor_name=payload.recruiter_name,
         candidate_id=payload.candidate_id,
         vacancy_id=payload.vacancy_id,
-        company_id=payload.company_id,
+        company_id=company_id,
         details={
             "scheduled_date": payload.scheduled_date,
             "notes": payload.notes
@@ -400,7 +407,6 @@ async def _handle_schedule_action(
 async def teams_adaptive_card_webhook(
     request: Request,
     x_teams_signature: str | None = Header(None, alias="X-Teams-Signature"),
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -456,10 +462,6 @@ async def teams_adaptive_card_webhook(
     try:
         payload_data = json.loads(raw_body)
         payload = TeamsWebhookPayload(**payload_data)
-        
-        if x_company_id and not payload.company_id:
-            payload.company_id = x_company_id
-        
     except json.JSONDecodeError as e:
         logger.error(f"[TEAMS WEBHOOK] Invalid JSON: {e}")
         raise HTTPException(status_code=400, detail="Invalid JSON payload")
@@ -468,18 +470,39 @@ async def teams_adaptive_card_webhook(
         raise HTTPException(status_code=400, detail=f"Invalid payload: {str(e)}")
     
     logger.info(f"[TEAMS WEBHOOK] Received action={payload.action} for candidate={payload.candidate_id}")
-    
+
+    # P0-2: resolve company_id server-side from recruiter_id (canonical, not from payload).
+    # Reuses TeamsRepository.get_user_by_platform_id (existing canonical lookup).
+    resolved_company_id: str | None = None
+    if payload.recruiter_id:
+        try:
+            _repo = TeamsRepository(db)
+            _user = await _repo.get_user_by_platform_id(payload.recruiter_id)
+            if _user:
+                resolved_company_id = _user.company_id
+        except Exception as _exc:
+            logger.warning(
+                "[TEAMS WEBHOOK] recruiter_id=%s lookup failed: %s",
+                payload.recruiter_id, _exc,
+            )
+    if not resolved_company_id:
+        logger.warning(
+            "[TEAMS WEBHOOK] could not resolve company_id (recruiter_id=%s) — "
+            "action proceeds but tenant boundary is unenforced",
+            payload.recruiter_id,
+        )
+
     action = payload.action.lower()
-    
+
     if action == TeamsCardAction.APPROVE.value:
-        return await _handle_approve_action(payload, db)
-    
+        return await _handle_approve_action(payload, resolved_company_id, db)
+
     elif action == TeamsCardAction.REJECT.value:
-        return await _handle_reject_action(payload, db)
-    
+        return await _handle_reject_action(payload, resolved_company_id, db)
+
     elif action in [TeamsCardAction.SCHEDULE.value, TeamsCardAction.RESCHEDULE.value]:
-        return await _handle_schedule_action(payload, db)
-    
+        return await _handle_schedule_action(payload, resolved_company_id, db)
+
     elif action == TeamsCardAction.REQUEST_INFO.value:
         audit_id = await _log_teams_action_audit(
             action="request_info",
@@ -488,7 +511,7 @@ async def teams_adaptive_card_webhook(
             actor_name=payload.recruiter_name,
             candidate_id=payload.candidate_id,
             vacancy_id=payload.vacancy_id,
-            company_id=payload.company_id,
+            company_id=resolved_company_id,
             details={"notes": payload.notes},
             db=db
         )
@@ -1496,7 +1519,7 @@ async def teams_tab_auth(
 
         # Generate a platform JWT (reuse existing auth service if available)
         from app.auth.security import create_access_token
-        platform_token = create_access_token(subject=str(user.id), company_id=getattr(user, "company_id", None))
+        platform_token = create_access_token(subject=str(user.id), company_id=user.company_id)
 
         logger.info(f"[TeamsTabAuth] SSO resolved: AAD={aad_object_id} → user={user.id}")
         return TabAuthResponse(
