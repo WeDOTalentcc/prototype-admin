@@ -759,3 +759,62 @@ Tenant scope:       18/18 PASSED ✓
 ```
 
 **Commit de correção de testes:** `731a61e8a` — `_is_dev_environment` patched para produção nos 5 no_auth tests.
+
+---
+
+## Onda 23 — Wave 1 Complete + Wave 2/3/4 Audit (2026-04-28)
+
+**Branch:** `feat/orch-migration-sprint-I`
+**Commits:** `566d1ac89` · `be172b778`
+**Harness:** GUIDE (computacional) — capability_map + entity resolution + tests
+
+### Audit: Waves 2/3/4 já implementadas no Replit (deep audit)
+
+A auditoria profunda dos arquivos no Replit revelou que as waves 2, 3 e 4 já estavam
+parcialmente ou totalmente implementadas. **Nenhuma reescrita foi necessária** —
+só completamos os gaps identificados.
+
+| Wave | Item | Estado encontrado no Replit | Ação |
+|------|------|----------------------------|------|
+| Wave 1 | PR-AUTO (automations-tab tests) | 4/7 falhando — namespace errado | ✅ FIXED — 7/7 green |
+| Wave 2 | PR-J (entity resolver service) | `entity_resolver_service.py` 100% implementado, 8 testes passando | ✅ JÁ PRONTO |
+| Wave 2 | PR-J (capability_map service) | `capability_map_service.py` implementado, 20 testes passando | ✅ JÁ PRONTO |
+| Wave 2 | PR-J (rail_a_capability_check) | Implementado — gate de entidade antes do orchestrator | ✅ JÁ PRONTO |
+| Wave 2 | PR-J2 (pipeline-pulse → suggest_action) | `_handle_suggest_action` queries DB diretamente (stale >3d) | ✅ JÁ PRONTO |
+| Wave 2 | PR-J2 (daily_briefing) | `_handle_daily_briefing` NÃO está deprecated no Replit | ✅ JÁ PRONTO |
+| Wave 3 | PR-RAG (search_candidates → RAG) | Tool usa `PearchService.hybrid_search` (RAG real) | ✅ JÁ PRONTO |
+| Wave 4 | PR-HIRE (register_hire action) | `pipeline/tools/pipeline_tools.py`: `register_hire` implementado | ✅ JÁ PRONTO |
+| Wave 4 | capability_map: send_offer | Ausente | ✅ ADICIONADO |
+| Wave 4 | capability_map: register_hire | Ausente | ✅ ADICIONADO |
+
+### Arquivos entregues
+
+| Arquivo | Mudança |
+|---------|---------|
+| `plataforma-lia/src/components/settings/recruitment/__tests__/automations-tab.test.tsx` | Fix namespace `automations` → `automationsTab` + todos os i18n keys, 7/7 green |
+| `lia-agent-system/app/config/capability_map.yaml` | +`send_offer` (modal_id=offer_review, requires candidate) + `register_hire` (chat_executable, requires candidate+job) |
+| `lia-agent-system/tests/unit/services/test_pr_j_capability_map.py` | `test_total_intents_is_nine` → `test_total_intents_is_eleven` + `TestCapabilityMapWave4Intents` (7 novos sensores) |
+
+### Estado dos testes após esta onda
+
+| Suite | Resultado |
+|-------|-----------|
+| `test_pr_j_entity_resolver.py` | 8/8 ✅ |
+| `test_pr_j_capability_map.py` | 27/27 ✅ (inclui Wave 4) |
+| `test_pr_j_capability_gate.py` | 19/19 ✅ |
+| `automations-tab.test.tsx` | 7/7 ✅ |
+| `test_wave5_offer_fe_invariants.py` | 10/10 ✅ |
+| `OfferReviewModal.test.tsx` | 18/18 ✅ |
+| `tests/domains/offer/` (backend) | 38/38 ✅ |
+
+### Harness engineering: guides e sensors adicionados
+
+**Guides computacionais:**
+- `capability_map.yaml` agora declara 11 intents (9 Wave 1 + `send_offer` + `register_hire`)
+- `send_offer`: `chat_executable: false` — abre OfferReviewModal diretamente (zero chat detour)
+- `register_hire`: `chat_executable: true` + entity_required=[candidate, job] — LIA resolve antes de executar
+
+**Sensors computacionais:**
+- `test_total_intents_is_eleven` detecta adições/remoções acidentais
+- `TestCapabilityMapWave4Intents` (7 asserções) valida propriedades de send_offer e register_hire
+
