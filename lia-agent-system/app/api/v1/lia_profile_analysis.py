@@ -5,6 +5,8 @@ import os
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from app.auth.dependencies import get_current_user_or_demo, validate_company_access
+from app.auth.models import User
 from pydantic import BaseModel
 # sqlalchemy ORM imports moved to ProfileAnalysisRepository
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -144,6 +146,7 @@ Use hífen (-) para bullet points. Seja abrangente mas conciso."""
 async def generate_profile_analysis(
     request: ProfileAnalysisRequest,
     company_id: str | None = Query(None, description="Company ID for tenant resolution"),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Generate an AI-powered profile analysis for a candidate."""
     from app.shared.observability.token_budget_service import RequestBudgetExceededError
@@ -156,6 +159,9 @@ async def generate_profile_analysis(
 
     if not candidate_info or len(candidate_info) < 20:
         raise HTTPException(status_code=400, detail="Insufficient candidate data to generate analysis")
+
+    if company_id:
+        validate_company_access(current_user, company_id)
 
     try:
         from app.shared.providers.llm_factory import get_provider_for_tenant
@@ -192,9 +198,11 @@ async def generate_profile_analysis(
 async def save_profile_analysis(
     request: LiaProfileAnalysisCreate,
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Save a generated profile analysis to the database."""
+    validate_company_access(current_user, company_id)
     try:
         repo = ProfileAnalysisRepository(db)
         existing = await repo.get_active_by_candidate_type_company(
@@ -247,9 +255,11 @@ async def save_profile_analysis(
 async def get_candidate_analyses(
     candidate_id: _DualId,
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Get all saved analyses for a candidate."""
+    validate_company_access(current_user, company_id)
     try:
         repo = ProfileAnalysisRepository(db)
         analyses = await repo.get_all_active_for_candidate(candidate_id, company_id)
@@ -298,9 +308,11 @@ async def delete_candidate_analysis(
     candidate_id: _DualId,
     analysis_type: str,
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Delete a specific analysis for a candidate."""
+    validate_company_access(current_user, company_id)
     try:
         repo = ProfileAnalysisRepository(db)
         analysis = await repo.soft_delete(candidate_id, analysis_type, company_id)

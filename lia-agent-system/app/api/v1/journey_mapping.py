@@ -8,6 +8,8 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from app.auth.dependencies import get_current_user_or_demo, validate_company_access
+from app.auth.models import User
 from pydantic import BaseModel, Field
 
 from app.domains.journey_mapping.dependencies import get_journey_mapping_repo
@@ -239,7 +241,8 @@ STEP_TYPE_MAP = {
 @router.post("/wizard/complete", response_model=JourneyBlueprintResponse)
 async def complete_wizard(
     data: WizardCompleteData,
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Complete the journey mapping wizard by creating:
@@ -247,6 +250,7 @@ async def complete_wizard(
     - JourneyStep for each process step
     - JourneyIntegration for each system and publication channel
     """
+    validate_company_access(current_user, str(data.company_id))
     try:
         blueprint_kwargs = {
             "company_id": data.company_id,
@@ -348,9 +352,11 @@ async def complete_wizard(
 @router.get("/blueprint", response_model=JourneyBlueprintResponse)
 async def get_company_blueprint(
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Get the company's journey blueprint with steps and integrations."""
+    validate_company_access(current_user, str(company_id))
     try:
         blueprint = await repo.get_company_blueprint(company_id)
 
@@ -368,9 +374,11 @@ async def get_company_blueprint(
 @router.post("/blueprint", response_model=JourneyBlueprintResponse)
 async def create_blueprint(
     data: JourneyBlueprintCreate,
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Create a new journey blueprint for a company."""
+    validate_company_access(current_user, str(data.company_id))
     try:
         blueprint = await repo.create_blueprint_with_commit(
             company_id=data.company_id,
@@ -394,9 +402,11 @@ async def update_blueprint(
     blueprint_id: uuid.UUID,
     data: JourneyBlueprintUpdate,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Update an existing journey blueprint."""
+    validate_company_access(current_user, str(company_id))
     try:
         blueprint = await repo.get_blueprint_with_relations(blueprint_id)
 
@@ -418,9 +428,11 @@ async def update_blueprint(
 async def save_wizard_step(
     data: WizardStepData,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Save wizard step data and update progress."""
+    validate_company_access(current_user, str(company_id))
     try:
         blueprint = await repo.get_blueprint_with_relations(data.blueprint_id)
 
@@ -441,9 +453,11 @@ async def save_wizard_step(
 async def get_steps(
     blueprint_id: uuid.UUID = Query(..., description="Blueprint ID"),
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Get all steps for a journey blueprint."""
+    validate_company_access(current_user, str(company_id))
     try:
         blueprint = await repo.get_blueprint(blueprint_id)
         verify_ownership(blueprint, company_id, "Journey blueprint")
@@ -459,9 +473,11 @@ async def get_steps(
 async def create_step(
     data: JourneyStepCreate,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Create a new journey step."""
+    validate_company_access(current_user, str(company_id))
     try:
         blueprint = await repo.get_blueprint(data.blueprint_id)
         verify_ownership(blueprint, company_id, "Journey blueprint")
@@ -480,9 +496,11 @@ async def update_step(
     step_id: uuid.UUID,
     data: JourneyStepUpdate,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Update an existing journey step."""
+    validate_company_access(current_user, str(company_id))
     try:
         step = await repo.get_step(step_id)
 
@@ -508,9 +526,11 @@ async def update_step(
 async def delete_step(
     step_id: uuid.UUID,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Delete a journey step."""
+    validate_company_access(current_user, str(company_id))
     try:
         step = await repo.get_step(step_id)
 
@@ -535,9 +555,11 @@ async def delete_step(
 async def get_integrations(
     blueprint_id: uuid.UUID = Query(..., description="Blueprint ID"),
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Get all integrations for a journey blueprint."""
+    validate_company_access(current_user, str(company_id))
     try:
         blueprint = await repo.get_blueprint(blueprint_id)
         verify_ownership(blueprint, company_id, "Journey blueprint")
@@ -553,9 +575,11 @@ async def get_integrations(
 async def create_integration(
     data: JourneyIntegrationCreate,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Create a new journey integration."""
+    validate_company_access(current_user, str(company_id))
     try:
         blueprint = await repo.get_blueprint(data.blueprint_id)
         verify_ownership(blueprint, company_id, "Journey blueprint")
@@ -574,9 +598,11 @@ async def update_integration(
     integration_id: uuid.UUID,
     data: JourneyIntegrationUpdate,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Update an existing journey integration."""
+    validate_company_access(current_user, str(company_id))
     try:
         integration = await repo.get_integration(integration_id)
 
@@ -602,9 +628,11 @@ async def update_integration(
 async def get_ai_recommendations(
     data: AIRecommendationsRequest,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Get AI-generated recommendations for journey optimization."""
+    validate_company_access(current_user, str(company_id))
     try:
         blueprint = await repo.get_blueprint_with_relations(data.blueprint_id)
 

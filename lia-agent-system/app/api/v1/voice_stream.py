@@ -32,6 +32,8 @@ from fastapi import (
 from pydantic import BaseModel
 
 from app.shared.pii_masking import mask_pii
+from app.auth.dependencies import get_current_user_or_demo, validate_company_access
+from app.auth.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +90,7 @@ class VoiceStreamStartResponse(BaseModel):
 async def start_voice_stream_session(
     request_body: VoiceStreamStartRequest,
     request: Request,
+    current_user: User = Depends(get_current_user_or_demo),
 ) -> VoiceStreamStartResponse:
     authenticated_tenant = getattr(request.state, "company_id", None) or getattr(
         request.state, "tenant_id", None
@@ -98,6 +101,7 @@ async def start_voice_stream_session(
             status_code=403,
             detail="company_id does not match authenticated tenant.",
         )
+    validate_company_access(current_user, tenant_id)
 
     client_ip = "unknown"
     if request.client:
@@ -399,7 +403,12 @@ async def voice_stream_websocket(
 
 
 @router.get("/voice-stream/status")
-async def voice_stream_status(company_id: str = Query("")):
+async def voice_stream_status(
+    company_id: str = Query(""),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    if company_id:
+        validate_company_access(current_user, company_id)
     from app.shared.providers.llm_factory import get_voice_provider_for_tenant
 
     voice_provider = get_voice_provider_for_tenant(

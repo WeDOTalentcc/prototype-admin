@@ -745,6 +745,10 @@ class WizardStepService:
                 except Exception as e:
                     logger.warning(f"Error evaluating stage skip: {e}")
 
+            # Frente D — Stage validator sensor
+            from app.domains.job_management.schemas.wizard_stage_validators import validate_stage
+            _missing = validate_stage(stage_info["name"], job_draft) if job_draft else []
+
             return WizardStepResponse(
                 conversation_id=conversation_id,
                 current_stage=current_stage,
@@ -762,6 +766,7 @@ class WizardStepService:
                 skip_reason=skip_reason,
                 auto_filled_data=auto_filled_data,
                 stages_to_skip=stages_to_skip if stages_to_skip else None,
+                missing_fields=_missing if _missing else None,
             )
 
         except Exception as e:

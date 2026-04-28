@@ -26,3 +26,7 @@ class WizardStepResponse(BaseModel):
     skip_reason: str | None = None
     auto_filled_data: dict[str, Any] | None = None
     stages_to_skip: list[int] | None = None
+    # Frente D — Sensor fields (missing field feedback loop)
+    missing_fields: list[str] | None = None
+    requires_approval: bool = False
+    approval_context: dict[str, Any] | None = None
