@@ -606,25 +606,25 @@ git log --oneline -- docs/BRANCH_MAP.md
 
 ## Ondas 18-21 — Wizard Canonical Plugs (2026-04-28)
 
-**Branch:**  (sprint corrente)
+**Branch:** `feat/orch-migration-sprint-I` (sprint corrente)
 **Harness:** sensor (computacional) — feedback_learning + canonical priority
 
 ### Mudanças aplicadas
 
 | Arquivo | Mudança |
 |---------|---------|
-|  | Param  adicionado a  |
-|  | **NOVO** —  dataclass +  |
-|  |  plugado (F.1) |
-|  |  plugado (F.2) |
-|  |  plugado (F.3) |
-|  |  plugado (F.4) |
-|  |  wired — history + market priority (S.1) |
-|  |  +  passados para os 4 handlers |
-|  | **NOVO** — 7 cenários |
-|  | **NOVO** — 11 cenários |
+| `app/shared/chat_event_serializer.py` | Param `wizard_step_response` adicionado a `serialize_message()` |
+| `app/shared/wizard_suggestion_priority.py` | **NOVO** — `WizardSuggestion` dataclass + `pick_canonical()` |
+| `wizard_step_service/stage_description.py` | `apply_learning` plugado (F.1) |
+| `wizard_step_service/stage_basic_info.py` | `apply_learning` plugado (F.2) |
+| `wizard_step_service/stage_wsi.py` | `apply_learning` plugado (F.3) |
+| `wizard_step_service/stage_review.py` | `apply_learning` plugado (F.4) |
+| `wizard_step_service/stage_salary.py` | `pick_canonical()` wired — history + market priority (S.1) |
+| `wizard_step_service/service.py` | `db` + `company_id` passados para os 4 handlers |
+| `tests/unit/test_company_job_history_service.py` | **NOVO** — 7 cenários |
+| `tests/unit/test_recruitment_template_service.py` | **NOVO** — 11 cenários |
 
 ### Nota de compatibilidade
- foi intencionalmente deletado no Task #850 (canonical consolidation).
-As mudanças C.2/P.1/C.4 do Mac () são incompatíveis com
+`wizard_react_agent.py` foi intencionalmente deletado no Task #850 (canonical consolidation).
+As mudanças C.2/P.1/C.4 do Mac (`followup/wizard-canonical-plugs`) são incompatíveis com
 a arquitetura atual do Replit — omitidas propositalmente.
