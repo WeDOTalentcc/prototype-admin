@@ -592,6 +592,7 @@ class WizardStepService:
                         suggestions_data=suggestions_data,
                         db=db,
                         company_id=company_id,
+                        screening_mode=job_draft.get("screening_mode", "compact"),
                     )
 
                 elif current_stage == 6:

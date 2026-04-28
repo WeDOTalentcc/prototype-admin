@@ -21,6 +21,10 @@ async def handle_review(
     """
     Handle stage 6: review + completeness check + JD generation.
 
+    C.2: After primary JD generation, runs JdEnrichmentService as a
+    post-processing step to get fairness_warnings + quality_score.
+    Fail-open: if enrichment fails, keeps the raw JD.
+
     Returns:
         (lia_message, suggestions_data)
     """
@@ -82,6 +86,7 @@ async def handle_review(
         'field_details': completeness_result.field_details,
     }
 
+    # Primary JD generation (unchanged — jd_generator_service stays as primary)
     generated_description = jd_generator_service.generate_description(
         job_data=job_draft,
         company_context={
@@ -91,6 +96,56 @@ async def handle_review(
     )
     job_draft['generated_description'] = generated_description
     suggestions_data['generated_description'] = generated_description
+
+    # --- C.2: JdEnrichmentService post-processing ---
+    jd_quality_score = None
+    jd_fairness_warnings = []
+    jd_enriched_text = None
+    jd_quality_line = ""
+
+    try:
+        from app.domains.job_creation.services.jd_enrichment import JdEnrichmentService
+
+        jd_raw_text = str(generated_description) if generated_description else ""
+        if jd_raw_text:
+            job_title_for_enrich = job_data_for_completeness.get("title") or ""
+            seniority_for_enrich = job_data_for_completeness.get("seniority_level") or ""
+            department_for_enrich = job_data_for_completeness.get("department") or ""
+
+            enrichment_svc = JdEnrichmentService()
+            enriched_jd, quality_score, enrich_warnings = enrichment_svc.enrich(
+                jd_raw=jd_raw_text,
+                title=job_title_for_enrich,
+                seniority=seniority_for_enrich,
+                department=department_for_enrich,
+            )
+
+            # Collect fairness warnings from enrichment
+            jd_fairness_warnings = enrich_warnings or []
+            if enriched_jd.fairness_corrections:
+                jd_fairness_warnings = list(set(jd_fairness_warnings + enriched_jd.fairness_corrections))
+
+            jd_quality_score = quality_score
+            jd_enriched_text = enriched_jd.about_role or jd_raw_text
+
+            suggestions_data["jd_quality"] = {
+                "quality_score": quality_score,
+                "fairness_warnings": jd_fairness_warnings,
+                "enriched_text": jd_enriched_text,
+            }
+
+            logger.info(
+                "[stage_review:C2] JD enrichment OK: quality=%.1f, fairness_warnings=%d",
+                quality_score,
+                len(jd_fairness_warnings),
+            )
+
+            if quality_score >= 80:
+                jd_quality_line = f"\n\n📊 **Qualidade da JD: {int(quality_score)}/100**"
+
+    except Exception as _enrich_exc:
+        logger.warning("[stage_review:C2] JdEnrichmentService post-processing failed: %s", _enrich_exc)
+        # fail-open: keep raw JD, no quality score shown
 
     completeness_warnings = []
     if completeness_result.missing_critical:
@@ -232,7 +287,7 @@ async def handle_review(
 
     lia_message = f"""Excelente! Chegamos à **Revisão Final**! 🎉
 
-{status_message}
+{status_message}{jd_quality_line}
 {field_origin_summary}
 ---
 
