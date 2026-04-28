@@ -1,5 +1,5 @@
 /**
- * useWizardChatCards — owns the two non-persisted assistant cards the wizard
+ * useWizardChatCards — owns the non-persisted assistant cards the wizard
  * injects into the chat feed:
  *
  *   1. **Plano de trabalho** card — appears the first time the wizard
@@ -8,7 +8,15 @@
  *      visible with all 6 steps marked completed and the title flipped to
  *      "Plano de trabalho — Concluído" (Task #830).
  *
- *   2. **Vaga publicada** closing card — injected once the wizard reaches
+ *   2. **Pipeline template** selection card (Onda 28 — E.8) — injected
+ *      whenever the backend surfaces `data.suggestions_data.pipeline_template`
+ *      in the wizard payload. The recruiter sees the 5 preset pipelines
+ *      with the backend's recommendation highlighted, picks one, and the
+ *      hook forwards the choice as a free-text chat reply via
+ *      `onSelectTemplate` so LIA's stage_basic_info handler resolves it
+ *      with the same NLU path used by the typed answer.
+ *
+ *   3. **Vaga publicada** closing card — injected once the wizard reaches
  *      a closing stage (`done`/`handoff`), carrying the actionable summary
  *      (job link, share link). Re-emissions of the same payload are
  *      deduped to avoid React churn.
@@ -32,12 +40,18 @@ import {
   WIZARD_PLAN_MESSAGE_ID,
   WIZARD_PUBLISHED_MESSAGE_ID,
   WIZARD_PUBLISHED_TITLE,
+  WIZARD_TEMPLATE_MESSAGE_ID,
+  WIZARD_TEMPLATE_TITLE,
+  buildPipelineTemplateCard,
   buildPlanFlowSteps,
   buildPublishedJobCard,
   isWizardClosingStage,
+  pipelineTemplateCardsEqual,
   planCardTitleForStage,
   planStepsEqual,
   publishedJobCardsEqual,
+  type PipelineTemplateCardData,
+  type PipelineTemplateOption,
   type WizardPublishedJobCardData,
 } from "./wizard-plan-card"
 import type { WizardStage } from "./wizard-types"
@@ -51,13 +65,31 @@ export interface UseWizardChatCardsOptions {
   wizardStageData: Record<string, unknown> | null
   /** Setter for the chat feed messages (`LiaChatMessage[]`). */
   setChatMessages: Dispatch<SetStateAction<LiaChatMessage[]>>
+  /**
+   * Optional callback fired when the recruiter picks a pipeline template
+   * tile from the in-feed selection card. The chat surface should forward
+   * the selection as a regular chat message so LIA's NLU resolves it the
+   * same way as a typed answer (e.g. "Vou usar o template Técnico").
+   * When omitted, the card still renders but tile clicks are no-ops.
+   */
+  onSelectTemplate?: (option: PipelineTemplateOption) => void
 }
 
 export function useWizardChatCards(options: UseWizardChatCardsOptions): void {
-  const { wizardStage, wizardStageData, setChatMessages } = options
+  const { wizardStage, wizardStageData, setChatMessages, onSelectTemplate } =
+    options
 
   const planCardInsertedRef = useRef(false)
   const publishedCardInsertedRef = useRef(false)
+  const templateCardInsertedRef = useRef(false)
+
+  // Keep the latest `onSelectTemplate` in a ref so the metadata payload
+  // stays stable across re-renders (we don't want a parent prop change to
+  // cascade into a chat-feed message diff and re-mount the card).
+  const onSelectTemplateRef = useRef<typeof onSelectTemplate>(onSelectTemplate)
+  useEffect(() => {
+    onSelectTemplateRef.current = onSelectTemplate
+  }, [onSelectTemplate])
 
   // --- Plan card sync ---
   useEffect(() => {
@@ -116,16 +148,68 @@ export function useWizardChatCards(options: UseWizardChatCardsOptions): void {
     })
   }, [wizardStage, setChatMessages])
 
-  // --- E.8: Pipeline template selection card ---
-  // TODO E.8: wire template selection card here.
-  // When `wizardStageData?.detected_criteria?.pipeline_template` (or
-  // `wizardStageData?.suggestions?.pipeline_template`) is present in the
-  // incoming WS message, inject a button-group card into the chat feed
-  // offering the 5 template options (technical, behavioral, mixed, custom,
-  // fast-track). On recruiter selection send WS:
-  //   { action: "select_template", template_type: "technical" }
-  // Pattern: follow the plan-card pattern above (dedupe ref + setChatMessages).
-  // Message id: "wizard-template-card" ; metadata.type: "wizard_template_select"
+  // --- Pipeline template selection card (Onda 28 — E.8) ---
+  // Injects the 5-option preset picker as soon as the backend surfaces a
+  // `suggestions_data.pipeline_template` block. The card is non-persisted
+  // (assistant id `lia-wizard-template-card`) and re-emissions of the
+  // same suggestion update in place via `pipelineTemplateCardsEqual` so
+  // the card never duplicates. Once the wizard moves past the basic-info
+  // stage we drop the card to keep the feed tidy — the recruiter has
+  // already picked at that point.
+  useEffect(() => {
+    const cardData = buildPipelineTemplateCard(wizardStageData)
+    if (!cardData) {
+      // Reset the latch whenever the suggestion goes away (e.g. wizard
+      // moves on, or the recruiter resets) so a fresh suggestion later
+      // in the run still injects a brand-new card.
+      templateCardInsertedRef.current = false
+      setChatMessages((prev) => {
+        const exists = prev.some((m) => m.id === WIZARD_TEMPLATE_MESSAGE_ID)
+        if (!exists) return prev
+        return prev.filter((m) => m.id !== WIZARD_TEMPLATE_MESSAGE_ID)
+      })
+      return
+    }
+    setChatMessages((prev) => {
+      const idx = prev.findIndex((m) => m.id === WIZARD_TEMPLATE_MESSAGE_ID)
+      if (idx === -1) {
+        if (templateCardInsertedRef.current) return prev
+        templateCardInsertedRef.current = true
+        const templateMsg: LiaChatMessage = {
+          id: WIZARD_TEMPLATE_MESSAGE_ID,
+          sender: "lia",
+          content: WIZARD_TEMPLATE_TITLE,
+          timestamp: new Date().toISOString(),
+          metadata: {
+            type: "wizard_template_select",
+            templateCard: cardData,
+            // Stable thunk via ref — caller swap doesn't churn the message.
+            onSelectTemplate: (option: PipelineTemplateOption) => {
+              onSelectTemplateRef.current?.(option)
+            },
+          },
+        }
+        return [...prev, templateMsg]
+      }
+      // Same payload re-emitted — keep the existing card to avoid churn.
+      const existing = prev[idx]
+      const prevData =
+        (existing.metadata?.templateCard as
+          | PipelineTemplateCardData
+          | undefined) ?? null
+      if (pipelineTemplateCardsEqual(prevData, cardData)) return prev
+      const next = prev.slice()
+      next[idx] = {
+        ...existing,
+        metadata: {
+          ...(existing.metadata ?? {}),
+          type: "wizard_template_select",
+          templateCard: cardData,
+        },
+      }
+      return next
+    })
+  }, [wizardStageData, setChatMessages])
 
   // --- Published card injection ---
   useEffect(() => {

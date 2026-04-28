@@ -1,5 +1,5 @@
 /**
- * useActiveTasks — fetches the current users in-progress tasks via SWR.
+ * useActiveTasks — fetches the current user's in-progress tasks via SWR.
  *
  * Onda 30 D: connects TaskContextBar to GET /api/v1/tasks/?status=in_progress
  * (FastAPI). Auto-refreshes every 30s. Maps backend TaskResponse to the
@@ -11,15 +11,15 @@
  * Frontend shape (ActiveTask):
  *   { id, title, type, progress?, lastUpdated }
  */
-use client
+'use client'
 
-import useSWR from swr
+import useSWR from 'swr'
 
 export type ActiveTaskType =
-  | vacancy_creation
-  | screening
-  | calibration
-  | general
+  | 'vacancy_creation'
+  | 'screening'
+  | 'calibration'
+  | 'general'
 
 export interface ActiveTask {
   id: string
@@ -49,15 +49,15 @@ interface UseActiveTasksReturn {
 }
 
 const REFRESH_MS = 30_000
-const ENDPOINT = /api/backend-proxy/v1/tasks?status=in_progress&limit=20
+const ENDPOINT = '/api/backend-proxy/v1/tasks?status=in_progress&limit=20'
 
 const jsonFetcher = async (url: string): Promise<TaskResponse[]> => {
-  const r = await fetch(url, { credentials: include })
-  if (!r.ok) throw new Error(HTTP  + r.status)
+  const r = await fetch(url, { credentials: 'include' })
+  if (!r.ok) throw new Error(`HTTP ${r.status}`)
   const data: unknown = await r.json()
   // Tolerate either a bare list or {items: [...]} envelope
   if (Array.isArray(data)) return data as TaskResponse[]
-  if (data && typeof data === object && items in data) {
+  if (data && typeof data === 'object' && 'items' in data) {
     const items = (data as { items?: unknown }).items
     if (Array.isArray(items)) return items as TaskResponse[]
   }
@@ -65,26 +65,26 @@ const jsonFetcher = async (url: string): Promise<TaskResponse[]> => {
 }
 
 function mapTaskType(raw: string | null | undefined): ActiveTaskType {
-  if (!raw) return general
+  if (!raw) return 'general'
   const normalized = raw.toLowerCase()
-  if (normalized.includes(vacancy) || normalized.includes(job_creation)) {
-    return vacancy_creation
+  if (normalized.includes('vacancy') || normalized.includes('job_creation')) {
+    return 'vacancy_creation'
   }
-  if (normalized.includes(screening) || normalized.includes(triagem)) {
-    return screening
+  if (normalized.includes('screening') || normalized.includes('triagem')) {
+    return 'screening'
   }
-  if (normalized.includes(calibrat)) return calibration
-  return general
+  if (normalized.includes('calibrat')) return 'calibration'
+  return 'general'
 }
 
 function mapProgress(status: string | null | undefined): number | undefined {
   if (!status) return undefined
   switch (status.toUpperCase()) {
-    case PENDING:
+    case 'PENDING':
       return 0
-    case IN_PROGRESS:
+    case 'IN_PROGRESS':
       return 50
-    case COMPLETED:
+    case 'COMPLETED':
       return 100
     default:
       return undefined

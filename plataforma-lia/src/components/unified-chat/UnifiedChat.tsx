@@ -256,6 +256,12 @@ export function UnifiedChat({
     wizardStage,
     wizardStageData,
     setChatMessages,
+    // E.8 — pipeline template tile click forwards as a chat reply so
+    // LIA's stage_basic_info handler resolves the choice with the
+    // same NLU path as a typed answer ("Vou usar o template ...").
+    onSelectTemplate: (option) => {
+      sendChatMessage(`Vou usar o template ${option.name}`);
+    },
   });
 
   // Persist mode preference

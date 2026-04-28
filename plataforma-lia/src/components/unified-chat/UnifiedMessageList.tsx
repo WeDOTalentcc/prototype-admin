@@ -9,7 +9,8 @@ import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
 import { ThinkingStepsCard } from "./ThinkingStepsCard"
 import { OutreachCard } from "./OutreachCard"
 import { WizardPublishedJobCard } from "./wizard/WizardPublishedJobCard"
-import type { WizardPublishedJobCardData } from "./wizard/wizard-plan-card"
+import { WizardPipelineTemplateCard } from "./wizard/WizardPipelineTemplateCard"
+import type { PipelineTemplateCardData, PipelineTemplateOption, WizardPublishedJobCardData } from "./wizard/wizard-plan-card"
 import { renderMarkdown } from "@/lib/render-markdown"
 import { submitThumbsFeedback } from "@/services/lia-api/feedback-api"
 import type { LiaChatMessage } from "@/hooks/chat/use-lia-chat-connection"
@@ -295,6 +296,8 @@ export function UnifiedMessageList({
         const hasOutreach = meta?.type === "outreach_message" && meta?.outreach != null
         const hasPublishedJob =
           meta?.type === "wizard_published_job" && meta?.publishedJob != null
+        const hasTemplateCard =
+          meta?.type === "wizard_template_select" && meta?.templateCard != null
 
         return (
           <div
@@ -370,6 +373,22 @@ export function UnifiedMessageList({
                 {/* Outreach card — inline multi-channel approval before sending */}
                 {hasOutreach && (
                   <OutreachCard data={meta!.outreach as import("./OutreachCard").OutreachData} />
+                )}
+
+                {/* Pipeline template picker — Onda 28/E.8. Surfaced when
+                    backend recommends a preset; click forwards a chat
+                    reply to LIA so the recruiter's pick re-uses the same
+                    NLU path as a typed answer. */}
+                {hasTemplateCard && (
+                  <WizardPipelineTemplateCard
+                    data={meta!.templateCard as PipelineTemplateCardData}
+                    onSelect={(option) => {
+                      const cb = meta!.onSelectTemplate as
+                        | ((opt: PipelineTemplateOption) => void)
+                        | undefined
+                      cb?.(option)
+                    }}
+                  />
                 )}
 
                 {/* Closing card — "Vaga publicada" injected when the wizard

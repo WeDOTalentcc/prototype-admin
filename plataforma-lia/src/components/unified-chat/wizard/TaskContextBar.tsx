@@ -1,11 +1,18 @@
 /**
  * TaskContextBar — rodapé persistente do wizard mostrando ação atual da LIA.
  * E.5 Frente E
+ *
+ * Onda 30 D: connected to GET /api/v1/tasks/?status=in_progress via
+ * useActiveTasks(). When tasks/activeTasks props are not provided, the
+ * component fetches its own list. When the list is empty, only the current
+ * action bar is shown (no Switch Task button, no dropdown).
  */
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useActiveTasks, type ActiveTask } from '@/hooks/use-active-tasks'
 
+/** @deprecated kept for backward compat with Onda 28 callers. Prefer ActiveTask. */
 interface TaskItem {
   id: string
   label: string
@@ -13,24 +20,67 @@ interface TaskItem {
 }
 
 interface TaskContextBarProps {
-  currentAction: string      // ex: "Criando vaga: Engenheiro Sênior"
-  activeTasks?: TaskItem[]   // outras tarefas em andamento
+  /** ex: "Criando vaga: Engenheiro Senior" */
+  currentAction: string
+  /**
+   * Active tasks (Onda 30 D shape). When neither this nor activeTasks is
+   * passed, the component fetches via useActiveTasks().
+   */
+  tasks?: ActiveTask[]
+  /** @deprecated legacy prop from Onda 28; use `tasks` instead. */
+  activeTasks?: TaskItem[]
   onSwitchTask?: (taskId: string) => void
 }
 
-const TYPE_ICONS: Record<TaskItem['type'], string> = {
+const TYPE_ICONS: Record<string, string> = {
   vacancy: '📋',
+  vacancy_creation: '📋',
   screening: '🔍',
   calibration: '🎯',
+  general: '📌',
+}
+
+interface NormalizedTask {
+  id: string
+  label: string
+  iconKey: string
+}
+
+function normalizeFromActiveTask(task: ActiveTask): NormalizedTask {
+  return { id: task.id, label: task.title, iconKey: task.type }
+}
+
+function normalizeFromTaskItem(task: TaskItem): NormalizedTask {
+  return { id: task.id, label: task.label, iconKey: task.type }
 }
 
 export function TaskContextBar({
   currentAction,
-  activeTasks = [],
+  tasks,
+  activeTasks,
   onSwitchTask,
 }: TaskContextBarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Only fetch when caller did not pass either prop. SWR is fine to call
+  // unconditionally, but we want to avoid network noise when a parent already
+  // has the list (tests, mocks, future server-fetched contexts).
+  const callerProvidedTasks = tasks !== undefined || activeTasks !== undefined
+  const fetched = useActiveTasks()
+  const fetchedTasks = callerProvidedTasks ? [] : fetched.tasks
+
+  const items: NormalizedTask[] = useMemo(() => {
+    if (tasks !== undefined) {
+      return tasks.map(normalizeFromActiveTask)
+    }
+    if (activeTasks !== undefined) {
+      return activeTasks.map(normalizeFromTaskItem)
+    }
+    return fetchedTasks.map(normalizeFromActiveTask)
+  }, [tasks, activeTasks, fetchedTasks])
+
+  const hasOtherTasks = items.length > 0
 
   const openDropdown = useCallback(() => setDropdownOpen(true), [])
   const closeDropdown = useCallback(() => setDropdownOpen(false), [])
@@ -45,7 +95,7 @@ export function TaskContextBar({
 
   // Cmd+K / Ctrl+K keyboard shortcut
   useEffect(() => {
-    if (activeTasks.length === 0) return
+    if (!hasOtherTasks) return
     function handleKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
@@ -54,7 +104,7 @@ export function TaskContextBar({
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [activeTasks.length])
+  }, [hasOtherTasks])
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -77,7 +127,7 @@ export function TaskContextBar({
         </span>
 
         {/* Right: switch task button (only when other tasks exist) */}
-        {activeTasks.length > 0 && (
+        {hasOtherTasks && (
           <button
             type="button"
             onClick={openDropdown}
@@ -94,7 +144,7 @@ export function TaskContextBar({
       </div>
 
       {/* Dropdown */}
-      {dropdownOpen && activeTasks.length > 0 && (
+      {dropdownOpen && hasOtherTasks && (
         <div
           className="absolute bottom-full mb-1 left-0 right-0 z-50 rounded-lg border border-border bg-popover shadow-lg overflow-hidden"
           role="listbox"
@@ -106,7 +156,7 @@ export function TaskContextBar({
             </span>
           </div>
           <ul className="py-1 max-h-48 overflow-y-auto">
-            {activeTasks.map((task) => (
+            {items.map((task) => (
               <li key={task.id}>
                 <button
                   type="button"
@@ -115,7 +165,7 @@ export function TaskContextBar({
                   onClick={() => handleSelectTask(task.id)}
                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-accent hover:text-accent-foreground transition-colors motion-reduce:transition-none"
                 >
-                  <span aria-hidden="true">{TYPE_ICONS[task.type]}</span>
+                  <span aria-hidden="true">{TYPE_ICONS[task.iconKey] ?? TYPE_ICONS.general}</span>
                   <span className="truncate">{task.label}</span>
                 </button>
               </li>
