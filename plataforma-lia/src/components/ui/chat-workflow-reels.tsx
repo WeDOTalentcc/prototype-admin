@@ -26,6 +26,8 @@ export interface WorkflowReelSuggestion {
   intent_hint?: string;
   /** PR-K: quando definido, navega diretamente (sem detour pelo chat). */
   navigate_url?: string;
+  /** PR-Q1: quando definido, abre modal via lia:open_modal (sem detour pelo chat). */
+  modal_id?: string;
 }
 
 /**
@@ -137,6 +139,16 @@ export const NAVIGATION_OVERRIDES: Record<string, string> = {
   "ai-credits": "/configuracoes/ai-credits",
   "hiring-policy": "/configuracoes?section=pipeline",
   "email-templates": "/configuracoes?section=templates-assinatura",
+  /** PR-Q1: Banco de talentos tem página dedicada — navegar direto. */
+  "talent-pool": "/bancos-de-talentos",
+};
+
+/**
+ * PR-Q1: Cards que abrem modal diretamente (sem detour pelo chat).
+ * Valor = modal_id reconhecido por LIAGlobalModals via lia:open_modal event.
+ */
+export const MODAL_OVERRIDES: Record<string, string> = {
+  "add-candidate": "add_candidate",
 };
 
 export function buildSuggestionMetadata(
@@ -270,6 +282,7 @@ function useTranslatedStages(
               domain_hint: hint?.domain_hint,
               intent_hint: hint?.intent_hint,
               navigate_url: NAVIGATION_OVERRIDES[sid],
+              modal_id: MODAL_OVERRIDES[sid],
             };
           }),
         };
@@ -612,10 +625,14 @@ export function ChatWorkflowReels({
                 data-rail-a-stage={activeStage.id}
                 onClick={() => {
                   window.dispatchEvent(new CustomEvent("lia:rail-a-card-click", {
-                    detail: { card_id: suggestion.id, stage_id: activeStage.id, navigate: !!suggestion.navigate_url },
+                    detail: { card_id: suggestion.id, stage_id: activeStage.id, navigate: !!suggestion.navigate_url, modal: !!suggestion.modal_id },
                   }));
                   if (suggestion.navigate_url) {
                     router.push(suggestion.navigate_url);
+                  } else if (suggestion.modal_id) {
+                    window.dispatchEvent(new CustomEvent("lia:open_modal", {
+                      detail: { modal_id: suggestion.modal_id, data: {} },
+                    }));
                   } else {
                     onSelect(
                       suggestion.command,
@@ -784,6 +801,8 @@ function CompactReels({
   // canonical-fix: pulse deve viver no componente que o usa, não como
   // variável capturada de escopo externo (bug detectado em teste de compact mode).
   const { pulse } = usePipelinePulse();
+  // PR-Q1: router necessário para navigate_url dispatch no modo compact.
+  const router = useRouter();
   const allNodes = [...stages, ...utilityNodes];
   const nodesWithSuggestions = allNodes.filter((s) => s.suggestions.length > 0);
   const firstWithSuggestions = nodesWithSuggestions[0]?.id ?? null;
@@ -850,10 +869,14 @@ function CompactReels({
               data-rail-a-stage={activeStage.id}
               onClick={() => {
                 window.dispatchEvent(new CustomEvent("lia:rail-a-card-click", {
-                  detail: { card_id: suggestion.id, stage_id: activeStage.id, navigate: !!suggestion.navigate_url },
+                  detail: { card_id: suggestion.id, stage_id: activeStage.id, navigate: !!suggestion.navigate_url, modal: !!suggestion.modal_id },
                 }));
                 if (suggestion.navigate_url) {
                   router.push(suggestion.navigate_url);
+                } else if (suggestion.modal_id) {
+                  window.dispatchEvent(new CustomEvent("lia:open_modal", {
+                    detail: { modal_id: suggestion.modal_id, data: {} },
+                  }));
                 } else {
                   onSelect(
                     suggestion.command,
