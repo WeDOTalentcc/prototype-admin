@@ -665,3 +665,97 @@ Rodar com: pytest lia-agent-system/tests/unit/test_wave5_offer_fe_invariants.py 
 8. `OfferHITLBanner` tem `role="alert"` no estado de erro ✅
 9. Todos os 4 proxy routes existem (POST, PATCH, DELETE, send, prepare-manual) ✅
 10. Store usa Zustand com `devtools` middleware ✅
+
+---
+
+## Ondas 22-28 — Wizard Enterprise Readiness (2026-04-28)
+
+**Branch:** `feat/orch-migration-sprint-I`
+**Auditoria prévia:** 3 agentes em paralelo via SSH (2026-04-28) — 6 premissas do plano original corrigidas.
+**Skill aplicada:** harness-engineering + canonical-fix + design-patterns
+
+---
+
+### Onda 22A — Frente A: Tenant Guards P0 (commits `e74aff11b`)
+
+| Arquivo | Mudança |
+|---------|---------|
+| `app/api/v1/pipeline_prediction.py` | `get_current_user_or_demo` + `validate_company_access` adicionados (era zero-auth) |
+| `app/api/v1/user_agent_preferences.py` | Mesmos guards (era zero-auth, 3 endpoints) |
+| `app/api/v1/company_benefits.py` | 6 chamadas `validate_company_access` |
+| `app/api/v1/pipeline_velocity.py` | 2 chamadas `validate_company_access` |
+| `app/api/v1/early_warning.py` | 1 chamada `validate_company_access` |
+| `app/api/v1/skills_catalog.py` | 5 chamadas (body company_id endpoints) |
+| `app/api/v1/approvals.py` | auth dep + 6 guards (era zero-auth) |
+| `app/api/v1/lia_profile_analysis.py` | auth dep + 4 guards (era zero-auth) |
+| `app/api/v1/voice_stream.py` | auth + 2 guards |
+| `app/api/v1/journey_mapping.py` | auth dep + 13 guards (era zero-auth) |
+| `tests/integration/test_tenant_scope_v1.py` | **NOVO** — 18 testes: 401/403/200 por endpoint |
+
+### Onda 22B/D — Frente B+D: Cleanup + Pydantic Validators (`e74aff11b`)
+
+| Arquivo | Mudança |
+|---------|---------|
+| `app/prompts/job_wizard.py` | **DELETADO** — shim 609 bytes, zero importadores diretos |
+| `schemas/wizard_schemas.py` | +3 campos: `missing_fields`, `requires_approval`, `approval_context` |
+| `schemas/wizard_stage_validators.py` | **NOVO** — 6 validators (description/basic-info/competencies/salary/wsi/review) |
+| `wizard_step_service/service.py` | `validate_stage()` chamado antes de retornar `WizardStepResponse` |
+| `tests/unit/test_wizard_stage_validators.py` | **NOVO** — 21 cenários (6 stages × 3+) |
+
+---
+
+### Onda 23 — Frente C: Serviços Canônicos WSI + JD (`bdb0cf8d2`)
+
+| Arquivo | Mudança |
+|---------|---------|
+| `stage_wsi.py` | `WsiQuestionGenerator` plugado; `SeniorityResolver.resolve_seniority_simple()`; fallback para templates legacy |
+| `stage_review.py` | `JdEnrichmentService().enrich()` pós-processando JD; quality_score + fairness_warnings em suggestions_data |
+
+### Onda 24 — Frente C.3: Perguntas Explícitas ao Recrutador (`7a0d9ab79`)
+
+| Arquivo | Mudança |
+|---------|---------|
+| `stage_description.py` | Seniority confirmation: se confidence < 0.7 → `requires_seniority_confirmation` flag |
+| `stage_wsi.py` | WSI mode selection: pergunta compacta (5) vs completa (12) quando não confirmado |
+| `stage_publication.py` | Calibração opcional pós-publicação |
+
+### Onda 25 — Frente C.5 + F.1 + F.2 (`5727f7432`)
+
+| Arquivo | Mudança |
+|---------|---------|
+| `stage_basic_info.py` | `_suggest_template_type()` — 5 tipos: technical/executive/operational/mass_hiring/intern |
+| `stage_description.py` | `ats_job_history_service.get_similar_jobs()` — contexto histórico |
+| `stage_wsi.py` | `screening_mode` persistido em `job_draft["screening_mode"]` via `inferred_fields._extra_data` |
+
+---
+
+### Onda 26-27 — Frente E: UX Painéis Tezi + Split View (`05ccd6fcc`)
+
+| Arquivo | Mudança |
+|---------|---------|
+| `useWizardIntegration.ts` | `activePanelType`, `missingFields`, `handleWizardStepResponse()` — E.1 + E.7 |
+| `panels/WizardCalibrationPanel.tsx` | **NOVO** — Tezi design: critérios toggle + cards candidatos + 👍/👎 — E.2 |
+| `panels/WizardJDReviewPanel.tsx` | **NOVO** — HITL gate 1: diff visual JD raw vs enriched + quality_score — E.3 |
+| `panels/WizardWSIListPanel.tsx` | **NOVO** — HITL gate 2: lista WSI editável + drag-reorder + "Gerar mais" — E.4 |
+
+### Onda 28 — Frente E.5-E.8: TaskContextBar + Chips + Template UI (`07d1eb0af`)
+
+| Arquivo | Mudança |
+|---------|---------|
+| `wizard/TaskContextBar.tsx` | **NOVO** — footer barra "📂 ação atual" + Cmd+K switch task — E.5 |
+| `PromptSuggestionsPanel.tsx` | `workflowContext` prop + chips vacancy_published/candidate_approved/wizard_active — E.6 |
+| `useWizardChatCards.ts` | TODO pipeline_template card wired — E.8 |
+| `UnifiedChat.tsx` | `<TaskContextBar>` montado abaixo do chat input |
+
+---
+
+### Verificação final Onda 29
+
+```
+G7 sensor:          13/13 canonical-compliant ✓
+TypeScript:         0 errors ✓
+Wizard validators:  21/21 PASSED ✓
+Tenant scope:       18/18 PASSED ✓
+```
+
+**Commit de correção de testes:** `731a61e8a` — `_is_dev_environment` patched para produção nos 5 no_auth tests.
