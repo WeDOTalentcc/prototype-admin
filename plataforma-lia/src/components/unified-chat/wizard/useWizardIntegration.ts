@@ -1,13 +1,12 @@
 "use client"
 
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
   AJUDA_REGEX,
   buildAjudaHelpMarkdown,
   findSlashCommandByToken,
   findSlashCommandByVerb,
 } from "../slash-commands"
-// Types imported as needed by consumers
 
 /**
  * useWizardIntegration — Phase D.1 Cross-feature integration.
@@ -17,9 +16,34 @@ import {
  * - File upload: JD PDF → auto-populates wizard intake
  * - /commands: /criar vaga → starts wizard
  * - Navigation hints: auto-navigate after handoff
+ * - wizard_step_response: drives split-view panel state (E.1 / E.7)
  *
  * Place in UnifiedChat to wire all features together.
  */
+
+// --- Panel type driven by wizard_step_response ---
+
+export type ActivePanelType = "jd_review" | "wsi_review" | "calibration" | null
+
+interface WizardStepResponse {
+  missing_fields?: string[]
+  requires_approval?: boolean
+  approval_context?: Record<string, unknown>
+  stage_name?: string
+  detected_criteria?: Record<string, unknown>
+}
+
+/**
+ * Determine which side-panel to open based on the stage_name in
+ * wizard_step_response.
+ */
+function determinePanelType(stepResponse: WizardStepResponse): ActivePanelType {
+  const stage = (stepResponse.stage_name ?? "").toLowerCase()
+  if (stage.includes("jd_enrichment") || stage.includes("review")) return "jd_review"
+  if (stage.includes("wsi_questions") || stage.includes("wsi")) return "wsi_review"
+  if (stage.includes("calibration")) return "calibration"
+  return null
+}
 
 interface Props {
   isWizardActive: boolean
@@ -46,6 +70,30 @@ export function useWizardIntegration({
   sendMessage,
   onLocalCommand,
 }: Props) {
+  // E.1 / E.7: Split-view state driven by wizard_step_response
+  const [activePanelType, setActivePanelType] = useState<ActivePanelType>(null)
+  const [missingFields, setMissingFields] = useState<string[]>([])
+
+  // E.1: Process wizard_step_response from WS message metadata.
+  // Call this from the WS message handler whenever a new message arrives.
+  const handleWizardStepResponse = useCallback((message: { metadata?: Record<string, unknown> }) => {
+    const stepResponse = message?.metadata?.wizard_step_response as WizardStepResponse | undefined
+    if (!stepResponse) return
+
+    // Store missing fields if present
+    if (Array.isArray(stepResponse.missing_fields) && stepResponse.missing_fields.length > 0) {
+      setMissingFields(stepResponse.missing_fields)
+    }
+
+    // Drive split-view panel
+    if (stepResponse.requires_approval === true) {
+      const panelType = determinePanelType(stepResponse)
+      setActivePanelType(panelType)
+    } else if (stepResponse.requires_approval === false) {
+      // Close the panel when approval is no longer required
+      setActivePanelType(null)
+    }
+  }, [])
 
   // D.1: File upload → wizard intake
   useEffect(() => {
@@ -164,7 +212,7 @@ export function useWizardIntegration({
     }
 
     // Bare command, e.g. "/criar vaga", "/job", "/pipeline".
-    const bareMatch = cmd.match(/^\/[\w\u00C0-\u017F][\w\u00C0-\u017F\s]*$/i)
+    const bareMatch = cmd.match(/^\/[\wÀ-ſ][\wÀ-ſ\s]*$/i)
     if (bareMatch) {
       const found = findSlashCommandByToken(cmd)
       const message = found?.buildBareMessage?.()
@@ -197,9 +245,13 @@ export function useWizardIntegration({
     }
 
     return false
-  }, [sendMessage])
+  }, [sendMessage, onLocalCommand])
 
   return {
     handleSlashCommand,
+    // E.1 / E.7: Split-view state
+    activePanelType,
+    missingFields,
+    handleWizardStepResponse,
   }
 }
