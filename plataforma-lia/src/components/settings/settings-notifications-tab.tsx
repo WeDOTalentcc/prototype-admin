@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Bell, Mail, MessageSquare } from "lucide-react"
 
@@ -9,6 +10,7 @@ export interface SettingsNotificationsTabProps {
 }
 
 export function SettingsNotificationsTab({ onSettingsChange }: SettingsNotificationsTabProps) {
+  const t = useTranslations("settings.notifications")
   const [notifications, setNotifications] = useState({
     email: true,
     push: true,
@@ -19,21 +21,30 @@ export function SettingsNotificationsTab({ onSettingsChange }: SettingsNotificat
     liaInsights: true
   })
 
+  const channels = [
+    { key: "email", label: t("channelEmail"), icon: Mail, desc: t("channelEmailDesc") },
+    { key: "push", label: t("channelPush"), icon: Bell, desc: t("channelPushDesc") },
+    { key: "whatsapp", label: t("channelWhatsapp"), icon: MessageSquare, desc: t("channelWhatsappDesc") }
+  ]
+
+  const types = [
+    { key: "newCandidates", label: t("newCandidates"), desc: t("newCandidatesDesc") },
+    { key: "interviews", label: t("interviews"), desc: t("interviewsDesc") },
+    { key: "deadlines", label: t("deadlines"), desc: t("deadlinesDesc") },
+    { key: "liaInsights", label: t("liaInsights"), desc: t("liaInsightsDesc") }
+  ]
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Bell className="w-4 h-4" />
-            Canais de Notificação
+            {t("channelsTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {[
-            { key: "email", label: "Email", icon: Mail, desc: "Notificações por email" },
-            { key: "push", label: "Push", icon: Bell, desc: "Notificações do navegador" },
-            { key: "whatsapp", label: "WhatsApp", icon: MessageSquare, desc: "Mensagens WhatsApp" }
-          ].map((channel) => (
+          {channels.map((channel) => (
             <div key={channel.key} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <div className="flex items-center gap-3">
                 <channel.icon className="w-4 h-4 text-lia-text-primary" />
@@ -57,15 +68,10 @@ export function SettingsNotificationsTab({ onSettingsChange }: SettingsNotificat
 
       <Card>
         <CardHeader>
-          <CardTitle>Tipos de Notificação</CardTitle>
+          <CardTitle>{t("typesTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {[
-            { key: "newCandidates", label: "Novos Candidatos", desc: "Quando novos candidatos se inscrevem" },
-            { key: "interviews", label: "Entrevistas", desc: "Lembretes e confirmações de entrevistas" },
-            { key: "deadlines", label: "Prazos", desc: "Deadlines de feedback e processos" },
-            { key: "liaInsights", label: "Análises da LIA", desc: "Análises e sugestões da IA" }
-          ].map((type) => (
+          {types.map((type) => (
             <div key={type.key} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <div>
                 <div className="text-sm font-medium text-lia-text-primary">{type.label}</div>

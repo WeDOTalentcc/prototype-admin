@@ -1,6 +1,7 @@
 "use client"
 
 import React from"react"
+import { useTranslations } from "next-intl"
 import { textStyles } from"@/lib/design-tokens"
 import { Button } from"@/components/ui/button"
 import { Input } from"@/components/ui/input"
@@ -38,20 +39,6 @@ import {
   Clock,
   Library,
 } from"lucide-react"
-
-const BENEFIT_CATEGORIES = [
-  { id:"health", name:"Saúde & Bem-estar", icon: Stethoscope, color:"text-status-error", bgColor:"bg-status-error/10 dark:bg-status-error/20" },
-  { id:"food", name:"Alimentação", icon: Utensils, color:"text-wedo-orange", bgColor:"bg-wedo-orange/10 dark:bg-wedo-orange/20" },
-  { id:"transport", name:"Transporte", icon: Car, color:"text-lia-text-primary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
-  { id:"education", name:"Educação & Desenvolvimento", icon: GraduationCap, color:"text-wedo-purple", bgColor:"bg-wedo-purple/10 dark:bg-wedo-purple/20" },
-  { id:"wellness", name:"Bem-estar", icon: Stethoscope, color:"text-wedo-cyan", bgColor:"bg-wedo-cyan/10 dark:bg-wedo-cyan/20" },
-  { id:"financial", name:"Financeiro", icon: Wallet, color:"text-status-success", bgColor:"bg-status-success/10 dark:bg-status-success/20" },
-  { id:"quality_life", name:"Qualidade de Vida", icon: Home, color:"text-lia-text-secondary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
-  { id:"family", name:"Família", icon: Baby, color:"text-wedo-magenta", bgColor:"bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
-  { id:"flexibility", name:"Flexibilidade", icon: Clock, color:"text-wedo-purple", bgColor:"bg-wedo-purple/10 dark:bg-wedo-purple/20" },
-  { id:"security", name:"Segurança", icon: Shield, color:"text-lia-text-primary", bgColor:"bg-lia-bg-secondary dark:bg-lia-bg-secondary/50" },
-  { id:"other", name:"Outros", icon: Gift, color:"text-lia-text-secondary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
-]
 
 interface BenefitTemplate {
   id: string
@@ -93,16 +80,32 @@ export function BenefitTemplateModal({
   onSelectTemplate,
   onOpenBenefitModal,
 }: BenefitTemplateModalProps) {
+  const t = useTranslations("settings.benefits")
+
+  const BENEFIT_CATEGORIES = [
+    { id:"health", name: t("categoryHealth"), icon: Stethoscope, color:"text-status-error", bgColor:"bg-status-error/10 dark:bg-status-error/20" },
+    { id:"food", name: t("categoryFood"), icon: Utensils, color:"text-wedo-orange", bgColor:"bg-wedo-orange/10 dark:bg-wedo-orange/20" },
+    { id:"transport", name: t("categoryTransport"), icon: Car, color:"text-lia-text-primary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
+    { id:"education", name: t("categoryEducation"), icon: GraduationCap, color:"text-wedo-purple", bgColor:"bg-wedo-purple/10 dark:bg-wedo-purple/20" },
+    { id:"wellness", name: t("categoryHealth"), icon: Stethoscope, color:"text-wedo-cyan", bgColor:"bg-wedo-cyan/10 dark:bg-wedo-cyan/20" },
+    { id:"financial", name: t("categoryFinancial"), icon: Wallet, color:"text-status-success", bgColor:"bg-status-success/10 dark:bg-status-success/20" },
+    { id:"quality_life", name: t("categoryQualityLife"), icon: Home, color:"text-lia-text-secondary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
+    { id:"family", name: t("categoryFamily"), icon: Baby, color:"text-wedo-magenta", bgColor:"bg-wedo-magenta/10 dark:bg-wedo-magenta/20" },
+    { id:"flexibility", name: t("categoryQualityLife"), icon: Clock, color:"text-wedo-purple", bgColor:"bg-wedo-purple/10 dark:bg-wedo-purple/20" },
+    { id:"security", name: t("categorySecurity"), icon: Shield, color:"text-lia-text-primary", bgColor:"bg-lia-bg-secondary dark:bg-lia-bg-secondary/50" },
+    { id:"other", name: t("noDescription"), icon: Gift, color:"text-lia-text-secondary", bgColor:"bg-lia-bg-tertiary dark:bg-lia-bg-secondary" },
+  ]
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DraggableDialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-hidden flex flex-col p-3">
         <DialogHeader className="flex-shrink-0 pb-2">
           <DialogTitle className={`flex items-center gap-2 ${textStyles.h3}`}>
             <Library className="w-4 h-4 text-lia-text-primary" />
-            Biblioteca de Benefícios
+            {t("libraryTitle")}
           </DialogTitle>
           <DialogDescription className={`${textStyles.description}`}>
-            Selecione um benefício da lista para adicionar à sua empresa.
+            {t("libraryDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -111,7 +114,7 @@ export function BenefitTemplateModal({
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-lia-text-secondary" />
               <Input
-                placeholder="Buscar benefício..."
+                placeholder={t("searchBenefit")}
                 value={templateSearch}
                 onChange={(e) => setTemplateSearch(e.target.value)}
                 className="pl-8 h-8 text-xs rounded-full py-1.5 px-2"
@@ -119,10 +122,10 @@ export function BenefitTemplateModal({
             </div>
             <Select value={templateCategoryFilter} onValueChange={setTemplateCategoryFilter}>
               <SelectTrigger className="w-[180px] h-8 text-xs rounded-md">
-                <SelectValue placeholder="Todas categorias" />
+                <SelectValue placeholder={t("allCategoriesFilter")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all" className="text-xs">Todas as categorias</SelectItem>
+                <SelectItem value="all" className="text-xs">{t("allCategoriesFilter")}</SelectItem>
                 {BENEFIT_CATEGORIES.map((cat) => {
                   const Icon = cat.icon
                   return (
@@ -139,7 +142,7 @@ export function BenefitTemplateModal({
           </div>
 
           <div className={`flex items-center gap-2 ${textStyles.caption}`}>
-            <span aria-live="polite" aria-atomic="true">{filteredTemplates.length} benefícios encontrados</span>
+            <span aria-live="polite" aria-atomic="true">{t("benefitsFound", { count: filteredTemplates.length })}</span>
             {templateSearch && (
               <Button
                 variant="ghost"
@@ -147,25 +150,25 @@ export function BenefitTemplateModal({
                 className="h-5 text-micro px-1.5"
                 onClick={() => { setTemplateSearch(""); setTemplateCategoryFilter("all"); }}
               >
-                Limpar
+                {t("clearFilters")}
               </Button>
             )}
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto space-y-2 py-1 pr-1 -mr-1" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="flex-1 overflow-y-auto space-y-2 py-1 pr-1 -mr-1" role="status" aria-live="polite" aria-label={t("loading")}>
           {isLoadingTemplates ? (
-            <div className="flex items-center justify-center py-6" role="status" aria-live="polite" aria-label="Carregando...">
-              <div className="text-center" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="flex items-center justify-center py-6" role="status" aria-live="polite" aria-label={t("loading")}>
+              <div className="text-center" role="status" aria-live="polite" aria-label={t("loading")}>
                 <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2 text-lia-text-secondary" />
-                <p className={`${textStyles.description}`}>Carregando...</p>
+                <p className={`${textStyles.description}`}>{t("loading")}</p>
               </div>
             </div>
           ) : filteredTemplates.length === 0 ? (
             <div className="text-center py-6">
               <Gift className="w-4 h-4 mx-auto text-lia-text-disabled mb-2" />
               <p className={`${textStyles.description}`} aria-live="polite" aria-atomic="true">
-                Nenhum benefício encontrado
+                {t("noBenefitFound")}
               </p>
               <Button
                 variant="ghost"
@@ -173,7 +176,7 @@ export function BenefitTemplateModal({
                 className="mt-1 h-6 text-xs text-lia-text-primary hover:text-lia-text-primary"
                 onClick={() => { setTemplateSearch(""); setTemplateCategoryFilter("all"); }}
               >
-                Limpar filtros
+                {t("clearFiltersBtn")}
               </Button>
             </div>
           ) : (
@@ -242,7 +245,7 @@ export function BenefitTemplateModal({
         <DialogFooter className="flex-shrink-0 border-t pt-3 mt-3">
           <div className="flex items-center justify-between w-full">
             <p className={`${textStyles.description}`}>
-              Não encontrou?{""}
+              {t("notFound")}{" "}
               <Button
                 variant="link"
                 className={`h-auto p-0 ${textStyles.link}`}
@@ -251,7 +254,7 @@ export function BenefitTemplateModal({
                   onOpenBenefitModal()
                 }}
               >
-                Crie um benefício personalizado
+                {t("createCustom")}
               </Button>
             </p>
             <Button
@@ -263,7 +266,7 @@ export function BenefitTemplateModal({
               }}
               className="rounded-md text-xs"
             >
-              Fechar
+              {t("close")}
             </Button>
           </div>
         </DialogFooter>

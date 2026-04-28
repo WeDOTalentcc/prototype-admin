@@ -13,6 +13,7 @@
  */
 
 import React, { useEffect, useState } from "react"
+import { useTranslations } from "next-intl"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Chip } from "@/components/ui/chip"
@@ -49,6 +50,7 @@ function formatBRL(usd: number, rate: number): string {
 }
 
 export function ApifyConsumptionWidget({ className, autoRefreshMs }: Props) {
+  const t = useTranslations("settings.apifyWidget")
   const [data, setData] = useState<BudgetStatus | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
@@ -61,14 +63,14 @@ export function ApifyConsumptionWidget({ className, autoRefreshMs }: Props) {
         headers: { "Content-Type": "application/json" },
       })
       if (!res.ok) {
-        setError(`Erro ${res.status} ao carregar consumo`)
+        setError(t("loadError", { status: res.status }))
         setData(null)
       } else {
         const body = (await res.json()) as BudgetStatus
         setData(body)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Falha ao carregar consumo")
+      setError(err instanceof Error ? err.message : t("loadFailed"))
       setData(null)
     } finally {
       setLoading(false)
@@ -78,8 +80,8 @@ export function ApifyConsumptionWidget({ className, autoRefreshMs }: Props) {
   useEffect(() => {
     fetchStatus()
     if (!autoRefreshMs || autoRefreshMs < 5000) return
-    const t = setInterval(fetchStatus, autoRefreshMs)
-    return () => clearInterval(t)
+    const id = setInterval(fetchStatus, autoRefreshMs)
+    return () => clearInterval(id)
   }, [autoRefreshMs])
 
   const severity = data ? severityForUsage(data.usage_percentage) : "success"
@@ -90,12 +92,12 @@ export function ApifyConsumptionWidget({ className, autoRefreshMs }: Props) {
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
             <Zap className="w-4 h-4 text-wedo-cyan" />
-            Consumo Apify (mês atual)
+            {t("title")}
           </CardTitle>
           <button
             type="button"
             onClick={fetchStatus}
-            aria-label="Atualizar"
+            aria-label={t("refresh")}
             className={cn(
               "p-1 rounded-md text-lia-text-tertiary hover:text-lia-text-secondary",
               "hover:bg-black/5 dark:hover:bg-white/5",
@@ -109,7 +111,7 @@ export function ApifyConsumptionWidget({ className, autoRefreshMs }: Props) {
       </CardHeader>
       <CardContent className="space-y-3">
         {loading && !data ? (
-          <p className="text-xs text-lia-text-tertiary">Carregando...</p>
+          <p className="text-xs text-lia-text-tertiary">{t("loading")}</p>
         ) : error ? (
           <div className="flex items-start gap-2 text-xs text-status-danger">
             <AlertCircle className="w-3.5 h-3.5 mt-0.5" />
@@ -119,7 +121,7 @@ export function ApifyConsumptionWidget({ className, autoRefreshMs }: Props) {
           <>
             <div className="flex items-baseline justify-between">
               <div>
-                <p className="text-xs text-lia-text-tertiary">Gasto</p>
+                <p className="text-xs text-lia-text-tertiary">{t("spent")}</p>
                 <p className="text-sm font-medium text-lia-text-primary">
                   ${data.current_spend_usd.toFixed(2)}{" "}
                   <span className="text-xs text-lia-text-tertiary">USD</span>
@@ -129,12 +131,12 @@ export function ApifyConsumptionWidget({ className, autoRefreshMs }: Props) {
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-lia-text-tertiary">Limite</p>
+                <p className="text-xs text-lia-text-tertiary">{t("limit")}</p>
                 <p className="text-sm font-medium text-lia-text-primary">
                   ${data.monthly_budget_usd.toFixed(2)}
                 </p>
                 <p className="text-xs text-lia-text-tertiary">
-                  Restam ${data.remaining_usd.toFixed(2)}
+                  {t("remaining", { amount: `$${data.remaining_usd.toFixed(2)}` })}
                 </p>
               </div>
             </div>
@@ -142,7 +144,7 @@ export function ApifyConsumptionWidget({ className, autoRefreshMs }: Props) {
             <div>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs text-lia-text-tertiary">
-                  {data.usage_percentage.toFixed(1)}% usado
+                  {t("usagePct", { pct: data.usage_percentage.toFixed(1) })}
                 </span>
                 <Chip
                   variant={
@@ -151,9 +153,9 @@ export function ApifyConsumptionWidget({ className, autoRefreshMs }: Props) {
                     : "status-success"
                   }
                 >
-                  {severity === "danger" ? "Limite próximo"
-                    : severity === "warning" ? "Uso alto"
-                    : "Saudável"}
+                  {severity === "danger" ? t("nearLimit")
+                    : severity === "warning" ? t("highUse")
+                    : t("healthy")}
                 </Chip>
               </div>
               <Progress value={Math.min(data.usage_percentage, 100)} />
@@ -163,7 +165,7 @@ export function ApifyConsumptionWidget({ className, autoRefreshMs }: Props) {
               <div className="flex items-start gap-2 text-xs text-status-danger">
                 <AlertCircle className="w-3.5 h-3.5 mt-0.5" />
                 <span>
-                  Próximo do limite mensal. Novas chamadas Apify podem ser bloqueadas.
+                  {t("nearLimitWarning")}
                 </span>
               </div>
             )}

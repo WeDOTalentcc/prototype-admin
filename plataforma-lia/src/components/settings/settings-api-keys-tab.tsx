@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Shield, Plus, Copy, Eye } from "lucide-react"
@@ -8,20 +9,21 @@ export interface SettingsAPIKeysTabProps {
   onSettingsChange: (changed: boolean) => void
 }
 
-export function SettingsAPIKeysTab({ onSettingsChange }: SettingsAPIKeysTabProps) {
+export function SettingsAPIKeysTab({ onSettingsChange: _onSettingsChange }: SettingsAPIKeysTabProps) {
+  const t = useTranslations("settings.apiKeys")
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Shield className="w-4 h-4" />
-            Chaves de API
+            {t("title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
             <div>
-              <div className="text-sm font-medium text-lia-text-primary">Chave de Produção</div>
+              <div className="text-sm font-medium text-lia-text-primary">{t("productionKey")}</div>
               <div className="text-xs text-lia-text-primary font-mono mt-1">sk-prod-****************************</div>
             </div>
             <div className="flex items-center gap-2">
@@ -36,7 +38,7 @@ export function SettingsAPIKeysTab({ onSettingsChange }: SettingsAPIKeysTabProps
 
           <div className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
             <div>
-              <div className="text-sm font-medium text-lia-text-primary">Chave de Teste</div>
+              <div className="text-sm font-medium text-lia-text-primary">{t("testKey")}</div>
               <div className="text-xs text-lia-text-primary font-mono mt-1">sk-test-****************************</div>
             </div>
             <div className="flex items-center gap-2">
@@ -51,7 +53,7 @@ export function SettingsAPIKeysTab({ onSettingsChange }: SettingsAPIKeysTabProps
 
           <Button variant="outline" className="gap-2">
             <Plus className="w-4 h-4" />
-            Gerar Nova Chave
+            {t("generateNew")}
           </Button>
         </CardContent>
       </Card>

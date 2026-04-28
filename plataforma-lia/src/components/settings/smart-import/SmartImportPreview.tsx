@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { textStyles, cardStyles } from "@/lib/design-tokens"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -21,6 +22,7 @@ export function SmartImportPreview({
   onCancel,
   onConfirm,
 }: SmartImportPreviewProps) {
+  const t = useTranslations("settings.smartImport")
   return (
     <Card className={`${cardStyles.default} dark:border-lia-border-subtle rounded-md overflow-hidden`}>
       <div className="px-2 py-1.5 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50">
@@ -30,9 +32,9 @@ export function SmartImportPreview({
               <Eye className="w-4 h-4 text-lia-text-secondary" />
             </div>
             <div>
-              <h3 className={textStyles.title}>Pré-visualização dos Dados</h3>
+              <h3 className={textStyles.title}>{t("previewTitle")}</h3>
               <p className={textStyles.caption} aria-live="polite" aria-atomic="true">
-                {previewData?.totalRows || 0} registros encontrados em {fileName}
+                {t("previewSubtitle", { count: previewData?.totalRows || 0, fileName: fileName || "" })}
               </p>
             </div>
           </div>
@@ -54,7 +56,7 @@ export function SmartImportPreview({
               {previewData.matchedFields.length > 0 && (
                 <div className="flex items-center gap-1.5">
                   <CheckCircle className="w-3.5 h-3.5 text-status-success" />
-                  <span className={textStyles.labelSmall}>Campos identificados:</span>
+                  <span className={textStyles.labelSmall}>{t("matchedFields")}</span>
                   {previewData.matchedFields.map((field) => (
                     <Chip
                       variant="neutral"
@@ -71,7 +73,7 @@ export function SmartImportPreview({
                 <div className="flex items-center gap-1.5 mt-1">
                   <AlertCircle className="w-3.5 h-3.5 text-status-warning" />
                   <span className={textStyles.labelSmall} aria-live="polite" aria-atomic="true">
-                    Não encontrados:
+                    {t("unmatchedFields")}
                   </span>
                   {previewData.unmatchedFields.map((field) => (
                     <Chip
@@ -124,7 +126,7 @@ export function SmartImportPreview({
                 </div>
                 {previewData.totalRows > 5 && (
                   <div className="px-2 py-1.5 text-center text-micro text-lia-text-secondary bg-lia-bg-secondary/50 dark:bg-lia-bg-secondary/30">
-                    ... e mais {previewData.totalRows - 5} registros
+                    {t("moreRecords", { count: previewData.totalRows - 5 })}
                   </div>
                 )}
               </div>
@@ -138,7 +140,7 @@ export function SmartImportPreview({
                 className="gap-1.5 rounded-md text-xs"
               >
                 <X className="w-3.5 h-3.5" />
-                Cancelar
+                {t("cancel")}
               </Button>
               <Button
                 size="sm"
@@ -146,7 +148,7 @@ export function SmartImportPreview({
                 className="gap-1.5 rounded-md text-xs bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
               >
                 <CheckCircle className="w-3.5 h-3.5" />
-                Confirmar Importação
+                {t("confirmImport")}
               </Button>
             </div>
           </>

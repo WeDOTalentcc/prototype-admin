@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Shield, Phone, Download } from "lucide-react"
@@ -9,28 +10,29 @@ export interface SettingsSecurityTabProps {
 }
 
 export function SettingsSecurityTab({ onSettingsChange }: SettingsSecurityTabProps) {
+  const t = useTranslations("settings.security")
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Shield className="w-4 h-4" />
-            Segurança da Conta
+            {t("title")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3">
             <Button variant="outline" className="w-full justify-start">
               <Shield className="w-4 h-4 mr-2" />
-              Alterar Senha
+              {t("changePassword")}
             </Button>
             <Button variant="outline" className="w-full justify-start">
               <Phone className="w-4 h-4 mr-2" />
-              Configurar 2FA
+              {t("configure2FA")}
             </Button>
             <Button variant="outline" className="w-full justify-start">
               <Download className="w-4 h-4 mr-2" />
-              Baixar Dados
+              {t("downloadData")}
             </Button>
           </div>
         </CardContent>
@@ -38,21 +40,21 @@ export function SettingsSecurityTab({ onSettingsChange }: SettingsSecurityTabPro
 
       <Card>
         <CardHeader>
-          <CardTitle>Privacidade</CardTitle>
+          <CardTitle>{t("privacy")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm font-medium">Compartilhar dados de uso</div>
-                <div className="text-xs text-lia-text-primary">Ajuda a melhorar a plataforma</div>
+                <div className="text-sm font-medium">{t("shareUsageData")}</div>
+                <div className="text-xs text-lia-text-primary">{t("shareUsageDataDesc")}</div>
               </div>
               <input type="checkbox" defaultChecked onChange={() => onSettingsChange(true)} />
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <div className="text-sm font-medium">Análise de comportamento</div>
-                <div className="text-xs text-lia-text-primary">Para personalizar sua experiência</div>
+                <div className="text-sm font-medium">{t("behaviorAnalysis")}</div>
+                <div className="text-xs text-lia-text-primary">{t("behaviorAnalysisDesc")}</div>
               </div>
               <input type="checkbox" defaultChecked onChange={() => onSettingsChange(true)} />
             </div>

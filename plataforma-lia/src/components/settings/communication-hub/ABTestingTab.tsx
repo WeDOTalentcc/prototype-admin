@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import { FlaskConical, Plus, BarChart3, Loader2, AlertCircle, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react"
 import { BACKEND_URL, getAuthHeaders } from "@/services/lia-api/base"
 
@@ -38,6 +39,7 @@ const EMPTY_FORM: CreateTestForm = {
 }
 
 export function ABTestingTab() {
+  const t = useTranslations("settings.communication.abtesting")
   const [tests, setTests] = useState<ABTest[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -55,15 +57,15 @@ export function ABTestingTab() {
     setError(null)
     try {
       const response = await fetch(`${BACKEND_URL}/ab-tests`, { headers: getAuthHeaders() })
-      if (!response.ok) throw new Error(`Erro ao carregar testes: ${response.statusText}`)
+      if (!response.ok) throw new Error(t("loadError", { status: response.statusText }))
       const data = await response.json()
       setTests(data.tests || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar experimentos")
+      setError(err instanceof Error ? err.message : t("loadErrorGeneric"))
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [t])
 
   const fetchMetrics = useCallback(async (testName: string) => {
     setMetricsLoading(prev => ({ ...prev, [testName]: true }))
@@ -71,7 +73,7 @@ export function ABTestingTab() {
       const response = await fetch(`${BACKEND_URL}/ab-tests/${encodeURIComponent(testName)}/results`, {
         headers: getAuthHeaders(),
       })
-      if (!response.ok) throw new Error("Erro ao carregar métricas")
+      if (!response.ok) throw new Error(t("metricsError"))
       const data: ABTestMetrics = await response.json()
       setMetricsMap(prev => ({ ...prev, [testName]: data }))
     } catch {
@@ -79,7 +81,7 @@ export function ABTestingTab() {
     } finally {
       setMetricsLoading(prev => ({ ...prev, [testName]: false }))
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     fetchTests()
@@ -120,13 +122,13 @@ export function ABTestingTab() {
     setCreateSuccess(null)
 
     if (!form.test_name.trim()) {
-      setCreateError("Nome do experimento é obrigatório")
+      setCreateError(t("experimentNameRequired"))
       return
     }
 
     const totalTraffic = form.variants.reduce((sum, v) => sum + Number(v.traffic_percentage), 0)
     if (Math.abs(totalTraffic - 100) > 0.1) {
-      setCreateError(`A soma do tráfego deve ser 100% (atual: ${totalTraffic}%)`)
+      setCreateError(t("trafficSumError", { total: totalTraffic }))
       return
     }
 
@@ -143,15 +145,15 @@ export function ABTestingTab() {
 
       const data = await response.json()
       if (!response.ok || data.error) {
-        throw new Error(data.error || data.detail || "Erro ao criar experimento")
+        throw new Error(data.error || data.detail || t("createError"))
       }
 
-      setCreateSuccess(`Experimento "${form.test_name}" criado com sucesso!`)
+      setCreateSuccess(t("experimentCreated", { name: form.test_name }))
       setForm(EMPTY_FORM)
       setShowCreateForm(false)
       fetchTests()
     } catch (err) {
-      setCreateError(err instanceof Error ? err.message : "Erro ao criar experimento")
+      setCreateError(err instanceof Error ? err.message : t("createError"))
     } finally {
       setCreating(false)
     }
@@ -165,10 +167,10 @@ export function ABTestingTab() {
   }
 
   const getStatusLabel = (metrics: ABTestMetrics | undefined) => {
-    if (!metrics) return "Sem dados"
-    if (metrics.winner) return "Vencedor identificado"
-    if (metrics.total_observations > 0) return "Em progresso"
-    return "Aguardando dados"
+    if (!metrics) return t("noData")
+    if (metrics.winner) return t("winnerIdentified")
+    if (metrics.total_observations > 0) return t("inProgress")
+    return t("awaitingData")
   }
 
   return (
@@ -177,10 +179,10 @@ export function ABTestingTab() {
         <div>
           <h3 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
             <FlaskConical className="w-4 h-4 text-wedo-cyan" />
-            A/B Testing de Modelos de Email
+            {t("title")}
           </h3>
           <p className="text-xs text-lia-text-tertiary mt-0.5">
-            Gerencie experimentos para otimizar templates de email com base em dados reais
+            {t("description")}
           </p>
         </div>
         <button
@@ -188,7 +190,7 @@ export function ABTestingTab() {
           className="flex items-center gap-1.5 text-xs bg-wedo-cyan text-white px-3 py-1.5 rounded-lg hover:bg-wedo-cyan-dark transition-colors font-medium"
         >
           <Plus className="w-3.5 h-3.5" />
-          Novo Experimento
+          {t("newExperiment")}
         </button>
       </div>
 
@@ -201,27 +203,27 @@ export function ABTestingTab() {
 
       {showCreateForm && (
         <div className="border border-lia-border-subtle rounded-xl p-4 bg-lia-bg-secondary space-y-4">
-          <h4 className="text-sm font-semibold text-lia-text-primary">Novo Experimento</h4>
+          <h4 className="text-sm font-semibold text-lia-text-primary">{t("newExperimentTitle")}</h4>
 
           <div>
-            <label className="text-xs font-medium text-lia-text-secondary block mb-1">Nome do Experimento</label>
+            <label className="text-xs font-medium text-lia-text-secondary block mb-1">{t("experimentNameLabel")}</label>
             <input
               type="text"
               value={form.test_name}
               onChange={e => setForm(prev => ({ ...prev, test_name: e.target.value }))}
-              placeholder="ex: email_screening_invite_v2"
+              placeholder={t("experimentNamePlaceholder")}
               className="w-full text-sm bg-lia-bg-primary border border-lia-border-subtle rounded-lg px-3 py-2 text-lia-text-primary placeholder:text-lia-text-tertiary focus:outline-none focus:ring-1 focus:ring-wedo-cyan"
             />
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-lia-text-secondary">Variantes</label>
+              <label className="text-xs font-medium text-lia-text-secondary">{t("variantsLabel")}</label>
               <button
                 onClick={addVariant}
                 className="text-xs text-wedo-cyan hover:text-wedo-cyan-dark font-medium"
               >
-                + Adicionar variante
+                {t("addVariantBtn")}
               </button>
             </div>
 
@@ -229,7 +231,7 @@ export function ABTestingTab() {
               <div key={i} className="border border-lia-border-subtle rounded-lg p-3 space-y-2 bg-lia-bg-primary">
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
-                    <label className="text-[10px] text-lia-text-tertiary block mb-0.5">Nome da Variante</label>
+                    <label className="text-[10px] text-lia-text-tertiary block mb-0.5">{t("variantNameSmall")}</label>
                     <input
                       type="text"
                       value={variant.variant_name}
@@ -238,7 +240,7 @@ export function ABTestingTab() {
                     />
                   </div>
                   <div className="w-24">
-                    <label className="text-[10px] text-lia-text-tertiary block mb-0.5">Tráfego (%)</label>
+                    <label className="text-[10px] text-lia-text-tertiary block mb-0.5">{t("trafficSmall")}</label>
                     <input
                       type="number"
                       min={0}
@@ -258,11 +260,11 @@ export function ABTestingTab() {
                   )}
                 </div>
                 <div>
-                  <label className="text-[10px] text-lia-text-tertiary block mb-0.5">Template do Email</label>
+                  <label className="text-[10px] text-lia-text-tertiary block mb-0.5">{t("templateLabel")}</label>
                   <textarea
                     value={variant.prompt_template}
                     onChange={e => handleFormVariantChange(i, "prompt_template", e.target.value)}
-                    placeholder="Olá {{candidate_name}}, ..."
+                    placeholder={t("templatePlaceholder", { placeholder: "{{candidate_name}}" })}
                     rows={3}
                     className="w-full text-xs bg-lia-bg-secondary border border-lia-border-subtle rounded px-2 py-1.5 text-lia-text-primary placeholder:text-lia-text-tertiary focus:outline-none focus:ring-1 focus:ring-wedo-cyan resize-none font-mono"
                   />
@@ -283,7 +285,7 @@ export function ABTestingTab() {
               onClick={() => { setShowCreateForm(false); setForm(EMPTY_FORM); setCreateError(null) }}
               className="text-xs text-lia-text-secondary px-3 py-1.5 rounded-lg border border-lia-border-subtle hover:bg-lia-bg-primary transition-colors"
             >
-              Cancelar
+              {t("cancel")}
             </button>
             <button
               onClick={handleCreate}
@@ -291,7 +293,7 @@ export function ABTestingTab() {
               className="flex items-center gap-1.5 text-xs bg-wedo-cyan text-white px-3 py-1.5 rounded-lg hover:bg-wedo-cyan-dark transition-colors font-medium disabled:opacity-60"
             >
               {creating && <Loader2 className="w-3 h-3 animate-spin" />}
-              {creating ? "Criando..." : "Criar Experimento"}
+              {creating ? t("creating") : t("createExperiment")}
             </button>
           </div>
         </div>
@@ -300,7 +302,7 @@ export function ABTestingTab() {
       {loading ? (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-5 h-5 animate-spin text-wedo-cyan" />
-          <span className="ml-2 text-sm text-lia-text-tertiary">Carregando experimentos...</span>
+          <span className="ml-2 text-sm text-lia-text-tertiary">{t("loadingExperiments")}</span>
         </div>
       ) : error ? (
         <div className="flex items-center gap-2 text-sm text-status-error bg-status-error/10 border border-status-error/30 rounded-lg px-4 py-3">
@@ -310,8 +312,8 @@ export function ABTestingTab() {
       ) : tests.length === 0 ? (
         <div className="text-center py-12 border border-dashed border-lia-border-subtle rounded-xl">
           <FlaskConical className="w-8 h-8 text-lia-text-tertiary mx-auto mb-2" />
-          <p className="text-sm text-lia-text-secondary">Nenhum experimento ativo</p>
-          <p className="text-xs text-lia-text-tertiary mt-1">Crie um experimento para começar a testar variantes de email</p>
+          <p className="text-sm text-lia-text-secondary">{t("noActiveExperiments")}</p>
+          <p className="text-xs text-lia-text-tertiary mt-1">{t("noExperimentsHint")}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -331,8 +333,8 @@ export function ABTestingTab() {
                     <div>
                       <p className="text-sm font-medium text-lia-text-primary">{test.test_name}</p>
                       <p className="text-xs text-lia-text-tertiary">
-                        {test.variants.length} variante{test.variants.length !== 1 ? "s" : ""}
-                        {test.created_at && ` · criado em ${new Date(test.created_at).toLocaleDateString("pt-BR")}`}
+                        {t("variantsCountLabel", { count: test.variants.length })}
+                        {test.created_at && t("createdOnLabel", { date: new Date(test.created_at).toLocaleDateString() })}
                       </p>
                     </div>
                   </div>
@@ -350,7 +352,7 @@ export function ABTestingTab() {
                 {isExpanded && (
                   <div className="border-t border-lia-border-subtle p-4 bg-lia-bg-secondary space-y-4">
                     <div>
-                      <p className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wide mb-2">Variantes</p>
+                      <p className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wide mb-2">{t("variantsLabel")}</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {test.variants.map(variant => (
                           <div key={variant.variant_name} className="bg-lia-bg-primary rounded-lg border border-lia-border-subtle px-3 py-2">
@@ -372,26 +374,31 @@ export function ABTestingTab() {
                     {isLoadingMetrics ? (
                       <div className="flex items-center gap-2 text-xs text-lia-text-tertiary">
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        Carregando métricas...
+                        {t("loadingMetrics")}
                       </div>
                     ) : metrics ? (
                       <div>
                         <div className="flex items-center gap-2 mb-2">
                           <BarChart3 className="w-3.5 h-3.5 text-wedo-cyan" />
                           <p className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wide">
-                            Métricas · {metrics.total_observations} observações
+                            {t("metricsHeader", { count: metrics.total_observations })}
                           </p>
                         </div>
 
                         {metrics.winner && (
                           <div className="flex items-center gap-2 text-xs text-status-success bg-status-success/10 border border-status-success/30 rounded-lg px-3 py-2 mb-3">
                             <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                            Vencedor: <strong>{metrics.winner.variant}</strong> (+{metrics.winner.improvement_pct}% em {metrics.winner.metric}, p={metrics.winner.p_value})
+                            {t("winnerInline", {
+                              variant: metrics.winner.variant,
+                              pct: metrics.winner.improvement_pct,
+                              metric: metrics.winner.metric,
+                              p: metrics.winner.p_value,
+                            })}
                           </div>
                         )}
 
                         {metrics.total_observations === 0 ? (
-                          <p className="text-xs text-lia-text-tertiary">Nenhuma observação registrada ainda.</p>
+                          <p className="text-xs text-lia-text-tertiary">{t("noObservationsYet")}</p>
                         ) : (
                           <div className="space-y-2">
                             {Object.entries(metrics.variants).map(([variantName, variantData]) => (
@@ -401,7 +408,7 @@ export function ABTestingTab() {
                                   <div key={metricName} className="flex items-center justify-between text-xs text-lia-text-secondary">
                                     <span>{metricName}</span>
                                     <span className="font-mono">
-                                      média: <strong>{metricData.mean}</strong> · n={metricData.sample_size}
+                                      {t("meanLabel")}: <strong>{metricData.mean}</strong> · n={metricData.sample_size}
                                     </span>
                                   </div>
                                 ))}

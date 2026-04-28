@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useCallback, useMemo, useState } from "react"
+import { useTranslations } from "next-intl"
 import {
   Plus,
   Gift,
@@ -96,6 +97,7 @@ export function BenefitsListSection({
   companyId,
   onChanged,
 }: BenefitsListSectionProps) {
+  const t = useTranslations("settings.benefits")
   const [showModal, setShowModal] = useState(false)
   const [editingBenefit, setEditingBenefit] = useState<CompanyBenefit | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -152,11 +154,11 @@ export function BenefitsListSection({
   const handleSave = useCallback(
     async (benefit: CompanyBenefit) => {
       if (!companyId) {
-        setError("Empresa não identificada. Recarregue a página.")
+        setError(t("companyNotIdentified"))
         return
       }
       if (!benefit.name?.trim()) {
-        setError("Informe o nome do benefício.")
+        setError(t("benefitNameRequired"))
         return
       }
       setIsSaving(true)
@@ -173,24 +175,24 @@ export function BenefitsListSection({
         })
         if (!res.ok) {
           const text = await res.text().catch(() => "")
-          throw new Error(text || `Falha ao salvar benefício (${res.status})`)
+          throw new Error(text || t("saveFailed", { status: res.status }))
         }
         setShowModal(false)
         setEditingBenefit(null)
         await refresh()
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Erro ao salvar benefício.")
+        setError(err instanceof Error ? err.message : t("saveErrorGeneric"))
       } finally {
         setIsSaving(false)
       }
     },
-    [companyId, refresh]
+    [companyId, refresh, t]
   )
 
   const handleDelete = useCallback(
     async (benefitId: string) => {
       if (!benefitId) return
-      if (typeof window !== "undefined" && !window.confirm("Remover este benefício?")) {
+      if (typeof window !== "undefined" && !window.confirm(t("removeBenefitConfirm"))) {
         return
       }
       setBusyId(benefitId)
@@ -201,16 +203,16 @@ export function BenefitsListSection({
           { method: "DELETE" }
         )
         if (!res.ok) {
-          throw new Error(`Falha ao remover (${res.status})`)
+          throw new Error(t("removeFailed", { status: res.status }))
         }
         await refresh()
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Erro ao remover benefício.")
+        setError(err instanceof Error ? err.message : t("removeErrorGeneric"))
       } finally {
         setBusyId(null)
       }
     },
-    [refresh]
+    [refresh, t]
   )
 
   const handleToggleStatus = useCallback(
@@ -227,22 +229,22 @@ export function BenefitsListSection({
             body: JSON.stringify({ is_active: !benefit.is_active }),
           }
         )
-        if (!res.ok) throw new Error(`Falha ao atualizar status (${res.status})`)
+        if (!res.ok) throw new Error(t("updateStatusFailed", { status: res.status }))
         await refresh()
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Erro ao atualizar benefício.")
+        setError(err instanceof Error ? err.message : t("updateStatusErrorGeneric"))
       } finally {
         setBusyId(null)
       }
     },
-    [companyId, refresh]
+    [companyId, refresh, t]
   )
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className={textStyles.description}>
-          Gerencie item a item o pacote de benefícios oferecido.
+          {t("manageItemByItem")}
         </p>
         <Button
           type="button"
@@ -252,7 +254,7 @@ export function BenefitsListSection({
           className="inline-flex items-center gap-1.5"
         >
           <Plus className="w-3.5 h-3.5" />
-          Adicionar benefício
+          {t("addBenefitBtn")}
         </Button>
       </div>
 
@@ -265,10 +267,10 @@ export function BenefitsListSection({
       {totalCount === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 py-8 rounded-lg border border-dashed border-lia-border-subtle text-lia-text-secondary">
           <Gift className="w-6 h-6 text-lia-text-tertiary" />
-          <p className={textStyles.description}>Nenhum benefício cadastrado ainda.</p>
+          <p className={textStyles.description}>{t("noBenefitsYet")}</p>
           <Button type="button" size="sm" variant="outline" onClick={openCreate}>
             <Plus className="w-3.5 h-3.5 mr-1" />
-            Adicionar o primeiro
+            {t("addFirst")}
           </Button>
         </div>
       ) : (
@@ -307,7 +309,7 @@ export function BenefitsListSection({
                       <BenefitItemCard
                         benefit={{
                           id: b.id,
-                          name: b.name || "Sem nome",
+                          name: b.name || t("noNameDefault"),
                           description: b.description || "",
                           category: b.category || "quality_life",
                           value_type: b.value_type || "informative",
@@ -339,7 +341,7 @@ export function BenefitsListSection({
       {isSaving && (
         <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
           <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />
-          Salvando...
+          {t("savingShort")}
         </div>
       )}
 

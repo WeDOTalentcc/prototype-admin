@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
@@ -57,6 +58,20 @@ export function BenefitsList({
   onCreateBenefitInCategory,
   onDelete,
 }: BenefitsListProps) {
+  const t = useTranslations("settings.benefits")
+  const CATEGORY_NAME_KEYS: Record<string, string> = {
+    health: "categoryHealth",
+    food: "categoryFood",
+    transport: "categoryTransport",
+    education: "categoryEducation",
+    wellness: "categoryHealth",
+    financial: "categoryFinancial",
+    quality_life: "categoryQualityLife",
+    family: "categoryFamily",
+    flexibility: "categoryQualityLife",
+    security: "categorySecurity",
+    other: "noDescription",
+  }
   const [expandedCategories, setExpandedCategories] = React.useState<string[]>(
     BENEFIT_CATEGORIES.map(c => c.id)
   )
@@ -90,16 +105,15 @@ export function BenefitsList({
                   <CategoryIcon className={`w-4 h-4 ${category.color}`} />
                 </div>
                 <div>
-                  <h3 className={textStyles.title}>{category.name}</h3>
+                  <h3 className={textStyles.title}>{t(CATEGORY_NAME_KEYS[category.id] || "noDescription")}</h3>
                   <p className={textStyles.caption}>
-                    {categoryBenefits.length}{" "}
-                    {categoryBenefits.length === 1 ? 'benefício' : 'benefícios'}
+                    {t("benefitsFound", { count: categoryBenefits.length })}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Chip variant="neutral" className="text-micro">
-                  {categoryBenefits.filter(b => b.is_active).length} ativos
+                  {t("activeBenefits", { count: categoryBenefits.filter(b => b.is_active).length })}
                 </Chip>
                 {isExpanded ? (
                   <ChevronDown className="w-4 h-4 text-lia-text-secondary" />
@@ -115,7 +129,7 @@ export function BenefitsList({
                   <div className="p-3 text-center">
                     <Gift className="w-4 h-4 mx-auto text-lia-text-disabled mb-2" />
                     <p className={textStyles.bodySmall}>
-                      Nenhum benefício nesta categoria
+                      {t("noBenefitsInCategory")}
                     </p>
                     <Button
                       variant="ghost"
@@ -125,7 +139,7 @@ export function BenefitsList({
                       disabled={!isEditingBenefits}
                     >
                       <Plus className="w-3.5 h-3.5 mr-1" />
-                      Adicionar benefício
+                      {t("addBenefitBtn")}
                     </Button>
                   </div>
                 ) : (

@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useTranslations } from 'next-intl'
 import { Save, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { CompanyDataCard } from '../CompanyDataCard'
@@ -26,11 +27,13 @@ export function BigFiveSection({
   updateLiaInstruction,
   handleSaveCultureFields,
 }: BigFiveSectionProps) {
+  const t = useTranslations('settings.bigFive')
+  const tBenefits = useTranslations('settings.benefits')
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1">
-          Perfil Organizacional (Big Five)
+          {t('title')}
         </h3>
         <Button
           variant="outline"
@@ -42,12 +45,12 @@ export function BigFiveSection({
           {saving ? (
             <>
               <Loader2 className="w-3 h-3 mr-1.5 animate-spin motion-reduce:animate-none" />
-              Salvando...
+              {tBenefits('savingBtn')}
             </>
           ) : (
             <>
               <Save className="w-3 h-3 mr-1.5 text-lia-text-primary" />
-              Salvar Perfil
+              {t('saveProfile')}
             </>
           )}
         </Button>
@@ -55,8 +58,8 @@ export function BigFiveSection({
       
       <CompanyDataCard
         fieldKey="company_big_five"
-        label="Perfil Cultural Big Five"
-        category="Cultura Organizacional"
+        label={t('culturalProfile')}
+        category={t('organizationalCulture')}
         grouped
         isActive={companyData.lia_field_toggles?.company_big_five ?? true}
         currentInstruction={companyData.lia_instructions?.company_big_five || ''}

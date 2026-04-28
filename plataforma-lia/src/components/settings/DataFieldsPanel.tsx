@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { ChevronDown, ChevronRight } from "lucide-react"
 import { ALL_DATA_FIELDS, FIELD_CATEGORY_LABELS } from "./StageCardHelpers"
 import type { RecruitmentStage, StageDataField } from "./recruitment-journey.types"
@@ -12,6 +13,7 @@ interface DataFieldsPanelProps {
 }
 
 export function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanelProps) {
+  const t = useTranslations("settings.dataFields")
   const [expanded, setExpanded] = React.useState(false)
 
   const dataFields = stage.data_fields || []
@@ -60,8 +62,8 @@ export function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanel
         type="button"
       >
         {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-        <span className="font-medium">Dados a coletar</span>
-        <span className="text-lia-text-tertiary">({enabledCount} campo{enabledCount !== 1 ? 's' : ''})</span>
+        <span className="font-medium">{t("collapseLabel")}</span>
+        <span className="text-lia-text-tertiary">({t("fieldCount", { count: enabledCount })})</span>
       </button>
 
       {expanded && (
@@ -90,7 +92,7 @@ export function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanel
                           checked={active}
                           onChange={() => toggleField(catalog)}
                           className="h-3.5 w-3.5 rounded-xl border-lia-border-default text-lia-text-primary cursor-pointer"
-                          aria-label={`Ativar campo ${catalog.displayName}`}
+                          aria-label={t("enableField", { name: catalog.displayName })}
                         />
                       ) : (
                         <div className={`w-2 h-2 rounded-full flex-shrink-0 ${active ? 'bg-lia-btn-primary-bg' : 'bg-lia-interactive-active'}`} />
@@ -109,7 +111,7 @@ export function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanel
                               onChange={() => toggleRequired(catalog.id)}
                               className="h-3 w-3 rounded-xl border-lia-border-default text-lia-text-primary cursor-pointer"
                             />
-                            <span className="text-micro text-lia-text-secondary">Obrigatório</span>
+                            <span className="text-micro text-lia-text-secondary">{t("required")}</span>
                           </label>
                           <label className="flex items-center gap-1 cursor-pointer">
                             <input
@@ -118,7 +120,7 @@ export function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanel
                               onChange={() => toggleAutoCollect(catalog.id)}
                               className="h-3 w-3 rounded-xl border-lia-border-default text-lia-text-primary cursor-pointer"
                             />
-                            <span className="text-micro text-lia-text-secondary">LIA coleta</span>
+                            <span className="text-micro text-lia-text-secondary">{t("liaCollects")}</span>
                           </label>
                         </div>
                       )}
@@ -127,12 +129,12 @@ export function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanel
                         <div className="flex items-center gap-1.5">
                           {field?.required && (
                             <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-status-error/10 text-status-error text-micro">
-                              Obrigatório
+                              {t("required")}
                             </span>
                           )}
                           {field?.auto_collect && (
                             <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan text-micro">
-                              LIA coleta
+                              {t("liaCollects")}
                             </span>
                           )}
                         </div>
@@ -144,7 +146,7 @@ export function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanel
             </div>
           ))}
           <p className="text-micro text-lia-text-tertiary px-1 pt-1">
-            Marque "LIA coleta" para que a assistente solicite o dado durante a conversa nesta etapa.
+            {t("helpText")}
           </p>
         </div>
       )}

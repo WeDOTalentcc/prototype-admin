@@ -35,16 +35,22 @@ const SECTION_ICON_COLORS: Record<string, string> = {
 
 
 import dynamic from"next/dynamic"
+import { useTranslations } from "next-intl"
 import { LoadingFallback } from"@/components/ui/loading"
-const MinhaEmpresaHub = dynamic(() => import("@/components/settings/MinhaEmpresaHub").then(m => ({ default: m.MinhaEmpresaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando empresa..." /> })
-const RecruitmentPipelineTab = dynamic(() => import("@/components/settings/RecruitmentPipelineTab").then(m => ({ default: m.RecruitmentPipelineTab })), { ssr: false, loading: () => <LoadingFallback text="Carregando pipeline..." /> })
-const RecruitmentScreeningTab = dynamic(() => import("@/components/settings/RecruitmentScreeningTab").then(m => ({ default: m.RecruitmentScreeningTab })), { ssr: false, loading: () => <LoadingFallback text="Carregando screening..." /> })
-const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando comunicação..." /> })
-const IntegrationsHub = dynamic(() => import("@/components/settings/IntegrationsHub").then(m => ({ default: m.IntegrationsHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando integrações..." /> })
-const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando usuários..." /> })
-const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
-const WebhooksManager = dynamic(() => import("@/components/settings/WebhooksManager").then(m => ({ default: m.WebhooksManager })), { ssr: false, loading: () => <LoadingFallback text="Carregando webhooks..." /> })
-const GovernancaHub = dynamic(() => import("@/components/settings/governance/GovernancaHub").then(m => ({ default: m.GovernancaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando governança..." /> })
+function I18nLoadingFallback({ tKey }: { tKey: string }) {
+  const tLoad = useTranslations("settings.loading")
+  return <LoadingFallback text={tLoad(tKey)} />
+}
+
+const MinhaEmpresaHub = dynamic(() => import("@/components/settings/MinhaEmpresaHub").then(m => ({ default: m.MinhaEmpresaHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="company" /> })
+const RecruitmentPipelineTab = dynamic(() => import("@/components/settings/RecruitmentPipelineTab").then(m => ({ default: m.RecruitmentPipelineTab })), { ssr: false, loading: () => <I18nLoadingFallback tKey="pipeline" /> })
+const RecruitmentScreeningTab = dynamic(() => import("@/components/settings/RecruitmentScreeningTab").then(m => ({ default: m.RecruitmentScreeningTab })), { ssr: false, loading: () => <I18nLoadingFallback tKey="screening" /> })
+const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="communication" /> })
+const IntegrationsHub = dynamic(() => import("@/components/settings/IntegrationsHub").then(m => ({ default: m.IntegrationsHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="integrations" /> })
+const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="users" /> })
+const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="compliance" /> })
+const WebhooksManager = dynamic(() => import("@/components/settings/WebhooksManager").then(m => ({ default: m.WebhooksManager })), { ssr: false, loading: () => <I18nLoadingFallback tKey="webhooks" /> })
+const GovernancaHub = dynamic(() => import("@/components/settings/governance/GovernancaHub").then(m => ({ default: m.GovernancaHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="governanca" /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'

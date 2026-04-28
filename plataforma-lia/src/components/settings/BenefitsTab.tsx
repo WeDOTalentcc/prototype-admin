@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import {
   Library,
@@ -24,6 +25,7 @@ import { defaultBenefit } from "./benefits/benefits-types"
 import type { BenefitTemplate } from "./benefits/benefits-types"
 
 export function BenefitsTab() {
+  const t = useTranslations("settings.benefits")
   const hub = useBenefitsTab()
 
   const templatesByCategory = hub.filteredTemplates.reduce<Record<string, BenefitTemplate[]>>(
@@ -38,11 +40,11 @@ export function BenefitsTab() {
 
   if (hub.isLoading) {
     return (
-      <div className="space-y-3" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="space-y-3" role="status" aria-live="polite" aria-label={t("loading")}>
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <Loader2 className="w-4 h-4 animate-spin motion-reduce:animate-none mx-auto mb-2 text-lia-text-secondary" />
-            <p className={textStyles.description}>Carregando benefícios...</p>
+            <p className={textStyles.description}>{t("loading")}</p>
           </div>
         </div>
       </div>
@@ -67,9 +69,9 @@ export function BenefitsTab() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h2 className={textStyles.titleLarge}>Benefícios da Empresa</h2>
+          <h2 className={textStyles.titleLarge}>{t("title")}</h2>
           <p className={`${textStyles.body} mt-1`}>
-            Gerencie os benefícios oferecidos aos colaboradores
+            {t("description")}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -83,12 +85,12 @@ export function BenefitsTab() {
               onInstructionSave={hub.handleLiaInstructionSave}
               compact
             />
-            <span className="text-xs text-lia-text-secondary">Consumido pela LIA</span>
+            <span className="text-xs text-lia-text-secondary">{t("consumedByLia")}</span>
           </div>
           {!hub.isEditingBenefits ? (
             <button onClick={hub.handleEnterEditMode} className={actionButtonStyles.smOutline}>
               <Pencil className={actionButtonStyles.icon} />
-              Editar
+              {t("edit")}
             </button>
           ) : (
             <>
@@ -97,7 +99,7 @@ export function BenefitsTab() {
                 className={actionButtonStyles.smSecondary}
                 disabled={hub.isSaving}
               >
-                Cancelar
+                {t("cancel")}
               </button>
               <button
                 onClick={hub.handleSaveChanges}
@@ -107,10 +109,10 @@ export function BenefitsTab() {
                 {hub.isSaving ? (
                   <>
                     <Loader2 className="w-3 h-3 animate-spin motion-reduce:animate-none" />
-                    Salvando...
+                    {t("savingBtn")}
                   </>
                 ) : (
-                  "Salvar Alterações"
+                  t("saveChanges")
                 )}
               </button>
             </>
@@ -123,7 +125,7 @@ export function BenefitsTab() {
             className="gap-1.5 rounded-xl text-xs border-lia-border-default text-lia-text-primary dark:border-lia-border-default hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover"
           >
             <Library className="w-3.5 h-3.5" />
-            Adicionar da Lista
+            {t("addFromList")}
           </Button>
           <Button
             size="sm"
@@ -135,7 +137,7 @@ export function BenefitsTab() {
             className="gap-1.5 rounded-md text-xs bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
           >
             <Plus className="w-3.5 h-3.5" />
-            Novo Benefício
+            {t("newBenefit")}
           </Button>
         </div>
       </div>

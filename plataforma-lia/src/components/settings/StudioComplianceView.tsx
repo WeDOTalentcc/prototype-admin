@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
+import { useTranslations } from "next-intl"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -21,6 +22,7 @@ interface StudioComplianceData {
 }
 
 export function StudioComplianceView() {
+  const t = useTranslations("settings.studio")
   const [period, setPeriod] = useState("30")
   const [data, setData] = useState<StudioComplianceData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -36,22 +38,22 @@ export function StudioComplianceView() {
           `/api/backend-proxy/custom-agents/studio-compliance-summary?period_days=${period}`,
           { headers: token ? { Authorization: `Bearer ${token}` } : {} },
         )
-        if (!res.ok) throw new Error("Erro ao carregar dados")
+        if (!res.ok) throw new Error(t("loadError"))
         const json = await res.json()
         setData(json)
       } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Erro ao carregar")
+        setError(err instanceof Error ? err.message : t("loadErrorGeneric"))
       } finally {
         setLoading(false)
       }
     }
     fetchData()
-  }, [period])
+  }, [period, t])
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12 gap-2 text-sm text-lia-text-secondary">
-        <Loader2 className="w-4 h-4 animate-spin" /> Carregando metricas do Studio...
+        <Loader2 className="w-4 h-4 animate-spin" /> {t("loading")}
       </div>
     )
   }
@@ -73,16 +75,16 @@ export function StudioComplianceView() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Bot className="w-5 h-5 text-wedo-cyan-dark" />
-          <h2 className={textStyles.title}>Compliance do Agent Studio</h2>
+          <h2 className={textStyles.title}>{t("title")}</h2>
         </div>
         <Select value={period} onValueChange={setPeriod}>
           <SelectTrigger className="w-40">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7">Ultimos 7 dias</SelectItem>
-            <SelectItem value="30">Ultimos 30 dias</SelectItem>
-            <SelectItem value="90">Ultimos 90 dias</SelectItem>
+            <SelectItem value="7">{t("last7")}</SelectItem>
+            <SelectItem value="30">{t("last30")}</SelectItem>
+            <SelectItem value="90">{t("last90")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -93,7 +95,7 @@ export function StudioComplianceView() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <Activity className="w-4 h-4 text-lia-text-secondary" />
-              <span className="text-xs text-lia-text-secondary">Execucoes</span>
+              <span className="text-xs text-lia-text-secondary">{t("executions")}</span>
             </div>
             <p className="text-2xl font-bold font-inter text-lia-text-primary">{data.total_executions}</p>
           </CardContent>
@@ -103,7 +105,7 @@ export function StudioComplianceView() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
-              <span className="text-xs text-lia-text-secondary">Aprovadas</span>
+              <span className="text-xs text-lia-text-secondary">{t("approved")}</span>
             </div>
             <p className="text-2xl font-bold font-inter text-emerald-600">
               {data.total_executions - data.blocked_executions}
@@ -115,10 +117,10 @@ export function StudioComplianceView() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <AlertTriangle className="w-4 h-4 text-status-warning" />
-              <span className="text-xs text-lia-text-secondary">Bloqueadas</span>
+              <span className="text-xs text-lia-text-secondary">{t("blocked")}</span>
             </div>
             <p className="text-2xl font-bold font-inter text-status-warning">{data.blocked_executions}</p>
-            <p className="text-[10px] text-lia-text-disabled mt-0.5">{data.block_rate_pct}% do total</p>
+            <p className="text-[10px] text-lia-text-disabled mt-0.5">{t("blockedPctOfTotal", { pct: data.block_rate_pct })}</p>
           </CardContent>
         </Card>
 
@@ -126,11 +128,11 @@ export function StudioComplianceView() {
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-1">
               <Bot className="w-4 h-4 text-wedo-cyan-dark" />
-              <span className="text-xs text-lia-text-secondary">Agents ativos</span>
+              <span className="text-xs text-lia-text-secondary">{t("activeAgents")}</span>
             </div>
             <p className="text-2xl font-bold font-inter text-lia-text-primary">{data.active_agents}</p>
             <p className="text-[10px] text-lia-text-disabled mt-0.5">
-              Confianca media: {(data.avg_confidence * 100).toFixed(0)}%
+              {t("avgConfidence", { pct: (data.avg_confidence * 100).toFixed(0) })}
             </p>
           </CardContent>
         </Card>
@@ -140,7 +142,7 @@ export function StudioComplianceView() {
       {data.trend.length > 0 && (
         <Card className={cardStyles.default}>
           <CardHeader>
-            <CardTitle className="text-sm">Execucoes por dia</CardTitle>
+            <CardTitle className="text-sm">{t("executionsByDay")}</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={240}>
@@ -149,8 +151,8 @@ export function StudioComplianceView() {
                 <XAxis dataKey="day" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
-                <Line type="monotone" dataKey="executions" stroke="#60BED1" strokeWidth={2} name="Total" />
-                <Line type="monotone" dataKey="blocked" stroke="#DC2626" strokeWidth={2} name="Bloqueadas" />
+                <Line type="monotone" dataKey="executions" stroke="#60BED1" strokeWidth={2} name={t("totalLine")} />
+                <Line type="monotone" dataKey="blocked" stroke="#DC2626" strokeWidth={2} name={t("blockedLine")} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -163,7 +165,7 @@ export function StudioComplianceView() {
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
               <TrendingDown className="w-4 h-4 text-status-warning" />
-              Agents com mais bloqueios
+              {t("topBlockedAgents")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -175,7 +177,7 @@ export function StudioComplianceView() {
                     <span className="text-lia-text-primary">{a.agent_name}</span>
                   </div>
                   <Chip variant="neutral" muted className="bg-status-warning/15 text-status-warning text-xs">
-                    {a.blocked_count} bloqueio{a.blocked_count !== 1 ? "s" : ""}
+                    {t("blocks", { count: a.blocked_count })}
                   </Chip>
                 </div>
               ))}
@@ -189,9 +191,9 @@ export function StudioComplianceView() {
         <Card className={cardStyles.default}>
           <CardContent className="py-8 text-center">
             <Bot className="w-10 h-10 text-lia-text-disabled mx-auto mb-3" />
-            <p className={textStyles.subtitle}>Sem execucoes no periodo</p>
+            <p className={textStyles.subtitle}>{t("noExecutions")}</p>
             <p className="text-xs text-lia-text-disabled mt-1">
-              Crie agents no Studio e vincule a vagas para ver metricas aqui
+              {t("noExecutionsHint")}
             </p>
           </CardContent>
         </Card>

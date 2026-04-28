@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { textStyles, cardStyles } from "@/lib/design-tokens"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -42,6 +43,7 @@ export function SmartImportDropArea({
   onFileSelect,
   onDownloadTemplate,
 }: SmartImportDropAreaProps) {
+  const t = useTranslations("settings.smartImport")
   return (
     <Card
       className={`${cardStyles.interactive} border-2 border-dashed rounded-xl transition-colors motion-reduce:transition-none duration-200 ${
@@ -66,11 +68,11 @@ export function SmartImportDropArea({
           <div className="flex items-center gap-2">
             <Chip variant="neutral" className="text-micro rounded-full">
               <FileSpreadsheet className="w-3.5 h-3.5 mr-1" />
-              Excel (.xlsx, .xls)
+              {t("excelFormat")}
             </Chip>
             <Chip variant="neutral" className="text-micro rounded-full">
               <FileText className="w-3.5 h-3.5 mr-1" />
-              CSV
+              {t("csvFormat")}
             </Chip>
           </div>
           <div className="flex items-center gap-2">
@@ -85,7 +87,7 @@ export function SmartImportDropArea({
               disabled={disabled}
             >
               <Upload className="w-3.5 h-3.5" />
-              Selecionar Arquivo
+              {t("selectFile")}
             </Button>
             {templateDownloadEndpoint && (
               <Button
@@ -99,13 +101,13 @@ export function SmartImportDropArea({
                 disabled={disabled}
               >
                 <Download className="w-3.5 h-3.5" />
-                Baixar Template
+                {t("downloadTemplate")}
               </Button>
             )}
           </div>
           {expectedFields.length > 0 && (
             <div className="mt-3 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle w-full">
-              <p className={`${textStyles.labelSmall} mb-2`}>Campos esperados:</p>
+              <p className={`${textStyles.labelSmall} mb-2`}>{t("expectedFields")}</p>
               <div className="flex flex-wrap justify-center gap-1.5">
                 {expectedFields.map((field) => (
                   <Chip

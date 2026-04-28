@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useTranslations } from 'next-intl'
 import { Bot, Info, Save, X, Loader2, Check } from 'lucide-react'
 import {
   Popover,
@@ -36,6 +37,7 @@ export function LiaFieldToggle({
   showLabel = false,
   compact = false,
 }: LiaFieldToggleProps) {
+  const t = useTranslations('settings.liaField')
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [instruction, setInstruction] = useState(currentInstruction)
   const [isSaving, setIsSaving] = useState(false)
@@ -88,7 +90,7 @@ export function LiaFieldToggle({
  ? "text-lia-text-primary hover:bg-lia-interactive-active dark:bg-lia-bg-elevated"
                   : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active hover:text-lia-text-primary"
               )}
-              title={localIsActive ? (hasInstruction ? "Editar instrução" : "Adicionar instrução") : "Campo desativado"}
+              title={localIsActive ? (hasInstruction ? t("editInstruction") : t("addInstruction")) : t("fieldDisabled")}
             >
               <Bot className="w-3 h-3" />
             </button>
@@ -119,7 +121,7 @@ export function LiaFieldToggle({
               <Textarea
                 value={instruction}
                 onChange={(e) => setInstruction(e.target.value)}
-                placeholder="Adicione instruções que ajudarão a LIA a interpretar melhor este campo..."
+                placeholder={t("instructionPlaceholder")}
                 className="min-h-[100px] text-xs border-lia-border-subtle focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium resize-none"
               />
 
@@ -205,7 +207,7 @@ export function LiaFieldToggle({
  ? "text-lia-text-primary hover:bg-lia-bg-tertiary"
                 : "bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active"
             )}
-            title={localIsActive ? (hasInstruction ? "Editar instrução" : "Adicionar instrução") : "Campo desativado"}
+            title={localIsActive ? (hasInstruction ? t("editInstruction") : t("addInstruction")) : t("fieldDisabled")}
           >
             <Bot className="w-3 h-3" />
             {hasInstruction ? (
@@ -244,7 +246,7 @@ export function LiaFieldToggle({
             <Textarea
               value={instruction}
               onChange={(e) => setInstruction(e.target.value)}
-              placeholder="Adicione instruções que ajudarão a LIA a interpretar melhor este campo..."
+              placeholder={t("instructionPlaceholder")}
               className="min-h-[100px] text-xs border-lia-border-subtle focus:ring-lia-btn-primary-bg/20 dark:focus:ring-lia-border-subtle/20 focus:border-lia-border-medium resize-none"
             />
 

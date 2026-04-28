@@ -3,6 +3,7 @@
 
 import { CURRENCY_SYMBOL } from "@/lib/pricing"
 import React from "react"
+import { useTranslations } from "next-intl"
 import { textStyles } from "@/lib/design-tokens"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -41,46 +42,6 @@ import {
   Gift,
 } from "lucide-react"
 
-const BENEFIT_CATEGORIES = [
-  { id: "health", name: "Saúde & Bem-estar", icon: Stethoscope, color: "text-status-error" },
-  { id: "food", name: "Alimentação", icon: Utensils, color: "text-wedo-orange" },
-  { id: "transport", name: "Transporte", icon: Car, color: "text-lia-text-primary" },
-  { id: "education", name: "Educação & Desenvolvimento", icon: GraduationCap, color: "text-wedo-purple" },
-  { id: "wellness", name: "Bem-estar", icon: Stethoscope, color: "text-wedo-cyan" },
-  { id: "financial", name: "Financeiro", icon: Wallet, color: "text-status-success" },
-  { id: "quality_life", name: "Qualidade de Vida", icon: Home, color: "text-lia-text-secondary" },
-  { id: "family", name: "Família", icon: Baby, color: "text-wedo-magenta" },
-  { id: "flexibility", name: "Flexibilidade", icon: Clock, color: "text-wedo-purple" },
-  { id: "security", name: "Segurança", icon: Shield, color: "text-lia-text-primary" },
-  { id: "other", name: "Outros", icon: Gift, color: "text-lia-text-secondary" },
-]
-
-const VALUE_TYPES = [
-  { id: "monetary", name: "Valor Monetário", icon: DollarSign, description: `Valor fixo em ${CURRENCY_SYMBOL}` },
-  { id: "percentage", name: "Percentual", icon: Percent, description: "Porcentagem (ex: 5% contribuição)" },
-  { id: "informative", name: "Informativo", icon: Info, description: "Apenas descrição, sem valor" },
-]
-
-const SENIORITY_LEVELS = [
-  { id: "all", name: "Todos os Níveis" },
-  { id: "junior", name: "Júnior" },
-  { id: "pleno", name: "Pleno" },
-  { id: "senior", name: "Sênior" },
-  { id: "coordinator", name: "Coordenação+" },
-  { id: "manager", name: "Gerência+" },
-  { id: "director", name: "Diretoria" },
-  { id: "c-level", name: "C-Level" },
-]
-
-const WAITING_PERIODS = [
-  { id: 0, name: "Imediato" },
-  { id: 30, name: "30 dias" },
-  { id: 60, name: "60 dias" },
-  { id: 90, name: "90 dias" },
-  { id: 180, name: "6 meses" },
-  { id: 365, name: "1 ano" },
-]
-
 interface Benefit {
   id?: string
   name: string
@@ -116,15 +77,57 @@ export function BenefitFormModal({
   isSaving,
   onSave,
 }: BenefitFormModalProps) {
+  const t = useTranslations("settings.benefits")
+
+  const BENEFIT_CATEGORIES = [
+    { id: "health", name: t("categoryHealth"), icon: Stethoscope, color: "text-status-error" },
+    { id: "food", name: t("categoryFood"), icon: Utensils, color: "text-wedo-orange" },
+    { id: "transport", name: t("categoryTransport"), icon: Car, color: "text-lia-text-primary" },
+    { id: "education", name: t("categoryEducation"), icon: GraduationCap, color: "text-wedo-purple" },
+    { id: "wellness", name: t("categoryHealth"), icon: Stethoscope, color: "text-wedo-cyan" },
+    { id: "financial", name: t("categoryFinancial"), icon: Wallet, color: "text-status-success" },
+    { id: "quality_life", name: t("categoryQualityLife"), icon: Home, color: "text-lia-text-secondary" },
+    { id: "family", name: t("categoryFamily"), icon: Baby, color: "text-wedo-magenta" },
+    { id: "flexibility", name: t("categoryQualityLife"), icon: Clock, color: "text-wedo-purple" },
+    { id: "security", name: t("categorySecurity"), icon: Shield, color: "text-lia-text-primary" },
+    { id: "other", name: t("noDescription"), icon: Gift, color: "text-lia-text-secondary" },
+  ]
+
+  const VALUE_TYPES = [
+    { id: "monetary", name: t("valueMonetary"), icon: DollarSign, description: t("valueMonetaryDesc", { currency: CURRENCY_SYMBOL }) },
+    { id: "percentage", name: t("valuePercentage"), icon: Percent, description: t("valuePercentageDesc") },
+    { id: "informative", name: t("valueInformative"), icon: Info, description: t("valueInformativeDesc") },
+  ]
+
+  const SENIORITY_LEVELS = [
+    { id: "all", name: t("seniorityAll") },
+    { id: "junior", name: t("seniorityJunior") },
+    { id: "pleno", name: t("seniorityPleno") },
+    { id: "senior", name: t("senioritySenior") },
+    { id: "coordinator", name: t("seniorityCoordinator") },
+    { id: "manager", name: t("seniorityManager") },
+    { id: "director", name: t("seniorityDirector") },
+    { id: "c-level", name: t("seniorityCLevel") },
+  ]
+
+  const WAITING_PERIODS = [
+    { id: 0, name: t("waitingImmediate") },
+    { id: 30, name: t("waiting30") },
+    { id: 60, name: t("waiting60") },
+    { id: 90, name: t("waiting90") },
+    { id: 180, name: t("waiting180") },
+    { id: 365, name: t("waiting365") },
+  ]
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DraggableDialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className={textStyles.h3}>
-            {editingBenefit?.id ? 'Editar Benefício' : 'Novo Benefício'}
+            {editingBenefit?.id ? t("formTitleEdit") : t("formTitleNew")}
           </DialogTitle>
           <DialogDescription className={textStyles.description}>
-            Preencha os dados do benefício abaixo
+            {t("formDescription")}
           </DialogDescription>
         </DialogHeader>
 
@@ -132,30 +135,30 @@ export function BenefitFormModal({
           <div className="space-y-3 py-1.5">
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
-                <Label htmlFor="name" className={textStyles.label}>Nome do Benefício *</Label>
+                <Label htmlFor="name" className={textStyles.label}>{t("benefitName")}</Label>
                 <Input
                   id="name"
                   value={editingBenefit.name}
                   onChange={(e) => setEditingBenefit({ ...editingBenefit, name: e.target.value })}
-                  placeholder="Ex: Plano de Saúde Bradesco"
+                  placeholder={t("benefitNamePlaceholder")}
                   className="mt-1 rounded-full text-xs py-1.5 px-2"
                 />
               </div>
 
               <div className="col-span-2">
-                <Label htmlFor="description" className={textStyles.label}>Descrição</Label>
+                <Label htmlFor="description" className={textStyles.label}>{t("descriptionLabel")}</Label>
                 <Textarea
                   id="description"
                   value={editingBenefit.description}
                   onChange={(e) => setEditingBenefit({ ...editingBenefit, description: e.target.value })}
-                  placeholder="Descreva os detalhes do benefício..."
+                  placeholder={t("descriptionPlaceholder")}
                   className="mt-1 rounded-full text-xs py-1.5 px-2"
                   rows={2}
                 />
               </div>
 
               <div>
-                <Label className={textStyles.label}>Categoria *</Label>
+                <Label className={textStyles.label}>{t("categoryLabel")}</Label>
                 <Select
                   value={editingBenefit.category}
                   onValueChange={(value) => setEditingBenefit({ ...editingBenefit, category: value })}
@@ -180,17 +183,17 @@ export function BenefitFormModal({
               </div>
 
               <div>
-                <Label className={textStyles.label}>Fornecedor/Operadora</Label>
+                <Label className={textStyles.label}>{t("provider")}</Label>
                 <Input
                   value={editingBenefit.provider || ''}
                   onChange={(e) => setEditingBenefit({ ...editingBenefit, provider: e.target.value })}
-                  placeholder="Ex: Bradesco Saúde"
+                  placeholder={t("providerPlaceholder")}
                   className="mt-1 rounded-full text-xs py-1.5 px-2"
                 />
               </div>
 
               <div>
-                <Label className={textStyles.label}>Tipo de Valor</Label>
+                <Label className={textStyles.label}>{t("valueType")}</Label>
                 <Select
                   value={editingBenefit.value_type}
                   onValueChange={(value) => setEditingBenefit({ ...editingBenefit, value_type: value })}
@@ -216,7 +219,7 @@ export function BenefitFormModal({
 
               {editingBenefit.value_type === 'monetary' && (
                 <div>
-                  <Label className={textStyles.label}>Valor ({CURRENCY_SYMBOL})</Label>
+                  <Label className={textStyles.label}>{t("valueCurrency", { currency: CURRENCY_SYMBOL })}</Label>
                   <Input
                     type="number"
                     value={editingBenefit.value || ''}
@@ -229,7 +232,7 @@ export function BenefitFormModal({
 
               {editingBenefit.value_type === 'percentage' && (
                 <div>
-                  <Label className={textStyles.label}>Percentual (%)</Label>
+                  <Label className={textStyles.label}>{t("percentageLabel")}</Label>
                   <Input
                     type="number"
                     value={editingBenefit.percentage_value || ''}
@@ -242,18 +245,18 @@ export function BenefitFormModal({
 
               {editingBenefit.value_type === 'informative' && (
                 <div className="col-span-2">
-                  <Label className={textStyles.label}>Detalhes do Valor</Label>
+                  <Label className={textStyles.label}>{t("valueDetails")}</Label>
                   <Input
                     value={editingBenefit.value_details || ''}
                     onChange={(e) => setEditingBenefit({ ...editingBenefit, value_details: e.target.value })}
-                    placeholder="Ex: Conforme política interna"
+                    placeholder={t("valueDetailsPlaceholder")}
                     className="mt-1 rounded-full text-xs py-1.5 px-2"
                   />
                 </div>
               )}
 
               <div>
-                <Label className={textStyles.label}>Elegibilidade</Label>
+                <Label className={textStyles.label}>{t("eligibility")}</Label>
                 <Select
                   value={editingBenefit.seniority_levels[0] || 'all'}
                   onValueChange={(value) => setEditingBenefit({ ...editingBenefit, seniority_levels: [value] })}
@@ -272,7 +275,7 @@ export function BenefitFormModal({
               </div>
 
               <div>
-                <Label className={textStyles.label}>Período de Carência</Label>
+                <Label className={textStyles.label}>{t("waitingPeriod")}</Label>
                 <Select
                   value={String(editingBenefit.waiting_period_days)}
                   onValueChange={(value) => setEditingBenefit({ ...editingBenefit, waiting_period_days: parseInt(value) })}
@@ -293,13 +296,13 @@ export function BenefitFormModal({
 
             <div className="border-t border-lia-border-subtle dark:border-lia-border-strong pt-3 space-y-2">
               <h4 className={`${textStyles.labelSmall} uppercase tracking-wider`}>
-                Configurações
+                {t("settings")}
               </h4>
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <div>
-                    <Label className={textStyles.label}>Ativo</Label>
-                    <p className={textStyles.caption}>Disponível para colaboradores</p>
+                    <Label className={textStyles.label}>{t("activeLabel")}</Label>
+                    <p className={textStyles.caption}>{t("activeDesc")}</p>
                   </div>
                   <Switch
                     checked={editingBenefit.is_active}
@@ -309,8 +312,8 @@ export function BenefitFormModal({
 
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <div>
-                    <Label className={textStyles.label}>Destaque</Label>
-                    <p className={textStyles.caption}>Exibir com destaque</p>
+                    <Label className={textStyles.label}>{t("highlight")}</Label>
+                    <p className={textStyles.caption}>{t("highlightDesc")}</p>
                   </div>
                   <Switch
                     checked={editingBenefit.is_highlighted}
@@ -320,8 +323,8 @@ export function BenefitFormModal({
 
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <div>
-                    <Label className={textStyles.label}>Obrigatório</Label>
-                    <p className={textStyles.caption}>Adesão obrigatória</p>
+                    <Label className={textStyles.label}>{t("mandatoryLabel")}</Label>
+                    <p className={textStyles.caption}>{t("mandatoryDesc")}</p>
                   </div>
                   <Switch
                     checked={editingBenefit.is_mandatory}
@@ -331,8 +334,8 @@ export function BenefitFormModal({
 
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
                   <div>
-                    <Label className={textStyles.label}>Desconto em Folha</Label>
-                    <p className={textStyles.caption}>Valor descontado do salário</p>
+                    <Label className={textStyles.label}>{t("payrollDeduction")}</Label>
+                    <p className={textStyles.caption}>{t("payrollDeductionDesc")}</p>
                   </div>
                   <Switch
                     checked={editingBenefit.is_discount}
@@ -353,7 +356,7 @@ export function BenefitFormModal({
             }}
             className="rounded-md text-xs"
           >
-            Cancelar
+            {t("cancel")}
           </Button>
           <Button
             onClick={() => editingBenefit && onSave(editingBenefit)}
@@ -363,10 +366,10 @@ export function BenefitFormModal({
             {isSaving ? (
               <>
                 <Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none mr-1.5" />
-                Salvando...
+                {t("savingBtn")}
               </>
             ) : (
-              editingBenefit?.id ? 'Salvar Alterações' : 'Criar Benefício'
+              editingBenefit?.id ? t("saveChanges") : t("createBenefit")
             )}
           </Button>
         </DialogFooter>
