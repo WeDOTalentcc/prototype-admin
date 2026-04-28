@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useTranslations } from 'next-intl'
 import { MapPin } from 'lucide-react'
 import { CompanyDataCard, SimpleDataCard } from '../CompanyDataCard'
 import { inputClass } from '../useCompanyDataForm'
@@ -21,17 +22,18 @@ export function ContactPresenceSection({
   updateLiaToggle,
   updateLiaInstruction,
 }: ContactPresenceSectionProps) {
+  const t = useTranslations('settings.minhaEmpresa.contact')
   return (
     <div className="space-y-3" data-testid="contact-presence-section">
       <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1">
-        Contato e Presença Online
+        {t('sectionTitle')}
       </h3>
       
       <div className="grid grid-cols-1 gap-3">
         <CompanyDataCard
           fieldKey="website"
-          label="Website"
-          category="Presença Online"
+          label={t('website')}
+          category={t('onlinePresence')}
           isActive={companyData.lia_field_toggles?.website ?? true}
           currentInstruction={companyData.lia_instructions?.website || ''}
           isEditing={isEditing}
@@ -46,15 +48,15 @@ export function ContactPresenceSection({
               onChange={(e) => setCompanyData((prev) => ({ ...prev, website: e.target.value }))}
               disabled={!isEditing}
               className={inputClass(!isEditing)}
-              placeholder="https://www.empresa.com.br"
+              placeholder={t('websitePlaceholder')}
             />
           </div>
         </CompanyDataCard>
 
         <CompanyDataCard
           fieldKey="linkedin_url"
-          label="LinkedIn"
-          category="Presença Online"
+          label={t('linkedin')}
+          category={t('onlinePresence')}
           isActive={companyData.lia_field_toggles?.linkedin_url ?? true}
           currentInstruction={companyData.lia_instructions?.linkedin_url || ''}
           isEditing={isEditing}
@@ -69,15 +71,15 @@ export function ContactPresenceSection({
               onChange={(e) => setCompanyData((prev) => ({ ...prev, linkedin_url: e.target.value }))}
               disabled={!isEditing}
               className={inputClass(!isEditing)}
-              placeholder="https://linkedin.com/company/..."
+              placeholder={t('linkedinPlaceholder')}
             />
           </div>
         </CompanyDataCard>
 
         <SimpleDataCard
-          label="Email"
+          label={t('email')}
           fieldId="field-email"
-          category="Contato"
+          category={t('contactCategory')}
           isEditing={isEditing}
         >
           <div className="flex items-center gap-2">
@@ -88,15 +90,15 @@ export function ContactPresenceSection({
               onChange={(e) => setCompanyData((prev) => ({ ...prev, email: e.target.value }))}
               disabled={!isEditing}
               className={inputClass(!isEditing)}
-              placeholder="contato@empresa.com.br"
+              placeholder={t('emailPlaceholder')}
             />
           </div>
         </SimpleDataCard>
 
         <SimpleDataCard
-          label="Telefone"
+          label={t('phone')}
           fieldId="field-telefone"
-          category="Contato"
+          category={t('contactCategory')}
           isEditing={isEditing}
         >
           <div className="flex items-center gap-2">
@@ -107,15 +109,15 @@ export function ContactPresenceSection({
               onChange={(e) => setCompanyData((prev) => ({ ...prev, phone: e.target.value }))}
               disabled={!isEditing}
               className={inputClass(!isEditing)}
-              placeholder="(11) 9999-9999"
+              placeholder={t('phonePlaceholder')}
             />
           </div>
         </SimpleDataCard>
 
         <CompanyDataCard
           fieldKey="locations"
-          label="Endereço"
-          category="Localização"
+          label={t('address')}
+          category={t('location')}
           isActive={companyData.lia_field_toggles?.locations ?? true}
           currentInstruction={companyData.lia_instructions?.locations || ''}
           isEditing={isEditing}
@@ -132,7 +134,7 @@ export function ContactPresenceSection({
               onChange={(e) => setCompanyData((prev) => ({ ...prev, address: e.target.value }))}
               disabled={!isEditing}
               className={inputClass(!isEditing)}
-              placeholder="Endereço completo"
+              placeholder={t('addressPlaceholder')}
             />
           </div>
         </CompanyDataCard>

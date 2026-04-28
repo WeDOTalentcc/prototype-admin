@@ -3,6 +3,7 @@
 import React from "react"
 import { Switch } from "@/components/ui/switch"
 import { ChevronDown, ChevronRight, Star, Loader2 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { useSubStatusPanel } from "@/hooks/recruitment/use-sub-status-panel"
 import { isRealId } from "./StageCardHelpers"
 import type { RecruitmentStage } from "./recruitment-journey.types"
@@ -14,6 +15,7 @@ interface SubStatusPanelProps {
 }
 
 export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStatusPanelProps) {
+  const t = useTranslations("settings.recruitment.pipeline.subStatus")
   const {
     expanded, displayList, loading, togglingId, activeCount, canFetch,
     handleExpand, handleToggleActive, handleToggleDefault,
@@ -24,6 +26,7 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
   })
 
   const canManage = isEditMode && canFetch && !!onToggleSubStatus
+  const stageName = stage.display_name || stage.name
 
   return (
     <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle mt-3 pt-2">
@@ -31,30 +34,30 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
         onClick={handleExpand}
         className="flex items-center gap-1.5 text-xs text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none w-full"
         aria-expanded={expanded}
-        aria-label={`${expanded ? 'Recolher' : 'Expandir'} subetapas de ${stage.display_name || stage.name}`}
+        aria-label={t("toggleAria", { action: expanded ? t("collapse") : t("expand"), name: stageName })}
         data-testid={`sub-status-panel-${stage.id}`}
         type="button"
       >
         {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-        <span className="font-medium">Subetapas</span>
-        <span className="text-lia-text-tertiary">({activeCount} ativas)</span>
+        <span className="font-medium">{t("subStatusesLabel")}</span>
+        <span className="text-lia-text-tertiary">{t("activeCount", { count: activeCount })}</span>
         {!isRealId(stage.id) && isEditMode && (
-          <span className="ml-auto text-micro text-status-warning">Salve a etapa primeiro</span>
+          <span className="ml-auto text-micro text-status-warning">{t("saveStageFirst")}</span>
         )}
       </button>
 
       {expanded && (
-        <div className="mt-2 space-y-1.5" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="mt-2 space-y-1.5" role="status" aria-live="polite" aria-label={t("loading")}>
           {loading && (
-            <div className="flex items-center gap-2 px-1 py-2" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="flex items-center gap-2 px-1 py-2" role="status" aria-live="polite" aria-label={t("loading")}>
               <Loader2 className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
-              <span className="text-xs text-lia-text-tertiary">Carregando subetapas...</span>
+              <span className="text-xs text-lia-text-tertiary">{t("loadingSubStatuses")}</span>
             </div>
           )}
 
           {!loading && displayList.length === 0 && (
             <p className="text-xs text-lia-text-tertiary px-1 py-1 italic">
-              Nenhuma subetapa disponível para esta etapa.
+              {t("noSubStatuses")}
             </p>
           )}
 
@@ -77,7 +80,7 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
 
               {ss.is_waiting && ss.is_active && (
                 <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-wedo-cyan/10 text-wedo-cyan-dark text-micro font-medium">
-                  Aguarda
+                  {t("waiting")}
                 </span>
               )}
 
@@ -85,8 +88,8 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
                 <button
                   onClick={() => handleToggleDefault(ss)}
                   disabled={togglingId === `default-${ss.id}`}
-                  aria-label={ss.is_default ? `Remover ${ss.display_name} como padrão` : `Definir ${ss.display_name} como padrão`}
-                  title={ss.is_default ? 'Remover como padrão' : 'Definir como padrão'}
+                  aria-label={ss.is_default ? t("removeDefault", { name: ss.display_name }) : t("setDefault", { name: ss.display_name })}
+                  title={ss.is_default ? t("removeDefaultShort") : t("setDefaultShort")}
                   className="p-0.5 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-border-medium transition-colors motion-reduce:transition-none"
                   data-testid={`sub-status-default-toggle-${ss.id}`}
                   type="button"
@@ -106,7 +109,7 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
                   checked={ss.is_active ?? true}
                   onCheckedChange={() => handleToggleActive(ss)}
                   disabled={togglingId === ss.id}
-                  aria-label={`${ss.is_active ? 'Desativar' : 'Ativar'} subetapa ${ss.display_name}`}
+                  aria-label={t("toggleActive", { action: ss.is_active ? t("deactivate") : t("activate"), name: ss.display_name })}
                 />
               )}
 
@@ -118,7 +121,7 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
 
           {canManage && displayList.length > 0 && (
             <p className="text-micro text-lia-text-tertiary px-1 pt-1">
-              Ative/desative subetapas do catálogo. Subetapas inativas não aparecem no processo seletivo.
+              {t("manageHelp")}
             </p>
           )}
         </div>

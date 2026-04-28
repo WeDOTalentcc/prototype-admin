@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, ReactNode } from 'react'
 import { Bot, Info, Save, X, Loader2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import {
   Popover,
   PopoverContent,
@@ -44,6 +45,7 @@ export function CompanyDataCard({
   fullWidth = false,
   grouped = false,
 }: CompanyDataCardProps) {
+  const t = useTranslations('settings.minhaEmpresa.dataCard')
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [instruction, setInstruction] = useState(currentInstruction)
   const [isSaving, setIsSaving] = useState(false)
@@ -112,7 +114,7 @@ export function CompanyDataCard({
             <button
               type="button"
               disabled={!localIsActive || !isEditing}
-              aria-label={`Configurar instrução LIA para ${label}`}
+              aria-label={t('configureInstruction', { label })}
               className={cn(
                 "inline-flex items-center justify-center w-7 h-7 rounded-md transition-colors flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan",
                 (!localIsActive || !isEditing) && "opacity-40 cursor-not-allowed",
@@ -133,12 +135,12 @@ export function CompanyDataCard({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Bot className="w-4 h-4 text-lia-text-secondary" />
-                  <span className={textStyles.h4}>Instrução para LIA</span>
+                  <span className={textStyles.h4}>{t('liaInstructionTitle')}</span>
                 </div>
                 <button
                   onClick={() => setIsPopoverOpen(false)}
                   className="text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan rounded-sm"
-                  aria-label="Fechar instrução LIA"
+                  aria-label={t('closeInstruction')}
                   data-dismiss="true"
                 >
                   <X className="w-4 h-4" aria-hidden="true" />
@@ -146,13 +148,13 @@ export function CompanyDataCard({
               </div>
 
               <div className={textStyles.description}>
-                Campo: <span className="text-lia-text-primary font-medium">{label}</span>
+                {t('fieldLabel')} <span className="text-lia-text-primary font-medium">{label}</span>
               </div>
 
               <Textarea
                 value={instruction}
                 onChange={(e) => setInstruction(e.target.value)}
-                placeholder="Adicione instruções que ajudarão a LIA a interpretar melhor este campo..."
+                placeholder={t('instructionPlaceholder')}
                 className="min-h-[100px] text-xs border-lia-border-subtle dark:border-lia-border-default focus:ring-lia-btn-primary-bg focus:border-lia-btn-primary-bg dark:focus:ring-lia-border-subtle dark:focus:border-lia-border-subtle resize-none"
               />
 
@@ -160,7 +162,7 @@ export function CompanyDataCard({
                 <div className="space-y-2 p-3 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle">
                   <div className="flex items-center gap-1 text-xs font-medium uppercase text-lia-text-secondary">
                     <Info className="w-3 h-3" />
-                    <span>Exemplos</span>
+                    <span>{t('examples')}</span>
                   </div>
                   <div className="space-y-1">
                     {examples.map((example, idx) => (
@@ -183,7 +185,7 @@ export function CompanyDataCard({
                   onClick={() => setIsPopoverOpen(false)}
                   className="text-xs h-8"
                 >
-                  Cancelar
+                  {t('cancel')}
                 </Button>
                 <Button
                   size="sm"
@@ -196,7 +198,7 @@ export function CompanyDataCard({
                   ) : (
                     <Save className="w-3.5 h-3.5 mr-1" />
                   )}
-                  Salvar
+                  {t('save')}
                 </Button>
               </div>
             </div>

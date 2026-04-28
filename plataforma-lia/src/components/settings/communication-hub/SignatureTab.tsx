@@ -2,6 +2,7 @@ import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Edit, Save, PenTool, Loader2, AlertCircle, CheckCircle } from"lucide-react"
+import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 
 interface SignatureTabProps {
@@ -21,6 +22,7 @@ export function SignatureTab({
   isEditingSignature, setIsEditingSignature,
   savingSettings, saveCommunicationSettings
 }: SignatureTabProps) {
+  const t = useTranslations("settings.communication")
   return (
     <div className="space-y-4">
       {successMessage && (
@@ -40,17 +42,17 @@ export function SignatureTab({
           <div className="flex items-center justify-between">
             <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
               <PenTool className="w-3.5 h-3.5 text-lia-text-secondary" />
-              Assinatura Padrão de Email
+              {t("signatureSection.title")}
             </CardTitle>
             {!isEditingSignature ? (
               <button onClick={() => setIsEditingSignature(true)} className={actionButtonStyles.smOutline}>
                 <Edit className={actionButtonStyles.icon} />
-                Editar
+                {t("common.edit")}
               </button>
             ) : (
               <div className="flex items-center gap-2">
                 <button onClick={() => setIsEditingSignature(false)} className={actionButtonStyles.smSecondary}>
-                  Cancelar
+                  {t("common.cancel")}
                 </button>
                 <button
                   onClick={async () => { await saveCommunicationSettings(); setIsEditingSignature(false) }}
@@ -58,7 +60,7 @@ export function SignatureTab({
                   className={actionButtonStyles.smPrimary}
                 >
                   {savingSettings ? <Loader2 className={actionButtonStyles.icon} /> : <Save className={actionButtonStyles.icon} />}
-                  Salvar Alterações
+                  {t("common.saveChanges")}
                 </button>
               </div>
             )}
@@ -67,7 +69,7 @@ export function SignatureTab({
         <CardContent className="space-y-3">
           <div>
             <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-              Template de Assinatura
+              {t("signatureSection.templateLabel")}
             </label>
             <textarea
               value={signature}
@@ -79,7 +81,7 @@ export function SignatureTab({
           </div>
           <div>
             <label className="block text-micro font-medium text-lia-text-secondary mb-1">
-              Variáveis Disponíveis
+              {t("signatureSection.variablesLabel")}
             </label>
             <div className="flex flex-wrap gap-1">
               {['recrutador_nome', 'cargo', 'empresa_nome', 'email', 'telefone', 'website', 'linkedin'].map((v) => (
@@ -91,16 +93,16 @@ export function SignatureTab({
           </div>
           <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-3">
             <label className="block text-micro font-medium text-lia-text-secondary mb-1.5">
-              Prévia
+              {t("signatureSection.previewLabel")}
             </label>
             <div className="text-xs text-lia-text-primary whitespace-pre-wrap">
               {signature
-                .replace('{{recrutador_nome}}', 'Ana Silva')
-                .replace('{{cargo}}', 'Recrutadora Sênior')
-                .replace('{{empresa_nome}}', 'WedoTalent')
-                .replace('{{email}}', 'ana.silva@wedotalent.com')
-                .replace('{{telefone}}', '+55 11 99999-0000')
-                .replace('{{website}}', 'www.wedotalent.com')}
+                .replace('{{recrutador_nome}}', t("signatureSection.sampleName"))
+                .replace('{{cargo}}', t("signatureSection.sampleRole"))
+                .replace('{{empresa_nome}}', t("signatureSection.sampleCompany"))
+                .replace('{{email}}', t("signatureSection.sampleEmail"))
+                .replace('{{telefone}}', t("signatureSection.samplePhone"))
+                .replace('{{website}}', t("signatureSection.sampleWebsite"))}
             </div>
           </div>
         </CardContent>

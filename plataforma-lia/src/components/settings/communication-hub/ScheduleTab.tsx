@@ -2,6 +2,7 @@ import React from"react"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Edit, Save, Clock, Shield, Loader2, AlertCircle, CheckCircle } from"lucide-react"
+import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 
 interface ScheduleTabProps {
@@ -30,6 +31,7 @@ export function ScheduleTab({
   isEditingSchedule, setIsEditingSchedule,
   savingSettings, saveCommunicationSettings
 }: ScheduleTabProps) {
+  const t = useTranslations("settings.communication")
   return (
     <div className="space-y-4">
       {successMessage && (
@@ -49,17 +51,17 @@ export function ScheduleTab({
           <div className="flex items-center justify-between">
             <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
               <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />
-              Horários de Envio (Conformidade LGPD)
+              {t("scheduleSection.title")}
             </CardTitle>
             {!isEditingSchedule ? (
               <button onClick={() => setIsEditingSchedule(true)} className={actionButtonStyles.smOutline}>
                 <Edit className={actionButtonStyles.icon} />
-                Editar
+                {t("common.edit")}
               </button>
             ) : (
               <div className="flex items-center gap-2">
                 <button onClick={() => setIsEditingSchedule(false)} className={actionButtonStyles.smSecondary}>
-                  Cancelar
+                  {t("common.cancel")}
                 </button>
                 <button
                   onClick={async () => { await saveCommunicationSettings(); setIsEditingSchedule(false) }}
@@ -67,7 +69,7 @@ export function ScheduleTab({
                   className={actionButtonStyles.smPrimary}
                 >
                   {savingSettings ? <Loader2 className={actionButtonStyles.icon} /> : <Save className={actionButtonStyles.icon} />}
-                  Salvar Alterações
+                  {t("common.saveChanges")}
                 </button>
               </div>
             )}
@@ -78,10 +80,9 @@ export function ScheduleTab({
             <div className="flex items-start gap-2">
               <Shield className="w-4 h-4 text-status-warning flex-shrink-0 mt-0.5" />
               <div>
-                <p className={`${textStyles.subtitle} text-status-warning dark:text-status-warning`}>Conformidade LGPD</p>
+                <p className={`${textStyles.subtitle} text-status-warning dark:text-status-warning`}>{t("scheduleSection.lgpdTitle")}</p>
                 <p className="text-xs text-status-warning dark:text-status-warning mt-0.5">
-                  De acordo com as boas práticas de LGPD, mensagens só podem ser enviadas entre 8h e 20h em dias úteis.
-                  A LIA respeita automaticamente estes horários.
+                  {t("scheduleSection.lgpdDescription")}
                 </p>
               </div>
             </div>
@@ -90,7 +91,7 @@ export function ScheduleTab({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-micro font-medium text-lia-text-secondary mb-1.5">
-                Horário de Início
+                {t("scheduleSection.startTime")}
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -107,7 +108,7 @@ export function ScheduleTab({
             </div>
             <div>
               <label className="block text-micro font-medium text-lia-text-secondary mb-1.5">
-                Horário de Fim
+                {t("scheduleSection.endTime")}
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -126,9 +127,9 @@ export function ScheduleTab({
 
           <div className="bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl p-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-micro font-medium text-lia-text-secondary">Janela de Envio</span>
+              <span className="text-micro font-medium text-lia-text-secondary">{t("scheduleSection.sendingWindow")}</span>
               <Chip variant="neutral" className="text-micro rounded-full border-lia-border-default text-lia-text-primary dark:border-lia-border-default">
-                {sendingHours.end - sendingHours.start} horas/dia
+                {t("scheduleSection.hoursPerDay", { hours: sendingHours.end - sendingHours.start })}
               </Chip>
             </div>
             <div className="relative h-6 bg-lia-interactive-active rounded-full overflow-hidden">
@@ -145,19 +146,19 @@ export function ScheduleTab({
 
           <div className="space-y-2">
             <h4 className="text-micro font-semibold text-lia-text-secondary uppercase tracking-wider">
-              Configurações Adicionais
+              {t("scheduleSection.additionalSettings")}
             </h4>
             <div className="space-y-1.5">
               <label className={`flex items-center justify-between gap-3 p-2.5 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
-                <span className="text-xs text-lia-text-primary">Respeitar feriados nacionais</span>
+                <span className="text-xs text-lia-text-primary">{t("scheduleSection.respectHolidays")}</span>
                 <input type="checkbox" checked={respectHolidays} onChange={(e) => setRespectHolidays(e.target.checked)} disabled={!isEditingSchedule} className="rounded-md accent-lia-btn-primary-bg" />
               </label>
               <label className={`flex items-center justify-between gap-3 p-2.5 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
-                <span className="text-xs text-lia-text-primary">Não enviar nos finais de semana</span>
+                <span className="text-xs text-lia-text-primary">{t("scheduleSection.respectWeekends")}</span>
                 <input type="checkbox" checked={respectWeekends} onChange={(e) => setRespectWeekends(e.target.checked)} disabled={!isEditingSchedule} className="rounded-md accent-lia-btn-primary-bg" />
               </label>
               <label className={`flex items-center justify-between gap-3 p-2.5 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-md ${isEditingSchedule ? 'cursor-pointer' : 'cursor-default opacity-70'}`}>
-                <span className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">Limite máximo de {maxMessagesPerDay} mensagens/dia por candidato</span>
+                <span className="text-xs text-lia-text-primary" aria-live="polite" aria-atomic="true">{t("scheduleSection.maxMessages", { count: maxMessagesPerDay })}</span>
                 <input type="checkbox" checked={maxMessagesPerDay > 0} onChange={(e) => setMaxMessagesPerDay(e.target.checked ? 3 : 0)} disabled={!isEditingSchedule} className="rounded-md accent-lia-btn-primary-bg" />
               </label>
             </div>

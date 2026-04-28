@@ -5,6 +5,7 @@ import {
   Building, Heart, Code, Gift, Network, GitBranch, BarChart3, FileText,
   Loader2, RefreshCw, AlertCircle, CheckCircle, Upload,
 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { useCompanySettingsCards } from "@/hooks/settings/use-company-settings-cards"
 import { useSettingsConversational } from "@/hooks/settings/use-settings-conversational"
 import { MinhaEmpresaCard } from "@/components/settings/MinhaEmpresaCard"
@@ -25,6 +26,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
 }
 
 export function MinhaEmpresaHub() {
+  const t = useTranslations("settings.minhaEmpresa")
   const {
     blocks,
     benefits,
@@ -86,19 +88,18 @@ export function MinhaEmpresaHub() {
       section: "minha-empresa",
       prompt:
         "[ACTION:analyze_website]" + urlTag + "\n\n" +
-        "Analise nosso site institucional e extraia missão, valores, cultura, " +
-        "tech stack e benefícios. Mostre os campos extraídos para eu revisar antes de gravar.",
+        t("analyzeWebsitePrompt"),
       source: "ui",
       autoSend: true,
     })
-  }, [triggerAction, websiteUrl])
+  }, [triggerAction, websiteUrl, t])
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="flex items-center justify-center h-64" role="status" aria-live="polite" aria-label={t("loading")}>
         <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
         <span className={`ml-2 ${textStyles.body}`}>
-          Carregando dados da empresa...
+          {t("loadingCompanyData")}
         </span>
       </div>
     )
@@ -120,9 +121,9 @@ export function MinhaEmpresaHub() {
       <div>
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h2 className={textStyles.h3}>Minha Empresa</h2>
+            <h2 className={textStyles.h3}>{t("title")}</h2>
             <p className={`${textStyles.description} mt-0.5`}>
-              Converse com a LIA no chat lateral para preencher automaticamente. Ou edite diretamente nos cards.
+              {t("description")}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -136,25 +137,25 @@ export function MinhaEmpresaHub() {
                 text-lia-text-primary border border-lia-border-subtle
                 hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none
               "
-              title="Pedir para a LIA analisar nosso site"
+              title={t("analyzeWebsiteTitle")}
             >
               <Globe className="w-3.5 h-3.5 text-wedo-cyan" aria-hidden />
-              Analisar nosso site
+              {t("analyzeWebsite")}
             </button>
             <button
               onClick={refreshAll}
               className="p-1.5 rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
-              aria-label="Atualizar dados"
+              aria-label={t("refreshData")}
             >
               <RefreshCw className="w-4 h-4 text-lia-text-secondary" />
             </button>
             <span className={`${textStyles.metricSmall} flex-shrink-0`}>
-              {overallProgress}% configurado
+              {t("configuredSuffix", { progress: overallProgress })}
             </span>
             {overallProgress >= 80 && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-success/10 text-status-success border border-status-success/30 flex-shrink-0">
                 <CheckCircle className="w-3 h-3 mr-1" />
-                Quase completo
+                {t("almostComplete")}
               </span>
             )}
           </div>
@@ -174,13 +175,10 @@ export function MinhaEmpresaHub() {
         >
           <div className="flex items-center justify-between mb-1.5">
             <p className={`${textStyles.captionBold} text-lia-text-primary`}>
-              Perfil {overallProgress}% completo — {totalPendingFields} campo
-              {totalPendingFields === 1 ? "" : "s"} pendente
-              {totalPendingFields === 1 ? "" : "s"}
+              {t("profileCompletePending", { progress: overallProgress, count: totalPendingFields })}
             </p>
             <span className="text-micro text-lia-text-tertiary">
-              {pendingSections.length} seç
-              {pendingSections.length === 1 ? "ão" : "ões"} para revisar
+              {t("sectionsToReview", { count: pendingSections.length })}
             </span>
           </div>
           <div className="flex flex-wrap gap-1.5">
@@ -213,9 +211,9 @@ export function MinhaEmpresaHub() {
                         bg-lia-btn-primary-bg/10 text-lia-btn-primary-bg border border-lia-btn-primary-bg/30
                         hover:bg-lia-btn-primary-bg/20 transition-colors motion-reduce:transition-none
                       "
-                      title={`Pedir à LIA para preencher ${b.title}`}
+                      title={t("askLiaToFillTitle", { section: b.title })}
                     >
-                      LIA
+                      {t("askLiaShort")}
                     </button>
                   )}
                 </span>
