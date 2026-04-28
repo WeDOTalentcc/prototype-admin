@@ -895,3 +895,76 @@ só completamos os gaps identificados.
 **Nota técnica:** `AsyncSessionLocal` é importado localmente dentro da função,
 portanto o patch target correto é `lia_config.database.AsyncSessionLocal` (não
 `scheduling_tools.AsyncSessionLocal` que não existe em nível de módulo).
+
+---
+
+## Onda 30 — Wizard Enterprise Closure (2026-04-28)
+
+**Branch:** `feat/orch-migration-sprint-I`
+**Commits:** `03fbf3841` (A+B+A.2), `e0fb295b9` (D+F.3), `c35035649` (E.8 final)
+**Origem:** fechamento dos 6 itens parciais/ausentes da auditoria pós-Onda 29.
+
+### Motivação
+Auditoria pós-entrega revelou 6 gaps vs plano original:
+- Frente A — só 10 de 13 rotas com guards (3 faltando)
+- Testes A — 3 cenários implementados, plano pedia 4 (no_company_id 422, invalid 422)
+- Frente B — `app/shared/prompts/job_wizard.py` não auditado
+- E.5 backend — TaskRegistry não verificado
+- E.8 — TODO comment em vez de card visual
+- F.3 — `pick_canonical(history, market)` ainda sem 3ª fonte (ats_history)
+- C.4 — HITL não validado explicitamente
+
+### Auditoria pré-execução (3 agentes paralelos)
+- **HITL graph audit** confirmou: padrão atual em `job_creation/graph.py` é GUIDE-FIRST via conditional edges (`route_after_jd`, `route_after_questions` → END quando `approved is None`). Equivalente a `interrupt_after` mas mais flexível (suporta branches de rejeição e fairness block). Nenhum patch necessário em C.4.
+- **Job_wizard.py duplicate audit** revelou: `shared/prompts/job_wizard.py` é canônico vivo (Apr 25, persona LIA + LGPD qualifier). `domains/job_management/prompts/job_wizard.py` é stale (Apr 12, zero importadores). DELETAR domains/, manter shared/.
+- **TaskRegistry audit** descobriu que `Task` model + `TaskService` + `GET /api/v1/tasks/?status=in_progress` JÁ EXISTEM. Onda 30 D só precisa wiring frontend. P0 colateral detectado em `tasks.py` (aceita `user_id` da query) — escopado para issue separado via spawn_task.
+
+### Mudanças aplicadas
+
+| Frente | Arquivo | Mudança |
+|--------|---------|---------|
+| **A** | `app/api/v1/interview_analysis.py` | 4 endpoints com guards: 2 com company_id Query, 2 com lookup-then-check (status, results) |
+| **A** | `app/api/v1/company_assessments.py` | 15 endpoints — 8 Cat 1 (auth-only catálogo) + 7 Cat 2 (validate_company_access) |
+| **A** | `app/api/v1/company_culture_config.py` | 8 endpoints 100% Classe B — 4 Query, 4 lookup-then-check |
+| **A.2** | `tests/integration/test_tenant_scope_v1.py` | 18 → 70 testes (+13 classes, +52 testes). Cobre: no_auth/no_company_id/invalid/cross_tenant/same_tenant/not_found |
+| **B** | `app/domains/job_management/prompts/job_wizard.py` | **DELETADO** — versão stale Apr 12, sem importadores |
+| **D** | `plataforma-lia/src/hooks/use-active-tasks.ts` | **NOVO** — SWR hook + adapter `TaskResponse → ActiveTask` (mapTaskType, mapProgress) |
+| **D** | `plataforma-lia/src/app/api/backend-proxy/v1/tasks/route.ts` | **NOVO** — proxy SSR via `createProxyHandlers` canônico |
+| **D** | `wizard/TaskContextBar.tsx` | Aceita `tasks?: ActiveTask[]` via prop OU consome `useActiveTasks()` |
+| **E.8** | `wizard/wizard-plan-card.ts` | +`PipelineTemplateOption`, `PIPELINE_TEMPLATES` (5 presets), `buildPipelineTemplateCard()` |
+| **E.8** | `wizard/WizardPipelineTemplateCard.tsx` | **NOVO** (164 linhas) — 5 tiles selecionáveis, design tokens, a11y |
+| **E.8** | `wizard/useWizardChatCards.ts` | Effect detecta `suggestions_data.pipeline_template` → injeta card no chat |
+| **E.8** | `unified-chat/UnifiedMessageList.tsx` | Render branch para `metadata.type==="wizard_template_select"` |
+| **E.8** | `unified-chat/UnifiedChat.tsx` | `onSelectTemplate` callback → envia "Vou usar o template {nome}" |
+| **F.3** | `wizard_step_service/stage_salary.py` | 3ª fonte: `ATSJobHistoryService.get_similar_jobs()` com cutoff LGPD 365d, mediana via statistics, fail-open |
+| **F.3** | `tests/unit/test_wizard_stage_salary.py` | **NOVO** — 4 cenários: fail-open, empty history, 3a fonte, LGPD cutoff |
+
+### C.4 — HITL Coverage (documentação)
+
+**Veredicto:** HITL COMPLETO sem patch necessário.
+
+`job_creation/graph.py` linhas 1499-1565 implementa HITL via conditional edges:
+- `jd_enrichment` → `route_after_jd` retorna `"end"` se `state["jd_approved"] is None` (pausa) ou se rejeitado/fairness blocked
+- `wsi_questions` → `route_after_questions` retorna `"end"` se `state["questions_approved"] is None` ou regenera se rejeitado
+
+Padrão escolhido (conditional edge) é mais flexível que `interrupt_after`: permite branches de rejeição → loop, fairness block → terminate, com auditoria via `emit_policy_block_audit`. Checkpointer (`PostgresSaver` em prod, `MemorySaver` em dev) garante persistência.
+
+Classificação harness: **guide-first com sensores defensivos** — topologia estática + flags `approved is None` + PolicyGate `HITL_REQUIRED` dentro dos nós. Computacional > inferencial.
+
+### Verificação Onda 30
+
+```
+G7 sensor:           13/13 canonical-compliant ✓
+TypeScript:          0 erros nos arquivos novos ✓
+Tenant scope tests:  70/70 PASSED (era 18) ✓
+Wizard validators:   21/21 PASSED ✓
+Salary F.3 tests:    4/4 PASSED ✓
+Total wizard suite:  95/95 PASSED ✓
+Imports:             11/11 modules clean ✓
+```
+
+### Pendências escopadas para fora desta onda
+
+- **P0 separado**: `app/api/v1/tasks.py` aceita `user_id` da query (não JWT). Spawn task criado para fix cirúrgico. Não bloqueia Onda 30 — frontend consome via proxy SSR autenticado.
+- **Big Five/Technical questions catalog**: 8 endpoints Cat 1 com `get_current_user_or_demo` (auth-only). Recomendação para próxima onda: avaliar se devem virar `require_role([UserRole.ADMIN])` (catálogo global tem semântica admin).
+- **Smoke E2E browser**: validação visual via UI Replit é responsabilidade do Paulo.
