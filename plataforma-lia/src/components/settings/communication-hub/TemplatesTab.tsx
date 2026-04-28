@@ -35,7 +35,7 @@ interface TemplatesTabProps {
   aiPrompt: string
   setAiPrompt: (v: string) => void
   aiResultModal: AiResultModal | null
-  bodyTextareaRef: React.RefObject<HTMLTextAreaElement>
+  bodyTextareaRef: React.RefObject<HTMLTextAreaElement | null>
   isGenerating: boolean
   handleChannelFilterChange: (channel: 'all' | 'email' | 'whatsapp') => void
   insertVariableAtCursor: (variable: string) => void

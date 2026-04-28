@@ -55,7 +55,7 @@ export function CommunicationHub({ activeSubsection, visibleTabs, stacked }: Com
             aiPrompt={hub.aiPrompt}
             setAiPrompt={hub.setAiPrompt}
             aiResultModal={hub.aiResultModal}
-            bodyTextareaRef={hub.bodyTextareaRef as any}
+            bodyTextareaRef={hub.bodyTextareaRef}
             isGenerating={hub.isGenerating}
             handleChannelFilterChange={hub.handleChannelFilterChange}
             insertVariableAtCursor={hub.insertVariableAtCursor}

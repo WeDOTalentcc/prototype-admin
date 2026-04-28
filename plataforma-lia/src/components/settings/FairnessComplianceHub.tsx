@@ -75,8 +75,8 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
         const logsData = await logsRes.json()
         setSummary(summaryData)
         setLogs(logsData.items || [])
-      } catch (err: any) {
-        setError(err.message ||"Erro ao carregar dados de fairness")
+      } catch (err) {
+        setError(err instanceof Error ? err.message :"Erro ao carregar dados de fairness")
       } finally {
         setLoading(false)
       }
