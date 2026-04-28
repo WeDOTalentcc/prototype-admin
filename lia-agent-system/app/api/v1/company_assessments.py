@@ -8,6 +8,8 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.auth.dependencies import get_current_user_or_demo, validate_company_access
+from app.auth.models import User
 from app.domains.company.dependencies import (
     get_big_five_repo,
     get_technical_test_repo,
@@ -33,6 +35,11 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/company", tags=["company"])
 
+
+# =====================================================================
+# Big Five — Questions (catalog global, auth-only, no tenant filtering)
+# =====================================================================
+
 @router.get("/big-five/questions", response_model=list[BigFiveQuestionResponse])
 async def list_big_five_questions(
     trait: str | None = Query(None),
@@ -41,9 +48,10 @@ async def list_big_five_questions(
     include_inactive: bool = Query(False),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
+    current_user: User = Depends(get_current_user_or_demo),
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
 ):
-    """List Big Five personality questions."""
+    """List Big Five personality questions (global catalog)."""
     try:
         questions = await bf_repo.list_questions(trait=trait)
         if category:
@@ -61,9 +69,10 @@ async def list_big_five_questions(
 @router.post("/big-five/questions", response_model=BigFiveQuestionResponse)
 async def create_big_five_question(
     data: BigFiveQuestionCreate,
+    current_user: User = Depends(get_current_user_or_demo),
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
 ):
-    """Create a new Big Five question."""
+    """Create a new Big Five question (global catalog)."""
     try:
         question = await bf_repo.create_question(data.model_dump())
         logger.info(f"Created Big Five question for trait: {question.trait}")
@@ -77,9 +86,10 @@ async def create_big_five_question(
 async def update_big_five_question(
     question_id: uuid.UUID,
     data: BigFiveQuestionUpdate,
+    current_user: User = Depends(get_current_user_or_demo),
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
 ):
-    """Update a Big Five question."""
+    """Update a Big Five question (global catalog)."""
     try:
         update_data = data.model_dump(exclude_unset=True)
         update_data["updated_at"] = datetime.utcnow()
@@ -97,9 +107,10 @@ async def update_big_five_question(
 @router.delete("/big-five/questions/{question_id}", response_model=None)
 async def delete_big_five_question(
     question_id: uuid.UUID,
+    current_user: User = Depends(get_current_user_or_demo),
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
 ):
-    """Soft delete a Big Five question."""
+    """Soft delete a Big Five question (global catalog)."""
     try:
         deleted = await bf_repo.delete_question(question_id)
         if not deleted:
@@ -112,18 +123,24 @@ async def delete_big_five_question(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# =====================================================================
+# Big Five — Role Profiles (tenant-scoped — validate_company_access)
+# =====================================================================
+
 @router.get("/big-five/role-profiles", response_model=list[BigFiveRoleProfileResponse])
 async def list_big_five_role_profiles(
     company_id: uuid.UUID | None = Query(None),
     role_category: str | None = Query(None),
     include_templates: bool = Query(True),
     include_inactive: bool = Query(False),
+    current_user: User = Depends(get_current_user_or_demo),
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
 ):
-    """List Big Five role profiles."""
+    """List Big Five role profiles (tenant-scoped)."""
     try:
         if not company_id:
             return []
+        validate_company_access(current_user, str(company_id))
         profiles = await bf_repo.list_role_profiles(company_id)
         if role_category:
             profiles = [p for p in profiles if p.role_category == role_category]
@@ -132,6 +149,8 @@ async def list_big_five_role_profiles(
         if not include_inactive:
             profiles = [p for p in profiles if p.is_active]
         return profiles
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing Big Five role profiles: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -140,13 +159,19 @@ async def list_big_five_role_profiles(
 @router.post("/big-five/role-profiles", response_model=BigFiveRoleProfileResponse)
 async def create_big_five_role_profile(
     data: BigFiveRoleProfileCreate,
+    current_user: User = Depends(get_current_user_or_demo),
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
 ):
-    """Create a new Big Five role profile."""
+    """Create a new Big Five role profile (tenant-scoped)."""
     try:
+        if data.company_id is None:
+            raise HTTPException(status_code=400, detail="company_id is required")
+        validate_company_access(current_user, str(data.company_id))
         profile = await bf_repo.create_role_profile(data.model_dump())
         logger.info(f"Created Big Five role profile: {profile.name}")
         return profile
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating Big Five role profile: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -156,10 +181,16 @@ async def create_big_five_role_profile(
 async def update_big_five_role_profile(
     profile_id: uuid.UUID,
     data: BigFiveRoleProfileUpdate,
+    current_user: User = Depends(get_current_user_or_demo),
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
 ):
-    """Update a Big Five role profile."""
+    """Update a Big Five role profile (tenant-scoped via lookup-then-check)."""
     try:
+        existing = await bf_repo.get_role_profile(profile_id)
+        if not existing:
+            raise HTTPException(status_code=404, detail="Role profile not found")
+        if existing.company_id is not None:
+            validate_company_access(current_user, str(existing.company_id))
         update_data = data.model_dump(exclude_unset=True)
         update_data["updated_at"] = datetime.utcnow()
         profile = await bf_repo.update_role_profile(profile_id, update_data)
@@ -173,6 +204,10 @@ async def update_big_five_role_profile(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# =====================================================================
+# Technical — Questions (catalog global, auth-only, no tenant filtering)
+# =====================================================================
+
 @router.get("/technical/questions", response_model=list[TechnicalQuestionResponse])
 async def list_technical_questions(
     area: str | None = Query(None),
@@ -182,9 +217,10 @@ async def list_technical_questions(
     include_inactive: bool = Query(False),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
+    current_user: User = Depends(get_current_user_or_demo),
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
-    """List technical assessment questions."""
+    """List technical assessment questions (global catalog)."""
     try:
         questions = await tt_repo.list_questions()
         if area:
@@ -206,9 +242,10 @@ async def list_technical_questions(
 @router.post("/technical/questions", response_model=TechnicalQuestionResponse)
 async def create_technical_question(
     data: TechnicalQuestionCreate,
+    current_user: User = Depends(get_current_user_or_demo),
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
-    """Create a new technical question."""
+    """Create a new technical question (global catalog)."""
     try:
         question = await tt_repo.create_question(data.model_dump())
         logger.info(f"Created technical question: {question.title}")
@@ -222,9 +259,10 @@ async def create_technical_question(
 async def update_technical_question(
     question_id: uuid.UUID,
     data: TechnicalQuestionUpdate,
+    current_user: User = Depends(get_current_user_or_demo),
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
-    """Update a technical question."""
+    """Update a technical question (global catalog)."""
     try:
         update_data = data.model_dump(exclude_unset=True)
         update_data["updated_at"] = datetime.utcnow()
@@ -242,9 +280,10 @@ async def update_technical_question(
 @router.delete("/technical/questions/{question_id}", response_model=None)
 async def delete_technical_question(
     question_id: uuid.UUID,
+    current_user: User = Depends(get_current_user_or_demo),
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
-    """Soft delete a technical question."""
+    """Soft delete a technical question (global catalog)."""
     try:
         deleted = await tt_repo.delete_question(question_id)
         if not deleted:
@@ -257,6 +296,10 @@ async def delete_technical_question(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# =====================================================================
+# Technical — Templates (tenant-scoped — validate_company_access)
+# =====================================================================
+
 @router.get("/technical/templates", response_model=list[TechnicalTestTemplateResponse])
 async def list_technical_templates(
     company_id: uuid.UUID | None = Query(None),
@@ -264,12 +307,14 @@ async def list_technical_templates(
     role_type: str | None = Query(None),
     include_public: bool = Query(True),
     include_inactive: bool = Query(False),
+    current_user: User = Depends(get_current_user_or_demo),
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
-    """List technical test templates."""
+    """List technical test templates (tenant-scoped)."""
     try:
         if not company_id:
             return []
+        validate_company_access(current_user, str(company_id))
         templates = await tt_repo.list_templates(company_id)
         if area:
             templates = [t for t in templates if t.area == area]
@@ -278,6 +323,8 @@ async def list_technical_templates(
         if not include_inactive:
             templates = [t for t in templates if t.is_active]
         return templates
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing technical templates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -286,13 +333,19 @@ async def list_technical_templates(
 @router.post("/technical/templates", response_model=TechnicalTestTemplateResponse)
 async def create_technical_template(
     data: TechnicalTestTemplateCreate,
+    current_user: User = Depends(get_current_user_or_demo),
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
-    """Create a new technical test template."""
+    """Create a new technical test template (tenant-scoped)."""
     try:
+        if data.company_id is None:
+            raise HTTPException(status_code=400, detail="company_id is required")
+        validate_company_access(current_user, str(data.company_id))
         template = await tt_repo.create_template(data.model_dump())
         logger.info(f"Created technical template: {template.name}")
         return template
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating technical template: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -302,10 +355,16 @@ async def create_technical_template(
 async def update_technical_template(
     template_id: uuid.UUID,
     data: TechnicalTestTemplateUpdate,
+    current_user: User = Depends(get_current_user_or_demo),
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
-    """Update a technical test template."""
+    """Update a technical test template (tenant-scoped via lookup-then-check)."""
     try:
+        existing = await tt_repo.get_template(template_id)
+        if not existing:
+            raise HTTPException(status_code=404, detail="Template not found")
+        if existing.company_id is not None:
+            validate_company_access(current_user, str(existing.company_id))
         update_data = data.model_dump(exclude_unset=True)
         update_data["updated_at"] = datetime.utcnow()
         template = await tt_repo.update_template(template_id, update_data)
@@ -322,10 +381,16 @@ async def update_technical_template(
 @router.delete("/technical/templates/{template_id}", response_model=None)
 async def delete_technical_template(
     template_id: uuid.UUID,
+    current_user: User = Depends(get_current_user_or_demo),
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
-    """Soft delete a technical test template."""
+    """Soft delete a technical test template (tenant-scoped via lookup-then-check)."""
     try:
+        existing = await tt_repo.get_template(template_id)
+        if not existing:
+            raise HTTPException(status_code=404, detail="Template not found")
+        if existing.company_id is not None:
+            validate_company_access(current_user, str(existing.company_id))
         deleted = await tt_repo.delete_template(template_id)
         if not deleted:
             raise HTTPException(status_code=404, detail="Template not found")
@@ -335,5 +400,3 @@ async def delete_technical_template(
     except Exception as e:
         logger.error(f"Error deleting technical template: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-

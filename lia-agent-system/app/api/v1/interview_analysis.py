@@ -19,6 +19,8 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, R
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import get_current_user_or_demo, validate_company_access
+from app.auth.models import User
 from app.core.database import get_db
 from app.domains.communication.services.teams_recording_service import teams_recording_service
 from app.domains.interview_scheduling.repositories.interview_analysis_repository import InterviewAnalysisRepository
@@ -269,16 +271,23 @@ async def analyze_interview(
     interview_id: _DualId,
     force_refresh: bool = Query(False, description="Force fetch new transcript from Teams"),
     company_id: str = Query(..., description="Company ID for tenant scoping"),
-    db: AsyncSession = Depends(get_db)
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Analyze an interview's transcript using WSI methodology.
     """
     try:
+        validate_company_access(current_user, company_id)
+
         repo = InterviewAnalysisRepository(db)
         interview = await repo.get_interview_by_id(interview_id)
 
         if not interview:
+            raise HTTPException(status_code=404, detail="Interview not found")
+
+        # Defense-in-depth: ensure the interview belongs to the asserted tenant.
+        if hasattr(interview, "company_id") and interview.company_id and str(interview.company_id) != str(company_id):
             raise HTTPException(status_code=404, detail="Interview not found")
 
         transcript_text = None
@@ -355,12 +364,15 @@ async def analyze_interview(
 async def analyze_raw_transcript(
     request: AnalyzeTranscriptRequest,
     company_id: str = Query(..., description="Company ID for tenant scoping"),
-    db: AsyncSession = Depends(get_db)
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Analyze a raw transcript text using WSI methodology.
     """
     try:
+        validate_company_access(current_user, company_id)
+
         if not request.transcript_text or len(request.transcript_text.strip()) < 100:
             raise HTTPException(
                 status_code=400,
@@ -470,7 +482,8 @@ async def teams_meeting_webhook(
 @router.get("/status/{interview_id}", response_model=None)
 async def get_analysis_status(
     interview_id: _DualId,
-    db: AsyncSession = Depends(get_db)
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
 ) -> AnalysisStatusResponse:
     """Get status of interview analysis."""
     try:
@@ -479,6 +492,11 @@ async def get_analysis_status(
 
         if not interview:
             raise HTTPException(status_code=404, detail="Interview not found")
+
+        # Lookup-then-check tenant guard: derive company_id from the resource.
+        if not hasattr(interview, "company_id") or not interview.company_id:
+            raise HTTPException(status_code=404, detail="Interview not found")
+        validate_company_access(current_user, str(interview.company_id))
 
         feedback = interview.feedback or {}
         has_transcript = bool(feedback.get("transcript_text"))
@@ -512,7 +530,8 @@ async def get_analysis_status(
 @router.get("/results/{interview_id}", response_model=None)
 async def get_analysis_results(
     interview_id: _DualId,
-    db: AsyncSession = Depends(get_db)
+    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db),
 ):
     """Get full analysis results for an interview."""
     try:
@@ -521,6 +540,11 @@ async def get_analysis_results(
 
         if not interview:
             raise HTTPException(status_code=404, detail="Interview not found")
+
+        # Lookup-then-check tenant guard: derive company_id from the resource.
+        if not hasattr(interview, "company_id") or not interview.company_id:
+            raise HTTPException(status_code=404, detail="Interview not found")
+        validate_company_access(current_user, str(interview.company_id))
 
         feedback = interview.feedback or {}
         analysis = feedback.get("wsi_analysis")
