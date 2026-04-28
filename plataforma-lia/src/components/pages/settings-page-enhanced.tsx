@@ -17,7 +17,7 @@ import {
   Send, Bell, Palette, Lightbulb, TrendingDown, Activity, RotateCcw,
   ChevronLeft, FastForward, SkipForward, RefreshCw, Zap as Lightning,
   MousePointer, Compass, HelpCircle, Rocket,
-  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield
+  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield, Webhook
 } from"lucide-react"
 
 const SECTION_ICON_COLORS: Record<string, string> = {
@@ -28,6 +28,7 @@ const SECTION_ICON_COLORS: Record<string, string> = {
   'comunicacao-alertas': 'text-rose-400',
   'usuarios-departamentos': 'text-sky-500',
   'integrations': 'text-emerald-500',
+  'webhooks': 'text-cyan-500',
   'fairness-compliance': 'text-violet-400',
 }
 
@@ -42,6 +43,7 @@ const IntegrationsHub = dynamic(() => import("@/components/settings/Integrations
 const TemplatesAssinaturaHub = dynamic(() => import("@/components/settings/TemplatesAssinaturaHub").then(m => ({ default: m.TemplatesAssinaturaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando templates..." /> })
 const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando usuários..." /> })
 const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
+const WebhooksManager = dynamic(() => import("@/components/settings/WebhooksManager").then(m => ({ default: m.WebhooksManager })), { ssr: false, loading: () => <LoadingFallback text="Carregando webhooks..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
@@ -164,6 +166,16 @@ const getDefaultSections = (): SettingsSection[] => [
     estimatedTime: 10,
   },
   {
+    id: 'webhooks',
+    title: 'Webhooks',
+    description: 'Eventos do Agent Studio para sistemas externos',
+    icon: Webhook,
+    status: 'incomplete',
+    priority: 'medium',
+    category: 'integrations',
+    estimatedTime: 5,
+  },
+  {
     id: 'fairness-compliance',
     title: 'Fairness & LGPD',
     description: 'Equidade da IA e pedidos LGPD de candidatos',
@@ -281,6 +293,7 @@ export default function SettingsPageEnhanced() {
     'comunicacao-alertas': 0,
     'usuarios-departamentos': 0,
     'integrations': 0,
+    'webhooks': 0,
     'fairness-compliance': 0,
   })
 
@@ -330,6 +343,7 @@ export default function SettingsPageEnhanced() {
           'comunicacao-alertas': data.sections['comunicacao-alertas'] ?? prev['comunicacao-alertas'],
           'usuarios-departamentos': data.sections['usuarios-departamentos'] ?? prev['usuarios-departamentos'],
           'integrations': data.sections['integracoes'] ?? data.sections['integrations'] ?? prev['integrations'],
+          'webhooks': data.sections['webhooks'] ?? prev['webhooks'],
         }))
       }
       
@@ -462,6 +476,12 @@ export default function SettingsPageEnhanced() {
         return (
           <ErrorBoundarySection>
             <IntegrationsHub activeSubsection={activeSubsection} />
+          </ErrorBoundarySection>
+        )
+      case 'webhooks':
+        return (
+          <ErrorBoundarySection>
+            <WebhooksManager />
           </ErrorBoundarySection>
         )
       case 'fairness-compliance':

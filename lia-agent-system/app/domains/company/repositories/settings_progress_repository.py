@@ -241,3 +241,35 @@ class SettingsProgressRepository:
         except Exception as exc:
             logger.warning("count_active_integrations failed: %s", exc)
             return 0
+
+    async def count_webhooks(self, company_id) -> int:
+        """Total webhook subscriptions for the company (regardless of state)."""
+        try:
+            result = await self.db.execute(
+                text("""
+                    SELECT COUNT(*) FROM studio_webhooks
+                    WHERE company_id = :cid
+                """),
+                {"cid": str(company_id)},
+            )
+            return result.scalar() or 0
+        except Exception as exc:
+            logger.warning("count_webhooks failed: %s", exc)
+            return 0
+
+    async def count_delivering_webhooks(self, company_id) -> int:
+        """Webhooks that are active AND have delivered at least one event successfully."""
+        try:
+            result = await self.db.execute(
+                text("""
+                    SELECT COUNT(*) FROM studio_webhooks
+                    WHERE company_id = :cid
+                    AND is_active = true
+                    AND COALESCE(total_successes, 0) > 0
+                """),
+                {"cid": str(company_id)},
+            )
+            return result.scalar() or 0
+        except Exception as exc:
+            logger.warning("count_delivering_webhooks failed: %s", exc)
+            return 0

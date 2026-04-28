@@ -18,6 +18,7 @@ export const SETTINGS_SECTION_IDS = [
   'comunicacao-alertas',
   'usuarios-departamentos',
   'integrations',
+  'webhooks',
   'fairness-compliance',
 ] as const
 

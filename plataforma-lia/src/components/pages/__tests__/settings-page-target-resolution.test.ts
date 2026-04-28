@@ -24,6 +24,15 @@ describe("resolveSettingsTarget — page parsea o destino do searchParams", () =
     });
   });
 
+  it("`?section=webhooks` (Task #895) abre tab Webhooks", () => {
+    const params = new URLSearchParams("section=webhooks");
+    expect(resolveSettingsTarget(params)).toEqual({
+      section: "webhooks",
+      subsection: "",
+      field: null,
+    });
+  });
+
   it("`?section=pipeline` (card hiring-policy do chat-workflow-reels) abre tab Pipeline", () => {
     const params = new URLSearchParams("section=pipeline");
     expect(resolveSettingsTarget(params).section).toBe("pipeline");
