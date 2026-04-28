@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useMemo, useCallback, useEffect } from"react"
+import { useSearchParams } from "next/navigation"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
@@ -46,6 +47,7 @@ import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
 import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
 import { useCompanyId } from"@/hooks/company/useCompanyId"
+import { resolveSettingsTarget } from "@/lib/settings/resolve-settings-target"
 
 interface SettingsSubsection {
   id: string
@@ -188,9 +190,37 @@ const getCompletionBadgeColor = (percentage: number): string => {
 
 export default function SettingsPageEnhanced() {
   const { companyId, tenantInfo, isLoading: isTenantLoading } = useCompanyId()
+  const searchParams = useSearchParams()
   const [activeSection, setActiveSection] = useState<string>('minha-empresa')
   const [activeSubsection, setActiveSubsection] = useState<string>('')
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['minha-empresa']))
+
+  // Task #894 — quando a página é aberta via deep-link com `?section=…`
+  // (ex.: CTA do job-publish-modal ou cards do chat-workflow-reels), abre
+  // direto a tab solicitada em vez de cair na default `minha-empresa`.
+  // O parâmetro `?field=…` continua funcionando para scroll-into-view
+  // (compatibilidade com Task #712), mesmo sem `?section=`, desde que
+  // a tab atual contenha o campo.
+  useEffect(() => {
+    const target = resolveSettingsTarget(searchParams)
+    if (target.section) {
+      setActiveSection(target.section)
+      setActiveSubsection(target.subsection)
+      setExpandedSections((prev) => new Set([...Array.from(prev), target.section as string]))
+    }
+    if (target.field && typeof window !== 'undefined') {
+      window.requestAnimationFrame(() => {
+        const el = document.querySelector(`[data-field="${target.field}"]`) as HTMLElement | null
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          el.dataset.recentlyHighlighted = 'true'
+          window.setTimeout(() => {
+            if (el) delete el.dataset.recentlyHighlighted
+          }, 3000)
+        }
+      })
+    }
+  }, [searchParams])
 
   useEffect(() => {
     const openTabHandler = (e: Event) => {
