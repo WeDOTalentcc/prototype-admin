@@ -73,12 +73,13 @@ class TestPipelinePredictionVacancy:
     """Tests for GET /api/v1/pipeline-prediction (get_vacancy_prediction)."""
 
     def test_no_auth_returns_401(self, pipeline_app):
-        """Request without Authorization header must return 401."""
-        client = TestClient(pipeline_app, raise_server_exceptions=False)
-        response = client.get(
-            "/api/v1/pipeline-prediction",
-            params={"vacancy_id": "vac-1", "company_id": "company-A"},
-        )
+        """Request without Authorization header must return 401 (production mode)."""
+        with patch("app.auth.dependencies._is_dev_environment", return_value=False):
+            client = TestClient(pipeline_app, raise_server_exceptions=False)
+            response = client.get(
+                "/api/v1/pipeline-prediction",
+                params={"vacancy_id": "vac-1", "company_id": "company-A"},
+            )
         assert response.status_code == 401, (
             f"Expected 401 without auth, got {response.status_code}: {response.text}"
         )
@@ -135,12 +136,13 @@ class TestPipelinePredictionCompanyOverview:
     """Tests for GET /api/v1/pipeline-prediction/company-overview."""
 
     def test_no_auth_returns_401(self, pipeline_app):
-        """Request without Authorization header must return 401."""
-        client = TestClient(pipeline_app, raise_server_exceptions=False)
-        response = client.get(
-            "/api/v1/pipeline-prediction/company-overview",
-            params={"company_id": "company-A"},
-        )
+        """Request without Authorization header must return 401 (production mode)."""
+        with patch("app.auth.dependencies._is_dev_environment", return_value=False):
+            client = TestClient(pipeline_app, raise_server_exceptions=False)
+            response = client.get(
+                "/api/v1/pipeline-prediction/company-overview",
+                params={"company_id": "company-A"},
+            )
         assert response.status_code == 401, (
             f"Expected 401 without auth, got {response.status_code}: {response.text}"
         )
@@ -200,12 +202,13 @@ class TestUserPreferencesListEndpoint:
     """Tests for GET /api/v1/user-preferences/agent."""
 
     def test_no_auth_returns_401(self, prefs_app):
-        """Request without auth must return 401."""
-        client = TestClient(prefs_app, raise_server_exceptions=False)
-        response = client.get(
-            "/api/v1/user-preferences/agent",
-            params={"user_id": "user-1", "company_id": "company-A"},
-        )
+        """Request without auth must return 401 (production mode)."""
+        with patch("app.auth.dependencies._is_dev_environment", return_value=False):
+            client = TestClient(prefs_app, raise_server_exceptions=False)
+            response = client.get(
+                "/api/v1/user-preferences/agent",
+                params={"user_id": "user-1", "company_id": "company-A"},
+            )
         assert response.status_code == 401, (
             f"Expected 401 without auth, got {response.status_code}: {response.text}"
         )
@@ -256,18 +259,19 @@ class TestUserPreferencesUpsertEndpoint:
     """Tests for POST /api/v1/user-preferences/agent."""
 
     def test_no_auth_returns_401(self, prefs_app):
-        """Request without auth must return 401."""
-        client = TestClient(prefs_app, raise_server_exceptions=False)
-        response = client.post(
-            "/api/v1/user-preferences/agent",
-            json={
-                "user_id": "user-1",
-                "company_id": "company-A",
-                "domain": "interview",
-                "action_type": "schedule",
-                "auto_confirm": True,
-            },
-        )
+        """Request without auth must return 401 (production mode)."""
+        with patch("app.auth.dependencies._is_dev_environment", return_value=False):
+            client = TestClient(prefs_app, raise_server_exceptions=False)
+            response = client.post(
+                "/api/v1/user-preferences/agent",
+                json={
+                    "user_id": "user-1",
+                    "company_id": "company-A",
+                    "domain": "interview",
+                    "action_type": "schedule",
+                    "auto_confirm": True,
+                },
+            )
         assert response.status_code == 401, (
             f"Expected 401 without auth, got {response.status_code}: {response.text}"
         )
@@ -340,17 +344,18 @@ class TestUserPreferencesCheckEndpoint:
     """Tests for GET /api/v1/user-preferences/agent/check."""
 
     def test_no_auth_returns_401(self, prefs_app):
-        """Request without auth must return 401."""
-        client = TestClient(prefs_app, raise_server_exceptions=False)
-        response = client.get(
-            "/api/v1/user-preferences/agent/check",
-            params={
-                "user_id": "user-1",
-                "company_id": "company-A",
-                "domain": "interview",
-                "action_type": "schedule",
-            },
-        )
+        """Request without auth must return 401 (production mode)."""
+        with patch("app.auth.dependencies._is_dev_environment", return_value=False):
+            client = TestClient(prefs_app, raise_server_exceptions=False)
+            response = client.get(
+                "/api/v1/user-preferences/agent/check",
+                params={
+                    "user_id": "user-1",
+                    "company_id": "company-A",
+                    "domain": "interview",
+                    "action_type": "schedule",
+                },
+            )
         assert response.status_code == 401, (
             f"Expected 401 without auth, got {response.status_code}: {response.text}"
         )
