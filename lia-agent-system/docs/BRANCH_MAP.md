@@ -818,3 +818,80 @@ só completamos os gaps identificados.
 - `test_total_intents_is_eleven` detecta adições/remoções acidentais
 - `TestCapabilityMapWave4Intents` (7 asserções) valida propriedades de send_offer e register_hire
 
+
+---
+
+## Onda 24 — PR-CAL: scheduling MVP sem fake links (2026-04-28)
+
+**Branch:** `feat/orch-migration-sprint-I`
+**Commit:** `3e1ae39c5`
+**Harness:** GUIDE (computacional) + SENSORS (computacionais)
+
+### Problema resolvido
+
+`schedule_interview` e `reschedule_interview` em
+`app/domains/interview_scheduling/tools/scheduling_tools.py` eram **simulation stubs**:
+- Geravam links falsos `https://calendar.lia.app/interviews/{id}` (P0 bloqueador)
+- Nunca escreviam no banco de dados (Interview row nunca criado)
+- `reschedule_interview` retornava `old_datetime: "N/A"` sem consultar o DB
+
+### Fixes aplicados
+
+**schedule_interview** (MVP):
+- Escreve row real em `interviews` table com `company_id`, `start_time`, `end_time`, `meeting_url`
+- `meeting_url` fornecido pelo recrutador (Zoom/Meet/Teams) — não gera link falso
+- Retorna `is_simulated_calendar: True` como GUIDE para o FE exibir disclaimer
+- Error handling não-fatal (Crença 7): DB fail → loga e continua, retorna success=True
+- Retorna `interview_id` UUID real (não formato fake `IV-XXXXXXXX`)
+
+**reschedule_interview** (MVP):
+- Busca Interview existente por UUID + `company_id` (filtro multi-tenant)
+- Lê `start_time` real do DB → retorna como `old_datetime` (não mais "N/A")
+- Atualiza `start_time`, `end_time`, `status="rescheduled"`, `updated_at`
+- Retorna `is_simulated_calendar: True` (mesmo padrão de guide)
+- Error handling não-fatal idêntico
+
+### Arquivos entregues
+
+| Arquivo | Mudança |
+|---------|---------|
+| `app/domains/interview_scheduling/tools/scheduling_tools.py` | `schedule_interview` + `reschedule_interview` — stubs → MVP |
+| `tests/unit/domains/interview_scheduling/test_pr_cal_schedule_interview.py` | 8 sensores computacionais (NOVO) |
+| `tests/unit/domains/interview_scheduling/test_pr_cal_reschedule_interview.py` | 6 sensores computacionais (NOVO) |
+
+### Estado dos testes após esta onda
+
+| Suite | Resultado |
+|-------|-----------|
+| `test_pr_cal_schedule_interview.py` | 8/8 ✅ |
+| `test_pr_cal_reschedule_interview.py` | 6/6 ✅ |
+| `test_pr_j_capability_map.py` | 27/27 ✅ |
+| `automations-tab.test.tsx` | 7/7 ✅ |
+| `tests/domains/offer/` (backend) | 38/38 ✅ |
+
+### Harness engineering: guides e sensors
+
+**GUIDE (computacional):**
+- `is_simulated_calendar: True` em ambos os retornos → FE exibe disclaimer
+  "Integração com Google Calendar em breve. Adicione o link da reunião manualmente."
+- Feature flag `CALENDAR_INTEGRATION_ENABLED` (a implementar) controlará quando remover o flag
+
+**SENSOR (computacional) — `test_pr_cal_schedule_interview.py`:**
+- `test_no_fake_calendar_lia_app_link` — P0 guard: nenhum link `calendar.lia.app` gerado
+- `test_is_simulated_calendar_flag_present` — guide presente no response
+- `test_returns_real_uuid_interview_id` — UUID real, não `IV-XXXXXXXX`
+- `test_meeting_url_propagated_when_provided` — meeting_url propagado corretamente
+- `test_db_failure_is_non_fatal` — DB falha → success=True (non-fatal pattern)
+- `test_company_id_propagated_to_db` — multi-tenant sensor
+
+**SENSOR (computacional) — `test_pr_cal_reschedule_interview.py`:**
+- `test_old_datetime_not_hardcoded_na_when_db_found` — old_datetime lido do DB real
+- `test_old_datetime_na_when_interview_not_found` — fallback gracioso quando row ausente
+- `test_is_simulated_calendar_present` — guide flag presente
+- `test_is_simulated_calendar_true_even_when_db_fails` — guide independente de erros
+- `test_db_failure_non_fatal` — non-fatal resilience
+- `test_company_id_used_in_db_filter` — WHERE clause contém company_id
+
+**Nota técnica:** `AsyncSessionLocal` é importado localmente dentro da função,
+portanto o patch target correto é `lia_config.database.AsyncSessionLocal` (não
+`scheduling_tools.AsyncSessionLocal` que não existe em nível de módulo).
