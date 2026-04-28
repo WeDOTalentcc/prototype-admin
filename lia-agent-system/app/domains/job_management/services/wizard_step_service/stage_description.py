@@ -28,6 +28,64 @@ async def handle_description(
     Returns:
         (lia_message, detected_criteria, suggestions_data)
     """
+    # F.1 — ATS job history context (fail-open: wrapped in try/except)
+    try:
+        from app.domains.job_management.services.ats_job_history_service import ats_job_history_service
+
+        # Use a rough title hint from the raw input (first 60 chars or explicit title)
+        _title_hint = (
+            job_draft.get('job_title')
+            or job_draft.get('cargo')
+            or request.user_input[:60]
+        )
+        if _title_hint and company_id:
+            _similar_jobs = await ats_job_history_service.get_similar_jobs(
+                company_id=company_id,
+                role=_title_hint,
+                limit=10,
+            )
+            if _similar_jobs:
+                # Aggregate common skills
+                _skill_counts: dict[str, int] = {}
+                _salary_mins = []
+                _salary_maxs = []
+                for _j in _similar_jobs:
+                    if _j.skills:
+                        for _s in _j.skills:
+                            _sk = _s.get('name') if isinstance(_s, dict) else str(_s)
+                            _skill_counts[_sk] = _skill_counts.get(_sk, 0) + 1
+                    if _j.salary_min and _j.salary_max:
+                        _salary_mins.append(_j.salary_min)
+                        _salary_maxs.append(_j.salary_max)
+
+                _top_skills = [
+                    sk for sk, _ in sorted(_skill_counts.items(), key=lambda x: x[1], reverse=True)[:8]
+                ]
+                _typical_salary: dict = {}
+                if _salary_mins and _salary_maxs:
+                    import statistics as _stats
+                    _typical_salary = {
+                        "min": round(_stats.mean(_salary_mins)),
+                        "max": round(_stats.mean(_salary_maxs)),
+                        "currency": "BRL",
+                        "sample_size": len(_salary_mins),
+                    }
+
+                suggestions_data["historical_context"] = {
+                    "similar_count": len(_similar_jobs),
+                    "common_skills": _top_skills,
+                    "typical_salary": _typical_salary,
+                }
+                job_draft["_ats_historical_count"] = len(_similar_jobs)
+                job_draft["_ats_common_skills"] = _top_skills
+
+                logger.info(
+                    "[F.1] ATS history: %d similar jobs found for role=%s",
+                    len(_similar_jobs), _title_hint,
+                )
+    except Exception as _ats_exc:
+        logger.warning("[F.1] ats_job_history_service failed (non-blocking): %s", _ats_exc)
+
     llm_service = LLMService()
 
     from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
@@ -273,6 +331,18 @@ Analise esta descrição de vaga e extraia TODAS as informações possíveis.
                     logger.warning("apply_learning failed in stage_description: %s", _al_exc)
 
             lia_message = lia_intro + "\n".join(criteria_lines)
+
+            # F.1 — Surface historical context hint in the LIA message
+            _hist = suggestions_data.get("historical_context", {})
+            if _hist.get("similar_count", 0) > 0:
+                _hist_count = _hist["similar_count"]
+                _hist_skills = _hist.get("common_skills", [])
+                lia_message += (
+                    f"\n\n📂 **Histórico ATS:** Notei que vocês já criaram **{_hist_count}** vaga(s) "
+                    f"similar(es). Quer começar com base no padrão que costumam usar?"
+                )
+                if _hist_skills:
+                    lia_message += f"\n   Skills recorrentes: {', '.join(_hist_skills[:5])}"
 
             if detected_low_conf:
                 lia_message += "\n\n**Preciso confirmar:**\n"

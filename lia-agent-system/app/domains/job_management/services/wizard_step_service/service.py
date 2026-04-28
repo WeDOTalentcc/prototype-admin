@@ -584,6 +584,17 @@ class WizardStepService:
                     )
 
                 elif current_stage == 5:
+                    # F.2 — screening_mode persistence: parse keywords before dispatching
+                    try:
+                        _input_lower_f2 = (request.user_input or "").lower()
+                        if any(kw in _input_lower_f2 for kw in ["compacta", "compact", "rápida", "rapida", "curta"]):
+                            job_draft["screening_mode"] = "compact"
+                            logger.info("[F.2] screening_mode set to 'compact' from recruiter input")
+                        elif any(kw in _input_lower_f2 for kw in ["completa", "full", "completo", "detalhada", "longa"]):
+                            job_draft["screening_mode"] = "full"
+                            logger.info("[F.2] screening_mode set to 'full' from recruiter input")
+                    except Exception as _f2_exc:
+                        logger.warning("[F.2] screening_mode parse failed (non-blocking): %s", _f2_exc)
                     lia_message, suggestions_data = await handle_wsi_questions(
                         job_draft=job_draft,
                         suggestions_data=suggestions_data,
