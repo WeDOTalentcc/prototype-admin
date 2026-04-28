@@ -23,6 +23,7 @@ import {
 } from "./integrations/integration-data"
 import { IntegrationCard } from "./integrations/IntegrationCard"
 import { IntegrationDetailDrawer } from "./integrations/IntegrationDetailDrawer"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface LLMConfigData {
   company_id: string
@@ -77,7 +78,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
   }, [activeSubsection])
 
   useEffect(() => {
-    fetch("/api/backend-proxy/calendar/health")
+    apiFetch("/api/backend-proxy/calendar/health")
       .then((r) => r.json())
       .then((data) => {
         setMicrosoftStatus(data.graph_configured ? "connected" : "not_configured")
@@ -87,7 +88,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
       })
       .catch(() => setMicrosoftStatus("not_configured"))
 
-    fetch("/api/backend-proxy/integrations/status")
+    apiFetch("/api/backend-proxy/integrations/status")
       .then((r) => {
         if (!r.ok) throw new Error("Failed to fetch integrations status")
         return r.json()
@@ -103,7 +104,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
 
     fetchLlmConfig()
 
-    fetch("/api/backend-proxy/ats/connections")
+    apiFetch("/api/backend-proxy/ats/connections")
       .then((r) => {
         if (!r.ok) throw new Error("Failed to fetch ATS connections")
         return r.json()
@@ -115,7 +116,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
   }, [])
 
   const fetchLlmConfig = useCallback(() => {
-    fetch("/api/backend-proxy/llm-config")
+    apiFetch("/api/backend-proxy/llm-config")
       .then((r) => {
         if (!r.ok) throw new Error("Failed to fetch LLM config")
         return r.json()
@@ -134,7 +135,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
     setErrorMsg(null)
     try {
       const companyId = "current"
-      const res = await fetch(`/api/backend-proxy/calendar/google/auth-url?company_id=${companyId}`)
+      const res = await apiFetch(`/api/backend-proxy/calendar/google/auth-url?company_id=${companyId}`)
       if (!res.ok) {
         const data = await res.json()
         throw new Error(data.detail || t("integrations.authUrlError"))

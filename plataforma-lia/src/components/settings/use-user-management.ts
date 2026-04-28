@@ -6,6 +6,7 @@ import { useSCIMConfig } from '@/hooks/company/use-scim-config'
 import { useCurrentCompany } from '@/hooks/company/use-current-company'
 import { badgeStyles } from '@/lib/design-tokens'
 import type { UserData } from './user-management-types'
+import { apiFetch } from '@/lib/api/api-fetch'
 
 function mapRoleToApi(role?: string): string {
   if (!role) return 'viewer'
@@ -55,7 +56,7 @@ export function useUserManagement() {
     setError(null)
     try {
       const cid = effectiveCompanyId || 'demo_company'
-      const response = await fetch(`/api/backend-proxy/company/users?company_id=${cid}`)
+      const response = await apiFetch(`/api/backend-proxy/company/users?company_id=${cid}`)
       if (!response.ok) throw new Error('Failed to fetch users')
       const data = await response.json()
       const usersData = Array.isArray(data) ? data : (data.data || data.users || [])
@@ -137,7 +138,7 @@ export function useUserManagement() {
     const cid = effectiveCompanyId || 'demo_company'
     try {
       if (isCreating) {
-        const response = await fetch(`/api/backend-proxy/company/users?company_id=${cid}`, {
+        const response = await apiFetch(`/api/backend-proxy/company/users?company_id=${cid}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -155,7 +156,7 @@ export function useUserManagement() {
         setSuccessMessage(t('users.userCreatedSuccess', { email: formData.email || '' }))
         setTimeout(() => setSuccessMessage(null), 8000)
       } else if (selectedUser) {
-        const response = await fetch(`/api/backend-proxy/company/users/${selectedUser.id}?company_id=${cid}`, {
+        const response = await apiFetch(`/api/backend-proxy/company/users/${selectedUser.id}?company_id=${cid}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -180,7 +181,7 @@ export function useUserManagement() {
     const cid = effectiveCompanyId || 'demo_company'
     setResendingInvite(userId)
     try {
-      const response = await fetch(`/api/backend-proxy/company/users/${userId}/resend-invitation?company_id=${cid}`, {
+      const response = await apiFetch(`/api/backend-proxy/company/users/${userId}/resend-invitation?company_id=${cid}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })
@@ -201,7 +202,7 @@ export function useUserManagement() {
     const cid = effectiveCompanyId || 'demo_company'
     if (confirm(t('users.confirmDeleteUser'))) {
       try {
-        const response = await fetch(`/api/backend-proxy/company/users/${userId}?company_id=${cid}`, {
+        const response = await apiFetch(`/api/backend-proxy/company/users/${userId}?company_id=${cid}`, {
           method: 'DELETE'
         })
         if (!response.ok) throw new Error('Failed to delete user')

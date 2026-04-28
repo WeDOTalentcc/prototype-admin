@@ -7,6 +7,7 @@ import { cardStyles, textStyles } from "@/lib/design-tokens"
 import { Loading } from "@/components/ui/loading"
 import { Chip } from "@/components/ui/chip"
 import { cn } from "@/lib/utils"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface DSR {
   id: string
@@ -98,8 +99,8 @@ export function DSRInboxPanel() {
       try {
         const qs = statusFilter !== "all" ? `?status=${statusFilter}` : ""
         const [listRes, statsRes] = await Promise.all([
-          fetch(`/api/backend-proxy/data-subject-requests${qs}`, { headers }),
-          fetch("/api/backend-proxy/data-subject-requests/stats", { headers }),
+          apiFetch(`/api/backend-proxy/data-subject-requests${qs}`, { headers }),
+          apiFetch("/api/backend-proxy/data-subject-requests/stats", { headers }),
         ])
         if (!listRes.ok) throw new Error(`HTTP ${listRes.status}`)
         const listData = await listRes.json()

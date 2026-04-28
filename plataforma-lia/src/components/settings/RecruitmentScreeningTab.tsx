@@ -317,8 +317,9 @@ function QuestionFormSection({ newQuestion, setNewQuestion, onAdd, onCancel }: Q
     <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-xl">
       <CardContent className="p-3 space-y-4">
         <div>
-          <label className={`block mb-1.5 ${textStyles.labelSmall}`}>{t("recruitment.screening.questionLabel")}</label>
+          <label htmlFor="screening-question-text" className={`block mb-1.5 ${textStyles.labelSmall}`}>{t("recruitment.screening.questionLabel")}</label>
           <input
+            id="screening-question-text"
             type="text"
             value={newQuestion.question}
             onChange={(e) => setNewQuestion(prev => ({ ...prev, question: e.target.value }))}
@@ -328,8 +329,9 @@ function QuestionFormSection({ newQuestion, setNewQuestion, onAdd, onCancel }: Q
         </div>
         <div className="flex gap-3">
           <div className="flex-1">
-            <label className={`block mb-1.5 ${textStyles.labelSmall}`}>{t("recruitment.screening.typeLabel")}</label>
+            <label htmlFor="screening-question-type" className={`block mb-1.5 ${textStyles.labelSmall}`}>{t("recruitment.screening.typeLabel")}</label>
             <select
+              id="screening-question-type"
               value={newQuestion.type}
               onChange={(e) => setNewQuestion(prev => ({ ...prev, type: e.target.value as 'text' | 'yesno' | 'scale' | 'multiple' }))}
               className={`w-full px-2 py-1.5 border border-lia-border-subtle rounded-md bg-lia-bg-primary ${textStyles.body}`}

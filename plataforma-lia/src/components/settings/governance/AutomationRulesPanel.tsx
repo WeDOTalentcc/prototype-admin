@@ -7,6 +7,7 @@ import { cardStyles, textStyles } from "@/lib/design-tokens"
 import { Loading } from "@/components/ui/loading"
 import { Chip } from "@/components/ui/chip"
 import { cn } from "@/lib/utils"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface AutomationRule {
   id: string
@@ -44,8 +45,7 @@ export function AutomationRulesPanel() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch(
-          `/api/backend-proxy/automation-rules/company/${companyId}`,
+        const res = await apiFetch(`/api/backend-proxy/automation-rules/company/${companyId}`,
           { headers: { "X-Company-ID": companyId! } },
         )
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -73,7 +73,7 @@ export function AutomationRulesPanel() {
     if (!id || !companyId) return
     setPending((p) => ({ ...p, [id]: true }))
     try {
-      const res = await fetch(`/api/backend-proxy/automation-rules/${id}/toggle`, {
+      const res = await apiFetch(`/api/backend-proxy/automation-rules/${id}/toggle`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

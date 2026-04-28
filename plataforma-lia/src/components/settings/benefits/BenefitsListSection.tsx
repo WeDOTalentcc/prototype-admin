@@ -28,6 +28,7 @@ import {
   type BenefitCategory,
   type CompanyBenefit,
 } from "@/types/benefits"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 const CATEGORY_ICONS: Record<BenefitCategory, LucideIcon> = {
   health: Stethoscope,
@@ -198,8 +199,7 @@ export function BenefitsListSection({
       setBusyId(benefitId)
       setError(null)
       try {
-        const res = await fetch(
-          `/api/backend-proxy/company/benefits/${benefitId}`,
+        const res = await apiFetch(`/api/backend-proxy/company/benefits/${benefitId}`,
           { method: "DELETE" }
         )
         if (!res.ok) {
@@ -221,8 +221,7 @@ export function BenefitsListSection({
       setBusyId(benefit.id)
       setError(null)
       try {
-        const res = await fetch(
-          `/api/backend-proxy/company/benefits/${benefit.id}?company_id=${encodeURIComponent(companyId)}`,
+        const res = await apiFetch(`/api/backend-proxy/company/benefits/${benefit.id}?company_id=${encodeURIComponent(companyId)}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },

@@ -19,6 +19,7 @@ import { Progress } from "@/components/ui/progress"
 import { Chip } from "@/components/ui/chip"
 import { Zap, AlertCircle, RefreshCw } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface BudgetStatus {
   company_id: string
@@ -59,7 +60,7 @@ export function ApifyConsumptionWidget({ className, autoRefreshMs }: Props) {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch("/api/backend-proxy/consumption?path=budget-status", {
+      const res = await apiFetch("/api/backend-proxy/consumption?path=budget-status", {
         headers: { "Content-Type": "application/json" },
       })
       if (!res.ok) {

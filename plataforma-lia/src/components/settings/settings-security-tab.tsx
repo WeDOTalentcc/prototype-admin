@@ -45,18 +45,28 @@ export function SettingsSecurityTab({ onSettingsChange }: SettingsSecurityTabPro
         <CardContent className="space-y-4">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <div>
+              <label htmlFor="privacy-share-usage-data" className="cursor-pointer">
                 <div className="text-sm font-medium">{t("shareUsageData")}</div>
                 <div className="text-xs text-lia-text-primary">{t("shareUsageDataDesc")}</div>
-              </div>
-              <input type="checkbox" defaultChecked onChange={() => onSettingsChange(true)} />
+              </label>
+              <input
+                id="privacy-share-usage-data"
+                type="checkbox"
+                defaultChecked
+                onChange={() => onSettingsChange(true)}
+              />
             </div>
             <div className="flex items-center justify-between">
-              <div>
+              <label htmlFor="privacy-behavior-analysis" className="cursor-pointer">
                 <div className="text-sm font-medium">{t("behaviorAnalysis")}</div>
                 <div className="text-xs text-lia-text-primary">{t("behaviorAnalysisDesc")}</div>
-              </div>
-              <input type="checkbox" defaultChecked onChange={() => onSettingsChange(true)} />
+              </label>
+              <input
+                id="privacy-behavior-analysis"
+                type="checkbox"
+                defaultChecked
+                onChange={() => onSettingsChange(true)}
+              />
             </div>
           </div>
         </CardContent>

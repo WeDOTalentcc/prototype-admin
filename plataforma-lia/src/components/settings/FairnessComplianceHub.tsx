@@ -17,6 +17,7 @@ interface FairnessSummary {
   total_events: number
   by_category: CategorySummary[]
 }
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface CategorySummary {
   category: string
@@ -72,8 +73,8 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
       setError(null)
       try {
         const [summaryRes, logsRes] = await Promise.all([
-          fetch(`/api/backend-proxy/fairness-report/summary?days=${period}`, { credentials:"include" }),
-          fetch(`/api/backend-proxy/fairness/audit/logs?days=${period}`, { credentials:"include" }),
+          apiFetch(`/api/backend-proxy/fairness-report/summary?days=${period}`, { credentials:"include" }),
+          apiFetch(`/api/backend-proxy/fairness/audit/logs?days=${period}`, { credentials:"include" }),
         ])
         if (!summaryRes.ok || !logsRes.ok) throw new Error(t("errorLoadingData"))
         const summaryData = await summaryRes.json()

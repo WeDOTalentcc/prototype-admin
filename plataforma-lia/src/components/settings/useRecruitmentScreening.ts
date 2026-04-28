@@ -8,6 +8,7 @@ import {
 } from "@/components/settings/eligibility-questions-bank"
 import type { NewQuestionForm, ScreeningQuestion } from "./recruitment-types"
 import type { RecruitmentPersistenceState } from "./useRecruitmentPersistence"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 export interface RecruitmentScreeningState {
   questions: ScreeningQuestion[]
@@ -82,7 +83,7 @@ export function useRecruitmentScreening({
       const newOnes = updatedQuestions.filter(q => isTempId(q.id))
       const savedNew: ScreeningQuestion[] = []
       for (const q of newOnes) {
-        const res = await fetch('/api/backend-proxy/company/screening-questions', {
+        const res = await apiFetch('/api/backend-proxy/company/screening-questions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -108,7 +109,7 @@ export function useRecruitmentScreening({
         q => !isTempId(q.id) && !updatedIds.has(q.id)
       )
       for (const q of removed) {
-        await fetch(`/api/backend-proxy/company/screening-questions/${q.id}`, {
+        await apiFetch(`/api/backend-proxy/company/screening-questions/${q.id}`, {
           method: 'DELETE',
         })
       }

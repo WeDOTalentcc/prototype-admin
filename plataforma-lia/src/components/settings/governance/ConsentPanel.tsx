@@ -7,6 +7,7 @@ import { cardStyles, textStyles } from "@/lib/design-tokens"
 import { Loading } from "@/components/ui/loading"
 import { Chip } from "@/components/ui/chip"
 import { cn } from "@/lib/utils"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface ConsentRecord {
   purpose: string
@@ -74,8 +75,7 @@ export function ConsentPanel() {
     setError(null)
     setSummary(null)
     try {
-      const res = await fetch(
-        `/api/backend-proxy/consent/granular/${encodeURIComponent(id.trim())}`,
+      const res = await apiFetch(`/api/backend-proxy/consent/granular/${encodeURIComponent(id.trim())}`,
         { headers: { "X-Company-ID": companyId } },
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -92,8 +92,7 @@ export function ConsentPanel() {
     if (!summary || !companyId) return
     setPending((p) => ({ ...p, [purpose]: true }))
     try {
-      const res = await fetch(
-        `/api/backend-proxy/consent/granular/${encodeURIComponent(summary.candidate_id)}/update`,
+      const res = await apiFetch(`/api/backend-proxy/consent/granular/${encodeURIComponent(summary.candidate_id)}/update`,
         {
           method: "POST",
           headers: {

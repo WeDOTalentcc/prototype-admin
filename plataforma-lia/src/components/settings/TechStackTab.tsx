@@ -114,9 +114,11 @@ export function TechStackTab({
                           {tech}
                           {isEditingCompanyData && (
                             <button
+                              type="button"
                               onClick={() =>
                                 removeTechFromCategory(category.key, tech)
                               }
+                              aria-label={t("removeTech", { tech })}
                               className="ml-1.5 hover:text-status-error"
                             >
                               ×
@@ -203,7 +205,9 @@ export function TechStackTab({
                       {tech}
                       {isEditingCompanyData && (
                         <button
+                          type="button"
                           onClick={() => removeTechFromCategory("outros", tech)}
+                          aria-label={t("removeTech", { tech })}
                           className="ml-1.5 hover:text-status-error"
                         >
                           ×

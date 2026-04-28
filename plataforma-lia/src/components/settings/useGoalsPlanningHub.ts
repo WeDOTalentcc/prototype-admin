@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useCallback } from "react"
 import { useCompanyLiaInstructions } from "@/hooks/company/use-company-lia-instructions"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { DEFAULT_ALERTS, MOCK_WORKFORCE, INITIAL_DEPARTMENTS, AlertConfig, WorkforceEntry, MonthlyPlanning, Position, DepartmentData } from "./goalsPlanningConstants"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 const defaultAlerts = DEFAULT_ALERTS
 const mockWorkforce = MOCK_WORKFORCE
@@ -45,7 +46,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
 
   const fetchDepartmentsFromBackend = useCallback(async () => {
     try {
-      const response = await fetch('/api/backend-proxy/company/departments')
+      const response = await apiFetch('/api/backend-proxy/company/departments')
       if (response.ok) {
         const backendDepts = await response.json()
         if (Array.isArray(backendDepts) && backendDepts.length > 0) {
@@ -71,7 +72,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
 
   const createDepartmentInBackend = useCallback(async (name: string): Promise<string | null> => {
     try {
-      const response = await fetch(`/api/backend-proxy/company/departments?company_id=${encodeURIComponent(companyId || '')}`, {
+      const response = await apiFetch(`/api/backend-proxy/company/departments?company_id=${encodeURIComponent(companyId || '')}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, description: `Departamento criado via Planejamento de Contratações`, headcount: 0 })
@@ -89,7 +90,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
 
   const fetchCompanyUsers = useCallback(async () => {
     try {
-      const response = await fetch('/api/backend-proxy/company/users')
+      const response = await apiFetch('/api/backend-proxy/company/users')
       if (response.ok) {
         const data = await response.json()
         const mappedUsers = data.map((u: Record<string, unknown>) => ({
@@ -121,7 +122,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
 
   const fetchWorkforceData = useCallback(async () => {
     try {
-      const workforceRes = await fetch('/api/backend-proxy/workforce')
+      const workforceRes = await apiFetch('/api/backend-proxy/workforce')
       if (workforceRes.ok) {
         const workforceResult = await workforceRes.json()
         if (Array.isArray(workforceResult) && workforceResult.length > 0) {
@@ -148,8 +149,8 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
         setLoading(true)
         setError(null)
         const [alertsRes, workforceRes] = await Promise.all([
-          fetch('/api/backend-proxy/alerts/config'),
-          fetch('/api/backend-proxy/workforce')
+          apiFetch('/api/backend-proxy/alerts/config'),
+          apiFetch('/api/backend-proxy/workforce')
         ])
         if (alertsRes.ok) {
           const alertsResult = await alertsRes.json()
@@ -189,7 +190,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
   const saveAlertsConfig = async () => {
     try {
       setSaving(true)
-      const response = await fetch('/api/backend-proxy/alerts/config', {
+      const response = await apiFetch('/api/backend-proxy/alerts/config', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -210,7 +211,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
   const saveWorkforceData = async () => {
     try {
       setSaving(true)
-      const response = await fetch('/api/backend-proxy/workforce', {
+      const response = await apiFetch('/api/backend-proxy/workforce', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -231,7 +232,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
   const getCompanyId = async (): Promise<string> => {
     if (companyId) return companyId
     try {
-      const res = await fetch('/api/backend-proxy/company/profile')
+      const res = await apiFetch('/api/backend-proxy/company/profile')
       if (res.ok) {
         const company = await res.json()
         return company.id || ''
@@ -245,7 +246,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
     try {
       const updatedToggles = { ...liaToggles, [fieldKey]: isActive }
       const companyId = await getCompanyId()
-      const response = await fetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`, {
+      const response = await apiFetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lia_field_toggles: updatedToggles })
@@ -262,7 +263,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
     try {
       const updatedInstructions = { ...liaInstructions, [fieldKey]: instruction }
       const companyId = await getCompanyId()
-      const response = await fetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`, {
+      const response = await apiFetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lia_instructions: updatedInstructions })
@@ -360,7 +361,7 @@ export function useGoalsPlanningHub({ users = [], onGoalUpdate, activeSubsection
     setDepartments(prev => prev.map(d => d.id === deptId ? { ...d, name } : d))
     if (deptId.startsWith('temp-')) return
     try {
-      await fetch(`/api/backend-proxy/company/departments/${deptId}`, {
+      await apiFetch(`/api/backend-proxy/company/departments/${deptId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name })

@@ -12,6 +12,7 @@ import {
   Edit, Plus, Workflow, FileText, Zap, Target,
   Download, BarChart3, Activity, MoreHorizontal, AlertCircle,
 } from "lucide-react"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface ApiAutomation {
   id: string
@@ -62,7 +63,7 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
     if (!companyId) return
     setIsLoading(true)
     setError(null)
-    fetch(`/api/backend-proxy/automations?company_id=${encodeURIComponent(companyId)}`)
+    apiFetch(`/api/backend-proxy/automations?company_id=${encodeURIComponent(companyId)}`)
       .then((res) => res.json())
       .then((json) => {
         if (json?.success && Array.isArray(json?.data?.automations)) {

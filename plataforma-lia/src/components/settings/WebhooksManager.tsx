@@ -12,6 +12,7 @@ import { textStyles, cardStyles, buttonStyles, badgeStyles } from "@/lib/design-
 import { toast } from "@/lib/toast"
 import { useWebhooks } from "@/hooks/agents"
 import { WEBHOOK_EVENTS, type Webhook } from "@/components/pages-agent-studio/custom-agents/webhook-types"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 export function WebhooksManager() {
   const t = useTranslations("settings.webhooks")
@@ -42,7 +43,7 @@ export function WebhooksManager() {
     setSubmitting(true)
     try {
       const token = localStorage.getItem("auth_token")
-      const res = await fetch("/api/backend-proxy/webhooks", {
+      const res = await apiFetch("/api/backend-proxy/webhooks", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -75,7 +76,7 @@ export function WebhooksManager() {
     if (!confirm(t("deleteConfirm", { name }))) return
     try {
       const token = localStorage.getItem("auth_token")
-      const res = await fetch(`/api/backend-proxy/webhooks/${id}`, {
+      const res = await apiFetch(`/api/backend-proxy/webhooks/${id}`, {
         method: "DELETE",
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       })
@@ -91,7 +92,7 @@ export function WebhooksManager() {
     setTestingId(id)
     try {
       const token = localStorage.getItem("auth_token")
-      const res = await fetch(`/api/backend-proxy/webhooks/${id}/test`, {
+      const res = await apiFetch(`/api/backend-proxy/webhooks/${id}/test`, {
         method: "POST",
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       })

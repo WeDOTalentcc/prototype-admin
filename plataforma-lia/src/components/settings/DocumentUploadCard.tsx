@@ -12,6 +12,7 @@ import { textStyles } from "@/lib/design-tokens"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { useAuth } from "@/contexts/auth-context"
 import type { LucideIcon } from "lucide-react"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 type UploadState = "idle" | "uploading" | "extracting" | "sending" | "done" | "error"
 
@@ -159,7 +160,7 @@ export function DocumentUploadCard() {
       setUploadState("extracting")
       animateProgress(STATE_PROGRESS.extracting)
 
-      const response = await fetch("/api/backend-proxy/documents/upload", {
+      const response = await apiFetch("/api/backend-proxy/documents/upload", {
         method: "POST",
         body: formData,
       })

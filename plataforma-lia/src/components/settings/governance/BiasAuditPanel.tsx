@@ -7,6 +7,7 @@ import { cardStyles, textStyles } from "@/lib/design-tokens"
 import { Loading } from "@/components/ui/loading"
 import { Chip } from "@/components/ui/chip"
 import { cn } from "@/lib/utils"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface FairnessLog {
   id?: string
@@ -57,7 +58,7 @@ export function BiasAuditPanel() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch("/api/backend-proxy/fairness-audit/logs?limit=50", {
+        const res = await apiFetch("/api/backend-proxy/fairness-audit/logs?limit=50", {
           headers: { "X-Company-ID": companyId! },
         })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -86,8 +87,7 @@ export function BiasAuditPanel() {
     setDrillError(null)
     setDrillReport(null)
     try {
-      const res = await fetch(
-        `/api/backend-proxy/bias-audit/job/${encodeURIComponent(jobId.trim())}`,
+      const res = await apiFetch(`/api/backend-proxy/bias-audit/job/${encodeURIComponent(jobId.trim())}`,
         { headers: { "X-Company-ID": companyId } },
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)

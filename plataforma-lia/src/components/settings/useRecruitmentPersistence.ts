@@ -12,6 +12,7 @@ import {
   RawScreeningQuestion,
   ScreeningQuestion,
 } from "./recruitment-types"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 export interface RecruitmentPersistenceState {
   loading: boolean
@@ -39,8 +40,8 @@ export function useRecruitmentPersistence(): RecruitmentPersistenceState {
       try {
         setLoading(true)
         const [questionsRes, pipelineRes] = await Promise.all([
-          fetch('/api/backend-proxy/company/screening-questions'),
-          fetch('/api/backend-proxy/company-pipeline'),
+          apiFetch('/api/backend-proxy/company/screening-questions'),
+          apiFetch('/api/backend-proxy/company-pipeline'),
         ])
 
         if (!cancelled && questionsRes.ok) {

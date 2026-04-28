@@ -7,6 +7,7 @@ import {
 } from "lucide-react"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { textStyles } from "@/lib/design-tokens"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 type UploadState = "idle" | "uploading" | "extracting" | "sending" | "done" | "error"
 
@@ -126,7 +127,7 @@ export function SectionUploadDropZone({
       setUploadState("extracting")
       animateProgress(STATE_PROGRESS.extracting)
 
-      const response = await fetch("/api/backend-proxy/documents/upload", {
+      const response = await apiFetch("/api/backend-proxy/documents/upload", {
         method: "POST",
         body: formData,
       })

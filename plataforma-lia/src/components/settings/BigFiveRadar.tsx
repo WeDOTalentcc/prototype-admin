@@ -178,10 +178,12 @@ export function BigFiveRadar({
 
       {isEditable && (
         <div className="space-y-4 mt-4">
-          {TRAITS.map((trait) => (
+          {TRAITS.map((trait) => {
+            const sliderId = `bigfive-slider-${trait.key}`
+            return (
             <div key={trait.key} className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label className={textStyles.label}>
+                <Label htmlFor={sliderId} className={textStyles.label}>
                   {trait.label}
                 </Label>
                 <span className="text-xs font-semibold text-lia-text-primary">
@@ -192,15 +194,20 @@ export function BigFiveRadar({
                 {trait.description}
               </p>
               <input
+                id={sliderId}
                 type="range"
                 min="0"
                 max="100"
                 value={scores[trait.key]}
                 onChange={(e) => handleSliderChange(trait.key, parseInt(e.target.value))}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={scores[trait.key]}
+                aria-label={trait.label}
                 className="w-full h-1.5 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-xl appearance-none cursor-pointer accent-lia-btn-primary-bg dark:accent-lia-bg-tertiary"
               />
             </div>
-          ))}
+          )})}
         </div>
       )}
 

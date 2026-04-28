@@ -3646,7 +3646,9 @@
       "errorSaveUser": "Error saving user",
       "errorResendInvite": "Error resending invitation",
       "confirmDeleteUser": "Are you sure you want to delete this user?",
-      "errorDeleteUser": "Error deleting user"
+      "errorDeleteUser": "Error deleting user",
+      "dismissSuccess": "Dismiss message",
+      "avatarOf": "Avatar of {name}"
     },
     "departments": {
       "title": "Departments",
@@ -5558,7 +5560,8 @@
       "engineeringCulture": "Engineering Culture",
       "engineeringPlaceholder": "Describe the company's engineering culture (methodologies, development practices, technical work environment)...",
       "addCustom": "Add custom {category}...",
-      "addTechnology": "Add technology..."
+      "addTechnology": "Add technology...",
+      "removeTech": "Remove {tech}"
     },
     "culturePreview": {
       "title": "Identified Cultural Profile",

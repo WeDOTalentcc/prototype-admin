@@ -4,6 +4,7 @@ import { useState } from "react"
 import { RecruitmentStage } from "@/components/settings/RecruitmentJourneyConfig"
 import { mapRawPipelineStage, RawPipelineStage } from "./recruitment-types"
 import type { RecruitmentPersistenceState } from "./useRecruitmentPersistence"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 export interface RecruitmentPipelineState {
   recruitmentStages: RecruitmentStage[]
@@ -76,7 +77,7 @@ export function useRecruitmentPipeline({
         default_channel: s.default_channel || 'email',
       }))
 
-      const response = await fetch('/api/backend-proxy/company-pipeline', {
+      const response = await apiFetch('/api/backend-proxy/company-pipeline', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ stages: stagesPayload }),
@@ -109,8 +110,7 @@ export function useRecruitmentPipeline({
     updates: { is_active?: boolean; is_default?: boolean }
   ): Promise<void> => {
     try {
-      const response = await fetch(
-        `/api/backend-proxy/recruitment-stages/sub-statuses/${subStatusId}`,
+      const response = await apiFetch(`/api/backend-proxy/recruitment-stages/sub-statuses/${subStatusId}`,
         {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },

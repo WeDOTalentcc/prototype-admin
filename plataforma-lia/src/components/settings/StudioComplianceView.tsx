@@ -9,6 +9,7 @@ import { Bot, ShieldCheck, AlertTriangle, Activity, TrendingDown, Loader2 } from
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
 import { textStyles, cardStyles } from "@/lib/design-tokens"
 import { CHART_GRID, CHART_LIA, CHART_DANGER } from "@/lib/chart-colors"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface StudioComplianceData {
   period_days: number
@@ -35,8 +36,7 @@ export function StudioComplianceView() {
       setError(null)
       try {
         const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null
-        const res = await fetch(
-          `/api/backend-proxy/custom-agents/studio-compliance-summary?period_days=${period}`,
+        const res = await apiFetch(`/api/backend-proxy/custom-agents/studio-compliance-summary?period_days=${period}`,
           { headers: token ? { Authorization: `Bearer ${token}` } : {} },
         )
         if (!res.ok) throw new Error(t("loadError"))

@@ -7,6 +7,7 @@ import { WorkforceSection } from "./WorkforceSection"
 import { useGoalsPlanningHub } from "./useGoalsPlanningHub"
 import { useSettingsConversational } from "@/hooks/settings/use-settings-conversational"
 import { textStyles, cardStyles } from "@/lib/design-tokens"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 /**
  * Rich content for the Workforce card inside the "Minha Empresa" hub.
@@ -43,7 +44,7 @@ export function WorkforceHubContent() {
     try {
       const formData = new FormData()
       formData.append("file", file)
-      const res = await fetch("/api/backend-proxy/workforce/entries/import", {
+      const res = await apiFetch("/api/backend-proxy/workforce/entries/import", {
         method: "POST",
         body: formData,
       })

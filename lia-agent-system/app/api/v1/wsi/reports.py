@@ -127,7 +127,6 @@ class F11ReportResponse(BaseModel):
     seniority_weights: dict[str, float] | None = None
     attention_flags: list[str] = []
     generated_at: str
-    methodology_version: str = "WSI v2.0"
     # Audit task #528 (rev. 23 G23-02) — selo de qualidade degradada agregado.
     # True quando QUALQUER análise (Camada 1 ou Camada 2) sinalizou degradação.
     # UI exibe banner global "Análise semântica não disponível em N respostas".

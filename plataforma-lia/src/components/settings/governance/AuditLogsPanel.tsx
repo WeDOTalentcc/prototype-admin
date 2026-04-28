@@ -7,6 +7,7 @@ import { cardStyles, textStyles } from "@/lib/design-tokens"
 import { Loading } from "@/components/ui/loading"
 import { Chip } from "@/components/ui/chip"
 import { cn } from "@/lib/utils"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface AuditLog {
   id: string
@@ -90,9 +91,9 @@ export function AuditLogsPanel() {
       setError(null)
       try {
         const [logsRes, statsRes, retRes] = await Promise.all([
-          fetch(`/api/backend-proxy/audit-logs?${buildQuery()}`, { headers }),
-          fetch("/api/backend-proxy/audit-logs/stats", { headers }),
-          fetch("/api/backend-proxy/audit-logs/retention-policies", { headers }),
+          apiFetch(`/api/backend-proxy/audit-logs?${buildQuery()}`, { headers }),
+          apiFetch("/api/backend-proxy/audit-logs/stats", { headers }),
+          apiFetch("/api/backend-proxy/audit-logs/retention-policies", { headers }),
         ])
         if (!logsRes.ok) throw new Error(`HTTP ${logsRes.status}`)
         const logsData = await logsRes.json()

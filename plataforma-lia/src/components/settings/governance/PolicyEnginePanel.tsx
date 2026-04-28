@@ -7,6 +7,7 @@ import { cardStyles, textStyles } from "@/lib/design-tokens"
 import { Loading } from "@/components/ui/loading"
 import { Chip } from "@/components/ui/chip"
 import { cn } from "@/lib/utils"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface Policy {
   id?: string
@@ -83,7 +84,7 @@ export function PolicyEnginePanel() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch("/api/backend-proxy/policy-engine", {
+        const res = await apiFetch("/api/backend-proxy/policy-engine", {
           headers: { "X-Company-ID": companyId! },
         })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)

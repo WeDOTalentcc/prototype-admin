@@ -5,6 +5,7 @@ import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { useCompanyLiaInstructions } from "@/hooks/company/use-company-lia-instructions"
 import type { BenefitTabRecord, BenefitTemplate } from "./benefits-types"
 import { defaultBenefit } from "./benefits-types"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 const normalizeBenefit = (benefit: Record<string, unknown>): BenefitTabRecord => {
   const seniorityRaw = benefit.seniority_levels
@@ -79,7 +80,7 @@ export function useBenefitsTab() {
   const getCompanyId = useCallback(async (): Promise<string> => {
     if (companyId) return companyId
     try {
-      const res = await fetch('/api/backend-proxy/company/profile')
+      const res = await apiFetch('/api/backend-proxy/company/profile')
       if (res.ok) {
         const company = await res.json()
         return company.id || ''
@@ -97,8 +98,7 @@ export function useBenefitsTab() {
     ) => {
       try {
         const cid = await getCompanyId()
-        const response = await fetch(
-          `/api/backend-proxy/company/culture-profile/${encodeURIComponent(cid)}`,
+        const response = await apiFetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(cid)}`,
           {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -140,8 +140,7 @@ export function useBenefitsTab() {
     setIsLoading(true)
     try {
       const cid = companyId || ''
-      const response = await fetch(
-        `/api/backend-proxy/company/benefits/?company_id=${encodeURIComponent(cid)}`
+      const response = await apiFetch(`/api/backend-proxy/company/benefits/?company_id=${encodeURIComponent(cid)}`
       )
       if (response.ok) {
         const data = await response.json()
@@ -162,7 +161,7 @@ export function useBenefitsTab() {
   const loadTemplates = useCallback(async () => {
     setIsLoadingTemplates(true)
     try {
-      const response = await fetch('/api/backend-proxy/benefits/templates')
+      const response = await apiFetch('/api/backend-proxy/benefits/templates')
       if (response.ok) {
         const data = await response.json()
         setTemplates(data.items || [])
@@ -176,7 +175,7 @@ export function useBenefitsTab() {
 
   const seedTemplates = useCallback(async () => {
     try {
-      await fetch('/api/backend-proxy/benefits/templates', { method: 'POST' })
+      await apiFetch('/api/backend-proxy/benefits/templates', { method: 'POST' })
       await loadTemplates()
     } catch {
       // silent
@@ -203,8 +202,7 @@ export function useBenefitsTab() {
       is_highlighted: template.is_popular,
     }
     try {
-      const response = await fetch(
-        `/api/backend-proxy/company/benefits/?company_id=${encodeURIComponent(companyId || '')}`,
+      const response = await apiFetch(`/api/backend-proxy/company/benefits/?company_id=${encodeURIComponent(companyId || '')}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -276,8 +274,7 @@ export function useBenefitsTab() {
     if (typeof window !== 'undefined' && !window.confirm("Tem certeza que deseja excluir este benefício?"))
       return
     try {
-      const response = await fetch(
-        `/api/backend-proxy/company/benefits/${benefitId}?company_id=${encodeURIComponent(companyId || '')}`,
+      const response = await apiFetch(`/api/backend-proxy/company/benefits/${benefitId}?company_id=${encodeURIComponent(companyId || '')}`,
         { method: 'DELETE' }
       )
       if (response.ok) {
@@ -323,8 +320,7 @@ export function useBenefitsTab() {
     try {
       const cid = encodeURIComponent(companyId || '')
       const savePromises = Array.from(pendingChanges.values()).map(benefit =>
-        fetch(
-          `/api/backend-proxy/company/benefits/${benefit.id}?company_id=${cid}`,
+        apiFetch(`/api/backend-proxy/company/benefits/${benefit.id}?company_id=${cid}`,
           {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },

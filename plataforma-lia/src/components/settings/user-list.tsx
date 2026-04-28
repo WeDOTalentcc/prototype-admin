@@ -64,7 +64,7 @@ export function UserList({
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <Avatar className="w-9 h-9">
-                    <AvatarImage src={user.avatar} alt={user.name} />
+                    <AvatarImage src={user.avatar} alt={t('avatarOf', { name: user.name })} />
                     <AvatarFallback className={`${badgeStyles.info} font-medium text-micro`}>
                       {user.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
@@ -186,7 +186,7 @@ export function UserList({
                   <td className="px-2 py-1.5 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <Avatar className="w-8 h-8">
-                        <AvatarImage src={user.avatar} alt={user.name} />
+                        <AvatarImage src={user.avatar} alt={t('avatarOf', { name: user.name })} />
                         <AvatarFallback className={`${badgeStyles.info} font-medium text-micro`}>
                           {user.name.split(' ').map(n => n[0]).join('')}
                         </AvatarFallback>

@@ -3646,7 +3646,9 @@
       "errorSaveUser": "Erro ao salvar usuário",
       "errorResendInvite": "Erro ao reenviar convite",
       "confirmDeleteUser": "Tem certeza que deseja excluir este usuário?",
-      "errorDeleteUser": "Erro ao excluir usuário"
+      "errorDeleteUser": "Erro ao excluir usuário",
+      "dismissSuccess": "Fechar mensagem",
+      "avatarOf": "Avatar de {name}"
     },
     "departments": {
       "title": "Departamentos",
@@ -5558,7 +5560,8 @@
       "engineeringCulture": "Cultura de Engenharia",
       "engineeringPlaceholder": "Descreva a cultura de engenharia da empresa (metodologias, práticas de desenvolvimento, ambiente de trabalho técnico)...",
       "addCustom": "Adicionar {category} personalizado...",
-      "addTechnology": "Adicionar tecnologia..."
+      "addTechnology": "Adicionar tecnologia...",
+      "removeTech": "Remover {tech}"
     },
     "culturePreview": {
       "title": "Perfil Cultural Identificado",

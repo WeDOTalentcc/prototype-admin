@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { ChevronDown, ChevronRight, Loader2, Gauge } from "lucide-react"
 import type { RecruitmentStage } from "./recruitment-journey.types"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface SaturationSettings {
   threshold_web: number
@@ -36,7 +37,7 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
   const handleExpand = () => {
     if (!expanded && !loaded) {
       setLoading(true)
-      fetch('/api/backend-proxy/settings/saturation')
+      apiFetch('/api/backend-proxy/settings/saturation')
         .then(r => r.ok ? r.json() : null)
         .then(data => {
           if (data) {
@@ -62,7 +63,7 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
 
   const handleSave = () => {
     setSaving(true)
-    fetch('/api/backend-proxy/settings/saturation', {
+    apiFetch('/api/backend-proxy/settings/saturation', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(settings),
