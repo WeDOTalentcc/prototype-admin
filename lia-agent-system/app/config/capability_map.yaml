@@ -73,3 +73,21 @@ capabilities:
         param: job_id
     navigate_fallback: /jobs
 
+
+  # ── Wave 4 PR-B + PR-C: Offer + Hire actions ────────────────────────────
+  send_offer:
+    chat_executable: false   # opens OfferReviewModal; HITL review before send
+    entity_required:
+      - type: candidate
+        param: candidate_id
+    modal_id: offer_review
+    navigate_fallback: /visao-do-funil?stage=oferta
+
+  register_hire:
+    chat_executable: true    # LIA guides checklist; entity resolution required
+    entity_required:
+      - type: candidate
+        param: candidate_id
+      - type: job
+        param: job_id
+    navigate_fallback: /visao-do-funil?stage=contratacao

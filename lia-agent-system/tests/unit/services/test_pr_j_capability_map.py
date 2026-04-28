@@ -138,11 +138,55 @@ class TestCapabilityMapWave1Intents:
                     f"navigate_fallback de {intent} deve ser path absoluto (começa com /)."
                 )
 
-    def test_total_intents_is_nine(self):
-        """sensor: capability_map deve ter exatamente 9 intents após Wave 1."""
+    def test_total_intents_is_eleven(self):
+        """sensor: capability_map deve ter exatamente 11 intents após Wave 4 (Wave 1 + send_offer + register_hire)."""
         caps = CapabilityMapService.load()
-        assert len(caps) == 9, (
-            f"capability_map.yaml deve ter 9 intents após Wave 1, "
+        assert len(caps) == 11, (
+            f"capability_map.yaml deve ter 11 intents após Wave 4, "
             f"encontrado: {len(caps)}. "
             "Adicione a entrada ou remova se obsoleta."
         )
+
+
+class TestCapabilityMapWave4Intents:
+    """Sensor computacional: Wave 4 intents (send_offer + register_hire) corretamente mapeados."""
+
+    def test_wave4_intents_present(self):
+        caps = CapabilityMapService.load()
+        assert "send_offer" in caps, "send_offer ausente do capability_map"
+        assert "register_hire" in caps, "register_hire ausente do capability_map"
+
+    def test_send_offer_not_chat_executable(self):
+        """send_offer abre OfferReviewModal diretamente — sem detour de chat."""
+        cap = CapabilityMapService.get("send_offer")
+        assert cap is not None
+        assert cap.chat_executable is False
+
+    def test_send_offer_has_offer_review_modal(self):
+        cap = CapabilityMapService.get("send_offer")
+        assert cap is not None
+        assert cap.modal_id == "offer_review"
+
+    def test_send_offer_requires_candidate_entity(self):
+        reqs = CapabilityMapService.needs_entity("send_offer")
+        types = [r.type for r in reqs]
+        assert "candidate" in types
+
+    def test_register_hire_is_chat_executable(self):
+        """register_hire é conversacional — LIA guia checklist pós-contratação."""
+        cap = CapabilityMapService.get("register_hire")
+        assert cap is not None
+        assert cap.chat_executable is True
+
+    def test_register_hire_requires_candidate_and_job(self):
+        reqs = CapabilityMapService.needs_entity("register_hire")
+        types = [r.type for r in reqs]
+        assert "candidate" in types, "register_hire deve exigir entidade candidate"
+        assert "job" in types, "register_hire deve exigir entidade job"
+
+    def test_register_hire_has_navigate_fallback(self):
+        cap = CapabilityMapService.get("register_hire")
+        assert cap is not None
+        assert cap.navigate_fallback is not None
+        assert "contratacao" in cap.navigate_fallback or "visao" in cap.navigate_fallback
+
