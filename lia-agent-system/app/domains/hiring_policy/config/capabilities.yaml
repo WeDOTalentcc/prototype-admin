@@ -3,6 +3,12 @@
 # PR-I: removed "automação" keywords that conflicted with automation domain.
 # "configure_automation" (LIA autonomy level) is now reached via specific
 # "autonomia" keywords only. "automação" belongs to the automation domain.
+#
+# PR-Q4: CANONICAL policy routing domain. The legacy "policy" domain
+# (app/domains/policy/) is DEPRECATED — it has no capabilities.yaml and is
+# not registered as a keyword routing target. All card 9.2
+# ('Política de contratação') intents route here via the keywords below.
+# See docs/TODO_POLICY_CONSOLIDATION.md for Sprint VI removal plan.
 
 domain: hiring_policy
 
