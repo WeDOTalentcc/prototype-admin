@@ -22,6 +22,8 @@ async def handle_description(
     field_origins: dict,
     confidence_service,
     suggestions_data: dict,
+    db=None,
+    company_id: str | None = None,
 ) -> tuple[str, dict, dict]:
     """
     Handle stage 1: parse job description, extract criteria, build LIA message.
@@ -250,6 +252,28 @@ Analise esta descrição de vaga e extraia TODAS as informações possíveis.
                     )
                 if salary_lines:
                     criteria_lines.extend(salary_lines)
+
+            # F.4 apply_learning: adjust description suggestions based on company correction history
+            _role_for_al = detected_criteria.get("cargo") or ""
+            if db is not None and company_id and _role_for_al:
+                try:
+                    from app.domains.analytics.services.feedback_learning_service import feedback_learning_service
+                    _al_seniority = detected_criteria.get("senioridadeIdiomas") or "Pleno"
+                    _al_skills = (
+                        (detected_criteria.get("competenciasTecnicas") or [])
+                        + (detected_criteria.get("competenciasComportamentais") or [])
+                    )
+                    _al_adjusted = await feedback_learning_service.apply_learning(
+                        db=db,
+                        company_id=company_id,
+                        suggestion={"skills": _al_skills, "role": _role_for_al, "seniority": _al_seniority},
+                        role=_role_for_al,
+                        seniority=_al_seniority,
+                    )
+                    if _al_adjusted:
+                        suggestions_data["learning_adjustments"] = _al_adjusted
+                except Exception as _al_exc:
+                    logger.warning("apply_learning failed in stage_description: %s", _al_exc)
 
             lia_message = lia_intro + "\n".join(criteria_lines)
 

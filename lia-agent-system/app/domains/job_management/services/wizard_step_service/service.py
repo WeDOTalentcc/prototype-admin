@@ -555,6 +555,8 @@ class WizardStepService:
                         field_origins=field_origins,
                         confidence_service=confidence_service,
                         suggestions_data=suggestions_data,
+                        db=db,
+                        company_id=company_id,
                     )
 
                 elif current_stage == 2:
@@ -562,6 +564,8 @@ class WizardStepService:
                         job_draft=job_draft,
                         company_departments=company_departments,
                         suggestions_data=suggestions_data,
+                        db=db,
+                        company_id=company_id,
                     )
 
                 elif current_stage == 3:
@@ -586,6 +590,8 @@ class WizardStepService:
                     lia_message, suggestions_data = await handle_wsi_questions(
                         job_draft=job_draft,
                         suggestions_data=suggestions_data,
+                        db=db,
+                        company_id=company_id,
                     )
 
                 elif current_stage == 6:
@@ -597,6 +603,8 @@ class WizardStepService:
                         field_origins=field_origins,
                         suggestions_data=suggestions_data,
                         completeness_service=completeness_service,
+                        db=db,
+                        company_id=company_id,
                     )
 
                 elif current_stage == 7:

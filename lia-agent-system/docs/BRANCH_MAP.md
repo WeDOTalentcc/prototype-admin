@@ -600,3 +600,31 @@ git log --oneline -- docs/BRANCH_MAP.md
 - **Commits cobertos:** ~600 commits (3 janelas de ~200)
 - **Docs canônicos cruzados:** 24 (root + docs/ + docs/architecture/)
 - **Última atualização:** 2026-04-27
+
+
+---
+
+## Ondas 18-21 — Wizard Canonical Plugs (2026-04-28)
+
+**Branch:**  (sprint corrente)
+**Harness:** sensor (computacional) — feedback_learning + canonical priority
+
+### Mudanças aplicadas
+
+| Arquivo | Mudança |
+|---------|---------|
+|  | Param  adicionado a  |
+|  | **NOVO** —  dataclass +  |
+|  |  plugado (F.1) |
+|  |  plugado (F.2) |
+|  |  plugado (F.3) |
+|  |  plugado (F.4) |
+|  |  wired — history + market priority (S.1) |
+|  |  +  passados para os 4 handlers |
+|  | **NOVO** — 7 cenários |
+|  | **NOVO** — 11 cenários |
+
+### Nota de compatibilidade
+ foi intencionalmente deletado no Task #850 (canonical consolidation).
+As mudanças C.2/P.1/C.4 do Mac () são incompatíveis com
+a arquitetura atual do Replit — omitidas propositalmente.

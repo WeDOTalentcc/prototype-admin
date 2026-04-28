@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 async def handle_wsi_questions(
     job_draft: dict,
     suggestions_data: dict,
+    db=None,
+    company_id: str | None = None,
 ) -> tuple[str, dict]:
     """
     Handle stage 5: WSI question generation.
@@ -23,6 +25,24 @@ async def handle_wsi_questions(
         detected_tech = [detected_tech]
     if isinstance(detected_behav, str):
         detected_behav = [detected_behav]
+
+    # F.3 apply_learning: filter out competencies company previously rejected
+    if db is not None and company_id and (detected_tech or detected_behav):
+        try:
+            from app.domains.analytics.services.feedback_learning_service import feedback_learning_service
+            _al_role = job_draft.get("cargo") or job_draft.get("job_title") or ""
+            _al_seniority = job_draft.get("senioridade") or job_draft.get("seniority") or "Pleno"
+            _al_adjusted = await feedback_learning_service.apply_learning(
+                db=db,
+                company_id=company_id,
+                suggestion={"skills": detected_tech + detected_behav},
+                role=_al_role,
+                seniority=_al_seniority,
+            )
+            if _al_adjusted:
+                suggestions_data["learning_adjustments"] = _al_adjusted
+        except Exception as _al_exc:
+            logger.warning("apply_learning failed in stage_wsi: %s", _al_exc)
 
     wsi_competency_summary = ""
     wsi_question_suggestions = []

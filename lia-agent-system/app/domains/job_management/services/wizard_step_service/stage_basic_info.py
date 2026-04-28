@@ -12,6 +12,8 @@ async def handle_basic_info(
     job_draft: dict,
     company_departments: list,
     suggestions_data: dict,
+    db=None,
+    company_id: str | None = None,
 ) -> tuple[str, dict]:
     """
     Handle stage 2: basic job info confirmation + competency gap analysis.
@@ -32,6 +34,23 @@ async def handle_basic_info(
         detected_tech = [detected_tech]
     if isinstance(detected_behav, str):
         detected_behav = [detected_behav]
+
+    # F.2 apply_learning: adjust skill suggestions based on company correction history
+    if db is not None and company_id and job_title_for_gap:
+        try:
+            from app.domains.analytics.services.feedback_learning_service import feedback_learning_service
+            _al_adjusted = await feedback_learning_service.apply_learning(
+                db=db,
+                company_id=company_id,
+                suggestion={"role": job_title_for_gap, "seniority": seniority_for_gap,
+                            "skills": detected_tech + detected_behav},
+                role=job_title_for_gap,
+                seniority=seniority_for_gap,
+            )
+            if _al_adjusted and _al_adjusted.get("skills"):
+                suggestions_data["learning_adjustments"] = _al_adjusted
+        except Exception as _al_exc:
+            logger.warning("apply_learning failed in stage_basic_info: %s", _al_exc)
 
     competency_gap_message = ""
     try:

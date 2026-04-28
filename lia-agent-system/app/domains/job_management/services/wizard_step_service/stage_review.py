@@ -15,6 +15,8 @@ async def handle_review(
     field_origins: dict,
     suggestions_data: dict,
     completeness_service,
+    db=None,
+    company_id: str | None = None,
 ) -> tuple[str, dict]:
     """
     Handle stage 6: review + completeness check + JD generation.
@@ -22,6 +24,28 @@ async def handle_review(
     Returns:
         (lia_message, suggestions_data)
     """
+    # F.4 apply_learning: adjust review suggestions based on company correction history
+    _role_for_al = job_draft.get("cargo") or job_draft.get("job_title") or ""
+    if db is not None and company_id and _role_for_al:
+        try:
+            from app.domains.analytics.services.feedback_learning_service import feedback_learning_service
+            _al_seniority = job_draft.get("senioridade") or job_draft.get("seniority") or "Pleno"
+            _al_skills = (
+                (job_draft.get("competenciasTecnicas") or job_draft.get("detected_skills") or [])
+                + (job_draft.get("competenciasComportamentais") or job_draft.get("behavioral_skills") or [])
+            )
+            _al_adjusted = await feedback_learning_service.apply_learning(
+                db=db,
+                company_id=company_id,
+                suggestion={"skills": _al_skills, "role": _role_for_al, "seniority": _al_seniority},
+                role=_role_for_al,
+                seniority=_al_seniority,
+            )
+            if _al_adjusted:
+                suggestions_data["learning_adjustments"] = _al_adjusted
+        except Exception as _al_exc:
+            logger.warning("apply_learning failed in stage_review: %s", _al_exc)
+
     job_data_for_completeness = {
         "title": job_draft.get("cargo") or job_draft.get("job_title"),
         "seniority_level": job_draft.get("senioridadeIdiomas") or job_draft.get("seniority"),

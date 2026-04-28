@@ -4,6 +4,7 @@ Stage 4 — Salary & Benefits handler for the wizard step service.
 import logging
 
 from ._shared import get_historical_salary_patterns
+from app.shared.wizard_suggestion_priority import WizardSuggestion, pick_canonical
 
 logger = logging.getLogger(__name__)
 
@@ -155,5 +156,44 @@ async def handle_salary(
         "learning_adjustments": learning_adjustments,
         "historical_salary": salary_patterns if salary_patterns.get('has_data') else None,
     }
+
+    # ---- pick_canonical salary suggestion --------------------------------
+    _hist_suggestion = None
+    _mkt_suggestion = None
+
+    if salary_patterns.get("has_data"):
+        _hist_suggestion = WizardSuggestion(
+            source="history",
+            recommended_min=salary_patterns.get("avg_min"),
+            recommended_max=salary_patterns.get("avg_max"),
+            confidence=(
+                "high" if salary_patterns.get("sample_size", 0) >= 10
+                else "medium" if salary_patterns.get("sample_size", 0) >= 3
+                else "low"
+            ),
+            sample_size=salary_patterns.get("sample_size", 0),
+            metadata={"source_detail": "historical_pattern"},
+        )
+
+    if combined.get("recommended_min"):
+        _mkt_suggestion = WizardSuggestion(
+            source="market",
+            recommended_min=combined.get("recommended_min"),
+            recommended_max=combined.get("recommended_max"),
+            confidence=combined.get("confidence", "low"),
+            sample_size=combined.get("sample_size", 0),
+            metadata={"source_detail": "benchmark_market"},
+        )
+
+    _canonical = pick_canonical(history=_hist_suggestion, market=_mkt_suggestion)
+    if _canonical:
+        suggestions_data["canonical_salary_suggestion"] = {
+            "source": _canonical.source,
+            "recommended_min": _canonical.recommended_min,
+            "recommended_max": _canonical.recommended_max,
+            "confidence": _canonical.confidence,
+            "sample_size": _canonical.sample_size,
+        }
+    # -----------------------------------------------------------------------
 
     return lia_message, suggestions_data, field_origins
