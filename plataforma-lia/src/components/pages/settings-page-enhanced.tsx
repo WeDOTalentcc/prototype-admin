@@ -551,7 +551,7 @@ export default function SettingsPageEnhanced() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-3">
-            <nav className="space-y-2">
+            <nav className="space-y-2" role="navigation" aria-label="Configurações">
               {settingsSections.map((section) => {
                 const IconComponent = section.icon
                 const PriorityIcon = priorityIcons[section.priority]
@@ -563,6 +563,8 @@ export default function SettingsPageEnhanced() {
                     <button
                       data-testid={`settings-menu-${section.id}`}
                       data-active={isActive && !activeSubsection}
+                      aria-label={section.title}
+                      aria-current={isActive && !activeSubsection ? 'page' : undefined}
                       onClick={() => {
                         setActiveSection(section.id)
                         setActiveSubsection('')
@@ -570,7 +572,7 @@ export default function SettingsPageEnhanced() {
                           handleToggleSection(section.id)
                         }
                       }}
-                      className={`w-full flex items-center gap-2 p-2.5 rounded-lg text-left transition-colors motion-reduce:transition-none ${
+                      className={`w-full flex items-center gap-2 p-2.5 rounded-lg text-left transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wedo-cyan ${
                         isActive && !activeSubsection
                           ? 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary'
                           : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 text-lia-text-secondary'
