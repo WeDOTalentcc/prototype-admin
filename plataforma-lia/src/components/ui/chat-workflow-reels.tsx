@@ -781,6 +781,9 @@ function CompactReels({
   utilityNodes: WorkflowReelStage[];
   onSelect: (command: string, metadata?: ChatSuggestionMetadata) => void;
 }) {
+  // canonical-fix: pulse deve viver no componente que o usa, não como
+  // variável capturada de escopo externo (bug detectado em teste de compact mode).
+  const { pulse } = usePipelinePulse();
   const allNodes = [...stages, ...utilityNodes];
   const nodesWithSuggestions = allNodes.filter((s) => s.suggestions.length > 0);
   const firstWithSuggestions = nodesWithSuggestions[0]?.id ?? null;

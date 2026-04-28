@@ -16,6 +16,19 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 
+// Mock next/navigation: ChatWorkflowReels usa useRouter para cards com navigate_url.
+// Canonical fix (sensor computacional): valida que router.push é chamado
+// quando suggestion.navigate_url está definido — evita regressoes silenciosas.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => "/",
+  useSearchParams: () => new URLSearchParams(),
+}));
+
 // jsdom não implementa matchMedia — mock global p/ useDockMagnifier (prefers-reduced-motion).
 beforeAll(() => {
   if (typeof window !== "undefined" && !window.matchMedia) {
@@ -273,13 +286,17 @@ describe("SUGGESTION_HINTS — completude do mapa de 22 cards", () => {
       domain: "interview_scheduling",
       intent: "reschedule_interview",
     },
-    { id: "send-offer", domain: "communication", intent: undefined }, // P0: action a criar em PR-B
+    // send-offer: usa domínio "offer" dedicado (backend já tem offer_proposals table).
+    // intent_hint "send_offer" garante routing determinístico via PR-A guide.
+    { id: "send-offer", domain: "offer", intent: "send_offer" },
     {
       id: "compare-candidates",
       domain: "sourcing",
       intent: "compare_candidates",
     },
-    { id: "register-hire", domain: "pipeline", intent: "move_candidate" }, // PR-C dará ação dedicada
+    // register-hire: action dedicada "register_hire" (mais específica que move_candidate).
+    // PR-C implementará a tool; o hint já roteia para pipeline domain corretamente.
+    { id: "register-hire", domain: "pipeline", intent: "register_hire" },
     { id: "close-vacancy", domain: "job_management", intent: "close_job" },
     // Utilitárias (9)
     { id: "job-report", domain: "analytics", intent: "generate_job_report" },
