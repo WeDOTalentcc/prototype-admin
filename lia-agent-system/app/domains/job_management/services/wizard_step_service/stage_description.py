@@ -1,6 +1,3 @@
-"""
-Stage 1 — Description handler for the wizard step service.
-"""
 import json
 import logging
 import re
@@ -348,6 +345,15 @@ Analise esta descrição de vaga e extraia TODAS as informações possíveis.
             else:
                 lia_message += "\n\n---\n\nMe informe aqui no chat o que deseja ajustar e eu faço as alterações para você."
                 lia_message += "\n\nQuando estiver satisfeito, clique em **Confirmar Critérios**."
+
+            # C.3.1: Seniority confirmation — ask recruiter to confirm inferred seniority
+            _seniority_val = detected_criteria.get('senioridadeIdiomas') or job_draft.get('senioridade') or job_draft.get('seniority')
+            if _seniority_val:
+                _seniority_conf = field_origins.get('senioridadeIdiomas', {}).get('confidence', 0.5)
+                _seniority_low_conf = _seniority_conf < 0.70
+                lia_message += f"\n\nIdentifiquei a senioridade como **{_seniority_val}**. Confirma ou prefere ajustar?"
+                if _seniority_low_conf:
+                    suggestions_data.setdefault('stage_meta', {})['requires_seniority_confirmation'] = True
 
             suggestions_data['skill_suggestions'] = job_draft.get('skill_suggestions', {})
             suggestions_data['skill_quality_feedback'] = job_draft.get('skill_quality_feedback', {})

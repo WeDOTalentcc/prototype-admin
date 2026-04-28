@@ -1,6 +1,3 @@
-"""
-Stage 5 — WSI Questions handler for the wizard step service.
-"""
 import logging
 
 logger = logging.getLogger(__name__)
@@ -277,6 +274,11 @@ async def handle_wsi_questions(
 
     quality_source = "WSI F2+F3+F6" if canonical_used else "modelo legado"
 
+    # C.3.2: Screening mode selection — ask recruiter if mode not yet chosen
+    _screening_mode_in_draft = job_draft.get('screening_mode')
+    if not _screening_mode_in_draft:
+        suggestions_data.setdefault('stage_meta', {})['requires_screening_mode_selection'] = True
+
     lia_message = f"""Perfeito! Agora vou gerar as **Perguntas de Triagem WSI**. 📝
 {wsi_competency_summary}
 
@@ -299,5 +301,9 @@ As perguntas seguem a metodologia WeDoTalent Skill Index com 7 blocos:
 ✅ **Próximo passo:** Após confirmar as perguntas, vamos para a **revisão final** onde você verá tudo consolidado.
 
 ❓ *Quer saber mais sobre a metodologia WSI? Pergunte!*"""
+
+    # C.3.2: Append mode selection question only when recruiter hasn't chosen yet
+    if not _screening_mode_in_draft:
+        lia_message += "\n\nPrefere triagem **compacta** (5 perguntas rápidas) ou **completa** (12 perguntas detalhadas)?"
 
     return lia_message, suggestions_data

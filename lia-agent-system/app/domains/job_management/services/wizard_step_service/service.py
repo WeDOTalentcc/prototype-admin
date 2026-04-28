@@ -1,6 +1,3 @@
-"""
-WizardStepService facade — delegates to stage-specific handlers.
-"""
 import logging
 from datetime import datetime
 from typing import Any
@@ -612,7 +609,7 @@ class WizardStepService:
                     lia_message = handle_pre_publish()
 
                 elif current_stage == 8:
-                    lia_message = handle_candidate_search()
+                    lia_message, suggestions_data = handle_candidate_search(suggestions_data)
 
                 elif current_stage == 9:
                     lia_message = handle_calibration()
