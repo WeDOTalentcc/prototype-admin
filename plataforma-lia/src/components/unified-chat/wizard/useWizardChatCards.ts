@@ -116,6 +116,17 @@ export function useWizardChatCards(options: UseWizardChatCardsOptions): void {
     })
   }, [wizardStage, setChatMessages])
 
+  // --- E.8: Pipeline template selection card ---
+  // TODO E.8: wire template selection card here.
+  // When `wizardStageData?.detected_criteria?.pipeline_template` (or
+  // `wizardStageData?.suggestions?.pipeline_template`) is present in the
+  // incoming WS message, inject a button-group card into the chat feed
+  // offering the 5 template options (technical, behavioral, mixed, custom,
+  // fast-track). On recruiter selection send WS:
+  //   { action: "select_template", template_type: "technical" }
+  // Pattern: follow the plan-card pattern above (dedupe ref + setChatMessages).
+  // Message id: "wizard-template-card" ; metadata.type: "wizard_template_select"
+
   // --- Published card injection ---
   useEffect(() => {
     // Reset the dedupe latch on any non-closing stage (including null and a

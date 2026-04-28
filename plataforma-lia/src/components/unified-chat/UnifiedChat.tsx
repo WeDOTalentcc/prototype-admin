@@ -27,6 +27,7 @@ import {
   SPLIT_STAGES,
 } from "./wizard/DynamicContextPanel";
 import { ProgressiveDisclosure } from "./wizard/ProgressiveDisclosure";
+import { TaskContextBar } from "./wizard/TaskContextBar";
 import { WizardProgressBar } from "./wizard/WizardProgressBar";
 import { useWizardChatCards } from "./wizard/useWizardChatCards";
 import { useWizardFlow } from "./wizard/useWizardFlow";
@@ -704,6 +705,18 @@ export function UnifiedChat({
           onFileButtonClick={handleFileButtonClick}
           onFileAttach={handleFileAttach}
         />
+
+        {/* E.5: TaskContextBar — shown when wizard is active, below the input */}
+        {wizardActive && activeTaskLabel && (
+          <div className="px-2 pb-2">
+            <TaskContextBar
+              currentAction={activeTaskLabel}
+              onSwitchTask={(taskId) => {
+                void handleSelectSession(taskId)
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Split View: DynamicContextPanel — wider in fullscreen to use available space */}
