@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Palette, Sun, Moon, Monitor, Globe, Bot } from "lucide-react"
 
@@ -18,6 +19,7 @@ export function SettingsGeneralTab({ onSettingsChange }: SettingsGeneralTabProps
 }
 
 function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => void }) {
+  const t = useTranslations("settings.general")
   const [theme, setTheme] = useState("light")
   const [language, setLanguage] = useState("pt-BR")
   const [timezone, setTimezone] = useState("America/Sao_Paulo")
@@ -28,19 +30,19 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Palette className="w-4 h-4" />
-            Aparência
+            {t("appearance")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-              Tema
+              {t("theme")}
             </label>
             <div className="grid grid-cols-3 gap-3">
               {[
-                { id: "light", name: "Claro", icon: Sun },
-                { id: "dark", name: "Escuro", icon: Moon },
-                { id: "system", name: "Sistema", icon: Monitor }
+                { id: "light", name: t("light"), icon: Sun },
+                { id: "dark", name: t("dark"), icon: Moon },
+                { id: "system", name: t("system"), icon: Monitor }
               ].map((themeOption) => (
                 <button
                   key={themeOption.id}
@@ -63,7 +65,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
 
           <div>
             <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-              Idioma
+              {t("language")}
             </label>
             <select
               value={language}
@@ -73,9 +75,9 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
               }}
               className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             >
-              <option value="pt-BR">Português (Brasil)</option>
-              <option value="en-US">English (US)</option>
-              <option value="es-ES">Español</option>
+              <option value="pt-BR">{t("portugueseBrazil")}</option>
+              <option value="en-US">{t("englishUS")}</option>
+              <option value="es-ES">{t("spanish")}</option>
             </select>
           </div>
         </CardContent>
@@ -85,13 +87,13 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Globe className="w-4 h-4" />
-            Localização
+            {t("localization")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div>
             <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-              Fuso Horário
+              {t("timezone")}
             </label>
             <select
               value={timezone}
@@ -101,9 +103,9 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
               }}
               className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             >
-              <option value="America/Sao_Paulo">São Paulo (UTC-3)</option>
-              <option value="America/New_York">New York (UTC-5)</option>
-              <option value="Europe/London">London (UTC+0)</option>
+              <option value="America/Sao_Paulo">{t("tzSaoPaulo")}</option>
+              <option value="America/New_York">{t("tzNewYork")}</option>
+              <option value="Europe/London">{t("tzLondon")}</option>
             </select>
           </div>
         </CardContent>
@@ -113,6 +115,7 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
 }
 
 function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => void }) {
+  const t = useTranslations("settings.general")
   const [liaSettings, setLiaSettings] = useState({
     personality: "professional",
     responseStyle: "detailed",
@@ -128,20 +131,20 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Bot className="w-4 h-4" />
-            Personalidade da LIA
+            {t("liaPersonality")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-              Estilo de Comunicação
+              {t("communicationStyle")}
             </label>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { id: "professional", name: "Profissional", desc: "Formal e objetiva" },
-                { id: "casual", name: "Casual", desc: "Amigável e descontraída" },
-                { id: "concise", name: "Concisa", desc: "Respostas curtas" },
-                { id: "detailed", name: "Detalhada", desc: "Explicações completas" }
+                { id: "professional", name: t("professional"), desc: t("professionalDesc") },
+                { id: "casual", name: t("casual"), desc: t("casualDesc") },
+                { id: "concise", name: t("concise"), desc: t("conciseDesc") },
+                { id: "detailed", name: t("detailed"), desc: t("detailedDesc") }
               ].map((style) => (
                 <button
                   key={style.id}
@@ -164,10 +167,10 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
-              { key: "autoSuggestions", label: "Sugestões Automáticas", desc: "LIA sugere ações proativamente" },
-              { key: "contextAwareness", label: "Consciência Contextual", desc: "Considera contexto das conversas" },
-              { key: "proactiveInsights", label: "Insights Proativos", desc: "Análises e alertas automáticos" },
-              { key: "learningMode", label: "Modo Aprendizado", desc: "LIA aprende com suas preferências" }
+              { key: "autoSuggestions", label: t("autoSuggestions"), desc: t("autoSuggestionsDesc") },
+              { key: "contextAwareness", label: t("contextAwareness"), desc: t("contextAwarenessDesc") },
+              { key: "proactiveInsights", label: t("proactiveInsights"), desc: t("proactiveInsightsDesc") },
+              { key: "learningMode", label: t("learningMode"), desc: t("learningModeDesc") }
             ].map((setting) => (
               <div key={setting.key} className="flex items-start gap-3 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
                 <input

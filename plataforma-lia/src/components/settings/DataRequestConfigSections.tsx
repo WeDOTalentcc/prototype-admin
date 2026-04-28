@@ -1,6 +1,7 @@
 "use client"
 
 import React from"react"
+import { useTranslations } from "next-intl"
 import { Chip } from "@/components/ui/chip"
 import { Switch } from"@/components/ui/switch"
 import { Label } from"@/components/ui/label"
@@ -43,20 +44,21 @@ interface GeneralSettingsProps {
 }
 
 export function GeneralSettingsContent({ config, isEditing, updateGeneralConfig }: GeneralSettingsProps) {
+  const t = useTranslations("settings.dataRequest")
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       <div className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
         <div className="flex items-center gap-2">
           <Shield className="w-3.5 h-3.5 text-lia-text-secondary" />
           <div>
-            <Label className="text-xs font-medium text-lia-text-primary">OTP Obrigatório</Label>
-            <p className="text-micro text-lia-text-secondary">Verificação por código</p>
+            <Label className="text-xs font-medium text-lia-text-primary">{t("otpRequired")}</Label>
+            <p className="text-micro text-lia-text-secondary">{t("otpDesc")}</p>
           </div>
         </div>
         {isEditing ? (
           <Switch checked={config.otpRequired} onCheckedChange={(checked: boolean) => updateGeneralConfig({ otpRequired: checked })} />
         ) : (
-          <Chip variant="neutral" muted className="text-micro">{config.otpRequired ? "Ativo" : "Inativo"}</Chip>
+          <Chip variant="neutral" muted className="text-micro">{config.otpRequired ? t("active") : t("inactive")}</Chip>
         )}
       </div>
 
@@ -64,34 +66,34 @@ export function GeneralSettingsContent({ config, isEditing, updateGeneralConfig 
         <div className="flex items-center gap-2">
           <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
           <div>
-            <Label className="text-xs font-medium text-lia-text-primary">Lembretes Automáticos</Label>
-            <p className="text-micro text-lia-text-secondary">Enviar lembretes pendentes</p>
+            <Label className="text-xs font-medium text-lia-text-primary">{t("autoReminders")}</Label>
+            <p className="text-micro text-lia-text-secondary">{t("autoRemindersDesc")}</p>
           </div>
         </div>
         {isEditing ? (
           <Switch checked={config.autoReminders} onCheckedChange={(checked: boolean) => updateGeneralConfig({ autoReminders: checked })} />
         ) : (
-          <Chip variant="neutral" muted className="text-micro">{config.autoReminders ? "Ativo" : "Inativo"}</Chip>
+          <Chip variant="neutral" muted className="text-micro">{config.autoReminders ? t("active") : t("inactive")}</Chip>
         )}
       </div>
 
       <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
         <div className="flex items-center gap-2 mb-2">
           <Clock className="w-3.5 h-3.5 text-lia-text-secondary" />
-          <Label className="text-xs font-medium text-lia-text-primary">Dias para Expiração</Label>
+          <Label className="text-xs font-medium text-lia-text-primary">{t("expirationDays")}</Label>
         </div>
         {isEditing ? (
           <Select value={config.expirationDays.toString()} onValueChange={(value) => updateGeneralConfig({ expirationDays: parseInt(value) })}>
             <SelectTrigger className="w-full h-8 text-xs"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="3">3 dias</SelectItem>
-              <SelectItem value="7">7 dias</SelectItem>
-              <SelectItem value="14">14 dias</SelectItem>
-              <SelectItem value="30">30 dias</SelectItem>
+              <SelectItem value="3">3 {t("days")}</SelectItem>
+              <SelectItem value="7">7 {t("days")}</SelectItem>
+              <SelectItem value="14">14 {t("days")}</SelectItem>
+              <SelectItem value="30">30 {t("days")}</SelectItem>
             </SelectContent>
           </Select>
         ) : (
-          <p className="text-xs font-medium text-lia-text-primary">{config.expirationDays} dias</p>
+          <p className="text-xs font-medium text-lia-text-primary">{config.expirationDays} {t("days")}</p>
         )}
       </div>
 
@@ -99,20 +101,20 @@ export function GeneralSettingsContent({ config, isEditing, updateGeneralConfig 
         <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
           <div className="flex items-center gap-2 mb-2">
             <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
-            <Label className="text-xs font-medium text-lia-text-primary">Enviar Lembrete Após</Label>
+            <Label className="text-xs font-medium text-lia-text-primary">{t("sendReminderAfter")}</Label>
           </div>
           {isEditing ? (
             <Select value={config.reminderDays.toString()} onValueChange={(value) => updateGeneralConfig({ reminderDays: parseInt(value) })}>
               <SelectTrigger className="w-full h-8 text-xs"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">1 dia</SelectItem>
-                <SelectItem value="2">2 dias</SelectItem>
-                <SelectItem value="3">3 dias</SelectItem>
-                <SelectItem value="5">5 dias</SelectItem>
+                <SelectItem value="1">1 {t("day")}</SelectItem>
+                <SelectItem value="2">2 {t("days")}</SelectItem>
+                <SelectItem value="3">3 {t("days")}</SelectItem>
+                <SelectItem value="5">5 {t("days")}</SelectItem>
               </SelectContent>
             </Select>
           ) : (
-            <p className="text-xs font-medium text-lia-text-primary">{config.reminderDays} dia(s)</p>
+            <p className="text-xs font-medium text-lia-text-primary">{config.reminderDays} {t("daysPlural")}</p>
           )}
         </div>
       )}
@@ -127,13 +129,14 @@ interface LgpdSectionProps {
 }
 
 export function LgpdSectionContent({ config, isEditing, updateLgpdConfig }: LgpdSectionProps) {
+  const t = useTranslations("settings.dataRequest")
   return (
     <div className="space-y-4">
       <div className="p-3 bg-status-warning/10 dark:bg-status-warning/20 border border-status-warning/30 dark:border-status-warning/30 rounded-xl">
         <div className="flex items-start gap-2">
           <AlertCircle className="w-4 h-4 text-status-warning mt-0.5 flex-shrink-0" />
           <p className="text-micro text-status-warning dark:text-status-warning" aria-live="polite" aria-atomic="true">
-            A Lei Geral de Proteção de Dados (Lei nº 13.709/2018) exige consentimento explícito do candidato antes da coleta de dados pessoais.
+            {t("lgpdWarning")}
           </p>
         </div>
       </div>
@@ -141,31 +144,31 @@ export function LgpdSectionContent({ config, isEditing, updateLgpdConfig }: Lgpd
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
           <div className="flex items-center justify-between mb-2">
-            <Label className="text-xs font-medium text-lia-text-primary">Exigir Consentimento</Label>
+            <Label className="text-xs font-medium text-lia-text-primary">{t("requireConsent")}</Label>
             {isEditing ? (
               <Switch checked={config.lgpd.requireConsent} onCheckedChange={(checked: boolean) => updateLgpdConfig({ requireConsent: checked })} />
             ) : (
-              <Chip variant="neutral" muted className="text-micro">{config.lgpd.requireConsent ? "Obrigatório" : "Desabilitado"}</Chip>
+              <Chip variant="neutral" muted className="text-micro">{config.lgpd.requireConsent ? t("required") : t("disabled")}</Chip>
             )}
           </div>
-          <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">Candidato deve autorizar antes de enviar dados</p>
+          <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">{t("consentDesc")}</p>
         </div>
 
         <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
           <div className="flex items-center justify-between mb-2">
-            <Label className="text-xs font-medium text-lia-text-primary">Permitir Exclusão</Label>
+            <Label className="text-xs font-medium text-lia-text-primary">{t("allowDeletion")}</Label>
             {isEditing ? (
               <Switch checked={config.lgpd.allowDataDeletion} onCheckedChange={(checked: boolean) => updateLgpdConfig({ allowDataDeletion: checked })} />
             ) : (
-              <Chip variant="neutral" muted className="text-micro">{config.lgpd.allowDataDeletion ? "Habilitado" : "Desabilitado"}</Chip>
+              <Chip variant="neutral" muted className="text-micro">{config.lgpd.allowDataDeletion ? t("enabled") : t("disabled")}</Chip>
             )}
           </div>
-          <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">Candidato pode solicitar exclusão dos dados</p>
+          <p className="text-micro text-lia-text-secondary" aria-live="polite" aria-atomic="true">{t("deletionDesc")}</p>
         </div>
       </div>
 
       <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
-        <Label className="text-xs font-medium text-lia-text-primary mb-2 block">Retenção de Dados</Label>
+        <Label className="text-xs font-medium text-lia-text-primary mb-2 block">{t("dataRetention")}</Label>
         {isEditing ? (
           <div className="flex items-center gap-2">
             <input
@@ -176,15 +179,15 @@ export function LgpdSectionContent({ config, isEditing, updateLgpdConfig }: Lgpd
               max={1825}
               className="w-20 px-2 py-1 text-xs border border-lia-border-default dark:border-lia-border-default rounded-xl focus:outline-none focus:border-lia-btn-primary-bg dark:focus:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-primary"
             />
-            <span className="text-micro text-lia-text-secondary">dias após término do processo</span>
+            <span className="text-micro text-lia-text-secondary">{t("daysAfterProcess")}</span>
           </div>
         ) : (
-          <p className="text-xs text-lia-text-secondary">{config.lgpd.dataRetentionDays} dias após término do processo</p>
+          <p className="text-xs text-lia-text-secondary">{config.lgpd.dataRetentionDays} {t("daysAfterProcess")}</p>
         )}
       </div>
 
-      <MessageField label="Mensagem de Consentimento (WhatsApp)" value={config.lgpd.consentMessage} isEditing={isEditing} onChange={(v) => updateLgpdConfig({ consentMessage: v })} rows={4} />
-      <MessageField label="Disclaimer (Portal)" value={config.lgpd.disclaimerText} isEditing={isEditing} onChange={(v) => updateLgpdConfig({ disclaimerText: v })} rows={3} />
+      <MessageField label={t("consentMessage")} value={config.lgpd.consentMessage} isEditing={isEditing} onChange={(v) => updateLgpdConfig({ consentMessage: v })} rows={4} />
+      <MessageField label={t("disclaimerPortal")} value={config.lgpd.disclaimerText} isEditing={isEditing} onChange={(v) => updateLgpdConfig({ disclaimerText: v })} rows={3} />
     </div>
   )
 }

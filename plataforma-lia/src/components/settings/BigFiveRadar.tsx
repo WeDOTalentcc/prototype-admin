@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Label } from "@/components/ui/label"
 import { textStyles } from '@/lib/design-tokens'
 
@@ -19,12 +20,12 @@ interface BigFiveRadarProps {
   size?: number
 }
 
-const TRAITS = [
-  { key: "openness", label: "Abertura", description: "Inovação e criatividade" },
-  { key: "conscientiousness", label: "Conscienciosidade", description: "Processos e organização" },
-  { key: "extraversion", label: "Extroversão", description: "Colaboração e energia" },
-  { key: "agreeableness", label: "Amabilidade", description: "Empatia e trabalho em equipe" },
-  { key: "stability", label: "Estabilidade", description: "Resiliência e calma" }
+const TRAIT_KEYS = [
+  { key: "openness", labelKey: "openness", descKey: "opennessDesc" },
+  { key: "conscientiousness", labelKey: "conscientiousness", descKey: "conscientiousnessDesc" },
+  { key: "extraversion", labelKey: "extraversion", descKey: "extraversionDesc" },
+  { key: "agreeableness", labelKey: "agreeableness", descKey: "agreeablenessDesc" },
+  { key: "stability", labelKey: "stability", descKey: "stabilityDesc" }
 ] as const
 
 export function BigFiveRadar({ 
@@ -33,6 +34,12 @@ export function BigFiveRadar({
   isEditable = false,
   size = 200 
 }: BigFiveRadarProps) {
+  const t = useTranslations("settings.bigFive")
+  const TRAITS = TRAIT_KEYS.map((tr) => ({
+    key: tr.key,
+    label: t(tr.labelKey as never),
+    description: t(tr.descKey as never),
+  }))
   const center = size / 2
   const maxRadius = (size / 2) - 30
   const angleStep = (2 * Math.PI) / 5

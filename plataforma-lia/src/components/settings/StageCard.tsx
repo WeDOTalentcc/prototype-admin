@@ -22,13 +22,14 @@ export {
   getActionBehaviorShort,
   ActionBehaviorBadge,
   getStageDisplayName,
+  useStageDisplayName,
   isRealId,
 } from "./StageCardHelpers"
 
 import {
   getTypeBadge,
   ActionBehaviorBadge,
-  getStageDisplayName,
+  useStageDisplayName,
 } from "./StageCardHelpers"
 import { SubStatusPanel } from "./SubStatusPanel"
 import { DataFieldsPanel } from "./DataFieldsPanel"
@@ -36,6 +37,7 @@ import { SaturationControlPanel } from "./SaturationControlPanel"
 
 export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
   const t = useTranslations("settings.recruitment.pipeline.stage")
+  const getStageDisplayName = useStageDisplayName()
   const isSystemStage = stage.type === 'system'
 
   const channelLabel = (channel: string) =>
@@ -119,6 +121,7 @@ export function SortableStageCard({
   isEditMode, registerRef,
 }: SortableStageCardProps) {
   const t = useTranslations("settings.recruitment.pipeline.stage")
+  const getStageDisplayName = useStageDisplayName()
   const isSystemStage = stage.type === 'system'
   const canEditName = !isSystemStage
   const canRemove = stage.type === 'custom'

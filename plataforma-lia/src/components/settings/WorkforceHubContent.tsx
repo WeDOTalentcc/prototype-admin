@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useRef, useState } from "react"
+import { useTranslations } from "next-intl"
 import { Paperclip, MessageSquare, ClipboardPaste, Loader2, X } from "lucide-react"
 import { WorkforceSection } from "./WorkforceSection"
 import { useGoalsPlanningHub } from "./useGoalsPlanningHub"
@@ -18,6 +19,7 @@ import { textStyles, cardStyles } from "@/lib/design-tokens"
  * before any data is persisted — see Task #768 backend changes.
  */
 export function WorkforceHubContent() {
+  const t = useTranslations("settings.workforce")
   const hub = useGoalsPlanningHub({ activeSubsection: "workforce" })
   const { triggerAction, sendChatPrompt } = useSettingsConversational()
   const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -47,17 +49,17 @@ export function WorkforceHubContent() {
       })
       if (!res.ok) {
         const msg = await res.text().catch(() => "")
-        throw new Error(msg || "Falha ao enviar planilha")
+        throw new Error(msg || t("uploadFailed"))
       }
       triggerAction("configure_workforce", {
         section: "minha-empresa",
-        prompt: `Acabei de enviar a planilha "${file.name}". Pode validar o plano extraido e me mostrar a proposta para aprovacao antes de salvar?`,
+        prompt: t("spreadsheetPrompt", { fileName: file.name }),
         payload: { input_mode: "spreadsheet", source_filename: file.name },
         source: "ui",
       })
       hub.fetchWorkforceData?.()
     } catch (err) {
-      setUploadError(err instanceof Error ? err.message : "Falha ao enviar planilha")
+      setUploadError(err instanceof Error ? err.message : t("uploadFailed"))
     } finally {
       setUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ""
@@ -69,8 +71,7 @@ export function WorkforceHubContent() {
   const handleDescribe = () => {
     triggerAction("configure_workforce", {
       section: "minha-empresa",
-      prompt:
-        "Quero descrever o plano de contratacoes em texto livre. Use input_mode=text para extrair a proposta e me apresente antes de salvar (preciso aprovar).",
+      prompt: t("describePrompt"),
       payload: { input_mode: "text" },
       source: "ui",
     })
@@ -87,9 +88,7 @@ export function WorkforceHubContent() {
       payload: { input_mode: "paste", raw_text: trimmed },
       source: "ui",
     })
-    sendChatPrompt(
-      `Colei a tabela abaixo. Use input_mode=paste, mostre a proposta parseada e aguarde minha aprovacao antes de salvar.\n\n${trimmed}`,
-    )
+    sendChatPrompt(`${t("pastePromptPrefix")}\n\n${trimmed}`)
     setPasteOpen(false)
     setPasteText("")
   }
@@ -103,11 +102,10 @@ export function WorkforceHubContent() {
         className={`${cardStyles.flat} rounded-lg border border-lia-border-subtle dark:border-lia-border-default p-3`}
       >
         <p className={`${textStyles.captionBold} mb-2 text-lia-text-primary`}>
-          Como voce quer enviar o plano de contratacoes?
+          {t("howToSend")}
         </p>
         <p className={`${textStyles.caption} mb-3 text-lia-text-secondary`}>
-          Os tres caminhos passam pela LIA e aguardam sua aprovacao antes de
-          gravar.
+          {t("pathsExplanation")}
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <button
@@ -121,11 +119,11 @@ export function WorkforceHubContent() {
             ) : (
               <Paperclip className="w-3.5 h-3.5" />
             )}
-            Anexar planilha
+            {t("attachSpreadsheet")}
           </button>
           <button type="button" onClick={handleDescribe} className={btnClass}>
             <MessageSquare className="w-3.5 h-3.5" />
-            Descrever no chat
+            {t("describeInChat")}
           </button>
           <button
             type="button"
@@ -133,7 +131,7 @@ export function WorkforceHubContent() {
             className={btnClass}
           >
             <ClipboardPaste className="w-3.5 h-3.5" />
-            Colar dados
+            {t("pasteData")}
           </button>
         </div>
         {uploadError && (
@@ -160,26 +158,25 @@ export function WorkforceHubContent() {
           <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-lg border border-lia-border-default w-full max-w-lg mx-4 p-4 shadow-xl">
             <div className="flex items-center justify-between mb-2">
               <p className={`${textStyles.h3} text-lia-text-primary`}>
-                Colar plano de contratacoes
+                {t("pasteDialogTitle")}
               </p>
               <button
                 type="button"
                 onClick={() => setPasteOpen(false)}
-                aria-label="Fechar"
+                aria-label={t("closeDialog")}
                 className="p-1 rounded-md hover:bg-lia-bg-tertiary"
               >
                 <X className="w-4 h-4 text-lia-text-tertiary" />
               </button>
             </div>
             <p className={`${textStyles.caption} mb-2 text-lia-text-secondary`}>
-              Cole uma tabela com cabecalho. Colunas aceitas: departamento,
-              cargo, quantidade, prazo, senioridade.
+              {t("pasteDialogDesc")}
             </p>
             <textarea
               value={pasteText}
               onChange={(e) => setPasteText(e.target.value)}
               rows={8}
-              placeholder={"Departamento\tCargo\tQuantidade\tPrazo\tSenioridade\nEngenharia\tBackend\t3\tQ2\tPleno"}
+              placeholder={t("pastePlaceholder")}
               className="w-full font-mono text-xs border border-lia-border-default rounded-md px-2 py-1.5 bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary"
             />
             <div className="flex justify-end gap-2 mt-3">
@@ -188,7 +185,7 @@ export function WorkforceHubContent() {
                 onClick={() => setPasteOpen(false)}
                 className="px-3 py-1.5 text-xs rounded-md border border-lia-border-default text-lia-text-secondary hover:bg-lia-bg-secondary"
               >
-                Cancelar
+                {t("cancel")}
               </button>
               <button
                 type="button"
@@ -196,7 +193,7 @@ export function WorkforceHubContent() {
                 disabled={!pasteText.trim()}
                 className="px-3 py-1.5 text-xs rounded-md bg-lia-btn-primary-bg text-white hover:bg-lia-btn-primary-hover disabled:opacity-60"
               >
-                Enviar para LIA
+                {t("sendToLia")}
               </button>
             </div>
           </div>

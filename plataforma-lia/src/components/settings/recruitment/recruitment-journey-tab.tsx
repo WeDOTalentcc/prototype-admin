@@ -1,20 +1,22 @@
 "use client"
 
-import { useState } from"react"
-import { cn } from"@/lib/utils"
-import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Button } from"@/components/ui/button"
+import { useState } from "react"
+import { useTranslations } from "next-intl"
+import { cn } from "@/lib/utils"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import {
   RECRUITMENT_STAGES
-} from"@/lib/recruitment-stages"
+} from "@/lib/recruitment-stages"
 import {
   Edit, Plus, CheckCircle, Workflow, FileText, ClipboardList,
   Brain, Lock, Target, Settings, Check, X, ArrowUp, ArrowDown,
   Trash2,
-} from"lucide-react"
+} from "lucide-react"
 
 export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => void }) {
+  const t = useTranslations("settings.recruitment.journeyTab")
   const [activeSubTab, setActiveSubTab] = useState("pipeline")
   const [stages, setStages] = useState(() =>
     RECRUITMENT_STAGES.filter(s => s.name !== 'standby' && s.name !== 'interview_manager2').map((stage, index) => ({
@@ -26,10 +28,10 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
   const [isEditing, setIsEditing] = useState(false)
 
   const subTabs = [
-    { id:"pipeline", label:"Pipeline", icon: Workflow },
-    { id:"eligibility", label:"Perguntas de Elegibilidade", icon: FileText },
-    { id:"data-request", label:"Solicitação de Dados", icon: ClipboardList },
-    { id:"lia-instructions", label:"Instruções LIA", icon: Brain },
+    { id: "pipeline", label: t("pipeline"), icon: Workflow },
+    { id: "eligibility", label: t("eligibilityQuestions"), icon: FileText },
+    { id: "data-request", label: t("dataRequest"), icon: ClipboardList },
+    { id: "lia-instructions", label: t("liaInstructions"), icon: Brain },
   ]
 
   const getCategoryIcon = (category: string) => {
@@ -65,7 +67,7 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
   const addCustomStage = () => {
     const newStage = {
       name: `custom_${Date.now()}`,
-      displayName: 'Nova Etapa',
+      displayName: t("newCustomStageName"),
       stageOrder: stages.length + 1,
       color: 'var(--lia-text-tertiary)',
       icon: 'plus-circle',
@@ -106,13 +108,13 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-semibold">Recrutamento</CardTitle>
-              <p className="text-sm text-lia-text-secondary mt-1">Pipeline e elegibilidade</p>
+              <CardTitle className="text-sm font-semibold">{t("title")}</CardTitle>
+              <p className="text-sm text-lia-text-secondary mt-1">{t("subtitle")}</p>
             </div>
             <div className="flex items-center gap-2">
               <Chip variant="success" className="bg-status-success/10 dark:bg-status-success gap-1.5">
                 <CheckCircle className="w-3 h-3" />
-                Sincronizado
+                {t("synchronized")}
               </Chip>
             </div>
           </div>
@@ -124,8 +126,8 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                 onClick={() => setActiveSubTab(tab.id)}
                 className={cn("flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200 rounded-md -mb-px",
                   activeSubTab === tab.id
-                    ?"border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary"
-                    :"border-transparent text-lia-text-secondary hover:text-lia-text-primary"
+                    ? "border-lia-btn-primary-bg dark:border-lia-border-subtle text-lia-text-primary"
+                    : "border-transparent text-lia-text-secondary hover:text-lia-text-primary"
                 )}
               >
                 <tab.icon className="w-4 h-4" />
@@ -136,13 +138,13 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
         </CardHeader>
 
         <CardContent>
-          {activeSubTab ==="pipeline" && (
+          {activeSubTab === "pipeline" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Chip variant="danger" className="bg-status-error/10 dark:bg-status-error gap-1.5 cursor-pointer hover:bg-status-error/15">
                     <Trash2 className="w-3 h-3" />
-                    Deletar Template
+                    {t("deleteTemplate")}
                   </Chip>
                   <Button
                     variant="outline"
@@ -151,27 +153,27 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                     className="gap-1.5"
                   >
                     <Edit className="w-3.5 h-3.5" />
-                    {isEditing ? 'Concluir' : 'Editar'}
+                    {isEditing ? t("done") : t("edit")}
                   </Button>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-lg font-medium text-lia-text-primary mb-1">Jornada de Recrutamento</h3>
-                <p className="text-sm text-lia-text-secondary mb-4">Visualize as etapas do processo seletivo configuradas.</p>
+                <h3 className="text-lg font-medium text-lia-text-primary mb-1">{t("journeyTitle")}</h3>
+                <p className="text-sm text-lia-text-secondary mb-4">{t("journeyDesc")}</p>
 
                 <div className="flex items-center gap-6 text-xs text-lia-text-secondary mb-6 p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-lg">
                   <div className="flex items-center gap-1.5">
                     <Lock className="w-3.5 h-3.5" />
-                    <span><strong>Sistema:</strong> Etapas fixas (Funil, Triagem, Entrevista RH, Contratado, Reprovado)</span>
+                    <span><strong>{t("systemLabel")}</strong> {t("systemDesc")}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Target className="w-3.5 h-3.5" />
-                    <span><strong>Padrão:</strong> Editável nome e SLA</span>
+                    <span><strong>{t("defaultLabel")}</strong> {t("defaultDesc")}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Settings className="w-3.5 h-3.5" />
-                    <span><strong>Custom:</strong> Totalmente editável</span>
+                    <span><strong>{t("customLabel")}</strong> {t("customDesc")}</span>
                   </div>
                 </div>
 
@@ -181,8 +183,8 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                       key={stage.name}
                       className={cn("flex items-center gap-4 p-4 border rounded-md transition-colors",
                         stage.isActive
-                          ?"border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary"
-                          :"border-lia-border-subtle dark:border-lia-border-strong bg-lia-bg-secondary dark:bg-lia-bg-primary/50 opacity-60"
+                          ? "border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary"
+                          : "border-lia-border-subtle dark:border-lia-border-strong bg-lia-bg-secondary dark:bg-lia-bg-primary/50 opacity-60"
                       )}
                     >
                       <div className="flex items-center gap-3 min-w-10">
@@ -229,19 +231,19 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                             onClick={() => toggleStageActive(stage.name)}
                             className={cn("flex items-center gap-1 text-xs px-2 py-1 rounded-md transition-colors",
                               stage.isActive
-                                ?"text-lia-text-tertiary hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error"
-                                :"text-status-success hover:bg-status-success/10 dark:hover:bg-status-success"
+                                ? "text-lia-text-tertiary hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error"
+                                : "text-status-success hover:bg-status-success/10 dark:hover:bg-status-success"
                             )}
                           >
                             {stage.isActive ? (
                               <>
                                 <X className="w-3 h-3" />
-                                Inativo
+                                {t("makeInactive")}
                               </>
                             ) : (
                               <>
                                 <Check className="w-3 h-3" />
-                                Ativar
+                                {t("activate")}
                               </>
                             )}
                           </button>
@@ -269,31 +271,31 @@ export function RecruitmentJourneyTab({ onSettingsChange }: { onSettingsChange: 
                     className="w-full mt-4 gap-2 border-dashed"
                   >
                     <Plus className="w-4 h-4" />
-                    Adicionar Etapa Customizada
+                    {t("addCustomStage")}
                   </Button>
                 )}
               </div>
             </div>
           )}
 
-          {activeSubTab ==="eligibility" && (
+          {activeSubTab === "eligibility" && (
             <div className="text-center py-12 text-lia-text-secondary">
               <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">Configurações de Perguntas de Elegibilidade</p>
+              <p className="text-sm">{t("eligibilityConfig")}</p>
             </div>
           )}
 
-          {activeSubTab ==="data-request" && (
+          {activeSubTab === "data-request" && (
             <div className="text-center py-12 text-lia-text-secondary">
               <ClipboardList className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p className="text-sm">Configurações de Solicitação de Dados</p>
+              <p className="text-sm">{t("dataRequestConfig")}</p>
             </div>
           )}
 
-          {activeSubTab ==="lia-instructions" && (
+          {activeSubTab === "lia-instructions" && (
             <div className="text-center py-12 text-lia-text-secondary">
               <Brain className="w-12 h-12 mx-auto mb-3 opacity-30 text-wedo-cyan" />
-              <p className="text-sm">Instruções para a LIA</p>
+              <p className="text-sm">{t("liaInstructionsConfig")}</p>
             </div>
           )}
         </CardContent>

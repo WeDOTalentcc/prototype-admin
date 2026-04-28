@@ -74,6 +74,31 @@ export function getStageDisplayName(stage: RecruitmentStage): string {
   return stage.display_name || stage.name
 }
 
+// Names of canonical default stages that have locale-aware translations.
+const DEFAULT_STAGE_NAME_KEYS = new Set([
+  'sourcing', 'screening', 'long_list', 'short_list', 'interview_hr',
+  'technical_test', 'english_test', 'interview_technical',
+  'interview_manager', 'interview_final', 'references',
+  'offer', 'offer_declined', 'hired', 'rejected',
+])
+
+/**
+ * Returns a function that resolves a stage's display name with i18n support.
+ * For known default stages (matched by `name`), it returns the locale-specific
+ * label from `settings.recruitment.journey.defaultStageNames.<name>`. For any
+ * other stage (custom user-added or API-provided), it falls back to the raw
+ * `display_name` so user input is preserved as-is.
+ */
+export function useStageDisplayName(): (stage: RecruitmentStage) => string {
+  const t = useTranslations("settings.recruitment.journey.defaultStageNames")
+  return (stage: RecruitmentStage) => {
+    if (stage.name && DEFAULT_STAGE_NAME_KEYS.has(stage.name)) {
+      return t(stage.name as never) as string
+    }
+    return stage.display_name || stage.name
+  }
+}
+
 export function isRealId(id: string): boolean {
   return !id.startsWith('stage-') && !id.startsWith('catalog-')
 }

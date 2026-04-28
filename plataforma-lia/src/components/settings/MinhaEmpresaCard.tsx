@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Card, CardContent } from "@/components/ui/card"
 import {
   ChevronDown, ChevronUp, Pencil, Check, X, Loader2,
@@ -16,8 +17,8 @@ import { SectionUploadDropZone, type TargetSection } from "./SectionUploadDropZo
 interface SectionUploadConfig {
   targetSection: TargetSection
   documentType: "handbook" | "tech_doc" | "org_chart" | "compensation"
-  sectionLabel: string
-  hint?: string
+  sectionLabelKey: string
+  hintKey?: string
 }
 
 // Per-block contextual upload configuration. The target_section value is what
@@ -26,37 +27,12 @@ interface SectionUploadConfig {
 // it's structured registration data, not a document-derived area.
 const BLOCK_UPLOAD: Record<string, SectionUploadConfig | undefined> = {
   basic: undefined,
-  culture: { targetSection: "culture", documentType: "handbook", sectionLabel: "Cultura & EVP", hint: "Manual / handbook — extrai missão, valores, modelo de trabalho." },
-  tech: { targetSection: "tech_stack", documentType: "tech_doc", sectionLabel: "Tech Stack", hint: "Documentação técnica — extrai stack, ferramentas, cultura de engenharia." },
-  benefits: { targetSection: "benefits", documentType: "handbook", sectionLabel: "Benefícios", hint: "Manual de benefícios — extrai a lista de benefícios oferecidos." },
-  policy: { targetSection: "policy", documentType: "handbook", sectionLabel: "Políticas de Recrutamento", hint: "Manual de processos — extrai regras de pipeline, agendamento e comunicação." },
-  workforce: { targetSection: "workforce", documentType: "org_chart", sectionLabel: "Workforce Planning", hint: "Organograma — extrai departamentos, hierarquia e headcount." },
-  documents: { targetSection: "compensation", documentType: "compensation", sectionLabel: "Plano de Remuneração", hint: "Plano de cargos / remuneração — extrai níveis e faixas salariais." },
-}
-
-function formatFieldValue(value: unknown): string {
-  if (value === null || value === undefined || value === "") return "Nao definido"
-  if (typeof value === "boolean") return value ? "Sim" : "Nao"
-  if (Array.isArray(value)) {
-    if (value.length === 0) return "Nenhum"
-    return value.join(", ")
-  }
-  return String(value)
-}
-
-const STATUS_STYLES = {
-  configured: {
-    badge: "bg-status-success/10 text-status-success border-status-success/30 dark:bg-status-success/20",
-    label: "Configurado",
-  },
-  partial: {
-    badge: "bg-status-warning/10 text-status-warning border-status-warning/30 dark:bg-status-warning/20",
-    label: "Parcial",
-  },
-  pending: {
-    badge: "bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle dark:bg-lia-bg-elevated dark:border-lia-border-default",
-    label: "Pendente",
-  },
+  culture: { targetSection: "culture", documentType: "handbook", sectionLabelKey: "cultureLabel", hintKey: "cultureHint" },
+  tech: { targetSection: "tech_stack", documentType: "tech_doc", sectionLabelKey: "techLabel", hintKey: "techHint" },
+  benefits: { targetSection: "benefits", documentType: "handbook", sectionLabelKey: "benefitsLabel", hintKey: "benefitsHint" },
+  policy: { targetSection: "policy", documentType: "handbook", sectionLabelKey: "policyLabel", hintKey: "policyHint" },
+  workforce: { targetSection: "workforce", documentType: "org_chart", sectionLabelKey: "workforceLabel", hintKey: "workforceHint" },
+  documents: { targetSection: "compensation", documentType: "compensation", sectionLabelKey: "documentsLabel", hintKey: "documentsHint" },
 }
 
 function InlineFieldEditor({
@@ -72,6 +48,7 @@ function InlineFieldEditor({
   onCancel: () => void
   isSaving: boolean
 }) {
+  const t = useTranslations("settings.minhaEmpresaCard")
   const [localValue, setLocalValue] = useState(() => {
     if (currentValue === null || currentValue === undefined) return ""
     if (typeof currentValue === "boolean") return currentValue
@@ -89,7 +66,7 @@ function InlineFieldEditor({
       } else {
         const n = Number(localValue)
         if (!Number.isFinite(n)) {
-          setValidationError("Numero invalido")
+          setValidationError(t("invalidNumber"))
           return
         }
         parsed = n
@@ -105,7 +82,7 @@ function InlineFieldEditor({
       if (raw === "") {
         parsed = ""
       } else if (!/^\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}$/.test(raw)) {
-        setValidationError("Use HH:MM - HH:MM")
+        setValidationError(t("timeRangeFormat"))
         return
       } else {
         parsed = raw
@@ -225,7 +202,36 @@ export function MinhaEmpresaCard({
   onCancelEditing,
   onSaveField,
 }: MinhaEmpresaCardProps) {
+  const t = useTranslations("settings.minhaEmpresaCard")
+
+  const formatFieldValue = (value: unknown): string => {
+    if (value === null || value === undefined || value === "") return t("valueNotDefined")
+    if (typeof value === "boolean") return value ? t("valueYes") : t("valueNo")
+    if (Array.isArray(value)) {
+      if (value.length === 0) return t("valueNone")
+      return value.join(", ")
+    }
+    return String(value)
+  }
+
+  const STATUS_STYLES = {
+    configured: {
+      badge: "bg-status-success/10 text-status-success border-status-success/30 dark:bg-status-success/20",
+      label: t("statusConfigured"),
+    },
+    partial: {
+      badge: "bg-status-warning/10 text-status-warning border-status-warning/30 dark:bg-status-warning/20",
+      label: t("statusPartial"),
+    },
+    pending: {
+      badge: "bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle dark:bg-lia-bg-elevated dark:border-lia-border-default",
+      label: t("statusPending"),
+    },
+  } as const
+
   const statusStyle = STATUS_STYLES[block.status]
+
+  const uploadConfig = BLOCK_UPLOAD[block.key]
 
   return (
     <Card
@@ -256,7 +262,7 @@ export function MinhaEmpresaCard({
               className="text-micro font-medium text-lia-text-secondary"
               data-testid={`block-progress-${block.key}`}
             >
-              {block.progress.filled} de {block.progress.total} preenchidos
+              {t("fieldsFilled", { filled: block.progress.filled, total: block.progress.total })}
             </span>
           )}
           <span
@@ -274,8 +280,13 @@ export function MinhaEmpresaCard({
 
       {isExpanded && (
         <CardContent className="px-4 py-3 border-t border-lia-border-subtle space-y-3">
-          {BLOCK_UPLOAD[block.key] && (
-            <SectionUploadDropZone {...BLOCK_UPLOAD[block.key]!} />
+          {uploadConfig && (
+            <SectionUploadDropZone
+              targetSection={uploadConfig.targetSection}
+              documentType={uploadConfig.documentType}
+              sectionLabel={t(`blockUpload.${uploadConfig.sectionLabelKey}` as never)}
+              hint={uploadConfig.hintKey ? t(`blockUpload.${uploadConfig.hintKey}` as never) : undefined}
+            />
           )}
           {block.progress.missingLabels.length > 0 && (
             <div
@@ -283,7 +294,7 @@ export function MinhaEmpresaCard({
               data-testid={`block-missing-${block.key}`}
             >
               <p className={`${textStyles.captionBold} text-lia-text-primary mb-1`}>
-                Campos pendentes ({block.progress.missingLabels.length})
+                {t("missingFieldsTitle", { count: block.progress.missingLabels.length })}
               </p>
               <p className="text-micro text-lia-text-secondary">
                 {block.progress.missingLabels.slice(0, 8).join(" · ")}
@@ -291,9 +302,9 @@ export function MinhaEmpresaCard({
                   ? ` · +${block.progress.missingLabels.length - 8}`
                   : ""}
               </p>
-              {BLOCK_UPLOAD[block.key] && (
+              {uploadConfig && (
                 <p className="text-micro text-lia-text-tertiary mt-1">
-                  Um upload aqui pode preencher automaticamente esses campos (você confirma antes).
+                  {t("uploadHint")}
                 </p>
               )}
             </div>
@@ -359,7 +370,7 @@ export function MinhaEmpresaCard({
                             onStartEditing(block.key, field.key)
                           }}
                           className="opacity-0 group-hover:opacity-100 p-0.5 rounded-md hover:bg-lia-interactive-active dark:hover:bg-lia-border-medium transition-opacity motion-reduce:transition-none"
-                          aria-label={`Editar ${field.label}`}
+                          aria-label={t("editFieldAria", { label: field.label })}
                         >
                           <Pencil className="w-3 h-3 text-lia-text-tertiary" />
                         </button>

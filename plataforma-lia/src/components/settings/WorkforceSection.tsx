@@ -1,6 +1,7 @@
 "use client"
 
 import React from"react"
+import { useTranslations } from "next-intl"
 import { CURRENCY_PLACEHOLDER } from"@/lib/pricing"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
@@ -21,6 +22,7 @@ interface WorkforceSectionProps {
 }
 
 export function WorkforceSection({ hub }: WorkforceSectionProps) {
+  const t = useTranslations("settings.workforce")
   const {
     selectedYear, setSelectedYear,
     liaInstructions, liaToggles,
@@ -38,8 +40,8 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
   return (
     <div className="space-y-4">
       <SmartImportZone
-        title="Importar Plano de Headcount"
-        description="Importe o plano anual de contratações por departamento e mês. A LIA analisa e sugere ajustes baseados em dados históricos."
+        title={t("importTitle")}
+        description={t("importDescription")}
         importEndpoint="/api/backend-proxy/workforce/entries/import"
         templateDownloadEndpoint="/api/backend-proxy/workforce/entries/import/template"
         expectedFields={["department","month","year","planned","actual"]}
@@ -53,11 +55,11 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
             <div>
               <CardTitle className={`${textStyles.h3} flex items-center gap-2 flex-wrap`}>
                 <Calendar className="w-3.5 h-3.5 text-lia-text-secondary" />
-                Planejamento de Headcount {selectedYear}
+                {t("headcountPlanning", { year: selectedYear })}
                 {departmentsLoaded && (
                   <Chip variant="neutral" className={`${badgeStyles.success} text-micro font-normal`}>
                     <RefreshCw className="w-2.5 h-2.5 mr-1" />
-                    Sincronizado
+                    {t("synchronized")}
                   </Chip>
                 )}
                 <div className="flex items-center gap-2 ml-2">
@@ -70,11 +72,11 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
                     onInstructionSave={handleLiaInstructionSave}
                     compact
                   />
-                  <span className={textStyles.caption}>Consumido pela LIA</span>
+                  <span className={textStyles.caption}>{t("consumedByLia")}</span>
                 </div>
               </CardTitle>
               <p className={`${textStyles.description} mt-1`}>
-                Departamentos integrados com Empresa e Equipe. Novos departamentos são criados automaticamente.
+                {t("departmentsDesc")}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -89,7 +91,7 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
               </select>
               <button className={actionButtonStyles.smOutline}>
                 <Download className={actionButtonStyles.icon} />
-                Exportar
+                {t("export")}
               </button>
               {!isEditingWorkforce ? (
                 <button
@@ -97,7 +99,7 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
                   className={actionButtonStyles.smOutline}
                 >
                   <Edit className={actionButtonStyles.icon} />
-                  Editar
+                  {t("edit")}
                 </button>
               ) : (
                 <>
@@ -105,7 +107,7 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
                     onClick={() => setIsEditingWorkforce(false)}
                     className={actionButtonStyles.smSecondary}
                   >
-                    Cancelar
+                    {t("cancel")}
                   </button>
                   <button
                     onClick={async () => {
@@ -116,7 +118,7 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
                     className={actionButtonStyles.smPrimary}
                   >
                     {saving ? <Loader2 className={actionButtonStyles.icon +" animate-spin motion-reduce:animate-none"} /> : <Save className={actionButtonStyles.icon} />}
-                    Salvar Alterações
+                    {t("saveChanges")}
                   </button>
                 </>
               )}
@@ -127,12 +129,12 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
           <div className="flex items-center gap-2 mb-4">
             <Card className={`${cardStyles.flat} rounded-md flex-1`}>
               <CardContent className="p-2.5">
-                <p className={textStyles.caption}>Total Planejado {selectedYear}</p>
-                <p className={textStyles.metricLarge} aria-live="polite" aria-atomic="true">{workforceStats.totalPlanned} vagas</p>
+                <p className={textStyles.caption}>{t("totalPlanned", { year: selectedYear })}</p>
+                <p className={textStyles.metricLarge} aria-live="polite" aria-atomic="true">{workforceStats.totalPlanned} {t("vacancies")}</p>
               </CardContent>
             </Card>
             <p className={`${textStyles.description} max-w-xs`}>
-              O acompanhamento do realizado será exibido nos dashboards de performance.
+              {t("trackingDesc")}
             </p>
           </div>
 
@@ -156,10 +158,10 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={textStyles.description}>
-                      {dept.positions.length} posição{dept.positions.length !== 1 ? 's' : ''}
+                      {dept.positions.length} {dept.positions.length !== 1 ? t("positionPlural") : t("positionSingular")}
                     </span>
                     <span className={`${textStyles.subtitle} font-semibold text-lia-text-primary`} aria-live="polite" aria-atomic="true">
-                      {dept.positions.reduce((acc, p) => acc + getPositionTotal(p), 0)} vagas
+                      {dept.positions.reduce((acc, p) => acc + getPositionTotal(p), 0)} {t("vacancies")}
                     </span>
                   </div>
                 </div>
@@ -170,13 +172,13 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
                       <table className={`w-full ${textStyles.caption}`}>
                         <thead>
                           <tr className="border-b border-lia-border-subtle dark:border-lia-border-subtle">
-                            <th className={`text-left p-2 min-w-[140px] sticky left-0 bg-lia-bg-secondary dark:bg-lia-bg-secondary ${textStyles.captionBold}`}>Posição</th>
-                            <th className={`text-center p-2 min-w-[90px] ${textStyles.captionBold} text-lia-text-primary`}>Salário Mín.</th>
-                            <th className={`text-center p-2 min-w-[90px] ${textStyles.captionBold} text-lia-text-primary`}>Salário Máx.</th>
+                            <th className={`text-left p-2 min-w-[140px] sticky left-0 bg-lia-bg-secondary dark:bg-lia-bg-secondary ${textStyles.captionBold}`}>{t("positionLabel")}</th>
+                            <th className={`text-center p-2 min-w-[90px] ${textStyles.captionBold} text-lia-text-primary`}>{t("salaryMin")}</th>
+                            <th className={`text-center p-2 min-w-[90px] ${textStyles.captionBold} text-lia-text-primary`}>{t("salaryMax")}</th>
                             {monthLabels.map((month, idx) => (
                               <th key={idx} className={`text-center p-2 min-w-10 ${textStyles.captionBold} text-lia-text-primary`}>{month}</th>
                             ))}
-                            <th className={`text-center p-2 min-w-[50px] font-semibold text-lia-text-primary`}>Total</th>
+                            <th className={`text-center p-2 min-w-[50px] font-semibold text-lia-text-primary`}>{t("total")}</th>
                             <th className="w-8 p-2"></th>
                           </tr>
                         </thead>
@@ -188,7 +190,7 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
                                   type="text"
                                   value={pos.name}
                                   onChange={(e) => updatePositionName(dept.id, pos.id, e.target.value)}
-                                  placeholder="Nome da posição"
+                                  placeholder={t("positionPlaceholder")}
                                   disabled={!isEditingWorkforce}
                                   className={`w-full px-2 py-1 ${textStyles.caption} border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated disabled:bg-lia-bg-secondary dark:disabled:bg-lia-btn-primary-hover disabled:text-lia-text-secondary dark:disabled:text-lia-text-secondary`}
                                 />
@@ -256,7 +258,7 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
                           className={`w-full gap-1.5 py-1.5 text-micro rounded-md ${buttonStyles.outline}`}
                         >
                           <Plus className="w-3 h-3" />
-                          Adicionar Posição
+                          {t("addPosition")}
                         </Button>
                       </div>
                     )}
@@ -272,7 +274,7 @@ export function WorkforceSection({ hub }: WorkforceSectionProps) {
               className={`w-full mt-4 gap-1.5 py-1.5 text-xs rounded-md ${buttonStyles.primary}`}
             >
               <Plus className="w-3.5 h-3.5" />
-              Adicionar Departamento
+              {t("addDepartment")}
             </Button>
           )}
         </CardContent>

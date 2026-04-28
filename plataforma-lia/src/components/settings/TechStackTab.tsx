@@ -1,6 +1,7 @@
 "use client";
 
 import React from"react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card";
 import { Chip } from "@/components/ui/chip";
 import {
@@ -42,13 +43,14 @@ export function TechStackTab({
   updateLiaToggle,
   updateLiaInstruction,
 }: TechStackTabProps) {
+  const t = useTranslations("settings.techStackTab");
   return (
     <Card className={cardStyles.default}>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-sm font-semibold text-lia-text-primary">
             <Code className="w-4 h-4" />
-            Tech Stack por Categoria
+            {t("title")}
           </CardTitle>
           <LiaFieldToggle
             fieldKey="tech_stack"
@@ -147,7 +149,7 @@ export function TechStackTab({
 
                   <input
                     type="text"
-                    placeholder={`Adicionar ${category.label.toLowerCase()} personalizada...`}
+                    placeholder={t("addCustom", { category: category.label.toLowerCase() })}
                     disabled={!isEditingCompanyData}
                     className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary dark:bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                     onKeyDown={(e) => {
@@ -178,7 +180,7 @@ export function TechStackTab({
             >
               <div className="flex items-center gap-2">
                 <Code className="w-4 h-4" />
-                <span className="text-xs font-medium">Outros</span>
+                <span className="text-xs font-medium">{t("others")}</span>
                 <Chip variant="neutral" muted className="bg-lia-bg-primary/50 dark:bg-black/20 text-micro px-1.5 py-0.5">
                   {techStackByCategory["outros"].length}
                 </Chip>
@@ -213,7 +215,7 @@ export function TechStackTab({
 
                 <input
                   type="text"
-                  placeholder="Adicionar tecnologia..."
+                  placeholder={t("addTechnology")}
                   disabled={!isEditingCompanyData}
                   className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-secondary dark:bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed' : ''}`}
                   onKeyDown={(e) => {
@@ -233,7 +235,7 @@ export function TechStackTab({
           <label className="flex items-center gap-3 text-xs font-medium text-lia-text-secondary mb-2">
             <span className="flex items-center gap-1">
               <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
-              Cultura de Engenharia
+              {t("engineeringCulture")}
             </span>
             <LiaFieldToggle
               fieldKey="engineering_culture"
@@ -256,7 +258,7 @@ export function TechStackTab({
             }
             className={`w-full px-3 py-2 text-xs border border-lia-border-subtle dark:border-lia-border-subtle rounded-md bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium transition-colors motion-reduce:transition-none ${!isEditingCompanyData ? 'opacity-60 cursor-not-allowed bg-lia-bg-secondary dark:bg-lia-bg-primary' : ''}`}
             rows={3}
-            placeholder="Descreva a cultura de engenharia da empresa (metodologias, práticas de desenvolvimento, ambiente de trabalho técnico)..."
+            placeholder={t("engineeringPlaceholder")}
           />
         </div>
       </CardContent>

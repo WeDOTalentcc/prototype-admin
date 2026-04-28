@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useTranslations } from "next-intl"
 import { Chip } from "@/components/ui/chip"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,18 +12,6 @@ import {
   Edit, Plus, Workflow, FileText, Zap, Target,
   Download, BarChart3, Activity, MoreHorizontal, AlertCircle,
 } from "lucide-react"
-
-// ── Trigger/action label maps ────────────────────────────────────────────
-
-const TRIGGER_LABELS: Record<string, string> = {
-  candidate_stage_changed: "Candidato movimentado",
-  interview_scheduled: "Entrevista agendada",
-  offer_sent: "Proposta enviada",
-  screening_completed: "Triagem concluída",
-  no_response_48h: "Sem resposta (48h)",
-}
-
-// ── Types ────────────────────────────────────────────────────────────────
 
 interface ApiAutomation {
   id: string
@@ -41,7 +30,7 @@ interface WorkflowItem {
   name: string
   description: string
   status: "active" | "paused"
-  trigger: string
+  triggerType: string
   lastRun: string | null
   executions: number
   successRate: number
@@ -53,16 +42,15 @@ function mapAutomation(a: ApiAutomation): WorkflowItem {
     name: a.name,
     description: a.description ?? "",
     status: a.is_active ? "active" : "paused",
-    trigger: TRIGGER_LABELS[a.trigger_type] ?? a.trigger_type,
+    triggerType: a.trigger_type,
     lastRun: a.last_executed_at ?? null,
     executions: a.executions_count ?? 0,
     successRate: a.success_rate ?? 100,
   }
 }
 
-// ── Component ────────────────────────────────────────────────────────────
-
-export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => void }) {
+export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSettingsChange: (changed: boolean) => void }) {
+  const t = useTranslations("settings.recruitment.automationsTab")
   const [selectedView, setSelectedView] = useState<"overview" | "builder" | "templates" | "logs">("overview")
   const [workflows, setWorkflows] = useState<WorkflowItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -84,18 +72,29 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
         }
       })
       .catch((err) => {
-        console.error("[AutomationsTab] Não foi possível carregar as automações:", err)
-        setError("Não foi possível carregar as automações.")
+        console.error("[AutomationsTab] Could not load automations:", err)
+        setError(t("loadError"))
       })
       .finally(() => setIsLoading(false))
-  }, [companyId])
+  }, [companyId, t])
+
+  const labelForTrigger = (triggerType: string): string => {
+    const key = `trigger_${triggerType}`
+    try {
+      const label = t(key as never)
+      if (label && label !== key) return label
+    } catch {
+      // missing key — fall through
+    }
+    return triggerType
+  }
 
   if (!hasModuleAccess("workflow_automation")) {
     return (
       <ModuleUpsell
         moduleId="workflow_automation"
-        title="Automação Avançada de Workflows"
-        description="Workflow builder visual com automações inteligentes e templates pré-configurados"
+        title={t("upsellTitle")}
+        description={t("upsellDesc")}
       />
     )
   }
@@ -105,7 +104,7 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
       return (
         <div className="flex items-center justify-center py-16">
           <div className="w-6 h-6 rounded-full border-2 border-lia-text-secondary border-t-transparent animate-spin" />
-          <span className="ml-3 text-sm text-lia-text-primary">Carregando automações…</span>
+          <span className="ml-3 text-sm text-lia-text-primary">{t("loading")}</span>
         </div>
       )
     }
@@ -130,9 +129,9 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-lia-text-primary">Workflows Ativos</p>
+                  <p className="text-sm font-medium text-lia-text-primary">{t("activeWorkflows")}</p>
                   <p className="text-2xl font-semibold text-status-success">{activeCount}</p>
-                  <p className="text-xs text-lia-text-primary">de {workflows.length} total</p>
+                  <p className="text-xs text-lia-text-primary">{t("ofTotalSimple", { total: workflows.length })}</p>
                 </div>
                 <div className="w-10 h-10 bg-status-success/15 rounded-md flex items-center justify-center">
                   <Workflow className="w-5 h-5 text-status-success" />
@@ -145,11 +144,11 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-lia-text-primary">Execuções Hoje</p>
+                  <p className="text-sm font-medium text-lia-text-primary">{t("executionsToday")}</p>
                   <p className="text-2xl font-semibold text-lia-text-primary">
                     {workflows.reduce((sum, w) => sum + w.executions, 0)}
                   </p>
-                  <p className="text-xs text-lia-text-primary">total acumulado</p>
+                  <p className="text-xs text-lia-text-primary">{t("totalAccumulated")}</p>
                 </div>
                 <div className="w-10 h-10 bg-wedo-cyan/15 rounded-md flex items-center justify-center">
                   <Zap className="w-5 h-5 text-lia-text-secondary" />
@@ -162,13 +161,13 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-lia-text-primary">Taxa de Sucesso</p>
+                  <p className="text-sm font-medium text-lia-text-primary">{t("successRate")}</p>
                   <p className="text-2xl font-semibold text-wedo-orange">
                     {workflows.length > 0
                       ? `${Math.round(workflows.reduce((s, w) => s + w.successRate, 0) / workflows.length)}%`
                       : "—"}
                   </p>
-                  <p className="text-xs text-lia-text-primary">média das automações</p>
+                  <p className="text-xs text-lia-text-primary">{t("averageOfAutomations")}</p>
                 </div>
                 <div className="w-10 h-10 bg-wedo-orange/15 rounded-md flex items-center justify-center">
                   <Target className="w-5 h-5 text-wedo-orange" />
@@ -181,9 +180,9 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-lia-text-primary">Automações</p>
+                  <p className="text-sm font-medium text-lia-text-primary">{t("automationsLabel")}</p>
                   <p className="text-2xl font-semibold text-wedo-purple">{workflows.length}</p>
-                  <p className="text-xs text-lia-text-primary">configuradas</p>
+                  <p className="text-xs text-lia-text-primary">{t("configured")}</p>
                 </div>
                 <div className="w-10 h-10 bg-wedo-purple/15 rounded-md flex items-center justify-center">
                   <FileText className="w-5 h-5 text-wedo-purple" />
@@ -196,10 +195,10 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              <span>Workflows Configurados</span>
+              <span>{t("configuredWorkflows")}</span>
               <Button className="gap-2">
                 <Plus className="w-4 h-4" />
-                Novo Workflow
+                {t("newWorkflow")}
               </Button>
             </CardTitle>
           </CardHeader>
@@ -208,14 +207,14 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Workflow className="w-10 h-10 text-lia-text-primary mb-3" />
                 <p className="text-sm font-medium text-lia-text-primary mb-1">
-                  Nenhuma automação configurada ainda
+                  {t("emptyTitle")}
                 </p>
                 <p className="text-xs text-lia-text-primary mb-4">
-                  Crie sua primeira automação para agilizar o processo seletivo
+                  {t("emptyDesc")}
                 </p>
                 <Button size="sm" className="gap-2">
                   <Plus className="w-4 h-4" />
-                  Criar primeira automação
+                  {t("createFirst")}
                 </Button>
               </div>
             ) : (
@@ -243,22 +242,22 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
                           <p className="text-sm text-lia-text-primary">{workflow.description}</p>
                         )}
                         <div className="flex items-center gap-3 mt-1 text-xs text-lia-text-primary">
-                          <span>Trigger: {workflow.trigger}</span>
+                          <span>{t("trigger", { value: labelForTrigger(workflow.triggerType) })}</span>
                           <span>•</span>
-                          <span>{workflow.executions} execuções</span>
+                          <span>{t("executions", { count: workflow.executions })}</span>
                           <span>•</span>
-                          <span className="text-status-success">{workflow.successRate}% sucesso</span>
+                          <span className="text-status-success">{t("successPct", { pct: workflow.successRate })}</span>
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <Chip variant="neutral" muted={workflow.status !== "active"}>
-                        {workflow.status === "active" ? "Ativo" : "Pausado"}
+                        {workflow.status === "active" ? t("statusActive") : t("statusPaused")}
                       </Chip>
                       <Button variant="outline" size="sm">
                         <Edit className="w-4 h-4 mr-2" />
-                        Editar
+                        {t("edit")}
                       </Button>
                       <Button variant="ghost" size="sm">
                         <MoreHorizontal className="w-4 h-4" />
@@ -273,31 +272,31 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
 
         <Card>
           <CardHeader>
-            <CardTitle>Ações Rápidas</CardTitle>
+            <CardTitle>{t("quickActions")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Button variant="outline" className="h-auto p-4 justify-start gap-3">
                 <Plus className="w-5 h-5 text-lia-text-secondary" />
                 <div className="text-left">
-                  <div className="font-medium">Criar Workflow</div>
-                  <div className="text-sm text-lia-text-primary">Do zero ou usando template</div>
+                  <div className="font-medium">{t("createWorkflow")}</div>
+                  <div className="text-sm text-lia-text-primary">{t("createWorkflowDesc")}</div>
                 </div>
               </Button>
 
               <Button variant="outline" className="h-auto p-4 justify-start gap-3">
                 <Download className="w-5 h-5 text-status-success" />
                 <div className="text-left">
-                  <div className="font-medium">Importar Modelo</div>
-                  <div className="text-sm text-lia-text-primary">Da biblioteca de templates</div>
+                  <div className="font-medium">{t("importTemplate")}</div>
+                  <div className="text-sm text-lia-text-primary">{t("importTemplateDesc")}</div>
                 </div>
               </Button>
 
               <Button variant="outline" className="h-auto p-4 justify-start gap-3">
                 <BarChart3 className="w-5 h-5 text-wedo-purple" />
                 <div className="text-left">
-                  <div className="font-medium">Ver Analytics</div>
-                  <div className="text-sm text-lia-text-primary">Performance detalhada</div>
+                  <div className="font-medium">{t("viewAnalytics")}</div>
+                  <div className="text-sm text-lia-text-primary">{t("viewAnalyticsDesc")}</div>
                 </div>
               </Button>
             </div>
@@ -310,24 +309,24 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
   const renderBuilder = () => (
     <div className="text-center py-12">
       <Workflow className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
-      <h3 className="text-lg font-medium text-lia-text-primary mb-2">Workflow Builder Visual</h3>
-      <p className="text-lia-text-primary">Interface de arrastar e soltar para criar workflows</p>
+      <h3 className="text-lg font-medium text-lia-text-primary mb-2">{t("builderTitle")}</h3>
+      <p className="text-lia-text-primary">{t("builderDesc")}</p>
     </div>
   )
 
   const renderTemplates = () => (
     <div className="text-center py-12">
       <FileText className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
-      <h3 className="text-lg font-medium text-lia-text-primary mb-2">Biblioteca de Modelos</h3>
-      <p className="text-lia-text-primary">Templates pré-configurados para casos comuns</p>
+      <h3 className="text-lg font-medium text-lia-text-primary mb-2">{t("templateLibrary")}</h3>
+      <p className="text-lia-text-primary">{t("templateLibraryDesc")}</p>
     </div>
   )
 
   const renderLogs = () => (
     <div className="text-center py-12">
       <Activity className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
-      <h3 className="text-lg font-medium text-lia-text-primary mb-2">Logs de Execução</h3>
-      <p className="text-lia-text-primary">Histórico detalhado de todas as execuções</p>
+      <h3 className="text-lg font-medium text-lia-text-primary mb-2">{t("executionLogs")}</h3>
+      <p className="text-lia-text-primary">{t("executionLogsDesc")}</p>
     </div>
   )
 
@@ -337,30 +336,30 @@ export function AutomationsTab({ onSettingsChange }: { onSettingsChange: (change
         <div>
           <h2 className="text-xl font-semibold text-lia-text-primary flex items-center gap-2">
             <Workflow className="w-5 h-5 text-lia-text-secondary" />
-            Automação Workflows Enterprise
+            {t("pageTitle")}
           </h2>
           <p className="text-sm text-lia-text-primary">
-            Builder visual para automações inteligentes de recrutamento
+            {t("pageSubtitle")}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" className="gap-2">
             <Download className="w-4 h-4" />
-            Exportar
+            {t("export")}
           </Button>
           <Button size="sm" className="gap-2">
             <Plus className="w-4 h-4" />
-            Novo Workflow
+            {t("newWorkflow")}
           </Button>
         </div>
       </div>
 
       <div className="flex space-x-1 bg-lia-bg-tertiary p-1 rounded-xl w-fit">
         {[
-          { id: "overview", label: "Visão Geral", icon: BarChart3 },
-          { id: "builder", label: "Builder", icon: Workflow },
-          { id: "templates", label: "Templates", icon: FileText },
-          { id: "logs", label: "Logs", icon: Activity },
+          { id: "overview", label: t("tabOverview"), icon: BarChart3 },
+          { id: "builder", label: t("tabBuilder"), icon: Workflow },
+          { id: "templates", label: t("tabTemplates"), icon: FileText },
+          { id: "logs", label: t("tabLogs"), icon: Activity },
         ].map((tab) => (
           <button
             key={tab.id}

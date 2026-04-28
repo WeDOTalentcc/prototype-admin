@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useCallback, useEffect, useRef, useState } from "react"
+import { useTranslations } from "next-intl"
 import {
   Upload, Loader2, CheckCircle, AlertTriangle, X, FileText,
 } from "lucide-react"
@@ -16,15 +17,6 @@ const STATE_PROGRESS: Record<UploadState, number> = {
   sending: 80,
   done: 100,
   error: 0,
-}
-
-const STATE_LABELS: Record<UploadState, string> = {
-  idle: "",
-  uploading: "Enviando arquivo...",
-  extracting: "Extraindo texto...",
-  sending: "Enviando para LIA...",
-  done: "Concluído!",
-  error: "",
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
@@ -59,6 +51,7 @@ export function SectionUploadDropZone({
   sectionLabel,
   hint,
 }: SectionUploadDropZoneProps) {
+  const t = useTranslations("settings.sectionUpload")
   const [uploadState, setUploadState] = useState<UploadState>("idle")
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [warnings, setWarnings] = useState<string[]>([])
@@ -68,6 +61,11 @@ export function SectionUploadDropZone({
   const dropZoneRef = useRef<HTMLDivElement>(null)
   const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const { sendChatMessage } = useLiaFloat()
+
+  const stateLabel = (state: UploadState): string => {
+    if (state === "idle" || state === "error") return ""
+    return t(`states.${state}` as never)
+  }
 
   useEffect(() => {
     return () => {
@@ -101,13 +99,13 @@ export function SectionUploadDropZone({
   const processFile = useCallback(async (file: File) => {
     const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase()
     if (!VALID_EXTS.includes(ext)) {
-      setErrorMessage("Formato não suportado. Use PDF, DOCX ou TXT.")
+      setErrorMessage(t("errors.unsupportedFormat"))
       setUploadState("error")
       setTimeout(resetState, 4000)
       return
     }
     if (file.size > MAX_FILE_SIZE) {
-      setErrorMessage("Arquivo muito grande (máximo 10MB).")
+      setErrorMessage(t("errors.fileTooLarge"))
       setUploadState("error")
       setTimeout(resetState, 4000)
       return
@@ -135,7 +133,7 @@ export function SectionUploadDropZone({
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}))
-        throw new Error(errData.error || "Falha ao processar o documento")
+        throw new Error(errData.error || t("errors.processFailed"))
       }
 
       const result = await response.json()
@@ -143,7 +141,7 @@ export function SectionUploadDropZone({
       const fairnessWarnings: string[] = result.fairness_warnings || []
 
       if (!extractedText || extractedText.trim().length < 10) {
-        throw new Error("Não foi possível extrair texto suficiente do documento.")
+        throw new Error(t("errors.insufficientText"))
       }
 
       setWarnings(fairnessWarnings)
@@ -151,19 +149,19 @@ export function SectionUploadDropZone({
       animateProgress(STATE_PROGRESS.sending)
 
       const chatMessage = [
-        `[TOOL:process_uploaded_document]`,
+        t("chatToolHeader"),
         `[document_type:${documentType}]`,
         `[target_section:${targetSection}]`,
         `[file_name:${file.name}]`,
         `[text_length:${extractedText.length}]`,
         ``,
-        `Recebi o upload do arquivo "${file.name}" no card de ${sectionLabel}.`,
-        `Use a ferramenta process_uploaded_document com document_type="${documentType}" e target_section="${targetSection}" para extrair APENAS os campos da seção "${sectionLabel}".`,
-        `Após analisar, liste os campos encontrados e PEÇA MINHA CONFIRMAÇÃO antes de preencher.`,
+        t("chatReceivedSection", { fileName: file.name, sectionLabel }),
+        t("chatUseTool", { docType: documentType, targetSection, sectionLabel }),
+        t("chatAskConfirm"),
         ``,
-        `--- TEXTO DO DOCUMENTO ---`,
+        t("chatDocStart"),
         extractedText.substring(0, 8000),
-        `--- FIM DO TEXTO ---`,
+        t("chatDocEnd"),
       ].join("\n")
 
       await sendChatMessage(chatMessage, "company_settings")
@@ -173,12 +171,12 @@ export function SectionUploadDropZone({
       setProgressPercent(100)
       setTimeout(resetState, 5000)
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Erro ao processar documento")
+      setErrorMessage(err instanceof Error ? err.message : t("errors.processError"))
       setUploadState("error")
       setProgressPercent(0)
       setTimeout(resetState, 5000)
     }
-  }, [animateProgress, documentType, resetState, sectionLabel, sendChatMessage, targetSection])
+  }, [animateProgress, documentType, resetState, sectionLabel, sendChatMessage, t, targetSection])
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -240,13 +238,13 @@ export function SectionUploadDropZone({
           }`}
         >
           {isProcessing
-            ? STATE_LABELS[uploadState]
+            ? stateLabel(uploadState)
             : isDragOver
-              ? "Solte o arquivo aqui"
-              : `Arraste um documento de ${sectionLabel.toLowerCase()} ou clique para selecionar`}
+              ? t("dropFileHere")
+              : t("dragSection", { sectionLabel: sectionLabel.toLowerCase() })}
         </p>
         <p className="text-micro text-lia-text-tertiary mt-0.5">
-          {hint || "PDF, DOCX ou TXT — máx. 10MB. A LIA confirmará antes de gravar."}
+          {hint || t("defaultHint")}
         </p>
       </div>
 
@@ -262,7 +260,7 @@ export function SectionUploadDropZone({
       {uploadState === "done" && (
         <div className="flex items-center gap-2 px-2 py-1.5 rounded-md text-micro bg-status-success/10 text-status-success border border-status-success/30">
           <CheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
-          <span>Enviado! A LIA pedirá confirmação antes de preencher os campos.</span>
+          <span>{t("doneMessage")}</span>
         </div>
       )}
 
@@ -277,18 +275,19 @@ export function SectionUploadDropZone({
         <div className="px-2 py-1.5 rounded-md text-micro bg-status-warning/10 border border-status-warning/30">
           <div className="flex items-center gap-1 mb-0.5">
             <AlertTriangle className="w-3 h-3 text-status-warning" />
-            <span className="font-medium text-status-warning">FairnessGuard</span>
+            <span className="font-medium text-status-warning">{t("fairnessTitle")}</span>
           </div>
           <p className="text-lia-text-secondary">
-            Termos sensíveis detectados: {warnings.slice(0, 3).join(", ")}
-            {warnings.length > 3 ? "…" : ""}
+            {t("sensitiveTermsDetected", {
+              terms: warnings.slice(0, 3).join(", ") + (warnings.length > 3 ? "…" : ""),
+            })}
           </p>
         </div>
       )}
 
       <p className="text-micro text-lia-text-tertiary flex items-center gap-1">
         <FileText className="w-2.5 h-2.5" />
-        Upload contextual — extração focada em {sectionLabel}.
+        {t("contextualUpload", { sectionLabel })}
       </p>
 
       <input

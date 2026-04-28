@@ -1,61 +1,87 @@
 "use client"
 
-import { useState } from"react"
+import { useState, useMemo } from "react"
+import { useTranslations, useLocale } from "next-intl"
 import { Chip } from "@/components/ui/chip"
-import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
-import { Button } from"@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import {
   Mail, Bell, MessageSquare, Phone, Zap, Plus, Edit,
   MoreVertical, CheckCircle,
-} from"lucide-react"
+} from "lucide-react"
 
 export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => void }) {
+  const t = useTranslations("settings.recruitment.communicationTab")
+  const locale = useLocale()
   const [activeSubTab, setActiveSubTab] = useState<'templates' | 'notifications' | 'whatsapp' | 'sms' | 'automation'>('templates')
-  const [templates, setTemplates] = useState([
+
+  const templates = useMemo(() => ([
     {
       id: 'welcome',
-      name: 'Boas-vindas',
-      subject: 'Bem-vindo(a) ao processo seletivo da {empresa}',
+      name: t('templateBoasVindasName'),
+      subject: t('templateBoasVindasSubject', { empresa: '{empresa}' }),
       type: 'email',
-      status: 'ativo',
-      trigger: 'Novo candidato',
-      lastModified: '2024-01-15'
+      status: 'active' as const,
+      trigger: t('templateBoasVindasTrigger'),
+      lastModified: '2024-01-15',
     },
     {
       id: 'interview-invite',
-      name: 'Convite para Entrevista',
-      subject: 'Convite para entrevista - {vaga}',
+      name: t('templateInterviewInviteName'),
+      subject: t('templateInterviewInviteSubject', { vaga: '{vaga}' }),
       type: 'email',
-      status: 'ativo',
-      trigger: 'Agendamento de entrevista',
-      lastModified: '2024-01-18'
+      status: 'active' as const,
+      trigger: t('templateInterviewInviteTrigger'),
+      lastModified: '2024-01-18',
     },
     {
       id: 'rejection',
-      name: 'Feedback Negativo',
-      subject: 'Agradecemos seu interesse - {vaga}',
+      name: t('templateRejectionName'),
+      subject: t('templateRejectionSubject', { vaga: '{vaga}' }),
       type: 'email',
-      status: 'ativo',
-      trigger: 'Candidato rejeitado',
-      lastModified: '2024-01-10'
+      status: 'active' as const,
+      trigger: t('templateRejectionTrigger'),
+      lastModified: '2024-01-10',
     },
     {
       id: 'offer',
-      name: 'Proposta de Emprego',
-      subject: 'Proposta de emprego - {vaga}',
+      name: t('templateOfferName'),
+      subject: t('templateOfferSubject', { vaga: '{vaga}' }),
       type: 'email',
-      status: 'ativo',
-      trigger: 'Aprovação final',
-      lastModified: '2024-01-20'
-    }
-  ])
+      status: 'active' as const,
+      trigger: t('templateOfferTrigger'),
+      lastModified: '2024-01-20',
+    },
+  ]), [t])
 
   const subTabs = [
-    { id: 'templates', name: 'Modelos de Email', icon: Mail },
-    { id: 'notifications', name: 'Notificações', icon: Bell },
-    { id: 'whatsapp', name: 'WhatsApp Business', icon: MessageSquare },
-    { id: 'sms', name: 'SMS', icon: Phone },
-    { id: 'automation', name: 'Automação', icon: Zap }
+    { id: 'templates', name: t('emailTemplates'), icon: Mail },
+    { id: 'notifications', name: t('notifications'), icon: Bell },
+    { id: 'whatsapp', name: t('whatsappBusiness'), icon: MessageSquare },
+    { id: 'sms', name: t('sms'), icon: Phone },
+    { id: 'automation', name: t('automation'), icon: Zap },
+  ]
+
+  const notificationItems = [
+    { key: 'newCandidate' },
+    { key: 'interviewScheduled' },
+    { key: 'interviewReminder' },
+    { key: 'feedbackDue' },
+    { key: 'candidateReply' },
+    { key: 'processDeadline' },
+  ] as const
+
+  const messageTemplates = [
+    { id: 'invite', name: t('msgTemplate_inviteName'), message: t('msgTemplate_inviteText', { vaga: '{vaga}' }) },
+    { id: 'reminder', name: t('msgTemplate_reminderName'), message: t('msgTemplate_reminderText', { horario: '{horario}' }) },
+    { id: 'docs', name: t('msgTemplate_docsName'), message: t('msgTemplate_docsText', { documentos: '{documentos}' }) },
+  ]
+
+  const automations = [
+    { id: 'response', name: t('auto_responseName'), description: t('auto_responseDesc'), status: 'active' as const, trigger: t('auto_responseTrigger') },
+    { id: 'followup', name: t('auto_followupName'), description: t('auto_followupDesc'), status: 'active' as const, trigger: t('auto_followupTrigger') },
+    { id: 'deadline', name: t('auto_deadlineName'), description: t('auto_deadlineDesc'), status: 'paused' as const, trigger: t('auto_deadlineTrigger') },
+    { id: 'reengage', name: t('auto_reengageName'), description: t('auto_reengageDesc'), status: 'active' as const, trigger: t('auto_reengageTrigger') },
   ]
 
   const renderTemplates = () => (
@@ -65,11 +91,11 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Mail className="w-4 h-4" />
-              Modelos de Email
+              {t('emailTemplates')}
             </div>
             <Button className="gap-2">
               <Plus className="w-4 h-4" />
-              Novo Modelo
+              {t('newTemplate')}
             </Button>
           </CardTitle>
         </CardHeader>
@@ -85,19 +111,19 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
                     <h4 className="font-medium text-lia-text-primary">{template.name}</h4>
                     <p className="text-sm text-lia-text-primary">{template.subject}</p>
                     <div className="flex items-center gap-3 mt-1 text-xs text-lia-text-primary">
-                      <span>Trigger: {template.trigger}</span>
+                      <span>{t('triggerLabel', { value: template.trigger })}</span>
                       <span>•</span>
-                      <span>Modificado em {new Date(template.lastModified).toLocaleDateString('pt-BR')}</span>
+                      <span>{t('modifiedOn', { date: new Date(template.lastModified).toLocaleDateString(locale) })}</span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Chip variant="neutral" muted={template.status !== 'ativo'}>
-                    {template.status}
+                  <Chip variant="neutral" muted={template.status !== 'active'}>
+                    {template.status === 'active' ? t('statusActive') : t('statusPaused')}
                   </Chip>
                   <Button variant="outline" size="sm">
                     <Edit className="w-4 h-4 mr-2" />
-                    Editar
+                    {t('edit')}
                   </Button>
                   <Button variant="ghost" size="sm">
                     <MoreVertical className="w-4 h-4" />
@@ -111,28 +137,30 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
 
       <Card>
         <CardHeader>
-          <CardTitle>Configurações Gerais de Email</CardTitle>
+          <CardTitle>{t('generalEmailSettings')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-2 block">
-                Nome do Remetente
+                {t('senderName')}
               </label>
               <input
+                key={t('senderDefault')}
                 type="text"
-                defaultValue="Equipe de Recrutamento - Sodexo"
+                defaultValue={t('senderDefault')}
                 onChange={() => onSettingsChange(true)}
                 className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
               />
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-2 block">
-                Email de Resposta
+                {t('replyEmail')}
               </label>
               <input
+                key={t('replyEmailDefault')}
                 type="email"
-                defaultValue="recrutamento@sodexo.com.br"
+                defaultValue={t('replyEmailDefault')}
                 onChange={() => onSettingsChange(true)}
                 className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
               />
@@ -140,11 +168,12 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
           </div>
           <div>
             <label className="text-sm font-medium text-lia-text-primary mb-2 block">
-              Assinatura Padrão
+              {t('defaultSignature')}
             </label>
             <textarea
+              key={t('signatureDefault')}
               rows={4}
-              defaultValue="Atenciosamente,&#10;Equipe de Recrutamento&#10;Sodexo Brasil&#10;www.sodexo.com.br"
+              defaultValue={t('signatureDefault')}
               onChange={() => onSettingsChange(true)}
               className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             />
@@ -160,35 +189,28 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bell className="w-4 h-4" />
-            Configurações de Notificação
+            {t('notificationSettings')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {[
-            { key:"newCandidate", label:"Novo candidato se inscreveu", desc:"Notificar recrutadores sobre novas inscrições" },
-            { key:"interviewScheduled", label:"Entrevista agendada", desc:"Lembrete para recrutador e candidato" },
-            { key:"interviewReminder", label:"Lembrete de entrevista", desc:"Enviar 24h antes da entrevista" },
-            { key:"feedbackDue", label:"Prazo de feedback", desc:"Lembrar de dar feedback após entrevistas" },
-            { key:"candidateReply", label:"Resposta do candidato", desc:"Quando candidato responde emails" },
-            { key:"processDeadline", label:"Prazo do processo", desc:"Alertar sobre prazos de processos seletivos" }
-          ].map((notification) => (
+          {notificationItems.map((notification) => (
             <div key={notification.key} className="flex items-center justify-between p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl">
               <div>
-                <div className="text-sm font-medium text-lia-text-primary">{notification.label}</div>
-                <div className="text-xs text-lia-text-primary">{notification.desc}</div>
+                <div className="text-sm font-medium text-lia-text-primary">{t(`notif_${notification.key}_label` as never)}</div>
+                <div className="text-xs text-lia-text-primary">{t(`notif_${notification.key}_desc` as never)}</div>
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
                   <input type="checkbox" defaultChecked className="text-lia-text-secondary" onChange={() => onSettingsChange(true)} />
-                  <span className="text-xs text-lia-text-primary">Email</span>
+                  <span className="text-xs text-lia-text-primary">{t('email')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <input type="checkbox" className="text-lia-text-secondary" onChange={() => onSettingsChange(true)} />
-                  <span className="text-xs text-lia-text-primary">Push</span>
+                  <span className="text-xs text-lia-text-primary">{t('push')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <input type="checkbox" className="text-lia-text-secondary" onChange={() => onSettingsChange(true)} />
-                  <span className="text-xs text-lia-text-primary">WhatsApp</span>
+                  <span className="text-xs text-lia-text-primary">{t('whatsappBusiness')}</span>
                 </div>
               </div>
             </div>
@@ -204,47 +226,48 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4" />
-            WhatsApp Business
+            {t('whatsappBusiness')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="p-4 bg-status-success/10 dark:bg-status-success/20 border border-status-success/30 dark:border-status-success/30 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
               <CheckCircle className="w-5 h-5 text-status-success" />
-              <span className="font-medium text-status-success dark:text-status-success">WhatsApp Business Conectado</span>
+              <span className="font-medium text-status-success dark:text-status-success">{t('whatsappConnected')}</span>
             </div>
             <p className="text-sm text-status-success dark:text-status-success">
-              Número: +55 (11) 99999-9999
+              {t('whatsappNumber')}
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-2 block">
-                Mensagem de Boas-vindas
+                {t('welcomeMessage')}
               </label>
               <textarea
+                key={t('welcomeMessageDefault')}
                 rows={3}
-                defaultValue="Olá! 👋 Obrigado pelo interesse em nossa vaga. Em breve entraremos em contato."
+                defaultValue={t('welcomeMessageDefault')}
                 onChange={() => onSettingsChange(true)}
                 className="w-full p-2 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
               />
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-2 block">
-                Horário de Atendimento
+                {t('serviceHours')}
               </label>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm w-16">Segunda:</span>
+                  <span className="text-sm w-16">{t('monday')}</span>
                   <input type="time" defaultValue="08:00" className="text-xs" onChange={() => onSettingsChange(true)} />
-                  <span className="text-xs">às</span>
+                  <span className="text-xs">{t('to')}</span>
                   <input type="time" defaultValue="18:00" className="text-xs" onChange={() => onSettingsChange(true)} />
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm w-16">Sexta:</span>
+                  <span className="text-sm w-16">{t('friday')}</span>
                   <input type="time" defaultValue="08:00" className="text-xs" onChange={() => onSettingsChange(true)} />
-                  <span className="text-xs">às</span>
+                  <span className="text-xs">{t('to')}</span>
                   <input type="time" defaultValue="17:00" className="text-xs" onChange={() => onSettingsChange(true)} />
                 </div>
               </div>
@@ -252,17 +275,13 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
           </div>
 
           <div>
-            <h4 className="font-medium text-lia-text-primary mb-3">Modelos de Mensagem</h4>
+            <h4 className="font-medium text-lia-text-primary mb-3">{t('messageTemplates')}</h4>
             <div className="space-y-2">
-              {[
-                { name:"Convite para entrevista", message:"Parabéns! Você foi selecionado(a) para a próxima etapa do processo seletivo para a vaga de {vaga}. 🎉" },
-                { name:"Lembrete de entrevista", message:"Olá! Lembrando que sua entrevista está agendada para amanhã às {horario}. 📅" },
-                { name:"Solicitação de documentos", message:"Para prosseguir com seu processo, precisamos que envie os seguintes documentos: {documentos}" }
-              ].map((template) => (
-                <div key={template.name} className="p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
+              {messageTemplates.map((template) => (
+                <div key={template.id} className="p-3 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-sm">{template.name}</span>
-                    <Button variant="outline" size="sm">Editar</Button>
+                    <Button variant="outline" size="sm">{t('edit')}</Button>
                   </div>
                   <p className="text-xs text-lia-text-primary">{template.message}</p>
                 </div>
@@ -280,18 +299,18 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Phone className="w-4 h-4" />
-            SMS
+            {t('sms')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
             <Phone className="w-12 h-12 text-lia-text-primary mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-lia-text-primary mb-2">SMS em Desenvolvimento</h3>
+            <h3 className="text-lg font-medium text-lia-text-primary mb-2">{t('smsInDevelopment')}</h3>
             <p className="text-lia-text-primary mb-4">
-              Funcionalidade de SMS será disponibilizada em breve
+              {t('smsComingSoon')}
             </p>
             <Button variant="outline">
-              Solicitar Acesso Antecipado
+              {t('requestEarlyAccess')}
             </Button>
           </div>
         </CardContent>
@@ -305,58 +324,33 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Zap className="w-4 h-4" />
-            Automação de Comunicação
+            {t('communicationAutomation')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-4">
-            {[
-              {
-                name:"Resposta Automática",
-                description:"Enviar email de confirmação ao receber nova inscrição",
-                status:"ativo",
-                trigger:"Novo candidato"
-              },
-              {
-                name:"Follow-up de Entrevista",
-                description:"Solicitar feedback do candidato 2 dias após entrevista",
-                status:"ativo",
-                trigger:"2 dias após entrevista"
-              },
-              {
-                name:"Lembrete de Prazo",
-                description:"Alertar recrutadores sobre feedbacks pendentes",
-                status:"pausado",
-                trigger:"24h após prazo"
-              },
-              {
-                name:"Reengajamento",
-                description:"Contatar candidatos inativos há mais de 30 dias",
-                status:"ativo",
-                trigger:"30 dias de inatividade"
-              }
-            ].map((automation, index) => (
-              <div key={`auto-${index}`} className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
+            {automations.map((automation) => (
+              <div key={automation.id} className="flex items-center justify-between p-4 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
                 <div className="flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-md flex items-center justify-center ${
-                    automation.status === 'ativo' ? 'bg-status-success/15 dark:bg-status-success/20' : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
+                    automation.status === 'active' ? 'bg-status-success/15 dark:bg-status-success/20' : 'bg-lia-bg-tertiary dark:bg-lia-bg-secondary'
                   }`}>
                     <Zap className={`w-5 h-5 ${
-                      automation.status === 'ativo' ? 'text-status-success' : 'text-lia-text-primary'
+                      automation.status === 'active' ? 'text-status-success' : 'text-lia-text-primary'
                     }`} />
                   </div>
                   <div>
                     <h4 className="font-medium text-lia-text-primary">{automation.name}</h4>
                     <p className="text-sm text-lia-text-primary">{automation.description}</p>
-                    <p className="text-xs text-lia-text-primary">Trigger: {automation.trigger}</p>
+                    <p className="text-xs text-lia-text-primary">{t('triggerLabel', { value: automation.trigger })}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Chip variant="neutral" muted={automation.status !== 'ativo'}>
-                    {automation.status}
+                  <Chip variant="neutral" muted={automation.status !== 'active'}>
+                    {automation.status === 'active' ? t('automationStatusActive') : t('automationStatusPaused')}
                   </Chip>
                   <Button variant="outline" size="sm">
-                    Configurar
+                    {t('configure')}
                   </Button>
                 </div>
               </div>
@@ -365,7 +359,7 @@ export function CommunicationTab({ onSettingsChange }: { onSettingsChange: (chan
 
           <Button className="w-full gap-2" variant="outline">
             <Plus className="w-4 h-4" />
-            Nova Automação
+            {t('newAutomation')}
           </Button>
         </CardContent>
       </Card>
