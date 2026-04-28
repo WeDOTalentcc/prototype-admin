@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import { useLoadingWatchdog } from "@/hooks/shared/use-loading-watchdog"
-import type { CompanyData } from "@/components/settings/companyTeamHub.types"
+import type { CompanyData } from "@/hooks/settings/department-types"
 import type { CompanyBenefit } from "@/types/benefits"
 
 export interface BlockProgress {

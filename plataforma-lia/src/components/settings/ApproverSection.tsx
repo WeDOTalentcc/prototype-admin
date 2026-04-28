@@ -17,7 +17,7 @@ import {
 import {
   type Approver,
   type NewApproverForm,
-} from "./companyTeamHub.types";
+} from "@/hooks/settings/department-types";
 import { useTranslations } from "next-intl";
 
 export interface ApproverSectionProps {

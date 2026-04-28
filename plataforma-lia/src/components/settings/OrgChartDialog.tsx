@@ -21,7 +21,7 @@ import {
   getLevelOrder,
   getLevelLabel,
   getLevelColor,
-} from './companyTeamHub.types';
+} from '@/hooks/settings/department-types';
 import { textStyles } from "@/lib/design-tokens";
 import { useTranslations } from "next-intl";
 

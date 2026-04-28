@@ -7,7 +7,7 @@ import {
   defaultCompanyData,
   parseTechStackToCategories,
   categoriesToTechStack,
-} from "@/components/settings/companyTeamHub.types";
+} from "@/hooks/settings/department-types";
 
 export interface UseCompanyDataState {
   companyData: CompanyData;

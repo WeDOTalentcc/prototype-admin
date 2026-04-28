@@ -1,6 +1,6 @@
 import type React from "react"
-export type { CompanyData } from "./companyTeamHub.types"
-import type { CompanyData } from "./companyTeamHub.types"
+export type { CompanyData } from "@/hooks/settings/department-types"
+import type { CompanyData } from "@/hooks/settings/department-types"
 
 export interface CompanyDataSectionProps {
   companyData: CompanyData

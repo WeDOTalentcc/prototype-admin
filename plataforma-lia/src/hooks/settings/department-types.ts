@@ -117,7 +117,7 @@ export interface CompanyData {
 
 export interface CompanyTeamHubProps {
   activeSubsection?: string;
-  onUserUpdate?: (user: import('./user-management-types').UserData) => void;
+  onUserUpdate?: (user: import('@/components/settings/user-management-types').UserData) => void;
   onGoalUpdate?: (userId: string, goals: Record<string, unknown>) => void;
 }
 

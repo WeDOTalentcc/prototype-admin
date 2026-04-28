@@ -14,7 +14,7 @@ import {
   type CompanyData,
   type TechStackByCategory,
   TECH_STACK_CATEGORIES,
-} from './companyTeamHub.types';
+} from '@/hooks/settings/department-types';
 import { cardStyles } from"@/lib/design-tokens";
 
 export interface TechStackTabProps {

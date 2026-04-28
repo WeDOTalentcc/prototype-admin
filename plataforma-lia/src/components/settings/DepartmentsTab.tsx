@@ -19,7 +19,7 @@ import {
   type NewDepartmentForm,
   type NewMemberForm,
   type NewApproverForm,
-} from './companyTeamHub.types';
+} from '@/hooks/settings/department-types';
 import { actionButtonStyles } from "@/lib/design-tokens";
 import { ApproverSection } from "./ApproverSection";
 import { DepartmentFormCard } from "./DepartmentFormCard";
