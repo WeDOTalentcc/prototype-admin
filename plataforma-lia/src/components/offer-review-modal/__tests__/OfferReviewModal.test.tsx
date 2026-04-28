@@ -136,7 +136,8 @@ describe("OfferReviewModal", () => {
     it("exibe título da vaga no subtítulo", () => {
       vi.mocked(useOfferDraftStore).mockReturnValue(mockStore() as ReturnType<typeof useOfferDraftStore>)
       render(<OfferReviewModal />)
-      expect(screen.getByText("Engenheiro de Software")).toBeTruthy()
+      // Job title appears in header subtitle and JobDataPanel — use getAllByText
+      expect(screen.getAllByText("Engenheiro de Software").length).toBeGreaterThanOrEqual(1)
     })
 
     it("usa fallback 'Candidato' quando nome está ausente", () => {
@@ -187,17 +188,26 @@ describe("OfferReviewModal", () => {
       expect(mockCancel).toHaveBeenCalledOnce()
     })
 
-    it("clique em 'Enviar Proposta' chama sendAuto()", async () => {
+    it("clique em 'Enviar Proposta' confirma via HITL e chama sendAuto()", async () => {
       vi.mocked(useOfferDraftStore).mockReturnValue(mockStore() as ReturnType<typeof useOfferDraftStore>)
       render(<OfferReviewModal />)
+      // Step 1: request confirmation (idle -> confirming)
       fireEvent.click(screen.getByRole("button", { name: /Enviar Proposta/ }))
+      // OfferHITLBanner in confirming state shows Confirmar envio button
+      const confirmBtn = await waitFor(() => screen.getByRole("button", { name: /Confirmar envio/ }))
+      // Step 2: user confirms (user_confirmation: true — HITL gate)
+      fireEvent.click(confirmBtn)
       await waitFor(() => expect(mockSendAuto).toHaveBeenCalledOnce())
     })
 
-    it("exibe mensagem de resultado após envio bem-sucedido", async () => {
+    it("exibe mensagem de sucesso após confirmação HITL e envio", async () => {
       vi.mocked(useOfferDraftStore).mockReturnValue(mockStore() as ReturnType<typeof useOfferDraftStore>)
       render(<OfferReviewModal />)
+      // Two-step HITL: request -> confirm
       fireEvent.click(screen.getByRole("button", { name: /Enviar Proposta/ }))
+      const confirmBtn = await waitFor(() => screen.getByRole("button", { name: /Confirmar envio/ }))
+      fireEvent.click(confirmBtn)
+      // OfferHITLBanner success state shows fixed success text
       await waitFor(() => expect(screen.getByText("Proposta enviada com sucesso!")).toBeTruthy())
     })
 
