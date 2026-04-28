@@ -18,48 +18,35 @@ import {
 } from"@/components/settings/eligibility-questions-bank"
 import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
-import { ScreeningQuestion, NewQuestionForm } from './useRecruitmentHub'
+import { useRecruitmentHub, type NewQuestionForm } from './useRecruitmentHub'
 
-interface RecruitmentScreeningTabProps {
-  error: string | null
-  successMessage: string | null
-  questions: ScreeningQuestion[]
-  showQuestionForm: boolean
-  setShowQuestionForm: (v: boolean) => void
-  newQuestion: NewQuestionForm
-  setNewQuestion: React.Dispatch<React.SetStateAction<NewQuestionForm>>
-  isEditingQuestions: boolean
-  savingQuestions: boolean
-  showQuestionBank: boolean
-  setShowQuestionBank: (v: boolean) => void
-  expandedCategories: Set<QuestionCategory>
-  selectedBankQuestions: Set<string>
-  onStartEditQuestions: () => void
-  onCancelEditQuestions: () => void
-  onSaveQuestions: () => void
-  onAddQuestion: () => void
-  onDeleteQuestion: (id: string) => void
-  onToggleRequired: (id: string) => void
-  onToggleCategory: (category: QuestionCategory) => void
-  onToggleBankQuestion: (questionId: string) => void
-  onAddFromBank: () => void
-  getQuestionsByCategory: (category: QuestionCategory) => EligibilityQuestionTemplate[]
-  isQuestionAlreadyAdded: (q: EligibilityQuestionTemplate) => boolean
-}
-
-export function RecruitmentScreeningTab({
-  error, successMessage,
-  questions, showQuestionForm, setShowQuestionForm,
-  newQuestion, setNewQuestion,
-  isEditingQuestions, savingQuestions,
-  showQuestionBank, setShowQuestionBank,
-  expandedCategories, selectedBankQuestions,
-  onStartEditQuestions, onCancelEditQuestions, onSaveQuestions,
-  onAddQuestion, onDeleteQuestion, onToggleRequired,
-  onToggleCategory, onToggleBankQuestion, onAddFromBank,
-  getQuestionsByCategory, isQuestionAlreadyAdded,
-}: RecruitmentScreeningTabProps) {
+export function RecruitmentScreeningTab() {
   const t = useTranslations("settings")
+  const hub = useRecruitmentHub('screening')
+  const error = hub.error
+  const successMessage = hub.successMessage
+  const questions = hub.questions
+  const showQuestionForm = hub.showQuestionForm
+  const setShowQuestionForm = hub.setShowQuestionForm
+  const newQuestion = hub.newQuestion
+  const setNewQuestion = hub.setNewQuestion
+  const isEditingQuestions = hub.isEditingQuestions
+  const savingQuestions = hub.savingQuestions
+  const showQuestionBank = hub.showQuestionBank
+  const setShowQuestionBank = hub.setShowQuestionBank
+  const expandedCategories = hub.expandedCategories
+  const selectedBankQuestions = hub.selectedBankQuestions
+  const onStartEditQuestions = hub.handleStartEditQuestions
+  const onCancelEditQuestions = hub.handleCancelEditQuestions
+  const onSaveQuestions = hub.handleSaveQuestions
+  const onAddQuestion = hub.handleAddQuestion
+  const onDeleteQuestion = hub.handleDeleteQuestion
+  const onToggleRequired = hub.handleToggleRequired
+  const onToggleCategory = hub.toggleCategory
+  const onToggleBankQuestion = hub.toggleBankQuestion
+  const onAddFromBank = hub.handleAddFromBank
+  const getQuestionsByCategory = hub.getQuestionsByCategory
+  const isQuestionAlreadyAdded = hub.isQuestionAlreadyAdded
   return (
     <div className="space-y-6">
       {error && (

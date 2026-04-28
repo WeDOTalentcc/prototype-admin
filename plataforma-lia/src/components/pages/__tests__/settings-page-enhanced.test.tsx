@@ -99,28 +99,38 @@ vi.mock("@/components/settings/MinhaEmpresaHub", () => ({
     </div>
   ),
 }))
-vi.mock("@/components/settings/PipelineStandalone", () => ({
-  PipelineStandalone: () => <div data-testid="hub-pipeline" />,
+vi.mock("@/components/settings/RecruitmentPipelineTab", () => ({
+  RecruitmentPipelineTab: () => <div data-testid="hub-pipeline" />,
 }))
-vi.mock("@/components/settings/ScreeningStandalone", () => ({
-  ScreeningStandalone: () => <div data-testid="hub-screening" />,
+vi.mock("@/components/settings/RecruitmentScreeningTab", () => ({
+  RecruitmentScreeningTab: () => <div data-testid="hub-screening" />,
 }))
 vi.mock("@/components/settings/CommunicationHub", () => ({
-  CommunicationHub: (props: { activeSubsection?: string; visibleTabs?: string[] }) => (
-    <div
-      data-testid="hub-comunicacao-alertas"
-      data-active-subsection={props.activeSubsection ?? ""}
-      data-visible-tabs={(props.visibleTabs ?? []).join(",")}
-    />
-  ),
+  CommunicationHub: (props: { activeSubsection?: string; visibleTabs?: string[]; stacked?: boolean }) => {
+    const tabs = props.visibleTabs ?? []
+    // Task #900 — o mesmo CommunicationHub canônico atende duas tabs do
+    // menu (templates+signature ↔ schedule+alerts+abtesting). O testid
+    // muda conforme `visibleTabs` para distinguir as duas instâncias.
+    // A flag `stacked` é refletida em data-stacked para preservar a
+    // paridade visual do antigo TemplatesAssinaturaHub (Templates +
+    // Signature renderizados juntos, sem pill nav).
+    const testid = tabs.includes("templates")
+      ? "hub-templates-assinatura"
+      : "hub-comunicacao-alertas"
+    return (
+      <div
+        data-testid={testid}
+        data-active-subsection={props.activeSubsection ?? ""}
+        data-visible-tabs={tabs.join(",")}
+        data-stacked={props.stacked ? "true" : "false"}
+      />
+    )
+  },
 }))
 vi.mock("@/components/settings/IntegrationsHub", () => ({
   IntegrationsHub: (props: { activeSubsection?: string }) => (
     <div data-testid="hub-integrations" data-active-subsection={props.activeSubsection ?? ""} />
   ),
-}))
-vi.mock("@/components/settings/TemplatesAssinaturaHub", () => ({
-  TemplatesAssinaturaHub: () => <div data-testid="hub-templates-assinatura" />,
 }))
 vi.mock("@/components/settings/UsuariosDepartamentosHub", () => ({
   UsuariosDepartamentosHub: () => <div data-testid="hub-usuarios-departamentos" />,
@@ -256,6 +266,30 @@ describe("SettingsPageEnhanced — switch de hubs por activeSection", () => {
       expect(contentArea.getAttribute("data-active-section")).toBe(id)
     })
   }
+
+  // Task #900 — paridade visual: 'templates-assinatura' deve renderizar
+  // CommunicationHub no modo stacked (Templates + Signature empilhados,
+  // sem pill nav), preservando o layout do antigo TemplatesAssinaturaHub.
+  it("'templates-assinatura' renderiza CommunicationHub com stacked=true e visibleTabs=templates,signature", async () => {
+    const user = userEvent.setup()
+    render(<SettingsPageEnhanced />)
+
+    await user.click(screen.getByTestId("settings-menu-templates-assinatura"))
+
+    const hub = await screen.findByTestId("hub-templates-assinatura")
+    expect(hub.getAttribute("data-stacked")).toBe("true")
+    expect(hub.getAttribute("data-visible-tabs")).toBe("templates,signature")
+  })
+
+  it("'comunicacao-alertas' renderiza CommunicationHub sem stacked (modo pill)", async () => {
+    const user = userEvent.setup()
+    render(<SettingsPageEnhanced />)
+
+    await user.click(screen.getByTestId("settings-menu-comunicacao-alertas"))
+
+    const hub = await screen.findByTestId("hub-comunicacao-alertas")
+    expect(hub.getAttribute("data-stacked")).toBe("false")
+  })
 })
 
 // ── 3. Listener `settings-open-tab` ───────────────────────────────────────
