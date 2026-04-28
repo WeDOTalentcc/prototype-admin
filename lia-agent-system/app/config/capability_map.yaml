@@ -64,7 +64,9 @@ capabilities:
     entity_required: []     # tenant-wide forecast — no entity needed
     navigate_fallback: /analytics?view=previsoes
 
-  start_wsi_flow:
+  # PR-Q3: renamed from start_wsi_flow to align with FE intent_hint "start_wsi_interview"
+  # (SUGGESTION_HINTS["wsi-screening"].intent_hint = "start_wsi_interview")
+  start_wsi_interview:
     chat_executable: true
     entity_required:
       - type: job
