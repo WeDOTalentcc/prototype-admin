@@ -480,6 +480,31 @@ class MainOrchestrator:
                 except Exception as e:
                     logger.warning("[LIA-M01] Memory setup failed (non-blocking): %s", e)
 
+            # ── Phase 0.0: Rail A capability gate (PR-J) ──────────────────
+            # harness-engineering guide computacional: short-circuits non-chat-executable
+            # Rail A cards (add_candidate, stage_transition, interview_scheduling,
+            # candidate_compare) before ANY LLM call. Returns open_modal/navigate_to
+            # immediately. Failure is non-blocking (logged + fallthrough).
+            _rail_a_meta = ctx.extra.get("metadata")
+            if _rail_a_meta and _rail_a_meta.get("source") == "rail_a":
+                try:
+                    from app.orchestrator.rail_a_capability_check import check_rail_a_capability as _check_rail_a_cap
+                    _cap_result = await _check_rail_a_cap(
+                        context=ctx.to_orchestrator_context(),
+                        message=ctx.message,
+                        company_id=str(ctx.company_id),
+                        db=db,
+                    )
+                    if _cap_result is not None:
+                        _cap_response = ChatResponse.from_orchestrator_result(
+                            {**_cap_result, "success": True}, conv_id=conv_id
+                        )
+                        if _soft_warnings and not _cap_response.fairness_warnings:
+                            _cap_response.fairness_warnings = _soft_warnings
+                        return _cap_response
+                except Exception as _cap_exc:
+                    logger.debug("[PR-J] rail_a_capability_check skipped (non-blocking): %s", _cap_exc)
+
             # ── Phase 0: PendingAction ──────────────────────────────────────
             pending_response = await self._handle_pending_action(ctx, conv_id)
             if pending_response is not None:
