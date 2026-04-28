@@ -628,3 +628,40 @@ git log --oneline -- docs/BRANCH_MAP.md
 `wizard_react_agent.py` foi intencionalmente deletado no Task #850 (canonical consolidation).
 As mudanças C.2/P.1/C.4 do Mac (`followup/wizard-canonical-plugs`) são incompatíveis com
 a arquitetura atual do Replit — omitidas propositalmente.
+
+---
+
+## Onda 22 — Wave 5 Sensors: Offer FE Invariants (2026-04-28)
+
+**Branch:** `feat/orch-migration-sprint-I`
+**Commit:** `4e6374302`
+**Harness:** SENSOR (computacional) — pathlib-only, 10 guards, zero imports de runtime
+
+### Arquivos entregues
+
+| Arquivo | Mudança | Guard |
+|---------|---------|-------|
+| `plataforma-lia/src/components/offer-review-modal/OfferHITLBanner.tsx` | **NOVO** — banner HITL com `role="alert"` no estado de erro | Guard 8 (WCAG 2.1 AA) |
+| `plataforma-lia/src/components/offer-review-modal/OfferReviewModal.tsx` | HITL two-step `idle→confirming→success/error` + `user_confirmation` | Guards 2, 3 |
+| `plataforma-lia/src/components/offer-review-modal/OfferDataForm.tsx` | `aria-invalid={salaryOverBudget}` no campo salário | Guard 7 |
+| `plataforma-lia/src/stores/offer-draft-store.ts` | `reset()/initialState` + `devtools` middleware + `setDraft/setOpen` | Guards 6, 10 |
+| `plataforma-lia/src/hooks/offers/useOfferReviewFlow.ts` | `start()` chama `offersApi.createDraft`, `setDraft(draft)`, `setOpen(true)` | Guard 5 |
+| `lia-agent-system/tests/unit/test_wave5_offer_fe_invariants.py` | **NOVO** — 10 sensors computacionais | Guards 1–10 |
+
+### Resultado dos sensors
+```
+10/10 PASSED (feat/orch-migration-sprint-I, Replit)
+Rodar com: pytest lia-agent-system/tests/unit/test_wave5_offer_fe_invariants.py --no-cov -v
+```
+
+### Guards implementados
+1. `OfferReviewModal.tsx` ≤ 250 linhas — 193 linhas ✅
+2. `user_confirmation: true` presente no modal (HITL nunca bypassado) ✅
+3. Send só dispara após `confirmState="confirming"` ✅
+4. `offersApi` usa `/api/backend-proxy` (nunca FastAPI direta) ✅
+5. `useOfferReviewFlow.start()` chama `offersApi.createDraft`, `setDraft`, `setOpen` ✅
+6. `useOfferDraftStore` tem `reset()` + `initialState` ✅
+7. `OfferDataForm` tem `aria-invalid` no campo salário ✅
+8. `OfferHITLBanner` tem `role="alert"` no estado de erro ✅
+9. Todos os 4 proxy routes existem (POST, PATCH, DELETE, send, prepare-manual) ✅
+10. Store usa Zustand com `devtools` middleware ✅
