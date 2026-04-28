@@ -42,3 +42,32 @@ capabilities:
         param: job_id
     modal_id: candidate_compare
     navigate_fallback: /visao-do-funil?stage=oferta
+
+  # ── Wave 1 PR-Q2: job entity resolution for VERIFICAR cards ──────────────
+  close_job:
+    chat_executable: true
+    entity_required:
+      - type: job
+        param: job_id
+    navigate_fallback: /jobs?status=open
+
+  generate_job_report:
+    chat_executable: true
+    entity_required:
+      - type: job
+        param: job_id
+    navigate_fallback: /analytics
+
+  # ── Wave 1 PR-Q3: canonical intents for analytics/WSI cards ─────────────
+  forecast:
+    chat_executable: true
+    entity_required: []     # tenant-wide forecast — no entity needed
+    navigate_fallback: /analytics?view=previsoes
+
+  start_wsi_flow:
+    chat_executable: true
+    entity_required:
+      - type: job
+        param: job_id
+    navigate_fallback: /jobs
+

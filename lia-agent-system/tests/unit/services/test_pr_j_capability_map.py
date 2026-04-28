@@ -90,3 +90,59 @@ class TestCapabilityGet:
                 assert cap.modal_id is not None or cap.navigate_fallback is not None, (
                     f"'{intent}' não é chat-executable mas não tem modal_id nem navigate_fallback."
                 )
+
+
+class TestCapabilityMapWave1Intents:
+    """Wave 1 PR-Q2 + PR-Q3: close_job, generate_job_report, forecast, start_wsi_flow."""
+
+    def test_wave1_intents_present(self):
+        """sensor: todos os 9 intents Wave 0+1 estão declarados no capability_map."""
+        caps = CapabilityMapService.load()
+        wave1 = ["close_job", "generate_job_report", "forecast", "start_wsi_flow"]
+        for intent in wave1:
+            assert intent in caps, (
+                f"Intent {intent} ausente do capability_map.yaml. "
+                "Wave 1 PR-Q2/PR-Q3 requer essas entradas para entity resolution dos cards."
+            )
+
+    def test_close_job_requires_job_entity(self):
+        reqs = CapabilityMapService.needs_entity("close_job")
+        assert any(r.type == "job" for r in reqs), (
+            "close_job deve exigir job_id para evitar dead-end (qual vaga encerrar?)."
+        )
+
+    def test_generate_job_report_requires_job_entity(self):
+        reqs = CapabilityMapService.needs_entity("generate_job_report")
+        assert any(r.type == "job" for r in reqs)
+
+    def test_forecast_has_no_entity_required(self):
+        """forecast é tenant-wide — não precisa de job específico."""
+        reqs = CapabilityMapService.needs_entity("forecast")
+        assert reqs == [], (
+            "forecast não deve exigir entidade — é previsão do pipeline todo do tenant."
+        )
+
+    def test_start_wsi_flow_requires_job(self):
+        reqs = CapabilityMapService.needs_entity("start_wsi_flow")
+        assert any(r.type == "job" for r in reqs), (
+            "start_wsi_flow deve exigir job_id — triagem WSI é por vaga."
+        )
+
+    def test_wave1_navigate_fallbacks_are_valid_paths(self):
+        """Todos os navigate_fallback devem começar com /."""
+        wave1 = ["close_job", "generate_job_report", "forecast", "start_wsi_flow"]
+        for intent in wave1:
+            cap = CapabilityMapService.get(intent)
+            if cap and cap.navigate_fallback:
+                assert cap.navigate_fallback.startswith("/"), (
+                    f"navigate_fallback de {intent} deve ser path absoluto (começa com /)."
+                )
+
+    def test_total_intents_is_nine(self):
+        """sensor: capability_map deve ter exatamente 9 intents após Wave 1."""
+        caps = CapabilityMapService.load()
+        assert len(caps) == 9, (
+            f"capability_map.yaml deve ter 9 intents após Wave 1, "
+            f"encontrado: {len(caps)}. "
+            "Adicione a entrada ou remova se obsoleta."
+        )
