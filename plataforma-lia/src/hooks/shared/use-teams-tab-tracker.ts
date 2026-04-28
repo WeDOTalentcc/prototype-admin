@@ -19,7 +19,7 @@
 
 import { useCallback, useEffect, useRef } from "react"
 
-const DEFAULT_(prolongedStayMs ?? DEFAULT_PROLONGED_STAY_MS) = 3 * 60 * 1000
+const DEFAULT_PROLONGED_STAY_MS = 3 * 60 * 1000
 
 interface TrackerOptions {
   teamsUserId?: string | null

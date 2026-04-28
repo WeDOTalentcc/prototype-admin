@@ -25,8 +25,13 @@ export function WebhooksManager() {
   const [testingId, setTestingId] = useState<string | null>(null)
 
   const eventLabel = (event: string): string => {
+    // next-intl proíbe `.` em chaves (caractere reservado para nesting), então
+    // os event types do backend (`agent.execution.completed`, etc) precisam ser
+    // normalizados para `agent_execution_completed` antes do lookup. O event
+    // type bruto é preservado como fallback caso a tradução não exista.
+    const key = event.replace(/\./g, "_")
     try {
-      return t(`eventLabels.${event}` as never)
+      return t(`eventLabels.${key}` as never)
     } catch {
       return event
     }

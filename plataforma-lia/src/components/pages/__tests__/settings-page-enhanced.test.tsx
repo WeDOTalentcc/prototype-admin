@@ -6,7 +6,7 @@
  * unificação Templates+Communication, etc).
  *
  * Cobre:
- *   1. Sidebar renderiza os 8 hubs definidos em `getDefaultSections()`.
+ *   1. Sidebar renderiza os 10 hubs definidos em `getDefaultSections()`.
  *   2. O switch `renderSectionContent()` carrega o hub correto por
  *      `activeSection` (via dynamic import — mockado abaixo).
  *   3. O listener de `window.dispatchEvent('settings-open-tab', sectionId)`
@@ -64,6 +64,16 @@ beforeAll(() => {
 })
 
 // ── Mocks de dependências (todos hoisted por vi.mock) ─────────────────────
+
+// next-intl: SettingsPageEnhanced e os hubs chamam useTranslations direto.
+// Sem este mock, qualquer render falha com "context from NextIntlClientProvider
+// was not found" (regressão Task #904, quando a Page passou a usar i18n direto).
+// Padrão alinhado com FunilDeTalentosClient.test e CandidatesTableArea.test.
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string, params?: Record<string, unknown>) =>
+    params ? `${key}:${JSON.stringify(params)}` : key,
+  useLocale: () => "pt-BR",
+}))
 
 vi.mock("@/hooks/company/useCompanyId", () => ({
   useCompanyId: () => ({
@@ -203,7 +213,7 @@ afterEach(() => {
 // Imports que dependem dos mocks acima
 import SettingsPageEnhanced from "@/components/pages/settings-page-enhanced"
 
-// ── 1. Sidebar: 8 hubs + estado inicial ───────────────────────────────────
+// ── 1. Sidebar: 10 hubs + estado inicial ──────────────────────────────────
 
 describe("SettingsPageEnhanced — sidebar", () => {
   it("renderiza os 10 hubs definidos em getDefaultSections()", async () => {

@@ -6270,12 +6270,12 @@
       "secretCopied": "Secret copiado",
       "copyError": "Erro ao copiar",
       "eventLabels": {
-        "agent.execution.completed": "Execução concluída",
-        "agent.execution.failed": "Execução falhou",
-        "agent.deployment.created": "Vínculo criado",
-        "agent.deployment.paused": "Vínculo pausado",
-        "agent.approval.requested": "Aprovação solicitada",
-        "agent.approval.reviewed": "Aprovação revisada"
+        "agent_execution_completed": "Execução concluída",
+        "agent_execution_failed": "Execução falhou",
+        "agent_deployment_created": "Vínculo criado",
+        "agent_deployment_paused": "Vínculo pausado",
+        "agent_approval_requested": "Aprovação solicitada",
+        "agent_approval_reviewed": "Aprovação revisada"
       }
     }
   },

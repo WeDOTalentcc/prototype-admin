@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Bot, ShieldCheck, AlertTriangle, Activity, TrendingDown, Loader2 } from "lucide-react"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts"
 import { textStyles, cardStyles } from "@/lib/design-tokens"
+import { CHART_GRID, CHART_LIA, CHART_DANGER } from "@/lib/chart-colors"
 
 interface StudioComplianceData {
   period_days: number
@@ -147,12 +148,12 @@ export function StudioComplianceView() {
           <CardContent>
             <ResponsiveContainer width="100%" height={240}>
               <LineChart data={data.trend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID} />
                 <XAxis dataKey="day" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
-                <Line type="monotone" dataKey="executions" stroke="#60BED1" strokeWidth={2} name={t("totalLine")} />
-                <Line type="monotone" dataKey="blocked" stroke="#DC2626" strokeWidth={2} name={t("blockedLine")} />
+                <Line type="monotone" dataKey="executions" stroke={CHART_LIA} strokeWidth={2} name={t("totalLine")} />
+                <Line type="monotone" dataKey="blocked" stroke={CHART_DANGER} strokeWidth={2} name={t("blockedLine")} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>

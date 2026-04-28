@@ -9,6 +9,7 @@ import { Shield, AlertTriangle, TrendingDown, Download } from"lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from"recharts"
 import { useTranslations } from "next-intl"
 import { textStyles, cardStyles } from"@/lib/design-tokens"
+import { CHART_DANGER, CHART_WARNING } from "@/lib/chart-colors"
 import { StudioComplianceView } from"./StudioComplianceView"
 
 interface FairnessSummary {
@@ -209,8 +210,8 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Bar dataKey="bloqueios" fill="#ef4444" radius={[4, 4, 0, 0]} name={t("blocksChart")} />
-                <Bar dataKey="alertas" fill="#eab308" radius={[4, 4, 0, 0]} name={t("alertsChart")} />
+                <Bar dataKey="bloqueios" fill={CHART_DANGER} radius={[4, 4, 0, 0]} name={t("blocksChart")} />
+                <Bar dataKey="alertas" fill={CHART_WARNING} radius={[4, 4, 0, 0]} name={t("alertsChart")} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>

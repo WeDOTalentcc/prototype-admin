@@ -6270,12 +6270,12 @@
       "secretCopied": "Secret copied",
       "copyError": "Error copying",
       "eventLabels": {
-        "agent.execution.completed": "Execution completed",
-        "agent.execution.failed": "Execution failed",
-        "agent.deployment.created": "Deployment created",
-        "agent.deployment.paused": "Deployment paused",
-        "agent.approval.requested": "Approval requested",
-        "agent.approval.reviewed": "Approval reviewed"
+        "agent_execution_completed": "Execution completed",
+        "agent_execution_failed": "Execution failed",
+        "agent_deployment_created": "Deployment created",
+        "agent_deployment_paused": "Deployment paused",
+        "agent_approval_requested": "Approval requested",
+        "agent_approval_reviewed": "Approval reviewed"
       }
     }
   },
