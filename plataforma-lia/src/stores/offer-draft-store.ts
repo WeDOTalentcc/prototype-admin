@@ -8,6 +8,7 @@
  * PR-B.
  */
 import { create } from "zustand"
+import { devtools } from "zustand/middleware"
 import type { OfferDraft, OfferDraftUpdate, SalaryWarning } from "@/types/offer"
 import { offersApi } from "@/services/lia-api/offers-api"
 
@@ -27,6 +28,17 @@ interface OfferDraftState {
   cancel: (reason?: string) => Promise<void>
   clearDraft: () => void
   setSalaryWarnings: (warnings: SalaryWarning[]) => void
+  setDraft: (draft: OfferDraft) => void
+  setOpen: (open: boolean) => void
+  reset: () => void
+}
+
+const initialState = {
+  draft: null as OfferDraft | null,
+  isLoading: false,
+  isSaving: false,
+  error: null as string | null,
+  salaryWarnings: [] as SalaryWarning[],
 }
 
 function computeSalaryWarnings(draft: OfferDraft): SalaryWarning[] {
@@ -45,90 +57,97 @@ function computeSalaryWarnings(draft: OfferDraft): SalaryWarning[] {
   return warnings
 }
 
-export const useOfferDraftStore = create<OfferDraftState>((set, get) => ({
-  draft: null,
-  isLoading: false,
-  isSaving: false,
-  error: null,
-  salaryWarnings: [],
+export const useOfferDraftStore = create<OfferDraftState>()(
+  devtools(
+    (set, get) => ({
+      ...initialState,
 
-  startDraft: async (candidateId: string, jobId: string) => {
-    set({ isLoading: true, error: null })
-    try {
-      const draft = await offersApi.createDraft({ candidate_id: candidateId, job_id: jobId })
-      set({ draft, isLoading: false, salaryWarnings: computeSalaryWarnings(draft) })
-    } catch (err) {
-      set({ error: String(err), isLoading: false })
-    }
-  },
+      startDraft: async (candidateId: string, jobId: string) => {
+        set({ isLoading: true, error: null })
+        try {
+          const draft = await offersApi.createDraft({ candidate_id: candidateId, job_id: jobId })
+          set({ draft, isLoading: false, salaryWarnings: computeSalaryWarnings(draft) })
+        } catch (err) {
+          set({ error: String(err), isLoading: false })
+        }
+      },
 
-  loadDraft: async (offerId: string) => {
-    set({ isLoading: true, error: null })
-    try {
-      const draft = await offersApi.getDraft(offerId)
-      set({ draft, isLoading: false, salaryWarnings: computeSalaryWarnings(draft) })
-    } catch (err) {
-      set({ error: String(err), isLoading: false })
-    }
-  },
+      loadDraft: async (offerId: string) => {
+        set({ isLoading: true, error: null })
+        try {
+          const draft = await offersApi.getDraft(offerId)
+          set({ draft, isLoading: false, salaryWarnings: computeSalaryWarnings(draft) })
+        } catch (err) {
+          set({ error: String(err), isLoading: false })
+        }
+      },
 
-  updateField: async (updates: OfferDraftUpdate) => {
-    const { draft } = get()
-    if (!draft) return
-    // Optimistic update
-    const optimistic = { ...draft, ...updates }
-    set({ draft: optimistic, isSaving: true, salaryWarnings: computeSalaryWarnings(optimistic) })
-    try {
-      const updated = await offersApi.updateDraft(draft.id, updates)
-      set({ draft: updated, isSaving: false, salaryWarnings: computeSalaryWarnings(updated) })
-    } catch (err) {
-      // Rollback on error
-      set({ draft, isSaving: false, error: String(err) })
-    }
-  },
+      updateField: async (updates: OfferDraftUpdate) => {
+        const { draft } = get()
+        if (!draft) return
+        const optimistic = { ...draft, ...updates }
+        set({ draft: optimistic, isSaving: true, salaryWarnings: computeSalaryWarnings(optimistic) })
+        try {
+          const updated = await offersApi.updateDraft(draft.id, updates)
+          set({ draft: updated, isSaving: false, salaryWarnings: computeSalaryWarnings(updated) })
+        } catch (err) {
+          set({ draft, isSaving: false, error: String(err) })
+        }
+      },
 
-  sendAuto: async () => {
-    const { draft } = get()
-    if (!draft) return { success: false, message: "Sem rascunho ativo" }
-    set({ isSaving: true })
-    try {
-      const result = await offersApi.sendAuto(draft.id)
-      set({ draft: { ...draft, status: "sent" }, isSaving: false })
-      return { success: true, message: result.message }
-    } catch (err) {
-      set({ isSaving: false, error: String(err) })
-      return { success: false, message: String(err) }
-    }
-  },
+      sendAuto: async () => {
+        const { draft } = get()
+        if (!draft) return { success: false, message: "Sem rascunho ativo" }
+        set({ isSaving: true })
+        try {
+          const result = await offersApi.sendAuto(draft.id)
+          set({ draft: { ...draft, status: "sent" }, isSaving: false })
+          return { success: true, message: result.message }
+        } catch (err) {
+          set({ isSaving: false, error: String(err) })
+          return { success: false, message: String(err) }
+        }
+      },
 
-  prepareManual: async () => {
-    const { draft } = get()
-    if (!draft) return null
-    try {
-      const result = await offersApi.prepareManual(draft.id)
-      return {
-        subject: result.subject_pre_filled,
-        body: result.body_pre_filled,
-        templateId: result.template_id,
-      }
-    } catch (err) {
-      set({ error: String(err) })
-      return null
-    }
-  },
+      prepareManual: async () => {
+        const { draft } = get()
+        if (!draft) return null
+        try {
+          const result = await offersApi.prepareManual(draft.id)
+          return {
+            subject: result.subject_pre_filled,
+            body: result.body_pre_filled,
+            templateId: result.template_id,
+          }
+        } catch (err) {
+          set({ error: String(err) })
+          return null
+        }
+      },
 
-  cancel: async (reason?: string) => {
-    const { draft } = get()
-    if (!draft) return
-    try {
-      await offersApi.cancel(draft.id, reason)
-      set({ draft: null })
-    } catch (err) {
-      set({ error: String(err) })
-    }
-  },
+      cancel: async (reason?: string) => {
+        const { draft } = get()
+        if (!draft) return
+        try {
+          await offersApi.cancel(draft.id, reason)
+          set({ draft: null })
+        } catch (err) {
+          set({ error: String(err) })
+        }
+      },
 
-  clearDraft: () => set({ draft: null, error: null, salaryWarnings: [] }),
+      clearDraft: () => set({ draft: null, error: null, salaryWarnings: [] }),
 
-  setSalaryWarnings: (warnings) => set({ salaryWarnings: warnings }),
-}))
+      setSalaryWarnings: (warnings) => set({ salaryWarnings: warnings }),
+
+      setDraft: (draft: OfferDraft) => set({ draft, salaryWarnings: computeSalaryWarnings(draft) }),
+
+      setOpen: (open: boolean) => {
+        if (!open) set({ draft: null, error: null, salaryWarnings: [] })
+      },
+
+      reset: () => set(initialState),
+    }),
+    { name: "offer-draft-store" },
+  ),
+)

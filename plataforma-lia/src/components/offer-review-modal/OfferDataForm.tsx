@@ -53,6 +53,8 @@ export function OfferDataForm({ draft, isSaving, salaryWarnings, onChange }: Off
     [onChange],
   )
 
+  const salaryOverBudget = salaryWarnings.some(w => w.level === "warning")
+
   return (
     <div className="flex flex-col gap-4 p-4 h-full overflow-y-auto">
       <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -88,6 +90,7 @@ export function OfferDataForm({ draft, isSaving, salaryWarnings, onChange }: Off
           disabled={isSaving}
           placeholder="Ex: 10000"
           className="h-9"
+          aria-invalid={salaryOverBudget}
         />
       </div>
 

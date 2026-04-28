@@ -6,6 +6,9 @@
  * Left column: job data snapshot (read-only)
  * Right column: offer fields (editable, debounced auto-save)
  *
+ * HITL two-step: idle → confirming → success/error.
+ * Send requires user_confirmation: true (Guard 2 — never bypasses HITL).
+ *
  * Opened when useOfferDraftStore.draft !== null.
  * Entry triggers (managed by useOfferReviewFlow):
  *   A) Rail A Card 5.1 ui_action="open_offer_review"
@@ -20,6 +23,8 @@ import { Button } from "@/components/ui/button"
 import { useOfferDraftStore } from "@/stores/offer-draft-store"
 import { JobDataPanel } from "./JobDataPanel"
 import { OfferDataForm } from "./OfferDataForm"
+import { OfferHITLBanner } from "./OfferHITLBanner"
+import type { ConfirmState } from "./OfferHITLBanner"
 import type { OfferDraftUpdate } from "@/types/offer"
 
 const DEBOUNCE_MS = 600
@@ -30,14 +35,14 @@ export function OfferReviewModal() {
 
   const [sendMode, setSendMode] = useState<"auto" | "manual" | null>(null)
   const [isSending, setIsSending] = useState(false)
-  const [sendResult, setSendResult] = useState<{ success: boolean; message: string } | null>(null)
+  const [confirmState, setConfirmState] = useState<ConfirmState>("idle")
+  const [errorMessage, setErrorMessage] = useState("")
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingUpdates = useRef<OfferDraftUpdate>({})
 
   const isOpen = draft !== null && draft.status === "draft"
 
-  // Debounced save: accumulate updates, flush after DEBOUNCE_MS of inactivity
   const handleChange = useCallback(
     (updates: OfferDraftUpdate) => {
       Object.assign(pendingUpdates.current, updates)
@@ -51,17 +56,42 @@ export function OfferReviewModal() {
     [updateField],
   )
 
-  const handleSendAuto = useCallback(async () => {
+  // Step 1: request confirmation (idle → confirming)
+  const handleRequestConfirm = useCallback(() => {
+    if (!draft?.offered_salary) return
+    setConfirmState("confirming")
+    setSendMode("auto")
+  }, [draft])
+
+  // Step 2: confirmed — send with user_confirmation: true
+  const handleConfirmSend = useCallback(async () => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current)
     if (Object.keys(pendingUpdates.current).length > 0) {
       await updateField({ ...pendingUpdates.current })
       pendingUpdates.current = {}
     }
     setIsSending(true)
+    // HITL gate: user_confirmation: true — recrutador confirmou explicitamente
     const result = await sendAuto()
     setIsSending(false)
-    setSendResult(result)
+    if (result.success) {
+      setConfirmState("success")
+    } else {
+      setErrorMessage(result.message)
+      setConfirmState("error")
+    }
   }, [updateField, sendAuto])
+
+  const handleCancelConfirm = useCallback(() => {
+    setConfirmState("idle")
+    setSendMode(null)
+  }, [])
+
+  const handleClearError = useCallback(() => {
+    setConfirmState("idle")
+    setErrorMessage("")
+    setSendMode(null)
+  }, [])
 
   const handlePrepareManual = useCallback(async () => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current)
@@ -71,7 +101,6 @@ export function OfferReviewModal() {
     }
     const prepared = await prepareManual()
     if (prepared) {
-      // Emit event for SendEmailModal to pick up (existing flow, untouched)
       window.dispatchEvent(new CustomEvent("lia:open_send_email_modal", { detail: prepared }))
       clearDraft()
     }
@@ -82,13 +111,13 @@ export function OfferReviewModal() {
     cancel()
   }, [cancel])
 
-  // Auto-close after successful send (2s delay to show result)
+  // Auto-close after successful send
   useEffect(() => {
-    if (sendResult?.success) {
+    if (confirmState === "success") {
       const t = setTimeout(clearDraft, 2000)
       return () => clearTimeout(t)
     }
-  }, [sendResult, clearDraft])
+  }, [confirmState, clearDraft])
 
   if (!draft) return null
 
@@ -108,13 +137,10 @@ export function OfferReviewModal() {
           <p className="text-[11px] text-muted-foreground">{jobTitle}</p>
         </DialogHeader>
 
-        {/* 2-column body */}
         <div className="flex flex-1 overflow-hidden">
-          {/* Left: job data (read-only) */}
           <div className="w-[44%] overflow-y-auto border-r border-border">
             <JobDataPanel job={draft.job_data_snapshot} />
           </div>
-          {/* Right: offer form (editable) */}
           <div className="flex-1 overflow-y-auto">
             <OfferDataForm
               draft={draft}
@@ -125,12 +151,17 @@ export function OfferReviewModal() {
           </div>
         </div>
 
-        {/* Send result toast */}
-        {sendResult && (
-          <div className={`mx-6 mb-2 text-[11px] px-3 py-2 rounded-md ${sendResult.success ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>
-            {sendResult.message}
-          </div>
-        )}
+        <div className="px-6 pb-2">
+          <OfferHITLBanner
+            confirmState={confirmState}
+            errorMessage={errorMessage}
+            isSending={isSending}
+            candidateName={candidateName}
+            onCancelConfirm={handleCancelConfirm}
+            onConfirmSend={handleConfirmSend}
+            onClearError={handleClearError}
+          />
+        </div>
 
         <DialogFooter className="px-6 pb-5 pt-3 border-t border-border flex gap-2 justify-between">
           <Button variant="ghost" size="sm" onClick={handleCancel} disabled={isSending}>
@@ -141,18 +172,18 @@ export function OfferReviewModal() {
               variant="outline"
               size="sm"
               onClick={handlePrepareManual}
-              disabled={isSaving || isSending || !draft.offered_salary}
+              disabled={isSaving || isSending || !draft.offered_salary || confirmState !== "idle"}
             >
               Envio Manual
             </Button>
             <Button
               variant="default"
               size="sm"
-              onClick={handleSendAuto}
-              disabled={isSaving || isSending || !draft.offered_salary}
+              onClick={handleRequestConfirm}
+              disabled={isSaving || isSending || !draft.offered_salary || confirmState !== "idle"}
               className="bg-gray-800 text-white hover:bg-gray-700"
             >
-              {isSending ? "Enviando..." : "Enviar Proposta"}
+              Enviar Proposta
             </Button>
           </div>
         </DialogFooter>
