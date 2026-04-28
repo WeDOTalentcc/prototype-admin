@@ -30,6 +30,7 @@ const SECTION_ICON_COLORS: Record<string, string> = {
   'integrations': 'text-emerald-500',
   'webhooks': 'text-cyan-500',
   'fairness-compliance': 'text-violet-400',
+  'governanca': 'text-amber-500',
 }
 
 
@@ -43,6 +44,7 @@ const IntegrationsHub = dynamic(() => import("@/components/settings/Integrations
 const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando usuários..." /> })
 const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
 const WebhooksManager = dynamic(() => import("@/components/settings/WebhooksManager").then(m => ({ default: m.WebhooksManager })), { ssr: false, loading: () => <LoadingFallback text="Carregando webhooks..." /> })
+const GovernancaHub = dynamic(() => import("@/components/settings/governance/GovernancaHub").then(m => ({ default: m.GovernancaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando governança..." /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
@@ -187,6 +189,24 @@ const getDefaultSections = (): SettingsSection[] => [
       { id: 'fairness', title: 'Fairness & Compliance', description: 'Eventos de equidade e auditoria da IA', fields: [] },
       { id: 'lgpd-candidatos', title: 'LGPD Candidatos', description: 'Pedidos Art. 20 de candidatos (prazo 15 dias úteis)', fields: [] },
       { id: 'studio', title: 'Agent Studio', description: 'Compliance do Agent Studio', fields: [] },
+    ],
+  },
+  {
+    id: 'governanca',
+    title: 'Governança',
+    description: 'Audit logs, bias audit, automation rules, policy engine, DSR e consent',
+    icon: Shield,
+    status: 'incomplete',
+    priority: 'low',
+    category: 'advanced',
+    estimatedTime: 0,
+    subsections: [
+      { id: 'audit-logs', title: 'Audit Logs', description: 'Eventos de auditoria do sistema', fields: [] },
+      { id: 'bias-audit', title: 'Bias Audit', description: 'Auditorias de viés (Four-Fifths Rule)', fields: [] },
+      { id: 'automation-rules', title: 'Automation Rules', description: 'Regras de automação por gatilho', fields: [] },
+      { id: 'policy-engine', title: 'Policy Engine', description: 'Políticas de compliance por setor', fields: [] },
+      { id: 'dsr', title: 'DSR / LGPD', description: 'Data Subject Requests', fields: [] },
+      { id: 'consent', title: 'Consent', description: 'Tipos de consentimento e métricas', fields: [] },
     ],
   },
 ]
@@ -487,6 +507,12 @@ export default function SettingsPageEnhanced() {
         return (
           <ErrorBoundarySection>
             <FairnessComplianceHub activeSubsection={activeSubsection || 'fairness'} />
+          </ErrorBoundarySection>
+        )
+      case 'governanca':
+        return (
+          <ErrorBoundarySection>
+            <GovernancaHub activeSubsection={(activeSubsection || 'audit-logs') as 'audit-logs'} />
           </ErrorBoundarySection>
         )
       default:

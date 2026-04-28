@@ -140,6 +140,11 @@ vi.mock("@/components/settings/FairnessComplianceHub", () => ({
     <div data-testid="hub-fairness-compliance" data-active-subsection={props.activeSubsection ?? ""} />
   ),
 }))
+vi.mock("@/components/settings/governance/GovernancaHub", () => ({
+  GovernancaHub: (props: { activeSubsection?: string }) => (
+    <div data-testid="hub-governanca" data-active-subsection={props.activeSubsection ?? ""} />
+  ),
+}))
 
 // `next/dynamic` no jsdom: invoca o loader e renderiza o módulo resolvido.
 // Casado com os mocks acima, garante que o hub correto aparece dentro do
@@ -201,7 +206,7 @@ import SettingsPageEnhanced from "@/components/pages/settings-page-enhanced"
 // ── 1. Sidebar: 8 hubs + estado inicial ───────────────────────────────────
 
 describe("SettingsPageEnhanced — sidebar", () => {
-  it("renderiza os 8 hubs definidos em getDefaultSections()", async () => {
+  it("renderiza os 10 hubs definidos em getDefaultSections()", async () => {
     render(<SettingsPageEnhanced />)
 
     const expected = [
@@ -212,16 +217,18 @@ describe("SettingsPageEnhanced — sidebar", () => {
       "comunicacao-alertas",
       "usuarios-departamentos",
       "integrations",
+      "webhooks",
       "fairness-compliance",
+      "governanca",
     ]
     for (const id of expected) {
       expect(screen.getByTestId(`settings-menu-${id}`)).toBeInTheDocument()
     }
-    // 8 itens, nem mais nem menos — protege contra regressão silenciosa
+    // 10 itens, nem mais nem menos — protege contra regressão silenciosa
     const allMenuButtons = screen.getAllByRole("button").filter((b) =>
       b.getAttribute("data-testid")?.startsWith("settings-menu-"),
     )
-    expect(allMenuButtons).toHaveLength(8)
+    expect(allMenuButtons).toHaveLength(10)
     // Drena o microtask do dynamic-import para evitar contaminar o
     // próximo teste com state-updates pendentes do MinhaEmpresaHub.
     await screen.findByTestId("hub-minha-empresa")
@@ -250,6 +257,7 @@ describe("SettingsPageEnhanced — switch de hubs por activeSection", () => {
     { id: "usuarios-departamentos", testid: "hub-usuarios-departamentos" },
     { id: "integrations", testid: "hub-integrations" },
     { id: "fairness-compliance", testid: "hub-fairness-compliance" },
+    { id: "governanca", testid: "hub-governanca" },
   ]
 
   for (const { id, testid } of cases) {
