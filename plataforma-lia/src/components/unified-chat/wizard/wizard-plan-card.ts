@@ -193,3 +193,160 @@ export function publishedJobCardsEqual(
     a.shareLink === b.shareLink
   )
 }
+
+// ---------------------------------------------------------------------------
+// Pipeline template selection card (Onda 28 — E.8)
+// ---------------------------------------------------------------------------
+
+/**
+ * Stable id for the non-persisted pipeline-template selection card so
+ * re-emissions of the same `suggestions_data.pipeline_template` block
+ * update the existing card in place instead of stacking duplicates in
+ * the chat feed.
+ */
+export const WIZARD_TEMPLATE_MESSAGE_ID = "lia-wizard-template-card"
+export const WIZARD_TEMPLATE_TITLE = "Escolha o pipeline desta vaga"
+
+/**
+ * Canonical ids for the 5 backend-supported pipeline templates. Mirrors
+ * the `suggested_type` enum emitted by `stage_basic_info.py` (Onda 25)
+ * so the highlight + click payload stay in sync without a runtime guard.
+ */
+export type PipelineTemplateType =
+  | "technical"
+  | "executive"
+  | "operational"
+  | "mass_hiring"
+  | "intern"
+
+export interface PipelineTemplateOption {
+  id: PipelineTemplateType
+  /** Recruiter-facing short name (PT-BR, used in the chat reply). */
+  name: string
+  /** One-line summary surfaced as the button's secondary copy. */
+  description: string
+  /** Pipeline stages displayed as a small chevron-separated list. */
+  stages: readonly string[]
+}
+
+/**
+ * Static catalog of the 5 pipeline templates rendered in the card.
+ * Descriptions stay short so the card never overflows the chat column.
+ */
+export const PIPELINE_TEMPLATES: readonly PipelineTemplateOption[] = [
+  {
+    id: "technical",
+    name: "Técnico",
+    description: "Vagas de engenharia, dados e produto.",
+    stages: ["Triagem", "Desafio Técnico", "Entrevista Cultural", "Proposta"],
+  },
+  {
+    id: "executive",
+    name: "Executivo",
+    description: "Liderança sênior, diretoria e C-level.",
+    stages: ["Triagem", "Hiring Manager", "C-level", "Negociação"],
+  },
+  {
+    id: "operational",
+    name: "Operacional",
+    description: "Volume médio com decisão rápida.",
+    stages: ["Triagem rápida", "Entrevista", "Proposta"],
+  },
+  {
+    id: "mass_hiring",
+    name: "Mass Hiring",
+    description: "Alto volume com triagem WSI em batch.",
+    stages: ["Triagem WSI", "Validação", "Proposta em batch"],
+  },
+  {
+    id: "intern",
+    name: "Estágio",
+    description: "Estagiários e trainees, foco acadêmico.",
+    stages: ["Avaliação acadêmica", "Entrevista comportamental", "Proposta"],
+  },
+] as const
+
+/**
+ * Plain data the chat-feed pipeline-template card consumes. Mirrors the
+ * shape of `suggestions_data.pipeline_template` emitted by the backend —
+ * we keep the templates list flexible (string[] of ids) so a future
+ * backend tweak that hides one option doesn't require a frontend bump.
+ */
+export interface PipelineTemplateCardData {
+  /** Backend's recommendation, used to highlight the matching option. */
+  suggestedType: PipelineTemplateType | null
+  /** Allowed template ids — when null, all 5 from the catalog are shown. */
+  allowedTypes: PipelineTemplateType[] | null
+}
+
+const VALID_TEMPLATE_IDS = new Set<string>(PIPELINE_TEMPLATES.map((t) => t.id))
+
+function coerceTemplateType(value: unknown): PipelineTemplateType | null {
+  return typeof value === "string" && VALID_TEMPLATE_IDS.has(value)
+    ? (value as PipelineTemplateType)
+    : null
+}
+
+/**
+ * Build the template-card data from a wizard stage payload's `data`
+ * field. Returns `null` when the backend hasn't surfaced a template
+ * suggestion yet so the chat surface can skip injection.
+ *
+ * Accepts both shapes the backend may emit:
+ *   - `data.suggestions_data.pipeline_template = { suggested_type, templates }`
+ *     (Onda 25 canonical path)
+ *   - `data.pipeline_template = { ... }` (legacy fallback while the
+ *     backend stabilises the wrapper key — drops with no behaviour change)
+ */
+export function buildPipelineTemplateCard(
+  data: Record<string, unknown> | null | undefined,
+): PipelineTemplateCardData | null {
+  if (!data) return null
+  const wrapper =
+    (data.suggestions_data as Record<string, unknown> | undefined) ?? data
+  const block = wrapper?.pipeline_template as
+    | Record<string, unknown>
+    | undefined
+  if (!block || typeof block !== "object") return null
+  const suggestedType = coerceTemplateType(block.suggested_type)
+  const rawTemplates = block.templates
+  let allowedTypes: PipelineTemplateType[] | null = null
+  if (Array.isArray(rawTemplates)) {
+    const filtered = rawTemplates
+      .map((t) => {
+        if (typeof t === "string") return coerceTemplateType(t)
+        if (t && typeof t === "object") {
+          return coerceTemplateType((t as Record<string, unknown>).id)
+        }
+        return null
+      })
+      .filter((t): t is PipelineTemplateType => t !== null)
+    allowedTypes = filtered.length > 0 ? filtered : null
+  }
+  // No usable signal at all — skip injection.
+  if (suggestedType === null && allowedTypes === null) return null
+  return { suggestedType, allowedTypes }
+}
+
+/**
+ * Cheap structural equality so the template card doesn't churn when the
+ * wizard re-emits the same suggestion (e.g. recruiter sends another
+ * message before picking a template).
+ */
+export function pipelineTemplateCardsEqual(
+  a: PipelineTemplateCardData | null,
+  b: PipelineTemplateCardData | null,
+): boolean {
+  if (a === b) return true
+  if (a === null || b === null) return false
+  if (a.suggestedType !== b.suggestedType) return false
+  const aList = a.allowedTypes
+  const bList = b.allowedTypes
+  if (aList === bList) return true
+  if (aList === null || bList === null) return false
+  if (aList.length !== bList.length) return false
+  for (let i = 0; i < aList.length; i++) {
+    if (aList[i] !== bList[i]) return false
+  }
+  return true
+}

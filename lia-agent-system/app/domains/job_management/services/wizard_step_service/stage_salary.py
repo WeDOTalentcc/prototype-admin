@@ -1,12 +1,31 @@
 """
 Stage 4 — Salary & Benefits handler for the wizard step service.
+
+F.3 (Onda 25 cross-reference) — `pick_canonical` agora considera 3 fontes:
+  1. history  — padrões salariais internos (vagas anteriores na plataforma)
+  2. market   — benchmark externo (combined_recommendation)
+  3. ats_history — vagas similares vindas dos ATSs conectados (Gupy/Pandapé/Merge)
+
+A 3ª fonte é fail-open: se `ats_job_history_service.get_similar_jobs` falhar
+ou retornar lista vazia (empresa sem ATS conectado, primeira vaga, etc.), o
+pipeline mantém o comportamento de 2 fontes. LGPD: descartamos vagas com
+`closed_at` ou `created_at` mais antigo que 12 meses para não usar referências
+salariais defasadas.
 """
 import logging
+import statistics
+from datetime import datetime, timedelta
 
 from ._shared import get_historical_salary_patterns
 from app.shared.wizard_suggestion_priority import WizardSuggestion, pick_canonical
+from app.domains.job_management.services.ats_job_history_service import (
+    ats_job_history_service,
+)
 
 logger = logging.getLogger(__name__)
+
+# LGPD / qualidade: descartar vagas ATS com mais de 12 meses
+_ATS_HISTORY_CUTOFF_DAYS = 365
 
 
 async def handle_salary(
@@ -160,6 +179,8 @@ async def handle_salary(
     # ---- pick_canonical salary suggestion --------------------------------
     _hist_suggestion = None
     _mkt_suggestion = None
+    _ats_suggestion = None
+    _sources_used: list[str] = []
 
     if salary_patterns.get("has_data"):
         _hist_suggestion = WizardSuggestion(
@@ -174,6 +195,7 @@ async def handle_salary(
             sample_size=salary_patterns.get("sample_size", 0),
             metadata={"source_detail": "historical_pattern"},
         )
+        _sources_used.append("history")
 
     if combined.get("recommended_min"):
         _mkt_suggestion = WizardSuggestion(
@@ -184,8 +206,79 @@ async def handle_salary(
             sample_size=combined.get("sample_size", 0),
             metadata={"source_detail": "benchmark_market"},
         )
+        _sources_used.append("market")
 
-    _canonical = pick_canonical(history=_hist_suggestion, market=_mkt_suggestion)
+    # ---- F.3: 3rd source — ATS job history (fail-open) -------------------
+    # Vagas similares no histórico dos ATSs conectados (Gupy/Pandapé/Merge).
+    # Pode falhar por: empresa sem ATS conectado, sem vagas similares, erro
+    # de rede no ATS. Em todos os casos, mantemos o pipeline com 2 fontes.
+    try:
+        if db is not None and company_id and job_title_for_salary:
+            similar_ats_jobs = await ats_job_history_service.get_similar_jobs(
+                company_id=company_id,
+                role=job_title_for_salary,
+                seniority=seniority_for_salary,
+                limit=20,
+            )
+
+            # Cutoff temporal LGPD: descarta vagas > 12 meses
+            cutoff = datetime.utcnow() - timedelta(days=_ATS_HISTORY_CUTOFF_DAYS)
+            ats_mins: list[float] = []
+            ats_maxs: list[float] = []
+            for j in similar_ats_jobs or []:
+                ref_date = j.closed_at or j.created_at
+                if ref_date is not None and ref_date < cutoff:
+                    continue
+                if j.salary_min and j.salary_max and j.salary_min > 0 and j.salary_max > 0:
+                    ats_mins.append(float(j.salary_min))
+                    ats_maxs.append(float(j.salary_max))
+
+            if ats_mins and ats_maxs:
+                ats_sample = len(ats_mins)
+                ats_min_median = statistics.median(ats_mins)
+                ats_max_median = statistics.median(ats_maxs)
+                _ats_suggestion = WizardSuggestion(
+                    source="ats_history",
+                    recommended_min=ats_min_median,
+                    recommended_max=ats_max_median,
+                    confidence=(
+                        "high" if ats_sample >= 10
+                        else "medium" if ats_sample >= 3
+                        else "low"
+                    ),
+                    sample_size=ats_sample,
+                    metadata={"source_detail": "ats_similar_jobs"},
+                )
+                _sources_used.append("ats_history")
+                logger.info(
+                    f"ATS history suggestion: {ats_sample} similar jobs "
+                    f"R$ {ats_min_median:,.0f} - R$ {ats_max_median:,.0f}"
+                )
+    except Exception as e:
+        # FAIL-OPEN: ATS opcional, pipeline continua com 2 fontes
+        logger.warning(f"Could not fetch ATS history salary signal (fail-open): {e}")
+
+    # `pick_canonical` aceita apenas (history, market). Fundimos as duas fontes
+    # de "histórico" (interno + ATS) em uma única — escolhendo a que tiver
+    # MAIOR confiança / sample_size, com prioridade ao histórico interno em
+    # caso de empate (mais auditável e LGPD-clean).
+    _merged_history = _hist_suggestion
+    if _ats_suggestion is not None:
+        if _merged_history is None:
+            _merged_history = _ats_suggestion
+        else:
+            _CONF_RANK = {"high": 3, "medium": 2, "low": 1}
+            hist_rank = _CONF_RANK.get(_merged_history.confidence, 0)
+            ats_rank = _CONF_RANK.get(_ats_suggestion.confidence, 0)
+            # ATS só prevalece se ranking ESTRITAMENTE maior, ou ranking igual
+            # com sample_size estritamente maior — interno tem prioridade no empate
+            if ats_rank > hist_rank or (
+                ats_rank == hist_rank
+                and _ats_suggestion.sample_size > _merged_history.sample_size
+            ):
+                _merged_history = _ats_suggestion
+
+    _canonical = pick_canonical(history=_merged_history, market=_mkt_suggestion)
     if _canonical:
         suggestions_data["canonical_salary_suggestion"] = {
             "source": _canonical.source,
@@ -193,6 +286,7 @@ async def handle_salary(
             "recommended_max": _canonical.recommended_max,
             "confidence": _canonical.confidence,
             "sample_size": _canonical.sample_size,
+            "sources_used": _sources_used,  # auditoria F.3
         }
     # -----------------------------------------------------------------------
 
