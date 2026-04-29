@@ -91,35 +91,45 @@ class TestPredictSubstatus:
 # ----------------- /substatus-options/{stage} -----------------
 
 class TestSubstatusOptions:
-    """The production endpoint imports OFFER_DECLINE_REASONS / REJECTION_REASONS
-    from lia_models.recruitment_stages, but those symbols are not defined in the
-    current build of lia_models. The endpoint catches the ImportError and
-    returns HTTP 500 — these tests document and pin that behavior so that any
-    future fix to lia_models is detected (the tests will start failing and
-    must be updated to assert the new happy path)."""
+    """Bug pré-existente em produção (Task #936): o endpoint importa
+    OFFER_DECLINE_REASONS / REJECTION_REASONS de lia_models.recruitment_stages,
+    mas esses símbolos NÃO existem no build atual de lia_models. O endpoint
+    captura o ImportError e devolve HTTP 500. Os 3 testes abaixo são marcados
+    `xfail(strict=True)`: enquanto o bug existir eles aparecem como XFAIL
+    (não-bloqueante); quando o bug for corrigido (#936), eles viram XPASS
+    e a `strict=True` faz o pytest **falhar deliberadamente** para forçar
+    quem corrigir o bug a remover os marcadores e endurecer os asserts
+    para `status_code == 200`."""
 
-    def test_rejected_currently_500_due_to_missing_import(self, app: FastAPI):
+    @pytest.mark.xfail(
+        strict=True,
+        reason="Bug #936: lia_models.recruitment_stages não exporta REJECTION_REASONS",
+    )
+    def test_rejected_returns_options(self, app: FastAPI):
         client = TestClient(app, raise_server_exceptions=False)
         r = client.get("/api/v1/automation/substatus-options/rejected")
-        # Either fixed (200) or current broken state (500) — both acceptable.
-        assert r.status_code in (200, 500)
-        if r.status_code == 200:
-            assert r.json()["stage"] == "rejected"
+        assert r.status_code == 200
+        assert r.json()["stage"] == "rejected"
 
-    def test_offer_declined_currently_500_due_to_missing_import(self, app: FastAPI):
+    @pytest.mark.xfail(
+        strict=True,
+        reason="Bug #936: lia_models.recruitment_stages não exporta OFFER_DECLINE_REASONS",
+    )
+    def test_offer_declined_returns_options(self, app: FastAPI):
         client = TestClient(app, raise_server_exceptions=False)
         r = client.get("/api/v1/automation/substatus-options/offer_declined")
-        assert r.status_code in (200, 500)
-        if r.status_code == 200:
-            assert r.json()["stage"] == "offer_declined"
+        assert r.status_code == 200
+        assert r.json()["stage"] == "offer_declined"
 
-    def test_unknown_stage_isolation(self, app: FastAPI):
+    @pytest.mark.xfail(
+        strict=True,
+        reason="Bug #936: import side-effect derruba todas as stages, mesmo desconhecidas",
+    )
+    def test_unknown_stage_returns_empty_options(self, app: FastAPI):
         client = TestClient(app, raise_server_exceptions=False)
         r = client.get("/api/v1/automation/substatus-options/__unknown_stage__")
-        # Same import path is exercised — same outcome class.
-        assert r.status_code in (200, 500)
-        if r.status_code == 200:
-            assert r.json()["options"] == []
+        assert r.status_code == 200
+        assert r.json()["options"] == []
 
 
 # ----------------- /bulk-predict-substatus -----------------

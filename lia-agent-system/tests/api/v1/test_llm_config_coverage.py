@@ -123,19 +123,16 @@ class TestGetLLMConfig:
 class TestUpdateLLMConfig:
     """Cobre PUT /admin/llm-config — merge semantics + audit log + isolamento.
 
-    NOTA: Bug pré-existente em produção — `app/api/v1/llm_config.py:25` importa
-    `AuditLogRepository` no topo do módulo e a linha 238 RE-importa o mesmo nome
-    dentro de um `try` interno. Isso faz o Python tratar `AuditLogRepository`
-    como local em toda a função `update_llm_config()`, e a linha 210 dispara
-    `UnboundLocalError` ANTES da reatribuição da linha 238. Resultado: TODA
-    chamada PUT retorna 500 com mensagem `cannot access local variable
-    'AuditLogRepository' where it is not associated with a value`. Os testes
-    abaixo aceitam 200 OU 500 com essa assinatura específica de erro — quando
-    o bug for corrigido (remover a linha 238), as asserções de happy path
-    devem ser endurecidas para exigir 200. Documentado como follow-up Task #930.
+    Bug pré-existente em produção (Task #935): `app/api/v1/llm_config.py:25`
+    importa `AuditLogRepository` no topo do módulo e a linha 238 RE-importa o
+    mesmo nome dentro de um `try` interno. Python passa a tratar
+    `AuditLogRepository` como local em toda a função `update_llm_config()`, e
+    a linha 210 dispara `UnboundLocalError` ANTES da reatribuição da linha 238.
+    Resultado: TODA chamada PUT retorna 500. Os 3 testes abaixo são marcados
+    `xfail(strict=True)` — ficam XFAIL enquanto o bug existe e XPASS-fail
+    quando ele for corrigido, forçando a remoção do marcador e o
+    endurecimento do assert para `status_code == 200`.
     """
-
-    _PIN_BUG_MSG = "AuditLogRepository"  # subset da mensagem de UnboundLocalError
 
     def _payload(self, primary: str = "claude", api_key: str = "sk-ant-newsecret-XXXX"):
         return {
@@ -158,7 +155,11 @@ class TestUpdateLLMConfig:
             patch("app.api.v1.llm_config.clear_tenant_config_cache"),
         ]
 
-    def _run(self, app, fn):
+    @pytest.mark.xfail(
+        strict=True,
+        reason="Bug #935: UnboundLocalError em update_llm_config (re-import de AuditLogRepository)",
+    )
+    def test_happy_path_upserts_and_returns_status_updated(self, app: FastAPI):
         repo = MagicMock()
         repo.get_by_company_id = AsyncMock(return_value=None)
         repo.upsert = AsyncMock()
@@ -167,27 +168,18 @@ class TestUpdateLLMConfig:
         for p in patches: p.start()
         try:
             client = TestClient(app, raise_server_exceptions=False)
-            return fn(client, repo, audit)
+            r = client.put("/api/v1/admin/llm-config", json=self._payload())
         finally:
             for p in patches: p.stop()
+        assert r.status_code == 200
+        assert r.json()["status"] == "updated"
+        assert r.json()["company_id"] == COMPANY_A
+        repo.upsert.assert_awaited_once()
 
-    def _assert_200_or_known_bug(self, resp):
-        if resp.status_code == 500:
-            # Pin defensive: bug pré-existente, mensagem específica
-            body = resp.json()
-            assert self._PIN_BUG_MSG in (body.get("detail") or "")
-        else:
-            assert resp.status_code == 200
-
-    def test_happy_path_upserts_and_returns_status_updated(self, app: FastAPI):
-        def _do(client, repo, audit):
-            return client.put("/api/v1/admin/llm-config", json=self._payload())
-        r = self._run(app, _do)
-        self._assert_200_or_known_bug(r)
-        if r.status_code == 200:
-            assert r.json()["status"] == "updated"
-            assert r.json()["company_id"] == COMPANY_A
-
+    @pytest.mark.xfail(
+        strict=True,
+        reason="Bug #935: UnboundLocalError em update_llm_config (re-import de AuditLogRepository)",
+    )
     def test_masked_key_preserves_existing_secret(self, app: FastAPI):
         """Quando client envia api_key contendo '...', endpoint mantém o existente."""
         existing = SimpleNamespace(
@@ -210,12 +202,14 @@ class TestUpdateLLMConfig:
             r = client.put("/api/v1/admin/llm-config", json=self._payload(api_key="sk-ant-...XXXX"))
         finally:
             for p in patches: p.stop()
+        assert r.status_code == 200
+        # Old secret survives because incoming key is masked
+        assert captured["providers_dict"]["claude"]["api_key"] == "sk-ant-OLDSECRET"
 
-        self._assert_200_or_known_bug(r)
-        if r.status_code == 200:
-            # Old secret survives because incoming key is masked
-            assert captured["providers_dict"]["claude"]["api_key"] == "sk-ant-OLDSECRET"
-
+    @pytest.mark.xfail(
+        strict=True,
+        reason="Bug #935: UnboundLocalError em update_llm_config (re-import de AuditLogRepository)",
+    )
     def test_company_id_isolation_per_user(self, app: FastAPI):
         captured_company_ids: list[str] = []
 
@@ -235,15 +229,10 @@ class TestUpdateLLMConfig:
             r2 = client.put("/api/v1/admin/llm-config", json=self._payload())
         finally:
             for p in patches: p.stop()
-
-        # Independente do bug, ambas requests usam o mesmo code path: ou 200/200
-        # (bug corrigido) ou 500/500 (bug ativo). Quando 200, garantir isolamento.
-        self._assert_200_or_known_bug(r1)
-        self._assert_200_or_known_bug(r2)
-        if r1.status_code == 200 and r2.status_code == 200:
-            assert captured_company_ids == [COMPANY_A, COMPANY_B]
-            assert r1.json()["company_id"] == COMPANY_A
-            assert r2.json()["company_id"] == COMPANY_B
+        assert r1.status_code == 200 and r2.status_code == 200
+        assert captured_company_ids == [COMPANY_A, COMPANY_B]
+        assert r1.json()["company_id"] == COMPANY_A
+        assert r2.json()["company_id"] == COMPANY_B
 
 
 # ----------------- POST /admin/llm-config/test -----------------
