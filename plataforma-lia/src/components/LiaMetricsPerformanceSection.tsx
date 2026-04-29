@@ -7,8 +7,8 @@ import {
   TrendingUp, Clock, Target, CheckCircle, Award, AlertCircle, Activity, Timer
 } from"lucide-react"
 import { LiaMetricsChart } from"./lia-metrics-chart"
-import { generateTimeSeriesData } from"./useLiaMetricsData"
-import type { LiaMetricsData } from"./useLiaMetricsData"
+import { generateTimeSeriesData } from"@/hooks/ai/use-lia-metrics-data"
+import type { LiaMetricsData } from"@/hooks/ai/use-lia-metrics-data"
 
 interface LiaMetricsPerformanceSectionProps {
   data: LiaMetricsData

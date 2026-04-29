@@ -74,52 +74,6 @@ JOB_ACTION_MAP: dict[str, str] = {
 
 SKIP_ACTION_INTENTS = {"create_job", "greeting", "general_question", "unknown", "search_candidates"}
 
-INTENT_TO_ACTIONABLE: dict[str, str] = {
-    "move_candidate": "mover_candidato",
-    "update_candidate_status": "atualizar_status_candidato",
-    "update_status": "atualizar_status_candidato",
-    "reject_candidate": "reprovar_candidato",
-    "approve_candidate": "aprovar_candidato",
-    "send_email": "enviar_email",
-    "send_message": "enviar_mensagem",
-    "schedule_interview": "agendar_entrevista",
-    "trigger_screening": "disparar_triagem",
-    "dispatch_screening": "disparar_triagem",
-    "start_screening": "iniciar_triagem",
-    "analyze_profile": "analisar_perfil",
-    "detailed_analysis": "analise_detalhada",
-    "pause_job": "pausar_vaga",
-    "close_job": "fechar_vaga",
-    "duplicate_job": "duplicar_vaga",
-    "reopen_job": "reabrir_vaga",
-}
-
-
-def _flatten_entities(entities: dict) -> dict:
-    flat = dict(entities)
-    if "entidades" in entities and isinstance(entities["entidades"], dict):
-        flat.update(entities["entidades"])
-    return flat
-
-
-def map_intent_to_actionable(intent: str, entities: dict) -> str | None:
-    """Restored from git history (regression fix). Maps intent+entities to an
-    ACTIONABLE_INTENTS key, handling EN→PT translation and update_job subtypes."""
-    if intent in SKIP_ACTION_INTENTS:
-        return None
-    flat = _flatten_entities(entities)
-    if intent == "update_job":
-        acao = (flat.get("ação") or flat.get("acao") or flat.get("action") or "").lower().strip()
-        return JOB_ACTION_MAP.get(acao)
-    mapped = INTENT_TO_ACTIONABLE.get(intent)
-    if mapped:
-        return mapped
-    if intent in ACTIONABLE_INTENTS:
-        return intent
-    return None
-
-
-
 
 async def resolve_candidate_by_name(
     candidate_name: str,
@@ -1232,12 +1186,7 @@ async def set_chat_context(
             detail=f"Unknown context_type '{ctx}'. Allowed: {sorted(_ALLOWED_CONTEXT_TYPES)}",
         )
 
-    domain = resolve_domain(
-        ctx,
-        tenant_id=str(getattr(current_user, "company_id", "") or "") or None,
-        user_id=str(getattr(current_user, "id", "") or "") or None,
-        conversation_id=payload.conversation_id,
-    )
+    domain = resolve_domain(ctx)
 
     # Persist context on the conversation if an ID was provided
     if payload.conversation_id:

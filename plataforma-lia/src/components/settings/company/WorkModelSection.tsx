@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useTranslations } from 'next-intl'
 import { Briefcase, CheckCircle } from 'lucide-react'
 import { Chip } from '@/components/ui/chip'
 import { CompanyDataCard } from '../CompanyDataCard'
@@ -22,17 +23,18 @@ export function WorkModelSection({
   updateLiaToggle,
   updateLiaInstruction,
 }: WorkModelSectionProps) {
+  const t = useTranslations('settings.minhaEmpresa.workModel')
   return (
     <div className="space-y-3">
       <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1">
-        Modelo de Trabalho e Contratação
+        {t('sectionTitle')}
       </h3>
       
       <div className="grid grid-cols-1 gap-3">
         <CompanyDataCard
           fieldKey="work_model"
-          label="Modelo de Trabalho"
-          category="Trabalho & Contratação"
+          label={t('workModelLabel')}
+          category={t('category')}
           isActive={companyData.lia_field_toggles?.work_model ?? true}
           currentInstruction={companyData.lia_instructions?.work_model || ''}
           isEditing={isEditing}
@@ -48,19 +50,19 @@ export function WorkModelSection({
               disabled={!isEditing}
               className={selectClass(!isEditing)}
             >
-              <option value="">Selecione...</option>
-              <option value="remote">100% Remoto</option>
-              <option value="hybrid">Híbrido</option>
-              <option value="onsite">Presencial</option>
-              <option value="flexible">Flexível</option>
+              <option value="">{t('selectPlaceholder')}</option>
+              <option value="remote">{t('optionRemote100')}</option>
+              <option value="hybrid">{t('optionHybrid')}</option>
+              <option value="onsite">{t('optionOnsite')}</option>
+              <option value="flexible">{t('optionFlexible')}</option>
             </select>
           </div>
         </CompanyDataCard>
 
         <CompanyDataCard
           fieldKey="employment_types"
-          label="Modelos de Contratação"
-          category="Trabalho & Contratação"
+          label={t('hiringModels')}
+          category={t('category')}
           grouped
           isActive={companyData.lia_field_toggles?.employment_types ?? true}
           currentInstruction={companyData.lia_instructions?.employment_types || ''}
@@ -100,8 +102,8 @@ export function WorkModelSection({
 
         <CompanyDataCard
           fieldKey="seniority_levels"
-          label="Níveis de Senioridade"
-          category="Trabalho & Contratação"
+          label={t('seniorityLevels')}
+          category={t('category')}
           grouped
           isActive={companyData.lia_field_toggles?.seniority_levels ?? true}
           currentInstruction={companyData.lia_instructions?.seniority_levels || ''}

@@ -8,7 +8,7 @@ import {
   Target, MessageSquare, Star, Heart, Clock, CheckCircle,
   Download, Copy
 } from"lucide-react"
-import type { ScreeningData, ScreeningStep } from"./useLiaScreeningDialogue"
+import type { ScreeningData, ScreeningStep } from"@/hooks/ai/use-lia-screening-dialogue"
 
 interface JobData {
   title?: string

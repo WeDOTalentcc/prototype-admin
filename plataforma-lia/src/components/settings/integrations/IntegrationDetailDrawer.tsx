@@ -36,6 +36,7 @@ interface ProviderConfigData {
   model?: string
   is_active?: boolean
 }
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface LLMConfigData {
   company_id: string
@@ -110,9 +111,9 @@ export function IntegrationDetailDrawer({
 
   const handleSaveApiKey = useCallback(async (apiKey: string) => {
     try {
-      const currentConfig = await fetch("/api/backend-proxy/llm-config").then(r => r.json())
+      const currentConfig = await apiFetch("/api/backend-proxy/llm-config").then(r => r.json())
 
-      const res = await fetch("/api/backend-proxy/llm-config", {
+      const res = await apiFetch("/api/backend-proxy/llm-config", {
         method:"PUT",
         headers: {"Content-Type":"application/json" },
         body: JSON.stringify({
@@ -137,9 +138,9 @@ export function IntegrationDetailDrawer({
   }, [integration, onConfigSaved])
 
   const handleRemoveApiKey = useCallback(async () => {
-    const currentConfig = await fetch("/api/backend-proxy/llm-config").then(r => r.json())
+    const currentConfig = await apiFetch("/api/backend-proxy/llm-config").then(r => r.json())
 
-    await fetch("/api/backend-proxy/llm-config", {
+    await apiFetch("/api/backend-proxy/llm-config", {
       method:"PUT",
       headers: {"Content-Type":"application/json" },
       body: JSON.stringify({

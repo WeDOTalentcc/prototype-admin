@@ -28,7 +28,7 @@ export interface ChatTurnCapture {
  * only does the page-level setup.
  */
 export async function openChatOnPage(page: Page, _scope: string, pagePath: string) {
-  await page.goto(`/pt/${pagePath}`, { waitUntil: "commit", timeout: 60_000 });
+  await page.goto(`/pt/${pagePath}`, { waitUntil: 'domcontentloaded', timeout: 20_000 });
   const input = page.locator(CHAT_INPUT).first();
   if (!(await input.isVisible().catch(() => false))) {
     await page.getByRole('button', { name: /Chat LIA/i }).first().click().catch(() => {});

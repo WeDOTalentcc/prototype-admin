@@ -22,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { type Department } from './companyTeamHub.types';
+import { type Department } from '@/hooks/settings/department-types';
 import { useTranslations } from "next-intl";
 
 export interface DepartmentGridProps {

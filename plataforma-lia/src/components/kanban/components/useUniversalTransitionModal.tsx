@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useInterpretContext, type InterpretChatMessage as ChatMessage } from '@/hooks/shared/use-interpret-context'
 import { useTransitionContext, type CandidateContext, type JobContext } from '@/hooks/recruitment/use-transition-context'
 import { RECRUITMENT_STAGES } from '@/lib/recruitment-stages'
@@ -36,6 +36,8 @@ export interface AvailableStage {
   displayName: string
   actionBehavior?: string
 }
+
+const EMPTY_TRANSITION_CANDIDATES: CandidateContext[] = []
 
 export interface UniversalTransitionModalProps {
   isOpen: boolean
@@ -174,22 +176,29 @@ export function useUniversalTransitionModal({
   const showChatPanel = isLiaAutoAllowed(currentActionBehavior) && action !== 'just_move'
   const isRejectedStage = selectedToStage === 'rejected'
 
-  const transitionCandidates: CandidateContext[] = isRejectedBatch
-    ? candidates.map(c => ({
-        id: c.id,
-        name: c.name,
-        email: c.email,
-        phone: c.phone,
-        avatar: c.avatar,
-        current_title: c.role ?? undefined,
-        current_company: c.currentCompany || c.company,
-      }))
-    : []
+  // Stabilize references passed to useTransitionContext. Without useMemo these
+  // would be reconstructed every render, invalidating the downstream effect's
+  // dependency array (deps: [candidates, ..., jobContext]) on every render and
+  // triggering an infinite re-render loop via setPredictedSubStatuses /
+  // setIsPredicting in useTransitionState (canonical fix at the source where
+  // unstable identities are produced).
+  const transitionCandidates = useMemo<CandidateContext[]>(() => {
+    if (!isRejectedBatch) return EMPTY_TRANSITION_CANDIDATES
+    return candidates.map(c => ({
+      id: c.id,
+      name: c.name,
+      email: c.email,
+      phone: c.phone,
+      avatar: c.avatar,
+      current_title: c.role ?? undefined,
+      current_company: c.currentCompany || c.company,
+    }))
+  }, [isRejectedBatch, candidates])
 
-  const transitionJobContext: JobContext = {
+  const transitionJobContext = useMemo<JobContext>(() => ({
     id: companyId || '',
     title: jobTitle || '',
-  }
+  }), [companyId, jobTitle])
 
   const {
     predictedSubStatuses,
@@ -205,6 +214,9 @@ export function useUniversalTransitionModal({
 
   const { sendMessage, messages, result: interpretResult, isLoading: isInterpreting, reset: resetInterpret } = useInterpretContext()
 
+  const firstCandidateId = candidates[0]?.id
+  const firstCandidateName = candidates[0]?.name
+
   useEffect(() => {
     if (!isOpen || !companyId) return
     const isOfferStage = selectedToStage.toLowerCase().includes('proposta') ||
@@ -215,43 +227,42 @@ export function useUniversalTransitionModal({
       setPolicyMetadata({})
       return
     }
-    const candidateId = candidates[0]?.id
-    if (!candidateId) return
+    if (!firstCandidateId) return
 
-    fetch(`/api/backend-proxy/pipeline-policy?action=validate-transition&candidate_id=${candidateId}&target_stage=${selectedToStage}&company_id=${companyId}`)
+    fetch(`/api/backend-proxy/pipeline-policy?action=validate-transition&candidate_id=${firstCandidateId}&target_stage=${selectedToStage}&company_id=${companyId}`)
       .then(res => res.json())
       .then(data => {
         setPolicyWarnings(data.warnings || [])
         setPolicyMetadata(data.metadata || {})
       })
       .catch((err) => { console.error('[useUniversalTransitionModal] pipeline-policy fetch failed', err) })
-  }, [isOpen, companyId, selectedToStage, candidates])
+  }, [isOpen, companyId, selectedToStage, firstCandidateId])
 
   useEffect(() => {
-    if (isOpen) {
-      setSubStatus(currentSubStatusOptions.length > 0 ? currentSubStatusOptions[0].code : '')
-      setAction('lia_auto')
-      setPrompt(initialPrompt || '')
-      setChannel('email')
-      setPerCandidateSubStatus({})
-      setManuallyEditedCandidates(new Set())
-      setShowAllPerCandidate(false)
-      resetInterpret()
-      if (initialPrompt) {
-        setTimeout(() => {
-          sendMessage(initialPrompt, {
-            candidate_id: candidates[0]?.id || '',
-            candidate_name: candidates[0]?.name,
-            job_title: jobTitle,
-            from_stage: fromStage,
-            to_stage: selectedToStage,
-            action_behavior: currentActionBehavior,
-            company_id: companyId,
-          })
-        }, 300)
-      }
+    if (!isOpen) return
+    setSubStatus(currentSubStatusOptions.length > 0 ? currentSubStatusOptions[0].code : '')
+    setAction('lia_auto')
+    setPrompt(initialPrompt || '')
+    setChannel('email')
+    setPerCandidateSubStatus({})
+    setManuallyEditedCandidates(new Set())
+    setShowAllPerCandidate(false)
+    resetInterpret()
+    if (initialPrompt) {
+      const timer = setTimeout(() => {
+        sendMessage(initialPrompt, {
+          candidate_id: firstCandidateId || '',
+          candidate_name: firstCandidateName,
+          job_title: jobTitle,
+          from_stage: fromStage,
+          to_stage: selectedToStage,
+          action_behavior: currentActionBehavior,
+          company_id: companyId,
+        })
+      }, 300)
+      return () => clearTimeout(timer)
     }
-  }, [isOpen, currentSubStatusOptions, resetInterpret, initialPrompt, candidates, companyId, currentActionBehavior, fromStage, jobTitle, selectedToStage, sendMessage])
+  }, [isOpen, currentSubStatusOptions, resetInterpret, initialPrompt, firstCandidateId, firstCandidateName, companyId, currentActionBehavior, fromStage, jobTitle, selectedToStage, sendMessage])
 
   useEffect(() => {
     if (isRejectedBatch && Object.keys(predictedSubStatuses).length > 0) {

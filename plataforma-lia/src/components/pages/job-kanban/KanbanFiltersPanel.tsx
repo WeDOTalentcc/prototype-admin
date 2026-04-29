@@ -67,7 +67,7 @@ export function KanbanFiltersPanel({
   }
 
   return (
-    <div className="flex-shrink-0 w-72 transition-colors motion-reduce:transition-none duration-300">
+    <div data-testid="filters-panel" className="flex-shrink-0 w-72 transition-colors motion-reduce:transition-none duration-300">
       <Card className="h-[calc(100vh-12rem)] flex flex-col overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl">
         {/* Header */}
         <div className="flex-shrink-0 p-4">

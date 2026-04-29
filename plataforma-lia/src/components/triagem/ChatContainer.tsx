@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 
 interface ChatContainerProps {
@@ -9,6 +10,7 @@ interface ChatContainerProps {
 }
 
 export function ChatContainer({ children, className }: ChatContainerProps) {
+  const t = useTranslations("triagem.container")
   return (
     <div
       className={cn(
@@ -16,7 +18,7 @@ export function ChatContainer({ children, className }: ChatContainerProps) {
         className
       )}
       role="main"
-      aria-label="Chat de triagem"
+      aria-label={t("ariaLabel")}
     >
       {children}
     </div>

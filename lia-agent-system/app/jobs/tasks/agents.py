@@ -9,70 +9,14 @@ from app.jobs.tasks._utils import (
     _emit_celery_retry, _emit_dlq_push,
 )
 
-@celery_app.task(name="agents.wizard.process_async", bind=True, max_retries=2, queue="vagas_normal")
-def wizard_process_async_task(self, message: str, context: dict, session_id: str, company_id: str, user_id: str) -> dict:
-    """
-    Processa mensagem do Wizard em background para operações longas.
-
-    Usado quando a criação/atualização de vaga envolve chamadas externas
-    (benchmark salarial, busca de templates, geração de JD com LLM).
-
-    Args:
-        message: Mensagem do usuário.
-        context: Contexto da sessão (stage, collected_data).
-        session_id: ID da sessão WS para devolver resultado.
-        company_id: ID da empresa.
-        user_id: ID do usuário.
-
-    Returns:
-        AgentOutput serializado como dict.
-    """
-    from lia_agents_core.agent_interface import AgentInput
-
-    span = _celery_span("celery.task_start", "agents.wizard.process_async")
-    span.set_attribute("company_id", company_id)
-    span.set_attribute("session_id", session_id)
-
-    async def _run() -> dict:
-        from app.domains.job_management.agents.wizard_react_agent import WizardReActAgent
-        agent = WizardReActAgent()
-        agent_input = AgentInput(
-            message=message,
-            context=context,
-            session_id=session_id,
-            company_id=company_id,
-            user_id=user_id,
-        )
-        output = await agent.process(agent_input)
-        return output.dict()
-
-    try:
-        result = asyncio.run(_run())
-        try:
-            import asyncio as _asyncio
-
-            from app.api.v1.ws_manager import ws_manager
-            loop = _asyncio.new_event_loop()
-            loop.run_until_complete(ws_manager.send_to_session(session_id, {
-                "type": "message",
-                "content": result.get("message", ""),
-                "confidence": result.get("confidence", 0.7),
-                "source": "celery_task",
-            }))
-            loop.close()
-        except Exception:
-            pass
-        _finish_celery_success(span, "agents.wizard.process_async")
-        return result
-    except Exception as exc:
-        _finish_celery_failure(span, "agents.wizard.process_async", exc)
-        logger.error("agents.wizard.process_async falhou session=%s: %s", session_id, exc)
-        _emit_celery_retry("agents.wizard.process_async", exc, self.request.retries, self.max_retries, 30)
-
-        if self.request.retries >= self.max_retries:
-
-            _emit_dlq_push("agents.wizard.process_async", exc)
-        raise self.retry(exc=exc, countdown=30)
+# Task #850: `agents.wizard.process_async` was fully retired. The
+# job-creation flow runs synchronously through `JobCreationGraph` from
+# the WS layer (see `app.api.v1.agent_chat_ws.py`) — wizard was always
+# in `SYNC_DOMAINS` per `celery_config.py` and never actually dispatched
+# through Celery. The task name is no longer registered: any stale
+# producer trying to publish to `agents.wizard.process_async` will be
+# rejected by Celery with `KeyError: task not registered`, which is the
+# explicit-failure semantic we want.
 
 @celery_app.task(name="agents.pipeline.transition_async", bind=True, max_retries=2, queue="vagas_normal")
 def pipeline_transition_async_task(self, transition_data: dict, session_id: str, company_id: str, user_id: str) -> dict:
@@ -147,34 +91,9 @@ async def _publish_response(session_id: str, reply_to: str, output_dict: dict, d
     except Exception as exc:
         logger.warning("_publish_response failed session=%s: %s", session_id, exc)
 
-@celery_app.task(name="agents.wizard.execute", bind=True, max_retries=2, queue="vagas_normal")
-def execute_wizard_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "wizard", reply_to: str = "") -> dict:
-    """Executa WizardReActAgent em background (vaga, templates, JD)."""
-    span = _celery_span("celery.task_start", "agents.wizard.execute")
-    span.set_attribute("company_id", company_id)
-    span.set_attribute("domain", domain)
-
-    async def _run() -> dict:
-        from app.domains.job_management.agents.wizard_react_agent import WizardReActAgent
-        agent = WizardReActAgent()
-        output = await agent.process(_build_agent_input(agent_input_dict))
-        result = output.dict()
-        await _publish_response(session_id, reply_to, result, domain)
-        return result
-
-    try:
-        result = asyncio.run(_run())
-        _finish_celery_success(span, "agents.wizard.execute")
-        return result
-    except Exception as exc:
-        _finish_celery_failure(span, "agents.wizard.execute", exc)
-        logger.error("agents.wizard.execute falhou session=%s: %s", session_id, exc)
-        _emit_celery_retry("agents.wizard.execute", exc, self.request.retries, self.max_retries, 30)
-
-        if self.request.retries >= self.max_retries:
-
-            _emit_dlq_push("agents.wizard.execute", exc)
-        raise self.retry(exc=exc, countdown=30)
+# Task #850: `agents.wizard.execute` was fully retired alongside
+# `agents.wizard.process_async`. See the note above the
+# `agents.pipeline.transition_async` task for the full rationale.
 
 @celery_app.task(name="agents.pipeline.execute", bind=True, max_retries=2, queue="evaluation_normal")
 def execute_pipeline_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "pipeline", reply_to: str = "") -> dict:

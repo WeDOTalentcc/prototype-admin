@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { ClipboardCheck } from "lucide-react"
 
@@ -21,6 +22,7 @@ export function ConfirmationCard({
   isSubmitting = false,
   className,
 }: ConfirmationCardProps) {
+  const t = useTranslations("triagem.confirmationCard")
   return (
     <div
       className={cn(
@@ -28,7 +30,7 @@ export function ConfirmationCard({
         className
       )}
       role="dialog"
-      aria-label="Confirmação de finalização"
+      aria-label={t("ariaLabel")}
     >
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-lia-bg-tertiary dark:bg-lia-bg-elevated flex items-center justify-center">
@@ -36,18 +38,18 @@ export function ConfirmationCard({
         </div>
         <div>
           <h3 className="text-sm font-semibold text-lia-text-primary">
-            Chegamos ao final!
+            {t("title")}
           </h3>
           <p className="text-xs text-lia-text-tertiary mt-1">
-            Quer revisar algo antes de concluir?
+            {t("subtitle")}
           </p>
         </div>
       </div>
 
       <div className="flex items-center gap-3 text-xs text-lia-text-tertiary font-['Inter',sans-serif]">
-        <span>{questionsAnswered} perguntas respondidas</span>
+        <span>{t("questionsAnswered", { count: questionsAnswered })}</span>
         <span className="w-1 h-1 rounded-full bg-lia-border-default dark:bg-lia-border-medium" />
-        <span>{durationMinutes} minutos</span>
+        <span>{t("minutesSummary", { count: durationMinutes })}</span>
       </div>
 
       <div className="flex gap-3">
@@ -55,19 +57,19 @@ export function ConfirmationCard({
           type="button"
           onClick={onReview}
           disabled={isSubmitting}
-          aria-label="Quero revisar minhas respostas"
+          aria-label={t("reviewAria")}
           className="flex-1 h-10 flex items-center justify-center rounded-lg bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-sm font-medium border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
         >
-          Quero revisar
+          {t("reviewLabel")}
         </button>
         <button
           type="button"
           onClick={onConfirm}
           disabled={isSubmitting}
-          aria-label="Finalizar triagem"
+          aria-label={t("confirmAria")}
           className="flex-1 h-10 flex items-center justify-center rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-sm font-medium hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
         >
-          {isSubmitting ? "Finalizando..." : "Finalizar Triagem"}
+          {isSubmitting ? t("confirmLoading") : t("confirmLabel")}
         </button>
       </div>
     </div>

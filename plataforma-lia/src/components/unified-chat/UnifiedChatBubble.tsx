@@ -228,11 +228,11 @@ export function UnifiedChatBubble({ onOpen }: Props) {
         "fixed z-50 touch-none select-none",
         !position && "bottom-6 right-6",
         "w-14 h-14 rounded-full",
-        "bg-[#60BED1] shadow-lg shadow-[#60BED1]/30",
+        "bg-wedo-cyan shadow-lg shadow-wedo-cyan/30",
         "flex items-center justify-center",
         "transition-transform motion-reduce:transition-none",
-        "hover:scale-110 hover:shadow-xl hover:shadow-[#60BED1]/40",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#60BED1]/50 focus-visible:ring-offset-2",
+        "hover:scale-110 hover:shadow-lia-lg hover:shadow-wedo-cyan/40",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-wedo-cyan/50 focus-visible:ring-offset-2",
         "cursor-grab active:cursor-grabbing",
         "group"
       )}
@@ -259,7 +259,7 @@ export function UnifiedChatBubble({ onOpen }: Props) {
       </span>
 
       {chatIsConnected && (
-        <span className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-status-success ring-2 ring-[#60BED1]" />
+        <span className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-status-success ring-2 ring-wedo-cyan" />
       )}
     </button>
   )

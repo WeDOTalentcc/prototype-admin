@@ -51,6 +51,11 @@ COMPLEX_ACTIONS: dict[str, tuple[str, str, str]] = {
         "Você está navegando há algum tempo aqui. Prefere usar a plataforma completa?",
         "/",
     ),
+    "click_dashboard_drilldown": (
+        "Ver detalhes no dashboard",
+        "Para análises detalhadas e drill-down, use a plataforma completa.",
+        "/dashboard",
+    ),
 }
 
 
@@ -60,7 +65,7 @@ class TeamsTabTriggerEngine:
     Teams message redirecting the recruiter to the full platform.
     """
 
-    PLATFORM_URL_DEFAULT = "https://app.wedotalent.com"
+    PLATFORM_URL_DEFAULT = "https://app.wedotalent.cc"
 
     def __init__(self, platform_url: str | None = None):
         import os

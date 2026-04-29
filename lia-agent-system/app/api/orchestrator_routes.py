@@ -208,13 +208,6 @@ async def health_check(
     if llm_error:
         result["llm_error"] = llm_error
 
-    # Task #672 / Fase 2C P0-2: silent-fallback observability for unmapped agent-types.
-    try:
-        from app.orchestrator.domain_mappings import get_fallback_stats
-        result["domain_resolver_fallbacks"] = get_fallback_stats()
-    except Exception as exc:  # pragma: no cover — defensive
-        result["domain_resolver_fallbacks"] = {"error": str(exc)}
-
     return result
 
 

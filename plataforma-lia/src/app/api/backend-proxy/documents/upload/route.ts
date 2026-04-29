@@ -5,6 +5,10 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 const VALID_DOCUMENT_TYPES = ["handbook", "org_chart", "compensation", "tech_doc", "general"]
+const VALID_TARGET_SECTIONS = new Set([
+  "culture", "tech_stack", "benefits", "workforce",
+  "compensation", "policy",
+])
 
 const SENSITIVE_TERMS: Record<string, string> = {
   "idade máxima": "Restrição por idade",
@@ -90,6 +94,11 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get("file") as File
     const documentType = (formData.get("document_type") as string) || "general"
+    const rawTargetSection = formData.get("target_section")
+    const targetSection =
+      typeof rawTargetSection === "string" && VALID_TARGET_SECTIONS.has(rawTargetSection)
+        ? rawTargetSection
+        : null
 
     if (!file || !(file instanceof File)) {
       return NextResponse.json(
@@ -136,6 +145,7 @@ export async function POST(request: NextRequest) {
       success: true,
       extracted_text: extractedText,
       document_type: documentType,
+      target_section: targetSection,
       file_name: file.name,
       file_size: file.size,
       text_length: extractedText.length,

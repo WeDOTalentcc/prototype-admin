@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
+from app.auth.dependencies import get_current_user_or_demo, get_user_company_id, validate_company_access
 from app.auth.models import User
 from app.core.database import get_db
 from app.domains.company.repositories.company_benefit_repository import (
@@ -92,6 +92,7 @@ async def list_company_benefits(
     """List company benefits."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
+        validate_company_access(current_user, effective_company_id)
         repo = CompanyBenefitRepository(db)
         benefits = await repo.list_for_company(
             effective_company_id,
@@ -115,6 +116,7 @@ async def create_company_benefit(
     """Create a new company benefit."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
+        validate_company_access(current_user, effective_company_id)
         repo = CompanyBenefitRepository(db)
         new_benefit = await repo.create(effective_company_id, benefit.model_dump())
         logger.info(f"Created company benefit: {new_benefit.name} for company: {effective_company_id}")
@@ -137,6 +139,7 @@ async def get_company_benefit(
         benefit = await repo.get_by_id(benefit_id)
         if not benefit:
             raise HTTPException(status_code=404, detail="Benefit not found")
+        validate_company_access(current_user, benefit.company_id)
         return _to_response(benefit)
     except HTTPException:
         raise
@@ -158,6 +161,7 @@ async def update_company_benefit(
         benefit = await repo.get_by_id(benefit_id)
         if not benefit:
             raise HTTPException(status_code=404, detail="Benefit not found")
+        validate_company_access(current_user, benefit.company_id)
         benefit = await repo.update(benefit, updates.model_dump(exclude_unset=True))
         logger.info(f"Updated company benefit: {benefit.name}")
         return _to_response(benefit)
@@ -182,6 +186,7 @@ async def delete_company_benefit(
         benefit = await repo.get_by_id(benefit_id)
         if not benefit:
             raise HTTPException(status_code=404, detail="Benefit not found")
+        validate_company_access(current_user, benefit.company_id)
         if hard_delete:
             await repo.hard_delete(benefit)
             message = f"Benefit '{benefit.name}' permanently deleted"
@@ -207,6 +212,7 @@ async def seed_default_benefits(
     """Seed default Brazilian benefits for a company."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
+        validate_company_access(current_user, effective_company_id)
         repo = CompanyBenefitRepository(db)
         existing_count = await repo.count_for_company(effective_company_id)
         if existing_count > 0:

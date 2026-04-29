@@ -1,8 +1,3 @@
-# tenant-isolation: manual — legacy tools authored before @tool_handler.
-# Each handler reads company_id from the injected `_context` (ToolExecutionContext)
-# and/or from kwargs populated by `app/tools/executor.py`. Migration to
-# @tool_handler is tracked under the ADR-018 / Task #673 backlog. Do NOT add
-# new functions here — author new tools via @tool_handler in a new module.
 """
 Sourcing Query Tools - Tools for candidate search, talent metrics, and market benchmarks.
 
@@ -350,7 +345,7 @@ async def get_candidate_details(
                 "linkedin": getattr(candidate, 'linkedin_url', None),
                 "location": getattr(candidate, 'location', None),
                 "seniority": getattr(candidate, 'seniority_level', None),
-                "status": getattr(candidate, 'status', None),
+                "status": candidate.status,
                 "lia_score": getattr(candidate, 'lia_score', None),
                 "wsi_score": getattr(candidate, 'wsi_score', None),
                 "fit_score": getattr(candidate, 'fit_score', None),

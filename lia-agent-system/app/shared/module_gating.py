@@ -152,11 +152,11 @@ async def check_tool_module_access(
         from app.domains.modules.services.module_service import module_service
         status = await module_service.get_module_status(db, company_id, module_name)
 
-        if status in ("beta", "experimental"):
-            return {"allowed": True, "module_name": module_name, "status": status}
+        if status == "beta":
+            return {"allowed": True, "module_name": module_name, "status": "beta"}
         elif status in ("active", "trial"):
             return {"allowed": True, "module_name": module_name, "status": status}
-        elif status in ("disabled", "expired", "deprecated", "coming_soon") or status is None:
+        elif status in ("disabled", "expired", "coming_soon") or status is None:
             is_premium = tool_name in PREMIUM_GATED_TOOLS
             is_tasting = tool_name in TASTING_TOOLS
             return {

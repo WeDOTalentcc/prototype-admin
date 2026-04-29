@@ -23,7 +23,24 @@ import {
 import { ScreeningBadge } from "./ScreeningBadge"
 import { LiaEditor } from "@/components/ui/lia-editor"
 import { sanitizeHtml } from "@/lib/sanitize"
-import { getJobSeniority } from "@/lib/jobs/seniority"
+import { RemoteCombobox, type RemoteComboboxOption } from "@/components/ui/remote-combobox"
+import {
+  useJobStatuses, useJobPriorities, useJobUrgencyLevels,
+  useJobWorkplaceTypes, useJobEmploymentTypes, useJobSeniorities,
+  useDepartmentsSearch, useCitiesSearch,
+} from "@/hooks/jobs/use-job-metadata"
+
+function asOption(value: unknown): RemoteComboboxOption | null {
+  if (value && typeof value === "object") {
+    const v = value as Record<string, unknown>
+    if (v.id !== undefined && v.name !== undefined) {
+      return { id: v.id as string | number, name: String(v.name) }
+    }
+    return null
+  }
+  if (value) return { id: String(value), name: String(value) }
+  return null
+}
 
 interface JobInfoGeralSectionProps {
   jobEditForm: Record<string, unknown>
@@ -48,6 +65,18 @@ export function JobInfoGeralSection({
   getScreeningImpact,
   publicLink,
 }: JobInfoGeralSectionProps) {
+  const [departmentQuery, setDepartmentQuery] = React.useState("")
+  const [cityQuery, setCityQuery] = React.useState("")
+
+  const { options: statusOptions, isLoading: statusLoading } = useJobStatuses()
+  const { options: priorityOptions, isLoading: priorityLoading } = useJobPriorities()
+  const { options: urgencyOptions, isLoading: urgencyLoading } = useJobUrgencyLevels()
+  const { options: workplaceOptions, isLoading: workplaceLoading } = useJobWorkplaceTypes()
+  const { options: employmentOptions, isLoading: employmentLoading } = useJobEmploymentTypes()
+  const { options: seniorityOptions, isLoading: seniorityLoading } = useJobSeniorities()
+  const { options: departmentOptions, isLoading: departmentLoading } = useDepartmentsSearch(departmentQuery)
+  const { options: cityOptions, isLoading: cityLoading } = useCitiesSearch(cityQuery)
+
   return (
     <div className="space-y-5">
       <div>
@@ -57,10 +86,10 @@ export function JobInfoGeralSection({
             <div className="grid grid-cols-4 gap-4">
               <div>
                 <label className={labelClass}>Status</label>
-                <select
-                  value={(jobEditForm.status as string) || ""}
-                  onChange={(e) => {
-                    const newStatus = e.target.value
+                <RemoteCombobox
+                  value={asOption(jobEditForm.status)}
+                  onChange={(opt) => {
+                    const newStatus = opt?.name
                     if (!newStatus) return
                     const impact = getScreeningImpact(newStatus)
                     if (impact !== "none") {
@@ -69,36 +98,33 @@ export function JobInfoGeralSection({
                       updateField("status", newStatus)
                     }
                   }}
+                  options={statusOptions}
+                  isLoading={statusLoading}
+                  placeholder="Status"
                   disabled={!isEditing}
-                  className={selectClass(!isEditing)}
-                >
-                  <option value="">Selecione...</option>
-                  <option value="Rascunho">Rascunho</option>
-                  <option value="Ativa">Ativa</option>
-                  <option value="Paralisada">Paralisada</option>
-                  <option value="Concluída">Concluída</option>
-                  <option value="Cancelada">Cancelada</option>
-                </select>
+                />
               </div>
               <div>
                 <label className={labelClass}>Prioridade</label>
-                <select value={(jobEditForm.priority as string) || ""} onChange={(e) => updateField("priority", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
-                  <option value="">Selecione...</option>
-                  <option value="alta">Alta</option>
-                  <option value="média">Média</option>
-                  <option value="baixa">Baixa</option>
-                </select>
+                <RemoteCombobox
+                  value={asOption(jobEditForm.priority)}
+                  onChange={(opt) => updateField("priority", opt)}
+                  options={priorityOptions}
+                  isLoading={priorityLoading}
+                  placeholder="Prioridade"
+                  disabled={!isEditing}
+                />
               </div>
               <div>
                 <label className={labelClass}>Nível de Urgência</label>
-                <select value={jobEditForm.urgencyLevel?.toString() || ""} onChange={(e) => updateField("urgencyLevel", parseInt(e.target.value))} disabled={!isEditing} className={selectClass(!isEditing)}>
-                  <option value="">Selecione...</option>
-                  <option value="1">1 - Baixa</option>
-                  <option value="2">2 - Moderada</option>
-                  <option value="3">3 - Média</option>
-                  <option value="4">4 - Alta</option>
-                  <option value="5">5 - Crítica</option>
-                </select>
+                <RemoteCombobox
+                  value={asOption(jobEditForm.urgencyLevel)}
+                  onChange={(opt) => updateField("urgencyLevel", opt)}
+                  options={urgencyOptions}
+                  isLoading={urgencyLoading}
+                  placeholder="Urgência"
+                  disabled={!isEditing}
+                />
               </div>
               <div>
                 <label className={labelClass}>Triagem</label>
@@ -140,11 +166,31 @@ export function JobInfoGeralSection({
               </div>
               <div>
                 <label className={labelClass}>Departamento<ScreeningBadge /></label>
-                <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.department as string) || ""} onChange={(e) => updateField("department", e.target.value)} disabled={!isEditing} placeholder="Ex: Tecnologia" />
+                <RemoteCombobox
+                  value={asOption(jobEditForm.department)}
+                  onChange={(opt) => updateField("department", opt)}
+                  options={departmentOptions}
+                  isLoading={departmentLoading}
+                  onSearchChange={setDepartmentQuery}
+                  placeholder="Selecione um departamento"
+                  disabled={!isEditing}
+                />
               </div>
               <div>
                 <label className={labelClass}>Localização<ScreeningBadge /></label>
                 <input type="text" className={inputClass(!isEditing)} value={(jobEditForm.location as string) || ""} onChange={(e) => updateField("location", e.target.value)} disabled={!isEditing} placeholder="Ex: São Paulo, SP" />
+              </div>
+              <div>
+                <label className={labelClass}>Cidade<ScreeningBadge /></label>
+                <RemoteCombobox
+                  value={asOption(jobEditForm.city)}
+                  onChange={(opt) => updateField("city", opt)}
+                  options={cityOptions}
+                  isLoading={cityLoading}
+                  onSearchChange={setCityQuery}
+                  placeholder="Busque uma cidade"
+                  disabled={!isEditing}
+                />
               </div>
             </div>
           </CardContent>
@@ -163,12 +209,18 @@ export function JobInfoGeralSection({
                     <span className="ml-1.5 text-micro text-wedo-cyan-dark font-normal">(padrão: {(companyDefaults as Record<string, unknown>)?.workModel as string})</span>
                   )}
                 </label>
-                <select value={(jobEditForm.workModel as string) || ""} onChange={(e) => updateField("workModel", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
-                  <option value="">{(companyDefaults as Record<string, unknown>)?.workModel ? `Usar padrão (${(companyDefaults as Record<string, unknown>)?.workModel})` : "Selecione..."}</option>
-                  <option value="Presencial">Presencial</option>
-                  <option value="Remoto">Remoto</option>
-                  <option value="Híbrido">Híbrido</option>
-                </select>
+                <RemoteCombobox
+                  value={asOption(jobEditForm.workModel)}
+                  onChange={(opt) => updateField("workModel", opt?.name ?? null)}
+                  options={workplaceOptions}
+                  isLoading={workplaceLoading}
+                  placeholder={
+                    (companyDefaults as Record<string, unknown>)?.workModel
+                      ? `Usar padrão (${(companyDefaults as Record<string, unknown>)?.workModel})`
+                      : "Selecione o modelo de trabalho"
+                  }
+                  disabled={!isEditing}
+                />
               </div>
               <div>
                 <label className={labelClass}>
@@ -177,42 +229,29 @@ export function JobInfoGeralSection({
                     <span className="ml-1.5 text-micro text-wedo-cyan-dark font-normal">(padrão: {((companyDefaults as Record<string, unknown>)?.employmentTypes as string[])[0]})</span>
                   )}
                 </label>
-                {(() => {
-                  const staticTypes = ["CLT", "PJ", "Estágio", "Temporário", "Freelancer", "Aprendiz"]
-                  const companyTypes = ((companyDefaults as Record<string, unknown>)?.employmentTypes as string[]) || []
-                  const allTypes = [...new Set([...companyTypes, ...staticTypes])]
-                  return (
-                    <select value={(jobEditForm.type as string) || ""} onChange={(e) => updateField("type", e.target.value)} disabled={!isEditing} className={selectClass(!isEditing)}>
-                      <option value="">{companyTypes[0] ? `Usar padrão (${companyTypes[0]})` : "Selecione..."}</option>
-                      {allTypes.map((t) => (
-                        <option key={t} value={t}>{t}{companyTypes.includes(t) && !staticTypes.includes(t) ? " (empresa)" : ""}</option>
-                      ))}
-                    </select>
-                  )
-                })()}
+                <RemoteCombobox
+                  value={asOption(jobEditForm.type)}
+                  onChange={(opt) => updateField("type", opt)}
+                  options={employmentOptions}
+                  isLoading={employmentLoading}
+                  placeholder={
+                    ((companyDefaults as Record<string, unknown>)?.employmentTypes as string[] | undefined)?.[0]
+                      ? `Usar padrão (${((companyDefaults as Record<string, unknown>)?.employmentTypes as string[])[0]})`
+                      : "Tipo de contrato"
+                  }
+                  disabled={!isEditing}
+                />
               </div>
               <div>
                 <label className={labelClass}>Nível<ScreeningBadge /></label>
-                {/* Task #539 — `level` legacy removido; persistir e ler via
-                    `seniority` (canônico). Helper `getJobSeniority` mantido
-                    como tolerância a payloads parciais. */}
-                <select
-                  value={getJobSeniority(jobEditForm as { seniority?: string | null }) ?? ""}
-                  onChange={(e) => {
-                    updateField("seniority", e.target.value)
-                  }}
+                <RemoteCombobox
+                  value={asOption(jobEditForm.level)}
+                  onChange={(opt) => updateField("level", opt)}
+                  options={seniorityOptions}
+                  isLoading={seniorityLoading}
+                  placeholder="Senioridade"
                   disabled={!isEditing}
-                  className={selectClass(!isEditing)}
-                >
-                  <option value="">Selecione...</option>
-                  <option value="Estágio">Estágio</option>
-                  <option value="Júnior">Júnior</option>
-                  <option value="Pleno">Pleno</option>
-                  <option value="Sênior">Sênior</option>
-                  <option value="Lead">Lead</option>
-                  <option value="Gerente">Gerente</option>
-                  <option value="Diretor">Diretor</option>
-                </select>
+                />
               </div>
             </div>
           </CardContent>

@@ -91,7 +91,7 @@ class WebhookLog(Base):
     __tablename__ = "webhook_logs"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    webhook_id = Column(UUID(as_uuid=True), ForeignKey("webhooks.id", ondelete="CASCADE"), nullable=False, index=True)
+    webhook_id = Column(UUID(as_uuid=True), ForeignKey("studio_webhooks.id", ondelete="CASCADE"), nullable=False, index=True)
     event = Column(String(128), nullable=False)
     status = Column(Enum(WebhookStatus), default=WebhookStatus.PENDING, nullable=False)
     status_code = Column(Integer, nullable=True)

@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useTranslations } from 'next-intl'
 import { Chip } from '@/components/ui/chip'
 import { CompanyDataCard } from '../CompanyDataCard'
 import { inputClass, textareaClass } from '../useCompanyDataForm'
@@ -21,17 +22,18 @@ export function CultureIdentitySection({
   updateLiaToggle,
   updateLiaInstruction,
 }: CultureIdentitySectionProps) {
+  const t = useTranslations('settings.minhaEmpresa.culture')
   return (
     <div className="space-y-3">
       <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1">
-        Cultura e Identidade
+        {t('sectionTitle')}
       </h3>
       
       <div className="grid grid-cols-1 gap-3">
         <CompanyDataCard
           fieldKey="mission"
-          label="Missão"
-          category="Cultura"
+          label={t('mission')}
+          category={t('category')}
           isActive={companyData.lia_field_toggles?.mission ?? true}
           currentInstruction={companyData.lia_instructions?.mission || ''}
           isEditing={isEditing}
@@ -45,14 +47,14 @@ export function CultureIdentitySection({
             disabled={!isEditing}
             className={textareaClass(!isEditing)}
             rows={2}
-            placeholder="Missão da empresa..."
+            placeholder={t('missionPlaceholder')}
           />
         </CompanyDataCard>
 
         <CompanyDataCard
           fieldKey="vision"
-          label="Visão"
-          category="Cultura"
+          label={t('vision')}
+          category={t('category')}
           isActive={companyData.lia_field_toggles?.vision ?? true}
           currentInstruction={companyData.lia_instructions?.vision || ''}
           isEditing={isEditing}
@@ -66,14 +68,14 @@ export function CultureIdentitySection({
             disabled={!isEditing}
             className={textareaClass(!isEditing)}
             rows={2}
-            placeholder="Visão da empresa..."
+            placeholder={t('visionPlaceholder')}
           />
         </CompanyDataCard>
 
         <CompanyDataCard
           fieldKey="values"
-          label="Valores"
-          category="Cultura"
+          label={t('valuesLabel')}
+          category={t('category')}
           isActive={companyData.lia_field_toggles?.values ?? true}
           currentInstruction={companyData.lia_instructions?.values || ''}
           isEditing={isEditing}
@@ -100,7 +102,7 @@ export function CultureIdentitySection({
             <input
               id="field-values"
               type="text"
-              placeholder="Adicionar valor e pressionar Enter..."
+              placeholder={t('valuesPlaceholder')}
               disabled={!isEditing}
               className={inputClass(!isEditing)}
               onKeyDown={(e) => {
@@ -119,8 +121,8 @@ export function CultureIdentitySection({
 
         <CompanyDataCard
           fieldKey="core_competencies"
-          label="Competências Comportamentais"
-          category="Cultura"
+          label={t('behavioralCompetencies')}
+          category={t('category')}
           isActive={companyData.lia_field_toggles?.core_competencies ?? true}
           currentInstruction={companyData.lia_instructions?.core_competencies || ''}
           isEditing={isEditing}
@@ -139,7 +141,7 @@ export function CultureIdentitySection({
                         coreCompetencies: prev.coreCompetencies?.filter((_: string, i: number) => i !== idx),
                       }))}
                       className="ml-1 hover:text-status-error"
-                      aria-label={`Remover ${comp}`}
+                      aria-label={t('removeCompetency', { name: comp })}
                     >×</button>
                   )}
                 </Chip>
@@ -148,7 +150,7 @@ export function CultureIdentitySection({
             <input
               id="field-core_competencies"
               type="text"
-              placeholder="Adicionar competência e pressionar Enter..."
+              placeholder={t('addCompetencyPlaceholder')}
               disabled={!isEditing}
               className={inputClass(!isEditing)}
               onKeyDown={(e) => {

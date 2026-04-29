@@ -24,9 +24,15 @@ Referências:
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+
+def _now() -> float:
+    """Indirection over ``time.monotonic`` so tests can fast-forward."""
+    return time.monotonic()
 
 try:
     import redis.asyncio as aioredis
@@ -53,7 +59,19 @@ class AgentHealthAlertService:
 
     def __init__(self) -> None:
         self._redis: Any | None = None
-        self._memory: dict[str, int] = {}   # fallback in-memory
+        # In-process fallback when Redis is unavailable. Each entry is a
+        # ``(count, monotonic_expires_at)`` tuple so failure counters for
+        # agents that never recover are evicted after ``WINDOW_MINUTES``,
+        # mirroring the Redis ``EXPIRE`` semantics. Without this the dict
+        # accumulated one entry per (company, agent) pair forever. (Task #871)
+        self._memory: dict[str, tuple[int, float]] = {}
+
+    def _sweep_memory(self) -> None:
+        """Drop entries whose sliding window has elapsed."""
+        now = _now()
+        expired = [k for k, (_, exp) in self._memory.items() if exp <= now]
+        for key in expired:
+            self._memory.pop(key, None)
 
     async def _get_redis(self) -> Any | None:
         if not _AIOREDIS_AVAILABLE:
@@ -87,9 +105,12 @@ class AgentHealthAlertService:
             except Exception as exc:
                 logger.warning("[AgentHealthAlertService] Redis incr failed (%s), using fallback", exc)
 
-        # fallback in-memory
-        self._memory[key] = self._memory.get(key, 0) + 1
-        return self._memory[key]
+        # fallback in-memory — TTL-aware so silent agents don't pin counters.
+        self._sweep_memory()
+        existing = self._memory.get(key)
+        new_count = (existing[0] if existing else 0) + 1
+        self._memory[key] = (new_count, _now() + WINDOW_MINUTES * 60)
+        return new_count
 
     async def _reset(self, company_id: str, agent_id: str) -> None:
         """Reseta contador após sucesso."""
@@ -102,6 +123,7 @@ class AgentHealthAlertService:
             except Exception as exc:
                 logger.warning("[AgentHealthAlertService] Redis delete failed (%s), using fallback", exc)
 
+        self._sweep_memory()
         self._memory.pop(key, None)
 
     async def _alert(
@@ -202,7 +224,9 @@ class AgentHealthAlertService:
                 return int(val) if val else 0
             except Exception:
                 pass
-        return self._memory.get(key, 0)
+        self._sweep_memory()
+        entry = self._memory.get(key)
+        return entry[0] if entry else 0
 
 
 agent_health_alert_service = AgentHealthAlertService()

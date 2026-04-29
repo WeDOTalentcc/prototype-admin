@@ -182,6 +182,52 @@ class CascadedRouter:
 
         _tracer = get_tracer()
 
+        # ── W7.2 PromptInjectionGuard — guard all callers (direct SSE/REST + orchestrator) ──
+        try:
+            from app.shared.robustness.security_patterns import check_input_security, get_block_response
+            _sec = check_input_security(message)
+            if _sec.is_blocked:
+                logger.warning(
+                    "[CascadedRouter] SecurityPatterns blocked routing: risk=%s categories=%s",
+                    _sec.risk_level, _sec.threat_categories,
+                )
+                return RouteResult(
+                    domain_id="recruiter_assistant",
+                    confidence=1.0,
+                    source="security_blocked",
+                    intent_details={
+                        "blocked": True,
+                        "risk_level": _sec.risk_level,
+                        "threat_categories": list(_sec.threat_categories or []),
+                        "block_response": get_block_response(_sec, language="pt"),
+                    },
+                )
+        except Exception as _sec_exc:
+            logger.debug("[CascadedRouter] security check skipped: %s", _sec_exc)
+        # ─────────────────────────────────────────────────────────────────────
+
+        # PR-A Tier 0.0 — Rail A hint override (FE-H03 do audit enterprise).
+        # Cobre TODOS os transports: WS via MainOrchestrator + SSE/REST que
+        # chamam CascadedRouter direto. Curto-circuita os tiers 0-4 quando
+        # FE forneceu metadata estruturada com domain_hint válido.
+        # Skill canônica: harness-engineering [guide computacional].
+        if context:
+            try:
+                from app.orchestrator.services.rail_a_hint_override import try_hint_route
+                _hint_route = try_hint_route(context)
+                if _hint_route is not None:
+                    logger.info(
+                        "[CascadedRouter] rail_a_hint override: card=%s → domain=%s intent=%s",
+                        (context.get("metadata") or {}).get("card_id", "?"),
+                        _hint_route.domain_id,
+                        (_hint_route.intent_details or {}).get("raw_intent", "?"),
+                    )
+                    if _hit_counter:
+                        _hit_counter.labels(tier="rail_a_hint").inc()
+                    return _hint_route
+            except Exception as _hint_exc:
+                logger.debug("[CascadedRouter] rail_a_hint check skipped: %s", _hint_exc)
+
         # Tier 0 — Resolver pronomes/referências via WorkingMemory antes de rotear
         if session_id:
             async with _tracer.start_span("router.tier0_memory_resolve", attributes={
@@ -761,19 +807,8 @@ class CascadedRouter:
             logger.debug("[CascadedRouter] llm_cascade falhou: %s", exc)
             return None
 
-    def _intent_to_domain(
-        self,
-        intent: str,
-        context: dict[str, Any] | None = None,
-        session_id: str | None = None,
-    ) -> str:
-        ctx = context or {}
-        return resolve_domain(
-            intent,
-            tenant_id=ctx.get("company_id") or ctx.get("tenant_id"),
-            user_id=ctx.get("user_id"),
-            conversation_id=ctx.get("conversation_id") or session_id,
-        )
+    def _intent_to_domain(self, intent: str) -> str:
+        return resolve_domain(intent)
 
     def _cache_store(self, key: str, result: RouteResult) -> None:
         if len(self._memory_cache) >= self._cache_max_size:

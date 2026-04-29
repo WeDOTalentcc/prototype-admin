@@ -22,18 +22,52 @@ export class HttpError extends Error {
   readonly status: number
   readonly retryAfterMs?: number
   readonly body?: string
+  /**
+   * Task #728: when true, the failure is a transient client-side network
+   * error (cold-start, DNS hiccup, dropped connection) — NOT a real 4xx/5xx
+   * from the backend. Consumers may render a soft "trying to reconnect"
+   * state without alarming the user, and the Next.js dev overlay can be
+   * filtered against this discriminator instead of matching on the raw
+   * `TypeError: Failed to fetch` message.
+   */
+  readonly transientNetworkError?: boolean
 
   constructor(
     status: number,
     message: string,
-    opts: { retryAfterMs?: number; body?: string } = {},
+    opts: { retryAfterMs?: number; body?: string; transientNetworkError?: boolean } = {},
   ) {
     super(message)
     this.name = 'HttpError'
     this.status = status
     this.retryAfterMs = opts.retryAfterMs
     this.body = opts.body
+    this.transientNetworkError = opts.transientNetworkError
   }
+}
+
+/**
+ * Task #728: detects browser network-layer failures that are *not* HTTP
+ * responses — typically thrown by `fetch()` as `TypeError("Failed to fetch")`
+ * during cold-start, DNS resolution failures, or aborted connections.
+ *
+ * NOT considered transient: real `HttpError` (we got a response), explicit
+ * AbortError from the caller, server 5xx (those are real failures).
+ */
+export function isTransientNetworkError(err: unknown): boolean {
+  if (err instanceof HttpError) return err.transientNetworkError === true
+  if (err instanceof TypeError) {
+    // The exact message varies by browser (Chrome: "Failed to fetch",
+    // Firefox: "NetworkError when attempting to fetch resource", Safari:
+    // "Load failed"). Match conservatively.
+    const msg = (err.message || '').toLowerCase()
+    return (
+      msg.includes('failed to fetch') ||
+      msg.includes('networkerror') ||
+      msg.includes('load failed')
+    )
+  }
+  return false
 }
 
 /** Parses an HTTP `Retry-After` header (seconds OR HTTP-date) into ms. */
@@ -160,6 +194,26 @@ export async function fetchWithRetry(
       }
       // TimeoutError (own signal) or TypeError (network) — fall through to retry.
     }
+  }
+
+  // Task #728: convert raw network TypeError into a typed HttpError so
+  // (a) consumers can discriminate transient failures with a single check
+  // and (b) the Next.js dev overlay no longer matches the bare
+  // `TypeError: Failed to fetch` string and pops up during cold-start.
+  // Real HTTP errors (5xx etc.) and AbortError are preserved verbatim.
+  if (isTransientNetworkError(lastError)) {
+    // Task #801 (C2): NUNCA propagar a string crua "Failed to fetch" — o
+    // dev-overlay do Next.js (e logs do console) reanexam à mensagem,
+    // ressuscitando o sintoma que a Task #728 quis suprimir. Usamos uma
+    // mensagem fixa, identificável por testes, e preservamos o original em
+    // `cause` para diagnóstico.
+    const err = new HttpError(0, 'Network unavailable (transient)', {
+      transientNetworkError: true,
+    })
+    if (lastError instanceof Error) {
+      ;(err as Error & { cause?: unknown }).cause = lastError
+    }
+    throw err
   }
 
   throw lastError instanceof Error

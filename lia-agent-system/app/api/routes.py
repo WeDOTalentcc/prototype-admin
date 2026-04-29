@@ -16,6 +16,9 @@ from app.api.public import shared_searches as public_shared_searches
 # ── Lazy imports (originally inline in main.py) ───────────────────────────────
 
 from app.api.v1.candidate_portal import router as candidate_portal_router
+from app.api.v1.candidate_portal_explanation import (
+    router as candidate_portal_explanation_router,
+)
 from app.api.v1 import (
     ab_testing,
     activities,
@@ -195,7 +198,7 @@ from app.api.v1 import (
     webhooks,
     whatsapp,
     wizard_analytics,
-    wizard_smart_orchestrator,
+    # `wizard_smart_orchestrator` removed in Task #850 — replaced by canonical JobCreationGraph (WS `wizard_graph` channel).
     wizard_suggestions,
     workforce,
     workforce_planning,
@@ -474,7 +477,8 @@ def register_all_routes(app: FastAPI) -> None:
 
     # ── Wizard ────────────────────────────────────────────────────────────────
     app.include_router(wizard_suggestions.router, prefix="/api/v1/wizard", tags=["wizard-suggestions"])
-    app.include_router(wizard_smart_orchestrator.router, prefix="/api/v1/wizard", tags=["wizard-smart-orchestrator"])
+    # `wizard_smart_orchestrator.router` removed in Task #850 — JobCreationGraph
+    # is exposed via the WebSocket `wizard_graph` channel and HITL endpoints.
 
     # ── Orchestrator ──────────────────────────────────────────────────────────
     app.include_router(orchestrator_routes.router)
@@ -633,7 +637,12 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(whatsapp_webhook_router, tags=["whatsapp"])
 
     app.include_router(candidate_portal_router, prefix="/api/v1", tags=["candidate-self-service"])
+    app.include_router(candidate_portal_explanation_router, tags=["candidate-portal-explanation"])
     app.include_router(rh_dashboard_router, prefix="/api/v1", tags=["rh-dashboard"])
     # ── Public (no /api/v1 prefix) ────────────────────────────────────────────
+    # ── Offer Proposals (PR-B) ──────────────────────────────────────────────
+    from app.api.v1.offers import router as _offers_router
+    app.include_router(_offers_router, prefix="/api/v1", tags=["offers"])
+
     app.include_router(candidate_portal.router, tags=["candidate-portal"])
     app.include_router(public_shared_searches.router, prefix="/api", tags=["public-shared-searches"])

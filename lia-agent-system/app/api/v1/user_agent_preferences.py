@@ -17,6 +17,8 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import get_current_user_or_demo, validate_company_access
+from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
 
@@ -78,8 +80,10 @@ async def list_user_preferences(
     user_id: str = Query(...),
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Lista todas as preferências de auto_confirm de um usuário."""
+    validate_company_access(current_user, company_id)
     prefs = await UserAgentPreferenceService.list_user_preferences(
         db, user_id=user_id, company_id=company_id
     )
@@ -90,8 +94,10 @@ async def list_user_preferences(
 async def upsert_preference(
     data: PreferenceUpsertRequest,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Cria ou atualiza preferência de auto_confirm."""
+    validate_company_access(current_user, data.company_id)
     pref = await UserAgentPreferenceService.upsert(
         db,
         user_id=data.user_id,
@@ -110,11 +116,13 @@ async def check_auto_confirm(
     domain: str = Query(...),
     action_type: str = Query(...),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Verifica se auto_confirm está ativo para um usuário/domínio/ação.
     Usado pelo HITL service antes de cada aprovação.
     """
+    validate_company_access(current_user, company_id)
     auto = await UserAgentPreferenceService.check_auto_confirm(
         db, user_id=user_id, company_id=company_id,
         domain=domain, action_type=action_type,

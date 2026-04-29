@@ -1,10 +1,12 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { ChevronDown, ChevronRight, Loader2, Gauge } from "lucide-react"
 import type { RecruitmentStage } from "./recruitment-journey.types"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface SaturationSettings {
   threshold_web: number
@@ -21,6 +23,7 @@ const DEFAULT_SATURATION: SaturationSettings = {
 }
 
 export function SaturationControlPanel({ stage, isEditMode }: { stage: RecruitmentStage; isEditMode: boolean }) {
+  const t = useTranslations("settings.recruitment.saturation")
   const [expanded, setExpanded] = React.useState(false)
   const [settings, setSettings] = React.useState<SaturationSettings>(DEFAULT_SATURATION)
   const [loading, setLoading] = React.useState(false)
@@ -34,7 +37,7 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
   const handleExpand = () => {
     if (!expanded && !loaded) {
       setLoading(true)
-      fetch('/api/backend-proxy/settings/saturation')
+      apiFetch('/api/backend-proxy/settings/saturation')
         .then(r => r.ok ? r.json() : null)
         .then(data => {
           if (data) {
@@ -60,7 +63,7 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
 
   const handleSave = () => {
     setSaving(true)
-    fetch('/api/backend-proxy/settings/saturation', {
+    apiFetch('/api/backend-proxy/settings/saturation', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(settings),
@@ -84,15 +87,15 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
       >
         {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
         <Gauge className="h-3.5 w-3.5" />
-        <span className="font-medium">Controle de Saturação</span>
+        <span className="font-medium">{t("title")}</span>
       </button>
 
       {expanded && (
-        <div className="mt-2 space-y-3" role="status" aria-live="polite" aria-label="Carregando...">
+        <div className="mt-2 space-y-3" role="status" aria-live="polite" aria-label={t("loading")}>
           {loading && (
-            <div className="flex items-center gap-2 px-1 py-2" role="status" aria-live="polite" aria-label="Carregando...">
+            <div className="flex items-center gap-2 px-1 py-2" role="status" aria-live="polite" aria-label={t("loading")}>
               <Loader2 className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
-              <span className="text-xs text-lia-text-tertiary">Carregando configurações...</span>
+              <span className="text-xs text-lia-text-tertiary">{t("loading")}</span>
             </div>
           )}
 
@@ -101,7 +104,7 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
                   <Label className="text-xs text-lia-text-secondary">
-                    Limite inscrições orgânicas (web/whatsapp)
+                    {t("thresholdWeb")}
                   </Label>
                   <input
                     type="number"
@@ -116,7 +119,7 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
 
                 <div className="flex flex-col gap-1">
                   <Label className="text-xs text-lia-text-secondary">
-                    Limite busca ativa (sourcing)
+                    {t("thresholdSourcing")}
                   </Label>
                   <input
                     type="number"
@@ -131,7 +134,7 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
 
                 <div className="flex flex-col gap-1">
                   <Label className="text-xs text-lia-text-secondary">
-                    Incremento de desbloqueio
+                    {t("unlockIncrement")}
                   </Label>
                   <div className="flex items-center gap-1">
                     <span className="text-xs text-lia-text-tertiary">+</span>
@@ -149,7 +152,7 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
 
                 <div className="flex flex-col gap-1">
                   <Label className="text-xs text-lia-text-secondary">
-                    Horas de desbloqueio temporário
+                    {t("unlockHours")}
                   </Label>
                   <div className="flex items-center gap-1.5">
                     <input
@@ -161,7 +164,7 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
                       max={168}
                       className={inputClassName}
                     />
-                    <span className="text-xs text-lia-text-tertiary whitespace-nowrap">horas</span>
+                    <span className="text-xs text-lia-text-tertiary whitespace-nowrap">{t("hours")}</span>
                   </div>
                 </div>
               </div>
@@ -177,17 +180,17 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
                     {saving ? (
                       <>
                         <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none mr-1" />
-                        Salvando...
+                        {t("saving")}
                       </>
                     ) : (
-                      'Salvar Saturação'
+                      t("saveSaturation")
                     )}
                   </Button>
                 </div>
               )}
 
               <p className="text-micro text-lia-text-tertiary px-1" aria-live="polite" aria-atomic="true">
-                Define os limites de candidatos simultâneos em triagem por canal. Quando o limite é atingido, novos candidatos entram em fila de espera.
+                {t("helpText")}
               </p>
             </>
           )}

@@ -552,7 +552,7 @@ cases:
     expected_tools: ["configure_wsi_questions"]
     expected_behavior: "Generates and configures WSI questions specific to DevOps/Kubernetes/CI-CD"
     canonical_files:
-      - "app/domains/job_management/agents/wizard_tool_registry.py"
+      - "app/domains/job_creation/services/intake_extractor.py"
       - "app/domains/voice_screening/services/wsi_question_generation_service.py"
     success_criteria:
       - "Returns relevant technical questions"
@@ -952,8 +952,8 @@ cases:
     expected_tools: ["create_job_draft", "extract_job_requirements"]
     expected_behavior: "Starts wizard flow: extracts requirements, suggests salary, creates draft for review"
     canonical_files:
-      - "app/domains/job_management/agents/wizard_react_agent.py"
-      - "app/domains/job_management/agents/wizard_tool_registry.py"
+      - "app/domains/job_creation/graph.py"
+      - "app/domains/job_creation/services/intake_extractor.py"
     success_criteria:
       - "Extracts DevOps/Kubernetes/AWS/CI-CD as requirements"
       - "Sets modality as remote"
@@ -974,7 +974,7 @@ cases:
     expected_tools: ["generate_job_description"]
     expected_behavior: "Generates professional JD with requirements, responsibilities, benefits for PM role"
     canonical_files:
-      - "app/domains/job_management/agents/wizard_tool_registry.py"
+      - "app/domains/job_creation/services/intake_extractor.py"
     success_criteria:
       - "Generates structured JD"
       - "Includes agile methodologies"
@@ -993,7 +993,7 @@ cases:
     expected_tools: ["suggest_salary_range"]
     expected_behavior: "Returns salary range based on market benchmark for the role/seniority/location"
     canonical_files:
-      - "app/domains/job_management/agents/wizard_tool_registry.py"
+      - "app/domains/job_creation/services/intake_extractor.py"
       - "app/domains/analytics/services/salary_benchmark_service.py"
     success_criteria:
       - "Returns salary range with min/max"
@@ -1032,7 +1032,7 @@ cases:
     expected_tools: ["set_pipeline_template"]
     expected_behavior: "Configures the 5-stage pipeline template, shows it for approval"
     canonical_files:
-      - "app/domains/job_management/agents/wizard_tool_registry.py"
+      - "app/domains/job_creation/services/intake_extractor.py"
     success_criteria:
       - "Creates all 5 stages in order"
       - "Asks for approval"
@@ -1222,7 +1222,7 @@ cases:
     expected_tools: ["create_job_draft", "configure_wsi_questions", "search_candidates"]
     expected_behavior: "Shows 3-step plan, creates job, configures WSI, sources candidates — sequential with approvals"
     canonical_files:
-      - "app/domains/job_management/agents/wizard_tool_registry.py"
+      - "app/domains/job_creation/services/intake_extractor.py"
       - "app/domains/sourcing/agents/sourcing_tool_registry.py"
     success_criteria:
       - "Executes all 3 tasks"
@@ -1518,3 +1518,91 @@ cases:
     anti_patterns:
       - "Says 'only Portuguese supported'"
       - "Fails to understand"
+
+  # ─────────────────────────────────────────────────────────────
+  # PR — PROACTIVE / ONBOARDING SEVERITY (regression task-811)
+  # ─────────────────────────────────────────────────────────────
+
+  - id: PR-100
+    category: PR
+    severity: critical
+    title: "Criar vaga com tenant sem benefícios/cultura/policy cadastrados"
+    prompt: "quero criar uma vaga de Desenvolvedor Backend Python pleno, remoto, R$ 10.000"
+    context:
+      scope: "global"
+      page: "home"
+    expected_tools: ["create_job_vacancy"]
+    expected_behavior: |
+      O orchestrator deve atender o pedido (criar a vaga ou pedir clarificação
+      sobre dados faltantes da vaga) MESMO QUE o tenant esteja com benefícios,
+      cultura ou política de contratação não cadastrados (hints proativos com
+      severity=info). Esses hints podem ser MENCIONADOS na resposta como
+      sugestão, mas NÃO devem desviar a conversa para o agente
+      `company_settings`. Regression guard para task #811.
+    canonical_files:
+      - "app/orchestrator/main_orchestrator.py"
+      - "app/orchestrator/precondition_checker.py"
+    success_criteria:
+      - "Response refers to job/vacancy creation (vaga, criar, criação, dados da vaga)"
+      - "Does not say 'erro interno' or 'não consigo realizar'"
+      - "Does not redirect to settings page without addressing the create-job request"
+    anti_patterns:
+      - "Says 'erro genérico' or 'algo deu errado'"
+      - "Says 'precisa configurar a empresa antes' without offering to proceed"
+      - "Routes to company_settings agent and refuses to discuss the vacancy"
+
+  # ─────────────────────────────────────────────────────────────
+  # CS-OP — COMPANY SETTINGS atende intenções operacionais (Task #812)
+  # ─────────────────────────────────────────────────────────────
+
+  - id: CS-OP-001
+    category: CM
+    severity: high
+    title: "Criar vaga rascunho dentro do agente company_settings"
+    prompt: "antes de continuar configurando a empresa, abre uma vaga rascunho de Engenheiro de Dados pleno"
+    context:
+      scope: "Configurações da empresa"
+      page: "company-settings"
+      entity_type: "company"
+    expected_tools: ["create_job_vacancy"]
+    expected_behavior: |
+      O agente company_settings deve atender a intenção operacional explícita
+      chamando `create_job_vacancy` com title "Engenheiro de Dados". Pode
+      mencionar uma pendência de configuração como sugestão complementar,
+      mas NÃO deve bloquear a ação para forçar onboarding.
+    canonical_files:
+      - "app/domains/company_settings/agents/company_tool_registry.py"
+      - "app/prompts/domains/company_settings.yaml"
+    success_criteria:
+      - "Calls create_job_vacancy with the requested title"
+      - "Confirms the draft was created (mentions ID or 'rascunho')"
+      - "Does not refuse the request citing 'apenas configuração'"
+    anti_patterns:
+      - "Says 'só posso configurar dados da empresa, não vagas'"
+      - "Asks user to switch to recruiter chat"
+      - "Calls only get_company_profile and ignores the create request"
+
+  - id: CS-OP-002
+    category: CM
+    severity: medium
+    title: "Listar vagas a partir do chat de configurações"
+    prompt: "lista as vagas abertas que já temos cadastradas"
+    context:
+      scope: "Configurações da empresa"
+      page: "company-settings"
+      entity_type: "company"
+    expected_tools: ["list_jobs"]
+    expected_behavior: |
+      Mesmo no agente company_settings, ao receber uma intenção operacional
+      clara de listagem, o agente deve chamar `list_jobs` (ToolDefinition
+      reaproveitada do registry canônico de jobs_mgmt) e devolver a lista
+      ao recrutador, sem desviar para onboarding.
+    canonical_files:
+      - "app/domains/company_settings/agents/company_tool_registry.py"
+      - "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py"
+    success_criteria:
+      - "Calls list_jobs"
+      - "Returns the list (even if empty)"
+    anti_patterns:
+      - "Refuses listing because 'este chat é só sobre configuração'"
+      - "Hallucinates a list without calling the tool"

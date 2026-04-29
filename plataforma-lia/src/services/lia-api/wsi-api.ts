@@ -32,7 +32,7 @@ import type {
 // produces the 401 we are normalizing.
 
 export async function wsiGenerateQuestions(request: GenerateQuestionsRequest): Promise<GenerateQuestionsResponse> {
-  const response = await fetch(`/api/lia/api/wsi/generate-questions`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/generate-questions`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(request),
@@ -42,7 +42,7 @@ export async function wsiGenerateQuestions(request: GenerateQuestionsRequest): P
 }
 
 export async function wsiAnalyzeResponse(request: AnalyzeResponseRequest): Promise<AnalyzeResponseResponse> {
-  const response = await fetch(`/api/lia/api/wsi/analyze-response`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/analyze-response`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(request),
@@ -52,7 +52,7 @@ export async function wsiAnalyzeResponse(request: AnalyzeResponseRequest): Promi
 }
 
 export async function wsiCalculateScore(request: CalculateWSIRequest): Promise<CalculateWSIResponse> {
-  const response = await fetch(`/api/lia/api/wsi/calculate-wsi`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/calculate-wsi`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(request),
@@ -62,7 +62,7 @@ export async function wsiCalculateScore(request: CalculateWSIRequest): Promise<C
 }
 
 export async function wsiGetSession(sessionId: string): Promise<WSISessionResponse> {
-  const response = await fetch(`/api/lia/api/wsi/sessions/${sessionId}`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/sessions/${sessionId}`, {
     headers: getAuthHeaders(),
   })
   if (!response.ok) await throwLiaApiError(response, 'Failed to get WSI session')
@@ -70,7 +70,7 @@ export async function wsiGetSession(sessionId: string): Promise<WSISessionRespon
 }
 
 export async function wsiGetCandidateResults(candidateId: string, limit: number = 10): Promise<WSIResultsResponse> {
-  const response = await fetch(`/api/lia/api/wsi/results/candidate/${candidateId}?limit=${limit}`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/results/candidate/${candidateId}?limit=${limit}`, {
     headers: getAuthHeaders(),
   })
   if (!response.ok) await throwLiaApiError(response, 'Failed to get candidate WSI results')
@@ -78,7 +78,7 @@ export async function wsiGetCandidateResults(candidateId: string, limit: number 
 }
 
 export async function wsiGetResultDetails(resultId: string): Promise<WSIResultDetails> {
-  const response = await fetch(`/api/lia/api/wsi/results/${resultId}/details`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/results/${resultId}/details`, {
     headers: getAuthHeaders(),
   })
   if (!response.ok) await throwLiaApiError(response, 'Failed to get WSI result details')
@@ -86,7 +86,7 @@ export async function wsiGetResultDetails(resultId: string): Promise<WSIResultDe
 }
 
 export async function wsiGetVacancyRanking(jobVacancyId: string): Promise<WSIVacancyRanking> {
-  const response = await fetch(`/api/lia/api/wsi/ranking/${jobVacancyId}`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/ranking/${jobVacancyId}`, {
     headers: getAuthHeaders(),
   })
   if (!response.ok) await throwLiaApiError(response, 'Failed to get vacancy ranking')
@@ -94,7 +94,7 @@ export async function wsiGetVacancyRanking(jobVacancyId: string): Promise<WSIVac
 }
 
 export async function wsiGetCandidateRanking(candidateId: string, jobVacancyId: string): Promise<WSICandidateRanking> {
-  const response = await fetch(`/api/lia/api/wsi/candidate/${candidateId}/ranking/${jobVacancyId}`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/candidate/${candidateId}/ranking/${jobVacancyId}`, {
     headers: getAuthHeaders(),
   })
   if (!response.ok) await throwLiaApiError(response, 'Failed to get candidate ranking')
@@ -102,7 +102,7 @@ export async function wsiGetCandidateRanking(candidateId: string, jobVacancyId: 
 }
 
 export async function wsiStartVoiceScreening(request: StartVoiceScreeningRequest): Promise<StartVoiceScreeningResponse> {
-  const response = await fetch(`/api/lia/api/wsi/start-voice-screening`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/start-voice-screening`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(request),
@@ -112,7 +112,7 @@ export async function wsiStartVoiceScreening(request: StartVoiceScreeningRequest
 }
 
 export async function wsiGetVoiceScreeningStatus(sessionId: string): Promise<VoiceScreeningStatusResponse> {
-  const response = await fetch(`/api/lia/api/wsi/voice-screening/${sessionId}`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/voice-screening/${sessionId}`, {
     headers: getAuthHeaders(),
   })
   if (!response.ok) await throwLiaApiError(response, 'Failed to get voice screening status')
@@ -135,7 +135,7 @@ export async function updateScreeningStatus(jobId: string, status: string, extra
 }
 
 export async function wsiGetCandidatesScores(jobVacancyId: string): Promise<WSICandidatesScores> {
-  const response = await fetch(`/api/lia/api/wsi/candidates/${jobVacancyId}/scores`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/candidates/${jobVacancyId}/scores`, {
     headers: getAuthHeaders(),
     credentials: 'include',
   })
@@ -144,7 +144,7 @@ export async function wsiGetCandidatesScores(jobVacancyId: string): Promise<WSIC
 }
 
 export async function wsiTriggerFeedback(resultId: string): Promise<Record<string, unknown>> {
-  const response = await fetch(`/api/lia/api/wsi/results/${resultId}/trigger-feedback`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/results/${resultId}/trigger-feedback`, {
     method: 'POST',
     headers: getAuthHeaders(),
   })
@@ -153,7 +153,7 @@ export async function wsiTriggerFeedback(resultId: string): Promise<Record<strin
 }
 
 export async function wsiGetFeedbackStatus(resultId: string): Promise<Record<string, unknown>> {
-  const response = await fetch(`/api/lia/api/wsi/results/${resultId}/feedback-status`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/results/${resultId}/feedback-status`, {
     headers: getAuthHeaders(),
   })
   if (!response.ok) await throwLiaApiError(response, 'Failed to get feedback status')
@@ -186,7 +186,7 @@ export async function generateJobScreeningQuestions(request: {
   total_generated: number
   methodology: string
 }> {
-  const response = await fetch(`/api/lia/api/wsi/generate-job-screening-questions`, {
+  const response = await fetch(`/api/backend-proxy/api/wsi/generate-job-screening-questions`, {
     method: 'POST',
     headers: getAuthHeaders(),
     body: JSON.stringify(request),

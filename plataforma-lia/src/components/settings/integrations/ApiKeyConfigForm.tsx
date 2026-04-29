@@ -14,6 +14,7 @@ import {
   Key,
   Trash2,
 } from "lucide-react"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface ApiKeyConfigFormProps {
   providerId: string
@@ -51,7 +52,7 @@ export function ApiKeyConfigForm({
     setMessage("Validando chave...")
 
     try {
-      const testRes = await fetch("/api/backend-proxy/llm-config/test", {
+      const testRes = await apiFetch("/api/backend-proxy/llm-config/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ provider: providerId, api_key: apiKey.trim() }),

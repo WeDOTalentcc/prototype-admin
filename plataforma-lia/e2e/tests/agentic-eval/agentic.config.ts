@@ -1,39 +1,43 @@
-import { defineConfig, devices } from "@playwright/test";
-import * as path from "path";
+import { defineConfig, devices } from '@playwright/test';
+import { execSync } from 'child_process';
+import * as path from 'path';
 
-const REPORT_DIR = path.join(process.cwd(), "playwright-report", "diagnostic");
+function getSystemChromiumPath(): string | undefined {
+  try {
+    return execSync('which chromium', { encoding: 'utf-8' }).trim();
+  } catch {
+    return undefined;
+  }
+}
+
+const systemChromium = process.env.PLAYWRIGHT_CHROMIUM_PATH || getSystemChromiumPath();
+const REPORT_DIR = path.join(process.cwd(), 'playwright-report', 'diagnostic');
 
 export default defineConfig({
-  testDir: ".",
+  testDir: '.',
   testMatch: /agentic-eval\.spec\.ts$/,
   fullyParallel: false,
   workers: 1,
   retries: 0,
   reporter: [
-    ["list"],
-    ["json", { outputFile: path.join(REPORT_DIR, "agentic-results.json") }],
+    ['list'],
+    ['json', { outputFile: path.join(REPORT_DIR, 'agentic-results.json') }],
   ],
-  timeout: 300_000,
+  timeout: 240_000,
 
   use: {
-    baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://127.0.0.1:5000",
-    trace: "off",
-    screenshot: "off",
-    video: "off",
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5000',
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+    video: 'off',
     viewport: { width: 1366, height: 900 },
     ignoreHTTPSErrors: true,
-    launchOptions: {
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-        "--no-first-run",
-      ],
-    },
+    ...(systemChromium
+      ? { launchOptions: { executablePath: systemChromium, args: ["--no-sandbox", "--disable-setuid-sandbox"] } }
+      : { launchOptions: { args: ["--no-sandbox", "--disable-setuid-sandbox"] } }),
   },
 
   projects: [
-    { name: "agentic-eval", use: { ...devices["Desktop Chrome"] } },
+    { name: 'agentic-eval', use: { ...devices['Desktop Chrome'] } },
   ],
 });

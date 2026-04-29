@@ -41,6 +41,7 @@ import { useKanbanColumnConfig } from "@/components/pages/job-kanban/hooks/useKa
 import { useKanbanCandidateHandlers } from "@/components/pages/job-kanban/hooks/useKanbanCandidateHandlers"
 import { useKanbanTransitionHandlers } from "@/components/pages/job-kanban/hooks/useKanbanTransitionHandlers"
 import { useKanbanNavigation } from "@/components/pages/job-kanban/hooks/useKanbanNavigation"
+import { useOfferReviewFlow } from "@/hooks/offers/useOfferReviewFlow"
 import { useKanbanJobFormInit } from "@/components/pages/job-kanban/hooks/useKanbanJobFormInit"
 import { useKanbanDataEffects } from "@/components/pages/job-kanban/hooks/useKanbanDataEffects"
 import { toast } from "sonner"
@@ -147,7 +148,22 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const [inferredBehavior, setInferredBehavior] = useState<{suggested_behavior: string, confidence: number} | null>(null)
   const [isAddingColumn, setIsAddingColumn] = useState(false)
 
-  const { modalState: universalModalState, openTransition, closeTransition } = useUniversalTransition(dynamicStages)
+  const { modalState: universalModalState, openTransition: openTransitionRaw, closeTransition } = useUniversalTransition(dynamicStages)
+
+  // PR-B: hook de criação de draft de proposta
+  const { openOfferReview } = useOfferReviewFlow()
+
+  // Intercept drag/drop para coluna "oferta" → abre OfferReviewModal antes do TransitionModal
+  const openTransition = useCallback(
+    (candidates: KanbanCandidate[], fromStage: string, toStage: string) => {
+      if ((toStage === "oferta" || toStage === "offer") && candidates.length > 0 && job?.id) {
+        openOfferReview({ candidateId: String(candidates[0].id), jobId: String(job.id) })
+        return
+      }
+      openTransitionRaw(candidates, fromStage, toStage)
+    },
+    [openTransitionRaw, openOfferReview, job],
+  )
 
   const candidatesData = useKanbanStore((s) => s.candidatesData)
   const setCandidatesData = useKanbanStore((s) => s.setCandidatesData)

@@ -49,7 +49,7 @@ export function IntakePanel({ data, onUpdate }: Props) {
       </div>
 
       {/* Raw input display / edit */}
-      <div className="rounded-lg bg-lia-bg-secondary p-3">
+      <div className="rounded-md bg-lia-bg-secondary p-3">
         {isEditing ? (
           <div className="space-y-2">
             <textarea

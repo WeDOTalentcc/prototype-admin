@@ -607,26 +607,119 @@ async def _wrap_get_communication_history(**kwargs: Any) -> dict[str, Any]:
 
 # ── Additional tools: Job Management (extended) ──────────────────────────────
 
+# Task #850: `wizard_tool_registry` was removed. The three handlers
+# below are wired to the canonical services that back the
+# JobCreationGraph: `salary_benchmark_service` (analytics),
+# `IntakeExtractor` (validate_job_requirements), and
+# `CompanyConfigurationService` (get_company_config). Errors are
+# surfaced explicitly via `{"success": False, "error": ...}` instead of
+# silent fallbacks.
 @tool_handler("autonomous")
 async def _wrap_get_salary_benchmark(**kwargs: Any) -> dict[str, Any]:
-    """Get salary benchmark for a role from wizard registry."""
-    from app.domains.job_management.agents.wizard_tool_registry import _wrap_get_salary_benchmarks
-    return await _wrap_get_salary_benchmarks(**kwargs)
+    """Get salary benchmark for a role."""
+    try:
+        from app.domains.analytics.services.salary_benchmark_service import (
+            salary_benchmark_service,
+        )
+        result = await salary_benchmark_service.get_market_range(
+            job_title=kwargs.get("job_title", ""),
+            seniority=kwargs.get("seniority", "pleno"),
+            location=kwargs.get("location", "Brasil"),
+        )
+        return {"success": True, "data": result}
+    except Exception as exc:
+        return {"success": False, "error": str(exc), "data": {}}
 
 
-# require_company=False kept: delegates to wizard validator (pure schema validation)
 @tool_handler("autonomous", require_company=False)
 async def _wrap_validate_job_requirements(**kwargs: Any) -> dict[str, Any]:
-    """Validate job requirements for completeness and quality."""
-    from app.domains.job_management.agents.wizard_tool_registry import _wrap_validate_job_requirements
-    return await _wrap_validate_job_requirements(**kwargs)
+    """Validate job requirements for completeness and quality.
+
+    Task #850: routes through the canonical IntakeExtractor + the
+    `field_is_filled` contract on JobIntakePayload. Reports the missing
+    fields and the categorical confidence label per field — the same
+    information the JobCreationGraph uses to decide whether to request
+    clarification.
+    """
+    try:
+        from app.domains.job_creation.services.intake_extractor import (
+            JobIntakePayload,
+            get_intake_extractor,
+        )
+
+        raw = kwargs.get("requirements_text") or kwargs.get("text") or ""
+        form = kwargs.get("form_data")
+        attached = kwargs.get("attached_file_text", "")
+        extractor = get_intake_extractor()
+        if form or attached:
+            payload: JobIntakePayload = extractor.extract_from_sources(
+                user_text=raw, right_panel_form=form, attached_file_text=attached,
+            )
+        else:
+            payload = extractor.extract(raw)
+
+        required = ["title", "seniority", "work_model", "responsibilities"]
+        missing = [f for f in required if not payload.field_is_filled(f)]
+        per_field = {
+            f: getattr(payload, f).confidence_label
+            for f in payload.model_fields
+            if hasattr(getattr(payload, f, None), "confidence_label")
+        }
+        return {
+            "success": True,
+            "data": {
+                "is_complete": not missing,
+                "missing_fields": missing,
+                "overall_confidence": payload.overall_confidence,
+                "overall_confidence_label": payload.overall_confidence_label,
+                "fields": per_field,
+                "fairness_blocked": payload.fairness_blocked,
+            },
+        }
+    except Exception as exc:
+        return {"success": False, "error": str(exc), "data": {}}
 
 
 @tool_handler("autonomous")
 async def _wrap_get_company_config(**kwargs: Any) -> dict[str, Any]:
-    """Get company configuration including hiring policies and preferences."""
-    from app.domains.job_management.agents.wizard_tool_registry import _wrap_get_company_config
-    return await _wrap_get_company_config(**kwargs)
+    """Get company configuration including hiring policies and preferences.
+
+    Task #850: routes to the canonical CompanyConfigurationService which
+    is the same source consumed by the company_settings agent and the
+    JobCreationGraph during the eligibility/calibration nodes.
+    """
+    try:
+        from app.domains.company.services.company_configuration_service import (
+            CompanyConfigurationService,
+        )
+
+        company_id = kwargs.get("company_id")
+        if not company_id:
+            return {
+                "success": False,
+                "error": "company_id is required",
+                "data": {},
+            }
+        service = CompanyConfigurationService()
+        config = await service.get_configuration(company_id)
+        if config is None:
+            return {
+                "success": True,
+                "data": {"configured": False, "ai_context": ""},
+            }
+        return {
+            "success": True,
+            "data": {
+                "configured": True,
+                "ai_context": config.to_ai_context(),
+                "benefits": config.get_benefits_for_seniority(
+                    kwargs.get("seniority")
+                ),
+                "eliminatory_questions": config.get_eliminatory_questions(),
+            },
+        }
+    except Exception as exc:
+        return {"success": False, "error": str(exc), "data": {}}
 
 
 # ── Additional tools: CV Screening / Pipeline (extended) ─────────────────────

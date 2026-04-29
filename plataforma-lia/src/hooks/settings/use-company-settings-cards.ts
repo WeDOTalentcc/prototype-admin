@@ -3,14 +3,23 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { useLiaChatContext } from "@/contexts/lia-float-context"
 import { useLoadingWatchdog } from "@/hooks/shared/use-loading-watchdog"
-import type { CompanyData } from "@/components/settings/companyTeamHub.types"
+import type { CompanyData } from "@/hooks/settings/department-types"
+import type { CompanyBenefit } from "@/types/benefits"
+
+export interface BlockProgress {
+  filled: number
+  total: number
+  missingLabels: string[]
+}
 
 export interface CardBlock {
   key: string
   title: string
+  subtitle?: string
   iconName: string
   fields: CardField[]
   status: "configured" | "partial" | "pending"
+  progress: BlockProgress
 }
 
 export interface CardField {
@@ -34,9 +43,10 @@ interface CompanySettingsCardsState {
   isSavingField: boolean
 }
 
-interface BenefitItem {
+type BenefitItem = Partial<CompanyBenefit> & {
   id?: string
   name?: string
+  category?: string
   is_active?: boolean
 }
 
@@ -106,23 +116,31 @@ const POLICY_FIELD_TO_BLOCK: Record<string, string> = {
   autonomy_level: "automation_rules",
 }
 
+function isFieldFilled(f: CardField): boolean {
+  if (f.value === null || f.value === undefined || f.value === "") return false
+  if (Array.isArray(f.value) && f.value.length === 0) return false
+  return true
+}
+
 function computeBlockStatus(fields: CardField[]): "configured" | "partial" | "pending" {
   const dataFields = fields.filter(f => !ACTION_FIELD_KEYS.has(f.key))
   if (dataFields.length === 0) return "pending"
-  const filled = dataFields.filter(f => {
-    if (f.value === null || f.value === undefined || f.value === "") return false
-    if (Array.isArray(f.value) && f.value.length === 0) return false
-    return true
-  }).length
+  const filled = dataFields.filter(isFieldFilled).length
   if (filled === 0) return "pending"
   if (filled === dataFields.length) return "configured"
   return "partial"
 }
 
+function computeBlockProgress(fields: CardField[]): BlockProgress {
+  const dataFields = fields.filter(f => !ACTION_FIELD_KEYS.has(f.key))
+  const filled = dataFields.filter(isFieldFilled).length
+  const missingLabels = dataFields.filter(f => !isFieldFilled(f)).map(f => f.label)
+  return { filled, total: dataFields.length, missingLabels }
+}
+
 function buildBlocks(
   company: CompanyData | null,
   benefits: BenefitItem[],
-  departments: unknown[],
   hiringPolicy: HiringPolicyData | null,
 ): CardBlock[] {
   if (!company) return []
@@ -169,8 +187,11 @@ function buildBlocks(
     { key: "benefits_count", label: "Total de Beneficios", value: benefits.length > 0 ? `${benefits.length} cadastrado(s)` : null, type: "text", editable: false, block: "benefits" },
     { key: "benefits_active", label: "Beneficios Ativos", value: activeBenefits.length || null, type: "number", editable: false, block: "benefits" },
     { key: "benefits_list", label: "Pacote", value: benefitNames.length > 0 ? benefitNames : null, type: "list", editable: false, block: "benefits" },
-    { key: "departments_count", label: "Departamentos", value: departments.length > 0 ? `${departments.length} cadastrado(s)` : null, type: "text", editable: false, block: "benefits" },
   ]
+  const benefitsSubtitle =
+    benefits.length === 0
+      ? "Nenhum benefício cadastrado"
+      : `${benefits.length} cadastrado${benefits.length === 1 ? "" : "s"} · ${activeBenefits.length} ativo${activeBenefits.length === 1 ? "" : "s"}`
 
   const pr = hiringPolicy?.pipeline_rules
   const sr = hiringPolicy?.scheduling_rules
@@ -213,24 +234,26 @@ function buildBlocks(
     { key: "import_spreadsheet", label: "Importar Planilha", value: null, type: "text", editable: false, block: "workforce" },
   ]
 
+  // "documents" is renamed to "Remuneracao & Onboarding" — the upload hub
+  // moved into the section cards (T#779). The remaining fields here are
+  // onboarding metadata + the compensation summary; uploads of compensation
+  // documents now use the contextual drop-zone embedded in this card.
   const documentFields: CardField[] = [
     { key: "onboarding_completed", label: "Onboarding Concluido", value: additionalData?.onboarding_completed_at ? "Sim" : null, type: "text", editable: false, block: "documents" },
     { key: "responsible_name", label: "Responsavel", value: additionalData?.responsible_name, type: "text", editable: true, block: "documents" },
     { key: "responsible_position", label: "Cargo do Responsavel", value: additionalData?.responsible_position, type: "text", editable: true, block: "documents" },
     { key: "additional_notes", label: "Notas Adicionais", value: additionalData?.additional_notes, type: "text", editable: true, block: "documents" },
-    { key: "handbook", label: "Manual / Handbook", value: null, type: "text", editable: false, block: "documents" },
-    { key: "org_chart", label: "Organograma", value: null, type: "text", editable: false, block: "documents" },
     { key: "compensation_structure", label: "Estrutura de Remuneracao", value: company.default_salary_ranges && company.default_salary_ranges.length > 0 ? `${company.default_salary_ranges.length} faixa(s)` : null, type: "text", editable: false, block: "documents" },
   ]
 
   const blocks: CardBlock[] = [
-    { key: "basic", title: "Dados Basicos", iconName: "Building", fields: basicFields, status: computeBlockStatus(basicFields) },
-    { key: "culture", title: "Cultura & EVP", iconName: "Heart", fields: cultureFields, status: computeBlockStatus(cultureFields) },
-    { key: "tech", title: "Tech Stack", iconName: "Code", fields: techFields, status: computeBlockStatus(techFields) },
-    { key: "benefits", title: "Beneficios & Departamentos", iconName: "Gift", fields: benefitsFields, status: computeBlockStatus(benefitsFields) },
-    { key: "policy", title: "Politicas de Recrutamento", iconName: "GitBranch", fields: policyFields, status: computeBlockStatus(policyFields) },
-    { key: "workforce", title: "Workforce Planning", iconName: "BarChart3", fields: workforceFields, status: computeBlockStatus(workforceFields) },
-    { key: "documents", title: "Documentos & Onboarding", iconName: "FileText", fields: documentFields, status: computeBlockStatus(documentFields) },
+    { key: "basic", title: "Dados Basicos", iconName: "Building", fields: basicFields, status: computeBlockStatus(basicFields), progress: computeBlockProgress(basicFields) },
+    { key: "culture", title: "Cultura & EVP", iconName: "Heart", fields: cultureFields, status: computeBlockStatus(cultureFields), progress: computeBlockProgress(cultureFields) },
+    { key: "tech", title: "Tech Stack", iconName: "Code", fields: techFields, status: computeBlockStatus(techFields), progress: computeBlockProgress(techFields) },
+    { key: "benefits", title: "Benefícios", subtitle: benefitsSubtitle, iconName: "Gift", fields: benefitsFields, status: computeBlockStatus(benefitsFields), progress: computeBlockProgress(benefitsFields) },
+    { key: "policy", title: "Politicas de Recrutamento", iconName: "GitBranch", fields: policyFields, status: computeBlockStatus(policyFields), progress: computeBlockProgress(policyFields) },
+    { key: "workforce", title: "Workforce Planning", iconName: "BarChart3", fields: workforceFields, status: computeBlockStatus(workforceFields), progress: computeBlockProgress(workforceFields) },
+    { key: "documents", title: "Remuneracao & Onboarding", iconName: "FileText", fields: documentFields, status: computeBlockStatus(documentFields), progress: computeBlockProgress(documentFields) },
   ]
 
   return blocks
@@ -269,7 +292,6 @@ async function extractErrorMessage(response: Response, fallback: string): Promis
 export function useCompanySettingsCards() {
   const [companyData, setCompanyData] = useState<CompanyData | null>(null)
   const [benefits, setBenefits] = useState<BenefitItem[]>([])
-  const [departments, setDepartments] = useState<unknown[]>([])
   const [hiringPolicy, setHiringPolicy] = useState<HiringPolicyData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -320,14 +342,6 @@ export function useCompanySettingsCards() {
     return []
   }, [])
 
-  const fetchDepartments = useCallback(async () => {
-    try {
-      const res = await fetch("/api/backend-proxy/company/departments")
-      if (res.ok) return await res.json()
-    } catch { /* handled by caller */ }
-    return []
-  }, [])
-
   const fetchHiringPolicy = useCallback(async () => {
     try {
       const res = await fetch("/api/backend-proxy/hiring-policy")
@@ -353,10 +367,9 @@ export function useCompanySettingsCards() {
       const profile = await fetchCompanyProfile()
       const cid = profile?.id
 
-      const [culture, benefitsData, deptsData, policyData] = await Promise.all([
+      const [culture, benefitsData, policyData] = await Promise.all([
         cid ? fetchCultureProfile(cid) : null,
         cid ? fetchBenefits(cid) : [],
-        fetchDepartments(),
         fetchHiringPolicy(),
       ])
 
@@ -398,7 +411,6 @@ export function useCompanySettingsCards() {
 
       setCompanyData(merged)
       setBenefits(Array.isArray(benefitsData) ? benefitsData : [])
-      setDepartments(Array.isArray(deptsData) ? deptsData : [])
       setHiringPolicy(policyData)
 
       await fetchProgress()
@@ -407,15 +419,15 @@ export function useCompanySettingsCards() {
     } finally {
       setLoading(false)
     }
-  }, [fetchCompanyProfile, fetchCultureProfile, fetchBenefits, fetchDepartments, fetchHiringPolicy, fetchProgress])
+  }, [fetchCompanyProfile, fetchCultureProfile, fetchBenefits, fetchHiringPolicy, fetchProgress])
 
   useEffect(() => {
     loadAll()
   }, [loadAll])
 
   const blocks = useMemo(
-    () => buildBlocks(companyData, benefits, departments, hiringPolicy),
-    [companyData, benefits, departments, hiringPolicy]
+    () => buildBlocks(companyData, benefits, hiringPolicy),
+    [companyData, benefits, hiringPolicy]
   )
 
   useEffect(() => {
@@ -570,7 +582,7 @@ export function useCompanySettingsCards() {
           body: JSON.stringify({ additional_data: nextAdditional }),
         })
       } else if (block === "benefits") {
-        throw new Error("Para gerenciar beneficios e departamentos, use o painel especifico.")
+        throw new Error("Use a lista de benefícios para adicionar ou editar itens.")
       } else {
         throw new Error(`Bloco desconhecido: ${block}`)
       }
@@ -578,6 +590,37 @@ export function useCompanySettingsCards() {
       if (response && !response.ok) {
         const message = await extractErrorMessage(response, fallbackErr)
         throw new Error(message)
+      }
+
+      // Bidirectional UI -> chat bridge (Task #712): emit canonical events so
+      // (a) the OnboardingActionOrchestrator can advance its state machine
+      // when a save originates from a manual-edit card, and (b) the chat
+      // context assembly can surface a silent "system note" telling LIA the
+      // recruiter just edited <section>.<field>. We dispatch BOTH events here
+      // explicitly (defense-in-depth) on top of the global fetch interceptor
+      // in SettingsSyncBroadcaster so the bridge survives even if a hub
+      // bypasses the global wrapper (e.g. via axios or background save).
+      const blockToSection: Record<string, { section: string; actionId: string }> = {
+        basic: { section: "profile", actionId: "configure_profile" },
+        culture: { section: "culture", actionId: "configure_culture" },
+        tech: { section: "tech_stack", actionId: "configure_tech_stack" },
+        policy: { section: "hiring_policies", actionId: "configure_culture" },
+        workforce: { section: "workforce", actionId: "configure_workforce" },
+        documents: { section: "profile", actionId: "configure_profile" },
+        benefits: { section: "benefits", actionId: "configure_benefits" },
+      }
+      const mapping = blockToSection[block]
+      if (mapping && typeof window !== "undefined") {
+        const detail = {
+          actionId: mapping.actionId,
+          section: mapping.section,
+          field,
+          value,
+          source: "ui" as const,
+          ts: Date.now(),
+        }
+        window.dispatchEvent(new CustomEvent("lia:settings-success", { detail }))
+        window.dispatchEvent(new CustomEvent("lia:settings-updated", { detail }))
       }
 
       setSuccessMessage("Campo atualizado com sucesso!")
@@ -605,6 +648,8 @@ export function useCompanySettingsCards() {
 
   return {
     ...state,
+    benefits,
+    companyId,
     toggleBlock,
     startEditing,
     cancelEditing,

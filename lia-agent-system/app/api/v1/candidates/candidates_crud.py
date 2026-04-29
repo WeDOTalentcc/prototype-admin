@@ -356,7 +356,7 @@ def _assert_tenant_scope(candidate, current_user: User) -> None:
     acesso cross-tenant por id vira 404 (em vez de 403, para não vazar
     existência da row para outros tenants).
     """
-    row_company = getattr(candidate, "company_id", None)
+    row_company = candidate.company_id
     if row_company is None:
         return
     user_company = str(current_user.company_id) if current_user.company_id else None

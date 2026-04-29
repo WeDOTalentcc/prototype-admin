@@ -1,18 +1,12 @@
 """
 WebSocket connection manager with Redis Pub/Sub broadcast.
 
-Multi-worker safe: each Uvicorn worker maintains its own dict of local
-WebSocket connections. When send_to_session is called, the message is
-published to a Redis channel. Every worker's subscriber picks it up and
-delivers to its local connections.
+Each Uvicorn worker maintains its own dict of local WebSocket connections.
+When send_to_session is called, the message is published to a Redis channel.
+Every worker's subscriber picks it up and delivers to its local connections.
 
 Fallback: if Redis is unavailable, sends directly to local connections only
-(single-worker degraded mode — sessions connected to a different worker will
-not receive the message; sticky sessions should be enabled in the load
-balancer when Redis pub/sub is unavailable).
-
-MULTI-WORKER STATUS: production-ready via Redis pub/sub (gap C-01 closed).
-Sticky sessions are NOT required when Redis is available.
+(single-worker mode — same as before this change).
 """
 import asyncio
 import json

@@ -25,6 +25,13 @@ export interface EmailTemplate {
 export interface CommunicationHubProps {
   activeSubsection?: string
   visibleTabs?: string[]
+  /**
+   * Quando true, todas as `visibleTabs` são renderizadas empilhadas
+   * (sem pill nav), uma abaixo da outra. Usado pela tab
+   * "Templates & Assinatura" do menu Configurações para preservar o
+   * layout do antigo `TemplatesAssinaturaHub`.
+   */
+  stacked?: boolean
 }
 
 export interface AiResultModal {

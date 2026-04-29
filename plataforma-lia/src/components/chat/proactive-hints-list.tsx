@@ -16,7 +16,7 @@
  */
 
 import React, { useCallback, useEffect, useState } from "react"
-import { AlertTriangle, Info, AlertCircle, ArrowRight, Sparkles, X } from "lucide-react"
+import { AlertTriangle, Info, AlertCircle, ArrowRight, Brain, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export interface ProactiveHint {
@@ -155,7 +155,7 @@ export function ProactiveHintsList({ hints, className }: Props) {
             >
               <X className="w-3 h-3" />
             </button>
-            <Sparkles className="w-3.5 h-3.5 text-wedo-cyan mt-0.5 shrink-0" />
+            <Brain className="w-3.5 h-3.5 text-wedo-cyan mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="flex items-start gap-2">
                 {ICONS[hint.severity] ?? ICONS.info}

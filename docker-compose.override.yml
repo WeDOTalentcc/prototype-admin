@@ -1,0 +1,24 @@
+services:
+  frontend:
+    build:
+      context: ./plataforma-lia
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5000:3000"
+    environment:
+      NODE_ENV: development
+      NEXT_TELEMETRY_DISABLED: "1"
+      BACKEND_URL: http://api:8000
+      DEBUG_PERF: "1"
+      NEXT_PUBLIC_DEBUG_PERF: "1"
+      DEBUG: "next:*"
+    command: npm run dev:turbo
+    volumes:
+      - ./plataforma-lia:/app
+      - /app/node_modules
+      - next_cache:/app/.next
+    tty: true
+    stdin_open: true
+
+volumes:
+  next_cache:

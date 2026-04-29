@@ -111,7 +111,9 @@ export function UserManagement(_props: UserManagementProps) {
               <p className={textStyles.subtitle}>{successMessage}</p>
             </div>
             <button
+              type="button"
               onClick={() => setSuccessMessage(null)}
+              aria-label={t('dismissSuccess')}
               className="text-status-success dark:text-status-success hover:text-status-success dark:hover:text-status-success"
             >
               <X className="w-3.5 h-3.5" />

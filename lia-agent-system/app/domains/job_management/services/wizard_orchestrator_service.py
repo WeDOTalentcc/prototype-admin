@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from enum import Enum, StrEnum
 from typing import Any
 
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 MAX_CONTEXT_CHARS = 16000
@@ -333,11 +334,40 @@ def _strip_meta(p: dict) -> dict:
 
 
 async def get_wizard_step(**params):
-    """Wrapper para o chat. Devolve a próxima etapa sugerida pelo wizard."""
-    p = _strip_meta(params)
-    raise NotImplementedError(
-        "get_wizard_step ainda não está implementado em WizardOrchestratorService. "
-        "Backlog: expor estado da sessão via process_wizard_message."
+    """Wrapper para o chat. Devolve a próxima etapa sugerida pelo wizard.
+
+    Task #857 — N-02: o wrapper legado nunca foi implementado e levantava
+    `NotImplementedError`, gerando 500 em produção sempre que algum caller
+    residual chamava a tool. O caminho canônico passou a ser o
+    `JobCreationGraph` exposto via WS `/ws/agent-chat` (domain
+    ``job_creation``). Trocamos o erro por **HTTP 410 Gone** com mensagem
+    padronizada apontando para o caminho canônico e log estruturado para
+    medir uso residual sem ruído de warning.
+    """
+    company_id = (
+        params.get("_company_id")
+        or params.get("company_id")
+        or (params.get("_tenant", {}) or {}).get("company_id")
+    )
+    logging.getLogger(__name__).info(
+        "wizard.legacy.deprecated_call",
+        extra={
+            "tenant.company_id": str(company_id) if company_id else None,
+            "caller": "WizardOrchestratorService.get_wizard_step",
+            "path": (
+                "app.domains.job_management.services."
+                "wizard_orchestrator_service:get_wizard_step"
+            ),
+        },
+    )
+    raise HTTPException(
+        status_code=410,
+        detail={
+            "error": (
+                "Endpoint deprecated. Use WS /ws/agent-chat with "
+                "domain=job_creation."
+            ),
+        },
     )
 
 

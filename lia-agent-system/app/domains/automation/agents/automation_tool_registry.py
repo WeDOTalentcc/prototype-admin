@@ -86,14 +86,7 @@ Responda APENAS com JSON válido."""
 
 @tool_handler("automation")
 async def _wrap_decompose_task(**kwargs: Any) -> dict[str, Any]:
-    """Decompose a complex recruitment or workflow task into executable subtasks via LLM.
-
-    Uses a structured planning prompt to assign agent types, priorities, estimated
-    durations, and dependency chains. Persists results to PlannedTaskService by default.
-    Side effects: db_write, credits_consumed
-    Governance: multi_tenant, audit_trail
-    Use before: prioritize_tasks, get_execution_plan
-    """
+    """Decompose a complex task into subtasks using LLM + PlannedTaskService."""
     from app.core.database import AsyncSessionLocal
     from app.domains.automation.services.planned_task_service import PlannedTaskService
     from lia_models.planned_task import PlannedTaskPriority
@@ -203,14 +196,7 @@ async def _wrap_decompose_task(**kwargs: Any) -> dict[str, Any]:
 
 @tool_handler("automation")
 async def _wrap_prioritize_tasks(**kwargs: Any) -> dict[str, Any]:
-    """Recalculate and update priority scores for planned tasks using multi-criteria scoring.
-
-    Criteria weights: urgency 30%, impact 25%, criticality 25%, efficiency 20%.
-    Writes updated priority values back to planned_tasks table.
-    Side effects: db_write
-    Governance: multi_tenant, audit_trail
-    Use after: decompose_task; use before: get_execution_plan
-    """
+    """Recalculate priority scores for tasks."""
     from app.core.database import AsyncSessionLocal
     from app.domains.automation.services.planned_task_service import PlannedTaskService
 
@@ -244,14 +230,7 @@ async def _wrap_prioritize_tasks(**kwargs: Any) -> dict[str, Any]:
     }
 @tool_handler("automation")
 async def _wrap_get_execution_plan(**kwargs: Any) -> dict[str, Any]:
-    """Generate a structured execution plan with parallel levels from a set of planned tasks.
-
-    Validates the dependency DAG for cycles and persists the plan to the database.
-    Returns the plan with its parallel execution levels and any cycle warnings.
-    Side effects: db_write
-    Governance: multi_tenant, audit_trail
-    Use after: decompose_task, prioritize_tasks; use before: dispatching specialist agents
-    """
+    """Generate an execution plan with parallel levels."""
     from app.core.database import AsyncSessionLocal
     from app.domains.automation.services.planned_task_service import CycleDetectedError, PlannedTaskService
 
@@ -294,13 +273,7 @@ async def _wrap_get_execution_plan(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "has_cycle": True, "message": str(e)}
 @tool_handler("automation")
 async def _wrap_build_dag(**kwargs: Any) -> dict[str, Any]:
-    """Build and validate a Directed Acyclic Graph (DAG) from a list of task dependencies.
-
-    Detects cycles and computes topological execution levels. Read-only — does not persist.
-    Side effects: none
-    Governance: multi_tenant
-    Use before: get_execution_plan (for cycle-free validation)
-    """
+    """Build and validate a DAG from task dependencies."""
     from app.core.database import AsyncSessionLocal
     from app.domains.automation.services.planned_task_service import PlannedTaskService
 
@@ -314,14 +287,7 @@ async def _wrap_build_dag(**kwargs: Any) -> dict[str, Any]:
     return {"success": True, **result}
 @tool_handler("automation")
 async def _wrap_check_dependencies(**kwargs: Any) -> dict[str, Any]:
-    """Check the dependency completion status for a specific planned task.
-
-    Returns which prerequisite tasks are done, pending, or blocked.
-    Use to determine if a task is ready to start before dispatching it.
-    Side effects: none (read-only)
-    Governance: multi_tenant
-    Use before: dispatching any specialist agent; see also: get_next_tasks
-    """
+    """Check dependency status for a task."""
     from app.core.database import AsyncSessionLocal
     from app.domains.automation.services.planned_task_service import PlannedTaskService
 
@@ -335,14 +301,7 @@ async def _wrap_check_dependencies(**kwargs: Any) -> dict[str, Any]:
     return {"success": True, **result}
 @tool_handler("automation")
 async def _wrap_get_next_tasks(**kwargs: Any) -> dict[str, Any]:
-    """Return planned tasks that are ready for execution (all dependencies completed).
-
-    Filtered by goal, agent type, and company. Drive the autonomous execution loop —
-    call repeatedly to pick up tasks as dependencies complete.
-    Side effects: none (read-only)
-    Governance: multi_tenant
-    Poll pattern: call after each completed task to discover newly unblocked tasks.
-    """
+    """Get tasks ready for execution."""
     from app.core.database import AsyncSessionLocal
     from app.domains.automation.services.planned_task_service import PlannedTaskService
 
@@ -365,72 +324,32 @@ def get_automation_tools() -> list[ToolDefinition]:
     return [
         ToolDefinition(
             name="decompose_task",
-            description=(
-                "Decomposes a complex recruitment or workflow task into executable subtasks using an LLM "
-                "with a structured planning prompt. Automatically assigns agent types, priorities, estimated "
-                "durations, and dependency chains. Optionally persists the subtasks to the database via "
-                "PlannedTaskService. Use for any multi-step workflow that requires orchestration across "
-                "multiple agents. "
-                "Params: task_description (str, required), goal_id (str), company_id (str), persist (bool, default True). "
-                "Side effects: db_write, credits_consumed. Governance: multi_tenant, audit_trail."
-            ),
+            description="Decompor uma tarefa complexa em subtarefas usando IA. Parâmetros: task_description (str, obrigatório), goal_id (str, opcional), company_id (str, opcional), persist (bool, padrão True).",
             function=_wrap_decompose_task,
         ),
         ToolDefinition(
             name="prioritize_tasks",
-            description=(
-                "Recalculates and updates priority scores for a list of planned tasks using multi-criteria "
-                "scoring (urgency 30%, impact 25%, criticality 25%, efficiency 20%). Writes updated priority "
-                "values back to the planned_tasks table. Run after decomposing tasks or when context changes "
-                "(budget cut, new deadline, blocked dependency). "
-                "Params: task_ids (list[str]) or goal_id (str). "
-                "Side effects: db_write. Governance: multi_tenant, audit_trail."
-            ),
+            description="Calcular e atualizar prioridades de tarefas. Parâmetros: task_ids (list[str]) ou goal_id (str).",
             function=_wrap_prioritize_tasks,
         ),
         ToolDefinition(
             name="get_execution_plan",
-            description=(
-                "Generates a structured execution plan with parallel levels from a set of planned tasks, "
-                "validates the dependency DAG for cycles, and persists the plan to the database. Returns "
-                "the plan with its parallel execution levels and any cycle warnings. Use to prepare the "
-                "final, validated execution schedule before starting an autonomous pipeline. "
-                "Params: task_ids (list[str]) or goal_id (str), name (str, optional). "
-                "Side effects: db_write. Governance: multi_tenant, audit_trail."
-            ),
+            description="Gerar plano de execução com níveis paralelos. Parâmetros: task_ids (list[str]) ou goal_id (str), name (str, opcional).",
             function=_wrap_get_execution_plan,
         ),
         ToolDefinition(
             name="build_dag",
-            description=(
-                "Builds and validates a Directed Acyclic Graph (DAG) from a list of task dependencies, "
-                "detecting cycles and computing topological execution levels. Read-only — does not persist "
-                "anything. Use to validate a dependency graph before committing to an execution plan. "
-                "Params: task_ids (list[str], required). "
-                "Side effects: none. Governance: multi_tenant."
-            ),
+            description="Construir e validar DAG de dependências. Parâmetros: task_ids (list[str]).",
             function=_wrap_build_dag,
         ),
         ToolDefinition(
             name="check_dependencies",
-            description=(
-                "Checks the dependency completion status for a specific planned task, returning which "
-                "prerequisite tasks are done, pending, or blocked. Use to determine if a task is ready "
-                "to start before dispatching it to the appropriate specialist agent. "
-                "Params: task_id (str, required). "
-                "Side effects: none (read-only). Governance: multi_tenant."
-            ),
+            description="Verificar status das dependências de uma tarefa. Parâmetros: task_id (str).",
             function=_wrap_check_dependencies,
         ),
         ToolDefinition(
             name="get_next_tasks",
-            description=(
-                "Returns the list of planned tasks ready for execution (all dependencies completed, not yet "
-                "started), filtered by goal, agent type, and company. Use to drive the autonomous execution "
-                "loop — call repeatedly to pick up tasks as they become available. "
-                "Params: goal_id (str), parent_task_id (str), agent_type (str), limit (int, default 5). "
-                "Side effects: none (read-only). Governance: multi_tenant."
-            ),
+            description="Obter próximas tarefas prontas para execução. Parâmetros: goal_id (str, opcional), agent_type (str, opcional), limit (int, padrão 5).",
             function=_wrap_get_next_tasks,
         ),
     ]

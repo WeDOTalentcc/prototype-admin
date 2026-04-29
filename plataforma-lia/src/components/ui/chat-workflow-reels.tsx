@@ -1,229 +1,439 @@
-"use client"
+"use client";
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from "react"
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 import {
-  Briefcase, Search, UserCheck, Calendar, FileText,
-  TrendingUp, ChevronRight, ChevronLeft, BarChart3,
-  Sparkles, Settings
-} from "lucide-react"
-import { useTranslations } from 'next-intl'
+  getCanonicalStage,
+  type CanonicalStageColor,
+} from "@/components/workflow-rail/canonicalFunnelStages";
+import { useTranslations } from "next-intl";
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+} from "react";
 
 export interface WorkflowReelSuggestion {
-  id: string
-  title: string
-  description: string
-  command: string
+  id: string;
+  title: string;
+  description: string;
+  command: string;
+  /** PR-A: hint de domínio para routing determinístico no orchestrator. */
+  domain_hint?: string;
+  /** PR-A: hint de action/intent dentro do domínio. */
+  intent_hint?: string;
+  /** PR-K: quando definido, navega diretamente (sem detour pelo chat). */
+  navigate_url?: string;
+  /** PR-Q1: quando definido, abre modal via lia:open_modal (sem detour pelo chat). */
+  modal_id?: string;
+}
+
+/**
+ * PR-A — metadata enviada ao chat quando o usuário clica num card do Rail A.
+ *
+ * Consumida pelo `main_orchestrator.py` (`_prefer_hints_before_keyword_match`)
+ * como guide computacional (per harness-engineering): rota determinística
+ * antes do fallback keyword-based. Resolve FE-H03 do audit enterprise.
+ */
+export interface ChatSuggestionMetadata {
+  source: "rail_a";
+  card_id: string;
+  stage: string;
+  domain_hint?: string;
+  intent_hint?: string;
+}
+
+/**
+ * Mapa card_id → { domain_hint, intent_hint }. Fonte única de roteamento.
+ *
+ * Cada entrada foi validada contra `app/domains/<domain>/config/capabilities.yaml`
+ * em 2026-04-26. Atualizar aqui quando novos cards forem adicionados ao Rail A
+ * ou quando capabilities mudarem.
+ *
+ * Card 6.1 (register-hire) usa register_hire action (PR-C).
+
+ */
+export const SUGGESTION_HINTS: Record<
+  string,
+  { domain_hint?: string; intent_hint?: string }
+> = {
+  // Funil (13)
+  "create-job": { domain_hint: "job_management", intent_hint: "create_job" },
+  "job-template": {
+    domain_hint: "job_management",
+    intent_hint: "create_from_template",
+  },
+  "search-candidates": {
+    domain_hint: "sourcing",
+    intent_hint: "search_candidates",
+  },
+  "add-candidate": { domain_hint: "sourcing", intent_hint: "add_candidate" },
+  "talent-pool": {
+    domain_hint: "talent_pool",
+    intent_hint: "list_talent_pools",
+  },
+  "candidate-info": {
+    domain_hint: "recruiter_assistant",
+    intent_hint: "quick_question",
+  },
+  "update-status": { domain_hint: "pipeline", intent_hint: "move_candidate" },
+  "schedule-interview": {
+    domain_hint: "interview_scheduling",
+    intent_hint: "schedule_interview",
+  },
+  "reschedule-interview": {
+    domain_hint: "interview_scheduling",
+    intent_hint: "reschedule_interview",
+  },
+  "send-offer": { domain_hint: "offer", intent_hint: "send_offer" },
+  "compare-candidates": {
+    domain_hint: "sourcing",
+    intent_hint: "compare_candidates",
+  },
+  "register-hire": { domain_hint: "pipeline", intent_hint: "register_hire" },
+  "close-vacancy": { domain_hint: "job_management", intent_hint: "close_job" },
+  // Utilitárias (9)
+  "job-report": {
+    domain_hint: "analytics",
+    intent_hint: "generate_job_report",
+  },
+  "daily-briefing": {
+    domain_hint: "recruiter_assistant",
+    intent_hint: "daily_briefing",
+  },
+  "hiring-predictions": { domain_hint: "analytics", intent_hint: "forecast" },
+  "configure-automations": {
+    domain_hint: "automation",
+    intent_hint: "create_automation",
+  },
+  "wsi-screening": {
+    domain_hint: "interview_scheduling",
+    intent_hint: "start_wsi_interview",
+  },
+  "ai-suggestions": {
+    domain_hint: "recruiter_assistant",
+    intent_hint: "suggest_action",
+  },
+  "ai-credits": {
+    domain_hint: "agent_studio",
+    intent_hint: "get_studio_consumption",
+  },
+  "hiring-policy": {
+    domain_hint: "hiring_policy",
+    intent_hint: "configure_policy",
+  },
+  "email-templates": {
+    domain_hint: "communication",
+    intent_hint: "create_template",
+  },
+};
+
+/**
+ * PR-K: Cards 9.x navegam diretamente para a página de destino em vez de
+ * passar pelo chat. Evita o detour conversacional para funcionalidades de
+ * configuração que têm páginas dedicadas.
+ */
+export const NAVIGATION_OVERRIDES: Record<string, string> = {
+  "ai-credits": "/configuracoes/ai-credits",
+  "hiring-policy": "/configuracoes?section=pipeline",
+  "email-templates": "/configuracoes?section=templates-assinatura",
+  /** PR-Q1: Banco de talentos tem página dedicada — navegar direto. */
+  "talent-pool": "/bancos-de-talentos",
+};
+
+/**
+ * PR-Q1: Cards que abrem modal diretamente (sem detour pelo chat).
+ * Valor = modal_id reconhecido por LIAGlobalModals via lia:open_modal event.
+ */
+export const MODAL_OVERRIDES: Record<string, string> = {
+  "add-candidate": "add_candidate",
+};
+
+export function buildSuggestionMetadata(
+  cardId: string,
+  stageId: string,
+): ChatSuggestionMetadata {
+  const hint = SUGGESTION_HINTS[cardId];
+  return {
+    source: "rail_a",
+    card_id: cardId,
+    stage: stageId,
+    ...(hint?.domain_hint ? { domain_hint: hint.domain_hint } : {}),
+    ...(hint?.intent_hint ? { intent_hint: hint.intent_hint } : {}),
+  };
 }
 
 export interface WorkflowReelStage {
-  id: string
-  label: string
-  shortLabel: string
-  icon: React.ElementType
-  pulseStageId?: string
-  color: {
-    accent: string
-    accentBg: string
-    nodeBorder: string
-    cardBorder: string
-  }
-  suggestions: WorkflowReelSuggestion[]
+  id: string;
+  label: string;
+  shortLabel: string;
+  icon: React.ElementType;
+  pulseStageId?: string;
+  color: CanonicalStageColor;
+  suggestions: WorkflowReelSuggestion[];
 }
 
 interface PipelinePulseData {
-  stages: Array<{ macro_stage: string; count: number }>
-  total: number
+  stages: Array<{ macro_stage: string; count: number }>;
+  total: number;
+  /** PR-M: active job vacancies count for the Vaga node pulse badge. */
+  active_jobs?: number;
 }
 
 function usePipelinePulse() {
-  const [pulse, setPulse] = useState<Record<string, number>>({})
-  const [loading, setLoading] = useState(true)
+  const [pulse, setPulse] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
     fetch("/api/backend-proxy/pipeline-pulse")
       .then((res) => (res.ok ? res.json() : null))
       .then((data: PipelinePulseData | null) => {
-        if (cancelled || !data) return
-        const map: Record<string, number> = {}
-        for (const s of data.stages) {
-          map[s.macro_stage] = s.count
+        if (cancelled || !data) return;
+        // Task #817 (canonical-fix, defesa em profundidade): mesmo com o
+        // backend declarando `PipelinePulseResponse{stages, total}` via
+        // Pydantic, o proxy pode retornar 200 OK com payload divergente em
+        // cenários transitórios (cache stale, HMR em dev, response 200 com
+        // body vazio quando o backend reinicia). Defensivo: tratar
+        // `stages` ausente/não-array como "sem dados", não como crash.
+        const stages = Array.isArray(data?.stages) ? data.stages : [];
+        const map: Record<string, number> = {};
+        for (const s of stages) {
+          if (
+            s &&
+            typeof s.macro_stage === "string" &&
+            typeof s.count === "number"
+          ) {
+            map[s.macro_stage] = s.count;
+          }
         }
-        setPulse(map)
+        // PR-M: wire active_jobs count for the Vaga node pulse badge.
+        if (typeof data.active_jobs === "number" && data.active_jobs > 0) {
+          map["definir-vaga"] = data.active_jobs;
+        }
+        setPulse(map);
       })
-      .catch((err) => { console.warn('[chatWorkflowReels] pulse fetch failed', err) })
-      .finally(() => { if (!cancelled) setLoading(false) })
-    return () => { cancelled = true }
-  }, [])
+      .catch((err) => {
+        console.warn("[chatWorkflowReels] pulse fetch failed", err);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  return { pulse, loading }
+  return { pulse, loading };
 }
 
+/** Chat-reels-specific stage data. Icon + color come from canonicalFunnelStages. */
 interface StageStructure {
-  id: string
-  icon: React.ElementType
-  pulseStageId?: string
-  color: { accent: string; accentBg: string; nodeBorder: string; cardBorder: string }
-  suggestionIds: string[]
+  id: string;
+  pulseStageId?: string;
+  suggestionIds: string[];
 }
 
 const STAGE_STRUCTURES: StageStructure[] = [
-  { id: "definir-vaga", icon: Briefcase, color: { accent: "var(--wedo-cyan, #60BED1)", accentBg: "rgba(96, 190, 209, 0.10)", nodeBorder: "var(--wedo-cyan, #60BED1)", cardBorder: "rgba(96, 190, 209, 0.25)" }, suggestionIds: ["create-job", "job-template"] },
-  { id: "sourcing", icon: Search, pulseStageId: "sourcing", color: { accent: "var(--wedo-green, #5DA47A)", accentBg: "rgba(93, 164, 122, 0.10)", nodeBorder: "var(--wedo-green, #5DA47A)", cardBorder: "rgba(93, 164, 122, 0.25)" }, suggestionIds: ["search-candidates", "add-candidate", "talent-pool"] },
-  { id: "triagem", icon: UserCheck, pulseStageId: "triagem", color: { accent: "var(--wedo-green, #5DA47A)", accentBg: "rgba(93, 164, 122, 0.10)", nodeBorder: "var(--wedo-green, #5DA47A)", cardBorder: "rgba(93, 164, 122, 0.25)" }, suggestionIds: ["candidate-info", "update-status"] },
-  { id: "entrevista", icon: Calendar, pulseStageId: "entrevista", color: { accent: "var(--wedo-orange, #D19960)", accentBg: "rgba(209, 153, 96, 0.10)", nodeBorder: "var(--wedo-orange, #D19960)", cardBorder: "rgba(209, 153, 96, 0.25)" }, suggestionIds: ["schedule-interview", "reschedule-interview"] },
-  { id: "oferta", icon: FileText, pulseStageId: "oferta", color: { accent: "var(--wedo-purple, #9860D1)", accentBg: "rgba(152, 96, 209, 0.10)", nodeBorder: "var(--wedo-purple, #9860D1)", cardBorder: "rgba(152, 96, 209, 0.25)" }, suggestionIds: ["send-offer", "compare-candidates"] },
-  { id: "contratacao", icon: TrendingUp, pulseStageId: "contratacao", color: { accent: "var(--wedo-purple, #9860D1)", accentBg: "rgba(152, 96, 209, 0.10)", nodeBorder: "var(--wedo-purple, #9860D1)", cardBorder: "rgba(152, 96, 209, 0.25)" }, suggestionIds: ["register-hire", "close-vacancy"] },
-]
+  { id: "definir-vaga", pulseStageId: "definir-vaga", suggestionIds: ["create-job", "job-template"] },
+  { id: "sourcing", pulseStageId: "sourcing", suggestionIds: ["search-candidates", "add-candidate", "talent-pool"] },
+  { id: "triagem", pulseStageId: "triagem", suggestionIds: ["candidate-info", "update-status"] },
+  { id: "entrevista", pulseStageId: "entrevista", suggestionIds: ["schedule-interview", "reschedule-interview"] },
+  { id: "oferta", pulseStageId: "oferta", suggestionIds: ["send-offer", "compare-candidates"] },
+  { id: "contratacao", pulseStageId: "contratacao", suggestionIds: ["register-hire", "close-vacancy"] },
+];
 
 const UTILITY_STRUCTURES: StageStructure[] = [
-  { id: "analytics", icon: BarChart3, color: { accent: "var(--wedo-amber, #D1A960)", accentBg: "rgba(209, 169, 96, 0.10)", nodeBorder: "var(--wedo-amber, #D1A960)", cardBorder: "rgba(209, 169, 96, 0.25)" }, suggestionIds: ["job-report", "daily-briefing", "hiring-predictions"] },
-  { id: "ia-automacoes", icon: Sparkles, color: { accent: "var(--wedo-cyan, #60BED1)", accentBg: "rgba(96, 190, 209, 0.10)", nodeBorder: "var(--wedo-cyan, #60BED1)", cardBorder: "rgba(96, 190, 209, 0.25)" }, suggestionIds: ["configure-automations", "wsi-screening", "ai-suggestions"] },
-  { id: "configuracoes", icon: Settings, color: { accent: "var(--lia-text-secondary, #8A8F98)", accentBg: "rgba(138, 143, 152, 0.10)", nodeBorder: "var(--lia-text-secondary, #8A8F98)", cardBorder: "rgba(138, 143, 152, 0.25)" }, suggestionIds: ["ai-credits", "hiring-policy", "email-templates"] },
-]
+  { id: "analytics", suggestionIds: ["job-report", "daily-briefing", "hiring-predictions"] },
+  { id: "ia-automacoes", suggestionIds: ["configure-automations", "wsi-screening", "ai-suggestions"] },
+  { id: "configuracoes", suggestionIds: ["ai-credits", "hiring-policy", "email-templates"] },
+];
 
-function useTranslatedStages(structures: StageStructure[]): WorkflowReelStage[] {
-  const ts = useTranslations('chat.workflowReels.stages')
-  const tsg = useTranslations('chat.workflowReels.suggestions')
-  return useMemo(() => structures.map(s => ({
-    id: s.id,
-    label: ts(`${s.id}.label` as `definir-vaga.label`),
-    shortLabel: ts(`${s.id}.shortLabel` as `definir-vaga.shortLabel`),
-    icon: s.icon,
-    pulseStageId: s.pulseStageId,
-    color: s.color,
-    suggestions: s.suggestionIds.map(sid => ({
-      id: sid,
-      title: tsg(`${sid}.title` as `create-job.title`),
-      description: tsg(`${sid}.description` as `create-job.description`),
-      command: tsg(`${sid}.command` as `create-job.command`),
-    })),
-  })), [ts, tsg, structures])
+function useTranslatedStages(
+  structures: StageStructure[],
+): WorkflowReelStage[] {
+  const ts = useTranslations("chat.workflowReels.stages");
+  const tsg = useTranslations("chat.workflowReels.suggestions");
+  return useMemo(
+    () =>
+      structures.map((s) => {
+        const canonical = getCanonicalStage(s.id);
+        return {
+          id: s.id,
+          label: ts(`${s.id}.label` as `definir-vaga.label`),
+          shortLabel: ts(`${s.id}.shortLabel` as `definir-vaga.shortLabel`),
+          icon: canonical?.Icon ?? (() => null),
+          pulseStageId: s.pulseStageId,
+          color: canonical?.color ?? {
+            accent: "var(--lia-text-secondary)",
+            accentBg: "rgba(138, 143, 152, 0.10)",
+            nodeBorder: "var(--lia-text-secondary)",
+            cardBorder: "rgba(138, 143, 152, 0.25)",
+          },
+          suggestions: s.suggestionIds.map((sid) => {
+            const hint = SUGGESTION_HINTS[sid];
+            return {
+              id: sid,
+              title: tsg(`${sid}.title` as `create-job.title`),
+              description: tsg(`${sid}.description` as `create-job.description`),
+              command: tsg(`${sid}.command` as `create-job.command`),
+              domain_hint: hint?.domain_hint,
+              intent_hint: hint?.intent_hint,
+              navigate_url: NAVIGATION_OVERRIDES[sid],
+              modal_id: MODAL_OVERRIDES[sid],
+            };
+          }),
+        };
+      }),
+    [ts, tsg, structures],
+  );
 }
 
 interface ChatWorkflowReelsProps {
-  onSelect: (command: string) => void
-  compact?: boolean
-  stages?: WorkflowReelStage[]
-  utilityNodes?: WorkflowReelStage[]
+  /**
+   * Callback disparado ao clicar num card. PR-A: além do `command` em PT-BR,
+   * recebe `metadata` com hints de routing para o orchestrator.
+   */
+  onSelect: (command: string, metadata?: ChatSuggestionMetadata) => void;
+  compact?: boolean;
+  stages?: WorkflowReelStage[];
+  utilityNodes?: WorkflowReelStage[];
 }
 
-const DOCK_MAX_SCALE = 1.4
-const DOCK_NEIGHBOR_1_SCALE = 1.2
-const DOCK_NEIGHBOR_2_SCALE = 1.1
-const DOCK_INFLUENCE_RADIUS = 120
-const DRAG_THRESHOLD = 5
+const DOCK_MAX_SCALE = 1.4;
+const DOCK_NEIGHBOR_1_SCALE = 1.2;
+const DOCK_NEIGHBOR_2_SCALE = 1.1;
+const DOCK_INFLUENCE_RADIUS = 120;
+const DRAG_THRESHOLD = 5;
 
-function useDockMagnifier(containerRef: React.RefObject<HTMLDivElement | null>) {
-  const mouseXRef = useRef<number | null>(null)
-  const [mouseX, setMouseX] = useState<number | null>(null)
-  const rafId = useRef<number>(0)
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+function useDockMagnifier(
+  containerRef: React.RefObject<HTMLDivElement | null>,
+) {
+  const mouseXRef = useRef<number | null>(null);
+  const [mouseX, setMouseX] = useState<number | null>(null);
+  const rafId = useRef<number>(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)")
-    setPrefersReducedMotion(mq.matches)
-    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches)
-    mq.addEventListener("change", handler)
-    return () => mq.removeEventListener("change", handler)
-  }, [])
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setPrefersReducedMotion(mq.matches);
+    const handler = (e: MediaQueryListEvent) =>
+      setPrefersReducedMotion(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (prefersReducedMotion) return
-    const rect = containerRef.current?.getBoundingClientRect()
-    if (!rect) return
-    const x = e.clientX - rect.left + (containerRef.current?.scrollLeft ?? 0)
-    mouseXRef.current = x
-    if (!rafId.current) {
-      rafId.current = requestAnimationFrame(() => {
-        setMouseX(mouseXRef.current)
-        rafId.current = 0
-      })
-    }
-  }, [containerRef, prefersReducedMotion])
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (prefersReducedMotion) return;
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const x = e.clientX - rect.left + (containerRef.current?.scrollLeft ?? 0);
+      mouseXRef.current = x;
+      if (!rafId.current) {
+        rafId.current = requestAnimationFrame(() => {
+          setMouseX(mouseXRef.current);
+          rafId.current = 0;
+        });
+      }
+    },
+    [containerRef, prefersReducedMotion],
+  );
 
   const handleMouseLeave = useCallback(() => {
-    mouseXRef.current = null
+    mouseXRef.current = null;
     if (rafId.current) {
-      cancelAnimationFrame(rafId.current)
-      rafId.current = 0
+      cancelAnimationFrame(rafId.current);
+      rafId.current = 0;
     }
-    setMouseX(null)
-  }, [])
+    setMouseX(null);
+  }, []);
 
-  const getScale = useCallback((nodeIndex: number, nodeRefs: React.RefObject<(HTMLElement | null)[]>) => {
-    if (mouseX === null || prefersReducedMotion) return 1
-    const nodeEl = nodeRefs.current?.[nodeIndex]
-    if (!nodeEl) return 1
-    const nodeCenter = nodeEl.offsetLeft + nodeEl.offsetWidth / 2
-    const distance = Math.abs(mouseX - nodeCenter)
-    if (distance > DOCK_INFLUENCE_RADIUS) return 1
+  const getScale = useCallback(
+    (nodeIndex: number, nodeRefs: React.RefObject<(HTMLElement | null)[]>) => {
+      if (mouseX === null || prefersReducedMotion) return 1;
+      const nodeEl = nodeRefs.current?.[nodeIndex];
+      if (!nodeEl) return 1;
+      const nodeCenter = nodeEl.offsetLeft + nodeEl.offsetWidth / 2;
+      const distance = Math.abs(mouseX - nodeCenter);
+      if (distance > DOCK_INFLUENCE_RADIUS) return 1;
 
-    const ratio = 1 - distance / DOCK_INFLUENCE_RADIUS
-    const eased = Math.cos((1 - ratio) * Math.PI / 2)
+      const ratio = 1 - distance / DOCK_INFLUENCE_RADIUS;
+      const eased = Math.cos(((1 - ratio) * Math.PI) / 2);
 
-    if (distance < DOCK_INFLUENCE_RADIUS * 0.33) {
-      return 1 + (DOCK_MAX_SCALE - 1) * eased
-    } else if (distance < DOCK_INFLUENCE_RADIUS * 0.66) {
-      return 1 + (DOCK_NEIGHBOR_1_SCALE - 1) * eased
-    } else {
-      return 1 + (DOCK_NEIGHBOR_2_SCALE - 1) * eased
-    }
-  }, [mouseX, prefersReducedMotion])
+      if (distance < DOCK_INFLUENCE_RADIUS * 0.33) {
+        return 1 + (DOCK_MAX_SCALE - 1) * eased;
+      } else if (distance < DOCK_INFLUENCE_RADIUS * 0.66) {
+        return 1 + (DOCK_NEIGHBOR_1_SCALE - 1) * eased;
+      } else {
+        return 1 + (DOCK_NEIGHBOR_2_SCALE - 1) * eased;
+      }
+    },
+    [mouseX, prefersReducedMotion],
+  );
 
-  return { handleMouseMove, handleMouseLeave, getScale, isActive: mouseX !== null }
+  return {
+    handleMouseMove,
+    handleMouseLeave,
+    getScale,
+    isActive: mouseX !== null,
+  };
 }
 
 function useDragToScroll(scrollRef: React.RefObject<HTMLDivElement | null>) {
-  const isDragging = useRef(false)
-  const startX = useRef(0)
-  const startScroll = useRef(0)
-  const dragDistance = useRef(0)
-  const [grabbing, setGrabbing] = useState(false)
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const startScroll = useRef(0);
+  const dragDistance = useRef(0);
+  const [grabbing, setGrabbing] = useState(false);
 
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
-    const el = scrollRef.current
-    if (!el) return
-    isDragging.current = true
-    dragDistance.current = 0
-    startX.current = e.clientX
-    startScroll.current = el.scrollLeft
-  }, [scrollRef])
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      const el = scrollRef.current;
+      if (!el) return;
+      isDragging.current = true;
+      dragDistance.current = 0;
+      startX.current = e.clientX;
+      startScroll.current = el.scrollLeft;
+    },
+    [scrollRef],
+  );
 
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current) return
-      const el = scrollRef.current
-      if (!el) return
-      const dx = e.clientX - startX.current
-      dragDistance.current = Math.abs(dx)
+      if (!isDragging.current) return;
+      const el = scrollRef.current;
+      if (!el) return;
+      const dx = e.clientX - startX.current;
+      dragDistance.current = Math.abs(dx);
       if (dragDistance.current > DRAG_THRESHOLD) {
-        setGrabbing(true)
-        e.preventDefault()
-        el.scrollLeft = startScroll.current - dx
+        setGrabbing(true);
+        e.preventDefault();
+        el.scrollLeft = startScroll.current - dx;
       }
-    }
+    };
 
     const onMouseUp = () => {
-      isDragging.current = false
-      setGrabbing(false)
-    }
+      isDragging.current = false;
+      setGrabbing(false);
+    };
 
-    window.addEventListener("mousemove", onMouseMove)
-    window.addEventListener("mouseup", onMouseUp)
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
     return () => {
-      window.removeEventListener("mousemove", onMouseMove)
-      window.removeEventListener("mouseup", onMouseUp)
-    }
-  }, [scrollRef])
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+  }, [scrollRef]);
 
   const wasDragging = useCallback(() => {
-    return dragDistance.current > DRAG_THRESHOLD
-  }, [])
+    return dragDistance.current > DRAG_THRESHOLD;
+  }, []);
 
-  return { onMouseDown, grabbing, wasDragging }
+  return { onMouseDown, grabbing, wasDragging };
 }
-
 
 export function ChatWorkflowReels({
   onSelect,
@@ -231,64 +441,71 @@ export function ChatWorkflowReels({
   stages: stagesProp,
   utilityNodes: utilityNodesProp,
 }: ChatWorkflowReelsProps) {
-  const t = useTranslations('chat.workflowReels')
-  const defaultStages = useTranslatedStages(STAGE_STRUCTURES)
-  const defaultUtility = useTranslatedStages(UTILITY_STRUCTURES)
-  const stages = stagesProp ?? defaultStages
-  const utilityNodes = utilityNodesProp ?? defaultUtility
-  const translatedStages = stages
-  const translatedUtility = utilityNodes
-  const allNodes = [...translatedStages, ...translatedUtility]
-  const nodesWithSuggestions = allNodes.filter((s) => s.suggestions.length > 0)
-  const firstWithSuggestions = nodesWithSuggestions[0]?.id ?? null
+  const router = useRouter();
+  const t = useTranslations("chat.workflowReels");
+  const defaultStages = useTranslatedStages(STAGE_STRUCTURES);
+  const defaultUtility = useTranslatedStages(UTILITY_STRUCTURES);
+  const stages = stagesProp ?? defaultStages;
+  const utilityNodes = utilityNodesProp ?? defaultUtility;
+  const translatedStages = stages;
+  const translatedUtility = utilityNodes;
+  const allNodes = [...translatedStages, ...translatedUtility];
+  const nodesWithSuggestions = allNodes.filter((s) => s.suggestions.length > 0);
+  const firstWithSuggestions = nodesWithSuggestions[0]?.id ?? null;
 
-  const { pulse } = usePipelinePulse()
-  const [activeStageId, setActiveStageId] = useState<string | null>(firstWithSuggestions)
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const nodeRefs = useRef<(HTMLElement | null)[]>([])
-  const [canScrollLeft, setCanScrollLeft] = useState(false)
-  const [canScrollRight, setCanScrollRight] = useState(false)
+  const { pulse } = usePipelinePulse();
+  const [activeStageId, setActiveStageId] = useState<string | null>(
+    firstWithSuggestions,
+  );
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const nodeRefs = useRef<(HTMLElement | null)[]>([]);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
-  const activeStage = allNodes.find((s) => s.id === activeStageId) ?? null
+  const activeStage = allNodes.find((s) => s.id === activeStageId) ?? null;
 
-  const { handleMouseMove, handleMouseLeave, getScale } = useDockMagnifier(scrollRef)
-  const { onMouseDown, grabbing, wasDragging } = useDragToScroll(scrollRef)
+  const { handleMouseMove, handleMouseLeave, getScale } =
+    useDockMagnifier(scrollRef);
+  const { onMouseDown, grabbing, wasDragging } = useDragToScroll(scrollRef);
 
   const handleNodeClick = (nodeId: string, hasSuggestions: boolean) => {
-    if (wasDragging()) return
-    if (!hasSuggestions) return
-    setActiveStageId(activeStageId === nodeId ? null : nodeId)
-  }
+    if (wasDragging()) return;
+    if (!hasSuggestions) return;
+    setActiveStageId(activeStageId === nodeId ? null : nodeId);
+  };
 
   const updateScrollState = () => {
-    const el = scrollRef.current
-    if (!el) return
-    setCanScrollLeft(el.scrollLeft > 4)
-    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
-  }
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  };
 
   useEffect(() => {
-    const el = scrollRef.current
-    if (!el) return
-    updateScrollState()
-    el.addEventListener("scroll", updateScrollState, { passive: true })
-    const ro = new ResizeObserver(updateScrollState)
-    ro.observe(el)
+    const el = scrollRef.current;
+    if (!el) return;
+    updateScrollState();
+    el.addEventListener("scroll", updateScrollState, { passive: true });
+    const ro = new ResizeObserver(updateScrollState);
+    ro.observe(el);
     return () => {
-      el.removeEventListener("scroll", updateScrollState)
-      ro.disconnect()
-    }
-  }, [])
+      el.removeEventListener("scroll", updateScrollState);
+      ro.disconnect();
+    };
+  }, []);
 
   const scroll = (dir: "left" | "right") => {
-    const el = scrollRef.current
-    if (!el) return
-    el.scrollBy({ left: dir === "left" ? -160 : 160, behavior: "smooth" })
-  }
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir === "left" ? -160 : 160, behavior: "smooth" });
+  };
 
-  const setNodeRef = useCallback((index: number) => (el: HTMLElement | null) => {
-    nodeRefs.current[index] = el
-  }, [])
+  const setNodeRef = useCallback(
+    (index: number) => (el: HTMLElement | null) => {
+      nodeRefs.current[index] = el;
+    },
+    [],
+  );
 
   if (compact) {
     return (
@@ -297,10 +514,10 @@ export function ChatWorkflowReels({
         utilityNodes={translatedUtility}
         onSelect={onSelect}
       />
-    )
+    );
   }
 
-  let nodeIndex = 0
+  let nodeIndex = 0;
 
   return (
     <div className="w-full space-y-5">
@@ -339,50 +556,58 @@ export function ChatWorkflowReels({
         >
           <div className="flex items-end gap-0 min-w-max px-1 pt-8 pb-2">
             {translatedStages.map((stage, idx) => {
-              const currentIndex = nodeIndex++
+              const currentIndex = nodeIndex++;
               return (
                 <React.Fragment key={stage.id}>
                   <StageNode
                     ref={setNodeRef(currentIndex)}
                     stage={stage}
                     isActive={activeStageId === stage.id}
-                    pulseCount={stage.pulseStageId ? pulse[stage.pulseStageId] : undefined}
-                    onClick={() => handleNodeClick(stage.id, stage.suggestions.length > 0)}
+                    pulseCount={
+                      stage.pulseStageId ? pulse[stage.pulseStageId] : undefined
+                    }
+                    onClick={() =>
+                      handleNodeClick(stage.id, stage.suggestions.length > 0)
+                    }
                     scale={getScale(currentIndex, nodeRefs)}
                   />
                   {idx < translatedStages.length - 1 && (
                     <div
                       className="h-px w-6 flex-shrink-0 transition-colors self-center"
                       style={{
-                        backgroundColor: stage.suggestions.length > 0 && translatedStages[idx + 1].suggestions.length > 0
-                          ? "var(--lia-border-default)"
-                          : "var(--lia-border-subtle)",
+                        backgroundColor:
+                          stage.suggestions.length > 0 &&
+                          translatedStages[idx + 1].suggestions.length > 0
+                            ? "var(--lia-border-default)"
+                            : "var(--lia-border-subtle)",
                       }}
                     />
                   )}
                 </React.Fragment>
-              )
+              );
             })}
 
             {translatedUtility.length > 0 && (
               <>
                 <div className="flex-shrink-0 w-px h-8 mx-3 bg-lia-border-subtle self-center" />
                 {translatedUtility.map((node, idx) => {
-                  const currentIndex = nodeIndex++
+                  const currentIndex = nodeIndex++;
                   return (
                     <React.Fragment key={node.id}>
                       <StageNode
                         ref={setNodeRef(currentIndex)}
                         stage={node}
                         isActive={activeStageId === node.id}
-                        onClick={() => handleNodeClick(node.id, node.suggestions.length > 0)}
+                        onClick={() =>
+                          handleNodeClick(node.id, node.suggestions.length > 0)
+                        }
                         scale={getScale(currentIndex, nodeRefs)}
                       />
                       {idx < translatedUtility.length - 1 && (
                         <div className="w-3 flex-shrink-0" />
                       )}
                     </React.Fragment>
-                  )
+                  );
                 })}
               </>
             )}
@@ -396,18 +621,40 @@ export function ChatWorkflowReels({
             {activeStage.suggestions.map((suggestion) => (
               <button
                 key={suggestion.id}
-                onClick={() => onSelect(suggestion.command)}
+                data-rail-a-card={suggestion.id}
+                data-rail-a-stage={activeStage.id}
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("lia:rail-a-card-click", {
+                    detail: { card_id: suggestion.id, stage_id: activeStage.id, navigate: !!suggestion.navigate_url, modal: !!suggestion.modal_id },
+                  }));
+                  if (suggestion.navigate_url) {
+                    router.push(suggestion.navigate_url);
+                  } else if (suggestion.modal_id) {
+                    window.dispatchEvent(new CustomEvent("lia:open_modal", {
+                      detail: { modal_id: suggestion.modal_id, data: {} },
+                    }));
+                  } else {
+                    onSelect(
+                      suggestion.command,
+                      buildSuggestionMetadata(suggestion.id, activeStage.id),
+                    );
+                  }
+                }}
                 className="flex items-start gap-3 p-4 text-left rounded-xl bg-lia-bg-primary border transition-all duration-150 hover:-translate-y-0.5 group flex-1 min-w-[180px]"
                 style={{
                   borderColor: activeStage.color.cardBorder,
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = activeStage.color.nodeBorder
-                  e.currentTarget.style.backgroundColor = activeStage.color.accentBg
+                  e.currentTarget.style.borderColor =
+                    activeStage.color.nodeBorder;
+                  e.currentTarget.style.backgroundColor =
+                    activeStage.color.accentBg;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = activeStage.color.cardBorder
-                  e.currentTarget.style.backgroundColor = "var(--lia-bg-primary)"
+                  e.currentTarget.style.borderColor =
+                    activeStage.color.cardBorder;
+                  e.currentTarget.style.backgroundColor =
+                    "var(--lia-bg-primary)";
                 }}
               >
                 <div
@@ -417,7 +664,9 @@ export function ChatWorkflowReels({
                     color: activeStage.color.accent,
                   }}
                 >
-                  {React.createElement(activeStage.icon, { className: "w-4 h-4" })}
+                  {React.createElement(activeStage.icon, {
+                    className: "w-4 h-4",
+                  })}
                 </div>
                 <div className="min-w-0">
                   <span className="text-[14px] font-semibold text-lia-text-primary block mb-0.5">
@@ -432,30 +681,29 @@ export function ChatWorkflowReels({
           </div>
         </div>
       )}
-
     </div>
-  )
+  );
 }
 
 const StageNode = React.forwardRef<
   HTMLButtonElement,
   {
-    stage: WorkflowReelStage
-    isActive: boolean
-    pulseCount?: number
-    onClick: () => void
-    scale?: number
+    stage: WorkflowReelStage;
+    isActive: boolean;
+    pulseCount?: number;
+    onClick: () => void;
+    scale?: number;
   }
 >(function StageNode({ stage, isActive, pulseCount, onClick, scale = 1 }, ref) {
-  const t = useTranslations('chat')
-  const Icon = stage.icon
-  const hasSuggestions = stage.suggestions.length > 0
-  const showPulse = pulseCount !== undefined && pulseCount > 0
+  const t = useTranslations("chat");
+  const Icon = stage.icon;
+  const hasSuggestions = stage.suggestions.length > 0;
+  const showPulse = pulseCount !== undefined && pulseCount > 0;
 
   const handlePulseClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    window.location.href = "/funil-de-talentos?tab=pipeline"
-  }
+    e.stopPropagation();
+    window.location.href = "/funil-de-talentos?tab=pipeline";
+  };
 
   return (
     <button
@@ -463,7 +711,14 @@ const StageNode = React.forwardRef<
       onClick={onClick}
       disabled={!hasSuggestions}
       className="flex flex-col items-center gap-1.5 group px-2 disabled:cursor-default origin-bottom motion-reduce:!transition-none"
-      title={hasSuggestions ? t("suggestionCount", { label: stage.label, count: stage.suggestions.length }) : stage.label}
+      title={
+        hasSuggestions
+          ? t("suggestionCount", {
+              label: stage.label,
+              count: stage.suggestions.length,
+            })
+          : stage.label
+      }
       style={{
         transform: scale !== 1 ? `scale(${scale})` : undefined,
         transition: "transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
@@ -476,16 +731,14 @@ const StageNode = React.forwardRef<
           backgroundColor: isActive
             ? stage.color.accent
             : hasSuggestions
-            ? stage.color.accentBg
-            : "var(--lia-bg-tertiary)",
+              ? stage.color.accentBg
+              : "var(--lia-bg-tertiary)",
           borderColor: isActive
             ? stage.color.accent
             : hasSuggestions
-            ? stage.color.nodeBorder
-            : "var(--lia-border-subtle)",
-          boxShadow: isActive
-            ? `0 0 0 3px ${stage.color.accentBg}`
-            : undefined,
+              ? stage.color.nodeBorder
+              : "var(--lia-border-subtle)",
+          boxShadow: isActive ? `0 0 0 3px ${stage.color.accentBg}` : undefined,
         }}
       >
         <Icon
@@ -494,8 +747,8 @@ const StageNode = React.forwardRef<
             color: isActive
               ? "var(--lia-text-on-accent, #fff)"
               : hasSuggestions
-              ? stage.color.accent
-              : "var(--lia-text-disabled)",
+                ? stage.color.accent
+                : "var(--lia-text-disabled)",
           }}
         />
       </div>
@@ -505,8 +758,8 @@ const StageNode = React.forwardRef<
           color: isActive
             ? stage.color.accent
             : hasSuggestions
-            ? "var(--lia-text-primary)"
-            : "var(--lia-text-disabled)",
+              ? "var(--lia-text-primary)"
+              : "var(--lia-text-disabled)",
         }}
       >
         {stage.shortLabel}
@@ -514,7 +767,10 @@ const StageNode = React.forwardRef<
       {showPulse ? (
         <span
           className="text-xs font-bold cursor-pointer rounded-full px-1.5 py-0.5"
-          style={{ backgroundColor: stage.color.accentBg, color: stage.color.accent }}
+          style={{
+            backgroundColor: stage.color.accentBg,
+            color: stage.color.accent,
+          }}
           onClick={handlePulseClick}
           title={t("pulseBadge", { count: pulseCount })}
         >
@@ -530,38 +786,51 @@ const StageNode = React.forwardRef<
         />
       ) : null}
     </button>
-  )
-})
+  );
+});
 
 function CompactReels({
   stages,
   utilityNodes,
   onSelect,
 }: {
-  stages: WorkflowReelStage[]
-  utilityNodes: WorkflowReelStage[]
-  onSelect: (command: string) => void
+  stages: WorkflowReelStage[];
+  utilityNodes: WorkflowReelStage[];
+  onSelect: (command: string, metadata?: ChatSuggestionMetadata) => void;
 }) {
-  const allNodes = [...stages, ...utilityNodes]
-  const nodesWithSuggestions = allNodes.filter((s) => s.suggestions.length > 0)
-  const firstWithSuggestions = nodesWithSuggestions[0]?.id ?? null
-  const [activeStageId, setActiveStageId] = useState<string | null>(firstWithSuggestions)
-  const activeStage = allNodes.find((s) => s.id === activeStageId) ?? null
+  // canonical-fix: pulse deve viver no componente que o usa, não como
+  // variável capturada de escopo externo (bug detectado em teste de compact mode).
+  const { pulse } = usePipelinePulse();
+  // PR-Q1: router necessário para navigate_url dispatch no modo compact.
+  const router = useRouter();
+  const allNodes = [...stages, ...utilityNodes];
+  const nodesWithSuggestions = allNodes.filter((s) => s.suggestions.length > 0);
+  const firstWithSuggestions = nodesWithSuggestions[0]?.id ?? null;
+  const [activeStageId, setActiveStageId] = useState<string | null>(
+    firstWithSuggestions,
+  );
+  const activeStage = allNodes.find((s) => s.id === activeStageId) ?? null;
 
   const handleNodeClick = (nodeId: string, hasSuggestions: boolean) => {
-    if (!hasSuggestions) return
-    setActiveStageId(activeStageId === nodeId ? null : nodeId)
-  }
+    if (!hasSuggestions) return;
+    setActiveStageId(activeStageId === nodeId ? null : nodeId);
+  };
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-1" style={{ scrollbarWidth: "none" }}>
+      <div
+        className="flex items-center gap-1 overflow-x-auto scrollbar-none py-1"
+        style={{ scrollbarWidth: "none" }}
+      >
         {stages.map((stage, idx) => (
           <React.Fragment key={stage.id}>
             <CompactNode
               stage={stage}
               isActive={activeStageId === stage.id}
-              onClick={() => handleNodeClick(stage.id, stage.suggestions.length > 0)}
+              onClick={() =>
+                handleNodeClick(stage.id, stage.suggestions.length > 0)
+              }
+              pulseCount={stage.pulseStageId ? pulse[stage.pulseStageId] : undefined}
             />
             {idx < stages.length - 1 && (
               <div className="h-px w-4 flex-shrink-0 bg-lia-border-subtle" />
@@ -577,7 +846,10 @@ function CompactReels({
                 <CompactNode
                   stage={node}
                   isActive={activeStageId === node.id}
-                  onClick={() => handleNodeClick(node.id, node.suggestions.length > 0)}
+                  onClick={() =>
+                    handleNodeClick(node.id, node.suggestions.length > 0)
+                  }
+                  pulseCount={node.pulseStageId ? pulse[node.pulseStageId] : undefined}
                 />
                 {idx < utilityNodes.length - 1 && (
                   <div className="w-1 flex-shrink-0" />
@@ -593,86 +865,131 @@ function CompactReels({
           {activeStage.suggestions.map((suggestion) => (
             <button
               key={suggestion.id}
-              onClick={() => onSelect(suggestion.command)}
+              data-rail-a-card={suggestion.id}
+              data-rail-a-stage={activeStage.id}
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("lia:rail-a-card-click", {
+                  detail: { card_id: suggestion.id, stage_id: activeStage.id, navigate: !!suggestion.navigate_url, modal: !!suggestion.modal_id },
+                }));
+                if (suggestion.navigate_url) {
+                  router.push(suggestion.navigate_url);
+                } else if (suggestion.modal_id) {
+                  window.dispatchEvent(new CustomEvent("lia:open_modal", {
+                    detail: { modal_id: suggestion.modal_id, data: {} },
+                  }));
+                } else {
+                  onSelect(
+                    suggestion.command,
+                    buildSuggestionMetadata(suggestion.id, activeStage.id),
+                  );
+                }
+              }}
               className="w-full flex items-center gap-2.5 p-2.5 rounded-xl text-left border transition-colors"
               style={{
                 borderColor: activeStage.color.cardBorder,
                 backgroundColor: "var(--lia-bg-primary)",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = activeStage.color.accentBg
+                e.currentTarget.style.backgroundColor =
+                  activeStage.color.accentBg;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = "var(--lia-bg-primary)"
+                e.currentTarget.style.backgroundColor = "var(--lia-bg-primary)";
               }}
             >
               <div
                 className="p-1.5 rounded-md flex-shrink-0"
-                style={{ backgroundColor: activeStage.color.accentBg, color: activeStage.color.accent }}
+                style={{
+                  backgroundColor: activeStage.color.accentBg,
+                  color: activeStage.color.accent,
+                }}
               >
-                {React.createElement(activeStage.icon, { className: "w-3.5 h-3.5" })}
+                {React.createElement(activeStage.icon, {
+                  className: "w-3.5 h-3.5",
+                })}
               </div>
-              <span className="text-base-ui font-medium text-lia-text-primary">{suggestion.title}</span>
+              <span className="text-base-ui font-medium text-lia-text-primary">
+                {suggestion.title}
+              </span>
             </button>
           ))}
         </div>
       )}
-
     </div>
-  )
+  );
 }
 
 function CompactNode({
   stage,
   isActive,
   onClick,
+  pulseCount,
 }: {
-  stage: WorkflowReelStage
-  isActive: boolean
-  onClick: () => void
+  stage: WorkflowReelStage;
+  isActive: boolean;
+  onClick: () => void;
+  pulseCount?: number;
 }) {
-  const Icon = stage.icon
-  const hasSuggestions = stage.suggestions.length > 0
+  const Icon = stage.icon;
+  const hasSuggestions = stage.suggestions.length > 0;
+  const showPulse = pulseCount !== undefined && pulseCount > 0;
 
   return (
     <button
       onClick={onClick}
       disabled={!hasSuggestions}
-      className="flex-shrink-0 flex flex-col items-center gap-1 px-1 disabled:cursor-default"
+      className="flex-shrink-0 flex flex-col items-center gap-0.5 px-1 disabled:cursor-default"
       title={stage.label}
     >
-      <div
-        className="w-7 h-7 rounded-full flex items-center justify-center border transition-colors"
-        style={{
-          backgroundColor: isActive
-            ? stage.color.accent
-            : hasSuggestions
-            ? stage.color.accentBg
-            : "var(--lia-bg-tertiary)",
-          borderColor: isActive
-            ? stage.color.accent
-            : hasSuggestions
-            ? stage.color.nodeBorder
-            : "var(--lia-border-subtle)",
-        }}
-      >
-        <Icon
-          className="w-3 h-3"
+      <div className="relative">
+        <div
+          className="w-7 h-7 rounded-full flex items-center justify-center border transition-colors"
           style={{
-            color: isActive
-              ? "var(--lia-text-on-accent, #fff)"
-              : hasSuggestions
+            backgroundColor: isActive
               ? stage.color.accent
-              : "var(--lia-text-disabled)",
+              : hasSuggestions
+                ? stage.color.accentBg
+                : "var(--lia-bg-tertiary)",
+            borderColor: isActive
+              ? stage.color.accent
+              : hasSuggestions
+                ? stage.color.nodeBorder
+                : "var(--lia-border-subtle)",
           }}
-        />
+        >
+          <Icon
+            className="w-3 h-3"
+            style={{
+              color: isActive
+                ? "var(--lia-text-on-accent, #fff)"
+                : hasSuggestions
+                  ? stage.color.accent
+                  : "var(--lia-text-disabled)",
+            }}
+          />
+        </div>
+        {showPulse && (
+          <span
+            className="absolute -top-1 -right-1.5 min-w-[14px] h-3.5 text-[9px] font-bold rounded-full flex items-center justify-center px-0.5"
+            style={{
+              backgroundColor: stage.color.accent,
+              color: "var(--lia-text-on-accent, #fff)",
+            }}
+          >
+            {pulseCount! > 99 ? "99+" : pulseCount}
+          </span>
+        )}
       </div>
       <span
         className="text-micro font-medium whitespace-nowrap"
-        style={{ color: hasSuggestions ? "var(--lia-text-secondary)" : "var(--lia-text-disabled)" }}
+        style={{
+          color: hasSuggestions
+            ? "var(--lia-text-secondary)"
+            : "var(--lia-text-disabled)",
+        }}
       >
         {stage.shortLabel}
       </span>
     </button>
-  )
+  );
 }

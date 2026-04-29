@@ -9,7 +9,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import get_current_user_or_demo
+from app.auth.dependencies import get_current_user_or_demo, validate_company_access
 from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.pipeline_velocity_service import pipeline_velocity_service
@@ -41,6 +41,7 @@ async def get_pipeline_velocity(
     - `is_bottleneck`: etapa acima do limite
     """
     effective_company_id = company_id or getattr(current_user, "company_id", None)
+    validate_company_access(current_user, effective_company_id)
 
     try:
         metrics = await pipeline_velocity_service.get_velocity_metrics(
@@ -69,6 +70,7 @@ async def get_velocity_bottlenecks(
     Usado para exibir alertas proativos no dashboard do recrutador.
     """
     effective_company_id = company_id or getattr(current_user, "company_id", None)
+    validate_company_access(current_user, effective_company_id)
     if not effective_company_id:
         raise HTTPException(status_code=400, detail="company_id é obrigatório")
 

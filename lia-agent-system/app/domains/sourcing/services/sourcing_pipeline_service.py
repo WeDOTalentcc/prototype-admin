@@ -483,7 +483,7 @@ class SourcingPipelineService:
                     await fg.log_check(
                         result=fg_result,
                         context=context,
-                        company_id=str(getattr(job, "company_id", "") or ""),
+                        company_id=str((job.company_id or "") or ""),
                         job_id=str(job.id) if getattr(job, "id", None) else None,
                     )
                 except Exception:
@@ -591,7 +591,7 @@ class SourcingPipelineService:
             )
             full_reasoning = list(reasoning) + [f"prompt_hash={prompt_hash}"]
             await audit_service.log_decision(
-                company_id=str(getattr(job, "company_id", "") or ""),
+                company_id=str((job.company_id or "") or ""),
                 agent_name="sourcing_pipeline_service",
                 decision_type=decision_type,
                 action=f"{decision_type}:prompt_hash={prompt_hash}",

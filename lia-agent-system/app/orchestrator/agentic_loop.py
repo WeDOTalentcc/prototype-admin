@@ -64,7 +64,7 @@ class AgenticLoop:
         conversation_history: list | None = None,
         company_id: str | None = None,
         user_id: str | None = None,
-        provider: str = "gemini",
+        provider: str = "claude",
         max_iterations: int | None = None,
     ) -> dict:
         """

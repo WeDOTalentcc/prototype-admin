@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { Brain } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 
 interface LiaAnalysisCardProps {
@@ -21,6 +22,7 @@ export function LiaAnalysisCard({
   liaAnalysisStep,
   handleLiaAnalysis,
 }: LiaAnalysisCardProps) {
+  const t = useTranslations('settings.minhaEmpresa.liaAnalysis')
   return (
     <div className="rounded-xl border border-lia-border-default dark:border-lia-border-default bg-gradient-to-r from-lia-bg-secondary dark:from-lia-bg-primary to-transparent p-5">
       <div className="flex items-start gap-4">
@@ -31,17 +33,17 @@ export function LiaAnalysisCard({
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="text-sm font-semibold text-lia-text-primary mb-1">
-            Análise Inteligente com LIA
+            {t('title')}
           </h4>
           <p className="text-xs text-lia-text-secondary mb-3 leading-relaxed">
-            A LIA pode analisar o website e LinkedIn da empresa para preencher automaticamente os campos de Cultura, Missão, Visão, Valores e ajustar o perfil Big Five.
+            {t('description')}
           </p>
 
           {isLiaAnalyzing ? (
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-medium text-lia-text-primary">
-                  {liaAnalysisStep || "Iniciando..."}
+                  {liaAnalysisStep || t('starting')}
                 </span>
                 <span className="font-bold tabular-nums text-lia-text-primary">
                   {Math.round(liaAnalysisProgress)}%
@@ -60,15 +62,15 @@ export function LiaAnalysisCard({
               className="gap-2 text-white hover:opacity-90 transition-opacity motion-reduce:transition-none text-xs bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
             >
               <Brain className="w-4 h-4 text-wedo-cyan" />
-              Analisar com LIA
+              {t('analyzeButton')}
             </Button>
           )}
 
           {!isLiaAnalyzing && (!isEditing || !website) && (
             <p className="text-micro text-status-warning mt-2">
-              {!isEditing 
-                ? "Clique em 'Editar' para habilitar a análise"
-                : "Informe o website da empresa acima para habilitar a análise"
+              {!isEditing
+                ? t('enableEditingHint')
+                : t('enableWebsiteHint')
               }
             </p>
           )}

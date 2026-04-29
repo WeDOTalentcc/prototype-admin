@@ -104,7 +104,12 @@ export default function JobPage() {
           recruiterEmail: v.recruiter_email,
           description: v.enriched_jd || v.description,
           requirements: (v.technical_requirements || []).map(r => String(r)),
-          benefits: v.benefits || [],
+          // Task #765 — JobVacancy.benefits may now be structured dicts
+          // (post-migration) or legacy strings. Flatten to display names
+          // for the read-only detail view.
+          benefits: (v.benefits || []).map(b =>
+            typeof b === 'string' ? b : (b?.name ?? '')
+          ).filter(Boolean),
           funnel: v.funnel_metrics,
           nps: v.nps_score,
           priority: v.priority,

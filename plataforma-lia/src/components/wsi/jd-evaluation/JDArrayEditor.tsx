@@ -140,7 +140,7 @@ export const JDArrayEditor = React.memo(function JDArrayEditor({
             {items.map((item, idx) => (
               <span
                 key={`${fieldKey}-tag-${idx}-${item}`}
-                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 bg-lia-bg-tertiary text-lia-text-secondary rounded-full border border-lia-border-subtle"
+                className="inline-flex items-center gap-1 text-micro px-2 py-0.5 bg-lia-bg-tertiary text-lia-text-secondary rounded-full border border-lia-border-subtle"
               >
                 {item}
                 <button
@@ -157,7 +157,7 @@ export const JDArrayEditor = React.memo(function JDArrayEditor({
               <button
                 key={s.key}
                 onClick={() => onAcceptSuggestion?.(s.key)}
-                className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border transition-colors motion-reduce:transition-none hover:opacity-80 border-wedo-cyan/40 text-wedo-cyan-dark bg-wedo-cyan/[0.08]"
+                className="inline-flex items-center gap-1 text-micro px-2 py-0.5 rounded-full border transition-colors motion-reduce:transition-none hover:opacity-80 border-wedo-cyan/40 text-wedo-cyan-dark bg-wedo-cyan/[0.08]"
               >
                 <Plus className="h-3 w-3 text-lia-text-secondary" />
                 {s.label}

@@ -106,7 +106,12 @@ export function useNotifications({
       setIsLoading(true)
       setError(null)
 
-      const response = await fetch(`/api/backend-proxy/notifications?user_id=${userId}&limit=50`)
+      // [Task #801/#803] usar fetchWithRetry em vez de fetch() cru — herda
+      // retry, timeout e HttpError(transientNetworkError) consistentes.
+      const { fetchWithRetry } = await import("@/services/lia-api/base")
+      const response = await fetchWithRetry(
+        `/api/backend-proxy/notifications?user_id=${userId}&limit=50`,
+      )
 
       if (response.status === 429) {
         backoffRef.current = Math.min((backoffRef.current || 1000) * 2, 120000)
@@ -131,7 +136,7 @@ export function useNotifications({
         setNotifications([])
       }
 
-      fetch(`/api/backend-proxy/notifications/unread-count?user_id=${userId}`)
+      fetchWithRetry(`/api/backend-proxy/notifications/unread-count?user_id=${userId}`)
         .then(r => r.json())
         .then(d => {
           if (typeof d.unread_count === "number") setServerUnreadCount(d.unread_count)
@@ -148,9 +153,11 @@ export function useNotifications({
 
   const markAsRead = useCallback(async (id: string) => {
     try {
-      const response = await fetch(`/api/backend-proxy/notifications/${id}/read?user_id=${userId}`, {
-        method: "POST"
-      })
+      const { fetchWithRetry } = await import("@/services/lia-api/base")
+      const response = await fetchWithRetry(
+        `/api/backend-proxy/notifications/${id}/read?user_id=${userId}`,
+        { method: "POST" },
+      )
       const data = await response.json()
       if (data.success) {
         setNotifications(prev =>
@@ -164,9 +171,11 @@ export function useNotifications({
 
   const markAllAsRead = useCallback(async () => {
     try {
-      const response = await fetch(`/api/backend-proxy/notifications/read-all?user_id=${userId}`, {
-        method: "POST"
-      })
+      const { fetchWithRetry } = await import("@/services/lia-api/base")
+      const response = await fetchWithRetry(
+        `/api/backend-proxy/notifications/read-all?user_id=${userId}`,
+        { method: "POST" },
+      )
       const data = await response.json()
       if (data.success) {
         setNotifications(prev => prev.map(n => ({ ...n, read: true })))
@@ -178,9 +187,11 @@ export function useNotifications({
 
   const removeNotification = useCallback(async (id: string) => {
     try {
-      const response = await fetch(`/api/backend-proxy/notifications/${id}/dismiss?user_id=${userId}`, {
-        method: "POST"
-      })
+      const { fetchWithRetry } = await import("@/services/lia-api/base")
+      const response = await fetchWithRetry(
+        `/api/backend-proxy/notifications/${id}/dismiss?user_id=${userId}`,
+        { method: "POST" },
+      )
       const data = await response.json()
       if (data.success) {
         setNotifications(prev => prev.filter(n => n.id !== id))

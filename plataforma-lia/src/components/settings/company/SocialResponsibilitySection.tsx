@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useTranslations } from 'next-intl'
 import { Users, Leaf, Heart } from 'lucide-react'
 import { CompanyDataCard } from '../CompanyDataCard'
 import { textareaClass } from '../useCompanyDataForm'
@@ -21,17 +22,18 @@ export function SocialResponsibilitySection({
   updateLiaToggle,
   updateLiaInstruction,
 }: SocialResponsibilitySectionProps) {
+  const t = useTranslations('settings.minhaEmpresa.social')
   return (
     <div className="space-y-3">
       <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1">
-        Responsabilidade Social
+        {t('sectionTitle')}
       </h3>
       
       <div className="grid grid-cols-1 gap-3">
         <CompanyDataCard
           fieldKey="dei_initiatives"
-          label="Diversidade e Inclusão"
-          category="Responsabilidade Social"
+          label={t('dei')}
+          category={t('category')}
           isActive={companyData.lia_field_toggles?.dei_initiatives ?? true}
           currentInstruction={companyData.lia_instructions?.dei_initiatives || ''}
           isEditing={isEditing}
@@ -47,15 +49,15 @@ export function SocialResponsibilitySection({
               disabled={!isEditing}
               className={textareaClass(!isEditing)}
               rows={2}
-              placeholder="Descreva as iniciativas de D&I..."
+              placeholder={t('deiPlaceholder')}
             />
           </div>
         </CompanyDataCard>
 
         <CompanyDataCard
           fieldKey="sustainability"
-          label="Sustentabilidade"
-          category="Responsabilidade Social"
+          label={t('sustainability')}
+          category={t('category')}
           isActive={companyData.lia_field_toggles?.sustainability ?? true}
           currentInstruction={companyData.lia_instructions?.sustainability || ''}
           isEditing={isEditing}
@@ -71,15 +73,15 @@ export function SocialResponsibilitySection({
               disabled={!isEditing}
               className={textareaClass(!isEditing)}
               rows={2}
-              placeholder="Descreva as práticas de sustentabilidade..."
+              placeholder={t('sustainabilityPlaceholder')}
             />
           </div>
         </CompanyDataCard>
 
         <CompanyDataCard
           fieldKey="social_impact"
-          label="Impacto Social"
-          category="Responsabilidade Social"
+          label={t('socialImpact')}
+          category={t('category')}
           isActive={companyData.lia_field_toggles?.social_impact ?? true}
           currentInstruction={companyData.lia_instructions?.social_impact || ''}
           isEditing={isEditing}
@@ -95,7 +97,7 @@ export function SocialResponsibilitySection({
               disabled={!isEditing}
               className={textareaClass(!isEditing)}
               rows={2}
-              placeholder="Descreva o impacto social da empresa..."
+              placeholder={t('socialImpactPlaceholder')}
             />
           </div>
         </CompanyDataCard>

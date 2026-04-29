@@ -68,9 +68,9 @@ export function OutreachCard({ data }: Props) {
 
   if (sent) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary max-w-[85%]">
+      <div className="flex items-center gap-2 px-3 py-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary max-w-[85%]">
         <CheckCircle className="w-4 h-4 text-status-success flex-shrink-0" aria-hidden="true" />
-        <span className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
+        <span className="text-xs text-lia-text-secondary">
           {meta.label} enviado para {data.candidate_name}
         </span>
       </div>
@@ -78,11 +78,11 @@ export function OutreachCard({ data }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary max-w-[85%] overflow-hidden">
+    <div className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary max-w-[85%] overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-2.5 border-b border-lia-border-subtle">
         <Icon className={cn("w-4 h-4 flex-shrink-0", meta.color)} aria-hidden="true" />
-        <span className="text-xs font-semibold text-lia-text-primary font-['Open_Sans',sans-serif]">
+        <span className="text-xs font-semibold text-lia-text-primary">
           {meta.label} · {data.candidate_name}
         </span>
       </div>
@@ -109,8 +109,13 @@ export function OutreachCard({ data }: Props) {
       </div>
 
       {/* VoIP extra info */}
+      {/*
+        A-09 / WCAG 2.1 AA 1.4.3: previously `text-[10px] text-lia-text-disabled`
+        (~9 px after Tailwind base, ~2.85:1 contrast). Promoted to `text-xs`
+        (12 px) and `text-lia-text-secondary` (#6B7280, ≥4.5:1 on white).
+      */}
       {data.channel === "voip" && data.extension && (
-        <div className="px-3 pb-2 text-[10px] text-lia-text-disabled font-['Open_Sans',sans-serif]">
+        <div className="px-3 pb-2 text-xs text-lia-text-secondary">
           Ramal: {data.extension} · Gravação: {data.recording ? "Ativada" : "Desativada"}
         </div>
       )}
@@ -119,7 +124,7 @@ export function OutreachCard({ data }: Props) {
       <div className="flex items-center gap-2 px-3 py-2.5 border-t border-lia-border-subtle">
         <button
           onClick={handleEdit}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-lia-border-subtle text-xs text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border border-lia-border-subtle text-xs text-lia-text-secondary hover:text-lia-text-primary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
         >
           <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
           Editar
@@ -147,18 +152,18 @@ function EmailContent({
   return (
     <div className="space-y-1">
       {subject && (
-        <p className="text-xs font-medium text-lia-text-primary font-['Open_Sans',sans-serif] truncate">
+        <p className="text-xs font-medium text-lia-text-primary truncate">
           {subject}
         </p>
       )}
-      <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] leading-relaxed">
+      <p className="text-xs text-lia-text-secondary leading-relaxed">
         {expanded ? body : preview}
         {hasMore && !expanded && "..."}
       </p>
       {hasMore && (
         <button
           onClick={onToggle}
-          className="flex items-center gap-0.5 text-[10px] text-wedo-cyan hover:underline font-['Open_Sans',sans-serif]"
+          className="flex items-center gap-0.5 text-[10px] text-wedo-cyan hover:underline"
         >
           {expanded ? (
             <><ChevronUp className="w-3 h-3" aria-hidden="true" /> ver menos</>
@@ -182,16 +187,18 @@ function WhatsAppContent({
 }) {
   return (
     <div className="space-y-1">
+      {/* A-09 / WCAG 2.1 AA 1.4.3: phone & template promoted from
+          `text-[10px] text-lia-text-disabled` to `text-xs text-lia-text-secondary`. */}
       {phone && (
-        <p className="text-[10px] text-lia-text-disabled font-['Open_Sans',sans-serif]">{phone}</p>
+        <p className="text-xs text-lia-text-secondary">{phone}</p>
       )}
       {message && (
-        <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] leading-relaxed">
+        <p className="text-xs text-lia-text-secondary leading-relaxed">
           "{message.slice(0, 140)}{message.length > 140 ? "..." : ""}"
         </p>
       )}
       {template && (
-        <p className="text-[10px] text-lia-text-disabled font-['Open_Sans',sans-serif]">
+        <p className="text-xs text-lia-text-secondary">
           Template: {template}
         </p>
       )}
@@ -202,21 +209,23 @@ function WhatsAppContent({
 function ScriptContent({ script, duration }: { script?: string[]; duration?: string }) {
   return (
     <div className="space-y-1">
+      {/* A-09 / WCAG 2.1 AA 1.4.3: duration & step counters promoted from
+          `text-[10px] text-lia-text-disabled` to `text-xs text-lia-text-secondary`. */}
       {duration && (
-        <p className="text-[10px] text-lia-text-disabled font-['Open_Sans',sans-serif]">
+        <p className="text-xs text-lia-text-secondary">
           Duração estimada: {duration}
         </p>
       )}
       {script && script.length > 0 && (
         <ol className="space-y-0.5 pl-0">
           {script.slice(0, 4).map((step, i) => (
-            <li key={i} className="flex items-start gap-1.5 text-xs text-lia-text-secondary font-['Open_Sans',sans-serif]">
-              <span className="text-lia-text-disabled flex-shrink-0 mt-0.5">{i + 1}.</span>
+            <li key={i} className="flex items-start gap-1.5 text-xs text-lia-text-secondary">
+              <span className="text-lia-text-secondary flex-shrink-0 mt-0.5">{i + 1}.</span>
               {step}
             </li>
           ))}
           {script.length > 4 && (
-            <li className="text-[10px] text-lia-text-disabled font-['Open_Sans',sans-serif] pl-4">
+            <li className="text-xs text-lia-text-secondary pl-4">
               +{script.length - 4} pontos...
             </li>
           )}
@@ -228,7 +237,7 @@ function ScriptContent({ script, duration }: { script?: string[]; duration?: str
 
 function ChatContent({ message }: { message?: string }) {
   return (
-    <p className="text-xs text-lia-text-secondary font-['Open_Sans',sans-serif] leading-relaxed">
+    <p className="text-xs text-lia-text-secondary leading-relaxed">
       "{message?.slice(0, 140)}{message && message.length > 140 ? "..." : ""}"
     </p>
   )
@@ -247,7 +256,7 @@ function ActionButton({ channel, onAction }: { channel: OutreachChannel; onActio
   return (
     <button
       onClick={onAction}
-      className="flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md bg-gray-900 text-white text-xs font-medium hover:bg-gray-800 transition-colors motion-reduce:transition-none font-['Open_Sans',sans-serif]"
+      className="flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-md bg-gray-900 text-white text-xs font-medium hover:bg-gray-800 transition-colors motion-reduce:transition-none"
     >
       <Icon className="w-3.5 h-3.5" aria-hidden="true" />
       {label}

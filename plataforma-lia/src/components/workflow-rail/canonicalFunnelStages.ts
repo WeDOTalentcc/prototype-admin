@@ -23,6 +23,7 @@ import {
   TrendingUp,
   BarChart3,
   Sparkles,
+  Settings,
   type LucideIcon,
 } from "lucide-react"
 
@@ -34,7 +35,7 @@ export type CanonicalStageId =
   | "oferta"
   | "contratacao"
 
-export type CanonicalUtilityId = "analytics" | "ia-automacoes"
+export type CanonicalUtilityId = "analytics" | "ia-automacoes" | "configuracoes"
 
 export interface CanonicalStageColor {
   /** Solid accent (used for active node, ring, label). */
@@ -62,34 +63,40 @@ export interface CanonicalStage {
 }
 
 const COLOR_CYAN: CanonicalStageColor = {
-  accent: "var(--wedo-cyan, #60BED1)",
+  accent: "var(--wedo-cyan)",
   accentBg: "rgba(96, 190, 209, 0.10)",
-  nodeBorder: "var(--wedo-cyan, #60BED1)",
+  nodeBorder: "var(--wedo-cyan)",
   cardBorder: "rgba(96, 190, 209, 0.25)",
 }
 const COLOR_GREEN: CanonicalStageColor = {
-  accent: "var(--wedo-green, #5DA47A)",
+  accent: "var(--wedo-green)",
   accentBg: "rgba(93, 164, 122, 0.10)",
-  nodeBorder: "var(--wedo-green, #5DA47A)",
+  nodeBorder: "var(--wedo-green)",
   cardBorder: "rgba(93, 164, 122, 0.25)",
 }
 const COLOR_ORANGE: CanonicalStageColor = {
-  accent: "var(--wedo-orange, #D19960)",
+  accent: "var(--wedo-orange)",
   accentBg: "rgba(209, 153, 96, 0.10)",
-  nodeBorder: "var(--wedo-orange, #D19960)",
+  nodeBorder: "var(--wedo-orange)",
   cardBorder: "rgba(209, 153, 96, 0.25)",
 }
 const COLOR_PURPLE: CanonicalStageColor = {
-  accent: "var(--wedo-purple, #9860D1)",
+  accent: "var(--wedo-purple)",
   accentBg: "rgba(152, 96, 209, 0.10)",
-  nodeBorder: "var(--wedo-purple, #9860D1)",
+  nodeBorder: "var(--wedo-purple)",
   cardBorder: "rgba(152, 96, 209, 0.25)",
 }
 const COLOR_AMBER: CanonicalStageColor = {
-  accent: "var(--wedo-amber, #D1A960)",
+  accent: "var(--wedo-amber)",
   accentBg: "rgba(209, 169, 96, 0.10)",
-  nodeBorder: "var(--wedo-amber, #D1A960)",
+  nodeBorder: "var(--wedo-amber)",
   cardBorder: "rgba(209, 169, 96, 0.25)",
+}
+const COLOR_GRAY: CanonicalStageColor = {
+  accent: "var(--lia-text-secondary)",
+  accentBg: "rgba(138, 143, 152, 0.10)",
+  nodeBorder: "var(--lia-text-secondary)",
+  cardBorder: "rgba(138, 143, 152, 0.25)",
 }
 
 /** Ordered funnel stages. The footer bar renders these in this order. */
@@ -169,6 +176,15 @@ export const CANONICAL_UTILITY_STAGES: CanonicalStage[] = [
     color: COLOR_CYAN,
     navPath: "/agent-studio",
     order: 8,
+  },
+  {
+    key: "configuracoes",
+    labelKey: "chat.workflowReels.stages.configuracoes.label",
+    shortLabelKey: "chat.workflowReels.stages.configuracoes.shortLabel",
+    Icon: Settings,
+    color: COLOR_GRAY,
+    navPath: "/configuracoes",
+    order: 9,
   },
 ]
 

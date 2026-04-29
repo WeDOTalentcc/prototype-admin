@@ -25,6 +25,14 @@ export class ErrorBoundarySection extends React.Component<ErrorBoundarySectionPr
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     this.props.onError?.(error)
+    if (process.env.NODE_ENV === "production") {
+      const sentry = typeof window !== "undefined" && (window as { Sentry?: { captureException: (e: Error, ctx?: object) => void } }).Sentry
+      if (sentry) {
+        sentry.captureException(error, { extra: { componentStack: info.componentStack } })
+      } else {
+        console.error("[ErrorBoundary]", error.message, info.componentStack)
+      }
+    }
   }
 
   handleReset = () => {

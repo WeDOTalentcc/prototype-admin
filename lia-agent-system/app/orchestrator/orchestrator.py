@@ -13,6 +13,9 @@ import logging
 import os
 from typing import Any
 
+from app.orchestrator._observability import V1_SPANS
+from app.shared.observability.tracing import trace_span
+
 
 from app.core.config import settings
 from app.domains.base import DomainContext, DomainResponse
@@ -84,6 +87,19 @@ class Orchestrator:
         self._init_cascaded_router()
         self._cacheable_intents = {intent.value for intent in CacheableIntent}
         self._initialize_tools()
+        # Sprint II.2 + III audit: init no __init__ evita race condition em concurrent calls
+        # (lazy init via hasattr criava 2 instâncias quando 2 requests chegavam simultaneamente)
+        from app.orchestrator.services.fallback_react_service import FallbackReActService
+        self._fallback_react_service = FallbackReActService(llm_service=llm_service)
+        # Sprint IV: rubric dispatch para BARS CV match (extraído de _handle_cv_screening_with_rubric)
+        from app.domains.cv_screening.services.rubric_dispatch import RubricDispatchService
+        self._rubric_dispatch_service = RubricDispatchService(llm_service=llm_service)
+        # Extraction follow-up: analytics dispatch (extraído de process_analytics_request)
+        from app.domains.analytics.services.analytics_dispatch import AnalyticsDispatchService
+        self._analytics_dispatch_service = AnalyticsDispatchService(
+            analytics_service=job_analytics_prompt_service,
+            command_templates=COMMAND_TEMPLATES,
+        )
         logger.info("Orchestrator initialized with CascadedRouter + DomainWorkflow")
 
     def _init_cascaded_router(self):
@@ -110,6 +126,7 @@ class Orchestrator:
             return await self._response_cache.invalidate_for_company(entity_id)
         return await self._response_cache.invalidate_by_pattern(f"*{entity_type}*{entity_id}*")
 
+    @trace_span(V1_SPANS.PROCESS_REQUEST)
     async def process_request(self, user_id: str, message: str,
                               conversation_id: str | None = None,
                               context: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -127,21 +144,20 @@ class Orchestrator:
                 if state:
                     ctx.update({k: state.get(k) for k in ("last_agent", "current_job", "current_candidate")})
 
-            _ctx_type = ctx.get("context_type", "")
-            _CONTEXT_TYPE_DOMAIN_OVERRIDE = {
-                "company_settings": "company_settings",
-                "hiring_policy": "hiring_policy",
-            }
-            _domain_override = _CONTEXT_TYPE_DOMAIN_OVERRIDE.get(_ctx_type)
-            if _domain_override:
-                from app.orchestrator.cascaded_router import RouteResult
-                route = RouteResult(
-                    domain_id=_domain_override,
-                    confidence=1.0,
-                    source="context_type_override",
-                    intent_details={"raw_intent": _domain_override},
+            # Delegação canônica para context_type_override service (Sprint II.4, ADR-019).
+            # Mantém log com mesmo formato do V1 para compat com observabilidade existente.
+            #
+            # PR-A: rail_a_hint override é avaliado dentro do CascadedRouter (Tier 0.0,
+            # canonical-fix: uma fonte da verdade). context_type override permanece aqui
+            # para preservar precedência V1 (context_type > CascadedRouter tiers).
+            from app.orchestrator.services.context_type_override import try_override_route
+            route = try_override_route(ctx)
+            if route is not None:
+                logger.info(
+                    "[Orchestrator] context_type override: %s → domain=%s",
+                    ctx.get("context_type", ""),
+                    route.domain_id,
                 )
-                logger.info("[Orchestrator] context_type override: %s → domain=%s", _ctx_type, _domain_override)
             else:
                 route = await self._cascaded_router.route(sanitized, ctx, session_id=conversation_id)
             domain_id, confidence = route.domain_id, route.confidence
@@ -372,56 +388,24 @@ class Orchestrator:
             return {"success": False, "error": str(e), "conversation_id": conversation_id,
                     "message": SystemPromptBuilder.build_error_response()}
 
-    _TECHNICAL_PATTERNS = (
-        "Keyword heuristic matched",
-        "Ferramenta '",
-        "Ação '",
-        "encaminhada para o agente",
-        "executada para ação",
-    )
-
     def _is_technical_response(self, message: str) -> bool:
-        if message == "Processado com sucesso.":
-            return True
-        return any(p in message for p in self._TECHNICAL_PATTERNS)
+        """Delegação canônica para heuristics module (Sprint II.3, ADR-019).
 
-    # CV matching keywords — used to trigger rubric tool regardless of classified intent
-    _CV_MATCHING_PATTERNS = (
-        "analise o cv", "analisa o cv", "analisar o cv", "análise do cv",
-        "compatibilidade do candidato", "compatibilidade de candidato",
-        "match do candidato", "match de cv", "match score",
-        "triagem de cv", "triagem do candidato",
-        "score do candidato", "avaliar cv", "avalie o cv",
-        "analise a compatibilidade", "análise de compatibilidade",
-        "quanto o candidato", "como o candidato se encaixa",
-        "candidato para a vaga", "candidato está alinhado",
-    )
+        Mantido como método para preservar API interna do V1. Comportamento
+        é idêntico ao implementado no módulo canônico — verificado via
+        `tests/unit/orchestrator/heuristics/test_heuristics.py::TestEquivalenceWithV1`.
+        """
+        from app.orchestrator.heuristics import is_technical_response
+        return is_technical_response(message)
 
     def _is_cv_matching_request(self, message: str) -> bool:
-        """Check if message requests CV/candidate analysis regardless of classified intent."""
-        msg_lower = message.lower()
-        return any(p in msg_lower for p in self._CV_MATCHING_PATTERNS)
+        """Delegação canônica para heuristics module (Sprint II.3, ADR-019).
 
-    # Structured-output additions injected per intent (fix C-05 / C-06)
-    _STRUCTURED_INTENT_ADDENDA = {
-        "cv_screening": (
-            "\n\nRegra de saída estruturada (C-05): sempre que responder a uma análise de "
-            "compatibilidade ou match de CV, inclua ao final da resposta um bloco JSON no formato:\n"
-            "```json\n"
-            "{\"match_score\": <0-100>, \"matched_skills\": [\"skill1\", \"skill2\"], "
-            "\"missing_skills\": [\"skill3\"], \"recommendation\": \"APROVADO|EM_ANALISE|REPROVADO\"}\n"
-            "```\n"
-            "O match_score deve ser um número inteiro de 0 a 100."
-        ),
-        "salary_benchmark": (
-            "\n\nRegra de saída salarial (C-06): sempre inclua faixas salariais no formato "
-            "R$ XX.XXX - R$ XX.XXX mensais (CLT). Estruture a resposta com:\n"
-            "- Faixa mínima: R$ X.XXX\n"
-            "- Faixa máxima: R$ X.XXX\n"
-            "- Mediana: R$ X.XXX\n"
-            "Use ponto como separador de milhar (ex: R$ 12.000)."
-        ),
-    }
+        Check if message requests CV/candidate analysis regardless of classified intent.
+        Comportamento idêntico ao módulo canônico (validado em characterization tests).
+        """
+        from app.orchestrator.heuristics import is_cv_matching_request
+        return is_cv_matching_request(message)
 
     async def _handle_directly(
         self,
@@ -430,170 +414,51 @@ class Orchestrator:
         entities: dict[str, Any],
         context: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
+        """Sprint II.2 — delegação canônica ao FallbackReActService (LIA-A04).
+
+        Pre-flight CV screening rubric mantém-se aqui (domain-specific),
+        mas a lógica core do fallback ReAct foi extraída ao service.
+
+        Estrutura:
+        1. Tenta CV rubric primeiro (se intent ou heurística sinaliza CV match)
+        2. Delega ao FallbackReActService.handle_directly para LLM + tools
+        """
+        # 1. Pre-flight CV rubric — domain-specific, fica em V1 por enquanto.
+        #    Sprint III: caller (V2) decide se quer essa pre-flight via cv_screening domain.
         if intent == "cv_screening" or self._is_cv_matching_request(message):
             rubric_result = await self._handle_cv_screening_with_rubric(message, context or {})
             if rubric_result.get("success"):
                 return rubric_result
 
-        ctx = context or {}
-        try:
-            from langchain_core.prompts import ChatPromptTemplate
-            extra = self._STRUCTURED_INTENT_ADDENDA.get(intent, "")
-            system_prompt = SystemPromptBuilder.build(
-                agent_type="orchestrator",
-                tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
-                user_name=ctx.get("user_name", ""),
-                user_role=ctx.get("user_role", ""),
-                conversation_summary=ctx.get("conversation_summary", ""),
-                conversation_history=ctx.get("conversation_history"),
-                context_page=ctx.get("context_page", "general"),
-                entity_type=ctx.get("entity_type"),
-                intent=intent,
-                entities=entities,
-                extra_instructions=extra,
-            )
-            # LIA-M03: Include conversation history as real message turns
-            messages = [("system", system_prompt)]
-
-            # Add conversation history as actual turns (last 10 messages max)
-            conversation_history = ctx.get("conversation_history", [])
-            if conversation_history and isinstance(conversation_history, list):
-                recent_history = conversation_history[-10:]
-                for msg in recent_history:
-                    role = msg.get("role", "")
-                    content = msg.get("content", "")
-                    if role == "user":
-                        messages.append(("human", content))
-                    elif role == "assistant":
-                        messages.append(("ai", content))
-
-            messages.append(("human", "{message}"))
-            prompt = ChatPromptTemplate.from_messages(messages)
-
-            # LIA-A04 (Fase 4): bind tools in fallback path so LIA can act, not just talk.
-            # ReAct agents already have tools via create_react_agent; this gives the
-            # _handle_directly fallback path the same agentic capability.
-            llm = self.llm_service.get_audited_model()
-            _bind_tools_enabled = os.environ.get("LIA_FALLBACK_BIND_TOOLS", "true").lower() in ("1", "true", "yes")
-            if _bind_tools_enabled:
-                try:
-                    from app.tools import get_all_tool_schemas
-                    tool_schemas = get_all_tool_schemas(agent_type="orchestrator", format="claude")
-                    if tool_schemas:
-                        llm = llm.bind_tools(tool_schemas)
-                        logger.debug("[LIA-A04] _handle_directly bound %d tools", len(tool_schemas))
-                except Exception as _bind_exc:
-                    logger.warning("[LIA-A04] bind_tools failed (continuing without): %s", _bind_exc)
-
-            chain = prompt | llm
-            response = await chain.ainvoke({"message": message})
-
-            # Extract content (string) from response (which may have tool_calls)
-            response_content = response.content if hasattr(response, "content") else str(response)
-            response_tools_used = []
-            if hasattr(response, "tool_calls") and response.tool_calls:
-                response_tools_used = [tc.get("name") if isinstance(tc, dict) else getattr(tc, "name", "") for tc in response.tool_calls]
-                logger.info("[LIA-A04] _handle_directly LLM requested %d tool(s): %s", len(response_tools_used), response_tools_used)
-
-            return {"message": response_content, "success": True, "data": {"tool_calls_requested": response_tools_used},
-                    "requires_user_input": True, "suggested_prompts": [], "next_actions": [],
-                    "agent_used": "LIA Orchestrator", "agent_type": "orchestrator"}
-        except Exception:
-            user_name = ctx.get("user_name", "")
-            error_msg = SystemPromptBuilder.build_error_response(user_name=user_name)
-            return {"message": error_msg,
-                    "success": True, "requires_user_input": True,
-                    "suggested_prompts": [],
-                    "agent_used": "LIA Orchestrator", "agent_type": "orchestrator"}
+        # 2. Delegação canônica para o service (Sprint II.2 + III audit fix, ADR-019)
+        # Service criado no __init__ — sem race condition em concurrent.
+        return await self._fallback_react_service.handle_directly(
+            intent=intent,
+            message=message,
+            entities=entities,
+            context=context,
+        )
 
     async def _handle_cv_screening_with_rubric(
         self,
         message: str,
         context: dict[str, Any],
     ) -> dict[str, Any]:
+        """Sprint IV — delegação canônica ao RubricDispatchService.
+
+        Service em app/domains/cv_screening/services/rubric_dispatch.py
+        substitui implementação inline do V1 com:
+        - Mesmo fluxo: entity extraction (LLM) + BARS rubric tool dispatch
+        - Mesmo shape de retorno (V1-compatible)
+        - Multi-tenant isolation preservada (company_id em ToolExecutionContext)
+        - Graceful degradation: any exception -> {"success": False}
+
+        Comportamento idêntico ao V1 inline — verificado via 18 unit tests
+        em tests/unit/domains/cv_screening/test_rubric_dispatch.py.
+
+        Reference: ADR-019 — Sprint IV
         """
-        Opção B: Extract candidate/vacancy from message and invoke the BARS rubric tool.
-
-        Uses the LLM for entity extraction only, then delegates scoring to
-        CVScoringService (deterministic BARS methodology — not LLM free-text).
-        Falls back gracefully so _handle_directly can use the LLM addendum instead.
-        """
-        try:
-            import json
-            import re
-
-            from app.tools.executor import ToolExecutionContext, tool_executor
-
-            # ── Entity extraction ─────────────────────────────────────────────
-            extraction_prompt = (
-                "Extraia do texto abaixo as informações de candidato e vaga para análise de CV. "
-                "Retorne SOMENTE um JSON válido (sem markdown) com as chaves: "
-                'candidate_id, candidate_name, vacancy_id, vacancy_title. '
-                "Use null quando não encontrar. Não invente IDs — somente use se mencionados "
-                "explicitamente como UUID.\n\n"
-                f"Texto: {message}"
-            )
-
-            raw = await self.llm_service.generate(extraction_prompt, provider="gemini")
-
-            # Strip potential markdown fences
-            raw = re.sub(r"```(?:json)?", "", raw).strip().strip("`")
-            match = re.search(r"\{.*?\}", raw, re.DOTALL)
-            if not match:
-                logger.debug("[cv_screening rubric] No JSON in extraction response")
-                return {"success": False}
-
-            params = json.loads(match.group())
-            # Remove null / empty values
-            params = {k: v for k, v in params.items() if v not in (None, "", "null")}
-
-            if not params.get("candidate_id") and not params.get("candidate_name"):
-                logger.debug("[cv_screening rubric] No candidate found in message")
-                return {"success": False}
-
-            # ── Build execution context ───────────────────────────────────────
-            exec_context = ToolExecutionContext(
-                user_id=context.get("user_id", "system"),
-                company_id=context.get("company_id"),
-                session_id=context.get("session_id"),
-            )
-
-            # ── Execute tool ─────────────────────────────────────────────────
-            tool_result = await tool_executor.execute(
-                tool_name="analyze_cv_match",
-                parameters=params,
-                agent_type="orchestrator",
-                context=exec_context,
-            )
-
-            if tool_result.success and tool_result.result:
-                data = tool_result.result
-                return {
-                    "success": True,
-                    "message": data.get("message", "Análise de CV concluída."),
-                    "data": data,
-                    "requires_user_input": False,
-                    "suggested_prompts": [
-                        "Mover candidato para próxima etapa",
-                        "Ver outros candidatos para esta vaga",
-                        "Enviar feedback ao candidato",
-                    ],
-                    "next_actions": [],
-                    "agent_used": "CV Match Tool (BARS Rubric)",
-                    "agent_type": "tool",
-                    # C-05 structured fields surfaced at top level
-                    "match_score": data.get("match_score"),
-                    "matched_skills": data.get("matched_skills", []),
-                    "missing_skills": data.get("missing_skills", []),
-                    "recommendation": data.get("recommendation"),
-                }
-
-            logger.warning("[cv_screening rubric] Tool returned failure: %s", tool_result.error)
-            return {"success": False}
-
-        except Exception as exc:
-            logger.warning("[cv_screening rubric] Tool invocation failed (%s), falling back to LLM", exc)
-            return {"success": False}
+        return await self._rubric_dispatch_service.dispatch(message, context)
 
     def get_available_tools(self, agent_type: str | None = None) -> list[dict[str, Any]]:
         return get_all_tool_schemas(agent_type=agent_type, format="claude")
@@ -652,17 +517,20 @@ class Orchestrator:
     async def process_analytics_request(self, user_id: str, command: str,
                                         context: dict[str, Any],
                                         conversation_id: str | None = None) -> dict[str, Any]:
-        try:
-            if command in COMMAND_TEMPLATES:
-                result = await job_analytics_prompt_service.execute_command(command, context)
-            else:
-                result = await job_analytics_prompt_service.analyze_natural_query(command, context)
-            if conversation_id:
-                self.state_manager.update_state(conversation_id, {
-                    "last_analytics_command": command, "last_analytics_result": result.command})
-            return {"success": True, "command": result.command, "agent_used": result.agent_used,
-                    "response": result.response, "data": result.data, "charts": result.charts,
-                    "suggestions": result.suggestions, "metadata": result.metadata}
-        except Exception as e:
-            logger.error(f"Analytics request failed: {e}")
-            return {"success": False, "error": str(e)}
+        """Delegação canônica ao AnalyticsDispatchService (extraction follow-up).
+
+        State manager update fica em V1 (V1-specific session lifecycle).
+        Service handle the dispatch + response shaping.
+
+        Reference: ADR-019 — process_analytics_request extraction
+        """
+        result = await self._analytics_dispatch_service.dispatch(command, context)
+
+        # State manager update (V1-specific — não passou para service)
+        if result.get("success") and conversation_id:
+            self.state_manager.update_state(conversation_id, {
+                "last_analytics_command": command,
+                "last_analytics_result": result.get("command"),
+            })
+
+        return result

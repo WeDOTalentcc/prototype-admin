@@ -10,7 +10,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.teams import TeamsActionAuditLog, TeamsConversation, TeamsMessage
+from lia_models.teams import TeamsActionAuditLog, TeamsConversation, TeamsFeedback, TeamsMessage
 
 logger = logging.getLogger(__name__)
 
@@ -27,15 +27,6 @@ class TeamsRepository:
         result = await self.db.execute(
             select(TeamsConversation).where(
                 TeamsConversation.conversation_id == conversation_id
-            )
-        )
-        return result.scalar_one_or_none()
-
-    async def get_conversation_by_teams_id(self, teams_conversation_id: str) -> TeamsConversation | None:
-        """Legacy alias — uses teams_conversation_id field."""
-        result = await self.db.execute(
-            select(TeamsConversation).where(
-                TeamsConversation.teams_conversation_id == teams_conversation_id
             )
         )
         return result.scalar_one_or_none()
@@ -73,11 +64,15 @@ class TeamsRepository:
         user_aad_object_id: str | None,
         conversation_reference: dict,
         last_message_at: datetime | None,
+        company_id: str | None = None,
     ) -> TeamsConversation:
         existing = await self.get_conversation_by_conversation_id(conversation_id)
         if existing:
             existing.last_message_at = last_message_at
             existing.conversation_reference = conversation_reference
+            # Backfill company_id on update if it was missing (legacy rows)
+            if company_id and not existing.company_id:
+                existing.company_id = company_id
             return existing
         conv = TeamsConversation(
             conversation_id=conversation_id,
@@ -89,9 +84,10 @@ class TeamsRepository:
             user_aad_object_id=user_aad_object_id,
             conversation_reference=conversation_reference,
             last_message_at=last_message_at,
+            company_id=company_id,
         )
         self.db.add(conv)
-        logger.info(f"Stored new Teams conversation: {conversation_id}")
+        logger.info(f"Stored new Teams conversation: {conversation_id} (company_id={company_id})")
         return conv
 
     async def create_conversation(self, data: dict) -> TeamsConversation:
@@ -175,13 +171,23 @@ class TeamsRepository:
         *,
         action: str | None = None,
         candidate_id: str | None = None,
+        company_id: str | None = None,
         limit: int = 50,
     ) -> list[TeamsActionAuditLog]:
+        """List audit logs with optional filters.
+
+        P0-3 fix (auditoria 2026-04-26): company_id filter is the multi-tenant
+        boundary. Caller (endpoint) MUST pass current_user.company_id to avoid
+        cross-tenant leak. None is allowed only for admin/diagnostic contexts
+        where caller has explicitly opted in.
+        """
         query = select(TeamsActionAuditLog)
         if action:
             query = query.where(TeamsActionAuditLog.action == action)
         if candidate_id:
             query = query.where(TeamsActionAuditLog.candidate_id == candidate_id)
+        if company_id:
+            query = query.where(TeamsActionAuditLog.company_id == company_id)
         query = query.order_by(TeamsActionAuditLog.created_at.desc()).limit(limit)
         result = await self.db.execute(query)
         return list(result.scalars().all())
@@ -191,28 +197,46 @@ class TeamsRepository:
         *,
         action: str | None = None,
         candidate_id: str | None = None,
+        company_id: str | None = None,
     ) -> int:
+        """Count audit logs with optional filters. See list_audit_logs for tenant rules."""
         from sqlalchemy import func
         query = select(func.count(TeamsActionAuditLog.id))
         if action:
             query = query.where(TeamsActionAuditLog.action == action)
         if candidate_id:
             query = query.where(TeamsActionAuditLog.candidate_id == candidate_id)
+        if company_id:
+            query = query.where(TeamsActionAuditLog.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar() or 0
 
-    # ── Legacy compat ───────────────────────────────────────────────────
+    # ── TeamsFeedback ───────────────────────────────────────────────────
 
-    async def get_conversation_by_candidate(
-        self, candidate_id: str, vacancy_id: str | None = None
-    ) -> TeamsConversation | None:
-        q = select(TeamsConversation).where(
-            TeamsConversation.candidate_id == candidate_id
+    async def create_feedback(
+        self,
+        *,
+        feedback_type: str,
+        user_id: str,
+        company_id: str | None = None,
+        feedback_text: str | None = None,
+        card_context: dict | None = None,
+    ) -> TeamsFeedback:
+        """Persist Teams Adaptive Card feedback (P1-7 fix).
+
+        Returns the saved TeamsFeedback row. Caller is responsible for
+        committing the session (FastAPI dependency does this on success).
+        """
+        entry = TeamsFeedback(
+            feedback_type=feedback_type,
+            feedback_text=feedback_text,
+            user_id=user_id,
+            company_id=company_id,
+            card_context=card_context or {},
         )
-        if vacancy_id:
-            q = q.where(TeamsConversation.vacancy_id == vacancy_id)
-        result = await self.db.execute(q)
-        return result.scalar_one_or_none()
+        self.db.add(entry)
+        await self.db.flush()
+        return entry
 
     # ── SSO / Tab auth (teams.py Phase 2) ───────────────────────────────
 

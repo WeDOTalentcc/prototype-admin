@@ -9,32 +9,26 @@ import {
 } from"lucide-react"
 import {
   RecruitmentJourneyConfig,
-  RecruitmentStage,
 } from"@/components/settings/RecruitmentJourneyConfig"
 import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
+import { useRecruitmentHub } from './useRecruitmentHub'
 
-interface RecruitmentPipelineTabProps {
-  loading: boolean
-  error: string | null
-  successMessage: string | null
-  recruitmentStages: RecruitmentStage[]
-  isEditingPipeline: boolean
-  hasStageChanges: boolean
-  savingStages: boolean
-  onStagesChange: (stages: RecruitmentStage[]) => void
-  onStartEdit: () => void
-  onCancelEdit: () => void
-  onSave: () => void
-  onToggleSubStatus: (subStatusId: string, updates: { is_active?: boolean; is_default?: boolean }) => Promise<void>
-}
-
-export function RecruitmentPipelineTab({
-  loading, error, successMessage,
-  recruitmentStages, isEditingPipeline, hasStageChanges, savingStages,
-  onStagesChange, onStartEdit, onCancelEdit, onSave, onToggleSubStatus,
-}: RecruitmentPipelineTabProps) {
+export function RecruitmentPipelineTab() {
   const t = useTranslations("settings")
+  const hub = useRecruitmentHub('pipeline')
+  const loading = hub.loading
+  const error = hub.error
+  const successMessage = hub.successMessage
+  const recruitmentStages = hub.recruitmentStages
+  const isEditingPipeline = hub.isEditingPipeline
+  const hasStageChanges = hub.hasStageChanges
+  const savingStages = hub.savingStages
+  const onStagesChange = hub.handleStagesChange
+  const onStartEdit = hub.handleStartEdit
+  const onCancelEdit = hub.handleCancelEdit
+  const onSave = hub.saveRecruitmentStages
+  const onToggleSubStatus = hub.handleToggleSubStatus
   if (loading) {
     return (
       <div className="space-y-6">

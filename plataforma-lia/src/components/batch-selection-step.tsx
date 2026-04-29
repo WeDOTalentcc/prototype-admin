@@ -13,7 +13,7 @@ import {
   getScoreColor,
   getPriorityColor,
   type BatchApprovalCandidate,
-} from"./useBatchApproval"
+} from"@/hooks/candidates/use-batch-approval"
 
 interface BatchSelectionStepProps {
   filteredCandidates: BatchApprovalCandidate[]

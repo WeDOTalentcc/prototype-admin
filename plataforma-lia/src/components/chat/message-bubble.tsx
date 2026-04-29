@@ -4,6 +4,7 @@ import React, { memo, useMemo } from "react"
 import { cn } from "@/lib/utils"
 import { ActionResultCard } from "@/components/chat/action-result-card"
 import { ChatBubbleBase } from "@/components/chat/chat-bubble-base"
+import { GlossaryHighlightedText } from "@/components/chat/glossary-highlighted-text"
 import { MessageFeedback } from "@/components/chat/message-feedback"
 import { cleanAgentResponse, parseChatMarkdown, escapeHtml } from "@/lib/chat-format"
 import { sanitizeHtml } from "@/lib/sanitize"
@@ -31,6 +32,10 @@ function RichTextContent({ html, className }: { html: string; className?: string
       dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }}
     />
   )
+}
+
+function LiaRichContent({ html, className }: { html: string; className?: string }) {
+  return <GlossaryHighlightedText html={html} className={className} />
 }
 
 const MessageBubbleComponent = memo(function MessageBubble({
@@ -73,12 +78,17 @@ const MessageBubbleComponent = memo(function MessageBubble({
         ) : undefined
       }
     >
-      <RichTextContent
-        html={renderedContent}
-        className={cn(
-          "text-xs leading-relaxed text-lia-text-primary"
-        )}
-      />
+      {isLia ? (
+        <LiaRichContent
+          html={renderedContent}
+          className={cn("text-xs leading-relaxed text-lia-text-primary")}
+        />
+      ) : (
+        <RichTextContent
+          html={renderedContent}
+          className={cn("text-xs leading-relaxed text-lia-text-primary")}
+        />
+      )}
 
       {actionResult && (
         <ActionResultCard

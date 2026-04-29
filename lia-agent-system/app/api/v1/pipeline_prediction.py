@@ -10,8 +10,10 @@ Endpoints:
 """
 import logging
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.auth.dependencies import get_current_user_or_demo, validate_company_access
+from app.auth.models import User
 from app.shared.services.pipeline_prediction_service import pipeline_prediction_service
 
 logger = logging.getLogger(__name__)
@@ -23,6 +25,7 @@ router = APIRouter(prefix="/pipeline-prediction", tags=["pipeline-prediction"])
 async def get_vacancy_prediction(
     vacancy_id: str = Query(..., description="UUID da vaga"),
     company_id: str = Query(..., description="UUID da empresa"),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Retorna probabilidade de fechamento de uma vaga específica.
@@ -38,6 +41,8 @@ async def get_vacancy_prediction(
     if not vacancy_id or not company_id:
         raise HTTPException(status_code=422, detail="vacancy_id e company_id são obrigatórios")
 
+    validate_company_access(current_user, company_id)
+
     try:
         result = await pipeline_prediction_service.get_vacancy_prediction(
             vacancy_id=vacancy_id,
@@ -52,6 +57,7 @@ async def get_vacancy_prediction(
 @router.get("/company-overview", response_model=None)
 async def get_company_overview(
     company_id: str = Query(..., description="UUID da empresa"),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Retorna previsões de todas as vagas ativas da empresa,
@@ -63,6 +69,8 @@ async def get_company_overview(
     """
     if not company_id:
         raise HTTPException(status_code=422, detail="company_id é obrigatório")
+
+    validate_company_access(current_user, company_id)
 
     try:
         result = await pipeline_prediction_service.get_company_overview(

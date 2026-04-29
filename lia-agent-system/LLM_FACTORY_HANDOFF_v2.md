@@ -765,8 +765,7 @@ grep -n "task_type" app/api/v1/wsi/evaluation.py
 |--------|---------|-------------------|------------|
 | ✅ | `services/job_qualification_service.py` | `generate_with_fallback` | qualificação de vaga |
 | ✅ | `services/job_template_service.py` | `generate_with_fallback` | templates |
-| ⚠️ | `services/wizard_step_service.py` | `LLMService` global | wizard de criação de vaga |
-| ⚠️ | `services/wizard_step_service/service.py` | `LLMService` global | idem |
+| ⚠️ | `services/wizard_step_service/service.py` | `LLMService` global | wizard de criação de vaga (consolidado em pacote — N-04 Rev 4) |
 | ⚠️ | `services/wizard_step_service/stage_description.py` | `LLMService` global | geração de descritivo |
 
 ---

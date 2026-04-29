@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Users, Network } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { tabStyles } from "@/lib/design-tokens"
@@ -11,7 +11,44 @@ import { useDepartmentManagement } from "@/hooks/settings/useDepartmentManagemen
 
 export function UsuariosDepartamentosHub() {
   const t = useTranslations("settings")
-  const [activeTab, setActiveTab] = useState("users")
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    if (typeof window === "undefined") return "users"
+    try {
+      const raw = sessionStorage.getItem("settings-pending-subtab")
+      if (raw) {
+        const parsed = JSON.parse(raw) as { section?: string; tab?: string }
+        if (
+          parsed?.section === "usuarios-departamentos" &&
+          (parsed.tab === "users" || parsed.tab === "departments")
+        ) {
+          return parsed.tab
+        }
+      }
+    } catch { /* ignore */ }
+    return "users"
+  })
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    try {
+      sessionStorage.removeItem("settings-pending-subtab")
+    } catch { /* ignore */ }
+  }, [])
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail
+      if (!detail || typeof detail !== "object") return
+      const wantedSection = (detail as { section?: string }).section
+      const wantedTab = (detail as { tab?: string }).tab
+      if (wantedSection && wantedSection !== "usuarios-departamentos") return
+      if (wantedTab === "users" || wantedTab === "departments") {
+        setActiveTab(wantedTab)
+      }
+    }
+    window.addEventListener("settings-open-subtab", handler)
+    return () => window.removeEventListener("settings-open-subtab", handler)
+  }, [])
 
   const { state: companyState, actions: companyActions, initialDepartments, initialApprovers } = useCompanyData()
 

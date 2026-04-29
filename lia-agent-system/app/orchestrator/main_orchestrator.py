@@ -19,6 +19,11 @@ Consolida a lógica que antes estava espalhada em:
 """
 from __future__ import annotations
 
+import os
+
+from app.orchestrator._observability import V2_SPANS
+from app.shared.observability.tracing import trace_span
+
 import logging
 import time
 import uuid
@@ -58,6 +63,134 @@ _CACHE_TTL_BY_DOMAIN: dict[str, int] = {
     "recruiter_assistant": 300,
     "pipeline_context": 60,
 }
+
+# ── Severity- + intent-based delegation (canonical-fix, ref task-811) ───────
+# Quando o PreConditionChecker emite ProactiveHints, decidimos se mantemos a
+# intenção primária (criar vaga, buscar candidato, etc) ou se desviamos para o
+# agente `company_settings`. Critério adotado, em ordem de precedência:
+#
+#   1. Intent explícito de configuração de empresa
+#      (ex.: classifier devolveu "company_settings", "configure_company",
+#      "settings_config" ou "hiring_policy") → delega independente de hints.
+#      O usuário PEDIU explicitamente para configurar; não há motivo para
+#      manter o orquestrador genérico.
+#   2. Hint com severity ∈ {"warning","critical"} E type em
+#      _ONBOARDING_HINT_TYPES → delega (pré-requisito real para a ação).
+#   3. Hint com severity == "info" (qualquer onboarding type)
+#      → mantém orchestrator. Hint é anexado ao prompt como sugestão proativa,
+#        mas a intenção primária do usuário é executada normalmente.
+#
+# Antes desta mudança, o conjunto inteiro de _ONBOARDING_HINT_TYPES disparava
+# delegação independentemente da severidade — o que fazia "criar vaga" ser
+# desviado para `company_settings` sempre que faltasse benefits/culture/policy
+# (todos `info`), causando resposta genérica de "erro interno" porque
+# `company_settings` não tem a tool `create_job_vacancy` no toolset.
+_ONBOARDING_HINT_TYPES: frozenset[str] = frozenset({
+    "missing_company_id",
+    "incomplete_company_profile",
+    "company_website_missing",
+    "culture_profile_missing",
+    "benefits_catalog_empty",
+    "hiring_policy_missing",
+})
+_BLOCKING_HINT_SEVERITIES: frozenset[str] = frozenset({"warning", "critical"})
+# Intents (do classifier) que indicam pedido explícito de configuração da
+# empresa. Reflete os mesmos valores usados em `_DOMAIN_SPECIFIC_CONTEXTS`
+# para `ctx.context_type`, mas aplicado ao intent classificado.
+_COMPANY_SETTINGS_INTENTS: frozenset[str] = frozenset({
+    "company_settings",
+    "configure_company",
+    "settings_config",
+    "hiring_policy",
+})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Sprint III.B — Feature flags granulares para migração V1→V2
+# Cada flag controla 1 service. Default OFF (V1 delegation continua).
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def _is_plan_service_enabled() -> bool:
+    """Sprint III.B: ativa PlanOrchestrationService no V2 quando True.
+
+    Env var `LIA_V2_USE_PLAN_SERVICE` controla. Default OFF (V1 delegation).
+    Tipos aceitos: "1", "true", "yes" (case-insensitive) → True.
+
+    REMOVE: 2026-07-01 — após canary completar a promoção 5% → 25% → 100%
+    descrita em ADR-019 §Promotion Gate, esta flag deve ser deletada e o
+    código que ela protege passa a ser o caminho default (V2 sempre).
+    Ref.: Auditoria Rev 4 §N-10. Owner: orchestrator team.
+    """
+    raw = os.environ.get("LIA_V2_USE_PLAN_SERVICE", "false").lower()
+    return raw in ("1", "true", "yes")
+
+
+def _is_fallback_react_enabled() -> bool:
+    """Sprint III.D: ativa FallbackReActService late-intercept quando True.
+
+    Env var `LIA_V2_USE_FALLBACK_REACT` controla. Default OFF (V1 fallback).
+    Quando ON: se V1 retorna resposta classificada como técnica (router
+    artifact), V2 substitui via fallback_react_service.handle_directly().
+
+    REMOVE: 2026-07-01 — promoção pareada com `LIA_V2_USE_PLAN_SERVICE`
+    (mesma janela de canary). Ver ADR-019 §Promotion Gate. Owner:
+    orchestrator team.
+    """
+    raw = os.environ.get("LIA_V2_USE_FALLBACK_REACT", "false").lower()
+    return raw in ("1", "true", "yes")
+
+
+def _decide_agent_type_from_hints(
+    hints: list,
+    *,
+    intent: str | None = None,
+    onboarding_hint_types: frozenset[str] = _ONBOARDING_HINT_TYPES,
+    blocking_severities: frozenset[str] = _BLOCKING_HINT_SEVERITIES,
+    company_settings_intents: frozenset[str] = _COMPANY_SETTINGS_INTENTS,
+) -> tuple[str, list, list]:
+    """Decide qual agente atende o turno com base em intent + severidade.
+
+    Pure function — sem efeitos colaterais, totalmente testável.
+
+    Args:
+        hints: lista de ``ProactiveHint`` retornada pelo ``PreConditionChecker``.
+        intent: intent classificado para a mensagem do usuário (ou ``None``).
+        onboarding_hint_types: tipos de hint que sinalizam onboarding incompleto.
+        blocking_severities: severidades que bloqueiam a intenção primária.
+        company_settings_intents: intents que pedem explicitamente configuração
+            de empresa.
+
+    Returns:
+        Tupla ``(agent_type, blocking_hints, informational_hints)``:
+
+        * ``agent_type`` — ``"company_settings"`` se intent for explícito de
+          configuração OU se houver hint de onboarding com severidade
+          bloqueante; caso contrário ``"orchestrator"``.
+        * ``blocking_hints`` — subconjunto que justifica a delegação por
+          severidade (lista vazia quando a delegação é apenas por intent).
+        * ``informational_hints`` — hints de onboarding ``info`` (anexados ao
+          prompt mas não trocam o agente).
+
+    Compliance: regra determinística (Crença #10 — Inteligência vs
+    Determinismo). FairnessGuard, PII masking e ConfidencePolicy não são
+    afetados — a função apenas escolhe roteamento de agente, não classifica
+    candidatos nem altera scoring.
+    """
+    blocking = [
+        h for h in hints
+        if getattr(h, "type", None) in onboarding_hint_types
+        and getattr(h, "severity", "info") in blocking_severities
+    ]
+    informational = [
+        h for h in hints
+        if getattr(h, "type", None) in onboarding_hint_types
+        and getattr(h, "severity", "info") not in blocking_severities
+    ]
+    intent_norm = (intent or "").strip().lower()
+    intent_match = intent_norm in company_settings_intents
+    agent_type = "company_settings" if (intent_match or blocking) else "orchestrator"
+    return agent_type, blocking, informational
 
 _perf_metrics: dict[str, list[float]] = {}
 
@@ -179,11 +312,37 @@ class MainOrchestrator:
     controlados aqui.
     """
 
-    def __init__(self, orchestrator: Any) -> None:
+    def __init__(
+        self,
+        orchestrator: Any,
+        *,
+        plan_service: Any | None = None,
+        fallback_react_service: Any | None = None,
+        policy_gate_service: Any | None = None,
+    ) -> None:
+        """V2 MainOrchestrator.
+
+        Args:
+            orchestrator: V1 Orchestrator instance (Phase 2 delegation — current default).
+            plan_service: Optional PlanOrchestrationService (Sprint III.B feature flag).
+            fallback_react_service: Optional FallbackReActService (Sprint III.B).
+            policy_gate_service: Optional PolicyGateService (Sprint III.B).
+
+        Sprint III.A:
+            Services são injetados mas NÃO usados ainda. V1 delegation continua
+            sendo o caminho default em _route_with_tenant_llm. Sprint III.B
+            implementa _route_via_services() alternativo controlado por
+            feature flag (default OFF — backward compatible).
+        """
         self._orchestrator = orchestrator
         self._fairness_guard = FairnessGuard()
         self._tenant_context_service = TenantContextService()
+        # Sprint III.A: services canônicos via DI (sem uso ainda — Sprint III.B ativa)
+        self._plan_service = plan_service
+        self._fallback_react_service = fallback_react_service
+        self._policy_gate_service = policy_gate_service
 
+    @trace_span(V2_SPANS.PROCESS)
     async def process(
         self,
         ctx: UniversalContext,
@@ -321,6 +480,31 @@ class MainOrchestrator:
                 except Exception as e:
                     logger.warning("[LIA-M01] Memory setup failed (non-blocking): %s", e)
 
+            # ── Phase 0.0: Rail A capability gate (PR-J) ──────────────────
+            # harness-engineering guide computacional: short-circuits non-chat-executable
+            # Rail A cards (add_candidate, stage_transition, interview_scheduling,
+            # candidate_compare) before ANY LLM call. Returns open_modal/navigate_to
+            # immediately. Failure is non-blocking (logged + fallthrough).
+            _rail_a_meta = ctx.extra.get("metadata")
+            if _rail_a_meta and _rail_a_meta.get("source") == "rail_a":
+                try:
+                    from app.orchestrator.rail_a_capability_check import check_rail_a_capability as _check_rail_a_cap
+                    _cap_result = await _check_rail_a_cap(
+                        context=ctx.to_orchestrator_context(),
+                        message=ctx.message,
+                        company_id=str(ctx.company_id),
+                        db=db,
+                    )
+                    if _cap_result is not None:
+                        _cap_response = ChatResponse.from_orchestrator_result(
+                            {**_cap_result, "success": True}, conv_id=conv_id
+                        )
+                        if _soft_warnings and not _cap_response.fairness_warnings:
+                            _cap_response.fairness_warnings = _soft_warnings
+                        return _cap_response
+                except Exception as _cap_exc:
+                    logger.debug("[PR-J] rail_a_capability_check skipped (non-blocking): %s", _cap_exc)
+
             # ── Phase 0: PendingAction ──────────────────────────────────────
             pending_response = await self._handle_pending_action(ctx, conv_id)
             if pending_response is not None:
@@ -362,7 +546,7 @@ class MainOrchestrator:
                     from app.orchestrator.agentic_loop import agentic_loop
 
                     # LIA-LLM-1: Respect Choose Your AI — use tenant's chat provider
-                    _agentic_provider = "gemini"
+                    _agentic_provider = "claude"
                     _loop_company_id = getattr(ctx, "company_id", None)
                     if _loop_company_id:
                         try:
@@ -372,65 +556,106 @@ class MainOrchestrator:
                                 _agentic_provider = (
                                     _tenant_cfg.get("routing", {}).get("chat")
                                     or _tenant_cfg.get("primary_provider")
-                                    or "gemini"
+                                    or "claude"
                                 )
                         except Exception:
-                            pass  # Fail-open: use gemini default
+                            pass  # Fail-open: use claude default
 
                     # D10 — Pre-condition check for proactive assistance
+                    #
+                    # Severity- + intent-based delegation (canonical-fix,
+                    # ref task-811): ver _decide_agent_type_from_hints() no
+                    # topo do módulo para o critério completo. Resumo:
+                    #   - intent explícito de configuração → delega
+                    #     (mesmo com lista de hints vazia);
+                    #   - hints `warning|critical` de onboarding → delega;
+                    #   - hints `info` (apenas) → mantêm o orchestrator e
+                    #     viram sugestão proativa anexada ao prompt.
+                    #
+                    # IMPORTANTE: a chamada ao helper acontece SEMPRE,
+                    # independente de existirem hints. Caso contrário, intent
+                    # explícito de configuração seria ignorado quando o
+                    # checker devolve lista vazia (regressão da regressão).
                     _proactive_hints_text = ""
                     _proactive_hints_payload: list[dict] = []
                     _agent_type = "orchestrator"
-                    _ONBOARDING_HINT_TYPES = {
-                        "missing_company_id",
-                        "incomplete_company_profile",
-                        "company_website_missing",
-                        "culture_profile_missing",
-                        "benefits_catalog_empty",
-                        "hiring_policy_missing",
-                    }
+                    _hints: list = []
+                    _blocking_hints: list = []
+                    _informational_hints: list = []
+                    _ctx_intent = (getattr(ctx, "intent", "") or "").strip().lower()
                     try:
                         from app.orchestrator.precondition_checker import precondition_checker
-                        _hints = await precondition_checker.check(ctx)
-                        if _hints:
-                            _proactive_hints_text = (
-                                "## Sugestoes Proativas (detectadas pelo sistema)\n"
-                                "Voce DEVE mencionar estas proativamente se relevantes ao que o recrutador pediu:\n\n"
-                                + "\n".join(f"- [{h.severity}] {h.message}" for h in _hints)
-                            )
-                            # Gap 4: delegate to company_settings agent when onboarding hints emitted
-                            _onboarding_hints_detected = [h.type for h in _hints if h.type in _ONBOARDING_HINT_TYPES]
-                            if _onboarding_hints_detected:
-                                _agent_type = "company_settings"
-                                logger.info(
-                                    "[PreConditionChecker] Delegating to company_settings agent",
-                                    extra={
-                                        "company_id": _loop_company_id,
-                                        "onboarding_hints": _onboarding_hints_detected,
-                                        "total_hints": len(_hints),
-                                    },
-                                )
-                            # Structured payload for frontend rendering (NavigationHintCard / proactive-insight-card)
-                            _proactive_hints_payload = [
-                                {
-                                    "type": h.type,
-                                    "message": h.message,
-                                    "severity": h.severity,
-                                    "action": h.action,
-                                    "metadata": h.metadata,
-                                }
-                                for h in _hints
-                            ]
-                            # Save for downstream WebSocket emitter
-                            ctx.extra["proactive_hints"] = _proactive_hints_payload
-                            logger.info("[PreConditionChecker] %d proactive hint(s) generated", len(_hints))
+                        _hints = await precondition_checker.check(ctx) or []
                     except Exception as _pc_exc:
                         logger.debug("[PreConditionChecker] check skipped: %s", _pc_exc)
+                        _hints = []
+
+                    # Decisão de roteamento — sempre executada, mesmo com
+                    # _hints == []. É o que garante que intent explícito
+                    # ("company_settings", "configure_company", etc) seja
+                    # honrado mesmo na ausência de hints proativos.
+                    _agent_type, _blocking_hints, _informational_hints = (
+                        _decide_agent_type_from_hints(_hints, intent=_ctx_intent)
+                    )
+
+                    if _hints:
+                        _proactive_hints_text = (
+                            "## Sugestoes Proativas (detectadas pelo sistema)\n"
+                            "Voce DEVE mencionar estas proativamente se relevantes ao que o recrutador pediu:\n\n"
+                            + "\n".join(f"- [{h.severity}] {h.message}" for h in _hints)
+                        )
+                        # Structured payload for frontend rendering (NavigationHintCard / proactive-insight-card)
+                        _proactive_hints_payload = [
+                            {
+                                "type": h.type,
+                                "message": h.message,
+                                "severity": h.severity,
+                                "action": h.action,
+                                "metadata": h.metadata,
+                            }
+                            for h in _hints
+                        ]
+                        # Save for downstream WebSocket emitter
+                        ctx.extra["proactive_hints"] = _proactive_hints_payload
+                        logger.info("[PreConditionChecker] %d proactive hint(s) generated", len(_hints))
+
+                    if _agent_type == "company_settings":
+                        if _blocking_hints:
+                            _decision_reason = "blocking_severity_present"
+                        else:
+                            _decision_reason = "explicit_company_settings_intent"
+                        logger.info(
+                            "[PreConditionChecker] Delegating to company_settings agent",
+                            extra={
+                                "company_id": _loop_company_id,
+                                "intent": _ctx_intent,
+                                "blocking_hints": [
+                                    (h.type, h.severity) for h in _blocking_hints
+                                ],
+                                "informational_hints": [
+                                    (h.type, h.severity) for h in _informational_hints
+                                ],
+                                "total_hints": len(_hints),
+                                "decision_reason": _decision_reason,
+                            },
+                        )
+                    elif _informational_hints:
+                        logger.info(
+                            "[PreConditionChecker] Onboarding hints detected but informational — keeping orchestrator",
+                            extra={
+                                "company_id": _loop_company_id,
+                                "intent": _ctx_intent,
+                                "informational_hints": [
+                                    (h.type, h.severity) for h in _informational_hints
+                                ],
+                                "total_hints": len(_hints),
+                                "decision_reason": "non_blocking_severity",
+                            },
+                        )
 
                     from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
                     _system_prompt = SystemPromptBuilder.build(
                         agent_type=_agent_type,
-                        company_id=_loop_company_id or "",
                         tenant_context_snippet=getattr(ctx, "tenant_context_snippet", "") or ctx.extra.get("tenant_context", ""),
                         user_name=getattr(ctx, "user_name", ""),
                         user_role=getattr(ctx, "user_role", ""),
@@ -450,27 +675,55 @@ class MainOrchestrator:
 
                     if _agentic_result and _agentic_result.get("response"):
                         # P2#7 — Onboarding enforcement telemetry
+                        # Task #812: agora aceitamos que o agente company_settings
+                        # atenda intenções operacionais (criar/listar vagas,
+                        # buscar candidatos). Só logamos warning quando o LLM
+                        # não chamou NEM tool de onboarding NEM operacional —
+                        # isto é, devolveu apenas texto ignorando a delegação.
                         if _agent_type == "company_settings":
-                            _expected_tools = {
+                            from app.domains.company_settings.agents.company_tool_registry import (
+                                OPERATIONAL_TOOL_NAMES as _OPERATIONAL_TOOLS,
+                            )
+                            _onboarding_tools = {
                                 "check_company_completeness",
                                 "analyze_company_website",
                                 "suggest_recruiting_policy",
                                 "import_benefits_from_data",
                                 "save_company_field",
                                 "save_company_section",
+                                "get_company_profile",
+                                "get_company_completion",
+                                "process_uploaded_document",
+                                "import_workforce_plan",
                             }
+                            _acceptable_tools = _onboarding_tools | set(_OPERATIONAL_TOOLS)
                             _tools_called = {
                                 tc.get("name") for tc in (_agentic_result.get("tool_calls_made") or [])
                                 if isinstance(tc, dict) and tc.get("name")
                             }
-                            if not (_tools_called & _expected_tools):
+                            if not (_tools_called & _acceptable_tools):
                                 logger.warning(
-                                    "[Onboarding] LLM did NOT call any onboarding tool despite delegate",
+                                    "[Onboarding] LLM did NOT call any onboarding/operational tool despite delegate",
                                     extra={
                                         "company_id": _loop_company_id,
                                         "tools_called": list(_tools_called),
-                                        "expected_any_of": list(_expected_tools),
-                                        "onboarding_hints": _onboarding_hints_detected if "_onboarding_hints_detected" in dir() else [],
+                                        "expected_any_of": sorted(_acceptable_tools),
+                                        "blocking_hints": [
+                                            (h.type, h.severity) for h in _blocking_hints
+                                        ],
+                                        "informational_hints": [
+                                            (h.type, h.severity) for h in _informational_hints
+                                        ],
+                                    },
+                                )
+                            elif _tools_called & set(_OPERATIONAL_TOOLS):
+                                logger.info(
+                                    "[Onboarding] company_settings agent handled operational intent",
+                                    extra={
+                                        "company_id": _loop_company_id,
+                                        "operational_tools_called": sorted(
+                                            _tools_called & set(_OPERATIONAL_TOOLS)
+                                        ),
                                     },
                                 )
                         logger.info(
@@ -876,6 +1129,7 @@ class MainOrchestrator:
     # Phase 2 — Pipeline consolidado (sem delegação intermediária)
     # ------------------------------------------------------------------
 
+    @trace_span(V2_SPANS.PHASE_2_VIA_ORCHESTRATOR)
     async def _process_via_orchestrator(
         self,
         ctx: UniversalContext,
@@ -966,9 +1220,16 @@ class MainOrchestrator:
         try:
             from app.domains.ai.services.response_cache_service import response_cache_service
             from app.orchestrator.fast_router import FastRouter
-            _fast = FastRouter()
-            _fast_match = _fast.match(ctx.message or "")
-            _detected_domain = _fast_match.domain_id if _fast_match else None
+            from app.orchestrator.services.rail_a_hint_override import try_hint_route
+
+            # PR-A: prefere hint do Rail A (FE-H03) antes do pattern matcher.
+            _hint_route = try_hint_route(ctx.to_orchestrator_context())
+            if _hint_route is not None:
+                _detected_domain = _hint_route.domain_id
+            else:
+                _fast = FastRouter()
+                _fast_match = _fast.match(ctx.message or "")
+                _detected_domain = _fast_match.domain_id if _fast_match else None
             if not (_detected_domain and _detected_domain in _CACHEABLE_DOMAINS):
                 return None
             _cache_context = {
@@ -1038,6 +1299,7 @@ class MainOrchestrator:
             logger.warning("[MainOrchestrator] ConversationMemory setup failed — conversation history lost: %s", _mem_exc)
             return None, conv_id
 
+    @trace_span(V2_SPANS.ROUTE_WITH_TENANT_LLM)
     async def _route_with_tenant_llm(
         self,
         ctx: UniversalContext,
@@ -1082,6 +1344,23 @@ class MainOrchestrator:
             except Exception as _tenant_exc:
                 logger.debug("[MainOrchestrator] Tenant LLM resolution failed for %s: %s — using global", _tenant_id, _tenant_exc)
 
+        # Sprint III.B: try plan_service path BEFORE V1 delegation (feature flag)
+        plan_result_dict = None
+        if _is_plan_service_enabled() and self._plan_service is not None:
+            plan_result_dict = await self._try_plan_via_service(
+                ctx, conv_id, orchestrator_context
+            )
+
+        if plan_result_dict is not None:
+            # Plan service handled — skip V1 delegation
+            try:
+                return plan_result_dict
+            finally:
+                if _llm_svc:
+                    _llm_svc._tenant_container = _original_container
+                    _llm_svc._current_tenant = _original_tenant
+
+        # Default path: V1 delegation (Sprint III.C+ migrarão outros paths)
         try:
             result = await self._orchestrator.process_request(
                 user_id=ctx.user_id, message=ctx.message,
@@ -1092,7 +1371,142 @@ class MainOrchestrator:
                 _llm_svc._tenant_container = _original_container
                 _llm_svc._current_tenant = _original_tenant
 
+        # Sprint III.D: late-intercept FallbackReActService (feature flag default OFF)
+        if _is_fallback_react_enabled() and self._fallback_react_service is not None:
+            result = await self._try_fallback_react_substitute(
+                result, ctx, orchestrator_context
+            )
+
         return result
+
+    @trace_span(V2_SPANS.PLAN_DETECT)
+    async def _try_plan_via_service(
+        self,
+        ctx: Any,
+        conv_id: str,
+        orchestrator_context: dict[str, Any],
+    ) -> dict[str, Any] | None:
+        """Sprint III.B: tenta executar via PlanOrchestrationService.
+
+        Retorna dict V1-compatible se plan detected + executed, ou None.
+        Em None, caller faz V1 delegation (caminho atual).
+
+        Mantém shape de retorno compatível com V1.process_request para
+        downstream code (persist, audit, navigation hints) funcionar.
+        """
+        try:
+            detected_plan = self._plan_service.detect(ctx.message)
+            if detected_plan is None:
+                return None
+
+            logger.info(
+                "[MainOrchestrator] Sprint III.B plan detected via service: %s",
+                getattr(detected_plan, "detected_pattern", "unknown"),
+            )
+
+            plan_result = await self._plan_service.execute(
+                detected_plan,
+                user_id=ctx.user_id,
+                session_id=conv_id,
+                tenant_id=str(ctx.company_id) if ctx.company_id else None,
+                base_context=orchestrator_context,
+            )
+
+            # Convert PlanExecutionResult to V1-compatible dict
+            return {
+                "success": plan_result.success,
+                "conversation_id": conv_id,
+                "intent": f"plan:{plan_result.pattern}",
+                "agent": "plan_executor",
+                "agent_type": "execution_plan",
+                "confidence": 1.0,
+                "message": plan_result.message,
+                "result": {"message": plan_result.message, "data": plan_result.data},
+                "execution_plan": plan_result.summary,
+                "requires_user_input": False,
+                "suggested_prompts": plan_result.suggestions,
+                "next_actions": [],
+                "policy_constraints": {},
+            }
+        except Exception as e:
+            # P1 graceful: plan service failure não bloqueia request — fallback V1
+            logger.warning(
+                "[MainOrchestrator] Sprint III.B plan_service failed (fallback to V1): %s",
+                e,
+            )
+            return None
+
+    @trace_span(V2_SPANS.FALLBACK_REACT_HANDLE)
+    async def _try_fallback_react_substitute(
+        self,
+        v1_result: dict[str, Any],
+        ctx: Any,
+        orchestrator_context: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Sprint III.D: late-intercept FallbackReActService.
+
+        Se V1 retornou resposta "técnica" (router fallback artifact) e flag ON
+        e fallback_react_service injected → substitui resposta via service.
+
+        Detecção via heuristics.is_technical_response. Se substituição falha,
+        retorna v1_result original (graceful degradation).
+
+        Args:
+            v1_result: Dict retornado pelo V1.process_request.
+            ctx: UniversalContext da request.
+            orchestrator_context: Context dict passado ao V1.
+
+        Returns:
+            Dict com mesma shape do v1_result. Mensagem pode ter sido
+            substituída pelo fallback service se aplicável.
+        """
+        try:
+            from app.orchestrator.heuristics import is_technical_response
+
+            v1_message = v1_result.get("message", "") or ""
+            if not is_technical_response(v1_message):
+                # Resposta V1 é OK, não substituir
+                return v1_result
+
+            logger.info(
+                "[MainOrchestrator] Sprint III.D: V1 technical response detected, "
+                "trying fallback_react_service substitute"
+            )
+
+            intent = v1_result.get("intent") or "general_chat"
+            entities = (v1_result.get("result") or {}).get("data", {}).get("entities", {})
+
+            fallback_result = await self._fallback_react_service.handle_directly(
+                intent=intent,
+                message=ctx.message,
+                entities=entities or {},
+                context=orchestrator_context,
+            )
+
+            if fallback_result and fallback_result.get("success"):
+                # Substitui campos relevantes preservando metadata V1
+                substituted = dict(v1_result)
+                substituted["message"] = fallback_result.get("message", v1_message)
+                if "data" in fallback_result:
+                    substituted["data"] = fallback_result["data"]
+                substituted["agent_used"] = fallback_result.get("agent_used", "LIA Orchestrator")
+                substituted["agent_type"] = fallback_result.get("agent_type", "orchestrator")
+                substituted["_fallback_substituted"] = True  # marker para audit
+                logger.info(
+                    "[MainOrchestrator] Sprint III.D: V1 response substituted via fallback service"
+                )
+                return substituted
+
+            # Fallback service não conseguiu substituir — usa V1 original
+            return v1_result
+
+        except Exception as e:
+            # P1 graceful: any exception preserva resposta V1
+            logger.warning(
+                "[MainOrchestrator] Sprint III.D fallback substitute failed (using V1): %s",
+                e,
+            )
+            return v1_result
 
     async def _persist_response(
         self, ctx: UniversalContext, conv_id: str, conv: Any, result: dict[str, Any], db: Any

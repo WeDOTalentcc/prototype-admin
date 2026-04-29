@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title><%= yield :title %></title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f9fafb; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f9fafb;">
+    <tr>
+      <td align="center" style="padding: 32px 16px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" width="560" style="max-width: 560px; width: 100%;">
+
+          <tr>
+            <td style="background-color: #ffffff; border-radius: 12px; border: 1px solid #e5e7eb; overflow: hidden;">
+
+              <%= yield %>
+
+              <%= render 'shared/mailer/email_footer', front_url: @front_url %>
+
+            </td>
+          </tr>
+
+          <tr>
+            <td align="center" style="padding: 20px 16px 0;">
+              <p style="margin: 0; font-size: 11px; color: #d1d5db; line-height: 1.5;">
+                <% if content_for?(:disclaimer) %>
+                  <%= yield :disclaimer %>
+                <% else %>
+                  Este é um email automático, por favor não responda.
+                <% end %>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

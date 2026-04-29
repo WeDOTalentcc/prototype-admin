@@ -154,7 +154,7 @@ async def get_candidate_enrichment(
         candidate_id=candidate_id,
         name=getattr(candidate, "name", None),
         email=getattr(candidate, "email", None),
-        status=getattr(candidate, "status", None),
+        status=candidate.status,
         wsi=wsi,
         ai_insights=ai_insights,
         synced_at=_now(),
@@ -181,8 +181,8 @@ async def get_job_intelligence(
     return JobIntelligenceResponse(
         job_id=job_id,
         title=getattr(job, "title", None),
-        status=getattr(job, "status", None),
-        company_id=getattr(job, "company_id", None),
+        status=job.status,
+        company_id=job.company_id,
         sourcing_data=JobSourcingData(
             channels=getattr(job, "sourcing_channels", None) or [],
         ),

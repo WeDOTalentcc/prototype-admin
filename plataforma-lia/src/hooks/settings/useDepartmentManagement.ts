@@ -8,7 +8,7 @@ import {
   type NewApproverForm,
   DEFAULT_NEW_DEPARTMENT,
   DEFAULT_NEW_MEMBER,
-} from "@/components/settings/companyTeamHub.types";
+} from "@/hooks/settings/department-types";
 import { useCompanyId } from "@/hooks/company/useCompanyId";
 
 export interface UseDepartmentManagementState {

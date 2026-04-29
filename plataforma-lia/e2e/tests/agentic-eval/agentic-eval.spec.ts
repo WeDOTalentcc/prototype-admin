@@ -9,24 +9,7 @@
  * The judge (`judge_agentic.py`) and report (`eval_report_agentic.py`)
  * consume the output downstream — see `docs/eval/AGENTIC_EVAL_PLAYBOOK.md`.
  */
-import { test as _baseTest, expect } from '../../fixtures/auth.fixture';
-
-// Override authenticatedPage to skip the initial page.goto — openChatOnPage handles
-// navigation per scenario. The shared auth fixture's goto hangs in dev-mode Next.js
-// because HMR WebSockets prevent waitUntil='load' from completing.
-const AUTH_DOMAIN = process.env.PLAYWRIGHT_BASE_URL
-  ? new URL(process.env.PLAYWRIGHT_BASE_URL).hostname
-  : '127.0.0.1';
-const test = _baseTest.extend<{ authenticatedPage: import('@playwright/test').Page }>({
-  authenticatedPage: async ({ context, page }, use) => {
-    await context.addCookies([
-      { name: 'lia_access_token', value: 'e2e-test-token', domain: AUTH_DOMAIN, path: '/' },
-      { name: 'lia_auth_method',  value: 'jwt',            domain: AUTH_DOMAIN, path: '/' },
-    ]);
-    // Do NOT navigate here — openChatOnPage does it per scenario.
-    await use(page);
-  },
-});
+import { test, expect } from '../../fixtures/auth.fixture';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as YAML from 'yaml';
@@ -116,7 +99,7 @@ function persist() {
   if (!fs.existsSync(RUNS_DIR)) fs.mkdirSync(RUNS_DIR, { recursive: true });
   const meta = {
     timestamp: RUN_TIMESTAMP,
-    base_url: process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:5000',
+    base_url: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:5000',
     pass_k: PASS_K,
     scenarios_total: SCENARIOS.length,
     scenarios_run: RESULTS.length,
@@ -144,7 +127,7 @@ test.describe('Agentic Eval Roteiro', () => {
     for (let i = 0; i < runs; i++) {
       const label = runs > 1 ? `${scenario.id} #${i + 1}/${runs} ${tagSuffix}` : `${scenario.id} ${tagSuffix}`;
       test(label, async ({ authenticatedPage: page }) => {
-        test.setTimeout(300_000);
+        test.setTimeout(180_000);
         // Normalise pageContext (camelCase canonical) ← page_context (snake legacy).
         const ctx = scenario.pageContext || scenario.page_context || {};
         const scope = ctx.scope || 'global';

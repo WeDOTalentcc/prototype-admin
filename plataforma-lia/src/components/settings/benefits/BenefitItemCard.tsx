@@ -3,6 +3,7 @@
 
 import { CURRENCY_SYMBOL } from"@/lib/pricing"
 import React from"react"
+import { useTranslations } from "next-intl"
 import { Button } from"@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import { Switch } from"@/components/ui/switch"
@@ -34,26 +35,6 @@ interface Benefit {
   provider?: string
 }
 
-const SENIORITY_LEVELS = [
-  { id:"all", name:"Todos os Níveis" },
-  { id:"junior", name:"Júnior" },
-  { id:"pleno", name:"Pleno" },
-  { id:"senior", name:"Sênior" },
-  { id:"coordinator", name:"Coordenação+" },
-  { id:"manager", name:"Gerência+" },
-  { id:"director", name:"Diretoria" },
-  { id:"c-level", name:"C-Level" },
-]
-
-const WAITING_PERIODS = [
-  { id: 0, name:"Imediato" },
-  { id: 30, name:"30 dias" },
-  { id: 60, name:"60 dias" },
-  { id: 90, name:"90 dias" },
-  { id: 180, name:"6 meses" },
-  { id: 365, name:"1 ano" },
-]
-
 interface BenefitItemCardProps {
   benefit: Benefit
   isEditingBenefits: boolean
@@ -69,33 +50,55 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
   onEdit,
   onDelete,
 }: BenefitItemCardProps) {
+  const t = useTranslations("settings.benefits")
+
+  const SENIORITY_LEVELS = [
+    { id: "all", name: t("seniorityAll") },
+    { id: "junior", name: t("seniorityJunior") },
+    { id: "pleno", name: t("seniorityPleno") },
+    { id: "senior", name: t("senioritySenior") },
+    { id: "coordinator", name: t("seniorityCoordinator") },
+    { id: "manager", name: t("seniorityManager") },
+    { id: "director", name: t("seniorityDirector") },
+    { id: "c-level", name: t("seniorityCLevel") },
+  ]
+
+  const WAITING_PERIODS = [
+    { id: 0, name: t("waitingImmediate") },
+    { id: 30, name: t("waiting30") },
+    { id: 60, name: t("waiting60") },
+    { id: 90, name: t("waiting90") },
+    { id: 180, name: t("waiting180") },
+    { id: 365, name: t("waiting365") },
+  ]
+
   const formatBenefitValue = (b: Benefit) => {
     if (b.value_type ==="monetary" && b.value) {
-      const prefix = b.is_discount ?"Desconto:" :""
-      return prefix + CURRENCY_SYMBOL +"" +  b.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })
+      const prefix = b.is_discount ? `${t("discount")}: ` :""
+      return prefix + CURRENCY_SYMBOL +"" +  b.value.toLocaleString(undefined, { minimumFractionDigits: 2 })
     }
     if (b.value_type ==="percentage" && b.percentage_value) {
       return b.percentage_value +"%"
     }
     if (b.value_type ==="informative") {
-      return b.value_details ||"Informativo"
+      return b.value_details || t("informative")
     }
     return"-"
   }
 
   const getSeniorityLabel = (levels: string[]) => {
     if (!levels || levels.length === 0 || levels.includes("all")) {
-      return"Todos"
+      return t("allLevels")
     }
     if (levels.length === 1) {
       return SENIORITY_LEVELS.find((l) => l.id === levels[0])?.name || levels[0]
     }
-    return levels.length +" níveis"
+    return `${levels.length} ${t("levels")}`
   }
 
   const getWaitingPeriodLabel = (days: number) => {
     const period = WAITING_PERIODS.find((p) => p.id === days)
-    return period ? period.name : days +" dias"
+    return period ? period.name : `${days} ${t("waiting30").replace(/^\d+\s*/, "").trim() || "days"}`
   }
 
   const activeClass = !benefit.is_active ?"opacity-60" :""
@@ -113,16 +116,16 @@ export const BenefitItemCard = React.memo(function BenefitItemCard({
             <Star className="w-3.5 h-3.5 text-status-warning fill-yellow-500" />
           )}
           {benefit.is_mandatory && (
-            <Chip variant="neutral" muted className="text-micro">Obrigatório</Chip>
+            <Chip variant="neutral" muted className="text-micro">{t("mandatory")}</Chip>
           )}
           {benefit.is_discount && (
             <Chip variant="danger" className="text-micro">
-              Desconto
+              {t("discount")}
             </Chip>
           )}
         </div>
         <p className={textStyles.description +" truncate mb-1.5"}>
-          {benefit.description ||"Sem descrição"}
+          {benefit.description || t("noDescription")}
         </p>
         <div className="flex items-center gap-3 text-xs text-lia-text-secondary">
           <span className="flex items-center gap-1">

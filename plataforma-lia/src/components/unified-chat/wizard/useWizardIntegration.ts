@@ -1,11 +1,12 @@
 "use client"
 
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useState } from "react"
 import {
+  AJUDA_REGEX,
+  buildAjudaHelpMarkdown,
   findSlashCommandByToken,
   findSlashCommandByVerb,
 } from "../slash-commands"
-// Types imported as needed by consumers
 
 /**
  * useWizardIntegration — Phase D.1 Cross-feature integration.
@@ -15,14 +16,46 @@ import {
  * - File upload: JD PDF → auto-populates wizard intake
  * - /commands: /criar vaga → starts wizard
  * - Navigation hints: auto-navigate after handoff
+ * - wizard_step_response: drives split-view panel state (E.1 / E.7)
  *
  * Place in UnifiedChat to wire all features together.
  */
+
+// --- Panel type driven by wizard_step_response ---
+
+export type ActivePanelType = "jd_review" | "wsi_review" | "calibration" | null
+
+interface WizardStepResponse {
+  missing_fields?: string[]
+  requires_approval?: boolean
+  approval_context?: Record<string, unknown>
+  stage_name?: string
+  detected_criteria?: Record<string, unknown>
+}
+
+/**
+ * Determine which side-panel to open based on the stage_name in
+ * wizard_step_response.
+ */
+function determinePanelType(stepResponse: WizardStepResponse): ActivePanelType {
+  const stage = (stepResponse.stage_name ?? "").toLowerCase()
+  if (stage.includes("jd_enrichment") || stage.includes("review")) return "jd_review"
+  if (stage.includes("wsi_questions") || stage.includes("wsi")) return "wsi_review"
+  if (stage.includes("calibration")) return "calibration"
+  return null
+}
 
 interface Props {
   isWizardActive: boolean
   currentStage: string | null
   sendMessage: (text: string) => void
+  /**
+   * Called when a slash command is fully resolved on the client (no
+   * backend round-trip). Today only `/ajuda` uses this; keeping the
+   * surface as a generic `(commandId, payload)` tuple lets future local
+   * commands like `/definir` migrate here without changing the contract.
+   */
+  onLocalCommand?: (commandId: string, payload: { responseMarkdown: string; rawInput: string }) => void
 }
 
 // Type-safe custom event helper
@@ -35,15 +68,50 @@ export function useWizardIntegration({
   isWizardActive,
   currentStage,
   sendMessage,
+  onLocalCommand,
 }: Props) {
+  // E.1 / E.7: Split-view state driven by wizard_step_response
+  const [activePanelType, setActivePanelType] = useState<ActivePanelType>(null)
+  const [missingFields, setMissingFields] = useState<string[]>([])
+
+  // E.1: Process wizard_step_response from WS message metadata.
+  // Call this from the WS message handler whenever a new message arrives.
+  const handleWizardStepResponse = useCallback((message: { metadata?: Record<string, unknown> }) => {
+    const stepResponse = message?.metadata?.wizard_step_response as WizardStepResponse | undefined
+    if (!stepResponse) return
+
+    // Store missing fields if present
+    if (Array.isArray(stepResponse.missing_fields) && stepResponse.missing_fields.length > 0) {
+      setMissingFields(stepResponse.missing_fields)
+    }
+
+    // Drive split-view panel
+    if (stepResponse.requires_approval === true) {
+      const panelType = determinePanelType(stepResponse)
+      setActivePanelType(panelType)
+    } else if (stepResponse.requires_approval === false) {
+      // Close the panel when approval is no longer required
+      setActivePanelType(null)
+    }
+  }, [])
 
   // D.1: File upload → wizard intake
   useEffect(() => {
     function handleFileConfirmed(e: CustomEvent) {
-      const { file, type } = e.detail || {}
+      const { file, type, consentAcknowledged } = e.detail || {}
       if (type === "jd" && file?.name) {
-        // JD file auto-starts wizard
-        sendMessage(`Criar vaga a partir do arquivo: ${file.name}`)
+        // Task #838 / M-01: ao confirmar consentimento aqui (mesma sessao),
+        // memoriza no sessionStorage para que `useSmartFileUpload` nao volte a
+        // perguntar nas proximas JDs do mesmo tab. Isso e defesa em profundidade
+        // alem do preflight contra `/jd-import/consent-status`.
+        if (consentAcknowledged === true && typeof window !== "undefined") {
+          try { window.sessionStorage.setItem("lia-jd-upload-consent", "1") } catch { /* quota */ }
+        }
+        // Task #865 — actually starting the wizard now happens AFTER the
+        // async worker reports `completed` (see `useJdUploadProgress`).
+        // Firing `sendMessage("Criar vaga…")` here would race with the
+        // upload, so this branch only persists the consent flag now and
+        // lets the upload hook drive the wizard from the WS event.
       }
     }
 
@@ -127,8 +195,24 @@ export function useWizardIntegration({
   const handleSlashCommand = useCallback((command: string) => {
     const cmd = command.trim()
 
+    // `/ajuda` is a fully-local command — no backend round-trip. The help
+    // text is built from the canonical SLASH_COMMANDS list so every chat
+    // surface (UnifiedChat and any future popovers) renders identical
+    // copy. Surfaces that don't pass `onLocalCommand` fall through to
+    // backend dispatch, preserving prior behaviour.
+    if (AJUDA_REGEX.test(cmd)) {
+      if (onLocalCommand) {
+        onLocalCommand("ajuda", {
+          responseMarkdown: buildAjudaHelpMarkdown(),
+          rawInput: cmd,
+        })
+        return true
+      }
+      return false
+    }
+
     // Bare command, e.g. "/criar vaga", "/job", "/pipeline".
-    const bareMatch = cmd.match(/^\/[\w\u00C0-\u017F][\w\u00C0-\u017F\s]*$/i)
+    const bareMatch = cmd.match(/^\/[\wÀ-ſ][\wÀ-ſ\s]*$/i)
     if (bareMatch) {
       const found = findSlashCommandByToken(cmd)
       const message = found?.buildBareMessage?.()
@@ -161,9 +245,13 @@ export function useWizardIntegration({
     }
 
     return false
-  }, [sendMessage])
+  }, [sendMessage, onLocalCommand])
 
   return {
     handleSlashCommand,
+    // E.1 / E.7: Split-view state
+    activePanelType,
+    missingFields,
+    handleWizardStepResponse,
   }
 }

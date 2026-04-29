@@ -1,0 +1,208 @@
+# Cursor AI Rules - ATS Mercado
+
+## Arquitetura do Projeto
+
+Este é um ATS (Applicant Tracking System) em Ruby on Rails com:
+- Multi-tenancy (Apartment gem)
+- Busca híbrida (Elasticsearch + pgvector embeddings)
+- LLM integration (Gemini API)
+- Background jobs (Sidekiq)
+- Real-time updates (ActionCable)
+
+## Padrões de Código
+
+### Services
+- Sempre usar keyword arguments no initialize
+- Método principal sempre se chama `call`
+- Retornar objetos estruturados (Result, Response) em vez de hashes
+- Documentar fluxo com comentários detalhados
+
+### Jobs
+- Sempre incluir `sidekiq_options queue: :default, retry: 2`
+- Sempre fazer switch de tenant: `Apartment::Tenant.switch(tenant)`
+- Sempre ter rescue para tratar erros
+- Logging detalhado com emojis (🔄 ✅ ❌ ⏳ 💡)
+
+### Logging
+Use emojis e separadores para facilitar leitura:
+```ruby
+Rails.logger.info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+Rails.logger.info "🔄 [ClassName] AÇÃO PRINCIPAL"
+Rails.logger.info "   Detalhe: #{valor}"
+Rails.logger.info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+```
+
+### Busca Híbrida
+- Simple queries (1-3 palavras) → Simple path (sem LLM)
+- Currículo completo → Resume path (extração de perfil)
+- Queries complexas → Complex path (QueryAnalyzer + HyDE)
+
+### Cache
+- QueryAnalyzer: 1h TTL, chave SHA256
+- EmbeddingCache: 24h touch, chave SHA256 + model_version + account_id
+- Sempre verificar cache antes de chamar LLM
+
+### LLM Calls
+- Sempre usar timeout (3s para análise, 5s para geração)
+- Sempre ter fallback se LLM falhar
+- Sempre usar `response_format: { type: "json_object" }` para JSON
+
+### Performance
+- Usar `pluck` quando não precisa de models
+- Usar `find_each` para grandes volumes
+- NUNCA fazer N+1 queries
+- Sempre usar `includes` para eager loading
+
+### Testes
+- Arrange-Act-Assert pattern
+- Usar `let` para setup
+- Contextos claros com `context` e `describe`
+- Factory Bot para criar dados de teste
+
+### Multi-tenancy
+- SEMPRE usar `Apartment::Tenant.switch` ao acessar dados de tenant
+- Verificar tenant correto nos logs
+- Incluir account_id em queries importantes
+
+### WebSocket
+- Broadcast após ações importantes (sourcing_started, sourcing_completed)
+- Incluir timestamp ISO8601
+- Incluir dados mínimos necessários (IDs, status)
+
+## Documentação
+
+### Documentação de Código
+- Comentários detalhados em métodos complexos
+- Explicar FLUXO, não só O QUE faz
+- Incluir exemplos quando útil
+- Documentar edge cases e fallbacks
+
+### Documentação Markdown
+- Criar em `docs/` para features importantes
+- Incluir diagramas ASCII quando útil
+- Exemplos práticos e troubleshooting
+- Manter atualizado
+
+## Git
+
+### Commits
+Formato: `<tipo>(<escopo>): <descrição>`
+
+Tipos: feat, fix, docs, refactor, perf, test, chore
+
+Exemplo:
+```
+feat(search): adiciona busca híbrida com embeddings
+
+Combina Elasticsearch + pgvector com Weighted Rank Fusion
+```
+
+## Não Fazer
+
+- ❌ Commitar credentials ou API keys
+- ❌ Usar `.as_json` direto (usar serializers)
+- ❌ Fazer queries sem switch tenant
+- ❌ Ignorar erros silenciosamente
+- ❌ Deixar código sem logging
+- ❌ Criar métodos gigantes (quebrar em private methods)
+- ❌ Usar mágica sem explicar (comentar!)
+
+## Clean Code Mandatório
+
+### DRY - Don't Repeat Yourself
+- Extrair código duplicado para métodos/módulos
+- Criar abstrações reutilizáveis
+- Usar concerns para comportamentos compartilhados
+
+### Early Return (SEMPRE)
+```ruby
+# ✅ BOM
+def process(data)
+  return nil if data.blank?
+  return [] if data.invalid?
+  
+  execute_logic(data)
+end
+
+# ❌ RUIM
+def process(data)
+  if data.present?
+    if data.valid?
+      execute_logic(data)
+    else
+      []
+    end
+  else
+    nil
+  end
+end
+```
+
+### Lambda > Switch/Case
+```ruby
+# ✅ BOM
+HANDLERS = {
+  create: ->(params) { create_record(params) },
+  update: ->(params) { update_record(params) }
+}.freeze
+
+def handle(action, params)
+  handler = HANDLERS[action] || ->(p) { raise "Unknown: #{action}" }
+  handler.call(params)
+end
+```
+
+### SOLID Principles
+- Single Responsibility: Uma classe, uma razão para mudar
+- Open/Closed: Extensível sem modificar código existente
+- Liskov Substitution: Subclasses intercambiáveis
+- Interface Segregation: Interfaces específicas
+- Dependency Inversion: Injetar dependências
+
+## Testes Rápidos e Eficientes
+
+### Evitar Banco Sempre Que Possível
+```ruby
+# ✅ ÓTIMO - Sem banco
+let(:candidate) do
+  instance_double(
+    Candidate,
+    id: 1,
+    name: "Test",
+    email: "test@example.com"
+  )
+end
+
+# ⚠️ ACEITÁVEL - Com banco (quando necessário)
+let(:candidate) { create(:candidate) }
+```
+
+### Isolar Unidade Testada
+```ruby
+# Testar APENAS a lógica da classe
+# Mockar TODAS as dependências
+let(:dependency) { instance_double(Dependency) }
+allow(dependency).to receive(:call).and_return(result)
+```
+
+### Organização
+- `let` para setup lazy
+- `subject` para classe testada
+- Arrange-Act-Assert clara
+- Contextos descritivos
+
+## Fazer Sempre
+
+- ✅ Logging detalhado
+- ✅ Testes para novas features (rápidos, sem DB quando possível)
+- ✅ Documentação de APIs
+- ✅ ENV vars com fallback
+- ✅ Cache quando faz sentido
+- ✅ Timeout em operações externas
+- ✅ Rescue específico (não genérico)
+- ✅ Broadcast WebSocket para updates
+- ✅ Aplicar DRY - extrair duplicações
+- ✅ Early return - evitar if/else aninhado
+- ✅ Lambdas/hashes ao invés de switch/case
+- ✅ SOLID principles
+- ✅ Clean Architecture quando fizer sentido

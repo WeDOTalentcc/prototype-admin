@@ -11,6 +11,7 @@ export { useWizardIntegration } from "./useWizardIntegration"
 
 // Components
 export { DynamicContextPanel } from "./DynamicContextPanel"
+export { TaskContextBar } from "./TaskContextBar"
 export { WizardProgressBar } from "./WizardProgressBar"
 export { ProgressiveDisclosure } from "./ProgressiveDisclosure"
 export { FirstUseTooltip } from "./FirstUseTooltips"

@@ -10,7 +10,7 @@ import {
 } from"lucide-react"
 import { LiaMetricsChart } from"./lia-metrics-chart"
 import { textStyles } from"@/lib/design-tokens"
-import { generateTimeSeriesData, type SourceMetricItem, type StatusBreakdownItem } from"./useLiaMetrics"
+import { generateTimeSeriesData, type SourceMetricItem, type StatusBreakdownItem } from"@/hooks/ai/use-lia-metrics"
 import { LiaMetricsSLA } from"./LiaMetricsSLA"
 
 interface LiaMetricsDetailsProps {

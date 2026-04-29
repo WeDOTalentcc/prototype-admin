@@ -3,6 +3,12 @@ Company Settings Tool Registry - Tools for company profile configuration via con
 
 Provides tools for reading/writing company data, analyzing websites (Apify),
 processing uploaded documents with anonymization, and workforce planning.
+
+Task #812 — defesa em profundidade: o agente também recebe um conjunto curado
+de tools operacionais primárias (criar vaga, listar vagas, buscar candidatos),
+para não travar quando o recrutador interrompe o onboarding com uma intenção
+clara de outro domínio. Reaproveitamos as ToolDefinitions canônicas dos
+registries de jobs_mgmt e talent — não duplicamos handlers.
 """
 import json
 import logging
@@ -20,6 +26,38 @@ from app.shared.tool_handler import tool_handler
 logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
+
+
+# ── Task #812 — Tools operacionais primárias autorizadas no agente ──────────
+# Conjunto fechado: nomes de tools que representam intenções operacionais
+# (criar/listar vagas, buscar candidatos) atendidas mesmo dentro do contexto
+# de configuração da empresa. Mantido aqui para ser fonte única consumida
+# também pela telemetria do orchestrator.
+OPERATIONAL_TOOL_NAMES: frozenset[str] = frozenset({
+    "create_job_vacancy",
+    "list_jobs",
+    "view_job_details",
+    "search_candidates",
+})
+
+
+def _pick_tool_definitions(
+    source: list[ToolDefinition], names: list[str] | tuple[str, ...]
+) -> list[ToolDefinition]:
+    """Retorna ToolDefinitions com nomes em `names`, preservando a ordem do
+    iterável de entrada (determinismo na apresentação ao LLM). Falha alto se
+    algum nome estiver ausente — evita silently-missing tools quando o
+    registry de origem mudar.
+    """
+    by_name = {td.name: td for td in source}
+    requested = list(names)
+    missing = [n for n in requested if n not in by_name]
+    if missing:
+        raise LookupError(
+            "Tool definitions ausentes no registry de origem: "
+            f"{sorted(missing)} — verifique jobs_mgmt/talent registries."
+        )
+    return [by_name[n] for n in requested]
 
 TIER_1_FIELDS = {"cnpj", "name"}
 TIER_2_FIELDS = {"website", "mission", "vision", "values", "core_competencies", "evp_bullets"}
@@ -551,6 +589,114 @@ async def _wrap_get_company_completion(**kwargs: Any) -> dict[str, Any]:
     }
 
 
+@tool_handler("company_settings")
+async def _wrap_create_job_vacancy(**kwargs: Any) -> dict[str, Any]:
+    """Cria vaga delegando ao handler canônico `app.tools.job_tools.create_job_vacancy`.
+
+    Caminho de produção: o `@tool_handler` resolve `company_id` (via kwargs
+    explícito ou contextvar `get_current_llm_tenant`) e nós o repassamos
+    como `_tenant_id` ao handler canônico — que extrai/valida e delega ao
+    `JobVacancyLifecycleService.create`. Assim o agente `company_settings`
+    reusa exatamente a mesma lógica do executor de chat (sem duplicar
+    serviço, sem fallback silencioso).
+    """
+    from app.tools.job_tools import create_job_vacancy as _canonical_create
+
+    company_id = kwargs.pop("company_id", "") or ""
+    title = (kwargs.get("title", "") or "").strip()
+    if not title:
+        return {
+            "success": False,
+            "operation": "create_job_vacancy",
+            "error": "validation_error",
+            "message": "title é obrigatório para criar a vaga.",
+        }
+
+    payload = {k: v for k, v in kwargs.items() if not k.startswith("_") and v is not None}
+    payload["_tenant_id"] = str(company_id)
+
+    try:
+        result = await _canonical_create(**payload)
+    except Exception as exc:  # noqa: BLE001 — fronteira do tool: mapear, não mascarar
+        # Erro inesperado (ex: DBAPIError) é logado com stack e devolvido
+        # como resposta estruturada — para que o agente reporte falha real
+        # em vez de afirmar sucesso.
+        logger.exception("[company_settings] create_job_vacancy erro inesperado")
+        return {
+            "success": False,
+            "operation": "create_job_vacancy",
+            "error": "internal_error",
+            "message": (
+                "Falha inesperada ao criar a vaga. Detalhe: "
+                f"{type(exc).__name__}: {str(exc)[:200]}"
+            ),
+        }
+
+    if isinstance(result, dict) and result.get("success") is False:
+        # Já vem estruturado do handler canônico (validation_error/not_found).
+        logger.warning(
+            "[company_settings] create_job_vacancy retornou erro estruturado: %s",
+            result.get("error"),
+        )
+        return result
+
+    job_title = (result or {}).get("title", title)
+    job_status = (result or {}).get("status", "Rascunho")
+    job_id = (result or {}).get("id")
+    return {
+        **(result or {}),
+        "message": f"Vaga '{job_title}' criada como {job_status} (ID: {job_id}).",
+    }
+
+
+def _build_operational_tool_definitions() -> list[ToolDefinition]:
+    """Curadoria das tools operacionais primárias expostas ao agente.
+
+    Reaproveita as ToolDefinitions canônicas de `jobs_mgmt_tool_registry` e
+    `talent_tool_registry` (mesma `function=` referenciando os wrappers
+    multi-tenant já testados pelo agente recruiter_assistant).
+    """
+    from app.domains.recruiter_assistant.agents.jobs_mgmt_tool_registry import (
+        TOOL_DEFINITIONS as _JOBS_MGMT_TOOLS,
+    )
+    from app.domains.recruiter_assistant.agents.talent_tool_registry import (
+        TOOL_DEFINITIONS as _TALENT_TOOLS,
+    )
+
+    job_tools = _pick_tool_definitions(_JOBS_MGMT_TOOLS, ["list_jobs", "view_job_details"])
+    talent_tools = _pick_tool_definitions(_TALENT_TOOLS, ["search_candidates"])
+
+    create_tool = ToolDefinition(
+        name="create_job_vacancy",
+        description=(
+            "Cria uma vaga (rascunho por padrão) para a empresa atual. "
+            "Use quando o recrutador pedir explicitamente para criar/cadastrar "
+            "uma vaga, mesmo durante o onboarding. Title é obrigatório; "
+            "department/location/work_model/description são opcionais."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "title": {"type": "string", "description": "Título da vaga (obrigatório)"},
+                "department": {"type": "string", "description": "Departamento ou área"},
+                "location": {"type": "string", "description": "Localização (cidade/estado)"},
+                "work_model": {
+                    "type": "string",
+                    "description": "Modelo de trabalho: remoto, hibrido, presencial",
+                },
+                "description": {"type": "string", "description": "Descrição inicial da vaga"},
+                "status": {
+                    "type": "string",
+                    "description": "Status inicial (default 'Rascunho')",
+                },
+            },
+            "required": ["title"],
+        },
+        function=_wrap_create_job_vacancy,
+    )
+    return [create_tool, *job_tools, *talent_tools]
+
+
 def get_company_settings_tools() -> list[ToolDefinition]:
     return [
         ToolDefinition(
@@ -585,7 +731,7 @@ def get_company_settings_tools() -> list[ToolDefinition]:
         ),
         ToolDefinition(
             name="save_company_section",
-            description="Salva multiplos campos de uma secao do perfil de empresa de uma vez. Mais eficiente que save_company_field para atualizacoes em lote.",
+            description="Salva multiplos campos de uma secao de uma vez.",
             parameters={
                 "type": "object",
                 "properties": {
@@ -653,7 +799,7 @@ def get_company_settings_tools() -> list[ToolDefinition]:
         ),
         ToolDefinition(
             name="get_company_completion",
-            description="Retorna percentual de preenchimento do perfil da empresa por secao (perfil, cultura, tech stack, beneficios) para guiar o onboarding.",
+            description="Retorna o progresso de preenchimento do perfil da empresa por secao.",
             parameters={
                 "type": "object",
                 "properties": {
@@ -663,4 +809,9 @@ def get_company_settings_tools() -> list[ToolDefinition]:
             },
             function=_wrap_get_company_completion,
         ),
+        # ── Tools operacionais primárias (Task #812) ─────────────────────
+        # Mantidas DEPOIS das tools de onboarding intencionalmente: o LLM
+        # vê primeiro as ferramentas de configuração e só recorre às
+        # operacionais quando o recrutador trouxer intenção explícita.
+        *_build_operational_tool_definitions(),
     ]

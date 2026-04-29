@@ -3,15 +3,18 @@
 import React, { useState } from "react"
 import {
   ChevronDown, ChevronUp, Loader2, CheckCircle2, AlertCircle,
-  Search, FileSearch, Mail,
+  Search, FileSearch, Mail, FileUp,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export interface BackgroundTask {
   id: string
-  type: "sourcing" | "screening" | "communication" | "analysis"
+  // `wizard` lane — JD upload progress (Audit B-02 / Task #865).
+  type: "sourcing" | "screening" | "communication" | "analysis" | "wizard"
   label: string
-  status: "running" | "completed" | "failed"
+  // `queued` is shown before the worker picks up the job so the user
+  // gets immediate feedback after the 202 returns.
+  status: "queued" | "running" | "completed" | "failed"
   progress?: number
   message?: string
   completedAt?: number
@@ -23,9 +26,11 @@ const TASK_ICONS: Record<string, React.ElementType> = {
   screening: FileSearch,
   communication: Mail,
   analysis: FileSearch,
+  wizard: FileUp,
 }
 
 const STATUS_COLORS = {
+  queued: "text-lia-text-tertiary",
   running: "text-wedo-cyan",
   completed: "text-status-success",
   failed: "text-status-error",
@@ -42,7 +47,11 @@ export function BackgroundAgentsStatus({ tasks, onViewResult, className }: Backg
 
   if (tasks.length === 0) return null
 
-  const runningCount = tasks.filter((t) => t.status === "running").length
+  // "Active" includes both `queued` (waiting on a worker slot) and
+  // `running` (worker actively processing) — both render as in-progress
+  // rows below, so the header counter has to account for both to stay
+  // consistent with the visible task list.
+  const runningCount = tasks.filter((t) => t.status === "running" || t.status === "queued").length
   const completedCount = tasks.filter((t) => t.status === "completed").length
 
   return (
@@ -96,8 +105,13 @@ export function BackgroundAgentsStatus({ tasks, onViewResult, className }: Backg
                     <p className="text-[10px] text-lia-text-disabled mt-0.5 truncate">{task.message}</p>
                   )}
                 </div>
-                {task.status === "running" && (
-                  <Loader2 className="w-3 h-3 animate-spin text-wedo-cyan flex-shrink-0" />
+                {(task.status === "running" || task.status === "queued") && (
+                  <Loader2
+                    className={cn(
+                      "w-3 h-3 animate-spin flex-shrink-0",
+                      task.status === "queued" ? "text-lia-text-tertiary" : "text-wedo-cyan",
+                    )}
+                  />
                 )}
                 {task.status === "completed" && (
                   <button

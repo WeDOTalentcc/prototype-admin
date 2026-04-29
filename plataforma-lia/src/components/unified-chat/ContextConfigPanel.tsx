@@ -94,7 +94,7 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
       <div className="fixed inset-0 z-40" onClick={onClose} />
       <div
         className={cn(
-          "absolute left-0 bottom-full mb-1 z-50 rounded-xl border border-lia-border-subtle bg-lia-bg-primary shadow-lia-lg",
+          "absolute left-0 bottom-full mb-1 z-50 rounded-md border border-lia-border-subtle bg-lia-bg-primary shadow-lia-lg",
           mode === "fullscreen" ? "w-80" : "w-72"
         )}
       >
@@ -110,7 +110,7 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
           </button>
         </div>
 
-        <div className="mx-3 mb-2 flex items-start gap-2 px-2.5 py-2 rounded-lg bg-lia-bg-secondary">
+        <div className="mx-3 mb-2 flex items-start gap-2 px-2.5 py-2 rounded-md bg-lia-bg-secondary">
           <HelpCircle className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-tertiary mt-px" />
           <p className="text-[11px] text-lia-text-tertiary leading-relaxed">
             {t('helpText')}
@@ -118,7 +118,7 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
         </div>
 
         {activeEntity && (
-          <div className="mx-3 mb-2 flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-lg bg-lia-bg-secondary border border-lia-border-subtle">
+          <div className="mx-3 mb-2 flex items-center justify-between gap-2 px-2.5 py-1.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
             <span className="text-xs text-lia-info-color truncate">{activeEntity}</span>
             <button
               onClick={handleClearContext}
@@ -137,7 +137,7 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
                 key={type}
                 onClick={() => handleSelectMode(type)}
                 className={cn(
-                  "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors",
+                  "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-md text-left transition-colors",
                   isActive
                     ? "bg-lia-interactive-active text-lia-text-primary"
                     : "text-lia-text-secondary hover:bg-lia-bg-secondary"
@@ -163,7 +163,7 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
               <button
                 key={job.id}
                 onClick={() => handleSelectJob(job)}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-sm text-lia-text-secondary hover:bg-lia-bg-secondary transition-colors"
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-left text-sm text-lia-text-secondary hover:bg-lia-bg-secondary transition-colors"
               >
                 <Briefcase className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-tertiary" />
                 <span className="truncate flex-1">{job.title}</span>
@@ -182,7 +182,7 @@ export function ContextConfigPanel({ isOpen, onClose, mode }: Props) {
               <button
                 key={cand.id}
                 onClick={() => handleSelectCandidate(cand)}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left text-sm text-lia-text-secondary hover:bg-lia-bg-secondary transition-colors"
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-left text-sm text-lia-text-secondary hover:bg-lia-bg-secondary transition-colors"
               >
                 <Users className="w-3.5 h-3.5 flex-shrink-0 text-lia-text-tertiary" />
                 <span className="truncate flex-1">{cand.title}</span>

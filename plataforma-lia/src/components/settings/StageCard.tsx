@@ -5,6 +5,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
+import { useTranslations } from "next-intl"
 import { Card } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Button } from "@/components/ui/button"
@@ -21,20 +22,26 @@ export {
   getActionBehaviorShort,
   ActionBehaviorBadge,
   getStageDisplayName,
+  useStageDisplayName,
   isRealId,
 } from "./StageCardHelpers"
 
 import {
   getTypeBadge,
   ActionBehaviorBadge,
-  getStageDisplayName,
+  useStageDisplayName,
 } from "./StageCardHelpers"
 import { SubStatusPanel } from "./SubStatusPanel"
 import { DataFieldsPanel } from "./DataFieldsPanel"
 import { SaturationControlPanel } from "./SaturationControlPanel"
 
 export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
+  const t = useTranslations("settings.recruitment.pipeline.stage")
+  const getStageDisplayName = useStageDisplayName()
   const isSystemStage = stage.type === 'system'
+
+  const channelLabel = (channel: string) =>
+    channel === 'whatsapp' ? t('channelWhatsapp') : t('channelEmailWhatsapp')
 
   return (
     <Card
@@ -56,11 +63,11 @@ export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
               <ActionBehaviorBadge behavior={stage.action_behavior} />
               {stage.isActive ? (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-status-success/10 text-status-success text-micro font-medium">
-                  <Check className="h-3 w-3" />Ativo
+                  <Check className="h-3 w-3" />{t('active')}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-lia-bg-tertiary text-lia-text-secondary text-micro font-medium">
-                  <X className="h-3 w-3" />Inativo
+                  <X className="h-3 w-3" />{t('inactive')}
                 </span>
               )}
             </div>
@@ -71,14 +78,14 @@ export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
           {stage.sla > 0 && (
             <div className="flex items-center gap-1.5 pt-1">
               <Clock className="h-3.5 w-3.5 text-lia-text-secondary" />
-              <span className={textStyles.caption}>SLA: {stage.sla} {stage.sla === 1 ? 'dia' : 'dias'}</span>
+              <span className={textStyles.caption}>{t('sla')}: {stage.sla} {stage.sla === 1 ? t('slaDay') : t('slaDays')}</span>
             </div>
           )}
 
           {stage.default_channel && stage.default_channel !== 'email' && (
             <div className="flex items-center gap-1.5 pt-1">
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium bg-lia-bg-tertiary text-lia-text-secondary">
-                Canal: {stage.default_channel === 'whatsapp' ? 'WhatsApp' : 'E-mail + WhatsApp'}
+                {t('channelPrefix')} {channelLabel(stage.default_channel)}
               </span>
             </div>
           )}
@@ -113,6 +120,8 @@ export function SortableStageCard({
   onToggleSubStatus,
   isEditMode, registerRef,
 }: SortableStageCardProps) {
+  const t = useTranslations("settings.recruitment.pipeline.stage")
+  const getStageDisplayName = useStageDisplayName()
   const isSystemStage = stage.type === 'system'
   const canEditName = !isSystemStage
   const canRemove = stage.type === 'custom'
@@ -145,7 +154,7 @@ export function SortableStageCard({
             <button
               {...attributes} {...listeners}
               className="mt-1 cursor-grab active:cursor-grabbing p-1 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none"
-              aria-label="Arrastar para reordenar"
+              aria-label={t('dragToReorder')}
             >
               <GripVertical className="h-5 w-5 text-lia-text-tertiary" />
             </button>
@@ -161,7 +170,7 @@ export function SortableStageCard({
                   value={getStageDisplayName(stage)}
                   onChange={(e) => onUpdate(stage.id, { display_name: e.target.value, name: stage.name })}
                   className="flex-1 px-3 py-2 text-base-ui font-medium text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
-                  placeholder="Nome da etapa"
+                  placeholder={t('stageNamePlaceholder')}
                 />
               ) : (
                 <span className={`flex-1 ${textStyles.bodyLarge} font-medium px-3 py-2`}>
@@ -173,7 +182,7 @@ export function SortableStageCard({
                 <ActionBehaviorBadge behavior={stage.action_behavior} />
                 {canEditName && (
                   <div className="flex items-center gap-2">
-                    <Label htmlFor={`active-${stage.id}`} className={textStyles.description}>Ativo</Label>
+                    <Label htmlFor={`active-${stage.id}`} className={textStyles.description}>{t('active')}</Label>
                     <Switch
                       id={`active-${stage.id}`}
                       checked={stage.isActive}
@@ -188,7 +197,7 @@ export function SortableStageCard({
               <textarea
                 value={stage.notes}
                 onChange={(e) => onUpdate(stage.id, { notes: e.target.value })}
-                placeholder="Notas e comentários para a equipe..."
+                placeholder={t('notesPlaceholder')}
                 className="w-full px-3 py-2 text-xs text-lia-text-secondary border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none resize-none"
                 rows={2}
               />
@@ -198,7 +207,7 @@ export function SortableStageCard({
               <div className="flex items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-lia-text-secondary" />
-                  <Label htmlFor={`sla-${stage.id}`} className={textStyles.description}>SLA</Label>
+                  <Label htmlFor={`sla-${stage.id}`} className={textStyles.description}>{t('sla')}</Label>
                   <div className="flex items-center gap-1">
                     <input
                       id={`sla-${stage.id}`}
@@ -208,40 +217,40 @@ export function SortableStageCard({
                       className="w-14 px-2 py-1 text-xs text-center text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
                       min={0} max={30}
                     />
-                    <span className={textStyles.caption}>dias</span>
+                    <span className={textStyles.caption}>{t('slaDays')}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Label className={textStyles.description}>Ação</Label>
+                  <Label className={textStyles.description}>{t('action')}</Label>
                   <select
                     value={stage.action_behavior || 'passive'}
                     onChange={(e) => onUpdate(stage.id, { action_behavior: e.target.value })}
                     className="px-2 py-1 text-xs text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
                   >
-                    <option value="passive">Passivo</option>
-                    <option value="screening">Triagem WSI</option>
-                    <option value="scheduling">Agendamento</option>
-                    <option value="evaluation">Avaliação</option>
-                    <option value="verification">Verificação</option>
-                    <option value="offer">Proposta</option>
-                    <option value="intake">Entrada</option>
-                    <option value="conclusion_hired">Contratação</option>
-                    <option value="conclusion_rejected">Reprovação</option>
-                    <option value="conclusion_declined">Proposta Recusada</option>
+                    <option value="passive">{t('actionPassive')}</option>
+                    <option value="screening">{t('actionScreening')}</option>
+                    <option value="scheduling">{t('actionScheduling')}</option>
+                    <option value="evaluation">{t('actionEvaluation')}</option>
+                    <option value="verification">{t('actionVerification')}</option>
+                    <option value="offer">{t('actionOffer')}</option>
+                    <option value="intake">{t('actionIntake')}</option>
+                    <option value="conclusion_hired">{t('actionConclusionHired')}</option>
+                    <option value="conclusion_rejected">{t('actionConclusionRejected')}</option>
+                    <option value="conclusion_declined">{t('actionConclusionDeclined')}</option>
                   </select>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Label className={textStyles.description}>Canal</Label>
+                  <Label className={textStyles.description}>{t('channel')}</Label>
                   <select
                     value={stage.default_channel || 'email'}
                     onChange={(e) => onUpdate(stage.id, { default_channel: e.target.value })}
                     className="px-2 py-1 text-xs text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
                   >
-                    <option value="email">E-mail</option>
-                    <option value="whatsapp">WhatsApp</option>
-                    <option value="email_whatsapp">E-mail + WhatsApp</option>
+                    <option value="email">{t('channelEmail')}</option>
+                    <option value="whatsapp">{t('channelWhatsapp')}</option>
+                    <option value="email_whatsapp">{t('channelEmailWhatsapp')}</option>
                   </select>
                 </div>
               </div>
@@ -252,7 +261,7 @@ export function SortableStageCard({
                   size="sm"
                   onClick={() => onRemove(stage.id)}
                   className="text-lia-text-tertiary hover:text-status-error hover:bg-status-error/10 dark:hover:bg-status-error/20 transition-colors motion-reduce:transition-none"
-                  aria-label={`Remover etapa ${getStageDisplayName(stage)}`}
+                  aria-label={t('removeStage', { name: getStageDisplayName(stage) })}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

@@ -67,20 +67,20 @@ const BASE_CHANNELS: Omit<ChannelConfig, 'connected'>[] = [
     id: 'linkedin',
     name: 'LinkedIn',
     icon: <Linkedin className="w-3.5 h-3.5" />,
-    configUrl: '/configuracoes/integracoes',
+    configUrl: '/configuracoes?section=integrations',
     notConfiguredMessage: 'A integração com LinkedIn requer credenciais OAuth configuradas (LINKEDIN_CLIENT_ID e LINKEDIN_CLIENT_SECRET). Configure em Integrações para habilitar a publicação automática de vagas.',
   },
   {
     id: 'indeed',
     name: 'Indeed',
     icon: <Globe className="w-3.5 h-3.5" />,
-    configUrl: '/configuracoes/integracoes',
+    configUrl: '/configuracoes?section=integrations',
   },
   {
     id: 'gupy',
     name: 'Gupy',
     icon: <Building2 className="w-3.5 h-3.5" />,
-    configUrl: '/configuracoes/integracoes',
+    configUrl: '/configuracoes?section=integrations',
   },
   {
     id: 'portal',

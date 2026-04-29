@@ -1,6 +1,3 @@
-"""
-WizardStepService facade — delegates to stage-specific handlers.
-"""
 import logging
 from datetime import datetime
 from typing import Any
@@ -13,8 +10,8 @@ from lia_models.job_draft import ChangeType, JobDraft, JobDraftStatus
 from app.shared.services.confidence_policy_service import ConfidencePolicyService
 from app.shared.services.config_completeness_service import ConfigCompletenessService
 from app.shared.services.context_aggregator_service import context_aggregator
-from app.shared.services.enhanced_intent_classifier import EnhancedIntentType, enhanced_intent_classifier
-from app.shared.services.intent_classifier import IntentType, intent_classifier_service
+from app.domains.ai.services.enhanced_intent_classifier import EnhancedIntentType, enhanced_intent_classifier
+from app.domains.ai.services.intent_classifier import IntentType, intent_classifier_service
 from app.shared.services.knowledge_base_service import knowledge_base
 from app.shared.services.learning_hub_service import learning_hub_service
 from app.shared.services.organization_catalog_service import OrganizationCatalogService
@@ -555,6 +552,8 @@ class WizardStepService:
                         field_origins=field_origins,
                         confidence_service=confidence_service,
                         suggestions_data=suggestions_data,
+                        db=db,
+                        company_id=company_id,
                     )
 
                 elif current_stage == 2:
@@ -562,6 +561,8 @@ class WizardStepService:
                         job_draft=job_draft,
                         company_departments=company_departments,
                         suggestions_data=suggestions_data,
+                        db=db,
+                        company_id=company_id,
                     )
 
                 elif current_stage == 3:
@@ -583,9 +584,23 @@ class WizardStepService:
                     )
 
                 elif current_stage == 5:
+                    # F.2 — screening_mode persistence: parse keywords before dispatching
+                    try:
+                        _input_lower_f2 = (request.user_input or "").lower()
+                        if any(kw in _input_lower_f2 for kw in ["compacta", "compact", "rápida", "rapida", "curta"]):
+                            job_draft["screening_mode"] = "compact"
+                            logger.info("[F.2] screening_mode set to 'compact' from recruiter input")
+                        elif any(kw in _input_lower_f2 for kw in ["completa", "full", "completo", "detalhada", "longa"]):
+                            job_draft["screening_mode"] = "full"
+                            logger.info("[F.2] screening_mode set to 'full' from recruiter input")
+                    except Exception as _f2_exc:
+                        logger.warning("[F.2] screening_mode parse failed (non-blocking): %s", _f2_exc)
                     lia_message, suggestions_data = await handle_wsi_questions(
                         job_draft=job_draft,
                         suggestions_data=suggestions_data,
+                        db=db,
+                        company_id=company_id,
+                        screening_mode=job_draft.get("screening_mode", "compact"),
                     )
 
                 elif current_stage == 6:
@@ -597,13 +612,15 @@ class WizardStepService:
                         field_origins=field_origins,
                         suggestions_data=suggestions_data,
                         completeness_service=completeness_service,
+                        db=db,
+                        company_id=company_id,
                     )
 
                 elif current_stage == 7:
                     lia_message = handle_pre_publish()
 
                 elif current_stage == 8:
-                    lia_message = handle_candidate_search()
+                    lia_message, suggestions_data = handle_candidate_search(suggestions_data)
 
                 elif current_stage == 9:
                     lia_message = handle_calibration()
@@ -737,6 +754,10 @@ class WizardStepService:
                 except Exception as e:
                     logger.warning(f"Error evaluating stage skip: {e}")
 
+            # Frente D — Stage validator sensor
+            from app.domains.job_management.schemas.wizard_stage_validators import validate_stage
+            _missing = validate_stage(stage_info["name"], job_draft) if job_draft else []
+
             return WizardStepResponse(
                 conversation_id=conversation_id,
                 current_stage=current_stage,
@@ -754,6 +775,7 @@ class WizardStepService:
                 skip_reason=skip_reason,
                 auto_filled_data=auto_filled_data,
                 stages_to_skip=stages_to_skip if stages_to_skip else None,
+                missing_fields=_missing if _missing else None,
             )
 
         except Exception as e:

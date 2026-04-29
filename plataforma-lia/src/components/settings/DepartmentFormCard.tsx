@@ -10,7 +10,7 @@ import {
   type NewDepartmentForm,
   type NewMemberForm,
   COLOR_OPTIONS,
-} from './companyTeamHub.types';
+} from '@/hooks/settings/department-types';
 import { MemberSection } from './MemberSection';
 import { useTranslations } from "next-intl";
 

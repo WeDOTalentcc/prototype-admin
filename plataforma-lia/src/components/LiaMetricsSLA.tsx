@@ -7,7 +7,7 @@ import {
   TrendingUp, Clock, Target, CheckCircle, Award, AlertCircle, Activity, Timer
 } from"lucide-react"
 import { LiaMetricsChart } from"./lia-metrics-chart"
-import { generateTimeSeriesData } from"./useLiaMetrics"
+import { generateTimeSeriesData } from"@/hooks/ai/use-lia-metrics"
 
 interface LiaMetricsSLAProps {
   contactRate: number

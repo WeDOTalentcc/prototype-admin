@@ -1,5 +1,6 @@
 "use client"
 
+import { useTranslations } from "next-intl"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
@@ -13,42 +14,45 @@ interface SectionProps {
 }
 
 export function BasicDataSection({ onSettingsChange }: SectionProps) {
+  const t = useTranslations("settings.institutionalSections")
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Building className="w-4 h-4" />
-            Informações Básicas
+            {t("basicInfo")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Razão Social
+                {t("legalName")}
               </label>
               <input
+                key={t("legalNameDefault")}
                 type="text"
-                defaultValue="Sodexo do Brasil Comercial S.A."
+                defaultValue={t("legalNameDefault")}
                 onChange={() => onSettingsChange(true)}
                 className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Nome Fantasia
+                {t("tradeName")}
               </label>
               <input
+                key={t("tradeNameDefault")}
                 type="text"
-                defaultValue="Sodexo Brasil"
+                defaultValue={t("tradeNameDefault")}
                 onChange={() => onSettingsChange(true)}
                 className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                CNPJ
+                {t("cnpj")}
               </label>
               <input
                 type="text"
@@ -59,7 +63,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Inscrição Estadual
+                {t("stateRegistration")}
               </label>
               <input
                 type="text"
@@ -70,7 +74,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Data de Fundação
+                {t("foundingDate")}
               </label>
               <input
                 type="date"
@@ -81,18 +85,18 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Número de Funcionários
+                {t("employeeCount")}
               </label>
               <select
                 onChange={() => onSettingsChange(true)}
                 className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
-                <option>1-10 funcionários</option>
-                <option>11-50 funcionários</option>
-                <option>51-200 funcionários</option>
-                <option>201-1000 funcionários</option>
-                <option>1001-5000 funcionários</option>
-                <option>5000+ funcionários</option>
+                <option>{t("employees1_10")}</option>
+                <option>{t("employees11_50")}</option>
+                <option>{t("employees51_200")}</option>
+                <option>{t("employees201_1000")}</option>
+                <option>{t("employees1001_5000")}</option>
+                <option>{t("employees5000plus")}</option>
               </select>
             </div>
           </div>
@@ -100,7 +104,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Site Institucional
+                {t("institutionalWebsite")}
               </label>
               <input
                 type="url"
@@ -111,7 +115,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Email Principal
+                {t("mainEmail")}
               </label>
               <input
                 type="email"
@@ -122,7 +126,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Telefone Principal
+                {t("mainPhone")}
               </label>
               <input
                 type="tel"
@@ -133,7 +137,7 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                WhatsApp Corporativo
+                {t("corporateWhatsApp")}
               </label>
               <input
                 type="tel"
@@ -146,11 +150,12 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
 
           <div>
             <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-              Descrição da Empresa
+              {t("companyDescription")}
             </label>
             <textarea
+              key={t("companyDescriptionDefault")}
               rows={4}
-              defaultValue="A Sodexo é uma empresa francesa líder mundial em serviços de alimentação e facilities management, presente em 55 países. No Brasil desde 1997, oferece soluções integradas que melhoram a qualidade de vida diária."
+              defaultValue={t("companyDescriptionDefault")}
               onChange={() => onSettingsChange(true)}
               className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
             />
@@ -160,17 +165,17 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Logotipo da Empresa</CardTitle>
+          <CardTitle>{t("companyLogo")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="rounded-xl p-6 text-center bg-lia-bg-secondary dark:bg-lia-bg-secondary">
             <Upload className="w-8 h-8 mx-auto mb-2 text-lia-text-primary" />
             <p className="text-sm text-lia-text-primary mb-2">
-              Faça upload do logotipo da empresa
+              {t("uploadLogo")}
             </p>
-            <p className="text-xs text-lia-text-primary">PNG, JPG ou SVG até 2MB • Tamanho recomendado: 400x400px</p>
+            <p className="text-xs text-lia-text-primary">{t("logoFormat")}</p>
             <Button variant="outline" className="mt-3" size="sm">
-              Escolher Arquivo
+              {t("chooseFile")}
             </Button>
           </div>
         </CardContent>
@@ -180,20 +185,21 @@ export function BasicDataSection({ onSettingsChange }: SectionProps) {
 }
 
 export function AddressSection({ onSettingsChange }: SectionProps) {
+  const t = useTranslations("settings.institutionalSections")
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm font-semibold">
             <Globe className="w-4 h-4" />
-            Endereço da Matriz
+            {t("headquartersAddress")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                CEP
+                {t("zipCode")}
               </label>
               <input
                 type="text"
@@ -205,11 +211,12 @@ export function AddressSection({ onSettingsChange }: SectionProps) {
             </div>
             <div className="md:col-span-2">
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Logradouro
+                {t("street")}
               </label>
               <input
+                key={t("streetDefault")}
                 type="text"
-                defaultValue="Rua Dr. Geraldo Campos Moreira"
+                defaultValue={t("streetDefault")}
                 onChange={() => onSettingsChange(true)}
                 className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
@@ -219,7 +226,7 @@ export function AddressSection({ onSettingsChange }: SectionProps) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Número
+                {t("number")}
               </label>
               <input
                 type="text"
@@ -230,22 +237,23 @@ export function AddressSection({ onSettingsChange }: SectionProps) {
             </div>
             <div className="md:col-span-2">
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Complemento
+                {t("complement")}
               </label>
               <input
                 type="text"
-                placeholder="Andar, sala, bloco..."
+                placeholder={t("complementPlaceholder")}
                 onChange={() => onSettingsChange(true)}
                 className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Bairro
+                {t("neighborhood")}
               </label>
               <input
+                key={t("neighborhoodDefault")}
                 type="text"
-                defaultValue="Cidade Monções"
+                defaultValue={t("neighborhoodDefault")}
                 onChange={() => onSettingsChange(true)}
                 className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
@@ -255,70 +263,71 @@ export function AddressSection({ onSettingsChange }: SectionProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Cidade
+                {t("city")}
               </label>
               <input
+                key={t("cityDefault")}
                 type="text"
-                defaultValue="São Paulo"
+                defaultValue={t("cityDefault")}
                 onChange={() => onSettingsChange(true)}
                 className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               />
             </div>
             <div>
               <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-                Estado
+                {t("state")}
               </label>
               <select
                 defaultValue="SP"
                 onChange={() => onSettingsChange(true)}
                 className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
               >
-                <option value="">Selecione o estado</option>
-                <option value="AC">Acre</option>
-                <option value="AL">Alagoas</option>
-                <option value="AP">Amapá</option>
-                <option value="AM">Amazonas</option>
-                <option value="BA">Bahia</option>
-                <option value="CE">Ceará</option>
-                <option value="DF">Distrito Federal</option>
-                <option value="ES">Espírito Santo</option>
-                <option value="GO">Goiás</option>
-                <option value="MA">Maranhão</option>
-                <option value="MT">Mato Grosso</option>
-                <option value="MS">Mato Grosso do Sul</option>
-                <option value="MG">Minas Gerais</option>
-                <option value="PA">Pará</option>
-                <option value="PB">Paraíba</option>
-                <option value="PR">Paraná</option>
-                <option value="PE">Pernambuco</option>
-                <option value="PI">Piauí</option>
-                <option value="RJ">Rio de Janeiro</option>
-                <option value="RN">Rio Grande do Norte</option>
-                <option value="RS">Rio Grande do Sul</option>
-                <option value="RO">Rondônia</option>
-                <option value="RR">Roraima</option>
-                <option value="SC">Santa Catarina</option>
-                <option value="SP">São Paulo</option>
-                <option value="SE">Sergipe</option>
-                <option value="TO">Tocantins</option>
+                <option value="">{t("selectState")}</option>
+                <option value="AC">{t("stateAC")}</option>
+                <option value="AL">{t("stateAL")}</option>
+                <option value="AP">{t("stateAP")}</option>
+                <option value="AM">{t("stateAM")}</option>
+                <option value="BA">{t("stateBA")}</option>
+                <option value="CE">{t("stateCE")}</option>
+                <option value="DF">{t("stateDF")}</option>
+                <option value="ES">{t("stateES")}</option>
+                <option value="GO">{t("stateGO")}</option>
+                <option value="MA">{t("stateMA")}</option>
+                <option value="MT">{t("stateMT")}</option>
+                <option value="MS">{t("stateMS")}</option>
+                <option value="MG">{t("stateMG")}</option>
+                <option value="PA">{t("statePA")}</option>
+                <option value="PB">{t("statePB")}</option>
+                <option value="PR">{t("statePR")}</option>
+                <option value="PE">{t("statePE")}</option>
+                <option value="PI">{t("statePI")}</option>
+                <option value="RJ">{t("stateRJ")}</option>
+                <option value="RN">{t("stateRN")}</option>
+                <option value="RS">{t("stateRS")}</option>
+                <option value="RO">{t("stateRO")}</option>
+                <option value="RR">{t("stateRR")}</option>
+                <option value="SC">{t("stateSC")}</option>
+                <option value="SP">{t("stateSP")}</option>
+                <option value="SE">{t("stateSE")}</option>
+                <option value="TO">{t("stateTO")}</option>
               </select>
             </div>
           </div>
 
           <div>
             <label className="text-sm font-medium text-lia-text-primary mb-3 block">
-              País
+              {t("country")}
             </label>
             <select
               defaultValue="BR"
               onChange={() => onSettingsChange(true)}
               className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary"
             >
-              <option value="BR">Brasil</option>
-              <option value="US">Estados Unidos</option>
-              <option value="FR">França</option>
-              <option value="DE">Alemanha</option>
-              <option value="GB">Reino Unido</option>
+              <option value="BR">{t("countryBR")}</option>
+              <option value="US">{t("countryUS")}</option>
+              <option value="FR">{t("countryFR")}</option>
+              <option value="DE">{t("countryDE")}</option>
+              <option value="GB">{t("countryGB")}</option>
             </select>
           </div>
         </CardContent>

@@ -1,17 +1,15 @@
 /**
  * Adapter functions to normalize different candidate shapes into NormalizedCandidate.
  * - fromAgentStudio: CalibrationCardModal inline type (snake_case, API data)
- * - fromExpandedChat: CalibrationProfileModal type (camelCase, expanded-chat/types)
+ *
+ * The legacy `fromExpandedChat` adapter was removed alongside the deprecated
+ * `expanded-chat-modal` surface (Task #860 — A-01 / A-10). Calibration is now
+ * driven entirely from snake_case API payloads via `fromAgentStudio`.
  */
 
 import type {
   NormalizedCandidate,
-  NormalizedExperience,
-  NormalizedEducation,
-  NormalizedMatchCriterion,
-  MatchLevel,
 } from "./types"
-import type { CalibrationCandidate as ExpandedChatCandidate } from "@/components/expanded-chat/types"
 
 // ---------- Agent Studio shape (snake_case) ----------
 
@@ -80,46 +78,6 @@ export function fromAgentStudio(c: AgentStudioCandidate): NormalizedCandidate {
       id: `mc-${i}`,
       criterion: mc.criterion,
       match: mc.match,
-      explanation: mc.explanation,
-    })),
-  }
-}
-
-// ---------- Expanded Chat shape (camelCase) ----------
-
-export function fromExpandedChat(c: ExpandedChatCandidate): NormalizedCandidate {
-  const matchLevel = (isMatch: boolean): MatchLevel => isMatch ? "good" : "no"
-
-  return {
-    id: c.id,
-    name: c.name,
-    avatarUrl: c.photoUrl,
-    linkedinUrl: c.linkedinUrl,
-    currentTitle: c.currentRole,
-    currentCompany: c.currentCompany,
-    location: c.location,
-    totalExperience: c.totalExperience,
-    skills: c.additionalSkills?.slice(0, 8) ?? [],
-    experiences: (c.experiences ?? []).map((exp) => ({
-      id: exp.id,
-      title: exp.role,
-      company: exp.company,
-      period: exp.period,
-      durationLabel: exp.duration,
-      isPromotion: exp.isPromotion,
-      skills: exp.skills,
-    })),
-    education: (c.educationHistory ?? []).map((edu) => ({
-      id: edu.id,
-      institution: edu.institution,
-      degree: edu.degree,
-      field: edu.field,
-      period: edu.period,
-    })),
-    matchCriteria: (c.matchCriteria ?? []).map((mc) => ({
-      id: mc.id,
-      criterion: mc.criteria,
-      match: matchLevel(mc.isMatch),
       explanation: mc.explanation,
     })),
   }

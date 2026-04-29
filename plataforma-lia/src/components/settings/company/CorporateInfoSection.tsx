@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useTranslations } from 'next-intl'
 import { Users, Building2, Calendar } from 'lucide-react'
 import { SimpleDataCard } from '../CompanyDataCard'
 import { inputClass, selectClass } from '../useCompanyDataForm'
@@ -17,17 +18,18 @@ export function CorporateInfoSection({
   setCompanyData,
   isEditing,
 }: CorporateInfoSectionProps) {
+  const t = useTranslations('settings.minhaEmpresa.corporate')
   return (
     <div className="space-y-3">
       <h3 className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wider px-1">
-        Informações Corporativas
+        {t('sectionTitle')}
       </h3>
       
       <div className="grid grid-cols-1 gap-3">
         <SimpleDataCard
-          label="Nº de Funcionários"
+          label={t('employees')}
           fieldId="field-employee-count"
-          category="Estrutura"
+          category={t('structureCategory')}
           isEditing={isEditing}
         >
           <div className="flex items-center gap-2">
@@ -42,15 +44,15 @@ export function CorporateInfoSection({
               }))}
               disabled={!isEditing}
               className={inputClass(!isEditing)}
-              placeholder="Ex: 500"
+              placeholder={t('employeeCountPlaceholder')}
             />
           </div>
         </SimpleDataCard>
 
         <SimpleDataCard
-          label="Porte da Empresa"
+          label={t('companySize')}
           fieldId="field-company-size"
-          category="Estrutura"
+          category={t('structureCategory')}
           isEditing={isEditing}
         >
           <div className="flex items-center gap-2">
@@ -62,20 +64,20 @@ export function CorporateInfoSection({
               disabled={!isEditing}
               className={selectClass(!isEditing)}
             >
-              <option value="">Selecione...</option>
-              <option value="startup">Startup (1-50)</option>
-              <option value="small">Pequena (51-200)</option>
-              <option value="medium">Média (201-1000)</option>
-              <option value="large">Grande (1001-5000)</option>
-              <option value="enterprise">Enterprise (5000+)</option>
+              <option value="">{t('companySizePlaceholder')}</option>
+              <option value="startup">{t('companySizeStartup')}</option>
+              <option value="small">{t('companySizeSmall')}</option>
+              <option value="medium">{t('employeesMedium')}</option>
+              <option value="large">{t('companySizeLarge')}</option>
+              <option value="enterprise">{t('companySizeEnterprise')}</option>
             </select>
           </div>
         </SimpleDataCard>
 
         <SimpleDataCard
-          label="Ano de Fundação"
+          label={t('foundedYear')}
           fieldId="field-founded-year"
-          category="História"
+          category={t('history')}
           isEditing={isEditing}
         >
           <div className="flex items-center gap-2">
@@ -90,7 +92,7 @@ export function CorporateInfoSection({
               }))}
               disabled={!isEditing}
               className={inputClass(!isEditing)}
-              placeholder="Ex: 2020"
+              placeholder={t('foundedYearPlaceholder')}
             />
           </div>
         </SimpleDataCard>

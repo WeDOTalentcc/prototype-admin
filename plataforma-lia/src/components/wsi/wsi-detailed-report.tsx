@@ -76,7 +76,7 @@ function ReportHeader({ data, candidateName, candidateTitle }: { data: WSIResult
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Chip variant="neutral" muted className={`${decision.badge} text-xs font-medium px-3 py-1 rounded-full`}>
+          <Chip variant="neutral" muted className={`${decision.badge} text-micro font-medium px-3 py-1 rounded-full`}>
             {scores.decision ==="approve" || scores.decision ==="approved" ? (
               <><CheckCircle className="w-3.5 h-3.5 mr-1" />{decision.label}</>
             ) : (
@@ -160,7 +160,7 @@ function ScoresByDimension({ data }: { data: WSIResultDetails }) {
       </div>
       <div className="mt-4 pt-3 border-t border-lia-border-subtle space-y-2">
         <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1 text-xs text-lia-text-tertiary bg-lia-bg-secondary px-2 py-1 rounded-full">
+          <span className="flex items-center gap-1 text-micro text-lia-text-tertiary bg-lia-bg-secondary px-2 py-1 rounded-full">
             {session.screening_type ==="voice" ? <Mic className="w-3 h-3" /> : <Target className="w-3 h-3" />}
             {session.screening_type ==="voice" ? t('report.voiceScreening') : t('report.textScreening')}
           </span>
@@ -332,7 +332,7 @@ function ResponseCard({ response, index, isOpen, onToggle }: {
                   <p className={`font-semibold ${gap.color}`}>{bloomLabel(response.bloom_expected)}</p>
                 </div>
               )}
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${gap.bg} ${gap.color} border ${gap.border}`}>
+              <span className={`text-micro font-medium px-2 py-0.5 rounded-full ${gap.bg} ${gap.color} border ${gap.border}`}>
                 {gap.label}
               </span>
             </div>

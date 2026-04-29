@@ -4,6 +4,40 @@ import React from"react"
 import { Chip } from "@/components/ui/chip"
 import { LIAIcon } from"@/components/ui/lia-icon"
 
+// --- Workflow context types (E.6) ---
+
+export type WorkflowContext =
+  | 'vacancy_published'
+  | 'candidate_approved'
+  | 'wizard_active'
+  | 'idle'
+
+interface ContextSuggestionItem {
+  icon: string
+  label: string
+  prompt: string
+}
+
+const CONTEXT_SUGGESTIONS: Record<WorkflowContext, ContextSuggestionItem[]> = {
+  vacancy_published: [
+    { icon: '🎯', label: 'Calibrar busca', prompt: 'Quero calibrar a busca de candidatos' },
+    { icon: '🔍', label: 'Iniciar triagem', prompt: 'Vamos iniciar a triagem dos candidatos' },
+    { icon: '👥', label: 'Escolher entrevistadores', prompt: 'Quero definir os entrevistadores' },
+    { icon: '🔗', label: 'Compartilhar vaga', prompt: 'Como compartilho o link da vaga?' },
+  ],
+  candidate_approved: [
+    { icon: '📅', label: 'Agendar entrevista', prompt: 'Agendar entrevista para esse candidato' },
+    { icon: '📋', label: 'Gerar plano', prompt: 'Gerar plano de entrevista' },
+  ],
+  wizard_active: [
+    { icon: '⚡', label: 'Preencher rápido', prompt: 'Preencher os campos restantes automaticamente' },
+    { icon: '👁️', label: 'Ver progresso', prompt: 'Mostrar o progresso da vaga' },
+  ],
+  idle: [],
+}
+
+// --- Existing types ---
+
 interface SavedTemplate {
   id: string
   name: string
@@ -40,6 +74,10 @@ interface PromptSuggestionsPanelProps {
   setShowHistory: (val: boolean) => void
   onSuggestionClick: (suggestion: SuggestionItem) => void
   onHistoryCommand: (command: string) => void
+  /** E.6: optional context that overrides default suggestions with contextual chips */
+  workflowContext?: WorkflowContext
+  /** E.6: callback when a contextual chip is clicked (sends the prompt) */
+  onContextPromptClick?: (prompt: string) => void
 }
 
 export function getSmartSuggestions(
@@ -174,8 +212,47 @@ export function PromptSuggestionsPanel({
   showHistory,
   setShowHistory,
   onSuggestionClick,
-  onHistoryCommand
+  onHistoryCommand,
+  workflowContext,
+  onContextPromptClick,
 }: PromptSuggestionsPanelProps) {
+  // E.6: When workflowContext is provided and non-idle, show contextual chips
+  const contextChips =
+    workflowContext && workflowContext !== 'idle'
+      ? CONTEXT_SUGGESTIONS[workflowContext]
+      : []
+  const showContextChips = contextChips.length > 0
+
+  if (showContextChips) {
+    return (
+      <div className="px-4 pb-0">
+        <div className="flex items-center gap-2 mb-3">
+          <LIAIcon size="sm" />
+          <span className="text-sm font-medium text-lia-text-primary">💡 Sugestões</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {contextChips.map((chip) => (
+            <button
+              key={chip.prompt}
+              type="button"
+              onClick={() => onContextPromptClick?.(chip.prompt)}
+              disabled={isProcessing}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-lia-border-subtle bg-lia-bg-primary text-sm font-medium text-lia-text-primary transition-colors motion-reduce:transition-none ${
+                isProcessing
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'hover:border-lia-border-medium hover:bg-lia-bg-secondary'
+              }`}
+            >
+              <span aria-hidden="true">{chip.icon}</span>
+              {chip.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // Default (original) behavior when no workflowContext or idle
   return (
     <div className="px-4 pb-0">
       <div className="flex items-center justify-between mb-3">

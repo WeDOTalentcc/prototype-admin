@@ -7,7 +7,7 @@ import {
   TrendingUp, Clock, Phone, Calendar, Award, Zap, CheckCircle
 } from"lucide-react"
 import { textStyles } from"@/lib/design-tokens"
-import type { LiaMetricsData } from"./useLiaMetricsData"
+import type { LiaMetricsData } from"@/hooks/ai/use-lia-metrics-data"
 
 interface LiaMetricsKpiCardsProps {
   data: LiaMetricsData

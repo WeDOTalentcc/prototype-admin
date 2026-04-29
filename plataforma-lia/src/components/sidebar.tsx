@@ -300,7 +300,7 @@ const MenuItem = React.memo(({
                 <Crown className="w-2 h-2 text-lia-text-primary" />
               )}
               {isLocked && (
-                <span className="text-xs bg-lia-interactive-active px-1.5 py-0.5 rounded-full">
+                <span className="text-micro bg-lia-interactive-active px-1.5 py-0.5 rounded-full">
                   {t('labels.premium')}
                 </span>
               )}
@@ -356,7 +356,7 @@ const MenuItem = React.memo(({
                     <Crown className="w-2 h-2 text-lia-text-primary" />
                   )}
                   {subIsLocked && (
-                    <span className="text-xs bg-lia-interactive-active px-1 py-0.5 rounded-full">
+                    <span className="text-micro bg-lia-interactive-active px-1 py-0.5 rounded-full">
                       {t('labels.premium')}
                     </span>
                   )}
@@ -421,7 +421,7 @@ const JobFilterItem = React.memo(({
         <div className="flex items-center justify-between flex-1">
           <span className="text-base-ui">{item.label}</span>
           {item.count !== undefined && item.count > 0 && (
-            <span className="text-xs bg-lia-interactive-active px-1.5 py-0.5 rounded-full h-5 flex items-center">
+            <span className="text-micro bg-lia-interactive-active px-1.5 py-0.5 rounded-full h-5 flex items-center">
               {item.count}
             </span>
           )}

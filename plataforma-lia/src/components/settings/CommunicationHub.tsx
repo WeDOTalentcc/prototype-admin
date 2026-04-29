@@ -12,7 +12,7 @@ import { ScheduleTab } from './communication-hub/ScheduleTab'
 import { AlertsTab } from './communication-hub/AlertsTab'
 import { ABTestingTab } from './communication-hub/ABTestingTab'
 
-export function CommunicationHub({ activeSubsection, visibleTabs }: CommunicationHubProps) {
+export function CommunicationHub({ activeSubsection, visibleTabs, stacked }: CommunicationHubProps) {
   const t = useTranslations("settings")
   const hub = useCommunicationHub(activeSubsection)
 
@@ -31,8 +31,8 @@ export function CommunicationHub({ activeSubsection, visibleTabs }: Communicatio
 
   const tabs = visibleTabs ? allTabs.filter(tab => visibleTabs.includes(tab.id)) : allTabs
 
-  const renderContent = () => {
-    switch (hub.activeTab) {
+  const renderTab = (tabId: string) => {
+    switch (tabId) {
       case 'templates':
         return (
           <TemplatesTab
@@ -55,7 +55,7 @@ export function CommunicationHub({ activeSubsection, visibleTabs }: Communicatio
             aiPrompt={hub.aiPrompt}
             setAiPrompt={hub.setAiPrompt}
             aiResultModal={hub.aiResultModal}
-            bodyTextareaRef={hub.bodyTextareaRef as any}
+            bodyTextareaRef={hub.bodyTextareaRef}
             isGenerating={hub.isGenerating}
             handleChannelFilterChange={hub.handleChannelFilterChange}
             insertVariableAtCursor={hub.insertVariableAtCursor}
@@ -123,6 +123,16 @@ export function CommunicationHub({ activeSubsection, visibleTabs }: Communicatio
     }
   }
 
+  if (stacked) {
+    return (
+      <div className="space-y-8">
+        {tabs.map((tab) => (
+          <React.Fragment key={tab.id}>{renderTab(tab.id)}</React.Fragment>
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4">
       {tabs.length > 1 && (
@@ -140,7 +150,7 @@ export function CommunicationHub({ activeSubsection, visibleTabs }: Communicatio
       </div>
       )}
 
-      {renderContent()}
+      {renderTab(hub.activeTab)}
     </div>
   )
 }

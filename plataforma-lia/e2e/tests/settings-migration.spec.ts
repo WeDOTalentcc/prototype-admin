@@ -1,9 +1,12 @@
 import { test, expect, type Page } from '@playwright/test';
 
+// Task #896 — cobertura mínima dos 8 hubs do menu Configurações
+// (incluindo fairness-compliance, que faltava na lista original).
 const SECTION_IDS = [
   'minha-empresa', 'pipeline', 'screening',
   'templates-assinatura', 'comunicacao-alertas',
   'usuarios-departamentos', 'integrations',
+  'fairness-compliance',
 ] as const;
 
 async function navigateToSettings(page: Page) {
@@ -143,6 +146,7 @@ test.describe('Settings Migration — Independent Sections', () => {
     'comunicacao-alertas': 'Comunicação',
     'usuarios-departamentos': 'Usuários',
     'integrations': 'Integrações',
+    'fairness-compliance': 'Fairness',
   };
 
   for (const [id, headingText] of Object.entries(sectionHeadings)) {

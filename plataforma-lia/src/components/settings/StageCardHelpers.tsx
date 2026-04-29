@@ -1,33 +1,29 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Lock, Shield, Settings } from "lucide-react"
 import type { RecruitmentStage, StageDataField } from "./recruitment-journey.types"
 
 export function getTypeBadge(type: RecruitmentStage['type']) {
   switch (type) {
     case 'system':
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-lia-interactive-active text-lia-text-secondary text-micro font-medium">
-          <Lock className="h-3 w-3" />
-          Sistema
-        </span>
-      )
+      return <TypeBadge tKey="typeSystem" Icon={Lock} className="bg-lia-interactive-active text-lia-text-secondary" />
     case 'default':
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary text-micro font-medium">
-          <Shield className="h-3 w-3" />
-          Padrão
-        </span>
-      )
+      return <TypeBadge tKey="typeDefault" Icon={Shield} className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary" />
     case 'custom':
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary text-micro font-medium">
-          <Settings className="h-3 w-3" />
-          Custom
-        </span>
-      )
+      return <TypeBadge tKey="typeCustom" Icon={Settings} className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary" />
   }
+}
+
+function TypeBadge({ tKey, Icon, className }: { tKey: string; Icon: React.ComponentType<{ className?: string }>; className: string }) {
+  const t = useTranslations("settings.stageHelpers")
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${className} text-micro font-medium`}>
+      <Icon className="h-3 w-3" />
+      {t(tKey)}
+    </span>
+  )
 }
 
 const ACTION_BEHAVIOR_LABELS: Record<string, string> = {
@@ -53,17 +49,54 @@ export function getActionBehaviorShort(behavior?: string): string | null {
 }
 
 export function ActionBehaviorBadge({ behavior }: { behavior?: string }) {
-  const label = getActionBehaviorLabel(behavior)
-  if (!label) return null
+  const t = useTranslations("settings.stageHelpers")
+  const BEHAVIOR_KEYS: Record<string, string> = {
+    intake: "behaviorIntake",
+    screening: "behaviorScreening",
+    scheduling: "behaviorScheduling",
+    evaluation: "behaviorEvaluation",
+    verification: "behaviorVerification",
+    offer: "behaviorOffer",
+    passive: "behaviorPassive",
+    conclusion_hired: "behaviorHired",
+    conclusion_rejected: "behaviorRejected",
+    conclusion_declined: "behaviorDeclined",
+  }
+  if (!behavior || !BEHAVIOR_KEYS[behavior]) return null
   return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium bg-wedo-cyan/15 text-wedo-cyan">
-      {label}
+      {t(BEHAVIOR_KEYS[behavior])}
     </span>
   )
 }
 
 export function getStageDisplayName(stage: RecruitmentStage): string {
   return stage.display_name || stage.name
+}
+
+// Names of canonical default stages that have locale-aware translations.
+const DEFAULT_STAGE_NAME_KEYS = new Set([
+  'sourcing', 'screening', 'long_list', 'short_list', 'interview_hr',
+  'technical_test', 'english_test', 'interview_technical',
+  'interview_manager', 'interview_final', 'references',
+  'offer', 'offer_declined', 'hired', 'rejected',
+])
+
+/**
+ * Returns a function that resolves a stage's display name with i18n support.
+ * For known default stages (matched by `name`), it returns the locale-specific
+ * label from `settings.recruitment.journey.defaultStageNames.<name>`. For any
+ * other stage (custom user-added or API-provided), it falls back to the raw
+ * `display_name` so user input is preserved as-is.
+ */
+export function useStageDisplayName(): (stage: RecruitmentStage) => string {
+  const t = useTranslations("settings.recruitment.journey.defaultStageNames")
+  return (stage: RecruitmentStage) => {
+    if (stage.name && DEFAULT_STAGE_NAME_KEYS.has(stage.name)) {
+      return t(stage.name as never) as string
+    }
+    return stage.display_name || stage.name
+  }
 }
 
 export function isRealId(id: string): boolean {

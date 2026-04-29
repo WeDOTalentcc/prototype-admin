@@ -31,16 +31,24 @@ export function useHitlPending(options: UseHitlPendingOptions = {}) {
   const fetchPending = useCallback(async () => {
     try {
       setIsLoading(true)
-      const res = await fetch("/api/backend-proxy/hitl/pending")
+      // Task #801 (C4): usar fetchWithRetry para que erros transientes de
+      // rede (cold-start, HMR) sejam reentrados e não sumam com a contagem.
+      const { fetchWithRetry } = await import("@/services/lia-api/base")
+      const res = await fetchWithRetry(
+        "/api/backend-proxy/hitl/pending",
+        {},
+        { attempts: 3, timeoutMs: 10000, retryDelaysMs: [0, 1000, 3000] },
+      )
       if (!res.ok) {
-        setError("Failed to fetch")
+        setError(`HTTP ${res.status}`)
         return
       }
       const data = await res.json()
       setItems(data.pending || [])
       setError(null)
-    } catch {
-      setError("Network error")
+    } catch (err) {
+      // Não troca a lista preservada — apenas sinaliza erro.
+      setError(err instanceof Error ? err.message : "Network error")
     } finally {
       setIsLoading(false)
     }

@@ -309,6 +309,76 @@ class TeamsProactivityEngine:
             logger.warning(f"[ProactivityEngine] _send_card_to_ref error: {e}")
             return False
 
+    # ── W9.1 Group/channel proactive flow ────────────────────────────────────
+
+    async def _get_channel_refs_for_company(
+        self, company_id: str | None, tenant_id: str | None = None
+    ) -> list[dict[str, Any]]:
+        """Get stored group/channel conversation refs for proactive broadcasting.
+        Channel refs have user_id starting with 'channel:'.
+        """
+        try:
+            from sqlalchemy import text
+
+            from app.core.database import AsyncSessionLocal
+
+            async with AsyncSessionLocal() as db:
+                q = text("""
+                    SELECT tc.service_url, tc.conversation_id, tc.user_id
+                    FROM teams_conversations tc
+                    WHERE tc.user_id LIKE 'channel:%'
+                      AND (:tenant_id IS NULL OR tc.tenant_id = :tenant_id)
+                    ORDER BY tc.created_at DESC
+                    LIMIT 10
+                """)
+                result = await db.execute(q, {
+                    "tenant_id": tenant_id,
+                })
+                rows = result.fetchall()
+                return [
+                    {
+                        "service_url": r.service_url,
+                        "conversation_id": r.conversation_id,
+                        "user_id": r.user_id,
+                    }
+                    for r in rows
+                ]
+        except Exception as e:
+            logger.warning(f"[ProactivityEngine] _get_channel_refs_for_company: {e}")
+            return []
+
+    async def broadcast_to_channels(
+        self,
+        card: dict[str, Any],
+        company_id: str | None = None,
+        tenant_id: str | None = None,
+    ) -> int:
+        """Broadcast an Adaptive Card to all known group/channel conversations.
+        Returns number of successful sends.
+        """
+        refs = await self._get_channel_refs_for_company(company_id, tenant_id)
+        if not refs:
+            logger.info("[ProactivityEngine] No channel refs found for broadcast.")
+            return 0
+        sent = 0
+        for ref in refs:
+            try:
+                ok = await self._send_card_to_ref(card, ref)
+                if ok:
+                    sent += 1
+                    logger.info(
+                        "[ProactivityEngine] W9.1 channel broadcast ok: conv=%s",
+                        ref["conversation_id"],
+                    )
+            except Exception as e:
+                logger.warning(
+                    "[ProactivityEngine] W9.1 channel broadcast failed for %s: %s",
+                    ref["conversation_id"], e,
+                )
+        return sent
+
+    # ─────────────────────────────────────────────────────────────────────────
+
 
     async def send_daily_digest(self, company_id: str | None = None) -> int:
         """
@@ -318,7 +388,7 @@ class TeamsProactivityEngine:
         """
         from datetime import datetime, timedelta
 
-        from sqlalchemy import and_, func, select
+        from sqlalchemy import and_, func, select, text
 
         from app.domains.communication.services.teams_card_renderer import teams_card_renderer
         from lia_models import Candidate, JobVacancy
@@ -343,7 +413,7 @@ class TeamsProactivityEngine:
                 expiring_q = select(func.count(JobVacancy.id)).where(
                     and_(
                         JobVacancy.status.in_(["open", "active", "Open", "Active"]),
-                        JobVacancy.deadline is not None,
+                        JobVacancy.deadline.isnot(None),  # P1-1 W2.1: SQLAlchemy IS NOT NULL (not Python truthy)
                         JobVacancy.deadline <= week_ahead,
                     )
                 )
@@ -360,7 +430,8 @@ class TeamsProactivityEngine:
                 new_candidates = (await db.execute(cands_q)).scalar() or 0
 
                 # Stalled pipelines (reuse existing check)
-                stalled = await self._find_stalled_pipelines(db, company_id)
+                # P1-1 W2.1: signature is (self, company_id, stalled_days=5) — db not passed
+                stalled = await self._find_stalled_pipelines(company_id)
 
                 # Build digest card
                 from datetime import datetime as _dt
@@ -384,7 +455,7 @@ class TeamsProactivityEngine:
                     {"type": "Action.Submit", "title": "📊 Ver pipeline", "data": {"message": "Como está a saúde geral do pipeline?"}},
                     {"type": "Action.Submit", "title": "👥 Candidatos aguardando", "data": {"message": "Quais candidatos estão aguardando triagem ou retorno?"}},
                     {"type": "Action.Submit", "title": "⚠️ Vagas críticas", "data": {"message": "Quais vagas estão em estado crítico?"}},
-                    {"type": "Action.OpenUrl", "title": "🔗 Abrir plataforma", "url": "https://app.wedotalent.com"},
+                    {"type": "Action.OpenUrl", "title": "🔗 Abrir plataforma", "url": "https://app.wedotalent.cc"},
                 ]
 
                 card = teams_card_renderer.render_notification_card(
@@ -403,8 +474,9 @@ class TeamsProactivityEngine:
                     # Broader query — all refs for company
                     try:
                         async for db2 in self._get_db():
+                            # P1-1 W2.1: wrap raw SQL in sqlalchemy.text() (SQLAlchemy 2.x requirement)
                             result = await db2.execute(
-                                "SELECT DISTINCT service_url, conversation_id FROM teams_conversations WHERE company_id = :cid LIMIT 50",
+                                text("SELECT DISTINCT service_url, conversation_id FROM teams_conversations WHERE company_id = :cid LIMIT 50"),
                                 {"cid": company_id}
                             )
                             refs = [{"service_url": r.service_url, "conversation_id": r.conversation_id} for r in result]

@@ -9,7 +9,12 @@
  *   - A caller-supplied `signal` aborts immediately (no further retries).
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { fetchWithRetry, HttpError, parseRetryAfterMs } from '../base'
+import {
+  fetchWithRetry,
+  HttpError,
+  isTransientNetworkError,
+  parseRetryAfterMs,
+} from '../base'
 
 describe('parseRetryAfterMs', () => {
   it('parses seconds as a number', () => {
@@ -178,7 +183,8 @@ describe('fetchWithRetry', () => {
     )
     promise.catch(() => {}) // avoid unhandled-rejection from fake timers
     await vi.runAllTimersAsync()
-    await expect(promise).rejects.toThrow(/Failed to fetch/)
+    // Task #801 (C2): mensagem é fixa, original preservado em `cause`.
+    await expect(promise).rejects.toThrow(/network unavailable \(transient\)/i)
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 
@@ -218,5 +224,138 @@ describe('HttpError', () => {
     expect(err.retryAfterMs).toBe(5000)
     expect(err.name).toBe('HttpError')
     expect(err).toBeInstanceOf(Error)
+  })
+
+  it('carries transientNetworkError flag (Task #728)', () => {
+    const err = new HttpError(0, 'Failed to fetch', { transientNetworkError: true })
+    expect(err.status).toBe(0)
+    expect(err.transientNetworkError).toBe(true)
+  })
+})
+
+describe('isTransientNetworkError (Task #728)', () => {
+  it('detects HttpError with transientNetworkError flag', () => {
+    const err = new HttpError(0, 'x', { transientNetworkError: true })
+    expect(isTransientNetworkError(err)).toBe(true)
+  })
+
+  it('rejects HttpError without the flag (real 4xx/5xx)', () => {
+    expect(isTransientNetworkError(new HttpError(503, 'down'))).toBe(false)
+    expect(isTransientNetworkError(new HttpError(404, 'nope'))).toBe(false)
+  })
+
+  it('detects browser network TypeError variants', () => {
+    expect(isTransientNetworkError(new TypeError('Failed to fetch'))).toBe(true)
+    expect(
+      isTransientNetworkError(
+        new TypeError('NetworkError when attempting to fetch resource.'),
+      ),
+    ).toBe(true)
+    expect(isTransientNetworkError(new TypeError('Load failed'))).toBe(true)
+  })
+
+  it('rejects unrelated errors', () => {
+    expect(isTransientNetworkError(new TypeError('foo is undefined'))).toBe(false)
+    expect(isTransientNetworkError(new Error('boom'))).toBe(false)
+    expect(isTransientNetworkError(null)).toBe(false)
+    expect(isTransientNetworkError('string')).toBe(false)
+  })
+})
+
+describe('fetchWithRetry — transient network failures (Task #728)', () => {
+  let fetchMock: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  it('wraps final TypeError("Failed to fetch") into HttpError(0, transientNetworkError)', async () => {
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'))
+
+    const promise = fetchWithRetry('https://example.com', {}, { attempts: 2 })
+    promise.catch(() => {})
+    await vi.runAllTimersAsync()
+
+    await expect(promise).rejects.toBeInstanceOf(HttpError)
+    await expect(promise).rejects.toMatchObject({
+      status: 0,
+      transientNetworkError: true,
+    })
+    // The raw TypeError must NOT escape — it triggered the dev overlay.
+    await expect(promise).rejects.not.toBeInstanceOf(TypeError)
+  })
+
+  it('Task #801 (C2): wrapped HttpError uses fixed message, not raw "Failed to fetch"', async () => {
+    fetchMock.mockRejectedValue(new TypeError('Failed to fetch'))
+
+    const promise = fetchWithRetry('https://example.com', {}, { attempts: 1 })
+    promise.catch(() => {})
+    await vi.runAllTimersAsync()
+
+    let caught: unknown
+    try { await promise } catch (e) { caught = e }
+    expect(caught).toBeInstanceOf(HttpError)
+    expect((caught as Error).message).toBe('Network unavailable (transient)')
+    // Original is preserved in `cause` for diagnóstico, but never in message.
+    expect((caught as Error).message).not.toMatch(/failed to fetch/i)
+    expect((caught as Error & { cause?: Error }).cause).toBeInstanceOf(TypeError)
+  })
+
+  it('still retries on transient network errors before wrapping the final one', async () => {
+    fetchMock
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce(new Response('ok', { status: 200 }))
+
+    const promise = fetchWithRetry('https://example.com', {}, { attempts: 3 })
+    await vi.runAllTimersAsync()
+    const res = await promise
+    expect(res.ok).toBe(true)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('preserves non-transient errors verbatim', async () => {
+    const realError = new Error('something else broke')
+    fetchMock.mockRejectedValue(realError)
+
+    const promise = fetchWithRetry('https://example.com', {}, { attempts: 1 })
+    promise.catch(() => {})
+    await vi.runAllTimersAsync()
+
+    await expect(promise).rejects.toBe(realError)
+  })
+
+  it('does NOT reclassify caller AbortError as transient', async () => {
+    // Lock semantics long-term: an AbortError from the caller's signal must
+    // remain an AbortError, not be wrapped into a transient HttpError.
+    const controller = new AbortController()
+    fetchMock.mockImplementation((_url: string, init?: RequestInit) => {
+      return new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => {
+          const err = new DOMException('Aborted', 'AbortError')
+          reject(err)
+        })
+      })
+    })
+
+    const promise = fetchWithRetry(
+      'https://example.com',
+      { signal: controller.signal },
+      { attempts: 3 },
+    )
+    promise.catch(() => {})
+
+    await vi.advanceTimersByTimeAsync(0)
+    controller.abort()
+    await vi.runAllTimersAsync()
+
+    await expect(promise).rejects.toMatchObject({ name: 'AbortError' })
+    await expect(promise).rejects.not.toBeInstanceOf(HttpError)
   })
 })

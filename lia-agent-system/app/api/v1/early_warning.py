@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user_or_demo
+from app.auth.dependencies import validate_company_access
 from app.core.database import get_db
 from app.shared.services.early_warning_service import early_warning_service
 
@@ -32,6 +33,7 @@ async def get_early_warning(
     Retorna candidatos em risco de desengajamento ordenados por EWS score.
     Inclui resumo por nível de risco e top candidatos críticos.
     """
+    validate_company_access(current_user, company_id)
     try:
         summary = await early_warning_service.get_summary_by_risk_level(
             company_id=company_id,

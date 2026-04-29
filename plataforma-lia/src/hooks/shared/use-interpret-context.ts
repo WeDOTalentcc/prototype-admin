@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 
 interface InterpretContextParams {
   candidate_id: string
@@ -83,6 +83,11 @@ export function useInterpretContext() {
   const [messages, setMessages] = useState<InterpretChatMessage[]>([])
   const [conversationId, setConversationId] = useState<string | undefined>(undefined)
 
+  const messagesRef = useRef<InterpretChatMessage[]>([])
+  messagesRef.current = messages
+  const conversationIdRef = useRef<string | undefined>(undefined)
+  conversationIdRef.current = conversationId
+
   const sendMessage = useCallback(async (
     userMessage: string,
     params: Omit<InterpretContextParams, 'prompt' | 'message_history'>
@@ -96,14 +101,14 @@ export function useInterpretContext() {
     setIsLoading(true)
 
     try {
-      const currentMessages = [...messages, userChatMessage]
+      const currentMessages = [...messagesRef.current, userChatMessage]
       const response = await fetch('/api/backend-proxy/interpret-context', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...params,
           prompt: userMessage,
-          conversation_id: conversationId,
+          conversation_id: conversationIdRef.current,
           message_history: currentMessages.map(m => ({
             role: m.role,
             content: m.content,
@@ -152,7 +157,7 @@ export function useInterpretContext() {
       setIsLoading(false)
     }
     return null
-  }, [messages, conversationId])
+  }, [])
 
   const interpret = useCallback(async (params: InterpretContextParams) => {
     setIsLoading(true)

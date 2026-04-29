@@ -1,4 +1,5 @@
 import React from"react"
+import { useTranslations } from "next-intl"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
@@ -35,7 +36,7 @@ interface TemplatesTabProps {
   aiPrompt: string
   setAiPrompt: (v: string) => void
   aiResultModal: AiResultModal | null
-  bodyTextareaRef: React.RefObject<HTMLTextAreaElement>
+  bodyTextareaRef: React.RefObject<HTMLTextAreaElement | null>
   isGenerating: boolean
   handleChannelFilterChange: (channel: 'all' | 'email' | 'whatsapp') => void
   insertVariableAtCursor: (variable: string) => void
@@ -59,6 +60,7 @@ export function TemplatesTab({
   handleAdjustWithAI, handleConfirmAIAdjustment, handleCancelAIAdjustment,
   handleSaveTemplate,
 }: TemplatesTabProps) {
+  const t = useTranslations("settings.communication.templates")
   const categoryLabels = CATEGORY_LABELS
 
   return (
@@ -78,14 +80,14 @@ export function TemplatesTab({
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className={textStyles.h4}>Modelos de Comunicação</h3>
+          <h3 className={textStyles.h4}>{t("title")}</h3>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-lia-text-tertiary" />
             <Input
-              placeholder="Buscar modelos..."
+              placeholder={t("searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 text-xs h-9 rounded-md"
@@ -94,9 +96,9 @@ export function TemplatesTab({
 
           <div className="flex flex-wrap gap-2">
             {([
-              { key: 'all', label: 'Todos', icon: null },
-              { key: 'email', label: 'Email', icon: Mail },
-              { key: 'whatsapp', label: 'WhatsApp', icon: MessageSquare }
+              { key: 'all', label: t('all'), icon: null },
+              { key: 'email', label: t('filterEmail'), icon: Mail },
+              { key: 'whatsapp', label: t('filterWhatsapp'), icon: MessageSquare }
             ] as const).map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
@@ -119,17 +121,17 @@ export function TemplatesTab({
               onChange={(e) => setTriggerTypeFilter(e.target.value as 'all' | 'automatic' | 'manual' | 'both')}
               className="px-2.5 py-1.5 rounded-full text-xs font-medium border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary"
             >
-              <option value="all">Todos Tipos</option>
-              <option value="automatic">Automático</option>
-              <option value="manual">Manual</option>
-              <option value="both">Ambos</option>
+              <option value="all">{t("allTypes")}</option>
+              <option value="automatic">{t("automatic")}</option>
+              <option value="manual">{t("manual")}</option>
+              <option value="both">{t("both")}</option>
             </select>
           </div>
         </div>
 
         <div className="text-xs text-lia-text-secondary flex items-center gap-2">
           <Filter className="w-3.5 h-3.5" />
-          {filteredTemplates.length} template{filteredTemplates.length !== 1 ? 's' : ''} encontrado{filteredTemplates.length !== 1 ? 's' : ''}
+          {t("templatesFoundCount", { count: filteredTemplates.length })}
         </div>
       </div>
 
@@ -167,8 +169,8 @@ export function TemplatesTab({
                   <div className="w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
                     <Search className="w-4 h-4 text-lia-text-secondary" />
                   </div>
-                  <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">Nenhum template encontrado</p>
-                  <p className="text-xs text-lia-text-tertiary mt-1">Tente ajustar os filtros de busca</p>
+                  <p className="text-xs text-lia-text-secondary" aria-live="polite" aria-atomic="true">{t("noTemplateFound")}</p>
+                  <p className="text-xs text-lia-text-tertiary mt-1">{t("tryAdjustFilters")}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -210,7 +212,7 @@ export function TemplatesTab({
                                       <div className="flex items-center gap-1.5">
                                         <p className="text-xs font-medium text-lia-text-primary truncate">{template.name}</p>
                                         {template.priority && (
-                                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${PRIORITY_COLORS[template.priority]}`} title={`Prioridade: ${template.priority}`} />
+                                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${PRIORITY_COLORS[template.priority]}`} title={t("priority", { priority: template.priority })} />
                                         )}
                                       </div>
                                       <div className="flex items-center gap-1 mt-0.5 flex-wrap">
@@ -229,7 +231,7 @@ export function TemplatesTab({
                                     </div>
                                   </div>
                                   <Chip variant="neutral" muted={!template.isActive} className="text-micro flex-shrink-0 bg-lia-btn-primary-bg text-lia-btn-primary-text">
-                                    {template.isActive ? 'Ativo' : 'Inativo'}
+                                    {template.isActive ? t("active") : t("inactive")}
                                   </Chip>
                                 </div>
                               </CardContent>
@@ -248,7 +250,7 @@ export function TemplatesTab({
             {selectedTemplate ? (
               <>
                 <div className="flex items-center justify-between">
-                  <h3 className={textStyles.h4}>{editingTemplate ? 'Editando Template' : 'Visualização'}</h3>
+                  <h3 className={textStyles.h4}>{editingTemplate ? t("editingTemplate") : t("viewing")}</h3>
                   <div className="flex items-center gap-2">
                     {editingTemplate ? (
                       <>
@@ -257,7 +259,7 @@ export function TemplatesTab({
                         </Button>
                         <Button size="sm" className="py-1.5 px-2 text-xs bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active" onClick={handleSaveTemplate}>
                           <Save className="w-3.5 h-3.5 mr-1" />
-                          Salvar
+                          {t("save")}
                         </Button>
                       </>
                     ) : (
@@ -267,7 +269,7 @@ export function TemplatesTab({
                         className="rounded-full py-1.5 px-2 text-xs border-lia-btn-primary-bg text-lia-text-primary hover:bg-lia-bg-secondary dark:border-lia-border-subtle dark:hover:bg-lia-btn-primary-bg"
                       >
                         <Edit className="w-3.5 h-3.5 mr-1" />
-                        Editar
+                        {t("edit")}
                       </Button>
                     )}
                   </div>
@@ -277,7 +279,7 @@ export function TemplatesTab({
                   <CardContent className="p-3 space-y-3">
                     {channelFilter === 'email' && (
                       <div>
-                        <label className="block text-micro font-medium text-lia-text-secondary mb-1">Assunto</label>
+                        <label className="block text-micro font-medium text-lia-text-secondary mb-1">{t("subjectLabel")}</label>
                         {editingTemplate ? (
                           <input
                             type="text"
@@ -293,7 +295,7 @@ export function TemplatesTab({
                     <div>
                       <div className="flex items-center justify-between mb-1">
                         <label className="block text-micro font-medium text-lia-text-secondary">
-                          {channelFilter === 'email' ? 'Corpo do Email' : 'Mensagem WhatsApp'}
+                          {channelFilter === 'email' ? t("emailBodyLabel") : t("whatsappMessageLabel")}
                         </label>
                         {editingTemplate && (
                           <VariableSelector onSelect={insertVariableAtCursor} disabled={!editingTemplate} />
@@ -327,7 +329,7 @@ export function TemplatesTab({
                       )}
                     </div>
                     <div>
-                      <label className="block text-micro font-medium text-lia-text-secondary mb-1">Variáveis Disponíveis</label>
+                      <label className="block text-micro font-medium text-lia-text-secondary mb-1">{t("availableVariables")}</label>
                       <div className="flex flex-wrap gap-1">
                         {selectedTemplate.variables.map((v) => (
                           <Chip key={v} variant="neutral" className="text-micro font-mono rounded-full border-lia-border-default text-lia-text-primary dark:border-lia-border-default">
@@ -347,8 +349,8 @@ export function TemplatesTab({
                           <Brain className="w-4 h-4 text-wedo-cyan" />
                         </div>
                         <div>
-                          <span className={textStyles.h4}>Ajustar com a LIA</span>
-                          <p className="text-xs text-lia-text-secondary">Descreva as alterações desejadas</p>
+                          <span className={textStyles.h4}>{t("adjustWithLia")}</span>
+                          <p className="text-xs text-lia-text-secondary">{t("describeChanges")}</p>
                         </div>
                       </div>
                       <div className="flex gap-2">
@@ -357,7 +359,7 @@ export function TemplatesTab({
                           value={aiPrompt}
                           onChange={(e) => setAiPrompt(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && !isGenerating && aiPrompt.trim() && handleAdjustWithAI()}
-                          placeholder="Ex: Torne mais formal e adicione agradecimento..."
+                          placeholder={t("aiPlaceholder")}
                           disabled={isGenerating}
                           className="flex-1 px-3 py-2 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg focus:outline-none disabled:bg-lia-bg-secondary disabled:text-lia-text-tertiary dark:bg-lia-bg-secondary dark:border-lia-border-subtle dark:focus:ring-lia-border-subtle/10 dark:focus:border-lia-border-subtle"
                         />
@@ -367,9 +369,9 @@ export function TemplatesTab({
                           className="gap-1.5 rounded-md py-2 px-3 text-xs min-w-[100px] bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover disabled:bg-lia-border-medium dark:hover:bg-lia-interactive-active dark:disabled:bg-lia-border-medium"
                         >
                           {isGenerating ? (
-                            <><Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />Ajustando...</>
+                            <><Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />{t("adjusting")}</>
                           ) : (
-                            <><Wand2 className="w-3.5 h-3.5" />Ajustar</>
+                            <><Wand2 className="w-3.5 h-3.5" />{t("adjust")}</>
                           )}
                         </Button>
                       </div>
@@ -378,7 +380,7 @@ export function TemplatesTab({
                           <div className="flex gap-1">
                             <ThinkingDots dotClassName="bg-lia-btn-primary-bg" size="md" />
                           </div>
-                          <span className="text-xs text-lia-text-primary">A LIA está analisando e ajustando o template...</span>
+                          <span className="text-xs text-lia-text-primary">{t("liaAnalyzing")}</span>
                         </div>
                       )}
                     </CardContent>
@@ -395,8 +397,8 @@ export function TemplatesTab({
                               <Brain className="w-5 h-5 text-wedo-cyan" />
                             </div>
                             <div>
-                              <CardTitle className={textStyles.h3}>Ajustes da LIA</CardTitle>
-                              <p className="text-xs text-lia-text-secondary">Revise as alterações sugeridas</p>
+                              <CardTitle className={textStyles.h3}>{t("liaAdjustments")}</CardTitle>
+                              <p className="text-xs text-lia-text-secondary">{t("reviewChanges")}</p>
                             </div>
                           </div>
                           <Button variant="ghost" size="sm" onClick={handleCancelAIAdjustment} className="rounded-md">
@@ -407,7 +409,7 @@ export function TemplatesTab({
                       <CardContent className="p-4 space-y-4 overflow-y-auto">
                         <div>
                           <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">
-                            Alterações Realizadas
+                            {t("changesMade")}
                           </label>
                           <div className="flex flex-wrap gap-1.5">
                             {aiResultModal.changesMade.map((change, idx) => (
@@ -420,12 +422,12 @@ export function TemplatesTab({
                         </div>
                         {aiResultModal.newSubject && (
                           <div>
-                            <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">Novo Assunto</label>
+                            <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">{t("newSubject")}</label>
                             <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl text-xs text-lia-text-primary">{aiResultModal.newSubject}</div>
                           </div>
                         )}
                         <div>
-                          <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">Novo Conteúdo</label>
+                          <label className="block text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">{t("newContent")}</label>
                           <div className="p-3 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl text-xs text-lia-text-primary whitespace-pre-wrap max-h-content-md overflow-y-auto font-mono">
                             {aiResultModal.newBody}
                           </div>
@@ -434,16 +436,16 @@ export function TemplatesTab({
                           <div className="flex items-start gap-2">
                             <AlertCircle className="w-4 h-4 text-status-warning mt-0.5 flex-shrink-0" />
                             <p className="text-xs text-status-warning">
-                              Ao aplicar os ajustes, o texto será atualizado no editor. Lembre-se de clicar em <strong>"Salvar"</strong> para confirmar as alterações definitivamente.
+                              {t("applyChangesWarning")} <strong>"{t("applyChangesWarningSave")}"</strong> {t("applyChangesWarningEnd")}
                             </p>
                           </div>
                         </div>
                       </CardContent>
                       <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle p-4 flex items-center justify-end gap-3">
-                        <Button variant="outline" onClick={handleCancelAIAdjustment} className="rounded-xl px-4 py-2 text-xs">Cancelar</Button>
+                        <Button variant="outline" onClick={handleCancelAIAdjustment} className="rounded-xl px-4 py-2 text-xs">{t("cancel")}</Button>
                         <Button onClick={handleConfirmAIAdjustment} className="rounded-xl px-4 py-2 text-xs gap-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active">
                           <Check className="w-3.5 h-3.5" />
-                          Aplicar Ajustes
+                          {t("applyAdjustments")}
                         </Button>
                       </div>
                     </Card>
@@ -454,7 +456,7 @@ export function TemplatesTab({
               <Card className="border-dashed border-2 border-lia-border-subtle dark:border-lia-border-subtle rounded-xl h-full flex items-center justify-center backdrop-blur-sm">
                 <CardContent className="text-center py-8">
                   <Mail className="w-10 h-10 text-lia-text-disabled mx-auto mb-3" />
-                  <p className="text-xs text-lia-text-secondary">Selecione um template para visualizar</p>
+                  <p className="text-xs text-lia-text-secondary">{t("selectTemplate")}</p>
                 </CardContent>
               </Card>
             )}

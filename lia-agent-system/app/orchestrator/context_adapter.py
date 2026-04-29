@@ -223,6 +223,24 @@ class ContextAdapter:
         context_type = PAGE_TO_CONTEXT_TYPE.get(domain, "general")
         entity_id = context.get("entity_id") or context.get("sourcing_id") or context.get("job_id")
 
+        # PR-A: metadata estruturada vinda do Rail A (FE) — validada strict
+        # via Pydantic (RailASuggestionMetadata) para evitar prompt injection
+        # e drift de schema. Se inválida, é descartada com warning (fail-safe);
+        # routing cai no fallback CascadedRouter sem usar hint. Skill: harness-
+        # engineering [sensor no boundary]. Audit ref: FE-H03 (2026-04-26).
+        extra: dict[str, Any] = {"domain": domain, "ws_session_id": session_id}
+        raw_metadata = context.get("metadata")
+        if raw_metadata:
+            try:
+                from app.shared.websocket.ws_message_schemas import RailASuggestionMetadata
+                validated = RailASuggestionMetadata.model_validate(raw_metadata)
+                extra["metadata"] = validated.model_dump(exclude_none=False)
+            except Exception as _meta_exc:
+                logger.warning(
+                    "[ContextAdapter] Rail A metadata inválida descartada (session=%s): %s",
+                    session_id, _meta_exc,
+                )
+
         return UniversalContext(
             message=message_frame.get("content", ""),
             user_id=user_id,
@@ -235,7 +253,7 @@ class ContextAdapter:
             candidates=context.get("candidates", []),
             job_context=context.get("job_context"),
             search_context=context.get("search_context"),
-            extra={"domain": domain, "ws_session_id": session_id},
+            extra=extra,
         )
 
     # ------------------------------------------------------------------

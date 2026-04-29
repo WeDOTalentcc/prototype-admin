@@ -1,0 +1,11 @@
+<% border = local_assigns.fetch(:border, true) %>
+<tr>
+  <td style="padding: 16px 20px; <%= border ? 'border-bottom: 1px solid #f3f4f6;' : '' %>">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+      <tr>
+        <td width="110" style="font-size: 12px; font-weight: 600; color: #60BED1; vertical-align: top; padding-right: 12px;"><%= label %></td>
+        <td style="font-size: 13px; color: #374151; line-height: 1.5;"><%= value %></td>
+      </tr>
+    </table>
+  </td>
+</tr>

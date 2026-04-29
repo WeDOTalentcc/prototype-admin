@@ -18,48 +18,35 @@ import {
 } from"@/components/settings/eligibility-questions-bank"
 import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
-import { ScreeningQuestion, NewQuestionForm } from './useRecruitmentHub'
+import { useRecruitmentHub, type NewQuestionForm } from './useRecruitmentHub'
 
-interface RecruitmentScreeningTabProps {
-  error: string | null
-  successMessage: string | null
-  questions: ScreeningQuestion[]
-  showQuestionForm: boolean
-  setShowQuestionForm: (v: boolean) => void
-  newQuestion: NewQuestionForm
-  setNewQuestion: React.Dispatch<React.SetStateAction<NewQuestionForm>>
-  isEditingQuestions: boolean
-  savingQuestions: boolean
-  showQuestionBank: boolean
-  setShowQuestionBank: (v: boolean) => void
-  expandedCategories: Set<QuestionCategory>
-  selectedBankQuestions: Set<string>
-  onStartEditQuestions: () => void
-  onCancelEditQuestions: () => void
-  onSaveQuestions: () => void
-  onAddQuestion: () => void
-  onDeleteQuestion: (id: string) => void
-  onToggleRequired: (id: string) => void
-  onToggleCategory: (category: QuestionCategory) => void
-  onToggleBankQuestion: (questionId: string) => void
-  onAddFromBank: () => void
-  getQuestionsByCategory: (category: QuestionCategory) => EligibilityQuestionTemplate[]
-  isQuestionAlreadyAdded: (q: EligibilityQuestionTemplate) => boolean
-}
-
-export function RecruitmentScreeningTab({
-  error, successMessage,
-  questions, showQuestionForm, setShowQuestionForm,
-  newQuestion, setNewQuestion,
-  isEditingQuestions, savingQuestions,
-  showQuestionBank, setShowQuestionBank,
-  expandedCategories, selectedBankQuestions,
-  onStartEditQuestions, onCancelEditQuestions, onSaveQuestions,
-  onAddQuestion, onDeleteQuestion, onToggleRequired,
-  onToggleCategory, onToggleBankQuestion, onAddFromBank,
-  getQuestionsByCategory, isQuestionAlreadyAdded,
-}: RecruitmentScreeningTabProps) {
+export function RecruitmentScreeningTab() {
   const t = useTranslations("settings")
+  const hub = useRecruitmentHub('screening')
+  const error = hub.error
+  const successMessage = hub.successMessage
+  const questions = hub.questions
+  const showQuestionForm = hub.showQuestionForm
+  const setShowQuestionForm = hub.setShowQuestionForm
+  const newQuestion = hub.newQuestion
+  const setNewQuestion = hub.setNewQuestion
+  const isEditingQuestions = hub.isEditingQuestions
+  const savingQuestions = hub.savingQuestions
+  const showQuestionBank = hub.showQuestionBank
+  const setShowQuestionBank = hub.setShowQuestionBank
+  const expandedCategories = hub.expandedCategories
+  const selectedBankQuestions = hub.selectedBankQuestions
+  const onStartEditQuestions = hub.handleStartEditQuestions
+  const onCancelEditQuestions = hub.handleCancelEditQuestions
+  const onSaveQuestions = hub.handleSaveQuestions
+  const onAddQuestion = hub.handleAddQuestion
+  const onDeleteQuestion = hub.handleDeleteQuestion
+  const onToggleRequired = hub.handleToggleRequired
+  const onToggleCategory = hub.toggleCategory
+  const onToggleBankQuestion = hub.toggleBankQuestion
+  const onAddFromBank = hub.handleAddFromBank
+  const getQuestionsByCategory = hub.getQuestionsByCategory
+  const isQuestionAlreadyAdded = hub.isQuestionAlreadyAdded
   return (
     <div className="space-y-6">
       {error && (
@@ -330,8 +317,9 @@ function QuestionFormSection({ newQuestion, setNewQuestion, onAdd, onCancel }: Q
     <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-xl">
       <CardContent className="p-3 space-y-4">
         <div>
-          <label className={`block mb-1.5 ${textStyles.labelSmall}`}>{t("recruitment.screening.questionLabel")}</label>
+          <label htmlFor="screening-question-text" className={`block mb-1.5 ${textStyles.labelSmall}`}>{t("recruitment.screening.questionLabel")}</label>
           <input
+            id="screening-question-text"
             type="text"
             value={newQuestion.question}
             onChange={(e) => setNewQuestion(prev => ({ ...prev, question: e.target.value }))}
@@ -341,8 +329,9 @@ function QuestionFormSection({ newQuestion, setNewQuestion, onAdd, onCancel }: Q
         </div>
         <div className="flex gap-3">
           <div className="flex-1">
-            <label className={`block mb-1.5 ${textStyles.labelSmall}`}>{t("recruitment.screening.typeLabel")}</label>
+            <label htmlFor="screening-question-type" className={`block mb-1.5 ${textStyles.labelSmall}`}>{t("recruitment.screening.typeLabel")}</label>
             <select
+              id="screening-question-type"
               value={newQuestion.type}
               onChange={(e) => setNewQuestion(prev => ({ ...prev, type: e.target.value as 'text' | 'yesno' | 'scale' | 'multiple' }))}
               className={`w-full px-2 py-1.5 border border-lia-border-subtle rounded-md bg-lia-bg-primary ${textStyles.body}`}

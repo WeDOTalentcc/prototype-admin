@@ -13,13 +13,13 @@
  *     Nova vaga
  *   </Button>
  *
- * The hook also fires a "prolonged_stay" event automatically after PROLONGED_STAY_MS
+ * The hook also fires a "prolonged_stay" event automatically after (prolongedStayMs ?? DEFAULT_PROLONGED_STAY_MS)
  * of inactivity on the same page (default: 3 minutes).
  */
 
 import { useCallback, useEffect, useRef } from "react"
 
-const PROLONGED_STAY_MS = 3 * 60 * 1000 // 3 minutes
+const DEFAULT_PROLONGED_STAY_MS = 3 * 60 * 1000
 
 interface TrackerOptions {
   teamsUserId?: string | null
@@ -27,14 +27,24 @@ interface TrackerOptions {
   /** Pass entity id when tracking actions on a specific resource */
   entityId?: string | null
   entityType?: string | null
+  /** Override the inactivity threshold before firing prolonged_stay (default: 3 min) */
+  prolongedStayMs?: number
 }
 
 interface UseTeamsTabTrackerReturn {
   trackEvent: (eventType: string, overrides?: Partial<TrackerOptions>) => void
 }
 
+
+function getAuthToken(): string | null {
+  if (typeof window === "undefined") return null
+  // TODO(W8.2): migrate to httpOnly cookie when backend sets Set-Cookie:access_token.
+  // When migrated, remove this function — browser will send cookie automatically.
+  return localStorage.getItem("access_token")
+}
+
 export function useTeamsTabTracker(options: TrackerOptions = {}): UseTeamsTabTrackerReturn {
-  const { teamsUserId, platformUserId, entityId, entityType } = options
+  const { teamsUserId, platformUserId, entityId, entityType, prolongedStayMs } = options
   const prolongedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const firedProlongedRef = useRef(false)
 
@@ -43,7 +53,7 @@ export function useTeamsTabTracker(options: TrackerOptions = {}): UseTeamsTabTra
       eventType: string,
       overrides: Partial<TrackerOptions> = {},
     ) => {
-      const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+      const token = getAuthToken()
 
       const payload = {
         event_type: eventType,
@@ -89,7 +99,7 @@ export function useTeamsTabTracker(options: TrackerOptions = {}): UseTeamsTabTra
         firedProlongedRef.current = true
         sendEvent("prolonged_stay")
       }
-    }, PROLONGED_STAY_MS)
+    }, (prolongedStayMs ?? DEFAULT_PROLONGED_STAY_MS))
 
     return () => {
       if (prolongedTimerRef.current) clearTimeout(prolongedTimerRef.current)

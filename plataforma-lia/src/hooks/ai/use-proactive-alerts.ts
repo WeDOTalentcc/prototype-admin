@@ -53,7 +53,9 @@ export function useProactiveAlerts({
     setError(null)
     
     try {
-      const res = await fetch(`/api/backend-proxy/notifications/proactive/check`, {
+      // [Task #801 C4] usar fetchWithRetry para herdar retry/timeout
+      const { fetchWithRetry } = await import("@/services/lia-api/base")
+      const res = await fetchWithRetry(`/api/backend-proxy/notifications/proactive/check`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: userId, company_id: companyId })

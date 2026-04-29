@@ -51,8 +51,8 @@ export function useCandidateSuggestions(
   
   const endpoint = shouldFetch
     ? candidateId
-      ? `/api/lia/api/v1/automation/ai-suggestions/candidate/${candidateId}`
-      : `/api/lia/api/v1/automation/ai-suggestions/vacancy/${vacancyId}`
+      ? `/api/backend-proxy/api/v1/automation/ai-suggestions/candidate/${candidateId}`
+      : `/api/backend-proxy/api/v1/automation/ai-suggestions/vacancy/${vacancyId}`
     : null
   
   const { data, error, isLoading, mutate } = useSWR<{ suggestions: AISuggestion[] }>(
@@ -66,7 +66,7 @@ export function useCandidateSuggestions(
 
   const approveSuggestion = async (id: string) => {
     try {
-      await fetch(`/api/lia/api/v1/automation/ai-suggestions/${id}/approve`, {
+      await fetch(`/api/backend-proxy/api/v1/automation/ai-suggestions/${id}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       })
@@ -77,7 +77,7 @@ export function useCandidateSuggestions(
 
   const rejectSuggestion = async (id: string, reason?: string) => {
     try {
-      await fetch(`/api/lia/api/v1/automation/ai-suggestions/${id}/reject`, {
+      await fetch(`/api/backend-proxy/api/v1/automation/ai-suggestions/${id}/reject`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reason }),

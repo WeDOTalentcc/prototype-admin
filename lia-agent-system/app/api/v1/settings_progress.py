@@ -1,10 +1,10 @@
 """
 Settings Progress API endpoint.
-Calculates real completion percentages for the 7-item settings menu.
+Calculates real completion percentages for the 8-item settings menu.
 
 Section IDs:
   minha-empresa, pipeline, screening, templates-assinatura,
-  comunicacao-alertas, usuarios-departamentos, integracoes
+  comunicacao-alertas, usuarios-departamentos, integracoes, webhooks
 """
 import logging
 from typing import Any
@@ -164,6 +164,36 @@ async def _calc_integracoes(repo: SettingsProgressRepository, company_uuid) -> t
     return int_pct, {"integrations_active": int_ok}
 
 
+async def _calc_webhooks(repo: SettingsProgressRepository, company_uuid) -> tuple[int, dict]:
+    """Webhooks completeness — Task #895.
+
+    Scoring (matches Task #895 spec):
+      - 0 configured                    → 0%
+      - >=1 configured                  → 50%
+      - >=1 active AND delivering       → 100%
+    """
+    if not company_uuid:
+        return 0, {"webhooks_configured": False, "webhooks_delivering": False}
+
+    total = await repo.count_webhooks(company_uuid)
+    delivering = await repo.count_delivering_webhooks(company_uuid)
+
+    configured = total >= 1
+    is_delivering = delivering >= 1
+
+    if is_delivering:
+        score = 100
+    elif configured:
+        score = 50
+    else:
+        score = 0
+
+    return score, {
+        "webhooks_configured": configured,
+        "webhooks_delivering": is_delivering,
+    }
+
+
 @router.get("/progress", response_model=None)
 async def get_settings_progress(
     company_id: str = Query(default=None, description="Company ID (uses default company if not provided)"),
@@ -192,7 +222,14 @@ async def get_settings_progress(
         comm_score, comm_subs = await _safe(_calc_comunicacao_alertas(repo, company_uuid), (0, {"alerts": False, "lgpd_schedule": False}))
         usr_score, usr_subs = await _safe(_calc_usuarios_departamentos(repo, company_uuid), (0, {"users": False, "departments": False}))
         intg_score, intg_subs = await _safe(_calc_integracoes(repo, company_uuid), (0, {"integrations_active": False}))
+        wh_score, wh_subs = await _safe(
+            _calc_webhooks(repo, company_uuid),
+            (0, {"webhooks_configured": False, "webhooks_delivering": False}),
+        )
 
+        # Task #895 — webhooks added with 5% weight; integracoes trimmed
+        # 10 → 5 to keep the integrations category total at 10% and the
+        # overall sum at 100%.
         overall = int(
             me_score * 0.25 +
             pipe_score * 0.20 +
@@ -200,11 +237,12 @@ async def get_settings_progress(
             tmpl_score * 0.10 +
             comm_score * 0.10 +
             usr_score * 0.10 +
-            intg_score * 0.10
+            intg_score * 0.05 +
+            wh_score * 0.05
         )
 
         all_subs = {}
-        for sub_dict in [me_subs, pipe_subs, scr_subs, tmpl_subs, comm_subs, usr_subs, intg_subs]:
+        for sub_dict in [me_subs, pipe_subs, scr_subs, tmpl_subs, comm_subs, usr_subs, intg_subs, wh_subs]:
             all_subs.update(sub_dict)
 
         return {
@@ -217,6 +255,7 @@ async def get_settings_progress(
                 "comunicacao-alertas": comm_score,
                 "usuarios-departamentos": usr_score,
                 "integracoes": intg_score,
+                "webhooks": wh_score,
             },
             "subsections": all_subs,
             "details": {
@@ -230,6 +269,7 @@ async def get_settings_progress(
                     "comunicacao_alertas": comm_score,
                     "usuarios_departamentos": usr_score,
                     "integracoes": intg_score,
+                    "webhooks": wh_score,
                 },
             },
         }
@@ -246,6 +286,7 @@ async def get_settings_progress(
                 "comunicacao-alertas": 0,
                 "usuarios-departamentos": 0,
                 "integracoes": 0,
+                "webhooks": 0,
             },
             "subsections": {},
             "error": True,

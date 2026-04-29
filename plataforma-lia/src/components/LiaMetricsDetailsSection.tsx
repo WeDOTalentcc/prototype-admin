@@ -9,7 +9,7 @@ import {
   Phone, Calendar, Award, Zap, AlertCircle
 } from"lucide-react"
 import { textStyles } from"@/lib/design-tokens"
-import type { LiaMetricsData } from"./useLiaMetricsData"
+import type { LiaMetricsData } from"@/hooks/ai/use-lia-metrics-data"
 
 const statusIcons: Record<string, React.ReactNode> = {
   'Contato Inicial': <Phone className="w-4 h-4" />,

@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useReducer, useEffect } from "react"
+import { useCallback, useReducer, useEffect, useState } from "react"
 import type {
   WizardStage,
   WizardStagePayload,
@@ -56,6 +56,10 @@ type WizardAction =
   | { type: "CLEAR_ERROR" }
   | { type: "SET_THREAD"; threadId: string }
   | { type: "RESET" }
+  // Replace the in-memory state wholesale with one rehydrated from the
+  // active storage namespace. Used when `userId` flips mid-session so we
+  // never carry recruiter A's state into recruiter B's session (LGPD).
+  | { type: "REHYDRATE"; state: WizardState }
 
 function buildHistory(current: WizardStage | null, next: WizardStage, history: WizardStage[]): WizardStage[] {
   // Always include all visited stages in order
@@ -112,19 +116,38 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
       return { ...state, threadId: action.threadId }
     case "RESET":
       return initialState
+    case "REHYDRATE":
+      return action.state
     default:
       return state
   }
 }
 
 // --- Persistence ---
+//
+// Wizard state contains the in-flight job posting (raw input, JD draft,
+// competencies, salary band, etc.) and may include candidate-shaped data
+// once calibration starts — i.e. data of the recruiter's tenant. To avoid
+// leaking that across users on a shared browser (LGPD + multi-tenant),
+// the localStorage key is namespaced by `userId`. Without a `userId`
+// (logged-out / SSR / pre-auth render) we **do not persist at all** — a
+// global "lia-wizard-state" key would silently bleed between sessions.
 
-const WIZARD_STORAGE_KEY = "lia-wizard-state"
+const WIZARD_STORAGE_KEY_PREFIX = "lia-wizard-state"
 
-function loadPersistedState(): WizardState {
+/** Returns the per-user storage key, or `null` when persistence must be skipped. */
+export function getWizardStorageKey(userId: string | null | undefined): string | null {
+  if (typeof userId !== "string") return null
+  const trimmed = userId.trim()
+  if (trimmed === "") return null
+  return `${WIZARD_STORAGE_KEY_PREFIX}-${trimmed}`
+}
+
+function loadPersistedState(storageKey: string | null): WizardState {
+  if (storageKey === null) return initialState
   if (typeof window === "undefined") return initialState
   try {
-    const stored = localStorage.getItem(WIZARD_STORAGE_KEY)
+    const stored = localStorage.getItem(storageKey)
     if (stored) {
       const parsed = JSON.parse(stored) as WizardState
       if (parsed.active && parsed.currentStage) return parsed
@@ -133,26 +156,75 @@ function loadPersistedState(): WizardState {
   return initialState
 }
 
-function persistState(state: WizardState): void {
+function persistState(state: WizardState, storageKey: string | null): void {
+  if (storageKey === null) return
   if (typeof window === "undefined") return
   try {
     if (state.active) {
-      localStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(state))
+      localStorage.setItem(storageKey, JSON.stringify(state))
     } else {
-      localStorage.removeItem(WIZARD_STORAGE_KEY)
+      localStorage.removeItem(storageKey)
     }
   } catch { /* ignore */ }
 }
 
 // --- Hook ---
 
-export function useWizardFlow() {
-  const [state, dispatch] = useReducer(wizardReducer, initialState, loadPersistedState)
+export interface UseWizardFlowOptions {
+  /**
+   * User identifier used to namespace the wizard's localStorage key so
+   * recruiter A's in-flight job doesn't bleed to recruiter B on a shared
+   * browser (LGPD + multi-tenant). When omitted/null the wizard works
+   * normally but its state is **not persisted** across reloads.
+   */
+  userId?: string | null
+}
 
-  // Persist state changes to localStorage
+export function useWizardFlow(options: UseWizardFlowOptions = {}) {
+  const { userId = null } = options
+  const storageKey = getWizardStorageKey(userId)
+  const [state, dispatch] = useReducer(
+    wizardReducer,
+    initialState,
+    () => loadPersistedState(storageKey),
+  )
+
+  // Track which `storageKey` the current `state` belongs to. When the
+  // identity changes mid-session (recruiter A logs out → B logs in,
+  // hydration finally produces a userId, etc.) we must (1) drop A's
+  // in-memory wizard state and (2) hydrate B's namespace from disk
+  // **before** any persist effect runs — otherwise the persist effect
+  // would write A's stale state under B's storage key, defeating the
+  // whole namespacing exercise (LGPD cross-tenant bleed). Doing the
+  // dispatch during render via the "Adjusting state during rendering"
+  // pattern guarantees React commits the rehydrated state before the
+  // persist effect fires, so no intermediate write happens.
+  const [prevStorageKey, setPrevStorageKey] = useState<string | null>(storageKey)
+  if (prevStorageKey !== storageKey) {
+    setPrevStorageKey(storageKey)
+    dispatch({ type: "REHYDRATE", state: loadPersistedState(storageKey) })
+  }
+
+  // Persist state changes to localStorage (no-op when storageKey is null)
   useEffect(() => {
-    persistState(state)
-  }, [state])
+    persistState(state, storageKey)
+  }, [state, storageKey])
+
+  // Subscribe to the canonical `lia:wizard-stage-payload` window event so the
+  // hook is self-sufficient when mounted on the chat surface. The event is
+  // emitted by `useChatSocket` for every backend `ws_stage_payload`. We update
+  // local state directly via `dispatch` here (no re-dispatch) to avoid the
+  // feedback loop with `handleStagePayload` below.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    function handle(event: Event) {
+      const payload = (event as CustomEvent).detail as WizardStagePayload | undefined
+      if (!payload || payload.type !== "wizard_stage" || typeof payload.stage !== "string") return
+      dispatch({ type: "STAGE_UPDATE", payload })
+    }
+    window.addEventListener("lia:wizard-stage-payload", handle as EventListener)
+    return () => window.removeEventListener("lia:wizard-stage-payload", handle as EventListener)
+  }, [])
 
   const handleStagePayload = useCallback((payload: WizardStagePayload) => {
     dispatch({ type: "STAGE_UPDATE", payload })

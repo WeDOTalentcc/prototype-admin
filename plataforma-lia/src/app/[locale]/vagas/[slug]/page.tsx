@@ -16,10 +16,15 @@ export async function generateMetadata({
   }
 }
 
-export default function PublicVacancyPage() {
+export default async function PublicVacancyPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
+  const { slug } = await params
   return (
     <ErrorBoundarySection>
-      <VagasDetailClient />
+      <VagasDetailClient slug={slug} />
     </ErrorBoundarySection>
   )
 }

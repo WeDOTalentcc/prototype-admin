@@ -2,7 +2,7 @@
 
 import React from "react"
 import { Brain, CheckCircle, ArrowRight, Clock, Lightbulb } from "lucide-react"
-import { getScoreColor } from "./useRubricEvaluation"
+import { getScoreColor } from "@/hooks/ai/use-rubric-evaluation"
 import type { ParecerLIA, DecisionBadge, ScoreBadge, RubricEvaluationData } from "./rubric-evaluation-types"
 
 interface RubricOverviewSectionProps {

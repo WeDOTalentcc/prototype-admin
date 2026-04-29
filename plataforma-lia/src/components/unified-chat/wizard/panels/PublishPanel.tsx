@@ -99,7 +99,7 @@ export function PublishPanel({ data, onUpdate }: Props) {
       {/* Auto-screen toggle */}
       <button
         onClick={toggleAutoScreen}
-        className="w-full flex items-center justify-between p-2.5 rounded-xl bg-lia-bg-secondary border border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors"
+        className="w-full flex items-center justify-between p-2.5 rounded-md bg-lia-bg-secondary border border-lia-border-subtle hover:bg-lia-interactive-hover transition-colors"
       >
         <span className="text-xs text-lia-text-primary">Auto-screening</span>
         <span className={cn(
@@ -112,7 +112,7 @@ export function PublishPanel({ data, onUpdate }: Props) {
 
       {/* Share link */}
       {d.share_link && (
-        <div className="p-2.5 rounded-xl bg-wedo-cyan/5 border border-wedo-cyan/20">
+        <div className="p-2.5 rounded-md bg-wedo-cyan/5 border border-wedo-cyan/20">
           <p className="text-xs text-wedo-cyan font-medium mb-1">Link de compartilhamento</p>
           <p className="text-xs text-lia-text-primary break-all">{d.share_link}</p>
         </div>
@@ -125,7 +125,7 @@ export function PublishPanel({ data, onUpdate }: Props) {
             onClick={handlePublish}
             disabled={isPublishing || selectedPlatforms.size === 0}
             className={cn(
-              "w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold transition-colors",
+              "w-full flex items-center justify-center gap-2 px-4 py-3 rounded-md text-sm font-semibold transition-colors",
               isPublishing || selectedPlatforms.size === 0
                 ? "bg-lia-bg-tertiary text-lia-text-disabled cursor-not-allowed"
                 : "bg-wedo-cyan text-white hover:bg-wedo-cyan/90"
@@ -153,7 +153,7 @@ export function PublishPanel({ data, onUpdate }: Props) {
 
       {/* Published success */}
       {d.job_id && (
-        <div className="p-3 rounded-lg bg-status-success/5 border border-status-success/20 text-center">
+        <div className="p-3 rounded-md bg-status-success/5 border border-status-success/20 text-center">
           <Check className="w-5 h-5 text-status-success mx-auto mb-1" />
           <p className="text-sm font-medium text-status-success">Vaga publicada!</p>
           <p className="text-xs text-lia-text-secondary mt-0.5">ID: {d.job_id}</p>

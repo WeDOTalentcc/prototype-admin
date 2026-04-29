@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useLocale } from "next-intl"
 import { cn } from "@/lib/utils"
 import { LIAIcon } from "@/components/ui/lia-icon"
 
@@ -9,6 +10,10 @@ interface TypingIndicatorProps {
 }
 
 export function TypingIndicator({ className }: TypingIndicatorProps) {
+  const locale = useLocale()
+  const isEn = locale === "en"
+  const label = isEn ? "Analyzing" : "Analisando"
+  const visibleLabel = isEn ? "Analyzing..." : "Analisando..."
   return (
     <div
       className={cn(
@@ -16,7 +21,7 @@ export function TypingIndicator({ className }: TypingIndicatorProps) {
         className
       )}
       aria-live="polite"
-      aria-label="Analisando"
+      aria-label={label}
     >
       <div className="flex-shrink-0">
         <LIAIcon size="sm" className="bg-wedo-cyan/10" />
@@ -34,7 +39,7 @@ export function TypingIndicator({ className }: TypingIndicatorProps) {
           ))}
         </div>
         <span className="text-xs text-lia-text-secondary">
-          Analisando...
+          {visibleLabel}
         </span>
       </div>
 

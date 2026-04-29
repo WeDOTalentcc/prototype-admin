@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react"
 import type { AlertConfig, EmailTemplate, AiResultModal } from './CommunicationHub.types'
 import { DEFAULT_ALERTS, TEMPLATE_GROUPS } from './CommunicationHub.constants'
+import { apiFetch } from '@/lib/api/api-fetch'
 
 export function useCommunicationHub(activeSubsection?: string) {
   const [activeTab, setActiveTab] = useState(activeSubsection || 'templates')
@@ -59,7 +60,7 @@ export function useCommunicationHub(activeSubsection?: string) {
     setSavingWeeklyDigest(true)
     const newValue = !weeklyDigestEnabled
     try {
-      const res = await fetch("/api/backend-proxy/digest/weekly/preferences", {
+      const res = await apiFetch("/api/backend-proxy/digest/weekly/preferences", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ enabled: newValue }),
@@ -144,7 +145,7 @@ export function useCommunicationHub(activeSubsection?: string) {
 
       let fetchedCompanyId = ''
       try {
-        const profileRes = await fetch('/api/backend-proxy/company/profile')
+        const profileRes = await apiFetch('/api/backend-proxy/company/profile')
         if (profileRes.ok) {
           const profileData = await profileRes.json()
           if (profileData && profileData.id) {
@@ -161,9 +162,9 @@ export function useCommunicationHub(activeSubsection?: string) {
         : {}
 
       const [templatesResponse, settingsResponse, alertsResponse] = await Promise.all([
-        fetch(`/api/backend-proxy/email-templates?visibility=recruiter`),
-        fetch('/api/backend-proxy/company/communication-settings', { headers }),
-        fetch('/api/backend-proxy/alerts/config', { headers })
+        apiFetch(`/api/backend-proxy/email-templates?visibility=recruiter`),
+        apiFetch('/api/backend-proxy/company/communication-settings', { headers }),
+        apiFetch('/api/backend-proxy/alerts/config', { headers })
       ])
 
       if (templatesResponse.ok) {
@@ -221,7 +222,7 @@ export function useCommunicationHub(activeSubsection?: string) {
       }
 
       try {
-        const digestPrefRes = await fetch('/api/backend-proxy/digest/weekly/preferences')
+        const digestPrefRes = await apiFetch('/api/backend-proxy/digest/weekly/preferences')
         if (digestPrefRes.ok) {
           const prefData = await digestPrefRes.json()
           if (prefData && prefData.weekly_report_enabled !== undefined) {
@@ -248,7 +249,7 @@ export function useCommunicationHub(activeSubsection?: string) {
         headers['X-Company-ID'] = companyId
       }
 
-      const response = await fetch('/api/backend-proxy/company/communication-settings', {
+      const response = await apiFetch('/api/backend-proxy/company/communication-settings', {
         method: 'PUT',
         headers,
         body: JSON.stringify({
@@ -279,7 +280,7 @@ export function useCommunicationHub(activeSubsection?: string) {
   const saveTemplateToAPI = async (template: EmailTemplate) => {
     try {
       setSaving(true)
-      const response = await fetch(`/api/backend-proxy/email-templates/${template.id}`, {
+      const response = await apiFetch(`/api/backend-proxy/email-templates/${template.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -324,7 +325,7 @@ export function useCommunicationHub(activeSubsection?: string) {
       if (companyId) {
         headers['X-Company-ID'] = companyId
       }
-      const response = await fetch('/api/backend-proxy/alerts/config', {
+      const response = await apiFetch('/api/backend-proxy/alerts/config', {
         method: 'PUT',
         headers,
         body: JSON.stringify({
@@ -358,7 +359,7 @@ export function useCommunicationHub(activeSubsection?: string) {
 
     setIsGenerating(true)
     try {
-      const response = await fetch('/api/backend-proxy/email-templates/adjust', {
+      const response = await apiFetch('/api/backend-proxy/email-templates/adjust', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

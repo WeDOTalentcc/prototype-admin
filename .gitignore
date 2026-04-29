@@ -76,6 +76,22 @@ lia-agent-system/audit_logs/
 !.agents/skills/feature-audit/**
 !.agents/skills/lia-planning/
 !.agents/skills/lia-planning/**
+!.agents/skills/design-patterns/
+!.agents/skills/design-patterns/**
+!.agents/skills/design-standardize/
+!.agents/skills/design-standardize/**
+!.agents/skills/frontend-design/
+!.agents/skills/frontend-design/**
+!.agents/skills/humanizer/
+!.agents/skills/humanizer/**
+!.agents/skills/lia-compliance/
+!.agents/skills/lia-compliance/**
+!.agents/skills/lia-testing/
+!.agents/skills/lia-testing/**
+!.agents/skills/vue-migration-prep/
+!.agents/skills/vue-migration-prep/**
+!.agents/skills/vue-vuetify-standardize/
+!.agents/skills/vue-vuetify-standardize/**
 
 # Storybook assets (large PNGs)
 plataforma-lia/src/stories/assets/*.png
@@ -93,4 +109,3 @@ dump.rdb
 .coverage
 .coverage
 =155
-eval/agentic/runs/*.json

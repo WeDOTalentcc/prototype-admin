@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useCallback } from "react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import type { TriagemMessageOption } from "@/components/triagem/types"
 
@@ -19,6 +20,7 @@ export function MultipleChoiceCard({
   disabled = false,
   className,
 }: MultipleChoiceCardProps) {
+  const t = useTranslations("triagem.multipleChoiceCard")
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
   const handleSelect = useCallback(
@@ -30,6 +32,8 @@ export function MultipleChoiceCard({
     [disabled, selectedId, onSelect]
   )
 
+  const groupAria = question || t("groupAria")
+
   return (
     <div
       className={cn(
@@ -37,11 +41,13 @@ export function MultipleChoiceCard({
         className
       )}
       role="group"
-      aria-label={question}
+      aria-label={groupAria}
     >
-      <p className="text-sm text-lia-text-secondary">
-        {question}
-      </p>
+      {question && (
+        <p className="text-sm text-lia-text-secondary">
+          {question}
+        </p>
+      )}
       <div className="flex flex-col gap-2">
         {options.map((option) => {
           const isSelected = selectedId === option.id

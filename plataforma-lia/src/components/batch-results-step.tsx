@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import {
   CheckCircle, Activity, Bell, Mail, Download, Share2,
 } from "lucide-react"
-import type { BatchResults } from "./useBatchApproval"
+import type { BatchResults } from "@/hooks/candidates/use-batch-approval"
 
 interface BatchProcessingStepProps {
   selectedCount: number

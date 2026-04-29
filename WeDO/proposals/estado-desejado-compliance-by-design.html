@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Estado Desejado — Compliance-by-Design · Herança Automática</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #030712; font-family: 'Inter', system-ui, sans-serif; color: #e5e7eb; padding: 32px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .badge { display: inline-flex; align-items: center; gap: 8px; background: #052e16; border: 1px solid #16a34a; border-radius: 6px; padding: 6px 14px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #4ade80; margin-bottom: 8px; }
+  .subtitle { font-size: 11px; color: #6b7280; margin-left: 8px; }
+  h1 { font-size: 24px; font-weight: 700; color: #f9fafb; margin-bottom: 4px; }
+  .desc { font-size: 13px; color: #9ca3af; margin-bottom: 28px; }
+
+  /* Code comparison panel */
+  .code-panel { background: #0f172a; border: 2px solid #1e3a5f; border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+  .code-panel-title { font-size: 11px; color: #93c5fd; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .code-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .code-box { border-radius: 8px; padding: 12px; }
+  .code-box-fragil { background: #7f1d1d55; border: 1px solid #dc2626; }
+  .code-box-robusto { background: #052e1655; border: 1px solid #16a34a; }
+  .code-box-alvo { background: #1e3a5f55; border: 1px solid #3b82f6; }
+  .code-box-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .code-box-label { font-size: 11px; font-weight: 700; color: #d1d5db; }
+  .code-box-tag-fragil { font-size: 10px; font-weight: 700; color: #dc2626; }
+  .code-box-tag-robusto { font-size: 10px; font-weight: 700; color: #16a34a; }
+  .code-box-tag-alvo { font-size: 10px; font-weight: 700; color: #3b82f6; }
+  pre { margin: 0; font-size: 9.5px; color: #94a3b8; line-height: 1.5; font-family: 'JetBrains Mono', 'Courier New', monospace; white-space: pre-wrap; }
+
+  /* Kernel layer */
+  .layer { border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+  .layer-kernel { background: #1e1b4b; border: 2px solid #4338ca; }
+  .layer-domains { background: #022c22; border: 2px solid #065f46; }
+  .layer-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .layer-title-box { border-radius: 8px; padding: 8px 14px; }
+  .layer-kernel-title { background: #4f46e533; border: 1px solid #4f46e5; }
+  .layer-domains-title { background: #05996933; border: 1px solid #059669; }
+  .layer-title-main { font-size: 13px; font-weight: 700; color: #f9fafb; }
+  .layer-title-sub { font-size: 11px; color: #9ca3af; }
+  .layer-badge-100 { margin-left: auto; background: #052e16; border: 1px solid #16a34a; border-radius: 8px; padding: 8px 14px; text-align: center; }
+  .layer-badge-inf { margin-left: auto; background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 8px; padding: 8px 14px; text-align: center; }
+  .badge-num { font-size: 20px; font-weight: 800; }
+  .badge-ok { color: #4ade80; }
+  .badge-inf { color: #93c5fd; }
+  .badge-label { font-size: 10px; color: #6b7280; }
+
+  .kernel-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .domain-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .item-box { background: #00000033; border-radius: 8px; padding: 10px 12px; }
+  .item-icon-text { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+  .item-icon { font-size: 14px; }
+  .item-fn { font-size: 10.5px; font-weight: 700; color: #e2e8f0; font-family: 'JetBrains Mono', 'Courier New', monospace; }
+  .item-desc { font-size: 10px; color: #64748b; }
+
+  .domain-item { background: #00000033; border-radius: 8px; padding: 10px 12px; }
+  .domain-item-future { background: #1e293b55; border: 1px dashed #475569; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; }
+  .domain-plus { font-size: 18px; color: #475569; }
+  .domain-future-text { font-size: 10px; color: #475569; }
+  .domain-arrow { font-size: 10.5px; font-weight: 700; color: #e2e8f0; }
+  .domain-extends { font-size: 10px; color: #64748b; }
+
+  /* Metrics */
+  .metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .metric-box { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 16px 20px; text-align: center; }
+  .metric-icon { font-size: 24px; margin-bottom: 4px; }
+  .metric-value { font-size: 22px; font-weight: 800; }
+  .metric-val-purple { color: #4f46e5; }
+  .metric-val-green { color: #059669; }
+  .metric-val-blue { color: #0891b2; }
+  .metric-label { font-size: 11px; color: #6b7280; }
+
+  /* Coverage after table */
+  .coverage-section { background: #111827; border: 1px solid #374151; border-radius: 12px; padding: 20px; }
+  .coverage-section h3 { font-size: 13px; font-weight: 700; color: #f9fafb; margin-bottom: 16px; }
+  table { width: 100%; border-collapse: separate; border-spacing: 2px; }
+  th, td { padding: 0; }
+  .col-header { width: 120px; font-size: 10px; color: #6b7280; font-weight: 600; text-align: left; padding: 4px 8px; vertical-align: bottom; }
+  .domain-th { padding: 2px 4px; text-align: center; }
+  .domain-mini { background: #1f2937; border-radius: 4px; padding: 4px 6px; }
+  .domain-mini-dot { width: 6px; height: 6px; border-radius: 50%; margin: 0 auto 2px; }
+  .domain-mini-name { font-size: 9px; color: #d1d5db; font-weight: 600; white-space: nowrap; }
+  .concern-td { padding: 2px 8px 2px 0; vertical-align: middle; }
+  .cid { font-size: 9px; font-weight: 700; border-radius: 3px; padding: 1px 5px; letter-spacing: 0.05em; white-space: nowrap; color: #6366f1; background: #1e1b4b; }
+  .clabel { font-size: 10px; color: #6b7280; margin-left: 4px; }
+  .cell-td { padding: 2px; }
+  .cell-ok { background: #052e16; border: 1px solid #16a34a; border-radius: 4px; text-align: center; padding: 5px 4px; font-size: 11px; color: #4ade80; font-weight: 700; min-width: 32px; }
+
+  .coverage-footer { margin-top: 12px; background: #052e16; border: 1px solid #16a34a; border-radius: 8px; padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+  .coverage-footer-text { font-size: 12px; color: #86efac; }
+  .coverage-footer-em { font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+    <span class="badge">✓ ESTADO DESEJADO — COMPLIANCE-BY-DESIGN</span>
+    <span class="subtitle">Caminho 2 · ComplianceDomainPrompt · 3 semanas</span>
+  </div>
+  <h1>Arquitetura de Herança Automática de Compliance</h1>
+  <p class="desc">Um único kernel governa todos os 23 guards. Todo domínio — presente e futuro — herda compliance automaticamente.</p>
+
+  <div class="code-panel">
+    <div class="code-panel-title">PRINCÍPIO CENTRAL — Comparativo de Código</div>
+    <div class="code-grid">
+      <div class="code-box code-box-fragil">
+        <div class="code-box-header"><span class="code-box-label">v5 (hoje)</span><span class="code-box-tag-fragil">✗ FRÁGIL</span></div>
+        <pre>class EvaluationDomain:
+  def process_intent(self, req):
+    pii = self._manual_pii(req)
+    # esquece?
+    fair = self._manual_fair(pii)
+    # esquece?
+    return self._execute(fair)</pre>
+      </div>
+      <div class="code-box code-box-robusto">
+        <div class="code-box-header"><span class="code-box-label">LIA (referência)</span><span class="code-box-tag-robusto">✓ ROBUSTO</span></div>
+        <pre>class EvaluationAgent(
+  ComplianceDomainPrompt
+):
+  def _execute_logic(self, req):
+    # compliance já aplicado
+    return self._domain_logic(req)</pre>
+      </div>
+      <div class="code-box code-box-alvo">
+        <div class="code-box-header"><span class="code-box-label">v5 (desejado)</span><span class="code-box-tag-alvo">→ ALVO</span></div>
+        <pre>class EvaluationDomain(
+  ComplianceDomainPrompt
+):
+  def _execute_logic(self, req):
+    # mesma proteção LIA
+    return self._business(req)</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer layer-kernel">
+    <div class="layer-header">
+      <div class="layer-title-box layer-kernel-title">
+        <div class="layer-title-main">ComplianceDomainPrompt (Kernel)</div>
+        <div class="layer-title-sub">Herança automática — 1 arquivo governa todos os domínios</div>
+      </div>
+      <div class="layer-badge-100">
+        <div class="badge-num badge-ok">100%</div>
+        <div class="badge-label">cobertura</div>
+      </div>
+    </div>
+    <div class="kernel-grid">
+      <div class="item-box" style="border-left: 3px solid #4f46e5;">
+        <div class="item-icon-text"><span class="item-icon">⚡</span><span class="item-fn">_setup_enhanced()</span></div>
+        <div class="item-desc">chama todos os guards na inicialização</div>
+      </div>
+      <div class="item-box" style="border-left: 3px solid #4f46e5;">
+        <div class="item-icon-text"><span class="item-icon">🔒</span><span class="item-fn">pii_masking_pipeline()</span></div>
+        <div class="item-desc">4 camadas antes de qualquer chamada LLM</div>
+      </div>
+      <div class="item-box" style="border-left: 3px solid #4f46e5;">
+        <div class="item-icon-text"><span class="item-icon">⚖️</span><span class="item-fn">fairness_gate()</span></div>
+        <div class="item-desc">14 categorias discriminatórias bloqueadas</div>
+      </div>
+      <div class="item-box" style="border-left: 3px solid #4f46e5;">
+        <div class="item-icon-text"><span class="item-icon">📋</span><span class="item-fn">bias_audit_decorator()</span></div>
+        <div class="item-desc">log automático em toda execução</div>
+      </div>
+      <div class="item-box" style="border-left: 3px solid #4f46e5;">
+        <div class="item-icon-text"><span class="item-icon">🛡️</span><span class="item-fn">guardrail_repository()</span></div>
+        <div class="item-desc">repositório central de regras</div>
+      </div>
+      <div class="item-box" style="border-left: 3px solid #4f46e5;">
+        <div class="item-icon-text"><span class="item-icon">🔐</span><span class="item-fn">prompt_injection_scanner()</span></div>
+        <div class="item-desc">jailbreak + injection detectados</div>
+      </div>
+      <div class="item-box" style="border-left: 3px solid #4f46e5;">
+        <div class="item-icon-text"><span class="item-icon">📝</span><span class="item-fn">audit_immutable_writer()</span></div>
+        <div class="item-desc">ON CONFLICT DO NOTHING + retenção 7 anos</div>
+      </div>
+      <div class="item-box" style="border-left: 3px solid #4f46e5;">
+        <div class="item-icon-text"><span class="item-icon">📊</span><span class="item-fn">confidence_threshold()</span></div>
+        <div class="item-desc">bloqueia respostas abaixo de 0.7</div>
+      </div>
+      <div class="item-box" style="border-left: 3px solid #4f46e5;">
+        <div class="item-icon-text"><span class="item-icon">📜</span><span class="item-fn">hiring_policy_enforcer()</span></div>
+        <div class="item-desc">diretrizes contratuais aplicadas</div>
+      </div>
+      <div class="item-box" style="border-left: 3px solid #4f46e5;">
+        <div class="item-icon-text"><span class="item-icon">✅</span><span class="item-fn">fact_check_gate()</span></div>
+        <div class="item-desc">hallucination prevention ativo</div>
+      </div>
+      <div class="item-box" style="border-left: 3px solid #4f46e5;">
+        <div class="item-icon-text"><span class="item-icon">🎓</span><span class="item-fn">learning_fairness_gate()</span></div>
+        <div class="item-desc">bias antes de qualquer aprendizado</div>
+      </div>
+      <div class="item-box" style="border-left: 3px solid #4f46e5;">
+        <div class="item-icon-text"><span class="item-icon">🗃️</span><span class="item-fn">sox_retention_manager()</span></div>
+        <div class="item-desc">WORM compliance automático</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layer layer-domains">
+    <div class="layer-header">
+      <div class="layer-title-box layer-domains-title">
+        <div class="layer-title-main">Domínios de Negócio</div>
+        <div class="layer-title-sub">Implementam apenas a lógica específica — compliance já está garantido</div>
+      </div>
+      <div class="layer-badge-inf">
+        <div class="badge-num badge-inf">∞</div>
+        <div class="badge-label">futuros domínios</div>
+      </div>
+    </div>
+    <div class="domain-grid">
+      <div class="domain-item" style="border-left: 3px solid #6366f1;">
+        <div class="item-icon-text"><span class="item-icon" style="color:#6366f1">▸</span><span class="domain-arrow">EvaluationDomain</span></div>
+        <div class="domain-extends">extends ComplianceDomainPrompt</div>
+      </div>
+      <div class="domain-item" style="border-left: 3px solid #8b5cf6;">
+        <div class="item-icon-text"><span class="item-icon" style="color:#8b5cf6">▸</span><span class="domain-arrow">AutonomousDomain</span></div>
+        <div class="domain-extends">extends ComplianceDomainPrompt</div>
+      </div>
+      <div class="domain-item" style="border-left: 3px solid #ec4899;">
+        <div class="item-icon-text"><span class="item-icon" style="color:#ec4899">▸</span><span class="domain-arrow">AppliesDomain</span></div>
+        <div class="domain-extends">extends ComplianceDomainPrompt</div>
+      </div>
+      <div class="domain-item" style="border-left: 3px solid #f59e0b;">
+        <div class="item-icon-text"><span class="item-icon" style="color:#f59e0b">▸</span><span class="domain-arrow">ScreeningDomain</span></div>
+        <div class="domain-extends">extends ComplianceDomainPrompt</div>
+      </div>
+      <div class="domain-item" style="border-left: 3px solid #10b981;">
+        <div class="item-icon-text"><span class="item-icon" style="color:#10b981">▸</span><span class="domain-arrow">InterviewDomain</span></div>
+        <div class="domain-extends">extends ComplianceDomainPrompt</div>
+      </div>
+      <div class="domain-item" style="border-left: 3px solid #3b82f6;">
+        <div class="item-icon-text"><span class="item-icon" style="color:#3b82f6">▸</span><span class="domain-arrow">LearningDomain</span></div>
+        <div class="domain-extends">extends ComplianceDomainPrompt</div>
+      </div>
+      <div class="domain-item" style="border-left: 3px solid #ef4444;">
+        <div class="item-icon-text"><span class="item-icon" style="color:#ef4444">▸</span><span class="domain-arrow">ProfileDomain</span></div>
+        <div class="domain-extends">extends ComplianceDomainPrompt</div>
+      </div>
+      <div class="domain-item" style="border-left: 3px solid #14b8a6;">
+        <div class="item-icon-text"><span class="item-icon" style="color:#14b8a6">▸</span><span class="domain-arrow">MatchingDomain</span></div>
+        <div class="domain-extends">extends ComplianceDomainPrompt</div>
+      </div>
+      <div class="domain-item" style="border-left: 3px solid #a78bfa;">
+        <div class="item-icon-text"><span class="item-icon" style="color:#a78bfa">▸</span><span class="domain-arrow">FutureADomain</span></div>
+        <div class="domain-extends">extends ComplianceDomainPrompt</div>
+      </div>
+      <div class="domain-item-future">
+        <div class="domain-plus">＋</div>
+        <div class="domain-future-text">Futuro B<br>compliance<br>automático</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric-box">
+      <div class="metric-icon">⏱</div>
+      <div class="metric-value metric-val-purple">3 semanas</div>
+      <div class="metric-label">para implementação</div>
+    </div>
+    <div class="metric-box">
+      <div class="metric-icon">📉</div>
+      <div class="metric-value metric-val-green">−87%</div>
+      <div class="metric-label">de linhas de compliance</div>
+    </div>
+    <div class="metric-box">
+      <div class="metric-icon">🛡️</div>
+      <div class="metric-value metric-val-blue">0</div>
+      <div class="metric-label">esquecimentos possíveis no futuro</div>
+    </div>
+  </div>
+
+  <div class="coverage-section">
+    <h3>Mapa de Cobertura após Migração — todos os domínios ✓</h3>
+    <table>
+      <thead>
+        <tr>
+          <th class="col-header"></th>
+          <th class="domain-th"><div class="domain-mini" style="border:1px solid #6366f144"><div class="domain-mini-dot" style="background:#6366f1"></div><div class="domain-mini-name">Evaluation</div></div></th>
+          <th class="domain-th"><div class="domain-mini" style="border:1px solid #8b5cf644"><div class="domain-mini-dot" style="background:#8b5cf6"></div><div class="domain-mini-name">Autonomous</div></div></th>
+          <th class="domain-th"><div class="domain-mini" style="border:1px solid #ec489944"><div class="domain-mini-dot" style="background:#ec4899"></div><div class="domain-mini-name">Applies</div></div></th>
+          <th class="domain-th"><div class="domain-mini" style="border:1px solid #f59e0b44"><div class="domain-mini-dot" style="background:#f59e0b"></div><div class="domain-mini-name">Screening</div></div></th>
+          <th class="domain-th"><div class="domain-mini" style="border:1px solid #10b98144"><div class="domain-mini-dot" style="background:#10b981"></div><div class="domain-mini-name">Interview</div></div></th>
+          <th class="domain-th"><div class="domain-mini" style="border:1px solid #3b82f644"><div class="domain-mini-dot" style="background:#3b82f6"></div><div class="domain-mini-name">Learning</div></div></th>
+          <th class="domain-th"><div class="domain-mini" style="border:1px solid #ef444444"><div class="domain-mini-dot" style="background:#ef4444"></div><div class="domain-mini-name">Profile</div></div></th>
+          <th class="domain-th"><div class="domain-mini" style="border:1px solid #14b8a644"><div class="domain-mini-dot" style="background:#14b8a6"></div><div class="domain-mini-name">Matching</div></div></th>
+          <th class="domain-th"><div class="domain-mini" style="border:1px solid #a78bfa44"><div class="domain-mini-dot" style="background:#a78bfa"></div><div class="domain-mini-name">Futuro A</div></div></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="concern-td"><span class="cid">C01</span><span class="clabel">Fairness Guard</span></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td></tr>
+        <tr><td class="concern-td"><span class="cid">C02</span><span class="clabel">Bias Audit</span></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td></tr>
+        <tr><td class="concern-td"><span class="cid">C03</span><span class="clabel">PII Pré-LLM</span></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td></tr>
+        <tr><td class="concern-td"><span class="cid">C04</span><span class="clabel">Audit opt-in</span></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td></tr>
+        <tr><td class="concern-td"><span class="cid">C05</span><span class="clabel">Audit imutável</span></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td></tr>
+        <tr><td class="concern-td"><span class="cid">C06</span><span class="clabel">Retenção SOX</span></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td></tr>
+        <tr><td class="concern-td"><span class="cid">C07</span><span class="clabel">Guardrails</span></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td></tr>
+        <tr><td class="concern-td"><span class="cid">C08</span><span class="clabel">Prompt Inject.</span></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td></tr>
+        <tr><td class="concern-td"><span class="cid">C09</span><span class="clabel">Confidence</span></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td></tr>
+        <tr><td class="concern-td"><span class="cid">C10</span><span class="clabel">Hiring Policy</span></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td></tr>
+        <tr><td class="concern-td"><span class="cid">C11</span><span class="clabel">Fact Check</span></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td></tr>
+        <tr><td class="concern-td"><span class="cid">C12</span><span class="clabel">Learning Gate</span></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td><td class="cell-td"><div class="cell-ok">✓</div></td></tr>
+      </tbody>
+    </table>
+    <div class="coverage-footer">
+      <span>✓</span>
+      <span class="coverage-footer-text"><span class="coverage-footer-em">100% de cobertura</span> — incluindo Futuro A e qualquer domínio criado depois. Compliance é garantido pela arquitetura, não pela disciplina individual.</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

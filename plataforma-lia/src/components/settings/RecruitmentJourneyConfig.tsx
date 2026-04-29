@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from "react"
+import { useTranslations } from "next-intl"
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor,
   useSensor, useSensors, DragEndEvent,
@@ -43,25 +44,31 @@ interface CatalogStage {
 // Default stages fallback
 // ---------------------------------------------------------------------------
 
+// NOTE: display_name values are canonical English fallbacks. The UI looks up
+// a locale-specific label from `settings.recruitment.journey.defaultStageNames.<name>`
+// at render time via `getStageDisplayName()`, so users see translated stage
+// names in both pt-BR and EN.
 export const DEFAULT_STAGES: RecruitmentStage[] = [
-  { id: "1",  name: "sourcing",            display_name: "Funil",             order: 1,  isActive: true, notes: "", sla: 0, type: "system",  color: "var(--lia-text-secondary)", icon: "search",      action_behavior: "intake",               default_channel: "email",         stage_category: "system"  },
-  { id: "2",  name: "screening",           display_name: "Triagem",           order: 2,  isActive: true, notes: "", sla: 0, type: "system",  color: "var(--wedo-purple)", icon: "file-text",   action_behavior: "screening",            default_channel: "email",         stage_category: "system"  },
-  { id: "3",  name: "long_list",           display_name: "Long List",         order: 3,  isActive: true, notes: "", sla: 3, type: "custom",  color: "var(--lia-border-subtle)", icon: "list",        action_behavior: "passive",              default_channel: "email",         stage_category: "custom"  },
-  { id: "4",  name: "short_list",          display_name: "Short List",        order: 4,  isActive: true, notes: "", sla: 3, type: "custom",  color: "var(--lia-border-subtle)", icon: "list-checks", action_behavior: "passive",              default_channel: "email",         stage_category: "custom"  },
-  { id: "5",  name: "interview_hr",        display_name: "Entrevista RH",     order: 5,  isActive: true, notes: "", sla: 0, type: "system",  color: "var(--lia-text-tertiary)", icon: "users",       action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "system"  },
-  { id: "6",  name: "technical_test",      display_name: "Teste Técnico",     order: 6,  isActive: true, notes: "", sla: 5, type: "custom",  color: "var(--lia-border-subtle)", icon: "code-2",      action_behavior: "evaluation",           default_channel: "email",         stage_category: "custom"  },
-  { id: "7",  name: "english_test",        display_name: "Teste de Inglês",   order: 7,  isActive: true, notes: "", sla: 5, type: "custom",  color: "var(--lia-border-subtle)", icon: "languages",   action_behavior: "evaluation",           default_channel: "email",         stage_category: "custom"  },
-  { id: "8",  name: "interview_technical", display_name: "Entrevista Técnica",order: 8,  isActive: true, notes: "", sla: 5, type: "custom",  color: "var(--status-warning)", icon: "code",        action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "custom"  },
-  { id: "9",  name: "interview_manager",   display_name: "Entrevista Gestor", order: 9,  isActive: true, notes: "", sla: 5, type: "custom",  color: "var(--status-success)", icon: "briefcase",   action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "custom"  },
-  { id: "10", name: "interview_final",     display_name: "Entrevista Final",  order: 10, isActive: true, notes: "", sla: 5, type: "custom",  color: "var(--lia-border-subtle)", icon: "award",       action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "custom"  },
-  { id: "11", name: "references",          display_name: "Referências",       order: 11, isActive: true, notes: "", sla: 3, type: "custom",  color: "var(--lia-bg-tertiary)", icon: "phone",       action_behavior: "verification",         default_channel: "email",         stage_category: "custom"  },
-  { id: "12", name: "offer",               display_name: "Proposta",          order: 12, isActive: true, notes: "", sla: 3, type: "default", color: "var(--lia-text-secondary)", icon: "file-check",  action_behavior: "offer",                default_channel: "email",         stage_category: "catalog" },
-  { id: "13", name: "offer_declined",      display_name: "Proposta Recusada", order: 13, isActive: true, notes: "", sla: 0, type: "default", color: "var(--status-warning)", icon: "x",           action_behavior: "conclusion_declined",  default_channel: "email",         stage_category: "catalog" },
-  { id: "14", name: "hired",               display_name: "Contratado",        order: 14, isActive: true, notes: "", sla: 0, type: "system",  color: "var(--status-success)", icon: "check-circle",action_behavior: "conclusion_hired",     default_channel: "email",         stage_category: "system"  },
-  { id: "15", name: "rejected",            display_name: "Reprovado",         order: 15, isActive: true, notes: "", sla: 0, type: "system",  color: "var(--status-error)", icon: "x-circle",   action_behavior: "conclusion_rejected",  default_channel: "email",         stage_category: "system"  },
+  { id: "1",  name: "sourcing",            display_name: "Sourcing",           order: 1,  isActive: true, notes: "", sla: 0, type: "system",  color: "var(--lia-text-secondary)", icon: "search",      action_behavior: "intake",               default_channel: "email",         stage_category: "system"  },
+  { id: "2",  name: "screening",           display_name: "Screening",          order: 2,  isActive: true, notes: "", sla: 0, type: "system",  color: "var(--wedo-purple)", icon: "file-text",   action_behavior: "screening",            default_channel: "email",         stage_category: "system"  },
+  { id: "3",  name: "long_list",           display_name: "Long List",          order: 3,  isActive: true, notes: "", sla: 3, type: "custom",  color: "var(--lia-border-subtle)", icon: "list",        action_behavior: "passive",              default_channel: "email",         stage_category: "custom"  },
+  { id: "4",  name: "short_list",          display_name: "Short List",         order: 4,  isActive: true, notes: "", sla: 3, type: "custom",  color: "var(--lia-border-subtle)", icon: "list-checks", action_behavior: "passive",              default_channel: "email",         stage_category: "custom"  },
+  { id: "5",  name: "interview_hr",        display_name: "HR Interview",       order: 5,  isActive: true, notes: "", sla: 0, type: "system",  color: "var(--lia-text-tertiary)", icon: "users",       action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "system"  },
+  { id: "6",  name: "technical_test",      display_name: "Technical Test",     order: 6,  isActive: true, notes: "", sla: 5, type: "custom",  color: "var(--lia-border-subtle)", icon: "code-2",      action_behavior: "evaluation",           default_channel: "email",         stage_category: "custom"  },
+  { id: "7",  name: "english_test",        display_name: "English Test",       order: 7,  isActive: true, notes: "", sla: 5, type: "custom",  color: "var(--lia-border-subtle)", icon: "languages",   action_behavior: "evaluation",           default_channel: "email",         stage_category: "custom"  },
+  { id: "8",  name: "interview_technical", display_name: "Technical Interview",order: 8,  isActive: true, notes: "", sla: 5, type: "custom",  color: "var(--status-warning)", icon: "code",        action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "custom"  },
+  { id: "9",  name: "interview_manager",   display_name: "Manager Interview",  order: 9,  isActive: true, notes: "", sla: 5, type: "custom",  color: "var(--status-success)", icon: "briefcase",   action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "custom"  },
+  { id: "10", name: "interview_final",     display_name: "Final Interview",    order: 10, isActive: true, notes: "", sla: 5, type: "custom",  color: "var(--lia-border-subtle)", icon: "award",       action_behavior: "scheduling",           default_channel: "email_whatsapp", stage_category: "custom"  },
+  { id: "11", name: "references",          display_name: "References",         order: 11, isActive: true, notes: "", sla: 3, type: "custom",  color: "var(--lia-bg-tertiary)", icon: "phone",       action_behavior: "verification",         default_channel: "email",         stage_category: "custom"  },
+  { id: "12", name: "offer",               display_name: "Offer",              order: 12, isActive: true, notes: "", sla: 3, type: "default", color: "var(--lia-text-secondary)", icon: "file-check",  action_behavior: "offer",                default_channel: "email",         stage_category: "catalog" },
+  { id: "13", name: "offer_declined",      display_name: "Offer Declined",     order: 13, isActive: true, notes: "", sla: 0, type: "default", color: "var(--status-warning)", icon: "x",           action_behavior: "conclusion_declined",  default_channel: "email",         stage_category: "catalog" },
+  { id: "14", name: "hired",               display_name: "Hired",              order: 14, isActive: true, notes: "", sla: 0, type: "system",  color: "var(--status-success)", icon: "check-circle",action_behavior: "conclusion_hired",     default_channel: "email",         stage_category: "system"  },
+  { id: "15", name: "rejected",            display_name: "Rejected",           order: 15, isActive: true, notes: "", sla: 0, type: "system",  color: "var(--status-error)", icon: "x-circle",   action_behavior: "conclusion_rejected",  default_channel: "email",         stage_category: "system"  },
 ]
 
-const SYSTEM_END_NAMES = ['hired', 'rejected', 'Contratado', 'Reprovado']
+// Includes both canonical `name` keys and historical PT/EN display_name strings
+// so the system-end split keeps working across legacy data and translations.
+const SYSTEM_END_NAMES = ['hired', 'rejected', 'Contratado', 'Reprovado', 'Hired', 'Rejected']
 
 function splitSystemEnd(stages: RecruitmentStage[]) {
   const end = stages.filter(s => s.type === 'system' && (SYSTEM_END_NAMES.includes(s.name) || SYSTEM_END_NAMES.includes(s.display_name)))
@@ -82,11 +89,13 @@ export function RecruitmentJourneyConfig({
   hideHeader = false,
   onToggleSubStatus,
 }: RecruitmentJourneyConfigProps) {
+  const t = useTranslations("settings.recruitment.journey")
   const [newlyAddedStageId, setNewlyAddedStageId] = useState<string | null>(null)
   const [catalogStages, setCatalogStages] = useState<CatalogStage[]>([])
   const [catalogOpen, setCatalogOpen] = useState(false)
   const [catalogLoading, setCatalogLoading] = useState(false)
-  const [catalogError, setCatalogError] = useState<string | null>(null)
+  const [catalogHasError, setCatalogHasError] = useState(false)
+  const catalogError = catalogHasError ? t("catalogLoadError") : null
   const [catalogReloadKey, setCatalogReloadKey] = useState(0)
   const stageRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
@@ -99,7 +108,7 @@ export function RecruitmentJourneyConfig({
     const controller = new AbortController()
     let cancelled = false
     setCatalogLoading(true)
-    setCatalogError(null)
+    setCatalogHasError(false)
     fetchWithRetry('/api/backend-proxy/stage-catalog', { signal: controller.signal }, { attempts: 2, timeoutMs: 15000 })
       .then(async (r) => {
         if (!r.ok) throw new HttpError(r.status, `HTTP ${r.status}`)
@@ -116,7 +125,7 @@ export function RecruitmentJourneyConfig({
         // Use console.warn — Next dev overlay only intercepts uncaught errors
         // and unhandled rejections; warn keeps the noise out of the overlay.
         console.warn('[RecruitmentJourneyConfig] stage-catalog fetch failed', err)
-        setCatalogError('Não foi possível carregar o catálogo de etapas.')
+        setCatalogHasError(true)
       })
       .finally(() => {
         if (!cancelled) setCatalogLoading(false)
@@ -186,7 +195,7 @@ export function RecruitmentJourneyConfig({
     const newId = `stage-${Date.now()}`
     const { end, rest } = splitSystemEnd(stages)
     const newStage: RecruitmentStage = {
-      id: newId, name: `custom_${Date.now()}`, display_name: "Nova etapa",
+      id: newId, name: `custom_${Date.now()}`, display_name: t("newStage"),
       order: rest.length + 1, isActive: true, notes: "", sla: 3,
       type: "custom", action_behavior: "passive", stage_category: "custom",
     }
@@ -222,13 +231,10 @@ export function RecruitmentJourneyConfig({
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className={`${textStyles.titleLarge} text-lia-text-primary`}>
-              Jornada de Recrutamento
+              {t("title")}
             </h3>
             <p className={`${textStyles.description} mt-1`}>
-              {isEditMode
-                ? "Arraste as etapas para reordenar. Etapas de sistema podem ter SLA, ação e canal configurados."
-                : "Visualize as etapas do processo seletivo configuradas."
-              }
+              {isEditMode ? t("descEdit") : t("descView")}
             </p>
           </div>
           {isEditMode && (
@@ -236,20 +242,20 @@ export function RecruitmentJourneyConfig({
               <PopoverTrigger asChild>
                 <Button className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active rounded-xl px-4 py-2 text-xs font-semibold transition-colors motion-reduce:transition-none">
                   <Plus className="h-4 w-4 mr-2" />
-                  Adicionar etapa
+                  {t("addStage")}
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="end" className="w-80 p-0">
                 <div className="p-3 dark:border-lia-border-subtle">
                   <h4 className={`${textStyles.bodyLarge} font-semibold text-lia-text-primary`}>
-                    Adicionar do Catálogo
+                    {t("addFromCatalog")}
                   </h4>
                 </div>
                 <div className="max-h-64 overflow-y-auto p-2">
                   {catalogLoading && catalogStages.length === 0 ? (
                     <div className="flex items-center gap-2 px-3 py-4 text-lia-text-tertiary">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <span className={textStyles.description}>Carregando catálogo de etapas...</span>
+                      <span className={textStyles.description}>{t("loadingCatalog")}</span>
                     </div>
                   ) : catalogError && catalogStages.length === 0 ? (
                     <div className="px-3 py-4 space-y-2">
@@ -263,7 +269,7 @@ export function RecruitmentJourneyConfig({
                         onClick={() => setCatalogReloadKey((k) => k + 1)}
                         className="w-full"
                       >
-                        Tentar novamente
+                        {t("retry")}
                       </Button>
                     </div>
                   ) : availableCatalogStages.length > 0 ? (
@@ -282,7 +288,7 @@ export function RecruitmentJourneyConfig({
                     ))
                   ) : (
                     <p className={`px-3 py-2 ${textStyles.description}`}>
-                      Todas as etapas do catálogo já foram adicionadas.
+                      {t("allCatalogAdded")}
                     </p>
                   )}
                 </div>
@@ -292,7 +298,7 @@ export function RecruitmentJourneyConfig({
                     className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 transition-colors motion-reduce:transition-none text-left"
                   >
                     <Plus className="h-4 w-4 text-lia-text-secondary" />
-                    <span className={`${textStyles.body} text-lia-text-secondary`}>Criar etapa customizada</span>
+                    <span className={`${textStyles.body} text-lia-text-secondary`}>{t("createCustom")}</span>
                   </button>
                 </div>
               </PopoverContent>
@@ -305,15 +311,15 @@ export function RecruitmentJourneyConfig({
         <div className={`flex items-center gap-4 flex-wrap ${textStyles.caption}`}>
           <div className="flex items-center gap-1">
             <Lock className="h-3 w-3 text-lia-text-tertiary" />
-            <span><strong>Sistema:</strong> SLA, ação e canal configuráveis — nome e exclusão bloqueados</span>
+            <span><strong>{t("systemLabel")}</strong> {t("systemDesc")}</span>
           </div>
           <div className="flex items-center gap-1">
             <Shield className="h-3 w-3 text-wedo-cyan-dark dark:text-wedo-cyan-dark" />
-            <span><strong>Padrão:</strong> Totalmente editável</span>
+            <span><strong>{t("defaultLabel")}</strong> {t("defaultDesc")}</span>
           </div>
           <div className="flex items-center gap-1">
             <Settings className="h-3 w-3 text-wedo-purple" />
-            <span><strong>Custom:</strong> Totalmente editável</span>
+            <span><strong>{t("customLabel")}</strong> {t("customDesc")}</span>
           </div>
         </div>
       </div>
@@ -348,7 +354,7 @@ export function RecruitmentJourneyConfig({
       {stages.length === 0 && (
         <div className="text-center py-12 bg-lia-bg-secondary dark:bg-lia-bg-primary rounded-xl border-2 border-dashed border-lia-border-subtle dark:border-lia-border-subtle">
           <p className={textStyles.bodyLarge}>
-            Nenhuma etapa configurada. {isEditMode && 'Clique em "Adicionar etapa" para começar.'}
+            {t("noStages")} {isEditMode && t("noStagesHint")}
           </p>
         </div>
       )}

@@ -1,8 +1,3 @@
-# tenant-isolation: manual — legacy tools authored before @tool_handler.
-# Each handler reads company_id from the injected `_context` (ToolExecutionContext)
-# and/or from kwargs populated by `app/tools/executor.py`. Migration to
-# @tool_handler is tracked under the ADR-018 / Task #673 backlog. Do NOT add
-# new functions here — author new tools via @tool_handler in a new module.
 """
 Job Tools - Tools for job vacancy management.
 
@@ -68,9 +63,6 @@ async def create_job(
         
     Returns:
         Result with job creation details
-
-    Side effects: db_write, audit_trail
-    Governance: multi_tenant, audit_trail
     """
     context = _extract_context(kwargs)
     effective_company_id = context.company_id if context else company_id
@@ -383,9 +375,6 @@ async def close_job(
         
     Returns:
         Result with close details
-
-    Side effects: db_write, email_sent, audit_trail, write_destructive
-    Governance: multi_tenant, hitl_required, audit_trail, write_destructive
     """
     logger.info(f"🔒 Closing job vacancy: {job_id}, reason: {reason}")
     
@@ -434,7 +423,7 @@ async def close_job(
                 
                 try:
                     from app.domains.job_management.services.outcome_tracker import outcome_tracker
-                    company_id = getattr(job, 'company_id', 'demo_company')
+                    company_id = (job.company_id or 'demo_company')
                     await outcome_tracker.record_job_close(
                         job_id=job_id,
                         company_id=company_id,

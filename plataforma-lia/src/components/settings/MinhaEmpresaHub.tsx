@@ -5,6 +5,7 @@ import {
   Building, Heart, Code, Gift, Network, GitBranch, BarChart3, FileText,
   Loader2, RefreshCw, AlertCircle, CheckCircle, Upload,
 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { useCompanySettingsCards } from "@/hooks/settings/use-company-settings-cards"
 import { useSettingsConversational } from "@/hooks/settings/use-settings-conversational"
 import { MinhaEmpresaCard } from "@/components/settings/MinhaEmpresaCard"
@@ -25,8 +26,11 @@ const ICON_MAP: Record<string, LucideIcon> = {
 }
 
 export function MinhaEmpresaHub() {
+  const t = useTranslations("settings.minhaEmpresa")
   const {
     blocks,
+    benefits,
+    companyId,
     loading,
     error,
     successMessage,
@@ -42,24 +46,60 @@ export function MinhaEmpresaHub() {
     refreshAll,
   } = useCompanySettingsCards()
 
-  const { triggerAction } = useSettingsConversational()
+  const { triggerAction, triggerPrefillSection } = useSettingsConversational()
+
+  const BLOCK_TO_PREFILL: Record<string, "culture" | "tech_stack" | "benefits" | "workforce" | "policy" | "compensation" | undefined> = {
+    culture: "culture",
+    tech: "tech_stack",
+    benefits: "benefits",
+    workforce: "workforce",
+    policy: "policy",
+    documents: "compensation",
+  }
+
+  const pendingSections = React.useMemo(
+    () => blocks.filter((b) => b.progress.total > 0 && b.progress.filled < b.progress.total),
+    [blocks],
+  )
+  const totalPendingFields = React.useMemo(
+    () => pendingSections.reduce((acc, b) => acc + (b.progress.total - b.progress.filled), 0),
+    [pendingSections],
+  )
+
+  const handleJumpToBlock = React.useCallback((blockKey: string) => {
+    if (typeof window === "undefined") return
+    if (!expandedBlocks.has(blockKey)) toggleBlock(blockKey)
+    setTimeout(() => {
+      const target = document.querySelector(
+        `[data-block-anchor="${blockKey}"]`,
+      ) as HTMLElement | null
+      if (target) target.scrollIntoView({ behavior: "smooth", block: "start" })
+    }, 60)
+  }, [expandedBlocks, toggleBlock])
+
+  const websiteUrl = React.useMemo(() => {
+    const basicBlock = blocks.find((b) => b.key === "basic")
+    return basicBlock?.fields.find((f) => f.key === "website")?.value as string | undefined
+  }, [blocks])
 
   const handleAnalyzeWebsite = React.useCallback(() => {
+    const urlTag = websiteUrl ? `\n[website_url:${websiteUrl}]` : ""
     triggerAction("analyze_website", {
       section: "minha-empresa",
       prompt:
-        "Analise nosso site institucional e extraia missão, valores, cultura, " +
-        "tech stack e benefícios. Mostre os campos extraídos para eu revisar antes de gravar.",
+        "[ACTION:analyze_website]" + urlTag + "\n\n" +
+        t("analyzeWebsitePrompt"),
       source: "ui",
+      autoSend: true,
     })
-  }, [triggerAction])
+  }, [triggerAction, websiteUrl, t])
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64" role="status" aria-live="polite" aria-label="Carregando...">
+      <div className="flex items-center justify-center h-64" role="status" aria-live="polite" aria-label={t("loading")}>
         <Loader2 className="w-5 h-5 animate-spin motion-reduce:animate-none text-lia-text-tertiary" />
         <span className={`ml-2 ${textStyles.body}`}>
-          Carregando dados da empresa...
+          {t("loadingCompanyData")}
         </span>
       </div>
     )
@@ -81,9 +121,9 @@ export function MinhaEmpresaHub() {
       <div>
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h2 className={textStyles.h3}>Minha Empresa</h2>
+            <h2 className={textStyles.h3}>{t("title")}</h2>
             <p className={`${textStyles.description} mt-0.5`}>
-              Converse com a LIA no chat lateral para preencher automaticamente. Ou edite diretamente nos cards.
+              {t("description")}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -97,25 +137,25 @@ export function MinhaEmpresaHub() {
                 text-lia-text-primary border border-lia-border-subtle
                 hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none
               "
-              title="Pedir para a LIA analisar nosso site"
+              title={t("analyzeWebsiteTitle")}
             >
               <Globe className="w-3.5 h-3.5 text-wedo-cyan" aria-hidden />
-              Analisar nosso site
+              {t("analyzeWebsite")}
             </button>
             <button
               onClick={refreshAll}
               className="p-1.5 rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
-              aria-label="Atualizar dados"
+              aria-label={t("refreshData")}
             >
               <RefreshCw className="w-4 h-4 text-lia-text-secondary" />
             </button>
             <span className={`${textStyles.metricSmall} flex-shrink-0`}>
-              {overallProgress}% configurado
+              {t("configuredSuffix", { progress: overallProgress })}
             </span>
             {overallProgress >= 80 && (
               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-micro font-medium bg-status-success/10 text-status-success border border-status-success/30 flex-shrink-0">
                 <CheckCircle className="w-3 h-3 mr-1" />
-                Quase completo
+                {t("almostComplete")}
               </span>
             )}
           </div>
@@ -128,6 +168,61 @@ export function MinhaEmpresaHub() {
         </div>
       </div>
 
+      {totalPendingFields > 0 && (
+        <div
+          className="rounded-lg border border-lia-border-subtle bg-lia-bg-secondary/60 dark:bg-lia-bg-elevated px-3 py-2.5"
+          data-testid="profile-progress-panel"
+        >
+          <div className="flex items-center justify-between mb-1.5">
+            <p className={`${textStyles.captionBold} text-lia-text-primary`}>
+              {t("profileCompletePending", { progress: overallProgress, count: totalPendingFields })}
+            </p>
+            <span className="text-micro text-lia-text-tertiary">
+              {t("sectionsToReview", { count: pendingSections.length })}
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {pendingSections.map((b) => {
+              const remaining = b.progress.total - b.progress.filled
+              const prefillKey = BLOCK_TO_PREFILL[b.key]
+              return (
+                <span key={b.key} className="inline-flex items-center gap-0.5">
+                  <button
+                    type="button"
+                    onClick={() => handleJumpToBlock(b.key)}
+                    data-testid={`pending-section-${b.key}`}
+                    className="
+                      inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-micro font-medium
+                      bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-subtle
+                      text-lia-text-primary hover:border-lia-border-medium hover:bg-lia-bg-secondary
+                      transition-colors motion-reduce:transition-none
+                    "
+                  >
+                    {b.title}
+                    <span className="text-lia-text-tertiary">({remaining})</span>
+                  </button>
+                  {prefillKey && (
+                    <button
+                      type="button"
+                      onClick={() => triggerPrefillSection(prefillKey, b.progress.missingLabels)}
+                      data-testid={`pending-prefill-${b.key}`}
+                      className="
+                        inline-flex items-center px-1.5 py-0.5 rounded-full text-micro font-medium
+                        bg-lia-btn-primary-bg/10 text-lia-btn-primary-bg border border-lia-btn-primary-bg/30
+                        hover:bg-lia-btn-primary-bg/20 transition-colors motion-reduce:transition-none
+                      "
+                      title={t("askLiaToFillTitle", { section: b.title })}
+                    >
+                      {t("askLiaShort")}
+                    </button>
+                  )}
+                </span>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 gap-4">
         {blocks.map((block) => (
           <MinhaEmpresaCard
@@ -138,6 +233,9 @@ export function MinhaEmpresaHub() {
             recentlyUpdated={recentlyUpdated}
             editingField={editingField}
             isSavingField={isSavingField}
+            benefits={benefits}
+            companyId={companyId}
+            onBenefitsChanged={refreshAll}
             onToggle={() => toggleBlock(block.key)}
             onStartEditing={startEditing}
             onCancelEditing={cancelEditing}

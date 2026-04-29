@@ -55,13 +55,13 @@ export function ReviewPanel({ data, onUpdate }: Props) {
       </div>
 
       {readiness.ready ? (
-        <div className="p-2.5 rounded-xl bg-status-success/5 border border-status-success/20">
+        <div className="p-2.5 rounded-md bg-status-success/5 border border-status-success/20">
           <p className="text-xs text-status-success font-medium">
             Vaga pronta para publicar!
           </p>
         </div>
       ) : (
-        <div className="p-2.5 rounded-xl bg-status-warning/5 border border-status-warning/20">
+        <div className="p-2.5 rounded-md bg-status-warning/5 border border-status-warning/20">
           <p className="text-xs text-status-warning font-medium">
             Pendencias: {readiness.missing?.join(", ")}
           </p>
@@ -79,7 +79,7 @@ export function ReviewPanel({ data, onUpdate }: Props) {
       {!readiness.ready && (
         <button
           onClick={handleApplyDefaults}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-md border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors"
         >
           <Settings className="w-3.5 h-3.5" />
           Aplicar defaults da empresa

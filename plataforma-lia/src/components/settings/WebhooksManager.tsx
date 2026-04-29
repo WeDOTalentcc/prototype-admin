@@ -1,27 +1,23 @@
 "use client"
 
 import React, { useState } from "react"
-import { Webhook as WebhookIcon, Plus, Trash2, Send, Loader2, Copy, CheckCircle2, AlertCircle, X } from "lucide-react"
+import { useTranslations } from "next-intl"
+import { Webhook as WebhookIcon, Plus, Trash2, Send, Loader2, Copy, CheckCircle2, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { textStyles, cardStyles, buttonStyles, badgeStyles } from "@/lib/design-tokens"
 import { toast } from "@/lib/toast"
 import { useWebhooks } from "@/hooks/agents"
 import { WEBHOOK_EVENTS, type Webhook } from "@/components/pages-agent-studio/custom-agents/webhook-types"
-
-const EVENT_LABELS: Record<string, string> = {
-  "agent.execution.completed": "Execucao concluida",
-  "agent.execution.failed": "Execucao falhou",
-  "agent.deployment.created": "Vinculo criado",
-  "agent.deployment.paused": "Vinculo pausado",
-  "agent.approval.requested": "Aprovacao solicitada",
-  "agent.approval.reviewed": "Aprovacao revisada",
-}
+import { apiFetch } from "@/lib/api/api-fetch"
 
 export function WebhooksManager() {
+  const t = useTranslations("settings.webhooks")
   const { webhooks, isLoading, mutate } = useWebhooks()
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState("")
@@ -31,12 +27,25 @@ export function WebhooksManager() {
   const [showSecret, setShowSecret] = useState<{ id: string; secret: string } | null>(null)
   const [testingId, setTestingId] = useState<string | null>(null)
 
+  const eventLabel = (event: string): string => {
+    // next-intl proíbe `.` em chaves (caractere reservado para nesting), então
+    // os event types do backend (`agent.execution.completed`, etc) precisam ser
+    // normalizados para `agent_execution_completed` antes do lookup. O event
+    // type bruto é preservado como fallback caso a tradução não exista.
+    const key = event.replace(/\./g, "_")
+    try {
+      return t(`eventLabels.${key}` as never)
+    } catch {
+      return event
+    }
+  }
+
   const handleCreate = async () => {
     if (!newName.trim() || !newUrl.trim() || newEvents.length === 0) return
     setSubmitting(true)
     try {
       const token = localStorage.getItem("auth_token")
-      const res = await fetch("/api/backend-proxy/webhooks", {
+      const res = await apiFetch("/api/backend-proxy/webhooks", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -45,11 +54,11 @@ export function WebhooksManager() {
         body: JSON.stringify({ name: newName, url: newUrl, events: newEvents }),
       })
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ detail: "Erro" }))
-        throw new Error(err.detail || "Erro ao criar")
+        const err = await res.json().catch(() => ({ detail: t("createGenericError") }))
+        throw new Error(err.detail || t("createGenericErrorMessage"))
       }
       const created: Webhook = await res.json()
-      toast.success(`Webhook "${newName}" criado!`, "Copie o secret abaixo (so e exibido uma vez)")
+      toast.success(t("createdToast", { name: newName }), t("createdToastDesc"))
       if (created.secret) {
         setShowSecret({ id: created.id, secret: created.secret })
       }
@@ -59,25 +68,25 @@ export function WebhooksManager() {
       setNewEvents([])
       mutate()
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Erro ao criar webhook")
+      toast.error(e instanceof Error ? e.message : t("createError"))
     } finally {
       setSubmitting(false)
     }
   }
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Remover webhook "${name}"?`)) return
+    if (!confirm(t("deleteConfirm", { name }))) return
     try {
       const token = localStorage.getItem("auth_token")
-      const res = await fetch(`/api/backend-proxy/webhooks/${id}`, {
+      const res = await apiFetch(`/api/backend-proxy/webhooks/${id}`, {
         method: "DELETE",
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       })
-      if (!res.ok && res.status !== 204) throw new Error("Erro")
-      toast.success("Webhook removido")
+      if (!res.ok && res.status !== 204) throw new Error(t("createGenericError"))
+      toast.success(t("deletedToast"))
       mutate()
     } catch {
-      toast.error("Erro ao remover")
+      toast.error(t("deleteError"))
     }
   }
 
@@ -85,15 +94,15 @@ export function WebhooksManager() {
     setTestingId(id)
     try {
       const token = localStorage.getItem("auth_token")
-      const res = await fetch(`/api/backend-proxy/webhooks/${id}/test`, {
+      const res = await apiFetch(`/api/backend-proxy/webhooks/${id}/test`, {
         method: "POST",
         headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
       })
-      if (!res.ok) throw new Error("Erro")
-      toast.success("Evento de teste enviado", "Verifique seu endpoint receptor")
+      if (!res.ok) throw new Error(t("createGenericError"))
+      toast.success(t("testSentToast"), t("testSentDesc"))
       setTimeout(() => mutate(), 3000)
     } catch {
-      toast.error("Erro ao enviar teste")
+      toast.error(t("testError"))
     } finally {
       setTestingId(null)
     }
@@ -108,9 +117,9 @@ export function WebhooksManager() {
   const copySecret = async (secret: string) => {
     try {
       await navigator.clipboard.writeText(secret)
-      toast.success("Secret copiado")
+      toast.success(t("secretCopied"))
     } catch {
-      toast.error("Erro ao copiar")
+      toast.error(t("copyError"))
     }
   }
 
@@ -119,21 +128,20 @@ export function WebhooksManager() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <WebhookIcon className="w-5 h-5 text-wedo-cyan-dark" />
-          <h2 className={textStyles.title}>Webhooks externos</h2>
+          <h2 className={textStyles.title}>{t("title")}</h2>
         </div>
         <Button onClick={() => setCreating(true)} className={buttonStyles.primary}>
-          <Plus className="w-4 h-4 mr-1" /> Novo webhook
+          <Plus className="w-4 h-4 mr-1" /> {t("newWebhook")}
         </Button>
       </div>
 
       <p className={textStyles.description}>
-        Receba eventos do Agent Studio em sistemas externos (Zapier, Slack, seu CRM).
-        Cada delivery e assinada com HMAC-SHA256 via header X-WeDO-Signature.
+        {t("description")}
       </p>
 
       {isLoading && (
         <div className="flex items-center gap-2 py-8 justify-center text-xs text-lia-text-disabled">
-          <Loader2 className="w-3.5 h-3.5 animate-spin" /> Carregando webhooks...
+          <Loader2 className="w-3.5 h-3.5 animate-spin" /> {t("loading")}
         </div>
       )}
 
@@ -141,9 +149,9 @@ export function WebhooksManager() {
         <Card className={cardStyles.default}>
           <CardContent className="py-8 text-center">
             <WebhookIcon className="w-10 h-10 text-lia-text-disabled mx-auto mb-2" />
-            <p className={textStyles.subtitle}>Nenhum webhook configurado</p>
+            <p className={textStyles.subtitle}>{t("noneConfigured")}</p>
             <p className="text-xs text-lia-text-disabled mt-1">
-              Crie um webhook para receber eventos dos seus agents em sistemas externos
+              {t("noneHint")}
             </p>
           </CardContent>
         </Card>
@@ -158,7 +166,7 @@ export function WebhooksManager() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-semibold text-lia-text-primary">{wh.name}</span>
                     <Chip variant="neutral" muted className={wh.is_active ? badgeStyles.success : badgeStyles.default}>
-                      {wh.is_active ? "Ativo" : "Pausado"}
+                      {wh.is_active ? t("active") : t("paused")}
                     </Chip>
                     {wh.last_status_code && (
                       <Chip variant="neutral" muted
@@ -168,7 +176,7 @@ export function WebhooksManager() {
                             : badgeStyles.error
                         }
                       >
-                        Ultimo: {wh.last_status_code}
+                        {t("lastStatus", { code: wh.last_status_code })}
                       </Chip>
                     )}
                   </div>
@@ -176,13 +184,15 @@ export function WebhooksManager() {
                   <div className="flex flex-wrap gap-1 mt-2">
                     {wh.events.map((e) => (
                       <span key={e} className={cn(badgeStyles.default, "text-[10px]")}>
-                        {EVENT_LABELS[e] || e}
+                        {eventLabel(e)}
                       </span>
                     ))}
                   </div>
                   <div className="flex items-center gap-3 mt-2 text-[10px] text-lia-text-disabled">
-                    <span>{wh.total_deliveries} entrega(s)</span>
-                    {wh.total_failures > 0 && <span className="text-status-error">{wh.total_failures} falha(s)</span>}
+                    <span>{t("deliveries", { count: wh.total_deliveries })}</span>
+                    {wh.total_failures > 0 && (
+                      <span className="text-status-error">{t("failures", { count: wh.total_failures })}</span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
@@ -212,41 +222,38 @@ export function WebhooksManager() {
       <Dialog open={creating} onOpenChange={(v) => !v && setCreating(false)}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Novo webhook</DialogTitle>
+            <DialogTitle>{t("newWebhook")}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div>
-              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">Nome</label>
-              <input
+              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t("name")}</label>
+              <Input
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="Ex: Slack notifications"
-                className="w-full border border-lia-border-subtle rounded-md px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
+                placeholder={t("namePlaceholder")}
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">URL (HTTPS obrigatorio)</label>
-              <input
+              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t("urlLabel")}</label>
+              <Input
                 type="text"
                 value={newUrl}
                 onChange={(e) => setNewUrl(e.target.value)}
-                placeholder="https://hooks.zapier.com/..."
-                className="w-full border border-lia-border-subtle rounded-md px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30 font-mono"
+                placeholder={t("urlPlaceholder")}
+                className="font-mono"
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-lia-text-primary mb-2 block">Eventos</label>
+              <label className="text-xs font-semibold text-lia-text-primary mb-2 block">{t("events")}</label>
               <div className="space-y-1.5">
                 {WEBHOOK_EVENTS.map((event) => (
                   <label key={event} className="flex items-center gap-2 text-xs cursor-pointer">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={newEvents.includes(event)}
-                      onChange={() => toggleEvent(event)}
-                      className="rounded"
+                      onCheckedChange={() => toggleEvent(event)}
                     />
-                    <span className="text-lia-text-primary">{EVENT_LABELS[event]}</span>
+                    <span className="text-lia-text-primary">{eventLabel(event)}</span>
                     <span className="text-lia-text-disabled font-mono text-[10px]">({event})</span>
                   </label>
                 ))}
@@ -254,13 +261,13 @@ export function WebhooksManager() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setCreating(false)}>Cancelar</Button>
+            <Button variant="ghost" onClick={() => setCreating(false)}>{t("cancel")}</Button>
             <Button
               onClick={handleCreate}
               disabled={submitting || !newName || !newUrl || newEvents.length === 0}
               className={buttonStyles.primary}
             >
-              {submitting ? "Criando..." : "Criar webhook"}
+              {submitting ? t("creating") : t("create")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -271,8 +278,8 @@ export function WebhooksManager() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-              Webhook criado!
+              <CheckCircle2 className="w-5 h-5 text-status-success" />
+              {t("createdTitle")}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-2">
@@ -280,21 +287,21 @@ export function WebhooksManager() {
               <div className="flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 text-status-warning mt-0.5" />
                 <div className="text-xs">
-                  <p className="font-semibold text-lia-text-primary mb-1">Guarde este secret agora</p>
+                  <p className="font-semibold text-lia-text-primary mb-1">{t("saveSecretWarning")}</p>
                   <p className="text-lia-text-secondary">
-                    Por seguranca, ele NAO sera exibido novamente. Use para validar a assinatura HMAC-SHA256.
+                    {t("secretWarningDesc")}
                   </p>
                 </div>
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">Secret</label>
+              <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t("secretLabel")}</label>
               <div className="flex gap-1">
-                <input
+                <Input
                   type="text"
                   readOnly
                   value={showSecret?.secret || ""}
-                  className="flex-1 border border-lia-border-subtle rounded-md px-3 py-2 text-xs bg-lia-bg-tertiary text-lia-text-primary font-mono"
+                  className="flex-1 bg-lia-bg-tertiary font-mono"
                 />
                 <Button
                   size="sm"
@@ -308,7 +315,7 @@ export function WebhooksManager() {
           </div>
           <DialogFooter>
             <Button onClick={() => setShowSecret(null)} className={buttonStyles.primary}>
-              Entendi
+              {t("understood")}
             </Button>
           </DialogFooter>
         </DialogContent>

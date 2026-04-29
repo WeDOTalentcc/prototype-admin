@@ -52,6 +52,11 @@ def _detect_platform_route(text: str) -> str:
 
 
 
+_IMAGE_TYPES = frozenset({
+    'image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp', 'image/bmp'
+})
+
+
 class TeamsOrchestratorBridge:
     """
     Routes Teams text messages through the LIA orchestrator.
@@ -73,6 +78,24 @@ class TeamsOrchestratorBridge:
         text = (activity.get("text") or "").strip()
         if not text:
             return {"message": "Não entendi sua mensagem. Pode repetir?", "success": False}
+
+        # ── W7.2 PromptInjectionGuard — defense-in-depth antes do orchestrator ──
+        try:
+            from app.shared.robustness.security_patterns import check_input_security, get_block_response
+            _sec = check_input_security(text)
+            if _sec.is_blocked:
+                logger.warning(
+                    "[TeamsOrchestratorBridge] SecurityPatterns blocked: risk=%s categories=%s",
+                    _sec.risk_level, _sec.threat_categories,
+                )
+                return {
+                    "message": get_block_response(_sec, language="pt"),
+                    "success": False,
+                    "blocked_reason": "security_patterns",
+                }
+        except Exception as _sec_exc:
+            logger.debug("[TeamsOrchestratorBridge] security check skipped: %s", _sec_exc)
+        # ─────────────────────────────────────────────────────────────────────
 
         teams_user_id = activity.get("from", {}).get("id", "unknown")
         teams_user_name = activity.get("from", {}).get("name", "")
@@ -206,30 +229,269 @@ class TeamsOrchestratorBridge:
             logger.error(f"[TeamsOrchestratorBridge] CV processing error: {e}", exc_info=True)
             return {"success": False, "message": f"Erro ao processar CV: {str(e)}"}
 
+    async def process_image_attachment(
+        self,
+        activity: dict[str, Any],
+        attachment: dict[str, Any],
+        db: "AsyncSession | None" = None,
+    ) -> dict[str, Any]:
+        """W9.3: Process image attachment via Gemini Vision for recruitment context."""
+        import httpx
+
+        content_url = attachment.get("contentUrl", "")
+        content_type = (attachment.get("contentType") or "image/jpeg").lower()
+        filename = attachment.get("name", "image.jpg")
+
+        try:
+            from app.domains.communication.services.teams_simple import simple_teams_bot
+            token = await simple_teams_bot.get_access_token()
+
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    content_url,
+                    headers={"Authorization": f"Bearer {token}"},
+                    timeout=30.0,
+                )
+                image_bytes = resp.content
+
+            if not image_bytes:
+                return {"success": False, "message": "Imagem vazia ou inacessivel."}
+
+            try:
+                from google.genai import types as _gtypes
+                from app.domains.ai.services.llm import llm_service
+
+                prompt = (
+                    "Descreva esta imagem no contexto de recrutamento e RH. "
+                    "O que a imagem mostra? Como poderia ser usada num processo seletivo? "
+                    "Seja objetivo, em portugues, maximo 3 linhas."
+                )
+                contents = [
+                    _gtypes.Part.from_bytes(data=image_bytes, mime_type=content_type),
+                    prompt,
+                ]
+                response = await llm_service.generate_native_gemini(
+                    contents=contents,
+                    model="gemini-2.5-flash",
+                )
+                description = response.text if hasattr(response, "text") else str(response)
+                msg = f"Imagem recebida: {filename}\n\n{description}\n\nPara usar na plataforma, acesse o painel web."
+                return {"success": True, "message": msg}
+            except Exception as vision_err:
+                logger.warning("[TeamsOrchestratorBridge] Gemini Vision error: %s", vision_err)
+                img_size_kb = len(image_bytes) // 1024
+                msg = f"Imagem recebida: {filename} ({img_size_kb} KB). Para usar na plataforma, acesse o painel web."
+                return {"success": True, "message": msg}
+
+        except Exception as e:
+            logger.error("[TeamsOrchestratorBridge] process_image_attachment error: %s", e)
+            return {"success": False, "message": "Erro ao processar a imagem. Tente novamente."}
+
+    async def process_general_document(
+        self,
+        activity: dict[str, Any],
+        attachment: dict[str, Any],
+        db: "AsyncSession | None" = None,
+    ) -> dict[str, Any]:
+        """W9.3: Process generic documents (txt, csv) — extract text and route via orchestrator."""
+        import httpx
+
+        content_url = attachment.get("contentUrl", "")
+        filename = attachment.get("name", "document")
+        content_type = (attachment.get("contentType") or "").lower()
+
+        try:
+            from app.domains.communication.services.teams_simple import simple_teams_bot
+            token = await simple_teams_bot.get_access_token()
+
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    content_url,
+                    headers={"Authorization": f"Bearer {token}"},
+                    timeout=30.0,
+                )
+                raw_bytes = resp.content
+
+            if content_type in ("text/plain", "text/csv") or filename.endswith((".txt", ".csv")):
+                doc_text = raw_bytes.decode("utf-8", errors="ignore")
+                if doc_text.strip():
+                    excerpt = doc_text[:1000]
+                    fake_activity = {**activity, "text": f"[Documento: {filename}]\n\n{excerpt}"}
+                    return await self.process_message(fake_activity, db=db)
+
+            doc_size_kb = len(raw_bytes) // 1024
+            msg = (
+                f"Documento recebido: {filename} ({doc_size_kb} KB). "
+                "Para formatos .docx/.xlsx, use a plataforma web para importar dados."
+            )
+            return {"success": True, "message": msg}
+
+        except Exception as e:
+            logger.error("[TeamsOrchestratorBridge] process_general_document error: %s", e)
+            return {"success": False, "message": "Erro ao processar o documento."}
+
+
+    async def process_voice_attachment(
+        self,
+        activity: dict[str, Any],
+        attachment: dict[str, Any],
+        db: "AsyncSession | None" = None,
+    ) -> dict[str, Any]:
+        """W9.2: Transcribe audio/video via Gemini STT and route transcript through orchestrator."""
+        import httpx
+
+        _MAX_AUDIO_BYTES = 20 * 1024 * 1024  # 20 MB Gemini inline limit
+
+        content_url = attachment.get("contentUrl", "")
+        content_type = (attachment.get("contentType") or "audio/mpeg").lower()
+        filename = attachment.get("name", "audio_file")
+
+        try:
+            from app.domains.communication.services.teams_simple import simple_teams_bot
+            token = await simple_teams_bot.get_access_token()
+
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    content_url,
+                    headers={"Authorization": f"Bearer {token}"},
+                    timeout=60.0,
+                )
+                audio_bytes = resp.content
+
+            if not audio_bytes:
+                return {"success": False, "message": "Arquivo de audio vazio ou inacessivel."}
+
+            if len(audio_bytes) > _MAX_AUDIO_BYTES:
+                size_mb = len(audio_bytes) // (1024 * 1024)
+                return {
+                    "success": True,
+                    "message": (
+                        f"Arquivo {filename} ({size_mb} MB) e grande demais para transcricao automatica (limite: 20 MB). "
+                        "Para arquivos maiores, use a plataforma web ou envie um trecho menor."
+                    ),
+                }
+
+            try:
+                from google.genai import types as _gtypes
+                from app.domains.ai.services.llm import llm_service
+
+                prompt = (
+                    "Transcreva este audio em portugues com precisao. "
+                    "Forneca apenas a transcricao, sem introducao ou explicacoes. "
+                    "Se for uma mensagem de voz de candidato ou recrutador em contexto de RH, "
+                    "mantenha o conteudo original fiel."
+                )
+                contents = [
+                    _gtypes.Part.from_bytes(data=audio_bytes, mime_type=content_type),
+                    prompt,
+                ]
+                response = await llm_service.generate_native_gemini(
+                    contents=contents,
+                    model="gemini-2.5-flash",
+                )
+                transcription = response.text.strip() if (hasattr(response, "text") and response.text) else ""
+
+                if transcription:
+                    fake_activity = {**activity, "text": f"[Audio: {filename}]\n\n{transcription}"}
+                    return await self.process_message(fake_activity, db=db)
+                else:
+                    return {
+                        "success": True,
+                        "message": f"Audio recebido: {filename}. Nao foi possivel transcrever o conteudo.",
+                    }
+
+            except Exception as stt_err:
+                logger.warning("[TeamsOrchestratorBridge] STT error for %s: %s", filename, stt_err)
+                size_kb = len(audio_bytes) // 1024
+                return {
+                    "success": True,
+                    "message": (
+                        f"Audio recebido: {filename} ({size_kb} KB). "
+                        "A transcricao automatica nao esta disponivel no momento. "
+                        "Envie a mensagem em texto para continuar."
+                    ),
+                }
+
+        except Exception as e:
+            logger.error("[TeamsOrchestratorBridge] process_voice_attachment error: %s", e)
+            return {"success": False, "message": "Erro ao processar o audio. Tente novamente."}
+
+
     async def _resolve_company_id(
         self,
         teams_user_id: str,
         tenant_id: str,
         db: AsyncSession | None = None,
-    ) -> str:
+    ) -> str | None:
         """
-        Resolve company_id from Teams user/tenant.
-        Checks stored conversation reference first, then falls back.
-        """
-        if db:
-            try:
-                from lia_models.teams import TeamsConversation
-                stmt = select(TeamsConversation).where(
-                    TeamsConversation.user_id == teams_user_id
-                ).limit(1)
-                result = await db.execute(stmt)
-                row = result.scalar_one_or_none()
-                if row and getattr(row, "company_id", None):
-                    return row.company_id
-            except Exception:
-                pass
+        Resolve company_id for the Teams user.
 
-        return None
+        Strategy (P0-1 fix — auditoria 2026-04-26):
+        1. Read stored TeamsConversation.company_id (populated at write-time
+           via _store_conversation_reference → User.company_id lookup).
+        2. Fallback for pre-backfill rows: lookup User by user_aad_object_id
+           on the conversation row (if available).
+        3. Returns None if neither path resolves a company.
+
+        Logs an explicit warning when None is returned (harness sensor —
+        helps detect drift between Teams identity and platform User mapping).
+
+        Why direct attribute access (not defensive fallback): the previous version
+        used defensive coding that masked a missing schema column silently.
+        See AUDITORIA_TEAMS_2026-04-26.md (P0-1) for context. After Migration 097,
+        the column always exists, so direct access fails fast if schema regresses.
+        """
+        if not db:
+            logger.warning(
+                "[TeamsOrchestratorBridge] _resolve_company_id called without db session — "
+                "returning None (multi-tenant context unavailable for teams_user=%s)",
+                teams_user_id,
+            )
+            return None
+
+        try:
+            from app.domains.communication.repositories.teams_repository import (
+                TeamsRepository,
+            )
+            from lia_models.teams import TeamsConversation
+
+            stmt = select(TeamsConversation).where(
+                TeamsConversation.user_id == teams_user_id
+            ).limit(1)
+            result = await db.execute(stmt)
+            row = result.scalar_one_or_none()
+
+            if row and row.company_id:
+                return row.company_id
+
+            # Fallback: row exists but company_id not backfilled — derive from User
+            if row and row.user_aad_object_id:
+                repo = TeamsRepository(db)
+                user = await repo.get_user_by_aad_object_id(row.user_aad_object_id)
+                if user and user.company_id:
+                    # Opportunistic backfill on this row (next requests skip the lookup)
+                    row.company_id = user.company_id
+                    logger.info(
+                        "[TeamsOrchestratorBridge] backfilled company_id=%s on TeamsConversation %s "
+                        "via aad_object_id lookup",
+                        user.company_id, row.conversation_id,
+                    )
+                    return user.company_id
+
+            # Sentinel: no resolution — log so we can spot drift in production
+            logger.warning(
+                "[TeamsOrchestratorBridge] could not resolve company_id for teams_user=%s "
+                "(row_found=%s, aad_object_id=%s) — orchestrator will run without tenant context",
+                teams_user_id, bool(row), row.user_aad_object_id if row else None,
+            )
+            return None
+
+        except Exception as exc:
+            logger.error(
+                "[TeamsOrchestratorBridge] _resolve_company_id error for teams_user=%s: %s",
+                teams_user_id, exc, exc_info=True,
+            )
+            return None
 
 
 teams_orchestrator_bridge = TeamsOrchestratorBridge()

@@ -9,8 +9,8 @@ interface Props {
 }
 
 const TRAIT_CONFIG: Record<string, { label: string; color: string }> = {
-  openness: { label: "Abertura", color: "bg-purple-500" },
-  conscientiousness: { label: "Conscienciosidade", color: "bg-blue-500" },
+  openness: { label: "Abertura", color: "bg-wedo-purple" },
+  conscientiousness: { label: "Conscienciosidade", color: "bg-wedo-cyan" },
   extraversion: { label: "Extroversao", color: "bg-amber-500" },
   agreeableness: { label: "Amabilidade", color: "bg-green-500" },
   stability: { label: "Estabilidade", color: "bg-teal-500" },
@@ -77,7 +77,10 @@ export function BigFivePanel({ data }: Props) {
             {t.evidence.length > 0 && (
               <div className="pl-2 border-l-2 border-lia-border-subtle">
                 {t.evidence.slice(0, 2).map((e, i) => (
-                  <p key={i} className="text-[10px] text-lia-text-disabled italic leading-tight">
+                  // A-09 / WCAG 2.1 AA 1.4.3: was `text-[10px] text-lia-text-disabled`
+                  // (~9 px / ~2.85:1 contrast). Promoted to `text-xs` (12 px) +
+                  // `text-lia-text-secondary` (#6B7280, ≥4.5:1 on white).
+                  <p key={i} className="text-xs text-lia-text-secondary italic leading-tight">
                     "{e}"
                   </p>
                 ))}
@@ -89,7 +92,7 @@ export function BigFivePanel({ data }: Props) {
 
       {/* Ranked summary */}
       {rankings.length > 0 && (
-        <div className="rounded-xl bg-lia-bg-secondary p-2.5">
+        <div className="rounded-md bg-lia-bg-secondary p-2.5">
           <p className="text-[11px] text-lia-text-secondary">
             Traits prioritarios para esta vaga:{" "}
             <span className="text-lia-text-primary font-medium">

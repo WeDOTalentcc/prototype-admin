@@ -3,7 +3,7 @@
 import React from "react"
 import { Target, X, FileText, User, Briefcase, Loader2, ThumbsUp, ThumbsDown } from "lucide-react"
 import type { RubricEvaluationModalProps } from "./rubric-evaluation-types"
-import { useRubricEvaluation } from "./useRubricEvaluation"
+import { useRubricEvaluation } from "@/hooks/ai/use-rubric-evaluation"
 import { RubricOverviewSection } from "./rubric-overview-section"
 import { RubricDetailsSection } from "./rubric-details-section"
 

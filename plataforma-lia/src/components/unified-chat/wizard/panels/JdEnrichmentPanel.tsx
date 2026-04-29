@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from"react"
 import { cn } from"@/lib/utils"
-import { CheckCircle, AlertTriangle, XCircle, Sparkles, Shield } from"lucide-react"
+import { CheckCircle, AlertTriangle, XCircle, Brain, Shield } from"lucide-react"
 import type { JdEnrichmentData } from"../wizard-types"
 
 interface Props {
@@ -119,7 +119,7 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
 
           {/* Fairness corrections */}
           {enriched.fairness_corrections?.length > 0 && (
-            <div className="p-2.5 rounded-xl bg-status-success/5 border border-status-success/20">
+            <div className="p-2.5 rounded-md bg-status-success/5 border border-status-success/20">
               <div className="flex items-center gap-1.5 mb-1">
                 <Shield className="w-3.5 h-3.5 text-status-success" />
                 <span className="text-xs font-medium text-status-success">
@@ -138,7 +138,7 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
           {enriched.alteracoes_realizadas?.length > 0 && (
             <div>
               <div className="flex items-center gap-1.5 mb-1">
-                <Sparkles className="w-3.5 h-3.5 text-wedo-cyan" />
+                <Brain className="w-3.5 h-3.5 text-wedo-cyan" />
                 <span className="text-xs font-medium text-lia-text-secondary">
                   Alteracoes realizadas pela IA
                 </span>
@@ -162,7 +162,7 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
         <div className="flex-shrink-0 px-4 py-3 border-t border-lia-border-subtle bg-lia-bg-primary flex items-center gap-2">
           <button
             onClick={onReject}
-            className="flex-1 px-3 py-2 rounded-xl border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
+            className="flex-1 px-3 py-2 rounded-md border border-lia-border-subtle text-sm font-medium text-lia-text-secondary hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none"
           >
             Editar
           </button>

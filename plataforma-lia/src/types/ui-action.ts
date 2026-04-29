@@ -1,0 +1,109 @@
+/**
+ * PR-D — UIAction discriminated union
+ *
+ * Tipo canônico de ações de UI que o backend pode disparar via
+ * `ChatResponse.ui_action` + `ui_action_params`. Resolve UI-S03 do audit
+ * enterprise 2026-04-26: handler unificado em `UnifiedChat` para os
+ * actions GLOBAIS, com fallback via event broadcast para handlers
+ * page-specific (kanban, talent, jobs).
+ *
+ * **Princípio:** este tipo cobre apenas ações **globais** (cross-surface).
+ * Ações específicas de página (`move_candidate`, `start_job_wizard`,
+ * `filter_jobs`, `switch_search_mode`, etc.) continuam tratadas pelos
+ * hooks de cada surface — o fallback via `lia:unhandled_ui_action` event
+ * preserva esse comportamento sem regressão.
+ *
+ * **Mirror canônico no BE:** `app/shared/websocket/ws_message_schemas.py`
+ * (`UIAction*` Pydantic models). Validação acontece no boundary WS.
+ *
+ * Skill: harness-engineering [guide computacional + sensor no boundary].
+ */
+
+/**
+ * Ações globais com schema validado. Cada surface pode disparar qualquer uma.
+ * Implementadas no `useUIAction()` hook canonical.
+ */
+export type GlobalUIAction =
+  | {
+      type: "navigate_to";
+      params: {
+        page: string;
+        query?: Record<string, string>;
+      };
+    }
+  | {
+      type: "open_modal";
+      params: {
+        modal_id: string;
+        data?: unknown;
+      };
+    }
+  | {
+      type: "open_offer_review";
+      params: {
+        candidate_id: string;
+        job_id: string;
+        draft_id?: string;
+      };
+    }
+  | {
+      type: "wizard_step";
+      params: {
+        wizard: string;
+        step: string;
+      };
+    }
+  | {
+      type: "open_panel";
+      params: {
+        panel: string;
+        entity_id?: string;
+      };
+    }
+  | {
+      type: "scroll_to";
+      params: {
+        element_id: string;
+      };
+    };
+
+/**
+ * Tipo string das ações globais conhecidas. Útil para narrowing em runtime.
+ */
+export type GlobalUIActionType = GlobalUIAction["type"];
+
+/** Lista runtime de tipos globais — usado pelo `useUIAction` para roteamento. */
+export const GLOBAL_UI_ACTION_TYPES: readonly GlobalUIActionType[] = [
+  "navigate_to",
+  "open_modal",
+  "open_offer_review",
+  "wizard_step",
+  "open_panel",
+  "scroll_to",
+] as const;
+
+export function isGlobalUIActionType(type: string): type is GlobalUIActionType {
+  return (GLOBAL_UI_ACTION_TYPES as readonly string[]).includes(type);
+}
+
+/**
+ * Wire-format que chega do backend (via ChatResponse): tipo é string
+ * livre, params é dict aberto. O hook `useUIAction` faz narrowing
+ * defensivo antes de executar.
+ *
+ * Ações conhecidas (globais) são roteadas; desconhecidas (page-specific)
+ * são re-emitidas via `lia:unhandled_ui_action` CustomEvent.
+ */
+export interface RawUIAction {
+  type: string;
+  params?: Record<string, unknown>;
+}
+
+/** Detalhe do CustomEvent emitido quando UIAction não é tratada pelo handler global. */
+export interface UnhandledUIActionEventDetail {
+  action: string;
+  params: Record<string, unknown>;
+  conversation_id?: string;
+}
+
+export const UNHANDLED_UI_ACTION_EVENT = "lia:unhandled_ui_action" as const;

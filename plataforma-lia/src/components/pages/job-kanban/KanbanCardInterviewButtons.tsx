@@ -32,6 +32,7 @@ interface KanbanCardInterviewButtonsProps {
   onApproveFromScreening: (candidate: unknown) => void
   onRejectFromScreening: (candidate: unknown) => void
   openTransition: (candidates: unknown[], fromStage: string, toStage: string) => void
+  onManageProposal?: (candidate: unknown) => void
 }
 
 export function KanbanCardInterviewButtons({
@@ -47,6 +48,7 @@ export function KanbanCardInterviewButtons({
   onApproveFromScreening,
   onRejectFromScreening,
   openTransition,
+  onManageProposal,
 }: KanbanCardInterviewButtonsProps) {
   const t = useTranslations('kanban')
   const locale = useLocale()
@@ -226,6 +228,7 @@ export function KanbanCardInterviewButtons({
           className="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:bg-lia-btn-primary-bg dark:hover:bg-lia-btn-primary-hover rounded-full text-micro transition-colors motion-reduce:transition-none"
           onClick={(e) => {
             e.stopPropagation()
+            if (onManageProposal) onManageProposal(candidate)
           }}
         >
           <FileText className="w-3 h-3" />

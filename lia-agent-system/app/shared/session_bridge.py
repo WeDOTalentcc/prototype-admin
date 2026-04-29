@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from typing import Any
@@ -13,6 +14,11 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 _SESSION_TTL_SECONDS = 86400 * 7  # 7 days default
+
+
+def _now() -> float:
+    """Indirection over ``time.monotonic`` so tests can fast-forward."""
+    return time.monotonic()
 
 
 @dataclass
@@ -52,9 +58,21 @@ class SessionBridge:
     
     def __init__(self, ttl_seconds: int = _SESSION_TTL_SECONDS):
         self._ttl = ttl_seconds
-        self._memory_store: dict[str, str] = {}  # fallback
+        # In-process fallback when Redis is unavailable. Each entry is a
+        # ``(serialized_payload, monotonic_expires_at)`` tuple so abandoned
+        # sessions are evicted when their TTL elapses, mirroring the Redis
+        # ``setex`` path. Without this the dict grows unbounded on long-running
+        # dev pods or single-process CI runs (Task #871).
+        self._memory_store: dict[str, tuple[str, float]] = {}
         self._redis = None
         self._init_redis()
+
+    def _sweep_memory_store(self) -> None:
+        """Drop entries from the fallback store whose TTL has elapsed."""
+        now = _now()
+        expired = [k for k, (_, exp) in self._memory_store.items() if exp <= now]
+        for key in expired:
+            self._memory_store.pop(key, None)
     
     def _init_redis(self) -> None:
         # NOTE: Redis connectivity is verified lazily on first async call.
@@ -98,7 +116,11 @@ class SessionBridge:
                     get_redis_crypto().encrypt(serialized),
                 )
             else:
-                self._memory_store[self._key(ctx.session_id)] = serialized
+                self._sweep_memory_store()
+                self._memory_store[self._key(ctx.session_id)] = (
+                    serialized,
+                    _now() + self._ttl,
+                )
         except Exception as exc:
             logger.error("[SessionBridge] Failed to save session %s: %s", ctx.session_id, exc)
     
@@ -111,11 +133,21 @@ class SessionBridge:
             if redis_client:
                 raw = await redis_client.get(key)
             else:
-                raw = self._memory_store.get(key)
+                self._sweep_memory_store()
+                entry = self._memory_store.get(key)
+                if entry is not None:
+                    payload, expires_at = entry
+                    if expires_at <= _now():
+                        self._memory_store.pop(key, None)
+                    else:
+                        raw = payload
 
             if raw:
-                from app.shared.security.redis_crypto import get_redis_crypto
-                return SessionContext.from_json(get_redis_crypto().decrypt(raw))
+                if redis_client:
+                    from app.shared.security.redis_crypto import get_redis_crypto
+                    return SessionContext.from_json(get_redis_crypto().decrypt(raw))
+                # In-memory fallback stores plaintext JSON (no Redis crypto layer).
+                return SessionContext.from_json(raw)
         except Exception as exc:
             logger.error("[SessionBridge] Failed to load session %s: %s", session_id, exc)
         return None
@@ -149,8 +181,9 @@ class SessionBridge:
                             await redis_client.delete(key)
                             count += 1
             else:
+                self._sweep_memory_store()
                 to_delete = []
-                for key, raw in self._memory_store.items():
+                for key, (raw, _exp) in self._memory_store.items():
                     ctx = SessionContext.from_json(raw)
                     if ctx.user_id == user_id:
                         to_delete.append(key)

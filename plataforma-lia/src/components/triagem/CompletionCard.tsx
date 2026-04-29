@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { CheckCircle2 } from "lucide-react"
 import type { TriagemCompletionSummary } from "@/components/triagem/types"
@@ -13,6 +14,8 @@ interface CompletionCardProps {
 }
 
 export function CompletionCard({ candidateName, summary, onClose, className }: CompletionCardProps) {
+  const t = useTranslations("triagem.completionCard")
+
   return (
     <div
       className={cn(
@@ -26,25 +29,25 @@ export function CompletionCard({ candidateName, summary, onClose, className }: C
             <CheckCircle2 className="w-7 h-7 text-status-success dark:text-status-success" />
           </div>
           <h2 className="text-lg font-semibold text-lia-text-primary">
-            Triagem concluída com sucesso!
+            {t("title")}
           </h2>
           <p className="text-sm text-lia-text-secondary">
-            Obrigada, {candidateName}! Suas respostas foram registradas.
+            {t("thanks", { name: candidateName })}
           </p>
         </div>
 
         <div className="flex items-center justify-center gap-4 text-xs text-lia-text-tertiary font-['Inter',sans-serif]">
-          <span>{summary.questionsAnswered} perguntas respondidas</span>
+          <span>{t("questionsAnswered", { count: summary.questionsAnswered })}</span>
           <span className="w-1 h-1 rounded-full bg-lia-border-default dark:bg-lia-border-medium" />
-          <span>{summary.durationMinutes} minutos</span>
+          <span>{t("minutesSummary", { count: summary.durationMinutes })}</span>
         </div>
 
         {summary.nextSteps.length > 0 && (
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-lia-text-primary">
-              Próximos passos:
+              {t("nextStepsLabel")}
             </h3>
-            <ul className="space-y-2" aria-label="Próximos passos">
+            <ul className="space-y-2" aria-label={t("nextStepsAria")}>
               {summary.nextSteps.map((step, i) => (
                 <li
                   key={i}
@@ -64,10 +67,10 @@ export function CompletionCard({ candidateName, summary, onClose, className }: C
           <button
             type="button"
             onClick={onClose}
-            aria-label="Fechar triagem"
+            aria-label={t("closeAria")}
             className="w-full h-10 flex items-center justify-center rounded-lg bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary text-sm font-medium border border-lia-border-default dark:border-lia-border-default hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-elevated transition-colors motion-reduce:transition-none focus:ring-2 focus:ring-lia-btn-primary-bg/20 focus:outline-none"
           >
-            Fechar
+            {t("close")}
           </button>
         )}
 

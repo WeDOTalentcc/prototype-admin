@@ -1,6 +1,7 @@
 import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Edit, Save, Bell, Clock, Calendar, RefreshCw, Brain, Loader2, AlertCircle, CheckCircle, MessageSquare, BarChart3 } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 import type { AlertConfig } from './CommunicationHub.types'
 
@@ -29,6 +30,7 @@ export function AlertsTab({
   handleToggleAlert, handleChangeChannel,
   weeklyDigestEnabled, savingWeeklyDigest, handleToggleWeeklyDigest
 }: AlertsTabProps) {
+  const t = useTranslations("settings.communication")
   return (
     <div className="space-y-4">
       {successMessage && (
@@ -49,21 +51,21 @@ export function AlertsTab({
             <div>
               <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
                 <Bell className="w-3.5 h-3.5 text-lia-text-secondary" />
-                Configuração de Alertas
+                {t("alertsSection.title")}
               </CardTitle>
               <p className="text-xs text-lia-text-secondary mt-0.5">
-                A LIA aprende com seus padrões e ajusta os alertas automaticamente
+                {t("alertsSection.subtitle")}
               </p>
             </div>
             {!isEditingAlerts ? (
               <button onClick={() => setIsEditingAlerts(true)} className={actionButtonStyles.smOutline}>
                 <Edit className={actionButtonStyles.icon} />
-                Editar
+                {t("common.edit")}
               </button>
             ) : (
               <div className="flex items-center gap-2">
                 <button onClick={() => setIsEditingAlerts(false)} className={actionButtonStyles.smSecondary}>
-                  Cancelar
+                  {t("common.cancel")}
                 </button>
                 <button
                   onClick={async () => { await saveAlertsConfig(); setIsEditingAlerts(false) }}
@@ -71,7 +73,7 @@ export function AlertsTab({
                   className={actionButtonStyles.smPrimary}
                 >
                   {savingAlerts ? <Loader2 className={actionButtonStyles.icon} /> : <Save className={actionButtonStyles.icon} />}
-                  Salvar Alterações
+                  {t("common.saveChanges")}
                 </button>
               </div>
             )}
@@ -108,9 +110,9 @@ export function AlertsTab({
                     disabled={!isEditingAlerts || !alert.enabled}
                     className="text-micro border border-lia-border-subtle dark:border-lia-border-subtle rounded-full px-1.5 py-1 bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary disabled:bg-lia-bg-secondary disabled:text-lia-text-secondary"
                   >
-                    <option value="email">Email</option>
-                    <option value="teams">Teams</option>
-                    <option value="both">Ambos</option>
+                    <option value="email">{t("alertsSection.channelEmail")}</option>
+                    <option value="teams">{t("alertsSection.channelTeams")}</option>
+                    <option value="both">{t("alertsSection.channelBoth")}</option>
                   </select>
                   <button
                     onClick={() => isEditingAlerts && handleToggleAlert(alert.id)}
@@ -130,16 +132,16 @@ export function AlertsTab({
         <CardHeader className="pb-2">
           <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
             <MessageSquare className="w-3.5 h-3.5 text-lia-text-secondary" />
-            Frequência do Briefing da LIA
+            {t("alertsSection.briefingTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
             {([
-              { key: 'twice_daily' as const, label: '2x ao Dia', desc: 'Resumo às 8h e às 14h', icon: RefreshCw },
-              { key: 'daily' as const, label: 'Diário', desc: 'Resumo todas as manhãs às 8h', icon: Clock },
-              { key: 'weekly' as const, label: 'Semanal', desc: 'Resumo toda segunda-feira', icon: Calendar },
-              { key: 'monthly' as const, label: 'Mensal', desc: 'Resumo no 1º dia útil do mês', icon: Calendar },
+              { key: 'twice_daily' as const, label: t("alertsSection.briefingTwiceDaily"), desc: t("alertsSection.briefingTwiceDailyDesc"), icon: RefreshCw },
+              { key: 'daily' as const, label: t("alertsSection.briefingDaily"), desc: t("alertsSection.briefingDailyDesc"), icon: Clock },
+              { key: 'weekly' as const, label: t("alertsSection.briefingWeekly"), desc: t("alertsSection.briefingWeeklyDesc"), icon: Calendar },
+              { key: 'monthly' as const, label: t("alertsSection.briefingMonthly"), desc: t("alertsSection.briefingMonthlyDesc"), icon: Calendar },
             ] as const).map(({ key, label, desc, icon: Icon }) => (
               <button
                 key={key}
@@ -160,10 +162,9 @@ export function AlertsTab({
             <div className="flex items-start gap-2">
               <Brain className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-wedo-cyan" />
               <div>
-                <p className={`${textStyles.subtitle} text-lia-text-primary`}>A LIA aprende com você</p>
+                <p className={`${textStyles.subtitle} text-lia-text-primary`}>{t("alertsSection.liaLearnsTitle")}</p>
                 <p className="text-xs text-lia-text-secondary mt-0.5">
-                  Quanto mais você interage, melhor ela entende quais alertas são relevantes.
-                  Alertas ignorados consistentemente serão automaticamente desativados.
+                  {t("alertsSection.liaLearnsDesc")}
                 </p>
               </div>
             </div>
@@ -175,7 +176,7 @@ export function AlertsTab({
         <CardHeader className="pb-2">
           <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
             <BarChart3 className="w-3.5 h-3.5 text-lia-text-secondary" />
-            Resumo Semanal
+            {t("alertsSection.weeklyDigestTitle")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -195,10 +196,10 @@ export function AlertsTab({
                 </div>
                 <div>
                   <p className={`text-xs font-medium ${weeklyDigestEnabled ? 'text-lia-text-primary' : 'text-lia-text-primary'}`}>
-                    Insights Proativos Semanais
+                    {t("alertsSection.weeklyInsightsTitle")}
                   </p>
                   <p className="text-xs text-lia-text-secondary mt-0.5">
-                    Toda segunda-feira às 08h, receba um resumo consolidado com pipeline, compliance, vagas em risco e otimizações via Teams, chat e notificação.
+                    {t("alertsSection.weeklyInsightsDesc")}
                   </p>
                 </div>
               </div>
@@ -207,7 +208,7 @@ export function AlertsTab({
                 disabled={savingWeeklyDigest}
                 role="switch"
                 aria-checked={weeklyDigestEnabled}
-                aria-label="Ativar ou desativar resumo semanal de insights"
+                aria-label={t("alertsSection.weeklyDigestToggle")}
                 className={`relative w-9 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60 flex-shrink-0 mt-0.5 ${weeklyDigestEnabled ? 'bg-lia-text-primary' : 'bg-lia-border-subtle'}`}
               >
                 {savingWeeklyDigest ? (
@@ -221,7 +222,7 @@ export function AlertsTab({
 
           <div className="flex items-center gap-1.5 text-xs text-lia-text-secondary">
             <Clock className="w-3 h-3" />
-            <span>Entrega: segunda-feira, 08h (Brasília) — Teams + Chat + Bell</span>
+            <span>{t("alertsSection.deliveryNote")}</span>
           </div>
         </CardContent>
       </Card>

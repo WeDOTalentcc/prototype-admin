@@ -3,8 +3,16 @@
 > **Documento de referência para o time de engenharia.**
 > Cobre a jornada completa: do ambiente de desenvolvimento no Replit até a produção no GCP Cloud Run, passando pelo ambiente de staging.
 >
-> **Última atualização:** 10 de abril de 2026
+> **Última atualização:** 15 de abril de 2026
 > **Changelog recente:**
+> - **NOVA SEÇÃO 25** — Status de Integração Completa (snapshot abril/15) com checklist consolidado por time. Começar a leitura por aí para o estado atual.
+> - **MIGRATION_PLAN: 72/90 (80%) concluído.** Sessão 4 fechou Sprints 1, 7, 8 via 10 commits cross-repo. Ref: `docs/audit/fase7-execucao/RELATORIO_SESSAO_4_2026-04-15.md`
+> - **2 blockers críticos identificados (15/abr):**
+>   1. Admin Panel não cria tenant no Rails — cliente criado fica inacessível na ATS (ver 25.3)
+>   2. Follow-ups Sprint 7 (F-1 + F-2) não concluídos — `GET /v1/candidates?fork_uuid=<uuid>` ausente (ver 25.4)
+> - **LLM Factory 95% pronto** — 3 providers (Claude/Gemini/OpenAI) + circuit breaker + multi-tenant. 3 micro-tasks para fechamento (ver 25.5).
+> - **GCP operacional** — Cloud Run, RabbitMQ, Sentry, CORS, OTEL tracer. Pendente: secrets prod (MAILGUN, SENTRY_DSN, OTEL endpoint) + alertas Cloud Monitoring.
+> - Bugs frontend 15/abr fixados: Kanban `t is not a function` (c5aad4ab) + Funil "Erro ao carregar candidatos" regressão do Task #195 (da000dd1).
 > - Twilio Voice credenciais configuradas (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER=+551150289337)
 > - WhatsApp Business pendente aprovação Meta (conta duplicada deletada, aguardando liberação)
 > - P1/P4 resolvidos: zero `NEXT_PUBLIC_BACKEND_URL`/`NEXT_PUBLIC_API_URL` no codebase (Task #99)
@@ -12,7 +20,7 @@
 > - P6 resolvido: WebSocket URLs parametrizadas com `NEXT_PUBLIC_WS_URL` (Task #74)
 > - P5 reduzido: 4 arquivos de app (2 frontend + 2 backend) ainda usam vars Replit-only
 > - Tasks #91/#92 canceladas; rotas migradas diretamente na Task #99
-> - Migrations: 60 (up from 59), Endpoints: 362+, Models: 217+
+> - Migrations: 60 Alembic + 3 novas Rails (account_id, users.email index, fork_uuid); Endpoints: 362+; Models: 217+
 > - Sidebar reordenada: Operacional → Recrutamento → Configuração
 
 ---
@@ -50,6 +58,14 @@
     - 24.10 [Riscos Sistêmicos — Por Produto](#2410-riscos-sistêmicos--por-produto)
     - 24.11 [Scorecard Comparativo](#2411-scorecard-comparativo)
     - 24.12 [Roadmap Consolidado](#2412-roadmap-consolidado)
+25. **[Status de Integração Completa — Snapshot 15/abr/2026](#25-status-de-integração-completa--snapshot-15abril2026)** ← COMEÇAR AQUI
+    - 25.1 [Sumário Executivo](#251-sumário-executivo)
+    - 25.2 [Status por Área](#252-status-por-área) (Frontend / FastAPI / Rails / Admin / Data Collector / GCP)
+    - 25.3 [Blocker #1 — GAP CRÍTICO: Admin Panel → Rails Tenant](#253-blocker-1--gap-crítico-admin-panel--rails-tenant)
+    - 25.4 [Blocker #2 — Follow-ups Sprint 7 (F-1 + F-2)](#254-blocker-2--follow-ups-sprint-7-não-concluídos-f-1--f-2)
+    - 25.5 [LLM Factory — Status 95%](#255-llm-factory--status-95-3-micro-tasks-para-fechar)
+    - 25.6 [**CHECKLIST CONSOLIDADO — Por Time**](#256-checklist-consolidado--por-time)
+    - 25.7 [Ordem Recomendada de Ataque](#257-ordem-recomendada-de-ataque)
 
 ---
 
@@ -3587,6 +3603,295 @@ NÃO NECESSÁRIO:
 | 38 | Planejar failover multi-região | Replit | DR | GG |
 | 39 | Arquivar repos mortos (reembolsointeligente) | wedocc2026 | Limpeza | P |
 | 40 | Adicionar CI ao recruiter_agent_v5 | wedocc2026 | CI/CD | M |
+
+---
+
+## 25. Status de Integração Completa — Snapshot 15/abril/2026
+
+> **Contexto:** Esta seção consolida o estado real da integração entre todos os componentes do ecossistema (frontend, FastAPI, Rails, Admin Panel, Data Collector, GCP) baseado em auditoria direta do código nos 4 repos envolvidos, cruzada com o [`RELATORIO_SESSAO_4_2026-04-15.md`](docs/audit/fase7-execucao/RELATORIO_SESSAO_4_2026-04-15.md). Substitui e atualiza o estado descrito nas Seções 9 e 16 (que refletiam o estado de abril/07).
+>
+> **Score geral:** 72/90 items do `MIGRATION_PLAN` concluídos (80%). Infraestrutura GCP operacional. Dois blockers críticos identificados para fechamento total.
+
+### 25.1 Sumário Executivo
+
+| Métrica | Valor |
+|---|---|
+| Items concluídos (MIGRATION_PLAN) | **72/90 (80%)** |
+| Items pendentes | 18 (9 DevOps/manual, 3 OTEL, 4 Wave 6 escala, 2 follow-ups Sprint 7) |
+| Sprints 100% | 12/12 (Sessão 4 fechou Sprint 1, 7, 8) |
+| Commits cross-repo (sessão 4) | 10 (7 wedotalent + 3 ats-api) |
+| Blockers críticos para go-live | **2** (ver 25.3 e 25.4) |
+| LLM Factory | 95% pronto (3 micro-tasks pendentes) |
+| RabbitMQ / Sentry / OTEL / CORS / Cloud Run | ✅ Operacionais |
+
+**Os dois blockers críticos:**
+1. **Admin Panel não cria tenant no Rails** (Seção 25.3) — multi-tenancy fica inconsistente. Cliente criado no admin não consegue usar ATS.
+2. **Follow-up F-1 do Sprint 7** (Seção 25.4) — endpoint `GET /v1/candidates?fork_uuid=<uuid>` ausente no Rails; `find_candidate_by_fork_uuid` ausente no Python client. Sprint 7.3 só funciona pela metade.
+
+Nenhum dos dois é bloqueio de ambiente (não precisa de DevOps) — ambos são código novo a ser implementado.
+
+---
+
+### 25.2 Status por Área
+
+#### 25.2.1 Frontend — `plataforma-lia` (Next.js 15)
+
+| Item | Status | Evidência / Nota |
+|---|---|---|
+| WorkOS SSO implementado | ✅ | `src/lib/auth/workos.ts` |
+| Multi-tenancy lógica (org injection) | ✅ | `src/lib/api/auth-headers.ts` |
+| Backend proxy `/api/backend-proxy/*` | ✅ | `createProxyHandlers` + FastAPI/Rails target |
+| Build em produção (`next build`) | ✅ | P2 resolvido |
+| Docker + Cloud Run | ✅ | `plataforma-lia/Dockerfile` multi-stage standalone |
+| Sentry DSN prod | ❌ | Falta configurar `NEXT_PUBLIC_SENTRY_DSN` no Secret Manager GCP |
+| WorkOS prod redirect URIs | ❌ | Registrar `https://wedotalent.cc/api/auth/workos/callback` no dashboard WorkOS |
+| Bugs recentes (15/04) | ✅ | `c5aad4ab` Kanban `t`; `da000dd1` Funil `ensureServerReady` regressão do #195 |
+
+#### 25.2.2 Backend FastAPI — `lia-agent-system`
+
+| Item | Status | Evidência |
+|---|---|---|
+| Sprint 1 — Tenant Isolation (Rails) | ✅ | Commit `1639beb` |
+| Sprint 7 — CRUD Migration (deprecation layer) | ✅ | Commits `652b5028`, `f002e79c`, `07fa70f7` |
+| Sprint 8 — E2E Tests (22 testes) | ✅ | Commits `6f15aaa9`, `03db3fa0`, `0252ef33`, `a7240840` — rodam com env vars setadas |
+| LLM Factory (Claude + Gemini + OpenAI) | ✅ 95% | `app/shared/providers/llm_factory.py` — 3 providers + circuit breaker + multi-tenant |
+| RabbitMQ producer (`aio_pika`) | ✅ | `app/shared/messaging/rabbitmq_producer.py:36-47` |
+| Sentry SDK | ✅ | `sentry-sdk[fastapi]==2.19.2` em `requirements.txt` |
+| OpenTelemetry tracer | ✅ custom | `app/shared/tracing.py:1-70` — LightweightTracer + OTLP exporter |
+| CORS | ✅ | `app/main.py:434-435` via `CORSMiddleware`, env-driven |
+| Logs estruturados (JSON) | ❌ | `structlog` ausente em `requirements.txt` |
+| `find_candidate_by_fork_uuid` no Rails client | ❌ | **Follow-up F-2** — não implementado em `wedotalent_rails.py` |
+| Prompt versioning em Git | ⚠️ | 12 YAML em `app/prompts/domains/` mas sem hash/version/rollback |
+
+#### 25.2.3 Backend Rails — `ats-api-copia`
+
+| Item | Status | Evidência |
+|---|---|---|
+| Migrations Sprint 1 (account_id, fork_uuid, users.email index) | ✅ código | `db/migrate/20260415120001-3_*.rb` commit `1639beb` + `3668eae` |
+| `rails db:migrate` em staging/prod | ❌ **BLOCKER DevOps** | Item 1.3 do plano — não aplicado ainda |
+| `schema.rb` atualizado | ❌ | Schema version `2025_07_14_142059` vs max migration `20260415120003` — rodar `bin/rails db:schema:dump` pós-migrate |
+| JWT 24h (HS256, `secret_key_base`) | ✅ | `app/controllers/application_controller.rb:21-32` |
+| Sneakers consumer + 6 event handlers | ✅ | `app/workers/lia_events_worker.rb` — LIA-E03 versioning, DLQ, ack/reject/requeue |
+| CORS (`rack-cors`) | ✅ env-driven | Commit `cfdd2ee` (item 0.2) |
+| Sentry | ✅ | `config/initializers/sentry.rb:1-23` |
+| `POST /v1/accounts` (criar tenant) | ❌ **BLOCKER produto** | Endpoint não existe — ver 25.3 |
+| `GET /v1/candidates?fork_uuid=<uuid>` | ❌ **Follow-up F-1** | Sprint 7.3 assumiu existência; nunca foi implementado |
+| Backfill `candidates.account_id` | ⚠️ | Task `candidates:backfill_account_id` criada; roda após 1.3 |
+
+#### 25.2.4 Admin Panel — `wedotalent-admin-copia` ⚠️ GAP CRÍTICO
+
+| Item | Status | Evidência |
+|---|---|---|
+| Criação de `ClientAccount` (FastAPI) | ✅ | `clients_crud.py:173` |
+| Provisionamento WorkOS Organization | ✅ | `clients_crud.py:179` |
+| Clone templates de email do cliente | ✅ | `clients_crud.py:182` |
+| Welcome email | ✅ | via Mailgun (quando `MAILGUN_API_KEY` setado) |
+| Sync HubSpot (Company + Deal) | ✅ | `clients_crud.py:204` |
+| **Criação de `accounts` no Rails** | ❌ **CRÍTICO** | **Não chama Rails em momento algum** — ver 25.3 |
+
+#### 25.2.5 Data Collector — `data-collector-copia`
+
+| Item | Status | Evidência |
+|---|---|---|
+| RabbitMQ consumer (`pika`) | ✅ | `queues/connection.py:17-20` |
+| Integrações Gupy / Pandapé / Merge | ✅ | ETL popula `applies`/`selective_processes` |
+| Multi-tenant awareness | ⚠️ DT-001 | Consome `DEFAULT_ACCOUNT_ID` — workaround single-tenant; não cria tenant |
+
+#### 25.2.6 GCP Infrastructure
+
+| Item | Status | Nota |
+|---|---|---|
+| Cloud Run deploy workflow (FastAPI + Frontend) | ✅ | `.github/workflows/deploy.yml` com `gcloud run deploy` |
+| Secret Manager (via `--set-secrets` no Cloud Run) | ✅ | DATABASE_URL, REDIS_URL já mapeados |
+| RabbitMQ (CloudAMQP ou VM) | ✅ operacional | Conexão via `RABBITMQ_URL` |
+| Secrets **pendentes** em staging/prod | ❌ | `MAILGUN_API_KEY`, `SENTRY_DSN`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `CORS_ORIGINS`/`CORS_ALLOWED_ORIGINS` |
+| Alertas Cloud Monitoring (CRITICAL + WARNING) | ❌ | Items 4.7 + 10.4 do plano — criar policies |
+| Logs estruturados (Cloud Logging) | ⚠️ | Request ID propagado, mas sem JSON structured logging |
+
+---
+
+### 25.3 Blocker #1 — GAP CRÍTICO: Admin Panel → Rails Tenant
+
+**Descoberto em:** 2026-04-15 (auditoria cruzada deste documento)
+
+#### O problema
+
+Quando um admin cria um novo cliente no `wedotalent-admin-copia`, o fluxo executa:
+
+```
+POST /clients → FastAPI (wedotalent02202026)
+  ├─ 1. ClientAccount no Postgres FastAPI     ✅  clients_crud.py:173
+  ├─ 2. Organization no WorkOS (SSO)           ✅  clients_crud.py:179
+  ├─ 3. Clone templates de email               ✅  clients_crud.py:182
+  ├─ 4. Welcome email via Mailgun              ✅  clients_crud.py:~190
+  ├─ 5. Sync HubSpot (Company + Deal)          ✅  clients_crud.py:204
+  └─ 6. Criar Account no Rails                 ❌  NÃO ACONTECE
+```
+
+**Consequência prática:** Cliente criado no admin **não consegue acessar vagas/candidatos/processos**. O `TenantScoped` concern do Rails (`app/controllers/concerns/tenant_scoped.rb:13`) filtra tudo por `@current_user.account_id` — se o `account` nunca foi criado no Rails, `current_user.account_id` aponta pra inexistente, queries retornam empty, UI mostra "sem dados".
+
+**Rails não tem endpoint para criar account via API.** Hoje a criação é via `db/seeds.rb` (idempotent `find_or_create_by`) ou `rails console` — processo manual.
+
+#### Opções de solução (escolher 1)
+
+**Opção A — FastAPI chama Rails (recomendada):**
+1. **Rails:** criar endpoint `POST /v1/admin/accounts` (protegido por `INTERNAL_API_SECRET` ou JWT com role admin). Aceita `{name, tenant_slug, client_account_id}` e cria `Account` + link com `ClientAccount` FastAPI. **Atenção arquitetural:** Rails usa **Apartment gem para multi-schema Postgres** (ver `accounts.tenant`/`staging_tenant` na tabela). O endpoint precisa provisionar o schema via `Apartment::Tenant.create(tenant_slug)` na mesma transação — criar só o registro `Account` não é suficiente.
+2. **FastAPI:** adicionar em `clients_crud.py` após criar `ClientAccount`:
+   ```python
+   await rails_client.create_account(
+       name=client.name,
+       tenant_slug=slugify(client.name),
+       client_account_id=str(client.id)
+   )
+   ```
+3. Rollback: se Rails falhar, fazer compensating action (deletar ClientAccount + WorkOS Org + HubSpot Company).
+4. Esforço: ~2 sprints (1 Rails + 1 Python + testes de isolamento cross-service).
+
+**Opção B — Webhook event-driven:**
+1. FastAPI emite evento `tenant.created` no RabbitMQ após criar ClientAccount.
+2. `LiaEventsWorker` no Rails escuta o evento e cria o `Account` assíncrono.
+3. Vantagem: desacoplado, recuperável via DLQ.
+4. Desvantagem: eventual consistency — cliente pode tentar usar a plataforma antes do Account existir no Rails.
+5. Esforço: ~1.5 sprints.
+
+**Opção C — Unificar fonte de verdade:**
+- Definir Rails como fonte única de `account` (já é fonte única de vagas, candidatos, processos) e remover duplicação em FastAPI.
+- FastAPI vira cliente (lê de Rails via adapter) em vez de manter `ClientAccount` próprio.
+- Alinhado com memória de projeto: *"CRUD moving to Rails, IA stays in Python"*.
+- Esforço: ~3-4 sprints (mais arquitetural).
+
+**Recomendação:** Começar com Opção A (tátic, rápida) e planejar Opção C para roadmap.
+
+---
+
+### 25.4 Blocker #2 — Follow-ups Sprint 7 não concluídos (F-1 + F-2)
+
+Sprint 7.3 do `MIGRATION_PLAN` entregou migration + adapter wiring, mas os dois lados ficaram pela metade:
+
+**F-1 — Rails:** criar endpoint `GET /v1/candidates?fork_uuid=<uuid>`
+- **Arquivo:** `ats-api-copia/app/controllers/v1/users/candidates_controller.rb#index`
+- **Escopo:** whitelist `fork_uuid` em permitted params + filtro `Candidate.where(fork_uuid: params[:fork_uuid])` quando presente
+- **Esforço:** ~30min + teste
+
+**F-2 — Python:** implementar `find_candidate_by_fork_uuid(fork_uuid)` em `WeDOTalentATSClient`
+- **Arquivo:** `wedotalent02202026/lia-agent-system/app/domains/ats_integration/services/ats_clients/wedotalent_rails.py` (587 linhas, falta esse método)
+- **Escopo:** `async def find_candidate_by_fork_uuid(self, fork_uuid: str)` → `GET /v1/users/candidates?fork_uuid=<uuid>` → desempacota primeira match
+- **Usado por:** `rails_adapter.py:498` (já chama, falha graciosa hoje com `getattr(..., None)`)
+- **Esforço:** ~30min + teste
+
+Enquanto F-1 + F-2 não existirem, qualquer lookup de candidato via UUID retorna `None` — plataforma continua funcionando (fallback para IDs bigint), mas cross-system lookup fica sem coverage.
+
+---
+
+### 25.5 LLM Factory — Status 95% (3 micro-tasks para fechar)
+
+**Arquitetura atual (confirmada em código):** `app/shared/providers/llm_factory.py` + `ProviderContainer` + `TenantProviderRegistry`.
+
+| Dimensão | Status | Evidência |
+|---|---|---|
+| 3 providers (Claude `sonnet-4-6`, Gemini `2.5-flash`, OpenAI `gpt-4o`) | ✅ | `llm_claude.py:29`, `llm_gemini.py:23`, `llm_openai.py:15` |
+| Fallback chain com circuit breaker | ✅ | Default `["gemini","claude","openai"]` em `llm_factory.py:19`, breaker em cada provider |
+| Multi-tenant com API keys isoladas | ✅ | `TenantProviderRegistry` em `llm_factory.py:93-150` |
+| Token budget por request + por dia | ✅ | `token_budget_service.py:20-94` — plans starter/pro/business/enterprise |
+| PII stripping obrigatório | ✅ | `llm.py:333-359` + `strip_pii_for_llm_prompt()` |
+| Audit logs estruturados `[LLM-AUDIT]` | ✅ | `llm.py:239-253` |
+| Dashboard usage por tenant (endpoint) | ❌ | Não existe `GET /api/v1/admin/billing/usage-by-tenant` |
+| Métricas Prometheus de latência/provider | ❌ | `_METRICS_AVAILABLE = False` |
+| Retry automático no ClaudeLLMProvider | ⚠️ | Só Gemini tem `@retry` — Claude só tem circuit breaker |
+
+**Para fechar LLM Factory como produto (esforço ~2h):**
+1. Endpoint `/api/v1/admin/billing/usage-by-tenant` (~1h)
+2. Adicionar `@retry(stop_after_attempt=2, wait_exponential)` em `ClaudeLLMProvider` (~30min)
+3. Runbook curto documentando fallback chain em `docs/ops/llm-runbook.md` (~30min)
+
+Itens opcionais (pós-fechamento): métricas Prometheus, prompt versioning em Git, error handling por tipo (401 vs 429 vs 5xx).
+
+---
+
+### 25.6 CHECKLIST CONSOLIDADO — Por Time
+
+> Use como board de acompanhamento. Ordem dentro de cada time é por prioridade (top = mais urgente).
+
+#### 🔧 DevOps / Infraestrutura GCP
+
+- [ ] **CRÍTICO — Item 1.3:** Rodar `bundle exec rails db:migrate` em staging, depois `rake candidates:backfill_account_id DRY_RUN=true`, depois `rake candidates:backfill_account_id`, depois `rails runner 'p Candidate.where(account_id: nil).count'` — esperado 0
+- [ ] **Secrets pendentes** em Secret Manager GCP (staging + prod):
+  - [ ] `MAILGUN_API_KEY` (sandbox em staging + whitelist `e2e-test@wedotalent.cc`)
+  - [ ] `SENTRY_DSN` (Python + Rails + Next.js — 3 variáveis)
+  - [ ] `OTEL_EXPORTER_OTLP_ENDPOINT` (Cloud Trace ou Jaeger)
+  - [ ] `CORS_ORIGINS` (Python, lista JSON) + `CORS_ALLOWED_ORIGINS` (Rails, CSV)
+  - [ ] `REDIS_ENCRYPTION_KEY` (gerar com Fernet)
+  - [ ] `TWILIO_*` já setado em dev — migrar para Secret Manager GCP
+- [ ] **Alertas Cloud Monitoring** (itens 4.7 + 10.4):
+  - [ ] CRITICAL: error rate >5%, latência p95 >2s, circuit breaker open, worker DLQ >100
+  - [ ] WARNING: error rate >1%, latência p95 >1s
+- [ ] **Rodar E2E tests em staging** (Sprint 8) com env vars dos fixtures — 22 testes / 4 suites — ver seções 2.3 do `RELATORIO_SESSAO_4`
+- [ ] **Revogar API Key Atlassian** (item 0.1) — admin.atlassian.com
+- [ ] **Monitorar deprecation logs** por 2-4 semanas: `grep "\[rails-migration\] deprecated endpoint hit"`
+- [ ] **Flipar `STRICT_RAILS_ONLY=true`** em prod após zero hits por 2 semanas consecutivas (sunset programado 2026-07-31)
+- [ ] **Regenerar `schema.rb`** pós-migrate: `cd ats-api-copia && bin/rails db:schema:dump`
+
+#### 🦊 Backend Rails (`ats-api-copia`)
+
+- [ ] **CRÍTICO — F-1:** Adicionar filtro `fork_uuid` em `v1/users/candidates_controller.rb#index` + whitelist em permitted params
+- [ ] **CRÍTICO — Endpoint tenant:** Criar `POST /v1/admin/accounts` (protegido por `INTERNAL_API_SECRET`) para Opção A do gap admin — ver 25.3
+- [ ] Follow-up migration `change_column :candidates, :account_id, :bigint, null: false` (DT-009) — aplicar após backfill em staging confirmar zero NULL
+- [ ] Considerar endpoint `POST /v1/sessions/refresh` para evitar re-login a cada 24h (gap de UX identificado)
+
+#### 🐍 Backend FastAPI (`lia-agent-system`)
+
+- [ ] **CRÍTICO — F-2:** Adicionar `async def find_candidate_by_fork_uuid(fork_uuid: str)` em `app/domains/ats_integration/services/ats_clients/wedotalent_rails.py` (depende de F-1)
+- [ ] **CRÍTICO — Criar `rails_client.create_account()`** e chamar em `clients_crud.py` após `ClientAccount` create — ver 25.3 Opção A
+- [ ] **LLM Factory fechamento (3 micro-tasks):**
+  - [ ] Endpoint `/api/v1/admin/billing/usage-by-tenant` (~1h)
+  - [ ] `@retry` decorator em `ClaudeLLMProvider` (~30min)
+  - [ ] Runbook `docs/ops/llm-runbook.md` (~30min)
+- [ ] **OTEL spans** (desbloqueados após Secret `OTEL_EXPORTER_OTLP_ENDPOINT`):
+  - [ ] Item 4.1: agent spans `agent.{domain}.process` nos 14 ReAct agents
+  - [ ] Item 4.2: LLM spans `llm.call` com tokens/cost
+  - [ ] Item 4.3: handoff spans `router.handoff` no `CascadedRouter`
+- [ ] Adicionar `structlog` em `requirements.txt` + middleware de JSON logging
+- [ ] `libs/notification_service.py:905` — remover `raise Exception()` genérico (DT-003)
+
+#### 🎨 Frontend (`plataforma-lia`)
+
+- [ ] Configurar `NEXT_PUBLIC_SENTRY_DSN` prod no Secret Manager
+- [ ] Registrar redirect URIs de prod no dashboard WorkOS (`https://wedotalent.cc/api/auth/workos/callback`)
+- [ ] Atualizar Teams Tab URL para prod (após DNS apontar)
+- [ ] Headers de segurança em `next.config.js` (CSP experimental por ora)
+- [ ] P5 pendente: 4 arquivos com vars Replit-only (fallbacks): `workos.ts`, `jira-service.ts`, `shared_searches.py`, `email_adapter.py`
+
+#### 🏢 Admin Panel (`wedotalent-admin-copia`)
+
+- [ ] **CRÍTICO — Integração Rails:** Após Rails expor `POST /v1/admin/accounts`, atualizar flow do admin para validar que tenant foi criado com sucesso (retry + rollback). Ver 25.3.
+- [ ] Expor indicador visual no admin sobre status de cada integração (FastAPI / WorkOS / HubSpot / Rails) — hoje é silencioso
+- [ ] Documentar fluxo completo de criação de cliente em `docs/admin/new-client-flow.md`
+
+#### 🧪 QA / Produto
+
+- [ ] Rodar Sprint 8 E2E em staging (pré-requisito: DevOps completou checklist acima)
+- [ ] Validar isolamento multi-tenant: criar 2 clientes completos (admin → ClientAccount + WorkOS + HubSpot + **Rails Account**), logar com cada, confirmar que não se veem
+- [ ] Testar fluxo cross-system candidate: buscar por `fork_uuid` (depois de F-1 + F-2) retorna match correto
+- [ ] Validar que deprecation layer Sprint 7 loga corretamente endpoints antigos sendo chamados
+
+---
+
+### 25.7 Ordem Recomendada de Ataque
+
+**Semana 1 (DevOps):** Passos 1-4 do checklist de ativação (env vars + migrations + alertas). Desbloqueia tudo.
+
+**Semana 2 (Rails team):** F-1 (endpoint `fork_uuid`) + endpoint `POST /v1/admin/accounts` (desbloqueia gap do admin panel).
+
+**Semana 3 (Python team):** F-2 (`find_candidate_by_fork_uuid` no client) + integração admin→Rails em `clients_crud.py` + LLM Factory fechamento (3 micro-tasks).
+
+**Semana 4 (Frontend + QA):** configurações prod + 22 E2E em staging + validação multi-tenant completa.
+
+**Semana 5+:** OTEL spans (4.1-4.3), observabilidade, monitor deprecation até sunset 31/jul.
+
+---
+
+*Seção 25 adicionada em 2026-04-15 por auditoria cruzada dos 4 repos + RELATORIO_SESSAO_4.md*
+*Fontes: `clients_crud.py:134-222`, `tenant_scoped.rb:12-21`, `wedotalent_rails.py`, `llm_factory.py`, `deploy.yml`, migrations `db/migrate/20260415120001-3_*.rb`, commits `1639beb`/`652b5028`/`f002e79c`/`07fa70f7`/`6f15aaa9`/`03db3fa0`/`0252ef33`/`a7240840`/`3668eae`/`9368bb0`/`c5aad4ab`/`da000dd1`*
 
 ---
 

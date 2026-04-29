@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest"
 import {
+  AJUDA_REGEX,
   SLASH_COMMANDS,
+  buildAjudaChatMessages,
+  buildAjudaHelpMarkdown,
   findSlashCommandByToken,
   findSlashCommandByVerb,
 } from "./slash-commands"
@@ -48,6 +51,7 @@ describe("SLASH_COMMANDS registry", () => {
       "pipeline",
       "relatorio",
       "ajuda",
+      "definir",
       "nova-conversa",
     ])
   })
@@ -62,6 +66,45 @@ describe("SLASH_COMMANDS registry", () => {
       "Gerar relatorio semanal de recrutamento",
     )
     expect(findSlashCommandByToken("/ajuda")?.buildBareMessage?.()).toBe("/ajuda")
+  })
+
+  it("AJUDA_REGEX matches `/ajuda` case-insensitively and rejects args", () => {
+    expect(AJUDA_REGEX.test("/ajuda")).toBe(true)
+    expect(AJUDA_REGEX.test("/AJUDA")).toBe(true)
+    expect(AJUDA_REGEX.test("/ajuda  ")).toBe(true)
+    expect(AJUDA_REGEX.test("/ajuda termo")).toBe(false)
+    expect(AJUDA_REGEX.test("ajuda")).toBe(false)
+  })
+
+  it("buildAjudaHelpMarkdown lists every dropdown command", () => {
+    const md = buildAjudaHelpMarkdown()
+    expect(md).toMatch(/Comandos disponíveis/)
+    expect(md).toMatch(/_Dica: digite .*menu rápido/)
+    SLASH_COMMANDS
+      .filter((c) => c.showInDropdown)
+      .forEach((c) => {
+        expect(md).toContain(c.primary)
+        expect(md).toContain(c.subtitle)
+      })
+  })
+
+  it("buildAjudaChatMessages produces the user-echo + lia-help pair (Task #836)", () => {
+    const fixed = new Date("2026-04-26T13:00:00.000Z")
+    const { userMsg, helpMsg } = buildAjudaChatMessages(
+      "/ajuda",
+      buildAjudaHelpMarkdown(),
+      fixed,
+    )
+    expect(userMsg.sender).toBe("user")
+    expect(userMsg.content).toBe("/ajuda")
+    expect(userMsg.timestamp).toBe("2026-04-26T13:00:00.000Z")
+    expect(userMsg.id).toMatch(/^user-\d+$/)
+    expect(helpMsg.sender).toBe("lia")
+    expect(helpMsg.content).toMatch(/Comandos disponíveis/)
+    expect(helpMsg.id).toMatch(/^lia-\d+-ajuda$/)
+    // The two ids must collide on the same `now` slot but stay distinct
+    // by suffix — guards against accidental React key reuse.
+    expect(userMsg.id).not.toBe(helpMsg.id)
   })
 
   it("mention-message builders preserve the legacy backend payloads", () => {

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useMemo, useCallback, useEffect } from"react"
+import { useSearchParams } from "next/navigation"
 import { Button } from"@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
@@ -16,7 +17,7 @@ import {
   Send, Bell, Palette, Lightbulb, TrendingDown, Activity, RotateCcw,
   ChevronLeft, FastForward, SkipForward, RefreshCw, Zap as Lightning,
   MousePointer, Compass, HelpCircle, Rocket,
-  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield
+  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield, Webhook
 } from"lucide-react"
 
 const SECTION_ICON_COLORS: Record<string, string> = {
@@ -27,25 +28,36 @@ const SECTION_ICON_COLORS: Record<string, string> = {
   'comunicacao-alertas': 'text-rose-400',
   'usuarios-departamentos': 'text-sky-500',
   'integrations': 'text-emerald-500',
+  'webhooks': 'text-wedo-cyan',
   'fairness-compliance': 'text-violet-400',
+  'governanca': 'text-amber-500',
 }
 
 
 import dynamic from"next/dynamic"
+import { useTranslations } from "next-intl"
 import { LoadingFallback } from"@/components/ui/loading"
-const MinhaEmpresaHub = dynamic(() => import("@/components/settings/MinhaEmpresaHub").then(m => ({ default: m.MinhaEmpresaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando empresa..." /> })
-const PipelineStandalone = dynamic(() => import("@/components/settings/PipelineStandalone").then(m => ({ default: m.PipelineStandalone })), { ssr: false, loading: () => <LoadingFallback text="Carregando pipeline..." /> })
-const ScreeningStandalone = dynamic(() => import("@/components/settings/ScreeningStandalone").then(m => ({ default: m.ScreeningStandalone })), { ssr: false, loading: () => <LoadingFallback text="Carregando screening..." /> })
-const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando comunicação..." /> })
-const IntegrationsHub = dynamic(() => import("@/components/settings/IntegrationsHub").then(m => ({ default: m.IntegrationsHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando integrações..." /> })
-const TemplatesAssinaturaHub = dynamic(() => import("@/components/settings/TemplatesAssinaturaHub").then(m => ({ default: m.TemplatesAssinaturaHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando templates..." /> })
-const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando usuários..." /> })
-const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <LoadingFallback text="Carregando compliance..." /> })
+function I18nLoadingFallback({ tKey }: { tKey: string }) {
+  const tLoad = useTranslations("settings.loading")
+  return <LoadingFallback text={tLoad(tKey)} />
+}
+
+const MinhaEmpresaHub = dynamic(() => import("@/components/settings/MinhaEmpresaHub").then(m => ({ default: m.MinhaEmpresaHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="company" /> })
+const RecruitmentPipelineTab = dynamic(() => import("@/components/settings/RecruitmentPipelineTab").then(m => ({ default: m.RecruitmentPipelineTab })), { ssr: false, loading: () => <I18nLoadingFallback tKey="pipeline" /> })
+const RecruitmentScreeningTab = dynamic(() => import("@/components/settings/RecruitmentScreeningTab").then(m => ({ default: m.RecruitmentScreeningTab })), { ssr: false, loading: () => <I18nLoadingFallback tKey="screening" /> })
+const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="communication" /> })
+const IntegrationsHub = dynamic(() => import("@/components/settings/IntegrationsHub").then(m => ({ default: m.IntegrationsHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="integrations" /> })
+const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="users" /> })
+const FairnessComplianceHub = dynamic(() => import("@/components/settings/FairnessComplianceHub").then(m => ({ default: m.FairnessComplianceHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="compliance" /> })
+const WebhooksManager = dynamic(() => import("@/components/settings/WebhooksManager").then(m => ({ default: m.WebhooksManager })), { ssr: false, loading: () => <I18nLoadingFallback tKey="webhooks" /> })
+const GovernancaHub = dynamic(() => import("@/components/settings/governance/GovernancaHub").then(m => ({ default: m.GovernancaHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="governanca" /> })
 
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
 import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
 import { useCompanyId } from"@/hooks/company/useCompanyId"
+import { resolveSettingsTarget } from "@/lib/settings/resolve-settings-target"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface SettingsSubsection {
   id: string
@@ -162,6 +174,16 @@ const getDefaultSections = (): SettingsSection[] => [
     estimatedTime: 10,
   },
   {
+    id: 'webhooks',
+    title: 'Webhooks',
+    description: 'Eventos do Agent Studio para sistemas externos',
+    icon: Webhook,
+    status: 'incomplete',
+    priority: 'medium',
+    category: 'integrations',
+    estimatedTime: 5,
+  },
+  {
     id: 'fairness-compliance',
     title: 'Fairness & LGPD',
     description: 'Equidade da IA e pedidos LGPD de candidatos',
@@ -176,6 +198,24 @@ const getDefaultSections = (): SettingsSection[] => [
       { id: 'studio', title: 'Agent Studio', description: 'Compliance do Agent Studio', fields: [] },
     ],
   },
+  {
+    id: 'governanca',
+    title: 'Governança',
+    description: 'Audit logs, bias audit, automation rules, policy engine, DSR e consent',
+    icon: Shield,
+    status: 'incomplete',
+    priority: 'low',
+    category: 'advanced',
+    estimatedTime: 0,
+    subsections: [
+      { id: 'audit-logs', title: 'Audit Logs', description: 'Eventos de auditoria do sistema', fields: [] },
+      { id: 'bias-audit', title: 'Bias Audit', description: 'Auditorias de viés (Four-Fifths Rule)', fields: [] },
+      { id: 'automation-rules', title: 'Automation Rules', description: 'Regras de automação por gatilho', fields: [] },
+      { id: 'policy-engine', title: 'Policy Engine', description: 'Políticas de compliance por setor', fields: [] },
+      { id: 'dsr', title: 'DSR / LGPD', description: 'Data Subject Requests', fields: [] },
+      { id: 'consent', title: 'Consent', description: 'Tipos de consentimento e métricas', fields: [] },
+    ],
+  },
 ]
 
 const settingsSections: SettingsSection[] = getDefaultSections()
@@ -188,9 +228,37 @@ const getCompletionBadgeColor = (percentage: number): string => {
 
 export default function SettingsPageEnhanced() {
   const { companyId, tenantInfo, isLoading: isTenantLoading } = useCompanyId()
+  const searchParams = useSearchParams()
   const [activeSection, setActiveSection] = useState<string>('minha-empresa')
   const [activeSubsection, setActiveSubsection] = useState<string>('')
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['minha-empresa']))
+
+  // Task #894 — quando a página é aberta via deep-link com `?section=…`
+  // (ex.: CTA do job-publish-modal ou cards do chat-workflow-reels), abre
+  // direto a tab solicitada em vez de cair na default `minha-empresa`.
+  // O parâmetro `?field=…` continua funcionando para scroll-into-view
+  // (compatibilidade com Task #712), mesmo sem `?section=`, desde que
+  // a tab atual contenha o campo.
+  useEffect(() => {
+    const target = resolveSettingsTarget(searchParams)
+    if (target.section) {
+      setActiveSection(target.section)
+      setActiveSubsection(target.subsection)
+      setExpandedSections((prev) => new Set([...Array.from(prev), target.section as string]))
+    }
+    if (target.field && typeof window !== 'undefined') {
+      window.requestAnimationFrame(() => {
+        const el = document.querySelector(`[data-field="${target.field}"]`) as HTMLElement | null
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          el.dataset.recentlyHighlighted = 'true'
+          window.setTimeout(() => {
+            if (el) delete el.dataset.recentlyHighlighted
+          }, 3000)
+        }
+      })
+    }
+  }, [searchParams])
 
   useEffect(() => {
     const openTabHandler = (e: Event) => {
@@ -251,6 +319,7 @@ export default function SettingsPageEnhanced() {
     'comunicacao-alertas': 0,
     'usuarios-departamentos': 0,
     'integrations': 0,
+    'webhooks': 0,
     'fairness-compliance': 0,
   })
 
@@ -278,7 +347,7 @@ export default function SettingsPageEnhanced() {
   const fetchProgress = useCallback(async () => {
     try {
       setProgressLoading(true)
-      const response = await fetch('/api/backend-proxy/settings/progress/')
+      const response = await apiFetch('/api/backend-proxy/settings/progress/')
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -300,6 +369,7 @@ export default function SettingsPageEnhanced() {
           'comunicacao-alertas': data.sections['comunicacao-alertas'] ?? prev['comunicacao-alertas'],
           'usuarios-departamentos': data.sections['usuarios-departamentos'] ?? prev['usuarios-departamentos'],
           'integrations': data.sections['integracoes'] ?? data.sections['integrations'] ?? prev['integrations'],
+          'webhooks': data.sections['webhooks'] ?? prev['webhooks'],
         }))
       }
       
@@ -401,19 +471,19 @@ export default function SettingsPageEnhanced() {
       case 'pipeline':
         return (
           <ErrorBoundarySection>
-            <PipelineStandalone />
+            <RecruitmentPipelineTab />
           </ErrorBoundarySection>
         )
       case 'screening':
         return (
           <ErrorBoundarySection>
-            <ScreeningStandalone />
+            <RecruitmentScreeningTab />
           </ErrorBoundarySection>
         )
       case 'templates-assinatura':
         return (
           <ErrorBoundarySection>
-            <TemplatesAssinaturaHub />
+            <CommunicationHub visibleTabs={['templates', 'signature']} stacked />
           </ErrorBoundarySection>
         )
       case 'comunicacao-alertas':
@@ -434,10 +504,22 @@ export default function SettingsPageEnhanced() {
             <IntegrationsHub activeSubsection={activeSubsection} />
           </ErrorBoundarySection>
         )
+      case 'webhooks':
+        return (
+          <ErrorBoundarySection>
+            <WebhooksManager />
+          </ErrorBoundarySection>
+        )
       case 'fairness-compliance':
         return (
           <ErrorBoundarySection>
             <FairnessComplianceHub activeSubsection={activeSubsection || 'fairness'} />
+          </ErrorBoundarySection>
+        )
+      case 'governanca':
+        return (
+          <ErrorBoundarySection>
+            <GovernancaHub activeSubsection={(activeSubsection || 'audit-logs') as 'audit-logs'} />
           </ErrorBoundarySection>
         )
       default:
@@ -521,7 +603,7 @@ export default function SettingsPageEnhanced() {
           </div>
 
           <div className="flex-1 overflow-y-auto p-3">
-            <nav className="space-y-2">
+            <nav className="space-y-2" role="navigation" aria-label="Configurações">
               {settingsSections.map((section) => {
                 const IconComponent = section.icon
                 const PriorityIcon = priorityIcons[section.priority]
@@ -533,6 +615,8 @@ export default function SettingsPageEnhanced() {
                     <button
                       data-testid={`settings-menu-${section.id}`}
                       data-active={isActive && !activeSubsection}
+                      aria-label={section.title}
+                      aria-current={isActive && !activeSubsection ? 'page' : undefined}
                       onClick={() => {
                         setActiveSection(section.id)
                         setActiveSubsection('')
@@ -540,7 +624,7 @@ export default function SettingsPageEnhanced() {
                           handleToggleSection(section.id)
                         }
                       }}
-                      className={`w-full flex items-center gap-2 p-2.5 rounded-lg text-left transition-colors motion-reduce:transition-none ${
+                      className={`w-full flex items-center gap-2 p-2.5 rounded-lg text-left transition-colors motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-wedo-cyan ${
                         isActive && !activeSubsection
                           ? 'bg-lia-bg-tertiary dark:bg-lia-bg-elevated text-lia-text-primary'
                           : 'hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 text-lia-text-secondary'

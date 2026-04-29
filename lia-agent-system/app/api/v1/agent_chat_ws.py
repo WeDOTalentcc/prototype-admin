@@ -318,26 +318,187 @@ def _subagent_for_pipeline(message: str) -> str:
     return "pipeline_context"
 
 
-def _get_agent(domain: str) -> Any | None:
+def _get_agent(
+    domain: str,
+    *,
+    company_id: str | int | None = None,
+    session_id: str | None = None,
+    user_id: str | int | None = None,
+) -> Any | None:
     """Retorna instancia do agente para o dominio solicitado.
 
     Fase 3a (Wave 2): Delegates to AgentRegistry. The 21-branch if/elif
     was replaced — each agent class is decorated with @register_agent(id).
     Fallback to "talent" preserved for unknown domain.
+
+    Task #861 (N-07): Each call emits a `wizard.agent_chat.get_agent` span so
+    the WS dispatcher path is debuggable in OTLP. Callers should pass
+    `company_id`/`session_id`/`user_id` so the span carries the canonical
+    tenant attributes — they default to empty strings when missing, and the
+    surrounding gate (`validate_span_attributes`) flags such cases in CI.
     """
+    from app.orchestrator._observability import WIZARD_SPANS
+    from app.shared.observability.tracing import finish_span, get_tracer
+
+    tracer = get_tracer()
+    attrs = {
+        "service.name": "wizard",
+        "wizard.graph": "agent_chat",
+        "wizard.stage": "get_agent",
+        "domain": str(domain or ""),
+        "tenant.company_id": str(company_id or ""),
+        "user.id": str(user_id or ""),
+        "conversation.id": str(session_id or ""),
+        "orchestrator.version": "wizard",
+    }
+    span = tracer.create_span(
+        WIZARD_SPANS.AGENT_CHAT_GET_AGENT, attributes=attrs, _start_otel=True,
+    )
     try:
         # Trigger agent module imports (one-time, idempotent) so decorators run.
         # Each import registers the class in AgentRegistry.
         _ensure_agents_loaded()
 
         from app.shared.agents.agent_registry import AgentRegistry
-        return AgentRegistry().get_or_fallback(domain, fallback_id="talent")
+        agent = AgentRegistry().get_or_fallback(domain, fallback_id="talent")
+        span.set_attribute(
+            "agent.resolved_id", type(agent).__name__ if agent is not None else "",
+        )
+        finish_span(span, status="ok")
+        return agent
     except Exception as exc:
         logger.error("[AgentChatWS] Falha ao carregar agente domain=%s: %s", domain, exc)
+        finish_span(span, status="error", error=exc)
         return None
 
 
 _AGENTS_LOADED = False
+
+
+def _resume_wizard_canonical(
+    thread_id: str,
+    resume_input_dict: dict,
+) -> tuple[str, dict]:
+    """Resume a paused JobCreationGraph after HITL approval.
+
+    Task #850: this replaces the legacy `wiz_g._graph.ainvoke(None, ...)`
+    pattern that read response from `response`/`user_message` keys
+    (which JobCreationGraph does not emit). We now:
+
+      1. Pull `prior_state` from the LangGraph checkpointer.
+      2. Merge recruiter approval payload + `hitl_approved=True` flag.
+      3. Call the canonical `JobCreationGraph.resume(thread_id, prior,
+         updates)` so the audit callback stays wired.
+      4. Extract recruiter-facing message from the canonical
+         `ws_stage_payload.data` with stage-aware fallback.
+
+    Returns:
+        (message, ws_stage_payload) — both safe to pass directly to the
+        WS layer. `ws_stage_payload` may be empty dict if the resumed
+        node didn't emit one.
+    """
+    from app.domains.job_creation.graph import job_creation_graph as wiz_g
+
+    config = {"configurable": {"thread_id": thread_id}}
+    try:
+        prior_snapshot = wiz_g._graph.get_state(config)
+        prior_state = dict(prior_snapshot.values or {})
+    except Exception:  # checkpointer miss — fall back to empty seed
+        prior_state = {}
+
+    resume_context = (resume_input_dict or {}).get("context") or {}
+    approval_payload = (resume_input_dict or {}).get("approval_payload") or {}
+    updates: dict = {
+        "hitl_approved": True,
+        **approval_payload,
+    }
+    # Carry recruiter context (e.g. updated draft fields) if the HITL
+    # step accumulated any — keeps the canonical domain contract.
+    if isinstance(resume_context, dict):
+        for k in ("draft", "intake_payload", "jd_enriched", "wsi_questions"):
+            if k in resume_context and resume_context[k] is not None:
+                updates[k] = resume_context[k]
+
+    result = wiz_g.resume(thread_id, prior_state, updates)
+
+    if not isinstance(result, dict):
+        return ("Vaga atualizada após aprovação.", {})
+
+    stage_payload = result.get("ws_stage_payload") or {}
+    stage_data = stage_payload.get("data") or {}
+    current_stage = result.get("current_stage", "") or ""
+    message = (
+        stage_data.get("message")
+        or stage_data.get("response_text")
+        or {
+            "intake": "Captei a vaga. Vou seguir para o próximo passo.",
+            "jd_enrichment": "Descrição da vaga enriquecida — preciso da sua aprovação.",
+            "wsi_questions": "Perguntas de triagem WSI sugeridas — preciso da sua aprovação.",
+            "completed": "Vaga criada com sucesso.",
+        }.get(current_stage, f"Etapa atual: {current_stage or 'wizard'}.")
+    )
+    return (message, stage_payload)
+
+
+async def _resume_wizard_canonical_streaming(
+    thread_id: str,
+    resume_input_dict: dict,
+    on_token: Any,
+) -> tuple[str, dict, int]:
+    """Token-streaming variant of :func:`_resume_wizard_canonical`.
+
+    PM-02 (Audit Rev 4): drives ``JobCreationGraph.stream_invoke`` so
+    each LLM token surfaces as a WS ``token`` frame while still
+    returning the canonical recruiter-facing message + stage payload.
+
+    Falls back transparently to a single ``invoke()`` call if the graph
+    instance does not expose ``stream_invoke`` (e.g. older deploys).
+    """
+    from app.domains.job_creation.graph import job_creation_graph as wiz_g
+
+    config = {"configurable": {"thread_id": thread_id}}
+    try:
+        prior_snapshot = wiz_g._graph.get_state(config)
+        prior_state = dict(prior_snapshot.values or {})
+    except Exception:
+        prior_state = {}
+
+    resume_context = (resume_input_dict or {}).get("context") or {}
+    approval_payload = (resume_input_dict or {}).get("approval_payload") or {}
+    updates: dict = {"hitl_approved": True, **approval_payload}
+    if isinstance(resume_context, dict):
+        for k in ("draft", "intake_payload", "jd_enriched", "wsi_questions"):
+            if k in resume_context and resume_context[k] is not None:
+                updates[k] = resume_context[k]
+
+    merged_state = {**prior_state, **updates}
+    tokens_emitted = 0
+    if hasattr(wiz_g, "stream_invoke"):
+        result, tokens_emitted = await wiz_g.stream_invoke(
+            merged_state, thread_id, on_token=on_token,
+        )
+    else:  # pragma: no cover — defensive fallback
+        result = await asyncio.to_thread(
+            wiz_g.resume, thread_id, prior_state, updates,
+        )
+
+    if not isinstance(result, dict):
+        return ("Vaga atualizada após aprovação.", {}, tokens_emitted)
+
+    stage_payload = result.get("ws_stage_payload") or {}
+    stage_data = stage_payload.get("data") or {}
+    current_stage = result.get("current_stage", "") or ""
+    message = (
+        stage_data.get("message")
+        or stage_data.get("response_text")
+        or {
+            "intake": "Captei a vaga. Vou seguir para o próximo passo.",
+            "jd_enrichment": "Descrição da vaga enriquecida — preciso da sua aprovação.",
+            "wsi_questions": "Perguntas de triagem WSI sugeridas — preciso da sua aprovação.",
+            "completed": "Vaga criada com sucesso.",
+        }.get(current_stage, f"Etapa atual: {current_stage or 'wizard'}.")
+    )
+    return (message, stage_payload, tokens_emitted)
 
 
 def _ensure_agents_loaded() -> None:
@@ -351,7 +512,7 @@ def _ensure_agents_loaded() -> None:
 
     try:
         # Top-level ReAct agents
-        from app.domains.job_management.agents.wizard_react_agent import WizardReActAgent  # noqa: F401
+        # WizardReActAgent removed in Task #850 — JobCreationGraph replaces it.
         from app.domains.cv_screening.agents.pipeline_react_agent import PipelineReActAgent  # noqa: F401
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent  # noqa: F401
         from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent  # noqa: F401
@@ -434,11 +595,21 @@ async def agent_chat_ws(
     conversation_history: list = []
 
     try:
-        await ws_mgr.send_to_session(session_id, {
-            "type": "connected",
-            "session_id": session_id,
-            "domain": domain,
-        })
+        # PM-03 (Audit Rev 4): announce protocol version on connect so
+        # the client can probe for MAJOR compatibility.
+        from app.shared.websocket.ws_message_schemas import (
+            LIA_WS_PROTOCOL_VERSION,
+            WSConnectedMessage,
+            is_protocol_compatible,
+        )
+
+        await ws_mgr.send_to_session(
+            session_id,
+            WSConnectedMessage(
+                session_id=session_id,
+                domain=domain,
+            ).model_dump(),
+        )
 
         while True:
             try:
@@ -458,6 +629,36 @@ async def agent_chat_ws(
 
             if msg_type == "ping":
                 await ws_mgr.send_to_session(session_id, {"type": "pong"})
+                continue
+
+            # PM-03 (Audit Rev 4): client → server handshake. The client
+            # may send `{"type": "hello", "protocol_version": "X.Y"}` to
+            # announce its supported MAJOR. We close the socket with code
+            # 4400 (RFC-compliant private range) on MAJOR mismatch so the
+            # client can surface a "please update" error to the user.
+            if msg_type == "hello":
+                client_version = str(msg.get("protocol_version") or "").strip()
+                if not is_protocol_compatible(client_version):
+                    logger.warning(
+                        "[AgentChatWS] Protocol mismatch session=%s "
+                        "client=%r server=%r — closing 4400",
+                        session_id, client_version, LIA_WS_PROTOCOL_VERSION,
+                    )
+                    await ws_mgr.send_to_session(session_id, serialize_error(
+                        f"Protocol version {client_version!r} incompatible with "
+                        f"server {LIA_WS_PROTOCOL_VERSION!r}",
+                        "protocol_mismatch",
+                    ))
+                    try:
+                        await websocket.close(code=4400, reason="protocol_mismatch")
+                    except Exception:  # pragma: no cover — best-effort close
+                        pass
+                    break
+                # Echo the server's version so the client can confirm.
+                await ws_mgr.send_to_session(session_id, {
+                    "type": "hello_ack",
+                    "protocol_version": LIA_WS_PROTOCOL_VERSION,
+                })
                 continue
 
             if msg_type == "abort":
@@ -515,22 +716,60 @@ async def agent_chat_ws(
                                         source="hitl_resume",
                                     ))
                                     conversation_history.append({"role": "assistant", "content": _wsi_msg})
-                                # wizard (JobWizardGraph) usa ainvoke(None) direto — grafo pausado
+                                # wizard (JobCreationGraph) — Task #850 canonical
+                                # path. Use the canonical `resume(thread_id,
+                                # prior_state, updates)` API: pulls prior state
+                                # from the checkpointer, merges recruiter
+                                # approval payload, and re-invokes the graph
+                                # with the audit callback wired (no bypass of
+                                # the canonical domain contract).
                                 elif resume_domain == "wizard":
-                                    from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-                                    wiz_g = JobWizardGraph()
-                                    if wiz_g._compiled_lg is None:
-                                        wiz_g._compiled_lg = wiz_g._build_langgraph()
-                                    _wiz_config = {"configurable": {"thread_id": ws_thread_id}}
-                                    _wiz_result = await asyncio.wait_for(
-                                        wiz_g._compiled_lg.ainvoke(None, config=_wiz_config),
-                                        timeout=_AGENT_TIMEOUT,
+                                    # PM-02 (Audit Rev 4): when token streaming
+                                    # is enabled, drive the canonical wizard
+                                    # graph via `astream_events("v2")` so each
+                                    # LLM chunk surfaces as a `token` frame in
+                                    # real time. Falls back to the historical
+                                    # threaded `invoke()` path otherwise — the
+                                    # contract (final message + stage payload)
+                                    # is unchanged.
+                                    from app.api.v1._ws_stream_helpers import (
+                                        is_token_streaming_enabled,
                                     )
-                                    _wiz_msg = (
-                                        _wiz_result.get("response", "") or
-                                        _wiz_result.get("user_message", "Vaga criada com sucesso.")
-                                        if isinstance(_wiz_result, dict) else "Vaga criada com sucesso."
-                                    )
+                                    if is_token_streaming_enabled():
+                                        async def _on_wiz_token(chunk: str) -> None:
+                                            try:
+                                                await ws_mgr.send_to_session(
+                                                    session_id,
+                                                    {"type": "token", "content": chunk, "domain": "wizard"},
+                                                )
+                                            except Exception:  # pragma: no cover — fail-silent
+                                                pass
+
+                                        await ws_mgr.send_to_session(
+                                            session_id,
+                                            {"type": "token_stream_start", "domain": "wizard"},
+                                        )
+                                        _wiz_msg, _wiz_stage_payload, _wiz_tokens = await asyncio.wait_for(
+                                            _resume_wizard_canonical_streaming(
+                                                ws_thread_id,
+                                                resume_input_dict,
+                                                _on_wiz_token,
+                                            ),
+                                            timeout=_AGENT_TIMEOUT,
+                                        )
+                                        await ws_mgr.send_to_session(
+                                            session_id,
+                                            {"type": "token_stream_end", "domain": "wizard", "tokens": _wiz_tokens},
+                                        )
+                                    else:
+                                        _wiz_msg, _wiz_stage_payload = await asyncio.wait_for(
+                                            asyncio.to_thread(
+                                                _resume_wizard_canonical,
+                                                ws_thread_id,
+                                                resume_input_dict,
+                                            ),
+                                            timeout=_AGENT_TIMEOUT,
+                                        )
                                     _wiz_msg = _strip_react_json(_wiz_msg)
                                     await ws_mgr.send_to_session(session_id, serialize_message(
                                         content=_wiz_msg,
@@ -538,9 +777,19 @@ async def agent_chat_ws(
                                         domain="wizard",
                                         source="hitl_resume",
                                     ))
+                                    # Forward the canonical wizard stage payload
+                                    # to the UI so the right-panel form / stage
+                                    # cards stay in sync with the graph.
+                                    if _wiz_stage_payload:
+                                        await ws_mgr.send_to_session(session_id, _wiz_stage_payload)
                                     conversation_history.append({"role": "assistant", "content": _wiz_msg})
                                 else:
-                                    resume_agent = _get_agent(resume_domain)
+                                    resume_agent = _get_agent(
+                                        resume_domain,
+                                        company_id=company_id,
+                                        session_id=session_id,
+                                        user_id=user_id,
+                                    )
                                     if resume_agent:
                                         from lia_agents_core.agent_interface import AgentInput
                                         resume_agent_input = AgentInput(
@@ -666,6 +915,21 @@ async def agent_chat_ws(
             context.setdefault("company_id", company_id)
             context.setdefault("user_id", user_id)
             active_domain = msg.get("domain", domain)
+
+            # PR-J: Rail A capability gate (Phase 0.5)
+            try:
+                from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+                _cap_payload = await check_rail_a_capability(
+                    context=context,
+                    message=content,
+                    company_id=company_id,
+                    db=None,
+                )
+                if _cap_payload is not None:
+                    await ws_mgr.send_to_session(session_id, _cap_payload)
+                    continue
+            except Exception as _prj_exc:
+                logger.debug("[PR-J] Capability check skipped: %s", _prj_exc)
 
             _c3b_result = await pre_compliance(content, company_id, active_domain)
             if _c3b_result.fairness_blocked:
@@ -830,7 +1094,12 @@ async def agent_chat_ws(
                 active_domain = _subagent_for_sourcing(content)
                 logger.debug("[AgentChatWS][Z2] sourcing → %s", active_domain)
 
-            agent = _get_agent(active_domain)
+            agent = _get_agent(
+                active_domain,
+                company_id=company_id,
+                session_id=session_id,
+                user_id=user_id,
+            )
             if agent is None:
                 await ws_mgr.send_to_session(session_id, serialize_error(
                     f"Agente '{active_domain}' indisponível.", "agent_unavailable",
@@ -1140,7 +1409,12 @@ async def http_chat_message(req: HTTPChatRequest, request: Request):
         active_domain = _subagent_for_sourcing(content)
         logger.debug("[HTTPChat][Z2] sourcing → %s", active_domain)
 
-    agent = _get_agent(active_domain)
+    agent = _get_agent(
+        active_domain,
+        company_id=company_id,
+        session_id=session_id,
+        user_id=user_id,
+    )
     if agent is None:
         return HTTPChatResponse(
             content=f"Agente '{active_domain}' indisponível.",

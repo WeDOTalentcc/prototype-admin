@@ -98,7 +98,7 @@ export function FirstUseTooltip({ tooltipId, messageCount, position = "above", c
             position === "above" ? "bottom-full mb-2" : "top-full mt-2"
           } left-1/2 -translate-x-1/2 w-56`}
         >
-          <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-lia-bg-elevated border border-lia-border-subtle shadow-lg">
+          <div className="flex items-start gap-2 px-3 py-2 rounded-md bg-lia-bg-elevated border border-lia-border-subtle shadow-lg">
             <p className="flex-1 text-[11px] text-lia-text-primary leading-relaxed">
               {TOOLTIPS.find((t) => t.id === tooltipId)?.text}
             </p>

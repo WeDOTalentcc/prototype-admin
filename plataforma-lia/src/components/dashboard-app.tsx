@@ -3,8 +3,8 @@
 import { useState, Suspense, useEffect, useRef } from "react"
 import React from "react"
 import { useRouter } from "next/navigation"
+import { useLocale } from "next-intl"
 import { useKeyboardShortcuts } from "@/hooks/shared/use-keyboard-shortcuts"
-import { useProactiveActionRouter } from "@/hooks/chat/use-proactive-action-router"
 
 import { Sidebar } from "@/components/sidebar"
 import { CandidatesPage } from "@/components/pages/candidates-page"
@@ -28,13 +28,22 @@ import { DashboardChatPanel } from "@/components/unified-chat"
 import { GlobalSearchModal } from "@/components/global-search-modal"
 import { PipelineOverviewPage } from "@/components/pages/pipeline-overview-page"
 import { ModulesPage } from "@/components/pages/modules-page"
-import { SetupProgressBanner } from "@/components/onboarding/SetupProgressBanner"
+
+const PAGE_ROUTES: Record<string, string> = {
+  "Chat LIA": "/chat",
+  "Vagas": "/jobs",
+  "Funil de Talentos": "/funil-de-talentos",
+  "Tarefas": "/tasks",
+  "Configurações": "/configuracoes",
+  "Estúdio de Agentes": "/agent-studio",
+}
 
 interface DashboardAppProps {
   initialPage?: string
+  children?: React.ReactNode
 }
 
-export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
+export function DashboardApp({ initialPage = "Chat LIA", children }: DashboardAppProps) {
   const [currentPage, setCurrentPage] = useState(initialPage === "Painel de Controle" ? "Tarefas" : initialPage)
   const [showGlobalSearch, setShowGlobalSearch] = useState(false)
   const [pendingChatOpen, setPendingChatOpen] = useState<{ mode: 'general' | 'job-creation' } | null>(null)
@@ -47,6 +56,7 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
   const router = useRouter()
   const { recentItems, addRecentItem, removeRecentItem, clearAll: clearRecentItems } = useRecentItems()
   const { open: openFloat, splitView, setContextPage } = useLiaFloat()
+  const locale = useLocale()
 
   useEffect(() => {
     setContextPage(currentPage)
@@ -123,21 +133,23 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
     return () => window.removeEventListener("lia:navigation-hint", handler)
   }, [openFloat])
 
-  // E.1 — Proactive action routing (maps hint card clicks to navigation / chat / REST)
-  useProactiveActionRouter()
-
   const handleNavigate = (page: string) => {
     if (page === "Ajuda") {
-      router.push("/ajuda")
+      router.push(`/${locale}/ajuda`)
       return
     }
     if (page === "Sair") {
       logout()
-      router.push("/login")
+      router.push(`/${locale}/login`)
       return
     }
     const normalized = page === "Painel de Controle" ? "Tarefas" : page
     setCurrentPage(normalized)
+
+    const route = PAGE_ROUTES[normalized]
+    if (route) {
+      router.push(`/${locale}${route}`)
+    }
   }
 
   const handleRecentItemClick = (item: RecentItem) => {
@@ -268,14 +280,9 @@ export function DashboardApp({ initialPage = "Chat LIA" }: DashboardAppProps) {
       />
 
       <main id="main-content" className="flex-1 flex flex-col overflow-hidden" aria-label={currentPage}>
-        {currentPage !== "Chat LIA" && currentPage !== "Configurações" && (
-          <div className="px-4 pt-3">
-            <SetupProgressBanner />
-          </div>
-        )}
         <div className="flex-1 min-h-0 overflow-hidden flex">
           <div className="flex-1 min-w-0 overflow-hidden">
-            {renderCurrentPage()}
+            {children ?? renderCurrentPage()}
           </div>
           {splitView.active && (
             <LiaSplitPanel onNavigate={page => {

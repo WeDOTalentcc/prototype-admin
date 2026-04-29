@@ -64,7 +64,7 @@ export function EligibilityPanel({ data, onUpdate }: Props) {
       {questions.length > 0 && (
         <div className="space-y-2">
           {questions.map((q, i) => (
-            <div key={q.id || i} className="flex items-start gap-2 p-2.5 rounded-xl border border-lia-border-subtle">
+            <div key={q.id || i} className="flex items-start gap-2 p-2.5 rounded-md border border-lia-border-subtle">
               <span className="flex-shrink-0 w-5 h-5 rounded-full bg-status-error/10 text-status-error flex items-center justify-center text-[10px] font-medium mt-0.5">!</span>
               <div className="flex-1 min-w-0">
                 {editingIdx === i ? (

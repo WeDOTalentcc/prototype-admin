@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useRef, useCallback, useEffect } from "react"
+import { useTranslations, useLocale } from "next-intl"
 import { Card, CardContent } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import {
@@ -11,21 +12,22 @@ import { textStyles } from "@/lib/design-tokens"
 import { useLiaFloat } from "@/contexts/lia-float-context"
 import { useAuth } from "@/contexts/auth-context"
 import type { LucideIcon } from "lucide-react"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 type UploadState = "idle" | "uploading" | "extracting" | "sending" | "done" | "error"
 
-interface DocumentType {
+interface DocumentTypeInfo {
   id: string
-  label: string
-  description: string
+  labelKey: string
+  descriptionKey: string
   icon: LucideIcon
 }
 
-const DOCUMENT_TYPES: DocumentType[] = [
-  { id: "handbook", label: "Manual / Handbook", description: "Cultura, missão, valores, benefícios", icon: BookOpen },
-  { id: "org_chart", label: "Organograma", description: "Departamentos e hierarquia", icon: Network },
-  { id: "compensation", label: "Plano de Remuneração", description: "Faixas salariais e benefícios", icon: DollarSign },
-  { id: "tech_doc", label: "Documentação Técnica", description: "Stack, ferramentas, cultura de engenharia", icon: Code },
+const DOCUMENT_TYPES: DocumentTypeInfo[] = [
+  { id: "handbook", labelKey: "handbookLabel", descriptionKey: "handbookDescription", icon: BookOpen },
+  { id: "org_chart", labelKey: "orgChartLabel", descriptionKey: "orgChartDescription", icon: Network },
+  { id: "compensation", labelKey: "compensationLabel", descriptionKey: "compensationDescription", icon: DollarSign },
+  { id: "tech_doc", labelKey: "techDocLabel", descriptionKey: "techDocDescription", icon: Code },
 ]
 
 const STATE_PROGRESS: Record<UploadState, number> = {
@@ -35,15 +37,6 @@ const STATE_PROGRESS: Record<UploadState, number> = {
   sending: 80,
   done: 100,
   error: 0,
-}
-
-const STATE_LABELS: Record<UploadState, string> = {
-  idle: "",
-  uploading: "Enviando arquivo...",
-  extracting: "Extraindo texto do documento...",
-  sending: "Enviando para LIA para análise...",
-  done: "Concluído!",
-  error: "",
 }
 
 interface UploadedDoc {
@@ -81,6 +74,8 @@ function saveUploadedDoc(storageKey: string, doc: UploadedDoc) {
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 export function DocumentUploadCard() {
+  const t = useTranslations("settings.documentUpload")
+  const locale = useLocale()
   const { user } = useAuth()
   const storageKey = getStorageKey(user?.email ?? undefined)
   const [uploadState, setUploadState] = useState<UploadState>("idle")
@@ -95,6 +90,11 @@ export function DocumentUploadCard() {
   const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const dropZoneRef = useRef<HTMLDivElement>(null)
   const { sendChatMessage } = useLiaFloat()
+
+  const stateLabel = (state: UploadState): string => {
+    if (state === "idle" || state === "error") return ""
+    return t(`states.${state}` as never)
+  }
 
   useEffect(() => {
     return () => {
@@ -132,14 +132,14 @@ export function DocumentUploadCard() {
     const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase()
 
     if (!validExts.includes(ext)) {
-      setErrorMessage("Formato não suportado. Use PDF, DOCX ou TXT.")
+      setErrorMessage(t("errors.unsupportedFormat"))
       setUploadState("error")
       setTimeout(resetState, 4000)
       return
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      setErrorMessage("Arquivo muito grande (máximo 10MB).")
+      setErrorMessage(t("errors.fileTooLarge"))
       setUploadState("error")
       setTimeout(resetState, 4000)
       return
@@ -160,14 +160,14 @@ export function DocumentUploadCard() {
       setUploadState("extracting")
       animateProgress(STATE_PROGRESS.extracting)
 
-      const response = await fetch("/api/backend-proxy/documents/upload", {
+      const response = await apiFetch("/api/backend-proxy/documents/upload", {
         method: "POST",
         body: formData,
       })
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}))
-        throw new Error(errData.error || "Falha ao processar o documento")
+        throw new Error(errData.error || t("errors.processFailed"))
       }
 
       const result = await response.json()
@@ -175,29 +175,30 @@ export function DocumentUploadCard() {
       const warnings: string[] = result.fairness_warnings || []
 
       if (!extractedText || extractedText.trim().length < 10) {
-        throw new Error("Não foi possível extrair texto suficiente do documento.")
+        throw new Error(t("errors.insufficientText"))
       }
 
       setFairnessWarnings(warnings)
       setUploadState("sending")
       animateProgress(STATE_PROGRESS.sending)
 
-      const docTypeLabel = DOCUMENT_TYPES.find(d => d.id === docType)?.label || docType
+      const docTypeInfo = DOCUMENT_TYPES.find(d => d.id === docType)
+      const docTypeLabel = docTypeInfo ? t(`types.${docTypeInfo.labelKey}` as never) : docType
 
       const chatMessage = [
-        `[TOOL:process_uploaded_document]`,
+        t("chatToolHeader"),
         `[document_type:${docType}]`,
         `[file_name:${file.name}]`,
         `[text_length:${extractedText.length}]`,
         ``,
-        `Recebi o upload do documento "${file.name}" (${docTypeLabel}).`,
-        `Por favor, use a ferramenta process_uploaded_document com document_type="${docType}" para analisar o texto abaixo.`,
-        `Após analisar, liste os campos que encontrou e PEÇA MINHA CONFIRMAÇÃO antes de preencher qualquer campo.`,
-        `Exemplo: "Encontrei missão, 5 valores e modelo de trabalho híbrido. Posso preencher esses campos?"`,
+        t("chatReceivedDoc", { fileName: file.name, docTypeLabel }),
+        t("chatUseTool", { docType }),
+        t("chatAskConfirm"),
+        t("chatExample"),
         ``,
-        `--- TEXTO DO DOCUMENTO ---`,
+        t("chatDocStart"),
         extractedText.substring(0, 8000),
-        `--- FIM DO TEXTO ---`,
+        t("chatDocEnd"),
       ].join("\n")
 
       await sendChatMessage(chatMessage, "company_settings")
@@ -218,12 +219,12 @@ export function DocumentUploadCard() {
       setProgressPercent(100)
       setTimeout(resetState, 6000)
     } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Erro ao processar documento")
+      setErrorMessage(err instanceof Error ? err.message : t("errors.processError"))
       setUploadState("error")
       setProgressPercent(0)
       setTimeout(resetState, 5000)
     }
-  }, [animateProgress, resetState, sendChatMessage, storageKey])
+  }, [animateProgress, resetState, sendChatMessage, storageKey, t])
 
   const handleSelectDocType = (docTypeId: string) => {
     setPendingDocType(docTypeId)
@@ -291,9 +292,9 @@ export function DocumentUploadCard() {
       >
         <Upload className={`w-6 h-6 mx-auto mb-1.5 ${isDragOver ? "text-lia-btn-primary-bg" : "text-lia-text-tertiary"}`} />
         <p className={`${textStyles.labelSmall} ${isDragOver ? "text-lia-btn-primary-bg" : "text-lia-text-secondary"}`}>
-          {isDragOver ? "Solte o arquivo aqui" : "Arraste um arquivo ou clique para selecionar"}
+          {isDragOver ? t("dropFileHere") : t("dragOrClick")}
         </p>
-        <p className="text-micro text-lia-text-tertiary mt-0.5">PDF, DOCX ou TXT — máx. 10MB</p>
+        <p className="text-micro text-lia-text-tertiary mt-0.5">{t("fileSizeHint")}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -301,6 +302,8 @@ export function DocumentUploadCard() {
           const uploaded = getDocUploadInfo(docType.id)
           const isActive = activeDocType === docType.id && isProcessing
           const IconComp = docType.icon
+          const docLabel = t(`types.${docType.labelKey}` as never)
+          const docDesc = t(`types.${docType.descriptionKey}` as never)
 
           return (
             <Card
@@ -328,21 +331,21 @@ export function DocumentUploadCard() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`${textStyles.labelSmall} truncate`}>{docType.label}</p>
+                    <p className={`${textStyles.labelSmall} truncate`}>{docLabel}</p>
                     {isActive ? (
                       <p className="text-micro text-lia-btn-primary-bg font-medium mt-0.5">
-                        {STATE_LABELS[uploadState]}
+                        {stateLabel(uploadState)}
                       </p>
                     ) : uploaded ? (
                       <div className="mt-0.5">
                         <p className="text-micro text-status-success truncate">{uploaded.fileName}</p>
                         <p className="text-micro text-lia-text-tertiary flex items-center gap-1 mt-0.5">
                           <Clock className="w-2.5 h-2.5" />
-                          {new Date(uploaded.uploadedAt).toLocaleDateString("pt-BR")}
+                          {new Date(uploaded.uploadedAt).toLocaleDateString(locale)}
                         </p>
                       </div>
                     ) : (
-                      <p className="text-micro text-lia-text-tertiary mt-0.5">{docType.description}</p>
+                      <p className="text-micro text-lia-text-tertiary mt-0.5">{docDesc}</p>
                     )}
 
                     {uploaded && uploaded.warnings.length > 0 && (
@@ -379,7 +382,7 @@ export function DocumentUploadCard() {
         <div className="px-3 py-2.5 rounded-lg border border-lia-border-subtle bg-lia-bg-secondary">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-xs text-lia-text-secondary font-medium">
-              {STATE_LABELS[uploadState]}
+              {stateLabel(uploadState)}
             </span>
             <span className="text-micro text-lia-text-tertiary">{progressPercent}%</span>
           </div>
@@ -395,7 +398,7 @@ export function DocumentUploadCard() {
       {uploadState === "done" && (
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs bg-status-success/10 text-status-success border border-status-success/30">
           <CheckCircle className="w-3.5 h-3.5 flex-shrink-0" />
-          <span>Documento enviado! A LIA analisará e pedirá sua confirmação antes de preencher os campos.</span>
+          <span>{t("doneMessage")}</span>
         </div>
       )}
 
@@ -410,10 +413,10 @@ export function DocumentUploadCard() {
         <div className="px-3 py-2 rounded-lg text-xs bg-status-warning/10 border border-status-warning/30">
           <div className="flex items-center gap-1.5 mb-1.5">
             <AlertTriangle className="w-3.5 h-3.5 text-status-warning" />
-            <span className="font-medium text-status-warning">FairnessGuard — Termos sensíveis detectados</span>
+            <span className="font-medium text-status-warning">{t("fairnessTitle")}</span>
           </div>
           <p className="text-micro text-lia-text-secondary mb-1.5">
-            Verificação preliminar. A LIA fará análise completa via FairnessGuard do backend.
+            {t("fairnessSubtitle")}
           </p>
           <div className="flex flex-wrap gap-1">
             {fairnessWarnings.map((warning, i) => (
@@ -439,7 +442,7 @@ export function DocumentUploadCard() {
 
       <p className={`${textStyles.caption} text-center`}>
         <FileText className="w-3 h-3 inline mr-1" />
-        A LIA processará com FairnessGuard e pedirá confirmação antes de preencher.
+        {t("footer")}
       </p>
     </div>
   )

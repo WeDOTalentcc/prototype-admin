@@ -18,7 +18,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import get_current_user_or_demo
+from app.auth.dependencies import get_current_user_or_demo, validate_company_access
 from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.skills_catalog_service import (
@@ -228,6 +228,7 @@ async def get_company_catalog(
     
     Returns all skills organized by category with behavioral competencies.
     """
+    validate_company_access(current_user, company_id)
     try:
         db_service = get_skills_catalog_db_service(db)
         
@@ -264,6 +265,7 @@ async def add_skill_to_catalog(
     Creates or updates a skill entry for the company with default properties
     like weight, level, and description. Skills are immediately active.
     """
+    validate_company_access(current_user, request.company_id)
     try:
         db_service = get_skills_catalog_db_service(db)
         
@@ -308,6 +310,7 @@ async def sync_tech_stack_to_catalog(
     
     Returns statistics on how many were added, updated, or skipped.
     """
+    validate_company_access(current_user, request.company_id)
     try:
         db_service = get_skills_catalog_db_service(db)
         
@@ -355,6 +358,7 @@ async def suggest_skills_for_wizard(
     - include_company_catalog: Whether to include company catalog skills
     - limit: Maximum number of skills to return (1-20)
     """
+    validate_company_access(current_user, request.company_id)
     try:
         db_service = get_skills_catalog_db_service(db)
         get_skills_catalog_service()
@@ -454,6 +458,7 @@ async def record_skill_usage(
     - suggestion_confidence: Confidence score of the original suggestion (0-1)
     - suggestion_reasoning: Explanation for why the skill was suggested
     """
+    validate_company_access(current_user, request.company_id)
     try:
         db_service = get_skills_catalog_db_service(db)
         

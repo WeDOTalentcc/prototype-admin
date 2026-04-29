@@ -239,6 +239,12 @@ class PreConditionChecker:
 
         Uses canonical `company_profiles` table (schema: CompanyProfile model).
         Matches fields with D1 `check_company_completeness` tool for consistency.
+
+        Note: `website` is intentionally NOT part of this check. It has its own
+        dedicated hint (`company_website_missing` — Check 4 below) which doubles
+        as the trigger for the `analyze_company_website` offer (see contract
+        `docs/governance/tenant-minimum-config.md` §5.1). Including it here
+        would surface the same gap twice on every onboarding chat.
         """
         try:
             from lia_config.database import AsyncSessionLocal
@@ -247,7 +253,7 @@ class PreConditionChecker:
                 # Match by id OR client_account_id — token semantics vary across call paths
                 row = (await session.execute(
                     text(
-                        "SELECT name, industry, company_size, website "
+                        "SELECT name, industry, company_size "
                         "FROM company_profiles "
                         "WHERE id::text = :cid OR client_account_id::text = :cid "
                         "LIMIT 1"
@@ -255,7 +261,7 @@ class PreConditionChecker:
                     {"cid": company_id},
                 )).first()
                 if row is None:
-                    return ["nome", "setor", "tamanho", "website"]
+                    return ["nome", "setor", "tamanho"]
                 missing: list[str] = []
                 if not row[0]:
                     missing.append("nome")
@@ -263,8 +269,6 @@ class PreConditionChecker:
                     missing.append("setor")
                 if not row[2]:
                     missing.append("tamanho")
-                if not row[3]:
-                    missing.append("website")
                 return missing
         except Exception as exc:
             logger.debug("[PreConditionChecker] profile read failed: %s", exc)

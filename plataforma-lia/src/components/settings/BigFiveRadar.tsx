@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+import { useTranslations } from "next-intl"
 import { Label } from "@/components/ui/label"
 import { textStyles } from '@/lib/design-tokens'
 
@@ -19,12 +20,12 @@ interface BigFiveRadarProps {
   size?: number
 }
 
-const TRAITS = [
-  { key: "openness", label: "Abertura", description: "Inovação e criatividade" },
-  { key: "conscientiousness", label: "Conscienciosidade", description: "Processos e organização" },
-  { key: "extraversion", label: "Extroversão", description: "Colaboração e energia" },
-  { key: "agreeableness", label: "Amabilidade", description: "Empatia e trabalho em equipe" },
-  { key: "stability", label: "Estabilidade", description: "Resiliência e calma" }
+const TRAIT_KEYS = [
+  { key: "openness", labelKey: "openness", descKey: "opennessDesc" },
+  { key: "conscientiousness", labelKey: "conscientiousness", descKey: "conscientiousnessDesc" },
+  { key: "extraversion", labelKey: "extraversion", descKey: "extraversionDesc" },
+  { key: "agreeableness", labelKey: "agreeableness", descKey: "agreeablenessDesc" },
+  { key: "stability", labelKey: "stability", descKey: "stabilityDesc" }
 ] as const
 
 export function BigFiveRadar({ 
@@ -33,6 +34,12 @@ export function BigFiveRadar({
   isEditable = false,
   size = 200 
 }: BigFiveRadarProps) {
+  const t = useTranslations("settings.bigFive")
+  const TRAITS = TRAIT_KEYS.map((tr) => ({
+    key: tr.key,
+    label: t(tr.labelKey as never),
+    description: t(tr.descKey as never),
+  }))
   const center = size / 2
   const maxRadius = (size / 2) - 30
   const angleStep = (2 * Math.PI) / 5
@@ -171,10 +178,12 @@ export function BigFiveRadar({
 
       {isEditable && (
         <div className="space-y-4 mt-4">
-          {TRAITS.map((trait) => (
+          {TRAITS.map((trait) => {
+            const sliderId = `bigfive-slider-${trait.key}`
+            return (
             <div key={trait.key} className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label className={textStyles.label}>
+                <Label htmlFor={sliderId} className={textStyles.label}>
                   {trait.label}
                 </Label>
                 <span className="text-xs font-semibold text-lia-text-primary">
@@ -185,15 +194,20 @@ export function BigFiveRadar({
                 {trait.description}
               </p>
               <input
+                id={sliderId}
                 type="range"
                 min="0"
                 max="100"
                 value={scores[trait.key]}
                 onChange={(e) => handleSliderChange(trait.key, parseInt(e.target.value))}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={scores[trait.key]}
+                aria-label={trait.label}
                 className="w-full h-1.5 bg-lia-interactive-active dark:bg-lia-bg-elevated rounded-xl appearance-none cursor-pointer accent-lia-btn-primary-bg dark:accent-lia-bg-tertiary"
               />
             </div>
-          ))}
+          )})}
         </div>
       )}
 

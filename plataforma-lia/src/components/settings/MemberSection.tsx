@@ -15,7 +15,7 @@ import {
   type DepartmentMember,
   type NewMemberForm,
   DEFAULT_NEW_MEMBER,
-} from './companyTeamHub.types';
+} from '@/hooks/settings/department-types';
 import { useTranslations } from "next-intl";
 
 export interface MemberSectionProps {

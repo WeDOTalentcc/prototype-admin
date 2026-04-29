@@ -41,3 +41,12 @@ Metodologia proprietária WSI (WeDoTalent Skill Index) para triagem por voz.
 - docs/configuracoes-admin-cards-jira.md - Cards de funcionalidades
 - docs/gestao-vagas-cards-jira.md - Cards de gestão de vagas
 - docs/funil-talentos-cards-jira.md - Cards de funil
+
+
+## Regras de organização de branch e BRANCH_MAP
+
+- Todo novo tema/feature abre branch própria: `feat/<tema>-<descricao>` ou `fix/<tema>-<descricao>`
+- Proibido acumular temas distintos em branch de sprint genérica
+- `docs/BRANCH_MAP.md` é o mapa canônico do repo. Toda nova entrega exige atualização (seção §N + tag `milestone/<descricao>` + cross-refs)
+- Antes de qualquer mudança não-trivial: ler `docs/BRANCH_MAP.md` para identificar tema, milestones e docs cruzados
+- Templates de prompt no Apêndice A do BRANCH_MAP

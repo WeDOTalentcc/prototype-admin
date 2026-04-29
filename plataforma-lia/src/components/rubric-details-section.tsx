@@ -9,7 +9,7 @@ import {
   getRubricLabel,
   getPriorityLabel,
   getPriorityStyle,
-} from "./useRubricEvaluation"
+} from "@/hooks/ai/use-rubric-evaluation"
 
 function getRubricIcon(level: string) {
   switch (level?.toLowerCase()) {

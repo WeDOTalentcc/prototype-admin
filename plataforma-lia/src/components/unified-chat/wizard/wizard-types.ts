@@ -1,7 +1,36 @@
 /**
  * TypeScript types for the Wizard WSI pipeline.
- * Mirrors backend state.py WizardStage + ws_stage_payload format.
+ *
+ * Audit finding **N-12**: the contract types below — `WizardStage`,
+ * `ScreeningMode`, `WizardStagePayload`, `BigFiveProfile`, `TraitRanking`,
+ * `ScreeningQuestion`, `EligibilityQuestion`, `CalibrationCandidate` —
+ * are now re-exported from the auto-generated
+ * `src/types/generated/wizard-contract.ts`, whose source of truth is the
+ * Pydantic module `lia-agent-system/app/contracts/wizard_contract.py`.
+ *
+ * Regenerate after backend changes:
+ *   npm run generate:wizard-types
+ *
+ * CI fails on drift via:
+ *   npm run check:wizard-types
+ *
+ * The remaining UI-only interfaces (`*Data` wrappers, `EnrichedJobDescription`,
+ * `TechnicalSkill`, `BehavioralCompetency`, `ContextSignals`, stage-label
+ * tables) live below and stay hand-maintained until they are absorbed by
+ * the backend contract.
  */
+import type {
+  BigFiveProfileContract,
+  TraitRankingContract,
+  WizardStagePayloadContract,
+} from "@/types/generated/wizard-contract"
+
+// ---- Re-exports from the generated contract ------------------------------
+// NOTE: ScreeningQuestion / EligibilityQuestion / CalibrationCandidate are
+// kept hand-maintained below for now — the generated contract enforces
+// stricter shapes (e.g. `id` required, extra `competency`/`source` fields)
+// that would require touching ~20 component call-sites in a separate PR.
+// Tracked as a follow-up to N-12.
 
 export type WizardStage =
   | "intake"
@@ -21,16 +50,11 @@ export type WizardStage =
 export type ScreeningMode = "compact" | "full"
 
 /**
- * WebSocket message payload for wizard stages.
- * Sent by backend graph nodes via ws_stage_payload.
+ * WebSocket message payload for wizard stages — alias of
+ * `WizardStagePayloadContract` (generated). Kept as a type alias so
+ * existing imports `import { WizardStagePayload }` keep working.
  */
-export interface WizardStagePayload {
-  type: "wizard_stage"
-  stage: WizardStage
-  data: Record<string, unknown>
-  completeness: number // 0.0 to 1.0
-  requires_approval: boolean
-}
+export type WizardStagePayload = WizardStagePayloadContract
 
 // --- Stage-specific data interfaces ---
 
@@ -80,24 +104,21 @@ export interface ContextSignals {
   nivel_colaboracao: "baixo" | "medio" | "alto"
 }
 
+/**
+ * Big Five OCEAN profile — alias of the generated `BigFiveProfileContract`
+ * so the recruiter UI and the LangGraph state share one shape.
+ */
+export type BigFiveProfile = BigFiveProfileContract
+
 export interface BigFiveData {
-  bigfive_profile: {
-    openness: number
-    conscientiousness: number
-    extraversion: number
-    agreeableness: number
-    stability: number
-    evidences: Record<string, string[]>
-  } | null
+  bigfive_profile: BigFiveProfile | null
   trait_rankings: TraitRanking[]
 }
 
-export interface TraitRanking {
-  trait: string
-  score: number
-  rank: number
-  weight: number
-}
+/**
+ * Big Five trait ranking — alias of the generated `TraitRankingContract`.
+ */
+export type TraitRanking = TraitRankingContract
 
 export interface SalaryData {
   salary_min: number | null
@@ -167,7 +188,7 @@ export interface ReviewData {
 }
 
 export interface PublishData {
-  job_id: number | null
+  job_id: number | string | null
   platforms: string[]
   sourcing_mode: "local" | "global" | "hybrid" | null
   contact_channels: string[]
@@ -194,7 +215,14 @@ export interface CalibrationCandidate {
 }
 
 export interface HandoffData {
-  job_id: number | null
+  /**
+   * Job identifier emitted by the backend at handoff. Accepts both
+   * `number` (current Rails int IDs) and `string` (UUIDs / slugs) so a
+   * future ID-format migration on the backend doesn't silently drop the
+   * ID from the closing card. `null` when publication failed.
+   */
+  job_id: number | string | null
+  job_title?: string | null
   handoff_url: string | null
   share_link: string | null
 }
@@ -214,10 +242,33 @@ export const STAGE_LABELS: Record<WizardStage, string> = {
   calibration: "Calibracao",
   handoff: "Pagina da vaga",
   done: "Concluido",
+  scheduling: "Agendamento",
+}
+
+/**
+ * Pill-style labels rendered on the chat header, the workflow rail, and
+ * any other surface that needs the long "Criando vaga · X" prefix. Kept
+ * next to STAGE_LABELS so we have a single source of truth — every
+ * surface that shows a wizard stage name imports from here.
+ */
+export const STAGE_PILL_LABELS: Record<WizardStage, string> = {
+  intake: "Criando vaga · Início",
+  jd_enrichment: "Criando vaga · Descrição",
+  bigfive: "Criando vaga · Perfil",
+  salary: "Criando vaga · Salário",
+  competency: "Criando vaga · Competências",
+  wsi_questions: "Criando vaga · Triagem",
+  eligibility: "Criando vaga · Elegibilidade",
+  review: "Criando vaga · Revisão",
+  publish: "Criando vaga · Publicação",
+  calibration: "Calibrando · Candidatos",
+  handoff: "Criando vaga · Finalização",
+  done: "Vaga criada",
+  scheduling: "Agendando · Entrevistas",
 }
 
 export const STAGE_ORDER: WizardStage[] = [
   "intake", "jd_enrichment", "bigfive", "salary", "competency",
   "wsi_questions", "eligibility", "review", "publish", "calibration",
-  "handoff", "done",
+  "handoff", "done", "scheduling",
 ]
