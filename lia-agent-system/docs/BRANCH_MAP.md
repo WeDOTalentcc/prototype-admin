@@ -1160,3 +1160,39 @@ Zero residual refs:       grep BigFive|Technical|company_assessments returned 0 
 ### Pendencia escopada
 
 **P1: Task model schema gap** — adicionar coluna `company_id` em `tasks` table (FK + index) + backfill via `related_job_id`. Permite trocar fallback per-user por `validate_company_access(current_user, task.company_id)`. Pre-requisito para scaling tasks compartilhadas entre usuarios da mesma empresa.
+
+---
+
+## Onda 33 — Limpa cirurgica do Wizard chat (`plataforma-lia`)
+
+> **Escopo**: deletar 3 paineis dead-code, portar 2 features (drag-to-reorder + criteria toggle) e wirar banner `missingFields`. **Sem commit, sem push, working tree dirty para revisao.** Decisao fundamentada nos audits `plataforma-lia/e2e/reports/wizard-e2e-AUDIT.md` (308 LoC) e `wizard-panels-COMPARE.md` (254 LoC).
+
+### Mudancas
+
+| Acao | Arquivo |
+|---|---|
+| DELETE | `plataforma-lia/src/components/unified-chat/wizard/panels/WizardJDReviewPanel.tsx` (dead-code, 0 refs) |
+| DELETE | `plataforma-lia/src/components/unified-chat/wizard/panels/WizardWSIListPanel.tsx` (dead-code, 0 refs) |
+| DELETE | `plataforma-lia/src/components/unified-chat/wizard/panels/WizardCalibrationPanel.tsx` (dead-code, 0 refs) |
+| EDIT | `plataforma-lia/src/components/unified-chat/wizard/panels/WsiQuestionsPanel.tsx` — drag-to-reorder HTML5 nativo (`onDragStart/Over/Drop`, `useRef<number>`, `GripVertical`, `role="list"`/`"listitem"`, dispatch `lia:wizard-reorder-questions`, testids `wsi-question-row-${i}`) |
+| EDIT | `plataforma-lia/src/components/unified-chat/wizard/panels/CalibrationPanel.tsx` — `useState criteriaOpen` (default = `hasCriteria`), toggle button no header (`Mostrar/Ocultar criterios` + Chevron), helper `CriteriaTable` (5 colunas: icone/field/value/quality dot/+ Add) substituindo a antiga secao de chips. Tipo `CriterionItem` estendido com `field?/value?/quality?` opcionais (TODO backend). |
+| EDIT | `plataforma-lia/src/components/unified-chat/wizard/useWizardIntegration.ts` — adicionado handler `handleReorderQuestions` + listener `lia:wizard-reorder-questions` que chama `sendMessage("Reordenar pergunta X para posicao Y")`. **Fix de regressão (descoberto em code review):** `handleWizardStepResponse` agora reconcilia `missing_fields` em todo payload (set [] quando array ausente/vazio + clear extra em `requires_approval === false`); o comportamento anterior só dava SET em payload não-vazio, deixando o banner pinned com campos estais. |
+| EDIT | `plataforma-lia/src/components/unified-chat/UnifiedChat.tsx` — destructure `missingFields` do hook + banner inline (`role="status"`, `aria-live="polite"`, classes reaproveitadas de `ReviewPanel.tsx:64-68` — `border-status-warning/20 bg-status-warning/5`) entre `WizardProgressBar` e `UnifiedMessageList`. |
+| EDIT | `lia-agent-system/docs/BRANCH_MAP.md` — esta secao. |
+
+### Verificacao Onda 33
+
+```
+Paineis dead-code:        3/3 deletados ✓
+Refs residuais:           0 (grep WizardJDReviewPanel|WizardWSIListPanel|WizardCalibrationPanel)
+Drag-to-reorder:          HTML5 native, zero deps novas ✓
+Criteria toggle:          aria-expanded + aria-controls + testid ✓
+missingFields banner:     pattern reaproveitado de ReviewPanel ✓
+Backend wire (reorder):   sendMessage NL ja interpretado pelo orchestrator ✓
+Tipos:                    ScreeningQuestion preservado, CriterionItem estendido com opcionais
+Working tree:             dirty (sem commit, sem push, conforme brief)
+```
+
+### Pendencia escopada
+
+**Backend criteria payload** — `CalibrationData.criteria` hoje emite apenas `{label, type}`. O helper `CriteriaTable` ja renderiza graceful fallback (`field ?? label`, `value ?? "—"`, `quality ?? "good"`); quando o backend evoluir, basta popular os 3 campos opcionais sem mudanca no front. TODO ja deixado inline em `CalibrationPanel.tsx`.

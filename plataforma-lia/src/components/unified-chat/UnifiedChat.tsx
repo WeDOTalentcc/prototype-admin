@@ -180,7 +180,9 @@ export function UnifiedChat({
   // `onLocalCommand` lets `useWizardIntegration` resolve `/ajuda` (and any
   // future client-only command) without UnifiedChat re-implementing the
   // SLASH_COMMANDS filtering / help-text formatting itself.
-  const { handleSlashCommand } = useWizardIntegration({
+  // Onda 33 — also consume `missingFields` so the banner below can surface
+  // pending intake fields driven by the WS `wizard_step_response` payload.
+  const { handleSlashCommand, missingFields } = useWizardIntegration({
     isWizardActive: !!dynamicPanel,
     currentStage: dynamicPanel?.stage ?? null,
     sendMessage: sendChatMessage,
@@ -621,6 +623,25 @@ export function UnifiedChat({
               stageHistory={wizardHistory}
               compact={effectiveMode === "floating"}
             />
+          </div>
+        )}
+
+        {/* Onda 33 — missingFields banner. Reuses the warning pattern from
+            ReviewPanel (`bg-status-warning/5 border border-status-warning/20`)
+            instead of introducing a new component. Sits between the progress
+            bar and the message list so it stays visible while the recruiter
+            is reading the latest LIA reply. */}
+        {missingFields.length > 0 && (
+          <div className="px-4 pt-2">
+            <div
+              role="status"
+              aria-live="polite"
+              data-testid="wizard-missing-fields-banner"
+              className="rounded-md border border-status-warning/20 bg-status-warning/5 px-3 py-2 text-sm text-status-warning"
+            >
+              <span className="font-medium">⚠️ Campos obrigatórios em aberto:</span>{" "}
+              {missingFields.join(", ")}
+            </div>
           </div>
         )}
 

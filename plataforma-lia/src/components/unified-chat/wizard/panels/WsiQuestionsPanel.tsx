@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useRef, useState } from "react"
 import { cn } from "@/lib/utils"
-import { Check, Edit2, RefreshCw, Trash2, ChevronDown, ChevronUp } from "lucide-react"
+import { Check, Edit2, GripVertical, RefreshCw, Trash2, ChevronDown, ChevronUp } from "lucide-react"
 import type { WsiQuestionsData, ScreeningQuestion } from "../wizard-types"
 
 interface Props {
@@ -29,6 +29,9 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
   const mode = d.screening_mode
   const dist = d.distribution
   const [expandedId, setExpandedId] = useState<number | null>(null)
+  // Onda 33: HTML5 native drag-to-reorder. Source index lives in a ref so the
+  // drop handler can pair it with the target index without re-rendering.
+  const dragSourceRef = useRef<number | null>(null)
 
   // B.4: Individual question actions
   const handleEditQuestion = (index: number, newText: string) => {
@@ -50,6 +53,26 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
     if (questions.length <= minQuestions) return
     window.dispatchEvent(new CustomEvent("lia:wizard-remove-question", {
       detail: { index },
+    }))
+  }
+
+  // Onda 33: Drag-to-reorder handlers. Reorder is dispatched as an event;
+  // the actual question array stays controlled by `data` prop (backend echoes
+  // the new order on the next wizard_step_response). No local question state.
+  const handleDragStart = (index: number) => {
+    dragSourceRef.current = index
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+  }
+
+  const handleDrop = (targetIndex: number) => {
+    const sourceIndex = dragSourceRef.current
+    dragSourceRef.current = null
+    if (sourceIndex === null || sourceIndex === targetIndex) return
+    window.dispatchEvent(new CustomEvent("lia:wizard-reorder-questions", {
+      detail: { fromIndex: sourceIndex, toIndex: targetIndex },
     }))
   }
 
@@ -79,7 +102,7 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
       </div>
 
       {/* Question cards */}
-      <div className="px-4 py-3 space-y-2">
+      <div className="px-4 py-3 space-y-2" role="list">
         {questions.map((q, idx) => (
           <QuestionCard
             key={idx}
@@ -90,6 +113,9 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
             onEdit={handleEditQuestion}
             onRegenerate={handleRegenerateQuestion}
             onRemove={isAtMinimum ? undefined : handleRemoveQuestion}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
           />
         ))}
       </div>
@@ -125,6 +151,9 @@ function QuestionCard({
   onEdit,
   onRegenerate,
   onRemove,
+  onDragStart,
+  onDragOver,
+  onDrop,
 }: {
   index: number
   question: ScreeningQuestion
@@ -133,16 +162,33 @@ function QuestionCard({
   onEdit?: (index: number, newText: string) => void
   onRegenerate?: (index: number) => void
   onRemove?: (index: number) => void
+  onDragStart?: (index: number) => void
+  onDragOver?: (e: React.DragEvent) => void
+  onDrop?: (index: number) => void
 }) {
   const frameworkColor = FRAMEWORK_COLORS[question.framework] || FRAMEWORK_COLORS.CBI
 
   return (
-    <div className="rounded-md border border-lia-border-subtle overflow-hidden">
+    <div
+      role="listitem"
+      draggable={!!onDragStart}
+      onDragStart={() => onDragStart?.(index)}
+      onDragOver={onDragOver}
+      onDrop={() => onDrop?.(index)}
+      data-testid={`wsi-question-row-${index}`}
+      className="group rounded-md border border-lia-border-subtle overflow-hidden"
+    >
       {/* Card header */}
       <button
         onClick={onToggle}
         className="w-full flex items-start gap-2 px-3 py-2 text-left hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
       >
+        {/* Onda 33: drag handle visible only on hover; pointer-events-none so it
+            doesn't swallow the toggle click — drag is on the wrapper div. */}
+        <GripVertical
+          className="w-3.5 h-3.5 text-lia-text-disabled opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 mt-1 pointer-events-none"
+          aria-hidden="true"
+        />
         <span className="flex-shrink-0 w-5 h-5 rounded-full bg-lia-bg-secondary flex items-center justify-center text-[10px] font-medium text-lia-text-secondary mt-0.5">
           {index + 1}
         </span>

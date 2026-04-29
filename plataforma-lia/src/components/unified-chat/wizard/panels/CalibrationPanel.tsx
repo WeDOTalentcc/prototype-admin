@@ -1,13 +1,29 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import { cn } from "@/lib/utils"
-import { User, CheckCircle, XCircle, Target, ThumbsUp, ThumbsDown, Users } from "lucide-react"
+import {
+  User, CheckCircle, XCircle, Target, ThumbsUp, ThumbsDown, Users,
+  ChevronDown, ChevronUp, Plus, Award, Filter, type LucideIcon,
+} from "lucide-react"
 import type { CalibrationData, CalibrationCandidate } from "../wizard-types"
 
+// Onda 33 — Local UI type for criteria tables. Backend currently emits only
+// `{label, type}` (see CriterionItem below); the optional fields here are
+// rendered when present and fall back to defaults otherwise.
+// TODO: aguardar backend emitir constraints reais com field/value/quality.
 interface CriterionItem {
   label: string
   type: "must_have" | "sourcing"
+  field?: string
+  value?: string
+  quality?: "good" | "warning" | "poor"
+}
+
+const QUALITY_DOT: Record<NonNullable<CriterionItem["quality"]>, string> = {
+  good: "text-status-success",
+  warning: "text-status-warning",
+  poor: "text-status-error",
 }
 
 interface Props {
@@ -33,6 +49,9 @@ export function CalibrationPanel({ data, onApprove, onReject }: Props) {
   const poolCount = d.pool_count ?? null
   const mustHaves = d.criteria?.filter((c) => c.type === "must_have") ?? []
   const sourcingConstraints = d.criteria?.filter((c) => c.type === "sourcing") ?? []
+  // Onda 33 — criteria toggle (open by default when there are criteria to show)
+  const hasCriteria = mustHaves.length > 0 || sourcingConstraints.length > 0
+  const [criteriaOpen, setCriteriaOpen] = useState(hasCriteria)
 
   const handleApproveCandidate = (candidateId: string) => {
     window.dispatchEvent(new CustomEvent("lia:wizard-edit-question", {
@@ -84,47 +103,42 @@ export function CalibrationPanel({ data, onApprove, onReject }: Props) {
             Avalie pelo menos {threshold} perfis para continuar
           </p>
         )}
+        {/* Onda 33 — criteria toggle (only shown when there ARE criteria) */}
+        {hasCriteria && (
+          <button
+            onClick={() => setCriteriaOpen((v) => !v)}
+            aria-expanded={criteriaOpen}
+            aria-controls="calibration-criteria-tables"
+            data-testid="calibration-criteria-toggle"
+            className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-wedo-cyan hover:underline transition-colors motion-reduce:transition-none"
+          >
+            {criteriaOpen ? "Ocultar critérios" : "Mostrar critérios"}
+            {criteriaOpen ? (
+              <ChevronUp className="w-3 h-3" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="w-3 h-3" aria-hidden="true" />
+            )}
+          </button>
+        )}
       </div>
 
-      {/* Criteria overview — Must-haves vs Sourcing Constraints */}
-      {(mustHaves.length > 0 || sourcingConstraints.length > 0) && (
-        <div className="px-4 py-2.5 border-b border-lia-border-subtle space-y-2">
-          {mustHaves.length > 0 && (
-            <div>
-              {/* A-09 / WCAG 2.1 AA 1.4.3: was `text-[10px] text-lia-text-disabled`. */}
-              <p className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-1">
-                Must-haves (eliminatórios)
-              </p>
-              <div className="flex flex-wrap gap-1">
-                {mustHaves.map((c, i) => (
-                  <span
-                    key={i}
-                    className="px-1.5 py-0.5 rounded text-[10px] bg-gray-900 text-white"
-                  >
-                    {c.label}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-          {sourcingConstraints.length > 0 && (
-            <div>
-              {/* A-09 / WCAG 2.1 AA 1.4.3: was `text-[10px] text-lia-text-disabled`. */}
-              <p className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-1">
-                Preferências (sourcing)
-              </p>
-              <div className="flex flex-wrap gap-1">
-                {sourcingConstraints.map((c, i) => (
-                  <span
-                    key={i}
-                    className="px-1.5 py-0.5 rounded text-[10px] border border-lia-border-subtle text-lia-text-secondary"
-                  >
-                    {c.label}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+      {/* Onda 33 — Criteria tables (Must-have + Sourcing). Replaces the
+          previous chip-based overview. Only rendered when toggle is open. */}
+      {hasCriteria && criteriaOpen && (
+        <div
+          id="calibration-criteria-tables"
+          className="px-4 py-2.5 border-b border-lia-border-subtle space-y-3"
+        >
+          <CriteriaTable
+            title="Must-haves (eliminatórios)"
+            criteria={mustHaves}
+            defaultIcon={Award}
+          />
+          <CriteriaTable
+            title="Preferências (sourcing)"
+            criteria={sourcingConstraints}
+            defaultIcon={Filter}
+          />
         </div>
       )}
 
@@ -251,6 +265,71 @@ function CandidateCard({
           </button>
         </div>
       )}
+    </div>
+  )
+}
+
+/**
+ * Onda 33 — CriteriaTable
+ *
+ * Renders one criteria group (Must-have or Sourcing) as a 5-column table:
+ * icon · field · value · quality dot · "+ Add". Falls back gracefully when
+ * the backend payload only has `{label, type}` (current state): field uses
+ * the label, value renders an em-dash, quality defaults to good.
+ */
+function CriteriaTable({
+  title,
+  criteria,
+  defaultIcon: DefaultIcon,
+}: {
+  title: string
+  criteria: CriterionItem[]
+  defaultIcon: LucideIcon
+}) {
+  if (criteria.length === 0) return null
+  return (
+    <div>
+      <p className="text-xs font-semibold text-lia-text-secondary uppercase tracking-wide mb-1">
+        {title}
+      </p>
+      <table className="w-full text-xs">
+        <tbody className="divide-y divide-lia-border-subtle">
+          {criteria.map((c, i) => {
+            const quality = c.quality ?? "good"
+            return (
+              <tr key={i} className="hover:bg-lia-bg-secondary/50 transition-colors">
+                <td className="py-1.5 pr-2 w-6">
+                  <DefaultIcon className="w-3.5 h-3.5 text-lia-text-secondary" aria-hidden="true" />
+                </td>
+                <td className="py-1.5 pr-2 font-medium text-lia-text-primary">
+                  {c.field ?? c.label}
+                </td>
+                <td className="py-1.5 pr-2 text-lia-text-secondary">
+                  {c.value ?? "—"}
+                </td>
+                <td className="py-1.5 pr-2 w-4 text-center">
+                  <span
+                    className={cn("text-base leading-none", QUALITY_DOT[quality])}
+                    aria-label={`Qualidade ${quality}`}
+                  >
+                    ●
+                  </span>
+                </td>
+                <td className="py-1.5 text-right">
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-0.5 text-[10px] text-wedo-cyan hover:underline"
+                    aria-label={`Adicionar critério a ${title}`}
+                  >
+                    <Plus className="w-3 h-3" aria-hidden="true" />
+                    Add
+                  </button>
+                </td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>
     </div>
   )
 }

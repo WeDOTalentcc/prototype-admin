@@ -80,9 +80,14 @@ export function useWizardIntegration({
     const stepResponse = message?.metadata?.wizard_step_response as WizardStepResponse | undefined
     if (!stepResponse) return
 
-    // Store missing fields if present
-    if (Array.isArray(stepResponse.missing_fields) && stepResponse.missing_fields.length > 0) {
+    // Onda 33 — always reconcile missing_fields with the latest payload so the
+    // banner in UnifiedChat does not surface STALE warnings after the recruiter
+    // fixes the pending intake fields. Previous behavior only SET on non-empty,
+    // never cleared, which kept the banner pinned indefinitely.
+    if (Array.isArray(stepResponse.missing_fields)) {
       setMissingFields(stepResponse.missing_fields)
+    } else {
+      setMissingFields([])
     }
 
     // Drive split-view panel
@@ -92,6 +97,8 @@ export function useWizardIntegration({
     } else if (stepResponse.requires_approval === false) {
       // Close the panel when approval is no longer required
       setActivePanelType(null)
+      // Onda 33 — also clear the banner when the wizard exits this step.
+      setMissingFields([])
     }
   }, [])
 
@@ -159,10 +166,18 @@ export function useWizardIntegration({
       sendMessage(`Remover pergunta ${(index || 0) + 1}`)
     }
 
+    // Onda 33 — drag-to-reorder dispatched by WsiQuestionsPanel.
+    function handleReorderQuestions(e: CustomEvent) {
+      const { fromIndex, toIndex } = e.detail || {}
+      if (typeof fromIndex !== "number" || typeof toIndex !== "number") return
+      sendMessage(`Reordenar pergunta ${fromIndex + 1} para posicao ${toIndex + 1}`)
+    }
+
     const c1 = onCustomEvent("lia:wizard-edit-question", handleEditQuestion)
     const c2 = onCustomEvent("lia:wizard-regenerate-question", handleRegenerateQuestion)
     const c3 = onCustomEvent("lia:wizard-remove-question", handleRemoveQuestion)
-    return () => { c1(); c2(); c3() }
+    const c4 = onCustomEvent("lia:wizard-reorder-questions", handleReorderQuestions)
+    return () => { c1(); c2(); c3(); c4() }
   }, [isWizardActive, sendMessage])
 
   // Prefill message listener (used by DonePanel "Criar outra vaga")

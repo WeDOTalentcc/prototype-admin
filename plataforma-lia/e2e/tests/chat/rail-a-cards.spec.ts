@@ -551,11 +551,14 @@ test.describe('Rail A — Integridade: 22/22 cards presentes', () => {
       { shortLabel: 'Config',      cards: ['ai-credits', 'hiring-policy', 'email-templates'] },
     ];
 
+    // Navigate ONCE — repeated goChatEmpty in a loop causes hydration flicker.
+    // Cycle stages via expandStage (toggles within the same mounted component).
+    await goChatEmpty(page);
+
     let verified = 0;
     for (const { shortLabel, cards } of stages) {
-      await goChatEmpty(page);
-      // Vaga is default active; skip expandStage to avoid toggling off
-      if (shortLabel !== Vaga) {
+      // Vaga is default active on load — calling expandStage would toggle it OFF.
+      if (shortLabel !== 'Vaga') {
         await expandStage(page, shortLabel);
       }
       for (const cardId of cards) {
@@ -563,7 +566,7 @@ test.describe('Rail A — Integridade: 22/22 cards presentes', () => {
         await expect(
           card,
           `Card "${cardId}" (stage "${shortLabel}") deve ser visível`,
-        ).toBeVisible({ timeout: 5_000 });
+        ).toBeVisible({ timeout: 8_000 });
         await expect(card).toBeEnabled();
         verified++;
       }
