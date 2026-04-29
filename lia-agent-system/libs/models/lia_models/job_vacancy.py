@@ -54,7 +54,15 @@ class JobVacancy(Base):
     # NEW: Structured bonus range
     bonus_range = Column(JSON, nullable=True)  # {"min": 5000, "max": 8000, "currency": "BRL"}
     
-    benefits = Column(ARRAY(String), default=list)
+    # JSON (maps to JSONB in Postgres) — DB schema is JSONB after manual
+    # alteration / external migration. Keeping ARRAY(String) caused
+    # asyncpg.DatatypeMismatchError: "column 'benefits' is of type jsonb
+    # but expression is of type character varying[]" on every job creation
+    # via wizard (post-mortem 2026-04-29 wizard-domain-hint-leak). Same
+    # pattern as technical_requirements/languages/behavioral_competencies.
+    # Future P1: store [{name, id, value, ...}] dicts instead of bare
+    # name strings to preserve structure (currently still list[str]).
+    benefits = Column(JSON, default=list)
     
     # Status & Workflow
     status = Column(String(50), default="Rascunho", index=True)  # Ativa, Rascunho, Pausada, Concluída, etc
