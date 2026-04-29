@@ -149,6 +149,17 @@ def intake_node(state: JobCreationState) -> JobCreationState:
     parsed_seniority = payload.seniority.value or ""
     parsed_department = payload.department.value or ""
 
+    # Onda 37.3.3: Template type resolution (canonical, deterministic).
+    # Plugs the resolver into intake_node so the LIA chat path emits
+    # pipeline_template payload that WizardPipelineTemplateCard expects.
+    # Harness: computational sensor, fail-safe (default 'technical').
+    from app.domains.job_creation.services.template_type_resolver import (
+        suggest_template_type,
+        get_template_metadata,
+    )
+    resolved_template_type = suggest_template_type(parsed_title, parsed_department)
+    resolved_template_metadata = get_template_metadata(resolved_template_type)
+
     logger.info(
         "[JobCreation:intake] confidence=%.2f precompleted=%s blocked=%s",
         payload.overall_confidence, precompleted, payload.fairness_blocked,
@@ -163,6 +174,10 @@ def intake_node(state: JobCreationState) -> JobCreationState:
         "intake_confidence": payload.overall_confidence,
         "intake_payload": payload_dict,
         "precompleted_stages": precompleted,
+        # Onda 37.3.3: persist template_type in state for downstream nodes
+        # and for the frontend WizardPipelineTemplateCard
+        "template_type": resolved_template_type,
+        "template_metadata": resolved_template_metadata,
         "stage_history": (state.get("stage_history") or []) + ["intake"],
         "completeness": calculate_completeness("intake"),
         "requires_approval": False,
@@ -173,6 +188,14 @@ def intake_node(state: JobCreationState) -> JobCreationState:
                 "raw_input": query,
                 "intake_payload": payload_dict,
                 "precompleted_stages": precompleted,
+                # Onda 37.3.3: pipeline_template payload for the frontend.
+                # Mirrors the shape that WizardStepService used to emit so
+                # `useWizardChatCards` (Onda 28) can render WizardPipelineTemplateCard.
+                "pipeline_template": {
+                    "suggested_type": resolved_template_type,
+                    "display_name": resolved_template_metadata.get("display_name"),
+                    "description": resolved_template_metadata.get("description"),
+                },
                 "fairness_blocked": payload.fairness_blocked,
                 "fairness_message": payload.fairness_message,
             },
@@ -602,6 +625,13 @@ def competency_node(state: JobCreationState) -> JobCreationState:
                 "seniority_display": SENIORITY_DISPLAY_NAMES.get(seniority, seniority.title()),
                 "seniority_confidence": seniority_resolution.confidence,
                 "seniority_signals": seniority_signals_used,
+                # Onda 37.3.5: emit confidence flag — frontend uses this to ask
+                # the recruiter to confirm seniority when our 5-signal resolver
+                # is unsure. Threshold matches stage_description.py:422 (REST).
+                # Harness: computational sensor (deterministic threshold check).
+                "requires_seniority_confirmation": (
+                    seniority_resolution.confidence < 0.7
+                ),
                 "screening_mode": screening_mode,
                 "distribution": distribution,
                 "competency_tree": competency_tree,
@@ -612,7 +642,10 @@ def competency_node(state: JobCreationState) -> JobCreationState:
     }
 
     elapsed = (time.time() - t0) * 1000
-    logger.info("[JobCreation:competency] seniority=%s mode=%s | %0.fms", seniority, screening_mode, elapsed)
+    logger.info(
+        "[JobCreation:competency] seniority=%s confidence=%.2f mode=%s | %0.fms",
+        seniority, seniority_resolution.confidence, screening_mode, elapsed,
+    )
     return {**state, **updates}
 
 

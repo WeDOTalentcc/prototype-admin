@@ -126,6 +126,10 @@ class JobCreationState(TypedDict, total=False):
     parsed_model: Optional[str]  # remote/hybrid/onsite
     intake_confidence: float
 
+    # --- Onda 37.3.2: Template type (from template_type_resolver) ---
+    template_type: Optional[Literal["technical", "executive", "operational", "mass_hiring", "intern"]]
+    template_metadata: Optional[Dict[str, str]]  # display_name + description
+
     # --- F1: JD Enrichment ---
     jd_raw: Optional[str]  # recruiter's original JD text
     jd_enriched: Optional[Dict[str, Any]]  # EnrichedJobDescription from JdEnrichmentService
