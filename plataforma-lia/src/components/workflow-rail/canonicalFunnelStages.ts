@@ -64,39 +64,39 @@ export interface CanonicalStage {
 
 const COLOR_CYAN: CanonicalStageColor = {
   accent: "var(--wedo-cyan)",
-  accentBg: "rgba(96, 190, 209, 0.10)",
+  accentBg: "color-mix(in srgb, var(--wedo-cyan) 10%, transparent)",
   nodeBorder: "var(--wedo-cyan)",
-  cardBorder: "rgba(96, 190, 209, 0.25)",
+  cardBorder: "color-mix(in srgb, var(--wedo-cyan) 25%, transparent)",
 }
 const COLOR_GREEN: CanonicalStageColor = {
   accent: "var(--wedo-green)",
-  accentBg: "rgba(93, 164, 122, 0.10)",
+  accentBg: "color-mix(in srgb, var(--wedo-green) 10%, transparent)",
   nodeBorder: "var(--wedo-green)",
-  cardBorder: "rgba(93, 164, 122, 0.25)",
+  cardBorder: "color-mix(in srgb, var(--wedo-green) 25%, transparent)",
 }
 const COLOR_ORANGE: CanonicalStageColor = {
   accent: "var(--wedo-orange)",
-  accentBg: "rgba(209, 153, 96, 0.10)",
+  accentBg: "color-mix(in srgb, var(--wedo-orange) 10%, transparent)",
   nodeBorder: "var(--wedo-orange)",
-  cardBorder: "rgba(209, 153, 96, 0.25)",
+  cardBorder: "color-mix(in srgb, var(--wedo-orange) 25%, transparent)",
 }
 const COLOR_PURPLE: CanonicalStageColor = {
   accent: "var(--wedo-purple)",
-  accentBg: "rgba(152, 96, 209, 0.10)",
+  accentBg: "color-mix(in srgb, var(--wedo-purple) 10%, transparent)",
   nodeBorder: "var(--wedo-purple)",
-  cardBorder: "rgba(152, 96, 209, 0.25)",
+  cardBorder: "color-mix(in srgb, var(--wedo-purple) 25%, transparent)",
 }
 const COLOR_AMBER: CanonicalStageColor = {
   accent: "var(--wedo-amber)",
-  accentBg: "rgba(209, 169, 96, 0.10)",
+  accentBg: "color-mix(in srgb, var(--wedo-amber) 10%, transparent)",
   nodeBorder: "var(--wedo-amber)",
-  cardBorder: "rgba(209, 169, 96, 0.25)",
+  cardBorder: "color-mix(in srgb, var(--wedo-amber) 25%, transparent)",
 }
 const COLOR_GRAY: CanonicalStageColor = {
   accent: "var(--lia-text-secondary)",
-  accentBg: "rgba(138, 143, 152, 0.10)",
+  accentBg: "color-mix(in srgb, var(--lia-text-secondary) 10%, transparent)",
   nodeBorder: "var(--lia-text-secondary)",
-  cardBorder: "rgba(138, 143, 152, 0.25)",
+  cardBorder: "color-mix(in srgb, var(--lia-text-secondary) 25%, transparent)",
 }
 
 /** Ordered funnel stages. The footer bar renders these in this order. */

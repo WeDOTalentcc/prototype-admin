@@ -4,6 +4,11 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   getCanonicalStage,
+  CANONICAL_FUNNEL_STAGES,
+  CANONICAL_UTILITY_STAGES,
+  type CanonicalStage,
+  type CanonicalStageId,
+  type CanonicalUtilityId,
   type CanonicalStageColor,
 } from "@/components/workflow-rail/canonicalFunnelStages";
 import { useTranslations } from "next-intl";
@@ -229,50 +234,53 @@ function usePipelinePulse() {
   return { pulse, loading };
 }
 
-/** Chat-reels-specific stage data. Icon + color come from canonicalFunnelStages. */
-interface StageStructure {
-  id: string;
-  pulseStageId?: string;
-  suggestionIds: string[];
-}
+/**
+ * PR-H: Rail A-specific concern — which suggestion cards belong to each stage.
+ *
+ * Stage ordering + icon + color come 100% from `canonicalFunnelStages.ts`.
+ * This map only declares what is Rail-A-specific: card IDs per stage.
+ * TypeScript enforces that every key must be a valid CanonicalStageId/UtilityId.
+ */
+const RAIL_A_SUGGESTIONS: Partial<
+  Record<CanonicalStageId | CanonicalUtilityId, string[]>
+> = {
+  "definir-vaga":  ["create-job", "job-template"],
+  "sourcing":      ["search-candidates", "add-candidate", "talent-pool"],
+  "triagem":       ["candidate-info", "update-status"],
+  "entrevista":    ["schedule-interview", "reschedule-interview"],
+  "oferta":        ["send-offer", "compare-candidates"],
+  "contratacao":   ["register-hire", "close-vacancy"],
+  "analytics":     ["job-report", "daily-briefing", "hiring-predictions"],
+  "ia-automacoes": ["configure-automations", "wsi-screening", "ai-suggestions"],
+  "configuracoes": ["ai-credits", "hiring-policy", "email-templates"],
+};
 
-const STAGE_STRUCTURES: StageStructure[] = [
-  { id: "definir-vaga", pulseStageId: "definir-vaga", suggestionIds: ["create-job", "job-template"] },
-  { id: "sourcing", pulseStageId: "sourcing", suggestionIds: ["search-candidates", "add-candidate", "talent-pool"] },
-  { id: "triagem", pulseStageId: "triagem", suggestionIds: ["candidate-info", "update-status"] },
-  { id: "entrevista", pulseStageId: "entrevista", suggestionIds: ["schedule-interview", "reschedule-interview"] },
-  { id: "oferta", pulseStageId: "oferta", suggestionIds: ["send-offer", "compare-candidates"] },
-  { id: "contratacao", pulseStageId: "contratacao", suggestionIds: ["register-hire", "close-vacancy"] },
-];
-
-const UTILITY_STRUCTURES: StageStructure[] = [
-  { id: "analytics", suggestionIds: ["job-report", "daily-briefing", "hiring-predictions"] },
-  { id: "ia-automacoes", suggestionIds: ["configure-automations", "wsi-screening", "ai-suggestions"] },
-  { id: "configuracoes", suggestionIds: ["ai-credits", "hiring-policy", "email-templates"] },
-];
-
+/**
+ * PR-H: Build WorkflowReelStage[] from canonical stage definitions.
+ *
+ * Icon + color + ordering come from canonicalFunnelStages (single source of
+ * truth). Rail-A-specific concerns (which cards, pulse badge) are layered on
+ * top via RAIL_A_SUGGESTIONS and the withPulse flag.
+ */
 function useTranslatedStages(
-  structures: StageStructure[],
+  canonicalStages: CanonicalStage[],
+  withPulse: boolean,
 ): WorkflowReelStage[] {
   const ts = useTranslations("chat.workflowReels.stages");
   const tsg = useTranslations("chat.workflowReels.suggestions");
   return useMemo(
     () =>
-      structures.map((s) => {
-        const canonical = getCanonicalStage(s.id);
+      canonicalStages.map((canonical) => {
+        const suggestionIds =
+          RAIL_A_SUGGESTIONS[canonical.key as CanonicalStageId | CanonicalUtilityId] ?? [];
         return {
-          id: s.id,
-          label: ts(`${s.id}.label` as `definir-vaga.label`),
-          shortLabel: ts(`${s.id}.shortLabel` as `definir-vaga.shortLabel`),
-          icon: canonical?.Icon ?? (() => null),
-          pulseStageId: s.pulseStageId,
-          color: canonical?.color ?? {
-            accent: "var(--lia-text-secondary)",
-            accentBg: "rgba(138, 143, 152, 0.10)",
-            nodeBorder: "var(--lia-text-secondary)",
-            cardBorder: "rgba(138, 143, 152, 0.25)",
-          },
-          suggestions: s.suggestionIds.map((sid) => {
+          id: canonical.key,
+          label: ts(`${canonical.key}.label` as `definir-vaga.label`),
+          shortLabel: ts(`${canonical.key}.shortLabel` as `definir-vaga.shortLabel`),
+          icon: canonical.Icon,
+          pulseStageId: withPulse ? canonical.key : undefined,
+          color: canonical.color,
+          suggestions: suggestionIds.map((sid) => {
             const hint = SUGGESTION_HINTS[sid];
             return {
               id: sid,
@@ -287,7 +295,9 @@ function useTranslatedStages(
           }),
         };
       }),
-    [ts, tsg, structures],
+    // canonicalStages is a module-level constant — stable reference, not a dep.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ts, tsg],
   );
 }
 
@@ -443,8 +453,8 @@ export function ChatWorkflowReels({
 }: ChatWorkflowReelsProps) {
   const router = useRouter();
   const t = useTranslations("chat.workflowReels");
-  const defaultStages = useTranslatedStages(STAGE_STRUCTURES);
-  const defaultUtility = useTranslatedStages(UTILITY_STRUCTURES);
+  const defaultStages = useTranslatedStages(CANONICAL_FUNNEL_STAGES, true);
+  const defaultUtility = useTranslatedStages(CANONICAL_UTILITY_STAGES, false);
   const stages = stagesProp ?? defaultStages;
   const utilityNodes = utilityNodesProp ?? defaultUtility;
   const translatedStages = stages;
