@@ -116,22 +116,25 @@ async def create_job(
             
             if skills:
                 job.additional_data = {"skills": skills}
-            
+
             db.add(job)
+            # Capture job.id BEFORE commit (post-mortem 2026-04-29 part 2).
+            # SQLAlchemy default `expire_on_commit=True` expires every
+            # attribute after commit, so accessing `job.id` later triggers
+            # an implicit SELECT to refetch — which fails in async context
+            # with `MissingGreenlet: greenlet_spawn has not been called`.
+            # Since `id` is generated in Python via `Column(UUID,
+            # default=uuid.uuid4)`, it is already populated on the in-memory
+            # object — we can read it now and stash a string copy that
+            # survives expiration.
+            job_id = str(job.id)
             await db.commit()
-            # Canonical fix (post-mortem 2026-04-29 wizard-domain-hint-leak):
-            # `await db.refresh(job)` was failing with `Could not refresh
-            # instance` — Postgres RLS (Row Level Security) blocks the
-            # post-commit SELECT because the new implicit transaction opened
-            # for the refresh does not carry `set_config('app.company_id', ...)`.
-            #
-            # Refresh is also unnecessary here: `id` is generated in Python
-            # (column default=uuid.uuid4) and `created_at` / `updated_at`
-            # are set explicitly via `datetime.utcnow()` above. No DB-side
-            # defaults need to be pulled back.
-            #
-            # Wrap in try/except so a future RLS reconfiguration that fixes
-            # refresh is non-breaking: best-effort, never fatal.
+            # Best-effort refresh: the new transaction opened by refresh
+            # may be blocked by Postgres RLS (it doesn't carry
+            # `set_config('app.company_id', ...)`). Non-fatal — we already
+            # have job_id captured above, and created_at/updated_at were
+            # set explicitly in Python. Wrapped so a future RLS
+            # reconfiguration that fixes refresh is non-breaking.
             try:
                 await db.refresh(job)
             except Exception as _refresh_exc:
@@ -139,8 +142,6 @@ async def create_job(
                     "[create_job] db.refresh skipped (RLS or session): %s",
                     _refresh_exc,
                 )
-
-            job_id = str(job.id)
             
             logger.info(f"✅ Created job vacancy: {job_id} - {title}")
             
