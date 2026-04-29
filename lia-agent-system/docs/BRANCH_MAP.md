@@ -968,3 +968,85 @@ Imports:             11/11 modules clean ✓
 - **P0 separado**: `app/api/v1/tasks.py` aceita `user_id` da query (não JWT). Spawn task criado para fix cirúrgico. Não bloqueia Onda 30 — frontend consome via proxy SSR autenticado.
 - **Big Five/Technical questions catalog**: 8 endpoints Cat 1 com `get_current_user_or_demo` (auth-only). Recomendação para próxima onda: avaliar se devem virar `require_role([UserRole.ADMIN])` (catálogo global tem semântica admin).
 - **Smoke E2E browser**: validação visual via UI Replit é responsabilidade do Paulo.
+
+---
+
+## Onda 25 — PR-G: canonical-fix hitl_service (2026-04-28)
+
+**Branch:** `feat/orch-migration-sprint-I`
+**Commit:** `0569b325b`
+**Harness:** SENSOR (computacional) — CI guard para shim deletado
+
+### Problema resolvido (CC-S02 do audit)
+
+`app/shared/services/hitl_service.py` era um shim morto de 8 linhas que reexportava
+tudo de `app/domains/cv_screening/services/hitl_service.py`. Violava canonical-fix.
+
+**Diagnóstico real:**
+- Todos os 8+ consumidores já importavam diretamente do path canônico
+- Zero arquivos importavam do shim
+- O shim era dead code puro
+
+**Fix:** deletar shim. Implementação canônica (612 linhas) intocada.
+
+### Arquivos entregues
+
+| Arquivo | Mudança |
+|---------|---------|
+| `app/shared/services/hitl_service.py` | DELETADO (dead code) |
+| `tests/unit/services/test_pr_g_hitl_canonical.py` | 8 sensores CI (NOVO) |
+
+### Sensors PR-G (8/8 passing)
+
+- `test_shared_hitl_shim_does_not_exist` — CI guard: shim deletado não pode voltar
+- `test_canonical_hitl_service_exists` — canonical não foi deletado por acidente
+- `test_canonical_is_substantial` — canonical tem >100 linhas (não é outro shim)
+- `test_no_consumer_imports_dead_shim` — nenhum arquivo importa do path morto
+- `test_canonical_path_used_by_consumers` — ≥3 consumidores do path canônico
+- `test_hitlservice_class_defined` — HITLService class presente
+- `test_hitl_service_singleton_defined` — singleton `hitl_service` presente
+- `test_request_approval_method_exists` — método crítico não removido
+
+---
+
+## ✅ SPRINT feat/orch-migration-sprint-I — COMPLETO
+
+### Todos os P0 resolvidos
+
+| P0 | PR | Commit |
+|----|-----|--------|
+| `search_candidates` não usava RAG | Wave 3 audit | já implementado no Replit |
+| `schedule_interview` stub (links falsos) | PR-CAL | `3e1ae39c5` |
+| `reschedule_interview` stub (N/A hardcoded) | PR-CAL | `3e1ae39c5` |
+| `OfferReviewModal` FE não existia | PR-B | anterior |
+| FairnessGuard Layer 3 para OFFER sem gate | PR-B | anterior |
+| `register_hire` sem keyword/action | PR-C + capability_map | `be172b778` |
+| FairnessGuard Layer 3 para HIRE | pipeline domain | já implementado |
+| `daily_briefing` deprecated | Wave 2 audit | não estava deprecated no Replit |
+| `AutomationsTab` com dados fake | PR-AUTO | `566d1ac89` |
+| `policy/` e `hiring_policy/` duplicados | PR-Q4 | Wave 1 |
+| `hitl_service.py` shim morto | PR-G | `0569b325b` |
+
+### Testes acumulados (suite de sprint)
+
+| Suite | Resultado |
+|-------|-----------|
+| `test_pr_cal_schedule_interview.py` | 8/8 ✅ |
+| `test_pr_cal_reschedule_interview.py` | 6/6 ✅ |
+| `test_pr_j_capability_map.py` | 27/27 ✅ |
+| `test_pr_j_entity_resolver.py` | 8/8 ✅ |
+| `test_pr_g_hitl_canonical.py` | 8/8 ✅ |
+| `test_wave5_offer_fe_invariants.py` | 10/10 ✅ |
+| `automations-tab.test.tsx` | 7/7 ✅ |
+| `tests/domains/offer/` (backend) | 38/38 ✅ |
+| `OfferReviewModal.test.tsx` | 18/18 ✅ |
+| **Total** | **130/130 ✅** |
+
+### Pendências para próximo sprint (Wave 5 / PR-E)
+
+Acordado com Paulo: Paulo executará os testes Wave 5.
+
+- Golden dataset: 22 comandos × 5 variações = 110 test cases (intent classifier)
+- LLM-as-judge: validar routing cross-model (Claude, GPT-4o, Gemini)
+- E2E Playwright: 22 flows Rail A → ação esperada
+- P2 opcionais: PR-L (tokens DS), PR-M (pulse badge Vaga), PR-N (compact paridade)
