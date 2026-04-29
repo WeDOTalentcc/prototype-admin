@@ -1081,3 +1081,82 @@ Todas as waves 0–4 do sprint Rail A Audit:
 
 1. **Push para GitHub** — via Replit IDE na branch `replit-sync`
 2. **Wave 5 / PR-E** — golden dataset 22 cmds × 5 variações, LLM-as-judge, Playwright E2E
+
+---
+
+## Onda 31 — P0 tasks.py + Big Five Catalog Cleanup (2026-04-29)
+
+**Branch:** `main`
+**Commits:** `afe709945` (31.1 P0 tasks.py via Task #930), `4a28a1f6a` (31.2 delete orfaos)
+
+### Onda 31.1 — P0 IDOR fix em tasks.py (commit `afe709945`)
+
+**Problema descoberto durante audit pos-Onda 30D:** GET `/api/v1/tasks/?user_id=qualquer-id` aceitava `user_id` como Query parameter, permitindo qualquer usuario autenticado listar tarefas de outros usuarios.
+
+**Frontend `TaskContextBar` (Onda 30D) ja consumia esse endpoint** em producao.
+
+| Endpoint | Mudanca |
+|---|---|
+| `GET /tasks/` | `?user_id=` ignorado para nao-admin (logs WARNING); admin honrado |
+| `GET /tasks/summary, /today, /overdue` | Idem (helper `_resolve_scope_user_id`) |
+| `GET /tasks/{id}` | Lookup-then-check via `_is_owner_or_admin` → 403 |
+| `PATCH /tasks/{id}` | + bloqueia reassign cross-user para nao-admin |
+| `POST /tasks/` | Default `user_id = current_user.id`; admin pode override |
+| `POST /tasks/{id}/{complete,cancel,assign}` | Lookup-then-check |
+
+**P0 schema gap detectado:** `Task` model NAO tem coluna `company_id`. Fallback usado: per-user ownership (`assigned_to_user_id == current_user.id OR confirmed_by == current_user.id`). Recomendacao para proxima onda: adicionar `company_id` em Task + backfill via `related_job_id → vacancy.company_id`.
+
+**Tests:** `tests/integration/test_tasks_tenant_scope.py` 4/4 passing.
+
+### Onda 31.2 — Delete orphan Big Five/Technical catalog (commit `4a28a1f6a`)
+
+**Auditoria revelou catalogo dead code com 3 sistemas paralelos:**
+1. `company_assessments.py` ← orfao (este, deletado)
+2. `app/api/v1/big_five.py` ← vivo (usa `client.settings JSON`)
+3. ATS Rails `wsi/jd_big_five_extraction_service.rb` ← canonico do WSI
+
+**Evidencias do veredicto orfao:**
+- 0 registros em todas 4 tabelas Postgres
+- 0 hooks/componentes consumidores no plataforma-lia/src
+- 0 chamadas internas (WSI, cv_screening, agentes, tools)
+- 0 migrations Alembic versionadas
+- 0 seeds em todo o repo
+- Auditoria recursiva GET `/stats` (consumidor "vivo" em company.py) revelou tambem orfao (zero hooks)
+
+| Operacao | Arquivo |
+|---|---|
+| DELETE | `app/api/v1/company_assessments.py` (15 endpoints REST) |
+| DELETE | `app/domains/company/repositories/big_five_repository.py` |
+| DELETE | `app/domains/company/repositories/technical_test_repository.py` |
+| EDIT | `app/api/routes.py` — router unregistered |
+| EDIT | `app/api/v1/company.py` — endpoint `/stats` removed (-84 linhas) |
+| EDIT | `app/schemas/company.py` — 16 BigFive*/Technical* classes removed (-247 linhas) |
+| EDIT | `app/schemas/__init__.py` — re-exports removed |
+| EDIT | `libs/models/lia_models/company.py` — 4 ORM classes removed (-180 linhas) |
+| EDIT | `libs/models/lia_models/__init__.py` — 4 imports + 4 __all__ removed |
+| EDIT | `app/domains/company/dependencies.py` — 2 imports + 2 funcoes removidas |
+| EDIT | `tests/integration/test_tenant_scope_v1.py` — Section 7 + fixture removida (-229 linhas) |
+
+**Total: 862 linhas removidas, 186 inseridas** (mostly docstring updates, padding ajustado).
+
+**NAO TOCADO (decisao Paulo):** Tabelas Postgres `big_five_questions`, `big_five_role_profiles`, `technical_questions`, `technical_test_templates` mantidas (vazias, zero risco, podem ser dropped no futuro).
+
+### Verificacao Onda 31
+
+```
+G7 sensor:                13/13 canonical-compliant ✓
+Imports:                  5/5 core modules clean ✓
+Tests integradas:         78/78 PASSED ✓
+  - tenant scope:         53/53 (era 70 — Section 7 removida)
+  - wizard validators:    21/21
+  - salary cross:         4/4
+Tasks tenant scope:       4/4 PASSED ✓ (commit afe709945)
+Tests removidos:          17 (Section 7 — eram para catalogo orfao)
+Tests adicionados:        4 (test_tasks_tenant_scope.py)
+TypeScript:               unchanged (frontend nao tocado)
+Zero residual refs:       grep BigFive|Technical|company_assessments returned 0 hits in scope
+```
+
+### Pendencia escopada
+
+**P1: Task model schema gap** — adicionar coluna `company_id` em `tasks` table (FK + index) + backfill via `related_job_id`. Permite trocar fallback per-user por `validate_company_access(current_user, task.company_id)`. Pre-requisito para scaling tasks compartilhadas entre usuarios da mesma empresa.
