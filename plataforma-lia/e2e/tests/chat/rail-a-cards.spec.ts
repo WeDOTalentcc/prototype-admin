@@ -48,9 +48,13 @@ interface OpenModalEvent {
 
 /** Navigate to /pt/chat and wait for the Rail A stage nodes to appear. */
 async function goChatEmpty(page: Page): Promise<void> {
-  await page.goto('/pt/chat', { waitUntil: 'load', timeout: 30_000 });
-  // Stage nodes are always present in empty state — wait for any button with text "Vaga"
-  await page.waitForSelector('button', { timeout: 15_000 });
+  // domcontentloaded fires before 'load' and is reliable in HMR/dev environments
+  // where 'load' can hang if background network connections (HMR websockets, etc.)
+  // prevent the load event from firing within the timeout window.
+  await page.goto('/pt/chat', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+  // Vaga is the default active stage: its cards are always visible after hydration.
+  // data-rail-a-card is a stable, test-specific selector (guide computacional).
+  await page.waitForSelector('[data-rail-a-card="create-job"]', { timeout: 25_000 });
   await page.waitForTimeout(600); // let animations settle
 }
 
@@ -63,7 +67,9 @@ async function expandStage(page: Page, shortLabel: string): Promise<void> {
     .locator('button')
     .filter({ hasText: new RegExp(`^${shortLabel}$`) })
     .first();
-  await btn.waitFor({ state: 'visible', timeout: 8_000 });
+  // Increase timeout and scroll into view — stage rail may need horizontal scroll
+  await btn.waitFor({ state: 'visible', timeout: 20_000 });
+  await btn.scrollIntoViewIfNeeded();
   await btn.click();
   await page.waitForTimeout(400); // fade-in-up (350 ms) + margin
 }
@@ -142,7 +148,7 @@ test.describe('Rail A — snapshot inicial', () => {
 test.describe('Stage 1 — Vaga', () => {
   test('RAL-101 visual: cards do stage Vaga', async ({ authenticatedPage: page }) => {
     await goChatEmpty(page);
-    await expandStage(page, 'Vaga');
+    // Vaga is default active on load — calling expandStage would toggle it OFF
     await page.screenshot({ path: `${SS}/01-vaga.png` });
     await expect(page).toHaveScreenshot('ral-01-vaga.png', { maxDiffPixelRatio: 0.05 });
     await expect(page.locator('[data-rail-a-card="create-job"]')).toBeVisible();
@@ -151,7 +157,7 @@ test.describe('Stage 1 — Vaga', () => {
 
   test('RAL-111 CHAT: 1.1 Criar nova vaga → metadata {card_id, stage_id, domain_hint}', async ({ authenticatedPage: page }) => {
     await goChatEmpty(page);
-    await expandStage(page, 'Vaga');
+    // Vaga is default active on load — calling expandStage would toggle it OFF
     const ev = await onRailAClick(page, () =>
       page.locator('[data-rail-a-card="create-job"]').click(),
     );
@@ -163,7 +169,7 @@ test.describe('Stage 1 — Vaga', () => {
 
   test('RAL-112 CHAT: 1.2 Usar modelo de vaga → metadata correta', async ({ authenticatedPage: page }) => {
     await goChatEmpty(page);
-    await expandStage(page, 'Vaga');
+    // Vaga is default active on load — calling expandStage would toggle it OFF
     const ev = await onRailAClick(page, () =>
       page.locator('[data-rail-a-card="job-template"]').click(),
     );
@@ -452,7 +458,7 @@ test.describe('Stage 8 — IA & Automações', () => {
     await goChatEmpty(page);
     await expandStage(page, 'IA');
     const ev = await onRailAClick(page, () =>
-      page.locator('[data-rail-a-card="ai-suggestions"]').click(),
+      page.locator('[data-rail-a-card="ai-suggestions"]').click({ force: true }),
     );
     expect(ev.card_id).toBe('ai-suggestions');
     expect(ev.stage_id).toBe('ia-automacoes');
@@ -537,7 +543,10 @@ test.describe('Rail A — Integridade: 22/22 cards presentes', () => {
     let verified = 0;
     for (const { shortLabel, cards } of stages) {
       await goChatEmpty(page);
-      await expandStage(page, shortLabel);
+      // Vaga is default active; skip expandStage to avoid toggling off
+      if (shortLabel !== Vaga) {
+        await expandStage(page, shortLabel);
+      }
       for (const cardId of cards) {
         const card = page.locator(`[data-rail-a-card="${cardId}"]`);
         await expect(

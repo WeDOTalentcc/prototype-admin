@@ -29,7 +29,20 @@ export default defineConfig({
     screenshot: 'on',
     video: 'retain-on-failure',
     viewport: { width: 1920, height: 1080 },
-    ...(systemChromium ? { launchOptions: { executablePath: systemChromium } } : {}),
+    // Extra args for Replit's constrained environment:
+    // - disable-dev-shm-usage: prevents /dev/shm OOM crashes
+    // - no-sandbox: required for Replit (no setuid sandbox)
+    // - disable-gpu: reduces memory pressure
+    launchOptions: {
+      ...(systemChromium ? { executablePath: systemChromium } : {}),
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--no-first-run',
+      ],
+    },
   },
 
   projects: [

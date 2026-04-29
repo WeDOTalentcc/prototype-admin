@@ -32,9 +32,9 @@ export const test = base.extend<AuthFixture>({
     ]);
 
     // Navigate to /pt/chat (200) — /dashboard returns 404 in dev mode.
-    // Use 'load' instead of 'networkidle': dev-server HMR websockets prevent
-    // networkidle from ever firing, causing a 240s fixture timeout.
-    await page.goto('/pt/chat', { waitUntil: 'load', timeout: 30_000 });
+    // Use 'domcontentloaded': fires as soon as DOM is parsed, avoiding hangs
+    // from HMR websockets (which block 'load') or background network activity.
+    await page.goto('/pt/chat', { waitUntil: 'domcontentloaded', timeout: 30_000 });
     await use(page);
   },
 
@@ -55,7 +55,7 @@ export const test = base.extend<AuthFixture>({
         },
       ]);
 
-      await page.goto('/pt/chat', { waitUntil: 'load', timeout: 30_000 });
+      await page.goto('/pt/chat', { waitUntil: 'domcontentloaded', timeout: 30_000 });
     };
 
     await use(loginFn);
