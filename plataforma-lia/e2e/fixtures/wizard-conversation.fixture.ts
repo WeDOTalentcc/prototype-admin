@@ -17,17 +17,35 @@ export async function sendWizardMessage(
   message: string,
   waitForResponse: boolean = true
 ): Promise<void> {
-  // Localiza o campo de input do chat
+  // Localiza o campo de input do chat.
+  // Onda 32.A3.3: testid canônico em produção (data-testid="chat-input" no
+  // UnifiedChatInput.tsx). Fallbacks abaixo cobrem variantes legadas e
+  // tolerância a futura mudança de placeholder/aria-label (i18n PT/EN).
   const chatInput = page.locator(
-    'textarea[placeholder*="mensagem"], textarea[placeholder*="Digite"], input[placeholder*="mensagem"], [data-testid="chat-input"]'
+    [
+      '[data-testid="chat-input"]',
+      'textarea[aria-label*="Mensagem"]',
+      'textarea[aria-label*="Message"]',
+      'textarea[placeholder*="LIA"]',
+      'textarea[placeholder*="mensagem" i]',
+      'textarea[placeholder*="Digite" i]',
+      'input[placeholder*="mensagem" i]',
+    ].join(', ')
   ).first()
 
   await chatInput.waitFor({ state: 'visible', timeout: 15000 })
   await chatInput.fill(message)
 
-  // Envia com Enter ou botão de envio
+  // Envia com Enter ou botão de envio.
+  // Onda 32.A3.3: testid canônico data-testid="chat-send-button".
   const sendButton = page.locator(
-    'button[type="submit"], button[aria-label*="enviar"], button[aria-label*="send"], [data-testid="send-button"]'
+    [
+      '[data-testid="chat-send-button"]',
+      'button[aria-label*="Enviar" i]',
+      'button[aria-label*="Send" i]',
+      'button[type="submit"]',
+      '[data-testid="send-button"]',
+    ].join(', ')
   ).first()
 
   if (await sendButton.isVisible({ timeout: 2000 }).catch(() => false)) {

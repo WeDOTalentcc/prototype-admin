@@ -154,7 +154,7 @@ export function UnifiedChatInput({
         )}
 
         {/* Textarea */}
-        <textarea
+        <textarea data-testid="chat-input"
           ref={textareaRef}
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
@@ -283,6 +283,7 @@ export function UnifiedChatInput({
 
             {/* Send */}
             <button
+              data-testid="chat-send-button"
               type="button"
               onClick={onSend}
               disabled={!canSend}
