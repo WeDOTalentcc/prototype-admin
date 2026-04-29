@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { liaApi } from "@/services/lia-api"
 import { toast } from "sonner"
 import { useJobUIStore } from "@/stores/job-ui-store"
+import { navigateToJobDetail } from "@/lib/navigation/job-navigation"
 import type { JobsModalsSectionProps } from "./JobsModalsSectionTypes"
 import type { UnpublishData } from "@/components/modals/job-unpublish-modal"
 
@@ -235,7 +236,11 @@ export function useJobsModalHandlers(props: JobsModalsSectionProps) {
       onRefreshJobs()
 
       if (options.candidateOption === 'none' && newJobId) {
-        router.push(`/jobs/${newJobId}?action=sourcing`)
+        // Routed through canonical helper (post-mortem 2026-04-29):
+        // /jobs/<id> page does not exist anymore. The `?action=sourcing`
+        // query param is preserved for when the canonical route is restored
+        // — passing it as a hint via the toast description for now.
+        navigateToJobDetail(router, String(newJobId), undefined)
       }
     } catch (error) {
       toast.error('Erro ao duplicar vaga. Tente novamente.')

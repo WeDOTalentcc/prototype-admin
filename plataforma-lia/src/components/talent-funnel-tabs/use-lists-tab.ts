@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { liaApi, CandidateList } from "@/services/lia-api"
 import { toast } from "sonner"
+import { navigateToNewJobFromCandidates } from "@/lib/navigation/job-navigation"
 import { SharedSearch } from "./lists-tab-types"
 
 export const LIST_COLORS = [
@@ -232,8 +233,10 @@ export function useListsTab() {
 
   const handleCreateJobFromShared = useCallback((candidateIds: string[]) => {
     setSelectedCandidateIds(candidateIds)
-    toast.success("Criar nova vaga", { description: `Redirecionando para criar vaga com ${candidateIds.length} candidato(s)...` })
-    window.location.href = `/jobs/new?candidates=${candidateIds.join(',')}`
+    // Routed through canonical helper (post-mortem 2026-04-29): the
+    // /jobs/new route was deleted; helper surfaces a guidance toast so
+    // user knows how to proceed (chat with LIA + selected candidates).
+    navigateToNewJobFromCandidates(candidateIds)
   }, [])
 
   const handleShareList = useCallback((list: CandidateList) => {

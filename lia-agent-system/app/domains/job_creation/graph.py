@@ -1245,7 +1245,19 @@ def handoff_node(state: JobCreationState) -> JobCreationState:
 
     job_id = state.get("job_id")
     share_link = state.get("share_link")
-    handoff_url = f"/jobs/{job_id}" if job_id else None
+    # Canonical fix (post-mortem 2026-04-29 wizard-domain-hint-leak):
+    # The /jobs/<id> route was deleted from the Next.js app on commit
+    # f7627f1bf without updating producers. Returning a hardcoded
+    # /jobs/<id> URL here caused a 404 when the wizard's "Open job page"
+    # button was clicked. Until the canonical "view job detail" route is
+    # decided by product, return None so the chat surface can render the
+    # success card without an external link (share_link below still
+    # works for public sharing). When a canonical route is restored,
+    # update this single producer — consumers must not synthesize URLs.
+    #
+    # Skill canônica: harness-engineering [guide computacional] +
+    # canonical-fix (fix in producer, not consumer).
+    handoff_url = None  # was: f"/jobs/{job_id}" if job_id else None
 
     # Surface the canonical job title in the closing payload so the chat
     # surface can render a "Vaga publicada" card with the title without

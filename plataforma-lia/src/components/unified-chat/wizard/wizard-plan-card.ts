@@ -169,7 +169,13 @@ export function buildPublishedJobCard(
   const handoffUrl = typeof d.handoff_url === "string" && d.handoff_url.trim() !== ""
     ? d.handoff_url
     : null
-  const url = handoffUrl ?? (jobId !== null ? `/jobs/${jobId}` : null)
+  // Canonical-fix (post-mortem 2026-04-29): the previous fallback
+  // `/jobs/${jobId}` was synthesizing URLs for a route that no longer
+  // exists in the Next.js app, leading to 404s on every wizard
+  // "Open job page" click. The producer (backend handoff_node in
+  // app/domains/job_creation/graph.py) now returns null until product
+  // decides the canonical route. Frontend trusts the producer.
+  const url = handoffUrl
   const shareLink = typeof d.share_link === "string" && d.share_link.trim() !== ""
     ? d.share_link
     : null

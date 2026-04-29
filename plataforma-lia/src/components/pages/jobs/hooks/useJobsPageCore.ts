@@ -17,6 +17,9 @@ import { useJobsPreview } from "./useJobsPreview"
 // Stores
 import { useNavigationStore } from "@/stores/navigation-store"
 
+// Navigation helpers (canonical, post-mortem 2026-04-29)
+import { navigateToJobDetail } from "@/lib/navigation/job-navigation"
+
 // Types
 import type { Job } from "@/components/jobs"
 
@@ -263,11 +266,12 @@ export function useJobsPageCore(props: JobsPageProps) {
     setSelectedJob(null)
   }
 
-  // Direct navigation after manual job creation — uses explicit route push for reliability
-  const navigateToCreatedJob = React.useCallback((jobId: string, _jobTitle: string) => {
-    // Explicit route navigation is the most reliable approach —
-    // the /jobs/[id] page fetches the job independently of list state.
-    router.push(`/jobs/${jobId}`)
+  // Navigate to the newly created job — routed through canonical helper
+  // (post-mortem 2026-04-29: the /jobs/<id> page was deleted from the
+  // app; until product decides the replacement, the helper centralizes
+  // the no-op + toast UX).
+  const navigateToCreatedJob = React.useCallback((jobId: string, jobTitle: string) => {
+    navigateToJobDetail(router, jobId, jobTitle)
   }, [router])
 
   // -----------------------------------------------------------------------
