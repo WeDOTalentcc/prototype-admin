@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState } from "react"
 import type { ImportState, PreviewData } from "./smart-import-types"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 const VALID_EXTENSIONS = ['.xlsx', '.xls', '.csv']
 const VALID_MIME_TYPES = [
@@ -67,7 +68,7 @@ export function useSmartImport({
         const formData = new FormData()
         formData.append('file', selectedFile)
         formData.append('preview', 'true')
-        const response = await fetch(`${importEndpoint}?preview=true`, {
+        const response = await apiFetch(`${importEndpoint}?preview=true`, {
           method: 'POST',
           body: formData,
         })
@@ -128,7 +129,7 @@ export function useSmartImport({
     try {
       const formData = new FormData()
       formData.append('file', file)
-      const response = await fetch(importEndpoint, {
+      const response = await apiFetch(importEndpoint, {
         method: 'POST',
         body: formData,
       })
@@ -159,7 +160,7 @@ export function useSmartImport({
   const handleDownloadTemplate = async () => {
     if (!templateDownloadEndpoint) return
     try {
-      const response = await fetch(templateDownloadEndpoint)
+      const response = await apiFetch(templateDownloadEndpoint)
       if (!response.ok) throw new Error('Falha ao baixar template')
       const contentDisposition = response.headers.get('Content-Disposition')
       let filename = 'template_importacao.csv'

@@ -113,7 +113,7 @@ export function PolicyEnginePanel() {
     setApplyMsg(null)
     try {
       const url = `/api/backend-proxy/policy-engine/apply-sector?companyId=${companyId}&sector=${sector}`
-      const res = await fetch(url, {
+      const res = await apiFetch(url, {
         method: "POST",
         headers: { "X-Company-ID": companyId },
       })

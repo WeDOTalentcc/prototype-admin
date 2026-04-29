@@ -169,7 +169,7 @@ export function BenefitsListSection({
         const url = benefit.id
           ? `/api/backend-proxy/company/benefits/${benefit.id}?company_id=${cid}`
           : `/api/backend-proxy/company/benefits/?company_id=${cid}`
-        const res = await fetch(url, {
+        const res = await apiFetch(url, {
           method: benefit.id ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(benefit),

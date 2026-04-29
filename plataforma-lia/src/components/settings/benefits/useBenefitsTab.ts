@@ -246,7 +246,7 @@ export function useBenefitsTab() {
       const url = benefit.id
         ? `/api/backend-proxy/company/benefits/${benefit.id}?company_id=${cid}`
         : `/api/backend-proxy/company/benefits/?company_id=${cid}`
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         method: benefit.id ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(benefit),

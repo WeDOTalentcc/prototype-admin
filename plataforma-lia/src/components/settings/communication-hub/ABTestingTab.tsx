@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import { FlaskConical, Plus, BarChart3, Loader2, AlertCircle, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react"
 import { BACKEND_URL, getAuthHeaders } from "@/services/lia-api/base"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface ABVariant {
   variant_name: string
@@ -56,7 +57,7 @@ export function ABTestingTab() {
     setLoading(true)
     setError(null)
     try {
-      const response = await fetch(`${BACKEND_URL}/ab-tests`, { headers: getAuthHeaders() })
+      const response = await apiFetch(`${BACKEND_URL}/ab-tests`, { headers: getAuthHeaders() })
       if (!response.ok) throw new Error(t("loadError", { status: response.statusText }))
       const data = await response.json()
       setTests(data.tests || [])
@@ -70,7 +71,7 @@ export function ABTestingTab() {
   const fetchMetrics = useCallback(async (testName: string) => {
     setMetricsLoading(prev => ({ ...prev, [testName]: true }))
     try {
-      const response = await fetch(`${BACKEND_URL}/ab-tests/${encodeURIComponent(testName)}/results`, {
+      const response = await apiFetch(`${BACKEND_URL}/ab-tests/${encodeURIComponent(testName)}/results`, {
         headers: getAuthHeaders(),
       })
       if (!response.ok) throw new Error(t("metricsError"))
@@ -134,7 +135,7 @@ export function ABTestingTab() {
 
     setCreating(true)
     try {
-      const response = await fetch(`${BACKEND_URL}/ab-tests`, {
+      const response = await apiFetch(`${BACKEND_URL}/ab-tests`, {
         method: "POST",
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({
