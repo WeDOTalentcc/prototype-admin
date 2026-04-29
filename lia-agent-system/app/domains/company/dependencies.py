@@ -7,14 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.company.repositories.approver_repository import ApproverRepository
 from app.domains.company.repositories.benefit_repository import BenefitRepository
-from app.domains.company.repositories.big_five_repository import BigFiveRepository
 from app.domains.company.repositories.company_profile_repository import CompanyProfileRepository
 from app.domains.company.repositories.culture_profile_repository import CultureProfileRepository
 from app.domains.company.repositories.culture_value_repository import CultureValueRepository
 from app.domains.company.repositories.department_repository import DepartmentRepository
 from app.domains.company.repositories.global_settings_repository import GlobalSettingsRepository
 from app.domains.company.repositories.ideal_profile_repository import IdealProfileRepository
-from app.domains.company.repositories.technical_test_repository import TechnicalTestRepository
 from app.domains.company.repositories.tenant_repository import TenantRepository
 from app.domains.auth.repositories.user_repository import UserRepository
 
@@ -37,14 +35,6 @@ def get_culture_value_repo(db: AsyncSession = Depends(get_db)) -> CultureValueRe
 
 def get_ideal_profile_repo(db: AsyncSession = Depends(get_db)) -> IdealProfileRepository:
     return IdealProfileRepository(db)
-
-
-def get_big_five_repo(db: AsyncSession = Depends(get_db)) -> BigFiveRepository:
-    return BigFiveRepository(db)
-
-
-def get_technical_test_repo(db: AsyncSession = Depends(get_db)) -> TechnicalTestRepository:
-    return TechnicalTestRepository(db)
 
 
 def get_approver_repo(db: AsyncSession = Depends(get_db)) -> ApproverRepository:

@@ -335,3 +335,189 @@ class Approver(Base):
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+
+
+
+
+class BigFiveQuestion(Base):
+    """
+    Big Five personality assessment questions bank.
+    """
+    __tablename__ = "big_five_questions"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    
+    text = Column(Text, nullable=False)
+    text_en = Column(Text, nullable=True)
+    
+    trait = Column(String(50), nullable=False)
+    facet = Column(String(100), nullable=True)
+    
+    polarity = Column(String(10), default="positive")
+    
+    scale_min = Column(Integer, default=1)
+    scale_max = Column(Integer, default=5)
+    scale_labels = Column(JSON, default={})
+    
+    category = Column(String(100), default="general")
+    role_specific = Column(ARRAY(String), default=[])
+    
+    weight = Column(Float, default=1.0)
+    is_active = Column(Boolean, default=True)
+    is_core = Column(Boolean, default=False)
+    
+    validation_stats = Column(JSON, default={})
+    
+    ai_generated = Column(Boolean, default=False)
+    
+    order = Column(Integer, default=0)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class BigFiveRoleProfile(Base):
+    """
+    Big Five ideal profiles for specific roles.
+    """
+    __tablename__ = "big_five_role_profiles"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=True)
+    
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    
+    role_category = Column(String(100), nullable=True)
+    seniority_level = Column(String(50), nullable=True)
+    
+    openness_min = Column(Float, default=1.0)
+    openness_max = Column(Float, default=5.0)
+    openness_ideal = Column(Float, default=3.0)
+    openness_weight = Column(Float, default=1.0)
+    
+    conscientiousness_min = Column(Float, default=1.0)
+    conscientiousness_max = Column(Float, default=5.0)
+    conscientiousness_ideal = Column(Float, default=3.0)
+    conscientiousness_weight = Column(Float, default=1.0)
+    
+    extroversion_min = Column(Float, default=1.0)
+    extroversion_max = Column(Float, default=5.0)
+    extroversion_ideal = Column(Float, default=3.0)
+    extroversion_weight = Column(Float, default=1.0)
+    
+    agreeableness_min = Column(Float, default=1.0)
+    agreeableness_max = Column(Float, default=5.0)
+    agreeableness_ideal = Column(Float, default=3.0)
+    agreeableness_weight = Column(Float, default=1.0)
+    
+    neuroticism_min = Column(Float, default=1.0)
+    neuroticism_max = Column(Float, default=5.0)
+    neuroticism_ideal = Column(Float, default=3.0)
+    neuroticism_weight = Column(Float, default=1.0)
+    
+    facet_requirements = Column(JSON, default={})
+    
+    is_active = Column(Boolean, default=True)
+    is_template = Column(Boolean, default=True)
+    
+    usage_count = Column(Integer, default=0)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = Column(String(255), nullable=True)
+
+
+class TechnicalQuestion(Base):
+    """
+    Technical assessment questions bank.
+    """
+    __tablename__ = "technical_questions"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    
+    title = Column(String(500), nullable=False)
+    description = Column(Text, nullable=True)
+    
+    question_type = Column(String(50), nullable=False)
+    difficulty = Column(String(20), default="medium")
+    estimated_time = Column(Integer, default=5)
+    
+    area = Column(String(100), nullable=False)
+    tags = Column(ARRAY(String), default=[])
+    
+    options = Column(JSON, default=[])
+    correct_answer = Column(JSON, nullable=True)
+    explanation = Column(Text, nullable=True)
+    
+    code_template = Column(Text, nullable=True)
+    code_solution = Column(Text, nullable=True)
+    code_language = Column(String(50), nullable=True)
+    test_cases = Column(JSON, default=[])
+    
+    rubric = Column(JSON, default={})
+    
+    ai_generated = Column(Boolean, default=False)
+    ai_correction_enabled = Column(Boolean, default=True)
+    
+    is_active = Column(Boolean, default=True)
+    is_public = Column(Boolean, default=False)
+    
+    usage_count = Column(Integer, default=0)
+    avg_score = Column(Float, nullable=True)
+    avg_time = Column(Float, nullable=True)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = Column(String(255), nullable=True)
+
+
+class TechnicalTestTemplate(Base):
+    """
+    Templates for technical assessments.
+    """
+    __tablename__ = "technical_test_templates"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=True)
+    
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    
+    area = Column(String(100), nullable=True)
+    role_type = Column(String(100), nullable=True)
+    seniority_level = Column(String(50), nullable=True)
+    
+    question_ids = Column(ARRAY(UUID(as_uuid=True)), default=[])
+    question_config = Column(JSON, default={})
+    
+    total_time = Column(Integer, default=60)
+    passing_score = Column(Float, default=70.0)
+    
+    instructions = Column(Text, nullable=True)
+    instructions_en = Column(Text, nullable=True)
+    
+    randomize_questions = Column(Boolean, default=True)
+    randomize_options = Column(Boolean, default=True)
+    show_score = Column(Boolean, default=True)
+    
+    proctoring_enabled = Column(Boolean, default=False)
+    webcam_required = Column(Boolean, default=False)
+    
+    ai_correction_enabled = Column(Boolean, default=True)
+    ai_correction_prompt = Column(Text, nullable=True)
+    
+    is_active = Column(Boolean, default=True)
+    is_public = Column(Boolean, default=False)
+    
+    usage_count = Column(Integer, default=0)
+    avg_score = Column(Float, nullable=True)
+    completion_rate = Column(Float, nullable=True)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = Column(String(255), nullable=True)
+
+

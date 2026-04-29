@@ -40,10 +40,6 @@ from lia_models.company import (
     Benefit,
     CultureValue,
     IdealProfile,
-    BigFiveQuestion,
-    BigFiveRoleProfile,
-    TechnicalQuestion,
-    TechnicalTestTemplate
 )
 from lia_models.compensation_policy import CompensationPolicy
 from lia_models.company_culture import (
@@ -685,10 +681,6 @@ __all__ = [
     "Benefit",
     "CultureValue",
     "IdealProfile",
-    "BigFiveQuestion",
-    "BigFiveRoleProfile",
-    "TechnicalQuestion",
-    "TechnicalTestTemplate",
     "CompensationPolicy",
     "CompanyCultureProfile",
     "CultureAnalysisJob",
