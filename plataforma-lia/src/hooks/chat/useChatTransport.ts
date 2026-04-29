@@ -49,7 +49,12 @@ export interface UseChatTransportResult {
   connect: () => void
   disconnect: () => void
   clearTokens: () => void
-  sendMessage: (content: string, context?: Record<string, unknown>, domain?: string) => boolean
+  sendMessage: (
+    content: string,
+    context?: Record<string, unknown>,
+    domain?: string,
+    metadata?: Record<string, unknown>,
+  ) => boolean
   sendRaw: (data: Record<string, unknown>) => void
   sendMessageViaSSE: (
     sessionId: string,
@@ -252,11 +257,32 @@ export function useChatTransport(
   const clearTokens = useCallback(() => setTokens(""), [])
 
   const sendMessage = useCallback(
-    (content: string, context: Record<string, unknown> = {}, domain = ""): boolean => {
+    (
+      content: string,
+      context: Record<string, unknown> = {},
+      domain = "",
+      metadata?: Record<string, unknown>,
+    ): boolean => {
       const ws = wsRef.current
       if (!ws || ws.readyState !== WebSocket.OPEN) return false
       try {
-        ws.send(JSON.stringify({ type: "message", content, context, domain }))
+        // PR-A FE — embed metadata into context.metadata so backend
+        // rail_a_hint_override.try_hint_route() (Tier -1) can read it.
+        // Caller-provided context.metadata wins (idempotent merge).
+        const wsContext =
+          metadata && !context.metadata
+            ? { ...context, metadata }
+            : context
+        // Top-level metadata is also forwarded as a fallback the WS handler
+        // promotes into context.metadata when missing (defense-in-depth).
+        const frame: Record<string, unknown> = {
+          type: "message",
+          content,
+          context: wsContext,
+          domain,
+        }
+        if (metadata) frame.metadata = metadata
+        ws.send(JSON.stringify(frame))
         return true
       } catch {
         // Task #383 (F2): se ws.send lança (socket entrou em CLOSING entre o

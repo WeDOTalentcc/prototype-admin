@@ -53,6 +53,32 @@ export interface DynamicPanelData {
   requires_approval?: boolean;
 }
 
+/**
+ * PR-A FE — Map active dynamic panel → CascadedRouter `domain_hint`.
+ *
+ * When a dynamic panel is active, every outbound chat message gets enriched
+ * with `metadata.{source: "rail_a", domain_hint}` so the backend Tier -1
+ * (`rail_a_hint_override.try_hint_route`) routes deterministically with
+ * confidence=0.99, bypassing vector cache / fast router / LLM tiers.
+ *
+ * Without this guide, mid-wizard messages like "qual competência?" leak
+ * into `job_management` via the vector cache (≥0.85 cosine similarity).
+ *
+ * Add new panel→domain mappings here as new panel types are introduced.
+ * Domains must be registered in `DomainRegistry` (backend allowlist) — drift
+ * gracefully falls back to normal routing.
+ *
+ * Skill canônica: harness-engineering [guide computacional].
+ */
+const PANEL_TYPE_TO_DOMAIN_HINT: Partial<Record<DynamicPanelType, string>> = {
+  job_creation: "wizard",
+  // Future mappings (TBD with backend):
+  // calibration: "calibration",
+  // scheduling: "scheduling",
+  // candidate_review: "candidate_evaluation",
+  // profile: "candidate_profile",
+};
+
 export type ChatContextType =
   | "general"
   | "job_chat"
@@ -383,9 +409,29 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
         content,
         timestamp: formatMessageTime(),
       });
-      await connection.sendMessage(content, domain, scope, metadata);
+
+      // PR-A FE — enrich metadata with Rail A hint when a dynamic panel is
+      // active so backend Tier -1 routes deterministically. See
+      // PANEL_TYPE_TO_DOMAIN_HINT above for the mapping rationale. Caller
+      // can override by passing explicit metadata.domain_hint.
+      const activePanelType = state.dynamicPanel?.panelType;
+      const hintDomain = activePanelType
+        ? PANEL_TYPE_TO_DOMAIN_HINT[activePanelType]
+        : undefined;
+
+      const enrichedMetadata =
+        hintDomain && !metadata?.domain_hint
+          ? {
+              ...(metadata ?? {}),
+              source: metadata?.source ?? "rail_a",
+              card_id: metadata?.card_id ?? `panel_active:${activePanelType}`,
+              domain_hint: hintDomain,
+            }
+          : metadata;
+
+      await connection.sendMessage(content, domain, scope, enrichedMetadata);
     },
-    [connection, addChatMessage],
+    [connection, addChatMessage, state.dynamicPanel],
   );
 
   const sendOrchestratedMessage = useCallback(
