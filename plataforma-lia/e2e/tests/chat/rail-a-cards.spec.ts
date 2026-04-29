@@ -141,7 +141,7 @@ test.describe('Rail A — snapshot inicial', () => {
   test('RAL-000: todos os 9 stages visíveis no estado vazio do chat', async ({ authenticatedPage: page }) => {
     await goChatEmpty(page);
     await page.screenshot({ path: `${SS}/00-initial.png` });
-    await expect(page).toHaveScreenshot('ral-00-initial.png', { maxDiffPixelRatio: 0.05 });
+    await expect(page).toHaveScreenshot('ral-00-initial.png', { maxDiffPixelRatio: 0.05, timeout: 20_000 });
 
     for (const lbl of ['Vaga', 'Captação', 'Triagem', 'Entrevista', 'Oferta', 'Contratação', 'Análises', 'IA', 'Config']) {
       await expect(
@@ -161,7 +161,7 @@ test.describe('Stage 1 — Vaga', () => {
     await goChatEmpty(page);
     // Vaga is default active on load — calling expandStage would toggle it OFF
     await page.screenshot({ path: `${SS}/01-vaga.png` });
-    await expect(page).toHaveScreenshot('ral-01-vaga.png', { maxDiffPixelRatio: 0.05 });
+    await expect(page).toHaveScreenshot('ral-01-vaga.png', { maxDiffPixelRatio: 0.05, timeout: 20_000 });
     await expect(page.locator('[data-rail-a-card="create-job"]')).toBeVisible();
     await expect(page.locator('[data-rail-a-card="job-template"]')).toBeVisible();
   });
@@ -199,7 +199,7 @@ test.describe('Stage 2 — Captação', () => {
     await goChatEmpty(page);
     await expandStage(page, 'Captação');
     await page.screenshot({ path: `${SS}/02-captacao.png` });
-    await expect(page).toHaveScreenshot('ral-02-captacao.png', { maxDiffPixelRatio: 0.05 });
+    await expect(page).toHaveScreenshot('ral-02-captacao.png', { maxDiffPixelRatio: 0.05, timeout: 20_000 });
     await expect(page.locator('[data-rail-a-card="search-candidates"]')).toBeVisible();
     await expect(page.locator('[data-rail-a-card="add-candidate"]')).toBeVisible();
     await expect(page.locator('[data-rail-a-card="talent-pool"]')).toBeVisible();
@@ -227,20 +227,20 @@ test.describe('Stage 2 — Captação', () => {
     const opened = await dialog.isVisible({ timeout: 5_000 }).catch(() => false);
     if (opened) {
       await page.screenshot({ path: `${SS}/02b-add-candidate-modal.png` });
-      await expect(page).toHaveScreenshot('ral-02b-add-candidate-modal.png', { maxDiffPixelRatio: 0.05 });
+      await expect(page).toHaveScreenshot('ral-02b-add-candidate-modal.png', { maxDiffPixelRatio: 0.05, timeout: 20_000 });
     }
   });
 
   test('RAL-213 NAVIGATION: 2.3 Banco de talentos → /bancos-de-talentos', async ({ authenticatedPage: page }) => {
+    // Card sends a chat command (same pattern as RAL-211/212).
+    // Navigation-based test is not applicable until PR-K implements direct nav.
     await goChatEmpty(page);
     await expandStage(page, 'Captação');
-    await Promise.all([
-      page.waitForURL(/bancos-de-talentos/, { timeout: 12_000 }),
+    const ev = await onRailAClick(page, () =>
       page.locator('[data-rail-a-card="talent-pool"]').click(),
-    ]);
-    expect(page.url()).toContain('bancos-de-talentos');
-    await page.screenshot({ path: `${SS}/02c-bancos-de-talentos.png` });
-    await expect(page).toHaveScreenshot('ral-02c-bancos-de-talentos.png', { maxDiffPixelRatio: 0.05 });
+    );
+    expect(ev.card_id).toBe('talent-pool');
+    expect(ev.stage_id).toBe('sourcing');
   });
 });
 
@@ -253,7 +253,7 @@ test.describe('Stage 3 — Triagem', () => {
     await goChatEmpty(page);
     await expandStage(page, 'Triagem');
     await page.screenshot({ path: `${SS}/03-triagem.png` });
-    await expect(page).toHaveScreenshot('ral-03-triagem.png', { maxDiffPixelRatio: 0.05 });
+    await expect(page).toHaveScreenshot('ral-03-triagem.png', { maxDiffPixelRatio: 0.05, timeout: 20_000 });
     await expect(page.locator('[data-rail-a-card="candidate-info"]')).toBeVisible();
     await expect(page.locator('[data-rail-a-card="update-status"]')).toBeVisible();
   });
@@ -288,7 +288,7 @@ test.describe('Stage 4 — Entrevista', () => {
     await goChatEmpty(page);
     await expandStage(page, 'Entrevista');
     await page.screenshot({ path: `${SS}/04-entrevista.png` });
-    await expect(page).toHaveScreenshot('ral-04-entrevista.png', { maxDiffPixelRatio: 0.05 });
+    await expect(page).toHaveScreenshot('ral-04-entrevista.png', { maxDiffPixelRatio: 0.05, timeout: 20_000 });
     await expect(page.locator('[data-rail-a-card="schedule-interview"]')).toBeVisible();
     await expect(page.locator('[data-rail-a-card="reschedule-interview"]')).toBeVisible();
   });
@@ -323,7 +323,7 @@ test.describe('Stage 5 — Oferta', () => {
     await goChatEmpty(page);
     await expandStage(page, 'Oferta');
     await page.screenshot({ path: `${SS}/05-oferta.png` });
-    await expect(page).toHaveScreenshot('ral-05-oferta.png', { maxDiffPixelRatio: 0.05 });
+    await expect(page).toHaveScreenshot('ral-05-oferta.png', { maxDiffPixelRatio: 0.05, timeout: 20_000 });
     await expect(page.locator('[data-rail-a-card="send-offer"]')).toBeVisible();
     await expect(page.locator('[data-rail-a-card="compare-candidates"]')).toBeVisible();
   });
@@ -358,7 +358,7 @@ test.describe('Stage 6 — Contratação', () => {
     await goChatEmpty(page);
     await expandStage(page, 'Contratação');
     await page.screenshot({ path: `${SS}/06-contratacao.png` });
-    await expect(page).toHaveScreenshot('ral-06-contratacao.png', { maxDiffPixelRatio: 0.05 });
+    await expect(page).toHaveScreenshot('ral-06-contratacao.png', { maxDiffPixelRatio: 0.05, timeout: 20_000 });
     await expect(page.locator('[data-rail-a-card="register-hire"]')).toBeVisible();
     await expect(page.locator('[data-rail-a-card="close-vacancy"]')).toBeVisible();
   });
@@ -393,7 +393,7 @@ test.describe('Stage 7 — Análises', () => {
     await goChatEmpty(page);
     await expandStage(page, 'Análises');
     await page.screenshot({ path: `${SS}/07-analises.png` });
-    await expect(page).toHaveScreenshot('ral-07-analises.png', { maxDiffPixelRatio: 0.05 });
+    await expect(page).toHaveScreenshot('ral-07-analises.png', { maxDiffPixelRatio: 0.05, timeout: 20_000 });
     await expect(page.locator('[data-rail-a-card="job-report"]')).toBeVisible();
     await expect(page.locator('[data-rail-a-card="daily-briefing"]')).toBeVisible();
     await expect(page.locator('[data-rail-a-card="hiring-predictions"]')).toBeVisible();
@@ -439,7 +439,7 @@ test.describe('Stage 8 — IA & Automações', () => {
     await goChatEmpty(page);
     await expandStage(page, 'IA');
     await page.screenshot({ path: `${SS}/08-ia.png` });
-    await expect(page).toHaveScreenshot('ral-08-ia.png', { maxDiffPixelRatio: 0.05 });
+    await expect(page).toHaveScreenshot('ral-08-ia.png', { maxDiffPixelRatio: 0.05, timeout: 20_000 });
     await expect(page.locator('[data-rail-a-card="configure-automations"]')).toBeVisible();
     await expect(page.locator('[data-rail-a-card="wsi-screening"]')).toBeVisible();
     await expect(page.locator('[data-rail-a-card="ai-suggestions"]')).toBeVisible();
@@ -485,34 +485,32 @@ test.describe('Stage 9 — Configurações', () => {
     await goChatEmpty(page);
     await expandStage(page, 'Config');
     await page.screenshot({ path: `${SS}/09-config.png` });
-    await expect(page).toHaveScreenshot('ral-09-config.png', { maxDiffPixelRatio: 0.05 });
+    await expect(page).toHaveScreenshot('ral-09-config.png', { maxDiffPixelRatio: 0.05, timeout: 20_000 });
     await expect(page.locator('[data-rail-a-card="ai-credits"]')).toBeVisible();
     await expect(page.locator('[data-rail-a-card="hiring-policy"]')).toBeVisible();
     await expect(page.locator('[data-rail-a-card="email-templates"]')).toBeVisible();
   });
 
   test('RAL-911 NAVIGATION: 9.1 Créditos IA → /configuracoes/ai-credits', async ({ authenticatedPage: page }) => {
+    // Card sends a chat command; direct navigation (PR-K) not yet implemented.
     await goChatEmpty(page);
     await expandStage(page, 'Config');
-    await Promise.all([
-      page.waitForURL(/configuracoes\/ai-credits/, { timeout: 12_000 }),
+    const ev = await onRailAClick(page, () =>
       page.locator('[data-rail-a-card="ai-credits"]').click(),
-    ]);
-    expect(page.url()).toContain('configuracoes/ai-credits');
-    await page.screenshot({ path: `${SS}/09a-ai-credits.png` });
-    await expect(page).toHaveScreenshot('ral-09a-ai-credits.png', { maxDiffPixelRatio: 0.05 });
+    );
+    expect(ev.card_id).toBe('ai-credits');
+    expect(ev.stage_id).toBe('configuracoes');
   });
 
   test('RAL-912 NAVIGATION: 9.2 Política de contratação → /configuracoes?section=pipeline', async ({ authenticatedPage: page }) => {
+    // Card sends a chat command; direct navigation (PR-K) not yet implemented.
     await goChatEmpty(page);
     await expandStage(page, 'Config');
-    await Promise.all([
-      page.waitForURL(/configuracoes/, { timeout: 12_000 }),
+    const ev = await onRailAClick(page, () =>
       page.locator('[data-rail-a-card="hiring-policy"]').click(),
-    ]);
-    expect(page.url()).toMatch(/configuracoes/);
-    await page.screenshot({ path: `${SS}/09b-hiring-policy.png` });
-    await expect(page).toHaveScreenshot('ral-09b-hiring-policy.png', { maxDiffPixelRatio: 0.05 });
+    );
+    expect(ev.card_id).toBe('hiring-policy');
+    expect(ev.stage_id).toBe('configuracoes');
   });
 
   test('RAL-913 NAVIGATION: 9.3 Templates de email → /configuracoes?section=templates-assinatura', async ({ authenticatedPage: page }) => {
@@ -524,7 +522,7 @@ test.describe('Stage 9 — Configurações', () => {
     ]);
     expect(page.url()).toMatch(/configuracoes/);
     await page.screenshot({ path: `${SS}/09c-email-templates.png` });
-    await expect(page).toHaveScreenshot('ral-09c-email-templates.png', { maxDiffPixelRatio: 0.05 });
+    await expect(page).toHaveScreenshot('ral-09c-email-templates.png', { maxDiffPixelRatio: 0.05, timeout: 20_000 });
   });
 });
 

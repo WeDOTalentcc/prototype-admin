@@ -36,6 +36,7 @@
     "test:coverage": "vitest run --project=unit --project=unit-colocated --project=hooks --project=components --coverage",
     "test:ui": "vitest --ui --project=unit --project=unit-colocated --project=hooks --project=components",
     "test:all": "vitest run",
+    "test:e2e:rail-a": "PLAYWRIGHT_BASE_URL=https://82791557-0b63-4f8d-baed-bba54c6e1fdf-00-32kinhguzv9ak.picard.replit.dev npx playwright test e2e/tests/chat/rail-a-cards.spec.ts --project=desktop-chrome",
     "generate:api-types": "curl -s http://localhost:8001/openapi.json > /tmp/lia-openapi.json && npx openapi-typescript /tmp/lia-openapi.json -o src/types/api.generated.ts",
     "generate:wizard-types": "python3 ../lia-agent-system/scripts/generate_wizard_types.py",
     "check:wizard-types": "python3 ../lia-agent-system/scripts/generate_wizard_types.py --check",
