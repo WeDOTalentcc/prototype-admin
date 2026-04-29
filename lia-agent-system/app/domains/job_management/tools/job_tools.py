@@ -94,7 +94,21 @@ async def create_job(
                     "currency": "BRL"
                 }
             
+            # Generate the UUID explicitly in Python (not via SQLAlchemy
+            # column default) so we have a stable id BEFORE INSERT/commit
+            # and never need to read `job.id` back from the (potentially
+            # expired) ORM instance after commit. Avoids both:
+            #   - `str(job.id)` returning literal "None" when the column
+            #     default `uuid.uuid4` only fires on flush, AND
+            #   - `MissingGreenlet` lazy-load when accessing job.id after
+            #     `expire_on_commit=True` clears the in-memory state.
+            # Post-mortem 2026-04-29 wizard-domain-hint-leak (parts 2+3).
+            import uuid as _uuid_mod
+            job_uuid = _uuid_mod.uuid4()
+            job_id = str(job_uuid)
+
             job = JobVacancy(
+                id=job_uuid,
                 title=title,
                 company_id=effective_company_id,
                 department=department,
@@ -113,21 +127,11 @@ async def create_job(
                 updated_at=datetime.utcnow(),
                 published_at=datetime.utcnow() if publish else None
             )
-            
+
             if skills:
                 job.additional_data = {"skills": skills}
 
             db.add(job)
-            # Capture job.id BEFORE commit (post-mortem 2026-04-29 part 2).
-            # SQLAlchemy default `expire_on_commit=True` expires every
-            # attribute after commit, so accessing `job.id` later triggers
-            # an implicit SELECT to refetch — which fails in async context
-            # with `MissingGreenlet: greenlet_spawn has not been called`.
-            # Since `id` is generated in Python via `Column(UUID,
-            # default=uuid.uuid4)`, it is already populated on the in-memory
-            # object — we can read it now and stash a string copy that
-            # survives expiration.
-            job_id = str(job.id)
             await db.commit()
             # Best-effort refresh: the new transaction opened by refresh
             # may be blocked by Postgres RLS (it doesn't carry
