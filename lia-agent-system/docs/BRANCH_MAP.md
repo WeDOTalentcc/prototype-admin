@@ -1050,3 +1050,34 @@ Acordado com Paulo: Paulo executará os testes Wave 5.
 - LLM-as-judge: validar routing cross-model (Claude, GPT-4o, Gemini)
 - E2E Playwright: 22 flows Rail A → ação esperada
 - P2 opcionais: PR-L (tokens DS), PR-M (pulse badge Vaga), PR-N (compact paridade)
+
+---
+
+## Merge — feat/orch-migration-sprint-I → main (2026-04-28)
+
+**Merge commit:** `ec0657d80`
+**Branch deletada após merge:** `feat/orch-migration-sprint-I`
+**Target:** `main`
+**Estratégia:** `--no-ff` (merge commit explícito, histórico preservado)
+
+### O que entrou no main neste merge
+
+Todas as waves 0–4 do sprint Rail A Audit:
+
+| PR | Descrição | Testes |
+|----|-----------|--------|
+| PR-A | metadata domain_hint/intent_hint no payload do chat | — |
+| PR-D | useUIAction() hook unificado | — |
+| PR-B | OfferReviewModal + offer domain completo | 38BE + 18FE + 10inv |
+| PR-C | register_hire action no pipeline domain | — |
+| PR-AUTO | AutomationsTab API real, testes corrigidos | 7/7 |
+| PR-CAL | schedule/reschedule MVP (sem fake links) | 14/14 |
+| PR-G | hitl_service shim morto deletado | 8/8 |
+| capability_map | send_offer + register_hire Wave 4 | 27/27 |
+
+**Total: 130/130 testes passando no sprint.**
+
+### Próximos passos (Paulo executará)
+
+1. **Push para GitHub** — via Replit IDE na branch `replit-sync`
+2. **Wave 5 / PR-E** — golden dataset 22 cmds × 5 variações, LLM-as-judge, Playwright E2E
