@@ -91,40 +91,34 @@ class TestPredictSubstatus:
 # ----------------- /substatus-options/{stage} -----------------
 
 class TestSubstatusOptions:
-    """Bug pré-existente em produção (Task #936): o endpoint importa
-    OFFER_DECLINE_REASONS / REJECTION_REASONS de lia_models.recruitment_stages,
-    mas esses símbolos NÃO existem no build atual de lia_models. O endpoint
-    captura o ImportError e devolve HTTP 500. Os 3 testes abaixo são marcados
-    `xfail(strict=True)`: enquanto o bug existir eles aparecem como XFAIL
-    (não-bloqueante); quando o bug for corrigido (#936), eles viram XPASS
-    e a `strict=True` faz o pytest **falhar deliberadamente** para forçar
-    quem corrigir o bug a remover os marcadores e endurecer os asserts
-    para `status_code == 200`."""
+    """Task #936 — endurecidos após a correção do bug de import.
+    O endpoint agora resolve OFFER_DECLINE_REASONS / REJECTION_REASONS /
+    SUB_STATUSES a partir de lia_models.recruitment_stages e responde 200
+    para qualquer stage (motivos conhecidos viram lista populada,
+    desconhecidos viram lista vazia)."""
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Bug #936: lia_models.recruitment_stages não exporta REJECTION_REASONS",
-    )
     def test_rejected_returns_options(self, app: FastAPI):
         client = TestClient(app, raise_server_exceptions=False)
         r = client.get("/api/v1/automation/substatus-options/rejected")
         assert r.status_code == 200
-        assert r.json()["stage"] == "rejected"
+        body = r.json()
+        assert body["stage"] == "rejected"
+        options = body["options"]
+        assert isinstance(options, list) and len(options) > 0
+        first = options[0]
+        assert {"code", "display_name", "category"}.issubset(first.keys())
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Bug #936: lia_models.recruitment_stages não exporta OFFER_DECLINE_REASONS",
-    )
     def test_offer_declined_returns_options(self, app: FastAPI):
         client = TestClient(app, raise_server_exceptions=False)
         r = client.get("/api/v1/automation/substatus-options/offer_declined")
         assert r.status_code == 200
-        assert r.json()["stage"] == "offer_declined"
+        body = r.json()
+        assert body["stage"] == "offer_declined"
+        options = body["options"]
+        assert isinstance(options, list) and len(options) > 0
+        first = options[0]
+        assert {"code", "display_name"}.issubset(first.keys())
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Bug #936: import side-effect derruba todas as stages, mesmo desconhecidas",
-    )
     def test_unknown_stage_returns_empty_options(self, app: FastAPI):
         client = TestClient(app, raise_server_exceptions=False)
         r = client.get("/api/v1/automation/substatus-options/__unknown_stage__")

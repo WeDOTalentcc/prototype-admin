@@ -860,6 +860,85 @@ CANONICAL_SUB_STATUSES: dict = {
 # Backward-compatibility alias (kept for any import that still references DEFAULT_SUB_STATUSES)
 DEFAULT_SUB_STATUSES = CANONICAL_SUB_STATUSES
 
+# Public alias used by the stage-transition automation API to look up the
+# canonical sub-status catalog by stage slug.
+SUB_STATUSES = CANONICAL_SUB_STATUSES
+
+
+# Category map for rejection reasons. Mirrors the natural groupings that
+# appear inline in CANONICAL_SUB_STATUSES["rejected"]. Keeping it as a flat
+# dict makes the API payload deterministic and lets the frontend render
+# rejection motives grouped by category in the dropdown.
+_REJECTION_REASON_CATEGORIES: dict = {
+    # Decisão de negócio
+    "another_candidate_selected": "business_decision",
+    "position_cancelled": "business_decision",
+    "position_frozen": "business_decision",
+    "internal_hire": "business_decision",
+    "budget_insufficient": "business_decision",
+    "org_restructuring": "business_decision",
+    # Qualificação
+    "lacking_experience": "qualification",
+    "under_qualified": "qualification",
+    "over_qualified": "qualification",
+    "lacking_technical_skills": "qualification",
+    "education_mismatch": "qualification",
+    "missing_certification": "qualification",
+    "language_insufficient": "qualification",
+    "tools_insufficient": "qualification",
+    # Cultural / comportamental
+    "cultural_mismatch": "cultural",
+    "poor_communication": "cultural",
+    "inadequate_attitude": "cultural",
+    "lack_professionalism": "cultural",
+    "lack_of_interest": "cultural",
+    "misaligned_expectations": "cultural",
+    # Logística
+    "location_mismatch": "logistics",
+    "work_model_mismatch": "logistics",
+    "visa_required": "logistics",
+    "start_date_mismatch": "logistics",
+    "schedule_mismatch": "logistics",
+    "travel_requirements_mismatch": "logistics",
+    # Remuneração
+    "salary_above_budget": "compensation",
+    "benefits_mismatch": "compensation",
+    "compensation_not_competitive": "compensation",
+    # Processo
+    "interview_no_show": "process",
+    "test_no_show": "process",
+    "withdrew": "process",
+    "unresponsive": "process",
+    "incomplete_documentation": "process",
+    "failed_technical_test": "process",
+    "failed_behavioral_test": "process",
+    "negative_references": "process",
+    "failed_background_check": "process",
+    "failed_admission_exam": "process",
+}
+
+
+# Flat catalog of rejection reasons exposed by
+# GET /api/v1/stage-transition-automation/substatus-options/rejected.
+# Each item carries `code`, `display_name` and a `category` so the UI can
+# group reasons in the dropdown.
+REJECTION_REASONS: list = [
+    {
+        "code": item["name"],
+        "display_name": item["display_name"],
+        "category": _REJECTION_REASON_CATEGORIES.get(item["name"], "other"),
+    }
+    for item in CANONICAL_SUB_STATUSES["rejected"]
+]
+
+
+# Flat catalog of "offer declined" reasons exposed by
+# GET /api/v1/stage-transition-automation/substatus-options/offer_declined.
+OFFER_DECLINE_REASONS: list = [
+    {"code": item["name"], "display_name": item["display_name"]}
+    for item in CANONICAL_SUB_STATUSES["offer_declined"]
+]
+
 
 GUPY_STAGE_MAPPINGS = [
     {"ats_stage_name": "Inscrito", "wedotalent_stage": "sourcing"},
