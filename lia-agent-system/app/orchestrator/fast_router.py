@@ -53,6 +53,24 @@ class FastRouteResult:
 
 
 _HARDCODED_DOMAIN_PATTERNS: dict[str, list[str]] = {
+    # Onda 37.B.0 — Wizard canonical (JobCreationGraph). Patterns matching
+    # the *initial intent* of CREATING a job (not editing/listing/etc.)
+    # resolve here so the canonical graph runs end-to-end with template
+    # cards, HITL gates, and audit. job_management still has these
+    # patterns as a defensive fallback when upstream forces that domain.
+    # Order matters in fast_router — first match wins.
+    "wizard": [
+        r"criar?\s+\w*\s*vaga",
+        r"abrir?\s+\w*\s*vaga",
+        r"nova\s+vaga",
+        r"publicar?\s+\w*\s*vaga",
+        r"requisi[çc][ãa]o\s+d[eo]\s+vaga",
+        r"\bwizard\b",
+        r"quero\s+criar",
+        r"vou\s+criar\s+\w*\s*vaga",
+        r"preciso\s+contratar",
+        r"vamos\s+criar\s+\w*\s*vaga",
+    ],
     "job_management": [
         r"criar?\s+\w*\s*vaga",
         r"nova\s+vaga",

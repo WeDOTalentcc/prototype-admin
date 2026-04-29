@@ -5014,6 +5014,23 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 |:---:|---|---|---|---|---|
 | 🟡 | `03cad32de` | 2026-04-28 | Cross IA↔Back | feat(capability-map): PR-Q3 — align start_wsi_interview intent + triagem wsi keywords — Canonical-fix: capability_map.yaml used start_wsi_flow but FE SUGGESTION_HINTS | `lia-agent-system/app/config/capability_map.yaml` |
 
+### Menu Rename + Visão Global (Task #941 + pós-doc)
+
+**Descrição:** Renomeação de itens do menu lateral (Chat LIA→Conversar, Tarefas→Decidir), criação de "Recrutar" como pai expansível com sub-itens Vagas + Funil de Talentos (com sub-sub-itens dinâmicos de talent pools preservados), renomeação do cabeçalho "Visão do Pipeline" → "Visão Global" e inversão da ordem das abas (Vagas | Candidatos) com default do store passando para `'vagas'`. Inclui shims de retrocompat em `dashboard-app.tsx` para identificadores antigos (`Chat LIA`, `Tarefas`, `Visão do Funil`) — **não remover** os shims no cherry-pick.
+
+**⚠️ Dependências para cherry-pick:** aplicar os dois commits em ordem (`6b87a793c` → `d673198c7`).
+
+**Arquivos canônicos:** `plataforma-lia/src/components/sidebar.tsx`, `plataforma-lia/src/components/dashboard-app.tsx`, `plataforma-lia/src/components/pages/pipeline-overview-page.tsx`, `plataforma-lia/src/stores/ui-preferences-store.ts`, `plataforma-lia/messages/{pt-BR,en}.json`
+
+**Docs de referência:** card Jira "[FE] Renomeação e reorganização do menu lateral + Visão Global"
+
+- **Commits:** 2  |  **Período:** 2026-04-29 → 2026-04-29  |  **Camadas:** Frontend (UI)  |  **—**  |  **Risco:** 🟢×2
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟢 | `6b87a793c` | 2026-04-29 | Frontend (UI) | feat(sidebar): rename and restructure lateral menu per fork design — Task #941. Remove seção "Recrutamento", renomeia Chat LIA→Conversar e Tarefas→Decidir, cria "Recrutar" como pai expansível com Vagas + Funil de Talentos (preserva sub-sub-itens dinâmicos de talent pools via `injectDynamic()` recursivo). Inclui shims de retrocompat em `handleNavigate` e listener `lia:navigation-hint`. | `plataforma-lia/src/components/sidebar.tsx`<br>`plataforma-lia/src/components/dashboard-app.tsx`<br>`plataforma-lia/messages/pt-BR.json`<br>`plataforma-lia/messages/en.json` |
+| 🟢 | `d673198c7` | 2026-04-29 | Frontend (UI) | feat(pipeline-overview): rename Visão do Pipeline → Visão Global, invert tab order, default 'vagas' — Cabeçalho renomeado, ordem das abas passa a ser Vagas \| Candidatos, default do `pipelineOverviewMode` no store muda de `'candidatos'` para `'vagas'` (afeta apenas usuários sem preferência salva). | `plataforma-lia/src/components/pages/pipeline-overview-page.tsx`<br>`plataforma-lia/src/stores/ui-preferences-store.ts` |
+
 ---
 
 ## 3. Próximos passos sugeridos

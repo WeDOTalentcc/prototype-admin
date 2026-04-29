@@ -841,6 +841,8 @@ Todos os 3.491 commits no período, em ordem cronológica.
 
 | Risco | SHA | Data | Camada | Feature | O que faz |
 |:---:|---|---|---|---|---|
+| 🟢 | `d673198c7` | 2026-04-29 | Frontend (UI) | Menu Rename + Visão Global | feat(pipeline-overview): rename Visão do Pipeline → Visão Global, invert tab order, default 'vagas' — Cabeçalho renomeado, abas reordenadas (Vagas \| Candidatos), default do store passa para 'vagas' |
+| 🟢 | `6b87a793c` | 2026-04-29 | Frontend (UI) | Menu Rename + Visão Global | feat(sidebar): rename and restructure lateral menu per fork design — Task #941. Chat LIA→Conversar, Tarefas→Decidir, Recrutar como pai expansível com Vagas + Funil de Talentos. Inclui shims de retrocompat |
 | 🟡 | `2774dea0b` | 2026-04-29 | Frontend (UI) | Tests (FE e2e) | Add testing for new review panel and update helper functions — Add a data-testid to the review panel |
 | 🟡 | `745ce9d31` | 2026-04-29 | Auto-commit Replit | (Auto-commit Replit) | Saved your changes before starting work |
 | 🟢 | `2e07b3ef5` | 2026-04-29 | Docs | Wizard/Onda 36 | docs(branch-map): Onda 36 — P0 tenant guards settings_progress + integrations_hub — Documenta: |
