@@ -113,18 +113,48 @@ def try_hint_route(context: dict | None) -> RouteResult | None:
     Returns:
         ``RouteResult`` se hint válido, ``None`` caso contrário.
 
+    Lê o hint em duas estruturas (defesa em profundidade — INT-S04 followup):
+
+    1. ``context["metadata"]`` — formato canônico, populado por
+       ``ContextAdapter.from_ws``/``from_rabbitmq`` quando preservam o
+       payload original do FE.
+    2. ``context`` top-level — fallback usado quando o adapter promove
+       ``extra`` para top-level via ``to_orchestrator_context()`` ou
+       quando o handler popula ``context["domain_hint"]`` diretamente
+       (ex.: HTTP handler simplificado).
+
+    Em ambos os casos, ``get_hint_domain`` valida rigorosamente
+    ``source == "rail_a"`` (anti-injection) e ``domain_hint ∈ DomainRegistry``
+    (allowlist). Hint malformado em qualquer estrutura → fallback.
+
     Examples:
         >>> try_hint_route({"metadata": {"source": "rail_a", "domain_hint": "job_management"}}) is not None  # doctest: +SKIP
         True
-        >>> try_hint_route({"metadata": {"domain_hint": "job_management"}}) is None
+        >>> try_hint_route({"metadata": {"domain_hint": "job_management"}}) is None  # missing source
+        True
+        >>> try_hint_route({"source": "rail_a", "domain_hint": "job_management"}) is not None  # doctest: +SKIP
         True
         >>> try_hint_route(None) is None
         True
     """
     if not context:
         return None
-    metadata = context.get("metadata")
-    resolved = get_hint_domain(metadata)
+
+    # Caminho canônico: context["metadata"] populado pelo adapter.
+    resolved = get_hint_domain(context.get("metadata"))
+
+    # Fallback: hint em top-level (canal HTTP simplificado ou WS sem adapter).
+    # Mantém as mesmas validações computacionais via get_hint_domain.
+    if resolved is None:
+        flat_hint = {
+            "source": context.get("source"),
+            "domain_hint": context.get("domain_hint"),
+            "intent_hint": context.get("intent_hint"),
+        }
+        # Só tenta se há sinal de hint top-level (evita chamada inútil).
+        if flat_hint["source"] or flat_hint["domain_hint"]:
+            resolved = get_hint_domain(flat_hint)
+
     if resolved is None:
         return None
     domain_id, intent_id = resolved

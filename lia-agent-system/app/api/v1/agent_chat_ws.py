@@ -993,6 +993,14 @@ async def agent_chat_ws(
             context = msg.get("context", {})
             context.setdefault("company_id", company_id)
             context.setdefault("user_id", user_id)
+            # PR-A BE — promote top-level msg.metadata into context["metadata"]
+            # so rail_a_hint_override.try_hint_route() (Tier -1) can read it.
+            # FE may put metadata at the WS frame root (older transports) OR
+            # inside context.metadata (canonical via ContextAdapter.from_ws).
+            # Both work — promotion is idempotent (only fills when absent).
+            _msg_metadata = msg.get("metadata") or {}
+            if _msg_metadata and not context.get("metadata"):
+                context["metadata"] = _msg_metadata
             active_domain = msg.get("domain", domain)
 
             # PR-J: Rail A capability gate (Phase 0.5)
@@ -1460,6 +1468,11 @@ class HTTPChatRequest(BaseModel):
     domain: str = ""
     session_id: str = ""
     context: dict[str, Any] = {}
+    # PR-A BE — Rail A hint metadata (source / domain_hint / intent_hint / card_id).
+    # FE may post these at the body root via /api/backend-proxy/chat flows.
+    # Promoted into context["metadata"] inside http_chat_message so
+    # rail_a_hint_override.try_hint_route() can read it (Tier -1 routing).
+    metadata: dict[str, Any] = {}
 
     class Config:
         from_attributes = True
@@ -1505,6 +1518,11 @@ async def http_chat_message(req: HTTPChatRequest, request: Request):
     context = req.context or {}
     context.setdefault("company_id", company_id)
     context.setdefault("user_id", user_id)
+    # PR-A BE — promote top-level req.metadata into context["metadata"] so
+    # rail_a_hint_override.try_hint_route() (Tier -1) can read it. Mirrors
+    # the WS handler promotion above. Idempotent — only fills when absent.
+    if req.metadata and not context.get("metadata"):
+        context["metadata"] = dict(req.metadata)
     # A2a: map frontend scope to domain agent
     if not req.domain and context.get("scope"):
         _page_domain = _SCOPE_TO_DOMAIN.get(context["scope"])
