@@ -119,8 +119,27 @@ async def create_job(
             
             db.add(job)
             await db.commit()
-            await db.refresh(job)
-            
+            # Canonical fix (post-mortem 2026-04-29 wizard-domain-hint-leak):
+            # `await db.refresh(job)` was failing with `Could not refresh
+            # instance` — Postgres RLS (Row Level Security) blocks the
+            # post-commit SELECT because the new implicit transaction opened
+            # for the refresh does not carry `set_config('app.company_id', ...)`.
+            #
+            # Refresh is also unnecessary here: `id` is generated in Python
+            # (column default=uuid.uuid4) and `created_at` / `updated_at`
+            # are set explicitly via `datetime.utcnow()` above. No DB-side
+            # defaults need to be pulled back.
+            #
+            # Wrap in try/except so a future RLS reconfiguration that fixes
+            # refresh is non-breaking: best-effort, never fatal.
+            try:
+                await db.refresh(job)
+            except Exception as _refresh_exc:
+                logger.debug(
+                    "[create_job] db.refresh skipped (RLS or session): %s",
+                    _refresh_exc,
+                )
+
             job_id = str(job.id)
             
             logger.info(f"✅ Created job vacancy: {job_id} - {title}")
