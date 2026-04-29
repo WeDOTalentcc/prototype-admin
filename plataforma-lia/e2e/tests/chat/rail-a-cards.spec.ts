@@ -62,12 +62,23 @@ async function goChatEmpty(page: Page): Promise<void> {
  * Click the stage node identified by its shortLabel ("Vaga", "Captação", etc.)
  * and wait for the card tray to animate in.
  */
+/** Map of shortLabel → stage.id used for data-rail-a-node selector */
+const STAGE_LABEL_TO_ID: Record<string, string> = {
+  Vaga: 'definir-vaga',
+  'Captação': 'sourcing',
+  Triagem: 'triagem',
+  Entrevista: 'entrevista',
+  Oferta: 'oferta',
+  'Contratação': 'contratacao',
+  'Análises': 'analytics',
+  IA: 'ia-automacoes',
+  Config: 'configuracoes',
+};
+
 async function expandStage(page: Page, shortLabel: string): Promise<void> {
-  const btn = page
-    .locator('button')
-    .filter({ hasText: new RegExp(`^${shortLabel}$`) })
-    .first();
-  // Increase timeout and scroll into view — stage rail may need horizontal scroll
+  const stageId = STAGE_LABEL_TO_ID[shortLabel] ?? shortLabel.toLowerCase();
+  // Use data-rail-a-node for stable, unambiguous selector (guide computacional)
+  const btn = page.locator(`[data-rail-a-node="${stageId}"]`);
   await btn.waitFor({ state: 'visible', timeout: 20_000 });
   await btn.scrollIntoViewIfNeeded();
   await btn.click();

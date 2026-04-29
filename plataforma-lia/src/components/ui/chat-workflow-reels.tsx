@@ -720,6 +720,7 @@ const StageNode = React.forwardRef<
       ref={ref}
       onClick={onClick}
       disabled={!hasSuggestions}
+      data-rail-a-node={stage.id}
       className="flex flex-col items-center gap-1.5 group px-2 disabled:cursor-default origin-bottom motion-reduce:!transition-none"
       title={
         hasSuggestions
