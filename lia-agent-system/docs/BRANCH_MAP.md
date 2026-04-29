@@ -1196,3 +1196,61 @@ Working tree:             dirty (sem commit, sem push, conforme brief)
 ### Pendencia escopada
 
 **Backend criteria payload** — `CalibrationData.criteria` hoje emite apenas `{label, type}`. O helper `CriteriaTable` ja renderiza graceful fallback (`field ?? label`, `value ?? "—"`, `quality ?? "good"`); quando o backend evoluir, basta popular os 3 campos opcionais sem mudanca no front. TODO ja deixado inline em `CalibrationPanel.tsx`.
+
+---
+
+## Onda 36 — P0 Tenant Guards: settings_progress + integrations_hub (2026-04-29)
+
+**Branch:** `main`
+**Commit:** `78ced6508`
+
+### Origem
+Audit colateral durante Task #930 (settings coverage 73→82) descobriu **3 bugs reais de produção** (replit.md linha 55). Onda 36 endereça os 2 P0 reais; o P2 catalogado era falso positivo.
+
+### Bug 1 — `settings_progress.py` (P0 tenant bypass)
+
+**Problema:** `GET /api/v1/settings/progress?company_id=X` aceitava `company_id` na query mas IGNORAVA o valor — sempre chamava `repo.get_default_company()`. Em ambientes com 2+ tenants, qualquer usuário autenticado lia settings da empresa default (não da sua).
+
+**Fix:**
+- `current_user: User = Depends(get_current_user_or_demo)` adicionado
+- `validate_company_access(current_user, company_id)` quando query difere do JWT
+- Novo método `repo.get_company_by_id(uuid)` substitui `get_default_company()` no caminho canônico
+- `try/except HTTPException: raise` antes do catch genérico (403 antes era mascarado como 200 com `error: True`)
+
+### Bug 2 — `integrations_hub.py` (P0 authz query-only)
+
+**Problema:** 8 endpoints aceitavam `company_id` da query/body como única fonte de tenant, sem cruzar com identidade autenticada. Usuário da empresa A podia ler/criar/modificar/deletar conexões da empresa B passando `?company_id=B`. `verify_connection_ownership` validava só que a connection pertencia ao company_id passado — não que o user tinha acesso àquele company.
+
+**Fix:** `validate_company_access(current_user, company_id)` em todos os 8 endpoints sensíveis:
+- `GET /connections`, `POST /connections`, `PUT /connections/{id}`, `DELETE /connections/{id}`
+- `POST /connections/{id}/test`, `POST /connections/{id}/sync`, `GET /connections/{id}/logs`
+- `GET /health`
+
+`verify_connection_ownership` mantido como defesa em profundidade.
+
+### Bug 3 — `stage_transition_automation.py` (FALSO POSITIVO)
+
+Audit Task #930 classificou como "import top-level frágil de catálogos de motivos". Investigação Onda 36 confirmou que linha 345 é `from lia_models.recruitment_stages import OFFER_DECLINE_REASONS, REJECTION_REASONS, SUB_STATUSES` **dentro do handler `get_substatus_options`** (lazy import) — padrão aceitável e preferível a top-level. **Não é bug**, não tocado.
+
+### Tests
+
+| Arquivo | Mudança |
+|---|---|
+| `tests/integration/test_tenant_scope_v1.py` | +12 testes em 2 sections novas (Section 9 settings_progress + Section 10 integrations_hub). Cobre: no_auth/no_company_id/cross_tenant/same_tenant/use_user_company. Total: 53 → 65. |
+| `tests/api/v1/test_settings_progress_coverage.py` | Fixture atualizada com mock de `get_company_by_id` + override de `get_current_user_or_demo`. Existentes: 3/3 passing. |
+| `tests/api/v1/test_integrations_hub_coverage.py` | Fixture atualizada com override de `get_current_user_or_demo`. `test_company_id_query_passed_to_repo` refatorado para refletir guard. Existentes: 11/11 passing. |
+
+### Verificação Onda 36
+
+```
+G7 sensor:                13/13 canonical-compliant ✓
+Tenant scope tests:       65/65 PASSED (era 53)
+Settings progress cov:    3/3 PASSED
+Integrations hub cov:     11/11 PASSED
+Total Onda 36 + reg:      147/147 PASSED ✓
+```
+
+### Pendências escopadas (fora desta onda)
+
+- **`POST /integrations/seed-providers`** sem guard — catalog seed; deveria ser admin-only (`require_role([UserRole.ADMIN])`). Não é vulnerabilidade de tenant (é catálogo global) mas P1 de hardening.
+- **Bug 3 em `stage_transition_automation.py`** — não é bug, audit anterior errou. Desclassificar follow-up #936 se ainda existir.
