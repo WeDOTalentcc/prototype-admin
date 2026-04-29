@@ -20,17 +20,26 @@ function getSafeRedirectUrl(next: string | null): string {
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login, isLoading: authLoading } = useJWTAuth()
+  const { login, isLoading: authLoading, isAuthenticated } = useJWTAuth()
   const t = useTranslations('login')
 
   useEffect(() => {
-    if (process.env.NODE_ENV !== 'production') {
-      const hasLoggedOut = document.cookie.includes('lia_logged_out=1')
-      if (!hasLoggedOut) {
-        router.replace('/')
-      }
+    // If the user is already signed in by the time auth bootstrap settles,
+    // skip the form and go straight to the app. We rely on the authoritative
+    // store state (set after initAuth → getMe succeeds), not on raw cookie
+    // sniffing — stale `lia_auth_method` cookies (e.g. expired SSO with
+    // `_sso_session_` placeholder, or an invalid JWT) would otherwise trigger
+    // the same /login ↔ / redirect loop that motivated this fix.
+    //
+    // History: the previous heuristic checked for the absence of
+    // `lia_logged_out=1` and was dev-only. With LIA_DEV_AUTO_LOGIN off
+    // (default since the 2026-04-29 wizard-domain-hint-leak audit) the
+    // logout marker is never set on a fresh session, so the dev branch
+    // bounced /login → / forever.
+    if (!authLoading && isAuthenticated) {
+      router.replace('/')
     }
-  }, [router])
+  }, [authLoading, isAuthenticated, router])
 
   const [step, setStep] = useState<"email" | "password">("email")
   const [email, setEmail] = useState("")
