@@ -117,7 +117,7 @@ const tipCategories = [
 ]
 
 const contextualTips = {
-  "Tarefas": [
+  "Decidir": [
     "Pergunte sobre suas tarefas prioritárias do dia",
     "Solicite resumo das atividades e deadlines",
     "Crie relatório semanal de progresso",
@@ -161,12 +161,12 @@ const contextualTips = {
   ]
 }
 
-export function LIATipsModal({ isOpen, onClose, currentPage = "Tarefas", onNavigateToLibrary, onNavigateToChat }: LIATipsModalProps) {
+export function LIATipsModal({ isOpen, onClose, currentPage = "Decidir", onNavigateToLibrary, onNavigateToChat }: LIATipsModalProps) {
   const [activeCategory, setActiveCategory] = useState("general")
 
   if (!isOpen) return null
 
-  const currentContextTips = contextualTips[currentPage as keyof typeof contextualTips] || contextualTips["Tarefas"]
+  const currentContextTips = contextualTips[currentPage as keyof typeof contextualTips] || contextualTips["Decidir"]
 
   // Funções para ações das dicas
   const handleCopyTip = (tip: string) => {

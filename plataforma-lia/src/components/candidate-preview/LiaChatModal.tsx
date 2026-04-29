@@ -153,7 +153,7 @@ export function LiaChatModal({
             </div>
 
             {/* Context Badge */}
-            {contextPage && contextPage !=="Chat LIA" && (
+            {contextPage && contextPage !== "Conversar" && (
               <div className="px-1 mb-2">
                 <ContextBadge contextPage={contextPage} />
               </div>

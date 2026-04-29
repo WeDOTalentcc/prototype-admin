@@ -607,7 +607,7 @@ export const CAPABILITIES: Capability[] = [
     id: "nav-002",
     tool: "navigate_to_page",
     domain: "navigation",
-    prompt: "Abra a página de Tarefas",
+    prompt: "Abra a página de Decidir",
     scope: "GLOBAL",
     severity: "high",
     relatedBug: "BUG-18",

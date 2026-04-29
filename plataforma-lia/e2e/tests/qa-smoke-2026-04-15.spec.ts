@@ -143,11 +143,11 @@ test.describe("QA Smoke 2026-04-15", () => {
     await expect(page.locator("h1, h2").filter({ hasText: /Gestão de Vagas|Vagas/i })).toBeVisible({ timeout: 5000 })
   })
 
-  test("BUG contexto — chip muda entre páginas (Tarefas/Vagas/Estúdio/Módulos)", async ({ page }) => {
+  test("BUG contexto — chip muda entre páginas (Decidir/Vagas/Estúdio/Módulos)", async ({ page }) => {
     await openChatSidebar(page)
 
     const pages = [
-      { btn: /^Tarefas$/i, chip: /Tarefas/ },
+      { btn: /^Decidir$/i, chip: /Decidir/ },
       { btn: /^Vagas$/i, chip: /Vagas/ },
       { btn: /Estúdio de Agentes/i, chip: /Estúdio de Agentes/ },
       { btn: /^Módulos/i, chip: /Módulos/ },
@@ -164,8 +164,8 @@ test.describe("QA Smoke 2026-04-15", () => {
     }
   })
 
-  test("BUG-07 — Briefing diário carrega em Tarefas (sem card de erro)", async ({ page }) => {
-    await page.getByRole("button", { name: /^Tarefas$/i }).click()
+  test("BUG-07 — Briefing diário carrega em Decidir (sem card de erro)", async ({ page }) => {
+    await page.getByRole("button", { name: /^Decidir$/i }).click()
     await page.waitForLoadState("networkidle", { timeout: 10000 }).catch(() => {})
 
     await page.waitForResponse(
@@ -192,7 +192,7 @@ test.describe("QA Smoke 2026-04-15", () => {
     // Navegar e disparar fetches típicos
     await page.goto(LOCALE_HOME, { waitUntil: "networkidle", timeout: 15000 }).catch(() => {})
     await page.waitForTimeout(3000)
-    await page.getByRole("button", { name: /^Tarefas$/i }).click().catch(() => {})
+    await page.getByRole("button", { name: /^Decidir$/i }).click().catch(() => {})
     await page.waitForTimeout(2000)
 
     expect(

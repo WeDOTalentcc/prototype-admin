@@ -450,7 +450,7 @@ export function LiaSuperPrompt() {
                   <div className="px-6 py-4 border-t border-lia-border-subtle flex-shrink-0">
                     <div className="max-w-3xl mx-auto">
                       <div className="flex items-center gap-2 px-4 py-2.5 rounded-[24px] bg-lia-bg-primary border border-lia-border-subtle">
-                        {!contextDismissed && contextPage && contextPage !== "Chat LIA" && (
+                        {!contextDismissed && contextPage && contextPage !== "Conversar" && (
                           <ContextBadge
                             contextPage={contextPage}
                             onRemove={() => setContextDismissed(true)}

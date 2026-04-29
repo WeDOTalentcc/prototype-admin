@@ -124,7 +124,7 @@ test.describe("LIA Jornadas críticas", () => {
   })
 
   test("J5 — Briefing diário + alertas proativos", async ({ page }) => {
-    await navigateToPage(page, "Tarefas")
+    await navigateToPage(page, "Decidir")
 
     const r1 = await sendPromptAndCapture(page, "Qual é o meu briefing de hoje?", 25000)
     expect(r1.status).toBe(200)

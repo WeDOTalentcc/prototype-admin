@@ -77,16 +77,15 @@ import { useWorkflowRailStore } from "@/stores/workflow-rail-store"
 
 const sectionLabelKeys: Record<string, string> = {
   "Operacional": "sections.operational",
-  "Recrutamento": "sections.recruitment",
   "Configuração": "sections.configuration",
 }
 
 const itemLabelKeys: Record<string, string> = {
-  "Chat LIA": "items.chatLia",
-  "Tarefas": "items.tasks",
+  "Conversar": "items.conversar",
+  "Decidir": "items.decidir",
+  "Recrutar": "items.recrutar",
   "Vagas": "items.jobs",
   "Funil de Talentos": "items.talentPipeline",
-  "Visão do Funil": "items.pipelineView",
   "Estúdio de Agentes": "items.agentStudio",
   "Módulos": "items.modules",
 }
@@ -118,24 +117,26 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
   {
     label: "Operacional",
     items: [
-      { icon: MessageCircle, label: "Chat LIA", isCore: true },
-      { icon: Target, label: "Tarefas", isCore: true },
-    ],
-  },
-  {
-    label: "Recrutamento",
-    items: [
-      { icon: Briefcase, label: "Vagas", isCore: true },
+      { icon: MessageCircle, label: "Conversar", isCore: true },
+      { icon: Target, label: "Decidir", isCore: true },
       {
-        icon: Users,
-        label: "Funil de Talentos",
+        icon: GitBranch,
+        label: "Recrutar",
         isCore: true,
         navigateOnClick: true,
-        maxVisibleSubItems: 3,
-        seeAllLabel: "Ver todos os bancos",
-        seeAllTarget: "Funil de Talentos",
+        subItems: [
+          { icon: Briefcase, label: "Vagas", isCore: true },
+          {
+            icon: Users,
+            label: "Funil de Talentos",
+            isCore: true,
+            navigateOnClick: true,
+            maxVisibleSubItems: 3,
+            seeAllLabel: "Ver todos os bancos",
+            seeAllTarget: "Funil de Talentos",
+          },
+        ],
       },
-      { icon: GitBranch, label: "Visão do Funil", isCore: true },
     ],
   },
   {
@@ -241,12 +242,15 @@ const MenuItem = React.memo(({
   const canAccess = item.isCore || (item.moduleId && hasModuleAccess(item.moduleId))
   const hasSubItems = item.subItems && item.subItems.length > 0
 
-  // Auto-expand if current page is a subitem
+  // Auto-expand if current page is a subitem or if this navigateOnClick item is active
   useEffect(() => {
-    if (hasSubItems && item.subItems?.some(sub => sub.label === currentPage)) {
+    if (hasSubItems && (
+      item.subItems?.some(sub => sub.label === currentPage) ||
+      (item.navigateOnClick && currentPage === item.label)
+    )) {
       setIsExpanded(true)
     }
-  }, [currentPage, hasSubItems, item.subItems])
+  }, [currentPage, hasSubItems, item.subItems, item.navigateOnClick, item.label])
 
   const handleClick = useCallback(() => {
     if (hasSubItems && item.navigateOnClick) {
@@ -319,9 +323,26 @@ const MenuItem = React.memo(({
             ? item.subItems!.slice(0, item.maxVisibleSubItems)
             : item.subItems!
           ).map((subItem) => {
+            const navKey = subItem.navKey || subItem.label
+            const subHasRichFeatures = !!(subItem.subItems?.length || subItem.navigateOnClick || subItem.seeAllLabel)
+
+            if (subHasRichFeatures) {
+              return (
+                <div key={navKey} className="ml-0">
+                  <MenuItem
+                    item={subItem}
+                    currentPage={currentPage}
+                    onNavigate={onNavigate}
+                    isCollapsed={false}
+                    shouldShowContent={true}
+                    t={t}
+                  />
+                </div>
+              )
+            }
+
             const subIsLocked = subItem.moduleId && !hasModuleAccess(subItem.moduleId)
             const subCanAccess = subItem.isCore || (subItem.moduleId && hasModuleAccess(subItem.moduleId))
-            const navKey = subItem.navKey || subItem.label
 
             return (
               <button
@@ -351,7 +372,7 @@ const MenuItem = React.memo(({
                   {subIsLocked && <Lock className="w-2 h-2" />}
                 </div>
                 <div className="flex items-center justify-between flex-1 min-w-0">
-                  <span className="text-sm-ui truncate">{subItem.label}</span>
+                  <span className="text-sm-ui truncate">{itemLabelKeys[subItem.label] ? t(itemLabelKeys[subItem.label]) : subItem.label}</span>
                   {subItem.isPremium && !subIsLocked && (
                     <Crown className="w-2 h-2 text-lia-text-primary" />
                   )}
@@ -617,33 +638,40 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
   }
 
   const menuSections = useMemo(() => {
+    const injectDynamic = (item: MenuItemType): MenuItemType => {
+      if (item.label === "Funil de Talentos" && talentPools.length > 0) {
+        return {
+          ...item,
+          subItems: talentPools.map(p => ({
+            icon: Database,
+            label: p.name,
+            isCore: true,
+            navKey: `pool:${p.id}`,
+          })),
+        }
+      }
+      if (item.label === "Estúdio de Agentes" && agents.length > 0) {
+        return {
+          ...item,
+          subItems: agents.map(a => ({
+            icon: Bot,
+            label: a.name,
+            isCore: true,
+            navKey: `agent:${a.id}`,
+          })),
+        }
+      }
+      if (item.subItems && item.subItems.length > 0) {
+        return {
+          ...item,
+          subItems: item.subItems.map(sub => injectDynamic(sub)),
+        }
+      }
+      return item
+    }
     return BASE_MENU_SECTIONS.map(section => ({
       ...section,
-      items: section.items.map(item => {
-        if (item.label === "Funil de Talentos" && talentPools.length > 0) {
-          return {
-            ...item,
-            subItems: talentPools.map(p => ({
-              icon: Database,
-              label: p.name,
-              isCore: true,
-              navKey: `pool:${p.id}`,
-            })),
-          }
-        }
-        if (item.label === "Estúdio de Agentes" && agents.length > 0) {
-          return {
-            ...item,
-            subItems: agents.map(a => ({
-              icon: Bot,
-              label: a.name,
-              isCore: true,
-              navKey: `agent:${a.id}`,
-            })),
-          }
-        }
-        return item
-      }),
+      items: section.items.map(item => injectDynamic(item)),
     }))
   }, [talentPools, agents])
 

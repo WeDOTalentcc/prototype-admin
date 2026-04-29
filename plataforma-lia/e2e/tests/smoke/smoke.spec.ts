@@ -62,7 +62,7 @@ async function openChatInput(page: Page): Promise<void> {
   const input = page.locator(CHAT_INPUT).first();
   if (!(await input.isVisible().catch(() => false))) {
     await page
-      .getByRole('button', { name: /Chat LIA|abrir chat|mensagem/i })
+      .getByRole('button', { name: /Conversar|Chat LIA|abrir chat|mensagem/i })
       .first()
       .click()
       .catch(() => {});

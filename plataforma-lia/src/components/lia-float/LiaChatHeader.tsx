@@ -15,11 +15,11 @@ const CONTEXT_PAGE_ICONS: Record<string, LucideIcon> = {
   "Funil de Talentos": Users,
   "Vagas": Briefcase,
   "Painel de Controle": LayoutDashboard,
-  "Tarefas": Target,
+  "Decidir": Target,
   "Configurações": Settings,
   "Indicadores": BarChart2,
   "Biblioteca LIA": BookOpen,
-  "Chat LIA": MessageCircle,
+  "Conversar": MessageCircle,
 }
 
 export interface LiaChatHeaderProps {
@@ -62,7 +62,7 @@ export function LiaChatHeader({
           </div>
           <div className="flex flex-col">
             <span className="text-base-ui font-bold text-lia-text-primary leading-tight">LIA</span>
-            {(entityLabel || (contextPage && contextPage !== "Chat LIA")) && (
+            {(entityLabel || (contextPage && contextPage !== "Conversar")) && (
               <span className="inline-flex items-center gap-1 text-xs text-lia-text-tertiary leading-tight">
                 {ContextIcon && <ContextIcon className="w-3 h-3" />}
                 <span className="truncate max-w-[180px]">

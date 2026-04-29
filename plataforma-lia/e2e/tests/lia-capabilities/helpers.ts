@@ -38,7 +38,7 @@ export interface ChatCapture {
 export async function ensureChatOpen(page: Page) {
   const textarea = page.locator('textarea[placeholder*="LIA"]').first()
   if (!(await textarea.isVisible().catch(() => false))) {
-    await page.getByRole("button", { name: /Chat LIA/i }).first().click().catch(() => {})
+    await page.getByRole("button", { name: /Conversar|Chat LIA/i }).first().click().catch(() => {})
     await textarea.waitFor({ state: "visible", timeout: 5000 })
   }
   return textarea

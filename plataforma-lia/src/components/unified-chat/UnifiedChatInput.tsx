@@ -68,7 +68,7 @@ export function UnifiedChatInput({
   }, [isDisabled, inputText, onSend])
 
   const canSend = !isDisabled && !isBusy && inputText.trim().length > 0
-  const showContext = contextPage && contextPage !== "Chat LIA"
+  const showContext = contextPage && contextPage !== "Conversar"
   const [isDragOver, setIsDragOver] = useState(false)
 
   const handleDrop = useCallback((e: React.DragEvent) => {

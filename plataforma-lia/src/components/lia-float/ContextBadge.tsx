@@ -8,7 +8,7 @@ export const PAGE_ROUTE_TO_CONTEXT_LABEL: Record<string, string> = {
   candidates: "Funil de Talentos",
   jobs: "Vagas",
   dashboard: "Painel de Controle",
-  tasks: "Tarefas",
+  tasks: "Decidir",
   settings: "Configurações",
   indicators: "Indicadores",
   library: "Biblioteca LIA",
@@ -18,11 +18,11 @@ export const CONTEXT_PAGE_ICONS: Record<string, LucideIcon> = {
   "Funil de Talentos": Users,
   "Vagas": Briefcase,
   "Painel de Controle": LayoutDashboard,
-  "Tarefas": Target,
+  "Decidir": Target,
   "Configurações": Settings,
   "Indicadores": BarChart2,
   "Biblioteca LIA": BookOpen,
-  "Chat LIA": MessageCircle,
+  "Conversar": MessageCircle,
 }
 
 export interface ContextBadgeProps {
@@ -32,7 +32,7 @@ export interface ContextBadgeProps {
 }
 
 export function ContextBadge({ contextPage, onRemove, className }: ContextBadgeProps) {
-  if (!contextPage || contextPage === "Chat LIA") return null
+  if (!contextPage || contextPage === "Conversar") return null
 
   const Icon = CONTEXT_PAGE_ICONS[contextPage] ?? Brain
 

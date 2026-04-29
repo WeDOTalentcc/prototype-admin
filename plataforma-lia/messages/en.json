@@ -171,15 +171,14 @@
   "sidebar": {
     "sections": {
       "operational": "Operational",
-      "recruitment": "Recruitment",
       "configuration": "Configuration"
     },
     "items": {
-      "chatLia": "Chat LIA",
-      "tasks": "Tasks",
+      "conversar": "Chat",
+      "decidir": "Decide",
+      "recrutar": "Recruit",
       "jobs": "Jobs",
       "talentPipeline": "Talent Pipeline",
-      "pipelineView": "Pipeline View",
       "agentStudio": "Agent Studio",
       "modules": "Modules"
     },

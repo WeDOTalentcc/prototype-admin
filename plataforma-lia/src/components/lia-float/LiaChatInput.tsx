@@ -49,7 +49,7 @@ export function LiaChatInput({
   contextDismissed = false,
   onContextDismiss,
 }: LiaChatInputProps) {
-  const showBadge = !contextDismissed && !!contextPage && contextPage !== "Chat LIA"
+  const showBadge = !contextDismissed && !!contextPage && contextPage !== "Conversar"
 
   return (
     <div className="px-4 pb-4 pt-2 flex-shrink-0 border-t border-lia-border-subtle">

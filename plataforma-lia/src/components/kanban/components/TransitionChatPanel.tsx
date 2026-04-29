@@ -237,7 +237,7 @@ export function TransitionChatPanel({
               <span className="text-base-ui font-bold text-lia-text-primary" >
                 LIA
               </span>
-              {contextPage && contextPage !== "Chat LIA" && (
+              {contextPage && contextPage !== "Conversar" && (
                 <ContextBadge contextPage={contextPage} />
               )}
             </div>

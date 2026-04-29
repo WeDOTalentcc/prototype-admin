@@ -30,10 +30,10 @@ import { PipelineOverviewPage } from "@/components/pages/pipeline-overview-page"
 import { ModulesPage } from "@/components/pages/modules-page"
 
 const PAGE_ROUTES: Record<string, string> = {
-  "Chat LIA": "/chat",
+  "Conversar": "/chat",
   "Vagas": "/jobs",
   "Funil de Talentos": "/funil-de-talentos",
-  "Tarefas": "/tasks",
+  "Decidir": "/tasks",
   "Configurações": "/configuracoes",
   "Estúdio de Agentes": "/agent-studio",
 }
@@ -43,8 +43,8 @@ interface DashboardAppProps {
   children?: React.ReactNode
 }
 
-export function DashboardApp({ initialPage = "Chat LIA", children }: DashboardAppProps) {
-  const [currentPage, setCurrentPage] = useState(initialPage === "Painel de Controle" ? "Tarefas" : initialPage)
+export function DashboardApp({ initialPage = "Conversar", children }: DashboardAppProps) {
+  const [currentPage, setCurrentPage] = useState(initialPage === "Painel de Controle" ? "Decidir" : initialPage)
   const [showGlobalSearch, setShowGlobalSearch] = useState(false)
   const [pendingChatOpen, setPendingChatOpen] = useState<{ mode: 'general' | 'job-creation' } | null>(null)
   const [pendingChatConversationId, setPendingChatConversationId] = useState<string | null>(null)
@@ -60,7 +60,7 @@ export function DashboardApp({ initialPage = "Chat LIA", children }: DashboardAp
 
   useEffect(() => {
     setContextPage(currentPage)
-    if (currentPage !== "Chat LIA") {
+    if (currentPage !== "Conversar") {
       setPendingChatConversationId(null)
       const stored = localStorage.getItem("lia-chat-mode")
       const currentMode = stored === "floating" ? "floating" : "sidebar"
@@ -71,17 +71,17 @@ export function DashboardApp({ initialPage = "Chat LIA", children }: DashboardAp
 
   useEffect(() => {
     if (splitView.active && splitView.page) {
-      const normalized = splitView.page === "Painel de Controle" ? "Tarefas" : splitView.page
+      const normalized = splitView.page === "Painel de Controle" ? "Decidir" : splitView.page
       setCurrentPage(normalized)
     }
   }, [splitView.active, splitView.page])
 
   // BUG-09: ao sair do modo fullscreen do chat, voltar para a página onde o
-  // usuário estava antes — não mais "Tarefas" hardcoded. Guardamos a última
-  // página não-"Chat LIA" em um ref para restaurar ao fechar o fullscreen.
-  const previousPageBeforeChatRef = useRef<string>("Tarefas")
+  // usuário estava antes — não mais "Decidir" hardcoded. Guardamos a última
+  // página não-"Conversar" em um ref para restaurar ao fechar o fullscreen.
+  const previousPageBeforeChatRef = useRef<string>("Decidir")
   useEffect(() => {
-    if (currentPage !== "Chat LIA") {
+    if (currentPage !== "Conversar") {
       previousPageBeforeChatRef.current = currentPage
     }
   }, [currentPage])
@@ -90,7 +90,7 @@ export function DashboardApp({ initialPage = "Chat LIA", children }: DashboardAp
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{ conversationId?: string }>).detail
       setPendingChatConversationId(detail?.conversationId ?? null)
-      setCurrentPage("Chat LIA")
+      setCurrentPage("Conversar")
     }
     window.addEventListener("lia:navigate-chat-page", handler)
     return () => window.removeEventListener("lia:navigate-chat-page", handler)
@@ -99,7 +99,7 @@ export function DashboardApp({ initialPage = "Chat LIA", children }: DashboardAp
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     if (params.get("page") === "chat-lia") {
-      setCurrentPage("Chat LIA")
+      setCurrentPage("Conversar")
       params.delete("page")
       const qs = params.toString()
       window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""))
@@ -108,10 +108,10 @@ export function DashboardApp({ initialPage = "Chat LIA", children }: DashboardAp
 
   useEffect(() => {
     const handler = () => {
-      if (currentPage === "Chat LIA") {
-        // Restaura a última página visitada antes de entrar no Chat LIA fullscreen
-        // (BUG-09 — antes ia para "Tarefas" independente de onde o usuário estava).
-        setCurrentPage(previousPageBeforeChatRef.current || "Tarefas")
+      if (currentPage === "Conversar") {
+        // Restaura a última página visitada antes de entrar no Conversar fullscreen
+        // (BUG-09 — antes ia para "Decidir" independente de onde o usuário estava).
+        setCurrentPage(previousPageBeforeChatRef.current || "Decidir")
       }
     }
     window.addEventListener("lia:leave-fullscreen-chat", handler)
@@ -123,7 +123,8 @@ export function DashboardApp({ initialPage = "Chat LIA", children }: DashboardAp
     const handler = (e: Event) => {
       const { page } = (e as CustomEvent<{ page: string; hint: string }>).detail
       if (page) {
-        const normalized = page === "Painel de Controle" ? "Tarefas" : page
+        const legacyMapped = page === "Chat LIA" ? "Conversar" : page === "Tarefas" ? "Decidir" : page === "Visão do Funil" ? "Recrutar" : page
+        const normalized = legacyMapped === "Painel de Controle" ? "Decidir" : legacyMapped
         setCurrentPage(normalized)
         // Open sidebar if not already open
         openFloat()
@@ -143,7 +144,8 @@ export function DashboardApp({ initialPage = "Chat LIA", children }: DashboardAp
       router.push(`/${locale}/login`)
       return
     }
-    const normalized = page === "Painel de Controle" ? "Tarefas" : page
+    const legacyMapped = page === "Chat LIA" ? "Conversar" : page === "Tarefas" ? "Decidir" : page === "Visão do Funil" ? "Recrutar" : page
+    const normalized = legacyMapped === "Painel de Controle" ? "Decidir" : legacyMapped
     setCurrentPage(normalized)
 
     const route = PAGE_ROUTES[normalized]
@@ -180,7 +182,7 @@ export function DashboardApp({ initialPage = "Chat LIA", children }: DashboardAp
       setCurrentPage("Biblioteca LIA")
     },
     onChatOpen: () => {
-      setCurrentPage("Chat LIA")
+      setCurrentPage("Conversar")
     }
   })
 
@@ -201,7 +203,7 @@ export function DashboardApp({ initialPage = "Chat LIA", children }: DashboardAp
     }
 
     switch (currentPage) {
-      case "Chat LIA":
+      case "Conversar":
         return <ChatPage initialConversationId={pendingChatConversationId} />
       case "Funil de Talentos":
         return <CandidatesPage onAddRecentItem={addRecentItem} pendingCandidateOpen={pendingCandidateOpen} onCandidateOpened={() => setPendingCandidateOpen(null)} />
@@ -224,7 +226,7 @@ export function DashboardApp({ initialPage = "Chat LIA", children }: DashboardAp
         return <LiaLibraryPage onNavigate={handleNavigate} />
       case "Templates":
         return <TemplatesPage />
-      case "Tarefas":
+      case "Decidir":
         return <TasksPage onNavigate={handleNavigate} />
       case "Estúdio de Agentes":
         return (
@@ -253,7 +255,7 @@ export function DashboardApp({ initialPage = "Chat LIA", children }: DashboardAp
             )}
           </>
         )
-      case "Visão do Funil":
+      case "Recrutar":
         return <PipelineOverviewPage />
       case "Configurações":
         return <SettingsPageEnhanced />

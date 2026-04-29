@@ -31,7 +31,7 @@ export async function openChatOnPage(page: Page, _scope: string, pagePath: strin
   await page.goto(`/pt/${pagePath}`, { waitUntil: 'domcontentloaded', timeout: 20_000 });
   const input = page.locator(CHAT_INPUT).first();
   if (!(await input.isVisible().catch(() => false))) {
-    await page.getByRole('button', { name: /Chat LIA/i }).first().click().catch(() => {});
+    await page.getByRole('button', { name: /Conversar|Chat LIA/i }).first().click().catch(() => {});
   }
   await input.waitFor({ state: 'visible', timeout: 30_000 });
 }
