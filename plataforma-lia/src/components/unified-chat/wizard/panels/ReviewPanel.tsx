@@ -31,7 +31,7 @@ export function ReviewPanel({ data, onUpdate }: Props) {
   }
 
   return (
-    <div className="px-4 py-3 space-y-3">
+    <div data-testid="review-panel" className="px-4 py-3 space-y-3">
       <div className="flex items-center gap-2">
         <ClipboardCheck className="w-4 h-4 text-wedo-cyan" />
         <span className="text-sm font-semibold text-lia-text-primary">
