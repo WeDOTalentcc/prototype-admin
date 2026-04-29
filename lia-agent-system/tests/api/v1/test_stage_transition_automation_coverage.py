@@ -1,13 +1,15 @@
 """
 Coverage tests for app/api/v1/stage_transition_automation.py — Task #930.
 
-Cobre os 8 endpoints de automação de transição:
-- POST /predict-substatus       (happy + 500 quando service falha)
-- POST /generate-message        (happy)
-- POST /get-actions             (happy)
-- GET  /substatus-options/{stage} (rejected, offer_declined, default)
-- POST /bulk-predict-substatus  (happy + isolamento por candidato)
-- POST /bulk-predict-substatus-from-db (sem db retorna fallback)
+Cobre os endpoints exercidos pelo menu Configurações (subset funcional):
+- POST /predict-substatus              (happy + 500 quando service falha)
+- GET  /substatus-options/{stage}      (rejected, offer_declined, default)
+- POST /bulk-predict-substatus         (happy + isolamento por candidato no fallback)
+- POST /bulk-predict-substatus-from-db (sem db retorna fallback per-id)
+
+Endpoints adicionais do router (POST /generate-message, POST /regenerate-for-substatus,
+POST /get-actions, POST /bulk-generate-messages) NÃO são alvo desta task — são consumidos
+por fluxos fora do menu Configurações (workflow de transição em runtime, não setup).
 
 Endpoints não exigem autenticação na implementação atual; testes focam
 em comportamento funcional (happy/erro) + isolamento por candidato/stage.
