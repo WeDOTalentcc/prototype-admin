@@ -466,7 +466,7 @@ export function PipelineOverviewPage() {
           <div className="px-4 pt-3 pb-0 flex-shrink-0 border-b border-lia-border-subtle">
             <div className="flex items-center justify-between mb-2">
               <h1 className="text-lg font-semibold text-lia-text-primary">
-                Visão do Pipeline
+                Visão Global
               </h1>
               <Button
                 variant="outline"
@@ -482,16 +482,16 @@ export function PipelineOverviewPage() {
             <PageTabNavigation
               tabs={[
                 {
-                  id: "candidatos",
-                  label: tOverview("toggle.candidates"),
-                  icon: Users,
-                  count: totalCandidates > 0 ? totalCandidates : null,
-                } satisfies PageTab,
-                {
                   id: "vagas",
                   label: tOverview("toggle.vacancies"),
                   icon: Briefcase,
                   count: totalVacancies > 0 ? totalVacancies : null,
+                } satisfies PageTab,
+                {
+                  id: "candidatos",
+                  label: tOverview("toggle.candidates"),
+                  icon: Users,
+                  count: totalCandidates > 0 ? totalCandidates : null,
                 } satisfies PageTab,
               ]}
               activeTab={mode}

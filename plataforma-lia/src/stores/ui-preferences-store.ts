@@ -170,7 +170,7 @@ export const useUIPreferencesStore = create<UIPreferencesStore>()(
         liaRecentItems: [],
         liaFavorites: [],
         liaPrompt: null,
-        pipelineOverviewMode: 'candidatos',
+        pipelineOverviewMode: 'vagas',
         jobsViewMode: 'table',
 
         setCandidateTableColumns: (columns) =>
