@@ -28,7 +28,7 @@ const SECTION_ICON_COLORS: Record<string, string> = {
   'comunicacao-alertas': 'text-rose-400',
   'usuarios-departamentos': 'text-sky-500',
   'integrations': 'text-emerald-500',
-  'webhooks': 'text-cyan-500',
+  'webhooks': 'text-wedo-cyan',
   'fairness-compliance': 'text-violet-400',
   'governanca': 'text-amber-500',
 }
@@ -57,6 +57,7 @@ import { useHoverDebounce } from '@/lib/sidebar/useHoverDebounce'
 import { ErrorBoundarySection } from"@/components/ui/error-boundary-section"
 import { useCompanyId } from"@/hooks/company/useCompanyId"
 import { resolveSettingsTarget } from "@/lib/settings/resolve-settings-target"
+import { apiFetch } from "@/lib/api/api-fetch"
 
 interface SettingsSubsection {
   id: string
@@ -346,7 +347,7 @@ export default function SettingsPageEnhanced() {
   const fetchProgress = useCallback(async () => {
     try {
       setProgressLoading(true)
-      const response = await fetch('/api/backend-proxy/settings/progress/')
+      const response = await apiFetch('/api/backend-proxy/settings/progress/')
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)

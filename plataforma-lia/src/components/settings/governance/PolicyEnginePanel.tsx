@@ -6,6 +6,8 @@ import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { cardStyles, textStyles } from "@/lib/design-tokens"
 import { Loading } from "@/components/ui/loading"
 import { Chip } from "@/components/ui/chip"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api/api-fetch"
 
@@ -143,27 +145,34 @@ export function PolicyEnginePanel() {
         <h3 className={textStyles.h3}>{t("applySector")}</h3>
         <p className="text-xs text-lia-text-secondary">{t("applySectorHelp")}</p>
         <div className="flex flex-wrap items-center gap-2">
-          <select
+          <Select
             value={sector}
-            onChange={(e) => setSector(e.target.value as typeof SECTORS[number])}
-            data-testid="policy-engine-sector-select"
-            className="rounded-md border border-lia-border-default bg-lia-bg-primary px-2 py-1 text-xs"
+            onValueChange={(value) => setSector(value as typeof SECTORS[number])}
           >
-            {SECTORS.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-          <button
+            <SelectTrigger
+              className="h-8 w-[180px] text-xs"
+              data-testid="policy-engine-sector-select"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SECTORS.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
             type="button"
+            size="sm"
             onClick={applySector}
             disabled={applying}
             data-testid="policy-engine-apply-sector"
-            className="rounded-md bg-lia-btn-primary-bg px-3 py-1 text-xs font-medium text-lia-btn-primary-text hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="text-xs"
           >
             {applying ? t("applying") : t("apply")}
-          </button>
+          </Button>
           {applyMsg && (
             <span className="text-xs text-lia-text-secondary">{applyMsg}</span>
           )}
@@ -202,7 +211,7 @@ export function PolicyEnginePanel() {
                       <div className="text-[11px] text-lia-text-secondary">{policy.description}</div>
                     )}
                   </td>
-                  <td className="px-3 py-2 font-mono">{policy.type ?? policy.policy_type ?? "-"}</td>
+                  <td className="px-3 py-2">{policy.type ?? policy.policy_type ?? "-"}</td>
                   <td className="px-3 py-2">{policy.scope ?? "-"}</td>
                   <td className="px-3 py-2 font-mono">{policy.version ?? "-"}</td>
                   <td className="px-3 py-2">

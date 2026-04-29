@@ -3,8 +3,10 @@
 import { useState, useEffect, useCallback } from "react"
 import { useTranslations } from "next-intl"
 import { FlaskConical, Plus, BarChart3, Loader2, AlertCircle, CheckCircle2, ChevronDown, ChevronUp } from "lucide-react"
-import { BACKEND_URL, getAuthHeaders } from "@/services/lia-api/base"
 import { apiFetch } from "@/lib/api/api-fetch"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
 
 interface ABVariant {
   variant_name: string
@@ -39,6 +41,8 @@ const EMPTY_FORM: CreateTestForm = {
   ],
 }
 
+const AB_TESTS_URL = "/api/backend-proxy/ab-tests"
+
 export function ABTestingTab() {
   const t = useTranslations("settings.communication.abtesting")
   const [tests, setTests] = useState<ABTest[]>([])
@@ -57,7 +61,7 @@ export function ABTestingTab() {
     setLoading(true)
     setError(null)
     try {
-      const response = await apiFetch(`${BACKEND_URL}/ab-tests`, { headers: getAuthHeaders() })
+      const response = await apiFetch(AB_TESTS_URL)
       if (!response.ok) throw new Error(t("loadError", { status: response.statusText }))
       const data = await response.json()
       setTests(data.tests || [])
@@ -71,9 +75,7 @@ export function ABTestingTab() {
   const fetchMetrics = useCallback(async (testName: string) => {
     setMetricsLoading(prev => ({ ...prev, [testName]: true }))
     try {
-      const response = await apiFetch(`${BACKEND_URL}/ab-tests/${encodeURIComponent(testName)}/results`, {
-        headers: getAuthHeaders(),
-      })
+      const response = await apiFetch(`${AB_TESTS_URL}/${encodeURIComponent(testName)}/results`)
       if (!response.ok) throw new Error(t("metricsError"))
       const data: ABTestMetrics = await response.json()
       setMetricsMap(prev => ({ ...prev, [testName]: data }))
@@ -135,9 +137,9 @@ export function ABTestingTab() {
 
     setCreating(true)
     try {
-      const response = await apiFetch(`${BACKEND_URL}/ab-tests`, {
+      const response = await apiFetch(AB_TESTS_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           test_name: form.test_name.trim(),
           variants: form.variants,
@@ -186,88 +188,92 @@ export function ABTestingTab() {
             {t("description")}
           </p>
         </div>
-        <button
+        <Button
+          size="sm"
           onClick={() => { setShowCreateForm(!showCreateForm); setCreateError(null); setCreateSuccess(null) }}
-          className="flex items-center gap-1.5 text-xs bg-wedo-cyan text-white px-3 py-1.5 rounded-lg hover:bg-wedo-cyan-dark transition-colors font-medium"
+          className="text-xs"
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-3.5 h-3.5 mr-1.5" />
           {t("newExperiment")}
-        </button>
+        </Button>
       </div>
 
       {createSuccess && (
-        <div className="flex items-center gap-2 text-xs text-status-success bg-status-success/10 border border-status-success/30 rounded-lg px-3 py-2">
+        <div className="flex items-center gap-2 text-xs text-status-success bg-status-success/10 border border-status-success/30 rounded-md px-3 py-2">
           <CheckCircle2 className="w-4 h-4 shrink-0" />
           {createSuccess}
         </div>
       )}
 
       {showCreateForm && (
-        <div className="border border-lia-border-subtle rounded-xl p-4 bg-lia-bg-secondary space-y-4">
+        <div className="border border-lia-border-subtle rounded-md p-4 bg-lia-bg-secondary space-y-4">
           <h4 className="text-sm font-semibold text-lia-text-primary">{t("newExperimentTitle")}</h4>
 
           <div>
             <label className="text-xs font-medium text-lia-text-secondary block mb-1">{t("experimentNameLabel")}</label>
-            <input
+            <Input
               type="text"
               value={form.test_name}
               onChange={e => setForm(prev => ({ ...prev, test_name: e.target.value }))}
               placeholder={t("experimentNamePlaceholder")}
-              className="w-full text-sm bg-lia-bg-primary border border-lia-border-subtle rounded-lg px-3 py-2 text-lia-text-primary placeholder:text-lia-text-tertiary focus:outline-none focus:ring-1 focus:ring-wedo-cyan"
             />
           </div>
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-medium text-lia-text-secondary">{t("variantsLabel")}</label>
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={addVariant}
-                className="text-xs text-wedo-cyan hover:text-wedo-cyan-dark font-medium"
+                className="text-xs text-wedo-cyan hover:text-wedo-cyan-dark h-auto px-2 py-1"
               >
                 {t("addVariantBtn")}
-              </button>
+              </Button>
             </div>
 
             {form.variants.map((variant, i) => (
-              <div key={i} className="border border-lia-border-subtle rounded-lg p-3 space-y-2 bg-lia-bg-primary">
+              <div key={i} className="border border-lia-border-subtle rounded-md p-3 space-y-2 bg-lia-bg-primary">
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
                     <label className="text-[10px] text-lia-text-tertiary block mb-0.5">{t("variantNameSmall")}</label>
-                    <input
+                    <Input
                       type="text"
                       value={variant.variant_name}
                       onChange={e => handleFormVariantChange(i, "variant_name", e.target.value)}
-                      className="w-full text-xs bg-lia-bg-secondary border border-lia-border-subtle rounded px-2 py-1.5 text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-wedo-cyan"
+                      className="h-8 text-xs"
                     />
                   </div>
                   <div className="w-24">
                     <label className="text-[10px] text-lia-text-tertiary block mb-0.5">{t("trafficSmall")}</label>
-                    <input
+                    <Input
                       type="number"
                       min={0}
                       max={100}
                       value={variant.traffic_percentage}
                       onChange={e => handleFormVariantChange(i, "traffic_percentage", parseFloat(e.target.value) || 0)}
-                      className="w-full text-xs bg-lia-bg-secondary border border-lia-border-subtle rounded px-2 py-1.5 text-lia-text-primary focus:outline-none focus:ring-1 focus:ring-wedo-cyan"
+                      className="h-8 text-xs"
                     />
                   </div>
                   {form.variants.length > 2 && (
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => removeVariant(i)}
-                      className="text-status-error text-xs mt-4 hover:opacity-80"
+                      className="text-status-error text-xs mt-4 hover:opacity-80 h-auto px-2 py-1"
                     >
                       ✕
-                    </button>
+                    </Button>
                   )}
                 </div>
                 <div>
                   <label className="text-[10px] text-lia-text-tertiary block mb-0.5">{t("templateLabel")}</label>
-                  <textarea
+                  <Textarea
                     value={variant.prompt_template}
                     onChange={e => handleFormVariantChange(i, "prompt_template", e.target.value)}
                     placeholder={t("templatePlaceholder", { placeholder: "{{candidate_name}}" })}
                     rows={3}
-                    className="w-full text-xs bg-lia-bg-secondary border border-lia-border-subtle rounded px-2 py-1.5 text-lia-text-primary placeholder:text-lia-text-tertiary focus:outline-none focus:ring-1 focus:ring-wedo-cyan resize-none font-mono"
+                    className="text-xs font-mono resize-none"
                   />
                 </div>
               </div>
@@ -275,27 +281,30 @@ export function ABTestingTab() {
           </div>
 
           {createError && (
-            <div className="flex items-center gap-2 text-xs text-status-error bg-status-error/10 border border-status-error/30 rounded-lg px-3 py-2">
+            <div className="flex items-center gap-2 text-xs text-status-error bg-status-error/10 border border-status-error/30 rounded-md px-3 py-2">
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
               {createError}
             </div>
           )}
 
           <div className="flex gap-2 justify-end">
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => { setShowCreateForm(false); setForm(EMPTY_FORM); setCreateError(null) }}
-              className="text-xs text-lia-text-secondary px-3 py-1.5 rounded-lg border border-lia-border-subtle hover:bg-lia-bg-primary transition-colors"
+              className="text-xs"
             >
               {t("cancel")}
-            </button>
-            <button
+            </Button>
+            <Button
+              size="sm"
               onClick={handleCreate}
               disabled={creating}
-              className="flex items-center gap-1.5 text-xs bg-wedo-cyan text-white px-3 py-1.5 rounded-lg hover:bg-wedo-cyan-dark transition-colors font-medium disabled:opacity-60"
+              className="text-xs"
             >
-              {creating && <Loader2 className="w-3 h-3 animate-spin" />}
+              {creating && <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />}
               {creating ? t("creating") : t("createExperiment")}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -306,12 +315,12 @@ export function ABTestingTab() {
           <span className="ml-2 text-sm text-lia-text-tertiary">{t("loadingExperiments")}</span>
         </div>
       ) : error ? (
-        <div className="flex items-center gap-2 text-sm text-status-error bg-status-error/10 border border-status-error/30 rounded-lg px-4 py-3">
+        <div className="flex items-center gap-2 text-sm text-status-error bg-status-error/10 border border-status-error/30 rounded-md px-4 py-3">
           <AlertCircle className="w-4 h-4 shrink-0" />
           {error}
         </div>
       ) : tests.length === 0 ? (
-        <div className="text-center py-12 border border-dashed border-lia-border-subtle rounded-xl">
+        <div className="text-center py-12 border border-dashed border-lia-border-subtle rounded-md">
           <FlaskConical className="w-8 h-8 text-lia-text-tertiary mx-auto mb-2" />
           <p className="text-sm text-lia-text-secondary">{t("noActiveExperiments")}</p>
           <p className="text-xs text-lia-text-tertiary mt-1">{t("noExperimentsHint")}</p>
@@ -324,7 +333,7 @@ export function ABTestingTab() {
             const isLoadingMetrics = metricsLoading[test.test_name]
 
             return (
-              <div key={test.test_name} className="border border-lia-border-subtle rounded-xl overflow-hidden">
+              <div key={test.test_name} className="border border-lia-border-subtle rounded-md overflow-hidden">
                 <button
                   className="w-full flex items-center justify-between p-4 bg-lia-bg-primary hover:bg-lia-bg-secondary transition-colors text-left"
                   onClick={() => toggleExpand(test.test_name)}
@@ -356,7 +365,7 @@ export function ABTestingTab() {
                       <p className="text-xs font-semibold text-lia-text-tertiary uppercase tracking-wide mb-2">{t("variantsLabel")}</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {test.variants.map(variant => (
-                          <div key={variant.variant_name} className="bg-lia-bg-primary rounded-lg border border-lia-border-subtle px-3 py-2">
+                          <div key={variant.variant_name} className="bg-lia-bg-primary rounded-md border border-lia-border-subtle px-3 py-2">
                             <div className="flex items-center justify-between">
                               <span className="text-xs font-medium text-lia-text-primary">{variant.variant_name}</span>
                               <span className="text-xs text-lia-text-tertiary">{variant.traffic_percentage}%</span>
@@ -387,7 +396,7 @@ export function ABTestingTab() {
                         </div>
 
                         {metrics.winner && (
-                          <div className="flex items-center gap-2 text-xs text-status-success bg-status-success/10 border border-status-success/30 rounded-lg px-3 py-2 mb-3">
+                          <div className="flex items-center gap-2 text-xs text-status-success bg-status-success/10 border border-status-success/30 rounded-md px-3 py-2 mb-3">
                             <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                             {t("winnerInline", {
                               variant: metrics.winner.variant,
@@ -403,7 +412,7 @@ export function ABTestingTab() {
                         ) : (
                           <div className="space-y-2">
                             {Object.entries(metrics.variants).map(([variantName, variantData]) => (
-                              <div key={variantName} className="bg-lia-bg-primary rounded-lg border border-lia-border-subtle px-3 py-2">
+                              <div key={variantName} className="bg-lia-bg-primary rounded-md border border-lia-border-subtle px-3 py-2">
                                 <p className="text-xs font-medium text-lia-text-primary mb-1">{variantName}</p>
                                 {Object.entries(variantData.metrics).map(([metricName, metricData]) => (
                                   <div key={metricName} className="flex items-center justify-between text-xs text-lia-text-secondary">

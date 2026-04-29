@@ -73,8 +73,8 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
       setError(null)
       try {
         const [summaryRes, logsRes] = await Promise.all([
-          apiFetch(`/api/backend-proxy/fairness-report/summary?days=${period}`, { credentials:"include" }),
-          apiFetch(`/api/backend-proxy/fairness/audit/logs?days=${period}`, { credentials:"include" }),
+          apiFetch(`/api/backend-proxy/fairness-report/summary?days=${period}`),
+          apiFetch(`/api/backend-proxy/fairness/audit/logs?days=${period}`),
         ])
         if (!summaryRes.ok || !logsRes.ok) throw new Error(t("errorLoadingData"))
         const summaryData = await summaryRes.json()
@@ -165,8 +165,8 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
           <Card className={cardStyles.default}>
             <CardContent className="p-5">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-9 h-9 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                  <Shield className="w-5 h-5 text-blue-500" />
+                <div className="w-9 h-9 rounded-md bg-wedo-cyan/10 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-wedo-cyan" />
                 </div>
                 <span className={textStyles.description}>{t("totalEvents")}</span>
               </div>
@@ -176,23 +176,23 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
           <Card className={cardStyles.default}>
             <CardContent className="p-5">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-9 h-9 rounded-lg bg-red-500/10 flex items-center justify-center">
-                  <AlertTriangle className="w-5 h-5 text-red-500" />
+                <div className="w-9 h-9 rounded-md bg-status-error/10 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-status-error" />
                 </div>
                 <span className={textStyles.description}>{t("blocks")}</span>
               </div>
-              <p className="text-2xl font-semibold text-red-500">{summary?.total_blocks ?? 0}</p>
+              <p className="text-2xl font-semibold text-status-error">{summary?.total_blocks ?? 0}</p>
             </CardContent>
           </Card>
           <Card className={cardStyles.default}>
             <CardContent className="p-5">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-9 h-9 rounded-lg bg-yellow-500/10 flex items-center justify-center">
-                  <TrendingDown className="w-5 h-5 text-yellow-500" />
+                <div className="w-9 h-9 rounded-md bg-status-warning/10 flex items-center justify-center">
+                  <TrendingDown className="w-5 h-5 text-status-warning" />
                 </div>
                 <span className={textStyles.description}>{t("alerts")}</span>
               </div>
-              <p className="text-2xl font-semibold text-yellow-500">{totalWarnings}</p>
+              <p className="text-2xl font-semibold text-status-warning">{totalWarnings}</p>
             </CardContent>
           </Card>
         </div>
@@ -246,9 +246,9 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
                       </td>
                       <td className="py-2.5 px-3">
                         {log.is_blocked ? (
-                          <Badge className="bg-red-500/15 text-red-500 text-xs">{t("blocked")}</Badge>
+                          <Badge className="bg-status-error/15 text-status-error text-xs">{t("blocked")}</Badge>
                         ) : (
-                          <Badge className="bg-yellow-500/15 text-yellow-600 text-xs">{t("alert")}</Badge>
+                          <Badge className="bg-status-warning/15 text-status-warning text-xs">{t("alert")}</Badge>
                         )}
                       </td>
                       <td className="py-2.5 px-3 text-lia-text-secondary max-w-[200px] truncate">
@@ -277,7 +277,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
       {!loading && logs.length === 0 && !error && (
         <Card className={cardStyles.default}>
           <CardContent className="py-8 text-center">
-            <Shield className="w-10 h-10 text-green-500 mx-auto mb-3" />
+            <Shield className="w-10 h-10 text-status-success mx-auto mb-3" />
             <p className={textStyles.subtitle}>{t("noIncidents")}</p>
             <p className={textStyles.description}>{t("noIncidentsDesc")}</p>
           </CardContent>

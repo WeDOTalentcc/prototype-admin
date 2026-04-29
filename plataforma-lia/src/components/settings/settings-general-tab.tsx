@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Palette, Sun, Moon, Monitor, Globe, Bot } from "lucide-react"
 
 export interface SettingsGeneralTabProps {
@@ -67,18 +68,22 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
             <label className="text-sm font-medium text-lia-text-primary mb-3 block">
               {t("language")}
             </label>
-            <select
+            <Select
               value={language}
-              onChange={(e) => {
-                setLanguage(e.target.value)
+              onValueChange={(value) => {
+                setLanguage(value)
                 onSettingsChange(true)
               }}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             >
-              <option value="pt-BR">{t("portugueseBrazil")}</option>
-              <option value="en-US">{t("englishUS")}</option>
-              <option value="es-ES">{t("spanish")}</option>
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pt-BR">{t("portugueseBrazil")}</SelectItem>
+                <SelectItem value="en-US">{t("englishUS")}</SelectItem>
+                <SelectItem value="es-ES">{t("spanish")}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -95,18 +100,22 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
             <label className="text-sm font-medium text-lia-text-primary mb-3 block">
               {t("timezone")}
             </label>
-            <select
+            <Select
               value={timezone}
-              onChange={(e) => {
-                setTimezone(e.target.value)
+              onValueChange={(value) => {
+                setTimezone(value)
                 onSettingsChange(true)
               }}
-              className="w-full p-3 border border-lia-border-default dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary text-sm"
             >
-              <option value="America/Sao_Paulo">{t("tzSaoPaulo")}</option>
-              <option value="America/New_York">{t("tzNewYork")}</option>
-              <option value="Europe/London">{t("tzLondon")}</option>
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="America/Sao_Paulo">{t("tzSaoPaulo")}</SelectItem>
+                <SelectItem value="America/New_York">{t("tzNewYork")}</SelectItem>
+                <SelectItem value="Europe/London">{t("tzLondon")}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>

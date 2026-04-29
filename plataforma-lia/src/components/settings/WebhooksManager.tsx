@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { textStyles, cardStyles, buttonStyles, badgeStyles } from "@/lib/design-tokens"
 import { toast } from "@/lib/toast"
@@ -225,22 +227,21 @@ export function WebhooksManager() {
           <div className="space-y-3 py-2">
             <div>
               <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t("name")}</label>
-              <input
+              <Input
                 type="text"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder={t("namePlaceholder")}
-                className="w-full border border-lia-border-subtle rounded-md px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30"
               />
             </div>
             <div>
               <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t("urlLabel")}</label>
-              <input
+              <Input
                 type="text"
                 value={newUrl}
                 onChange={(e) => setNewUrl(e.target.value)}
                 placeholder={t("urlPlaceholder")}
-                className="w-full border border-lia-border-subtle rounded-md px-3 py-2 text-sm bg-lia-bg-secondary text-lia-text-primary focus:outline-none focus:ring-2 focus:ring-wedo-cyan/30 font-mono"
+                className="font-mono"
               />
             </div>
             <div>
@@ -248,11 +249,9 @@ export function WebhooksManager() {
               <div className="space-y-1.5">
                 {WEBHOOK_EVENTS.map((event) => (
                   <label key={event} className="flex items-center gap-2 text-xs cursor-pointer">
-                    <input
-                      type="checkbox"
+                    <Checkbox
                       checked={newEvents.includes(event)}
-                      onChange={() => toggleEvent(event)}
-                      className="rounded"
+                      onCheckedChange={() => toggleEvent(event)}
                     />
                     <span className="text-lia-text-primary">{eventLabel(event)}</span>
                     <span className="text-lia-text-disabled font-mono text-[10px]">({event})</span>
@@ -279,7 +278,7 @@ export function WebhooksManager() {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+              <CheckCircle2 className="w-5 h-5 text-status-success" />
               {t("createdTitle")}
             </DialogTitle>
           </DialogHeader>
@@ -298,11 +297,11 @@ export function WebhooksManager() {
             <div>
               <label className="text-xs font-semibold text-lia-text-primary mb-1 block">{t("secretLabel")}</label>
               <div className="flex gap-1">
-                <input
+                <Input
                   type="text"
                   readOnly
                   value={showSecret?.secret || ""}
-                  className="flex-1 border border-lia-border-subtle rounded-md px-3 py-2 text-xs bg-lia-bg-tertiary text-lia-text-primary font-mono"
+                  className="flex-1 bg-lia-bg-tertiary font-mono"
                 />
                 <Button
                   size="sm"

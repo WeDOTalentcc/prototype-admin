@@ -72,8 +72,7 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
           setWorkflows([])
         }
       })
-      .catch((err) => {
-        console.error("[AutomationsTab] Could not load automations:", err)
+      .catch(() => {
         setError(t("loadError"))
       })
       .finally(() => setIsLoading(false))

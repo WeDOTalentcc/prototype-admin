@@ -6,6 +6,8 @@ import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { cardStyles, textStyles } from "@/lib/design-tokens"
 import { Loading } from "@/components/ui/loading"
 import { Chip } from "@/components/ui/chip"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api/api-fetch"
 
@@ -157,30 +159,35 @@ export function DSRInboxPanel() {
       <div className="flex items-center justify-between gap-3">
         <h2 className={textStyles.h2}>{t("requests")}</h2>
         <div className="flex items-center gap-2">
-          <label className="text-xs text-lia-text-secondary">
-            <span className="mr-2">{t("filterStatus")}:</span>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              data-testid="dsr-status-filter"
-              className="rounded-md border border-lia-border-default bg-lia-bg-primary px-2 py-1 text-xs"
-            >
-              <option value="all">{t("all")}</option>
-              <option value="pending">{t("pending")}</option>
-              <option value="in_progress">{t("inProgress")}</option>
-              <option value="completed">{t("completed")}</option>
-              <option value="rejected">{t("rejected")}</option>
-            </select>
-          </label>
-          <button
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-lia-text-secondary">{t("filterStatus")}:</span>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger
+                className="h-8 w-[160px] text-xs"
+                data-testid="dsr-status-filter"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("all")}</SelectItem>
+                <SelectItem value="pending">{t("pending")}</SelectItem>
+                <SelectItem value="in_progress">{t("inProgress")}</SelectItem>
+                <SelectItem value="completed">{t("completed")}</SelectItem>
+                <SelectItem value="rejected">{t("rejected")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => exportCsv(items)}
             disabled={items.length === 0}
             data-testid="dsr-export-csv"
-            className="rounded-md border border-lia-border-default px-3 py-1 text-xs font-medium hover:bg-lia-bg-tertiary disabled:cursor-not-allowed disabled:opacity-50"
+            className="text-xs"
           >
             {t("exportCsv")}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -210,7 +217,7 @@ export function DSRInboxPanel() {
               return (
                 <tr key={id} className="border-t border-lia-border-subtle">
                   <td className="px-3 py-2 font-mono text-[11px]">{id.slice(0, 8) || "-"}</td>
-                  <td className="px-3 py-2 font-mono">{dsr.request_type ?? dsr.type ?? "-"}</td>
+                  <td className="px-3 py-2">{dsr.request_type ?? dsr.type ?? "-"}</td>
                   <td className="px-3 py-2">{dsr.subject_email ?? dsr.email ?? "-"}</td>
                   <td className="px-3 py-2">
                     <Chip variant={statusVariant[status] ?? "neutral"} density="compact">
