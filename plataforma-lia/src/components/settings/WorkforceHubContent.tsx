@@ -100,7 +100,7 @@ export function WorkforceHubContent() {
   return (
     <div className="space-y-3">
       <div
-        className={`${cardStyles.flat} rounded-lg border border-lia-border-subtle dark:border-lia-border-default p-3`}
+        className={`${cardStyles.flat} rounded-md border border-lia-border-subtle dark:border-lia-border-default p-3`}
       >
         <p className={`${textStyles.captionBold} mb-2 text-lia-text-primary`}>
           {t("howToSend")}
@@ -156,7 +156,7 @@ export function WorkforceHubContent() {
             if (e.target === e.currentTarget) setPasteOpen(false)
           }}
         >
-          <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-lg border border-lia-border-default w-full max-w-lg mx-4 p-4 shadow-xl">
+          <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-md border border-lia-border-default w-full max-w-lg mx-4 p-4 shadow-xl">
             <div className="flex items-center justify-between mb-2">
               <p className={`${textStyles.h3} text-lia-text-primary`}>
                 {t("pasteDialogTitle")}
