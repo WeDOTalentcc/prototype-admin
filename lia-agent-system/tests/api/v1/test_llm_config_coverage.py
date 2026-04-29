@@ -123,15 +123,9 @@ class TestGetLLMConfig:
 class TestUpdateLLMConfig:
     """Cobre PUT /admin/llm-config — merge semantics + audit log + isolamento.
 
-    Bug pré-existente em produção (Task #935): `app/api/v1/llm_config.py:25`
-    importa `AuditLogRepository` no topo do módulo e a linha 238 RE-importa o
-    mesmo nome dentro de um `try` interno. Python passa a tratar
-    `AuditLogRepository` como local em toda a função `update_llm_config()`, e
-    a linha 210 dispara `UnboundLocalError` ANTES da reatribuição da linha 238.
-    Resultado: TODA chamada PUT retorna 500. Os 3 testes abaixo são marcados
-    `xfail(strict=True)` — ficam XFAIL enquanto o bug existe e XPASS-fail
-    quando ele for corrigido, forçando a remoção do marcador e o
-    endurecimento do assert para `status_code == 200`.
+    Task #935: corrigido o `UnboundLocalError` que vinha do re-import de
+    `AuditLogRepository` dentro da função. O import canônico vive no topo
+    do módulo e o endpoint agora retorna 200 no happy path.
     """
 
     def _payload(self, primary: str = "claude", api_key: str = "sk-ant-newsecret-XXXX"):
@@ -155,10 +149,6 @@ class TestUpdateLLMConfig:
             patch("app.api.v1.llm_config.clear_tenant_config_cache"),
         ]
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Bug #935: UnboundLocalError em update_llm_config (re-import de AuditLogRepository)",
-    )
     def test_happy_path_upserts_and_returns_status_updated(self, app: FastAPI):
         repo = MagicMock()
         repo.get_by_company_id = AsyncMock(return_value=None)
@@ -176,10 +166,6 @@ class TestUpdateLLMConfig:
         assert r.json()["company_id"] == COMPANY_A
         repo.upsert.assert_awaited_once()
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Bug #935: UnboundLocalError em update_llm_config (re-import de AuditLogRepository)",
-    )
     def test_masked_key_preserves_existing_secret(self, app: FastAPI):
         """Quando client envia api_key contendo '...', endpoint mantém o existente."""
         existing = SimpleNamespace(
@@ -206,10 +192,6 @@ class TestUpdateLLMConfig:
         # Old secret survives because incoming key is masked
         assert captured["providers_dict"]["claude"]["api_key"] == "sk-ant-OLDSECRET"
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason="Bug #935: UnboundLocalError em update_llm_config (re-import de AuditLogRepository)",
-    )
     def test_company_id_isolation_per_user(self, app: FastAPI):
         captured_company_ids: list[str] = []
 

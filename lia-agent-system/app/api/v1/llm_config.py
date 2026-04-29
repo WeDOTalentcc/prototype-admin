@@ -235,7 +235,6 @@ async def update_llm_config(
         )
 
         try:
-            from app.domains.admin.repositories.audit_log_repository import AuditLogRepository
             audit_repo = AuditLogRepository(db)
             await audit_repo.create_log({
                 "user_id": str(current_user.id),
