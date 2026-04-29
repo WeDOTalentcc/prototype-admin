@@ -241,7 +241,6 @@ export function WebhooksManager() {
                 value={newUrl}
                 onChange={(e) => setNewUrl(e.target.value)}
                 placeholder={t("urlPlaceholder")}
-                className="font-mono"
               />
             </div>
             <div>
