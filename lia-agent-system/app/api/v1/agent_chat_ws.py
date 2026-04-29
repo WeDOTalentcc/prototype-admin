@@ -501,6 +501,85 @@ async def _resume_wizard_canonical_streaming(
     return (message, stage_payload, tokens_emitted)
 
 
+# ──────────────────────────────────────────────────────────────────
+# Onda 37.B.0 — Initial wizard invocation (canonical, non-resume)
+# ──────────────────────────────────────────────────────────────────
+
+async def _invoke_wizard_canonical_streaming(
+    thread_id: str,
+    user_message: str,
+    user_id: str | None,
+    company_id: str | None,
+    session_id: str,
+    context: dict | None,
+    on_token: Any,
+) -> tuple[str, dict, int]:
+    """Invoke JobCreationGraph for the FIRST message in a wizard session.
+
+    Mirrors `_resume_wizard_canonical_streaming` but builds initial state
+    from the recruiter's free text instead of pulling prior_state from the
+    checkpointer. The graph itself handles the rest of the flow (intake →
+    jd_enrichment → ... ) including the HITL pauses.
+
+    Returns:
+        (recruiter_message, ws_stage_payload, tokens_emitted)
+    """
+    from app.domains.job_creation.graph import job_creation_graph as wiz_g
+
+    # Build initial state. The intake_node will run IntakeExtractor on
+    # `user_query`/`raw_input` and populate parsed_title/seniority/department,
+    # plus the new template_type/pipeline_template payload (Onda 37.A).
+    initial_state: dict = {
+        "session_id": session_id,
+        "user_id": str(user_id) if user_id else "",
+        "workspace_id": int(company_id) if (company_id and str(company_id).isdigit()) else 0,
+        "auth_token": "",
+        "language": "pt-BR",
+        "current_stage": None,
+        "stage_history": [],
+        "user_query": user_message,
+        "raw_input": user_message,
+        "conversation_messages": [
+            {"role": "user", "content": user_message},
+        ],
+    }
+    if context and isinstance(context, dict):
+        # Carry recruiter-provided form data / file attachments so the
+        # IntakeExtractor multi-source path triggers (priority order:
+        # right_panel_form > user_text > attached_file_text).
+        for k in ("right_panel_form", "attached_file_text"):
+            if k in context and context[k]:
+                initial_state[k] = context[k]
+
+    tokens_emitted = 0
+    if hasattr(wiz_g, "stream_invoke"):
+        result, tokens_emitted = await wiz_g.stream_invoke(
+            initial_state, thread_id, on_token=on_token,
+        )
+    else:  # pragma: no cover — defensive fallback
+        result = await asyncio.to_thread(
+            wiz_g.invoke, initial_state, thread_id,
+        )
+
+    if not isinstance(result, dict):
+        return ("Vaga em criação — vamos seguir.", {}, tokens_emitted)
+
+    stage_payload = result.get("ws_stage_payload") or {}
+    stage_data = stage_payload.get("data") or {}
+    current_stage = result.get("current_stage", "") or ""
+    message = (
+        stage_data.get("message")
+        or stage_data.get("response_text")
+        or {
+            "intake": "Captei a vaga. Vou seguir para o próximo passo.",
+            "jd_enrichment": "Descrição da vaga enriquecida — preciso da sua aprovação.",
+            "wsi_questions": "Perguntas de triagem WSI sugeridas — preciso da sua aprovação.",
+            "completed": "Vaga criada com sucesso.",
+        }.get(current_stage, f"Etapa atual: {current_stage or 'wizard'}.")
+    )
+    return (message, stage_payload, tokens_emitted)
+
+
 def _ensure_agents_loaded() -> None:
     """Import all agent modules once to trigger @register_agent decorators.
 
@@ -1093,6 +1172,72 @@ async def agent_chat_ws(
             elif active_domain == "sourcing":
                 active_domain = _subagent_for_sourcing(content)
                 logger.debug("[AgentChatWS][Z2] sourcing → %s", active_domain)
+
+            # ──────────────────────────────────────────────────────
+            # Onda 37.B.0 — Wizard canonical INITIAL path
+            # ──────────────────────────────────────────────────────
+            # When the cascaded router resolves the message to "wizard"
+            # AND it's not a HITL resume (resume goes through the path
+            # at line ~719), invoke JobCreationGraph directly. This is
+            # the canonical replacement for the (removed) WizardReActAgent
+            # — see Task #850 / audit `wizard-canonical-gap-2026-04-29.md`.
+            if active_domain == "wizard":
+                try:
+                    from app.api.v1._ws_stream_helpers import (
+                        is_token_streaming_enabled,
+                    )
+
+                    async def _on_wiz_initial_token(chunk: str) -> None:
+                        if is_token_streaming_enabled():
+                            try:
+                                await ws_mgr.send_to_session(
+                                    session_id,
+                                    {"type": "token", "content": chunk, "domain": "wizard"},
+                                )
+                            except Exception:  # pragma: no cover
+                                pass
+
+                    if is_token_streaming_enabled():
+                        await ws_mgr.send_to_session(
+                            session_id,
+                            {"type": "token_stream_start", "domain": "wizard"},
+                        )
+
+                    _wiz_msg, _wiz_stage_payload, _wiz_tokens = await asyncio.wait_for(
+                        _invoke_wizard_canonical_streaming(
+                            ws_thread_id,
+                            content,
+                            user_id,
+                            company_id,
+                            session_id,
+                            context,
+                            _on_wiz_initial_token,
+                        ),
+                        timeout=_AGENT_TIMEOUT,
+                    )
+
+                    if is_token_streaming_enabled():
+                        await ws_mgr.send_to_session(
+                            session_id,
+                            {"type": "token_stream_end", "domain": "wizard", "tokens": _wiz_tokens},
+                        )
+
+                    _wiz_msg = _strip_react_json(_wiz_msg)
+                    await ws_mgr.send_to_session(session_id, serialize_message(
+                        content=_wiz_msg,
+                        confidence=0.95,
+                        domain="wizard",
+                        source="wizard_initial",
+                    ))
+                    if _wiz_stage_payload:
+                        await ws_mgr.send_to_session(session_id, _wiz_stage_payload)
+                    conversation_history.append({"role": "assistant", "content": _wiz_msg})
+                    continue
+                except Exception as _wiz_exc:  # fall through to legacy agent dispatch
+                    logger.exception(
+                        "[AgentChatWS] Wizard canonical path failed, falling back: %s",
+                        _wiz_exc,
+                    )
 
             agent = _get_agent(
                 active_domain,

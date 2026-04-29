@@ -8,6 +8,22 @@ description: |
   No code change needed — config-as-data.
 
 domains:
+  # Onda 37.B.0 — Wizard canonical (JobCreationGraph). Order matters:
+  # `criar vaga` and friends should resolve here so the canonical graph
+  # runs end-to-end (intake → jd_enrichment → ... ) with template cards,
+  # HITL gates, and audit. Listing/editing/etc still goes to job_management.
+  wizard:
+    - "abrir?\\s+\\w*\\s*vaga"
+    - "requisi[\u00e7c][\u00e3a]o\\s+d[eo]\\s+vaga"
+    - "\\bwizard\\b"
+    - "quero\\s+criar\\s+\\w*\\s*vaga"
+    - "vou\\s+criar\\s+\\w*\\s*vaga"
+    - "preciso\\s+contratar"
+    - "vamos\\s+criar\\s+\\w*\\s*vaga"
+    - "nova\\s+vaga"
+    - "criar?\\s+\\w*\\s*vaga"
+    - "publicar?\\s+\\w*\\s*vaga"
+
   job_management:
     # ── Leitura / Listagem (BUG-17 fix: sem esses patterns, "listar vagas" caía no
     # genérico \bvaga\b e era roteado para job_wizard, que não tem list_jobs no
@@ -28,21 +44,16 @@ domains:
     - "\\bfunil\\s+d[ae]\\s+vaga"
     - "detalhes\\s+d[ae]\\s+vaga"
     # ── Criação / Edição
-    - "criar?\\s+\\w*\\s*vaga"
-    - "nova\\s+vaga"
     - "editar?\\s+\\w*\\s*vaga"
     - "atualizar?\\s+\\w*\\s*vaga"
     - "gerar?\\s+jd"
     - "job\\s+description"
     - "descri[çc][ãa]o\\s+d[aeo]\\s+vaga"
-    - "wizard"
     - "requisitos\\s+d[aeo]"
     - "clonar?\\s+\\w*\\s*vaga"
     - "fechar?\\s+\\w*\\s*vaga"
-    - "publicar?\\s+\\w*\\s*vaga"
     - "pausar?\\s+\\w*\\s*vaga"
     - "template\\s+d[aeo]\\s+vaga"
-    - "\\bvaga\\b"
     - "compet[eê]ncias"
     - "sal[áa]rio"
     - "sal[aá]rio\\s+da\\s+vaga"
