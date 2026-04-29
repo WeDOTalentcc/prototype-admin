@@ -3,7 +3,7 @@
 > Janela: **15/mar/2026 → 29/abr/2026** (≈6 semanas)  
 > Total de commits: **3491**  
 > Repositório: Replit `/home/runner/workspace` (push manual → `WeDOTalentcc/wedotalent02202026` branch `replit-sync`)  
-> Gerado em: 2026-04-29 12:36 | **v3** com path inference + coluna Risco + arquivo principal/anexos separados  
+> Gerado em: 2026-04-29 12:47 | **v3** com path inference + coluna Risco + arquivo principal/anexos separados  
 
 > 📂 **Anexos** (cross-cutting, auto-commits do Replit, lista cronológica completa) em [CHERRY_PICK_APPENDICES.md](CHERRY_PICK_APPENDICES.md)
 
@@ -71,37 +71,37 @@ Mapa de **cherry-pick seletivo** dos commits do Replit para o ambiente do time. 
 | # | Feature / Tema | Commits | Camadas que toca |
 |---:|---|---:|---|
 | 1 | Mockup Sandbox (artefato gerado) | 298 | Outro×264, Frontend (UI)×14, Backend×9, Cross Back↔Front×4 |
-| 2 | (Auto-commit Replit) | 267 | Auto-commit Replit×260, Outro×3, Frontend (UI)×2, Cross IA↔Front×1 |
+| 2 | (Auto-commit Replit) | 270 | Auto-commit Replit×260, Empty/merge×4, Outro×3, Frontend (UI)×2 |
 | 3 | §15 WSI | 160 | Cross IA↔Back×41, Backend×23, IA×21, Cross IA↔Front×21 |
 | 4 | Compliance / LGPD / EU AI Act | 149 | Backend×43, Docs×33, Frontend (UI)×21, Cross IA↔Back×15 |
-| 5 | Configurações (hub) | 101 | Frontend (UI)×49, Backend×14, Cross Back↔Front×11, Docs×5 |
-| 6 | Kanban (vagas) | 75 | Frontend (UI)×60, Cross Back↔Front×4, Backend×4, Cross IA↔Front×3 |
-| 7 | §9 Security / Tenant guards | 74 | Backend×21, Frontend (UI)×16, Cross Back↔Front×13, Frontend (api/util)×6 |
-| 8 | Frontend (componentes diversos) | 70 | Frontend (UI)×65, Cross Back↔Front×3, Cross IA↔Front×2 |
+| 5 | Configurações (hub) | 102 | Frontend (UI)×50, Backend×14, Cross Back↔Front×11, Docs×5 |
+| 6 | §9 Security / Tenant guards | 78 | Backend×22, Frontend (UI)×17, Cross Back↔Front×13, Frontend (api/util)×6 |
+| 7 | Kanban (vagas) | 75 | Frontend (UI)×60, Cross Back↔Front×4, Backend×4, Cross IA↔Front×3 |
+| 8 | Frontend (componentes diversos) | 71 | Frontend (UI)×65, Cross Back↔Front×3, Cross IA↔Front×2, Outro×1 |
 | 9 | §1 Teams Integration | 63 | Backend×30, Docs×8, Cross Back↔Front×8, Testes×4 |
-| 10 | Auto-Replit (verbos sem scope) | 56 | Docs×28, Outro×10, Frontend (api/util)×8, Backend×3 |
-| 11 | FastAPI v1 endpoints | 56 | Backend×39, Cross IA↔Back×12, Cross Back↔Front×4, Cross IA↔Front×1 |
-| 12 | §2 Orchestrator Migration | 50 | IA×30, Cross IA↔Back×8, Cross IA↔Front×4, Backend×3 |
-| 13 | Triagem (módulo) | 49 | Frontend (UI)×19, Cross Back↔Front×8, Backend×8, Empty/merge×4 |
-| 14 | Tasks #712-#886 (Features de produto) | 48 | Frontend (UI)×16, Backend×13, Docs×4, Cross Back↔Front×4 |
-| 15 | §6 Chat Unificado / Funil | 48 | Frontend (UI)×15, Backend×11, Cross Back↔Front×7, Frontend (api/util)×6 |
-| 16 | Outro | 43 | Docs×18, Outro×11, Frontend (api/util)×7, Empty/merge×3 |
-| 17 | scope: phase2 | 41 | Backend×39, Cross IA↔Back×2 |
-| 18 | Login UI (FE) | 39 | Frontend (UI)×39 |
-| 19 | Candidates (FE pages) | 36 | Frontend (UI)×33, Cross Back↔Front×2, Frontend (api/util)×1 |
-| 20 | scope: guards | 33 | Backend×33 |
-| 21 | Docs / Specs | 31 | Docs×22, Frontend (UI)×4, Frontend (api/util)×2, Cross IA↔Front×1 |
-| 22 | Artefatos / Eval logs (sem código) | 30 | Backend×29, Outro×1 |
-| 23 | Wizard (geral) | 30 | Frontend (UI)×13, Backend×7, Cross IA↔Back×5, Testes×3 |
-| 24 | Skills / canonical-fix | 28 | Frontend (UI)×9, Docs×8, Empty/merge×6, Outro×3 |
-| 25 | §7 WorkflowRail UX | 28 | Frontend (UI)×16, Cross Back↔Front×5, Backend×4, Testes×1 |
-| 26 | i18n / Translation | 26 | Frontend (UI)×19, Frontend (api/util)×4, Docs×2, Cross IA↔Back×1 |
-| 27 | Tasks #574-#712 (Janela anterior — chat/funil/glossário) | 25 | Backend×10, Cross IA↔Back×6, Cross Back↔Front×3, Frontend (UI)×2 |
-| 28 | Automations | 24 | Empty/merge×8, Frontend (UI)×6, Backend×4, Cross Back↔Front×2 |
-| 29 | §17 Eval Framework | 23 | Backend×13, Cross IA↔Back×8, Cross IA↔Front×1, Cross Back↔Front×1 |
-| 30 | Backend Proxy Routes (FE) | 22 | Cross Back↔Front×11, Frontend (UI)×10, Cross IA↔Front×1 |
+| 10 | FastAPI v1 endpoints | 57 | Backend×40, Cross IA↔Back×12, Cross Back↔Front×4, Cross IA↔Front×1 |
+| 11 | §2 Orchestrator Migration | 50 | IA×30, Cross IA↔Back×8, Cross IA↔Front×4, Backend×3 |
+| 12 | Triagem (módulo) | 49 | Frontend (UI)×19, Cross Back↔Front×8, Backend×8, Empty/merge×4 |
+| 13 | Tasks #712-#886 (Features de produto) | 48 | Frontend (UI)×16, Backend×13, Docs×4, Cross Back↔Front×4 |
+| 14 | §6 Chat Unificado / Funil | 48 | Frontend (UI)×15, Backend×11, Cross Back↔Front×7, Frontend (api/util)×6 |
+| 15 | Login UI (FE) | 41 | Frontend (UI)×39, Frontend (api/util)×1, Outro×1 |
+| 16 | scope: phase2 | 41 | Backend×39, Cross IA↔Back×2 |
+| 17 | Candidates (FE pages) | 36 | Frontend (UI)×33, Cross Back↔Front×2, Frontend (api/util)×1 |
+| 18 | scope: guards | 33 | Backend×33 |
+| 19 | Docs / Specs | 31 | Docs×22, Frontend (UI)×4, Frontend (api/util)×2, Cross IA↔Front×1 |
+| 20 | Artefatos / Eval logs (sem código) | 30 | Backend×29, Outro×1 |
+| 21 | Wizard (geral) | 30 | Frontend (UI)×13, Backend×7, Cross IA↔Back×5, Testes×3 |
+| 22 | Skills / canonical-fix | 29 | Frontend (UI)×9, Docs×8, Empty/merge×6, Outro×3 |
+| 23 | §7 WorkflowRail UX | 28 | Frontend (UI)×16, Cross Back↔Front×5, Backend×4, Testes×1 |
+| 24 | i18n / Translation | 27 | Frontend (UI)×19, Frontend (api/util)×5, Docs×2, Cross IA↔Back×1 |
+| 25 | Tasks #574-#712 (Janela anterior — chat/funil/glossário) | 25 | Backend×10, Cross IA↔Back×6, Cross Back↔Front×3, Frontend (UI)×2 |
+| 26 | Automations | 24 | Empty/merge×8, Frontend (UI)×6, Backend×4, Cross Back↔Front×2 |
+| 27 | Docs / Auditorias | 23 | Docs×21, Frontend (api/util)×1, Outro×1 |
+| 28 | §17 Eval Framework | 23 | Backend×13, Cross IA↔Back×8, Cross IA↔Front×1, Cross Back↔Front×1 |
+| 29 | Backend Proxy Routes (FE) | 22 | Cross Back↔Front×11, Frontend (UI)×10, Cross IA↔Front×1 |
+| 30 | §16 LIA Persona | 22 | Backend×7, Cross IA↔Back×6, IA×6, Cross IA↔Front×1 |
 
-_Total de features identificadas: **555**_
+_Total de features identificadas: **566**_
 
 ---
 
@@ -191,7 +191,7 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 
 ### (Auto-commit Replit)
 
-- **Commits:** 267  |  **Período:** 2026-03-15 → 2026-04-29  |  **Camadas:** Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×263 🟢×3 🔴×1
+- **Commits:** 270  |  **Período:** 2026-03-15 → 2026-04-29  |  **Camadas:** Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×263 🟢×6 🔴×1
 
 | Risco | SHA | Data | Camada | O que faz | Arquivos chave |
 |:---:|---|---|---|---|---|
@@ -255,7 +255,7 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟡 | `be607d82a` | 2026-04-20 | Auto-commit Replit | Git commit prior to merge | `lia-agent-system/eval/agentic/runs/agentic-2026-04-20T11-04-15.json` |
 | 🟡 | `591441554` | 2026-04-20 | Auto-commit Replit | Git commit prior to merge | `plataforma-lia/e2e/tests/agentic-eval/agentic-eval.spec.ts`<br>`plataforma-lia/e2e/tests/agentic-eval/agentic-helpers.ts` |
 | 🟡 | `e5a0787aa` | 2026-04-20 | Auto-commit Replit | Transitioned from Plan to Build mode | `lia-agent-system/app/orchestrator/action_executor/executor.py`<br>`lia-agent-system/app/orchestrator/action_handlers/job_actions.py`<br>`lia-agent-system/app/shared/prompts/system_prompt_builder.py` |
-| | _… +207 commits adicionais (ver Apêndice C nos anexos)_ | | | | |
+| | _… +210 commits adicionais (ver Apêndice C nos anexos)_ | | | | |
 
 ### §15 WSI
 
@@ -420,7 +420,7 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 
 **Docs de referência:** BRANCH_MAP — Configurações Fase 3
 
-- **Commits:** 101  |  **Período:** 2026-03-27 → 2026-04-29  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×47 🟡×40 🔴×14
+- **Commits:** 102  |  **Período:** 2026-03-27 → 2026-04-29  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×48 🟡×40 🔴×14
 
 | Risco | SHA | Data | Camada | O que faz | Arquivos chave |
 |:---:|---|---|---|---|---|
@@ -484,7 +484,83 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟡 | `70c32ce48` | 2026-04-15 | Cross IA↔Back | Task #203: Backend — Conectar domínio company_settings + Hardening — Gaps de registro fechados: | `lia-agent-system/app/api/v1/agent_chat_ws.py`<br>`lia-agent-system/app/api/v1/settings_progress.py`<br>`lia-agent-system/app/domains/company/repositories/settings_progress_repository.py` |
 | 🟢 | `bb2029d2c` | 2026-04-15 | Docs | Task #202: Auditoria profunda - Migração Settings Conversacional — Produced comprehensive diagnostic document S01_DIAGNOSTICO.md covering | `docs/settings-conversacional/S01_DIAGNOSTICO.md` |
 | 🟢 | `736a09ede` | 2026-04-14 | Frontend (UI) | Fix communication settings API to pass authentication token and handle errors gracefully — Corrected `communication-settings` route to pass auth token and added default error responses for GE | `plataforma-lia/src/app/api/backend-proxy/company/communication-settings/route.ts` |
-| | _… +41 commits adicionais (ver Apêndice C nos anexos)_ | | | | |
+| | _… +42 commits adicionais (ver Apêndice C nos anexos)_ | | | | |
+
+### §9 Security / Tenant guards
+
+**Descrição:** Tenant guards P0 — get_current_user_or_demo + validate_company_access em endpoints zero-auth: pipeline_prediction, user_agent_preferences, company_benefits, pipeline_velocity, early_warning, skills_catalog, approvals, lia_profile_analysis, voice_stream, journey_mapping. Test suite test_tenant_scope_v1 (18 testes 401/403/200).
+
+**⚠️ Dependências para cherry-pick:** auth dependency em TODOS endpoints sensíveis | tests com _is_dev_environment patch | nenhum endpoint zero-auth restante
+
+**Arquivos canônicos:** lia-agent-system/app/api/v1/* (tenant guards added), tests/integration/test_tenant_scope_v1.py
+
+**Docs de referência:** BRANCH_MAP §9
+
+- **Commits:** 78  |  **Período:** 2026-03-29 → 2026-04-28  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×36 🔴×21 🟢×21
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟡 | `03fbf3841` | 2026-04-28 | Backend | Add authentication and authorization checks to API endpoints — Update API endpoints in multiple modules to include authentication using `get_current_user_or_demo`  | `lia-agent-system/app/api/v1/company_assessments.py`<br>`lia-agent-system/app/api/v1/company_culture_config.py`<br>`lia-agent-system/app/api/v1/interview_analysis.py` |
+| 🟡 | `2f09160ff` | 2026-04-27 | Cross IA↔Back | fix(security): W7.2 PromptInjectionGuard global — bridge + cascaded router — - TeamsOrchestratorBridge.process_message(): defense-in-depth guard before | `lia-agent-system/app/domains/communication/services/teams_orchestrator_bridge.py`<br>`lia-agent-system/app/orchestrator/cascaded_router.py` |
+| 🟡 | `151912552` | 2026-04-27 | Backend | Improve security by ensuring all privileged actions are refused when tenant boundaries cannot be verified — Update Teams webhook to implement a fail-closed security policy, refusing privileged actions | `lia-agent-system/app/api/v1/teams.py` |
+| 🟡 | `4f1cdfa3f` | 2026-04-27 | Backend | Update security and testing for job management and team webhooks — Adjusted job management evaluation results and enhanced security and testing for team webhooks by re | `lia-agent-system/eval/eval_results_20260426_235425.json`<br>`lia-agent-system/tests/integration/test_teams_webhook_company_id_w1_2.py` |
+| 🟡 | `0dc4d0a95` | 2026-04-18 | Backend | Improve error message for invalid authentication tokens — Update the error response for invalid or expired tokens to include more specific details about the a | `lia-agent-system/app/middleware/auth_enforcement.py` |
+| 🟡 | `6c5c7bfaf` | 2026-04-15 | Backend | Improve security by blocking access to internal network addresses — Update URL validation logic in `_wrap_analyze_company_website` to use the `ipaddress` module for mor | `lia-agent-system/app/domains/company_settings/agents/company_tool_registry.py` |
+| 🔴 | `5f705ff1b` | 2026-04-14 | Cross Back↔Front | feat: calibration dashboard — LIA vs recruiter divergences [PX08-068] — Sprint 10 item 10.3 — Backend + Frontend for calibration analysis. | `lia-agent-system/app/api/routes.py`<br>`lia-agent-system/app/api/v1/calibration_dashboard_v2.py`<br>`plataforma-lia/src/app/api/backend-proxy/analytics/calibration-dashboard/route.ts` |
+| 🟡 | `3a7b377d1` | 2026-04-14 | Backend | feat: CalibrationEvent auto-record in EnhancedAgentMixin [P35-030] — Sprint 3 item 3.3 — CalibrationEvent existed but was only created | `lia-agent-system/libs/models/lia_models/calibration.py` |
+| 🟡 | `868c6b0d4` | 2026-04-12 | Backend | Enhance agent security and LLM tenant compliance across multiple services — Introduces security patterns, fairness guards, and PII stripping in agent runtime, alongside tenant- | `lia-agent-system/app/domains/agent_studio/custom_agent_runtime.py` |
+| 🟡 | `979a613d7` | 2026-04-12 | Infra/Config | Fix: npm audit fix - DOMPurify vulnerabilities resolved | `package-lock.json` |
+| 🟡 | `64b9ae4ee` | 2026-04-12 | Backend | feat: GAP 1-4,6 — Agent Studio parity with product agents — GAP 1: SystemPromptBuilder in custom_agent_runtime._get_system_prompt() | `lia-agent-system/app/api/v1/custom_agents.py` |
+| 🟢 | `09c05517c` | 2026-04-12 | Frontend (api/util) | fix: resolve 9 critical security vulnerabilities (npm audit fix) — Updated next 15.5.14 → patched (DoS via Server Components) | `plataforma-lia/package-lock.json` |
+| 🟡 | `bcabfe479` | 2026-04-12 | Backend | feat: connect TenantContextService to SSE streaming endpoint — SSE streaming now passes tenant_context_snippet to SystemPromptBuilder. | `lia-agent-system/app/api/v1/chat.py` |
+| 🟡 | `298173746` | 2026-04-12 | Backend | feat: add FairnessGuard + SecurityPatterns to WebSocket handler (Item 4) — WS endpoint now has 3 layers of security pre-check: | `lia-agent-system/app/api/v1/agent_chat_ws.py` |
+| 🟡 | `668966ac6` | 2026-04-12 | Backend | Task #162: Interview Intelligence Pro — Security + Bias + Comparative fixes — Code review round 2 fixes: | `lia-agent-system/app/domains/interview_intelligence/services/bias_detector_service.py`<br>`lia-agent-system/app/domains/interview_intelligence/services/comparative_analysis_service.py` |
+| 🟡 | `c91bd09c5` | 2026-04-12 | Backend | fix: add is_blocked property to InjectionCheckResult (security bug) — compliance_base.py:376 called result.is_blocked but InjectionCheckResult | `lia-agent-system/app/shared/prompt_injection.py` |
+| 🟡 | `5f9bd57a4` | 2026-04-11 | IA | Improve screening process security and update documentation — Remove sensitive token from screening response and update audit report. | `lia-agent-system/app/orchestrator/action_handlers/candidate_actions.py` |
+| 🟡 | `3a4af080a` | 2026-04-10 | Backend | Improve security scanning by removing extraneous output — Modify CI workflow to adjust the output of Bandit SAST scan and pip-audit dependency vulnerability c | `lia-agent-system/.github/workflows/deploy.yml` |
+| 🟡 | `bdf5afff5` | 2026-04-10 | Outro | Update project dependencies and resolve security vulnerabilities — Update outdated project dependencies to address critical security vulnerabilities and ensure a stabl | `._onboarding-patches`<br>`onboarding-deploy.tar.gz` |
+| 🟡 | `4c7aa1fb0` | 2026-04-10 | Frontend (api/util) | Update project dependencies to address security vulnerabilities — Update aiohttp, jspdf, next, and jira.js dependencies across the project to resolve critical securit | `.claude/worktrees/agent-a92b041a/plataforma-lia/package-lock.json`<br>`.claude/worktrees/agent-a92b041a/plataforma-lia/package.json`<br>`.claude/worktrees/agent-af767ad0/plataforma-lia/package-lock.json` |
+| 🟡 | `b59c332cb` | 2026-04-10 | Backend | Improve security and reliability of Rails integration endpoints — Update Rails integration endpoints and tests to dynamically read environment variables for configura | `lia-agent-system/app/api/v1/rails_health.py`<br>`lia-agent-system/app/api/v1/rails_sync.py` |
+| 🔴 | `1c0fc21b6` | 2026-04-09 | Cross IA↔Front | Task #94: Choose Your AI — LLM Config Integration (Wiring + Security + Frontend) — Full end-to-end integration of per-tenant LLM provider configuration. | `lia-agent-system/app/api/routes.py`<br>`lia-agent-system/app/api/v1/llm_config.py`<br>`lia-agent-system/app/domains/ai/repositories/llm_config_repository.py` |
+| 🟢 | `c802d7107` | 2026-04-09 | Frontend (UI) | revert: restore secure:true sameSite:none for cookies (HTTPS via Replit proxy) — SameSite=lax breaks in Replit webview iframe context. | `plataforma-lia/src/app/api/auth/session/refresh/route.ts`<br>`plataforma-lia/src/app/api/auth/session/route.ts` |
+| 🟢 | `59afe6b6e` | 2026-04-09 | Frontend (api/util) | fix: resolve pipeline overview SQL type mismatch, restore cookie security, add proxy error handling — - Fixed `character varying = uuid` SQL error in job_vacancies_analytics_repository.py | `plataforma-lia/src/middleware.ts` |
+| 🔴 | `9ce15b138` | 2026-04-08 | Cross Back↔Front | fix(backend): Task #75 — Backend Deploy Readiness (OpenAPI, Shims, Secrets, Celery, Security) — ## Summary | `lia-agent-system/app/main.py`<br>`lia-agent-system/libs/models/lia_models/intelligent_cache.py`<br>`plataforma-lia/src/app/layout.tsx` |
+| 🔴 | `4b4f44771` | 2026-04-08 | Cross Back↔Front | Improve security and user management by isolating tenant data — Enhance multi-tenancy by isolating user data by tenant, preventing cross-tenant access and ensuring  | `lia-agent-system/app/api/v1/company.py`<br>`lia-agent-system/app/api/v1/company_users.py`<br>`lia-agent-system/app/domains/company/repositories/company_profile_repository.py` |
+| 🟡 | `053b7d0b5` | 2026-04-08 | Cross IA↔Back | Fix issues with job vacancy display and improve input security — Updates response schemas for job vacancies to correctly handle complex data types, implements multi- | `lia-agent-system/app/api/v1/job_vacancies/crud.py`<br>`lia-agent-system/app/domains/ai/services/llm.py`<br>`lia-agent-system/app/domains/cv_screening/services/cv_parser.py` |
+| 🔴 | `7c76bd7ac` | 2026-04-08 | Frontend (UI) | Improve security and reliability of authentication and iframe embedding — Update security headers to allow iframe embedding in development environments and switch cookie hand | `plataforma-lia/src/app/api/auth/auto-login/route.ts`<br>`plataforma-lia/src/app/api/auth/session/refresh/route.ts`<br>`plataforma-lia/src/app/api/auth/session/route.ts` |
+| 🟢 | `8ed5458f3` | 2026-04-07 | Docs | Update deployment guide with new environment variables and security notes — Update DEPLOY_GUIDE.md to include new environment variables, security alerts, and checklist items fo | `DEPLOY_GUIDE.md` |
+| 🟢 | `293e88e6b` | 2026-04-07 | Docs | Add client onboarding, AI workflow, and integration status sections — Adds new sections to the DEPLOY_GUIDE.md covering AI-assisted development, Microsoft Office and Goog | `DEPLOY_GUIDE.md` |
+| 🟡 | `4652eaf17` | 2026-04-07 | Backend | feat(security): Task #62 — Segurança Hardening Explícito — ## Summary | `lia-agent-system/app/api/v1/autocomplete.py`<br>`lia-agent-system/app/api/v1/company_departments.py`<br>`lia-agent-system/app/api/v1/company_users.py` |
+| 🔴 | `61752038b` | 2026-04-06 | Cross Back↔Front | Security hardening from code review findings: — - Mailgun webhooks: Add timestamp freshness check (5min max age) for replay protection | `lia-agent-system/app/domains/communication/services/email_providers/resend_provider.py`<br>`plataforma-lia/src/components/pages/candidates/hooks/useCandidatesViewComposition.tsx` |
+| 🔴 | `4c22ddda8` | 2026-04-06 | Cross Back↔Front | Security hardening from code review findings: — - Mailgun webhooks: Add timestamp freshness check (5min max age) for replay protection | `lia-agent-system/libs/models/lia_models/communication_history.py`<br>`plataforma-lia/src/components/pages/candidates/hooks/useCandidatesActions.ts`<br>`plataforma-lia/src/components/pages/candidates/hooks/useCandidatesCVHandlers.ts` |
+| 🔴 | `07c43b2e4` | 2026-04-06 | Cross Back↔Front | Security hardening from code review findings: — - Mailgun webhooks: Add timestamp freshness check (5min max age) for replay protection | `lia-agent-system/app/domains/communication/services/email_providers/mailgun_provider.py`<br>`plataforma-lia/src/components/pages/candidates/hooks/useCandidatesExecuteSearch.ts`<br>`plataforma-lia/src/components/pages/candidates/hooks/useCandidatesSearch.ts` |
+| 🟡 | `b2514cfeb` | 2026-04-06 | Backend | Security hardening from code review findings: — - Mailgun webhooks: Add timestamp freshness check (5min max age) for replay protection | `lia-agent-system/app/api/v1/mailgun_webhooks.py`<br>`lia-agent-system/app/domains/communication/repositories/__init__.py` |
+| 🔴 | `43e90596e` | 2026-04-06 | Cross IA↔Front | Security hardening from code review findings: — - Mailgun webhooks: Add timestamp freshness check (5min max age) for replay protection | `lia-agent-system/app/api/public/candidate_portal.py`<br>`lia-agent-system/app/api/public/shared_searches.py`<br>`lia-agent-system/app/api/routes.py` |
+| 🟡 | `64ff314ce` | 2026-04-06 | Backend | Task #38: ATS Integration — Full frontend-backend wiring with complete security hardening — Frontend: | `lia-agent-system/app/api/v1/ats.py` |
+| 🔴 | `837aef67a` | 2026-04-06 | Cross Back↔Front | Task #38: ATS Integration — Full frontend-backend wiring with security hardening — Frontend: | `lia-agent-system/app/api/v1/ats.py`<br>`lia-agent-system/app/domains/automation/services/pattern_applier.py`<br>`lia-agent-system/app/domains/chat/repositories/__init__.py` |
+| 🔴 | `2bbc1edf9` | 2026-04-06 | Cross Back↔Front | Task #38: ATS Integration — Full frontend-backend wiring with security hardening — Frontend: | `lia-agent-system/app/api/v1/ats.py`<br>`plataforma-lia/src/components/settings/integrations/IntegrationDetailDrawer.tsx` |
+| 🔴 | `587e96c50` | 2026-04-06 | Cross Back↔Front | Task #38: ATS Integration — Complete frontend-backend wiring with security hardening — Frontend changes: | `lia-agent-system/app/api/v1/ats.py`<br>`plataforma-lia/src/app/api/backend-proxy/ats/connections/sync/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/ats/field-mappings/route.ts` |
+| 🟡 | `dc9ff6268` | 2026-04-06 | Backend | Improve backend security by removing demo user fallbacks — Update documentation and logs to reflect backend security hardening and email provider changes. | `lia-agent-system/scripts/check_no_pii_in_logs.py` |
+| 🟡 | `438fb466e` | 2026-04-06 | Backend | Task #34: Backend Security Hardening — Remove demo-user fallbacks and protect mock providers — ## Changes | `lia-agent-system/app/domains/communication/services/communication_service.py` |
+| 🟡 | `756ab5464` | 2026-04-06 | Backend | Task #34: Backend Security Hardening — Remove demo-user fallbacks and protect mock providers — ## Changes | `lia-agent-system/app/domains/communication/services/communication_service.py` |
+| 🟡 | `1f87281fd` | 2026-04-06 | Backend | Task #34: Backend Security Hardening — Remove demo-user fallbacks and protect mock providers — ## Changes | `lia-agent-system/app/api/v1/credits.py`<br>`lia-agent-system/app/api/v1/pipeline_orchestrator.py`<br>`lia-agent-system/app/api/v1/search_feedback.py` |
+| 🟡 | `573177e95` | 2026-04-06 | Backend | Update Python dependencies for enhanced security and utility — Remove the python-jose dependency and update other Python packages. | `lia-agent-system/pyproject.toml` |
+| 🟢 | `73a7c303c` | 2026-04-06 | Docs | Update hardening plan with security fixes and improvements — Update HARDENING_PLAN.md to include recent security fixes for SQL injection, stack trace leaks, and  | `lia-agent-system/HARDENING_PLAN.md` |
+| 🔴 | `9d569d6c7` | 2026-04-06 | Cross Back↔Front | Improve chat functionality and security by adding retries and enhancing authentication — This commit introduces a robust retry mechanism with token refresh for various chat API endpoints. I | `lia-agent-system/app/api/v1/agent_chat_ws.py`<br>`plataforma-lia/src/app/api/backend-proxy/chat/message/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/chat/route.ts` |
+| 🟡 | `009229e73` | 2026-04-05 | Outro | Add WorkOS SSO and SCIM integration to the user authentication system — Integrates WorkOS for SSO and SCIM in the `lia-agent-system` (FastAPI), enabling dual authentication | `dump.rdb` |
+| 🟢 | `8b010f883` | 2026-04-04 | Frontend (UI) | Address security vulnerabilities by validating redirects and strengthening secret management — Refactor chat and payment handlers to validate redirect URLs, remove fallback secret in production,  | `plataforma-lia/src/components/pages/chat-page/useChatPageHandlers.tsx` |
+| 🟡 | `486e42ef5` | 2026-04-03 | Frontend (UI) | Task #107: Complete API validation + security hardening — Frontend API routes: | `plataforma-lia/src/app/api/ai/extract-archetype-info/route.ts`<br>`plataforma-lia/src/app/api/ai/suggest-companies/route.ts`<br>`plataforma-lia/src/app/api/ai/suggest-company-tags/route.ts` |
+| 🔴 | `395ad8955` | 2026-04-03 | Cross IA↔Front | Task #107: Complete API validation + security hardening — Frontend API routes: | `lia-agent-system/app/orchestrator/orchestrator.py`<br>`plataforma-lia/src/app/api/ai/extract-archetype-info/route.ts`<br>`plataforma-lia/src/app/api/ai/suggest-companies/route.ts` |
+| 🔴 | `e4a5d4705` | 2026-04-03 | Cross Back↔Front | Task #107: API Security - Complete validation hardening — All review issues fixed: | `plataforma-lia/src/app/api/backend-proxy/admin/guardrails/[id]/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/admin/guardrails/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/admin/templates/[id]/publish/route.ts` |
+| 🔴 | `3597eab4b` | 2026-04-03 | Cross Back↔Front | Task #107: API Security - Fix code review issues — Review fixes round 2: | `plataforma-lia/src/app/api/backend-proxy/analysis/file/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/jd-import/upload/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/search/candidates/from-cv/route.ts` |
+| 🔴 | `e37a20b4b` | 2026-04-03 | Frontend (UI) | Task #107: API Security - Zod validation + Security Headers (review fixes) — Review fixes applied: | `plataforma-lia/src/app/api/auth/session/refresh/route.ts`<br>`plataforma-lia/src/app/api/auth/session/route.ts`<br>`plataforma-lia/src/app/api/auth/workos/callback/route.ts` |
+| 🔴 | `6b3e4524f` | 2026-04-03 | Cross Back↔Front | Task #107: API Security - Zod validation + Security Headers — Security Headers: | `plataforma-lia/src/app/api/auth/session/refresh/route.ts`<br>`plataforma-lia/src/app/api/auth/session/route.ts`<br>`plataforma-lia/src/app/api/auth/workos/callback/route.ts` |
+| 🟡 | `a677e1a4a` | 2026-04-03 | Frontend (UI) | Task #106: Security P0 — Auth Migration (localStorage → httpOnly Cookies) + Middleware — == Session API == | `plataforma-lia/src/app/api/backend-proxy/agent-memory/[...path]/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/candidates/analyze-match-all/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/candidates/bulk/assign-job/route.ts` |
+| 🔴 | `7863c72ba` | 2026-04-03 | Cross IA↔Front | Task #106: Security P0 — Auth Migration (localStorage → httpOnly Cookies) + Middleware — == Session API == | `lia-agent-system/app/orchestrator/orchestrator.py`<br>`plataforma-lia/src/app/api/auth/session/route.ts` |
+| 🔴 | `7396ade2a` | 2026-04-03 | Cross IA↔Front | Task #106: Security P0 — Auth Migration (localStorage → httpOnly Cookies) + Middleware — == Session API == | `lia-agent-system/app/orchestrator/orchestrator.py`<br>`lia-agent-system/app/tools/scope_config.py` |
+| 🔴 | `6399beccf` | 2026-04-03 | Cross IA↔Front | Task #106: Security P0 — Auth Migration (localStorage → httpOnly Cookies) + Middleware — == Core changes == | `lia-agent-system/app/tools/__init__.py` |
+| 🟢 | `294e715a5` | 2026-04-03 | Frontend (api/util) | Task #106: Security P0 — Auth Migration (localStorage → httpOnly Cookies) + Middleware — == Core changes == | `plataforma-lia/package-lock.json`<br>`plataforma-lia/package.json`<br>`plataforma-lia/src/middleware.ts` |
+| | _… +18 commits adicionais (ver Apêndice C nos anexos)_ | | | | |
 
 ### Kanban (vagas)
 
@@ -562,85 +638,17 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `fd850daf7` | 2026-03-29 | Docs | Complete Excalidraw diagram with per-prompt capabilities (1516→2520 elements) — Added 1004 new elements to recruiter-agent-v5-architecture.excalidraw: | `docs/diagrams/recruiter-agent-v5-architecture.excalidraw`<br>`docs/specs/frontend/INVENTARIO_COMPONENTES.md` |
 | | _… +15 commits adicionais (ver Apêndice C nos anexos)_ | | | | |
 
-### §9 Security / Tenant guards
-
-**Descrição:** Tenant guards P0 — get_current_user_or_demo + validate_company_access em endpoints zero-auth: pipeline_prediction, user_agent_preferences, company_benefits, pipeline_velocity, early_warning, skills_catalog, approvals, lia_profile_analysis, voice_stream, journey_mapping. Test suite test_tenant_scope_v1 (18 testes 401/403/200).
-
-**⚠️ Dependências para cherry-pick:** auth dependency em TODOS endpoints sensíveis | tests com _is_dev_environment patch | nenhum endpoint zero-auth restante
-
-**Arquivos canônicos:** lia-agent-system/app/api/v1/* (tenant guards added), tests/integration/test_tenant_scope_v1.py
-
-**Docs de referência:** BRANCH_MAP §9
-
-- **Commits:** 74  |  **Período:** 2026-03-29 → 2026-04-28  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×33 🔴×21 🟢×20
-
-| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
-|:---:|---|---|---|---|---|
-| 🟡 | `03fbf3841` | 2026-04-28 | Backend | Add authentication and authorization checks to API endpoints — Update API endpoints in multiple modules to include authentication using `get_current_user_or_demo`  | `lia-agent-system/app/api/v1/company_assessments.py`<br>`lia-agent-system/app/api/v1/company_culture_config.py`<br>`lia-agent-system/app/api/v1/interview_analysis.py` |
-| 🟡 | `2f09160ff` | 2026-04-27 | Cross IA↔Back | fix(security): W7.2 PromptInjectionGuard global — bridge + cascaded router — - TeamsOrchestratorBridge.process_message(): defense-in-depth guard before | `lia-agent-system/app/domains/communication/services/teams_orchestrator_bridge.py`<br>`lia-agent-system/app/orchestrator/cascaded_router.py` |
-| 🟡 | `151912552` | 2026-04-27 | Backend | Improve security by ensuring all privileged actions are refused when tenant boundaries cannot be verified — Update Teams webhook to implement a fail-closed security policy, refusing privileged actions | `lia-agent-system/app/api/v1/teams.py` |
-| 🟡 | `4f1cdfa3f` | 2026-04-27 | Backend | Update security and testing for job management and team webhooks — Adjusted job management evaluation results and enhanced security and testing for team webhooks by re | `lia-agent-system/eval/eval_results_20260426_235425.json`<br>`lia-agent-system/tests/integration/test_teams_webhook_company_id_w1_2.py` |
-| 🟡 | `6c5c7bfaf` | 2026-04-15 | Backend | Improve security by blocking access to internal network addresses — Update URL validation logic in `_wrap_analyze_company_website` to use the `ipaddress` module for mor | `lia-agent-system/app/domains/company_settings/agents/company_tool_registry.py` |
-| 🔴 | `5f705ff1b` | 2026-04-14 | Cross Back↔Front | feat: calibration dashboard — LIA vs recruiter divergences [PX08-068] — Sprint 10 item 10.3 — Backend + Frontend for calibration analysis. | `lia-agent-system/app/api/routes.py`<br>`lia-agent-system/app/api/v1/calibration_dashboard_v2.py`<br>`plataforma-lia/src/app/api/backend-proxy/analytics/calibration-dashboard/route.ts` |
-| 🟡 | `3a7b377d1` | 2026-04-14 | Backend | feat: CalibrationEvent auto-record in EnhancedAgentMixin [P35-030] — Sprint 3 item 3.3 — CalibrationEvent existed but was only created | `lia-agent-system/libs/models/lia_models/calibration.py` |
-| 🟡 | `868c6b0d4` | 2026-04-12 | Backend | Enhance agent security and LLM tenant compliance across multiple services — Introduces security patterns, fairness guards, and PII stripping in agent runtime, alongside tenant- | `lia-agent-system/app/domains/agent_studio/custom_agent_runtime.py` |
-| 🟡 | `64b9ae4ee` | 2026-04-12 | Backend | feat: GAP 1-4,6 — Agent Studio parity with product agents — GAP 1: SystemPromptBuilder in custom_agent_runtime._get_system_prompt() | `lia-agent-system/app/api/v1/custom_agents.py` |
-| 🟢 | `09c05517c` | 2026-04-12 | Frontend (api/util) | fix: resolve 9 critical security vulnerabilities (npm audit fix) — Updated next 15.5.14 → patched (DoS via Server Components) | `plataforma-lia/package-lock.json` |
-| 🟡 | `bcabfe479` | 2026-04-12 | Backend | feat: connect TenantContextService to SSE streaming endpoint — SSE streaming now passes tenant_context_snippet to SystemPromptBuilder. | `lia-agent-system/app/api/v1/chat.py` |
-| 🟡 | `298173746` | 2026-04-12 | Backend | feat: add FairnessGuard + SecurityPatterns to WebSocket handler (Item 4) — WS endpoint now has 3 layers of security pre-check: | `lia-agent-system/app/api/v1/agent_chat_ws.py` |
-| 🟡 | `668966ac6` | 2026-04-12 | Backend | Task #162: Interview Intelligence Pro — Security + Bias + Comparative fixes — Code review round 2 fixes: | `lia-agent-system/app/domains/interview_intelligence/services/bias_detector_service.py`<br>`lia-agent-system/app/domains/interview_intelligence/services/comparative_analysis_service.py` |
-| 🟡 | `c91bd09c5` | 2026-04-12 | Backend | fix: add is_blocked property to InjectionCheckResult (security bug) — compliance_base.py:376 called result.is_blocked but InjectionCheckResult | `lia-agent-system/app/shared/prompt_injection.py` |
-| 🟡 | `5f9bd57a4` | 2026-04-11 | IA | Improve screening process security and update documentation — Remove sensitive token from screening response and update audit report. | `lia-agent-system/app/orchestrator/action_handlers/candidate_actions.py` |
-| 🟡 | `3a4af080a` | 2026-04-10 | Backend | Improve security scanning by removing extraneous output — Modify CI workflow to adjust the output of Bandit SAST scan and pip-audit dependency vulnerability c | `lia-agent-system/.github/workflows/deploy.yml` |
-| 🟡 | `bdf5afff5` | 2026-04-10 | Outro | Update project dependencies and resolve security vulnerabilities — Update outdated project dependencies to address critical security vulnerabilities and ensure a stabl | `._onboarding-patches`<br>`onboarding-deploy.tar.gz` |
-| 🟡 | `4c7aa1fb0` | 2026-04-10 | Frontend (api/util) | Update project dependencies to address security vulnerabilities — Update aiohttp, jspdf, next, and jira.js dependencies across the project to resolve critical securit | `.claude/worktrees/agent-a92b041a/plataforma-lia/package-lock.json`<br>`.claude/worktrees/agent-a92b041a/plataforma-lia/package.json`<br>`.claude/worktrees/agent-af767ad0/plataforma-lia/package-lock.json` |
-| 🟡 | `b59c332cb` | 2026-04-10 | Backend | Improve security and reliability of Rails integration endpoints — Update Rails integration endpoints and tests to dynamically read environment variables for configura | `lia-agent-system/app/api/v1/rails_health.py`<br>`lia-agent-system/app/api/v1/rails_sync.py` |
-| 🔴 | `1c0fc21b6` | 2026-04-09 | Cross IA↔Front | Task #94: Choose Your AI — LLM Config Integration (Wiring + Security + Frontend) — Full end-to-end integration of per-tenant LLM provider configuration. | `lia-agent-system/app/api/routes.py`<br>`lia-agent-system/app/api/v1/llm_config.py`<br>`lia-agent-system/app/domains/ai/repositories/llm_config_repository.py` |
-| 🟢 | `59afe6b6e` | 2026-04-09 | Frontend (api/util) | fix: resolve pipeline overview SQL type mismatch, restore cookie security, add proxy error handling — - Fixed `character varying = uuid` SQL error in job_vacancies_analytics_repository.py | `plataforma-lia/src/middleware.ts` |
-| 🔴 | `9ce15b138` | 2026-04-08 | Cross Back↔Front | fix(backend): Task #75 — Backend Deploy Readiness (OpenAPI, Shims, Secrets, Celery, Security) — ## Summary | `lia-agent-system/app/main.py`<br>`lia-agent-system/libs/models/lia_models/intelligent_cache.py`<br>`plataforma-lia/src/app/layout.tsx` |
-| 🔴 | `4b4f44771` | 2026-04-08 | Cross Back↔Front | Improve security and user management by isolating tenant data — Enhance multi-tenancy by isolating user data by tenant, preventing cross-tenant access and ensuring  | `lia-agent-system/app/api/v1/company.py`<br>`lia-agent-system/app/api/v1/company_users.py`<br>`lia-agent-system/app/domains/company/repositories/company_profile_repository.py` |
-| 🟡 | `053b7d0b5` | 2026-04-08 | Cross IA↔Back | Fix issues with job vacancy display and improve input security — Updates response schemas for job vacancies to correctly handle complex data types, implements multi- | `lia-agent-system/app/api/v1/job_vacancies/crud.py`<br>`lia-agent-system/app/domains/ai/services/llm.py`<br>`lia-agent-system/app/domains/cv_screening/services/cv_parser.py` |
-| 🔴 | `7c76bd7ac` | 2026-04-08 | Frontend (UI) | Improve security and reliability of authentication and iframe embedding — Update security headers to allow iframe embedding in development environments and switch cookie hand | `plataforma-lia/src/app/api/auth/auto-login/route.ts`<br>`plataforma-lia/src/app/api/auth/session/refresh/route.ts`<br>`plataforma-lia/src/app/api/auth/session/route.ts` |
-| 🟢 | `8ed5458f3` | 2026-04-07 | Docs | Update deployment guide with new environment variables and security notes — Update DEPLOY_GUIDE.md to include new environment variables, security alerts, and checklist items fo | `DEPLOY_GUIDE.md` |
-| 🟢 | `293e88e6b` | 2026-04-07 | Docs | Add client onboarding, AI workflow, and integration status sections — Adds new sections to the DEPLOY_GUIDE.md covering AI-assisted development, Microsoft Office and Goog | `DEPLOY_GUIDE.md` |
-| 🟡 | `4652eaf17` | 2026-04-07 | Backend | feat(security): Task #62 — Segurança Hardening Explícito — ## Summary | `lia-agent-system/app/api/v1/autocomplete.py`<br>`lia-agent-system/app/api/v1/company_departments.py`<br>`lia-agent-system/app/api/v1/company_users.py` |
-| 🔴 | `61752038b` | 2026-04-06 | Cross Back↔Front | Security hardening from code review findings: — - Mailgun webhooks: Add timestamp freshness check (5min max age) for replay protection | `lia-agent-system/app/domains/communication/services/email_providers/resend_provider.py`<br>`plataforma-lia/src/components/pages/candidates/hooks/useCandidatesViewComposition.tsx` |
-| 🔴 | `4c22ddda8` | 2026-04-06 | Cross Back↔Front | Security hardening from code review findings: — - Mailgun webhooks: Add timestamp freshness check (5min max age) for replay protection | `lia-agent-system/libs/models/lia_models/communication_history.py`<br>`plataforma-lia/src/components/pages/candidates/hooks/useCandidatesActions.ts`<br>`plataforma-lia/src/components/pages/candidates/hooks/useCandidatesCVHandlers.ts` |
-| 🔴 | `07c43b2e4` | 2026-04-06 | Cross Back↔Front | Security hardening from code review findings: — - Mailgun webhooks: Add timestamp freshness check (5min max age) for replay protection | `lia-agent-system/app/domains/communication/services/email_providers/mailgun_provider.py`<br>`plataforma-lia/src/components/pages/candidates/hooks/useCandidatesExecuteSearch.ts`<br>`plataforma-lia/src/components/pages/candidates/hooks/useCandidatesSearch.ts` |
-| 🟡 | `b2514cfeb` | 2026-04-06 | Backend | Security hardening from code review findings: — - Mailgun webhooks: Add timestamp freshness check (5min max age) for replay protection | `lia-agent-system/app/api/v1/mailgun_webhooks.py`<br>`lia-agent-system/app/domains/communication/repositories/__init__.py` |
-| 🔴 | `43e90596e` | 2026-04-06 | Cross IA↔Front | Security hardening from code review findings: — - Mailgun webhooks: Add timestamp freshness check (5min max age) for replay protection | `lia-agent-system/app/api/public/candidate_portal.py`<br>`lia-agent-system/app/api/public/shared_searches.py`<br>`lia-agent-system/app/api/routes.py` |
-| 🟡 | `64ff314ce` | 2026-04-06 | Backend | Task #38: ATS Integration — Full frontend-backend wiring with complete security hardening — Frontend: | `lia-agent-system/app/api/v1/ats.py` |
-| 🔴 | `837aef67a` | 2026-04-06 | Cross Back↔Front | Task #38: ATS Integration — Full frontend-backend wiring with security hardening — Frontend: | `lia-agent-system/app/api/v1/ats.py`<br>`lia-agent-system/app/domains/automation/services/pattern_applier.py`<br>`lia-agent-system/app/domains/chat/repositories/__init__.py` |
-| 🔴 | `2bbc1edf9` | 2026-04-06 | Cross Back↔Front | Task #38: ATS Integration — Full frontend-backend wiring with security hardening — Frontend: | `lia-agent-system/app/api/v1/ats.py`<br>`plataforma-lia/src/components/settings/integrations/IntegrationDetailDrawer.tsx` |
-| 🔴 | `587e96c50` | 2026-04-06 | Cross Back↔Front | Task #38: ATS Integration — Complete frontend-backend wiring with security hardening — Frontend changes: | `lia-agent-system/app/api/v1/ats.py`<br>`plataforma-lia/src/app/api/backend-proxy/ats/connections/sync/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/ats/field-mappings/route.ts` |
-| 🟡 | `dc9ff6268` | 2026-04-06 | Backend | Improve backend security by removing demo user fallbacks — Update documentation and logs to reflect backend security hardening and email provider changes. | `lia-agent-system/scripts/check_no_pii_in_logs.py` |
-| 🟡 | `438fb466e` | 2026-04-06 | Backend | Task #34: Backend Security Hardening — Remove demo-user fallbacks and protect mock providers — ## Changes | `lia-agent-system/app/domains/communication/services/communication_service.py` |
-| 🟡 | `756ab5464` | 2026-04-06 | Backend | Task #34: Backend Security Hardening — Remove demo-user fallbacks and protect mock providers — ## Changes | `lia-agent-system/app/domains/communication/services/communication_service.py` |
-| 🟡 | `1f87281fd` | 2026-04-06 | Backend | Task #34: Backend Security Hardening — Remove demo-user fallbacks and protect mock providers — ## Changes | `lia-agent-system/app/api/v1/credits.py`<br>`lia-agent-system/app/api/v1/pipeline_orchestrator.py`<br>`lia-agent-system/app/api/v1/search_feedback.py` |
-| 🟡 | `573177e95` | 2026-04-06 | Backend | Update Python dependencies for enhanced security and utility — Remove the python-jose dependency and update other Python packages. | `lia-agent-system/pyproject.toml` |
-| 🟢 | `73a7c303c` | 2026-04-06 | Docs | Update hardening plan with security fixes and improvements — Update HARDENING_PLAN.md to include recent security fixes for SQL injection, stack trace leaks, and  | `lia-agent-system/HARDENING_PLAN.md` |
-| 🔴 | `9d569d6c7` | 2026-04-06 | Cross Back↔Front | Improve chat functionality and security by adding retries and enhancing authentication — This commit introduces a robust retry mechanism with token refresh for various chat API endpoints. I | `lia-agent-system/app/api/v1/agent_chat_ws.py`<br>`plataforma-lia/src/app/api/backend-proxy/chat/message/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/chat/route.ts` |
-| 🟢 | `8b010f883` | 2026-04-04 | Frontend (UI) | Address security vulnerabilities by validating redirects and strengthening secret management — Refactor chat and payment handlers to validate redirect URLs, remove fallback secret in production,  | `plataforma-lia/src/components/pages/chat-page/useChatPageHandlers.tsx` |
-| 🟡 | `486e42ef5` | 2026-04-03 | Frontend (UI) | Task #107: Complete API validation + security hardening — Frontend API routes: | `plataforma-lia/src/app/api/ai/extract-archetype-info/route.ts`<br>`plataforma-lia/src/app/api/ai/suggest-companies/route.ts`<br>`plataforma-lia/src/app/api/ai/suggest-company-tags/route.ts` |
-| 🔴 | `395ad8955` | 2026-04-03 | Cross IA↔Front | Task #107: Complete API validation + security hardening — Frontend API routes: | `lia-agent-system/app/orchestrator/orchestrator.py`<br>`plataforma-lia/src/app/api/ai/extract-archetype-info/route.ts`<br>`plataforma-lia/src/app/api/ai/suggest-companies/route.ts` |
-| 🔴 | `e4a5d4705` | 2026-04-03 | Cross Back↔Front | Task #107: API Security - Complete validation hardening — All review issues fixed: | `plataforma-lia/src/app/api/backend-proxy/admin/guardrails/[id]/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/admin/guardrails/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/admin/templates/[id]/publish/route.ts` |
-| 🔴 | `3597eab4b` | 2026-04-03 | Cross Back↔Front | Task #107: API Security - Fix code review issues — Review fixes round 2: | `plataforma-lia/src/app/api/backend-proxy/analysis/file/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/jd-import/upload/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/search/candidates/from-cv/route.ts` |
-| 🔴 | `e37a20b4b` | 2026-04-03 | Frontend (UI) | Task #107: API Security - Zod validation + Security Headers (review fixes) — Review fixes applied: | `plataforma-lia/src/app/api/auth/session/refresh/route.ts`<br>`plataforma-lia/src/app/api/auth/session/route.ts`<br>`plataforma-lia/src/app/api/auth/workos/callback/route.ts` |
-| 🔴 | `6b3e4524f` | 2026-04-03 | Cross Back↔Front | Task #107: API Security - Zod validation + Security Headers — Security Headers: | `plataforma-lia/src/app/api/auth/session/refresh/route.ts`<br>`plataforma-lia/src/app/api/auth/session/route.ts`<br>`plataforma-lia/src/app/api/auth/workos/callback/route.ts` |
-| 🟡 | `a677e1a4a` | 2026-04-03 | Frontend (UI) | Task #106: Security P0 — Auth Migration (localStorage → httpOnly Cookies) + Middleware — == Session API == | `plataforma-lia/src/app/api/backend-proxy/agent-memory/[...path]/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/candidates/analyze-match-all/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/candidates/bulk/assign-job/route.ts` |
-| 🔴 | `7863c72ba` | 2026-04-03 | Cross IA↔Front | Task #106: Security P0 — Auth Migration (localStorage → httpOnly Cookies) + Middleware — == Session API == | `lia-agent-system/app/orchestrator/orchestrator.py`<br>`plataforma-lia/src/app/api/auth/session/route.ts` |
-| 🔴 | `7396ade2a` | 2026-04-03 | Cross IA↔Front | Task #106: Security P0 — Auth Migration (localStorage → httpOnly Cookies) + Middleware — == Session API == | `lia-agent-system/app/orchestrator/orchestrator.py`<br>`lia-agent-system/app/tools/scope_config.py` |
-| 🔴 | `6399beccf` | 2026-04-03 | Cross IA↔Front | Task #106: Security P0 — Auth Migration (localStorage → httpOnly Cookies) + Middleware — == Core changes == | `lia-agent-system/app/tools/__init__.py` |
-| 🟢 | `294e715a5` | 2026-04-03 | Frontend (api/util) | Task #106: Security P0 — Auth Migration (localStorage → httpOnly Cookies) + Middleware — == Core changes == | `plataforma-lia/package-lock.json`<br>`plataforma-lia/package.json`<br>`plataforma-lia/src/middleware.ts` |
-| 🟢 | `a819733f7` | 2026-04-03 | Frontend (api/util) | Task #106: Security P0 — Auth Migration (localStorage → httpOnly Cookies) + Middleware — == Core changes == | `plataforma-lia/src/middleware.ts` |
-| 🟢 | `d7b356005` | 2026-04-03 | Frontend (api/util) | Task #106: Security P0 — Auth Migration (localStorage → httpOnly Cookies) + Middleware — == Core changes == | `plataforma-lia/src/middleware.ts` |
-| 🟢 | `5e5193458` | 2026-04-03 | Frontend (UI) | Task #106: Security P0 — Auth Migration (localStorage → httpOnly Cookies) + Middleware — == What was done == | `plataforma-lia/src/app/api/auth/session/refresh/route.ts`<br>`plataforma-lia/src/app/api/auth/session/route.ts` |
-| 🟡 | `09f8e569a` | 2026-04-03 | Frontend (UI) | Task #106: Security P0 — Auth Migration (localStorage → httpOnly Cookies) + Middleware — == What was done == | `plataforma-lia/src/app/api/auth/session/refresh/route.ts`<br>`plataforma-lia/src/app/api/auth/session/route.ts`<br>`plataforma-lia/src/app/api/backend-proxy/auth/[...slug]/route.ts` |
-| | _… +14 commits adicionais (ver Apêndice C nos anexos)_ | | | | |
-
 ### Frontend (componentes diversos)
 
-- **Commits:** 70  |  **Período:** 2026-03-15 → 2026-04-19  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×45 🟡×13 🔴×12
+**Descrição:** Componentes FE diversos sem cluster específico — headers reutilizáveis aplicados em Candidate Search/Jobs/Dashboard, etc.
+
+**⚠️ Dependências para cherry-pick:** DS v4.2.2 tokens
+
+**Arquivos canônicos:** plataforma-lia/src/components/** (componentes não-classificados)
+
+**Docs de referência:** —
+
+- **Commits:** 71  |  **Período:** 2026-03-15 → 2026-04-19  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×45 🟡×14 🔴×12
 
 | Risco | SHA | Data | Camada | O que faz | Arquivos chave |
 |:---:|---|---|---|---|---|
@@ -704,7 +712,7 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `a306ff35e` | 2026-03-31 | Frontend (UI) | Update candidate profile and job preview components with improved type casting — Refactor UI components to include explicit type assertions for improved data handling and prevent po | `plataforma-lia/src/components/candidate-page.tsx`<br>`plataforma-lia/src/components/candidate-preview.tsx`<br>`plataforma-lia/src/components/pages/candidates-page.tsx` |
 | 🟢 | `b0fd7bde0` | 2026-03-31 | Frontend (UI) | Update candidate and job preview panels with improved data handling — Refactors `CandidatePage` and `JobPreviewPanel` components to use type casting for candidate and pre | `plataforma-lia/src/components/candidate-page.tsx`<br>`plataforma-lia/src/components/pages/jobs/JobPreviewPanel.tsx` |
 | 🟡 | `c9865a5de` | 2026-03-31 | Frontend (UI) | Task start baseline checkpoint for code review | `plataforma-lia/src/components/ai/agent-explainability-panel.tsx`<br>`plataforma-lia/src/components/chat/action-result-card.tsx`<br>`plataforma-lia/src/components/job-wizard/FastTrackReviewPanel.tsx` |
-| | _… +10 commits adicionais (ver Apêndice C nos anexos)_ | | | | |
+| | _… +11 commits adicionais (ver Apêndice C nos anexos)_ | | | | |
 
 ### §1 Teams Integration
 
@@ -783,69 +791,6 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟡 | `ef73164c4` | 2026-03-31 | Backend | feat(task-71): Fase 4 — External integrations (Voice, Teams, Apify, Embedding) | `lia-agent-system/app/api/v1/triagem.py`<br>`lia-agent-system/app/domains/communication/services/teams_bot.py`<br>`lia-agent-system/app/domains/cv_screening/services/deepgram_service.py` |
 | | _… +3 commits adicionais (ver Apêndice C nos anexos)_ | | | | |
 
-### Auto-Replit (verbos sem scope)
-
-- **Commits:** 56  |  **Período:** 2026-03-19 → 2026-04-23  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×38 🟡×18
-
-| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
-|:---:|---|---|---|---|---|
-| 🟢 | `12bf9953b` | 2026-04-23 | Docs | Update documentation to reflect current system architecture and agent counts — Refactor documentation to replace outdated ConversationGraph and ReActLoop references with LangGraph | `lia-agent-system/docs/MAPA_CAMADA_INTELIGENCIA.md` |
-| 🟢 | `81efb2987` | 2026-04-22 | Frontend (api/util) | Enforce removal of deprecated API route across all TypeScript files — Add ESLint rule to prevent usage of the removed `/api/lia/api` route in any `.ts` or `.tsx` files, r | `plataforma-lia/eslint.config.mjs` |
-| 🟢 | `ccd88701b` | 2026-04-21 | Docs | Update documentation to include API and endpoint details — Adds explicit mentions of APIs, endpoints, and webhooks to the developer handoff document, detailing | `plataforma-lia/DEVELOPER_HANDOFF_UX_REDESIGN.md` |
-| 🟢 | `f49be9b4d` | 2026-04-21 | Docs | Update documentation and code to reflect standardized workforce import and job pagination contracts — Refactors `DEVELOPER_HANDOFF_UX_REDESIGN.md` to update test file references and documentation for  | `lia-agent-system/docs/INITIATIVES_AUDIT.md`<br>`plataforma-lia/DEVELOPER_HANDOFF_UX_REDESIGN.md` |
-| 🟢 | `40a793a01` | 2026-04-19 | Empty/merge | merge: bring 'Saved your changes before starting work' from wedotalent/replit-sync into local main | — |
-| 🟡 | `0dc4d0a95` | 2026-04-18 | Backend | Improve error message for invalid authentication tokens — Update the error response for invalid or expired tokens to include more specific details about the a | `lia-agent-system/app/middleware/auth_enforcement.py` |
-| 🟡 | `101169222` | 2026-04-17 | Outro | Add tests for core platform functionalities and interactions — Adds a new Python script to `tests/lia_capabilities_audit.py` to perform comprehensive tests on LIA' | `tests/lia_capabilities_audit.py` |
-| 🟢 | `d3539e216` | 2026-04-13 | Frontend (api/util) | Improve development login by simplifying token handling — Update the development login flow in the middleware to directly set the Authorization header and han | `plataforma-lia/src/middleware.ts` |
-| 🟢 | `c7c2c060c` | 2026-04-12 | Empty/merge | Merge remote-tracking branch 'origin/develop-giovanni' | — |
-| 🟢 | `9787e738c` | 2026-04-10 | Frontend (api/util) | Update documentation with correct environment variable names — Update VALIDATION_PLAN.md and DEPLOY_GUIDE.md to reference correct environment variable names and ad | `plataforma-lia/5120` |
-| 🟢 | `11f66809b` | 2026-04-10 | Docs | Update infrastructure checklist and worker health check — Update GCP Infrastructure Checklist for enabled APIs and modify worker health check to use authentic | `GCP_INFRASTRUCTURE_CHECKLIST.md` |
-| 🟢 | `72b810898` | 2026-04-10 | Docs | Update AI agent domain counts to reflect current scope — Normalize the number of business domains from 53 to 58 across multiple sections in DEPLOY_GUIDE.md,  | `DEPLOY_GUIDE.md` |
-| 🟡 | `9c37c675e` | 2026-04-10 | Backend | Add new endpoints for onboarding and WhatsApp messaging — Integrate new routers for onboarding and WhatsApp webhook functionalities into the API. | `lia-agent-system/app/api/routes.py` |
-| 🟢 | `3c46f81d4` | 2026-04-10 | Docs | Add search quality audit report and fix critical search endpoint issues — Create a markdown document detailing the results of a search quality audit, identifying a critical H | `plataforma-lia/docs/AUDITORIA_BUSCA_2026-04-10.md` |
-| 🟡 | `b4823740d` | 2026-04-09 | IA | Add universal scope for tool permissions and update dependencies — Update `tool_permissions.yaml` to include a 'universal' scope for tools, and adjust `scope_config.py | `lia-agent-system/app/tools/scope_config.py`<br>`lia-agent-system/app/tools/tool_permissions.yaml`<br>`lia-agent-system/app/tools/tool_permissions_loader.py` |
-| 🟢 | `29d23937d` | 2026-04-09 | Docs | Update production readiness audit with comparative analysis and new structure — Refactors section 24 of DEPLOY_GUIDE.md, restructuring the production readiness audit into a compara | `DEPLOY_GUIDE.md` |
-| 🟢 | `548bbb150` | 2026-04-09 | Frontend (api/util) | Improve text readability by increasing font sizes across the platform — Adjust font size tokens in design-tokens.css and update diagnostic documentation to reflect global t | `plataforma-lia/src/styles/design-tokens.css` |
-| 🟢 | `a0116c89c` | 2026-04-09 | Docs | Update main application chat screenshot — Update the existing screenshot for the main application's chat interface. | `plataforma-lia/docs/screenshots/main-app-chat.jpg` |
-| 🟢 | `385dd7c8e` | 2026-04-07 | Docs | Expand product development workflow to include client feedback and bug fixes — Adds a comprehensive product development cycle diagram, detailed QA and hotfix processes, and a clie | `DEPLOY_GUIDE.md` |
-| 🟢 | `cd4710d07` | 2026-04-07 | Docs | Update deployment guide with current environment and limitations — Modify DEPLOY_GUIDE.md to reflect the existence of a staging environment, clarify deployment status, | `DEPLOY_GUIDE.md` |
-| 🟢 | `80e190bcd` | 2026-04-07 | Frontend (api/util) | Update proxy to connect to the correct backend server — Corrected the hardcoded backend port in the Next.js proxy configuration from 8000 to 8001 in `plataf | `plataforma-lia/next.config.js` |
-| 🟢 | `274dd0926` | 2026-04-06 | Docs | Update Python dependencies to resolve conflicts — Correct Python dependency versions in requirements.txt to resolve conflicts between langchain-core a | `lia-agent-system/requirements.txt` |
-| 🟢 | `f40efdf85` | 2026-04-05 | Frontend (UI) | Add a back button to the integrations page menu — Add an ArrowLeft icon import and a button element to navigate to the homepage. | `plataforma-lia/src/app/configuracoes/integracoes/IntegracoesClient.tsx` |
-| 🟡 | `009229e73` | 2026-04-05 | Outro | Add WorkOS SSO and SCIM integration to the user authentication system — Integrates WorkOS for SSO and SCIM in the `lia-agent-system` (FastAPI), enabling dual authentication | `dump.rdb` |
-| 🟢 | `cd5dcc969` | 2026-04-04 | Docs | Update documentation with revised frontend audit scores and detailed analysis — Update `audit-frontend-score-update.md` to reflect a deep dive into frontend metrics, detailing corr | `plataforma-lia/docs/audit-frontend-score-update.md` |
-| 🟢 | `2e58eb7ad` | 2026-04-03 | Docs | Update screenshots for login and 2FA process — Update screenshots to reflect the final state of the login and 2FA process, including disabled butto | `plataforma-lia/docs/screenshots/session3/S3-final-btn-disabled.png`<br>`plataforma-lia/docs/screenshots/session3/S3-final-filled.png` |
-| 🟢 | `1657ad17c` | 2026-04-03 | Docs | Update screenshots showing successful code input — Update screenshots to demonstrate successful input methods for verification codes. | `plataforma-lia/docs/screenshots/session3/S3-debug-methods.png`<br>`plataforma-lia/docs/screenshots/session3/S3-v4-typed.png` |
-| 🟢 | `d67a75dd3` | 2026-04-03 | Docs | Update screenshots for user login and 2FA process — Update screenshots to reflect changes in the user login and two-factor authentication flow. | `plataforma-lia/docs/screenshots/session3/S3-pre2fa.png`<br>`plataforma-lia/docs/screenshots/session3/S3-single-2fa-ready.png` |
-| 🟡 | `4f55a46ee` | 2026-04-03 | Docs | Update scripts to handle website login and two-factor authentication flow — Refactor and add new Python scripts using Playwright to automate the login process, including handli | `plataforma-lia/docs/screenshots/session3/S3-2fa-btn-disabled.png`<br>`plataforma-lia/docs/screenshots/session3/S3-2fa-filled.png`<br>`plataforma-lia/docs/screenshots/session3/S3-2fa-ready.png` |
-| 🟢 | `a9be7a167` | 2026-04-03 | Docs | Add layout and spacing issues to the audit document — Adds new Vue bugs (VUE-BUG-06, VUE-BUG-07, VUE-BUG-08) to the audit document, detailing layout and s | `plataforma-lia/docs/audit-candidate-preview-qa.md` |
-| 🟢 | `dd0d71b9c` | 2026-04-03 | Docs | Update audit document with new bugs and screenshots — Adds new bugs to the audit document, updates problem and screenshot counts, and removes unused login | `plataforma-lia/docs/audit-candidate-preview-qa.md`<br>`plataforma-lia/docs/screenshots/capture-replit.js`<br>`plataforma-lia/docs/screenshots/capture-wedotalent.js` |
-| 🟢 | `73f3bfae0` | 2026-04-03 | Docs | Update audit document with new candidate screenshots and identified issues — Adds 15 new candidate screenshots from production, details new bugs like exposed raw JSON data and m | `plataforma-lia/docs/audit-candidate-preview-qa.md` |
-| 🟢 | `8f01fa6d5` | 2026-04-03 | Docs | Implement direct API login to bypass multi-factor authentication — Introduce a bash script to perform API login, retrieve MFA token, and verify MFA code via API calls. | `plataforma-lia/docs/screenshots/login-api.sh`<br>`plataforma-lia/docs/screenshots/login-direct.js`<br>`plataforma-lia/docs/screenshots/vue-10-result.png` |
-| 🟢 | `24d8f4abf` | 2026-04-03 | Docs | Add login functionality and capture candidate screenshots for review — Update scripts to handle WeDOTalent login flow, including two-factor authentication, and capture scr | `plataforma-lia/docs/screenshots/capture-wedotalent.js`<br>`plataforma-lia/docs/screenshots/capture-with-2fa.js`<br>`plataforma-lia/docs/screenshots/vue-01-login.png` |
-| 🟢 | `3a4243904` | 2026-04-03 | Docs | Add script to capture screenshots of product previews — Implement Playwright script to capture screenshots of the Replit application's candidate preview fun | `plataforma-lia/docs/screenshots/capture-replit.js`<br>`plataforma-lia/docs/screenshots/replit-01-funil-busca.jpg`<br>`plataforma-lia/docs/screenshots/replit-02-funil-loaded.jpg` |
-| 🟢 | `04be87e96` | 2026-04-03 | Docs | Update audit document with detailed candidate preview information — Refactor the audit-candidate-preview-qa.md file to include comprehensive details on the header, tabs | `plataforma-lia/docs/audit-candidate-preview-qa.md` |
-| 🟢 | `6ede754b1` | 2026-04-03 | Docs | Add detailed documentation for the file upload tab — Update audit-candidate-preview-qa.md to include detailed descriptions and screenshots of the file up | `plataforma-lia/docs/audit-candidate-preview-qa.md` |
-| 🟢 | `903c02afd` | 2026-04-03 | Docs | Update audit document to include restructured content and detailed findings — Restructure the audit document to align with reference guides, improving clarity and actionability b | `plataforma-lia/docs/audit-candidate-preview-qa.md`<br>`replit.md` |
-| 🟢 | `7c742d925` | 2026-04-03 | Docs | Add detailed comparison of candidate preview features — Create a deep code-to-code comparison document for candidate preview functionality, detailing compon | `plataforma-lia/docs/deep-comparison-candidate-preview.md`<br>`replit.md` |
-| 🟡 | `975e0d586` | 2026-04-03 | Outro | Add automated login and initial page navigation for the website — Implement Playwright automation script to launch Chromium, navigate to the login page, fill in crede | `wedotalent-login.mjs` |
-| 🟢 | `36e023f61` | 2026-04-02 | Frontend (api/util) | Update font size token to ensure consistency — Adjusted the `--font-size-xs` CSS token from 11px to 12px in `design-tokens.css` to align with Tailw | `plataforma-lia/src/styles/design-tokens.css` |
-| 🟢 | `a84040218` | 2026-04-01 | Frontend (api/util) | Add UI avatars to image hosting configuration — Update next.config.js to include ui-avatars.com in allowed image domains and remote patterns. | `plataforma-lia/next.config.js` |
-| 🟡 | `0616a0776` | 2026-03-31 | Outro | Update documentation to remove outdated references — Remove all remaining "Task" and "ARCH" references from the documentation. | `=200` |
-| 🟢 | `349ae02df` | 2026-03-30 | Frontend (api/util) | Add linting and formatting configurations for project files — Add `lint-staged` and `browserslist` configurations to `package.json` for improved code quality and  | `plataforma-lia/package.json` |
-| 🟡 | `7d845c452` | 2026-03-29 | Outro | Standardize header appearance across multiple pages — Create a reusable header component and apply it to Candidate Search, Jobs, and Jobs Dashboard views  | `=806` |
-| 🟡 | `be19ab5c5` | 2026-03-29 | Outro | Add monolith definition to support new project structure — Add a new section for defining monoliths in the project configuration. | `2000`<br>`2000L` |
-| 🟡 | `2b02e46a2` | 2026-03-27 | Infra/Config | Add a command to find configuration files for Nuxt projects — Add a new bash command to find .config.js, .config.ts, and nuxt.config.* files within the project di | `.claude/settings.local.json` |
-| 🟡 | `4e46858de` | 2026-03-24 | Outro | Improve analysis script by extracting BetterBugs links and optimizing LLM calls — Enhance the `adf_to_text` function to extract BetterBugs URLs from link marks, adjust the prompt to  | `scripts/jira-fetch-analyze.py` |
-| 🟡 | `cb323fc58` | 2026-03-23 | Outro | Add detailed design and quality assurance information to Jira cards — Adds a new function to analyze and generate design issues, acceptance criteria, and Definition of Do | `scripts/jira-fetch-analyze.py` |
-| 🟡 | `efd618f8d` | 2026-03-23 | Outro | Improve AI model integration and code analysis capabilities — Update Anthropic API integration to use environment variables for keys and base URLs, switch to a mo | `scripts/jira-audit-design.py`<br>`scripts/jira-fetch-analyze.py` |
-| 🟡 | `52c6faa4a` | 2026-03-22 | Outro | Add audit documentation for the login screen redesign to Jira — Update Jira card WT-1639 with detailed audit documentation for the login screen, including file refe | `scripts/jira-update-wt1639-login-audit.py` |
-| 🟢 | `c651bc305` | 2026-03-19 | Docs | Update prompt management to include modification timestamps — Add 'updated_at' field to YAML prompts for better tracking and auditing, specifying 9 files in app/p | `relatorio_capacidades_prompts_lia.md` |
-| 🟢 | `51cdc8a26` | 2026-03-19 | Docs | Update documentation to reflect latest platform capabilities and features — Update the `relatorio_capacidades_prompts_lia.md` file to reflect version 4.4, detailing new feature | `relatorio_capacidades_prompts_lia.md` |
-| 🟡 | `61dff6be8` | 2026-03-19 | Infra/Config | Add commands to fetch repository and environment details — Add GitHub API calls to fetch repository information and capture environment variables. | `.claude/settings.local.json` |
-| 🟡 | `d7dd8100c` | 2026-03-19 | Infra/Config | Add Replit connectors SDK to manage GitHub integrations — Add @replit/connectors-sdk as a dependency in package.json to enable GitHub integration management. | `package-lock.json`<br>`package.json` |
-| 🟡 | `83f7e9415` | 2026-03-19 | Backend | Update dependency version for improved stability and compatibility — Update the langsmith dependency version in pyproject.toml and requirements.txt to ensure compatibili | `lia-agent-system/pyproject.toml` |
-
 ### FastAPI v1 endpoints
 
 **Descrição:** Endpoints sob lia-agent-system/app/api/v1 — superfície da API FastAPI. Onde rotas, schemas, auth, validações de payload vivem.
@@ -856,7 +801,7 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 
 **Docs de referência:** API_REFERENCE.md
 
-- **Commits:** 56  |  **Período:** 2026-03-16 → 2026-04-18  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×49 🔴×7
+- **Commits:** 57  |  **Período:** 2026-03-16 → 2026-04-18  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×50 🔴×7
 
 | Risco | SHA | Data | Camada | O que faz | Arquivos chave |
 |:---:|---|---|---|---|---|
@@ -879,6 +824,7 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟡 | `637fad2da` | 2026-04-12 | Backend | fix: replace db.refresh with re-fetch for M2 session compatibility — After M2 migration, MainOrchestrator commits via its own db session. | `lia-agent-system/app/api/v1/chat.py` |
 | 🟡 | `54aee7902` | 2026-04-12 | Backend | feat: M2 memory migration - MainOrchestrator owns persistence (Passo 3) — Items 1-4 of M2 memory migration: | `lia-agent-system/app/api/v1/chat.py` |
 | 🟡 | `cbf23f7ed` | 2026-04-12 | Backend | feat: disable handle_action_flow via early return (Passo 2 Commit B) — MainOrchestrator Phase 0+1 now handles all actions. | `lia-agent-system/app/api/v1/chat.py` |
+| 🟡 | `9c37c675e` | 2026-04-10 | Backend | Add new endpoints for onboarding and WhatsApp messaging — Integrate new routers for onboarding and WhatsApp webhook functionalities into the API. | `lia-agent-system/app/api/routes.py` |
 | 🟡 | `7c4cababe` | 2026-04-10 | Backend | Allow zero limit for candidate searches — Adjust search request models to permit a `pearch_limit` of 0, resolving an HTTP 422 validation error | `lia-agent-system/app/api/v1/candidate_search/_shared.py`<br>`lia-agent-system/app/api/v1/candidate_search/archetypes.py`<br>`lia-agent-system/app/api/v1/candidate_search/contact.py` |
 | 🟡 | `9d51b5db5` | 2026-04-10 | Backend | Fix critical search bug and add recruitment campaign stub functionality — Corrects the candidate search endpoint to properly handle PearchService requests, aligns the talent  | `lia-agent-system/app/api/routes.py`<br>`lia-agent-system/app/api/v1/candidates/candidates_search.py`<br>`lia-agent-system/app/api/v1/recruitment_campaigns.py` |
 | 🔴 | `3cad3eb72` | 2026-04-10 | Cross Back↔Front | Add real-time candidate counts to recruitment pipeline stages — Adds a new backend endpoint and frontend integration to display real-time candidate counts for each  | `lia-agent-system/app/api/v1/job_vacancies/analytics.py`<br>`plataforma-lia/src/app/api/backend-proxy/pipeline-pulse/route.ts`<br>`plataforma-lia/src/components/ui/chat-workflow-reels.tsx` |
@@ -1049,6 +995,14 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 
 ### Tasks #712-#886 (Features de produto)
 
+**Descrição:** Tasks da janela atual #712-#886 — onboarding proativo, wizard vagas, benefícios, WSI/Bloom terms, triagem, funil de candidatos, multi-tenancy.
+
+**⚠️ Dependências para cherry-pick:** Ver categorias específicas — features ainda em progresso em feat/orch-migration-sprint-I
+
+**Arquivos canônicos:** Diversos — depende da task específica
+
+**Docs de referência:** BRANCH_MAP §5
+
 - **Commits:** 48  |  **Período:** 2026-04-21 → 2026-04-27  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×23 🟢×19 🔴×6
 
 | Risco | SHA | Data | Camada | O que faz | Arquivos chave |
@@ -1166,55 +1120,61 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `8bd407e84` | 2026-04-01 | Frontend (UI) | fix(typescript): resolve residual type errors in FunilDeTalentosClient, candidate-modal, ScreeningQuestionsPanel | `plataforma-lia/src/app/funil-de-talentos/FunilDeTalentosClient.tsx`<br>`plataforma-lia/src/components/candidate-modal.tsx`<br>`plataforma-lia/src/components/job-creation/ScreeningQuestionsPanel.tsx` |
 | 🟡 | `a260fa9fe` | 2026-03-16 | Backend | fix: strip raw ReAct JSON from floating chat responses (WS + HTTP) — - Add _strip_react_json() to agent_chat_ws.py to extract 'response' field | `lia-agent-system/app/api/v1/agent_chat_ws.py` |
 
-### Outro
+### Login UI (FE)
 
-- **Commits:** 43  |  **Período:** 2026-03-15 → 2026-04-22  |  **Camadas:** Backend + Frontend  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×30 🟡×13
+**Descrição:** Páginas de login, welcome, dev-auto-login.
+
+**⚠️ Dependências para cherry-pick:** Auth provider config | dev-auto-login.ts (Task #384)
+
+**Arquivos canônicos:** plataforma-lia/src/app/login/**, src/lib/auth/**
+
+**Docs de referência:** —
+
+- **Commits:** 41  |  **Período:** 2026-03-22 → 2026-04-13  |  **Camadas:** Frontend  |  **—**  |  **Risco:** 🟢×39 🟡×2
 
 | Risco | SHA | Data | Camada | O que faz | Arquivos chave |
 |:---:|---|---|---|---|---|
-| 🟢 | `540315b5a` | 2026-04-22 | Docs | docs: expand LIA_MATURITY_LEAP_RESUMO.md section 7 with detailed breakdown — Previous section 7 was 6 bullet points saying "X: frontend needed". User | `lia-agent-system/docs/LIA_MATURITY_LEAP_RESUMO.md` |
-| 🟢 | `ec89039c6` | 2026-04-22 | Docs | docs: LIA_MATURITY_LEAP_RESUMO.md — explanatory summary for dev team — 200-line plain-language complement to HANDOFF_LIA_MATURITY_PROGRAM_COMPLETE.md. | `lia-agent-system/docs/LIA_MATURITY_LEAP_RESUMO.md` |
-| 🟢 | `0cdf20288` | 2026-04-22 | Frontend (api/util) | Remove all job readiness related endpoints and documentation — Removes deprecated job readiness endpoints from api.generated.ts and updates ARCITECTURE.md, SPARKLE | `plataforma-lia/src/types/api.generated.ts` |
-| 🟡 | `b7ac5d94a` | 2026-04-21 | Outro | chore: remove stray helper scripts from prior debug sessions | `apply_jwt_blacklist.py`<br>`fix_replit_tools.py` |
-| 🟡 | `0eb9c7013` | 2026-04-21 | Outro | chore: remove stray repair_tools.py from prior debugging session | `repair_tools.py` |
-| 🟡 | `d46fd1dae` | 2026-04-19 | Outro | Remove unnecessary data from the system — Remove a leftover data artifact from the system. | `=133` |
-| 🟢 | `287e5a19d` | 2026-04-19 | Docs | docs: secao 14 Claude Code usage guide paths canonicos | `lia-agent-system/DEVELOPER_HANDOFF.md` |
-| 🟢 | `cf3585177` | 2026-04-15 | Empty/merge | fix: resolve default_languages column type mismatch (ARRAY→JSONB) — The company_culture_profiles.default_languages column is jsonb in the DB | — |
-| 🟢 | `320d8192e` | 2026-04-15 | Frontend (api/util) | Fix translation BR tag rendering on login page — Replace self-closing <br/> with <br></br> in login.heroTitle translation | `plataforma-lia/messages/en.json`<br>`plataforma-lia/messages/pt-BR.json` |
-| 🟡 | `4c79c511f` | 2026-04-14 | Backend | docs: document staging Rails API URL in .env.example [PX08-007] — Staging URL: https://staging2.wedotalent.cc | `lia-agent-system/.env.example` |
-| 🟢 | `59a71de41` | 2026-04-14 | Docs | docs: Langfuse integration decision — N/A, covered by LangSmith [PX08-070] — Sprint 10 item 10.5 — Evaluated Langfuse integration and determined | `lia-agent-system/app/config/langfuse_decision.md` |
-| 🟡 | `558b94fc5` | 2026-04-13 | Outro | fix: cold-start resilience for Jobs, Candidates, and Tasks pages — Root cause: Next.js dev server takes 41+ seconds for initial compilation, | `fix_lucide_types.py`<br>`onda1_frontend_files.py`<br>`patch_b3_b4_bugfixes.py` |
-| 🟡 | `979a613d7` | 2026-04-12 | Infra/Config | Fix: npm audit fix - DOMPurify vulnerabilities resolved | `package-lock.json` |
-| 🟢 | `b36b27bc7` | 2026-04-12 | Docs | docs: audit log final completo — sessao Path A + SystemPromptBuilder + 5 items | `lia-agent-system/docs/audit/path-a-execution-log.md` |
-| 🟢 | `a3823816e` | 2026-04-12 | Docs | docs: update Path A audit log with Passo 2 Commits A+B | `lia-agent-system/docs/audit/path-a-execution-log.md` |
-| 🟢 | `98a2c20e5` | 2026-04-11 | Docs | docs: comprehensive diagnostic report - architecture, domains, Rails ATS analysis | `DIAGNOSTIC_REPORT_APRIL_2026.md` |
-| 🟡 | `8de193476` | 2026-04-11 | Outro | feat: add updated Detailed System Architecture diagram (April 2026) — - Updated from real codebase: 56 domains, 304 API files, 33 orchestrator files (1.2MB) | `diagrams/lia-ai-architecture.excalidraw` |
-| 🟢 | `4ee7061e6` | 2026-04-11 | Docs | Design System v4.2.2: document updated with all new values, 4 new sections, zero old refs | `plataforma-lia/docs/design-system/00-design-system-v4.md` |
-| 🟢 | `f1ade9154` | 2026-04-10 | Frontend (api/util) | Design System: add typescript ignoreBuildErrors | `plataforma-lia/next.config.js` |
-| 🟢 | `c802d7107` | 2026-04-09 | Frontend (UI) | revert: restore secure:true sameSite:none for cookies (HTTPS via Replit proxy) — SameSite=lax breaks in Replit webview iframe context. | `plataforma-lia/src/app/api/auth/session/refresh/route.ts`<br>`plataforma-lia/src/app/api/auth/session/route.ts` |
-| 🟢 | `c283a2eea` | 2026-04-09 | Frontend (api/util) | feat: Dynamic sidebar sub-items for Talent Pools and Agents — Sidebar now shows active Talent Pools as sub-items under "Funil de Talentos" | `plataforma-lia/src/middleware.ts` |
-| 🟢 | `e19a44a23` | 2026-04-09 | Empty/merge | fix: restore TalentPoolPage.tsx from bad merge corruption — A previous merge incorrectly inserted VoiceScreeningButton blocks | — |
-| 🟢 | `37141c08b` | 2026-04-09 | Empty/merge | resolve merge conflicts — accept remote | — |
-| 🟡 | `ccdedc141` | 2026-04-08 | Outro | Fix issue causing users to see a blank page and ensure proper data display — Add missing database columns and re-export internal functions to resolve rendering errors. | `1`<br>`200` |
-| 🟢 | `70863bb78` | 2026-04-07 | Frontend (api/util) | docs+refactor(phase2): complete Phase 2 repo extraction — - 215 API files clean (0 direct DB calls) | `plataforma-lia/package-lock.json`<br>`plataforma-lia/package.json`<br>`plataforma-lia/playwright.config.ts` |
-| 🟢 | `fd2ca73f2` | 2026-04-07 | Docs | Clarify team ownership of development flow and environment — Update DEPLOY_GUIDE.md to redefine roles in development flow, emphasizing team ownership of the cent | `DEPLOY_GUIDE.md` |
-| 🟢 | `df7f53768` | 2026-04-07 | Docs | docs: update REFACTOR_PLAN after Phase 2+3+4B | `lia-agent-system/REFACTOR_PLAN.md` |
-| 🟢 | `7e5560b6c` | 2026-04-07 | Docs | docs: revisit REFACTOR_PLAN with Rails-aware corrections — - Add Rails Migration Boundary section: entities owned by Rails vs FastAPI | `lia-agent-system/REFACTOR_PLAN.md` |
-| 🟢 | `bf0e042d0` | 2026-04-06 | Docs | docs: update REFACTOR_PLAN.md — Phase 2 (12 migrated, 174 pending), Phase 4 done, Phase 9 LOC delta | `lia-agent-system/REFACTOR_PLAN.md` |
+| 🟢 | `d3539e216` | 2026-04-13 | Frontend (api/util) | Improve development login by simplifying token handling — Update the development login flow in the middleware to directly set the Authorization header and han | `plataforma-lia/src/middleware.ts` |
+| 🟢 | `df7ce03b6` | 2026-04-11 | Frontend (UI) | Add a clear but subtle message about WeDO's ATS integration flexibility — Add a new paragraph to the login page in LoginClient.tsx to communicate that WeDO Talent can connect | `plataforma-lia/src/app/login/LoginClient.tsx` |
+| 🟢 | `78d4dbf00` | 2026-04-09 | Frontend (UI) | Allow users to remain logged out after signing out — Modify the login page and middleware to respect the 'lia_logged_out' cookie, preventing automatic re | `plataforma-lia/src/app/login/LoginClient.tsx` |
 | 🟡 | `e0405a9a3` | 2026-04-05 | Outro | Remove demo buttons and unnecessary routes from login page — Remove demo buttons and update routing configurations to streamline the login process. | `dump.rdb` |
-| 🟢 | `ff8b4a8b7` | 2026-04-02 | Docs | Clarify audit results in documentation regarding design token migration — Update replit.md to accurately reflect the outcome of the design token migration audit, noting that  | `replit.md` |
-| 🟢 | `69bca4528` | 2026-04-01 | Docs | docs: fix MIGRATION_READINESS — files >1000L is 3 not 1 (design-tokens.css grew, useExpandedChatModalCore at 1001L) | `plataforma-lia/MIGRATION_READINESS.md` |
-| 🟢 | `4a6a078e5` | 2026-04-01 | Docs | docs: MIGRATION_READINESS.md score 69/70 checklist context-store map risks | `plataforma-lia/MIGRATION_READINESS.md` |
-| 🟡 | `11ee7c473` | 2026-04-01 | Outro | chore: remove accidental =350 file | `=350` |
-| 🟢 | `eca690fec` | 2026-03-31 | Frontend (api/util) | ci: add GitHub Actions CI pipeline — lint, test, build on push/PR to main | `plataforma-lia/.github/workflows/ci.yml` |
-| 🟡 | `e80a660e4` | 2026-03-31 | Outro | chore: remove accidental artifact file | `=141` |
-| 🟢 | `8623bc019` | 2026-03-31 | Docs | docs: audit score v4 - 49.9/60 (+2.4 force-dynamic+virtual+splits+tests) | `plataforma-lia/docs/audit/frontend-audit-v4-scores.md` |
-| 🟢 | `3d0048966` | 2026-03-31 | Frontend (api/util) | fix: exclui test files e exports/ do tsc — remove 1000+ erros de arquivos fora do escopo de prod | `plataforma-lia/tsconfig.json` |
-| 🟢 | `78ff81786` | 2026-03-30 | Frontend (UI) | fix: corrige JSX comment duplo em layout.tsx — {{/* → {/* | `plataforma-lia/src/app/layout.tsx` |
-| 🟡 | `8fff66478` | 2026-03-23 | Outro | Stop updating card descriptions and post analysis as comments — Replaces direct updates to card descriptions with posts to comments, as the description endpoint can | `scripts/jira-audit-design.py`<br>`scripts/jira-fetch-analyze.py` |
-| 🟡 | `decb3621b` | 2026-03-23 | Outro | scripts: adiciona jira-fetch-analyze.py e jira-audit-design.py — jira-fetch-analyze.py (comando fetch): | `scripts/jira-audit-design.py`<br>`scripts/jira-fetch-analyze.py` |
-| 🟢 | `5fc57171c` | 2026-03-16 | Docs | docs: update replit.md with ReAct JSON strip documentation | `replit.md` |
-| 🟢 | `0d16fb162` | 2026-03-15 | Docs | docs: relatorio_capacidades_prompts_lia.md v4.2 — atualização completa seções 1-34 — Atualização profunda das seções 5, 9, 13, 15, 17, 18, 25 e 34 para refletir | `relatorio_capacidades_prompts_lia.md` |
+| 🟢 | `cec051c3d` | 2026-04-03 | Frontend (UI) | Add a new onboarding flow explaining the recruitment process — Introduce a multi-step animation detailing the recruitment workflow before the user proceeds to the  | `plataforma-lia/src/app/login/welcome/page.tsx` |
+| 🟢 | `3884f46fc` | 2026-04-03 | Frontend (UI) | Improve visibility and layout of login page elements — Adjust subtitle text styles for better readability and limit footer width on the login page. | `plataforma-lia/src/app/login/LoginClient.tsx` |
+| 🟢 | `cd550ec7e` | 2026-04-03 | Frontend (UI) | Restore original login page design with two-step authentication flow — Reverts the login page to its initial design, reintroducing a two-step email/password authentication | `plataforma-lia/src/app/login/LoginClient.tsx` |
+| 🟢 | `85ab54bf3` | 2026-04-03 | Frontend (UI) | Restore full login page with cloud background and SSO options — Update `LoginClient.tsx` to use the `LoginPage` component with `CloudsBackground`, while retaining J | `plataforma-lia/src/app/login/LoginClient.tsx` |
+| 🟢 | `61b361b85` | 2026-03-30 | Frontend (UI) | fix: remove use client de useSessionTimeout.ts + login form completo + tsconfig strict | `plataforma-lia/src/app/login/page.tsx` |
+| 🟡 | `58b131fa3` | 2026-03-30 | Frontend (UI) | forms: mascaras CPF/CNPJ/tel/CEP + MaskedInput + htmlFor/aria-describedby - fecha BCK-19 ALT-06 ALT-07 | `plataforma-lia/src/app/forgot-password/page.tsx`<br>`plataforma-lia/src/app/login/page.tsx`<br>`plataforma-lia/src/app/register/page.tsx` |
+| 🟢 | `c4ad7d11b` | 2026-03-22 | Frontend (UI) | Update login page styling and dark mode support — Adjusted border-radius for inputs and error messages to `rounded-xl`, added dark mode variants for t | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `42af42d82` | 2026-03-22 | Frontend (UI) | Improve the visual hierarchy and elegance of the login page — Update the login page's sequence text font weight to 'light' and adjust layout for better readabilit | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `7d683641b` | 2026-03-22 | Frontend (UI) | Improve the visual presentation of login page elements — Break the sequence text into two lines, placing "Recrutamento simples" on its own line for emphasis. | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `fd3f36615` | 2026-03-22 | Frontend (UI) | Make headline text lighter and bolder for emphasis — Update the login page's main headline to use a lighter font weight for descriptive text and a bold w | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `01bb2fddc` | 2026-03-22 | Frontend (UI) | Improve the visual scale and readability of the login page — Adjusted typography sizes and spacing in the login page's left panel to improve visual hierarchy and | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `ae5802f2b` | 2026-03-22 | Frontend (UI) | Make the word "simples" bold to increase its visibility — Update the UI to make the word "simples" bold in the login page's descriptive text. | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `595f8da3c` | 2026-03-22 | Frontend (UI) | Make the AI name bold and remove italics for better visibility — Update the `page.tsx` file to change the `<span>` elements containing "LIA" from italicized Source S | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `bfb9ca3b3` | 2026-03-22 | Frontend (UI) | Update page appearance to use specific fonts and colors — Modify the login page to apply Source Serif 4 font to "LIA", change "simples" to cyan text color, an | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `04765f750` | 2026-03-22 | Frontend (UI) | Update Microsoft login button to use official logo — Replace placeholder 'M' button with an inline SVG of the official 4-color Microsoft logo for the "Co | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `5931be794` | 2026-03-22 | Frontend (UI) | Add social media links and copyright to the login page footer — Import Globe and Linkedin icons, update left panel content structure, and add a footer with social m | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `e1191ab57` | 2026-03-22 | Frontend (UI) | Center align footer text on the login page — Center align the footer text "A WeDoTalent é uma HRTech brasileira..." in the login page component b | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `e0dd09292` | 2026-03-22 | Frontend (UI) | Update recruitment platform login page with new messaging — Update the recruitment platform's login page, refining the headline, descriptive text, and badge to  | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `5a09e3c93` | 2026-03-22 | Frontend (UI) | Improve alignment of login page elements for better visual appeal — Adjusted the positioning of the logo and footer to absolute values, and modified the content centeri | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `fa48b1405` | 2026-03-22 | Frontend (UI) | Center the login card and move the footer text to the bottom — Adjust the layout of the login page to vertically center the login card and position the footer text | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `c9adfd3f9` | 2026-03-22 | Frontend (UI) | Move login page footer text to below the main card — Removes footer text from the left panel and repositions it below the login card in the right panel,  | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `fe827551c` | 2026-03-22 | Frontend (UI) | Reposition AI badge to the bottom of the right panel — Move the AI badge from above the headline in the left panel to below the login card in the right pan | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `a334b0570` | 2026-03-22 | Frontend (UI) | Add a badge with recruitment AI information above the headline — Add a new badge component to the login page displaying "Inteligência Artificial Agêntica para Recrut | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `6b9568369` | 2026-03-22 | Frontend (UI) | Center login prompts and remove footer links from the platform access card — Center the "Entrar na plataforma" and "Acesse sua conta para continuar" text elements within the log | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `846482f55` | 2026-03-22 | Frontend (UI) | Adjust logo size and position to improve alignment with text — Update logo container width to 230px and apply a negative left margin of -10px to align the WeDoTale | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `7bbed4417` | 2026-03-22 | Frontend (UI) | Update footer text to correct company name and capitalization — Corrected "WeDo Talent" to "WeDoTalent" and "Brasileira" to "brasileira" in the login page footer. | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `ff83a14f5` | 2026-03-22 | Frontend (UI) | Adjust text alignment and size for better logo proportion — Update the "TALENT" text styling in `page.tsx` to increase font size to 18px, adjust tracking to 0.1 | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `726c430ea` | 2026-03-22 | Frontend (UI) | Increase size and spacing of Talent logo text — Adjusted the font size and letter spacing for the 'talent' text within the login page component to b | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `62d773b34` | 2026-03-22 | Frontend (UI) | Align "TALENT" text to the right below logo — Update login page to right-align the "TALENT" text beneath the "weDO" logo in `page.tsx`. | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `1253e103a` | 2026-03-22 | Frontend (UI) | Add "TALENT" text below the company logo on the login page — Update the login page component to include the "TALENT" text below the "WeDo" logo, adjusting the lo | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `0a8513b6d` | 2026-03-22 | Frontend (UI) | Align logo and adjust its size on the login page — Update login page layout in `page.tsx` to align the WeDo logo to the left with consistent padding an | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `907ff29fb` | 2026-03-22 | Frontend (UI) | Restructure login process into two distinct steps for improved user experience — Refactor login page to implement a two-step authentication flow, separating email input from passwor | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `cf3d38140` | 2026-03-22 | Frontend (UI) | Make the recruitment future description text color cyan — Update the login page heading to make the word "simples." cyan and slim. | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `a236995a7` | 2026-03-22 | Frontend (UI) | Add animated cloud background and floating card login form — Introduce CloudsBackground component with framer-motion for animated clouds and update the login pag | `plataforma-lia/src/app/login/page.tsx`<br>`plataforma-lia/src/components/clouds-background.tsx` |
+| 🟢 | `7e16b5d99` | 2026-03-22 | Frontend (UI) | Remove recruitment technology details from login screen — Remove descriptive text and bullet points related to AI recruitment from the left panel of the login | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `be887fa40` | 2026-03-22 | Frontend (UI) | Remove AI assistant card and screen dividing line — Removed the "Conheça a LIA" card and the dividing shadow from the login page in `src/app/login/page. | `plataforma-lia/src/app/login/page.tsx` |
+| 🟢 | `cc89ea23a` | 2026-03-22 | Frontend (UI) | Add a calming cloud background and transparent logo to the login page — Update the login page to include a CSS-generated cloud background gradient and use a transparent ver | `plataforma-lia/src/app/login/page.tsx`<br>`plataforma-lia/src/components/pages/login-page.tsx` |
 
 ### scope: phase2
 
@@ -1263,60 +1223,6 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟡 | `bbfe57323` | 2026-04-06 | Backend | feat(phase2): migrate journey_mapping.py to JourneyMappingRepository | `lia-agent-system/app/api/v1/journey_mapping.py`<br>`lia-agent-system/app/domains/journey_mapping/repositories/__init__.py`<br>`lia-agent-system/app/domains/journey_mapping/repositories/journey_mapping_repository.py` |
 | 🟡 | `0d7556503` | 2026-04-06 | Backend | feat(phase2): migrate workforce.py to WorkforceRepository + fix broken string literals — - Created app/domains/workforce/repositories/workforce_repository.py | `lia-agent-system/app/api/v1/workforce.py` |
 | 🟡 | `2d2273b1b` | 2026-04-06 | Backend | feat(phase2): migrate recruitment_journey.py to RecruitmentJourneyRepository | `lia-agent-system/app/api/v1/recruitment_journey.py` |
-
-### Login UI (FE)
-
-**Descrição:** Páginas de login, welcome, dev-auto-login.
-
-**⚠️ Dependências para cherry-pick:** Auth provider config | dev-auto-login.ts (Task #384)
-
-**Arquivos canônicos:** plataforma-lia/src/app/login/**, src/lib/auth/**
-
-**Docs de referência:** —
-
-- **Commits:** 39  |  **Período:** 2026-03-22 → 2026-04-11  |  **Camadas:** Frontend  |  **—**  |  **Risco:** 🟢×38 🟡×1
-
-| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
-|:---:|---|---|---|---|---|
-| 🟢 | `df7ce03b6` | 2026-04-11 | Frontend (UI) | Add a clear but subtle message about WeDO's ATS integration flexibility — Add a new paragraph to the login page in LoginClient.tsx to communicate that WeDO Talent can connect | `plataforma-lia/src/app/login/LoginClient.tsx` |
-| 🟢 | `78d4dbf00` | 2026-04-09 | Frontend (UI) | Allow users to remain logged out after signing out — Modify the login page and middleware to respect the 'lia_logged_out' cookie, preventing automatic re | `plataforma-lia/src/app/login/LoginClient.tsx` |
-| 🟢 | `cec051c3d` | 2026-04-03 | Frontend (UI) | Add a new onboarding flow explaining the recruitment process — Introduce a multi-step animation detailing the recruitment workflow before the user proceeds to the  | `plataforma-lia/src/app/login/welcome/page.tsx` |
-| 🟢 | `3884f46fc` | 2026-04-03 | Frontend (UI) | Improve visibility and layout of login page elements — Adjust subtitle text styles for better readability and limit footer width on the login page. | `plataforma-lia/src/app/login/LoginClient.tsx` |
-| 🟢 | `cd550ec7e` | 2026-04-03 | Frontend (UI) | Restore original login page design with two-step authentication flow — Reverts the login page to its initial design, reintroducing a two-step email/password authentication | `plataforma-lia/src/app/login/LoginClient.tsx` |
-| 🟢 | `85ab54bf3` | 2026-04-03 | Frontend (UI) | Restore full login page with cloud background and SSO options — Update `LoginClient.tsx` to use the `LoginPage` component with `CloudsBackground`, while retaining J | `plataforma-lia/src/app/login/LoginClient.tsx` |
-| 🟢 | `61b361b85` | 2026-03-30 | Frontend (UI) | fix: remove use client de useSessionTimeout.ts + login form completo + tsconfig strict | `plataforma-lia/src/app/login/page.tsx` |
-| 🟡 | `58b131fa3` | 2026-03-30 | Frontend (UI) | forms: mascaras CPF/CNPJ/tel/CEP + MaskedInput + htmlFor/aria-describedby - fecha BCK-19 ALT-06 ALT-07 | `plataforma-lia/src/app/forgot-password/page.tsx`<br>`plataforma-lia/src/app/login/page.tsx`<br>`plataforma-lia/src/app/register/page.tsx` |
-| 🟢 | `c4ad7d11b` | 2026-03-22 | Frontend (UI) | Update login page styling and dark mode support — Adjusted border-radius for inputs and error messages to `rounded-xl`, added dark mode variants for t | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `42af42d82` | 2026-03-22 | Frontend (UI) | Improve the visual hierarchy and elegance of the login page — Update the login page's sequence text font weight to 'light' and adjust layout for better readabilit | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `7d683641b` | 2026-03-22 | Frontend (UI) | Improve the visual presentation of login page elements — Break the sequence text into two lines, placing "Recrutamento simples" on its own line for emphasis. | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `fd3f36615` | 2026-03-22 | Frontend (UI) | Make headline text lighter and bolder for emphasis — Update the login page's main headline to use a lighter font weight for descriptive text and a bold w | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `01bb2fddc` | 2026-03-22 | Frontend (UI) | Improve the visual scale and readability of the login page — Adjusted typography sizes and spacing in the login page's left panel to improve visual hierarchy and | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `ae5802f2b` | 2026-03-22 | Frontend (UI) | Make the word "simples" bold to increase its visibility — Update the UI to make the word "simples" bold in the login page's descriptive text. | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `595f8da3c` | 2026-03-22 | Frontend (UI) | Make the AI name bold and remove italics for better visibility — Update the `page.tsx` file to change the `<span>` elements containing "LIA" from italicized Source S | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `bfb9ca3b3` | 2026-03-22 | Frontend (UI) | Update page appearance to use specific fonts and colors — Modify the login page to apply Source Serif 4 font to "LIA", change "simples" to cyan text color, an | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `04765f750` | 2026-03-22 | Frontend (UI) | Update Microsoft login button to use official logo — Replace placeholder 'M' button with an inline SVG of the official 4-color Microsoft logo for the "Co | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `5931be794` | 2026-03-22 | Frontend (UI) | Add social media links and copyright to the login page footer — Import Globe and Linkedin icons, update left panel content structure, and add a footer with social m | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `e1191ab57` | 2026-03-22 | Frontend (UI) | Center align footer text on the login page — Center align the footer text "A WeDoTalent é uma HRTech brasileira..." in the login page component b | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `e0dd09292` | 2026-03-22 | Frontend (UI) | Update recruitment platform login page with new messaging — Update the recruitment platform's login page, refining the headline, descriptive text, and badge to  | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `5a09e3c93` | 2026-03-22 | Frontend (UI) | Improve alignment of login page elements for better visual appeal — Adjusted the positioning of the logo and footer to absolute values, and modified the content centeri | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `fa48b1405` | 2026-03-22 | Frontend (UI) | Center the login card and move the footer text to the bottom — Adjust the layout of the login page to vertically center the login card and position the footer text | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `c9adfd3f9` | 2026-03-22 | Frontend (UI) | Move login page footer text to below the main card — Removes footer text from the left panel and repositions it below the login card in the right panel,  | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `fe827551c` | 2026-03-22 | Frontend (UI) | Reposition AI badge to the bottom of the right panel — Move the AI badge from above the headline in the left panel to below the login card in the right pan | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `a334b0570` | 2026-03-22 | Frontend (UI) | Add a badge with recruitment AI information above the headline — Add a new badge component to the login page displaying "Inteligência Artificial Agêntica para Recrut | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `6b9568369` | 2026-03-22 | Frontend (UI) | Center login prompts and remove footer links from the platform access card — Center the "Entrar na plataforma" and "Acesse sua conta para continuar" text elements within the log | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `846482f55` | 2026-03-22 | Frontend (UI) | Adjust logo size and position to improve alignment with text — Update logo container width to 230px and apply a negative left margin of -10px to align the WeDoTale | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `7bbed4417` | 2026-03-22 | Frontend (UI) | Update footer text to correct company name and capitalization — Corrected "WeDo Talent" to "WeDoTalent" and "Brasileira" to "brasileira" in the login page footer. | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `ff83a14f5` | 2026-03-22 | Frontend (UI) | Adjust text alignment and size for better logo proportion — Update the "TALENT" text styling in `page.tsx` to increase font size to 18px, adjust tracking to 0.1 | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `726c430ea` | 2026-03-22 | Frontend (UI) | Increase size and spacing of Talent logo text — Adjusted the font size and letter spacing for the 'talent' text within the login page component to b | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `62d773b34` | 2026-03-22 | Frontend (UI) | Align "TALENT" text to the right below logo — Update login page to right-align the "TALENT" text beneath the "weDO" logo in `page.tsx`. | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `1253e103a` | 2026-03-22 | Frontend (UI) | Add "TALENT" text below the company logo on the login page — Update the login page component to include the "TALENT" text below the "WeDo" logo, adjusting the lo | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `0a8513b6d` | 2026-03-22 | Frontend (UI) | Align logo and adjust its size on the login page — Update login page layout in `page.tsx` to align the WeDo logo to the left with consistent padding an | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `907ff29fb` | 2026-03-22 | Frontend (UI) | Restructure login process into two distinct steps for improved user experience — Refactor login page to implement a two-step authentication flow, separating email input from passwor | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `cf3d38140` | 2026-03-22 | Frontend (UI) | Make the recruitment future description text color cyan — Update the login page heading to make the word "simples." cyan and slim. | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `a236995a7` | 2026-03-22 | Frontend (UI) | Add animated cloud background and floating card login form — Introduce CloudsBackground component with framer-motion for animated clouds and update the login pag | `plataforma-lia/src/app/login/page.tsx`<br>`plataforma-lia/src/components/clouds-background.tsx` |
-| 🟢 | `7e16b5d99` | 2026-03-22 | Frontend (UI) | Remove recruitment technology details from login screen — Remove descriptive text and bullet points related to AI recruitment from the left panel of the login | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `be887fa40` | 2026-03-22 | Frontend (UI) | Remove AI assistant card and screen dividing line — Removed the "Conheça a LIA" card and the dividing shadow from the login page in `src/app/login/page. | `plataforma-lia/src/app/login/page.tsx` |
-| 🟢 | `cc89ea23a` | 2026-03-22 | Frontend (UI) | Add a calming cloud background and transparent logo to the login page — Update the login page to include a CSS-generated cloud background gradient and use a transparent ver | `plataforma-lia/src/app/login/page.tsx`<br>`plataforma-lia/src/components/pages/login-page.tsx` |
 
 ### Candidates (FE pages)
 
@@ -1410,6 +1316,14 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟡 | `eb2d19e86` | 2026-04-06 | Backend | fix(guards): add platform_event_handlers.py to PENDING_MIGRATION allowlist | `lia-agent-system/scripts/check_no_sql_in_controllers.py` |
 
 ### Docs / Specs
+
+**Descrição:** Specs técnicas — frontend, qa, e2e.
+
+**⚠️ Dependências para cherry-pick:** —
+
+**Arquivos canônicos:** docs/specs/**
+
+**Docs de referência:** —
 
 - **Commits:** 31  |  **Período:** 2026-03-24 → 2026-04-03  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×27 🔴×3 🟡×1
 
@@ -1539,7 +1453,7 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 
 ### Skills / canonical-fix
 
-- **Commits:** 28  |  **Período:** 2026-03-22 → 2026-04-26  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×15 🟡×12 🔴×1
+- **Commits:** 29  |  **Período:** 2026-03-19 → 2026-04-26  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×15 🟡×13 🔴×1
 - **Tags/Milestones:** `milestone/canonical-fix-skill`
 
 | Risco | SHA | Data | Camada | O que faz | Arquivos chave |
@@ -1572,6 +1486,7 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟡 | `be79c6ab6` | 2026-03-23 | IA | Update how candidate skills and traits are extracted and used — Enhance the WSI service to extract 5 technical and 5 behavioral competencies, adjust question genera | `lia-agent-system/app/domains/cv_screening/services/wsi_service.py` |
 | 🟡 | `916bc3d3f` | 2026-03-22 | Outro | feat(skill): add PASSO 0 Intenção Estética to design-standardize skill — Task #32 — Skill design-standardize: adicionar PASSO 0 — Intenção Estética | `.cursor/rules/design-standardize.mdc` |
 | 🟡 | `dc2e74ae7` | 2026-03-22 | Outro | feat(skill): add PASSO 0 Intenção Estética to design-standardize skill — Task #32 — Skill design-standardize: adicionar PASSO 0 — Intenção Estética | `.cursor/rules/design-standardize.mdc` |
+| 🟡 | `61dff6be8` | 2026-03-19 | Infra/Config | Add commands to fetch repository and environment details — Add GitHub API calls to fetch repository information and capture environment variables. | `.claude/settings.local.json` |
 
 ### §7 WorkflowRail UX
 
@@ -1619,7 +1534,7 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 
 ### i18n / Translation
 
-- **Commits:** 26  |  **Período:** 2026-04-13 → 2026-04-20  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×15 🟡×10 🔴×1
+- **Commits:** 27  |  **Período:** 2026-04-13 → 2026-04-20  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×16 🟡×10 🔴×1
 
 | Risco | SHA | Data | Camada | O que faz | Arquivos chave |
 |:---:|---|---|---|---|---|
@@ -1630,6 +1545,7 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `4deeb4980` | 2026-04-17 | Frontend (api/util) | Fix PT/EN locale switch being overridden by middleware — Task #380: The Next.js middleware in `plataforma-lia/src/middleware.ts` | `plataforma-lia/src/middleware.ts` |
 | 🟢 | `ff4f70448` | 2026-04-16 | Frontend (UI) | Fix login hero i18n rendering (Task #253) — The left-side hero phrase on /en/login and /pt-BR/login was rendering | `plataforma-lia/src/app/[locale]/login/LoginClient.tsx` |
 | 🟢 | `f3af139b4` | 2026-04-15 | Frontend (UI) | fix: Digital Twins i18n namespace + design consistency (Task #201) — Problem 1 - Translation keys showing as raw text: | `plataforma-lia/src/components/pages-agent-studio/DigitalTwinComponents.tsx` |
+| 🟢 | `320d8192e` | 2026-04-15 | Frontend (api/util) | Fix translation BR tag rendering on login page — Replace self-closing <br/> with <br></br> in login.heroTitle translation | `plataforma-lia/messages/en.json`<br>`plataforma-lia/messages/pt-BR.json` |
 | 🟢 | `1800efed9` | 2026-04-14 | Frontend (api/util) | Redirect all English paths to Portuguese and update locale cookie — Modify middleware to redirect root and all English paths to Portuguese, ensuring the locale cookie i | `plataforma-lia/src/middleware.ts` |
 | 🟡 | `861e8b6c2` | 2026-04-14 | Frontend (UI) | feat(i18n): complete Agent Studio i18n for all components — Task #194 — Replace all hardcoded PT strings with next-intl t() calls | `plataforma-lia/src/components/pages-agent-studio/CalibrationCardModal.tsx` |
 | 🟢 | `ad06793c3` | 2026-04-14 | Frontend (UI) | feat(i18n): complete Agent Studio i18n for all components — Task #194 — Replace all hardcoded PT strings with next-intl t() calls | `plataforma-lia/src/components/pages-agent-studio/custom-agents/ToolSelector.tsx` |
@@ -1651,6 +1567,14 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🔴 | `764d08216` | 2026-04-13 | Frontend (UI) | feat(i18n): implement next-intl infrastructure with localized routes (Task #190) — - Install next-intl and configure createNextIntlPlugin in next.config.js | `plataforma-lia/src/app/[locale]/ClientBody.tsx`<br>`plataforma-lia/src/app/[locale]/accept-invitation/AcceptInvitationClient.tsx`<br>`plataforma-lia/src/app/[locale]/accept-invitation/layout.tsx` |
 
 ### Tasks #574-#712 (Janela anterior — chat/funil/glossário)
+
+**Descrição:** Tasks da janela #574-#712 — chat unificado saneamento, funil unificado, glossário canônico, domains production-ready, candidate portal spec.
+
+**⚠️ Dependências para cherry-pick:** Ver §6 Chat Unificado / §8 Glossário / §11 Candidate Portal
+
+**Arquivos canônicos:** Diversos — depende da task específica
+
+**Docs de referência:** BRANCH_MAP — Janela 2
 
 - **Commits:** 25  |  **Período:** 2026-04-19 → 2026-04-21  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×16 🟢×5 🔴×4
 
@@ -1712,6 +1636,44 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `7857dda86` | 2026-03-31 | Frontend (UI) | Task #70: Fase 3 — Scheduler + Automações Celery (G6, I1, I3, I6, G9) + code review fixes — All 5 background automation subtasks implemented and pushed to GitHub: | `plataforma-lia/src/components/candidate-preview/CandidateActivitiesTab.tsx`<br>`plataforma-lia/src/components/pages/candidates/CandidatesPageModals.tsx` |
 | 🟢 | `b7dc5090e` | 2026-03-31 | Docs | Task #70: Fase 3 — Scheduler + Automações Celery (G6, I1, I3, I6, G9) — Implemented all 5 background automation subtasks for Task #70: | `replit.md` |
 | 🔴 | `cefc6278c` | 2026-03-31 | Cross Back↔Front | Task #70: Fase 3 — Scheduler + Automações Celery (G6, I1, I3, I6, G9) — - followup.process_pending: 7-day email follow-up for unopened WSI invites (I1) | `lia-agent-system/app/api/v1/email_tracking.py`<br>`lia-agent-system/app/domains/cv_screening/services/personalized_feedback_service.py`<br>`lia-agent-system/app/services/email_tracking_service.py` |
+
+### Docs / Auditorias
+
+**Descrição:** Relatórios de auditoria FE/BE — frontend-audit, candidate-preview-qa, search audit, design-token migration. Inclui scripts auxiliares de captura (login + 2FA + screenshots) usados nas auditorias.
+
+**⚠️ Dependências para cherry-pick:** —
+
+**Arquivos canônicos:** plataforma-lia/docs/audit/**, plataforma-lia/docs/audit-*.md, plataforma-lia/docs/AUDITORIA_*.md
+
+**Docs de referência:** —
+
+- **Commits:** 23  |  **Período:** 2026-03-30 → 2026-04-14  |  **Camadas:** Frontend  |  **—**  |  **Risco:** 🟢×21 🟡×2
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟡 | `7e69b62a9` | 2026-04-14 | Frontend (api/util) | Fix errors when loading candidate data and improve API responsiveness — Refactors the `useCandidatesList` hook to handle race conditions, restore retry logic, and implement | `plataforma-lia/src/hooks/candidates/use-candidates-list.ts`<br>`plataforma-lia/src/lib/api/proxy-handler.ts` |
+| 🟢 | `8cec79473` | 2026-04-14 | Docs | Add audit documentation files for project phases — Add new audit files to the documentation for phase 3 of the project, including COMPOSABLE_PATTERNS_A | `docs/audit/fase3-qualitativo/COMPOSABLE_PATTERNS_AUDIT.md`<br>`docs/audit/fase3-qualitativo/DUPLICATION_DIVERGENCE_MAP.md`<br>`docs/audit/fase3-qualitativo/PROPORTIONALITY_AUDIT.md` |
+| 🟢 | `c416afdf4` | 2026-04-14 | Docs | Update audit document to include detailed findings on agent intelligence perception — Adds a comprehensive audit report for the LIA Agent System, detailing scores, strengths, and critica | `docs/audit/fase3-qualitativo/AGENT_INTELLIGENCE_PERCEPTION_AUDIT.md` |
+| 🟢 | `ca4a7baa7` | 2026-04-14 | Docs | Update documentation to reflect platform architecture and audit findings — Update documentation files including FLOW_TRACES.md, PLATFORM_MAP.md, and PROMPT_AUDIT.md with detai | `docs/audit/fase1-reconhecimento/FLOW_TRACES.md`<br>`docs/audit/fase1-reconhecimento/PLATFORM_MAP.md`<br>`docs/audit/fase1-reconhecimento/PROMPT_AUDIT.md` |
+| 🟢 | `0b99bfde0` | 2026-04-14 | Docs | Task start baseline checkpoint for code review | `PLATFORM_MAP.md`<br>`artifacts/mockup-sandbox/src/.generated/mockup-components.ts`<br>`docs/audit/fase1-reconhecimento/FLOW_TRACES.md` |
+| 🟢 | `b36b27bc7` | 2026-04-12 | Docs | docs: audit log final completo — sessao Path A + SystemPromptBuilder + 5 items | `lia-agent-system/docs/audit/path-a-execution-log.md` |
+| 🟢 | `a3823816e` | 2026-04-12 | Docs | docs: update Path A audit log with Passo 2 Commits A+B | `lia-agent-system/docs/audit/path-a-execution-log.md` |
+| 🟢 | `3c46f81d4` | 2026-04-10 | Docs | Add search quality audit report and fix critical search endpoint issues — Create a markdown document detailing the results of a search quality audit, identifying a critical H | `plataforma-lia/docs/AUDITORIA_BUSCA_2026-04-10.md` |
+| 🟢 | `cd5dcc969` | 2026-04-04 | Docs | Update documentation with revised frontend audit scores and detailed analysis — Update `audit-frontend-score-update.md` to reflect a deep dive into frontend metrics, detailing corr | `plataforma-lia/docs/audit-frontend-score-update.md` |
+| 🟢 | `a9be7a167` | 2026-04-03 | Docs | Add layout and spacing issues to the audit document — Adds new Vue bugs (VUE-BUG-06, VUE-BUG-07, VUE-BUG-08) to the audit document, detailing layout and s | `plataforma-lia/docs/audit-candidate-preview-qa.md` |
+| 🟢 | `dd0d71b9c` | 2026-04-03 | Docs | Update audit document with new bugs and screenshots — Adds new bugs to the audit document, updates problem and screenshot counts, and removes unused login | `plataforma-lia/docs/audit-candidate-preview-qa.md`<br>`plataforma-lia/docs/screenshots/capture-replit.js`<br>`plataforma-lia/docs/screenshots/capture-wedotalent.js` |
+| 🟢 | `73f3bfae0` | 2026-04-03 | Docs | Update audit document with new candidate screenshots and identified issues — Adds 15 new candidate screenshots from production, details new bugs like exposed raw JSON data and m | `plataforma-lia/docs/audit-candidate-preview-qa.md` |
+| 🟢 | `8f01fa6d5` | 2026-04-03 | Docs | Implement direct API login to bypass multi-factor authentication — Introduce a bash script to perform API login, retrieve MFA token, and verify MFA code via API calls. | `plataforma-lia/docs/screenshots/login-api.sh`<br>`plataforma-lia/docs/screenshots/login-direct.js`<br>`plataforma-lia/docs/screenshots/vue-10-result.png` |
+| 🟢 | `24d8f4abf` | 2026-04-03 | Docs | Add login functionality and capture candidate screenshots for review — Update scripts to handle WeDOTalent login flow, including two-factor authentication, and capture scr | `plataforma-lia/docs/screenshots/capture-wedotalent.js`<br>`plataforma-lia/docs/screenshots/capture-with-2fa.js`<br>`plataforma-lia/docs/screenshots/vue-01-login.png` |
+| 🟢 | `3a4243904` | 2026-04-03 | Docs | Add script to capture screenshots of product previews — Implement Playwright script to capture screenshots of the Replit application's candidate preview fun | `plataforma-lia/docs/screenshots/capture-replit.js`<br>`plataforma-lia/docs/screenshots/replit-01-funil-busca.jpg`<br>`plataforma-lia/docs/screenshots/replit-02-funil-loaded.jpg` |
+| 🟢 | `04be87e96` | 2026-04-03 | Docs | Update audit document with detailed candidate preview information — Refactor the audit-candidate-preview-qa.md file to include comprehensive details on the header, tabs | `plataforma-lia/docs/audit-candidate-preview-qa.md` |
+| 🟢 | `6ede754b1` | 2026-04-03 | Docs | Add detailed documentation for the file upload tab — Update audit-candidate-preview-qa.md to include detailed descriptions and screenshots of the file up | `plataforma-lia/docs/audit-candidate-preview-qa.md` |
+| 🟢 | `903c02afd` | 2026-04-03 | Docs | Update audit document to include restructured content and detailed findings — Restructure the audit document to align with reference guides, improving clarity and actionability b | `plataforma-lia/docs/audit-candidate-preview-qa.md`<br>`replit.md` |
+| 🟢 | `7c742d925` | 2026-04-03 | Docs | Add detailed comparison of candidate preview features — Create a deep code-to-code comparison document for candidate preview functionality, detailing compon | `plataforma-lia/docs/deep-comparison-candidate-preview.md`<br>`replit.md` |
+| 🟡 | `975e0d586` | 2026-04-03 | Outro | Add automated login and initial page navigation for the website — Implement Playwright automation script to launch Chromium, navigate to the login page, fill in crede | `wedotalent-login.mjs` |
+| 🟢 | `8623bc019` | 2026-03-31 | Docs | docs: audit score v4 - 49.9/60 (+2.4 force-dynamic+virtual+splits+tests) | `plataforma-lia/docs/audit/frontend-audit-v4-scores.md` |
+| 🟢 | `870efa232` | 2026-03-30 | Docs | docs: consolida FRONTEND_AUDIT_REPORT_FINAL.md em frontend-audit-consolidado-20-dimensoes.md | `docs/audit/FRONTEND_AUDIT_REPORT_FINAL.md`<br>`docs/audit/frontend-audit-consolidado-20-dimensoes.md` |
+| 🟢 | `395266788` | 2026-03-30 | Docs | docs: relatório consolidado auditoria frontend 20 dimensões | `docs/audit/frontend-audit-consolidado-20-dimensoes.md` |
 
 ### §17 Eval Framework
 
@@ -1908,7 +1870,7 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 
 **Docs de referência:** —
 
-- **Commits:** 18  |  **Período:** 2026-04-05 → 2026-04-27  |  **Camadas:** Backend + Frontend  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×14 🟢×2 🔴×2
+- **Commits:** 19  |  **Período:** 2026-04-05 → 2026-04-27  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×15 🟢×2 🔴×2
 
 | Risco | SHA | Data | Camada | O que faz | Arquivos chave |
 |:---:|---|---|---|---|---|
@@ -1925,6 +1887,7 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `92c78649b` | 2026-04-11 | Testes | Update domain catalog and ensure all domains are properly registered — Update DOMAIN_CATALOG.md to reflect the accurate count of registered domains and improve the test fo | `lia-agent-system/tests/unit/test_ach020_api_docs.py` |
 | 🔴 | `e02734183` | 2026-04-10 | Cross Back↔Front | Update user profile and authentication features — Introduces profile editing, password change functionality, and lazy loading for the job creation dom | `plataforma-lia/src/components/top-bar.tsx`<br>`plataforma-lia/src/contexts/auth-context.tsx` |
 | 🟢 | `29e53fd81` | 2026-04-10 | Frontend (UI) | Improve display of enlarged icons in workflow reels — Adjust CSS to allow enlarged icons in the chat workflow reels to display fully by applying a clip-pa | `plataforma-lia/src/components/ui/chat-workflow-reels.tsx` |
+| 🟡 | `b4823740d` | 2026-04-09 | IA | Add universal scope for tool permissions and update dependencies — Update `tool_permissions.yaml` to include a 'universal' scope for tools, and adjust `scope_config.py | `lia-agent-system/app/tools/scope_config.py`<br>`lia-agent-system/app/tools/tool_permissions.yaml`<br>`lia-agent-system/app/tools/tool_permissions_loader.py` |
 | 🟡 | `5d088d3d3` | 2026-04-06 | Backend | Add vacancy saturation checks and billing repository functionality — Adds vacancy saturation checking logic to the communication repository and introduces a new BillingR | `lia-agent-system/app/domains/billing/repositories/__init__.py`<br>`lia-agent-system/app/domains/billing/repositories/billing_repository.py`<br>`lia-agent-system/app/domains/communication/repositories/communication_repository.py` |
 | 🟡 | `9c2cb8018` | 2026-04-06 | Backend | Add comment explaining initial free credits for new users — Adds a comment to clarify the purpose of INITIAL_FREE_CREDITS in credit_service.py, indicating it's  | `lia-agent-system/app/services/credit_service.py` |
 | 🟡 | `10b011129` | 2026-04-06 | Backend | Organize application health and opinion modules for better structure — Update __init__.py files to properly structure the health_check and opinions domains. | `lia-agent-system/app/domains/health_check/repositories/__init__.py`<br>`lia-agent-system/app/domains/opinions/repositories/__init__.py` |
@@ -1932,6 +1895,14 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🔴 | `642ece67f` | 2026-04-05 | Cross Back↔Front | Update daily briefing to show errors and refresh data — Modify the daily briefing card component to handle fetch errors by displaying an error UI instead of | `lia-agent-system/app/auth/rails_jwt.py`<br>`lia-agent-system/app/services/ats_clients/wedotalent_rails.py`<br>`plataforma-lia/src/components/daily-briefing-card.tsx` |
 
 ### Docs (geral)
+
+**Descrição:** Documentos gerais — não cabem em outras categorias específicas.
+
+**⚠️ Dependências para cherry-pick:** —
+
+**Arquivos canônicos:** docs/**
+
+**Docs de referência:** —
 
 - **Commits:** 18  |  **Período:** 2026-03-15 → 2026-04-16  |  **Camadas:** Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×17 🔴×1
 
@@ -2043,6 +2014,37 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟡 | `e60a00bef` | 2026-03-29 | Frontend (UI) | Centralize status labels for improved maintainability and consistency — Refactors multiple components to import screening status labels from a centralized `SCREENING_STATUS | `plataforma-lia/src/components/jobs/JobEditTab.tsx`<br>`plataforma-lia/src/components/pages/job-kanban-page.tsx`<br>`plataforma-lia/src/components/pages/jobs/JobPreviewPanel.tsx` |
 | 🟢 | `622736784` | 2026-03-29 | Frontend (UI) | Improve loading state management for job vacancy listings — Move `setIsLoadingJobs(false)` to execute after `setBackendJobs()` in `useJobsPageCore.tsx` to ensur | `plataforma-lia/src/components/pages/jobs/hooks/useJobsPageCore.tsx` |
 
+### Scripts / CLI
+
+**Descrição:** Scripts e CLIs auxiliares (Claude settings, find configs, helpers ad-hoc).
+
+**⚠️ Dependências para cherry-pick:** —
+
+**Arquivos canônicos:** .claude/settings.local.json, lia-agent-system/scripts/**
+
+**Docs de referência:** —
+
+- **Commits:** 16  |  **Período:** 2026-03-21 → 2026-04-26  |  **Camadas:** Backend  |  **—**  |  **Risco:** 🟡×16
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟡 | `22b581b46` | 2026-04-26 | Backend | Improve code quality by disallowing unsafe attribute access on models — Add a new pre-commit hook to prevent the use of `getattr` with default values on SQLAlchemy model in | `lia-agent-system/.pre-commit-config.yaml`<br>`lia-agent-system/scripts/check_no_getattr_on_models.py` |
+| 🟡 | `05db9825a` | 2026-04-08 | Backend | Add a new hiring manager user and update vacancy status — Update the seed data script to add a new user with the 'hiring_manager' role and change a vacancy's  | `lia-agent-system/scripts/seed_full_platform.py` |
+| 🟡 | `8516252cb` | 2026-04-07 | Backend | Update GitHub token retrieval to support multiple environment variables — Refactor GitHub token retrieval in `github_service.py` and script files to check for "GITHUB_TOKEN", | `lia-agent-system/app/domains/sourcing/services/github_service.py` |
+| 🟡 | `2b02e46a2` | 2026-03-27 | Infra/Config | Add a command to find configuration files for Nuxt projects — Add a new bash command to find .config.js, .config.ts, and nuxt.config.* files within the project di | `.claude/settings.local.json` |
+| 🟡 | `b41dc0739` | 2026-03-21 | Backend | Add a new screen configuration for the left-hand side menu — Update the design audit generator script to include a new screen configuration for the "Menu Lateral | `lia-agent-system/scripts/design_audit_generator.py` |
+| 🟡 | `4c32c329a` | 2026-03-21 | Backend | Enhance design audits by automatically mapping mentioned elements to their code — Integrate element-to-React component mapping into bug and design audit generation scripts to automat | `lia-agent-system/scripts/bug_spec_generator.py`<br>`lia-agent-system/scripts/design_audit_generator.py` |
+| 🟡 | `a360dec34` | 2026-03-21 | Backend | Add image analysis to bug and design audit generation — Integrates Vision API for screenshot analysis in bug_spec_generator and design_audit_generator, adds | `lia-agent-system/scripts/bug_spec_generator.py`<br>`lia-agent-system/scripts/design_audit_generator.py` |
+| 🟡 | `0a79c22c6` | 2026-03-21 | Backend | Add option to post audits as comments directly — Introduces the `--as-comment` flag to `cmd_post` in `design_audit_generator.py`, allowing direct pos | `lia-agent-system/scripts/design_audit_generator.py` |
+| 🟡 | `cd34e8057` | 2026-03-21 | Backend | Improve session fetching to support cookies and public links — Update `_betterbugs_fetch_session` function to support `BETTERBUGS_SESSION_COOKIE` env var, attempt  | `lia-agent-system/scripts/bug_spec_generator.py`<br>`lia-agent-system/scripts/design_audit_generator.py` |
+| 🟡 | `acf7fb7fb` | 2026-03-21 | Backend | Add BetterBugs API integration for enhanced bug reporting — Integrates BetterBugs REST API into bug_spec_generator.py and design_audit_generator.py to fetch ses | `lia-agent-system/scripts/bug_spec_generator.py`<br>`lia-agent-system/scripts/design_audit_generator.py` |
+| 🟡 | `047ce6b6d` | 2026-03-21 | Backend | Extract screenshots and links from BetterBugs Jira cards — Adds functionality to extract embedded screenshots and relevant links from BetterBugs Jira cards by  | `lia-agent-system/scripts/bug_spec_generator.py`<br>`lia-agent-system/scripts/design_audit_generator.py` |
+| 🟡 | `090a373db` | 2026-03-21 | Backend | Integrate real Vue code snippets into audit reports and add fallback for Jira posts — Add GitHub API integration to fetch real Vue code snippets for audit reports. Update Jira posting lo | `lia-agent-system/scripts/bug_spec_generator.py`<br>`lia-agent-system/scripts/design_audit_generator.py` |
+| 🟡 | `b0dc74f02` | 2026-03-21 | Backend | Add script to generate design audit templates for UI screens — Adds a Python script that fetches Jira card descriptions, extracts UI component information from Rea | `lia-agent-system/scripts/design_audit_generator.py` |
+| 🟡 | `287367535` | 2026-03-21 | Backend | Enhance bug report template with technical specification details — Update bug specification template to include technical details, component comparisons, and token tab | `lia-agent-system/scripts/bug_spec_generator.py` |
+| 🟡 | `7fc035b64` | 2026-03-21 | Backend | Improve tag extraction and error handling for Jira interactions — Enhance tag extraction regex to support various formats, add warning logs for connector authenticati | `lia-agent-system/scripts/bug_spec_generator.py` |
+| 🟡 | `261fcf456` | 2026-03-21 | Backend | Add script to generate bug specifications from Jira cards — Add a new Python script for fetching Jira card data and posting bug specifications. | `lia-agent-system/.env.example`<br>`lia-agent-system/scripts/bug_spec_generator.py` |
+
 ### UI Components (FE library)
 
 **Descrição:** Biblioteca de componentes UI (botões, inputs, cards, primitives). Mudanças aqui afetam toda a app.
@@ -2128,28 +2130,6 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🔴 | `535f05984` | 2026-04-05 | Cross IA↔Front | Fix multi-tenancy company_id isolation (Task #5) — Backend: | `lia-agent-system/alembic/versions/058_add_client_account_id_to_company_profiles.py`<br>`lia-agent-system/app/api/v1/company.py`<br>`lia-agent-system/app/orchestrator/action_handlers/pipeline_actions.py` |
 | 🔴 | `cfba6eddd` | 2026-03-31 | Cross Back↔Front | fix(security): ephemeral HMAC secret + valid UUID fallback for company_id — - HMAC secret now uses cryptographic random if env var not set (with warning) | `lia-agent-system/app/api/v1/communication_optout.py`<br>`plataforma-lia/src/components/modals/edit-job-modal.tsx`<br>`plataforma-lia/src/components/modals/edit-job-sections/EditJobModalPrivacy.tsx` |
 
-### Scripts / CLI
-
-- **Commits:** 15  |  **Período:** 2026-03-21 → 2026-04-26  |  **Camadas:** Backend  |  **—**  |  **Risco:** 🟡×15
-
-| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
-|:---:|---|---|---|---|---|
-| 🟡 | `22b581b46` | 2026-04-26 | Backend | Improve code quality by disallowing unsafe attribute access on models — Add a new pre-commit hook to prevent the use of `getattr` with default values on SQLAlchemy model in | `lia-agent-system/.pre-commit-config.yaml`<br>`lia-agent-system/scripts/check_no_getattr_on_models.py` |
-| 🟡 | `05db9825a` | 2026-04-08 | Backend | Add a new hiring manager user and update vacancy status — Update the seed data script to add a new user with the 'hiring_manager' role and change a vacancy's  | `lia-agent-system/scripts/seed_full_platform.py` |
-| 🟡 | `8516252cb` | 2026-04-07 | Backend | Update GitHub token retrieval to support multiple environment variables — Refactor GitHub token retrieval in `github_service.py` and script files to check for "GITHUB_TOKEN", | `lia-agent-system/app/domains/sourcing/services/github_service.py` |
-| 🟡 | `b41dc0739` | 2026-03-21 | Backend | Add a new screen configuration for the left-hand side menu — Update the design audit generator script to include a new screen configuration for the "Menu Lateral | `lia-agent-system/scripts/design_audit_generator.py` |
-| 🟡 | `4c32c329a` | 2026-03-21 | Backend | Enhance design audits by automatically mapping mentioned elements to their code — Integrate element-to-React component mapping into bug and design audit generation scripts to automat | `lia-agent-system/scripts/bug_spec_generator.py`<br>`lia-agent-system/scripts/design_audit_generator.py` |
-| 🟡 | `a360dec34` | 2026-03-21 | Backend | Add image analysis to bug and design audit generation — Integrates Vision API for screenshot analysis in bug_spec_generator and design_audit_generator, adds | `lia-agent-system/scripts/bug_spec_generator.py`<br>`lia-agent-system/scripts/design_audit_generator.py` |
-| 🟡 | `0a79c22c6` | 2026-03-21 | Backend | Add option to post audits as comments directly — Introduces the `--as-comment` flag to `cmd_post` in `design_audit_generator.py`, allowing direct pos | `lia-agent-system/scripts/design_audit_generator.py` |
-| 🟡 | `cd34e8057` | 2026-03-21 | Backend | Improve session fetching to support cookies and public links — Update `_betterbugs_fetch_session` function to support `BETTERBUGS_SESSION_COOKIE` env var, attempt  | `lia-agent-system/scripts/bug_spec_generator.py`<br>`lia-agent-system/scripts/design_audit_generator.py` |
-| 🟡 | `acf7fb7fb` | 2026-03-21 | Backend | Add BetterBugs API integration for enhanced bug reporting — Integrates BetterBugs REST API into bug_spec_generator.py and design_audit_generator.py to fetch ses | `lia-agent-system/scripts/bug_spec_generator.py`<br>`lia-agent-system/scripts/design_audit_generator.py` |
-| 🟡 | `047ce6b6d` | 2026-03-21 | Backend | Extract screenshots and links from BetterBugs Jira cards — Adds functionality to extract embedded screenshots and relevant links from BetterBugs Jira cards by  | `lia-agent-system/scripts/bug_spec_generator.py`<br>`lia-agent-system/scripts/design_audit_generator.py` |
-| 🟡 | `090a373db` | 2026-03-21 | Backend | Integrate real Vue code snippets into audit reports and add fallback for Jira posts — Add GitHub API integration to fetch real Vue code snippets for audit reports. Update Jira posting lo | `lia-agent-system/scripts/bug_spec_generator.py`<br>`lia-agent-system/scripts/design_audit_generator.py` |
-| 🟡 | `b0dc74f02` | 2026-03-21 | Backend | Add script to generate design audit templates for UI screens — Adds a Python script that fetches Jira card descriptions, extracts UI component information from Rea | `lia-agent-system/scripts/design_audit_generator.py` |
-| 🟡 | `287367535` | 2026-03-21 | Backend | Enhance bug report template with technical specification details — Update bug specification template to include technical details, component comparisons, and token tab | `lia-agent-system/scripts/bug_spec_generator.py` |
-| 🟡 | `7fc035b64` | 2026-03-21 | Backend | Improve tag extraction and error handling for Jira interactions — Enhance tag extraction regex to support various formats, add warning logs for connector authenticati | `lia-agent-system/scripts/bug_spec_generator.py` |
-| 🟡 | `261fcf456` | 2026-03-21 | Backend | Add script to generate bug specifications from Jira cards — Add a new Python script for fetching Jira card data and posting bug specifications. | `lia-agent-system/.env.example`<br>`lia-agent-system/scripts/bug_spec_generator.py` |
-
 ### Chat UI (FE)
 
 **Descrição:** Componentes de chat geral — mensagens, lista, input, plan progress card.
@@ -2177,6 +2157,34 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `7ad70055f` | 2026-04-03 | Frontend (UI) | Task start baseline checkpoint for code review | `plataforma-lia/src/components/chat/plan-progress-card.tsx` |
 | 🟡 | `b9d9a070d` | 2026-04-03 | Frontend (UI) | Fix issues with loading, image display, and search cancellation — Addresses an infinite loading bug by removing a root-level loading component, adds a missing search  | `plataforma-lia/src/app/loading.tsx`<br>`plataforma-lia/src/app/page.tsx`<br>`plataforma-lia/src/app/tasks/page.tsx` |
 | 🟢 | `8cc0a8ca0` | 2026-03-29 | Frontend (UI) | Adjust font sizes and remove unused CSS for improved readability — Update text sizes in AgentMemoryIndicator component and remove deprecated typography CSS classes fro | `plataforma-lia/src/app/globals.css`<br>`plataforma-lia/src/components/chat/agent-memory-indicator.tsx` |
+
+### DevOps / Deploy (Docker/GCP)
+
+**Descrição:** Docker, docker-compose, entrypoint, GCP deploy. Configuração de infraestrutura.
+
+**⚠️ Dependências para cherry-pick:** Configurar secrets antes do deploy | rebuild da imagem
+
+**Arquivos canônicos:** Dockerfile, docker-compose.yml, lia-agent-system/docker-entrypoint.sh, .github/workflows/**
+
+**Docs de referência:** —
+
+- **Commits:** 13  |  **Período:** 2026-03-19 → 2026-04-12  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×5 🟢×4 🔴×4
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟡 | `ba2f483bc` | 2026-04-12 | Backend | fix: production Dockerfile and uvicorn command for GCP deploy | `lia-agent-system/Dockerfile` |
+| 🟢 | `74a271623` | 2026-04-12 | Frontend (api/util) | fix: update plataforma-lia Dockerfile for GCP deploy | `plataforma-lia/Dockerfile` |
+| 🟡 | `cb0af1f76` | 2026-04-12 | Backend | feat: add docker-compose.yml and docker-entrypoint.sh for GCP deploy | `lia-agent-system/docker-entrypoint.sh` |
+| 🟢 | `11f66809b` | 2026-04-10 | Docs | Update infrastructure checklist and worker health check — Update GCP Infrastructure Checklist for enabled APIs and modify worker health check to use authentic | `GCP_INFRASTRUCTURE_CHECKLIST.md` |
+| 🟡 | `93c9df0e9` | 2026-04-10 | Backend | Task #114: GitHub CI/CD — Repositórios, Actions e Docker — CI/CD workflows for both repositories + infrastructure docs: | `lia-agent-system/.dockerignore` |
+| 🔴 | `f86387396` | 2026-04-10 | Cross Back↔Front | Task #114: GitHub CI/CD — Repositórios, Actions e Docker — CI/CD workflows for both repositories + infrastructure docs: | `lia-agent-system/.github/workflows/deploy.yml`<br>`lia-agent-system/Dockerfile.worker`<br>`lia-agent-system/scripts/worker_health.py` |
+| 🟡 | `386c67465` | 2026-04-10 | Backend | Task #114: GitHub CI/CD — Repositórios, Actions e Docker — Created deployment workflows and infrastructure documentation: | `lia-agent-system/.github/workflows/deploy.yml` |
+| 🔴 | `e1bd7d78e` | 2026-04-10 | Cross Back↔Front | Task #114: GitHub CI/CD — Repositórios, Actions e Docker — Created deployment workflows and infrastructure documentation: | `lia-agent-system/.github/workflows/deploy.yml`<br>`plataforma-lia/.github/workflows/deploy.yml` |
+| 🔴 | `dde1d6f0d` | 2026-04-10 | Cross Back↔Front | Task #114: GitHub CI/CD — Repositórios, Actions e Docker — Created deployment workflows and infrastructure documentation: | `plataforma-lia/src/components/candidate-preview/PipelineDecisionBar.tsx` |
+| 🔴 | `49d6b02a1` | 2026-04-07 | Cross IA↔Front | Update application configuration and Dockerfile for standalone deployment — Refactors several Python files to use repository patterns, updates Next.js configuration for standal | `lia-agent-system/app/api/v1/benefits.py`<br>`lia-agent-system/app/api/v1/calendar.py`<br>`lia-agent-system/app/api/v1/data_request.py` |
+| 🟢 | `80e190bcd` | 2026-04-07 | Frontend (api/util) | Update proxy to connect to the correct backend server — Corrected the hardcoded backend port in the Next.js proxy configuration from 8000 to 8001 in `plataf | `plataforma-lia/next.config.js` |
+| 🟢 | `a84040218` | 2026-04-01 | Frontend (api/util) | Add UI avatars to image hosting configuration — Update next.config.js to include ui-avatars.com in allowed image domains and remote patterns. | `plataforma-lia/next.config.js` |
+| 🟡 | `d7dd8100c` | 2026-03-19 | Infra/Config | Add Replit connectors SDK to manage GitHub integrations — Add @replit/connectors-sdk as a dependency in package.json to enable GitHub integration management. | `package-lock.json`<br>`package.json` |
 
 ### Policy / Job Creation
 
@@ -2407,6 +2415,31 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟡 | `b1ed88497` | 2026-04-12 | Cross IA↔Back | feat: Item A Tipo B — audited LangChain chain calls with PII strip + audit — - Create PIIStripCallback: strips PII from messages before LLM call | `lia-agent-system/app/api/v1/company.py`<br>`lia-agent-system/app/domains/ai/services/llm.py`<br>`lia-agent-system/app/domains/analytics/services/candidate_report_service.py` |
 | 🟡 | `39660c549` | 2026-03-19 | Cross IA↔Back | Z6-01 + Z6-02 + Z6-03 + Z7-01: observabilidade, PII NER e comportamento de recrutador — Z6-01 — Consolidação ATS clients: | `lia-agent-system/app/api/v1/recruiter_behavior.py`<br>`lia-agent-system/app/api/v1/traces.py`<br>`lia-agent-system/app/domains/ats_integration/services/ats_clients/__init__.py` |
 
+### Talent Funnel (FE)
+
+**Descrição:** Funil de Talentos — tabs, candidato page, components específicos.
+
+**⚠️ Dependências para cherry-pick:** Endpoint /api/backend-proxy/talent-funnel | hooks de funil
+
+**Arquivos canônicos:** plataforma-lia/src/app/funil-de-talentos/**, src/components/talent-funnel-tabs/**
+
+**Docs de referência:** —
+
+- **Commits:** 10  |  **Período:** 2026-03-30 → 2026-04-11  |  **Camadas:** Frontend  |  **—**  |  **Risco:** 🟢×9 🟡×1
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟢 | `30551691d` | 2026-04-11 | Frontend (UI) | Improve tab loading by rendering them only when active — Conditionally render tab content within TabsContent components to ensure components and their associ | `plataforma-lia/src/app/funil-de-talentos/FunilDeTalentosClient.tsx` |
+| 🟢 | `788baa5c7` | 2026-04-11 | Frontend (UI) | Improve ability to load candidate lists by adding automatic retries — Add retry logic with delay to `getCandidateLists` call in `use-lists-tab.ts` to handle transient bac | `plataforma-lia/src/components/talent-funnel-tabs/use-lists-tab.ts` |
+| 🟢 | `2e1b0fde4` | 2026-04-11 | Frontend (UI) | Add history tab with clock icon to talent funnel page — Add HistoryTab component, Clock icon import, and a new TabsTrigger for the "historico" value in Funi | `plataforma-lia/src/app/funil-de-talentos/FunilDeTalentosClient.tsx` |
+| 🟢 | `087d09486` | 2026-04-11 | Frontend (UI) | Task start baseline checkpoint for code review | `plataforma-lia/src/app/funil-de-talentos/candidato/[id]/CandidatoDetailClient.tsx`<br>`plataforma-lia/src/components/pages/candidates/CandidateTabs.tsx`<br>`plataforma-lia/src/components/pages/jobs-page.tsx` |
+| 🟢 | `c283a2eea` | 2026-04-09 | Frontend (api/util) | feat: Dynamic sidebar sub-items for Talent Pools and Agents — Sidebar now shows active Talent Pools as sub-items under "Funil de Talentos" | `plataforma-lia/src/middleware.ts` |
+| 🟢 | `e19a44a23` | 2026-04-09 | Empty/merge | fix: restore TalentPoolPage.tsx from bad merge corruption — A previous merge incorrectly inserted VoiceScreeningButton blocks | — |
+| 🟢 | `5b36eacab` | 2026-04-07 | Frontend (UI) | Update date formatting to return empty string for null values — Modify formatDate and formatDateShort functions in useCandidatePageCore.tsx to return an empty strin | `plataforma-lia/src/app/funil-de-talentos/candidato/[id]/useCandidatePageCore.tsx` |
+| 🟢 | `820e3a54e` | 2026-04-06 | Frontend (UI) | Update candidate data handling and job configuration — Modify default values for candidate work model and contract type, adjust type casting for candidate  | `plataforma-lia/src/app/funil-de-talentos/FunilDeTalentosClient.tsx`<br>`plataforma-lia/src/components/candidate-modal.tsx`<br>`plataforma-lia/src/components/jobs/job-edit-tab/useJobEditTab.ts` |
+| 🟢 | `65af36722` | 2026-04-01 | Frontend (UI) | Update job and vacancy pages and refine candidate profile — Adjusts routing and component rendering for job and vacancy pages, while also making internal refine | `plataforma-lia/src/app/funil-de-talentos/candidato/[id]/page.tsx`<br>`plataforma-lia/src/app/jobs/[id]/page.tsx`<br>`plataforma-lia/src/app/vagas/[slug]/page.tsx` |
+| 🟡 | `48e2ace56` | 2026-03-30 | Frontend (UI) | Improve candidate profile and activity tab display and data handling — Update type casting and conditional rendering in CandidateActivitiesTab, CandidateFilesTab, Candidat | `plataforma-lia/src/app/funil-de-talentos/candidato/[id]/components/CandidatoActivitiesTab.tsx`<br>`plataforma-lia/src/app/funil-de-talentos/candidato/[id]/components/CandidatoFilesTab.tsx`<br>`plataforma-lia/src/app/funil-de-talentos/candidato/[id]/components/CandidatoOpinionsTab.tsx` |
+
 ### Task #117
 
 - **Commits:** 10  |  **Período:** 2026-04-04 → 2026-04-10  |  **Camadas:** Frontend  |  **—**  |  **Risco:** 🟡×5 🟢×4 🔴×1
@@ -2457,6 +2490,31 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `8747a535f` | 2026-03-31 | Frontend (UI) | Task #82: Bell Notification In-App — Ativação Completa — Fixed critical React hydration issue preventing bell button onClick from firing: | `plataforma-lia/src/components/email-templates/report-email-templates.tsx`<br>`plataforma-lia/src/components/expanded-chat/hooks/useWSIAndCalibrationHandlers.ts` |
 | 🟢 | `10a159680` | 2026-03-31 | Frontend (UI) | Task #82: Bell Notification In-App — Ativação Completa — Fixed critical React hydration issue preventing bell button onClick from firing: | `plataforma-lia/src/components/notification-system.tsx`<br>`plataforma-lia/src/components/ui/EditLockButtons.tsx`<br>`plataforma-lia/src/hooks/use-edit-lock.tsx` |
 | 🔴 | `a48928814` | 2026-03-31 | Cross Back↔Front | Task #82: Bell Notification In-App — Ativação Completa — ## Changes Made | `lia-agent-system/app/domains/automation/services/proactive_service.py`<br>`plataforma-lia/src/components/notifications/notification-center.tsx` |
+
+### Tests (BE unit/integration)
+
+**Descrição:** Testes unit + integration do FastAPI — characterization, tenant scope, wizard validators, etc.
+
+**⚠️ Dependências para cherry-pick:** _is_dev_environment patched | golden eval set
+
+**Arquivos canônicos:** lia-agent-system/tests/**
+
+**Docs de referência:** —
+
+- **Commits:** 10  |  **Período:** 2026-03-19 → 2026-04-20  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×5 🟡×4 🔴×1
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟡 | `d9127032c` | 2026-04-20 | Backend | Fix conversation summary crash from missing _extract_structured_ids helper — Original task (#637): `ConversationMemory._generate_summary_from_dicts` | `lia-agent-system/app/domains/recruiter_assistant/services/conversation_memory.py` |
+| 🟡 | `101169222` | 2026-04-17 | Outro | Add tests for core platform functionalities and interactions — Adds a new Python script to `tests/lia_capabilities_audit.py` to perform comprehensive tests on LIA' | `tests/lia_capabilities_audit.py` |
+| 🟢 | `098941b8f` | 2026-04-17 | Testes | Add integration test for sourcing pipeline against discriminatory JD — Original task (#342): write an integration test that exercises | `lia-agent-system/tests/integration/test_sourcing_pipeline_discriminatory_jd.py` |
+| 🟢 | `15116c386` | 2026-04-14 | Testes | feat: 8 bias probe pairs for discrimination detection [P37-049] — Sprint 6 item 6.4 — 8 paired scenarios where profiles are IDENTICAL | `lia-agent-system/tests/eval/bias_probes/pairs.yaml` |
+| 🟢 | `4bd124f89` | 2026-04-13 | Testes | Add tests for Rails health endpoints and update event handling — Adds unit tests for Rails health check endpoints and modifies `webhook_dispatcher.py` to integrate n | `lia-agent-system/tests/unit/test_rails_health_endpoint.py` |
+| 🟢 | `4a44a6cd6` | 2026-04-11 | Testes | Update tests to reflect changes in orchestrator processing — Modify mock assertions in extended tests to expect `process_request` over `process_request_with_memo | `lia-agent-system/tests/unit/test_main_orchestrator_extended.py` |
+| 🟡 | `2bf7cfa7f` | 2026-04-08 | Frontend (UI) | Bypass client-side authentication fetch by injecting user data from server — Implement server-side data injection for user authentication by modifying layout.tsx to fetch user d | `plataforma-lia/src/app/layout.tsx` |
+| 🟡 | `8875c6747` | 2026-04-08 | Frontend (UI) | Improve login flow and remove development console logs — Update login page to redirect in development, prevent auth logout loops, and remove console logs. | `plataforma-lia/src/app/login/LoginClient.tsx`<br>`plataforma-lia/src/components/pages/jobs/hooks/useJobsData.ts` |
+| 🟢 | `f26ccce9d` | 2026-04-05 | Frontend (UI) | Update component styling and adjust backend import paths — Fix duplicated className in EAPTabNatural.tsx and update import paths for email providers in backend | `plataforma-lia/src/components/expandable-ai-prompt/tabs/EAPTabNatural.tsx` |
+| 🔴 | `11d68f839` | 2026-03-19 | Cross IA↔Front | Introduce specialized sourcing agents and improve model configurations — Add new sub-agents for sourcing tasks (planner, search, enrich, engagement) and update agent configu | `lia-agent-system/app/api/v1/agent_chat_ws.py`<br>`lia-agent-system/app/api/v1/fairness_reports.py`<br>`lia-agent-system/app/orchestrator/cascaded_router.py` |
 
 ### Unified Chat (FE)
 
@@ -2569,6 +2627,14 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 
 ### Backend (shared)
 
+**Descrição:** Backend shared utilities — chat_event_serializer, tenant_*, pii_masking, providers.
+
+**⚠️ Dependências para cherry-pick:** —
+
+**Arquivos canônicos:** lia-agent-system/app/shared/**
+
+**Docs de referência:** —
+
 - **Commits:** 9  |  **Período:** 2026-04-07 → 2026-04-25  |  **Camadas:** Backend  |  **—**  |  **Risco:** 🟡×9
 
 | Risco | SHA | Data | Camada | O que faz | Arquivos chave |
@@ -2599,29 +2665,29 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `649b0a2a0` | 2026-03-30 | Frontend (api/util) | fix: useBiasAudits.fetchAudits now updates SWR cache with fetched results — fetchAudits was discarding the API response. Now uses mutate() to | `plataforma-lia/src/hooks/admin/useBiasAudits.ts` |
 | 🟢 | `cbdead177` | 2026-03-30 | Frontend (api/util) | fix: add missing quotes in hook files — SWR keys, imports, use client directive — Fixed syntax errors in 4 hook files where string quotes were stripped: | `plataforma-lia/src/hooks/admin/useDashboardSummary.ts`<br>`plataforma-lia/src/hooks/admin/usePlatformMetrics.ts`<br>`plataforma-lia/src/hooks/use-ai-credits.ts` |
 
-### DevOps / Deploy (Docker/GCP)
+### Refactor / Cleanup
 
-**Descrição:** Docker, docker-compose, entrypoint, GCP deploy. Configuração de infraestrutura.
+**Descrição:** Limpeza de arquivos órfãos — `.bak` files do split (Etapa 6), helper scripts de debug, arquivos acidentais (`=133`, `=141`, `=350`), JSX comments duplos, monolith definitions descartadas.
 
-**⚠️ Dependências para cherry-pick:** Configurar secrets antes do deploy | rebuild da imagem
+**⚠️ Dependências para cherry-pick:** —
 
-**Arquivos canônicos:** Dockerfile, docker-compose.yml, lia-agent-system/docker-entrypoint.sh, .github/workflows/**
+**Arquivos canônicos:** lia-agent-system/app/api/v1/*.bak, root accidentais, helper scripts apply_*.py
 
 **Docs de referência:** —
 
-- **Commits:** 9  |  **Período:** 2026-04-07 → 2026-04-12  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×4 🔴×4 🟢×1
+- **Commits:** 9  |  **Período:** 2026-03-29 → 2026-04-22  |  **Camadas:** Frontend  |  **—**  |  **Risco:** 🟡×7 🟢×2
 
 | Risco | SHA | Data | Camada | O que faz | Arquivos chave |
 |:---:|---|---|---|---|---|
-| 🟡 | `ba2f483bc` | 2026-04-12 | Backend | fix: production Dockerfile and uvicorn command for GCP deploy | `lia-agent-system/Dockerfile` |
-| 🟢 | `74a271623` | 2026-04-12 | Frontend (api/util) | fix: update plataforma-lia Dockerfile for GCP deploy | `plataforma-lia/Dockerfile` |
-| 🟡 | `cb0af1f76` | 2026-04-12 | Backend | feat: add docker-compose.yml and docker-entrypoint.sh for GCP deploy | `lia-agent-system/docker-entrypoint.sh` |
-| 🟡 | `93c9df0e9` | 2026-04-10 | Backend | Task #114: GitHub CI/CD — Repositórios, Actions e Docker — CI/CD workflows for both repositories + infrastructure docs: | `lia-agent-system/.dockerignore` |
-| 🔴 | `f86387396` | 2026-04-10 | Cross Back↔Front | Task #114: GitHub CI/CD — Repositórios, Actions e Docker — CI/CD workflows for both repositories + infrastructure docs: | `lia-agent-system/.github/workflows/deploy.yml`<br>`lia-agent-system/Dockerfile.worker`<br>`lia-agent-system/scripts/worker_health.py` |
-| 🟡 | `386c67465` | 2026-04-10 | Backend | Task #114: GitHub CI/CD — Repositórios, Actions e Docker — Created deployment workflows and infrastructure documentation: | `lia-agent-system/.github/workflows/deploy.yml` |
-| 🔴 | `e1bd7d78e` | 2026-04-10 | Cross Back↔Front | Task #114: GitHub CI/CD — Repositórios, Actions e Docker — Created deployment workflows and infrastructure documentation: | `lia-agent-system/.github/workflows/deploy.yml`<br>`plataforma-lia/.github/workflows/deploy.yml` |
-| 🔴 | `dde1d6f0d` | 2026-04-10 | Cross Back↔Front | Task #114: GitHub CI/CD — Repositórios, Actions e Docker — Created deployment workflows and infrastructure documentation: | `plataforma-lia/src/components/candidate-preview/PipelineDecisionBar.tsx` |
-| 🔴 | `49d6b02a1` | 2026-04-07 | Cross IA↔Front | Update application configuration and Dockerfile for standalone deployment — Refactors several Python files to use repository patterns, updates Next.js configuration for standal | `lia-agent-system/app/api/v1/benefits.py`<br>`lia-agent-system/app/api/v1/calendar.py`<br>`lia-agent-system/app/api/v1/data_request.py` |
+| 🟢 | `0cdf20288` | 2026-04-22 | Frontend (api/util) | Remove all job readiness related endpoints and documentation — Removes deprecated job readiness endpoints from api.generated.ts and updates ARCITECTURE.md, SPARKLE | `plataforma-lia/src/types/api.generated.ts` |
+| 🟡 | `b7ac5d94a` | 2026-04-21 | Outro | chore: remove stray helper scripts from prior debug sessions | `apply_jwt_blacklist.py`<br>`fix_replit_tools.py` |
+| 🟡 | `0eb9c7013` | 2026-04-21 | Outro | chore: remove stray repair_tools.py from prior debugging session | `repair_tools.py` |
+| 🟡 | `d46fd1dae` | 2026-04-19 | Outro | Remove unnecessary data from the system — Remove a leftover data artifact from the system. | `=133` |
+| 🟡 | `ccdedc141` | 2026-04-08 | Outro | Fix issue causing users to see a blank page and ensure proper data display — Add missing database columns and re-export internal functions to resolve rendering errors. | `1`<br>`200` |
+| 🟡 | `11ee7c473` | 2026-04-01 | Outro | chore: remove accidental =350 file | `=350` |
+| 🟡 | `e80a660e4` | 2026-03-31 | Outro | chore: remove accidental artifact file | `=141` |
+| 🟢 | `78ff81786` | 2026-03-30 | Frontend (UI) | fix: corrige JSX comment duplo em layout.tsx — {{/* → {/* | `plataforma-lia/src/app/layout.tsx` |
+| 🟡 | `be19ab5c5` | 2026-03-29 | Outro | Add monolith definition to support new project structure — Add a new section for defining monoliths in the project configuration. | `2000`<br>`2000L` |
 
 ### Task #48
 
@@ -2638,30 +2704,6 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `9082c86fd` | 2026-03-26 | Docs | Task #48: SDD Semana 2 — DATA_MODELS.md + API_CONTRACTS.md (v3 fixes) — Fixed all code review issues with source-verified corrections: | `docs/specs/backend/API_CONTRACTS.md`<br>`docs/specs/backend/DATA_MODELS.md` |
 | 🟢 | `33b50bf96` | 2026-03-26 | Docs | Task #48: SDD Semana 2 — DATA_MODELS.md + API_CONTRACTS.md (fixed) — Updated both backend specification documents to address code review findings: | `docs/specs/backend/API_CONTRACTS.md`<br>`docs/specs/backend/DATA_MODELS.md` |
 | 🟢 | `3725250df` | 2026-03-26 | Docs | Task #48: SDD Semana 2 — DATA_MODELS.md + API_CONTRACTS.md — Created/updated two comprehensive backend specification documents: | `docs/specs/backend/API_CONTRACTS.md`<br>`docs/specs/backend/DATA_MODELS.md` |
-
-### Tests (BE unit/integration)
-
-**Descrição:** Testes unit + integration do FastAPI — characterization, tenant scope, wizard validators, etc.
-
-**⚠️ Dependências para cherry-pick:** _is_dev_environment patched | golden eval set
-
-**Arquivos canônicos:** lia-agent-system/tests/**
-
-**Docs de referência:** —
-
-- **Commits:** 9  |  **Período:** 2026-03-19 → 2026-04-20  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×5 🟡×3 🔴×1
-
-| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
-|:---:|---|---|---|---|---|
-| 🟡 | `d9127032c` | 2026-04-20 | Backend | Fix conversation summary crash from missing _extract_structured_ids helper — Original task (#637): `ConversationMemory._generate_summary_from_dicts` | `lia-agent-system/app/domains/recruiter_assistant/services/conversation_memory.py` |
-| 🟢 | `098941b8f` | 2026-04-17 | Testes | Add integration test for sourcing pipeline against discriminatory JD — Original task (#342): write an integration test that exercises | `lia-agent-system/tests/integration/test_sourcing_pipeline_discriminatory_jd.py` |
-| 🟢 | `15116c386` | 2026-04-14 | Testes | feat: 8 bias probe pairs for discrimination detection [P37-049] — Sprint 6 item 6.4 — 8 paired scenarios where profiles are IDENTICAL | `lia-agent-system/tests/eval/bias_probes/pairs.yaml` |
-| 🟢 | `4bd124f89` | 2026-04-13 | Testes | Add tests for Rails health endpoints and update event handling — Adds unit tests for Rails health check endpoints and modifies `webhook_dispatcher.py` to integrate n | `lia-agent-system/tests/unit/test_rails_health_endpoint.py` |
-| 🟢 | `4a44a6cd6` | 2026-04-11 | Testes | Update tests to reflect changes in orchestrator processing — Modify mock assertions in extended tests to expect `process_request` over `process_request_with_memo | `lia-agent-system/tests/unit/test_main_orchestrator_extended.py` |
-| 🟡 | `2bf7cfa7f` | 2026-04-08 | Frontend (UI) | Bypass client-side authentication fetch by injecting user data from server — Implement server-side data injection for user authentication by modifying layout.tsx to fetch user d | `plataforma-lia/src/app/layout.tsx` |
-| 🟡 | `8875c6747` | 2026-04-08 | Frontend (UI) | Improve login flow and remove development console logs — Update login page to redirect in development, prevent auth logout loops, and remove console logs. | `plataforma-lia/src/app/login/LoginClient.tsx`<br>`plataforma-lia/src/components/pages/jobs/hooks/useJobsData.ts` |
-| 🟢 | `f26ccce9d` | 2026-04-05 | Frontend (UI) | Update component styling and adjust backend import paths — Fix duplicated className in EAPTabNatural.tsx and update import paths for email providers in backend | `plataforma-lia/src/components/expandable-ai-prompt/tabs/EAPTabNatural.tsx` |
-| 🔴 | `11d68f839` | 2026-03-19 | Cross IA↔Front | Introduce specialized sourcing agents and improve model configurations — Add new sub-agents for sourcing tasks (planner, search, enrich, engagement) and update agent configu | `lia-agent-system/app/api/v1/agent_chat_ws.py`<br>`lia-agent-system/app/api/v1/fairness_reports.py`<br>`lia-agent-system/app/orchestrator/cascaded_router.py` |
 
 ### scope: typescript
 
@@ -2694,7 +2736,38 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `6399fc2cb` | 2026-03-30 | Docs | audit: score v2 pos Fases 6-9 — Skill 9 auditoria final | `docs/audit/frontend-audit-v2-scores.md` |
 | 🟢 | `042aa1335` | 2026-03-30 | Docs | design-audit: corrige espacamentos arbitrarios + dark mode tokens + relatorio FASE7 — Skill 7 | `docs/specs/frontend/DESIGN_AUDIT_FASE7.md` |
 
+### Docs / Architecture
+
+**Descrição:** Documentos de arquitetura — diagramas, MAPA_CAMADA_INTELIGENCIA, RELATORIO_CAPACIDADES, DIAGNOSTIC_REPORT, ARCHITECTURE.md.
+
+**⚠️ Dependências para cherry-pick:** —
+
+**Arquivos canônicos:** lia-agent-system/docs/MAPA_CAMADA_INTELIGENCIA.md, ARCHITECTURE.md, replit.md, relatorio_capacidades_prompts_lia.md, DIAGNOSTIC_REPORT_*.md
+
+**Docs de referência:** ARCHITECTURE.md raiz
+
+- **Commits:** 8  |  **Período:** 2026-03-15 → 2026-04-23  |  **Camadas:** —  |  **—**  |  **Risco:** 🟢×7 🟡×1
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟢 | `12bf9953b` | 2026-04-23 | Docs | Update documentation to reflect current system architecture and agent counts — Refactor documentation to replace outdated ConversationGraph and ReActLoop references with LangGraph | `lia-agent-system/docs/MAPA_CAMADA_INTELIGENCIA.md` |
+| 🟢 | `59a71de41` | 2026-04-14 | Docs | docs: Langfuse integration decision — N/A, covered by LangSmith [PX08-070] — Sprint 10 item 10.5 — Evaluated Langfuse integration and determined | `lia-agent-system/app/config/langfuse_decision.md` |
+| 🟢 | `98a2c20e5` | 2026-04-11 | Docs | docs: comprehensive diagnostic report - architecture, domains, Rails ATS analysis | `DIAGNOSTIC_REPORT_APRIL_2026.md` |
+| 🟡 | `0616a0776` | 2026-03-31 | Outro | Update documentation to remove outdated references — Remove all remaining "Task" and "ARCH" references from the documentation. | `=200` |
+| 🟢 | `c651bc305` | 2026-03-19 | Docs | Update prompt management to include modification timestamps — Add 'updated_at' field to YAML prompts for better tracking and auditing, specifying 9 files in app/p | `relatorio_capacidades_prompts_lia.md` |
+| 🟢 | `51cdc8a26` | 2026-03-19 | Docs | Update documentation to reflect latest platform capabilities and features — Update the `relatorio_capacidades_prompts_lia.md` file to reflect version 4.4, detailing new feature | `relatorio_capacidades_prompts_lia.md` |
+| 🟢 | `5fc57171c` | 2026-03-16 | Docs | docs: update replit.md with ReAct JSON strip documentation | `replit.md` |
+| 🟢 | `0d16fb162` | 2026-03-15 | Docs | docs: relatorio_capacidades_prompts_lia.md v4.2 — atualização completa seções 1-34 — Atualização profunda das seções 5, 9, 13, 15, 17, 18, 25 e 34 para refletir | `relatorio_capacidades_prompts_lia.md` |
+
 ### Docs / Propostas
+
+**Descrição:** Propostas técnicas — análises arquiteturais, paralelos com legacy v5.
+
+**⚠️ Dependências para cherry-pick:** —
+
+**Arquivos canônicos:** proposals/**
+
+**Docs de referência:** —
 
 - **Commits:** 8  |  **Período:** 2026-03-19 → 2026-03-22  |  **Camadas:** —  |  **—**  |  **Risco:** 🟢×8
 
@@ -2769,29 +2842,6 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟡 | `fbeacacdc` | 2026-04-06 | Backend | chore(guards): remove scheduling.py from PENDING_MIGRATION (now 143) | `lia-agent-system/scripts/check_no_sql_in_controllers.py` |
 | 🟡 | `bbf5ea042` | 2026-04-06 | Backend | feat(phase2): migrate scheduling.py to SchedulingRepository | `lia-agent-system/app/api/v1/scheduling.py`<br>`lia-agent-system/app/domains/interview_scheduling/repositories/scheduling_repository.py` |
 | 🟢 | `ef4698fa8` | 2026-03-31 | Frontend (UI) | Update the data structure for scheduling interviews — Introduce a new interface `ScheduledInterviewData` for structured storage of scheduled interview det | `plataforma-lia/src/components/ui/interview-scheduling-modal.tsx`<br>`plataforma-lia/src/components/wsi/wsi-voice-screening-status.tsx` |
-
-### Talent Funnel (FE)
-
-**Descrição:** Funil de Talentos — tabs, candidato page, components específicos.
-
-**⚠️ Dependências para cherry-pick:** Endpoint /api/backend-proxy/talent-funnel | hooks de funil
-
-**Arquivos canônicos:** plataforma-lia/src/app/funil-de-talentos/**, src/components/talent-funnel-tabs/**
-
-**Docs de referência:** —
-
-- **Commits:** 8  |  **Período:** 2026-03-30 → 2026-04-11  |  **Camadas:** Frontend  |  **—**  |  **Risco:** 🟢×7 🟡×1
-
-| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
-|:---:|---|---|---|---|---|
-| 🟢 | `30551691d` | 2026-04-11 | Frontend (UI) | Improve tab loading by rendering them only when active — Conditionally render tab content within TabsContent components to ensure components and their associ | `plataforma-lia/src/app/funil-de-talentos/FunilDeTalentosClient.tsx` |
-| 🟢 | `788baa5c7` | 2026-04-11 | Frontend (UI) | Improve ability to load candidate lists by adding automatic retries — Add retry logic with delay to `getCandidateLists` call in `use-lists-tab.ts` to handle transient bac | `plataforma-lia/src/components/talent-funnel-tabs/use-lists-tab.ts` |
-| 🟢 | `2e1b0fde4` | 2026-04-11 | Frontend (UI) | Add history tab with clock icon to talent funnel page — Add HistoryTab component, Clock icon import, and a new TabsTrigger for the "historico" value in Funi | `plataforma-lia/src/app/funil-de-talentos/FunilDeTalentosClient.tsx` |
-| 🟢 | `087d09486` | 2026-04-11 | Frontend (UI) | Task start baseline checkpoint for code review | `plataforma-lia/src/app/funil-de-talentos/candidato/[id]/CandidatoDetailClient.tsx`<br>`plataforma-lia/src/components/pages/candidates/CandidateTabs.tsx`<br>`plataforma-lia/src/components/pages/jobs-page.tsx` |
-| 🟢 | `5b36eacab` | 2026-04-07 | Frontend (UI) | Update date formatting to return empty string for null values — Modify formatDate and formatDateShort functions in useCandidatePageCore.tsx to return an empty strin | `plataforma-lia/src/app/funil-de-talentos/candidato/[id]/useCandidatePageCore.tsx` |
-| 🟢 | `820e3a54e` | 2026-04-06 | Frontend (UI) | Update candidate data handling and job configuration — Modify default values for candidate work model and contract type, adjust type casting for candidate  | `plataforma-lia/src/app/funil-de-talentos/FunilDeTalentosClient.tsx`<br>`plataforma-lia/src/components/candidate-modal.tsx`<br>`plataforma-lia/src/components/jobs/job-edit-tab/useJobEditTab.ts` |
-| 🟢 | `65af36722` | 2026-04-01 | Frontend (UI) | Update job and vacancy pages and refine candidate profile — Adjusts routing and component rendering for job and vacancy pages, while also making internal refine | `plataforma-lia/src/app/funil-de-talentos/candidato/[id]/page.tsx`<br>`plataforma-lia/src/app/jobs/[id]/page.tsx`<br>`plataforma-lia/src/app/vagas/[slug]/page.tsx` |
-| 🟡 | `48e2ace56` | 2026-03-30 | Frontend (UI) | Improve candidate profile and activity tab display and data handling — Update type casting and conditional rendering in CandidateActivitiesTab, CandidateFilesTab, Candidat | `plataforma-lia/src/app/funil-de-talentos/candidato/[id]/components/CandidatoActivitiesTab.tsx`<br>`plataforma-lia/src/app/funil-de-talentos/candidato/[id]/components/CandidatoFilesTab.tsx`<br>`plataforma-lia/src/app/funil-de-talentos/candidato/[id]/components/CandidatoOpinionsTab.tsx` |
 
 ### Task #113
 
@@ -2953,6 +3003,14 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 
 ### Agent Studio (FE)
 
+**Descrição:** Agent Studio — pages-agent-studio. Inclui pages para visualizar/configurar agentes IA.
+
+**⚠️ Dependências para cherry-pick:** Endpoint /api/v1/agent_studio | RBAC admin
+
+**Arquivos canônicos:** plataforma-lia/src/components/pages-agent-studio/**
+
+**Docs de referência:** —
+
 - **Commits:** 7  |  **Período:** 2026-04-09 → 2026-04-15  |  **Camadas:** Frontend  |  **—**  |  **Risco:** 🟢×6 🟡×1
 
 | Risco | SHA | Data | Camada | O que faz | Arquivos chave |
@@ -2965,21 +3023,37 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `95b3fb6ef` | 2026-04-09 | Frontend (UI) | Update Agent Studio to use brain icons and remove unnecessary wrappers — Replaced Sparkles icons with Brain icons, removed gradient background wrappers around Brain icons in | `plataforma-lia/src/components/pages-agent-studio/AgentStudioPage.tsx` |
 | 🟢 | `41efa41a5` | 2026-04-09 | Frontend (UI) | Update the Agent Studio page with a modern, intuitive, and sophisticated design — Redesign the Agent Studio page with a new header, metric bar, tabbed navigation, guided setup flow,  | `plataforma-lia/src/components/pages-agent-studio/AgentStudioPage.tsx` |
 
-### Docs / Auditorias
+### Docs / Configuration
 
-- **Commits:** 7  |  **Período:** 2026-03-30 → 2026-04-14  |  **Camadas:** Frontend  |  **—**  |  **Risco:** 🟢×6 🟡×1
+**Descrição:** Documentação de configuração e deploy — DEPLOY_GUIDE, GCP_INFRASTRUCTURE_CHECKLIST, .env.example, Langfuse decision, env vars.
+
+**⚠️ Dependências para cherry-pick:** —
+
+**Arquivos canônicos:** DEPLOY_GUIDE.md, GCP_INFRASTRUCTURE_CHECKLIST.md, lia-agent-system/.env.example, plataforma-lia/.env.example
+
+**Docs de referência:** DEPLOY_GUIDE.md
+
+- **Commits:** 7  |  **Período:** 2026-04-07 → 2026-04-14  |  **Camadas:** Backend + Frontend  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×6 🟡×1
 
 | Risco | SHA | Data | Camada | O que faz | Arquivos chave |
 |:---:|---|---|---|---|---|
-| 🟡 | `7e69b62a9` | 2026-04-14 | Frontend (api/util) | Fix errors when loading candidate data and improve API responsiveness — Refactors the `useCandidatesList` hook to handle race conditions, restore retry logic, and implement | `plataforma-lia/src/hooks/candidates/use-candidates-list.ts`<br>`plataforma-lia/src/lib/api/proxy-handler.ts` |
-| 🟢 | `8cec79473` | 2026-04-14 | Docs | Add audit documentation files for project phases — Add new audit files to the documentation for phase 3 of the project, including COMPOSABLE_PATTERNS_A | `docs/audit/fase3-qualitativo/COMPOSABLE_PATTERNS_AUDIT.md`<br>`docs/audit/fase3-qualitativo/DUPLICATION_DIVERGENCE_MAP.md`<br>`docs/audit/fase3-qualitativo/PROPORTIONALITY_AUDIT.md` |
-| 🟢 | `c416afdf4` | 2026-04-14 | Docs | Update audit document to include detailed findings on agent intelligence perception — Adds a comprehensive audit report for the LIA Agent System, detailing scores, strengths, and critica | `docs/audit/fase3-qualitativo/AGENT_INTELLIGENCE_PERCEPTION_AUDIT.md` |
-| 🟢 | `ca4a7baa7` | 2026-04-14 | Docs | Update documentation to reflect platform architecture and audit findings — Update documentation files including FLOW_TRACES.md, PLATFORM_MAP.md, and PROMPT_AUDIT.md with detai | `docs/audit/fase1-reconhecimento/FLOW_TRACES.md`<br>`docs/audit/fase1-reconhecimento/PLATFORM_MAP.md`<br>`docs/audit/fase1-reconhecimento/PROMPT_AUDIT.md` |
-| 🟢 | `0b99bfde0` | 2026-04-14 | Docs | Task start baseline checkpoint for code review | `PLATFORM_MAP.md`<br>`artifacts/mockup-sandbox/src/.generated/mockup-components.ts`<br>`docs/audit/fase1-reconhecimento/FLOW_TRACES.md` |
-| 🟢 | `870efa232` | 2026-03-30 | Docs | docs: consolida FRONTEND_AUDIT_REPORT_FINAL.md em frontend-audit-consolidado-20-dimensoes.md | `docs/audit/FRONTEND_AUDIT_REPORT_FINAL.md`<br>`docs/audit/frontend-audit-consolidado-20-dimensoes.md` |
-| 🟢 | `395266788` | 2026-03-30 | Docs | docs: relatório consolidado auditoria frontend 20 dimensões | `docs/audit/frontend-audit-consolidado-20-dimensoes.md` |
+| 🟡 | `4c79c511f` | 2026-04-14 | Backend | docs: document staging Rails API URL in .env.example [PX08-007] — Staging URL: https://staging2.wedotalent.cc | `lia-agent-system/.env.example` |
+| 🟢 | `9787e738c` | 2026-04-10 | Frontend (api/util) | Update documentation with correct environment variable names — Update VALIDATION_PLAN.md and DEPLOY_GUIDE.md to reference correct environment variable names and ad | `plataforma-lia/5120` |
+| 🟢 | `72b810898` | 2026-04-10 | Docs | Update AI agent domain counts to reflect current scope — Normalize the number of business domains from 53 to 58 across multiple sections in DEPLOY_GUIDE.md,  | `DEPLOY_GUIDE.md` |
+| 🟢 | `29d23937d` | 2026-04-09 | Docs | Update production readiness audit with comparative analysis and new structure — Refactors section 24 of DEPLOY_GUIDE.md, restructuring the production readiness audit into a compara | `DEPLOY_GUIDE.md` |
+| 🟢 | `385dd7c8e` | 2026-04-07 | Docs | Expand product development workflow to include client feedback and bug fixes — Adds a comprehensive product development cycle diagram, detailed QA and hotfix processes, and a clie | `DEPLOY_GUIDE.md` |
+| 🟢 | `cd4710d07` | 2026-04-07 | Docs | Update deployment guide with current environment and limitations — Modify DEPLOY_GUIDE.md to reflect the existence of a staging environment, clarify deployment status, | `DEPLOY_GUIDE.md` |
+| 🟢 | `fd2ca73f2` | 2026-04-07 | Docs | Clarify team ownership of development flow and environment — Update DEPLOY_GUIDE.md to redefine roles in development flow, emphasizing team ownership of the cent | `DEPLOY_GUIDE.md` |
 
 ### Docs / WeDO planos
+
+**Descrição:** Planos e análises da pasta WeDO/.
+
+**⚠️ Dependências para cherry-pick:** —
+
+**Arquivos canônicos:** WeDO/**
+
+**Docs de referência:** —
 
 - **Commits:** 7  |  **Período:** 2026-03-26 → 2026-04-02  |  **Camadas:** Frontend  |  **—**  |  **Risco:** 🟢×7
 
@@ -3143,6 +3217,27 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `17241f3b6` | 2026-03-30 | Docs | fix(docs): convert all ASCII box-drawing tables to standard Markdown tables — Converted 8+ ASCII box-drawing tables in DIAGNOSTICO_ATS_FRONT_VUE.md | `docs/specs/frontend/DIAGNOSTICO_ATS_FRONT_VUE.md` |
 | 🟢 | `d6acd9b68` | 2026-03-20 | Docs | feat(docs): add v5 domains/agents map to executive summary + guardrails_seed evidence — Added 'Mapa de Domínios e Agentes do v5' section to Sumário Executivo: | `proposals/diagnostico_arquitetura_codigo_lia_vs_v5.md` |
 
+### Docs / Diagramas
+
+**Descrição:** Diagramas Excalidraw / Mermaid de arquitetura, fluxos.
+
+**⚠️ Dependências para cherry-pick:** —
+
+**Arquivos canônicos:** docs/diagrams/**, *.excalidraw
+
+**Docs de referência:** —
+
+- **Commits:** 6  |  **Período:** 2026-03-29 → 2026-04-11  |  **Camadas:** Frontend  |  **—**  |  **Risco:** 🟢×5 🟡×1
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟡 | `8de193476` | 2026-04-11 | Outro | feat: add updated Detailed System Architecture diagram (April 2026) — - Updated from real codebase: 56 domains, 304 API files, 33 orchestrator files (1.2MB) | `diagrams/lia-ai-architecture.excalidraw` |
+| 🟢 | `c9cc53583` | 2026-03-29 | Docs | Add comprehensive architecture diagrams to the documentation — Create a new Excalidraw diagram file mirroring the complete architecture details from the HTML, incl | `docs/diagrams/architecture-transversal-unified.excalidraw` |
+| 🟢 | `c82d16096` | 2026-03-29 | Docs | Add comparative analysis and screening flow details to architecture diagram — Add comparative table, detailed screening flow comparison (v5 vs LIA), and flow comparison table to  | `docs/diagrams/recruiter-agent-v5-architecture.excalidraw` |
+| 🟢 | `303a3de04` | 2026-03-29 | Frontend (UI) | Add detailed comparison of prompt capabilities between LIA and v5 — Introduce new sections to the documentation comparing prompt-specific functionalities, tool usage, a | `plataforma-lia/src/app/globals.css` |
+| 🟢 | `a833a506b` | 2026-03-29 | Docs | Add LIA architecture diagram to existing v5 diagram file — Adds the LIA architecture diagram alongside the v5 diagram in the recruiter-agent-v5-architecture.ex | `docs/diagrams/lia-ai-architecture.excalidraw`<br>`docs/diagrams/recruiter-agent-v5-architecture.excalidraw` |
+| 🟢 | `622790db9` | 2026-03-29 | Frontend (api/util) | Add detailed architecture diagram for the LIA platform — Generate an HTML architecture diagram for the LIA platform, detailing its frontend, API gateway, orc | `plataforma-lia/public/diagram-lia-detailed.html` |
+
 ### Fase 5
 
 - **Commits:** 6  |  **Período:** 2026-03-28 → 2026-03-31  |  **Camadas:** Frontend  |  **—**  |  **Risco:** 🟢×5 🔴×1
@@ -3155,6 +3250,48 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `f888516d2` | 2026-03-30 | Docs | docs: atualiza score para 10.0/10 — FASE 5 monolith splits concluidos | `docs/specs/frontend/FRONTEND_INVENTORY_v1.md`<br>`docs/specs/frontend/INVENTARIO_COMPONENTES.md`<br>`docs/specs/frontend/OPORTUNIDADES_PADRONIZACAO.md` |
 | 🟢 | `8313bacca` | 2026-03-30 | Frontend (UI) | feat: FASE 5 monolith splits — 5 arquivos grandes divididos — ats-integrations-page.tsx: 1522L -> 418L + ats-integrations/ (types, constants, hook, modal) | `plataforma-lia/src/components/pages/candidates/hooks/useCandidatesPageCore.tsx` |
 | 🔴 | `2e65c1f44` | 2026-03-28 | Frontend (UI) | Fase 5 parcial — var(--eleven-*) → Tailwind DS tokens (98 arquivos) — Substitui 2.800+ ocorrências de var(--eleven-*) em inline styles por | `plataforma-lia/src/app/access/page.tsx`<br>`plataforma-lia/src/app/admin/clientes/[clientId]/automacoes/page.tsx`<br>`plataforma-lia/src/app/admin/clientes/[clientId]/big-five/page.tsx` |
+
+### Job Management (BE)
+
+**Descrição:** Domínio de gestão de vagas — services, tools, repositórios.
+
+**⚠️ Dependências para cherry-pick:** Schema canônico Job (com seniority, não level) | tenant guards
+
+**Arquivos canônicos:** lia-agent-system/app/domains/job_management/**
+
+**Docs de referência:** —
+
+- **Commits:** 6  |  **Período:** 2026-04-12 → 2026-04-28  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×3 🔴×2 🟢×1
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🔴 | `e0fb295b9` | 2026-04-28 | Cross Back↔Front | Enhance salary suggestions with ATS job history and refine task display — Integrate ATS job history for salary recommendations, add a pipeline template selection card, and im | `lia-agent-system/app/domains/job_management/services/wizard_step_service/stage_salary.py`<br>`plataforma-lia/src/app/api/backend-proxy/v1/tasks/route.ts`<br>`plataforma-lia/src/components/unified-chat/wizard/wizard-plan-card.ts` |
+| 🟢 | `f49be9b4d` | 2026-04-21 | Docs | Update documentation and code to reflect standardized workforce import and job pagination contracts — Refactors `DEVELOPER_HANDOFF_UX_REDESIGN.md` to update test file references and documentation for  | `lia-agent-system/docs/INITIATIVES_AUDIT.md`<br>`plataforma-lia/DEVELOPER_HANDOFF_UX_REDESIGN.md` |
+| 🟡 | `182dec756` | 2026-04-21 | Backend | Add pagination to job search functionality — Implement offset and limit parameters for the search_jobs function in query_tools.py, along with a n | `lia-agent-system/app/domains/job_management/tools/query_tools.py`<br>`lia-agent-system/tests/unit/test_fix20_pagination.py` |
+| 🔴 | `e3c1ed576` | 2026-04-19 | Cross IA↔Front | Improve job management and candidate comparison tools — Refactors job management tools to use a dedicated service layer, enhances the candidate comparison f | `lia-agent-system/app/domains/job_management/services/job_vacancy_lifecycle_service.py`<br>`lia-agent-system/app/domains/sourcing/services/consent_cache.py`<br>`lia-agent-system/app/tools/job_tools.py` |
+| 🟡 | `d9b4bd83b` | 2026-04-17 | Backend | Add logging to job search functionality — Add debug logging for the number of rows returned by the job search query in `query_tools.py`. | `lia-agent-system/app/domains/job_management/tools/query_tools.py` |
+| 🟡 | `9182a35c9` | 2026-04-12 | Backend | fix: restore vacancy_search_service.py — imported by 2 endpoints (not dead duplicate) | `lia-agent-system/app/domains/job_management/services/vacancy_search_service.py` |
+
+### Scripts / Jira tooling
+
+**Descrição:** Scripts auxiliares de Jira — fetch + analyze cards, audit design, update specific cards (WT-1639). Usa Anthropic API para análise.
+
+**⚠️ Dependências para cherry-pick:** Anthropic API key (env) | acesso Jira | scripts rodam local/CI, não em prod
+
+**Arquivos canônicos:** scripts/jira-fetch-analyze.py, scripts/jira-audit-design.py, scripts/jira-update-*.py
+
+**Docs de referência:** —
+
+- **Commits:** 6  |  **Período:** 2026-03-22 → 2026-03-24  |  **Camadas:** —  |  **—**  |  **Risco:** 🟡×6
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟡 | `4e46858de` | 2026-03-24 | Outro | Improve analysis script by extracting BetterBugs links and optimizing LLM calls — Enhance the `adf_to_text` function to extract BetterBugs URLs from link marks, adjust the prompt to  | `scripts/jira-fetch-analyze.py` |
+| 🟡 | `8fff66478` | 2026-03-23 | Outro | Stop updating card descriptions and post analysis as comments — Replaces direct updates to card descriptions with posts to comments, as the description endpoint can | `scripts/jira-audit-design.py`<br>`scripts/jira-fetch-analyze.py` |
+| 🟡 | `cb323fc58` | 2026-03-23 | Outro | Add detailed design and quality assurance information to Jira cards — Adds a new function to analyze and generate design issues, acceptance criteria, and Definition of Do | `scripts/jira-fetch-analyze.py` |
+| 🟡 | `efd618f8d` | 2026-03-23 | Outro | Improve AI model integration and code analysis capabilities — Update Anthropic API integration to use environment variables for keys and base URLs, switch to a mo | `scripts/jira-audit-design.py`<br>`scripts/jira-fetch-analyze.py` |
+| 🟡 | `decb3621b` | 2026-03-23 | Outro | scripts: adiciona jira-fetch-analyze.py e jira-audit-design.py — jira-fetch-analyze.py (comando fetch): | `scripts/jira-audit-design.py`<br>`scripts/jira-fetch-analyze.py` |
+| 🟡 | `52c6faa4a` | 2026-03-22 | Outro | Add audit documentation for the login screen redesign to Jira — Update Jira card WT-1639 with detailed audit documentation for the login screen, including file refe | `scripts/jira-update-wt1639-login-audit.py` |
 
 ### Task #111
 
@@ -3252,19 +3389,95 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟡 | `6e9287f50` | 2026-04-20 | Backend | docs: ADR-019 + glossário 281 actions/94 tools + MAPA 18 domínios — Original task #671: criar ADR-019 (intent-routed wizards), glossário das | `lia-agent-system/scripts/generate_glossario_actions_tools.py` |
 | 🔴 | `620ef0b05` | 2026-03-15 | Cross IA↔Front | Sprints Y1–Y5 completos + Diagnóstico v6: plataforma IA production-ready — ## Sprints Y1 (D1–D10) — Fundações e Observabilidade | `lia-agent-system/alembic/versions/041_add_agent_ragas_evaluations.py`<br>`lia-agent-system/alembic/versions/042_add_disparate_impact_to_snapshot.py`<br>`lia-agent-system/alembic/versions/043_add_candidate_consent_grants.py` |
 
-### Docs / Diagramas
+### Design System v4.2.2
 
-- **Commits:** 5  |  **Período:** 2026-03-29 → 2026-03-29  |  **Camadas:** Frontend  |  **—**  |  **Risco:** 🟢×5
+**Descrição:** Design System v4.2.2 — tokens (cores, fonts, spacing), TypeScript ignoreBuildErrors, font-size-xs ajuste, audit migração tokens. SOURCE OF TRUTH em 00-design-system-v4.2.2.md.
+
+**⚠️ Dependências para cherry-pick:** Tokens via design-tokens.css | tailwind.config.ts ALINHADO | nunca hardcode color/spacing
+
+**Arquivos canônicos:** plataforma-lia/src/styles/design-tokens.css, plataforma-lia/docs/design-system/00-design-system-v4.md, plataforma-lia/tailwind.config.ts
+
+**Docs de referência:** 00-design-system-v4.2.2.md
+
+- **Commits:** 5  |  **Período:** 2026-04-02 → 2026-04-11  |  **Camadas:** Frontend  |  **—**  |  **Risco:** 🟢×5
 
 | Risco | SHA | Data | Camada | O que faz | Arquivos chave |
 |:---:|---|---|---|---|---|
-| 🟢 | `c9cc53583` | 2026-03-29 | Docs | Add comprehensive architecture diagrams to the documentation — Create a new Excalidraw diagram file mirroring the complete architecture details from the HTML, incl | `docs/diagrams/architecture-transversal-unified.excalidraw` |
-| 🟢 | `c82d16096` | 2026-03-29 | Docs | Add comparative analysis and screening flow details to architecture diagram — Add comparative table, detailed screening flow comparison (v5 vs LIA), and flow comparison table to  | `docs/diagrams/recruiter-agent-v5-architecture.excalidraw` |
-| 🟢 | `303a3de04` | 2026-03-29 | Frontend (UI) | Add detailed comparison of prompt capabilities between LIA and v5 — Introduce new sections to the documentation comparing prompt-specific functionalities, tool usage, a | `plataforma-lia/src/app/globals.css` |
-| 🟢 | `a833a506b` | 2026-03-29 | Docs | Add LIA architecture diagram to existing v5 diagram file — Adds the LIA architecture diagram alongside the v5 diagram in the recruiter-agent-v5-architecture.ex | `docs/diagrams/lia-ai-architecture.excalidraw`<br>`docs/diagrams/recruiter-agent-v5-architecture.excalidraw` |
-| 🟢 | `622790db9` | 2026-03-29 | Frontend (api/util) | Add detailed architecture diagram for the LIA platform — Generate an HTML architecture diagram for the LIA platform, detailing its frontend, API gateway, orc | `plataforma-lia/public/diagram-lia-detailed.html` |
+| 🟢 | `4ee7061e6` | 2026-04-11 | Docs | Design System v4.2.2: document updated with all new values, 4 new sections, zero old refs | `plataforma-lia/docs/design-system/00-design-system-v4.md` |
+| 🟢 | `f1ade9154` | 2026-04-10 | Frontend (api/util) | Design System: add typescript ignoreBuildErrors | `plataforma-lia/next.config.js` |
+| 🟢 | `548bbb150` | 2026-04-09 | Frontend (api/util) | Improve text readability by increasing font sizes across the platform — Adjust font size tokens in design-tokens.css and update diagnostic documentation to reflect global t | `plataforma-lia/src/styles/design-tokens.css` |
+| 🟢 | `ff8b4a8b7` | 2026-04-02 | Docs | Clarify audit results in documentation regarding design token migration — Update replit.md to accurately reflect the outcome of the design token migration audit, noting that  | `replit.md` |
+| 🟢 | `36e023f61` | 2026-04-02 | Frontend (api/util) | Update font size token to ensure consistency — Adjusted the `--font-size-xs` CSS token from 11px to 12px in `design-tokens.css` to align with Tailw | `plataforma-lia/src/styles/design-tokens.css` |
+
+### DevOps / CI
+
+**Descrição:** GitHub Actions CI pipeline — lint, test, build on push/PR.
+
+**⚠️ Dependências para cherry-pick:** —
+
+**Arquivos canônicos:** plataforma-lia/.github/workflows/ci.yml, .github/workflows/**
+
+**Docs de referência:** —
+
+- **Commits:** 5  |  **Período:** 2026-03-30 → 2026-04-14  |  **Camadas:** Backend + Frontend  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×4 🟢×1
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟡 | `77fc2a9b8` | 2026-04-14 | Infra/Config | ci: integrate eval runner in CI pipeline [PX08-050] — Sprint 6 item 6.5 — Eval suites now run on every PR: | `.github/workflows/ci.yml` |
+| 🟡 | `d435a4d18` | 2026-04-13 | Infra/Config | ci: block unresolved merge conflict markers in main — Adds a CI step before ruff lint that greps for literal conflict markers | `.github/workflows/ci.yml` |
+| 🟡 | `88654d044` | 2026-04-09 | Backend | task-84: Alinhar DEPLOY_GUIDE.md com código real + remover AWS — Tarefa original: Alinhar DEPLOY_GUIDE.md com o estado real do código, | `lia-agent-system/terraform/aws/main.tf`<br>`lia-agent-system/terraform/aws/outputs.tf`<br>`lia-agent-system/terraform/aws/userdata.sh` |
+| 🟢 | `eca690fec` | 2026-03-31 | Frontend (api/util) | ci: add GitHub Actions CI pipeline — lint, test, build on push/PR to main | `plataforma-lia/.github/workflows/ci.yml` |
+| 🟡 | `dcbcd92df` | 2026-03-30 | Infra/Config | ci: add Playwright E2E job to CI pipeline | `.github/workflows/ci.yml` |
+
+### Docs / Refactor
+
+**Descrição:** REFACTOR_PLAN, MIGRATION_READINESS — planos e checklists de refactor estrutural (extração Phase 2/3/4, contagem de monolitos).
+
+**⚠️ Dependências para cherry-pick:** —
+
+**Arquivos canônicos:** lia-agent-system/REFACTOR_PLAN.md, plataforma-lia/MIGRATION_READINESS.md
+
+**Docs de referência:** REFACTOR_PLAN.md
+
+- **Commits:** 5  |  **Período:** 2026-04-01 → 2026-04-07  |  **Camadas:** —  |  **—**  |  **Risco:** 🟢×5
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟢 | `df7f53768` | 2026-04-07 | Docs | docs: update REFACTOR_PLAN after Phase 2+3+4B | `lia-agent-system/REFACTOR_PLAN.md` |
+| 🟢 | `7e5560b6c` | 2026-04-07 | Docs | docs: revisit REFACTOR_PLAN with Rails-aware corrections — - Add Rails Migration Boundary section: entities owned by Rails vs FastAPI | `lia-agent-system/REFACTOR_PLAN.md` |
+| 🟢 | `bf0e042d0` | 2026-04-06 | Docs | docs: update REFACTOR_PLAN.md — Phase 2 (12 migrated, 174 pending), Phase 4 done, Phase 9 LOC delta | `lia-agent-system/REFACTOR_PLAN.md` |
+| 🟢 | `69bca4528` | 2026-04-01 | Docs | docs: fix MIGRATION_READINESS — files >1000L is 3 not 1 (design-tokens.css grew, useExpandedChatModalCore at 1001L) | `plataforma-lia/MIGRATION_READINESS.md` |
+| 🟢 | `4a6a078e5` | 2026-04-01 | Docs | docs: MIGRATION_READINESS.md score 69/70 checklist context-store map risks | `plataforma-lia/MIGRATION_READINESS.md` |
+
+### Docs / Screenshots
+
+**Descrição:** Screenshots de docs (login, 2FA, chat) — usados em apresentações e auditorias.
+
+**⚠️ Dependências para cherry-pick:** —
+
+**Arquivos canônicos:** plataforma-lia/docs/screenshots/**
+
+**Docs de referência:** —
+
+- **Commits:** 5  |  **Período:** 2026-04-03 → 2026-04-09  |  **Camadas:** —  |  **—**  |  **Risco:** 🟢×4 🟡×1
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟢 | `a0116c89c` | 2026-04-09 | Docs | Update main application chat screenshot — Update the existing screenshot for the main application's chat interface. | `plataforma-lia/docs/screenshots/main-app-chat.jpg` |
+| 🟢 | `2e58eb7ad` | 2026-04-03 | Docs | Update screenshots for login and 2FA process — Update screenshots to reflect the final state of the login and 2FA process, including disabled butto | `plataforma-lia/docs/screenshots/session3/S3-final-btn-disabled.png`<br>`plataforma-lia/docs/screenshots/session3/S3-final-filled.png` |
+| 🟢 | `1657ad17c` | 2026-04-03 | Docs | Update screenshots showing successful code input — Update screenshots to demonstrate successful input methods for verification codes. | `plataforma-lia/docs/screenshots/session3/S3-debug-methods.png`<br>`plataforma-lia/docs/screenshots/session3/S3-v4-typed.png` |
+| 🟢 | `d67a75dd3` | 2026-04-03 | Docs | Update screenshots for user login and 2FA process — Update screenshots to reflect changes in the user login and two-factor authentication flow. | `plataforma-lia/docs/screenshots/session3/S3-pre2fa.png`<br>`plataforma-lia/docs/screenshots/session3/S3-single-2fa-ready.png` |
+| 🟡 | `4f55a46ee` | 2026-04-03 | Docs | Update scripts to handle website login and two-factor authentication flow — Refactor and add new Python scripts using Playwright to automate the login process, including handli | `plataforma-lia/docs/screenshots/session3/S3-2fa-btn-disabled.png`<br>`plataforma-lia/docs/screenshots/session3/S3-2fa-filled.png`<br>`plataforma-lia/docs/screenshots/session3/S3-2fa-ready.png` |
 
 ### FE libs / utils
+
+**Descrição:** Libs e utils do frontend — utilitários compartilhados, helpers, hooks ad-hoc.
+
+**⚠️ Dependências para cherry-pick:** —
+
+**Arquivos canônicos:** plataforma-lia/src/lib/**
+
+**Docs de referência:** —
 
 - **Commits:** 5  |  **Período:** 2026-03-26 → 2026-04-24  |  **Camadas:** Backend + Frontend  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×2 🟡×2 🔴×1
 
@@ -3287,26 +3500,6 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `6fb9868fb` | 2026-03-28 | Frontend (UI) | Fase 3 — Consolidação de Badges: dark mode + tokens DS v4.2.1 — setup-alert-badge: transition-shadow removida (anti-DS), 5 CSS vars bracket → Tailwind nativo, dark  | `plataforma-lia/src/components/ui/chat-status-indicators.tsx`<br>`plataforma-lia/src/components/ui/score-icon-button.tsx`<br>`plataforma-lia/src/components/ui/setup-alert-badge.tsx` |
 | 🟡 | `1a465e204` | 2026-03-27 | Frontend (UI) | Fase 3 — Consolidação de Badges: tokens DS + órfãos removidos — 3A badge.tsx: rgba() hardcoded → tokens Tailwind (wedo-green/15, wedo-orange/15, | `plataforma-lia/src/components/job-creation/field-origin-badge.tsx`<br>`plataforma-lia/src/components/screening/auto-screening-badge.tsx`<br>`plataforma-lia/src/components/screening/index.ts` |
 | 🟢 | `91155fb24` | 2026-03-27 | Docs | Fase 3 — Plano revisado com tokens semânticos, Vuetify map e code review — - Diagnóstico real: 2 órfãos (suggestion-badge, auto-screening-badge = 0 imports) | `docs/specs/frontend/INVENTARIO_COMPONENTES.md` |
-
-### Job Management (BE)
-
-**Descrição:** Domínio de gestão de vagas — services, tools, repositórios.
-
-**⚠️ Dependências para cherry-pick:** Schema canônico Job (com seniority, não level) | tenant guards
-
-**Arquivos canônicos:** lia-agent-system/app/domains/job_management/**
-
-**Docs de referência:** —
-
-- **Commits:** 5  |  **Período:** 2026-04-12 → 2026-04-28  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×3 🔴×2
-
-| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
-|:---:|---|---|---|---|---|
-| 🔴 | `e0fb295b9` | 2026-04-28 | Cross Back↔Front | Enhance salary suggestions with ATS job history and refine task display — Integrate ATS job history for salary recommendations, add a pipeline template selection card, and im | `lia-agent-system/app/domains/job_management/services/wizard_step_service/stage_salary.py`<br>`plataforma-lia/src/app/api/backend-proxy/v1/tasks/route.ts`<br>`plataforma-lia/src/components/unified-chat/wizard/wizard-plan-card.ts` |
-| 🟡 | `182dec756` | 2026-04-21 | Backend | Add pagination to job search functionality — Implement offset and limit parameters for the search_jobs function in query_tools.py, along with a n | `lia-agent-system/app/domains/job_management/tools/query_tools.py`<br>`lia-agent-system/tests/unit/test_fix20_pagination.py` |
-| 🔴 | `e3c1ed576` | 2026-04-19 | Cross IA↔Front | Improve job management and candidate comparison tools — Refactors job management tools to use a dedicated service layer, enhances the candidate comparison f | `lia-agent-system/app/domains/job_management/services/job_vacancy_lifecycle_service.py`<br>`lia-agent-system/app/domains/sourcing/services/consent_cache.py`<br>`lia-agent-system/app/tools/job_tools.py` |
-| 🟡 | `d9b4bd83b` | 2026-04-17 | Backend | Add logging to job search functionality — Add debug logging for the number of rows returned by the job search query in `query_tools.py`. | `lia-agent-system/app/domains/job_management/tools/query_tools.py` |
-| 🟡 | `9182a35c9` | 2026-04-12 | Backend | fix: restore vacancy_search_service.py — imported by 2 endpoints (not dead duplicate) | `lia-agent-system/app/domains/job_management/services/vacancy_search_service.py` |
 
 ### Modals (FE)
 
@@ -3414,6 +3607,14 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 
 ### Tasks #494-#570 (WSI/BYOK/Persona fundações)
 
+**Descrição:** Tasks da janela de fundações WSI + BYOK + Persona (494-570). Inclui escala WSI 0-10, ADR-018 BYOK, persona diagnostic, canonical-fix skill.
+
+**⚠️ Dependências para cherry-pick:** Ver §15 WSI / §14 BYOK / §16 LIA Persona — fundações já mergeadas em main
+
+**Arquivos canônicos:** Diversos — depende da task específica
+
+**Docs de referência:** BRANCH_MAP — Janela 3
+
 - **Commits:** 5  |  **Período:** 2026-04-18 → 2026-04-20  |  **Camadas:** Backend + Frontend + IA  |  **⚠️ Cross-cutting**  |  **Risco:** 🟡×2 🟢×2 🔴×1
 
 | Risco | SHA | Data | Camada | O que faz | Arquivos chave |
@@ -3460,6 +3661,25 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `28e67f22a` | 2026-04-21 | Docs | docs(fluxo-alpha1): add E10–E16 + CT (Chat Unified) + 16-stage status table (Task #713) | `plataforma-lia/docs/specs/FLUXO_TECNICO_COMPLETO_ALPHA1.md`<br>`replit.md` |
 | 🟢 | `694561e28` | 2026-04-20 | Docs | docs(fluxo-alpha1): add E0 chapter — AI architecture (cognitive layer) — Task #711: insert new chapter E0 'ARQUITETURA DE IA (CAMADA COGNITIVA)' | `plataforma-lia/docs/specs/FLUXO_TECNICO_COMPLETO_ALPHA1.md`<br>`replit.md` |
 
+### Backend Migrations (alembic)
+
+**Descrição:** Migrations alembic do FastAPI — schema changes para companies/jobs/candidates. Inclui fix default_languages ARRAY→JSONB.
+
+**⚠️ Dependências para cherry-pick:** Coordenar com `alembic upgrade head` no staging | downgrade testado
+
+**Arquivos canônicos:** lia-agent-system/alembic/versions/**, lia-agent-system/db/migrations/**
+
+**Docs de referência:** —
+
+- **Commits:** 4  |  **Período:** 2026-04-10 → 2026-04-15  |  **Camadas:** Backend  |  **—**  |  **Risco:** 🟡×3 🟢×1
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟢 | `cf3585177` | 2026-04-15 | Empty/merge | fix: resolve default_languages column type mismatch (ARRAY→JSONB) — The company_culture_profiles.default_languages column is jsonb in the DB | — |
+| 🟡 | `bc4c04b52` | 2026-04-13 | Backend | feat: Close all production gaps — migrations, triggers, metering, history — Migration 070: agent_deployments table with check constraints + unique index | `lia-agent-system/alembic/versions/070_agent_deployments.py`<br>`lia-agent-system/alembic/versions/071_agent_execution_logs.py`<br>`lia-agent-system/app/api/v1/automation/triggers.py` |
+| 🟡 | `d331029ea` | 2026-04-12 | Backend | feat: GAP 8 — schema migration + runtime connection — Model changes (3 new fields on custom_agents): | `lia-agent-system/alembic/versions/069_agent_studio_parity_fields.py`<br>`lia-agent-system/app/api/v1/custom_agents.py`<br>`lia-agent-system/libs/models/lia_models/custom_agent.py` |
+| 🟡 | `465751df3` | 2026-04-10 | Backend | Add new tables for onboarding and WhatsApp sessions — Add `onboarding_agent_state` and `whatsapp_sessions` tables to the database schema using Alembic mig | `lia-agent-system/alembic/versions/061_create_onboarding_tables.py` |
+
 ### Communication domain (BE)
 
 **Descrição:** Domínio de comunicação — email, WhatsApp, push, templates, communication_tools.
@@ -3479,18 +3699,15 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟡 | `edab76285` | 2026-04-08 | Backend | refactor: extract inline models and DRY communication_service (-351 lines) — - Extract 4 SQLAlchemy models to communication_models.py (263 lines) | `lia-agent-system/app/domains/communication/repositories/communication_repository.py`<br>`lia-agent-system/app/domains/communication/services/communication_models.py`<br>`lia-agent-system/app/domains/communication/services/communication_service.py` |
 | 🟡 | `70ec8fd8d` | 2026-04-04 | Backend | Add smart routing to direct users to the platform interface — Introduce a smart routing system that analyzes user messages to detect intents requiring platform in | `lia-agent-system/app/domains/communication/services/teams_card_renderer.py`<br>`lia-agent-system/app/domains/communication/services/teams_orchestrator_bridge.py`<br>`lia-agent-system/app/domains/communication/services/teams_simple.py` |
 
-### DevOps / CI
-
-- **Commits:** 4  |  **Período:** 2026-03-30 → 2026-04-14  |  **Camadas:** Backend  |  **—**  |  **Risco:** 🟡×4
-
-| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
-|:---:|---|---|---|---|---|
-| 🟡 | `77fc2a9b8` | 2026-04-14 | Infra/Config | ci: integrate eval runner in CI pipeline [PX08-050] — Sprint 6 item 6.5 — Eval suites now run on every PR: | `.github/workflows/ci.yml` |
-| 🟡 | `d435a4d18` | 2026-04-13 | Infra/Config | ci: block unresolved merge conflict markers in main — Adds a CI step before ruff lint that greps for literal conflict markers | `.github/workflows/ci.yml` |
-| 🟡 | `88654d044` | 2026-04-09 | Backend | task-84: Alinhar DEPLOY_GUIDE.md com código real + remover AWS — Tarefa original: Alinhar DEPLOY_GUIDE.md com o estado real do código, | `lia-agent-system/terraform/aws/main.tf`<br>`lia-agent-system/terraform/aws/outputs.tf`<br>`lia-agent-system/terraform/aws/userdata.sh` |
-| 🟡 | `dcbcd92df` | 2026-03-30 | Infra/Config | ci: add Playwright E2E job to CI pipeline | `.github/workflows/ci.yml` |
-
 ### Docs / BRANCH_MAP nav
+
+**Descrição:** Atualizações ao BRANCH_MAP.md — índice canônico de temas e milestones.
+
+**⚠️ Dependências para cherry-pick:** BRANCH_MAP.md atualizado a cada PR mergeado em branch de sprint
+
+**Arquivos canônicos:** lia-agent-system/docs/BRANCH_MAP.md
+
+**Docs de referência:** BRANCH_MAP.md
 
 - **Commits:** 4  |  **Período:** 2026-04-27 → 2026-04-27  |  **Camadas:** —  |  **—**  |  **Risco:** 🟢×4
 
@@ -3780,17 +3997,15 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟡 | `f0d3483ad` | 2026-04-09 | Backend | feat(backend): Sprint 2 — Talent Pool REST API (9 endpoints) — Models: | `lia-agent-system/app/api/routes.py`<br>`lia-agent-system/app/api/v1/talent_pools.py` |
 | 🔴 | `c2fd209de` | 2026-03-31 | Cross Back↔Front | fix(backend): Task #74 — Fix 5 backend architecture findings from Fase 6 audit — ARCH-04 (CRITICAL): Added **kwargs to RAGPipelineService.search() signature. | `lia-agent-system/app/domains/sourcing/services/llm_job_classification_service.py`<br>`plataforma-lia/src/app/vagas/[slug]/page.tsx`<br>`plataforma-lia/src/components/modals/data-blocking-modal.tsx` |
 
-### Backend Migrations (alembic)
-
-- **Commits:** 3  |  **Período:** 2026-04-10 → 2026-04-13  |  **Camadas:** Backend  |  **—**  |  **Risco:** 🟡×3
-
-| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
-|:---:|---|---|---|---|---|
-| 🟡 | `bc4c04b52` | 2026-04-13 | Backend | feat: Close all production gaps — migrations, triggers, metering, history — Migration 070: agent_deployments table with check constraints + unique index | `lia-agent-system/alembic/versions/070_agent_deployments.py`<br>`lia-agent-system/alembic/versions/071_agent_execution_logs.py`<br>`lia-agent-system/app/api/v1/automation/triggers.py` |
-| 🟡 | `d331029ea` | 2026-04-12 | Backend | feat: GAP 8 — schema migration + runtime connection — Model changes (3 new fields on custom_agents): | `lia-agent-system/alembic/versions/069_agent_studio_parity_fields.py`<br>`lia-agent-system/app/api/v1/custom_agents.py`<br>`lia-agent-system/libs/models/lia_models/custom_agent.py` |
-| 🟡 | `465751df3` | 2026-04-10 | Backend | Add new tables for onboarding and WhatsApp sessions — Add `onboarding_agent_state` and `whatsapp_sessions` tables to the database schema using Alembic mig | `lia-agent-system/alembic/versions/061_create_onboarding_tables.py` |
-
 ### Docs / Reconstruction Guides
+
+**Descrição:** Guides de reconstrução — documentação para reproduzir/onboard times novos.
+
+**⚠️ Dependências para cherry-pick:** —
+
+**Arquivos canônicos:** docs/reconstruction-guides/**
+
+**Docs de referência:** —
 
 - **Commits:** 3  |  **Período:** 2026-04-24 → 2026-04-25  |  **Camadas:** Backend + Frontend  |  **⚠️ Cross-cutting**  |  **Risco:** 🟢×2 🔴×1
 
@@ -3819,6 +4034,24 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | 🟢 | `ab29cadf4` | 2026-04-26 | Frontend (UI) | fix(fe): restore daily-briefing-card + disc-assessment-modal (false positives in #9957575f9) — Bug: Build error em Next.js 16 / Turbopack após merge da Task #850: | `plataforma-lia/src/components/daily-briefing-card.tsx`<br>`plataforma-lia/src/components/disc-assessment-modal.tsx` |
 | 🟡 | `b8c86f230` | 2026-04-26 | Frontend (UI) | refactor(fe): move 6 misplaced hooks to canonical hooks/ structure — Move hooks from components/ (wrong convention) to hooks/[category]/: | `plataforma-lia/src/components/LiaMetricsDetails.tsx`<br>`plataforma-lia/src/components/LiaMetricsDetailsSection.tsx`<br>`plataforma-lia/src/components/LiaMetricsFunnelSection.tsx` |
 | 🟡 | `9957575f9` | 2026-04-26 | Frontend (UI) | chore(fe): remove dead code — 6 orphaned components + workspace litter — Remove 6 React components confirmed with 0 external importers (~3,163 lines): | `plataforma-lia/src/components/LiaMetricsKPIs.tsx`<br>`plataforma-lia/src/components/daily-briefing-card.tsx`<br>`plataforma-lia/src/components/decision-explainer.tsx` |
+
+### Lint / Code Quality
+
+**Descrição:** ESLint rules, tsc exclusions, lint-staged + browserslist, prettier — qualidade de código e CI guards estáticos.
+
+**⚠️ Dependências para cherry-pick:** ESLint config no FE | tsconfig.json correto | lint-staged ativo no pre-commit
+
+**Arquivos canônicos:** plataforma-lia/eslint.config.mjs, plataforma-lia/tsconfig.json, plataforma-lia/package.json (lint-staged)
+
+**Docs de referência:** —
+
+- **Commits:** 3  |  **Período:** 2026-03-30 → 2026-04-22  |  **Camadas:** Frontend  |  **—**  |  **Risco:** 🟢×3
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟢 | `81efb2987` | 2026-04-22 | Frontend (api/util) | Enforce removal of deprecated API route across all TypeScript files — Add ESLint rule to prevent usage of the removed `/api/lia/api` route in any `.ts` or `.tsx` files, r | `plataforma-lia/eslint.config.mjs` |
+| 🟢 | `3d0048966` | 2026-03-31 | Frontend (api/util) | fix: exclui test files e exports/ do tsc — remove 1000+ erros de arquivos fora do escopo de prod | `plataforma-lia/tsconfig.json` |
+| 🟢 | `349ae02df` | 2026-03-30 | Frontend (api/util) | Add linting and formatting configurations for project files — Add `lint-staged` and `browserslist` configurations to `package.json` for improved code quality and  | `plataforma-lia/package.json` |
 
 ### Sprint 4.4
 

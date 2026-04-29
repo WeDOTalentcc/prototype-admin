@@ -1,7 +1,7 @@
 # Cherry-pick Map — Apêndices
 
 > Anexos do [CHERRY_PICK_MAP.md](CHERRY_PICK_MAP.md) — mantidos em arquivo separado pelo tamanho.
-> Gerado em: 2026-04-29 12:36
+> Gerado em: 2026-04-29 12:47
 
 ## Índice
 - [Apêndice A — Commits cross-cutting (alto risco para cherry-pick parcial)](#4-apêndice-a--commits-cross-cutting-lista-de-atenção)
@@ -1107,18 +1107,18 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `6f57b3d65` | 2026-04-23 | Auto-commit Replit | (Auto-commit Replit) | Git commit prior to merge |
 | 🟡 | `f7627f1bf` | 2026-04-23 | Auto-commit Replit | (Auto-commit Replit) | Saved progress at the end of the loop |
 | 🟡 | `98781c699` | 2026-04-23 | Backend | Artefatos / Eval logs (sem código) | Update job management evaluation results with new test cases — Add new test cases to the evaluation  |
-| 🟢 | `12bf9953b` | 2026-04-23 | Docs | Auto-Replit (verbos sem scope) | Update documentation to reflect current system architecture and agent counts — Refactor documentatio |
+| 🟢 | `12bf9953b` | 2026-04-23 | Docs | Docs / Architecture | Update documentation to reflect current system architecture and agent counts — Refactor documentatio |
 | 🟡 | `8237e5cb6` | 2026-04-23 | Auto-commit Replit | (Auto-commit Replit) | Transitioned from Plan to Build mode |
 | 🟢 | `a043b8c24` | 2026-04-22 | Frontend (UI) | Vagas Públicas | feat(vagas): design + WCAG 2.1 AA + code quality na página pública de vaga — - Design: espaçamentos  |
-| 🟢 | `81efb2987` | 2026-04-22 | Frontend (api/util) | Auto-Replit (verbos sem scope) | Enforce removal of deprecated API route across all TypeScript files — Add ESLint rule to prevent usa |
+| 🟢 | `81efb2987` | 2026-04-22 | Frontend (api/util) | Lint / Code Quality | Enforce removal of deprecated API route across all TypeScript files — Add ESLint rule to prevent usa |
 | 🟡 | `ad1fd512a` | 2026-04-22 | Frontend (UI) | Tasks #712-#886 (Features de produto) | Task #802: remove parallel proxy route /api/lia/[...path] — What changed |
 | 🟢 | `d6a0b5ca7` | 2026-04-22 | Frontend (UI) | Tests (FE e2e) | Improve error display and speed up candidate search reliability — Update error message key and enhan |
 | 🟡 | `1e29040d2` | 2026-04-22 | Frontend (UI) | §6 Chat Unificado / Funil | fix(funil): eliminate seed-candidate disappearance on transient network errors [Task #801] — Address |
 | 🟡 | `d0b1b75bb` | 2026-04-22 | Frontend (api/util) | §6 Chat Unificado / Funil | fix(funil): eliminate seed-candidate disappearance on transient network errors [Task #801] — Address |
 | 🟡 | `d7f273860` | 2026-04-22 | Frontend (UI) | §6 Chat Unificado / Funil | fix(funil): eliminate seed-candidate disappearance on transient network errors [Task #801] — Address |
 | 🟡 | `fc5ba84eb` | 2026-04-22 | Auto-commit Replit | (Auto-commit Replit) | Transitioned from Plan to Build mode |
-| 🟢 | `540315b5a` | 2026-04-22 | Docs | Outro | docs: expand LIA_MATURITY_LEAP_RESUMO.md section 7 with detailed breakdown — Previous section 7 was  |
-| 🟢 | `ec89039c6` | 2026-04-22 | Docs | Outro | docs: LIA_MATURITY_LEAP_RESUMO.md — explanatory summary for dev team — 200-line plain-language compl |
+| 🟢 | `540315b5a` | 2026-04-22 | Docs | §3 LIA Maturity | docs: expand LIA_MATURITY_LEAP_RESUMO.md section 7 with detailed breakdown — Previous section 7 was  |
+| 🟢 | `ec89039c6` | 2026-04-22 | Docs | §3 LIA Maturity | docs: LIA_MATURITY_LEAP_RESUMO.md — explanatory summary for dev team — 200-line plain-language compl |
 | 🟢 | `40dd2cf6c` | 2026-04-22 | Docs | scope: handoff | docs(handoff): add HANDOFF_LIA_MATURITY_PROGRAM_COMPLETE.md (740 lines) — Comprehensive handoff docu |
 | 🟡 | `1d2562bce` | 2026-04-22 | Outro | Mockup Sandbox (artefato gerado) | Update mock component generation for display — Update mockup component generation to correctly inclu |
 | 🟢 | `99aea7154` | 2026-04-22 | Frontend (UI) | Vagas Públicas | Alinhar página pública de vagas ao Design System (Task #799) — Refatora `plataforma-lia/src/app/[loc |
@@ -1134,7 +1134,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `301714b24` | 2026-04-22 | Frontend (UI) | Tasks #712-#886 (Features de produto) | Task #795: Restaurar Vagas e estabilizar dev — - Restart lia-backend (8001 estava down, causando 'Se |
 | 🟡 | `4af7cf447` | 2026-04-22 | Auto-commit Replit | (Auto-commit Replit) | Transitioned from Plan to Build mode |
 | 🔴 | `c698d5eef` | 2026-04-22 | Cross IA↔Front | (Auto-commit Replit) | Restored to 'c3d45b3d8ddb560ce2ee3a23c6062d8ae325a6f4' — Replit-Restored-To: c3d45b3d8ddb560ce2ee3a2 |
-| 🟢 | `0cdf20288` | 2026-04-22 | Frontend (api/util) | Outro | Remove all job readiness related endpoints and documentation — Removes deprecated job readiness endp |
+| 🟢 | `0cdf20288` | 2026-04-22 | Frontend (api/util) | Refactor / Cleanup | Remove all job readiness related endpoints and documentation — Removes deprecated job readiness endp |
 | 🔴 | `c320409e5` | 2026-04-22 | Cross Back↔Front | Tasks #712-#886 (Features de produto) | Task #791: Remove Job Readiness Hub feature (frontend + backend) — Consolidates around the unified f |
 | 🟡 | `b89052761` | 2026-04-22 | Auto-commit Replit | (Auto-commit Replit) | Transitioned from Plan to Build mode |
 | 🔴 | `af76de95f` | 2026-04-22 | Frontend (UI) | §9 Tenant Isolation / Multi-tenancy | fix(multi-tenancy): session 2026-04-22 — 16 proxy routes + company_id fixes + handoffs — - getSessio |
@@ -1189,8 +1189,8 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `e29e238ee` | 2026-04-21 | Docs | scope: audit | docs(audit): final consolidated audit for Benefícios + Departamentos + Workforce wave (#769) — Origi |
 | 🟡 | `dfedcb357` | 2026-04-21 | Backend | scope: lia | feat(lia): Initiative I.A — Grounded Capability Catalog (16 cards + CI guard) — Track 2 Initiative I |
 | 🟡 | `e416f26a6` | 2026-04-21 | IA | §16 LIA Persona | Improve system prompt to include active filters and pending actions — Add support for rendering acti |
-| 🟢 | `ccd88701b` | 2026-04-21 | Docs | Auto-Replit (verbos sem scope) | Update documentation to include API and endpoint details — Adds explicit mentions of APIs, endpoints |
-| 🟢 | `f49be9b4d` | 2026-04-21 | Docs | Auto-Replit (verbos sem scope) | Update documentation and code to reflect standardized workforce import and job pagination contracts  |
+| 🟢 | `ccd88701b` | 2026-04-21 | Docs | Docs / Handoff | Update documentation to include API and endpoint details — Adds explicit mentions of APIs, endpoints |
+| 🟢 | `f49be9b4d` | 2026-04-21 | Docs | Job Management (BE) | Update documentation and code to reflect standardized workforce import and job pagination contracts  |
 | 🟢 | `1c5e9a295` | 2026-04-21 | Docs | §12 DEVELOPER_HANDOFF — PARTE J | docs(handoff): adicionar PARTE J — Onda Benefícios + Departamentos + Workforce — Task #783: document |
 | 🟢 | `bd28ddf77` | 2026-04-21 | Docs | §12 DEVELOPER_HANDOFF — PARTE J | docs(handoff): adicionar PARTE J — Onda Benefícios + Departamentos + Workforce — Task #783: document |
 | 🟢 | `b43df6ebe` | 2026-04-21 | Docs | §12 DEVELOPER_HANDOFF — PARTE J | docs(handoff): adicionar PARTE J — Onda Benefícios + Departamentos + Workforce — Task #783: document |
@@ -1286,10 +1286,10 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `4ca80834f` | 2026-04-21 | Empty/merge | scope: fluxo-alpha1 | docs(fluxo-alpha1): add E10–E16 + CT (Chat Unified) + 16-stage status table — Task #713 — documentaç |
 | 🟢 | `28e67f22a` | 2026-04-21 | Docs | scope: fluxo-alpha1 | docs(fluxo-alpha1): add E10–E16 + CT (Chat Unified) + 16-stage status table (Task #713) |
 | 🔴 | `2f1bd439c` | 2026-04-21 | Cross Back↔Front | scope: auth+fe | fix(auth+fe): JWT blacklist check in get_current_user + CandidatePreview re-export — - dependencies. |
-| 🟡 | `b7ac5d94a` | 2026-04-21 | Outro | Outro | chore: remove stray helper scripts from prior debug sessions |
+| 🟡 | `b7ac5d94a` | 2026-04-21 | Outro | Refactor / Cleanup | chore: remove stray helper scripts from prior debug sessions |
 | 🔴 | `248df840c` | 2026-04-21 | Cross Back↔Front | Tasks #574-#712 (Janela anterior — chat/funil/glossário) | fix(task-712): address review nits — single prefill + global broadcaster — 1) OnboardingActionOrches |
 | 🟢 | `6a4b6844c` | 2026-04-21 | Empty/merge | Tasks #574-#712 (Janela anterior — chat/funil/glossário) | Task #712 — fechar últimos 3 pontos da revisão — Original: conectar 100% do menu Configurações às 7  |
-| 🟡 | `0eb9c7013` | 2026-04-21 | Outro | Outro | chore: remove stray repair_tools.py from prior debugging session |
+| 🟡 | `0eb9c7013` | 2026-04-21 | Outro | Refactor / Cleanup | chore: remove stray repair_tools.py from prior debugging session |
 | 🟡 | `aae815734` | 2026-04-21 | Cross IA↔Back | Compliance / LGPD / EU AI Act | feat(task-712): close 3 final compliance/registry findings — 1) FairnessGuard recursivo em writes de |
 | 🟢 | `18e736d99` | 2026-04-21 | Empty/merge | Configurações (hub) | Task #712 — onboarding proativo + 7 actions company_settings (full) — Original: conectar 100% do men |
 | 🟢 | `c473ee71a` | 2026-04-21 | Frontend (UI) | Bridge React→Vue | feat(task-712): close 3 final findings — useOnboardingFlow + UI->chat bridge — 1) useOnboardingFlow  |
@@ -1462,7 +1462,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `5cf89193e` | 2026-04-20 | Backend | §6 Chat Unificado / Funil | Task #591: Encerra Task #580 (Saneamento Fase 1 P0 — chat unificado) — 5 fixes aplicados, todos vali |
 | 🟡 | `a174d7d67` | 2026-04-20 | Cross IA↔Back | §6 Chat Unificado / Funil | Task #591: Encerra Task #580 (Saneamento Fase 1 P0 — chat unificado) — 5 fixes aplicados, todos vali |
 | 🔴 | `c6220768f` | 2026-04-20 | Cross IA↔Front | Unified Chat (FE) | Improve job creation and candidate sourcing workflows — Update job vacancy fields, fix action IDs, c |
-| 🟡 | `d46fd1dae` | 2026-04-19 | Outro | Outro | Remove unnecessary data from the system — Remove a leftover data artifact from the system. |
+| 🟡 | `d46fd1dae` | 2026-04-19 | Outro | Refactor / Cleanup | Remove unnecessary data from the system — Remove a leftover data artifact from the system. |
 | 🟡 | `d63271238` | 2026-04-19 | Backend | Mockup Sandbox (artefato gerado) | Add new components and evaluation results for job postings — Updates mockup components and adds new  |
 | 🟡 | `9eafa6207` | 2026-04-19 | Cross IA↔Back | scope: tools | fix(tools): P0/P1 hardening — multi-tenancy + capacity + factory bypass — - executor.py: execute_bat |
 | 🟡 | `cd89fcf8f` | 2026-04-19 | Frontend (api/util) | scope: eval | feat(eval): unified diagnostic battery for LIA via Playwright (task #603) — ## What was built |
@@ -1479,7 +1479,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `8c3c2eb71` | 2026-04-19 | Docs | Policy / Job Creation | Update audit documentation to reflect new hiring policy actions — Modify `chat_capabilities_audit.js |
 | 🟡 | `260a8bf22` | 2026-04-19 | Backend | Compliance / LGPD / EU AI Act | fix(rh-dashboard): correct APIResponse import + Next.js LGPD proxy routes — - rh_dashboard.py: wrong |
 | 🟡 | `421cfdb99` | 2026-04-19 | Backend | §6 Chat Unificado / Funil | Task #580 — Saneamento da cadeia de execução do chat unificado (Fase 1, P0) — Eliminados handlers qu |
-| 🟢 | `287e5a19d` | 2026-04-19 | Docs | Outro | docs: secao 14 Claude Code usage guide paths canonicos |
+| 🟢 | `287e5a19d` | 2026-04-19 | Docs | Docs / Handoff | docs: secao 14 Claude Code usage guide paths canonicos |
 | 🟡 | `fddbc96ae` | 2026-04-19 | IA | §2 Orchestrator Migration | Improve candidate comparison fallback for agentic loop — Modify the candidate comparison logic to re |
 | 🟡 | `fe9f7f329` | 2026-04-19 | Backend | Artefatos / Eval logs (sem código) | Update evaluation results for job management tests — Update lia-agent-system/eval/eval_results_20260 |
 | 🟡 | `536f3fc6b` | 2026-04-19 | Frontend (UI) | §7 WorkflowRail UX | feat(workflow-rail): redesign WorkflowRail as a wide predictive funnel bar — Task #587 — Workflow Ra |
@@ -1491,7 +1491,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `a060038c6` | 2026-04-19 | Backend | Backend Services (BE) | Add audit script to verify chat capabilities and update documentation — Introduce a Python script to |
 | 🟢 | `3722e7b38` | 2026-04-19 | Docs | §12 DEVELOPER_HANDOFF — PARTE F | docs(handoff): PARTE F section — conversational UX + P2/P3 hardening complete — F.1: scrape website  |
 | 🟡 | `104bc6356` | 2026-04-19 | Backend | Compliance / LGPD / EU AI Act | fix(compliance): P3#11 + P2#8 — FairnessGuard API + LGPD consent cache — P3#11 — fix FairnessGuard A |
-| 🟢 | `40a793a01` | 2026-04-19 | Empty/merge | Auto-Replit (verbos sem scope) | merge: bring 'Saved your changes before starting work' from wedotalent/replit-sync into local main |
+| 🟢 | `40a793a01` | 2026-04-19 | Empty/merge | (Auto-commit Replit) | merge: bring 'Saved your changes before starting work' from wedotalent/replit-sync into local main |
 | 🔴 | `744e161de` | 2026-04-19 | Cross IA↔Front | Frontend (componentes diversos) | Update candidate status page and chat features — Integrate the candidate chat feature with backend A |
 | 🟢 | `4a762e0ca` | 2026-04-19 | Frontend (UI) | §11 Candidate Portal | Add candidate portal for job application status and chat — Add new files to manage candidate applica |
 | 🟡 | `f66703bee` | 2026-04-19 | Outro | Mockup Sandbox (artefato gerado) | Update component imports for report and weekly digest mockups — Update generated file `mockup-compon |
@@ -1690,7 +1690,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `5817d8a38` | 2026-04-18 | Frontend (UI) | Kanban (vagas) | Task #499 — fix kanban visual regressions (chips, column bg, compare control) — Original task: ajust |
 | 🟡 | `1b7419206` | 2026-04-18 | Auto-commit Replit | (Auto-commit Replit) | Git commit prior to merge |
 | 🟡 | `d2cafcea0` | 2026-04-18 | Cross IA↔Back | Voice / ElevenLabs / STT | Refactor core voice screening logic and improve API error handling — This commit refactors the `proc |
-| 🟡 | `0dc4d0a95` | 2026-04-18 | Backend | Auto-Replit (verbos sem scope) | Improve error message for invalid authentication tokens — Update the error response for invalid or e |
+| 🟡 | `0dc4d0a95` | 2026-04-18 | Backend | §9 Security / Tenant guards | Improve error message for invalid authentication tokens — Update the error response for invalid or e |
 | 🟡 | `1d996df89` | 2026-04-18 | Cross IA↔Back | §15 WSI | refactor(wsi): extrair transcript_extractor do orchestrator (#496 PR1) — Inicia o split do voice_scr |
 | 🟡 | `bfb9d2d95` | 2026-04-18 | Backend | Artefatos / Eval logs (sem código) | Add job management categories to evaluation results — Update lia-agent-system/eval/eval_results_2026 |
 | 🔴 | `e867c1d24` | 2026-04-18 | Cross IA↔Front | §15 WSI | feat(wsi): split tech/behav 100% determinístico via category explícita (#498) — Substitui o heurísti |
@@ -1896,7 +1896,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `559a40da3` | 2026-04-17 | IA | scope: lia | fix(lia): 4 surgical fixes for LIA chat bugs — - navigation_intent.py: Add missing 'Indicadores' pag |
 | 🟡 | `2673b6bf6` | 2026-04-17 | IA | §2 Orchestrator Migration | Add ability to navigate between pages based on user intent — Add a new function to inject UI actions |
 | 🟡 | `58b50fc58` | 2026-04-17 | Cross IA↔Back | §2 Orchestrator Migration | Add navigation capabilities and context to agent responses — Introduces navigation intent detection  |
-| 🟡 | `101169222` | 2026-04-17 | Outro | Auto-Replit (verbos sem scope) | Add tests for core platform functionalities and interactions — Adds a new Python script to `tests/li |
+| 🟡 | `101169222` | 2026-04-17 | Outro | Tests (BE unit/integration) | Add tests for core platform functionalities and interactions — Adds a new Python script to `tests/li |
 | 🟡 | `a0fc298b5` | 2026-04-17 | Outro | Mockup Sandbox (artefato gerado) | Update component imports to include a new funnel feature — Modify the module map to correctly import |
 | 🟢 | `4cc6bab30` | 2026-04-17 | Testes | Task #391 | Add automated tests for PT/EN language switcher (task #391) — Locks in the language-switching behavi |
 | 🟡 | `bf16a8bbd` | 2026-04-17 | Auto-commit Replit | (Auto-commit Replit) | Git commit prior to merge |
@@ -2117,7 +2117,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `a3aac6b6b` | 2026-04-15 | Frontend (UI) | Kanban (vagas) | fix: QA fixes for Kanban t() and Funnel ensureServerReady (Task #216) — Two regression bugs from QA  |
 | 🟡 | `471d63637` | 2026-04-15 | Outro | Mockup Sandbox (artefato gerado) | Update mockups for weekly digest notifications — Re-add components to the mockups configuration file |
 | 🔴 | `8486175f9` | 2026-04-15 | Cross IA↔Front | Task #215 | feat: Pull QA fixes from fix/qa-2026-04-15 branch (Task #215) — Integrated 13 QA bug fixes from the  |
-| 🟢 | `cf3585177` | 2026-04-15 | Empty/merge | Outro | fix: resolve default_languages column type mismatch (ARRAY→JSONB) — The company_culture_profiles.def |
+| 🟢 | `cf3585177` | 2026-04-15 | Empty/merge | Backend Migrations (alembic) | fix: resolve default_languages column type mismatch (ARRAY→JSONB) — The company_culture_profiles.def |
 | 🔴 | `f7b3be109` | 2026-04-15 | Cross Back↔Front | Hooks (FE) | fix: resolve default_languages column type mismatch (ARRAY→JSONB) — The company_culture_profiles.def |
 | 🟢 | `ec49215c3` | 2026-04-15 | Frontend (UI) | Task #214 | Task #214: Layout single column na página Minha Empresa — Changed the "Minha Empresa" page layout fr |
 | 🟡 | `ce58b5f6e` | 2026-04-15 | IA | Configurações (hub) | Fix Settings chat domain routing: company_settings agent now receives messages — Problem: Messages s |
@@ -2163,7 +2163,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `c8de45ef7` | 2026-04-15 | Frontend (UI) | Agent Studio (FE) | Update digital twin page translations and visual styling — Correct translation namespaces in Digital |
 | 🟢 | `f3af139b4` | 2026-04-15 | Frontend (UI) | i18n / Translation | fix: Digital Twins i18n namespace + design consistency (Task #201) — Problem 1 - Translation keys sh |
 | 🟡 | `812de0157` | 2026-04-15 | Outro | Mockup Sandbox (artefato gerado) | Update mock components to include weekly digest and WSI report tabs — Update mockup-components.ts to |
-| 🟢 | `320d8192e` | 2026-04-15 | Frontend (api/util) | Outro | Fix translation BR tag rendering on login page — Replace self-closing <br/> with <br></br> in login. |
+| 🟢 | `320d8192e` | 2026-04-15 | Frontend (api/util) | i18n / Translation | Fix translation BR tag rendering on login page — Replace self-closing <br/> with <br></br> in login. |
 | 🟡 | `7a1b8dcbb` | 2026-04-15 | Auto-commit Replit | (Auto-commit Replit) | Git commit prior to merge |
 | 🟢 | `cfd50764d` | 2026-04-15 | Frontend (UI) | §7 WorkflowRail UX | Task #199: Workflow Rail para Gêmeos Digitais - Onboarding UX — Redesigned the Digital Twins tab in  |
 | 🟢 | `c47a48189` | 2026-04-15 | Frontend (UI) | Frontend (componentes diversos) | refactor: use existing isMounted from useSidebarState, non-interactive fallback |
@@ -2174,7 +2174,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `f8b6c1a57` | 2026-04-14 | Backend | Privacy / PII (W7) | fix: encrypt PII in Redis via Fernet [PX08-086] Wave 6 item 6.6 — - New RedisCrypto module: Fernet e |
 | 🟡 | `55aa8300b` | 2026-04-14 | Frontend (UI) | §6 Chat Unificado / Funil | cleanup: remove legacy /funil page, redirect to /funil-de-talentos [PX08-082] Wave 6 item 6.2 — - De |
 | 🟡 | `9126096cb` | 2026-04-14 | Cross IA↔Back | Task #93 | cleanup: remove LLMProviderFactory deprecated methods [PX08-081] Wave 6 item 6.1 — - Removed LLMProv |
-| 🟡 | `4c79c511f` | 2026-04-14 | Backend | Outro | docs: document staging Rails API URL in .env.example [PX08-007] — Staging URL: https://staging2.wedo |
+| 🟡 | `4c79c511f` | 2026-04-14 | Backend | Docs / Configuration | docs: document staging Rails API URL in .env.example [PX08-007] — Staging URL: https://staging2.wedo |
 | 🟡 | `6e40ff114` | 2026-04-14 | Backend | Sprint 11 | feat: golden scenario drift monitoring with baseline + alerts [P37-073] Sprint 11 item 11.3 — - New  |
 | 🔴 | `e4faeb8c9` | 2026-04-14 | Cross Back↔Front | Sprint 12 | feat: Digital Twin config UI with premium design + chat cards [PX08-077] Sprint 12 item 12.2 — Backe |
 | 🔴 | `dde1a35bf` | 2026-04-14 | Cross Back↔Front | §16 LIA Persona | feat: connect recruiter personalization to agent prompts [P36-079] Sprint 12 item 12.4 — - Personali |
@@ -2184,7 +2184,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `6da287859` | 2026-04-14 | Backend | Backend (shared) | feat: TTF ML model — training script + predictor + endpoint integration [P37-074] — Sprint 11 item 1 |
 | 🟢 | `a447db994` | 2026-04-14 | Testes | Compliance / LGPD / EU AI Act | feat: 8 adversarial eval scenarios for attack resistance [P37-072] — Sprint 11 item 11.2 — 8 attack  |
 | 🟢 | `16463f952` | 2026-04-14 | Testes | Compliance / LGPD / EU AI Act | feat: 8 integration eval scenarios for agent handoffs [P37-071] — Sprint 11 item 11.1 — 8 handoff sc |
-| 🟢 | `59a71de41` | 2026-04-14 | Docs | Outro | docs: Langfuse integration decision — N/A, covered by LangSmith [PX08-070] — Sprint 10 item 10.5 — E |
+| 🟢 | `59a71de41` | 2026-04-14 | Docs | Docs / Architecture | docs: Langfuse integration decision — N/A, covered by LangSmith [PX08-070] — Sprint 10 item 10.5 — E |
 | 🔴 | `5f705ff1b` | 2026-04-14 | Cross Back↔Front | §9 Security / Tenant guards | feat: calibration dashboard — LIA vs recruiter divergences [PX08-068] — Sprint 10 item 10.3 — Backen |
 | 🔴 | `008535151` | 2026-04-14 | Cross Back↔Front | FastAPI v1 endpoints | feat: ML predictions dashboard — time-to-fill per vacancy [PX08-067] — Sprint 10 item 10.2 — Backend |
 | 🟢 | `9d2b7d567` | 2026-04-14 | Frontend (UI) | Compliance / LGPD / EU AI Act | feat: connect Agent Control Center to quality dashboard endpoint [PX08-066] — Frontend integration f |
@@ -2297,7 +2297,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `808811987` | 2026-04-13 | Backend | Voice / ElevenLabs / STT | fix: rename path param in get_detailed_invoice to avoid FastAPI conflict |
 | 🟡 | `a5dce0848` | 2026-04-13 | Backend | Backend (shared) | Add API response envelope and contract tests for Rails events — Introduce Pydantic models for API re |
 | 🟢 | `787ac1c05` | 2026-04-13 | Frontend (UI) | Jobs (FE pages) | fix: garantir auto-login em dev ignorando cookie lia_logged_out — - middleware.ts: em DEV_AUTO_LOGIN |
-| 🟢 | `d3539e216` | 2026-04-13 | Frontend (api/util) | Auto-Replit (verbos sem scope) | Improve development login by simplifying token handling — Update the development login flow in the m |
+| 🟢 | `d3539e216` | 2026-04-13 | Frontend (api/util) | Login UI (FE) | Improve development login by simplifying token handling — Update the development login flow in the m |
 | 🟡 | `8e83578d1` | 2026-04-13 | Cross IA↔Back | Compliance / LGPD / EU AI Act | feat(compliance): Fase 3b — WS/SSE compliance strangler LIA-C3b — User-directed implementation of C3 |
 | 🟡 | `8eff6ce4f` | 2026-04-13 | Backend | Observability / Sentry / OTLP | Task #178: Consumption Observability + Invoicing (backend-only) — Expanded ExternalApiConsumption mo |
 | 🟡 | `f04c4d5a2` | 2026-04-13 | Backend | Observability / Sentry / OTLP | Task #178: Consumption Observability + Invoicing (backend-only) — Expanded ExternalApiConsumption mo |
@@ -2363,7 +2363,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `bc4c04b52` | 2026-04-13 | Backend | Backend Migrations (alembic) | feat: Close all production gaps — migrations, triggers, metering, history — Migration 070: agent_dep |
 | 🟢 | `d8c3f516e` | 2026-04-13 | Frontend (UI) | Wizard/Onda 1 | feat(studio): Wire Onda 1 into AgentStudioPage custom tab — Custom Agents tab now shows: |
 | 🟡 | `2a5133ee5` | 2026-04-13 | Backend | FastAPI v1 endpoints | Update backend files and remove script artifacts — Revert unrelated backend changes and remove lefto |
-| 🟡 | `558b94fc5` | 2026-04-13 | Outro | Outro | fix: cold-start resilience for Jobs, Candidates, and Tasks pages — Root cause: Next.js dev server ta |
+| 🟡 | `558b94fc5` | 2026-04-13 | Outro | Performance / Cold-start | fix: cold-start resilience for Jobs, Candidates, and Tasks pages — Root cause: Next.js dev server ta |
 | 🔴 | `4d5a85fe9` | 2026-04-13 | Cross IA↔Front | FastAPI v1 endpoints | fix: cold-start resilience for Jobs, Candidates, and Tasks pages — Root cause: Next.js dev server ta |
 | 🟡 | `1a60080be` | 2026-04-13 | Frontend (UI) | Wizard/Onda 1 | feat(studio): Onda 1 — Template Gallery, Agent Cards, Deploy Dialog — Foundation for AI-first Agent  |
 | 🟡 | `79c4bdb6e` | 2026-04-13 | Backend | scope: studio | feat(studio): Sprint 0 — AgentDeployment binds agents to jobs/pools/stages — Agents without a deploy |
@@ -2375,9 +2375,9 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `74a271623` | 2026-04-12 | Frontend (api/util) | DevOps / Deploy (Docker/GCP) | fix: update plataforma-lia Dockerfile for GCP deploy |
 | 🟡 | `cb0af1f76` | 2026-04-12 | Backend | DevOps / Deploy (Docker/GCP) | feat: add docker-compose.yml and docker-entrypoint.sh for GCP deploy |
 | 🔴 | `130cd6886` | 2026-04-12 | Cross IA↔Front | Backend Proxy Routes (FE) | Revert "Merge remote-tracking branch 'origin/develop-giovanni'" — This reverts commit c7c2c060ca2b81 |
-| 🟢 | `c7c2c060c` | 2026-04-12 | Empty/merge | Auto-Replit (verbos sem scope) | Merge remote-tracking branch 'origin/develop-giovanni' |
+| 🟢 | `c7c2c060c` | 2026-04-12 | Empty/merge | (Auto-commit Replit) | Merge remote-tracking branch 'origin/develop-giovanni' |
 | 🔴 | `d413ada7b` | 2026-04-12 | Cross IA↔Front | §14 BYOK + LLM Factory | fix: API routing, LLM Gemini fallback, auth token TTL and proxy fixes — - Add docker-compose.yml and |
-| 🟡 | `979a613d7` | 2026-04-12 | Infra/Config | Outro | Fix: npm audit fix - DOMPurify vulnerabilities resolved |
+| 🟡 | `979a613d7` | 2026-04-12 | Infra/Config | §9 Security / Tenant guards | Fix: npm audit fix - DOMPurify vulnerabilities resolved |
 | 🟢 | `f0276ae18` | 2026-04-12 | Frontend (UI) | Agent Studio (FE) | Fix deploy: remove broken void(), clean ESLint errors (3/3 resolved) |
 | 🟢 | `ec01ea69b` | 2026-04-12 | Frontend (UI) | Agent Studio (FE) | Fix deploy: AlertCircle import, unused expression |
 | 🟢 | `928a6f4d8` | 2026-04-12 | Docs | scope: audit | feat(audit): Task #175 — Auditoria de Chaves de API, URLs e Secrets da Plataforma — Criado `lia-agen |
@@ -2431,7 +2431,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `9182a35c9` | 2026-04-12 | Backend | Job Management (BE) | fix: restore vacancy_search_service.py — imported by 2 endpoints (not dead duplicate) |
 | 🟡 | `12fa1f74d` | 2026-04-12 | IA | §2 Orchestrator Migration | fix: indentation in orchestrator.py broken by TODO comment |
 | 🟡 | `1fb338d94` | 2026-04-12 | Cross IA↔Back | FastAPI v1 endpoints | feat: M2 pick-one-writer — MainOrchestrator owns persistence (retry) — Key difference from previous  |
-| 🟢 | `b36b27bc7` | 2026-04-12 | Docs | Outro | docs: audit log final completo — sessao Path A + SystemPromptBuilder + 5 items |
+| 🟢 | `b36b27bc7` | 2026-04-12 | Docs | Docs / Auditorias | docs: audit log final completo — sessao Path A + SystemPromptBuilder + 5 items |
 | 🟡 | `7d59056ee` | 2026-04-12 | Cross IA↔Back | §15 WSI | fix: Item 3 — route WSI through safe_invoke + mark LLM tech debt — Tipo A (6 WSI calls): FIXED — rou |
 | 🟡 | `af09e8070` | 2026-04-12 | IA | §15 WSI | fix: route 6 WSI question_generator calls through safe_invoke (Item 3 Tipo A) — Replaced 6 direct .c |
 | 🟡 | `298173746` | 2026-04-12 | Backend | §9 Security / Tenant guards | feat: add FairnessGuard + SecurityPatterns to WebSocket handler (Item 4) — WS endpoint now has 3 lay |
@@ -2464,7 +2464,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🔴 | `b945f3bb7` | 2026-04-12 | Cross IA↔Front | Task #160 | feat(task-160): Degustação Inteligente no Chat da LIA — Backend: |
 | 🟡 | `c91bd09c5` | 2026-04-12 | Backend | §9 Security / Tenant guards | fix: add is_blocked property to InjectionCheckResult (security bug) — compliance_base.py:376 called  |
 | 🟡 | `e08b06f04` | 2026-04-12 | Auto-commit Replit | (Auto-commit Replit) | Git commit prior to merge |
-| 🟢 | `a3823816e` | 2026-04-12 | Docs | Outro | docs: update Path A audit log with Passo 2 Commits A+B |
+| 🟢 | `a3823816e` | 2026-04-12 | Docs | Docs / Auditorias | docs: update Path A audit log with Passo 2 Commits A+B |
 | 🟡 | `cbf23f7ed` | 2026-04-12 | Backend | FastAPI v1 endpoints | feat: disable handle_action_flow via early return (Passo 2 Commit B) — MainOrchestrator Phase 0+1 no |
 | 🟡 | `81396f56c` | 2026-04-12 | Backend | Compliance / LGPD / EU AI Act | feat: reconnect chat.py -> MainOrchestrator via ChatAdapter (Passo 2 Commit A) — Reconnect the prima |
 | 🟡 | `4d030a846` | 2026-04-12 | IA | Compliance / LGPD / EU AI Act | feat: add ChatAdapter + skip_memory_persist flag (Path A Passo 1) — ChatAdapter bridges chat.py REST |
@@ -2521,8 +2521,8 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `c1f858b17` | 2026-04-11 | Cross IA↔Back | Task #149 | Task #149: Orchestrator Cleanup — Remove dead IntentRouter code — Changes: |
 | 🟡 | `e139479b8` | 2026-04-11 | Auto-commit Replit | (Auto-commit Replit) | Transitioned from Plan to Build mode |
 | 🟡 | `5eee537b9` | 2026-04-11 | Backend | Automations | feat: add admin platform endpoints (webhooks, automation, health, version) — 5 new endpoints consume |
-| 🟢 | `98a2c20e5` | 2026-04-11 | Docs | Outro | docs: comprehensive diagnostic report - architecture, domains, Rails ATS analysis |
-| 🟡 | `8de193476` | 2026-04-11 | Outro | Outro | feat: add updated Detailed System Architecture diagram (April 2026) — - Updated from real codebase:  |
+| 🟢 | `98a2c20e5` | 2026-04-11 | Docs | Docs / Architecture | docs: comprehensive diagnostic report - architecture, domains, Rails ATS analysis |
+| 🟡 | `8de193476` | 2026-04-11 | Outro | Docs / Diagramas | feat: add updated Detailed System Architecture diagram (April 2026) — - Updated from real codebase:  |
 | 🟡 | `c50ff50df` | 2026-04-11 | Outro | scope: diagrams | feat(diagrams): update LIA architecture diagram to v4.2.2 — Reflects ~101 commits across ~15 tasks c |
 | 🟡 | `732f7868f` | 2026-04-11 | Outro | Mockup Sandbox (artefato gerado) | Update mock components to reflect current weekly digest structure — Update the mock component mappin |
 | 🟡 | `b5ab76b98` | 2026-04-11 | Frontend (UI) | Task #142 | Task #142: Fix LIA Chat modes and default behavior (sidebar always present) — Changes made: |
@@ -2549,7 +2549,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `998564a0b` | 2026-04-11 | Frontend (UI) | Configurações (hub) | Tabs unified: tabStyles Agent Studio pattern, 3 custom tabs aligned, 7 Settings auto-inherit |
 | 🟡 | `e91d59f83` | 2026-04-11 | Backend | Compliance / LGPD / EU AI Act | Task #137: P1 Compliance & Governance — FairnessGuard, AI Disclosure, SOX — All 6 task items impleme |
 | 🟢 | `efabbb83b` | 2026-04-11 | Frontend (UI) | Frontend (componentes diversos) | Vagas tabs: Agent Studio pattern with icons and pill badges |
-| 🟢 | `4ee7061e6` | 2026-04-11 | Docs | Outro | Design System v4.2.2: document updated with all new values, 4 new sections, zero old refs |
+| 🟢 | `4ee7061e6` | 2026-04-11 | Docs | Design System v4.2.2 | Design System v4.2.2: document updated with all new values, 4 new sections, zero old refs |
 | 🟡 | `d7c0d4e5d` | 2026-04-11 | Backend | Compliance / LGPD / EU AI Act | Task #137: P1 Compliance & Governance — FairnessGuard, AI Disclosure, SOX — All 6 task items impleme |
 | 🔴 | `39252ae74` | 2026-04-11 | Cross IA↔Front | Chat UI (FE) | DS final: remaining chat bubble and handler hooks |
 | 🔴 | `a737c0267` | 2026-04-11 | Cross IA↔Front | Compliance / LGPD / EU AI Act | Task #137: P1 Compliance & Governance — FairnessGuard, AI Disclosure, SOX — All 6 task items impleme |
@@ -2619,15 +2619,15 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🔴 | `58ed2d300` | 2026-04-11 | Frontend (UI) | Frontend (componentes diversos) | Update component styling and improve user interface elements — Refactor various UI components to enh |
 | 🔴 | `b687d930e` | 2026-04-10 | Cross IA↔Front | §14 BYOK + LLM Factory | Task #119: Voice Abstraction in LLM Factory + Streaming Frontend — Created VoiceStreamProviderABC ab |
 | 🟡 | `828cd47c5` | 2026-04-10 | Auto-commit Replit | (Auto-commit Replit) | Git commit prior to merge |
-| 🟢 | `9787e738c` | 2026-04-10 | Frontend (api/util) | Auto-Replit (verbos sem scope) | Update documentation with correct environment variable names — Update VALIDATION_PLAN.md and DEPLOY_ |
+| 🟢 | `9787e738c` | 2026-04-10 | Frontend (api/util) | Docs / Configuration | Update documentation with correct environment variable names — Update VALIDATION_PLAN.md and DEPLOY_ |
 | 🟢 | `913e10bf1` | 2026-04-10 | Testes | Tests (FE e2e) | Update authentication to support staging environments and improve deployment guide — Update auth fix |
 | 🟢 | `4175bf2da` | 2026-04-10 | Frontend (api/util) | Task #116 | Task #116: Plano de Validação e Smoke Tests — Pré Go-Live — Created comprehensive validation plan an |
 | 🟢 | `6e8e74c40` | 2026-04-10 | Testes | Task #116 | Task #116: Plano de Validação e Smoke Tests — Pré Go-Live — Created comprehensive validation plan an |
-| 🟢 | `f1ade9154` | 2026-04-10 | Frontend (api/util) | Outro | Design System: add typescript ignoreBuildErrors |
+| 🟢 | `f1ade9154` | 2026-04-10 | Frontend (api/util) | Design System v4.2.2 | Design System: add typescript ignoreBuildErrors |
 | 🟢 | `4207da3c0` | 2026-04-10 | Frontend (UI) | Modals (FE) | Update modals to improve user experience and information display — Adjusted the Add to Job modal to  |
 | 🟡 | `a30e05192` | 2026-04-10 | Outro | Mockup Sandbox (artefato gerado) | Add new components for mockups to the system — Update the generated mockup-components.ts file to inc |
 | 🟡 | `aaf336f31` | 2026-04-10 | Outro | Task #118 | Task #118: Diagrama Excalidraw — Arquitetura Completa LIA + Diagnóstico de Mercado — Created a compr |
-| 🟢 | `11f66809b` | 2026-04-10 | Docs | Auto-Replit (verbos sem scope) | Update infrastructure checklist and worker health check — Update GCP Infrastructure Checklist for en |
+| 🟢 | `11f66809b` | 2026-04-10 | Docs | DevOps / Deploy (Docker/GCP) | Update infrastructure checklist and worker health check — Update GCP Infrastructure Checklist for en |
 | 🟢 | `71d3c7938` | 2026-04-10 | Frontend (UI) | Task #115 | Task #115: GCP Infrastructure Checklist — Guia de Provisionamento — Created GCP_INFRASTRUCTURE_CHECK |
 | 🟢 | `9a067fe27` | 2026-04-10 | Frontend (UI) | Task #115 | Task #115: GCP Infrastructure Checklist — Guia de Provisionamento — Created GCP_INFRASTRUCTURE_CHECK |
 | 🟢 | `a8b8732f2` | 2026-04-10 | Docs | Task #115 | Task #115: GCP Infrastructure Checklist — Guia de Provisionamento — Created GCP_INFRASTRUCTURE_CHECK |
@@ -2646,14 +2646,14 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `4516860a4` | 2026-04-10 | Frontend (UI) | Frontend (componentes diversos) | Update UI elements and API handling for jobs and agent templates — Refactors UI components for job l |
 | 🟡 | `ae85d2b23` | 2026-04-10 | Frontend (UI) | Task #112 | Task #112: Frontend Production Hardening — Deploy Blockers — Changes made: |
 | 🟡 | `deb214dec` | 2026-04-10 | Outro | Mockup Sandbox (artefato gerado) | Task #112: Frontend Production Hardening — Deploy Blockers — VERIFICATION RESULTS — All 6 items conf |
-| 🟢 | `72b810898` | 2026-04-10 | Docs | Auto-Replit (verbos sem scope) | Update AI agent domain counts to reflect current scope — Normalize the number of business domains fr |
+| 🟢 | `72b810898` | 2026-04-10 | Docs | Docs / Configuration | Update AI agent domain counts to reflect current scope — Normalize the number of business domains fr |
 | 🟢 | `4c9d6fb1a` | 2026-04-10 | Docs | Task #111 | Task #111: Atualizar DEPLOY_GUIDE.md — Snapshot Completo Abril 2026 — Comprehensive update to DEPLOY |
 | 🟢 | `853205f22` | 2026-04-10 | Docs | Task #111 | Task #111: Atualizar DEPLOY_GUIDE.md — Snapshot Completo Abril 2026 — Comprehensive update to DEPLOY |
 | 🟢 | `4c4006989` | 2026-04-10 | Docs | Task #111 | Task #111: Atualizar DEPLOY_GUIDE.md — Snapshot Completo Abril 2026 — Comprehensive update to DEPLOY |
 | 🟢 | `9a863a043` | 2026-04-10 | Docs | Task #111 | Task #111: Atualizar DEPLOY_GUIDE.md — Snapshot Completo Abril 2026 — Updates to DEPLOY_GUIDE.md ref |
 | 🟢 | `d869f573f` | 2026-04-10 | Docs | Task #111 | Task #111: Atualizar DEPLOY_GUIDE.md — Snapshot Completo Abril 2026 — Updates to DEPLOY_GUIDE.md ref |
 | 🟡 | `feb6757a3` | 2026-04-10 | Auto-commit Replit | (Auto-commit Replit) | Transitioned from Plan to Build mode |
-| 🟡 | `9c37c675e` | 2026-04-10 | Backend | Auto-Replit (verbos sem scope) | Add new endpoints for onboarding and WhatsApp messaging — Integrate new routers for onboarding and W |
+| 🟡 | `9c37c675e` | 2026-04-10 | Backend | FastAPI v1 endpoints | Add new endpoints for onboarding and WhatsApp messaging — Integrate new routers for onboarding and W |
 | 🟡 | `465751df3` | 2026-04-10 | Backend | Backend Migrations (alembic) | Add new tables for onboarding and WhatsApp sessions — Add `onboarding_agent_state` and `whatsapp_ses |
 | 🟢 | `1b4eeefe0` | 2026-04-10 | Frontend (UI) | Frontend (componentes diversos) | Move operational section to top of sidebar menu — Update sidebar.tsx to reorder menu sections, placi |
 | 🔴 | `9f42c9782` | 2026-04-10 | Cross Back↔Front | Compliance / LGPD / EU AI Act | Improve agent studio functionality and fix backend route issues — This commit addresses multiple bug |
@@ -2674,7 +2674,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `03b582313` | 2026-04-10 | Frontend (api/util) | Hooks (FE) | Add retry logic to candidate loading to prevent initial load errors — Implement automatic retry mech |
 | 🟡 | `7c4cababe` | 2026-04-10 | Backend | FastAPI v1 endpoints | Allow zero limit for candidate searches — Adjust search request models to permit a `pearch_limit` of |
 | 🟡 | `9d51b5db5` | 2026-04-10 | Backend | FastAPI v1 endpoints | Fix critical search bug and add recruitment campaign stub functionality — Corrects the candidate sea |
-| 🟢 | `3c46f81d4` | 2026-04-10 | Docs | Auto-Replit (verbos sem scope) | Add search quality audit report and fix critical search endpoint issues — Create a markdown document |
+| 🟢 | `3c46f81d4` | 2026-04-10 | Docs | Docs / Auditorias | Add search quality audit report and fix critical search endpoint issues — Create a markdown document |
 | 🟡 | `8b1c7f80e` | 2026-04-10 | Outro | Mockup Sandbox (artefato gerado) | Update platform to fix agent creation errors and improve page navigation — Corrects agent creation i |
 | 🟢 | `92802179d` | 2026-04-10 | Testes | Task #105 | Task #105: Search Quality Audit Playwright suite (WeDOTalent cross-reference) — File: plataforma-lia |
 | 🟡 | `7ed6d449f` | 2026-04-10 | Auto-commit Replit | (Auto-commit Replit) | Git commit prior to merge |
@@ -2729,7 +2729,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `477a5577a` | 2026-04-09 | Frontend (UI) | Kanban (vagas) | Fix component display names and improve conditional logic — Resolve ESLint errors by adding display  |
 | 🟡 | `a17d35ffd` | 2026-04-09 | Frontend (UI) | Bridge React→Vue | feat(unified-chat): Phase 6 — Deprecate old chats, add InlineChatBridge — - Created InlineChatBridge |
 | 🟢 | `e485d9b42` | 2026-04-09 | Frontend (UI) | scope: unified-chat | feat(unified-chat): Phase 5 — Universal scope + Navigation hints — Backend: |
-| 🟡 | `b4823740d` | 2026-04-09 | IA | Auto-Replit (verbos sem scope) | Add universal scope for tool permissions and update dependencies — Update `tool_permissions.yaml` to |
+| 🟡 | `b4823740d` | 2026-04-09 | IA | Backend Services (BE) | Add universal scope for tool permissions and update dependencies — Update `tool_permissions.yaml` to |
 | 🔴 | `65122342a` | 2026-04-09 | Cross IA↔Front | §14 BYOK + LLM Factory | feat: complete LLM Factory migration — zero direct SDK imports outside providers/ — ## Summary |
 | 🟢 | `10c37071e` | 2026-04-09 | Frontend (UI) | scope: unified-chat | feat(unified-chat): Phase 4 — Task Context Bar integration — - SwitchTaskModal connected to UnifiedC |
 | 🟢 | `aab86a1f7` | 2026-04-09 | Frontend (UI) | scope: unified-chat | feat(unified-chat): Phase 3 — Split View + HITL in all modes — - DynamicContextPanel renders inside  |
@@ -2741,7 +2741,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🔴 | `0bd4eb8e5` | 2026-04-09 | Cross Back↔Front | Backend Proxy Routes (FE) | Migrate all frontend API routes to use FastAPI and improve categories endpoint — Update backend targ |
 | 🟢 | `31f811f35` | 2026-04-09 | Frontend (UI) | scope: unified-chat | fix(unified-chat): implement handleNewChat, add plus menu, persist mode, fix TS types — - handleNewC |
 | 🟡 | `48b38e776` | 2026-04-09 | Frontend (UI) | Unified Chat (FE) | Implement a unified chat interface with multiple display modes — Replace the existing LiaFloat condi |
-| 🟢 | `29d23937d` | 2026-04-09 | Docs | Auto-Replit (verbos sem scope) | Update production readiness audit with comparative analysis and new structure — Refactors section 24 |
+| 🟢 | `29d23937d` | 2026-04-09 | Docs | Docs / Configuration | Update production readiness audit with comparative analysis and new structure — Refactors section 24 |
 | 🟢 | `68462a1f7` | 2026-04-09 | Docs | Compliance / LGPD / EU AI Act | Update AI layer evaluation with detailed audit findings — Enhance DEPLOY_GUIDE.md by updating the AI |
 | 🟢 | `dcaf62128` | 2026-04-09 | Docs | Skills / canonical-fix | Add detailed technical specification for skills inference and adjacency — Creates the `docs/specs/sk |
 | 🟢 | `624890507` | 2026-04-09 | Docs | §1 Teams Integration | DEPLOY_GUIDE.md: Add 8 new audit sections (24.11-24.18) — Expanded the production readiness audit fr |
@@ -2756,29 +2756,29 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `e588274d4` | 2026-04-09 | Backend | §6 Chat Unificado / Funil | fix: resolve Funil de Talentos hydration mismatch + fix backend attribute access — Frontend (root ca |
 | 🔴 | `a935f1f69` | 2026-04-09 | Cross Back↔Front | §6 Chat Unificado / Funil | fix: resolve Funil de Talentos hydration mismatch causing infinite loading state — Root cause: Radix |
 | 🟡 | `82011d72a` | 2026-04-09 | Auto-commit Replit | (Auto-commit Replit) | Transitioned from Plan to Build mode |
-| 🟢 | `c802d7107` | 2026-04-09 | Frontend (UI) | Outro | revert: restore secure:true sameSite:none for cookies (HTTPS via Replit proxy) — SameSite=lax breaks |
+| 🟢 | `c802d7107` | 2026-04-09 | Frontend (UI) | §9 Security / Tenant guards | revert: restore secure:true sameSite:none for cookies (HTTPS via Replit proxy) — SameSite=lax breaks |
 | 🟢 | `6e4700c14` | 2026-04-09 | Frontend (UI) | Configurações (hub) | fix: cookie settings for session and refresh routes (secure: false, sameSite: lax) — Same fix as mid |
 | 🟢 | `41f015c0a` | 2026-04-09 | Frontend (api/util) | Configurações (hub) | fix: dev-mode cookie settings (secure: false, sameSite: lax) for Replit environment — The middleware |
 | 🟢 | `78d4dbf00` | 2026-04-09 | Frontend (UI) | Login UI (FE) | Allow users to remain logged out after signing out — Modify the login page and middleware to respect |
 | 🟡 | `c63f580b8` | 2026-04-09 | Outro | Mockup Sandbox (artefato gerado) | Update component registration for mockups — Reorder module imports in `mockup-components.ts` to grou |
 | 🟡 | `88654d044` | 2026-04-09 | Backend | DevOps / CI | task-84: Alinhar DEPLOY_GUIDE.md com código real + remover AWS — Tarefa original: Alinhar DEPLOY_GUI |
 | 🟢 | `ba24f21dd` | 2026-04-09 | Frontend (UI) | Frontend (componentes diversos) | Update page titles to remove icons and align with design standards — Removes icons from page titles  |
-| 🟢 | `548bbb150` | 2026-04-09 | Frontend (api/util) | Auto-Replit (verbos sem scope) | Improve text readability by increasing font sizes across the platform — Adjust font size tokens in d |
+| 🟢 | `548bbb150` | 2026-04-09 | Frontend (api/util) | Design System v4.2.2 | Improve text readability by increasing font sizes across the platform — Adjust font size tokens in d |
 | 🟢 | `62b5797f8` | 2026-04-09 | Frontend (api/util) | Voice / ElevenLabs / STT | Update text and border colors to match ElevenLabs design — Refactors CSS design tokens to align with |
 | 🟢 | `95b3fb6ef` | 2026-04-09 | Frontend (UI) | Agent Studio (FE) | Update Agent Studio to use brain icons and remove unnecessary wrappers — Replaced Sparkles icons wit |
 | 🟢 | `41efa41a5` | 2026-04-09 | Frontend (UI) | Agent Studio (FE) | Update the Agent Studio page with a modern, intuitive, and sophisticated design — Redesign the Agent |
 | 🟢 | `59afe6b6e` | 2026-04-09 | Frontend (api/util) | §9 Security / Tenant guards | fix: resolve pipeline overview SQL type mismatch, restore cookie security, add proxy error handling  |
 | 🔴 | `7d4b383ad` | 2026-04-09 | Cross Back↔Front | Backend Proxy Routes (FE) | fix: resolve pipeline overview SQL type mismatch and add proxy error handling — - Fixed `character v |
 | 🟢 | `eace9f4cc` | 2026-04-09 | Frontend (UI) | Configurações (hub) | Improve sidebar navigation and restore cookie security settings — Update sidebar component to use a  |
-| 🟢 | `c283a2eea` | 2026-04-09 | Frontend (api/util) | Outro | feat: Dynamic sidebar sub-items for Talent Pools and Agents — Sidebar now shows active Talent Pools  |
+| 🟢 | `c283a2eea` | 2026-04-09 | Frontend (api/util) | Talent Funnel (FE) | feat: Dynamic sidebar sub-items for Talent Pools and Agents — Sidebar now shows active Talent Pools  |
 | 🟢 | `184acc5a4` | 2026-04-09 | Frontend (UI) | Frontend (componentes diversos) | feat: Dynamic sidebar sub-items for Talent Pools and Agents — Sidebar now shows active Talent Pools  |
 | 🟢 | `3abaf8aaf` | 2026-04-09 | Frontend (UI) | Frontend (componentes diversos) | Reorganize talent pools into a tab within the candidate funnel — Removes "Talent Pools" from the mai |
 | 🟡 | `4f36afab2` | 2026-04-09 | Frontend (UI) | Chat UI (FE) | Replace all instances of the sparkles icon with the brain icon — Replaces the 'Sparkles' icon compon |
 | 🟡 | `82e64b7af` | 2026-04-09 | Backend | Voice / ElevenLabs / STT | Fix error in voice interview state machine logic — Instantiate NotificationService before use in voi |
-| 🟢 | `e19a44a23` | 2026-04-09 | Empty/merge | Outro | fix: restore TalentPoolPage.tsx from bad merge corruption — A previous merge incorrectly inserted Vo |
+| 🟢 | `e19a44a23` | 2026-04-09 | Empty/merge | Talent Funnel (FE) | fix: restore TalentPoolPage.tsx from bad merge corruption — A previous merge incorrectly inserted Vo |
 | 🟢 | `0dba74b2f` | 2026-04-09 | Frontend (UI) | Frontend (componentes diversos) | Fix errors in talent pool page display and functionality — Remove incorrectly placed VoiceScreeningB |
-| 🟢 | `37141c08b` | 2026-04-09 | Empty/merge | Outro | resolve merge conflicts — accept remote |
-| 🟢 | `a0116c89c` | 2026-04-09 | Docs | Auto-Replit (verbos sem scope) | Update main application chat screenshot — Update the existing screenshot for the main application's  |
+| 🟢 | `37141c08b` | 2026-04-09 | Empty/merge | (Auto-commit Replit) | resolve merge conflicts — accept remote |
+| 🟢 | `a0116c89c` | 2026-04-09 | Docs | Docs / Screenshots | Update main application chat screenshot — Update the existing screenshot for the main application's  |
 | 🟢 | `06f5391e2` | 2026-04-09 | Docs | Task #83 | Task #83: Deep design audit — AUDITORIA_DESIGN_COMPLETA.md — Complete audit of all 17 pages, 13+ sha |
 | 🟡 | `b3a685d50` | 2026-04-08 | Cross IA↔Back | Compliance / LGPD / EU AI Act | feat: Phase 8.1+8.2 — 4 new domains + 22 tools + Pearch hybrid + router update — 8.1 — Orchestrator  |
 | 🟢 | `be98d2dd3` | 2026-04-09 | Docs | Task #83 | Task #83: Deep design audit — AUDITORIA_DESIGN_COMPLETA.md — Complete audit of all 13 pages, 13+ sha |
@@ -2847,7 +2847,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `edab76285` | 2026-04-08 | Backend | Communication domain (BE) | refactor: extract inline models and DRY communication_service (-351 lines) — - Extract 4 SQLAlchemy  |
 | 🔴 | `5b914d413` | 2026-04-08 | Frontend (UI) | Backend Proxy Routes (FE) | refactor: create shared proxy handler and convert 55 API routes (-1800 lines) — Created src/lib/api/ |
 | 🟡 | `eda0314ca` | 2026-04-08 | Backend | Kanban (vagas) | refactor: code optimization — extract static data to JSON, add tool_handler decorator, DRY event han |
-| 🟡 | `ccdedc141` | 2026-04-08 | Outro | Outro | Fix issue causing users to see a blank page and ensure proper data display — Add missing database co |
+| 🟡 | `ccdedc141` | 2026-04-08 | Outro | Refactor / Cleanup | Fix issue causing users to see a blank page and ensure proper data display — Add missing database co |
 | 🟡 | `61560e0b8` | 2026-04-08 | IA | Task #69 | Task #69: Complete Platform Audit + Fix DB columns + Fix import — 1. Full platform audit - report at |
 | 🟡 | `d53081703` | 2026-04-08 | Backend | Task #69 | Task #69: Complete Platform Audit + Fix DB columns + Fix import — 1. Full platform audit - report at |
 | 🟢 | `f3e74c1d2` | 2026-04-08 | Empty/merge | Task #69 | Task #69: Complete Platform Audit + Fix email_encrypted DB column — 1. Full platform audit completed |
@@ -2873,7 +2873,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `edff3aee3` | 2026-04-07 | Cross IA↔Back | scope: tests | fix(tests): fix Redis mock injection in token_budget, toon, and hitl services — - Promote app/servic |
 | 🟢 | `8ed5458f3` | 2026-04-07 | Docs | §9 Security / Tenant guards | Update deployment guide with new environment variables and security notes — Update DEPLOY_GUIDE.md t |
 | 🟢 | `6e37900d4` | 2026-04-07 | Testes | Tests (FE e2e) | Improve testing setup and documentation for local development — Update Playwright configuration and  |
-| 🟢 | `70863bb78` | 2026-04-07 | Frontend (api/util) | Outro | docs+refactor(phase2): complete Phase 2 repo extraction — - 215 API files clean (0 direct DB calls) |
+| 🟢 | `70863bb78` | 2026-04-07 | Frontend (api/util) | Backend (refactor Phase 2+) | docs+refactor(phase2): complete Phase 2 repo extraction — - 215 API files clean (0 direct DB calls) |
 | 🔴 | `49d6b02a1` | 2026-04-07 | Cross IA↔Front | DevOps / Deploy (Docker/GCP) | Update application configuration and Dockerfile for standalone deployment — Refactors several Python |
 | 🟡 | `d10f69696` | 2026-04-07 | Backend | FastAPI v1 endpoints | Refactor data retrieval to use dedicated repositories for learning patterns and LLM configurations — |
 | 🟡 | `113d065f2` | 2026-04-07 | Cross IA↔Back | FastAPI v1 endpoints | Refactor data access layers to improve code organization and maintainability — Extract various data  |
@@ -2882,22 +2882,22 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `c714b88c6` | 2026-04-07 | Backend | scope: phase2 | refactor(phase2): extract interview_analysis, communication_matrix, suggestions, experience_highligh |
 | 🟡 | `ef66d775d` | 2026-04-07 | Backend | Configurações (hub) | refactor(phase2): extract short_lists, policies, benefits, settings_progress DB calls to repositorie |
 | 🟡 | `88aeae88e` | 2026-04-07 | Backend | §1 Teams Integration | refactor(phase2): extract teams/webhooks/screening_questions direct DB calls to repositories — - tea |
-| 🟢 | `385dd7c8e` | 2026-04-07 | Docs | Auto-Replit (verbos sem scope) | Expand product development workflow to include client feedback and bug fixes — Adds a comprehensive  |
+| 🟢 | `385dd7c8e` | 2026-04-07 | Docs | Docs / Configuration | Expand product development workflow to include client feedback and bug fixes — Adds a comprehensive  |
 | 🟡 | `e2c2b0db3` | 2026-04-07 | Backend | Backend (shared) | Add cross-cutting service descriptions for agent health and tenant context — Add comments to agent_h |
 | 🟢 | `293e88e6b` | 2026-04-07 | Docs | §9 Security / Tenant guards | Add client onboarding, AI workflow, and integration status sections — Adds new sections to the DEPLO |
 | 🔴 | `5b9c855ca` | 2026-04-07 | Cross IA↔Back | scope: phase2 | refactor(phase2): extract API direct DB calls to repositories — batch 1 — Fully extracted (DB calls  |
-| 🟢 | `cd4710d07` | 2026-04-07 | Docs | Auto-Replit (verbos sem scope) | Update deployment guide with current environment and limitations — Modify DEPLOY_GUIDE.md to reflect |
-| 🟢 | `fd2ca73f2` | 2026-04-07 | Docs | Outro | Clarify team ownership of development flow and environment — Update DEPLOY_GUIDE.md to redefine role |
+| 🟢 | `cd4710d07` | 2026-04-07 | Docs | Docs / Configuration | Update deployment guide with current environment and limitations — Modify DEPLOY_GUIDE.md to reflect |
+| 🟢 | `fd2ca73f2` | 2026-04-07 | Docs | Docs / Configuration | Clarify team ownership of development flow and environment — Update DEPLOY_GUIDE.md to redefine role |
 | 🟡 | `523a48110` | 2026-04-07 | Backend | Backend (shared) | Expand deployment guide with integration details and readiness assessments — Update DEPLOY_GUIDE.md  |
 | 🟡 | `c84a47ab0` | 2026-04-07 | Backend | §15 WSI | refactor(phase2): classify remaining UNCLEAR API files and wsi repo extraction — - Annotated 16 more |
 | 🟡 | `1445b1707` | 2026-04-07 | Cross IA↔Back | FastAPI v1 endpoints | Update system to handle Rails-deprecated entities and fix import issues — Introduces a RailsAdapter  |
-| 🟢 | `df7f53768` | 2026-04-07 | Docs | Outro | docs: update REFACTOR_PLAN after Phase 2+3+4B |
+| 🟢 | `df7f53768` | 2026-04-07 | Docs | Docs / Refactor | docs: update REFACTOR_PLAN after Phase 2+3+4B |
 | 🔴 | `81889e02a` | 2026-04-07 | Cross IA↔Back | scope: phase4b | feat(phase4b): batch 2 — migrate 73 AI-permanent services to domain layer — Migrated services (73 to |
 | 🟡 | `bf6970eff` | 2026-04-07 | Cross IA↔Back | scope: phase2 | fix(phase2): classify API files as Rails-owned vs FastAPI-owned — - Annotated 2 API files as RAILS-D |
 | 🟡 | `5e89b5546` | 2026-04-07 | Backend | scope: phase4b | feat(phase4b): add backwards-compat shims in shared/services for migrated domain services — - compen |
 | 🟡 | `8516252cb` | 2026-04-07 | Backend | Scripts / CLI | Update GitHub token retrieval to support multiple environment variables — Refactor GitHub token retr |
 | 🔴 | `4adf6561f` | 2026-04-07 | Cross IA↔Back | scope: phase3 | fix(phase3): replace app.models imports with lia_models in service files — - Case A: 128 files chang |
-| 🟢 | `7e5560b6c` | 2026-04-07 | Docs | Outro | docs: revisit REFACTOR_PLAN with Rails-aware corrections — - Add Rails Migration Boundary section: e |
+| 🟢 | `7e5560b6c` | 2026-04-07 | Docs | Docs / Refactor | docs: revisit REFACTOR_PLAN with Rails-aware corrections — - Add Rails Migration Boundary section: e |
 | 🟡 | `81c352abb` | 2026-04-07 | Backend | Policy / Job Creation | Fix error in backend policy engine rule loading — Corrected a NameError in `main.py` by changing dic |
 | 🟡 | `ba43cd5c7` | 2026-04-07 | Cross IA↔Back | scope: ddd | feat(ddd): Phase 4 DDD migration — credit_service and rails_adapter to domain layer — - Move credit_ |
 | 🔴 | `879527074` | 2026-04-07 | Frontend (UI) | Wizard (geral) | fix: complete recruitment-stages decomposition and address all code review findings — Changes from 4 |
@@ -2959,7 +2959,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `c369c7951` | 2026-04-07 | Frontend (UI) | Configurações (hub) | Update type assertions for improved data handling — Refactor type assertions in multiple components  |
 | 🟢 | `5b36eacab` | 2026-04-07 | Frontend (UI) | Talent Funnel (FE) | Update date formatting to return empty string for null values — Modify formatDate and formatDateShor |
 | 🟡 | `77a7627f6` | 2026-04-07 | Frontend (UI) | Expandable AI Prompt (FE) | Update application configuration and component types for improved functionality — Update `next.confi |
-| 🟢 | `80e190bcd` | 2026-04-07 | Frontend (api/util) | Auto-Replit (verbos sem scope) | Update proxy to connect to the correct backend server — Corrected the hardcoded backend port in the  |
+| 🟢 | `80e190bcd` | 2026-04-07 | Frontend (api/util) | DevOps / Deploy (Docker/GCP) | Update proxy to connect to the correct backend server — Corrected the hardcoded backend port in the  |
 | 🟢 | `2ed8bf8b0` | 2026-04-07 | Frontend (UI) | Kanban (vagas) | Update type casting for candidate sub status |
 | 🟢 | `73c64add3` | 2026-04-07 | Frontend (UI) | Configurações (hub) | Improve display of default company settings in job editing — Update conditional rendering logic in J |
 | 🟡 | `aa94d9d29` | 2026-04-07 | Frontend (UI) | Kanban (vagas) | Update job listing and kanban board components and hooks — Refactor various components and hooks wit |
@@ -3089,7 +3089,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `d0283f01d` | 2026-04-06 | Backend | scope: guards | chore(guards): remove consent_management from PENDING_MIGRATION (now 172) |
 | 🟡 | `00d139603` | 2026-04-06 | Backend | scope: guards | chore(guards): remove candidate_lists from PENDING_MIGRATION (now 173) |
 | 🟡 | `deea3c774` | 2026-04-06 | Backend | scope: phase2 | feat(phase2): migrate consent_management.py to ConsentRepository |
-| 🟢 | `bf0e042d0` | 2026-04-06 | Docs | Outro | docs: update REFACTOR_PLAN.md — Phase 2 (12 migrated, 174 pending), Phase 4 done, Phase 9 LOC delta |
+| 🟢 | `bf0e042d0` | 2026-04-06 | Docs | Docs / Refactor | docs: update REFACTOR_PLAN.md — Phase 2 (12 migrated, 174 pending), Phase 4 done, Phase 9 LOC delta |
 | 🟡 | `44923dea2` | 2026-04-06 | Backend | scope: phase2 | feat(phase2): migrate candidate_lists.py to CandidateListRepository |
 | 🟡 | `a7c7db21c` | 2026-04-06 | Backend | Compliance / LGPD / EU AI Act | chore(guards): remove compliance_controls, journey_mapping from PENDING_MIGRATION (now 174) |
 | 🟡 | `4ee2793ea` | 2026-04-06 | Backend | Compliance / LGPD / EU AI Act | feat(phase2): migrate compliance_controls.py to ComplianceControlsRepository |
@@ -3175,7 +3175,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `a1e073bc2` | 2026-04-06 | Frontend (UI) | Kanban (vagas) | feat: implement contextual LIA chat presentation by page (#20) — New: LiaChatShell.tsx — unified wra |
 | 🟡 | `1d3f2691b` | 2026-04-06 | Backend | FastAPI v1 endpoints | Add missing API modules and WebSocket manager for agent communication — Creates new API router files |
 | 🟡 | `a57a53db7` | 2026-04-06 | Backend | FastAPI v1 endpoints | Remove unused insurance module import from API initialization — Remove import statement for the 'ins |
-| 🟢 | `274dd0926` | 2026-04-06 | Docs | Auto-Replit (verbos sem scope) | Update Python dependencies to resolve conflicts — Correct Python dependency versions in requirements |
+| 🟢 | `274dd0926` | 2026-04-06 | Docs | Backend (deps) | Update Python dependencies to resolve conflicts — Correct Python dependency versions in requirements |
 | 🟡 | `f699d602a` | 2026-04-06 | Outro | Mockup Sandbox (artefato gerado) | Update component registration for ElevenLabs funnel — Regenerate the component registration map for  |
 | 🟡 | `052f3c4c2` | 2026-04-06 | Frontend (UI) | Chat UI (FE) | Merged changes from nng5i7ac/main — Replit-Task-Id: 962f54f9-66bc-4345-bd00-4674bed92299 |
 | 🟡 | `57281a577` | 2026-04-06 | Backend | Backend Services (BE) | Add new and update existing functionalities for managing candidates and jobs — Integrate new and upd |
@@ -3186,7 +3186,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `8edd9a5c5` | 2026-04-05 | Frontend (UI) | Configurações (hub) | Task #21: Refactor Integrations Hub from separate route to inline Settings section — - Moved Integra |
 | 🟡 | `46cb28302` | 2026-04-05 | Frontend (UI) | Configurações (hub) | Task #21: Refactor Integrations Hub from separate route to inline Settings section — - Moved Integra |
 | 🟡 | `9441593dc` | 2026-04-05 | Auto-commit Replit | (Auto-commit Replit) | Transitioned from Plan to Build mode |
-| 🟢 | `f40efdf85` | 2026-04-05 | Frontend (UI) | Auto-Replit (verbos sem scope) | Add a back button to the integrations page menu — Add an ArrowLeft icon import and a button element  |
+| 🟢 | `f40efdf85` | 2026-04-05 | Frontend (UI) | Configurações (hub) | Add a back button to the integrations page menu — Add an ArrowLeft icon import and a button element  |
 | 🟢 | `9b191f000` | 2026-04-05 | Frontend (UI) | Frontend (componentes diversos) | Add a link to the integrations page and fix navigation errors — Replaced router.push with window.loc |
 | 🟢 | `7022f5dad` | 2026-04-05 | Frontend (UI) | Configurações (hub) | Add integrations link to the settings sidebar for external service connections — Import and utilize  |
 | 🟡 | `6196cbdc7` | 2026-04-05 | Frontend (UI) | Task #18 | Task #18: Hub de Integrações — Página Unificada estilo Claude/Manus — Redesigned /configuracoes/inte |
@@ -3266,8 +3266,8 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `60ec7840b` | 2026-04-05 | Outro | Mockup Sandbox (artefato gerado) | Update component mapping for funnel elevenlabs — Reorder the module map in `mockup-components.ts` to |
 | 🟢 | `d685c0088` | 2026-04-05 | Frontend (UI) | §6 Chat Unificado / Funil | fix: Corrigir erros na página /funil/ (Vagas) - Task #148 — ## Mudanças de código |
 | 🟡 | `5ca446df4` | 2026-04-05 | Auto-commit Replit | (Auto-commit Replit) | Git commit prior to merge |
-| 🟡 | `009229e73` | 2026-04-05 | Outro | Auto-Replit (verbos sem scope) | Add WorkOS SSO and SCIM integration to the user authentication system — Integrates WorkOS for SSO an |
-| 🟡 | `e0405a9a3` | 2026-04-05 | Outro | Outro | Remove demo buttons and unnecessary routes from login page — Remove demo buttons and update routing  |
+| 🟡 | `009229e73` | 2026-04-05 | Outro | §9 Security / Tenant guards | Add WorkOS SSO and SCIM integration to the user authentication system — Integrates WorkOS for SSO an |
+| 🟡 | `e0405a9a3` | 2026-04-05 | Outro | Login UI (FE) | Remove demo buttons and unnecessary routes from login page — Remove demo buttons and update routing  |
 | 🟢 | `bcf87b3df` | 2026-04-05 | Frontend (api/util) | scope: sidebar | fix(sidebar): resolve setState-during-render warning in useSidebarState — Task: #147 - Fix Sidebar s |
 | 🟢 | `8469cd2bf` | 2026-04-05 | Frontend (UI) | Onboarding (FE) | Remove broken demo buttons and their associated routes — Remove the `/demo-onboarding` route from pu |
 | 🟡 | `a86be78e3` | 2026-04-05 | Backend | Task #146 | Fix dev-server 500 errors on candidates and job-vacancies endpoints (Task #146) — Bug 1 - Candidates |
@@ -3385,7 +3385,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `8cae7a14d` | 2026-04-04 | Frontend (UI) | Task #113 | Task #113: Eliminate critical mock data from production code — CHANGES: |
 | 🟡 | `e24632178` | 2026-04-04 | Backend | FastAPI v1 endpoints | Task start baseline checkpoint for code review |
 | 🟡 | `232905535` | 2026-04-04 | Backend | FastAPI v1 endpoints | Add execution plan details to chat responses for better task tracking — Add an optional `execution_p |
-| 🟢 | `cd5dcc969` | 2026-04-04 | Docs | Auto-Replit (verbos sem scope) | Update documentation with revised frontend audit scores and detailed analysis — Update `audit-fronte |
+| 🟢 | `cd5dcc969` | 2026-04-04 | Docs | Docs / Auditorias | Update documentation with revised frontend audit scores and detailed analysis — Update `audit-fronte |
 | 🟢 | `2902809cb` | 2026-04-03 | Frontend (UI) | Acessibilidade (a11y) | Task #110: Design System + Accessibility + Dead Code cleanup — Changes: |
 | 🔴 | `72875a661` | 2026-04-03 | Cross Back↔Front | Acessibilidade (a11y) | Task #110: Design System v4.2.1 + Accessibility + Dead Code cleanup — Changes: |
 | 🔴 | `daed87514` | 2026-04-03 | Cross IA↔Front | scope: lia-chat | fix(lia-chat): Round 9 — education_level to lia_insights JSON + PT-BR datetime resolver — Final sema |
@@ -3425,34 +3425,34 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `80fc294b9` | 2026-04-03 | Frontend (UI) | UI Components (FE library) | Remove incomplete setup progress badge from application interface — Remove the SetupAlertBadge compo |
 | 🔴 | `9338f7773` | 2026-04-03 | Cross Back↔Front | Docs / Specs | Fix infinite loop in chat component state management — Wrap reset functions in useCallback to preven |
 | 🟢 | `ebc3c3a3b` | 2026-04-03 | Docs | Compliance / LGPD / EU AI Act | Update fairness reports with new data and error handling — Modify CSV and JSON files for fairness re |
-| 🟢 | `2e58eb7ad` | 2026-04-03 | Docs | Auto-Replit (verbos sem scope) | Update screenshots for login and 2FA process — Update screenshots to reflect the final state of the  |
-| 🟢 | `1657ad17c` | 2026-04-03 | Docs | Auto-Replit (verbos sem scope) | Update screenshots showing successful code input — Update screenshots to demonstrate successful inpu |
+| 🟢 | `2e58eb7ad` | 2026-04-03 | Docs | Docs / Screenshots | Update screenshots for login and 2FA process — Update screenshots to reflect the final state of the  |
+| 🟢 | `1657ad17c` | 2026-04-03 | Docs | Docs / Screenshots | Update screenshots showing successful code input — Update screenshots to demonstrate successful inpu |
 | 🟢 | `08968515a` | 2026-04-03 | Docs | Docs / Specs | Update login script to use direct value setting with event dispatching for two-factor authentication |
-| 🟢 | `d67a75dd3` | 2026-04-03 | Docs | Auto-Replit (verbos sem scope) | Update screenshots for user login and 2FA process — Update screenshots to reflect changes in the use |
+| 🟢 | `d67a75dd3` | 2026-04-03 | Docs | Docs / Screenshots | Update screenshots for user login and 2FA process — Update screenshots to reflect changes in the use |
 | 🟢 | `84795ebf8` | 2026-04-03 | Docs | Compliance / LGPD / EU AI Act | Add fairness report data to the QA documentation — Update CSV and JSON files with fairness report da |
-| 🟡 | `4f55a46ee` | 2026-04-03 | Docs | Auto-Replit (verbos sem scope) | Update scripts to handle website login and two-factor authentication flow — Refactor and add new Pyt |
+| 🟡 | `4f55a46ee` | 2026-04-03 | Docs | Docs / Screenshots | Update scripts to handle website login and two-factor authentication flow — Refactor and add new Pyt |
 | 🟡 | `195825178` | 2026-04-03 | Docs | Docs / Specs | Update login flow to handle WeDOTalent's direct 2FA authentication — Refactors `capture-wedo-ms-logi |
 | 🟢 | `ca61a48f1` | 2026-04-03 | Docs | Compliance / LGPD / EU AI Act | Update fairness reports with new latency and connection error data — Updates fairness reports in CSV |
 | 🟢 | `c82e55f57` | 2026-04-03 | Docs | Docs / Specs | Update benchmark tests and documentation to reflect current API and features — Update benchmark test |
-| 🟢 | `a9be7a167` | 2026-04-03 | Docs | Auto-Replit (verbos sem scope) | Add layout and spacing issues to the audit document — Adds new Vue bugs (VUE-BUG-06, VUE-BUG-07, VUE |
-| 🟢 | `dd0d71b9c` | 2026-04-03 | Docs | Auto-Replit (verbos sem scope) | Update audit document with new bugs and screenshots — Adds new bugs to the audit document, updates p |
-| 🟢 | `73f3bfae0` | 2026-04-03 | Docs | Auto-Replit (verbos sem scope) | Update audit document with new candidate screenshots and identified issues — Adds 15 new candidate s |
+| 🟢 | `a9be7a167` | 2026-04-03 | Docs | Docs / Auditorias | Add layout and spacing issues to the audit document — Adds new Vue bugs (VUE-BUG-06, VUE-BUG-07, VUE |
+| 🟢 | `dd0d71b9c` | 2026-04-03 | Docs | Docs / Auditorias | Update audit document with new bugs and screenshots — Adds new bugs to the audit document, updates p |
+| 🟢 | `73f3bfae0` | 2026-04-03 | Docs | Docs / Auditorias | Update audit document with new candidate screenshots and identified issues — Adds 15 new candidate s |
 | 🟢 | `6b5d6a630` | 2026-04-03 | Testes | Compliance / LGPD / EU AI Act | Update candidate scoring to include job vacancy and question details — Modify the payload structure  |
 | 🟢 | `32bf87468` | 2026-04-03 | Testes | §15 WSI | Update test script to align with new API specifications for candidate analysis — Modify the patch_fa |
-| 🟢 | `8f01fa6d5` | 2026-04-03 | Docs | Auto-Replit (verbos sem scope) | Implement direct API login to bypass multi-factor authentication — Introduce a bash script to perfor |
+| 🟢 | `8f01fa6d5` | 2026-04-03 | Docs | Docs / Auditorias | Implement direct API login to bypass multi-factor authentication — Introduce a bash script to perfor |
 | 🔴 | `1a59d95d2` | 2026-04-03 | Testes | Docs / Specs | Update login and 2FA process to handle custom input components — Modify the authentication flow to s |
-| 🟢 | `24d8f4abf` | 2026-04-03 | Docs | Auto-Replit (verbos sem scope) | Add login functionality and capture candidate screenshots for review — Update scripts to handle WeDO |
-| 🟢 | `3a4243904` | 2026-04-03 | Docs | Auto-Replit (verbos sem scope) | Add script to capture screenshots of product previews — Implement Playwright script to capture scree |
-| 🟢 | `04be87e96` | 2026-04-03 | Docs | Auto-Replit (verbos sem scope) | Update audit document with detailed candidate preview information — Refactor the audit-candidate-pre |
-| 🟢 | `6ede754b1` | 2026-04-03 | Docs | Auto-Replit (verbos sem scope) | Add detailed documentation for the file upload tab — Update audit-candidate-preview-qa.md to include |
-| 🟢 | `903c02afd` | 2026-04-03 | Docs | Auto-Replit (verbos sem scope) | Update audit document to include restructured content and detailed findings — Restructure the audit  |
+| 🟢 | `24d8f4abf` | 2026-04-03 | Docs | Docs / Auditorias | Add login functionality and capture candidate screenshots for review — Update scripts to handle WeDO |
+| 🟢 | `3a4243904` | 2026-04-03 | Docs | Docs / Auditorias | Add script to capture screenshots of product previews — Implement Playwright script to capture scree |
+| 🟢 | `04be87e96` | 2026-04-03 | Docs | Docs / Auditorias | Update audit document with detailed candidate preview information — Refactor the audit-candidate-pre |
+| 🟢 | `6ede754b1` | 2026-04-03 | Docs | Docs / Auditorias | Add detailed documentation for the file upload tab — Update audit-candidate-preview-qa.md to include |
+| 🟢 | `903c02afd` | 2026-04-03 | Docs | Docs / Auditorias | Update audit document to include restructured content and detailed findings — Restructure the audit  |
 | 🟢 | `c4a7d0540` | 2026-04-03 | Docs | Mockup Sandbox (artefato gerado) | Consolidate audit and code comparison documents into a single comprehensive report — Merge the deep  |
-| 🟢 | `7c742d925` | 2026-04-03 | Docs | Auto-Replit (verbos sem scope) | Add detailed comparison of candidate preview features — Create a deep code-to-code comparison docume |
+| 🟢 | `7c742d925` | 2026-04-03 | Docs | Docs / Auditorias | Add detailed comparison of candidate preview features — Create a deep code-to-code comparison docume |
 | 🟡 | `f88c929ed` | 2026-04-03 | Outro | Mockup Sandbox (artefato gerado) | Update component mapping for the ElevenLabs funnel — Update the dynamic import mapping in mockup-com |
 | 🟢 | `44ed2241e` | 2026-04-03 | Docs | Auditoria / Audit Rev | QA Audit: Candidate Preview Panel - Production vs Replit Reference — Complete rewrite of audit docum |
 | 🟡 | `f9471e961` | 2026-04-03 | Auto-commit Replit | (Auto-commit Replit) | Git commit prior to merge |
 | 🟡 | `b9d9a070d` | 2026-04-03 | Frontend (UI) | Chat UI (FE) | Fix issues with loading, image display, and search cancellation — Addresses an infinite loading bug  |
-| 🟡 | `975e0d586` | 2026-04-03 | Outro | Auto-Replit (verbos sem scope) | Add automated login and initial page navigation for the website — Implement Playwright automation sc |
+| 🟡 | `975e0d586` | 2026-04-03 | Outro | Docs / Auditorias | Add automated login and initial page navigation for the website — Implement Playwright automation sc |
 | 🟢 | `0a332b1ea` | 2026-04-03 | Frontend (UI) | Task #103 | Task #103: Ajustar fonte do placeholder para 12px — Changed placeholder font size from text-base-ui  |
 | 🟢 | `e213cf2ec` | 2026-04-03 | Frontend (UI) | Candidates (FE pages) | Align search results header and controls into a single unified toolbar — Unify the Brain prompt, sea |
 | 🟢 | `1fa2c5b9a` | 2026-04-03 | Frontend (UI) | Candidates (FE pages) | Align search results header and LIA prompt horizontally — Move the LIA prompt button to the same lin |
@@ -3480,7 +3480,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `9151587fd` | 2026-04-02 | Frontend (UI) | Frontend (componentes diversos) | Prevent hydration errors by deferring component rendering — Defer the mounting of the Popover compon |
 | 🟢 | `9b1061bb2` | 2026-04-02 | Frontend (UI) | Task #100 | Task #100: Auditoria e Enxugamento do Admin — Mapa de 61 Páginas para Decisão — Audited all 61 admin |
 | 🟢 | `0d2aba6ff` | 2026-04-02 | Frontend (UI) | Task #99 | Task #99: Fix runtime errors after dark mode migration — Root cause: Lucide React icons are `forward |
-| 🟢 | `ff8b4a8b7` | 2026-04-02 | Docs | Outro | Clarify audit results in documentation regarding design token migration — Update replit.md to accura |
+| 🟢 | `ff8b4a8b7` | 2026-04-02 | Docs | Design System v4.2.2 | Clarify audit results in documentation regarding design token migration — Update replit.md to accura |
 | 🟢 | `f02e873dd` | 2026-04-02 | Docs | Task #98 | Task #98: Migração completa de tokens de contraste — Etapa 4 (Final) — Migração abrangente de ~505+  |
 | 🟢 | `93ef4cf05` | 2026-04-02 | Frontend (UI) | Task #98 | Task #98: Migração completa de tokens de contraste — Etapa 4 (Final) — Migração abrangente de ~505+  |
 | 🔴 | `213adc816` | 2026-04-02 | Frontend (UI) | Task #98 | Task #98: Migração completa de tokens de contraste — Etapa 4 (Final) — Migração abrangente de ~505+  |
@@ -3523,7 +3523,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `ee0a5fb30` | 2026-04-02 | Frontend (UI) | UI Components (FE library) | Align styles and appearance across all candidate tables — Update CSS and markup in `candidate-table- |
 | 🟢 | `0a1122876` | 2026-04-02 | Frontend (UI) | Candidates (FE pages) | Align talent funnel table with job listings for consistent appearance — Adjust padding, checkbox com |
 | 🟢 | `1c4c56051` | 2026-04-02 | Frontend (UI) | Candidates (FE pages) | Change header background color to white — Update the `SearchResultsHeader.tsx` component to change t |
-| 🟢 | `36e023f61` | 2026-04-02 | Frontend (api/util) | Auto-Replit (verbos sem scope) | Update font size token to ensure consistency — Adjusted the `--font-size-xs` CSS token from 11px to  |
+| 🟢 | `36e023f61` | 2026-04-02 | Frontend (api/util) | Design System v4.2.2 | Update font size token to ensure consistency — Adjusted the `--font-size-xs` CSS token from 11px to  |
 | 🟢 | `f83e6052d` | 2026-04-01 | Frontend (UI) | Jobs (FE pages) | Add a bottom border to the jobs table header for better separation — Update the jobs table header to |
 | 🟢 | `9deb5bf28` | 2026-04-01 | Frontend (UI) | Jobs (FE pages) | Improve table header separation with a subtle shadow effect — Adjusted JobsCompactTableView.tsx to u |
 | 🟢 | `fbf5eb4af` | 2026-04-01 | Frontend (UI) | Jobs (FE pages) | Add a bottom border to the table header for better visual separation — Move the bottom border from t |
@@ -3541,13 +3541,13 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `0c8be0403` | 2026-04-01 | Frontend (UI) | Frontend (componentes diversos) | Update page backgrounds to white across the entire application — Replaced `bg-gray-50` with `bg-whit |
 | 🟡 | `2dc9d6d67` | 2026-04-01 | Outro | Mockup Sandbox (artefato gerado) | Add a visual mockup of the talent funnel page using Eleven Labs design — Create a new mock component |
 | 🟢 | `8ed926359` | 2026-04-01 | Frontend (UI) | Frontend (componentes diversos) | Fix error causing the application to crash when navigating job views — Move useMemo hook to ensure c |
-| 🟢 | `a84040218` | 2026-04-01 | Frontend (api/util) | Auto-Replit (verbos sem scope) | Add UI avatars to image hosting configuration — Update next.config.js to include ui-avatars.com in a |
+| 🟢 | `a84040218` | 2026-04-01 | Frontend (api/util) | DevOps / Deploy (Docker/GCP) | Add UI avatars to image hosting configuration — Update next.config.js to include ui-avatars.com in a |
 | 🟡 | `323a76519` | 2026-04-01 | Outro | Skills / canonical-fix | Complete the Vue Vuetify standardization skill for independent operation — Rewrite the vue-vuetify-s |
 | 🟢 | `02131244a` | 2026-04-01 | Empty/merge | Skills / canonical-fix | Rewrite vue-vuetify-standardize skill to be 100% self-contained — - Removed all references to extern |
 | 🟢 | `6aa487c13` | 2026-04-01 | Frontend (UI) | Configurações (hub) | Add missing icons to display benefits information correctly — Import the `Percent` and `Info` icons  |
-| 🟢 | `69bca4528` | 2026-04-01 | Docs | Outro | docs: fix MIGRATION_READINESS — files >1000L is 3 not 1 (design-tokens.css grew, useExpandedChatModa |
+| 🟢 | `69bca4528` | 2026-04-01 | Docs | Docs / Refactor | docs: fix MIGRATION_READINESS — files >1000L is 3 not 1 (design-tokens.css grew, useExpandedChatModa |
 | 🟢 | `8bd407e84` | 2026-04-01 | Frontend (UI) | §6 Chat Unificado / Funil | fix(typescript): resolve residual type errors in FunilDeTalentosClient, candidate-modal, ScreeningQu |
-| 🟢 | `4a6a078e5` | 2026-04-01 | Docs | Outro | docs: MIGRATION_READINESS.md score 69/70 checklist context-store map risks |
+| 🟢 | `4a6a078e5` | 2026-04-01 | Docs | Docs / Refactor | docs: MIGRATION_READINESS.md score 69/70 checklist context-store map risks |
 | 🟡 | `a1e4ab982` | 2026-04-01 | Frontend (UI) | scope: eslint | fix(eslint): resolve remaining errors — 0 errors target achieved |
 | 🔴 | `71ca5412f` | 2026-04-01 | Frontend (UI) | scope: eslint | fix(eslint): wrap JSX comment text nodes — 61 react/jsx-no-comment-textnodes errors → 0 |
 | 🟡 | `9ef73964f` | 2026-04-01 | Frontend (UI) | scope: quality | fix(quality): migrate auth-context imports to canonical path + remove orphan GoalsPlanningHub |
@@ -3604,7 +3604,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `0cbe0ff75` | 2026-04-01 | Docs | §9 Security / Tenant guards | docs(audit): v7 — 59/70 (84%) \| Architecture 2→4, Security 4→5, Bridge 3→4 \| 39→5 arquivos >1kL |
 | 🟢 | `a849e3b8b` | 2026-04-01 | Frontend (UI) | scope: arch | refactor(arch): reduce modern-conversations and CandidatesFilterPanel below 1000L |
 | 🟢 | `88e3ddbfc` | 2026-04-01 | Frontend (UI) | scope: arch | refactor(arch): extract sub-hooks from useExpandedChatModalCore and useEAPCallbacks |
-| 🟡 | `11ee7c473` | 2026-04-01 | Outro | Outro | chore: remove accidental =350 file |
+| 🟡 | `11ee7c473` | 2026-04-01 | Outro | Refactor / Cleanup | chore: remove accidental =350 file |
 | 🟡 | `1ec46c597` | 2026-04-01 | Frontend (UI) | Triagem (módulo) | refactor(arch): reduce last borderline files below 1000L (prompts, CandidateSearchResultsView, JobEd |
 | 🟢 | `5bfff47b2` | 2026-04-01 | Frontend (UI) | scope: arch | refactor(arch): extract sub-hooks from useSendMessageHandlers and useExpandedChatModalCore |
 | 🟢 | `3762d311c` | 2026-04-01 | Frontend (UI) | scope: ts | fix(ts): restore CandidatesFilterPanel.tsx truncated by dedup agent — 0 TS errors |
@@ -3682,7 +3682,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `358fc6e40` | 2026-03-31 | Frontend (UI) | Kanban (vagas) | fix(ts): batch 1 — add missing KanbanCandidate props, LanguageEntry.name, ts-nocheck validator (-89  |
 | 🟢 | `bbe308def` | 2026-03-31 | Frontend (api/util) | scope: vue | refactor(vue): 100% Pinia-ready hooks — extract EditLockButtons component, remove JSX from hooks |
 | 🟢 | `10a159680` | 2026-03-31 | Frontend (UI) | Task #82 | Task #82: Bell Notification In-App — Ativação Completa — Fixed critical React hydration issue preven |
-| 🟢 | `eca690fec` | 2026-03-31 | Frontend (api/util) | Outro | ci: add GitHub Actions CI pipeline — lint, test, build on push/PR to main |
+| 🟢 | `eca690fec` | 2026-03-31 | Frontend (api/util) | DevOps / CI | ci: add GitHub Actions CI pipeline — lint, test, build on push/PR to main |
 | 🟡 | `0f02bc88d` | 2026-03-31 | Frontend (UI) | scope: eslint | fix(eslint): 0 errors - merge duplicate className props, prefer-const, useMemo guard |
 | 🔴 | `a48928814` | 2026-03-31 | Cross Back↔Front | Task #82 | Task #82: Bell Notification In-App — Ativação Completa — ## Changes Made |
 | 🟢 | `280d7e671` | 2026-03-31 | Docs | Task #83 | Task #83: Expand FLUXO_TECNICO_COMPLETO_ALPHA1.md with complete file listing and transversal layer d |
@@ -3699,7 +3699,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `4dd87cf74` | 2026-03-31 | Docs | §15 WSI | Create docs/specs/FLUXO_TECNICO_COMPLETO_ALPHA1.md — Definitive technical reference for LIA platform |
 | 🟡 | `71cf79d1f` | 2026-03-31 | Auto-commit Replit | (Auto-commit Replit) | Git commit prior to merge |
 | 🟢 | `17d8bde5b` | 2026-03-31 | Empty/merge | Task #78 | Task #78 (Weekly Digest) — Final validation & critical fixes — Re-validated Task #78 against all req |
-| 🟡 | `e80a660e4` | 2026-03-31 | Outro | Outro | chore: remove accidental artifact file |
+| 🟡 | `e80a660e4` | 2026-03-31 | Outro | Refactor / Cleanup | chore: remove accidental artifact file |
 | 🟡 | `24a150be6` | 2026-03-31 | Outro | Task #78 | Task #78 (Weekly Digest) — Final validation & critical fixes — Re-validated Task #78 against all req |
 | 🔴 | `681625844` | 2026-03-31 | Cross Back↔Front | Compliance / LGPD / EU AI Act | fix(weekly-digest): dashboard data mapping, tenant-scoped compliance, PII masking, a11y & DS complia |
 | 🟡 | `a2b2d4f26` | 2026-03-31 | Backend | Analytics (BE) | Task start baseline checkpoint for code review |
@@ -3711,7 +3711,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `fbc71cf74` | 2026-03-31 | Docs | Compliance / LGPD / EU AI Act | docs: v6.6 — mark G7, C6, C7, P0.1, P0.3 as PÓS MVP — - G7 (Infra Externa): BLOQUEANTE → PÓS MVP |
 | 🔴 | `571a8aa7f` | 2026-03-31 | Frontend (UI) | §15 WSI | Update zod schemas and component types for improved data handling — Refactors zod schemas across var |
 | 🟢 | `6cfa2bf2d` | 2026-03-31 | Docs | §13 PARTE D — Foundation/Apify/Manifest | docs: v6.5 — mark G5 Apify API key as RESOLVIDO — - G5 marked resolved: APIFY_API_KEY configured as  |
-| 🟡 | `0616a0776` | 2026-03-31 | Outro | Auto-Replit (verbos sem scope) | Update documentation to remove outdated references — Remove all remaining "Task" and "ARCH" referenc |
+| 🟡 | `0616a0776` | 2026-03-31 | Outro | Docs / Architecture | Update documentation to remove outdated references — Remove all remaining "Task" and "ARCH" referenc |
 | 🟢 | `1ec69a548` | 2026-03-31 | Docs | Docs / Specs | docs: v6.4 — remove all verbose Status comments and Task/ARCH references — Cleanup: |
 | 🟢 | `a306ff35e` | 2026-03-31 | Frontend (UI) | Frontend (componentes diversos) | Update candidate profile and job preview components with improved type casting — Refactor UI compone |
 | 🟢 | `34602109b` | 2026-03-31 | Docs | Compliance / LGPD / EU AI Act | docs: v6.3 — deep verification of per-etapa status columns against actual codebase — Verified via co |
@@ -3792,12 +3792,12 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `fdd822852` | 2026-03-31 | Cross IA↔Back | Task #70 | Task #70: Code review fixes — webhook signature, Template Learning wiring, feedback state machine, c |
 | 🟢 | `b7dc5090e` | 2026-03-31 | Docs | Automations | Task #70: Fase 3 — Scheduler + Automações Celery (G6, I1, I3, I6, G9) — Implemented all 5 background |
 | 🔴 | `cefc6278c` | 2026-03-31 | Cross Back↔Front | Automations | Task #70: Fase 3 — Scheduler + Automações Celery (G6, I1, I3, I6, G9) — - followup.process_pending:  |
-| 🟢 | `8623bc019` | 2026-03-31 | Docs | Outro | docs: audit score v4 - 49.9/60 (+2.4 force-dynamic+virtual+splits+tests) |
+| 🟢 | `8623bc019` | 2026-03-31 | Docs | Docs / Auditorias | docs: audit score v4 - 49.9/60 (+2.4 force-dynamic+virtual+splits+tests) |
 | 🔴 | `2d2c29b23` | 2026-03-31 | Cross Back↔Front | Candidates (FE pages) | chore: remove unused recommendation variable in _update_pipeline_stage |
 | 🟢 | `b532e766b` | 2026-03-31 | Empty/merge | Triagem (módulo) | feat(triagem): complete Task #69 — fix triagem E2E bugs + code review fixes — Fixes applied to exist |
 | 🟡 | `18bd6a094` | 2026-03-31 | Backend | Triagem (módulo) | fix(triagem): align pipeline statuses with canonical values (pending/approved/rejected) — - Low WSI  |
 | 🟢 | `07cf149b3` | 2026-03-31 | Empty/merge | Triagem (módulo) | feat(triagem): complete Task #69 — fix triagem E2E bugs + code review fixes — This session fixed 3 b |
-| 🟢 | `3d0048966` | 2026-03-31 | Frontend (api/util) | Outro | fix: exclui test files e exports/ do tsc — remove 1000+ erros de arquivos fora do escopo de prod |
+| 🟢 | `3d0048966` | 2026-03-31 | Frontend (api/util) | Lint / Code Quality | fix: exclui test files e exports/ do tsc — remove 1000+ erros de arquivos fora do escopo de prod |
 | 🟢 | `8fb6ed426` | 2026-03-31 | Empty/merge | Triagem (módulo) | feat(triagem): complete Task #69 — Chat Web Público + Triagem E2E — Task #69 Fase 2 fixes (commits 7 |
 | 🔴 | `0d0f056ef` | 2026-03-31 | Cross Back↔Front | Triagem (módulo) | fix(triagem): code review fixes — progress accuracy, pipeline status, stage counts — - Fix estimated |
 | 🔴 | `72c5d5ddc` | 2026-03-31 | Cross Back↔Front | Triagem (módulo) | feat(triagem): fix E2E flow — proxy POST bug, pipeline update, progress tracking — Task #69 Fase 2 — |
@@ -3848,7 +3848,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `422c5dfbc` | 2026-03-30 | Frontend (UI) | UI Components (FE library) | Update UI components for better rendering and memoization — Refactor `ContextPill` and `EmptyState`  |
 | 🟢 | `0c6bdad17` | 2026-03-30 | Docs | Compliance / LGPD / EU AI Act | docs: reformat journey diagram as markdown tables v3.1 — Replace wide ASCII art (170+ chars, broke i |
 | 🟢 | `26634dd8a` | 2026-03-30 | Docs | Compliance / LGPD / EU AI Act | docs: redesign Alpha 1 journey diagram to vertical layout v3.0 — New diagram structure: |
-| 🟢 | `78ff81786` | 2026-03-30 | Frontend (UI) | Outro | fix: corrige JSX comment duplo em layout.tsx — {{/* → {/* |
+| 🟢 | `78ff81786` | 2026-03-30 | Frontend (UI) | Refactor / Cleanup | fix: corrige JSX comment duplo em layout.tsx — {{/* → {/* |
 | 🟢 | `e3ebd51f0` | 2026-03-30 | Frontend (api/util) | Hooks (FE) | fix: normalize refetch type to Promise<void> in 4 admin hooks |
 | 🟢 | `8ee979f8b` | 2026-03-30 | Empty/merge | Performance | perf: migra 10 hooks admin para useSWR -- elimina isMountedRef boilerplate -- ALT-SWR-02 |
 | 🟢 | `f190521b4` | 2026-03-30 | Empty/merge | Task #65 | Task #65: Alpha 1 Roadmap Analysis v2.0 + fix 14 broken hook files — 1. docs/specs/ANALISE_ROADMAP_A |
@@ -3881,7 +3881,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `f84aea2ab` | 2026-03-30 | Docs | Bridge React→Vue | bridge: inventário completo de portabilidade React→Vue — 131 hooks classificados em 3 tiers — Skill  |
 | 🟢 | `6399fc2cb` | 2026-03-30 | Docs | Auditoria / Audit Rev | audit: score v2 pos Fases 6-9 — Skill 9 auditoria final |
 | 🟡 | `53fbf3e2a` | 2026-03-30 | Frontend (UI) | Performance | perf: substitui key={index} por keys estaveis nos 20 arquivos criticos — ALT-03 |
-| 🟢 | `349ae02df` | 2026-03-30 | Frontend (api/util) | Auto-Replit (verbos sem scope) | Add linting and formatting configurations for project files — Add `lint-staged` and `browserslist` c |
+| 🟢 | `349ae02df` | 2026-03-30 | Frontend (api/util) | Lint / Code Quality | Add linting and formatting configurations for project files — Add `lint-staged` and `browserslist` c |
 | 🟢 | `3304eaf3e` | 2026-03-30 | Frontend (api/util) | Kanban (vagas) | fix: repair memo() syntax errors in 6 components from task agent merge — Fixed broken memo() closing |
 | 🟡 | `6279800ca` | 2026-03-30 | Frontend (UI) | Performance | perf: React.memo em componentes de lista + cleanup timers + AbortController + passive listeners — AL |
 | 🟢 | `37901fafa` | 2026-03-30 | Frontend (api/util) | scope: docs | fix(docs): convert ASCII box-drawing tables to Markdown + fix use client ordering — 1. Converted all |
@@ -3935,7 +3935,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `8cc0a8ca0` | 2026-03-29 | Frontend (UI) | Chat UI (FE) | Adjust font sizes and remove unused CSS for improved readability — Update text sizes in AgentMemoryI |
 | 🟡 | `76bb4c2c7` | 2026-03-29 | Frontend (UI) | Compliance / LGPD / EU AI Act | P6: Add comprehensive pros/cons/recommendations/market references comparative table — Added to Excal |
 | 🟡 | `e60a00bef` | 2026-03-29 | Frontend (UI) | Jobs (FE pages) | Centralize status labels for improved maintainability and consistency — Refactors multiple component |
-| 🟡 | `7d845c452` | 2026-03-29 | Outro | Auto-Replit (verbos sem scope) | Standardize header appearance across multiple pages — Create a reusable header component and apply i |
+| 🟡 | `7d845c452` | 2026-03-29 | Outro | Frontend (componentes diversos) | Standardize header appearance across multiple pages — Create a reusable header component and apply i |
 | 🟢 | `4662d61ac` | 2026-03-29 | Frontend (UI) | Docs / Specs | Create reusable LiaPromptHeader component for consistent LIA prompt titles — - Created `lia-prompt-h |
 | 🟢 | `f85817044` | 2026-03-29 | Frontend (UI) | Docs / Specs | Fix issues with displaying job listings and loading states — Update `JobsPage` component to properly |
 | 🟡 | `8d1fd2aa8` | 2026-03-29 | Frontend (UI) | §1 Teams Integration | Add P5 Teams Bot to HTML architecture diagram and summary table — - Inserted P5 Teams Bot section (3 |
@@ -3964,7 +3964,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `692fd66a9` | 2026-03-29 | Frontend (UI) | Skills / canonical-fix | Update candidate and job data structures and organize development skills — Refactor type definitions |
 | 🟢 | `191e7244f` | 2026-03-29 | Frontend (UI) | Expandable AI Prompt (FE) | Improve visual styling and layout consistency across the platform — Update styling and layout proper |
 | 🟢 | `1c4f56e7e` | 2026-03-29 | Docs | Docs / Specs | Update component inventory with recent project growth metrics — Update the component inventory docum |
-| 🟡 | `be19ab5c5` | 2026-03-29 | Outro | Auto-Replit (verbos sem scope) | Add monolith definition to support new project structure — Add a new section for defining monoliths  |
+| 🟡 | `be19ab5c5` | 2026-03-29 | Outro | Refactor / Cleanup | Add monolith definition to support new project structure — Add a new section for defining monoliths  |
 | 🟢 | `622736784` | 2026-03-29 | Frontend (UI) | Jobs (FE pages) | Improve loading state management for job vacancy listings — Move `setIsLoadingJobs(false)` to execut |
 | 🟢 | `d533ad4e0` | 2026-03-29 | Frontend (UI) | Modals (FE) | Add safety for recruiter assignment in job modals — Protect JobAssignRecruiterModal from undefined r |
 | 🟢 | `d1a96355b` | 2026-03-29 | Frontend (UI) | Candidates (FE pages) | Add search sorting functionality to candidate results view — Fix: Missing setSearchSortBy prop in Ca |
@@ -4058,7 +4058,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `147207344` | 2026-03-27 | Auto-commit Replit | (Auto-commit Replit) | Transitioned from Plan to Build mode |
 | 🟢 | `5db692bc9` | 2026-03-27 | Docs | Docs (geral) | Catalog all existing visual components on the platform — Create a comprehensive inventory of 465 vis |
 | 🟢 | `c58d25d8e` | 2026-03-27 | Docs | Docs (geral) | Update diagnostic document comparing React and Vue frontend standards — Create a comprehensive diagn |
-| 🟡 | `2b02e46a2` | 2026-03-27 | Infra/Config | Auto-Replit (verbos sem scope) | Add a command to find configuration files for Nuxt projects — Add a new bash command to find .config |
+| 🟡 | `2b02e46a2` | 2026-03-27 | Infra/Config | Scripts / CLI | Add a command to find configuration files for Nuxt projects — Add a new bash command to find .config |
 | 🟢 | `dcddfa39c` | 2026-03-26 | Docs | Docs / WeDO planos | Organize project documentation and working files — Moves working documents and analyses to a dedicat |
 | 🟡 | `deeb59592` | 2026-03-26 | Auto-commit Replit | (Auto-commit Replit) | Saved progress at the end of the loop |
 | 🟡 | `17e049be6` | 2026-03-26 | Frontend (UI) | Task #51 | Task #51: Standardize all LIA chat UIs across the platform — - Added chat-cyan (#00B8B8) to tailwind |
@@ -4151,11 +4151,11 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `6bf0e714c` | 2026-03-24 | Docs | Docs (geral) | Create a guide for coding standards and best practices — Generate a comprehensive CODING_STANDARDS.m |
 | 🟢 | `7b9317ff1` | 2026-03-24 | Docs | Docs (geral) | Add comprehensive architecture documentation for the platform — Create `docs/ARCHITECTURE.md` detail |
 | 🟢 | `972c2efaf` | 2026-03-24 | Docs | Task #36 | docs: SDD PLATFORM_MAP.md — mapa completo da plataforma WeDOTalent — Task #36 — SDD — PLATFORM_MAP d |
-| 🟡 | `4e46858de` | 2026-03-24 | Outro | Auto-Replit (verbos sem scope) | Improve analysis script by extracting BetterBugs links and optimizing LLM calls — Enhance the `adf_t |
-| 🟡 | `8fff66478` | 2026-03-23 | Outro | Outro | Stop updating card descriptions and post analysis as comments — Replaces direct updates to card desc |
+| 🟡 | `4e46858de` | 2026-03-24 | Outro | Scripts / Jira tooling | Improve analysis script by extracting BetterBugs links and optimizing LLM calls — Enhance the `adf_t |
+| 🟡 | `8fff66478` | 2026-03-23 | Outro | Scripts / Jira tooling | Stop updating card descriptions and post analysis as comments — Replaces direct updates to card desc |
 | 🟢 | `9994a42e3` | 2026-03-23 | Docs | Docs (geral) | Add verification for Jira description updates — Add a check after updating the Jira card description |
-| 🟡 | `cb323fc58` | 2026-03-23 | Outro | Auto-Replit (verbos sem scope) | Add detailed design and quality assurance information to Jira cards — Adds a new function to analyze |
-| 🟡 | `efd618f8d` | 2026-03-23 | Outro | Auto-Replit (verbos sem scope) | Improve AI model integration and code analysis capabilities — Update Anthropic API integration to us |
+| 🟡 | `cb323fc58` | 2026-03-23 | Outro | Scripts / Jira tooling | Add detailed design and quality assurance information to Jira cards — Adds a new function to analyze |
+| 🟡 | `efd618f8d` | 2026-03-23 | Outro | Scripts / Jira tooling | Improve AI model integration and code analysis capabilities — Update Anthropic API integration to us |
 | 🟢 | `de0ed094c` | 2026-03-23 | Docs | scope: design-standardize | fix(design-standardize): corrigir inconsistência de proporção tipográfica no checklist — Checklist f |
 | 🟢 | `5e78ea940` | 2026-03-23 | Empty/merge | Skills / canonical-fix | fix(skills): preencher gaps de documentação nas skills de agente IA (Task #35) — Correções de numera |
 | 🟢 | `2e07c287d` | 2026-03-23 | Docs | Policy / Job Creation | fix(skills): corrigir shadow policy, checklist backend e breakpoints — - design-standardize: shadow  |
@@ -4170,7 +4170,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `d33e1f9d5` | 2026-03-23 | Docs | §15 WSI | scripts: Script 1 — issues de funcionalidade com blocos multi-layer — Cada issue de funcionalidade a |
 | 🟢 | `ffda2cc9a` | 2026-03-23 | Docs | Docs (geral) | scripts: Script 1 — adiciona ANTES/DEPOIS Vue, Vuetify defaults e bloco vuetify.ts — jira-fetch-anal |
 | 🟢 | `f9d92fe91` | 2026-03-23 | Docs | Docs (geral) | scripts: atualiza jira-fetch-analyze.py (escopo completo) + templates de exemplo — jira-fetch-analyz |
-| 🟡 | `decb3621b` | 2026-03-23 | Outro | Outro | scripts: adiciona jira-fetch-analyze.py e jira-audit-design.py — jira-fetch-analyze.py (comando fetc |
+| 🟡 | `decb3621b` | 2026-03-23 | Outro | Scripts / Jira tooling | scripts: adiciona jira-fetch-analyze.py e jira-audit-design.py — jira-fetch-analyze.py (comando fetc |
 | 🟢 | `d1ad4ad6b` | 2026-03-23 | Docs | Docs (geral) | Update scoring system to a 0-10 scale and refine penalties — Update documentation to reflect the tra |
 | 🟢 | `9d529546f` | 2026-03-23 | Docs | §15 WSI | docs: atualiza LIA_UNIFIED_METHODOLOGY.md para versão 1.2 — Mudanças na seção 4.6 (Blocos): |
 | 🔴 | `f5ebbfdaf` | 2026-03-23 | Cross IA↔Front | §15 WSI | feat(wsi): unificação pipeline WSI — fonte única de verdade para perguntas de triagem — ## Objetivo |
@@ -4201,7 +4201,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `916bc3d3f` | 2026-03-22 | Outro | Skills / canonical-fix | feat(skill): add PASSO 0 Intenção Estética to design-standardize skill — Task #32 — Skill design-sta |
 | 🟡 | `dc2e74ae7` | 2026-03-22 | Outro | Skills / canonical-fix | feat(skill): add PASSO 0 Intenção Estética to design-standardize skill — Task #32 — Skill design-sta |
 | 🟡 | `a8d73e15b` | 2026-03-22 | Auto-commit Replit | (Auto-commit Replit) | Transitioned from Plan to Build mode |
-| 🟡 | `52c6faa4a` | 2026-03-22 | Outro | Auto-Replit (verbos sem scope) | Add audit documentation for the login screen redesign to Jira — Update Jira card WT-1639 with detail |
+| 🟡 | `52c6faa4a` | 2026-03-22 | Outro | Scripts / Jira tooling | Add audit documentation for the login screen redesign to Jira — Update Jira card WT-1639 with detail |
 | 🟢 | `c4ad7d11b` | 2026-03-22 | Frontend (UI) | Login UI (FE) | Update login page styling and dark mode support — Adjusted border-radius for inputs and error messag |
 | 🟢 | `42af42d82` | 2026-03-22 | Frontend (UI) | Login UI (FE) | Improve the visual hierarchy and elegance of the login page — Update the login page's sequence text  |
 | 🟢 | `7d683641b` | 2026-03-22 | Frontend (UI) | Login UI (FE) | Improve the visual presentation of login page elements — Break the sequence text into two lines, pla |
@@ -4277,13 +4277,13 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `06fc40b25` | 2026-03-19 | Docs | Triagem (módulo) | Add detailed technical guide for implementing market-standard AI agents — Complete Section 5 of the  |
 | 🟢 | `baf2bfa7c` | 2026-03-19 | Docs | Docs / Propostas | Add detailed technical guides for creating custom agents — Adds comprehensive technical documentatio |
 | 🟢 | `7efc6fc3c` | 2026-03-19 | Docs | Docs / Propostas | Update technical document with accurate v5 system details — Revise and expand technical documentatio |
-| 🟢 | `c651bc305` | 2026-03-19 | Docs | Auto-Replit (verbos sem scope) | Update prompt management to include modification timestamps — Add 'updated_at' field to YAML prompts |
+| 🟢 | `c651bc305` | 2026-03-19 | Docs | Docs / Architecture | Update prompt management to include modification timestamps — Add 'updated_at' field to YAML prompts |
 | 🟢 | `abbe5f5b2` | 2026-03-19 | Docs | Task #24 | docs: relatorio_capacidades_prompts_lia.md atualizado para v4.4 — Task #24 — Documento atualizado de |
 | 🟢 | `98efe1f0e` | 2026-03-19 | Empty/merge | Task #24 | docs: relatorio_capacidades_prompts_lia.md atualizado para v4.4 (Task #24) — Documento atualizado de |
-| 🟢 | `51cdc8a26` | 2026-03-19 | Docs | Auto-Replit (verbos sem scope) | Update documentation to reflect latest platform capabilities and features — Update the `relatorio_ca |
+| 🟢 | `51cdc8a26` | 2026-03-19 | Docs | Docs / Architecture | Update documentation to reflect latest platform capabilities and features — Update the `relatorio_ca |
 | 🟡 | `47f562e3a` | 2026-03-19 | Auto-commit Replit | (Auto-commit Replit) | Transitioned from Plan to Build mode |
-| 🟡 | `61dff6be8` | 2026-03-19 | Infra/Config | Auto-Replit (verbos sem scope) | Add commands to fetch repository and environment details — Add GitHub API calls to fetch repository  |
-| 🟡 | `d7dd8100c` | 2026-03-19 | Infra/Config | Auto-Replit (verbos sem scope) | Add Replit connectors SDK to manage GitHub integrations — Add @replit/connectors-sdk as a dependency |
+| 🟡 | `61dff6be8` | 2026-03-19 | Infra/Config | Skills / canonical-fix | Add commands to fetch repository and environment details — Add GitHub API calls to fetch repository  |
+| 🟡 | `d7dd8100c` | 2026-03-19 | Infra/Config | DevOps / Deploy (Docker/GCP) | Add Replit connectors SDK to manage GitHub integrations — Add @replit/connectors-sdk as a dependency |
 | 🟡 | `7cb0f5a79` | 2026-03-19 | Auto-commit Replit | (Auto-commit Replit) | Saved progress at the end of the loop |
 | 🟢 | `2cd853d95` | 2026-03-19 | Docs | Sprint S | docs: atualiza documentos comparativos para sprints Y1-Y5 + Z1-Z7 + AUD completos — Paralelo_LIA_vs_ |
 | 🟢 | `7c2ad5252` | 2026-03-19 | Docs | Sprint Z7 | docs: atualiza documentos comparativos LIA vs V5 com estado real pós-Sprint Z7 — - ANALISE_COMPARATI |
@@ -4299,7 +4299,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟡 | `3dceca5cc` | 2026-03-19 | Cross IA↔Back | Kanban (vagas) | Sprint Z1: Decomposição KanbanReActAgent e PipelineTransitionAgent em subagentes especializados — Z1 |
 | 🟢 | `892d691f4` | 2026-03-19 | Docs | Performance | Add optimization plan to improve platform performance and reliability — Append a detailed 4-phase op |
 | 🟢 | `dd6e179f1` | 2026-03-19 | Docs | Docs / Propostas | Add market analysis and recommendations to the existing document — Integrate market analysis, pros/c |
-| 🟡 | `83f7e9415` | 2026-03-19 | Backend | Auto-Replit (verbos sem scope) | Update dependency version for improved stability and compatibility — Update the langsmith dependency |
+| 🟡 | `83f7e9415` | 2026-03-19 | Backend | Backend (deps) | Update dependency version for improved stability and compatibility — Update the langsmith dependency |
 | 🟢 | `818393257` | 2026-03-18 | Empty/merge | Compliance / LGPD / EU AI Act | Task #22: Corrigir análise comparativa LIA vs v5 — fairness e fact_checker — OBJETIVO: Atualizar att |
 | 🟢 | `0ee26f3c9` | 2026-03-18 | Empty/merge | Compliance / LGPD / EU AI Act | Task #22: Corrigir análise comparativa LIA vs v5 — fairness e fact_checker — OBJETIVO: Atualizar att |
 | 🟢 | `ca36d9bf4` | 2026-03-18 | Empty/merge | Compliance / LGPD / EU AI Act | Task #22: Corrigir análise comparativa LIA vs v5 — fairness e fact_checker — OBJETIVO: Atualizar att |
@@ -4318,7 +4318,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `d9c4e07bb` | 2026-03-16 | Empty/merge | Task #19 | Task #19: Catálogo de Produtos, Serviços, Especificações Técnicas e CNAEs — WeDOTalent — Created com |
 | 🟢 | `625cc29f8` | 2026-03-16 | Empty/merge | Task #19 | Task #19: Catálogo de Produtos, Serviços, Especificações Técnicas e CNAEs — WeDOTalent — Created com |
 | 🟡 | `62e98db51` | 2026-03-16 | Auto-commit Replit | (Auto-commit Replit) | Transitioned from Plan to Build mode |
-| 🟢 | `5fc57171c` | 2026-03-16 | Docs | Outro | docs: update replit.md with ReAct JSON strip documentation |
+| 🟢 | `5fc57171c` | 2026-03-16 | Docs | Docs / Architecture | docs: update replit.md with ReAct JSON strip documentation |
 | 🟡 | `e948ba22d` | 2026-03-16 | Backend | Wizard (geral) | fix: apply _strip_react_json to HITL resume paths + handle empty response edge case — - Strip ReAct  |
 | 🟡 | `a260fa9fe` | 2026-03-16 | Backend | §6 Chat Unificado / Funil | fix: strip raw ReAct JSON from floating chat responses (WS + HTTP) — - Add _strip_react_json() to ag |
 | 🟡 | `e31c370de` | 2026-03-16 | Backend | FastAPI v1 endpoints | Fix: expanded prompt chat on jobs page - fix 403 auth and provider name — Two root causes: |
@@ -4330,7 +4330,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 | 🟢 | `fac7fab61` | 2026-03-15 | Docs | Docs (geral) | docs: Guia de Diagnóstico para Agentes IA adicionado nos dois documentos — RELATORIO_AUDITORIA_LIA.m |
 | 🟢 | `19dcc0008` | 2026-03-15 | Docs | §15 WSI | docs: relatorio_capacidades_prompts_lia.md v4.3 — Guia de Entrada para Agentes IA — Adicionado "GUIA |
 | 🟢 | `079a2012e` | 2026-03-15 | Docs | Compliance / LGPD / EU AI Act | docs: RELATORIO_AUDITORIA_LIA.md v6.1 — correções de consistência pós-Y1–Y5 — 11 pontos corrigidos a |
-| 🟢 | `0d16fb162` | 2026-03-15 | Docs | Outro | docs: relatorio_capacidades_prompts_lia.md v4.2 — atualização completa seções 1-34 — Atualização pro |
+| 🟢 | `0d16fb162` | 2026-03-15 | Docs | Docs / Architecture | docs: relatorio_capacidades_prompts_lia.md v4.2 — atualização completa seções 1-34 — Atualização pro |
 | 🔴 | `620ef0b05` | 2026-03-15 | Cross IA↔Front | §8 Glossário / Production-Ready | Sprints Y1–Y5 completos + Diagnóstico v6: plataforma IA production-ready — ## Sprints Y1 (D1–D10) —  |
 
 </details>
@@ -4339,7 +4339,7 @@ Todos os 3.491 commits no período, em ordem cronológica.
 
 ## 7. Apêndice D — Features menores (1-2 commits, sem camada IA)
 
-_298 features pequenas reunidas aqui pra reduzir ruído na seção 2 do MAP principal._
+_303 features pequenas reunidas aqui pra reduzir ruído na seção 2 do MAP principal._
 
 <details>
 <summary>Expandir lista</summary>
@@ -4348,8 +4348,10 @@ _298 features pequenas reunidas aqui pra reduzir ruído na seção 2 do MAP prin
 |---|---|---|
 | Analytics (BE) | `e50766222`, `a2b2d4f26` | Backend |
 | Backend (core) | `313d0141a`, `419afaaaf` | Backend |
+| Backend (deps) | `274dd0926`, `83f7e9415` | Docs, Backend |
 | Backend (libs) | `cd4ee9719`, `37e623db6` | Backend |
 | Compliance Dashboard (FE) | `b5e74a10e`, `db4fedc94` | Cross Back↔Front, Frontend (UI) |
+| Docs / Handoff | `ccd88701b`, `287e5a19d` | Docs |
 | Expandable AI Prompt (FE) | `77a7627f6`, `191e7244f` | Frontend (UI) |
 | Fase 6 | `7f9abe450`, `ac5ce8d09` | Empty/merge |
 | Indicadores (FE) | `bde2a3327`, `359a71d9f` | Frontend (UI) |
@@ -4369,14 +4371,14 @@ _298 features pequenas reunidas aqui pra reduzir ruído na seção 2 do MAP prin
 | Task #134 | `30d2dc03e`, `8f4536dfb` | Backend |
 | Task #141 | `0bfffe539`, `e7daeb78c` | Cross Back↔Front, Frontend (UI) |
 | Task #144 | `2a70c3220`, `3b95e5e7d` | Cross Back↔Front, Backend |
-| Task #198 | `7c9214a39`, `8507ca026` | Empty/merge, Backend |
-| Task #24 | `abbe5f5b2`, `98efe1f0e` | Empty/merge, Docs |
+| Task #198 | `7c9214a39`, `8507ca026` | Backend, Empty/merge |
+| Task #24 | `abbe5f5b2`, `98efe1f0e` | Docs, Empty/merge |
 | Task #243 | `769f54ee1`, `14a215850` | Cross Back↔Front, Frontend (UI) |
 | Task #245 | `a313275fa`, `c2da99b13` | Frontend (api/util), Frontend (UI) |
 | Task #38 | `14b5ae056`, `8729d4587` | Cross Back↔Front |
 | Task #49 | `c803f56c4`, `255ea29c1` | Docs, Frontend (UI) |
 | Task #51 | `e467eab71`, `17e049be6` | Frontend (UI) |
-| Task #53 | `4af1a779f`, `70a4c5733` | Cross Back↔Front, Docs |
+| Task #53 | `4af1a779f`, `70a4c5733` | Docs, Cross Back↔Front |
 | Task #56 | `09bca1312`, `9c7a4bf02` | Frontend (UI) |
 | Task #58 | `0b6a5ea4e`, `a11879592` | Frontend (UI) |
 | Task #61 | `c73957bf8`, `e7a3fe16b` | Docs, Backend |
@@ -4384,7 +4386,7 @@ _298 features pequenas reunidas aqui pra reduzir ruído na seção 2 do MAP prin
 | Task #68 | `9c7113453`, `fb9b531a9` | Docs, Backend |
 | Task #91 | `19cf22c56`, `6bd155d9d` | Frontend (UI) |
 | Wizard/Onda 1 | `d8c3f516e`, `1a60080be` | Frontend (UI) |
-| Wizard/Onda 2 | `802104b89`, `b4ef2443c` | Cross Back↔Front, Docs |
+| Wizard/Onda 2 | `802104b89`, `b4ef2443c` | Docs, Cross Back↔Front |
 | Wizard/Onda 22 | `64b1cdcaf`, `e74aff11b` | Docs, Backend |
 | Wizard/Onda 25 | `832bedd3f`, `5727f7432` | Docs, Backend |
 | Wizard/Onda 36 | `2e07b3ef5`, `78ced6508` | Docs, Backend |
@@ -4404,6 +4406,7 @@ _298 features pequenas reunidas aqui pra reduzir ruído na seção 2 do MAP prin
 | scope: vue | `845fe57c8`, `bbe308def` | Frontend (api/util) |
 | scope: weekly-digest | `e631dfcda`, `86805f232` | Cross Back↔Front |
 | §12 DEVELOPER_HANDOFF — PARTE I | `2ee8ad9af`, `df34f5707` | Docs |
+| §3 LIA Maturity | `540315b5a`, `ec89039c6` | Docs |
 | §3 LIA Maturity — FIX 35 | `b26448e18`, `8bfad78f1` | Testes, Backend |
 | §4 Rail Features — PR-I | `7d8222ea2`, `60a09637f` | Backend |
 | ADR-002 | `6eeed3e10` | Docs |
@@ -4411,6 +4414,7 @@ _298 features pequenas reunidas aqui pra reduzir ruído na seção 2 do MAP prin
 | ADR-016 | `b9427ec52` | Docs |
 | ADR-018 | `8cd82e847` | Docs |
 | Automation domain (BE) | `f697a4efe` | Backend |
+| Backend (refactor Phase 2+) | `70863bb78` | Frontend (api/util) |
 | Fase 2C_DOMAIN_VERIFICATION_REPORT.MD | `974282fe1` | Backend |
 | Fase 2D | `117c551d3` | Frontend (UI) |
 | Fase 4 | `cc4bfa44b` | Docs |
@@ -4419,6 +4423,7 @@ _298 features pequenas reunidas aqui pra reduzir ruído na seção 2 do MAP prin
 | Fase 5C | `1b05d97cc` | Frontend (UI) |
 | Fase 5D | `8518c0ac9` | Frontend (UI) |
 | JD Import / Job Description | `bfe3efade` | Cross Back↔Front |
+| Performance / Cold-start | `558b94fc5` | Outro |
 | Rails (ats-api-copia) | `5e3b4aeea` | Rails (ats-api) |
 | Schemas / Pydantic (BE) | `0980b0677` | Backend |
 | Sprint 4.2 | `035f5bd6a` | Frontend (UI) |
