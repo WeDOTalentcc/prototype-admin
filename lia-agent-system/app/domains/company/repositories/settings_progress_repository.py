@@ -25,6 +25,7 @@ class SettingsProgressRepository:
         self.db = db
 
     async def get_default_company(self) -> CompanyProfile | None:
+        """Legacy fallback. Prefer `get_company_by_id` after authz validation."""
         result = await self.db.execute(
             select(CompanyProfile).where(CompanyProfile.is_default).limit(1)
         )
@@ -35,6 +36,21 @@ class SettingsProgressRepository:
             )
             company = result.scalar_one_or_none()
         return company
+
+    async def get_company_by_id(self, company_id) -> CompanyProfile | None:
+        """Fetch company by id; caller is responsible for authz validation upstream."""
+        if not company_id:
+            return None
+        try:
+            from uuid import UUID
+            cid = UUID(str(company_id)) if not isinstance(company_id, UUID) else company_id
+        except (ValueError, TypeError):
+            logger.warning("Invalid company_id format: %r", company_id)
+            return None
+        result = await self.db.execute(
+            select(CompanyProfile).where(CompanyProfile.id == cid).limit(1)
+        )
+        return result.scalar_one_or_none()
 
     async def count_active_departments(self, company_id) -> int:
         result = await self.db.execute(

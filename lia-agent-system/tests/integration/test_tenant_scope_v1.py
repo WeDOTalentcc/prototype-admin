@@ -849,7 +849,213 @@ class TestIdealProfilesList:
 
 
 # ---------------------------------------------------------------------------
-# Section 9 — Unit contract: validate_company_access
+# Section 9 — settings_progress (Onda 36 P0 fix)
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def settings_progress_app():
+    """FastAPI app with only the settings_progress router."""
+    from app.api.v1.settings_progress import router
+    from app.core.database import get_db
+    app = FastAPI()
+    app.include_router(router, prefix="/api/v1")
+    app.dependency_overrides[get_db] = lambda: MagicMock()
+    return app
+
+
+class TestSettingsProgressTenantScope:
+    """
+    Onda 36 fix — settings_progress.py was ignoring `company_id` query param
+    and always loading default company (tenant bypass). Now uses current_user.company_id.
+    """
+
+    def test_no_auth_returns_401(self, settings_progress_app):
+        with patch("app.auth.dependencies._is_dev_environment", return_value=False):
+            client = TestClient(settings_progress_app, raise_server_exceptions=False)
+            response = client.get("/api/v1/settings/progress")
+        assert response.status_code == 401
+
+    def test_no_query_param_uses_user_company(self, settings_progress_app):
+        """Sem query param: usa current_user.company_id (canonical)."""
+        user_a = _user(VALID_UUID_A)
+        settings_progress_app.dependency_overrides[get_current_user_or_demo] = lambda: user_a
+
+        mock_repo = MagicMock()
+        mock_repo.get_company_by_id = AsyncMock(return_value=None)
+        mock_repo.get_default_company = AsyncMock(return_value=None)
+
+        with patch(
+            "app.api.v1.settings_progress.SettingsProgressRepository",
+            return_value=mock_repo,
+        ):
+            client = TestClient(settings_progress_app, raise_server_exceptions=False)
+            response = client.get("/api/v1/settings/progress")
+
+        assert response.status_code == 200
+        # Critical: must have called get_company_by_id with user's company, NOT get_default_company
+        mock_repo.get_company_by_id.assert_called_once_with(VALID_UUID_A)
+        mock_repo.get_default_company.assert_not_called()
+        settings_progress_app.dependency_overrides.clear()
+
+    def test_cross_tenant_query_returns_403(self, settings_progress_app):
+        """Passar company_id de outro tenant na query → 403."""
+        user_a = _user(VALID_UUID_A)
+        settings_progress_app.dependency_overrides[get_current_user_or_demo] = lambda: user_a
+        client = TestClient(settings_progress_app, raise_server_exceptions=False)
+        response = client.get(
+            "/api/v1/settings/progress",
+            params={"company_id": VALID_UUID_B},
+        )
+        assert response.status_code == 403
+        settings_progress_app.dependency_overrides.clear()
+
+    def test_same_tenant_query_uses_provided_id(self, settings_progress_app):
+        """Query company_id == user.company_id: usa o id provido."""
+        user_a = _user(VALID_UUID_A)
+        settings_progress_app.dependency_overrides[get_current_user_or_demo] = lambda: user_a
+
+        mock_repo = MagicMock()
+        mock_repo.get_company_by_id = AsyncMock(return_value=None)
+
+        with patch(
+            "app.api.v1.settings_progress.SettingsProgressRepository",
+            return_value=mock_repo,
+        ):
+            client = TestClient(settings_progress_app, raise_server_exceptions=False)
+            response = client.get(
+                "/api/v1/settings/progress",
+                params={"company_id": VALID_UUID_A},
+            )
+        assert response.status_code == 200
+        mock_repo.get_company_by_id.assert_called_once_with(VALID_UUID_A)
+        settings_progress_app.dependency_overrides.clear()
+
+
+# ---------------------------------------------------------------------------
+# Section 10 — integrations_hub (Onda 36 P0 fix)
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def integrations_hub_app():
+    """FastAPI app with only the integrations_hub router."""
+    from app.api.v1.integrations_hub import router
+    from app.domains.integrations_hub.dependencies import get_integrations_hub_repo
+    app = FastAPI()
+    app.include_router(router, prefix="/api/v1")
+    app.dependency_overrides[get_integrations_hub_repo] = lambda: MagicMock()
+    return app
+
+
+class TestIntegrationsHubListConnections:
+    """GET /api/v1/integrations/connections — Onda 36 fix."""
+
+    def test_no_auth_returns_401(self, integrations_hub_app):
+        with patch("app.auth.dependencies._is_dev_environment", return_value=False):
+            client = TestClient(integrations_hub_app, raise_server_exceptions=False)
+            response = client.get(
+                "/api/v1/integrations/connections",
+                params={"company_id": VALID_UUID_A},
+            )
+        assert response.status_code == 401
+
+    def test_no_company_id_returns_422(self, integrations_hub_app):
+        user_a = _user(VALID_UUID_A)
+        integrations_hub_app.dependency_overrides[get_current_user_or_demo] = lambda: user_a
+        client = TestClient(integrations_hub_app, raise_server_exceptions=False)
+        response = client.get("/api/v1/integrations/connections")
+        assert response.status_code == 422
+        integrations_hub_app.dependency_overrides.clear()
+
+    def test_cross_tenant_returns_403(self, integrations_hub_app):
+        user_a = _user(VALID_UUID_A)
+        integrations_hub_app.dependency_overrides[get_current_user_or_demo] = lambda: user_a
+        client = TestClient(integrations_hub_app, raise_server_exceptions=False)
+        response = client.get(
+            "/api/v1/integrations/connections",
+            params={"company_id": VALID_UUID_B},
+        )
+        assert response.status_code == 403
+        integrations_hub_app.dependency_overrides.clear()
+
+    def test_same_tenant_returns_200(self, integrations_hub_app):
+        user_a = _user(VALID_UUID_A)
+        integrations_hub_app.dependency_overrides[get_current_user_or_demo] = lambda: user_a
+
+        mock_repo = MagicMock()
+        mock_repo.list_connections = AsyncMock(return_value=[])
+        integrations_hub_app.dependency_overrides[
+            __import__("app.domains.integrations_hub.dependencies", fromlist=["get_integrations_hub_repo"]).get_integrations_hub_repo
+        ] = lambda: mock_repo
+
+        client = TestClient(integrations_hub_app, raise_server_exceptions=False)
+        response = client.get(
+            "/api/v1/integrations/connections",
+            params={"company_id": VALID_UUID_A},
+        )
+        assert response.status_code == 200
+        assert response.json() == []
+        integrations_hub_app.dependency_overrides.clear()
+
+
+class TestIntegrationsHubCreateConnection:
+    """POST /api/v1/integrations/connections — Onda 36 fix (body company_id)."""
+
+    def test_no_auth_returns_401(self, integrations_hub_app):
+        with patch("app.auth.dependencies._is_dev_environment", return_value=False):
+            client = TestClient(integrations_hub_app, raise_server_exceptions=False)
+            response = client.post(
+                "/api/v1/integrations/connections",
+                json={
+                    "provider_id": "prov-1",
+                    "company_id": VALID_UUID_A,
+                    "auth_type": "api_key",
+                },
+            )
+        assert response.status_code == 401
+
+    def test_cross_tenant_body_returns_403(self, integrations_hub_app):
+        """Body com company_id de outro tenant → 403."""
+        user_a = _user(VALID_UUID_A)
+        integrations_hub_app.dependency_overrides[get_current_user_or_demo] = lambda: user_a
+        client = TestClient(integrations_hub_app, raise_server_exceptions=False)
+        response = client.post(
+            "/api/v1/integrations/connections",
+            json={
+                "provider_id": "prov-1",
+                "company_id": VALID_UUID_B,
+                "auth_type": "api_key",
+            },
+        )
+        assert response.status_code == 403
+        integrations_hub_app.dependency_overrides.clear()
+
+
+class TestIntegrationsHubHealth:
+    """GET /api/v1/integrations/health — Onda 36 fix."""
+
+    def test_no_auth_returns_401(self, integrations_hub_app):
+        with patch("app.auth.dependencies._is_dev_environment", return_value=False):
+            client = TestClient(integrations_hub_app, raise_server_exceptions=False)
+            response = client.get(
+                "/api/v1/integrations/health",
+                params={"company_id": VALID_UUID_A},
+            )
+        assert response.status_code == 401
+
+    def test_cross_tenant_returns_403(self, integrations_hub_app):
+        user_a = _user(VALID_UUID_A)
+        integrations_hub_app.dependency_overrides[get_current_user_or_demo] = lambda: user_a
+        client = TestClient(integrations_hub_app, raise_server_exceptions=False)
+        response = client.get(
+            "/api/v1/integrations/health",
+            params={"company_id": VALID_UUID_B},
+        )
+        assert response.status_code == 403
+        integrations_hub_app.dependency_overrides.clear()
+
+
+# ---------------------------------------------------------------------------
+# Section 11 — Unit contract: validate_company_access
 # ---------------------------------------------------------------------------
 
 class TestValidateCompanyAccessContract:

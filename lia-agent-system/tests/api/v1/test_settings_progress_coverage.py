@@ -16,7 +16,24 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.api.v1.settings_progress import router
+from app.auth.dependencies import get_current_user_or_demo
+from app.auth.models import User
 from app.core.database import get_db
+
+
+COMPANY_A = "11111111-1111-1111-1111-111111111111"
+
+
+def _user_in(company_id: str = COMPANY_A) -> MagicMock:
+    """Mock user whose JWT-derived company matches `company_id` (Onda 36 guards)."""
+    u = MagicMock(spec=User)
+    u.id = f"user-{company_id}"
+    u.email = f"user@{company_id}.test"
+    u.company_id = company_id
+    u.role = "user"
+    u.is_active = True
+    u.can_access_company = lambda cid: cid == company_id
+    return u
 
 
 def _fake_db() -> MagicMock:
@@ -36,6 +53,8 @@ def app() -> FastAPI:
     application = FastAPI()
     application.include_router(router, prefix="/api/v1")
     application.dependency_overrides[get_db] = lambda: _fake_db()
+    # Onda 36: tenant guard exige current_user; default = COMPANY_A.
+    application.dependency_overrides[get_current_user_or_demo] = lambda: _user_in(COMPANY_A)
     return application
 
 
@@ -55,7 +74,7 @@ def _build_repo_mock(
     integrations: int = 1,
     webhooks: int = 1,
     delivering: int = 1,
-    company_id: str = "11111111-1111-1111-1111-111111111111",
+    company_id: str = COMPANY_A,
 ) -> MagicMock:
     repo = MagicMock()
     company = MagicMock()
@@ -70,7 +89,10 @@ def _build_repo_mock(
     company.company_size = "100-500"
     company.logo_url = "https://logo"
 
+    # Onda 36: handler agora usa get_company_by_id (após validate_company_access).
+    # Mantém get_default_company por retrocompat de outros testes/callers.
     repo.get_default_company = AsyncMock(return_value=company)
+    repo.get_company_by_id = AsyncMock(return_value=company)
     repo.get_culture_profile = AsyncMock(return_value={
         "mission": "m",
         "vision": "v",
@@ -146,6 +168,8 @@ class TestSettingsProgressIsolation:
         """When the resolved company has no UUID, all sections fall back to 0."""
         repo_no_company = MagicMock()
         repo_no_company.get_default_company = AsyncMock(return_value=None)
+        # Onda 36: handler chama get_company_by_id; simular "company não encontrada".
+        repo_no_company.get_company_by_id = AsyncMock(return_value=None)
 
         with patch(
             "app.api.v1.settings_progress.SettingsProgressRepository",

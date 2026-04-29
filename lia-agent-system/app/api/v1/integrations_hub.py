@@ -1,5 +1,9 @@
 """
 Integration Hub API endpoints for centralized integration management.
+
+Tenant scope: every endpoint that takes `company_id` (Query or body) calls
+`validate_company_access(current_user, company_id)` before any DB access,
+ensuring authz follows the JWT subject and not an arbitrary client value.
 """
 import logging
 from datetime import datetime
@@ -7,6 +11,8 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 
+from app.auth.dependencies import get_current_user_or_demo, validate_company_access
+from app.auth.models import User
 from app.domains.integrations_hub.dependencies import get_integrations_hub_repo
 from app.domains.integrations_hub.repositories.integrations_hub_repository import (
     IntegrationsHubRepository,
@@ -205,9 +211,11 @@ async def list_connections(
     company_id: str = Query(..., description="Company ID"),
     status: str | None = Query(None),
     category: str | None = Query(None),
+    current_user: User = Depends(get_current_user_or_demo),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Get company's integration connections."""
+    validate_company_access(current_user, company_id)
     try:
         rows = await repo.list_connections(
             company_id=company_id, status=status, category=category
@@ -222,9 +230,11 @@ async def list_connections(
 @router.post("/connections", response_model=ConnectionResponse)
 async def create_connection(
     request: ConnectionCreate,
+    current_user: User = Depends(get_current_user_or_demo),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Create a new integration connection."""
+    validate_company_access(current_user, str(request.company_id))
     try:
         provider = await repo.get_provider_by_id(request.provider_id)
         if not provider:
@@ -257,9 +267,11 @@ async def update_connection(
     connection_id: _DualId,
     request: ConnectionUpdate,
     company_id: str = Query(..., description="Company ID"),
+    current_user: User = Depends(get_current_user_or_demo),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Update an integration connection."""
+    validate_company_access(current_user, company_id)
     try:
         row = await repo.get_connection_with_provider(connection_id)
 
@@ -292,9 +304,11 @@ async def update_connection(
 async def delete_connection(
     connection_id: _DualId,
     company_id: str = Query(..., description="Company ID"),
+    current_user: User = Depends(get_current_user_or_demo),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Remove an integration connection."""
+    validate_company_access(current_user, company_id)
     try:
         connection = await repo.get_connection_by_id(connection_id)
         verify_connection_ownership(connection, company_id)
@@ -316,9 +330,11 @@ async def delete_connection(
 async def test_connection(
     connection_id: _DualId,
     company_id: str = Query(..., description="Company ID"),
+    current_user: User = Depends(get_current_user_or_demo),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Test an integration connection."""
+    validate_company_access(current_user, company_id)
     try:
         row = await repo.get_connection_with_provider(connection_id)
 
@@ -350,9 +366,11 @@ async def trigger_sync(
     connection_id: _DualId,
     company_id: str = Query(..., description="Company ID"),
     sync_type: str = Query("full", description="full, incremental, or webhook"),
+    current_user: User = Depends(get_current_user_or_demo),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Trigger a sync operation for a connection."""
+    validate_company_access(current_user, company_id)
     try:
         connection = await repo.get_connection_by_id(connection_id)
         verify_connection_ownership(connection, company_id)
@@ -383,9 +401,11 @@ async def get_sync_logs(
     connection_id: _DualId,
     company_id: str = Query(..., description="Company ID"),
     limit: int = Query(20, ge=1, le=100),
+    current_user: User = Depends(get_current_user_or_demo),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Get sync logs for a connection."""
+    validate_company_access(current_user, company_id)
     try:
         connection = await repo.get_connection_by_id(connection_id)
         verify_connection_ownership(connection, company_id)
@@ -419,9 +439,11 @@ async def get_sync_logs(
 @router.get("/health", response_model=HealthResponse)
 async def get_integration_health(
     company_id: str = Query(..., description="Company ID"),
+    current_user: User = Depends(get_current_user_or_demo),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
     """Get overall integration health status."""
+    validate_company_access(current_user, company_id)
     try:
         from lia_models.integration_hub import IntegrationStatus
 

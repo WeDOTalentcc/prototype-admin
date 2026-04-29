@@ -19,11 +19,25 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from app.api.v1.integrations_hub import router
+from app.auth.dependencies import get_current_user_or_demo
+from app.auth.models import User
 from app.domains.integrations_hub.dependencies import get_integrations_hub_repo
 
 
 COMPANY_A = "11111111-1111-1111-1111-111111111111"
 COMPANY_B = "22222222-2222-2222-2222-222222222222"
+
+
+def _user_in(company_id: str) -> MagicMock:
+    """Mock user whose JWT-derived company matches `company_id` (Onda 36 guards)."""
+    u = MagicMock(spec=User)
+    u.id = f"user-{company_id}"
+    u.email = f"user@{company_id}.test"
+    u.company_id = company_id
+    u.role = "user"
+    u.is_active = True
+    u.can_access_company = lambda cid: cid == company_id
+    return u
 CONN_ID = "33333333-3333-3333-3333-333333333333"
 PROVIDER_ID = "44444444-4444-4444-4444-444444444444"
 
@@ -84,6 +98,9 @@ def app(repo: MagicMock) -> FastAPI:
     application = FastAPI()
     application.include_router(router, prefix="/api/v1")
     application.dependency_overrides[get_integrations_hub_repo] = lambda: repo
+    # Onda 36: tenant guards exigem current_user; default = COMPANY_A para os happy paths.
+    # Testes cross-tenant podem sobrepor explicitamente para COMPANY_B.
+    application.dependency_overrides[get_current_user_or_demo] = lambda: _user_in(COMPANY_A)
     return application
 
 
@@ -108,6 +125,11 @@ class TestProviders:
 
 class TestListConnections:
     def test_company_id_query_passed_to_repo(self, app: FastAPI, repo: MagicMock):
+        """Onda 36: query company_id is passed to repo — but only when authz allows.
+
+        Cross-tenant case (COMPANY_B with COMPANY_A user) returns 403 (correct
+        behavior post-Onda 36). Same-tenant case captures company_id at repo level.
+        """
         captured: list[str] = []
 
         async def _spy(*, company_id, status=None, category=None):
@@ -116,10 +138,16 @@ class TestListConnections:
 
         repo.list_connections = _spy
         client = TestClient(app, raise_server_exceptions=False)
+
+        # Same-tenant: 200 + repo receives COMPANY_A
         r1 = client.get("/api/v1/integrations/connections", params={"company_id": COMPANY_A})
+        assert r1.status_code == 200, r1.text
+        assert captured == [COMPANY_A]
+
+        # Cross-tenant: 403 (Onda 36 guard) — repo NOT called
         r2 = client.get("/api/v1/integrations/connections", params={"company_id": COMPANY_B})
-        assert r1.status_code == 200 and r2.status_code == 200
-        assert captured == [COMPANY_A, COMPANY_B]
+        assert r2.status_code == 403, r2.text
+        assert captured == [COMPANY_A]  # unchanged
 
     def test_missing_company_id_returns_422(self, app: FastAPI):
         client = TestClient(app, raise_server_exceptions=False)

@@ -9,9 +9,11 @@ Section IDs:
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import get_current_user_or_demo, validate_company_access
+from app.auth.models import User
 from app.core.database import get_db
 from app.domains.company.repositories.settings_progress_repository import SettingsProgressRepository
 
@@ -196,12 +198,30 @@ async def _calc_webhooks(repo: SettingsProgressRepository, company_uuid) -> tupl
 
 @router.get("/progress", response_model=None)
 async def get_settings_progress(
-    company_id: str = Query(default=None, description="Company ID (uses default company if not provided)"),
+    company_id: str | None = Query(default=None, description="Optional company_id; ignored unless caller has access (admin override)"),
+    current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db)
 ) -> dict[str, Any]:
+    """
+    Returns settings completion progress scoped to the authenticated user's company.
+
+    Tenant scope:
+    - Default: uses `current_user.company_id` (JWT-derived).
+    - If `company_id` query param is provided AND differs from the user's, calls
+      `validate_company_access` (raises 403 unless caller is admin or matches).
+    - The legacy fallback to "default company" was a tenant bypass and is removed.
+    """
     try:
         repo = SettingsProgressRepository(db)
-        company = await repo.get_default_company()
+
+        # Resolve target company from JWT (canonical) or validated query override
+        target_company_id = company_id if company_id else (
+            str(current_user.company_id) if current_user.company_id else None
+        )
+        if company_id and str(current_user.company_id) != company_id:
+            validate_company_access(current_user, company_id)
+
+        company = await repo.get_company_by_id(target_company_id) if target_company_id else None
         company_uuid = company.id if company else None
 
         async def _safe(coro, default):
@@ -274,6 +294,9 @@ async def get_settings_progress(
             },
         }
 
+    except HTTPException:
+        # Re-raise authz errors (401/403) — never mask as 200 with error payload
+        raise
     except Exception as e:
         logger.error(f"Error calculating settings progress: {e}")
         return {
