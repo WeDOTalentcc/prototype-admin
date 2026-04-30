@@ -18,6 +18,7 @@ from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.job_vacancy import JobVacancy
+from lia_models.imported_job_description import ImportedJobDescription
 
 logger = logging.getLogger(__name__)
 
@@ -240,7 +241,39 @@ class JobInsightsService:
             
             if not min_salaries or not max_salaries:
                 return self._empty_salary_response(role, seniority)
-            
+
+            # ── Source 2: imported JDs with quality gate approved ──────
+            platform_jobs_count = len(min_salaries)
+            imported_jobs_count = 0
+            try:
+                role_lower = role.lower()
+                imported_q = select(
+                    ImportedJobDescription.salary_min,
+                    ImportedJobDescription.salary_max,
+                    ImportedJobDescription.created_at,
+                ).where(
+                    ImportedJobDescription.company_id == company_id,
+                    ImportedJobDescription.is_used_for_learning.is_(True),
+                    ImportedJobDescription.salary_min.isnot(None),
+                    func.lower(ImportedJobDescription.job_title_normalized).contains(role_lower),
+                )
+                if seniority:
+                    imported_q = imported_q.where(
+                        func.lower(ImportedJobDescription.seniority) == seniority.lower()
+                    )
+                imp_result = await db.execute(imported_q)
+                for imp_row in imp_result.fetchall():
+                    if imp_row.salary_min is not None:
+                        min_salaries.append(float(imp_row.salary_min))
+                        imported_jobs_count += 1
+                    if imp_row.salary_max is not None:
+                        max_salaries.append(float(imp_row.salary_max))
+                    if imp_row.salary_min and imp_row.salary_max:
+                        avg = (float(imp_row.salary_min) + float(imp_row.salary_max)) / 2
+                        values_by_date.append((imp_row.created_at, avg))
+            except Exception as imp_exc:
+                self.logger.warning(f"Imported JD benchmark query failed: {imp_exc}")
+
             sample_size = len(min_salaries)
             oldest_date = min(row.created_at for row in rows)
             data_freshness_days = (datetime.utcnow() - oldest_date).days
@@ -269,7 +302,11 @@ class JobInsightsService:
                 "based_on": " ".join(description_parts),
                 "trend": trend,
                 "data_freshness_days": data_freshness_days,
-                "currency": "BRL"
+                "currency": "BRL",
+                "sources": {
+                    "platform_jobs": platform_jobs_count,
+                    "imported_jobs": imported_jobs_count,
+                }
             }
             
         except Exception as e:

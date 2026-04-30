@@ -107,6 +107,7 @@ class JobCreationState(TypedDict, total=False):
     workspace_id: int
     auth_token: str
     language: str  # default "pt-BR"
+    company_id: str  # tenant id -- injected from JWT in intake_node, never from user input
 
     # --- Current stage ---
     current_stage: WizardStage
@@ -171,6 +172,7 @@ class JobCreationState(TypedDict, total=False):
     # --- Review ---
     readiness_check: Optional[Dict[str, Any]]
     company_defaults_applied: List[str]  # which defaults from Settings were loaded
+    manager_preferences_loaded: bool  # True after ManagerPreferencesService.apply_to_state ran
 
     # --- Publish ---
     job_id: Optional[int]  # Rails job ID after creation

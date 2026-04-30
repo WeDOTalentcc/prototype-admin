@@ -38,6 +38,7 @@ from lia_models.interview import Interview, InterviewFeedback
 
 from lia_models.billing import CompanyModule
 from lia_models.external_api_consumption import ExternalApiConsumption
+from lia_models.manager_preferences import ManagerPreferences  # noqa: F401 — required for Alembic autogenerate
 
 target_metadata = Base.metadata
 

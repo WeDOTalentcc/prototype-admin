@@ -130,6 +130,7 @@ class WizardSessionService:
                 **prior_state,
                 # Override tenant fields with authoritative values
                 "workspace_id": safe_workspace_id,
+                "company_id": str(company_id) if company_id else "",
                 "user_id": str(user_id) if user_id else prior_state.get("user_id", ""),
                 # Update query fields with new message
                 "user_query": user_message,
@@ -156,6 +157,7 @@ class WizardSessionService:
             "session_id": session_id,
             "user_id": str(user_id) if user_id else "",
             "workspace_id": safe_workspace_id,
+            "company_id": str(company_id) if company_id else "",
             "auth_token": "",
             "language": "pt-BR",
             "current_stage": None,
@@ -213,6 +215,26 @@ class WizardSessionService:
             prior_state=prior_state,
         )
 
+        # ── Manager preferences injection (GUIDE — fail-open) ──────────
+        # Only on the first message of a session (when manager_email is known)
+        # to avoid overwriting state already set by the user in later turns.
+        manager_email = state.get("manager_email") or (context or {}).get("manager_email")
+        if manager_email and company_id and not state.get("manager_preferences_loaded"):
+            try:
+                from app.core.database import AsyncSessionLocal
+                from app.domains.job_creation.services.manager_preferences_service import ManagerPreferencesService
+                async with AsyncSessionLocal() as _mp_db:
+                    prefs = await ManagerPreferencesService.apply_to_state(
+                        _mp_db, str(company_id), manager_email, state
+                    )
+                    if prefs:
+                        state.update(prefs)
+                        state["company_defaults_applied"] = list(state.get("company_defaults_applied") or []) + ["manager_preferences"]
+                        state["manager_preferences_loaded"] = True
+                        logger.info("[WizardSession] manager_preferences applied: %s", list(prefs.keys()))
+            except Exception as mp_exc:
+                logger.warning("[WizardSession] manager_preferences injection failed (fail-open): %s", mp_exc)
+
         tokens_emitted = 0
         if hasattr(wiz_g, "stream_invoke"):
             result, tokens_emitted = await wiz_g.stream_invoke(
@@ -223,6 +245,35 @@ class WizardSessionService:
 
         if not isinstance(result, dict):
             return ("Vaga em criação — vamos seguir.", {}, tokens_emitted)
+
+        # ── Learning loop: record manager preferences on handoff ──────
+        # Called here (async context) instead of inside handoff_node (sync).
+        # Idempotency key: prevents double-counting on WS reconnect.
+        if (
+            result.get("current_stage") == "handoff"
+            and result.get("manager_email")
+            and company_id
+        ):
+            import hashlib, datetime as _dt
+            _ikey = hashlib.md5(
+                f"{company_id}:{result['manager_email']}:{result.get('job_id') or thread_id}:{_dt.date.today().isoformat()}".encode()
+            ).hexdigest()
+            try:
+                from app.core.database import AsyncSessionLocal
+                from app.domains.job_creation.services.manager_preferences_service import ManagerPreferencesService
+                async with AsyncSessionLocal() as _rl_db:
+                    await ManagerPreferencesService.record_job_completion(
+                        _rl_db,
+                        company_id=str(company_id),
+                        manager_email=result["manager_email"],
+                        final_state=result,
+                        initial_state=prior_state or None,
+                        idempotency_key=_ikey,
+                    )
+                    logger.info("[WizardSession] manager_preferences recorded for %s", result["manager_email"])
+            except Exception as _rl_exc:
+                logger.warning("[WizardSession] record_job_completion failed (fail-open): %s", _rl_exc)
+
 
         stage_payload = result.get("ws_stage_payload") or {}
         stage_data = stage_payload.get("data") or {}
