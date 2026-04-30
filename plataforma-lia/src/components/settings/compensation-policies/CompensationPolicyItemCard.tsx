@@ -70,7 +70,7 @@ export function CompensationPolicyItemCard({ policy, onEdit, onDeactivate }: Pro
               </button>
               {policy.is_active && (
                 <button
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-status-error hover:bg-status-error/10"
                   onClick={() => { setMenuOpen(false); onDeactivate(policy) }}
                 >
                   <PowerOff className="h-3.5 w-3.5" /> Desativar
@@ -94,7 +94,7 @@ export function CompensationPolicyItemCard({ policy, onEdit, onDeactivate }: Pro
           </span>
         )}
         {hasBands && (
-          <span className="rounded-full bg-blue-50 border border-blue-100 px-2 py-0.5 text-blue-700">
+          <span className="rounded-full bg-lia-primary/10 border border-lia-primary/20 px-2 py-0.5 text-lia-primary">
             {bandCount} banda{bandCount !== 1 ? "s" : ""}
           </span>
         )}

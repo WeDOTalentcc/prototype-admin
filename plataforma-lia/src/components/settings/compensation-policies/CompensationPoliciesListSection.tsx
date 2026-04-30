@@ -36,7 +36,7 @@ export function CompensationPoliciesListSection() {
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-1.5 rounded-lg bg-lia-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-lia-primary/90"
+          className="flex items-center gap-1.5 rounded-lg bg-lia-btn-primary-bg px-3 py-1.5 text-xs font-medium text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
         >
           <Plus className="h-3.5 w-3.5" /> Nova política
         </button>
@@ -44,13 +44,13 @@ export function CompensationPoliciesListSection() {
 
       {/* Feedback */}
       {successMessage && (
-        <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+        <div className="flex items-center gap-2 rounded-lg border border-status-success/20 bg-status-success/10 px-3 py-2 text-sm text-status-success">
           <CheckCircle className="h-4 w-4 shrink-0" />
           {successMessage}
         </div>
       )}
       {error && (
-        <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="flex items-center gap-2 rounded-lg border border-status-error/20 bg-status-error/10 px-3 py-2 text-sm text-status-error">
           <AlertCircle className="h-4 w-4 shrink-0" />
           {error}
         </div>
@@ -83,7 +83,7 @@ export function CompensationPoliciesListSection() {
             </button>
             <button
               onClick={openCreate}
-              className="flex items-center gap-1.5 rounded-lg bg-lia-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-lia-primary/90"
+              className="flex items-center gap-1.5 rounded-lg bg-lia-btn-primary-bg px-3 py-1.5 text-xs font-medium text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
             >
               <Plus className="h-3.5 w-3.5" /> Criar do zero
             </button>

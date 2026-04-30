@@ -351,7 +351,7 @@ function EligibilityTab({
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border border-amber-100 bg-amber-50 px-3 py-2 flex items-start gap-2 text-xs text-amber-700">
+      <div className="rounded-lg border border-status-warning/20 bg-status-warning/10 px-3 py-2 flex items-start gap-2 text-xs text-status-warning">
         <Info className="h-4 w-4 mt-0.5 shrink-0" />
         <span>
           Elegibilidade por atributo protegido (raça, gênero, idade, religião) é <strong>bloqueada</strong> automaticamente pelo backend (LGPD + Fairness Guard).
@@ -697,7 +697,7 @@ export function CompensationPolicyFormModal({
         {/* Footer */}
         <div className="border-t border-lia-border px-5 py-3 flex items-center justify-between gap-3">
           {error && (
-            <p className="text-sm text-red-500 flex-1 truncate">{error}</p>
+            <p className="text-sm text-status-error flex-1 truncate">{error}</p>
           )}
           {!error && <div className="flex-1" />}
           <div className="flex gap-2">
@@ -712,7 +712,7 @@ export function CompensationPolicyFormModal({
               type="button"
               onClick={handleSubmit}
               disabled={isSaving || !form.name.trim()}
-              className="rounded-lg bg-lia-primary px-4 py-2 text-sm font-medium text-white hover:bg-lia-primary/90 disabled:opacity-60"
+              className="rounded-lg bg-lia-btn-primary-bg px-4 py-2 text-sm font-medium text-lia-btn-primary-text hover:bg-lia-btn-primary-hover disabled:opacity-60"
             >
               {isSaving ? "Salvando..." : isEdit ? `Salvar v${form.version + 1}` : "Criar Política"}
             </button>

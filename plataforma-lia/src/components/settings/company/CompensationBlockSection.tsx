@@ -72,7 +72,7 @@ export function CompensationBlockSection({ onNavigate }: Props) {
           ))}
         </div>
       ) : error ? (
-        <div className="flex items-center gap-2 text-xs text-red-500">
+        <div className="flex items-center gap-2 text-xs text-status-error">
           <AlertCircle className="h-4 w-4" /> {error}
         </div>
       ) : activePolicies.length === 0 ? (
