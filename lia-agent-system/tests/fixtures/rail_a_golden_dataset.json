@@ -140,7 +140,7 @@
       "stage": "entrevista",
       "intent_hint": "schedule_interview",
       "domain_hint": "interview_scheduling",
-      "routing_layer": "chat_llm_fallback",
+      "routing_layer": "chat_cap_map",
       "expected_be_behavior": {
         "in_capability_map": false,
         "note": "Falls through to interview_scheduling agent via keyword router"
