@@ -214,3 +214,59 @@ def test_pydantic_create_roundtrip_all_20_fields_minimal():
     dumped = instance.model_dump(exclude_none=False)
     for k, v in full_payload.items():
         assert dumped[k] == v, f"campo {k!r} divergiu: enviado={v!r} dump={dumped[k]!r}"
+
+
+# ---------------------------------------------------------------------------
+# T4 — Fairness guard (// TODO(FAIRNESS:001)) — non-negotiable rule (CLAUDE.md)
+# ---------------------------------------------------------------------------
+# Beneficios NAO podem ter elegibilidade por atributo protegido. Sensor
+# computacional fail-loud. Alinhado com app/shared/compliance/fairness_guard.py
+# e PROHIBITED_ELIGIBILITY_TERMS no router company_benefits.py.
+
+
+@pytest.mark.parametrize(
+    "label,field,values,expect_fail",
+    [
+        # PT-BR — termos protegidos
+        ("genero em applicable_to", "applicable_to", ["homem"], True),
+        ("raca em departments", "departments", {"raca": True}, True),
+        ("idade em seniority_levels", "seniority_levels", ["jovem"], True),
+        ("religiao em contract_types", "contract_types", ["catolico"], True),
+        ("estado_civil em applicable_to", "applicable_to", ["solteiro"], True),
+        ("saude em applicable_to", "applicable_to", ["deficiencia"], True),
+        # EN — termos protegidos
+        ("gender EN", "applicable_to", ["male"], True),
+        ("age EN", "applicable_to", ["young"], True),
+        ("pregnancy EN", "applicable_to", ["pregnancy"], True),
+        # OK — termos neutros (cargo, senioridade, contrato, departamento)
+        ("clt+pj OK", "applicable_to", ["clt", "pj"], False),
+        ("senior+staff OK", "seniority_levels", ["senior", "staff"], False),
+        ("clt OK contract", "contract_types", ["clt"], False),
+        ("engineering OK dept", "departments", {"engineering": True}, False),
+    ],
+)
+def test_fairness_guard_blocks_protected_attributes(
+    label, field, values, expect_fail
+):
+    """Non-negotiable rule (CLAUDE.md #2 LGPD + #3 Fairness):
+    Beneficios nao podem ter elegibilidade por atributo protegido."""
+    from app.api.v1.company_benefits import CompanyBenefitCreate
+
+    payload = {
+        "name": "X",
+        "value_type": "informative",
+        "description": "test",
+        field: values,
+    }
+    if expect_fail:
+        with pytest.raises(ValidationError) as exc:
+            CompanyBenefitCreate(**payload)
+        # Mensagem de erro deve ser acionavel (otimizada para LLM)
+        msg = str(exc.value)
+        assert "discriminatorio" in msg.lower() or "fairness" in msg.lower(), (
+            f"caso '{label}' falhou mas mensagem de erro nao explica fairness: {msg}"
+        )
+    else:
+        instance = CompanyBenefitCreate(**payload)
+        actual = getattr(instance, field)
+        assert actual == values, f"caso '{label}' deveria preservar {field}={values}"

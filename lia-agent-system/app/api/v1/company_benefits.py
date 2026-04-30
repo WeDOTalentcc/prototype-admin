@@ -20,8 +20,57 @@ from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+# ---------------------------------------------------------------------------
+# Fairness guard — // TODO(FAIRNESS:001) — non-negotiable rule (CLAUDE.md)
+# ---------------------------------------------------------------------------
+# Beneficios NAO podem ter elegibilidade por atributo protegido (raca, genero,
+# idade, religiao, etnia, estado civil, saude, deficiencia). Lista PT-BR + EN
+# para cobrir input em ambos idiomas. Verificacao case-insensitive em
+# applicable_to[], seniority_levels[], contract_types[] e chaves de departments{}.
+#
+# Source-of-truth: app/shared/compliance/protected_attributes.py (existe — Fase 4
+# vai consolidar). Por ora, lista local mantida em sincronia com fairness_guard.py.
+PROHIBITED_ELIGIBILITY_TERMS = frozenset({
+    # PT-BR
+    "raca", "raça", "genero", "gênero", "religiao", "religião", "etnia",
+    "estado_civil", "estado civil", "casado", "solteiro", "divorciado",
+    "idade", "anos", "menor_de", "maior_de", "jovem", "idoso",
+    "saude", "saúde", "doenca", "doença", "deficiencia", "deficiência",
+    "gravidez", "gestante", "maternidade",
+    "homem", "mulher", "masculino", "feminino", "lgbt", "lgbtqia",
+    "branco", "negro", "pardo", "amarelo", "indigena", "indígena",
+    "catolico", "evangelico", "judeu", "muculmano", "ateu",
+    # EN (defensivo — recrutador internacional)
+    "race", "gender", "religion", "ethnicity", "marital", "single", "married",
+    "age", "elderly", "young", "youth",
+    "health", "disease", "disability", "pregnancy", "pregnant", "maternity",
+    "male", "female", "white", "black", "asian", "hispanic",
+})
+
+
+def _check_fairness_violation(values: list[str] | None, field_name: str) -> None:
+    """Raise se valores contiverem termo discriminatorio. Computacional, fail-loud."""
+    if not values:
+        return
+    for v in values:
+        if not v:
+            continue
+        normalized = str(v).lower().strip()
+        for prohibited in PROHIBITED_ELIGIBILITY_TERMS:
+            if prohibited in normalized:
+                raise ValueError(
+                    f"Termo discriminatorio detectado em {field_name}: '{v}'. "
+                    f"Beneficios NAO podem ter elegibilidade por atributo protegido "
+                    f"(raca, genero, idade, religiao, etnia, estado civil, saude, "
+                    f"deficiencia, gravidez). LGPD + non-negotiable rule (CLAUDE.md). "
+                    f"Use criterios neutros como cargo, senioridade, tipo de contrato. "
+                    f"Para casos especificos (ex: licenca-maternidade), use 'all' em "
+                    f"applicable_to e descreva no campo description."
+                )
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id, validate_company_access
 from app.auth.models import User
@@ -95,6 +144,22 @@ class CompanyBenefitCreate(CompanyBenefitBase):
                 "value_details (ou description) e obrigatorio quando value_type='informative'"
             )
         return self
+
+    # // TODO(FAIRNESS:001) — fairness guard (LGPD + non-negotiable CLAUDE.md)
+    @field_validator("applicable_to", "seniority_levels", "contract_types")
+    @classmethod
+    def _no_discriminatory_terms_in_lists(cls, v: list[str] | None, info) -> list[str] | None:
+        _check_fairness_violation(v, info.field_name)
+        return v
+
+    @field_validator("departments")
+    @classmethod
+    def _no_discriminatory_keys_in_departments(
+        cls, v: dict | None, info
+    ) -> dict | None:
+        if v:
+            _check_fairness_violation(list(v.keys()), info.field_name)
+        return v
 
 
 class CompanyBenefitUpdate(CompanyBenefitBase):
