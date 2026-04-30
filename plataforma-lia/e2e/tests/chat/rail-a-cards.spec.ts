@@ -156,6 +156,47 @@ test.describe('Rail A — snapshot inicial', () => {
 // Stage 1 — Vaga (definir-vaga)
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Stage 1 — Vaga — modal tests (W1-3)
+// ─────────────────────────────────────────────────────────────────────────────
+
+test.describe('Stage 1 — Vaga — modal', () => {
+  test('RAL-011 MODAL: 1.1 Criar nova vaga → lia:open_modal {modal_id: "create_job"}', async ({ authenticatedPage: page }) => {
+    // W1-3: Card opens CreateJobModal directly instead of going through chat.
+    await goChatEmpty(page);
+    await expandStage(page, 'Vaga');
+    // Capture the lia:open_modal event
+    await page.evaluate(() => {
+      (window as any).__ral_modal_event = undefined;
+      window.addEventListener('lia:open_modal', (e: Event) => {
+        (window as any).__ral_modal_event = (e as CustomEvent).detail;
+      }, { once: true });
+    });
+    await page.locator('[data-rail-a-card="create-job"]').click();
+    await page.waitForTimeout(600);
+    const ev = await page.evaluate(() => (window as any).__ral_modal_event);
+    expect(ev, 'create-job card deve disparar lia:open_modal').toBeDefined();
+    expect(ev?.modal_id).toBe('create_job');
+  });
+
+  test('RAL-012 MODAL: 1.2 Usar modelo → lia:open_modal {modal_id: "create_job"}', async ({ authenticatedPage: page }) => {
+    // W1-3: Job template card uses same CreateJobModal (step choose offers templates).
+    await goChatEmpty(page);
+    await expandStage(page, 'Vaga');
+    await page.evaluate(() => {
+      (window as any).__ral_modal_event = undefined;
+      window.addEventListener('lia:open_modal', (e: Event) => {
+        (window as any).__ral_modal_event = (e as CustomEvent).detail;
+      }, { once: true });
+    });
+    await page.locator('[data-rail-a-card="job-template"]').click();
+    await page.waitForTimeout(600);
+    const ev = await page.evaluate(() => (window as any).__ral_modal_event);
+    expect(ev, 'job-template card deve disparar lia:open_modal').toBeDefined();
+    expect(ev?.modal_id).toBe('create_job');
+  });
+});
+
 test.describe('Stage 1 — Vaga', () => {
   test('RAL-101 visual: cards do stage Vaga', async ({ authenticatedPage: page }) => {
     await goChatEmpty(page);
@@ -490,28 +531,16 @@ test.describe('Stage 9 — Configurações', () => {
     await expect(page.locator('[data-rail-a-card="email-templates"]')).toBeVisible();
   });
 
-  test('RAL-911 COMING_SOON: 9.1 Créditos IA → badge "Em breve" + toast, sem navegação', async ({ authenticatedPage: page }) => {
+  test('RAL-911 NAVIGATION: 9.1 Créditos IA → /configuracoes/ai-credits', async ({ authenticatedPage: page }) => {
+    // W1-3: ai-credits page now exists — card navigates directly instead of coming-soon.
     await goChatEmpty(page);
     await expandStage(page, 'Config');
-    const card = page.locator('[data-rail-a-card="ai-credits"]');
-    await expect(card).toBeVisible();
-    const initialUrl = page.url();
-    // Setup: verify lia:rail-a-card-click does NOT fire for coming-soon card
-    await page.evaluate(() => {
-      (window as any).__ral_event_coming_soon = undefined;
-      window.addEventListener('lia:rail-a-card-click', (e: Event) => {
-        (window as any).__ral_event_coming_soon = (e as CustomEvent).detail;
-      }, { once: true });
-    });
-    await card.click();
-    await page.waitForTimeout(600);
-    // URL must not change
-    expect(page.url()).toBe(initialUrl);
-    // Event must NOT have fired
-    const ev = await page.evaluate(() => (window as any).__ral_event_coming_soon);
-    expect(ev, 'coming-soon card não deve disparar lia:rail-a-card-click').toBeUndefined();
-    // Toast "Em breve" must appear
-    await expect(page.locator('[data-sonner-toast]').first()).toBeVisible({ timeout: 3_000 });
+    await Promise.all([
+      page.waitForURL(/configuracoes.*ai-credits|ai-credits/, { timeout: 12_000 }),
+      page.locator('[data-rail-a-card="ai-credits"]').click(),
+    ]);
+    expect(page.url()).toMatch(/ai-credits/);
+    await page.screenshot({ path: `${SS}/09a-ai-credits-nav.png` });
   });
 
   test('RAL-912 NAVIGATION: 9.2 Política de contratação → /configuracoes?section=pipeline', async ({ authenticatedPage: page }) => {

@@ -138,31 +138,38 @@ export const SUGGESTION_HINTS: Record<
 };
 
 /**
- * PR-K: Cards 9.x navegam diretamente para a página de destino em vez de
- * passar pelo chat. Evita o detour conversacional para funcionalidades de
- * configuração que têm páginas dedicadas.
+ * PR-K / PR-Q1: Cards que navegam diretamente para a página de destino
+ * em vez de passar pelo chat. Evita o detour conversacional para ações
+ * que têm páginas dedicadas.
  */
 export const NAVIGATION_OVERRIDES: Record<string, string> = {
-  // "ai-credits" removido: página não existe ainda — usa COMING_SOON_CARDS
+  /** W1-3: Créditos IA tem página dedicada /configuracoes/ai-credits. */
+  "ai-credits": "/configuracoes/ai-credits",
   "hiring-policy": "/configuracoes?section=pipeline",
   "email-templates": "/configuracoes?section=templates-assinatura",
-  /** PR-Q1: Banco de talentos tem página dedicada — navegar direto. */
+  /** PR-Q1: Banco de talentos tem página dedicada. */
   "talent-pool": "/bancos-de-talentos",
 };
 
 /**
- * Guide computacional: cards em estado "Em breve".
+ * Guide computacional: cards em estado "Em breve" (sem página nem modal).
  * Remover entrada quando a feature for implementada.
  * Single source of truth para coming-soon state no Rail A.
+ * W1-3: VAZIO — ai-credits movido para NAVIGATION_OVERRIDES.
  */
-export const COMING_SOON_CARDS = new Set<string>(["ai-credits"]);
+export const COMING_SOON_CARDS = new Set<string>([]);
 
 /**
- * PR-Q1: Cards que abrem modal diretamente (sem detour pelo chat).
+ * PR-Q1 / W1-3: Cards que abrem modal diretamente (sem detour pelo chat).
  * Valor = modal_id reconhecido por LIAGlobalModals via lia:open_modal event.
+ * W1-3: create-job + job-template → CreateJobModal (escolhe wizard ou manual).
  */
 export const MODAL_OVERRIDES: Record<string, string> = {
   "add-candidate": "add_candidate",
+  /** W1-3: Criar vaga abre CreateJobModal (step choose → wizard ou manual). */
+  "create-job": "create_job",
+  /** W1-3: Usar modelo abre o mesmo modal com opção de template na escolha. */
+  "job-template": "create_job",
 };
 
 export function buildSuggestionMetadata(

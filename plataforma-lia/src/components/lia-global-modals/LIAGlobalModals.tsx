@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { AddCandidateModal } from "@/components/modals/add-candidate-modal"
+import { CreateJobModal } from "@/components/modals/create-job-modal"
 import { InterviewSchedulingModal } from "@/components/ui/interview-scheduling-modal"
 import { CandidateCompareModal } from "@/components/modals/candidate-compare-modal"
 import { useModalOpenListener } from "@/hooks/chat/useModalOpenListener"
@@ -40,6 +41,9 @@ export function LIAGlobalModals() {
   }>("candidate_compare")
 
   const stageTransition = useModalOpenListener<{ page?: string }>("stage_transition")
+
+  // W1-3: Cards 1.1 (create-job) + 1.2 (job-template) open CreateJobModal.
+  const createJob = useModalOpenListener("create_job")
 
   // PR-B Trigger A: Rail A Card 5.1 sends ui_action="open_offer_review".
   // useUIAction dispatches `lia:open_offer_review` CustomEvent — handled here
@@ -97,6 +101,12 @@ export function LIAGlobalModals() {
         router.push(page)
         return null
       })()}
+      {/* W1-3: 1.1 Criar vaga + 1.2 Modelo — CreateJobModal. Wizard navigates to funil. */}
+      <CreateJobModal
+        isOpen={createJob.isOpen}
+        onClose={createJob.close}
+        onCreateWithWizard={() => { createJob.close(); router.push("/funil-de-talentos") }}
+      />
     </>
   )
 }
