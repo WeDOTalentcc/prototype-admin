@@ -249,7 +249,8 @@ class JobVacancyUpdate(BaseModel):
     salary: str | None = None
     salary_range: dict | None = None
     bonus_range: dict | None = None
-    benefits: list[str] | None = None
+    benefits: list[str | dict] | None = None
+    compensation_policy_id: str | None = None
     manager: str | None = None
     manager_email: str | None = None
     recruiter: str | None = None
@@ -293,7 +294,8 @@ class JobVacancyResponse(BaseModel):
     salary: str | None = None
     salary_range: dict | None = None
     bonus_range: dict | None = None
-    benefits: list[str] | None = []
+    benefits: list[str | dict] | None = []
+    compensation_policy_id: str | None = None
     manager: str | None = None
     manager_email: str | None = None
     recruiter: str | None = None

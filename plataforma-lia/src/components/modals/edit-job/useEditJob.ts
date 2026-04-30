@@ -75,12 +75,16 @@ export function useEditJob({ isOpen, job: rawJob, onSave, onClose }: UseEditJobP
   const [pipelineTemplates, setPipelineTemplates] = useState<PipelineTemplate[]>([])
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
-  
+  const [activeCompensationPolicies, setActiveCompensationPolicies] = useState<{id: string; name: string; policy_type?: string}[]>([])
 
   useEffect(() => {
     if (isOpen) {
       liaApi.listDepartments().then(setCompanyDepartments).catch(() => setCompanyDepartments([]))
       liaApi.listBenefits().then(setCompanyBenefits).catch(() => setCompanyBenefits([]))
+      fetch('/api/backend-proxy/company/compensation-policies/')
+        .then(r => r.ok ? r.json() : { items: [] })
+        .then(d => setActiveCompensationPolicies((d.items || []).filter((p: {is_active: boolean}) => p.is_active)))
+        .catch(() => setActiveCompensationPolicies([]))
       fetchPipelineTemplates()
     }
   }, [isOpen])
@@ -111,6 +115,7 @@ export function useEditJob({ isOpen, job: rawJob, onSave, onClose }: UseEditJobP
         bonusMin: job.bonusMin,
         bonusMax: job.bonusMax,
         benefits: [...(job.benefits || [])],
+        compensation_policy_id: job.compensation_policy_id || undefined,
         interviewStages: job.interviewStages && job.interviewStages.length > 0 
           ? [...job.interviewStages] 
           : companyStages.length > 0 
@@ -506,6 +511,7 @@ export function useEditJob({ isOpen, job: rawJob, onSave, onClose }: UseEditJobP
           currency: 'BRL'
         } : undefined,
         benefits: formData.benefits,
+        compensation_policy_id: formData.compensation_policy_id || undefined,
         interview_stages: (formData.interviewStages || []).filter(
           (stage): stage is InterviewStage => 
             !!stage.stageName && typeof stage.order === 'number' && typeof stage.sla === 'number'

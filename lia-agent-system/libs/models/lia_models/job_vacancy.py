@@ -54,6 +54,9 @@ class JobVacancy(Base):
     # NEW: Structured bonus range
     bonus_range = Column(JSON, nullable=True)  # {"min": 5000, "max": 8000, "currency": "BRL"}
     
+    # PRV: link to compensation policy (nullable, optional)
+    compensation_policy_id = Column(UUID(as_uuid=True), ForeignKey('compensation_policies.id', ondelete='SET NULL'), nullable=True, index=True)
+
     # JSON (maps to JSONB in Postgres) — DB schema is JSONB after manual
     # alteration / external migration. Keeping ARRAY(String) caused
     # asyncpg.DatatypeMismatchError: "column 'benefits' is of type jsonb

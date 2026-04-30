@@ -97,6 +97,7 @@ export interface Job {
     can_discuss_location?: boolean
     masked_intro?: string
   }
+  compensation_policy_id?: string
   createdBy?: string
   createdByEmail?: string
   createdAt?: string

@@ -21,12 +21,27 @@ import {
   Trash2,
   Loader2,
   ClipboardList,
+  TrendingUp,
 } from"lucide-react"
 import {
   inputStyle,
 } from '../edit-job-modal.constants'
 import type { InterviewStage, PipelineTemplate, Job } from '../edit-job/edit-job.types'
 import type { CompanyBenefit } from '@/types/benefits'
+
+type BenefitItem = string | { id: string; name: string }
+
+function benefitName(b: BenefitItem): string {
+  return typeof b === 'string' ? b : b.name
+}
+
+function isBenefitAdded(benefits: BenefitItem[], candidate: CompanyBenefit): boolean {
+  return benefits.some(b =>
+    typeof b === 'string'
+      ? b === candidate.name
+      : (b as { id: string }).id === candidate.id
+  )
+}
 
 interface EditJobModalRequirementsProps {
   formData: Partial<Job>
@@ -36,7 +51,7 @@ interface EditJobModalRequirementsProps {
   companyBenefits: CompanyBenefit[]
   addBenefit: () => void
   removeBenefit: (idx: number) => void
-  // Interview stages
+  activeCompensationPolicies: { id: string; name: string; policy_type?: string }[]
   newInterviewStageName: string
   setNewInterviewStageName: (v: string) => void
   newInterviewStageSLA: string
@@ -46,7 +61,6 @@ interface EditJobModalRequirementsProps {
   addInterviewStage: () => void
   removeInterviewStage: (idx: number) => void
   updateInterviewStage: (idx: number, field: string, value: string | number) => void
-  // Pipeline templates
   pipelineTemplates: PipelineTemplate[]
   isLoadingTemplates: boolean
   selectedTemplateId: string
@@ -62,6 +76,7 @@ export function EditJobModalRequirements({
   companyBenefits,
   addBenefit,
   removeBenefit,
+  activeCompensationPolicies,
   newInterviewStageName,
   setNewInterviewStageName,
   newInterviewStageSLA,
@@ -76,6 +91,8 @@ export function EditJobModalRequirements({
   selectedTemplateId,
   applyPipelineTemplate,
 }: EditJobModalRequirementsProps) {
+  const benefits = (formData.benefits || []) as BenefitItem[]
+
   return (
     <>
       <section data-testid="edit-job-requirements-section">
@@ -137,10 +154,46 @@ export function EditJobModalRequirements({
             </div>
           </div>
 
+          {activeCompensationPolicies.length > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <TrendingUp className="w-3.5 h-3.5 text-lia-text-secondary" />
+                <Label className="text-xs font-medium text-lia-text-primary">Política de Remuneração Variável (opcional)</Label>
+              </div>
+              <Select
+                value={formData.compensation_policy_id || 'none'}
+                onValueChange={(v) =>
+                  setFormData(prev => ({ ...prev, compensation_policy_id: v === 'none' ? undefined : v }))
+                }
+              >
+                <SelectTrigger className="h-10 w-full text-sm bg-lia-bg-secondary border-lia-border-subtle">
+                  <SelectValue placeholder="Nenhuma política vinculada" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none" className="text-xs text-lia-text-disabled">Nenhuma</SelectItem>
+                  {activeCompensationPolicies.map(p => (
+                    <SelectItem key={p.id} value={p.id} className="text-xs">
+                      {p.name}
+                      {p.policy_type && (
+                        <span className="ml-2 text-lia-text-tertiary">({p.policy_type})</span>
+                      )}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {formData.compensation_policy_id && (
+                <p className="text-micro text-lia-text-tertiary mt-1">
+                  PRV desta política será referência para bônus e verbas variáveis.
+                  {/* TODO(WIZARD-INT:005): Botão "Sugerir pacote com LIA" */}
+                </p>
+              )}
+            </div>
+          )}
+
           <div>
             <Label className="text-xs text-lia-text-secondary mb-2 block">Benefícios</Label>
             <div className="flex flex-wrap gap-2 mb-3">
-              {(formData.benefits || []).map((benefit, idx) => (
+              {benefits.map((benefit, idx) => (
                 <Chip
                   key={idx}
                   variant="neutral"
@@ -153,8 +206,8 @@ export function EditJobModalRequirements({
                   >
                     ×
                   </button>
-                  {benefit}
-                  {companyBenefits.find(cb => cb.name === benefit)?.is_highlighted && (
+                  {benefitName(benefit)}
+                  {companyBenefits.find(cb => cb.name === benefitName(benefit))?.is_highlighted && (
                     <Heart className="w-3 h-3 text-wedo-magenta fill-pink-500" />
                   )}
                 </Chip>
@@ -165,7 +218,7 @@ export function EditJobModalRequirements({
                 <Label className="text-xs text-lia-text-tertiary mb-1.5 block">Sugestões da empresa</Label>
                 <div className="flex flex-wrap gap-1.5">
                   {companyBenefits.map((benefit) => {
-                    const isAdded = (formData.benefits || []).includes(benefit.name)
+                    const isAdded = isBenefitAdded(benefits, benefit)
                     return (
                       <Chip
                         key={benefit.id}
@@ -179,7 +232,7 @@ export function EditJobModalRequirements({
                           if (!isAdded) {
                             setFormData(prev => ({
                               ...prev,
-                              benefits: [...(prev.benefits || []), benefit.name]
+                              benefits: [...((prev.benefits || []) as BenefitItem[]), { id: benefit.id, name: benefit.name }]
                             }))
                           }
                         }}

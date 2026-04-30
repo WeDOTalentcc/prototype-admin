@@ -122,6 +122,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
     getCategoryColor,
     getWeightColor,
     handleSave,
+    activeCompensationPolicies,
     applyPipelineTemplate,
     fetchPipelineTemplates,
   } = useEditJob({ isOpen, job, onSave, onClose })
@@ -190,6 +191,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   pipelineTemplates={pipelineTemplates}
                   isLoadingTemplates={isLoadingTemplates}
                   selectedTemplateId={selectedTemplateId}
+                  activeCompensationPolicies={activeCompensationPolicies}
                   applyPipelineTemplate={applyPipelineTemplate}
                   fetchPipelineTemplates={fetchPipelineTemplates}
                 />
