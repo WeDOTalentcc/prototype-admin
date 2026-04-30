@@ -1,6 +1,24 @@
 """
 EnhancedIntentClassifier - Classificador de intenções com extração rica de entidades.
 
+ARCHITECTURE NOTE (INT-S02, 2026-04-30):
+  This is the LLM-BASED (Tier 2) classifier — semantic, rich entity extraction, LLM cost.
+  Used for complex flows that require entity context beyond keyword matching.
+
+  TIER 1: keyword_intent_matcher (app/shared/services/)
+    - Deterministic, fast, zero LLM cost
+    - Used by: all domain can_handle() methods, fast_router
+    - harness-engineering guide computacional — prefer for domain routing
+
+  TIER 2: enhanced_intent_classifier (this file)
+    - LLM-based entity extraction and intent classification
+    - Used by: wizard_step_service, lia_assistant
+    - Use for: flows needing rich context (candidate name, job title, stage extraction)
+
+  This file is NOT a replacement for keyword_intent_matcher — they serve different tiers.
+  See app/shared/services/keyword_intent_matcher.py for the Tier 1 architecture note.
+
+
 Melhorias sobre o IntentClassifier básico:
 - Extrai TODAS as entidades mencionadas pelo usuário
 - Detecta contexto específico (vaga afirmativa, benefícios, idiomas, etc.)

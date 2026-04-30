@@ -1,6 +1,25 @@
 """
 LIA-I01: Shared Keyword Intent Matcher
 
+ARCHITECTURE NOTE (INT-S02, 2026-04-30):
+  This is the COMPUTATIONAL (Tier 1) classifier — deterministic, fast, zero LLM cost.
+  Used by domain can_handle() methods and the CascadedRouter fast_router to resolve
+  ~80% of queries without any LLM call.
+
+  TIER 1: keyword_intent_matcher (this file)
+    - Deterministic substring + regex matching
+    - Used by: all domain.py can_handle() methods, fast_router.py
+    - harness-engineering guide computacional: prefer this tier for new domain routing
+
+  TIER 2: enhanced_intent_classifier (app/domains/ai/services/)
+    - LLM-based, extracts rich entity context
+    - Used by: wizard_step_service, lia_assistant API flows
+    - Use for: complex multi-entity disambiguation that needs semantic understanding
+
+  Do NOT deprecate this module. Domain routing SHOULD use deterministic matching.
+  See app/orchestrator/fast_router.py for the CascadedRouter architecture.
+
+
 Provides a unified, configurable intent matching system that domains can use
 instead of hardcoded _KEYWORD_ACTION_MAP dicts.
 
