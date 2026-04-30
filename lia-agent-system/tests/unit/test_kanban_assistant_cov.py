@@ -3,20 +3,15 @@ Coverage tests for app/domains/recruiter_assistant/services/kanban_assistant_ser
 """
 import pytest
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
 
 
 @pytest.fixture
 def service():
-    with patch.dict("os.environ", {
-        "AI_INTEGRATIONS_ANTHROPIC_API_KEY": "test-key",
-        "AI_INTEGRATIONS_ANTHROPIC_BASE_URL": "https://test.api",
-    }):
-        with patch("app.domains.recruiter_assistant.services.kanban_assistant_service.Anthropic"):
-            from app.domains.recruiter_assistant.services.kanban_assistant_service import KanbanAssistantService
-            svc = KanbanAssistantService()
-            svc._client = MagicMock()
-            yield svc
+    # canonical-fix: Task #93 migrated service from direct Anthropic SDK to
+    # LLMProviderFactory (llm_complete). No _client attribute, no Anthropic import.
+    # These utility methods are pure functions — no LLM patch needed.
+    from app.domains.recruiter_assistant.services.kanban_assistant_service import KanbanAssistantService
+    return KanbanAssistantService()
 
 
 class TestParseJsonResponse:
@@ -163,10 +158,9 @@ class TestExtractActions:
 
 class TestClientProperty:
     @pytest.mark.easy
-    def test_unconfigured_raises(self):
-        with patch("app.domains.recruiter_assistant.services.kanban_assistant_service.AI_INTEGRATIONS_ANTHROPIC_API_KEY", None), \
-             patch("app.domains.recruiter_assistant.services.kanban_assistant_service.AI_INTEGRATIONS_ANTHROPIC_BASE_URL", None):
-            from app.domains.recruiter_assistant.services.kanban_assistant_service import KanbanAssistantService
-            svc = KanbanAssistantService()
-            with pytest.raises(ValueError, match="not configured"):
-                _ = svc.client
+    def test_service_instantiates_without_error(self):
+        # canonical-fix: client property removed in Task #93 migration to LLMProviderFactory.
+        # Replaced with test that verifies the service instantiates cleanly.
+        from app.domains.recruiter_assistant.services.kanban_assistant_service import KanbanAssistantService
+        svc = KanbanAssistantService()
+        assert svc is not None
