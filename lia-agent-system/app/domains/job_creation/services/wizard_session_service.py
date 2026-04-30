@@ -272,7 +272,7 @@ class WizardSessionService:
                     )
                     logger.info("[WizardSession] manager_preferences recorded for %s", result["manager_email"])
             except Exception as _rl_exc:
-                logger.warning("[WizardSession] record_job_completion failed (fail-open): %s", _rl_exc)
+                logger.error("[WizardSession] record_job_completion FAILED — learning loop data loss (company_id=%s, email=%s): %s", company_id, result.get("manager_email", "?"), _rl_exc)
 
 
         stage_payload = result.get("ws_stage_payload") or {}

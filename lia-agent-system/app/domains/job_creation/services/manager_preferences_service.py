@@ -128,6 +128,10 @@ class ManagerPreferencesService:
         Idempotency: if idempotency_key already stored, skip (LangGraph re-execution guard).
         FAIL-CLOSED: raises on DB failure — caller must handle / rollback.
         """
+        if not company_id:
+            raise ValueError(
+                "company_id obrigatório em record_job_completion — multi-tenancy enforcement"
+            )
         prefs = await ManagerPreferencesService.get_or_create(
             db, company_id, manager_email,
             manager_name=final_state.get("manager_name"),

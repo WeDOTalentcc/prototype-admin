@@ -473,6 +473,7 @@ export function ReadinessHubPage() {
           loading={loading}
           onRunAll={onRunAll}
           runAllPending={runAllPending}
+          onImport={() => setImportDrawerOpen(true)}
         />
         {selected.size > 0 && (
           <div className="flex items-center justify-between p-2 mb-2 rounded-md bg-wedo-cyan/10 border border-wedo-cyan/30">

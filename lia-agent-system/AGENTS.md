@@ -64,3 +64,42 @@
 - [ ] `app/workers/rabbitmq_consumer.py` implementado (substituir stub)
 - [ ] Integration test: `tests/integration/test_rabbitmq_consumer.py`
 - [ ] Smoke test manual: publicar 1 msg → verificar log `[rabbitmq_consumer] routed via ContextAdapter.from_rabbitmq`
+
+## Idempotency Guards (G8 — LangGraph Re-execution Safety)
+
+**Contexto:** Nós do JobCreationGraph são SYNC e podem ser re-executados pelo LangGraph (retry automático, checkpoint restore). Qualquer escrita no BD que aconteça após conclusão de um nó **deve** ser idempotente.
+
+### Regra G8 (computacional — guide)
+
+Toda chamada a `record_job_completion()` e funções similares de learning loop **deve** incluir um `idempotency_key` gerado como:
+
+```python
+import hashlib
+from datetime import date
+
+idempotency_key = hashlib.md5(
+    f"{company_id}:{manager_email}:{job_id or session_id}:{date.today().isoformat()}".encode()
+).hexdigest()
+```
+
+O serviço verifica `prefs.last_idempotency_key == idempotency_key` antes de qualquer write — se igual, retorna sem efeito colateral.
+
+### Sensor G8 (computacional — CI guard)
+
+Pre-commit / CI: qualquer nova chamada a `record_job_completion()` sem `idempotency_key` quebra o build:
+
+```bash
+# Sensor G8 — rodar em CI ou pre-commit
+grep -rn "record_job_completion(" --include="*.py" | grep -v "idempotency_key" | grep -v "def record_job_completion" | grep -v "test_"
+# Se retornar linhas → falha: adicione idempotency_key=<md5> na chamada
+```
+
+### Mensagem de erro para o LLM
+
+> `G8 VIOLATION: record_job_completion() chamado sem idempotency_key. LangGraph pode re-executar este nó e duplicar jobs_created_count. Corrija: gere um hashlib.md5(...).hexdigest() único por (company_id, manager_email, job_id, date) e passe como idempotency_key=...`
+
+### Arquivos canônicos
+
+- Service: `app/domains/job_creation/services/manager_preferences_service.py` → `record_job_completion()`
+- Call site: `app/domains/job_creation/services/wizard_session_service.py` (pós-handoff, L~260)
+- Modelo: `libs/models/lia_models/manager_preferences.py` → campo `last_idempotency_key`
