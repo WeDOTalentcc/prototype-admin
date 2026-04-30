@@ -9,15 +9,15 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 # ── Tool whitelist ─────────────────────────────────────────────────────────────
 
-def test_tool_registry_returns_exactly_3_tools():
+def test_tool_registry_returns_exactly_4_tools():
     from app.domains.candidate_self_service.agents.candidate_tool_registry import get_candidate_tools
     tools = get_candidate_tools()
-    assert len(tools) == 3
+    assert len(tools) == 4  # +explain_candidate_decision (EU AI Act Art.86 + LGPD Art.20)
 
 def test_tool_names_are_whitelisted():
     from app.domains.candidate_self_service.agents.candidate_tool_registry import get_candidate_tools
     names = {t.name for t in get_candidate_tools()}
-    assert names == {"get_application_status", "get_interview_info", "get_wsi_feedback"}
+    assert names == {"get_application_status", "get_interview_info", "get_wsi_feedback", "explain_candidate_decision"}
 
 
 # ── Forbidden fields never returned ───────────────────────────────────────────
