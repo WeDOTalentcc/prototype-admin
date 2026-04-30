@@ -45,6 +45,7 @@ async def handle_salary(
     """
     benefits_list = ""
     if company_benefits:
+        # TODO(WIZARD-INT:002): filter company_benefits by eligibility x seniority from job_draft
         benefits_list = "\n\n✅ **Benefícios cadastrados da empresa:**\n" + "\n".join(
             [f"• {b['name']}" for b in company_benefits[:10]]
         )
@@ -150,6 +151,7 @@ async def handle_salary(
                 f"for role {job_draft.get('cargo') or job_draft.get('job_title')}"
             )
 
+    # TODO(WIZARD-INT:001): replace prose "Bônus ou PLR" with structured query to compensation_policies filtered by seniority/dept
     lia_message = f"""Perfeito! Vamos definir a **Remuneração**. 💰
 
 📊 **Minha análise de mercado:**

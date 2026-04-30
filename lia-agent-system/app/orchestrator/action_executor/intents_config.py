@@ -731,6 +731,7 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
             "job_id": "Para qual vaga você quer listar os candidatos?",
         },
     },
+    # TODO(WIZARD-INT:003): add intents — apply_compensation_policy, override_bonus_in_job, confirm_total_package
     "sugerir_salario": {
         "domain_id": "job_management",
         "action_id": "suggest_salary",

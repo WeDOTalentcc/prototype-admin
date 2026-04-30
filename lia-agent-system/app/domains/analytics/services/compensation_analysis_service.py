@@ -493,6 +493,7 @@ class CompensationAnalysisService:
         
         return analysis
     
+    # TODO(LIA-PROACTIVITY:003): learn PRV patterns by title×seniority for proactive suggestions
     def _analyze_bonus(
         self,
         proposed_pct: float | None,

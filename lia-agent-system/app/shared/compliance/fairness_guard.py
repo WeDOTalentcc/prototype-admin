@@ -20,6 +20,10 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# TODO(FAIRNESS:001): extend PRV validation — compensation_policies.applicable_* must not
+# segment by protected attributes (race/gender/age/origin). Currently enforced at Pydantic
+# level in company_compensation_policies.py; wire to FairnessGuard.check() for runtime audit.
+
 _METRICS_AVAILABLE = False
 
 

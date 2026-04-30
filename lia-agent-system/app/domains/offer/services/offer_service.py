@@ -55,6 +55,7 @@ def prefill_from_snapshots(
         except Exception:
             pass
 
+    # TODO(WIZARD-INT:004): load compensation_policy linked to job + inherited benefits before building offer
     # Benefits: copy from job
     if job_snapshot.get("benefits"):
         benefits = job_snapshot["benefits"]
