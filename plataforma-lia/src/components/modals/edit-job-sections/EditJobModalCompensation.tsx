@@ -46,6 +46,8 @@ interface EditJobModalCompensationProps {
   addBenefit: () => void
   removeBenefit: (idx: number) => void
   activeCompensationPolicies: { id: string; name: string; policy_type?: string }[]
+  /** INT:005 — triggers LIA chat with apply_compensation_policy intent */
+  onSuggestWithLIA?: () => void
 }
 
 export function EditJobModalCompensation({
@@ -57,6 +59,7 @@ export function EditJobModalCompensation({
   addBenefit,
   removeBenefit,
   activeCompensationPolicies,
+  onSuggestWithLIA,
 }: EditJobModalCompensationProps) {
   const benefits = (formData.benefits || []) as BenefitItem[]
   const [showBenefitModal, setShowBenefitModal] = useState(false)
@@ -179,10 +182,23 @@ export function EditJobModalCompensation({
               </SelectContent>
             </Select>
             {formData.compensation_policy_id && (
-              <p className="text-micro text-lia-text-tertiary mt-1">
-                PRV desta política é a referência; bônus acima substitui pontualmente.
-                {/* TODO(WIZARD-INT:005): Botão "Sugerir pacote com LIA" */}
-              </p>
+              <div className="mt-1 flex items-center justify-between gap-2">
+                <p className="text-micro text-lia-text-tertiary">
+                  PRV desta política é a referência; bônus acima substitui pontualmente.
+                </p>
+                {onSuggestWithLIA && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-micro text-lia-text-link hover:text-lia-text-primary whitespace-nowrap flex items-center gap-1"
+                    onClick={onSuggestWithLIA}
+                  >
+                    <Briefcase className="w-3 h-3" />
+                    Sugerir pacote com LIA
+                  </Button>
+                )}
+              </div>
             )}
           </div>
         )}

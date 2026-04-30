@@ -731,7 +731,55 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
             "job_id": "Para qual vaga você quer listar os candidatos?",
         },
     },
-    # TODO(WIZARD-INT:003): add intents — apply_compensation_policy, override_bonus_in_job, confirm_total_package
+    # INT:003 — wizard compensation intents (PRV + bonus override + package confirmation)
+    "apply_compensation_policy": {
+        "domain_id": "job_management",
+        "action_id": "apply_compensation_policy",
+        "required_params": ["job_id"],
+        "optional_params": ["policy_id"],
+        "risk_level": "medium",
+        "requires_confirmation": True,
+        "param_labels": {
+            "job_id": "vaga",
+            "policy_id": "política de PRV",
+        },
+        "clarification_prompts": {
+            "job_id": "Para qual vaga você quer vincular a política de remuneração?",
+            "policy_id": "Qual política de remuneração variável quer aplicar?",
+        },
+    },
+    "override_bonus_in_job": {
+        "domain_id": "job_management",
+        "action_id": "override_bonus_in_job",
+        "required_params": ["job_id", "bonus_min", "bonus_max"],
+        "optional_params": [],
+        "risk_level": "medium",
+        "requires_confirmation": True,
+        "param_labels": {
+            "job_id": "vaga",
+            "bonus_min": "bônus mínimo",
+            "bonus_max": "bônus máximo",
+        },
+        "clarification_prompts": {
+            "job_id": "Para qual vaga você quer definir o bônus pontual?",
+            "bonus_min": "Qual o valor mínimo do bônus (R$)?",
+            "bonus_max": "Qual o valor máximo do bônus (R$)?",
+        },
+    },
+    "confirm_total_package": {
+        "domain_id": "job_management",
+        "action_id": "confirm_total_package",
+        "required_params": ["job_id"],
+        "optional_params": [],
+        "risk_level": "low",
+        "requires_confirmation": False,
+        "param_labels": {
+            "job_id": "vaga",
+        },
+        "clarification_prompts": {
+            "job_id": "Para qual vaga você quer confirmar o pacote total de remuneração?",
+        },
+    },
     "sugerir_salario": {
         "domain_id": "job_management",
         "action_id": "suggest_salary",

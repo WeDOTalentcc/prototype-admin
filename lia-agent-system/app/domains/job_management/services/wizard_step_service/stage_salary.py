@@ -36,6 +36,7 @@ async def handle_salary(
     benchmarks: dict,
     field_origins: dict,
     suggestions_data: dict,
+    compensation_policies: list | None = None,
 ) -> tuple[str, dict, dict]:
     """
     Handle stage 4: salary and benefits.
@@ -151,7 +152,27 @@ async def handle_salary(
                 f"for role {job_draft.get('cargo') or job_draft.get('job_title')}"
             )
 
-    # TODO(WIZARD-INT:001): replace prose "Bônus ou PLR" with structured query to compensation_policies filtered by seniority/dept
+    # INT:001 — build structured PRV section from compensation_policies (replaces prose "Bônus ou PLR")
+    prv_section = ""
+    default_policy: dict | None = None
+    if compensation_policies:
+        default_policy = compensation_policies[0]  # sorted: is_default first, then name
+        prv_section = f"\n\n📈 **Política de PRV:** {default_policy['name']}"
+        if default_policy.get("policy_type"):
+            prv_section += f" ({default_policy['policy_type']})"
+        vc = default_policy.get("variable_compensation") or {}
+        items = vc.get("items", []) if isinstance(vc, dict) else []
+        for item in items[:2]:  # show at most 2 variable-comp items
+            kind = item.get("kind", "")
+            name = item.get("name") or kind
+            value_pct = item.get("value_pct")
+            base = item.get("base", "")
+            freq = item.get("frequency", "")
+            detail = f"{value_pct}% do {base}" if value_pct else base
+            prv_section += f"\n  • {name}: {detail}{', ' + freq if freq else ''}"
+    else:
+        prv_section = "\n\n• Bônus ou PLR (se aplicável — nenhuma política PRV cadastrada)"
+
     lia_message = f"""Perfeito! Vamos definir a **Remuneração**. 💰
 
 📊 **Minha análise de mercado:**
@@ -159,8 +180,7 @@ async def handle_salary(
 {benefits_list}
 
 **O que precisamos definir:**
-• Faixa salarial (mínimo - máximo)
-• Bônus ou PLR (se aplicável)
+• Faixa salarial (mínimo - máximo){prv_section}
 • Benefícios oferecidos nesta vaga
 
 💡 *Os benefícios da empresa já estão pré-selecionados no painel. Ajuste conforme necessário.*
@@ -172,10 +192,16 @@ async def handle_salary(
 ❓ *Quer saber mais sobre salários de mercado para este cargo? Pergunte!*"""
 
     suggestions_data = {
-        "benefits": [{"name": b["name"], "selected": True} for b in company_benefits] if company_benefits else [],
+        # INT:002 — include id so FE can de-dup by id, not just name
+        "benefits": [
+            {"id": b.get("id"), "name": b["name"], "selected": True}
+            for b in company_benefits
+        ] if company_benefits else [],
         "salary_benchmark": combined,
         "learning_adjustments": learning_adjustments,
-        "historical_salary": salary_patterns if salary_patterns.get('has_data') else None,
+        "historical_salary": salary_patterns if salary_patterns.get("has_data") else None,
+        # INT:001 — expose default PRV policy for the wizard panel
+        "compensation_policy": default_policy,
     }
 
     # ---- pick_canonical salary suggestion --------------------------------

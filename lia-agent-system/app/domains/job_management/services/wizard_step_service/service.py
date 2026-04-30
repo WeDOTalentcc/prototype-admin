@@ -63,6 +63,7 @@ class WizardStepService:
         from app.domains.job_management.schemas.wizard_schemas import WizardStepResponse
         from lia_models.company import CompanyProfile, Department
         from lia_models.company_benefit import CompanyBenefit
+        from lia_models.compensation_policy import CompensationPolicy
 
         conversation_id = request.conversation_id or str(uuid4())
         current_stage = request.stage
@@ -336,12 +337,67 @@ class WizardStepService:
                     and_(CompanyBenefit.company_id == company_id, CompanyBenefit.is_active)
                 ).order_by(CompanyBenefit.order)
                 benefits_result = await db.execute(benefits_query)
+                _seniority = (
+                    job_draft.get("senioridade") or job_draft.get("seniority") or ""
+                ).strip()
+                # INT:002 — seniority-aware filter: include benefit if seniority_levels is
+                # NULL/empty (applies to all) OR explicitly contains the job seniority.
+                def _benefit_eligible(b: CompanyBenefit) -> bool:
+                    levels = b.seniority_levels
+                    if not levels:           # NULL or [] — universal benefit
+                        return True
+                    if not _seniority:      # seniority not yet set — show all
+                        return True
+                    return any(lvl.lower() == _seniority.lower() for lvl in levels)
+
                 company_benefits = [
-                    {"name": b.name, "category": b.category, "description": b.description}
+                    {
+                        "id": str(b.id),
+                        "name": b.name,
+                        "category": b.category,
+                        "description": b.description,
+                    }
                     for b in benefits_result.scalars().all()
+                    if _benefit_eligible(b)
                 ]
             except Exception as e:
                 logger.warning(f"Could not fetch company benefits: {e}")
+
+            # INT:001 — load active compensation policies (PRV) filtered by seniority.
+            # Sorted: is_default first, then by name.
+            company_compensation_policies: list[dict] = []
+            try:
+                _pol_query = select(CompensationPolicy).where(
+                    and_(
+                        CompensationPolicy.company_id == company_id,
+                        CompensationPolicy.is_active,
+                    )
+                ).order_by(
+                    CompensationPolicy.is_default.desc(),
+                    CompensationPolicy.name,
+                )
+                _pol_result = await db.execute(_pol_query)
+                _seniority_lower = _seniority.lower() if _seniority else ""
+                company_compensation_policies = [
+                    {
+                        "id": str(p.id),
+                        "name": p.name,
+                        "policy_type": p.policy_type,
+                        "variable_compensation": p.variable_compensation or {},
+                        "applicable_seniority": p.applicable_seniority or [],
+                    }
+                    for p in _pol_result.scalars().all()
+                    if (
+                        not p.applicable_seniority
+                        or not _seniority_lower
+                        or any(
+                            s.lower() == _seniority_lower
+                            for s in p.applicable_seniority
+                        )
+                    )
+                ]
+            except Exception as e:
+                logger.warning(f"Could not fetch compensation policies: {e}")
 
             try:
                 profile_query = select(CompanyProfile).where(CompanyProfile.is_active).limit(1)
@@ -581,6 +637,7 @@ class WizardStepService:
                         benchmarks=benchmarks,
                         field_origins=field_origins,
                         suggestions_data=suggestions_data,
+                        compensation_policies=company_compensation_policies,
                     )
 
                 elif current_stage == 5:

@@ -55,14 +55,41 @@ def prefill_from_snapshots(
         except Exception:
             pass
 
-    # TODO(WIZARD-INT:004): load compensation_policy linked to job + inherited benefits before building offer
-    # Benefits: copy from job
+    # INT:004 — hydrate offered_benefits: prefer structured data from linked compensation policy,
+    # then fall back to job_snapshot benefits (already set by wizard or manual edit).
+    # compensation_policy is pre-loaded by OfferService._enrich_job_snapshot_compensation()
+    # and merged into job_snapshot before this function is called.
+    _comp_policy = job_snapshot.get("compensation_policy") or {}
+    _policy_benefits_pkg = _comp_policy.get("benefits_package") or {}
+    _policy_benefit_names: list[str] = _policy_benefits_pkg.get("included", []) if isinstance(_policy_benefits_pkg, dict) else []
+
     if job_snapshot.get("benefits"):
         benefits = job_snapshot["benefits"]
         if isinstance(benefits, list):
             fields["offered_benefits"] = [
                 {"name": b} if isinstance(b, str) else b for b in benefits
             ]
+            # Merge in any policy benefits not already listed (no duplicates)
+            existing_names = {
+                (b if isinstance(b, str) else b.get("name", "")).lower()
+                for b in benefits
+            }
+            for pname in _policy_benefit_names:
+                if pname.lower() not in existing_names:
+                    fields["offered_benefits"].append({"name": pname, "source": "compensation_policy"})
+    elif _policy_benefit_names:
+        # No job benefits yet — inherit from policy
+        fields["offered_benefits"] = [
+            {"name": n, "source": "compensation_policy"} for n in _policy_benefit_names
+        ]
+
+    # Expose compensation_policy summary in offer fields for FE display
+    if _comp_policy.get("id"):
+        fields["compensation_policy_snapshot"] = {
+            "id": _comp_policy["id"],
+            "name": _comp_policy.get("name", ""),
+            "variable_compensation": _comp_policy.get("variable_compensation", {}),
+        }
 
     # Currency from salary_range
     fields["offered_salary_currency"] = salary_range.get("currency", "BRL")
@@ -111,6 +138,40 @@ class OfferService:
         self._db = db
         self._repo = OfferRepository(db)
 
+    async def _enrich_job_snapshot_compensation(self, job_snapshot: dict[str, Any]) -> None:
+        """Load CompensationPolicy linked to job and merge structured data into job_snapshot.
+
+        Mutates job_snapshot in-place. No-op if no compensation_policy_id or policy not found.
+        Fail-open: any DB error is logged and silently ignored.
+        """
+        policy_id = job_snapshot.get("compensation_policy_id")
+        if not policy_id:
+            return
+        try:
+            from lia_models.compensation_policy import CompensationPolicy
+            from sqlalchemy import select as _select
+            result = await self._db.execute(
+                _select(CompensationPolicy).where(CompensationPolicy.id == policy_id)
+            )
+            policy = result.scalar_one_or_none()
+            if policy:
+                job_snapshot["compensation_policy"] = {
+                    "id": str(policy.id),
+                    "name": policy.name,
+                    "policy_type": policy.policy_type,
+                    "variable_compensation": policy.variable_compensation or {},
+                    "salary_bands": policy.salary_bands or [],
+                    "benefits_package": policy.benefits_package or {},
+                }
+                logger.info(
+                    "[offer] compensation_policy %s (%s) merged into job_snapshot",
+                    policy.id, policy.name,
+                )
+        except Exception as exc:
+            logger.warning(
+                "[offer] Could not load compensation_policy %s: %s", policy_id, exc
+            )
+
     async def create_or_get_draft(
         self,
         data: OfferDraftCreate,
@@ -126,6 +187,8 @@ class OfferService:
         if existing:
             return existing
 
+        # INT:004 — load PRV policy before prefill so prefill_from_snapshots can hydrate benefits
+        await self._enrich_job_snapshot_compensation(job_snapshot)
         prefill = prefill_from_snapshots(job_snapshot, candidate_snapshot)
         validity = _DEFAULT_VALIDITY_DAYS
 
