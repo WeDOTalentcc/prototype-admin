@@ -849,6 +849,13 @@ function CompactReels({
   const { pulse } = usePipelinePulse();
   // PR-Q1: router necessário para navigate_url dispatch no modo compact.
   const router = useRouter();
+  // FE-S06: dock magnifier — paridade com modo expandido.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const nodeRefs = useRef<(HTMLElement | null)[]>([]);
+  const { handleMouseMove, handleMouseLeave, getScale } = useDockMagnifier(containerRef);
+  const setNodeRef = (index: number) => (el: HTMLElement | null) => {
+    nodeRefs.current[index] = el;
+  };
   const allNodes = [...stages, ...utilityNodes];
   const nodesWithSuggestions = allNodes.filter((s) => s.suggestions.length > 0);
   const firstWithSuggestions = nodesWithSuggestions[0]?.id ?? null;
@@ -865,18 +872,23 @@ function CompactReels({
   return (
     <div className="space-y-2">
       <div
+        ref={containerRef}
         className="flex items-center gap-1 overflow-x-auto scrollbar-none py-1"
         style={{ scrollbarWidth: "none" }}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
       >
         {stages.map((stage, idx) => (
           <React.Fragment key={stage.id}>
             <CompactNode
+              ref={setNodeRef(idx) as React.Ref<HTMLButtonElement>}
               stage={stage}
               isActive={activeStageId === stage.id}
               onClick={() =>
                 handleNodeClick(stage.id, stage.suggestions.length > 0)
               }
               pulseCount={stage.pulseStageId ? pulse[stage.pulseStageId] : undefined}
+              scale={getScale(idx, nodeRefs)}
             />
             {idx < stages.length - 1 && (
               <div className="h-px w-4 flex-shrink-0 bg-lia-border-subtle" />
@@ -890,12 +902,14 @@ function CompactReels({
             {utilityNodes.map((node, idx) => (
               <React.Fragment key={node.id}>
                 <CompactNode
+                  ref={setNodeRef(stages.length + idx) as React.Ref<HTMLButtonElement>}
                   stage={node}
                   isActive={activeStageId === node.id}
                   onClick={() =>
                     handleNodeClick(node.id, node.suggestions.length > 0)
                   }
                   pulseCount={node.pulseStageId ? pulse[node.pulseStageId] : undefined}
+                  scale={getScale(stages.length + idx, nodeRefs)}
                 />
                 {idx < utilityNodes.length - 1 && (
                   <div className="w-1 flex-shrink-0" />
@@ -965,27 +979,32 @@ function CompactReels({
   );
 }
 
-function CompactNode({
-  stage,
-  isActive,
-  onClick,
-  pulseCount,
-}: {
-  stage: WorkflowReelStage;
-  isActive: boolean;
-  onClick: () => void;
-  pulseCount?: number;
-}) {
+const CompactNode = React.forwardRef<
+  HTMLButtonElement,
+  {
+    stage: WorkflowReelStage;
+    isActive: boolean;
+    onClick: () => void;
+    pulseCount?: number;
+    /** Dock magnifier scale factor (1 = no magnification). */
+    scale?: number;
+  }
+>(function CompactNode({ stage, isActive, onClick, pulseCount, scale = 1 }, ref) {
   const Icon = stage.icon;
   const hasSuggestions = stage.suggestions.length > 0;
   const showPulse = pulseCount !== undefined && pulseCount > 0;
 
   return (
     <button
+      ref={ref}
       onClick={onClick}
       disabled={!hasSuggestions}
-      className="flex-shrink-0 flex flex-col items-center gap-0.5 px-1 disabled:cursor-default"
+      className="flex-shrink-0 flex flex-col items-center gap-0.5 px-1 disabled:cursor-default origin-bottom motion-reduce:!transition-none"
       title={stage.label}
+      style={{
+        transform: scale !== 1 ? `scale(${scale})` : undefined,
+        transition: "transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+      }}
     >
       <div className="relative">
         <div
@@ -1038,4 +1057,4 @@ function CompactNode({
       </span>
     </button>
   );
-}
+});
