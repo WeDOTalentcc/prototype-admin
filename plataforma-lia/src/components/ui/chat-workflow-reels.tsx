@@ -2,6 +2,8 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   getCanonicalStage,
   CANONICAL_FUNNEL_STAGES,
@@ -141,12 +143,19 @@ export const SUGGESTION_HINTS: Record<
  * configuração que têm páginas dedicadas.
  */
 export const NAVIGATION_OVERRIDES: Record<string, string> = {
-  "ai-credits": "/configuracoes/ai-credits",
+  // "ai-credits" removido: página não existe ainda — usa COMING_SOON_CARDS
   "hiring-policy": "/configuracoes?section=pipeline",
   "email-templates": "/configuracoes?section=templates-assinatura",
   /** PR-Q1: Banco de talentos tem página dedicada — navegar direto. */
   "talent-pool": "/bancos-de-talentos",
 };
+
+/**
+ * Guide computacional: cards em estado "Em breve".
+ * Remover entrada quando a feature for implementada.
+ * Single source of truth para coming-soon state no Rail A.
+ */
+export const COMING_SOON_CARDS = new Set<string>(["ai-credits"]);
 
 /**
  * PR-Q1: Cards que abrem modal diretamente (sem detour pelo chat).
@@ -634,6 +643,13 @@ export function ChatWorkflowReels({
                 data-rail-a-card={suggestion.id}
                 data-rail-a-stage={activeStage.id}
                 onClick={() => {
+                  // Guide computacional: coming-soon cards mostram toast e retornam sem ação.
+                  if (COMING_SOON_CARDS.has(suggestion.id)) {
+                    toast.info("Em breve", {
+                      description: "Esta funcionalidade estará disponível em breve.",
+                    });
+                    return;
+                  }
                   window.dispatchEvent(new CustomEvent("lia:rail-a-card-click", {
                     detail: { card_id: suggestion.id, stage_id: activeStage.id, navigate: !!suggestion.navigate_url, modal: !!suggestion.modal_id },
                   }));
@@ -650,17 +666,24 @@ export function ChatWorkflowReels({
                     );
                   }
                 }}
-                className="flex items-start gap-3 p-4 text-left rounded-xl bg-lia-bg-primary border transition-all duration-150 hover:-translate-y-0.5 group flex-1 min-w-[180px]"
+                className={cn(
+                  "flex items-start gap-3 p-4 text-left rounded-xl bg-lia-bg-primary border transition-all duration-150 group flex-1 min-w-[180px]",
+                  COMING_SOON_CARDS.has(suggestion.id)
+                    ? "opacity-60 cursor-default"
+                    : "hover:-translate-y-0.5",
+                )}
                 style={{
                   borderColor: activeStage.color.cardBorder,
                 }}
                 onMouseEnter={(e) => {
+                  if (COMING_SOON_CARDS.has(suggestion.id)) return;
                   e.currentTarget.style.borderColor =
                     activeStage.color.nodeBorder;
                   e.currentTarget.style.backgroundColor =
                     activeStage.color.accentBg;
                 }}
                 onMouseLeave={(e) => {
+                  if (COMING_SOON_CARDS.has(suggestion.id)) return;
                   e.currentTarget.style.borderColor =
                     activeStage.color.cardBorder;
                   e.currentTarget.style.backgroundColor =
@@ -681,6 +704,11 @@ export function ChatWorkflowReels({
                 <div className="min-w-0">
                   <span className="text-[14px] font-semibold text-lia-text-primary block mb-0.5">
                     {suggestion.title}
+                    {COMING_SOON_CARDS.has(suggestion.id) && (
+                      <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle align-middle">
+                        Em breve
+                      </span>
+                    )}
                   </span>
                   <span className="text-xs leading-snug text-lia-text-secondary block">
                     {suggestion.description}

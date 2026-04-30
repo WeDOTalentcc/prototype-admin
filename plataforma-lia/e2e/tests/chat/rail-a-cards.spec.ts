@@ -232,15 +232,14 @@ test.describe('Stage 2 — Captação', () => {
   });
 
   test('RAL-213 NAVIGATION: 2.3 Banco de talentos → /bancos-de-talentos', async ({ authenticatedPage: page }) => {
-    // Card sends a chat command (same pattern as RAL-211/212).
-    // Navigation-based test is not applicable until PR-K implements direct nav.
     await goChatEmpty(page);
     await expandStage(page, 'Captação');
-    const ev = await onRailAClick(page, () =>
+    await Promise.all([
+      page.waitForURL(/bancos-de-talentos/, { timeout: 12_000 }),
       page.locator('[data-rail-a-card="talent-pool"]').click(),
-    );
-    expect(ev.card_id).toBe('talent-pool');
-    expect(ev.stage_id).toBe('sourcing');
+    ]);
+    expect(page.url()).toMatch(/bancos-de-talentos/);
+    await page.screenshot({ path: `${SS}/02c-talent-pool-nav.png` });
   });
 });
 
@@ -491,26 +490,39 @@ test.describe('Stage 9 — Configurações', () => {
     await expect(page.locator('[data-rail-a-card="email-templates"]')).toBeVisible();
   });
 
-  test('RAL-911 NAVIGATION: 9.1 Créditos IA → /configuracoes/ai-credits', async ({ authenticatedPage: page }) => {
-    // Card sends a chat command; direct navigation (PR-K) not yet implemented.
+  test('RAL-911 COMING_SOON: 9.1 Créditos IA → badge "Em breve" + toast, sem navegação', async ({ authenticatedPage: page }) => {
     await goChatEmpty(page);
     await expandStage(page, 'Config');
-    const ev = await onRailAClick(page, () =>
-      page.locator('[data-rail-a-card="ai-credits"]').click(),
-    );
-    expect(ev.card_id).toBe('ai-credits');
-    expect(ev.stage_id).toBe('configuracoes');
+    const card = page.locator('[data-rail-a-card="ai-credits"]');
+    await expect(card).toBeVisible();
+    const initialUrl = page.url();
+    // Setup: verify lia:rail-a-card-click does NOT fire for coming-soon card
+    await page.evaluate(() => {
+      (window as any).__ral_event_coming_soon = undefined;
+      window.addEventListener('lia:rail-a-card-click', (e: Event) => {
+        (window as any).__ral_event_coming_soon = (e as CustomEvent).detail;
+      }, { once: true });
+    });
+    await card.click();
+    await page.waitForTimeout(600);
+    // URL must not change
+    expect(page.url()).toBe(initialUrl);
+    // Event must NOT have fired
+    const ev = await page.evaluate(() => (window as any).__ral_event_coming_soon);
+    expect(ev, 'coming-soon card não deve disparar lia:rail-a-card-click').toBeUndefined();
+    // Toast "Em breve" must appear
+    await expect(page.locator('[data-sonner-toast]').first()).toBeVisible({ timeout: 3_000 });
   });
 
   test('RAL-912 NAVIGATION: 9.2 Política de contratação → /configuracoes?section=pipeline', async ({ authenticatedPage: page }) => {
-    // Card sends a chat command; direct navigation (PR-K) not yet implemented.
     await goChatEmpty(page);
     await expandStage(page, 'Config');
-    const ev = await onRailAClick(page, () =>
+    await Promise.all([
+      page.waitForURL(/configuracoes/, { timeout: 12_000 }),
       page.locator('[data-rail-a-card="hiring-policy"]').click(),
-    );
-    expect(ev.card_id).toBe('hiring-policy');
-    expect(ev.stage_id).toBe('configuracoes');
+    ]);
+    expect(page.url()).toMatch(/configuracoes/);
+    await page.screenshot({ path: `${SS}/09b-hiring-policy-nav.png` });
   });
 
   test('RAL-913 NAVIGATION: 9.3 Templates de email → /configuracoes?section=templates-assinatura', async ({ authenticatedPage: page }) => {
