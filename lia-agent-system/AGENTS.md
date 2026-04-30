@@ -44,9 +44,23 @@
 - Guia de harness (regras extensas): `CLAUDE.md` (este repo)
 - Plano de sessão: `~/.claude/plans/chave-do-replit-para-linked-pie.md`
 
-## Dead Code Documentado
+## Integrações Planejadas (NOT YET WIRED)
 
-| Método | Arquivo | Status | Razão |
+> Estes componentes estão **implementados e testados** mas ainda não conectados ao tráfego de produção.
+> Para encontrá-los: `grep -rn "TODO(RABBITMQ-INT\|WS-ADAPTER-INT)" app/`
+
+| Componente | Arquivo | Status | O que falta para conectar |
 |---|---|---|---|
-| `ContextAdapter.from_ws` | `app/orchestrator/context_adapter.py` | DEAD CODE | WS handler faz inline promotion (linhas 954-961 de `agent_chat_ws.py`) |
-| `ContextAdapter.from_rabbitmq` | `app/orchestrator/context_adapter.py` | DEAD CODE | Nenhum consumer RabbitMQ existe ainda em `lia-agent-system` |
+| `ContextAdapter.from_ws` | `app/orchestrator/context_adapter.py` | NOT YET CALLED | Refatorar inline promotion em `agent_chat_ws.py:~954` para chamar este método |
+| `ContextAdapter.from_rabbitmq` | `app/orchestrator/context_adapter.py` | NOT YET WIRED | Implementar `app/workers/rabbitmq_consumer.py` (stub existe) |
+| `app/workers/rabbitmq_consumer.py` | `app/workers/rabbitmq_consumer.py` | STUB | Consumer AMQP + queue binding + integration test (ver docstring do módulo) |
+
+### Checklist para ativar RabbitMQ em produção
+
+- [ ] `AMQP_URL` env var configurada no Replit Secrets
+- [ ] `INTERNAL_SERVICE_TOKEN` env var configurada (shared secret Rails↔Python)
+- [ ] Exchange/queue criados: `exchange=lia.exchange`, `queue=lia.jobs`, `key=lia.chat`
+- [ ] Rails `LiaJobsProducerService` publicando no formato do contrato (ver `rabbitmq_consumer.py` docstring)
+- [ ] `app/workers/rabbitmq_consumer.py` implementado (substituir stub)
+- [ ] Integration test: `tests/integration/test_rabbitmq_consumer.py`
+- [ ] Smoke test manual: publicar 1 msg → verificar log `[rabbitmq_consumer] routed via ContextAdapter.from_rabbitmq`

@@ -204,6 +204,15 @@ class ContextAdapter:
 
     # ------------------------------------------------------------------
     # WebSocket
+    # NOT YET CALLED — agent_chat_ws.py ainda faz inline promotion (~linha 954).
+    # TODO(WS-ADAPTER-INT): para migrar, substituir o bloco inline em
+    #   agent_chat_ws.py por:
+    #     ctx = ContextAdapter.from_ws(
+    #         session_id=session_id,
+    #         message_frame=message_frame,
+    #         jwt_payload=jwt_payload,
+    #     )
+    # Tracking: AGENTS.md § Integrações Planejadas
     # ------------------------------------------------------------------
 
     @staticmethod
@@ -257,7 +266,14 @@ class ContextAdapter:
         )
 
     # ------------------------------------------------------------------
-    # RabbitMQ (compatível com formato do v5)
+    # RabbitMQ — Rails → Python async integration
+    # NOT YET WIRED — consumer em app/workers/rabbitmq_consumer.py (stub).
+    # TODO(RABBITMQ-INT): para ativar em produção:
+    #   1. Implementar app/workers/rabbitmq_consumer.py (ver checklist no módulo).
+    #   2. Exchange/queue: exchange='lia.exchange', queue='lia.jobs', key='lia.chat'.
+    #   3. Formato esperado: { question, domain, sourcing_id, user_id, context_data, company_id }
+    #   4. Autenticação: validar INTERNAL_SERVICE_TOKEN (shared secret Rails↔Python).
+    # Tracking: AGENTS.md § Integrações Planejadas
     # ------------------------------------------------------------------
 
     @staticmethod
