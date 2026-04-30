@@ -43,6 +43,7 @@ import { toast } from"sonner"
 import { cn } from"@/lib/utils"
 import { liaApi, type JobVacancy } from"@/services/lia-api"
 import type { CompanyBenefit } from '@/types/benefits'
+import { useLiaChatContext } from '@/contexts/lia-float-context'
 import {
   STATUS_OPTIONS,
   STAGE_OPTIONS,
@@ -127,6 +128,9 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
     fetchPipelineTemplates,
   } = useEditJob({ isOpen, job, onSave, onClose })
 
+  // INT:005 — LIA chat trigger for 'Sugerir pacote com LIA' button
+  const { sendChatMessage } = useLiaChatContext()
+
   if (!isOpen || !job) return null
 
   return (
@@ -180,6 +184,14 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   addBenefit={addBenefit}
                   removeBenefit={removeBenefit}
                   activeCompensationPolicies={activeCompensationPolicies}
+                  onSuggestWithLIA={() => {
+                    // INT:005 — open LIA chat pre-filled with compensation suggestion prompt
+                    sendChatMessage(
+                      `Sugira um pacote de remuneração completo para a vaga ${job?.title || ''}: salário, PRV e benefícios`,
+                      undefined,
+                      undefined,
+                    )
+                  }}
                 />
 
                 <hr className="border-lia-border-subtle" />
