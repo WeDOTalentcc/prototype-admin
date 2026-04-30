@@ -50,6 +50,20 @@ OVERRIDE_SOURCE: Final[str] = "rail_a_hint_override"
 TRUSTED_SOURCE: Final[str] = "rail_a"
 HINT_CONFIDENCE: Final[float] = 0.99
 
+# Routing targets that are valid Rail A destinations but are NOT registered
+# via @register_domain (DomainPrompt pattern). These are LangGraph canonical
+# flows or hard-coded WS handler branches — equally valid routing targets.
+#
+# "wizard" — JobCreationGraph canonical flow, handled at
+#   agent_chat_ws.py:~1153 (`if active_domain == "wizard":`). Not in
+#   DomainRegistry because it bypasses the DomainPrompt / ReAct agent path.
+#
+# Add new entries here when introducing non-DomainRegistry routing targets
+# that the FE may hint at via Rail A metadata.
+_RAIL_A_EXTRA_TARGETS: Final[frozenset[str]] = frozenset({
+    "wizard",
+})
+
 
 def get_hint_domain(metadata: dict | None) -> tuple[str, str | None] | None:
     """Retorna ``(domain_id, intent_id)`` se metadata declara hint válido.
@@ -70,11 +84,17 @@ def get_hint_domain(metadata: dict | None) -> tuple[str, str | None] | None:
     domain_hint = metadata.get("domain_hint")
     if not isinstance(domain_hint, str) or not domain_hint:
         return None
-    # Validar contra DomainRegistry — fail-safe contra typos / drift.
+    # Validar contra DomainRegistry + _RAIL_A_EXTRA_TARGETS — fail-safe contra
+    # typos / drift. _RAIL_A_EXTRA_TARGETS cobre routing targets válidos que
+    # existem como fluxos LangGraph ou branches hardcoded no WS handler mas
+    # NÃO estão registrados via @register_domain (ex.: "wizard").
     try:
         from app.domains.registry import DomainRegistry
         registry = DomainRegistry()
-        if domain_hint not in registry.list_domains():
+        if (
+            domain_hint not in registry.list_domains()
+            and domain_hint not in _RAIL_A_EXTRA_TARGETS
+        ):
             logger.warning(
                 "[rail_a_hint] domain_hint=%s não registrado — fallback",
                 domain_hint,
