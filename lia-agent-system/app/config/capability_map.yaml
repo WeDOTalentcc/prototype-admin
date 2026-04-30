@@ -98,8 +98,3 @@ capabilities:
     entity_required: []       # tenant-wide summary — no specific entity needed
     navigate_fallback: /analytics
 
-  # ── W1-2: daily_briefing — card 7.2, chat_executable (BriefingService legacy) ──
-  daily_briefing:
-    chat_executable: true
-    entity_required: []       # tenant-wide summary — no specific entity needed
-    navigate_fallback: /analytics
