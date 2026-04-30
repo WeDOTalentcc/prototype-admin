@@ -243,7 +243,7 @@ function buildBlocks(
     { key: "responsible_name", label: "Responsavel", value: additionalData?.responsible_name, type: "text", editable: true, block: "documents" },
     { key: "responsible_position", label: "Cargo do Responsavel", value: additionalData?.responsible_position, type: "text", editable: true, block: "documents" },
     { key: "additional_notes", label: "Notas Adicionais", value: additionalData?.additional_notes, type: "text", editable: true, block: "documents" },
-    { key: "compensation_structure", label: "Estrutura de Remuneracao", value: company.default_salary_ranges && company.default_salary_ranges.length > 0 ? `${company.default_salary_ranges.length} faixa(s)` : null, type: "text", editable: false, block: "documents" },
+    { key: "compensation_structure", label: "Pol®ticas de PRV", value: company.default_salary_ranges && company.default_salary_ranges.length > 0 ? `${company.default_salary_ranges.length} faixa(s)` : null, type: "text", editable: false, block: "documents" },
   ]
 
   const blocks: CardBlock[] = [
@@ -253,7 +253,7 @@ function buildBlocks(
     { key: "benefits", title: "Benefícios", subtitle: benefitsSubtitle, iconName: "Gift", fields: benefitsFields, status: computeBlockStatus(benefitsFields), progress: computeBlockProgress(benefitsFields) },
     { key: "policy", title: "Politicas de Recrutamento", iconName: "GitBranch", fields: policyFields, status: computeBlockStatus(policyFields), progress: computeBlockProgress(policyFields) },
     { key: "workforce", title: "Workforce Planning", iconName: "BarChart3", fields: workforceFields, status: computeBlockStatus(workforceFields), progress: computeBlockProgress(workforceFields) },
-    { key: "documents", title: "Remuneracao & Onboarding", iconName: "FileText", fields: documentFields, status: computeBlockStatus(documentFields), progress: computeBlockProgress(documentFields) },
+    { key: "documents", title: "Remuneração Variável", iconName: "TrendingUp", fields: documentFields, status: computeBlockStatus(documentFields), progress: computeBlockProgress(documentFields) },
   ]
 
   return blocks
