@@ -157,20 +157,33 @@ async def _resolve_required_entities(
                 "source": "disambiguation",
             }
 
-        # Not found — suggest navigation
-        navigate = resolution.navigate_to or "/funil-de-talentos"
-        return {
+        # Not found — suggest navigation if a valid route is available.
+        # Post-mortem 2026-04-29 Bug 4: previous fallback was
+        # "/funil-de-talentos" — a dead route in the App Router migration
+        # (404). Route now through safe_navigate_route so producers can
+        # never emit dead URLs. Default fallback is "/teams-tab/candidatos"
+        # (the canonical candidate list page); if even that is invalid the
+        # ui_action is omitted entirely so the user just sees the message.
+        from app.shared.navigation_routes import (
+            safe_navigate_route,
+            validate_navigate_route,
+        )
+        candidate_path = resolution.navigate_to or "/teams-tab/candidatos"
+        navigate = safe_navigate_route(candidate_path)
+        response: dict[str, Any] = {
             "type": "message",
             "content": (
                 "Não encontrei esse candidato. "
                 "Tente buscar pelo nome completo ou abrir a tela de candidatos."
             ),
-            "ui_action": _UI_ACTION_NAVIGATE,
-            "ui_action_params": {"page": navigate},
             "confidence": 0.5,
             "domain": "entity_resolver",
             "source": "not_found",
         }
+        if validate_navigate_route(navigate):
+            response["ui_action"] = _UI_ACTION_NAVIGATE
+            response["ui_action_params"] = {"page": navigate}
+        return response
 
     return None
 
