@@ -5044,3 +5044,162 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
    - Auto-commits do Replit Agent que misturam várias mudanças (Apêndice B)
    - Lista cronológica completa dos 3.491 commits (Apêndice C)
    - Features menores 1-2 commits (Apêndice D)
+
+---
+
+## 4. Atualização Incremental — 29/abr 12:47 → 30/abr/2026 (51 commits)
+
+> **Janela:** 2026-04-29 13:00 → 2026-04-30 18:32
+> **Total adicionado:** 51 commits após geração v3 deste doc
+> **Branch ativa:** `feat/benefits-prv-canonical` (76 commits ahead of `main`)
+> **Push para GitHub:** PENDENTE (Paulo manual via Replit IDE → branch `replit-sync`)
+
+### 4.1 Resumo por feature
+
+| Feature | Commits | Período | Camadas | Risco |
+|---|---:|---|---|---|
+| §4 Rail Features (sprint final + sessão 30/abr) | 20 | 29/abr 13:17 → 30/abr 18:32 | IA × Front × Back | 🟢×11 / 🟡×8 / 🔴×1 |
+| Benefits + PRV (Compensation Policies) | 13 | 29/abr → 30/abr | Cross IA↔Back, FE | 🟡×9 / 🔴×4 |
+| Misc fixes / Auto-commits | 18 | 29/abr → 30/abr | Vários | 🟢×10 / 🟡×7 / 🔴×1 |
+
+### 4.2 Rail A — sprint final + sessão Claude (20 commits)
+
+**Descrição:** fechamento dos PRs Rail A (PR-A a PR-O) + 5 fixes finais da sessão Claude 30/abr (PR-L, PR-J/J2, PR-BRIEF, PR-RAG, PR-E).
+
+**⚠️ Dependências para cherry-pick:** aplicar em ordem cronológica. PR-CAL (`18b7614c7`) e talent-pool Wave3 (`ed89147b7`) precisam vir ANTES das mudanças de capability_map de 30/abr (`d330b2822`) por shared file.
+
+**Arquivos canônicos:**
+- `lia-agent-system/app/config/capability_map.yaml`
+- `lia-agent-system/app/orchestrator/services/rail_a_hint_override.py`
+- `lia-agent-system/app/orchestrator/action_handlers/sourcing_actions.py`
+- `lia-agent-system/app/api/v1/briefing.py`
+- `lia-agent-system/app/domains/integrations_hub/services/rails_adapter.py`
+- `lia-agent-system/app/domains/talent_pool/agents/`
+- `lia-agent-system/tests/unit/test_rail_a_routing.py`
+- `lia-agent-system/tests/unit/test_rail_a_routing_deterministic.py`
+- `lia-agent-system/tests/deepeval/test_rail_a_golden_llm_judge.py`
+- `plataforma-lia/src/styles/design-tokens.css`
+- `plataforma-lia/src/components/ui/chat-workflow-reels.tsx`
+- `plataforma-lia/src/components/pages/job-kanban/hooks/useKanbanDragDrop.ts`
+
+**Docs de referência:** `/Users/paulomoraes/Documents/Python/handoff-rail-a/01-HANDOFF-TECNICO.md` (linhas 90-180 — mapa completo dos PRs do Rail A com hashes)
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟢 | `0cf1caa5b` | 2026-04-30 18:32 | Testes | **PR-E expansion (sessão Claude):** LLM-as-judge para 22 cards Rail A do golden dataset. 4 sensores estruturais always-on (passing) + 3 métricas DeepEval gated por OPENAI_API_KEY (HallucinationMetric, AnswerRelevancyMetric, BiasMetric). | `lia-agent-system/tests/deepeval/test_rail_a_golden_llm_judge.py` (NEW, 164 linhas) |
+| 🟢 | `661028958` | 2026-04-30 17:09 | Testes | E2E suites: Rail A routing (RA 9 tests) + Wizard PRV/Benefits (WB 10 tests). | `plataforma-lia/e2e/tests/...` |
+| 🟡 | `ccd90ff84` | 2026-04-30 16:38 | IA | **PR-RAG (sessão Claude):** substitui SQL ILIKE em `_search_candidates` por `RAGPipelineService.search()` (pgvector + BM25 hybrid, alpha=0.5). Multi-tenant explícito, FairnessGuard automático. | `lia-agent-system/app/orchestrator/action_handlers/sourcing_actions.py` |
+| 🟡 | `9e0eee100` | 2026-04-30 16:33 | Cross IA↔Back | **PR-BRIEF (sessão Claude):** `RailsAdapter.daily_summary()` substituindo `briefing_service` deprecated. Pull live de jobs ativos + recent applies via asyncio.gather. Multi-tenant via `get_user_company_id`. | `lia-agent-system/app/api/v1/briefing.py`<br>`lia-agent-system/app/domains/integrations_hub/services/rails_adapter.py` |
+| 🟢 | `d330b2822` | 2026-04-30 16:26 | Backend | **PR-J + PR-J2 (sessão Claude):** adiciona `quick_question` (card 3.1) e `suggest_action` (card 8.3) ao capability_map.yaml. Previne silent fallthrough em `rail_a_capability_check.py`. | `lia-agent-system/app/config/capability_map.yaml` |
+| 🟢 | `44ee3228e` | 2026-04-30 16:24 | Frontend (UI) | **PR-L (sessão Claude):** remove fallback hex `#60BED1` redundante de `--chat-cyan` (DS v4.2.1 compliance). | `plataforma-lia/src/styles/design-tokens.css` |
+| 🟢 | `0d3f6ba76` | 2026-04-30 ~16:00 | Docs | docs(harness): mark from_ws/from_rabbitmq as NOT-YET-WIRED, add rabbitmq_consumer stub. | `lia-agent-system/app/...` (docs) |
+| 🟡 | `3bbdfede6` | 2026-04-30 ~15:30 | Frontend (UI) | int005: wire useLiaChatContext + sendChatMessage no edit-job-modal.tsx. | `plataforma-lia/src/components/modals/edit-job/...` |
+| 🟢 | `3cd5bee33` | 2026-04-30 ~15:00 | Docs | harness: P1-A history trim + dead code docs + AGENTS.md update. | `AGENTS.md` |
+| 🟡 | `e6d36fd39` | 2026-04-30 14:55 | Testes | **PR-E routing test pyramid:** 29 tests, 29 passing (lia-testing layer 4 backend unit) para todos os 22 Rail A cards. | `lia-agent-system/tests/unit/test_rail_a_routing.py` |
+| 🟢 | `eacb2726f` | 2026-04-30 ~14:50 | Auto-commit Replit | Git commit prior to merge. | (auto) |
+| 🟢 | `18b7614c7` | 2026-04-30 14:41 | Backend | **PR-CAL:** add `schedule_interview` to capability_map.yaml (chat_executable: false, modal_id: interview_scheduling). Card 4.1 routes direct to InterviewSchedulingModal. | `lia-agent-system/app/config/capability_map.yaml` |
+| 🟢 | `bd71815fb` | 2026-04-30 14:22 | Backend | wire OfferDomain via `app/domains/__init__.py` import. Remove triagem keyword conflict between cv_screening e job_management. | `lia-agent-system/app/domains/__init__.py` |
+| 🟢 | `bad0a8385` | 2026-04-30 13:22 | Backend | add `wizard` to `_RAIL_A_EXTRA_TARGETS` allowlist em `rail_a_hint_override.py`. Resolve silent failure quando FE injeta `domain_hint='wizard'`. | `lia-agent-system/app/orchestrator/services/rail_a_hint_override.py` |
+| 🟢 | `4028932dd` | 2026-04-30 12:58 | Frontend (UI) | **PR-O telemetry + compact COMING_SOON parity + stale navigation tests:** evento `lia:rail-a-card-click` enriquecido com `domain_hint`, `intent_hint`, `ts` em modos expanded e compact. | `plataforma-lia/src/components/ui/chat-workflow-reels.tsx` |
+| 🟡 | `7f0124b89` | 2026-04-30 12:37 | Cross Back↔Front | shortlist init (Bug #4 do audit 2026-04-16) + PR-O telemetry + compact COMING_SOON guard. ShortListResponse passa a incluir `candidate_ids[]`. | `lia-agent-system/app/api/v1/...`<br>`plataforma-lia/src/components/...` |
+| 🔴 | `2e3919e4c` | 2026-04-30 11:32 | Frontend (UI) | **PR-B Trigger B:** drag candidate para coluna "offer" no kanban abre OfferReviewModal (intercepta antes de UniversalTransitionModal). Dispatch `lia:open_offer_review` event. | `plataforma-lia/src/components/pages/job-kanban/hooks/useKanbanDragDrop.ts` |
+| 🟢 | `16be81325` | 2026-04-30 10:41 | Frontend (UI) | **FE-S06:** dock magnifier parity em `CompactReels`. CompactNode passa a usar `React.forwardRef<HTMLButtonElement>` para nodeRefs tracking. | `plataforma-lia/src/components/ui/chat-workflow-reels.tsx` |
+| 🟢 | `e6bf5e2ac` | 2026-04-30 10:34 | Frontend (UI) | **FE-S03:** remove hex fallback de `chat-workflow-reels.tsx`. Adiciona `--lia-text-on-accent` token (light: #FFFFFF). DS v4.2.1 compliance. | `plataforma-lia/src/components/ui/chat-workflow-reels.tsx`<br>`plataforma-lia/src/styles/design-tokens.css` |
+| 🟢 | `ed667d861` | 2026-04-30 10:14 | Testes | **W4-1 routing determinism:** 38 tests + LLM judge stub. Wave 4 deliverables. | `lia-agent-system/tests/unit/test_rail_a_routing_deterministic.py`<br>`lia-agent-system/tests/stubs/llm_judge_stub.py` |
+| 🟡 | `89388004c` | 2026-04-30 09:54 | Backend | **W1-2 daily_briefing contract:** capability_map entry + legacy disclaimer + tests. Update test_pr_j_capability_map.py expected count 11→12. | `lia-agent-system/app/config/capability_map.yaml`<br>`lia-agent-system/tests/unit/services/test_pr_j_capability_map.py` |
+| 🟡 | `ed89147b7` | 2026-04-30 09:17 | IA | **Wave3 talent-pool canonical ReAct agent (AGT-S02 fix):** cria `agents/` com 5-file canonical structure. `talent_pool_agent.py` com `@register_agent` (alias voice_screening). | `lia-agent-system/app/domains/talent_pool/agents/` (NEW dir, 5 files) |
+
+### 4.3 Resumo executivo dos 5 commits da sessão Claude (30/abr/2026)
+
+**Contexto:** Sessão finalizou os pendentes do plano Rail A. Auditoria profunda revelou que vários "P1 pendentes" eram falsos positivos — apenas 5 commits foram suficientes para fechar tudo.
+
+| # | Commit | PR | Descrição executiva | Esforço |
+|---|---|---|---|---|
+| 1 | `44ee3228e` | **PR-L** | Remove fallback hex hardcoded `#60BED1` em `--chat-cyan`. DS v4.2.1 compliance — token chain agora limpa. | 5 min |
+| 2 | `d330b2822` | **PR-J + PR-J2** | Adiciona 2 entradas `quick_question` + `suggest_action` em `capability_map.yaml`. Previne silent fallthrough em `rail_a_capability_check.py` para cards 3.1 e 8.3. | 10 min |
+| 3 | `9e0eee100` | **PR-BRIEF** | Implementa `RailsAdapter.daily_summary()` substituindo `briefing_service` deprecated (since 2026-04-17). Pull live data de jobs + applies via Rails. Auth correta com `get_user_company_id` (canonical-fix). | 45-60 min |
+| 4 | `ccd90ff84` | **PR-RAG** | `_search_candidates` em `sourcing_actions.py` migra de SQL ILIKE para `RAGPipelineService.search()` (pgvector + BM25 hybrid). Multi-tenant explícito, FairnessGuard automático. | 60-90 min |
+| 5 | `0cf1caa5b` | **PR-E expansion** | LLM-as-judge para `rail_a_golden_dataset.json` (22 cards). 4 sensores estruturais always-on + 3 métricas DeepEval gated. Soft-fail para CI estabilização. | 1 dia |
+
+**Resultado:** 22/22 cards Rail A funcionais end-to-end. Zero P0 abertos. Zero P1 abertos.
+
+### 4.4 Benefits + PRV (Compensation Policies) — 13 commits
+
+**Descrição:** Onda completa de Benefits + PRV (Política de Remuneração Variável). Estende `CompanyBenefit` para contrato Rails (22 colunas), cria `CompensationPolicy` CRUD com 5 sub-tabs UI + RLS, integra empresa→vaga via `compensation_policy_id` FK, sincroniza no wizard de criação de vaga.
+
+**⚠️ Dependências para cherry-pick:** aplicar Fases 1→2→3→4 em ordem (sequência abaixo). Migrations alembic 099, 100, 102, 103.
+
+| Risco | SHA | Data | Camada | Fase | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟡 | `32f212c66` | 2026-04-29 | Backend | Fase 1.1-1.3 — estende `CompanyBenefit` para 22 cols | `lia-agent-system/alembic/versions/100_extend_company_benefits.py`<br>`lia-agent-system/libs/models/lia_models/company_benefit.py` |
+| 🟡 | `403111d5d` | 2026-04-29 | Frontend (UI) | Fase 1.4 — `BenefitFormModal` cobre 20 campos + multi-select chips | `plataforma-lia/src/components/...` |
+| 🟡 | `020503492` | 2026-04-29 | Cross IA↔Back | Fase 1.6+1.7 — propaga 22 campos pela cadeia + TODO sync listas mestre | múltiplos |
+| 🟡 | `e048abb3d` | 2026-04-29 | Testes | Fase 1.8 — sensors estruturais para CompanyBenefit (10 tests) | `lia-agent-system/tests/...` |
+| 🟡 | `1ec524959` | 2026-04-29 | Cross IA↔Back | Fase 1 hardening — fairness guard + 13 testes (resposta auditoria) | múltiplos |
+| 🟡 | `9d6cc44a0` | 2026-04-29 | Cross Back↔Front | **Fase 2 completa** — `CompensationPolicy` CRUD + UI 5 sub-tabs + RLS | múltiplos |
+| 🟡 | `a2b209c91` | 2026-04-29 | Docs | Fase 2.1 — best practices ATS/HR Tech para PRV | docs |
+| 🟡 | `f46699cf8` | 2026-04-29 | Cross Back↔Front | **Fase 3** — empresa→vaga: `compensation_policy_id` FK + object benefits + PRV dropdown | múltiplos |
+| 🟡 | `66d1a0144` | 2026-04-29 | Cross Back↔Front | Fase 3 deferred — P1 multi-tenancy + 3.4 pre-select + 3.5 BenefitFormModal in job + 3.7 bonus label + 3.8 split Compensation/Process | múltiplos |
+| 🟡 | `8be8f6b8a` | 2026-04-29 | IA | **Fase 4** — IA layer audit + TODO markers + fairness note | `lia-agent-system/...` |
+| 🔴 | `44d742f2f` | 2026-04-30 | Cross IA↔Back | Wizard integra company Benefits + PRV (compensation_policies) into wizard flow | `lia-agent-system/app/domains/job_management/services/wizard_step_service/` + FE |
+| 🔴 | `407e76545` | 2026-04-30 | Cross Back↔Front | Integrate detailed compensation policies into job offers and hiring workflows | múltiplos |
+| 🟢 | `423158edd` | 2026-04-30 | Frontend (UI) | fix(settings): fix encoding Pol(R)ticas→Politicas de PRV + i18n documentsLabel→Remuneracao Variavel | `plataforma-lia/src/components/settings/` |
+| 🟢 | `b56da03f4` | 2026-04-30 | Frontend (UI) | Update company settings labels and titles to reflect new terminology | `plataforma-lia/messages/pt-BR.json` |
+
+### 4.5 Misc fixes / Auto-commits (18 commits)
+
+| Risco | SHA | Data | Camada | O que faz |
+|:---:|---|---|---|---|
+| 🟢 | `546b7a7fc` | 2026-04-30 11:44 | Backend | fix(ci): remove stale daily_briefing hardcoded check from deprecated-tools guard. W1-2 completo. |
+| 🟢 | `704972b89` | 2026-04-30 10:21 | Docs | docs(classifiers): INT-S02 — document two-tier routing architecture |
+| 🟡 | `eda6d4eaa` | 2026-04-29 | Backend | fix(chat): restore _build_response_from_action + handle_action_flow in chat.py |
+| 🟢 | `717e17d8c` | 2026-04-29 | Frontend (UI) | fix(design-system): substituir tokens hardcoded por tokens canonicos v4.2.2 |
+| 🟢 | `ecbcdfd41` | 2026-04-29 | Testes | fix(tests): update kanban_assistant_cov fixture after Task #93 migration |
+| 🟢 | `bfdf6ccd8` | 2026-04-29 | Backend | fix: add wizard domain validator sensor to Tier 1/2 cache returns |
+| 🟢 | `1e59e7cab` | 2026-04-29 | Frontend (UI) | Update login redirect logic and clean up evaluation data |
+| 🟡 | `00b0bfeb1` | 2026-04-29 | Cross IA↔Back | fix: Sprint A pending items - P1/P2 hardening post-audit |
+| 🟢 | `85c57cfd8` | 2026-04-29 | Testes | test(css): update tool count to 4 after explain_candidate_decision (EU AI Act + LGPD Art.20) |
+| 🟢 | `85d488929` | 2026-04-29 | Backend | fix(checkpointer): PostgresSaver v3.x — ConnectionPool replaces from_conn_string |
+| 🟢 | `9920e5e39` | 2026-04-29 | Backend | fix(job-management): add missing company_job_history_service + recruitment_template_service |
+| 🟡 | `e79d457aa` | 2026-04-29 | IA | fix(llm): add tenacity transient-error retry on Claude + OpenAI providers |
+| 🟢 | `f60c300d4` | 2026-04-30 | Testes | test(e2e): extend job-compensation spec with LIA chat integration tests (JC-011–016) |
+| 🟢 | `7877c1ab4` | 2026-04-30 | Auto-commit Replit | Transitioned from Plan to Build mode |
+
+### 4.6 Validação no Replit
+
+Comandos para auditar a janela:
+
+```bash
+# Lista commits da janela
+ssh replit-wedo 'cd /home/runner/workspace && git log --since="2026-04-29 12:47" --oneline'
+
+# Testes Rail A (deve ser 29/29 + 38 + 4)
+ssh replit-wedo 'cd /home/runner/workspace/lia-agent-system && \
+  python -m pytest tests/unit/test_rail_a_routing.py \
+                   tests/unit/test_rail_a_routing_deterministic.py \
+                   tests/deepeval/test_rail_a_golden_llm_judge.py --no-cov -q'
+
+# Validar capability_map (deve ter 15 entries)
+ssh replit-wedo 'grep -E "^  [a-z_]+:" /home/runner/workspace/lia-agent-system/app/config/capability_map.yaml | wc -l'
+
+# Validar hex removido do chat-cyan
+ssh replit-wedo 'grep "chat-cyan" /home/runner/workspace/plataforma-lia/src/styles/design-tokens.css'
+```
+
+### 4.7 Status final do Rail A após esta janela
+
+| Métrica | Valor |
+|---|---|
+| Cards funcionais end-to-end | **22/22** ✅ |
+| P0 abertos | **0** |
+| P1 abertos | **0** (PR-CAL falso positivo, PR-E implementado) |
+| P2 abertos (otimizações) | ~13 priorizados |
+| Domínios IA registrados | 16 (13 Agentic + 3 Micro-Action) |
+| Capability map intents | 15 |
+| Circuit breakers | 18 |
+| Fidelidade docs ↔ código | ~99% (auditoria 2026-04-30) |
+
+**Pacote handoff:** `/Users/paulomoraes/Documents/Python/handoff-rail-a/` (9 docs · 6.209 linhas).
+
+---
+
