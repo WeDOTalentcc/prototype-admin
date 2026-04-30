@@ -133,6 +133,30 @@ export function useKanbanDragDrop(ctx: KanbanDragDropContext) {
       sub_status: draggedCandidate.sub_status,
     }
 
+    // PR-B Trigger B: drag to "offer" column → open OfferReviewModal first.
+    // Optimistically moves candidate to offer column so the kanban reflects
+    // recruiter intent; OfferReviewModal handles offer review and send.
+    // Skips UniversalTransitionModal — offer flow is self-contained in
+    // OfferReviewModal (auto or manual send).
+    if (validTargetColumn === "offer") {
+      setCandidatesData(prev => {
+        const next = { ...prev }
+        for (const col of Object.keys(next)) {
+          next[col] = (next[col] as KanbanCandidate[]).filter(c => c.id !== kanbanCandidate.id)
+        }
+        next["offer"] = [...(next["offer"] ?? []), { ...kanbanCandidate, stage: "offer" }]
+        return next as Record<string, KanbanCandidate[]>
+      })
+      window.dispatchEvent(
+        new CustomEvent("lia:open_offer_review", {
+          detail: { candidate_id: kanbanCandidate.id, job_id: job?.id ?? "" },
+        }),
+      )
+      setDragOverColumn(null)
+      setDraggedCandidate(null)
+      return
+    }
+
     openTransition([kanbanCandidate], fromColumn, validTargetColumn)
     setDragOverColumn(null)
     setDraggedCandidate(null)
