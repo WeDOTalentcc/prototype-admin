@@ -791,7 +791,7 @@ const StageNode = React.forwardRef<
           className="w-4 h-4 transition-colors"
           style={{
             color: isActive
-              ? "var(--lia-text-on-accent, #fff)"
+              ? "var(--lia-text-on-accent)"
               : hasSuggestions
                 ? stage.color.accent
                 : "var(--lia-text-disabled)",
@@ -1007,7 +1007,7 @@ function CompactNode({
             className="w-3 h-3"
             style={{
               color: isActive
-                ? "var(--lia-text-on-accent, #fff)"
+                ? "var(--lia-text-on-accent)"
                 : hasSuggestions
                   ? stage.color.accent
                   : "var(--lia-text-disabled)",
@@ -1019,7 +1019,7 @@ function CompactNode({
             className="absolute -top-1 -right-1.5 min-w-[14px] h-3.5 text-[9px] font-bold rounded-full flex items-center justify-center px-0.5"
             style={{
               backgroundColor: stage.color.accent,
-              color: "var(--lia-text-on-accent, #fff)",
+              color: "var(--lia-text-on-accent)",
             }}
           >
             {pulseCount! > 99 ? "99+" : pulseCount}
