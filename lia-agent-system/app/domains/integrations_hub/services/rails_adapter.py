@@ -1158,6 +1158,52 @@ class RailsAdapter:
         probe["circuit_breaker"] = circuit_stats
         return probe
 
+
+    async def daily_summary(self, company_id: str, user_id: str) -> dict:
+        """Replacement for deprecated BriefingService — pulls live data from Rails ATS.
+
+        Canonical replacement for briefing_service.generate_daily_briefing().
+        Reads active jobs + recent applies from Rails and builds a structured summary.
+        Multi-tenant: company_id is passed explicitly, never inferred.
+        """
+        import asyncio
+        from datetime import datetime, timedelta, date
+
+        jobs_task = asyncio.create_task(self.list_jobs(search="*", page=1, limit=50))
+        applies_task = asyncio.create_task(self.list_applies(search="*", page=1, limit=100))
+        jobs, applies = await asyncio.gather(jobs_task, applies_task, return_exceptions=True)
+
+        jobs = jobs if isinstance(jobs, list) else []
+        applies = applies if isinstance(applies, list) else []
+
+        active_jobs = [j for j in jobs if j.get("status") == "Ativa"]
+        cutoff = datetime.utcnow() - timedelta(days=7)
+        recent_applies = []
+        for a in applies:
+            try:
+                created = datetime.fromisoformat(
+                    a.get("created_at", "").replace("Z", "+00:00")
+                )
+                if created.replace(tzinfo=None) >= cutoff:
+                    recent_applies.append(a)
+            except Exception:
+                pass
+
+        today = date.today().isoformat()
+        return {
+            "date": today,
+            "company_id": company_id,
+            "user_id": user_id,
+            "active_jobs_count": len(active_jobs),
+            "active_jobs": active_jobs[:10],
+            "recent_applies_count": len(recent_applies),
+            "recent_applies": recent_applies[:10],
+            "summary": (
+                f"Hoje ({today}): {len(active_jobs)} vagas ativas, "
+                f"{len(recent_applies)} candidaturas nos últimos 7 dias."
+            ),
+        }
+
     # ---- Cleanup ----
 
     async def close(self):
