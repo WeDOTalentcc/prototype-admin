@@ -71,6 +71,7 @@ from app.api.v1 import (
     company_approvers,
     company_users,
     company_benefits,
+    company_compensation_policies,
     company_culture,
     company_culture_config,
     company_departments,
@@ -386,6 +387,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(company_culture_config.router, prefix="/api/v1", tags=["company"])
     app.include_router(company_departments.router, prefix="/api/v1", tags=["company"])
     app.include_router(company_benefits.router, prefix="/api/v1", tags=["company-benefits"])
+    app.include_router(company_compensation_policies.router, prefix="/api/v1", tags=["compensation-policies"])
     app.include_router(goals.router, prefix="/api/v1", tags=["goals"])
     app.include_router(benefits.router, prefix="/api/v1", tags=["benefits"])
     app.include_router(clients.router, prefix="/api/v1/clients", tags=["clients"])
