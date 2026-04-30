@@ -118,8 +118,22 @@ async def search_candidates(
     4. Se job_id fornecido, avalia candidatos com rubricas
     """
     try:
+        # Normalize free-text query before passing downstream (post-mortem
+        # 2026-04-29 Bug 5). The user/LIA may pass queries with trailing
+        # punctuation like "candidatos?" — the search index tokenizer
+        # then treats it as a literal token and returns zero results.
+        # Centralized in app.shared.search_utils for consistency.
+        from app.shared.search_utils import normalize_search_query
+        _original_query = request.query
+        _normalized_query = normalize_search_query(request.query)
+        if _normalized_query != _original_query:
+            logger.info(
+                "[search_candidates] query normalized: %r -> %r",
+                _original_query, _normalized_query,
+            )
+
         hybrid_request = HybridSearchRequest(
-            query=request.query,
+            query=_normalized_query,
             thread_id=request.thread_id,
             search_spec=request.search_spec,
             search_local_first=request.search_local,
