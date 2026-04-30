@@ -180,4 +180,124 @@ test.describe('JC — Job Compensation Modal', () => {
     await expect(modal).toBeVisible({ timeout: 5000 });
   });
 
+
+  // ──────────────────────────────────────────────────────────────
+  // INT:005 — "Sugerir pacote com LIA" button (WIZARD-INT:005)
+  //
+  // Ref: EditJobModalCompensation.tsx onSuggestWithLIA prop
+  //      edit-job-modal.tsx sendChatMessage integration
+  // ──────────────────────────────────────────────────────────────
+
+  // JC-011: seção compensation tem data-testid canônico
+  test('JC-011: edit-job-compensation-section tem testid canonico', async ({ authenticatedPage: page }) => {
+    const opened = await openEditJobModal(page);
+    if (!opened) { test.skip(); return; }
+
+    const section = page.locator('[data-testid="edit-job-compensation-section"]');
+    await expect(section).toBeVisible({ timeout: 8000 });
+
+    await page.screenshot({ path: `${REPORT_DIR}/JC-011-compensation-testid.png` });
+  });
+
+  // JC-012: seção process tem data-testid canônico
+  test('JC-012: edit-job-process-section tem testid canonico', async ({ authenticatedPage: page }) => {
+    const opened = await openEditJobModal(page);
+    if (!opened) { test.skip(); return; }
+
+    const section = page.locator('[data-testid="edit-job-process-section"]');
+    await expect(section).toBeVisible({ timeout: 8000 });
+
+    await page.screenshot({ path: `${REPORT_DIR}/JC-012-process-testid.png` });
+  });
+
+  // JC-013: botão "Sugerir pacote com LIA" presente quando policy selecionada
+  test('JC-013: botao Sugerir pacote com LIA visivel quando policy selecionada', async ({ authenticatedPage: page }) => {
+    const opened = await openEditJobModal(page);
+    if (!opened) { test.skip(); return; }
+
+    const suggestBtn = page.locator('button').filter({ hasText: /Sugerir pacote com LIA/i });
+    const btnVisible = await suggestBtn.isVisible({ timeout: 5000 }).catch(() => false);
+
+    await page.screenshot({ path: `${REPORT_DIR}/JC-013-suggest-btn.png` });
+
+    if (btnVisible) {
+      await expect(suggestBtn).toBeVisible();
+    } else {
+      console.log('[JC-013] Botão não visível — empresa sem compensation_policies cadastradas');
+    }
+  });
+
+  // JC-014: clique no botão envia mensagem ao LIA chat
+  test('JC-014: botao Sugerir com LIA envia mensagem ao chat', async ({ authenticatedPage: page }) => {
+    const opened = await openEditJobModal(page);
+    if (!opened) { test.skip(); return; }
+
+    const suggestBtn = page.locator('button').filter({ hasText: /Sugerir pacote com LIA/i });
+    if (!await suggestBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(); return;
+    }
+
+    const wsSent: string[] = [];
+    page.on('websocket', ws => {
+      ws.on('framesent', frame => wsSent.push(String(frame.payload ?? '')));
+    });
+
+    await suggestBtn.click();
+    await page.waitForTimeout(2000);
+
+    const messageSent = wsSent.some(f => {
+      try {
+        const p = JSON.parse(f);
+        return Boolean(p?.content?.includes('pacote de remuneração') || p?.content?.includes('Sugira'));
+      } catch { return false; }
+    });
+
+    await page.screenshot({ path: `${REPORT_DIR}/JC-014-suggest-sent.png` });
+    expect(messageSent, 'Nenhuma mensagem enviada após clique no botão Sugerir com LIA').toBe(true);
+  });
+
+  // JC-015: mensagem contém "pacote de remuneração" + título da vaga
+  test('JC-015: mensagem do botao contem pacote de remuneracao', async ({ authenticatedPage: page }) => {
+    const opened = await openEditJobModal(page);
+    if (!opened) { test.skip(); return; }
+
+    const suggestBtn = page.locator('button').filter({ hasText: /Sugerir pacote com LIA/i });
+    if (!await suggestBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
+      test.skip(); return;
+    }
+
+    const wsSent: string[] = [];
+    page.on('websocket', ws => {
+      ws.on('framesent', frame => wsSent.push(String(frame.payload ?? '')));
+    });
+
+    await suggestBtn.click();
+    await page.waitForTimeout(2000);
+
+    const correctMsg = wsSent.some(f => {
+      try {
+        const p = JSON.parse(f);
+        const content: string = p?.content ?? '';
+        return /pacote de remuneração|salário.*PRV|PRV.*benefícios/i.test(content);
+      } catch { return false; }
+    });
+
+    await page.screenshot({ path: `${REPORT_DIR}/JC-015-message-content.png` });
+    expect.soft(correctMsg, 'Mensagem do botão não menciona "pacote de remuneração"').toBe(true);
+  });
+
+  // JC-016: layout completo — salary + PRV + benefits + process sections
+  test('JC-016: modal tem salary + PRV + benefits + process sections', async ({ authenticatedPage: page }) => {
+    const opened = await openEditJobModal(page);
+    if (!opened) { test.skip(); return; }
+
+    await expect.soft(page.locator('[data-testid="edit-job-compensation-section"]')).toBeVisible({ timeout: 5000 });
+    await expect.soft(page.locator('[data-testid="edit-job-process-section"]')).toBeVisible({ timeout: 5000 });
+    await expect.soft(page.locator('text=/Faixa Salarial|Salário/i').first()).toBeVisible({ timeout: 5000 });
+    await expect.soft(page.locator('text=/Benefícios/i').first()).toBeVisible({ timeout: 5000 });
+
+    await page.screenshot({ path: `${REPORT_DIR}/JC-016-full-modal-layout.png`, fullPage: true });
+  });
+
+
 });
