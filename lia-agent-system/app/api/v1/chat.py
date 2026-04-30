@@ -89,6 +89,212 @@ async def resolve_candidate_by_name(
     return await repo.resolve_candidate_by_name(candidate_name, company_id=company_id, job_id=job_id)
 
 
+
+
+# ---------------------------------------------------------------------------
+# Action response builder + multi-turn flow — testable interface.
+#
+# _build_response_from_action: pure formatter, returns human-readable string
+#   from action metadata (action_result OR pending_action).
+# handle_action_flow: async state-machine wrapper for pending-action collection;
+#   delegates to pending_action_store + action_executor.
+#
+# Both were previously inlined in route handlers; extracted for testability.
+# MainOrchestrator._handle_pending_action mirrors this logic inside the full
+# orchestration pipeline. Tests import from this module (canonical location).
+#
+# Skill canônica: harness-engineering [sensor computacional].
+# ---------------------------------------------------------------------------
+
+
+def _build_response_from_action(metadata: "dict[str, Any] | None") -> "str | None":
+    """Build a human-readable response string from action metadata.
+
+    Covers 4 paths:
+      - action_result.status == "executed"  → success message
+      - action_result.status == "cancelled" → cancellation message
+      - action_result.status == "error"     → error message
+      - pending_action (awaiting_confirmation or missing_params)
+
+    Returns None when metadata carries no actionable payload.
+    """
+    if not metadata:
+        return None
+
+    # ── action_result paths ──────────────────────────────────────────────────
+    action_result = metadata.get("action_result")
+    if action_result:
+        status = action_result.get("status", "")
+        msg = action_result.get("message", "")
+        if status == "executed":
+            return msg or "Ação executada com sucesso."
+        if status == "cancelled":
+            return "Ação cancelada."
+        if status == "error":
+            return f"Não foi possível executar a ação. {msg}".strip()
+
+    # ── pending_action paths ─────────────────────────────────────────────────
+    pending = metadata.get("pending_action")
+    if not pending:
+        return None
+
+    awaiting: bool = pending.get("awaiting_confirmation", False)
+    collected: "dict[str, Any]" = pending.get("collected_params", {})
+    missing: list = pending.get("missing_params", [])
+    intent: str = pending.get("intent", "")
+
+    if awaiting:
+        candidate = collected.get("candidate_name", "")
+        stage = collected.get("to_stage", "")
+        if candidate and stage:
+            return f"Confirma mover **{candidate}** para **{stage}**?"
+        if candidate:
+            return f"Confirma a ação para **{candidate}**?"
+        return "Confirma a ação?"
+
+    if missing:
+        next_param = missing[0]
+        config = ACTIONABLE_INTENTS.get(intent, {})
+        clarification = config.get("clarification_prompts", {}).get(next_param)
+        if clarification:
+            return clarification
+        # Generic fallback — param name included for diagnosability
+        return f"Qual é o valor para: **{next_param}**?"
+
+    return None
+
+
+async def handle_action_flow(
+    conversation_id: str,
+    user_message_text: str,
+    intent: str,
+    entities: "dict[str, Any]",
+    user_id: str,
+    current_user: Any,
+    db: Any,
+) -> "dict[str, Any] | None":
+    """Multi-turn action parameter collection and execution (testable interface).
+
+    Called from route handlers when an action intent is detected.  Returns a
+    dict with either ``pending_action`` (still collecting params) or
+    ``action_result`` (action was executed or cancelled) keys.  Returns None
+    when no pending action is found for the conversation.
+
+    Mirrors MainOrchestrator._handle_pending_action; exists here so the
+    pending-action state machine can be unit-tested without spinning up the
+    full orchestrator.
+    """
+    pending = pending_action_store.get(conversation_id)
+    if pending is None:
+        return None
+
+    # ── Awaiting confirmation ─────────────────────────────────────────────
+    if pending.awaiting_confirmation:
+        if is_confirmation(user_message_text):
+            config = ACTIONABLE_INTENTS.get(pending.intent, {})
+            exec_result = await action_executor._execute_action(
+                pending.intent,
+                config,
+                pending.collected_params,
+                {"conversation_id": conversation_id, "user_id": user_id},
+            )
+            pending_action_store.remove(conversation_id)
+            return {
+                "action_result": {
+                    "status": exec_result.status,
+                    "message": getattr(exec_result, "message", ""),
+                    "data": getattr(exec_result, "data", {}),
+                    "action_type": getattr(exec_result, "action_type", ""),
+                    "success": exec_result.status == "executed",
+                }
+            }
+        if is_rejection(user_message_text):
+            pending_action_store.remove(conversation_id)
+            return {"action_result": {"status": "cancelled", "success": False}}
+        # Not confirmation/rejection — cancel and fall through to normal routing
+        pending_action_store.remove(conversation_id)
+        return None
+
+    # ── Collecting missing params ─────────────────────────────────────────
+    if pending.missing_params:
+        next_param = pending.next_missing_param()
+        if next_param:
+            if next_param == "candidate_id":
+                company_id = getattr(current_user, "company_id", None)
+                resolved = await resolve_candidate_by_name(
+                    user_message_text,
+                    company_id=str(company_id) if company_id else None,
+                    db=db,
+                )
+                if resolved:
+                    pending.add_param("candidate_id", str(resolved["id"]))
+                    pending.collected_params["candidate_name"] = user_message_text
+                    if resolved.get("stage"):
+                        pending.collected_params["from_stage"] = resolved["stage"]
+                else:
+                    # Candidate not found — store raw name, keep candidate_id in missing_params
+                    pending.collected_params["candidate_name"] = user_message_text
+                    pending_action_store.save(conversation_id, pending)
+                    return {
+                        "pending_action": {
+                            "intent": pending.intent,
+                            "action_id": pending.action_id,
+                            "awaiting_confirmation": False,
+                            "missing_params": list(pending.missing_params),
+                            "collected_params": dict(pending.collected_params),
+                        }
+                    }
+            else:
+                raw = user_message_text.strip()[:200]
+                pending.add_param(next_param, raw)
+
+            if pending.is_complete:
+                config = ACTIONABLE_INTENTS.get(pending.intent, {})
+                if config.get("requires_confirmation", False):
+                    pending.awaiting_confirmation = True
+                    pending_action_store.save(conversation_id, pending)
+                    return {
+                        "pending_action": {
+                            "intent": pending.intent,
+                            "action_id": pending.action_id,
+                            "awaiting_confirmation": True,
+                            "missing_params": [],
+                            "collected_params": dict(pending.collected_params),
+                        }
+                    }
+                # Auto-execute if confirmation not required
+                exec_result = await action_executor._execute_action(
+                    pending.intent,
+                    config,
+                    pending.collected_params,
+                    {"conversation_id": conversation_id, "user_id": user_id},
+                )
+                pending_action_store.remove(conversation_id)
+                return {
+                    "action_result": {
+                        "status": exec_result.status,
+                        "message": getattr(exec_result, "message", ""),
+                        "data": getattr(exec_result, "data", {}),
+                        "action_type": getattr(exec_result, "action_type", ""),
+                        "success": exec_result.status == "executed",
+                    }
+                }
+            else:
+                # Still missing params — save progress and return current state
+                pending_action_store.save(conversation_id, pending)
+                return {
+                    "pending_action": {
+                        "intent": pending.intent,
+                        "action_id": pending.action_id,
+                        "awaiting_confirmation": False,
+                        "missing_params": list(pending.missing_params),
+                        "collected_params": dict(pending.collected_params),
+                    }
+                }
+
+    pending_action_store.remove(conversation_id)
+    return None
+
 async def _invoke_orchestrator_legacy(
     user_message: str,
     user_id: str,
