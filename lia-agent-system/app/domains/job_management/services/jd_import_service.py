@@ -191,10 +191,13 @@ class JDImportService:
             metadata_raw=jd_data.get("metadata", {}),
         )
         
+        quality_score = self._compute_quality_score(jd_data)
+        imported_jd.is_used_for_learning = quality_score >= 0.65
+
         if parse_immediately:
             parsed = self.parse_jd(imported_jd)
             self._apply_parsed_data(imported_jd, parsed)
-        
+
         db.add(imported_jd)
         await db.commit()
         await db.refresh(imported_jd)
@@ -258,6 +261,20 @@ class JDImportService:
         await self._update_skill_catalog(db, company_id, batch.id)
         
         return batch
+
+
+    def _compute_quality_score(self, jd_data: dict) -> float:
+        """Score 0-1. Only jobs with score >= 0.65 feed the salary benchmark.
+
+        Weights: title (0.25) + salary_min (0.30) + department (0.15) + seniority (0.15) + skills (0.15)
+        """
+        score = 0.0
+        if jd_data.get("title"):        score += 0.25
+        if jd_data.get("salary_min"):   score += 0.30
+        if jd_data.get("department"):   score += 0.15
+        if jd_data.get("seniority"):    score += 0.15
+        if jd_data.get("skills") or jd_data.get("required_skills"):  score += 0.15
+        return round(score, 2)
 
     def parse_jd(self, jd: ImportedJobDescription) -> ParsedJD:
         """
