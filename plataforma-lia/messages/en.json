@@ -6191,8 +6191,8 @@
         "policyHint": "Process handbook - extracts pipeline, scheduling and communication rules.",
         "workforceLabel": "Workforce Planning",
         "workforceHint": "Org chart - extracts departments, hierarchy and headcount.",
-        "documentsLabel": "Compensation Plan",
-        "documentsHint": "Job/compensation plan - extracts levels and salary bands."
+        "documentsLabel": "Variable Compensation",
+        "documentsHint": "PRV policies — salary bands, bonus, commission and eligibility."
       }
     },
     "workforce": {

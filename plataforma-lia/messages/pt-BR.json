@@ -6191,8 +6191,8 @@
         "policyHint": "Manual de processos — extrai regras de pipeline, agendamento e comunicação.",
         "workforceLabel": "Workforce Planning",
         "workforceHint": "Organograma — extrai departamentos, hierarquia e headcount.",
-        "documentsLabel": "Plano de Remuneração",
-        "documentsHint": "Plano de cargos / remuneração — extrai níveis e faixas salariais."
+        "documentsLabel": "Remuneração Variável",
+        "documentsHint": "Políticas de PRV — carrega faixas, PLR, bônus, comissão e elegibilidade."
       }
     },
     "workforce": {

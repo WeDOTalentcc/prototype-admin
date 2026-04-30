@@ -243,7 +243,7 @@ function buildBlocks(
     { key: "responsible_name", label: "Responsavel", value: additionalData?.responsible_name, type: "text", editable: true, block: "documents" },
     { key: "responsible_position", label: "Cargo do Responsavel", value: additionalData?.responsible_position, type: "text", editable: true, block: "documents" },
     { key: "additional_notes", label: "Notas Adicionais", value: additionalData?.additional_notes, type: "text", editable: true, block: "documents" },
-    { key: "compensation_structure", label: "Pol®ticas de PRV", value: company.default_salary_ranges && company.default_salary_ranges.length > 0 ? `${company.default_salary_ranges.length} faixa(s)` : null, type: "text", editable: false, block: "documents" },
+    { key: "compensation_structure", label: "Políticas de PRV", value: company.default_salary_ranges && company.default_salary_ranges.length > 0 ? `${company.default_salary_ranges.length} faixa(s)` : null, type: "text", editable: false, block: "documents" },
   ]
 
   const blocks: CardBlock[] = [
