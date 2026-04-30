@@ -194,6 +194,49 @@ class JDImportService:
         quality_score = self._compute_quality_score(jd_data)
         imported_jd.is_used_for_learning = quality_score >= 0.65
 
+        # ── FairnessGuard — fail-closed: blocked JDs never feed the learning loop ──
+        # Hard block (is_blocked=True): is_used_for_learning=False + raises ValueError
+        #   → import_batch_jds catches it → item counted as failed in batch.errors
+        # Soft warnings: is_used_for_learning=False + continues (item saved, not learned from)
+        # Guard exception: fail-open for guard regression (log warning, keep existing flag)
+        if imported_jd.is_used_for_learning:
+            _fg_text = " ".join(filter(None, [
+                jd_data.get("title", ""),
+                jd_data.get("description", ""),
+                jd_data.get("responsibilities_text", ""),
+                " ".join(jd_data.get("required_skills") or jd_data.get("skills") or []),
+            ])).strip()
+            if _fg_text:
+                try:
+                    from app.shared.compliance.fairness_guard import FairnessGuard
+                    _fg_result = FairnessGuard().check(_fg_text)
+                    if _fg_result.is_blocked:
+                        imported_jd.is_used_for_learning = False
+                        logger.warning(
+                            "[JDImport] FairnessGuard HARD BLOCK: JD '%s' excluded from learning "
+                            "(category=%s, terms=%s) company_id=%s",
+                            jd_data.get("title", "?"), _fg_result.category,
+                            _fg_result.blocked_terms, company_id,
+                        )
+                        raise ValueError(
+                            f"fairness_blocked category={_fg_result.category} "
+                            f"terms={','.join(_fg_result.blocked_terms or [])}"
+                        )
+                    elif _fg_result.soft_warnings:
+                        imported_jd.is_used_for_learning = False
+                        logger.warning(
+                            "[JDImport] FairnessGuard soft warnings: JD '%s' excluded from "
+                            "learning (warnings=%s) company_id=%s",
+                            jd_data.get("title", "?"), _fg_result.soft_warnings, company_id,
+                        )
+                except ValueError:
+                    raise
+                except Exception as _fg_exc:  # noqa: BLE001 — guard regression must not break import
+                    logger.warning(
+                        "[JDImport] FairnessGuard check failed — fail-open (guard regression): %s",
+                        _fg_exc,
+                    )
+
         if parse_immediately:
             parsed = self.parse_jd(imported_jd)
             self._apply_parsed_data(imported_jd, parsed)
@@ -498,7 +541,8 @@ class JDImportService:
             and_(
                 ImportedJobDescription.company_id == company_id,
                 ImportedJobDescription.import_batch_id == batch_id,
-                ImportedJobDescription.processing_status == ProcessingStatus.PARSED.value
+                ImportedJobDescription.processing_status == ProcessingStatus.PARSED.value,
+                ImportedJobDescription.is_used_for_learning.is_(True),  # FairnessGuard gate
             )
         )
         result = await db.execute(stmt)
