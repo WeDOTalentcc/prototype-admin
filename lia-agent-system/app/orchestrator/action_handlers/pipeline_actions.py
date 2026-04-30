@@ -296,6 +296,16 @@ async def _generate_daily_briefing(params: dict[str, Any], context: dict[str, An
         if not schedule_lines and not task_lines:
             parts.append("Sua agenda está livre hoje! Aproveite para prospectar candidatos ou revisar vagas abertas.")
 
+        # W1-2 harness guide: surface legacy disclaimer to consumers (UI + LLM)
+        briefing["_legacy_disclaimer"] = (
+            "Dados gerados via serviço legado (remoção planejada 2026-07-16). "
+            "Migração para integrations_hub/rails_adapter em andamento."
+        )
+        # W1-2 harness guide: surface legacy disclaimer to consumers (UI + LLM)
+        briefing["_legacy_disclaimer"] = (
+            "Dados gerados via serviço legado (remoção planejada 2026-07-16). "
+            "Migração para integrations_hub/rails_adapter em andamento."
+        )
         return ActionResult(
             status="executed",
             message="\n".join(parts),

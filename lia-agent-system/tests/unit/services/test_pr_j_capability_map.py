@@ -138,11 +138,11 @@ class TestCapabilityMapWave1Intents:
                     f"navigate_fallback de {intent} deve ser path absoluto (começa com /)."
                 )
 
-    def test_total_intents_is_eleven(self):
-        """sensor: capability_map deve ter exatamente 11 intents após Wave 4 (Wave 1 + send_offer + register_hire)."""
+    def test_total_intents_is_twelve(self):
+        """sensor: capability_map deve ter exatamente 12 intents após W1-2 (Wave 4 + daily_briefing)."""
         caps = CapabilityMapService.load()
-        assert len(caps) == 11, (
-            f"capability_map.yaml deve ter 11 intents após Wave 4, "
+        assert len(caps) == 12, (
+            f"capability_map.yaml deve ter 12 intents após W1-2, "
             f"encontrado: {len(caps)}. "
             "Adicione a entrada ou remova se obsoleta."
         )
