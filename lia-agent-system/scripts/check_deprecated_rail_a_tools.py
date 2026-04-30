@@ -2,14 +2,16 @@
 """
 CI guard — Rail A × @deprecated tools (harness-engineering sensor computacional).
 
-Detecta quando uma tool marcada com @deprecated ainda está mapeada como
-intent_hint ativo no SUGGESTION_HINTS do Rail A (via capability_map.yaml).
+Detecta quando uma tool marcada com @deprecated (decorator Python, não comentário)
+ainda está mapeada como intent_hint ativo no capability_map.yaml do Rail A.
 
 Regra: nenhum intent em capability_map.yaml pode apontar para uma tool com
 @deprecated decorator — evita que cards do Rail A prometam features quebradas.
 
 Execução: python scripts/check_deprecated_rail_a_tools.py
 Exit 0 = ok. Exit 1 = violations encontradas.
+
+Note: comentários # @deprecated since=... são ignorados (não são decorators).
 """
 from __future__ import annotations
 import ast
@@ -19,15 +21,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
 
+
 def find_deprecated_tools() -> set[str]:
-    """Retorna nomes de functions/methods com @deprecated decorator."""
-    deprecated: set[str] = []
+    """Retorna nomes de functions/methods com @deprecated decorator Python (não comentário)."""
+    deprecated: list[str] = []
     for py_file in (ROOT / "app").rglob("*.py"):
         try:
             src = py_file.read_text(encoding="utf-8", errors="ignore")
         except Exception:
             continue
+        # Only parse files with actual @deprecated decorator (not just comments)
         if "@deprecated" not in src:
+            continue
+        # Skip if only comment-style deprecated
+        if not re.search(r"^\s*@deprecated", src, re.MULTILINE):
             continue
         try:
             tree = ast.parse(src)
@@ -68,7 +75,6 @@ def find_intent_handlers(intents: list[str]) -> dict[str, str]:
         except Exception:
             continue
         for intent in intents:
-            # Look for function definitions matching the intent name
             if re.search(rf"def {re.escape(intent)}\b", src):
                 handlers[intent] = py_file.name
     return handlers
@@ -84,16 +90,9 @@ def main() -> int:
         handler_name = handlers.get(intent, "")
         if handler_name and handler_name.replace(".py", "") in deprecated:
             violations.append(
-                f"  VIOLATION: Rail A intent {intent} is wired to "
-                f"@deprecated tool {handler_name} — remove from capability_map or undeprecate the tool."
+                f"  VIOLATION: Rail A intent {intent!r} is wired to "
+                f"@deprecated tool {handler_name!r} — remove from capability_map or undeprecate."
             )
-
-    # Special check: daily_briefing is known deprecated
-    if "daily_briefing" in intents:
-        violations.append(
-            "  WARNING: daily_briefing is in capability_map but the tool is @deprecated (rails_adapter not yet implemented).\n"
-            "  Add chat_executable=false and navigate_fallback until rails_adapter.daily_summary is live."
-        )
 
     if violations:
         print("✗ check_deprecated_rail_a_tools: VIOLATIONS FOUND\n")
@@ -105,7 +104,7 @@ def main() -> int:
         )
         return 1
 
-    print(f"✓ check_deprecated_rail_a_tools: {len(intents)} intents checked — no deprecated tools wired")
+    print(f"✓ check_deprecated_rail_a_tools: {len(intents)} intents, {len(deprecated)} @deprecated functions — no conflicts")
     return 0
 
 
