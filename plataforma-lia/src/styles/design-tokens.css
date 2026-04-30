@@ -55,7 +55,7 @@
      ======================================== */
   
   /* Vermelho Coral - Identidade LIA (USO MÍNIMO!) */
-  --chat-cyan: var(--wedo-cyan, #60BED1);           /* Alias para componentes de chat */
+  --chat-cyan: var(--wedo-cyan);           /* Alias para componentes de chat */
   --lia-brand-primary: #C74446;        /* Vermelho coral principal */
   --lia-brand-primary-hover: #B23B3D;  /* Hover mais escuro */
   --lia-brand-primary-light: #FEF2F2; /* Background sutil */
