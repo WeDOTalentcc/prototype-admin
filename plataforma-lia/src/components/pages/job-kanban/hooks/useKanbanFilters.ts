@@ -50,6 +50,20 @@ export function useKanbanFilters({
   const [shortListedCandidateIds, setShortListedCandidateIds] = useState<Set<string>>(new Set())
   const [activeShortListId, setActiveShortListId] = useState<string | null>(null)
 
+  // Guide: initialize shortListedCandidateIds from backend shortLists data on mount/update.
+  // Without this, existing short-listed candidates show no visual bookmark on page load.
+  // candidateIds is now populated by the backend (ShortListResponse.candidate_ids).
+  useEffect(() => {
+    if (!shortLists || shortLists.length === 0) return
+    const allCandidateIds = shortLists.flatMap((sl) => sl.candidateIds ?? [])
+    if (allCandidateIds.length > 0) {
+      setShortListedCandidateIds(new Set(allCandidateIds))
+    }
+    if (!activeShortListId && shortLists[0]?.id) {
+      setActiveShortListId(shortLists[0].id)
+    }
+  }, [shortLists]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleToggleShortList = useCallback(async (candidateId: string) => {
     const isInList = shortListedCandidateIds.has(candidateId)
     let listId: string | null = activeShortListId || shortLists[0]?.id || null

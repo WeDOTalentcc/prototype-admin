@@ -20,6 +20,7 @@ export interface ShortList {
   createdBy: string
   createdAt: string
   candidateCount: number
+  candidateIds: string[]  // populated from backend — used to init shortListedCandidateIds on mount
 }
 
 export interface ShortListEntry {
@@ -60,6 +61,7 @@ function toShortList(raw: Record<string, unknown>): ShortList {
     createdBy: String(raw.created_by ?? ''),
     createdAt: String(raw.created_at ?? ''),
     candidateCount: typeof raw.candidate_count === 'number' ? raw.candidate_count : 0,
+    candidateIds: Array.isArray(raw.candidate_ids) ? (raw.candidate_ids as string[]) : [],
   }
 }
 

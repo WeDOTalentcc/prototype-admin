@@ -59,6 +59,7 @@ class ShortListResponse(BaseModel):
     created_by: str
     created_at: str
     candidate_count: int
+    candidate_ids: list[str] = []  # IDs of candidates in this list (for FE initialization)
 
 
 class ShortListCandidateResponse(BaseModel):
@@ -98,6 +99,7 @@ def _decode_meta(description: str | None) -> tuple[str, str]:
 def _to_short_list_response(record) -> ShortListResponse:
     from lia_models.candidate_list import CandidateList
     job_id, desc = _decode_meta(record.description)
+    members = record.members or []
     return ShortListResponse(
         id=str(record.id),
         job_id=job_id,
@@ -105,7 +107,8 @@ def _to_short_list_response(record) -> ShortListResponse:
         description=desc or None,
         created_by=record.created_by,
         created_at=record.created_at.isoformat() if record.created_at else "",
-        candidate_count=len(record.members) if record.members else 0,
+        candidate_count=len(members),
+        candidate_ids=[str(m.candidate_id) for m in members],
     )
 
 

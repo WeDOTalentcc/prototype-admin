@@ -657,8 +657,18 @@ export function ChatWorkflowReels({
                     });
                     return;
                   }
+                  // PR-O: include domain_hint + intent_hint + timestamp for granular analytics.
+                  const _hint = SUGGESTION_HINTS[suggestion.id]
                   window.dispatchEvent(new CustomEvent("lia:rail-a-card-click", {
-                    detail: { card_id: suggestion.id, stage_id: activeStage.id, navigate: !!suggestion.navigate_url, modal: !!suggestion.modal_id },
+                    detail: {
+                      card_id: suggestion.id,
+                      stage_id: activeStage.id,
+                      navigate: !!suggestion.navigate_url,
+                      modal: !!suggestion.modal_id,
+                      domain_hint: _hint?.domain_hint,
+                      intent_hint: _hint?.intent_hint,
+                      ts: Date.now(),
+                    },
                   }));
                   if (suggestion.navigate_url) {
                     router.push(suggestion.navigate_url);
@@ -928,8 +938,25 @@ function CompactReels({
               data-rail-a-card={suggestion.id}
               data-rail-a-stage={activeStage.id}
               onClick={() => {
+                // Guide computacional: coming-soon cards mostram toast (parity com expanded mode).
+                if (COMING_SOON_CARDS.has(suggestion.id)) {
+                  toast.info("Em breve", {
+                    description: "Esta funcionalidade estará disponível em breve.",
+                  });
+                  return;
+                }
+                // PR-O: include domain_hint + intent_hint + timestamp for granular analytics.
+                const _hint = SUGGESTION_HINTS[suggestion.id]
                 window.dispatchEvent(new CustomEvent("lia:rail-a-card-click", {
-                  detail: { card_id: suggestion.id, stage_id: activeStage.id, navigate: !!suggestion.navigate_url, modal: !!suggestion.modal_id },
+                  detail: {
+                    card_id: suggestion.id,
+                    stage_id: activeStage.id,
+                    navigate: !!suggestion.navigate_url,
+                    modal: !!suggestion.modal_id,
+                    domain_hint: _hint?.domain_hint,
+                    intent_hint: _hint?.intent_hint,
+                    ts: Date.now(),
+                  },
                 }));
                 if (suggestion.navigate_url) {
                   router.push(suggestion.navigate_url);

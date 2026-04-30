@@ -7,6 +7,7 @@ import logging
 from uuid import UUID
 
 from sqlalchemy import and_, select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.candidate_list import CandidateList, CandidateListMember
@@ -29,7 +30,9 @@ class ShortListRepository:
     ) -> list[CandidateList]:
         """List all active short lists for a company, optionally filtered by job_id."""
         result = await self.db.execute(
-            select(CandidateList).where(
+            select(CandidateList)
+            .options(selectinload(CandidateList.members))
+            .where(
                 and_(
                     CandidateList.company_id == company_id,
                     CandidateList.is_active,
@@ -53,7 +56,9 @@ class ShortListRepository:
     ) -> CandidateList | None:
         """Fetch a specific short list by ID and company."""
         result = await self.db.execute(
-            select(CandidateList).where(
+            select(CandidateList)
+            .options(selectinload(CandidateList.members))
+            .where(
                 CandidateList.id == list_id,
                 CandidateList.company_id == company_id,
             )
