@@ -29,6 +29,7 @@ def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]
 
 
 async def search_candidates(
+    query: str | None = None,
     skills: list[str] | None = None,
     min_experience_years: int | None = None,
     max_experience_years: int | None = None,
@@ -43,9 +44,21 @@ async def search_candidates(
     **kwargs
 ) -> dict[str, Any]:
     """
-    Search candidates with various filters.
-    
+    Search candidates. Supports two modes:
+
+    1. **Natural language (RAG hybrid)**: Provide `query` as free text.
+       Routes to pgvector + BM25 hybrid search with FairnessGuard.
+       Example: query="desenvolvedor Python sênior São Paulo"
+
+    2. **Structured filters (SQL)**: Provide individual filter params.
+       Backward-compatible with existing usage.
+       Example: skills=["Python"], seniority="Sênior", location="São Paulo"
+
+    When both are provided, query takes precedence (RAG path).
+    RAG failures fall back gracefully to SQL structured path.
+
     Args:
+        query: Natural language search query (enables RAG hybrid mode)
         skills: List of required skills to filter by
         min_experience_years: Minimum years of experience
         max_experience_years: Maximum years of experience
@@ -57,13 +70,79 @@ async def search_candidates(
         language: Language requirement (e.g., 'Inglês Fluente')
         in_vacancy_id: Filter candidates in a specific vacancy
         limit: Maximum number of results (default 20)
-        
+
     Returns:
-        List of matching candidates with their details
+        dict with success, message, search_mode, and data.candidates list
     """
     context = _extract_context(kwargs)
     company_id = context.company_id if context else None
-    
+
+    # ─── RAG hybrid path ─────────────────────────────────────────────────────
+    # When a natural-language query is provided, use pgvector + BM25.
+    # FairnessGuard is wired inside rag_pipeline_service.search() (FAR-2).
+    # Multi-tenant: company_id enforced inside the RAG service.
+    # Fallback: if RAG fails, fall through to SQL structured path below.
+    if query:
+        logger.info(f"[search_candidates] RAG mode: query={query!r} company={company_id}")
+        try:
+            from app.core.database import AsyncSessionLocal
+            from app.domains.ai.services.rag_pipeline_service import (
+                rag_pipeline_service,
+            )
+
+            async with AsyncSessionLocal() as db:
+                rag_result = await rag_pipeline_service.search(
+                    query=query,
+                    company_id=company_id,
+                    db=db,
+                    limit=limit,
+                    alpha=0.5,  # hybrid: equal weight BM25 + semantic
+                    domain="talent",
+                )
+
+            candidates_list = [
+                {
+                    "id": r.get("id"),
+                    "name": r.get("name", "N/A"),
+                    "email": r.get("email"),
+                    "seniority": r.get("seniority_level"),
+                    "location": r.get("location"),
+                    "status": r.get("status"),
+                    "lia_score": r.get("lia_score"),
+                    "wsi_score": r.get("wsi_score"),
+                    "years_experience": r.get("years_experience"),
+                    "skills": r.get("skills") or [],
+                    "available_immediately": r.get("available_immediately"),
+                    "rag_score": r.get("rag_score", 0.0),
+                    "search_source": rag_result.source,
+                }
+                for r in rag_result.results
+            ]
+
+            return {
+                "success": True,
+                "message": (
+                    f"✅ Encontrados {len(candidates_list)} candidatos via busca semântica."
+                    + (" ⚠️ Diversidade de gênero: revisar top-10." if not rag_result.fairness_ok else "")
+                ),
+                "search_mode": "rag_hybrid",
+                "fairness_ok": rag_result.fairness_ok,
+                "search_time_ms": rag_result.search_time_ms,
+                "data": {
+                    "total": rag_result.total,
+                    "candidates": candidates_list,
+                    "query": query,
+                    "rag_source": rag_result.source,
+                },
+            }
+        except Exception as _rag_err:
+            logger.warning(
+                "[search_candidates] RAG search failed, falling back to SQL: %s",
+                _rag_err,
+            )
+            # Fall through to structured SQL path below
+    # ─── END RAG path ────────────────────────────────────────────────────────
+
     logger.info(f"🔍 Searching candidates with filters (company: {company_id})")
     
     try:
@@ -1346,18 +1425,30 @@ def register_sourcing_query_tools() -> None:
     
     tool_registry.register(ToolDefinition(
         name="search_candidates",
-        description="Buscar candidatos com filtros como skills, experiência, senioridade, score LIA, localização. Use para encontrar candidatos específicos ou responder perguntas sobre a base de candidatos.",
+        description=(
+            "Buscar candidatos na base de talentos. DOIS MODOS:\n"
+            "1. NATURAL (recomendado): use `query` com texto livre — ex: 'engenheiro Python sênior São Paulo'. "
+            "Usa busca semântica pgvector + BM25 com FairnessGuard automático.\n"
+            "2. FILTROS ESTRUTURADOS: use skills, seniority, location etc. para busca exata por campos.\n"
+            "Use o modo natural quando o recrutador descrever o perfil em linguagem natural. "
+            "Use filtros quando precisar de busca determinística por atributos específicos."
+        ),
         parameters_schema={
             "type": "object",
             "properties": {
-                "skills": {"type": "array", "items": {"type": "string"}, "description": "Lista de skills para filtrar"},
+                "query": {
+                    "type": "string",
+                    "description": "Busca em linguagem natural: 'desenvolvedor Python pleno São Paulo disponível imediatamente'. "
+                    "Quando fornecido, usa busca semântica (RAG hybrid) — ignora outros filtros."
+                },
+                "skills": {"type": "array", "items": {"type": "string"}, "description": "Lista de skills para filtrar (modo estruturado)"},
                 "min_experience_years": {"type": "integer", "description": "Anos mínimos de experiência"},
                 "max_experience_years": {"type": "integer", "description": "Anos máximos de experiência"},
                 "seniority": {"type": "string", "enum": ["Júnior", "Pleno", "Sênior", "Especialista"], "description": "Nível de senioridade"},
                 "min_score": {"type": "number", "description": "Score mínimo LIA/WSI (0-100)"},
                 "status": {"type": "string", "description": "Status do candidato"},
                 "available_immediately": {"type": "boolean", "description": "Disponibilidade imediata"},
-                "location": {"type": "string", "description": "Localização"},
+                "location": {"type": "string", "description": "Localização (modo estruturado)"},
                 "limit": {"type": "integer", "default": 20, "description": "Número máximo de resultados"}
             }
         },
