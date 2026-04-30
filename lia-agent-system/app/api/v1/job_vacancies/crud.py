@@ -25,6 +25,7 @@ from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RA
 from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
 from app.shared.rails_migration.deprecation import enforce_job_vacancies_deprecation
 from app.shared.robustness.idempotency import reject_duplicate_async
+from sqlalchemy import text
 
 # MIGRATION_PLAN item 7.1 — Python CRUD deprecated in favor of Rails (ats-api-copia).
 #
@@ -847,6 +848,23 @@ async def update_job_vacancy(
         db = repo.get_session()
 
         update_data = job_data.model_dump(exclude_unset=True, exclude_none=True)
+
+        # multi-tenancy guard: compensation_policy_id must belong to the same company
+        if update_data.get("compensation_policy_id"):
+            db = repo.get_session()
+            row = (await db.execute(
+                text(
+                    "SELECT id FROM compensation_policies "
+                    "WHERE id = :id AND company_id = :cid AND is_active = true"
+                ),
+                {"id": str(update_data["compensation_policy_id"]), "cid": user_company},
+            )).fetchone()
+            if not row:
+                raise HTTPException(
+                    status_code=400,
+                    detail="compensation_policy_id inválido ou não pertence a esta empresa",
+                )
+
         # Task #478 / ADR 003 — drop duplicate update retries for the same
         # vacancy/payload before they execute audit + persistence twice.
         # Task #486 — `job_vacancy_id` is now in `_DUAL_ID_PARAM_RESOLVERS`

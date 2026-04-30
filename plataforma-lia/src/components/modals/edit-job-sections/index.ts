@@ -1,3 +1,5 @@
 export { EditJobModalBasicInfo } from './EditJobModalBasicInfo'
 export { EditJobModalRequirements } from './EditJobModalRequirements'
+export { EditJobModalCompensation } from './EditJobModalCompensation'
+export { EditJobModalProcess } from './EditJobModalProcess'
 export { EditJobModalPrivacy } from './EditJobModalPrivacy'

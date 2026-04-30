@@ -165,6 +165,22 @@ export function useEditJob({ isOpen, job: rawJob, onSave, onClose }: UseEditJobP
     }
   }, [isOpen, job, companyStages, sla])
 
+
+  // 3.4: pre-select highlighted company benefits when job has no existing benefits
+  useEffect(() => {
+    if (companyBenefits.length > 0 && isOpen && job && !(job.benefits && (job.benefits as unknown[]).length > 0)) {
+      const preSelected = companyBenefits
+        .filter(b => b.is_highlighted)
+        .map(b => ({ id: b.id, name: b.name }))
+      if (preSelected.length > 0) {
+        setFormData(prev =>
+          !prev.benefits?.length ? { ...prev, benefits: preSelected } : prev
+        )
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companyBenefits, isOpen])
+
   const fetchPipelineTemplates = async () => {
     setIsLoadingTemplates(true)
     try {

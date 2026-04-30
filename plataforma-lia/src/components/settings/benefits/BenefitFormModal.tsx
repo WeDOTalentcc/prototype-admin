@@ -75,6 +75,7 @@ interface Benefit {
 }
 
 interface BenefitFormModalProps {
+  context?: "settings" | "job"
   open: boolean
   onOpenChange: (open: boolean) => void
   editingBenefit: Benefit | null

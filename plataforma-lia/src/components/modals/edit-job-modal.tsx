@@ -54,7 +54,7 @@ import {
 import type { InterviewStage, PipelineTemplate, Job, EditJobModalProps, CompanyDefaultQuestion } from './edit-job/edit-job.types'
 import { useEditJob } from './edit-job/useEditJob'
 
-import { EditJobModalBasicInfo, EditJobModalRequirements, EditJobModalPrivacy } from './edit-job-sections'
+import { EditJobModalBasicInfo, EditJobModalCompensation, EditJobModalProcess, EditJobModalPrivacy } from './edit-job-sections'
 export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps) {
   const {
     formData,
@@ -171,7 +171,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
 
                 <hr className="border-lia-border-subtle" />
 
-                <EditJobModalRequirements
+                <EditJobModalCompensation
                   formData={formData}
                   setFormData={setFormData}
                   newBenefit={newBenefit}
@@ -179,6 +179,13 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   companyBenefits={companyBenefits}
                   addBenefit={addBenefit}
                   removeBenefit={removeBenefit}
+                  activeCompensationPolicies={activeCompensationPolicies}
+                />
+
+                <hr className="border-lia-border-subtle" />
+
+                <EditJobModalProcess
+                  formData={formData}
                   newInterviewStageName={newInterviewStageName}
                   setNewInterviewStageName={setNewInterviewStageName}
                   newInterviewStageSLA={newInterviewStageSLA}
@@ -191,7 +198,6 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   pipelineTemplates={pipelineTemplates}
                   isLoadingTemplates={isLoadingTemplates}
                   selectedTemplateId={selectedTemplateId}
-                  activeCompensationPolicies={activeCompensationPolicies}
                   applyPipelineTemplate={applyPipelineTemplate}
                   fetchPipelineTemplates={fetchPipelineTemplates}
                 />
