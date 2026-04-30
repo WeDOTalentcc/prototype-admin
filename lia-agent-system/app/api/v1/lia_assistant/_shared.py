@@ -330,7 +330,7 @@ class WizardOrchestratorRequest(BaseModel):
     message: str
     current_stage: str
     collected_data: dict[str, Any]
-    conversation_history: list[dict[str, str]] | None = None
+    conversation_history: list[dict[str, str]] | None = None  # trimmed to _MAX_HISTORY_MESSAGES by callers
     company_id: str
     use_structured_outputs: bool = False
     llm_provider: str | None = "gemini"
