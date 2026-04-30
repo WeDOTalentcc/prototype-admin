@@ -270,13 +270,25 @@ class CascadedRouter:
                 _t1_span.set_attribute("domain_id", cached.domain_id)
                 _t1_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
                 logger.debug("CascadedRouter: memory hit for '%s...' → %s", message[:40], cached.domain_id)
-                return RouteResult(
-                    domain_id=cached.domain_id,
-                    confidence=cached.confidence,
-                    source="memory",
-                    matched_pattern=cached.matched_pattern,
-                    cached=True,
-                )
+                # Sensor: evict stale LRU entries that would route wizard messages to wrong domain.
+                # harness-engineering [sensor computacional] — validates before serving.
+                if self._wizard_domain_override(message, cached.domain_id):
+                    del self._memory_cache[cache_key]
+                    _t1_span.set_attribute("wizard_eviction", "true")
+                    logger.info(
+                        "[CascadedRouter] Tier1 LRU stale eviction: '%s...' "
+                        "had domain=%s → wizard override, re-routing",
+                        message[:40], cached.domain_id,
+                    )
+                    # Fall through to Tier 2 / Tier 2.5
+                else:
+                    return RouteResult(
+                        domain_id=cached.domain_id,
+                        confidence=cached.confidence,
+                        source="memory",
+                        matched_pattern=cached.matched_pattern,
+                        cached=True,
+                    )
             _t1_span.set_attribute("hit", "false")
             _t1_span.set_attribute("confidence_score", "0.0")
             _t1_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
@@ -299,13 +311,25 @@ class CascadedRouter:
                 _t2_span.set_attribute("domain_id", redis_hit.get("domain_id", ""))
                 _t2_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
                 logger.debug("CascadedRouter: redis hit for '%s...' → %s", message[:40], redis_hit.get("domain_id"))
-                return RouteResult(
-                    domain_id=redis_hit.get("domain_id", "recruiter_assistant"),
-                    confidence=redis_hit.get("confidence", 0.7),
-                    source="redis_cache",
-                    matched_pattern=redis_hit.get("matched_pattern"),
-                    cached=True,
-                )
+                # Sensor: evict stale Redis entries that would route wizard messages to wrong domain.
+                # harness-engineering [sensor computacional] — validates before serving.
+                if self._wizard_domain_override(message, redis_hit.get("domain_id", "")):
+                    await self._redis_cache.invalidate(message)
+                    _t2_span.set_attribute("wizard_eviction", "true")
+                    logger.info(
+                        "[CascadedRouter] Tier2 Redis stale eviction: '%s...' "
+                        "had domain=%s → wizard override, re-routing",
+                        message[:40], redis_hit.get("domain_id"),
+                    )
+                    # Fall through to Tier 2.5
+                else:
+                    return RouteResult(
+                        domain_id=redis_hit.get("domain_id", "recruiter_assistant"),
+                        confidence=redis_hit.get("confidence", 0.7),
+                        source="redis_cache",
+                        matched_pattern=redis_hit.get("matched_pattern"),
+                        cached=True,
+                    )
             _t2_span.set_attribute("hit", "false")
             _t2_span.set_attribute("confidence_score", "0.0")
             _t2_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
@@ -873,6 +897,28 @@ class CascadedRouter:
 
     def _intent_to_domain(self, intent: str) -> str:
         return resolve_domain(intent)
+
+    def _wizard_domain_override(self, message: str, cached_domain_id: str) -> bool:
+        """Sensor computacional: returns True if a stale cache entry should be evicted.
+
+        Fires when LRU (Tier 1) or Redis (Tier 2) would return a non-wizard domain
+        for a message that the fast-router classifies as wizard with high confidence.
+        The caller MUST evict the entry and fall through to Tier 2.5.
+
+        harness-engineering [sensor computacional] — O(n_patterns), ~0.1ms.
+        Fail-open: any exception returns False (trust cache).
+        """
+        if cached_domain_id == "wizard":
+            return False  # Already correct — no override needed
+        try:
+            _check = self.fast.match(message)
+            return (
+                _check is not None
+                and _check.domain_id == "wizard"
+                and _check.confidence >= settings.ROUTER_FAST_CONFIDENCE_THRESHOLD
+            )
+        except Exception:
+            return False  # Fail-open: check failure means trust cache
 
     def _cache_store(self, key: str, result: RouteResult) -> None:
         if len(self._memory_cache) >= self._cache_max_size:
