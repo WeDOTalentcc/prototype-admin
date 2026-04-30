@@ -150,8 +150,16 @@ describe("MODAL_OVERRIDES — mapa de modais diretos", () => {
     expect(MODAL_OVERRIDES["add-candidate"]).toBe("add_candidate");
   });
 
-  it("tem exatamente 1 entrada", () => {
-    expect(Object.keys(MODAL_OVERRIDES)).toHaveLength(1);
+  it("tem exatamente 3 entradas (add-candidate, create-job, job-template)", () => {
+    expect(Object.keys(MODAL_OVERRIDES)).toHaveLength(3);
+  });
+
+  it("inclui create-job → create_job (W1-3: abre CreateJobModal)", () => {
+    expect(MODAL_OVERRIDES["create-job"]).toBe("create_job");
+  });
+
+  it("inclui job-template → create_job (W1-3: usa mesmo modal com step template)", () => {
+    expect(MODAL_OVERRIDES["job-template"]).toBe("create_job");
   });
 });
 
@@ -246,14 +254,68 @@ describe("ChatWorkflowReels — clique em card com modal_id dispara lia:open_mod
   });
 });
 
-describe("ChatWorkflowReels — regressão: cards normais continuam chamando onSelect", () => {
-  it("clicar em 'Criar nova vaga' (sem navigate_url nem modal_id) chama onSelect", () => {
+describe("ChatWorkflowReels — W1-3: create-job abre modal, não chama onSelect", () => {
+  it("clicar em 'Criar nova vaga' (com modal_id) dispara lia:open_modal com create_job", () => {
+    const onSelect = vi.fn();
+    mockRouterPush.mockClear();
+
+    const dispatchedEvents: CustomEvent[] = [];
+    const spyDispatch = vi.spyOn(window, "dispatchEvent").mockImplementation((e: Event) => {
+      if ((e as CustomEvent).type === "lia:open_modal") {
+        dispatchedEvents.push(e as CustomEvent);
+      }
+      return true;
+    });
+
+    renderWithIntl(<ChatWorkflowReels onSelect={onSelect} />);
+
+    const card = screen.getByRole("button", { name: /Criar nova vaga/i });
+    fireEvent.click(card);
+
+    // W1-3: create-job fires lia:open_modal with modal_id="create_job"
+    expect(dispatchedEvents.some((e) => e.detail?.modal_id === "create_job")).toBe(true);
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(mockRouterPush).not.toHaveBeenCalled();
+
+    spyDispatch.mockRestore();
+  });
+
+  it("clicar em 'Usar modelo' (com modal_id) dispara lia:open_modal com create_job", () => {
+    const onSelect = vi.fn();
+    mockRouterPush.mockClear();
+
+    const dispatchedEvents: CustomEvent[] = [];
+    const spyDispatch = vi.spyOn(window, "dispatchEvent").mockImplementation((e: Event) => {
+      if ((e as CustomEvent).type === "lia:open_modal") {
+        dispatchedEvents.push(e as CustomEvent);
+      }
+      return true;
+    });
+
+    renderWithIntl(<ChatWorkflowReels onSelect={onSelect} />);
+
+    const card = screen.getByRole("button", { name: /Usar modelo/i });
+    fireEvent.click(card);
+
+    // W1-3: job-template also fires lia:open_modal with modal_id="create_job"
+    expect(dispatchedEvents.some((e) => e.detail?.modal_id === "create_job")).toBe(true);
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(mockRouterPush).not.toHaveBeenCalled();
+
+    spyDispatch.mockRestore();
+  });
+
+  it("card genérico (search-candidates) ainda chama onSelect normalmente", () => {
     const onSelect = vi.fn();
     mockRouterPush.mockClear();
 
     renderWithIntl(<ChatWorkflowReels onSelect={onSelect} />);
 
-    const card = screen.getByRole("button", { name: /Criar nova vaga/i });
+    // Navegar para stage "Captação"
+    const captacaoTab = screen.getByRole("button", { name: /Captação/i });
+    fireEvent.click(captacaoTab);
+
+    const card = screen.getByRole("button", { name: /Buscar/i });
     fireEvent.click(card);
 
     expect(onSelect).toHaveBeenCalledTimes(1);
