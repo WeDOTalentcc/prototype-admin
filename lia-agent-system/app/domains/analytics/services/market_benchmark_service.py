@@ -64,6 +64,89 @@ class TTLCache:
         return len(expired_keys)
 
 
+# Sanity caps (post-mortem 2026-04-29 wizard UAT — Bug 1).
+# When the LLM fallback estimates without real search results, it can
+# hallucinate salaries 2-3x above Brazilian market reality (e.g. R$ 33k
+# median for "Desenvolvedor Python Sênior" in São Paulo). These caps
+# enforce an upper bound based on actual Brazilian tech market data
+# (Glassdoor BR / LinkedIn BR / Catho 2025-2026 medians + 1.3x ceiling).
+#
+# When LLM output exceeds the cap, we clamp + lower confidence to "low"
+# so the frontend can flag the estimate to the recruiter.
+#
+# Skill canônica: harness-engineering [guide computacional] —
+# convert silent hallucinations into clamped values + visible confidence.
+_SALARY_CAPS_BRL_MONTHLY = {
+    "júnior": (3000, 9000),
+    "junior": (3000, 9000),
+    "pleno": (6000, 16000),
+    "pleno/sênior": (8000, 20000),
+    "sênior": (10000, 25000),  # market median ~R$ 15-18k for tech senior
+    "senior": (10000, 25000),
+    "especialista": (15000, 35000),
+    "staff": (15000, 35000),
+    "principal": (18000, 45000),
+    "gerente": (15000, 35000),
+    "manager": (15000, 35000),
+    "diretor": (25000, 70000),
+    "director": (25000, 70000),
+}
+
+
+def _apply_salary_caps(
+    parsed: dict[str, Any],
+    seniority: str | None,
+) -> tuple[dict[str, Any], bool]:
+    """Clamp parsed salary to per-seniority Brazilian market bounds.
+
+    Returns (parsed_clamped, was_clamped). When was_clamped is True,
+    confidence is also lowered to "low" so the FE can visibly flag.
+    """
+    sen_key = (seniority or "pleno").lower().strip()
+    caps = _SALARY_CAPS_BRL_MONTHLY.get(sen_key) or (5000, 50000)
+    cap_min, cap_max = caps
+
+    raw_min = parsed.get("min")
+    raw_max = parsed.get("max")
+    raw_median = parsed.get("median")
+
+    clamped = False
+    if isinstance(raw_max, (int, float)) and raw_max > cap_max:
+        parsed["max"] = cap_max
+        clamped = True
+    if isinstance(raw_min, (int, float)) and raw_min > cap_max:
+        # min above cap_max is nonsensical — pull both down
+        parsed["min"] = max(cap_min, cap_max // 2)
+        parsed["max"] = cap_max
+        clamped = True
+    if isinstance(raw_min, (int, float)) and raw_min < cap_min // 2:
+        # extremely low — also suspicious, clamp up
+        parsed["min"] = cap_min
+        clamped = True
+    if (
+        isinstance(raw_median, (int, float))
+        and isinstance(parsed.get("min"), (int, float))
+        and isinstance(parsed.get("max"), (int, float))
+    ):
+        # ensure median sits within [min, max] after clamping
+        new_min = parsed["min"]
+        new_max = parsed["max"]
+        if raw_median < new_min or raw_median > new_max:
+            parsed["median"] = (new_min + new_max) // 2
+            clamped = True
+
+    if clamped:
+        parsed["confidence"] = "low"
+        notes = parsed.get("notes") or ""
+        cap_note = (
+            f" [auto-clamped to BR market cap for '{sen_key}': "
+            f"max R${cap_max:,}]"
+        ).replace(",", ".")
+        parsed["notes"] = (notes + cap_note).strip()
+
+    return parsed, clamped
+
+
 class MarketBenchmarkService:
     """
     Service for fetching salary benchmarks and market trends from public sources.
@@ -235,14 +318,25 @@ Regras:
 
         try:
             response = await llm_service.generate(prompt, provider="gemini")
-            
+
             json_match = re.search(r'\{[^{}]*\}', response, re.DOTALL)
             if json_match:
                 parsed = json.loads(json_match.group())
+                # Sanity-cap to BR market bounds (post-mortem 2026-04-29 Bug 1).
+                # LLM without real search context tends to overshoot — clamp
+                # and lower confidence so the UI flags the estimate.
+                parsed, was_clamped = _apply_salary_caps(parsed, seniority)
+                if was_clamped:
+                    self.logger.warning(
+                        "[market_benchmark] salary clamped to BR caps: "
+                        "role=%s seniority=%s location=%s llm_fallback=%s",
+                        role, seniority, location, is_llm_fallback,
+                    )
                 return {
                     "success": True,
                     "data": parsed,
-                    "llm_fallback": is_llm_fallback
+                    "llm_fallback": is_llm_fallback,
+                    "was_clamped": was_clamped,
                 }
             
             self.logger.warning(f"Could not parse LLM response: {response[:200]}")
