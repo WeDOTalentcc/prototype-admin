@@ -337,6 +337,16 @@ async def lifespan(app: FastAPI):
         await rabbitmq_consumer.stop()
     except Exception:
         pass
+
+    # Close PostgresSaver ConnectionPool (checkpointer singleton -- prevents connection leak on restart)
+    try:
+        import lia_agents_core.checkpointer as _ckpt_mod
+        if getattr(_ckpt_mod, "_pg_pool", None) is not None:
+            _ckpt_mod._pg_pool.close()
+            logger.info("PostgresSaver ConnectionPool closed")
+    except Exception as _pool_exc:
+        logger.warning("Error closing PostgresSaver pool (non-critical): %s", _pool_exc)
+
     logger.info("🛑 Shutting down LIA Agent System...")
     
     try:

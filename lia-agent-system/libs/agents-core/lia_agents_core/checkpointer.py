@@ -86,8 +86,9 @@ def _postgres_saver() -> Any:
       sobrevive ao lifetime da aplicação. É o padrão recomendado pela equipe LangGraph
       para checkpointers de produção.
 
-    `saver.setup()` cria as tabelas `langgraph_checkpoints`, `langgraph_checkpoint_blobs`,
-    `langgraph_checkpoint_writes` se ainda não existirem (idempotente).
+    `saver.setup()` cria as tabelas canônicas v3.x: `checkpoints`, `checkpoint_blobs`,
+    `checkpoint_writes`, `checkpoint_migrations` se ainda não existirem (idempotente).
+    Nota: as tabelas `langgraph_*` criadas pela migration 027 são distintas e órfãs.
 
     Levanta exceção em caso de falha — o caller decide o comportamento.
     """

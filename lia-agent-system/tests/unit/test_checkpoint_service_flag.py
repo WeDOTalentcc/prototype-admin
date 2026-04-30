@@ -27,7 +27,7 @@ class TestSaveCheckpoint:
         mock_db.execute = AsyncMock()
         mock_db.commit = AsyncMock()
 
-        with patch("app.services.checkpoint_service.pg_insert") as mock_insert:
+        with patch("app.domains.cv_screening.services.checkpoint_service.pg_insert") as mock_insert:
             mock_stmt = MagicMock()
             mock_insert.return_value.values.return_value.on_conflict_do_update.return_value = mock_stmt
             await save_checkpoint(mock_db, "sess-001", "job_wizard", {"key": "value"})
@@ -41,7 +41,7 @@ class TestSaveCheckpoint:
         mock_db.execute = AsyncMock()
         mock_db.commit = AsyncMock()
 
-        with patch("app.services.checkpoint_service.pg_insert") as mock_insert:
+        with patch("app.domains.cv_screening.services.checkpoint_service.pg_insert") as mock_insert:
             mock_stmt = MagicMock()
             mock_insert.return_value.values.return_value.on_conflict_do_update.return_value = mock_stmt
             result = await save_checkpoint(mock_db, "sess-001", "interview", {})

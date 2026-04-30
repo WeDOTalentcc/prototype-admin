@@ -45,7 +45,8 @@ def test_derive_thread_id_whitespace_falls_back():
 
 # ── 2. _get_prior_state — non-raising ───────────────────────────────────────
 
-def test_get_prior_state_returns_empty_on_miss(monkeypatch):
+@pytest.mark.asyncio
+async def test_get_prior_state_returns_empty_on_miss(monkeypatch):
     """Checkpointer miss → empty dict, no exception."""
     import sys, types
 
@@ -57,11 +58,12 @@ def test_get_prior_state_returns_empty_on_miss(monkeypatch):
         job_creation_graph=types.SimpleNamespace(_graph=_FakeGraph())
     )
     monkeypatch.setitem(sys.modules, "app.domains.job_creation.graph", fake_mod)
-    result = WizardSessionService._get_prior_state("wiz-test-123")
+    result = await WizardSessionService._get_prior_state("wiz-test-123")
     assert result == {}
 
 
-def test_get_prior_state_returns_empty_on_none_values(monkeypatch):
+@pytest.mark.asyncio
+async def test_get_prior_state_returns_empty_on_none_values(monkeypatch):
     """Snapshot with None values → empty dict."""
     import sys, types
 
@@ -76,7 +78,7 @@ def test_get_prior_state_returns_empty_on_none_values(monkeypatch):
         job_creation_graph=types.SimpleNamespace(_graph=_FakeGraph())
     )
     monkeypatch.setitem(sys.modules, "app.domains.job_creation.graph", fake_mod)
-    result = WizardSessionService._get_prior_state("wiz-empty")
+    result = await WizardSessionService._get_prior_state("wiz-empty")
     assert result == {}
 
 

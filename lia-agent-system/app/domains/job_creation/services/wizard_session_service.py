@@ -66,7 +66,7 @@ class WizardSessionService:
         return (msg.get("thread_id") or f"wiz-{session_id}").strip() or f"wiz-{session_id}"
 
     @staticmethod
-    def _get_prior_state(thread_id: str) -> dict:
+    async def _get_prior_state(thread_id: str) -> dict:
         """Read checkpointed wizard state without raising.
 
         Returns empty dict on any error so callers always get a valid dict.
@@ -77,7 +77,7 @@ class WizardSessionService:
         try:
             from app.domains.job_creation.graph import job_creation_graph as wiz_g
             config = {"configurable": {"thread_id": thread_id}}
-            snapshot = wiz_g._graph.get_state(config)
+            snapshot = await asyncio.to_thread(wiz_g._graph.get_state, config)
             if snapshot is not None and snapshot.values:
                 state = dict(snapshot.values)
                 logger.debug(
@@ -151,7 +151,7 @@ class WizardSessionService:
             return state
 
         # ── Fresh session ─────────────────────────────────────────────────
-        logger.info("[WizardSession] New session thread=%s", thread_id)
+        logger.info("[WizardSession] New session thread=%s source=wizard_new", thread_id)
         state = {
             "session_id": session_id,
             "user_id": str(user_id) if user_id else "",
@@ -202,7 +202,7 @@ class WizardSessionService:
         """
         from app.domains.job_creation.graph import job_creation_graph as wiz_g
 
-        prior_state = cls._get_prior_state(thread_id)
+        prior_state = await cls._get_prior_state(thread_id)
         state = cls._build_state(
             thread_id=thread_id,
             user_message=user_message,
