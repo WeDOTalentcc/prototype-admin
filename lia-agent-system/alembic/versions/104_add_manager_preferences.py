@@ -1,7 +1,7 @@
 """add_manager_preferences
 
 Revision ID: 104
-Revises: 103
+Revises: 103_add_compensation_policy_id_to_jobs
 Create Date: 2026-04-30
 
 LGPD audit: stores only professional data (corporate email, work preferences).
@@ -15,7 +15,7 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "104"
-down_revision = "103"
+down_revision = "103_add_compensation_policy_id_to_jobs"
 branch_labels = None
 depends_on = None
 
