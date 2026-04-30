@@ -1,12 +1,26 @@
 """
 Company Benefits API endpoints.
 CRUD operations for company-specific benefits management.
+
+Schema-alvo: 1:1 com Rails canonical (`ats-api-copia/db/migrate/20250715000005_create_benefits.rb`).
+Cobre 24 colunas (22 do Rails + icon e timestamps).
+
+Multi-tenancy: scoping por company_id em toda query (RLS no DB tambem aplicada).
+
+LGPD: provider_contact e PII. Camadas downstream (logs, JD publicada) devem
+mascarar — ver // TODO(LGPD:001) em jd_template_service.
+
+Mudancas Fase 1 (2026-04-30):
+  - Pydantic Create/Update/Response cobrem 22 campos editaveis (antes: 8).
+  - Validacao condicional por value_type (monetary|percentage|informative).
+  - Helper _to_response retorna 24 colunas.
 """
 import logging
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id, validate_company_access
@@ -20,41 +34,106 @@ router = APIRouter(prefix="/company/benefits", tags=["company-benefits"])
 logger = logging.getLogger(__name__)
 
 
-class CompanyBenefitCreate(BaseModel):
+# ---------------------------------------------------------------------------
+# Pydantic schemas
+# ---------------------------------------------------------------------------
+
+class CompanyBenefitBase(BaseModel):
+    """Campos editaveis (mesmos para Create e Update)."""
+
+    name: str | None = Field(None, max_length=255)
+    category: str | None = None
+    description: str | None = None
+    icon: str | None = None
+
+    # Valor (3 modos)
+    value: float | None = None
+    percentage_value: float | None = None
+    value_type: str | None = "informative"  # monetary | percentage | informative
+    value_details: str | None = None
+
+    # Elegibilidade
+    applicable_to: list[str] | None = Field(default_factory=list)
+    seniority_levels: list[str] | None = Field(default_factory=list)
+    contract_types: list[str] | None = Field(default_factory=list)
+    departments: dict[str, Any] | None = Field(default_factory=dict)
+
+    # Regras operacionais
+    waiting_period_days: int | None = None
+    is_mandatory: bool | None = False
+    is_active: bool | None = True
+    is_highlighted: bool | None = False
+    is_discount: bool | None = False
+
+    # Apresentacao
+    order: int | None = 0
+
+    # Provider (PII em provider_contact — // TODO(LGPD:001) em jd_template_service)
+    provider: str | None = None
+    provider_contact: str | None = None
+
+
+class CompanyBenefitCreate(CompanyBenefitBase):
+    """Create exige `name` (override).
+
+    Validacao condicional por value_type:
+      - monetary    -> value e obrigatorio
+      - percentage  -> percentage_value e obrigatorio
+      - informative -> value_details e obrigatorio (ou description como fallback)
+    """
     name: str = Field(..., min_length=1, max_length=255)
-    category: str | None = None
-    description: str | None = None
-    icon: str | None = None
-    value: float | None = None
-    value_type: str | None = "informative"
-    is_highlighted: bool = False
-    order: int = 0
+
+    @model_validator(mode="after")
+    def validate_value_by_type(self) -> "CompanyBenefitCreate":
+        vt = (self.value_type or "informative").lower()
+        if vt == "monetary" and self.value is None:
+            raise ValueError("value e obrigatorio quando value_type='monetary'")
+        if vt == "percentage" and self.percentage_value is None:
+            raise ValueError("percentage_value e obrigatorio quando value_type='percentage'")
+        if vt == "informative" and not self.value_details and not self.description:
+            raise ValueError(
+                "value_details (ou description) e obrigatorio quando value_type='informative'"
+            )
+        return self
 
 
-class CompanyBenefitUpdate(BaseModel):
-    name: str | None = None
-    category: str | None = None
-    description: str | None = None
-    icon: str | None = None
-    value: float | None = None
-    value_type: str | None = None
-    is_active: bool | None = None
-    is_highlighted: bool | None = None
-    order: int | None = None
+class CompanyBenefitUpdate(CompanyBenefitBase):
+    """Update aceita campos parciais. Sem validacao condicional pois pode
+    estar atualizando so um pedaco; UI deve garantir consistencia."""
+    pass
 
 
 class CompanyBenefitResponse(BaseModel):
+    """Response com 24 colunas (22 Rails + icon + timestamps)."""
     id: str
     company_id: str
+
     name: str
     category: str | None = None
     description: str | None = None
     icon: str | None = None
+
     value: float | None = None
+    percentage_value: float | None = None
     value_type: str | None = None
+    value_details: str | None = None
+
+    applicable_to: list[str] = Field(default_factory=list)
+    seniority_levels: list[str] = Field(default_factory=list)
+    contract_types: list[str] = Field(default_factory=list)
+    departments: dict[str, Any] = Field(default_factory=dict)
+
+    waiting_period_days: int | None = None
+    is_mandatory: bool = False
     is_active: bool = True
     is_highlighted: bool = False
+    is_discount: bool = False
+
     order: int = 0
+
+    provider: str | None = None
+    provider_contact: str | None = None
+
     created_at: str | None = None
     updated_at: str | None = None
 
@@ -71,14 +150,29 @@ def _to_response(b) -> CompanyBenefitResponse:
         description=b.description,
         icon=b.icon,
         value=b.value,
+        percentage_value=getattr(b, "percentage_value", None),
         value_type=b.value_type,
+        value_details=getattr(b, "value_details", None),
+        applicable_to=getattr(b, "applicable_to", None) or [],
+        seniority_levels=getattr(b, "seniority_levels", None) or [],
+        contract_types=getattr(b, "contract_types", None) or [],
+        departments=getattr(b, "departments", None) or {},
+        waiting_period_days=getattr(b, "waiting_period_days", None),
+        is_mandatory=getattr(b, "is_mandatory", False) or False,
         is_active=b.is_active,
         is_highlighted=b.is_highlighted,
-        order=b.order,
+        is_discount=getattr(b, "is_discount", False) or False,
+        order=b.order or 0,
+        provider=getattr(b, "provider", None),
+        provider_contact=getattr(b, "provider_contact", None),
         created_at=b.created_at.isoformat() if b.created_at else None,
         updated_at=b.updated_at.isoformat() if b.updated_at else None,
     )
 
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
 
 @router.get("/", response_model=list[CompanyBenefitResponse])
 async def list_company_benefits(

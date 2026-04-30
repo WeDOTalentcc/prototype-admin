@@ -1,9 +1,22 @@
 """
 Company Benefits model for multi-tenant benefits management.
+
+Schema-alvo: alinhado ao contrato Rails canonico
+(ats-api-copia/db/migrate/20250715000005_create_benefits.rb, 22 colunas) + `icon`
+extra do FastAPI (harmless). Total 23 colunas.
+
+Multi-tenant: scoping por company_id em toda query.
+
+Mudancas Fase 1 (2026-04-30):
+  - Adicionadas 11 colunas: percentage_value, value_details, applicable_to[],
+    seniority_levels[], contract_types[], departments (jsonb),
+    waiting_period_days, is_mandatory, is_discount, provider, provider_contact.
+  - Sem PII em logs: provider_contact deve ser mascarado pela camada de logging
+    (// TODO(LGPD:001) — filtro em jd_template_service para JD publicada).
 """
 from datetime import datetime
 from sqlalchemy import Column, String, Integer, DateTime, Text, Boolean, Float
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
 import uuid
 
 from lia_config.database import Base
@@ -15,25 +28,45 @@ class CompanyBenefit(Base):
     Multi-tenant model with company_id scoping.
     """
     __tablename__ = "company_benefits"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(255), nullable=False, index=True)
-    
+
+    # --- Identificacao basica ---
     name = Column(String(255), nullable=False)
     category = Column(String(100), nullable=True)
     description = Column(Text, nullable=True)
-    icon = Column(String(100), nullable=True)
-    
+    icon = Column(String(100), nullable=True)  # extra FastAPI; nao existe no Rails (harmless)
+
+    # --- Valor (3 modos: monetary | percentage | informative) ---
     value = Column(Float, nullable=True)
+    percentage_value = Column(Float, nullable=True)
     value_type = Column(String(50), default="informative")
-    
+    value_details = Column(Text, nullable=True)
+
+    # --- Elegibilidade (Postgres arrays + jsonb para departments) ---
+    applicable_to = Column(ARRAY(String), nullable=True, server_default="{}")
+    seniority_levels = Column(ARRAY(String), nullable=True, server_default="{}")
+    contract_types = Column(ARRAY(String), nullable=True, server_default="{}")
+    departments = Column(JSONB, nullable=True, server_default="{}")
+
+    # --- Regras operacionais ---
+    waiting_period_days = Column(Integer, nullable=True)
+    is_mandatory = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
     is_highlighted = Column(Boolean, default=False)
+    is_discount = Column(Boolean, default=False)
+
+    # --- Apresentacao ---
     order = Column(Integer, default=0)
-    
+
+    # --- Provider (PII: provider_contact deve ser mascarado em logs) ---
+    provider = Column(String(255), nullable=True)
+    provider_contact = Column(String(255), nullable=True)
+
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     def __repr__(self):
         return f"<CompanyBenefit {self.id} - {self.name}>"
 
