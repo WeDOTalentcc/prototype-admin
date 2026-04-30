@@ -5059,7 +5059,7 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 | Feature | Commits | Período | Camadas | Risco |
 |---|---:|---|---|---|
 | §4 Rail Features (sprint final + sessão 30/abr) | 20 | 29/abr 13:17 → 30/abr 18:32 | IA × Front × Back | 🟢×11 / 🟡×8 / 🔴×1 |
-| Benefits + PRV (Compensation Policies) | 13 | 29/abr → 30/abr | Cross IA↔Back, FE | 🟡×9 / 🔴×4 |
+| Benefits + PRV (Compensation Policies) | 14 + 3 cross-refs | 30/abr 09:48 → 13:57 | Cross IA↔Back, FE, Backend, Testes, Docs | 🟡×10 / 🔴×3 / 🟢×4 |
 | Misc fixes / Auto-commits | 18 | 29/abr → 30/abr | Vários | 🟢×10 / 🟡×7 / 🔴×1 |
 
 ### 4.2 Rail A — sprint final + sessão Claude (20 commits)
@@ -5123,28 +5123,353 @@ Cada feature lista seus commits em **ordem cronológica reversa** (mais novo pri
 
 **Resultado:** 22/22 cards Rail A funcionais end-to-end. Zero P0 abertos. Zero P1 abertos.
 
-### 4.4 Benefits + PRV (Compensation Policies) — 13 commits
+### 4.4 Benefits + PRV (Compensation Policies) — 14 commits específicos + 3 cross-refs
 
-**Descrição:** Onda completa de Benefits + PRV (Política de Remuneração Variável). Estende `CompanyBenefit` para contrato Rails (22 colunas), cria `CompensationPolicy` CRUD com 5 sub-tabs UI + RLS, integra empresa→vaga via `compensation_policy_id` FK, sincroniza no wizard de criação de vaga.
+**Descrição:** Onda completa de Benefits + PRV (Política de Remuneração Variável) — plano de 5 fases sequenciais. Estende `CompanyBenefit` para contrato Rails canônico (22 cols editáveis + 4 metadados auditoria = **26 cols totais**), cria `CompensationPolicy` CRUD canonical (26 cols com 5 jsonbs ricos: `salary_bands`, `bonus_structure`, `equity_rules`, `benefits_package`, `variable_compensation` + RLS forced + 7 índices GIN), integra empresa→vaga via `compensation_policy_id` FK opcional com SQL guard multi-tenant explícito, sincroniza no wizard de criação de vaga via 12 TODO markers IA estáveis. Diferencial WeDOTalent: PLR/PPR brasileiros nativos (Lei 10.101/2000) + LGPD-by-design (`provider_contact` masking via `app/shared/pii_masking.py`) + versionamento auditável append-only via `revision_history` jsonb.
 
-**⚠️ Dependências para cherry-pick:** aplicar Fases 1→2→3→4 em ordem (sequência abaixo). Migrations alembic 099, 100, 102, 103.
+**⚠️ Dependências para cherry-pick:** aplicar Fases 0→1→2→3→4→5 em ordem (sequência cronológica abaixo). Migrations alembic dependentes: 099 (offer_proposals) → 100 (extend company_benefits 11 cols) → 101 (fix seniority_levels JSONB→TEXT[], se aplicável — squashed na 100 em algumas branches) → 102 (realign compensation_policies — drop 12 cols draft + add 15 Rails canonical + RLS) → 103 (add compensation_policy_id FK em job_vacancies). Branch parent: `main`. Branch ativa: `feat/benefits-prv-canonical` (76 commits ahead, HEAD `661028958`).
 
-| Risco | SHA | Data | Camada | Fase | Arquivos chave |
+**Arquivos canônicos** (paths absolutos para SSH `replit-wedo`):
+- **Backend FastAPI** (`/home/runner/workspace/lia-agent-system/`):
+  - `alembic/versions/100_extend_company_benefits.py` (11 cols add + 4 GIN indexes)
+  - `alembic/versions/102_realign_compensation_policies.py` (drop 12 + add 15 cols + RLS forced + 4 policies + 4 GIN)
+  - `alembic/versions/103_add_compensation_policy_id_to_jobs.py` (FK opcional ON DELETE SET NULL)
+  - `libs/models/lia_models/company_benefit.py` (123 LoC ORM)
+  - `libs/models/lia_models/compensation_policy.py` (224 LoC ORM)
+  - `libs/models/lia_models/job_vacancy.py` (324 LoC — adiciona compensation_policy_id UUID FK + benefits JSONB)
+  - `app/api/v1/company_benefits.py` (411 LoC — 7 endpoints + Pydantic Create/Update/Response + fairness guard)
+  - `app/api/v1/company_compensation_policies.py` (445 LoC — 7 endpoints + 5 validators + variable_compensation kinds)
+  - `app/api/v1/job_vacancies/crud.py:830-866` (PUT com SQL guard multi-tenant para compensation_policy_id)
+  - `app/domains/company/repositories/company_benefit_repository.py` (97 LoC)
+  - `app/domains/company/repositories/compensation_policy_repository.py` (147 LoC — auto-bump version + revision_history append)
+  - `app/shared/compliance/fairness_guard.py` (1.282 LoC — extendido com PRV)
+  - `app/shared/pii_masking.py` (235 LoC — JÁ EXISTE; cobre CPF/EMAIL/PHONE_BR/NAME/GRADUATION_YEAR)
+  - `app/domains/job_management/services/wizard_step_service/stage_salary.py:49,156-174,194-206` (TODO WIZARD-INT:002 + prv_section + suggestions)
+  - `app/domains/offer/services/offer_service.py:58-90,141-173,274` (INT:004 hidratar offered_benefits + _enrich_job_snapshot_compensation + render_offer_template_variables)
+  - `app/domains/analytics/services/compensation_analysis_service.py:496` (TODO LIA-PROACTIVITY:003)
+  - `scripts/validate_benefits_orphans.py` (orphan handling pre-migration)
+- **Frontend Next.js** (`/home/runner/workspace/plataforma-lia/`):
+  - `src/components/settings/benefits/BenefitFormModal.tsx` (626 LoC — 20+ campos + prop `context: "settings" | "job"`)
+  - `src/components/settings/benefits/BenefitsListSection.tsx` (368 LoC — usado em MinhaEmpresaCard:12,313)
+  - `src/components/settings/benefits/BenefitsList.tsx` (166 LoC — usado em BenefitsTab:22,145; refatorado, NÃO removido)
+  - `src/components/settings/benefits/benefits-types.ts` (54 LoC — `BenefitTabRecord`)
+  - `src/components/settings/benefits/useBenefitsTab.ts` (387 LoC; `handleSaveBenefit` em :268)
+  - `src/components/settings/compensation-policies/CompensationPolicyFormModal.tsx` (724 LoC — 5 sub-tabs)
+  - `src/components/settings/compensation-policies/CompensationPoliciesListSection.tsx` (116 LoC)
+  - `src/components/settings/compensation-policies/CompensationPolicyItemCard.tsx` (129 LoC)
+  - `src/components/settings/compensation-policies/compensation-policies-types.ts` (143 LoC — `CompensationPolicyRecord`, `VariableCompItem`, `SalaryBand`)
+  - `src/components/settings/compensation-policies/useCompensationPoliciesTab.ts` (197 LoC; `savePolicy` em :97)
+  - `src/components/settings/company/CompensationBlockSection.tsx` (138 LoC — bloco em "Dados da Empresa")
+  - `src/components/modals/edit-job-sections/EditJobModalCompensation.tsx` (319 LoC — Sal+Bônus+Benefícios+PRV; botão "Detalhado" :282-300; handleBenefitSaveToCompany :69-89)
+  - `src/components/modals/edit-job-sections/EditJobModalProcess.tsx` (193 LoC — Pipeline+Stages, separado)
+  - `src/components/modals/edit-job/useEditJob.ts:78-89,170-181` (carrega compensation-policies + pre-select highlighted benefits)
+  - `src/app/api/backend-proxy/company/compensation-policies/route.ts` (8 LoC proxy)
+  - `src/app/api/backend-proxy/company/compensation-policies/[policyId]/route.ts` (8 LoC proxy)
+  - `messages/pt-BR.json` + `messages/en.json` (i18n: `documentsLabel: "Remuneração Variável"`)
+  - `src/hooks/settings/use-company-settings-cards.ts:256` (block title "Remuneração Variável" + icon TrendingUp)
+- **Tests**:
+  - `lia-agent-system/tests/unit/test_company_benefits_extended.py` (5 tests)
+  - `lia-agent-system/tests/unit/test_compensation_policies.py` (6 tests)
+  - `lia-agent-system/tests/unit/test_job_vacancy_benefits_schema.py` (3 tests)
+  - `lia-agent-system/tests/unit/test_wizard_benefits_prv_integration.py` (19 tests — INT:002/003/004)
+  - `plataforma-lia/e2e/tests/benefits-prv-settings.spec.ts` (9 tests Settings UI)
+  - `plataforma-lia/e2e/tests/job-compensation.spec.ts` (18 tests JC-001→JC-016 + LIA chat)
+  - `plataforma-lia/e2e/tests/wizard/wizard-prv-benefits.spec.ts` (16 tests)
+- **Backend Rails canonical** (READ-ONLY referência — `/home/runner/workspace/ats-api-copia/`):
+  - `db/migrate/20250715000005_create_benefits.rb` (22 cols planejadas — não aplicada)
+  - `db/migrate/20250715000009_create_compensation_policies.rb` (23 cols planejadas — não aplicada)
+
+**Docs de referência** (5 docs handoff em `/Users/paulomoraes/Documents/Python/`):
+- `HANDOFF_BENEFITS_PRV_EXECUTIVE_SUMMARY.md` — visão de produto para time todo (10 seções, 1 frase TL;DR)
+- `HANDOFF_BENEFITS_PRV_MAIN.md` — handoff técnico geral (~700 linhas, DDL completo, env vars, comandos)
+- `HANDOFF_BENEFITS_PRV_TECHNICAL_DEEP_DIVE.md` — schemas Pydantic/TS/JSONB + camada IA + compliance (~1100 linhas)
+- `HANDOFF_BENEFITS_PRV_FLOWS.md` — 6 fluxos E2E com diagramas ASCII + payloads + error codes (~900 linhas)
+- `HANDOFF_BENEFITS_PRV_JIRA_EPIC_TEMPLATE.md` — 1 Epic + 18 Stories prontas (103 SP totais, ~800 linhas)
+
+#### 4.4.1 Tabela canonical de commits (14 específicos da feature)
+
+> **Sequência cronológica de aplicação** (mais antigo → mais novo). Para cherry-pick, manter ordem.
+
+| # | Risco | SHA | Data/Hora | Camada | Fase | Arquivos chave |
+|---:|:---:|---|---|---|---|---|
+| 1 | 🟡 | `32f212c66` | 2026-04-30 09:48 | Backend | **Fase 1.1-1.3** — estende `CompanyBenefit` para 22 cols Rails (+11: percentage_value, value_details, applicable_to[], seniority_levels[], contract_types[], departments jsonb, waiting_period_days, is_mandatory, is_discount, provider, provider_contact) | `alembic/versions/100_extend_company_benefits.py`<br>`libs/models/lia_models/company_benefit.py`<br>`app/api/v1/company_benefits.py` (Pydantic 22 fields)<br>`app/domains/company/repositories/company_benefit_repository.py` |
+| 2 | 🟡 | `403111d5d` | 2026-04-30 09:56 | Frontend (UI) | **Fase 1.4** — `BenefitFormModal` cobre 20 campos + multi-select chips (applicable_to, contract_types, departments, seniority_levels) + sub-bloco LGPD para provider_contact | `plataforma-lia/src/components/settings/benefits/BenefitFormModal.tsx`<br>`plataforma-lia/src/components/settings/benefits/benefits-types.ts` |
+| 3 | 🟡 | `020503492` | 2026-04-30 10:05 | Cross IA↔Back | **Fase 1.6+1.7** — propaga 22 campos pela cadeia FE→Proxy→FastAPI→DB; sync `DEFAULT_BRAZILIAN_BENEFITS` × `BENEFIT_TEMPLATES_DATA` + bloco "Benefícios da Empresa" em Configurações | múltiplos (FE + BE) |
+| 4 | 🟡 | `e048abb3d` | 2026-04-30 10:10 | Testes | **Fase 1.8** — sensors estruturais para CompanyBenefit (10 tests roundtrip 22 campos + multi-tenant + value_type validation) | `lia-agent-system/tests/unit/test_company_benefits_extended.py`<br>`tests/unit/test_job_vacancy_benefits_schema.py` |
+| 5 | 🟡 | `a2b209c91` | 2026-04-30 10:16 | Docs | **Fase 2.1** — best practices ATS/HR Tech para PRV (Greenhouse, Lever, Workday, Carta, Lattice, Levels.fyi) — 12 best practices + 12 anti-patterns + diferencial PLR/PPR BR | `docs/COMPENSATION_BEST_PRACTICES.md` |
+| 6 | 🟡 | `1ec524959` | 2026-04-30 10:39 | Cross IA↔Back | **Fase 1 hardening** — fairness guard `PROHIBITED_ELIGIBILITY_TERMS` (40+ termos PT + 30+ EN com cita Lei 9.029/95, CLT 373-A) + 13 testes de regressão fairness | `app/api/v1/company_benefits.py:37-66` (PROHIBITED_ELIGIBILITY_TERMS)<br>`app/shared/compliance/fairness_guard.py` (extendido) |
+| 7 | 🟡 | `9d6cc44a0` | 2026-04-30 11:12 | Cross Back↔Front | **Fase 2 completa** — `CompensationPolicy` CRUD canonical alinhado Rails: drop 12 cols draft + add 15 Rails (salary_bands jsonb, variable_compensation jsonb com kinds tipados, applicable_*[] arrays, version int, revision_history jsonb append-only) + RLS forced + 4 sub-tabs UI inicialmente | `alembic/versions/102_realign_compensation_policies.py`<br>`libs/models/lia_models/compensation_policy.py`<br>`app/api/v1/company_compensation_policies.py`<br>`app/domains/company/repositories/compensation_policy_repository.py`<br>`plataforma-lia/src/components/settings/compensation-policies/` (5 arquivos)<br>`plataforma-lia/src/components/settings/company/CompensationBlockSection.tsx` |
+| 8 | 🟡 | `f46699cf8` | 2026-04-30 12:01 | Cross Back↔Front | **Fase 3** — empresa→vaga: `compensation_policy_id` UUID FK opcional ON DELETE SET NULL + `Job.benefits` aceita `string \| {id, name}` + dropdown PRV no modal vaga | `alembic/versions/103_add_compensation_policy_id_to_jobs.py`<br>`libs/models/lia_models/job_vacancy.py:324`<br>`app/api/v1/job_vacancies/crud.py:830`<br>`plataforma-lia/src/components/modals/edit-job/useEditJob.ts` |
+| 9 | 🟡 | `8be8f6b8a` | 2026-04-30 12:26 | IA | **Fase 4** — IA layer audit + 11 TODO markers (WIZARD-INT × 5, LIA-PROACTIVITY × 3, FAIRNESS × 1, AUDIT × 1, LGPD × 1) + fairness note PRV | `IA_LAYER_BENEFITS_PRV_AUDIT.md`<br>`app/shared/compliance/fairness_guard.py:23` (TODO FAIRNESS:001)<br>`app/api/v1/company_benefits.py:11,28,120,148`<br>`app/api/v1/company_compensation_policies.py:10,11,13,114`<br>`app/domains/job_management/services/wizard_step_service/stage_salary.py:49`<br>`app/domains/analytics/services/compensation_analysis_service.py:496` |
+| 10 | 🟡 | `66d1a0144` | 2026-04-30 12:32 | Cross Back↔Front | **Fase 3 deferred** — P1 multi-tenancy SQL guard `crud.py:852-866` (SELECT id FROM compensation_policies WHERE id=:id AND company_id=:cid AND is_active=true → 400 se cross-tenant) + 3.4 pre-select `is_highlighted` benefits + 3.5 BenefitFormModal `context="job"` + 3.7 bonus override label + 3.8 split EditJobModalRequirements → EditJobModalCompensation (319 LoC) + EditJobModalProcess (193 LoC) | `app/api/v1/job_vacancies/crud.py:830-866`<br>`plataforma-lia/src/components/modals/edit-job-sections/EditJobModalCompensation.tsx` (NEW)<br>`plataforma-lia/src/components/modals/edit-job-sections/EditJobModalProcess.tsx` (NEW)<br>`plataforma-lia/src/components/modals/edit-job/useEditJob.ts:78-89,170-181`<br>`plataforma-lia/src/components/settings/benefits/BenefitFormModal.tsx:78` (prop context) |
+| 11 | 🟢 | `b56da03f4` | 2026-04-30 13:45 | Frontend (UI) | Update company settings labels and titles to reflect new terminology — bloco "Documentos" → "Remuneração Variável" + icon FileText → TrendingUp | `plataforma-lia/messages/pt-BR.json`<br>`plataforma-lia/messages/en.json`<br>`plataforma-lia/src/hooks/settings/use-company-settings-cards.ts:256` |
+| 12 | 🔴 | `407e76545` | 2026-04-30 13:44 | Cross Back↔Front | Integrate detailed compensation policies into job offers and hiring workflows — INT:004 hidratação `offered_benefits` via `compensation_policy.benefits_package.included` em `offer_service.py:58-90`; `_enrich_job_snapshot_compensation` em `:141-173`; expõe `compensation_policy_snapshot` em proposal.fields | `lia-agent-system/app/domains/offer/services/offer_service.py`<br>`lia-agent-system/app/domains/offer/tools/{create_offer_draft,update_offer_draft,send_offer}.py`<br>FE offer modals |
+| 13 | 🟢 | `423158edd` | 2026-04-30 13:50 | Frontend (UI) | fix(settings): fix encoding `Pol(R)ticas` (chr(174)) → `Políticas de PRV` (chr(237)) + i18n `documentsLabel` → "Remuneração Variável" / "Variable Compensation" + `documentsHint` → "Políticas de PRV — carrega faixas, PLR, bônus, comissão e elegibilidade." | `plataforma-lia/src/hooks/settings/use-company-settings-cards.ts`<br>`plataforma-lia/messages/pt-BR.json`<br>`plataforma-lia/messages/en.json` |
+| 14 | 🔴 | `44d742f2f` | 2026-04-30 13:57 | Cross IA↔Back | **Wizard integra company Benefits + PRV** (compensation_policies) into wizard flow — `stage_salary.py:156-174` constrói `prv_section` quando `compensation_policies` é passado pelo orchestrator (sorted is_default first); `:194-206` retorna `suggestions_data` com `benefits[{id,name,selected}]` + `compensation_policy: default_policy`; INT:001 (substitui prosa "Bônus ou PLR") + INT:002 (filter benefits by eligibility — TODO ainda aberto) + INT:003 (3 novos intents) + INT:004 (offer prefill) + INT:005 (botão "Sugerir pacote com LIA" placeholder em `EditJobModalCompensation.tsx:52`) | `lia-agent-system/app/domains/job_management/services/wizard_step_service/stage_salary.py`<br>`lia-agent-system/app/domains/job_management/services/wizard_step_service/service.py`<br>`lia-agent-system/app/orchestrator/action_executor/intents_config.py`<br>`plataforma-lia/src/components/modals/edit-job-sections/EditJobModalCompensation.tsx:52`<br>`tests/unit/test_wizard_benefits_prv_integration.py` (19 tests) |
+
+#### 4.4.2 Cross-refs com outras seções (3 commits relacionados a Benefits/PRV listados em outras seções)
+
+| Risco | SHA | Data/Hora | Camada | Listado em | Por que toca Benefits/PRV |
 |:---:|---|---|---|---|---|
-| 🟡 | `32f212c66` | 2026-04-29 | Backend | Fase 1.1-1.3 — estende `CompanyBenefit` para 22 cols | `lia-agent-system/alembic/versions/100_extend_company_benefits.py`<br>`lia-agent-system/libs/models/lia_models/company_benefit.py` |
-| 🟡 | `403111d5d` | 2026-04-29 | Frontend (UI) | Fase 1.4 — `BenefitFormModal` cobre 20 campos + multi-select chips | `plataforma-lia/src/components/...` |
-| 🟡 | `020503492` | 2026-04-29 | Cross IA↔Back | Fase 1.6+1.7 — propaga 22 campos pela cadeia + TODO sync listas mestre | múltiplos |
-| 🟡 | `e048abb3d` | 2026-04-29 | Testes | Fase 1.8 — sensors estruturais para CompanyBenefit (10 tests) | `lia-agent-system/tests/...` |
-| 🟡 | `1ec524959` | 2026-04-29 | Cross IA↔Back | Fase 1 hardening — fairness guard + 13 testes (resposta auditoria) | múltiplos |
-| 🟡 | `9d6cc44a0` | 2026-04-29 | Cross Back↔Front | **Fase 2 completa** — `CompensationPolicy` CRUD + UI 5 sub-tabs + RLS | múltiplos |
-| 🟡 | `a2b209c91` | 2026-04-29 | Docs | Fase 2.1 — best practices ATS/HR Tech para PRV | docs |
-| 🟡 | `f46699cf8` | 2026-04-29 | Cross Back↔Front | **Fase 3** — empresa→vaga: `compensation_policy_id` FK + object benefits + PRV dropdown | múltiplos |
-| 🟡 | `66d1a0144` | 2026-04-29 | Cross Back↔Front | Fase 3 deferred — P1 multi-tenancy + 3.4 pre-select + 3.5 BenefitFormModal in job + 3.7 bonus label + 3.8 split Compensation/Process | múltiplos |
-| 🟡 | `8be8f6b8a` | 2026-04-29 | IA | **Fase 4** — IA layer audit + TODO markers + fairness note | `lia-agent-system/...` |
-| 🔴 | `44d742f2f` | 2026-04-30 | Cross IA↔Back | Wizard integra company Benefits + PRV (compensation_policies) into wizard flow | `lia-agent-system/app/domains/job_management/services/wizard_step_service/` + FE |
-| 🔴 | `407e76545` | 2026-04-30 | Cross Back↔Front | Integrate detailed compensation policies into job offers and hiring workflows | múltiplos |
-| 🟢 | `423158edd` | 2026-04-30 | Frontend (UI) | fix(settings): fix encoding Pol(R)ticas→Politicas de PRV + i18n documentsLabel→Remuneracao Variavel | `plataforma-lia/src/components/settings/` |
-| 🟢 | `b56da03f4` | 2026-04-30 | Frontend (UI) | Update company settings labels and titles to reflect new terminology | `plataforma-lia/messages/pt-BR.json` |
+| 🔴 | `587187f7a` | 2026-04-29 20:03 | Backend | (commit anterior à seção 4) | fix(model): JobVacancy.benefits column = JSON (not ARRAY) to match JSONB DB schema — corrige tipo da coluna `benefits` no ORM, **pré-requisito** para Fase 3 aceitar `Job.benefits` como `string \| {id, name}` |
+| 🟢 | `f60c300d4` | 2026-04-30 16:49 | Testes | §4.5 Misc | test(e2e): extend job-compensation spec with LIA chat integration tests (JC-011→JC-016) — 6 tests adicionais cobrindo INT:005 botão "Sugerir pacote com LIA" + WS message validation + data-testid anchors |
+| 🟢 | `661028958` | 2026-04-30 17:09 | Testes | §4.2 Rail A | test(e2e): add Rail A routing + Wizard PRV/Benefits exhaustive E2E suites (RA 9 tests, **WB 10 tests**) — wizard-prv-benefits.spec.ts cobre 16 cenários totais (10 + 6 do JC) integrando Benefits + PRV no fluxo wizard |
+
+#### 4.4.3 Schema Postgres canonical (estado pós-aplicação das 3 migrations)
+
+**Tabela `company_benefits` — 26 colunas + 7 índices + RLS forced + 4 policies**
+
+```sql
+CREATE TABLE company_benefits (
+    id                   UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id           VARCHAR(255) NOT NULL,           -- ⚠ varchar (não uuid) para suportar slugs legados
+    name                 VARCHAR(255) NOT NULL,
+    category             VARCHAR(100),
+    description          TEXT,
+    icon                 VARCHAR(100),                    -- extra FastAPI (Rails não tem)
+    value                DOUBLE PRECISION,
+    value_type           VARCHAR(50),                     -- 'monetary' | 'percentage' | 'informative'
+    is_active            BOOLEAN,
+    is_highlighted       BOOLEAN,
+    "order"              INTEGER,
+    created_at           TIMESTAMP,
+    updated_at           TIMESTAMP,
+    provider             VARCHAR(255),
+    percentage_value     DOUBLE PRECISION,
+    value_details        TEXT,
+    waiting_period_days  INTEGER NOT NULL DEFAULT 0,
+    is_mandatory         BOOLEAN NOT NULL DEFAULT false,
+    is_discount          BOOLEAN NOT NULL DEFAULT false,
+    applicable_to        TEXT[] DEFAULT '{}'::text[],
+    contract_types       TEXT[] DEFAULT '{}'::text[],
+    departments          JSONB DEFAULT '{}'::jsonb,
+    provider_contact     VARCHAR(255),                    -- ⚠ PII LGPD — masking via app/shared/pii_masking.py
+    seniority_levels     TEXT[] DEFAULT '{}'::text[],
+    updated_by           VARCHAR(255),                    -- audit
+    created_by           VARCHAR(255)                     -- audit
+);
+
+-- 7 índices: 1 PK + 1 btree (company_id) + 1 partial highlighted + 4 GIN (arrays + jsonb)
+CREATE INDEX ix_company_benefits_company_id ON company_benefits(company_id);
+CREATE INDEX ix_company_benefits_applicable ON company_benefits USING GIN(applicable_to);
+CREATE INDEX ix_company_benefits_seniority ON company_benefits USING GIN(seniority_levels);
+CREATE INDEX ix_company_benefits_contract ON company_benefits USING GIN(contract_types);
+CREATE INDEX ix_company_benefits_departments ON company_benefits USING GIN(departments);
+CREATE INDEX ix_company_benefits_highlighted ON company_benefits(company_id, is_highlighted) WHERE is_active = true;
+
+-- RLS forced + 4 policies
+ALTER TABLE company_benefits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE company_benefits FORCE ROW LEVEL SECURITY;
+CREATE POLICY company_benefits_tenant_select ON company_benefits FOR SELECT USING (company_id::text = app_current_company_id());
+CREATE POLICY company_benefits_tenant_insert ON company_benefits FOR INSERT WITH CHECK (company_id::text = app_current_company_id());
+CREATE POLICY company_benefits_tenant_update ON company_benefits FOR UPDATE USING (company_id::text = app_current_company_id());
+CREATE POLICY company_benefits_tenant_delete ON company_benefits FOR DELETE USING (company_id::text = app_current_company_id());
+```
+
+**Tabela `compensation_policies` — 26 colunas + 7 índices + 1 FK + RLS forced**
+
+```sql
+CREATE TABLE compensation_policies (
+    id                       UUID NOT NULL PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id               UUID NOT NULL REFERENCES company_profiles(id),
+    name                     VARCHAR(255) NOT NULL,
+    description              TEXT,
+    policy_type              VARCHAR(50),                 -- 'hierarchical_bands' | 'mixed' | 'variable_only'
+    currency                 VARCHAR(10) NOT NULL DEFAULT 'BRL',
+    salary_bands             JSONB NOT NULL DEFAULT '[]'::jsonb,
+    bonus_structure          JSONB NOT NULL DEFAULT '{}'::jsonb,
+    equity_rules             JSONB NOT NULL DEFAULT '{}'::jsonb,
+    benefits_package         JSONB NOT NULL DEFAULT '{}'::jsonb,
+    variable_compensation    JSONB NOT NULL DEFAULT '{}'::jsonb,  -- items[].kind ∈ {plr, ppr, bonus, commission, spot_bonus, equity}
+    applicable_departments   TEXT[] NOT NULL DEFAULT '{}'::text[],
+    applicable_seniority     TEXT[] NOT NULL DEFAULT '{}'::text[],
+    applicable_roles         TEXT[] NOT NULL DEFAULT '{}'::text[],
+    is_active                BOOLEAN,
+    is_default               BOOLEAN NOT NULL DEFAULT false,
+    effective_from           TIMESTAMP,
+    effective_until          TIMESTAMP,
+    approved_by              VARCHAR(255),                -- ⚠ PII LGPD — masking
+    approved_at              TIMESTAMP,
+    version                  INTEGER NOT NULL DEFAULT 1,
+    revision_history         JSONB NOT NULL DEFAULT '[]'::jsonb,  -- append-only: {version, updated_at, updated_by, changes: list[str]}
+    created_at               TIMESTAMP,
+    updated_at               TIMESTAMP,
+    created_by               VARCHAR(255),
+    updated_by               VARCHAR(255)
+);
+
+-- 7 índices: 1 PK + 1 btree + 1 partial + 4 GIN (1 com jsonb_path_ops para variable_compensation)
+CREATE INDEX ix_compensation_policies_company ON compensation_policies(company_id);
+CREATE INDEX ix_compensation_policies_active_default ON compensation_policies(company_id, is_active, is_default) WHERE is_active = true;
+CREATE INDEX ix_compensation_policies_departments ON compensation_policies USING GIN(applicable_departments);
+CREATE INDEX ix_compensation_policies_seniority ON compensation_policies USING GIN(applicable_seniority);
+CREATE INDEX ix_compensation_policies_roles ON compensation_policies USING GIN(applicable_roles);
+CREATE INDEX ix_compensation_policies_variable_comp ON compensation_policies USING GIN(variable_compensation jsonb_path_ops);
+
+-- RLS forced + 4 policies
+ALTER TABLE compensation_policies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE compensation_policies FORCE ROW LEVEL SECURITY;
+CREATE POLICY compensation_policies_tenant_select ON compensation_policies FOR SELECT USING (company_id::text = app_current_company_id());
+CREATE POLICY compensation_policies_tenant_insert ON compensation_policies FOR INSERT WITH CHECK (company_id::text = app_current_company_id());
+CREATE POLICY compensation_policies_tenant_update ON compensation_policies FOR UPDATE USING (company_id::text = app_current_company_id()) WITH CHECK (company_id::text = app_current_company_id());
+CREATE POLICY compensation_policies_tenant_delete ON compensation_policies FOR DELETE USING (company_id::text = app_current_company_id());
+```
+
+**FK em `job_vacancies`**:
+```sql
+ALTER TABLE job_vacancies
+    ADD COLUMN compensation_policy_id UUID
+    REFERENCES compensation_policies(id) ON DELETE SET NULL;
+CREATE INDEX idx_job_vacancies_compensation_policy_id ON job_vacancies(compensation_policy_id);
+-- benefits column é JSONB (corrigido no commit 587187f7a — antes era ARRAY)
+```
+
+#### 4.4.4 Endpoints REST canonical (15 totais — 14 implementados + 1 PUT job)
+
+**`/api/v1/company/benefits` (7 endpoints — todos implementados, auditados via `grep -n "@router\." company_benefits.py`):**
+- `GET /` (linha 242) — list com filtros (active_only, category, search)
+- `POST /` (linha 268) — create com `CompanyBenefitCreate` (22 fields + fairness + value_type validators)
+- `GET /{benefit_id}` (linha 289) — detail com guard `validate_company_access`
+- `PUT /{benefit_id}` (linha 310) — update partial
+- `DELETE /{benefit_id}` (linha 335) — soft delete (`?hard_delete=false` default)
+- `POST /seed-defaults` (linha 365) — seed `DEFAULT_BRAZILIAN_BENEFITS` (25 itens)
+- `GET /categories/list` (linha 398) — enum static
+
+**`/api/v1/company/compensation-policies` (7 endpoints REAIS — auditados):**
+- `GET /` (linha 236)
+- `POST /` (linha 262) — create version=1, revision_history=[]
+- `GET /{policy_id}` (linha 294)
+- `PUT /{policy_id}` (linha 315) — auto-bump version + append revision_history
+- `DELETE /{policy_id}` (linha 348) — soft delete
+- `POST /seed-defaults` (linha 384)
+- `GET /policy-types/list` (linha 426)
+
+**Endpoints PROPOSED (NÃO implementados — devem ser criados em Rails se workflows desejados):**
+- ❌ `GET /default` (usar `GET /?is_default=true` filter atual)
+- ❌ `GET /{id}/history` (revision_history vem dentro do GET detail)
+- ❌ `POST /{id}/approve` (approve via PUT setando approved_by/approved_at)
+- ❌ `POST /{id}/clone`
+
+**`PUT /api/v1/job-vacancies/{job_vacancy_id}` (linha 830) — multi-tenant SQL guard CRÍTICO em linhas 852-866:**
+```python
+if update_data.get("compensation_policy_id"):
+    db = repo.get_session()
+    row = (await db.execute(
+        text("SELECT id FROM compensation_policies WHERE id = :id AND company_id = :cid AND is_active = true"),
+        {"id": str(update_data["compensation_policy_id"]), "cid": user_company},
+    )).fetchone()
+    if not row:
+        raise HTTPException(400, "compensation_policy_id inválido ou não pertence a esta empresa")
+```
+> **GAP conhecido:** `benefits[]` IDs ainda não tem guard simétrico. Time externo Rails deve adicionar.
+
+#### 4.4.5 TODO markers IA (12 plantados — para integração futura com Wizard novo)
+
+| ID | Arquivo:Linha | Hook |
+|---|---|---|
+| `LGPD:001` | `app/api/v1/company_benefits.py:11` | Mascarar `provider_contact` em logs/JD pública |
+| `FAIRNESS:001` | `app/api/v1/company_benefits.py:28` | Fairness guard non-negotiable rule |
+| `LGPD:001` | `app/api/v1/company_benefits.py:120` | PII em `provider_contact` — masking jd_template_service |
+| `FAIRNESS:001` | `app/api/v1/company_benefits.py:148` | Fairness guard LGPD + non-negotiable |
+| `LGPD:001` | `app/api/v1/company_compensation_policies.py:10` | Masking `approved_by` em logs offer |
+| `FAIRNESS:001` | `app/api/v1/company_compensation_policies.py:11` | Validador termos discriminatórios `applicable_*[]` |
+| `WIZARD-INT:001` | `app/api/v1/company_compensation_policies.py:13` | Wizard consultar policies por seniority/dept |
+| `LGPD:001` | `app/api/v1/company_compensation_policies.py:114` | `approved_by` masking em logs |
+| `WIZARD-INT:002` | `app/domains/job_management/services/wizard_step_service/stage_salary.py:49` | Filtrar `company_benefits` por elegibilidade × seniority |
+| `LIA-PROACTIVITY:003` | `app/domains/analytics/services/compensation_analysis_service.py:496` | Aprender padrões PRV title × seniority |
+| `FAIRNESS:001` | `app/shared/compliance/fairness_guard.py:23` | Estender PRV validation runtime |
+| `WIZARD-INT:005` | `plataforma-lia/src/components/modals/edit-job-sections/EditJobModalRequirements.tsx:187` (e EditJobModalCompensation.tsx:52) | Botão "Sugerir pacote com LIA" |
+
+#### 4.4.6 Testes (86 totais — 33 pytest backend + 53 Playwright E2E)
+
+**Pytest (`/home/runner/workspace/lia-agent-system/tests/unit/`):**
+- `test_company_benefits_extended.py` — 5 tests (roundtrip 22 fields, multi-tenant, value_type validation)
+- `test_compensation_policies.py` — 6 tests (CRUD + version + revision_history)
+- `test_job_vacancy_benefits_schema.py` — 3 tests (benefits jsonb + FK)
+- `test_wizard_benefits_prv_integration.py` — 19 tests (INT:002 benefit seniority filter, INT:003 new intents, INT:004 prefill_from_snapshots)
+
+**Playwright (`/home/runner/workspace/plataforma-lia/e2e/tests/`):**
+- `benefits-prv-settings.spec.ts` — 9 tests (Settings UI: Benefits + PRV blocks)
+- `job-compensation.spec.ts` — 18 tests (JC-001→JC-016 + LIA chat integration)
+- `wizard/wizard-prv-benefits.spec.ts` — 16 tests (16 cenários wizard)
+- `rail-a-routing.spec.ts` — 10 tests (Rail A — inclui validação de cards relacionados)
+
+**Comandos de execução:**
+```bash
+ssh replit-wedo 'cd /home/runner/workspace/lia-agent-system && pytest tests/unit/test_company_benefits_extended.py tests/unit/test_compensation_policies.py tests/unit/test_job_vacancy_benefits_schema.py tests/unit/test_wizard_benefits_prv_integration.py -v'
+ssh replit-wedo 'cd /home/runner/workspace/plataforma-lia && npx playwright test e2e/tests/benefits-prv-settings.spec.ts e2e/tests/job-compensation.spec.ts e2e/tests/wizard/wizard-prv-benefits.spec.ts e2e/tests/rail-a-routing.spec.ts'
+```
+
+#### 4.4.7 Funcionalidades implementadas (6 totais)
+
+1. **Cadastro de Benefícios da Empresa** (Configurações → Minha Empresa → "Benefícios") — catálogo central com 22 campos, fairness guard, LGPD masking, multi-tenant 4 camadas
+2. **Política de Remuneração Variável (PRV)** (5 sub-tabs no modal: Bandas Salariais / Verbas Variáveis / Equity / Elegibilidade / Vigência) — diferencial PLR/PPR brasileiros (Lei 10.101/2000) + versionamento auditável
+3. **Vínculo Empresa → Vaga** (FK forte) — pre-select automático de benefícios `is_highlighted`, dropdown PRV no modal vaga, multi-tenant SQL guard explícito para `compensation_policy_id`
+4. **Adicionar Benefício Novo dentro da Vaga** (`BenefitFormModal context="job"`) — dual write: salva no catálogo da empresa + vincula à vaga
+5. **Camada IA (LIA) consome Benefits + PRV estruturalmente** — wizard mostra `prv_section` formatado, 12 TODO markers prontos para Wizard novo plugar
+6. **Compliance / LGPD / Fairness invisível** — `PROHIBITED_ELIGIBILITY_TERMS` blocklist PT-BR + EN com cita Lei 9.029/95 + CLT 373-A + Title VII + EU 2000/78; `app/shared/pii_masking.py` cobrindo CPF/EMAIL/PHONE_BR/NAME; versionamento auditável retenção 730 dias
+
+#### 4.4.8 Métricas finais
+
+| Métrica | Valor |
+|---|---|
+| Branch | `feat/benefits-prv-canonical` |
+| HEAD | `661028958` |
+| Merge-base com main | `8d7221d87` |
+| Commits ahead of main | **76** |
+| Commits específicos Benefits/PRV (4.4) | **14** |
+| Commits cross-refs (587187f7a, f60c300d4, 661028958) | **3** |
+| Commits totais relacionados | **17** |
+| Arquivos modificados/criados | 191 |
+| Linhas adicionadas | +38.507 |
+| Linhas removidas | -1.132 |
+| Migrations alembic | 3 (100, 102, 103) |
+| Endpoints REST implementados | 14 (7 benefits + 7 compensation-policies) |
+| Endpoints PROPOSED | 4 (não implementados) |
+| Tests pytest | 33 |
+| Tests Playwright | 53 |
+| TODO markers IA | 12 |
+| Schema canônico (cols totais) | 26 (benefits) + 26 (compensation_policies) = 52 |
+| Índices Postgres novos | 14 (7 + 7) |
+| RLS policies criadas | 8 (4 + 4) |
+| Push para GitHub | PENDENTE (Paulo manual via Replit IDE → branch `replit-sync`) |
+
+#### 4.4.9 Documentos de handoff (5 docs em `/Users/paulomoraes/Documents/Python/`)
+
+| Doc | Audiência | Linhas aprox | Conteúdo |
+|---|---|---:|---|
+| `HANDOFF_BENEFITS_PRV_EXECUTIVE_SUMMARY.md` | Time todo | 500 | Visão de produto, jornada do recrutador, antes/depois, FAQ, métricas |
+| `HANDOFF_BENEFITS_PRV_MAIN.md` | Tech Lead Rails | 700 | Visão técnica geral, DDL completo, env vars, comandos dev, gaps P0/P1/P2 |
+| `HANDOFF_BENEFITS_PRV_TECHNICAL_DEEP_DIVE.md` | Devs Rails+Python | 1100 | Pydantic schemas (com correções v1.1), TS types, JSONB schemas, camada IA, compliance, repos |
+| `HANDOFF_BENEFITS_PRV_FLOWS.md` | Devs + QA | 900 | 6 fluxos E2E com diagramas ASCII, payloads JSON request/response, error codes, multi-tenant guards |
+| `HANDOFF_BENEFITS_PRV_JIRA_EPIC_TEMPLATE.md` | PM + Tech Lead | 800 | 1 Epic + 18 Stories prontas (103 SP totais) com Acceptance Criteria + Technical Notes + DoD |
+
+> **Versão dos docs**: v1.1 (pós-auditoria de fidelidade 2026-04-30 — corrigiu Pydantic/TS schemas inferidos, contagem de cols 24→26, endpoints PROPOSED vs reais, mask_pii já existe). Audit changelog explícito no topo de cada doc.
+
+#### 4.4.10 Validação Replit
+
+```bash
+# Confirmar branch e HEAD
+ssh replit-wedo 'cd /home/runner/workspace && git log --oneline -1 feat/benefits-prv-canonical'
+# → 661028958 test(e2e): add Rail A routing + Wizard PRV/Benefits exhaustive E2E suites
+
+# Listar 14 commits específicos Benefits + PRV (cronológico)
+ssh replit-wedo 'cd /home/runner/workspace && git log --format="%h|%ad|%s" --date=short feat/benefits-prv-canonical | grep -iE "benefits-prv|fase[1-4]|phase[1-4]|compensation|prv|benefit-form"'
+
+# Validar schema Postgres
+ssh replit-wedo 'psql $DATABASE_URL -c "\d company_benefits"'
+ssh replit-wedo 'psql $DATABASE_URL -c "\d compensation_policies"'
+ssh replit-wedo 'psql $DATABASE_URL -c "\d job_vacancies" | grep -E "benefits|compensation"'
+
+# Auditar TODO markers (deve retornar 12)
+ssh replit-wedo 'cd /home/runner/workspace && grep -rn "TODO(WIZARD-INT\|TODO(LIA-PROACTIVITY\|TODO(FAIRNESS\|TODO(AUDIT\|TODO(LGPD" lia-agent-system/app plataforma-lia/src 2>/dev/null | wc -l'
+
+# Rodar testes pytest (33 esperados)
+ssh replit-wedo 'cd /home/runner/workspace/lia-agent-system && pytest tests/unit/test_company_benefits_extended.py tests/unit/test_compensation_policies.py tests/unit/test_job_vacancy_benefits_schema.py tests/unit/test_wizard_benefits_prv_integration.py -v --no-cov'
+
+# Rodar testes Playwright (53 esperados)
+ssh replit-wedo 'cd /home/runner/workspace/plataforma-lia && npx playwright test e2e/tests/benefits-prv-settings.spec.ts e2e/tests/job-compensation.spec.ts e2e/tests/wizard/wizard-prv-benefits.spec.ts'
+```
 
 ### 4.5 Misc fixes / Auto-commits (18 commits)
 

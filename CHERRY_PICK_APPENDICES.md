@@ -4667,7 +4667,7 @@ _303 features pequenas reunidas aqui pra reduzir ruído na seção 2 do MAP prin
 |---|---|---|---|---|
 | `0cf1caa5b` | 2026-04-30 18:32 | Testes | §4 Rail Features — PR-E expansion | feat(tests): LLM-as-judge for 22 Rail A cards golden dataset (PR-E) |
 | `661028958` | 2026-04-30 17:09 | Testes | §4 Rail Features — E2E | test(e2e): Rail A routing + Wizard PRV/Benefits exhaustive E2E (RA 9 + WB 10) |
-| `f60c300d4` | 2026-04-30 ~17:00 | Testes | Benefits/PRV — E2E | test(e2e): extend job-compensation spec with LIA chat (JC-011–016) |
+| `f60c300d4` | 2026-04-30 16:49 | Testes | Benefits/PRV — E2E | test(e2e): extend job-compensation spec with LIA chat (JC-011–016) |
 | `ccd90ff84` | 2026-04-30 16:38 | IA | §4 Rail Features — PR-RAG | feat(sourcing-actions): replace SQL ILIKE with RAGPipelineService hybrid |
 | `9e0eee100` | 2026-04-30 16:33 | Cross IA↔Back | §4 Rail Features — PR-BRIEF | feat(rails-adapter): daily_summary replaces deprecated briefing_service |
 | `7877c1ab4` | 2026-04-30 ~16:30 | Auto-commit Replit | (auto) | Transitioned from Plan to Build mode |
@@ -4680,38 +4680,38 @@ _303 features pequenas reunidas aqui pra reduzir ruído na seção 2 do MAP prin
 | `eacb2726f` | 2026-04-30 ~14:50 | Auto-commit Replit | (auto) | Git commit prior to merge |
 | `18b7614c7` | 2026-04-30 14:41 | Backend | §4 Rail Features — PR-CAL | fix(rail-a): add schedule_interview to capability_map (PR-CAL) |
 | `bd71815fb` | 2026-04-30 14:22 | Backend | §4 Rail Features — OfferDomain | fix(rail-a): wire OfferDomain + remove triagem keyword conflict |
-| `44d742f2f` | 2026-04-30 ~14:00 | Cross IA↔Back | Benefits/PRV | feat(wizard): integrate company Benefits + PRV (compensation_policies) into wizard |
+| `44d742f2f` | 2026-04-30 13:57 | Cross IA↔Back | Benefits/PRV | feat(wizard): integrate company Benefits + PRV (compensation_policies) into wizard |
 | `423158edd` | 2026-04-30 ~13:50 | Frontend (UI) | Benefits/PRV | fix(settings): encoding Politicas de PRV + i18n documentsLabel→Remuneracao Variavel |
-| `b56da03f4` | 2026-04-30 ~13:40 | Frontend (UI) | Benefits/PRV | Update company settings labels and titles to reflect new terminology |
-| `407e76545` | 2026-04-30 ~13:30 | Cross Back↔Front | Benefits/PRV | Integrate detailed compensation policies into job offers and hiring workflows |
+| `b56da03f4` | 2026-04-30 13:45 | Frontend (UI) | Benefits/PRV | Update company settings labels and titles to reflect new terminology |
+| `407e76545` | 2026-04-30 13:44 | Cross Back↔Front | Benefits/PRV | Integrate detailed compensation policies into job offers and hiring workflows |
 | `bad0a8385` | 2026-04-30 13:22 | Backend | §4 Rail Features — RAIL_A_EXTRA | fix(rail-a): add wizard to _RAIL_A_EXTRA_TARGETS so domain hint passes allowlist |
 | `4028932dd` | 2026-04-30 12:58 | Frontend (UI) | §4 Rail Features — PR-O | fix(rail-a): PR-O telemetry + compact COMING_SOON parity + stale nav tests |
 | `7f0124b89` | 2026-04-30 12:37 | Cross Back↔Front | §4 Rail Features — Kanban | fix(kanban+rail): shortlist init + PR-O telemetry + compact COMING_SOON guard |
-| `66d1a0144` | 2026-04-30 ~12:00 | Cross Back↔Front | Benefits/PRV — Fase 3 deferred | feat(fase3-deferred): P1 multi-tenancy + 3.4 pre-select + 3.5 BenefitFormModal in job |
-| `8be8f6b8a` | 2026-04-30 ~11:30 | IA | Benefits/PRV — Fase 4 | feat(phase4): IA layer audit + TODO markers + fairness note |
+| `66d1a0144` | 2026-04-30 12:32 | Cross Back↔Front | Benefits/PRV — Fase 3 deferred | feat(fase3-deferred): P1 multi-tenancy + 3.4 pre-select + 3.5 BenefitFormModal in job |
+| `8be8f6b8a` | 2026-04-30 12:26 | IA | Benefits/PRV — Fase 4 | feat(phase4): IA layer audit + TODO markers + fairness note |
 | `e79d457aa` | 2026-04-30 ~11:00 | IA | LLM resilience | fix(llm): add tenacity transient-error retry on Claude + OpenAI providers |
-| `f46699cf8` | 2026-04-30 ~10:30 | Cross Back↔Front | Benefits/PRV — Fase 3 | feat(phase3): empresa→vaga integration — compensation_policy_id FK + PRV dropdown |
+| `f46699cf8` | 2026-04-30 12:01 | Cross Back↔Front | Benefits/PRV — Fase 3 | feat(phase3): empresa→vaga integration — compensation_policy_id FK + PRV dropdown |
 | `9920e5e39` | 2026-04-30 ~10:00 | Backend | Job Management | fix(job-management): add missing company_job_history_service + recruitment_template_service |
 | `546b7a7fc` | 2026-04-30 11:44 | Backend | §4 Rail Features — CI | fix(ci): remove stale daily_briefing hardcoded check from deprecated-tools guard |
 | `2e3919e4c` | 2026-04-30 11:32 | Frontend (UI) | §4 Rail Features — PR-B Trigger B | feat(kanban): PR-B Trigger B - drag to offer column opens OfferReviewModal |
 | `eda6d4eaa` | 2026-04-30 ~11:30 | Backend | Chat | fix(chat): restore _build_response_from_action + handle_action_flow in chat.py |
 | `717e17d8c` | 2026-04-30 ~11:00 | Frontend (UI) | Design System | fix(design-system): substituir tokens hardcoded por tokens canonicos v4.2.2 |
-| `9d6cc44a0` | 2026-04-30 ~10:30 | Cross Back↔Front | Benefits/PRV — Fase 2 | feat(prv): Fase 2 completa — CompensationPolicy CRUD + UI 5 sub-tabs + RLS |
+| `9d6cc44a0` | 2026-04-30 11:12 | Cross Back↔Front | Benefits/PRV — Fase 2 | feat(prv): Fase 2 completa — CompensationPolicy CRUD + UI 5 sub-tabs + RLS |
 | `ecbcdfd41` | 2026-04-30 ~10:00 | Testes | Tests | fix(tests): update kanban_assistant_cov fixture after Task #93 migration |
 | `16be81325` | 2026-04-30 10:41 | Frontend (UI) | §4 Rail Features — FE-S06 | feat(rail-a): FE-S06 — dock magnifier parity in CompactReels |
-| `1ec524959` | 2026-04-30 ~10:00 | Cross IA↔Back | Benefits/PRV — Fase 1 hardening | feat(benefits-prv): Fase 1 hardening — fairness guard + 13 testes |
+| `1ec524959` | 2026-04-30 10:39 | Cross IA↔Back | Benefits/PRV — Fase 1 hardening | feat(benefits-prv): Fase 1 hardening — fairness guard + 13 testes |
 | `bfdf6ccd8` | 2026-04-30 ~09:30 | Backend | Wizard | fix: add wizard domain validator sensor to Tier 1/2 cache returns |
 | `e6bf5e2ac` | 2026-04-30 10:34 | Frontend (UI) | §4 Rail Features — FE-S03 | fix(rail-a): FE-S03 — remove hex fallback from chat-workflow-reels |
 | `704972b89` | 2026-04-30 10:21 | Docs | Classifiers | docs(classifiers): INT-S02 — document two-tier routing architecture |
-| `a2b209c91` | 2026-04-30 ~10:00 | Docs | Benefits/PRV | docs(benefits-prv): Fase 2.1 — best practices ATS/HR Tech para PRV |
+| `a2b209c91` | 2026-04-30 10:16 | Docs | Benefits/PRV | docs(benefits-prv): Fase 2.1 — best practices ATS/HR Tech para PRV |
 | `ed667d861` | 2026-04-30 10:14 | Testes | §4 Rail Features — W4-1 | test(rail-a): W4-1 routing determinism — 38 tests + LLM judge stub |
-| `e048abb3d` | 2026-04-30 ~09:50 | Testes | Benefits/PRV — Fase 1.8 | test(benefits-prv): Fase 1.8 — sensors estruturais para CompanyBenefit (10 tests) |
-| `020503492` | 2026-04-30 ~09:40 | Cross IA↔Back | Benefits/PRV — Fase 1.6+1.7 | feat(benefits-prv): Fase 1.6+1.7 — propaga 22 campos pela cadeia |
+| `e048abb3d` | 2026-04-30 10:10 | Testes | Benefits/PRV — Fase 1.8 | test(benefits-prv): Fase 1.8 — sensors estruturais para CompanyBenefit (10 tests) |
+| `020503492` | 2026-04-30 10:05 | Cross IA↔Back | Benefits/PRV — Fase 1.6+1.7 | feat(benefits-prv): Fase 1.6+1.7 — propaga 22 campos pela cadeia |
 | `1e59e7cab` | 2026-04-30 ~09:30 | Frontend (UI) | Login | Update login redirect logic and clean up evaluation data |
 | `00b0bfeb1` | 2026-04-30 ~09:30 | Cross IA↔Back | Sprint A | fix: Sprint A pending items - P1/P2 hardening post-audit |
-| `403111d5d` | 2026-04-30 ~09:30 | Frontend (UI) | Benefits/PRV — Fase 1.4 | feat(benefits-prv): Fase 1.4 — BenefitFormModal cobre 20 campos + multi-select |
+| `403111d5d` | 2026-04-30 09:56 | Frontend (UI) | Benefits/PRV — Fase 1.4 | feat(benefits-prv): Fase 1.4 — BenefitFormModal cobre 20 campos + multi-select |
 | `89388004c` | 2026-04-30 09:54 | Backend | §4 Rail Features — W1-2 | fix(briefing): W1-2 daily_briefing contract — capability_map + legacy disclaimer + tests |
-| `32f212c66` | 2026-04-30 ~09:00 | Backend | Benefits/PRV — Fase 1.1-1.3 | feat(benefits-prv): Fase 1.1-1.3 — estender CompanyBenefit para contrato Rails (22 cols) |
+| `32f212c66` | 2026-04-30 09:48 | Backend | Benefits/PRV — Fase 1.1-1.3 | feat(benefits-prv): Fase 1.1-1.3 — estender CompanyBenefit para contrato Rails (22 cols) |
 | `85c57cfd8` | 2026-04-29 ~23:00 | Testes | Tools | test(css): update tool count to 4 after explain_candidate_decision (EU AI Act + LGPD Art.20) |
 | `ed89147b7` | 2026-04-30 09:17 | IA | §4 Rail Features — Wave3 talent-pool | feat(talent-pool): Wave3 canonical ReAct agent (AGT-S02 fix) |
 | `85d488929` | 2026-04-29 ~22:00 | Backend | Checkpointer | fix(checkpointer): PostgresSaver v3.x — ConnectionPool replaces from_conn_string |
