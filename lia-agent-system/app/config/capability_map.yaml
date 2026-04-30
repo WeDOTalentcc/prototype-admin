@@ -27,6 +27,15 @@ capabilities:
     modal_id: stage_transition
     navigate_fallback: /visao-do-funil
 
+  # ── PR-CAL: schedule_interview — Card 4.1 opens InterviewSchedulingModal ─────
+  schedule_interview:
+    chat_executable: false   # modal > AI stub (SIMULATION_STUB is AI-layer only)
+    entity_required:
+      - type: candidate
+        param: candidate_id
+    modal_id: interview_scheduling
+    navigate_fallback: /visao-do-funil?view=entrevistas
+
   reschedule_interview:
     chat_executable: true
     entity_required:
