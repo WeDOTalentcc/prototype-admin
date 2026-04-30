@@ -351,11 +351,16 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]) -
 
 
 async def _search_candidates(params: dict[str, Any], context: dict[str, Any]):
+    """Search candidates using RAGPipelineService (pgvector + BM25 hybrid).
+
+    Replaces raw SQL ILIKE search with semantic + keyword hybrid search.
+    Multi-tenant: company_id passed to rag_pipeline_service.search() for tenant isolation.
+    FairnessGuard runs automatically inside rag_pipeline_service.search().
+    """
     from app.orchestrator.action_executor import ActionResult
     try:
-        from sqlalchemy import text
-
         from app.core.database import AsyncSessionLocal
+        from app.domains.ai.services.rag_pipeline_service import rag_pipeline_service
 
         query = params.get("query", "")
         company_id = context.get("company_id") if context else None
@@ -368,46 +373,46 @@ async def _search_candidates(params: dict[str, Any], context: dict[str, Any]):
                 error_detail="Missing query",
                 action_type="search_candidates",
             )
+        if not company_id:
+            return ActionResult(
+                status="error",
+                message="Contexto de empresa não encontrado.",
+                error_detail="Missing company_id",
+                action_type="search_candidates",
+            )
 
-        search_term = f"%{query}%"
         async with AsyncSessionLocal() as db:
-            sql = """
-                SELECT DISTINCT c.id, c.name, c.current_title, c.current_company,
-                       c.location_city, c.seniority_level
-                FROM candidates c
-                LEFT JOIN vacancy_candidates vc ON CAST(vc.candidate_id AS uuid) = c.id
-                WHERE (
-                    c.name ILIKE :q OR c.current_title ILIKE :q
-                    OR c.current_company ILIKE :q
-                    OR :raw_q = ANY(c.technical_skills)
-                    OR c.location_city ILIKE :q
-                )
-            """
-            bind = {"q": search_term, "raw_q": query}
-            if company_id:
-                sql += " AND vc.company_id = :co"
-                bind["co"] = str(company_id)
-            sql += " ORDER BY c.name LIMIT :lim"
-            bind["lim"] = limit
+            result = await rag_pipeline_service.search(
+                query=query,
+                company_id=str(company_id),
+                db=db,
+                limit=limit,
+                alpha=0.5,
+                domain="talent",
+            )
 
-            result = await db.execute(text(sql), bind)
-            rows = result.fetchall()
-
+        rows = result.results or []
         if not rows:
             return ActionResult(
                 status="executed",
-                message=f"Nenhum candidato encontrado para \"{query}\".",
+                message=f'Nenhum candidato encontrado para "{query}".',
                 data={"candidates": [], "query": query},
                 action_type="search_candidates",
             )
 
-        lines = [f"**Resultados para \"{query}\" ({len(rows)} encontrados):**\n"]
+        lines = [f'**Resultados para "{query}" ({len(rows)} encontrados):**\n']
         found = []
         for row in rows:
-            lines.append(f"- **{row.name}** — {row.current_title or 'N/A'} @ {row.current_company or 'N/A'} | {row.location_city or 'N/A'}")
+            name = row.get("name", "N/A")
+            title = row.get("current_title") or row.get("title") or "N/A"
+            company = row.get("current_company") or row.get("company") or "N/A"
+            city = row.get("location_city") or row.get("city") or "N/A"
+            lines.append(f"- **{name}** — {title} @ {company} | {city}")
             found.append({
-                "id": str(row.id), "name": row.name,
-                "title": row.current_title, "company": row.current_company,
+                "id": row.get("id", ""),
+                "name": name,
+                "title": title,
+                "company": company,
             })
 
         return ActionResult(
