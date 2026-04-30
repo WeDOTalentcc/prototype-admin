@@ -107,3 +107,15 @@ capabilities:
     entity_required: []       # tenant-wide summary — no specific entity needed
     navigate_fallback: /analytics
 
+
+  # ── PR-J card 3.1: candidate-info — quick contextual Q&A ──────────────
+  quick_question:
+    chat_executable: true
+    entity_required: []
+    navigate_fallback: /visao-do-funil
+
+  # ── PR-J2 card 8.3: ai-suggestions — proactive action recommendation ───
+  suggest_action:
+    chat_executable: true
+    entity_required: []
+    navigate_fallback: /analytics
