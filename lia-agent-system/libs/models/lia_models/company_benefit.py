@@ -71,6 +71,29 @@ class CompanyBenefit(Base):
         return f"<CompanyBenefit {self.id} - {self.name}>"
 
 
+# ---------------------------------------------------------------------------
+# Lista mestre 1: SEED CURADO de empresa nova
+# ---------------------------------------------------------------------------
+# DEFAULT_BRAZILIAN_BENEFITS e a lista *curada* (25 itens) usada pelo
+# CompanyBenefitRepository.seed_defaults() ao popular uma empresa nova.
+# Tem identidade visual (icon emoji), is_highlighted, e nomes BR-friendly.
+#
+# Existe uma SEGUNDA lista, BENEFIT_TEMPLATES_DATA em
+# `app/api/v1/benefits.py` (60+ itens), que e o *catalogo de templates*
+# globais usado pelo endpoint `GET /api/v1/benefits/` para autocomplete e
+# import bulk. As duas se sobrepoem em ~20 itens com pequenas variacoes
+# de nomenclatura ("Vale Refeicao" vs "Vale-Refeicao") e categoria
+# (flexibility vs quality_life).
+#
+# // TODO(SYNC:001) — consolidacao futura (Fase 2 ou pos-PRV):
+#   1. Eleger DEFAULT_BRAZILIAN_BENEFITS como subset curado.
+#   2. Refatorar BENEFIT_TEMPLATES_DATA para incluir todos os 25 (com icon)
+#      + 35 itens extras nao curados (sem icon, is_popular flag).
+#   3. seed_defaults filtra TEMPLATES por flag `is_seed_curated=True`.
+#   4. Alinhar nomenclatura (com hifen ou sem) e categorias (flexibility
+#      como categoria distinta de quality_life).
+# Por enquanto, a duplicacao e intencional e sem impacto funcional —
+# usuario nao ve, ambas sao consistentes em relacao ao Schema (24 cols).
 DEFAULT_BRAZILIAN_BENEFITS = [
     {"name": "Vale Refeição", "category": "food", "description": "Cartão ou voucher para refeições prontas", "icon": "🍽️", "is_highlighted": True, "order": 1},
     {"name": "Vale Alimentação", "category": "food", "description": "Cartão para compra de alimentos em supermercados", "icon": "🛒", "is_highlighted": True, "order": 2},

@@ -311,17 +311,23 @@ export function BenefitsListSection({
                           name: b.name || t("noNameDefault"),
                           description: b.description || "",
                           category: b.category || "quality_life",
+                          icon: (b as { icon?: string }).icon,
                           value_type: b.value_type || "informative",
                           value: b.value,
                           percentage_value: b.percentage_value,
                           value_details: b.value_details,
+                          applicable_to: (b as { applicable_to?: string[] }).applicable_to || ["all"],
                           seniority_levels: b.seniority_levels || ["all"],
+                          contract_types: (b as { contract_types?: string[] }).contract_types || [],
+                          departments: (b as { departments?: Record<string, unknown> }).departments || {},
                           waiting_period_days: b.waiting_period_days || 0,
                           is_mandatory: !!b.is_mandatory,
                           is_active: b.is_active !== false,
                           is_highlighted: !!b.is_highlighted,
                           is_discount: !!b.is_discount,
+                          order: (b as { order?: number }).order || 0,
                           provider: b.provider,
+                          provider_contact: (b as { provider_contact?: string }).provider_contact,
                         }}
                         isEditingBenefits={true}
                         onToggleStatus={(sel) => handleToggleStatus(sel as CompanyBenefit)}

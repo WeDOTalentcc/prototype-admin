@@ -16,24 +16,11 @@ import {
   Trash2,
 } from"lucide-react"
 import { textStyles } from"@/lib/design-tokens"
+import type { BenefitTabRecord } from "./benefits-types"
 
-interface Benefit {
-  id?: string
-  name: string
-  description: string
-  category: string
-  value_type: string
-  value?: number
-  percentage_value?: number
-  value_details?: string
-  seniority_levels: string[]
-  waiting_period_days: number
-  is_mandatory: boolean
-  is_active: boolean
-  is_highlighted: boolean
-  is_discount: boolean
-  provider?: string
-}
+// Re-export local alias para compatibilidade com codigo antigo. Schema-alvo:
+// 22 campos do contrato Rails (ats-api-copia/db/migrate/20250715000005_create_benefits.rb).
+type Benefit = BenefitTabRecord
 
 interface BenefitItemCardProps {
   benefit: Benefit

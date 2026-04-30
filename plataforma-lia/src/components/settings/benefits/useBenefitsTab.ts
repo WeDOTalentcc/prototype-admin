@@ -7,18 +7,31 @@ import type { BenefitTabRecord, BenefitTemplate } from "./benefits-types"
 import { defaultBenefit } from "./benefits-types"
 import { apiFetch } from "@/lib/api/api-fetch"
 
+const toStringArray = (raw: unknown, fallback: string[]): string[] => {
+  if (Array.isArray(raw)) return raw.map((x) => String(x))
+  if (raw === undefined || raw === null) return fallback
+  return [String(raw)]
+}
+
+const toRecord = (raw: unknown): Record<string, unknown> => {
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    return raw as Record<string, unknown>
+  }
+  return {}
+}
+
 const normalizeBenefit = (benefit: Record<string, unknown>): BenefitTabRecord => {
-  const seniorityRaw = benefit.seniority_levels
-  const seniority_levels = Array.isArray(seniorityRaw)
-    ? (seniorityRaw as string[])
-    : seniorityRaw
-    ? [String(seniorityRaw)]
-    : ["all"]
   return {
     id: typeof benefit.id === "string" ? benefit.id : undefined,
     name: String(benefit.name || ""),
     category: String(benefit.category || "other"),
     description: String(benefit.description || ""),
+    icon:
+      typeof benefit.icon === "string" && benefit.icon.length > 0
+        ? benefit.icon
+        : undefined,
+
+    // valor (3 modos)
     value_type: String(benefit.value_type || "informative"),
     value: typeof benefit.value === "number" ? benefit.value : undefined,
     percentage_value:
@@ -27,13 +40,27 @@ const normalizeBenefit = (benefit: Record<string, unknown>): BenefitTabRecord =>
         : undefined,
     value_details:
       typeof benefit.value_details === "string" ? benefit.value_details : "",
-    seniority_levels,
+
+    // elegibilidade (arrays Postgres + jsonb)
+    applicable_to: toStringArray(benefit.applicable_to, ["all"]),
+    seniority_levels: toStringArray(benefit.seniority_levels, ["all"]),
+    contract_types: toStringArray(benefit.contract_types, []),
+    departments: toRecord(benefit.departments),
+
+    // operacional
     waiting_period_days: Number(benefit.waiting_period_days ?? 0),
     is_mandatory: Boolean(benefit.is_mandatory ?? false),
     is_active: Boolean(benefit.is_active ?? true),
     is_highlighted: Boolean(benefit.is_highlighted ?? false),
     is_discount: Boolean(benefit.is_discount ?? false),
+
+    // apresentacao
+    order: Number(benefit.order ?? 0),
+
+    // provider (provider_contact = PII; backend mascara em logs/JD)
     provider: typeof benefit.provider === "string" ? benefit.provider : "",
+    provider_contact:
+      typeof benefit.provider_contact === "string" ? benefit.provider_contact : "",
   }
 }
 
