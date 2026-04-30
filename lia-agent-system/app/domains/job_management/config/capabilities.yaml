@@ -52,7 +52,6 @@ intent_keywords:
   auto detect: detect_criteria
   pergunta wsi: generate_wsi_questions
   wsi question: generate_wsi_questions
-  triagem: generate_wsi_questions
   avançar etapa: advance_wizard_step
   avançar para próxima: advance_wizard_step
   próxima etapa: advance_wizard_step
