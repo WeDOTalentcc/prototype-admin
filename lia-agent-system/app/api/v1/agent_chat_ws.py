@@ -514,70 +514,30 @@ async def _invoke_wizard_canonical_streaming(
     context: dict | None,
     on_token: Any,
 ) -> tuple[str, dict, int]:
-    """Invoke JobCreationGraph for the FIRST message in a wizard session.
+    """Invoke JobCreationGraph for a wizard message (new or continuing session).
 
-    Mirrors `_resume_wizard_canonical_streaming` but builds initial state
-    from the recruiter's free text instead of pulling prior_state from the
-    checkpointer. The graph itself handles the rest of the flow (intake →
-    jd_enrichment → ... ) including the HITL pauses.
+    Sprint A.1 — Bug 6: delegates to WizardSessionService.process_message()
+    which checks the LangGraph checkpointer for prior state before building
+    the initial state dict. This fixes the conversation_messages reset bug
+    (LIA re-asking questions already answered in earlier turns).
+
+    Mirrors `_resume_wizard_canonical_streaming` but for non-approval messages.
+    HITL approval resumes go through `_resume_wizard_canonical_streaming`.
 
     Returns:
         (recruiter_message, ws_stage_payload, tokens_emitted)
     """
-    from app.domains.job_creation.graph import job_creation_graph as wiz_g
+    from app.domains.job_creation.services.wizard_session_service import WizardSessionService
 
-    # Build initial state. The intake_node will run IntakeExtractor on
-    # `user_query`/`raw_input` and populate parsed_title/seniority/department,
-    # plus the new template_type/pipeline_template payload (Onda 37.A).
-    initial_state: dict = {
-        "session_id": session_id,
-        "user_id": str(user_id) if user_id else "",
-        "workspace_id": int(company_id) if (company_id and str(company_id).isdigit()) else 0,
-        "auth_token": "",
-        "language": "pt-BR",
-        "current_stage": None,
-        "stage_history": [],
-        "user_query": user_message,
-        "raw_input": user_message,
-        "conversation_messages": [
-            {"role": "user", "content": user_message},
-        ],
-    }
-    if context and isinstance(context, dict):
-        # Carry recruiter-provided form data / file attachments so the
-        # IntakeExtractor multi-source path triggers (priority order:
-        # right_panel_form > user_text > attached_file_text).
-        for k in ("right_panel_form", "attached_file_text"):
-            if k in context and context[k]:
-                initial_state[k] = context[k]
-
-    tokens_emitted = 0
-    if hasattr(wiz_g, "stream_invoke"):
-        result, tokens_emitted = await wiz_g.stream_invoke(
-            initial_state, thread_id, on_token=on_token,
-        )
-    else:  # pragma: no cover — defensive fallback
-        result = await asyncio.to_thread(
-            wiz_g.invoke, initial_state, thread_id,
-        )
-
-    if not isinstance(result, dict):
-        return ("Vaga em criação — vamos seguir.", {}, tokens_emitted)
-
-    stage_payload = result.get("ws_stage_payload") or {}
-    stage_data = stage_payload.get("data") or {}
-    current_stage = result.get("current_stage", "") or ""
-    message = (
-        stage_data.get("message")
-        or stage_data.get("response_text")
-        or {
-            "intake": "Captei a vaga. Vou seguir para o próximo passo.",
-            "jd_enrichment": "Descrição da vaga enriquecida — preciso da sua aprovação.",
-            "wsi_questions": "Perguntas de triagem WSI sugeridas — preciso da sua aprovação.",
-            "completed": "Vaga criada com sucesso.",
-        }.get(current_stage, f"Etapa atual: {current_stage or 'wizard'}.")
+    return await WizardSessionService.process_message(
+        thread_id=thread_id,
+        user_message=user_message,
+        user_id=user_id,
+        company_id=company_id,
+        session_id=session_id,
+        context=context,
+        on_token=on_token,
     )
-    return (message, stage_payload, tokens_emitted)
 
 
 def _ensure_agents_loaded() -> None:
@@ -1189,8 +1149,18 @@ async def agent_chat_ws(
             # at line ~719), invoke JobCreationGraph directly. This is
             # the canonical replacement for the (removed) WizardReActAgent
             # — see Task #850 / audit `wizard-canonical-gap-2026-04-29.md`.
+            #
             if active_domain == "wizard":
                 try:
+                    # Bug 6a (Sprint A.1): ws_thread_id must be defined in the
+                    # regular message path, not only in the approval_response
+                    # branch. Derive it here — stable across all turns of the
+                    # same wizard session.
+                    from app.domains.job_creation.services.wizard_session_service import (
+                        WizardSessionService as _WizSvc,
+                    )
+                    ws_thread_id = _WizSvc.derive_thread_id(msg, session_id)
+
                     from app.api.v1._ws_stream_helpers import (
                         is_token_streaming_enabled,
                     )
