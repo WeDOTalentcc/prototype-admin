@@ -310,6 +310,70 @@ class CascadedRouter:
             _t2_span.set_attribute("confidence_score", "0.0")
             _t2_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
 
+        # Tier 2.5 — Wizard creation guard (harness-engineering guide computacional).
+        #
+        # Runs FastRouter patterns for the 'wizard' domain BEFORE the vector cache
+        # (Tier 3) so stale "criar vaga" → job_management cache entries never surface
+        # for wizard creation intents.
+        #
+        # Root cause (Task #850 / post-mortem 2026-04-29): WizardReActAgent was
+        # replaced by JobCreationGraph but the vector cache was populated when the
+        # wizard domain did not exist yet. Cosine-similar messages like "criar vaga"
+        # hit the cache and return job_management, bypassing Tier 4 (FastRouter)
+        # which correctly resolves to wizard.
+        #
+        # This guard runs the fast_router for all messages BEFORE vector cache and
+        # short-circuits when it returns "wizard" with sufficient confidence. It also
+        # overwrites the vector cache entry so future queries resolve correctly without
+        # needing this guard to fire again.
+        #
+        # Skill canônica: harness-engineering [guide computacional].
+        _wiz_pre = self.fast.match(message)
+        if (
+            _wiz_pre is not None
+            and _wiz_pre.domain_id == "wizard"
+            and _wiz_pre.confidence >= settings.ROUTER_FAST_CONFIDENCE_THRESHOLD
+        ):
+            logger.info(
+                "[CascadedRouter] wizard_guard (Tier 2.5): '%s...' → wizard "
+                "(confidence=%.2f pattern=%s, pre-cache)",
+                message[:40],
+                _wiz_pre.confidence,
+                _wiz_pre.matched_pattern or "?",
+            )
+            if _hit_counter:
+                _hit_counter.labels(tier="wizard_guard").inc()
+            _wiz_result = RouteResult(
+                domain_id="wizard",
+                confidence=_wiz_pre.confidence,
+                source="wizard_guard",
+                matched_pattern=_wiz_pre.matched_pattern,
+            )
+            # Overwrite caches so the vector cache no longer returns the stale
+            # job_management entry for this message and its semantic neighbours.
+            self._cache_store(cache_key, _wiz_result)
+            await self._redis_cache.set(
+                message,
+                {
+                    "domain_id": "wizard",
+                    "confidence": _wiz_pre.confidence,
+                    "matched_pattern": _wiz_pre.matched_pattern,
+                },
+            )
+            if self._vector_cache is not None:
+                try:
+                    await self._vector_cache.set(
+                        message,
+                        {
+                            "domain_id": "wizard",
+                            "confidence": _wiz_pre.confidence,
+                            "source": "wizard_guard",
+                        },
+                    )
+                except Exception as _wiz_vec_exc:
+                    logger.debug("[CascadedRouter] wizard_guard vector update skipped: %s", _wiz_vec_exc)
+            return _wiz_result
+
         # Tier 3 — VectorSemanticCache (pgvector, cosine similarity)
         if self._vector_cache is not None:
             async with _tracer.start_span("router.tier3_vector_cache", attributes={
