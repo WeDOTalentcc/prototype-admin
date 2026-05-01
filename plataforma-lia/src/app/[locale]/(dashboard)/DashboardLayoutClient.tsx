@@ -16,6 +16,7 @@ const ROUTE_TO_PAGE: Record<string, string> = {
   "/chat": "Conversar",
   "/tasks": "Decidir",
   "/jobs": "Vagas",
+  "/recrutar": "Recrutar",
   "/funil-de-talentos": "Funil de Talentos",
   "/agent-studio": "Estúdio de Agentes",
   "/configuracoes": "Configurações",

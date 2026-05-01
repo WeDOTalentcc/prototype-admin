@@ -32,6 +32,7 @@ import { ModulesPage } from "@/components/pages/modules-page"
 const PAGE_ROUTES: Record<string, string> = {
   "Conversar": "/chat",
   "Vagas": "/jobs",
+  "Recrutar": "/recrutar",
   "Funil de Talentos": "/funil-de-talentos",
   "Decidir": "/tasks",
   "Configurações": "/configuracoes",
