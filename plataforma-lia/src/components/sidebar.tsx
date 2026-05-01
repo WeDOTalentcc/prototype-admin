@@ -128,7 +128,9 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
           { icon: Briefcase, label: "Vagas", isCore: true },
           {
             // navigateOnClick required: injectDynamic injects talent pool
-            // subItems below, so without it handleClick only expands.
+            // subItems below, so without it handleClick only expands. Here
+            // navigateOnClick = "call onNavigate (= setCurrentPage SPA) even
+            // with subItems"; it does NOT trigger a full-page URL nav.
             icon: Users,
             label: "Funil de Talentos",
             isCore: true,

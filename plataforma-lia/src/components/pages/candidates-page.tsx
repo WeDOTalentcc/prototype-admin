@@ -1,471 +1,719 @@
 "use client"
 
-/**
- * CandidatesPage — canonical Funil de Talentos canvas (T002, fork_spa_switch).
- *
- * History
- * -------
- * The 719L "candidates-page" that lived here was the legacy implementation
- * (`CandidatesPageHeader` + `CandidatesPageModals` + `useCandidatesPageCore`).
- * The fork-of-truth chosen by the user shipped a leaner canvas in
- * `app/[locale]/(dashboard)/funil-de-talentos/FunilDeTalentosClient.tsx` —
- * "Compartilhar Busca" + 6 abas + ExpandableAIPrompt. We graduate that
- * canvas to be the SPA-switch canonical: `dashboard-app.tsx` keeps using
- * `setCurrentPage("Funil de Talentos")` and renders THIS component.
- *
- * Compatibility
- * -------------
- * `dashboard-app.tsx` calls this both with props
- * (`<CandidatesPage onAddRecentItem pendingCandidateOpen onCandidateOpened/>`)
- * and without (`<CandidatesPage />` as the default fallback case). We keep
- * the named export and accept the legacy prop bag — the props are routed
- * to the legacy session/recents/deep-link integrations that the new canvas
- * does not yet wire (left as TODOs below). They are safe to ignore for now;
- * dropping them from the signature would crash the existing caller.
- *
- * The legacy URL `/pt/funil-de-talentos` now redirects to `/` (server-side
- * `redirect`) so any back-compat link still lands on the SPA shell.
- */
-
-import { useState, useMemo, useCallback, useEffect } from "react"
-import dynamic from "next/dynamic"
-import { useTranslations, useLocale } from "next-intl"
-import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { BulkActionsBar } from "@/components/ui/bulk-actions-bar"
-import { ExpandableAIPrompt } from "@/components/expandable-ai-prompt"
-import { useCandidatesList } from "@/hooks/candidates/use-candidates-list"
-import { useBulkSelection } from "@/hooks/candidates/use-bulk-selection"
-import { useTalentFunnel } from "@/hooks/candidates/use-talent-funnel"
-import { Brain, Heart, Share2, Users, AlertCircle, List, Bookmark, Database, Clock, LogIn } from "lucide-react"
+import { FavoritesTab } from "@/components/talent-funnel-tabs/favorites-tab"
+import { HistoryTab } from "@/components/talent-funnel-tabs/history-tab"
+import { SavedSearchesTab } from "@/components/talent-funnel-tabs/saved-searches-tab"
+import { ListsTab } from "@/components/talent-funnel-tabs/lists-tab"
+import TalentPoolsTab from "@/components/pages-candidates/TalentPoolsTab"
+import { CandidateSearchResultsView } from "@/components/pages/candidates/CandidateSearchResultsView"
 import type { Candidate } from "@/components/pages/candidates/types"
-import type { TableCandidate } from "@/components/tables"
-import type { CandidateLocal } from "@/services/lia-api"
-import { LoadingFallback } from "@/components/ui/loading"
+import type { CandidatesPageModalsProps } from "@/components/pages/candidates/CandidatesPageModals.types"
+import { liaApi } from "@/services/lia-api"
+import dynamic from "next/dynamic"
+import { CandidateSearchBar } from "@/components/pages/candidates/CandidateSearchBar"
+import { useCandidatesPageCore } from "./candidates/hooks/useCandidatesPageCore"
+import { CandidatesPageHeader } from "@/components/pages/candidates/CandidatesPageHeader"
+const CandidatesPageModals = dynamic(() => import("@/components/pages/candidates/CandidatesPageModals").then(m => ({ default: m.CandidatesPageModals })), { ssr: false, loading: () => null })
+import { toast } from "sonner"
+import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
 
-function DynamicLoadingFallback({ textKey }: { textKey: string }) {
-  const t = useTranslations('pipeline')
-  return <LoadingFallback height="h-40" text={t(textKey)} />
-}
+import { LoadingModal as CandidatesLoadingModal } from "@/components/ui/loading"
+const CandidatePreview = dynamic(() => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })), { ssr: false, loading: () => <CandidatesLoadingModal /> })
 
-const FavoritesTab = dynamic(
-  () => import("@/components/talent-funnel-tabs/favorites-tab").then(m => ({ default: m.FavoritesTab })),
-  { ssr: false, loading: () => <DynamicLoadingFallback textKey="loading.favorites" /> }
-)
-
-const ListsTab = dynamic(
-  () => import("@/components/talent-funnel-tabs/lists-tab").then(m => ({ default: m.ListsTab })),
-  { ssr: false, loading: () => <DynamicLoadingFallback textKey="loading.lists" /> }
-)
-
-const SavedSearchesTab = dynamic(
-  () => import("@/components/talent-funnel-tabs/saved-searches-tab").then(m => ({ default: m.SavedSearchesTab })),
-  { ssr: false, loading: () => <DynamicLoadingFallback textKey="loading.savedSearches" /> }
-)
-
-const HistoryTab = dynamic(
-  () => import("@/components/talent-funnel-tabs/history-tab").then(m => ({ default: m.HistoryTab })),
-  { ssr: false, loading: () => <DynamicLoadingFallback textKey="loading.history" /> }
-)
-
-const TalentPoolsTab = dynamic(
-  () => import("@/components/pages-candidates/TalentPoolsTab"),
-  { ssr: false, loading: () => <DynamicLoadingFallback textKey="loading.talentPools" /> }
-)
-
-const ShareSearchModal = dynamic(
-  () => import("@/components/modals/share-search-modal").then(m => ({ default: m.ShareSearchModal })),
-  { ssr: false }
-)
-
-// ── Mapper: CandidateLocal → Candidate (para reutilizar CandidatesTable) ──────
-function toCandidateTableRow(c: CandidateLocal): Candidate {
-  const city = c.location_city ?? ""
-  const state = c.location_state ?? ""
-  const locationStr = [city, state].filter(Boolean).join(",") || "—"
-  return {
-    id: c.id,
-    candidateId: c.id,
-    name: c.name ?? "—",
-    email: c.email ?? "",
-    phone: c.phone ?? "",
-    current_title: c.current_title,
-    current_company: c.current_company,
-    location_city: c.location_city,
-    location_state: c.location_state,
-    lia_score: c.lia_score,
-    status: c.status,
-    tags: c.tags,
-    seniority_level: c.seniority_level,
-    created_at: c.created_at,
-    updated_at: c.updated_at,
-    linkedin_url: c.linkedin_url,
-    position: c.current_title ?? "—",
-    monthlySalary: c.current_salary ?? 0,
-    location: locationStr,
-    workModel: ((c.work_model_preference || "remoto") as "presencial" | "remoto" | "híbrido"),
-    score: c.lia_score ?? 0,
-    contractType: ((c.contract_type_preference || "CLT") as "CLT" | "PJ" | "Freelancer"),
-    linkedin: c.linkedin_url ?? "",
-    skills: [] as string[],
-    experience: 0,
-    education: [] as Array<{ school?: string; degree?: string }>,
-  }
-}
-
-// ── Props (legacy compat with dashboard-app.tsx) ─────────────────────────────
-type CandidatesPageProps = {
-  onAddRecentItem?: (item: {
-    id: string
-    type: 'vaga' | 'chat' | 'candidato'
-    title: string
-    subtitle?: string
-    meta?: Record<string, string | undefined>
-  }) => void
-  pendingCandidateOpen?: { candidateId: string; candidateName: string } | null
-  onCandidateOpened?: () => void
-}
-
-// ── Componente ────────────────────────────────────────────────────────────────
-export function CandidatesPage({
-  onAddRecentItem,
-  pendingCandidateOpen,
-  onCandidateOpened,
-}: CandidatesPageProps = {}) {
-  const t = useTranslations('pipeline')
-  const locale = useLocale()
+export function CandidatesPage({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened }: { onAddRecentItem?: (item: { id: string; type: 'vaga' | 'chat' | 'candidato'; title: string; subtitle?: string; meta?: Record<string, string | undefined> }) => void; pendingCandidateOpen?: { candidateId: string; candidateName: string } | null; onCandidateOpened?: () => void } = {}) {
   const {
-    candidates: rawCandidates,
-    error,
-    errorKind,
-    total,
-    filters,
-    updateFilter,
-    refresh,
-  } = useCandidatesList()
-
-  const {
-    selectedCandidates,
-    selectedCount,
-    selectAll,
-    clearSelection,
-  } = useBulkSelection()
-
-  const {
-    savedSearches,
-    addSavedSearch,
-    updateSavedSearch,
-    removeSavedSearch,
-    toggleSavedSearchFavorite,
-    getFavoriteIds,
-    getPinnedIds,
-    getFavoriteNotes,
-    toggleFavoriteCandidate,
-    togglePinnedCandidate,
-    favoriteCandidatesData,
-  } = useTalentFunnel()
-
-  const [activeTab, setActiveTab] = useState("todos")
-  const [shareModalOpen, setShareModalOpen] = useState(false)
-  const [shareBulkOpen, setShareBulkOpen] = useState(false)
-
-  const candidates = useMemo(() => rawCandidates.map(toCandidateTableRow), [rawCandidates])
-  const selectedIdsArray = useMemo(() => Array.from(selectedCandidates), [selectedCandidates])
-
-  // Candidates filtered by favorites (for FavoritesTab)
-  const favoriteIds = useMemo(() => getFavoriteIds(), [getFavoriteIds])
-  const pinnedIds = useMemo(() => getPinnedIds(), [getPinnedIds])
-  const favoriteNotes = useMemo(() => getFavoriteNotes(), [getFavoriteNotes])
-  const favoriteCandidates = useMemo(
-    () => favoriteCandidatesData.map(toCandidateTableRow),
-    [favoriteCandidatesData]
-  )
-
-  const handleSelectAll = () => {
-    selectAll(candidates.map(c => c.id))
-  }
-
-  const handleBulkAction = (actionId: string) => {
-    if (actionId === "share_search") {
-      setShareBulkOpen(true)
-    }
-  }
-
-  const handleCandidateClick = useCallback((candidate: Candidate) => {
-    // Surface the click in the recents rail (if the host wired it).
-    onAddRecentItem?.({
-      id: candidate.id,
-      type: 'candidato',
-      title: candidate.name,
-      subtitle: candidate.current_title ?? undefined,
-    })
-    window.open(`/funil-de-talentos/candidato/${candidate.id}`, "_blank")
-  }, [onAddRecentItem])
-
-  // Deep-link integration: dashboard-app passes `pendingCandidateOpen` when the
-  // user navigated here from a notification or recent item. We acknowledge it
-  // immediately so the host clears the pending state — actual modal wiring is
-  // a TODO that will land alongside the unified candidate-detail drawer.
-  useEffect(() => {
-    if (pendingCandidateOpen?.candidateId) {
-      onCandidateOpened?.()
-    }
-  }, [pendingCandidateOpen?.candidateId, onCandidateOpened])
-
-  // Redireciona ao login locale-aware preservando `next` para retornar aqui
-  // após a reautenticação.
-  const handleRelogin = useCallback(() => {
-    const next = typeof window !== "undefined"
-      ? `${window.location.pathname}${window.location.search}`
-      : `/${locale}/funil-de-talentos`
-    window.location.href = `/${locale}/login?next=${encodeURIComponent(next)}`
-  }, [locale])
-
-  const isAuthError = errorKind === "unauthorized" || errorKind === "forbidden"
-
-  // Mensagem localizada derivada de errorKind (o hook só classifica).
-  const errorMessage = (() => {
-    if (!errorKind) return error
-    const key =
-      errorKind === "unauthorized" ? "auth.unauthorizedMessage" :
-      errorKind === "forbidden"    ? "auth.forbiddenMessage"    :
-      errorKind === "server"       ? "auth.serverErrorMessage"  :
-                                     "auth.networkErrorMessage"
-    return t(key)
-  })()
-
-  // Wrapper para o EAP — registra comandos disparados pelo canvas de busca
-  // canônico (Linguagem Natural / Boolean / Job Description / Filtros).
-  // TODO: Wirar o command->updateFilter do useCandidatesList numa próxima
-  // iteração quando o contrato for definido com produto.
-  const handleSearchCommand = useCallback((command: string, _action: string) => {
-    if (process.env.NODE_ENV !== "production") {
-      console.log("[FunilDeTalentos.EAP] command", { command })
-    }
-  }, [])
+    activeSearchFilters, activeSearchTab, activeTab, addToListCandidateIds, addToListCandidateNames, bulkJobVacancies,
+    candidateListsForModal, candidates, chatMessages, clearAllFilters, clearAllTableFilters, clearCrossTabFilter,
+    columnSearchTerm, columnWidths, confirmContactFilterChange, confirmSourceChange, contactModalAction, contactModalCandidate,
+    convertCandidatesForBatch, creditEstimate, deselectAllCandidates, emailCandidateSelected, executeSearch, favoriteNotes,
+    favorites, getActiveAdvancedFiltersCount, getActiveSearchFiltersCount, getActiveTableFiltersCount, getPaginatedCandidates, handleAICommand,
+    handleAddCandidate, handleAddToList, handleBatchApprovalComplete, handleBulkEmail, handleBulkWSIScreening, handleCVConfirmed,
+    handleCVDragLeave, handleCVDragOver, handleCVDrop, handleCalibrationDislike, handleCalibrationLike, handleCandidateClick,
+    handleCandidatePageOpen, handleCloseCandidatePage, handleCloseCandidatePreview, handleConfirmPearchSearch, handleContactCandidate, handleExitWithoutSaving,
+    handleExpandToGlobal, handleLIAChatMessage, handleLIAClick, handleLoadMore, handleNavigateToFullProfile, handlePreviewResize,
+    handleQuickAction, handleRevealContact, handleSaveAllAndExit, handleSaveToLocalBase, handleScheduleComplete, handleScheduleInterview,
+    handleSendAgendamento, handleSendEmail, handleSendFeedback, handleSendMessage, handleSendTriagem, handleSendWhatsApp,
+    handleStartWSITextScreening, handleTabChangeWithWarning, handleToggleColumnConfig, handleToggleFavorite, handleTogglePin, handleTogglePreviewMaximize,
+    handleUnifiedModalClose, handleUnifiedModalSend, handleUpdateFavoriteNote, handleWSIScreeningComplete, hideViewedCandidates, isAddingToList,
+    isLIAThinking, isLoading, isSavingToBase, isSearchActive,
+    newCertificationFilter, newSoftSkillFilter, parsedCVData, pearchSearchOptions, pendingContactFilter,
+    pendingSourceChange, pinnedCandidates, preSelectedListForModal, previewWidth, renderCellValue, revealCandidate,
+    revealType, rubricCandidate, rubricEvaluationData, saveCurrentSearch, searchResults,
+    selectAllCandidates, selectedCandidateForAction, selectedCandidatesForBatch, selectedListForVacancies, selectedPearchCount, setActiveSearchFilters,
+    setActiveSearchTab, setActiveTab, setAddToListCandidateIds, setAddToListCandidateNames, setCandidateListsForModal, setCandidates,
+    setChatMessages, setColumnSearchTerm, setColumnWidths, setContactModalAction, setContactModalCandidate, setEmailCandidateSelected,
+    setIsLoading, setNewCertificationFilter, setNewSoftSkillFilter,
+    setParsedCVData, setPearchSearchOptions, setPendingContactFilter, setPendingSearchRequest, setPendingSourceChange, setPendingTabChange,
+    setPreSelectedListForModal, setRevealCandidate, setRubricCandidate, setRubricEvaluationData, setSearchResults, setSelectedCandidateForAction,
+    setSelectedCandidatesForBatch, setSelectedListForVacancies, setShareSearchCandidates, setShareSearchTitle, setShowAddCandidateModal, setShowAddListToVacanciesModal,
+    setShowAddToListModal, setShowAddToVacancyModal, setShowAdvancedSearch, setShowBatchApproval, setShowCVPreviewModal, setShowColumnConfig,
+    setShowComparisonModal, setShowContactFilterModal, setShowContactModal, setShowCreditConfirmation, setShowRevealModal, setShowRubricModal,
+    setShowScheduleModal, setShowSendEmailModal, setShowShareSearchModal, setShowSourceChangeModal, setShowTableFiltersPanel, setShowUnsavedWarningModal,
+    setShowWSIInviteModal, setShowWSITextModal, setShowWSIVoiceModal, setTableColumns, setTableFilters, setWsiCandidateForScreening,
+    setWsiInviteCandidate, shareSearchCandidates, shareSearchTitle, showAddCandidateModal, showAddListToVacanciesModal, showAddToListModal,
+    showAddToVacancyModal, showAdvancedSearch, showBatchApproval, showCVPreviewModal, showColumnConfig, showComparisonModal,
+    showContactFilterModal, showContactModal, showCreditConfirmation, showRevealModal, showRubricModal, showScheduleModal,
+    showSendEmailModal, showShareSearchModal, showSourceChangeModal, showTableFiltersPanel, showUnsavedWarningModal, showWSIInviteModal,
+    showWSITextModal, showWSIVoiceModal, sortedCandidates, tableColumns, tableContainerRef, tableFilters,
+    talentFunnel, toggleTableFilter, unifiedModalCandidate, unifiedModalOpen, unifiedModalType,
+    unsavedPearchCandidates, user, visibleCandidates, visibleTableColumns, wsiCandidateForScreening, wsiInviteCandidate,
+    tabs: tabsRaw,
+    archetypeCreationStep, archetypeToDelete, buildFiltersFromTags, crossTabFilter, currentPage, currentSearchSource,
+    cvUploadLoading, displayedResultsCount, editQueryValue, isCreatingArchetype, isDroppingCV, isExpandingToGlobal,
+    isLoadingMore, isPreviewMaximized, itemsPerPage, lastSearchEntities, lastSearchQuery, lastSuccessfulQuery,
+    liaPromptValue, localResultsCount, newArchetypeData, previewCandidate, previewingUserArchetype, previewSuggestion,
+    quickFilters, searchSortBy, searchSource, searchTerm, selectedCandidate,
+    setArchetypeCreationStep, setArchetypeToDelete, setCurrentPage, setDisplayedResultsCount, setEditQueryValue,
+    setHasSearchResults, setIsCreatingArchetype, setLastSearchEntities, setLastSearchMetadata, setLastSearchMode, setLastSearchQuery,
+    setLiaPromptValue, setLocalResultsCount, setNewArchetypeData, setPearchResultsCount, setPreviewCandidate, setPreviewingUserArchetype,
+    setPreviewSuggestion, setSearchResultsCount, setSearchSortBy, setSearchSource, setSearchTerm, setShowEditQueryModal,
+    setShowGlobalExpansionConfirm, setShowSaveAsArchetypeModal, setShowSearchResults, setSortBy, setSortOrder,
+    setUserArchetypes, setViewingList, showCrossTabBanner, showEditQueryModal,
+    showGlobalExpansionConfirm, showSaveAsArchetypeModal, showSearchResults, sortBy, sortOrder, viewingList,
+    showCandidatePage, showCandidatePreview,
+    candidatesError, refreshCandidatesList,
+    tabs,
+  } = useCandidatesPageCore({ onAddRecentItem, pendingCandidateOpen, onCandidateOpened })
 
   return (
-    <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
-      {/* Bulk selection bar — fixa no topo quando há seleção */}
-      {selectedCount > 0 && (
-        <BulkActionsBar
-          selectedCount={selectedCount}
-          totalCount={total}
-          layout="fixed"
-          showSelectAll
-          isAllSelected={selectedCount === candidates.length && candidates.length > 0}
-          onSelectAll={handleSelectAll}
-          onDeselectAll={clearSelection}
-          actions={[
-            { id: "move_stage", label: t('bulkActions.moveStage'), icon: <Users className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("move_stage") },
-            { id: "send_message", label: t('bulkActions.message'), icon: <Share2 className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("send_message") },
-            { id: "share_search", label: t('bulkActions.shareSelection'), icon: <Share2 className="w-3.5 h-3.5" />, onClick: () => handleBulkAction("share_search") },
-          ]}
-        />
-      )}
+    <ErrorBoundarySection>
+    <div className="h-full flex flex-col bg-lia-bg-primary dark:bg-lia-bg-primary overflow-hidden">
+      {/* Header Fixo - Título e Tabs */}
+      <CandidatesPageHeader
+        tabs={tabs as unknown as Parameters<typeof CandidatesPageHeader>[0]["tabs"]}
+        activeTab={activeTab}
+        showSearchResults={showSearchResults}
+        searchTerm={searchTerm}
+        quickFilters={quickFilters}
+        getActiveAdvancedFiltersCount={getActiveAdvancedFiltersCount}
+        onTabChange={handleTabChangeWithWarning}
+        onAddCandidate={() => setShowAddCandidateModal(true)}
+        onNewSearch={() => {
+          setShowSearchResults(false)
+          setSearchTerm('')
+          setLastSearchQuery('')
+          setActiveTab('search')
+        }}
+        onSaveCurrentSearch={saveCurrentSearch}
+      />
 
-      <div className="max-w-screen-2xl mx-auto px-4 pt-3 pb-0 space-y-0">
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-lg font-semibold text-lia-text-primary">
-            {t('title')}
-          </h1>
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-xl border-lia-border-default dark:border-lia-border-subtle"
-            onClick={() => setShareModalOpen(true)}
-            disabled={candidates.length === 0}
-          >
-            <Share2 className="w-4 h-4 mr-1.5" />
-            {t('shareSearch')}
-          </Button>
-        </div>
+      {/* Área de Conteúdo Scrollável */}
+      <div className="flex-1 flex flex-col overflow-hidden px-4 pt-2 pb-2">
+        {/* Conteúdo das Abas */}
+        
+        {/* ========== TAB BUSCA (AI-First) — extraído para CandidateSearchBar (Sprint F5) ========== */}
+        {activeTab === 'search' && !showSearchResults && (
+          <CandidateSearchBar
+            isSearchActive={isSearchActive}
+            isDroppingCV={isDroppingCV}
+            cvUploadLoading={cvUploadLoading}
+            searchTerm={searchTerm}
+            isLoading={isLoading}
+            activeFiltersCount={getActiveSearchFiltersCount()}
+            searchSource={searchSource}
+            pearchSearchOptions={pearchSearchOptions}
+            onSearchTermChange={setSearchTerm}
+            onSubmit={async (query, entities, mode, metadata) => {
+              setLastSearchQuery(query)
+              setLastSearchMode(mode || 'natural')
+              await executeSearch(query, entities, mode, metadata, false)
+            }}
+            onDrop={handleCVDrop as unknown as Parameters<typeof CandidateSearchBar>[0]["onDrop"]}
+            onDragOver={handleCVDragOver as unknown as Parameters<typeof CandidateSearchBar>[0]["onDragOver"]}
+            onDragLeave={handleCVDragLeave as unknown as Parameters<typeof CandidateSearchBar>[0]["onDragLeave"]}
+            onOpenFilters={() => setShowAdvancedSearch(true)}
+            onGoToResults={() => setShowSearchResults(true)}
+            onSearchSourceChange={setSearchSource}
+            onRequireEmailsChange={(value) => setPearchSearchOptions(prev => ({ ...prev, requireEmails: value }))}
+            onRequirePhoneNumbersChange={(value) => setPearchSearchOptions(prev => ({ ...prev, requirePhoneNumbers: value }))}
+          />
+        )}
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-lg">
-            <TabsTrigger value="todos" className="rounded-lg text-xs">
-              <Brain className="w-3.5 h-3.5 mr-1" />
-              {t('tabs.search')}
-            </TabsTrigger>
-            <TabsTrigger value="favoritos" className="rounded-lg text-xs"><Heart className="w-3.5 h-3.5 mr-1" />{t('tabs.favorites')}</TabsTrigger>
-            <TabsTrigger value="listas" className="rounded-lg text-xs"><List className="w-3.5 h-3.5 mr-1" />{t('tabs.lists')}</TabsTrigger>
-            <TabsTrigger value="bancos-vivos" className="rounded-lg text-xs"><Database className="w-3.5 h-3.5 mr-1" />{t('tabs.talentPools')}</TabsTrigger>
-            <TabsTrigger value="buscas" className="rounded-lg text-xs"><Bookmark className="w-3.5 h-3.5 mr-1" />{t('tabs.savedSearches')}</TabsTrigger>
-            <TabsTrigger value="historico" className="rounded-lg text-xs"><Clock className="w-3.5 h-3.5 mr-1" />{t('tabs.history')}</TabsTrigger>
-          </TabsList>
+        {/* ========== TAB BUSCA - RESULTADOS INLINE ========== */}
+        {activeTab === 'search' && showSearchResults && (
+          <CandidateSearchResultsView
+            lastSearchQuery={lastSearchQuery}
+            lastSearchEntities={lastSearchEntities}
+            onBack={() => setShowSearchResults(false)}
+            onOpenEditQueryModal={(value) => {
+              setEditQueryValue(value)
+              setShowEditQueryModal(true)
+            }}
+            onOpenAdvancedSearch={() => setShowAdvancedSearch(true)}
+            selectedCandidatesForBatch={selectedCandidatesForBatch}
+            selectedPearchCount={selectedPearchCount}
+            deselectAllCandidates={deselectAllCandidates}
+            onAddToVacancy={() => setShowAddToVacancyModal(true)}
+            onAddToList={handleAddToList}
+            isAddingToList={isAddingToList}
+            candidates={candidates}
+            onShareSearch={() => {
+              const selectedList = candidates.filter(c => selectedCandidatesForBatch.has(c.id))
+              const searchTitle = lastSearchQuery || `Busca - ${new Date().toLocaleDateString('pt-BR')}`
+              setShareSearchCandidates(selectedList.map(c => ({
+                id: c.id,
+                name: c.name,
+                email: c.email,
+                avatar_url: c.avatar,
+                current_title: c.position,
+                linkedin_url: c.linkedin
+              })))
+              setShareSearchTitle(searchTitle)
+              setShowShareSearchModal(true)
+            }}
+            onBulkEmail={handleBulkEmail}
+            onBulkWSIScreening={handleBulkWSIScreening}
+            onToggleFavoriteBatch={() => {
+              selectedCandidatesForBatch.forEach(id => talentFunnel.toggleFavoriteCandidate(id))
+              toast.success("Favoritos atualizados", { description: `${selectedCandidatesForBatch.size} candidato(s) adicionado(s) aos favoritos` })
+            }}
+            onHideBatch={() => {
+              selectedCandidatesForBatch.forEach(id => (talentFunnel as unknown as Record<string, (id: string) => void>).hideCandidate?.(id))
+              toast.success("Candidatos ocultos", { description: `${selectedCandidatesForBatch.size} candidato(s) oculto(s) da pesquisa` })
+              deselectAllCandidates()
+            }}
+            onSaveToLocalBase={handleSaveToLocalBase}
+            isSavingToBase={isSavingToBase}
+            showCrossTabBanner={showCrossTabBanner}
+            crossTabFilter={crossTabFilter as unknown as Parameters<typeof CandidateSearchResultsView>[0]["crossTabFilter"]}
+            clearCrossTabFilter={clearCrossTabFilter}
+            viewingList={viewingList}
+            setViewingList={setViewingList}
 
-          <div className="flex items-center gap-6 mt-2 mb-1">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-wedo-cyan animate-pulse" />
-              <span className="text-xs text-lia-text-secondary">
-                <span className="font-semibold text-lia-text-primary">{total.toLocaleString()}</span> {t('stats.candidates')}
-              </span>
+            setShowSearchResults={setShowSearchResults}
+            setSearchTerm={setSearchTerm}
+            setLastSearchQuery={setLastSearchQuery}
+            setActiveTab={setActiveTab as unknown as Parameters<typeof CandidateSearchResultsView>[0]["setActiveTab"]}
+            searchSortBy={searchSortBy}
+            setSearchSortBy={setSearchSortBy}
+            sortedCandidates={sortedCandidates}
+            selectAllCandidates={selectAllCandidates}
+            showTableFiltersPanel={showTableFiltersPanel}
+            setShowTableFiltersPanel={setShowTableFiltersPanel}
+            getActiveTableFiltersCount={getActiveTableFiltersCount}
+            showColumnConfig={showColumnConfig}
+            onToggleColumnConfig={handleToggleColumnConfig}
+            tableColumns={tableColumns}
+            quickFilters={quickFilters}
+            searchTerm={searchTerm}
+            getActiveAdvancedFiltersCount={getActiveAdvancedFiltersCount}
+            tableFilters={tableFilters}
+            setTableFilters={setTableFilters}
+            newSoftSkillFilter={newSoftSkillFilter}
+            setNewSoftSkillFilter={setNewSoftSkillFilter}
+            newCertificationFilter={newCertificationFilter}
+            setNewCertificationFilter={setNewCertificationFilter}
+            toggleTableFilter={toggleTableFilter}
+            clearAllTableFilters={clearAllTableFilters}
+            isLoading={isLoading}
+            visibleCandidates={visibleCandidates}
+            visibleTableColumns={visibleTableColumns}
+            columnWidths={columnWidths}
+            setColumnWidths={setColumnWidths}
+            setTableColumns={setTableColumns as unknown as Parameters<typeof CandidateSearchResultsView>[0]["setTableColumns"]}
+            pinnedCandidates={pinnedCandidates}
+            favorites={favorites}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            setSortBy={setSortBy}
+            setSortOrder={setSortOrder}
+            setSelectedCandidatesForBatch={setSelectedCandidatesForBatch}
+            onCandidateClick={handleCandidateClick}
+            onTogglePin={handleTogglePin}
+            onToggleFavorite={handleToggleFavorite}
+            renderCellValue={renderCellValue}
+            tableContainerRef={tableContainerRef as unknown as Parameters<typeof CandidateSearchResultsView>[0]["tableContainerRef"]}
+            showSearchResults={showSearchResults}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage as unknown as Parameters<typeof CandidateSearchResultsView>[0]["setCurrentPage"]}
+            itemsPerPage={itemsPerPage}
+            getPaginatedCandidates={getPaginatedCandidates}
+            clearAllFilters={clearAllFilters}
+            displayedResultsCount={displayedResultsCount}
+            isLoadingMore={isLoadingMore}
+            onLoadMore={handleLoadMore}
+            columnSearchTerm={columnSearchTerm}
+            setColumnSearchTerm={setColumnSearchTerm}
+            setShowColumnConfig={setShowColumnConfig}
+            showCandidatePreview={showCandidatePreview}
+            previewCandidate={previewCandidate}
+            previewWidth={previewWidth}
+            onPreviewResize={handlePreviewResize}
+            isPreviewMaximized={isPreviewMaximized}
+            onCloseCandidatePreview={handleCloseCandidatePreview}
+            onTogglePreviewMaximize={handleTogglePreviewMaximize}
+            onCandidatePageOpen={handleCandidatePageOpen}
+            setSelectedCandidateForAction={setSelectedCandidateForAction}
+            setShowScheduleModal={setShowScheduleModal}
+            onStartWSITextScreening={handleStartWSITextScreening}
+            onSendEmail={handleSendEmail}
+            onSendWhatsApp={handleSendWhatsApp}
+            onSendTriagem={handleSendTriagem}
+            onSendAgendamento={handleSendAgendamento}
+            onSendFeedback={handleSendFeedback}
+            setPreviewCandidate={setPreviewCandidate}
+            setShareSearchCandidates={setShareSearchCandidates}
+            setShareSearchTitle={setShareSearchTitle}
+            setShowShareSearchModal={setShowShareSearchModal}
+            talentFunnel={talentFunnel as unknown as Parameters<typeof CandidateSearchResultsView>[0]["talentFunnel"]}
+            setEditQueryValue={setEditQueryValue}
+            setShowEditQueryModal={setShowEditQueryModal}
+            setShowAddToVacancyModal={setShowAddToVacancyModal}
+            isEnrichingContacts={searchResults?.isEnrichingContacts}
+            filteredNoContact={searchResults?.filteredNoContact}
+            enrichmentAttempted={searchResults?.enrichmentAttempted}
+            filteredCandidates={searchResults?.filteredCandidates}
+            onDiscardedCandidateEnriched={({ candidate, email, phone }) => {
+              // Task #402: ao re-enriquecer um descartado com sucesso, movemos
+              // ele para a lista principal e o tiramos do conjunto de descartados
+              // (e do contador) para o aviso refletir a realidade atualizada.
+              const enrichedCandidate = {
+                id: candidate.id,
+                candidateId: candidate.id?.substring(0, 8).toUpperCase() || 'CAND',
+                name: candidate.name,
+                email: email || '',
+                phone: phone || '',
+                mobile_phone: phone || undefined,
+                current_title: candidate.current_title || candidate.headline || '',
+                current_company: candidate.current_company || '',
+                location: candidate.location || '',
+                linkedin_url: candidate.linkedin_url || undefined,
+                avatar_url: candidate.picture_url || undefined,
+                avatar: candidate.picture_url || undefined,
+                linkedin: candidate.linkedin_url || '',
+                position: candidate.current_title || candidate.headline || '',
+                source: candidate.source || 'pearch',
+                has_email: !!email,
+                has_phone: !!phone,
+                technical_skills: [],
+                skills: [],
+                experiences: [],
+                workHistory: [],
+                education: [],
+                liaAnalysis: { score: 75, strengths: [], concerns: [], recommendation: '' },
+                score: 75,
+                workModel: 'remoto' as const,
+                contractType: 'CLT' as const,
+                monthlySalary: 0,
+                experience: 0,
+              } as unknown as Candidate
+              setCandidates((prev) => {
+                const exists = prev.some((c) => c.id === candidate.id)
+                return exists ? prev : [enrichedCandidate, ...prev]
+              })
+              setSearchResults((prev) => ({
+                ...prev,
+                filteredCandidates: (prev.filteredCandidates || []).filter((c) => c.id !== candidate.id),
+                filteredNoContact: Math.max(0, (prev.filteredNoContact || 0) - 1),
+              }))
+            }}
+            error={candidatesError}
+            onRetry={refreshCandidatesList}
+          />
+        )}
+
+        {/* Aba Favoritos */}
+        {activeTab === 'favorites' && (
+          <div className="flex gap-6">
+            <div className={`${showCandidatePreview && previewCandidate ? 'flex-1' : 'w-full'} transition-colors motion-reduce:transition-none duration-300`}>
+              <FavoritesTab
+                candidates={candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id)) as unknown as Parameters<typeof FavoritesTab>[0]["candidates"]}
+                pinnedCandidates={pinnedCandidates}
+                favoriteCandidates={favorites}
+                favoriteNotes={favoriteNotes}
+                onTogglePin={handleTogglePin}
+                onToggleFavorite={handleToggleFavorite}
+                onCandidateClick={handleCandidateClick as unknown as Parameters<typeof FavoritesTab>[0]["onCandidateClick"]}
+                onLIAClick={handleLIAClick as unknown as Parameters<typeof FavoritesTab>[0]["onLIAClick"]}
+                onUpdateFavoriteNote={handleUpdateFavoriteNote}
+              />
             </div>
-            <div className="flex items-center gap-1.5">
-              <Heart className="w-3.5 h-3.5 text-rose-500" />
-              <span className="text-xs text-lia-text-secondary">
-                <span className="font-semibold text-lia-text-primary">{favoriteIds.size}</span> {t('stats.favorites')}
-              </span>
-            </div>
-          </div>
-
-          {/* Tab: Todos */}
-          <TabsContent value="todos" className="mt-4">
-            {isAuthError ? (
-              <div
-                role="alert"
-                aria-live="assertive"
-                data-testid="funil-relogin-state"
-                className="flex flex-col items-center justify-center text-center gap-3 py-14 px-6 bg-lia-bg-primary dark:bg-lia-bg-primary border border-status-error/30 rounded-xl"
-              >
-                <div className="h-10 w-10 rounded-full bg-status-error/10 flex items-center justify-center">
-                  <LogIn className="h-5 w-5 text-status-error" aria-hidden="true" />
-                </div>
-                <div className="space-y-1">
-                  <h2 className="text-sm font-semibold text-lia-text-primary">
-                    {t('auth.reloginTitle')}
-                  </h2>
-                  <p className="text-xs text-lia-text-secondary max-w-sm">{errorMessage}</p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="primary"
-                  onClick={handleRelogin}
-                  className="h-8 rounded-xl text-xs"
+            
+            {/* Candidate Preview - Painel lateral direito */}
+            {showCandidatePreview && previewCandidate && (
+              <div className="flex-shrink-0 relative" style={{width: `${previewWidth}px`}}>
+                <div
+                  className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-lia-border-medium dark:hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none z-10 group"
+                  onMouseDown={handlePreviewResize}
+                  title="Arraste para redimensionar"
                 >
-                  <LogIn className="h-3.5 w-3.5 mr-1.5" />
-                  {t('auth.reloginCta')}
-                </Button>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center gap-6 py-12">
-                <div className="flex items-center gap-2 text-lia-text-primary">
-                  <Brain className="h-5 w-5 text-wedo-cyan" />
-                  <h2 className="text-base font-medium">Vamos buscar de forma inteligente?</h2>
+                  <div className="absolute inset-0 -left-1 -right-1"></div>
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-lia-border-default dark:bg-lia-bg-elevated group-hover:bg-lia-border-medium dark:group-hover:bg-lia-bg-secondary rounded-full transition-colors motion-reduce:transition-none"></div>
                 </div>
-                {error && (
-                  <div
-                    role="alert"
-                    aria-live="polite"
-                    data-testid="funil-error-state"
-                    className="flex items-start gap-2 p-3 max-w-2xl w-full bg-status-error/10 dark:bg-status-error/10 border border-status-error/30 dark:border-status-error/30 rounded-xl text-xs text-status-error dark:text-status-error"
-                  >
-                    <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1 flex items-center justify-between gap-3">
-                      <span>{errorMessage}</span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => refresh()}
-                        className="h-7 rounded-lg text-xs border-status-error/40"
-                      >
-                        {t('auth.retryCta')}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-                <ExpandableAIPrompt
-                  selectedCandidates={selectedIdsArray}
-                  onCommand={handleSearchCommand}
-                  filteredCount={candidates.length}
-                  totalCount={total}
-                  pageContext="candidates"
-                />
+                <div className="bg-lia-bg-primary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle dark:border-lia-border-subtle h-[calc(100vh-6rem)] overflow-hidden">
+                  <CandidatePreview
+                    candidate={previewCandidate as unknown as Record<string, unknown>}
+                    isOpen={showCandidatePreview}
+                    onClose={handleCloseCandidatePreview}
+                    isMaximized={isPreviewMaximized}
+                    onToggleMaximize={handleTogglePreviewMaximize}
+                    candidates={candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id)) as unknown as Record<string, unknown>[]}
+                    currentIndex={candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id)).findIndex(c => c.id === previewCandidate.id)}
+                    onNavigateCandidate={(index) => {
+                      const favoriteCandidates = candidates.filter(c => pinnedCandidates.has(c.id) || favorites.has(c.id))
+                      if (favoriteCandidates[index]) {
+                        setPreviewCandidate(favoriteCandidates[index])
+                      }
+                    }}
+                    onOpenFullPage={handleCandidatePageOpen as unknown as (candidate: Record<string, unknown>) => void}
+                    onScheduleInterview={(candidate: Record<string, unknown>) => {
+                      setSelectedCandidateForAction(candidate as unknown as Parameters<typeof setSelectedCandidateForAction>[0])
+                      setShowScheduleModal(true)
+                    }}
+                    onAddToVacancy={(candidate: Record<string, unknown>) => {
+                      setSelectedCandidatesForBatch(new Set([candidate.id as string]) as unknown as Parameters<typeof setSelectedCandidatesForBatch>[0])
+                      setShowAddToVacancyModal(true)
+                    }}
+                    onToggleFavorite={(candidateId: string) => handleToggleFavorite(candidateId)}
+                    onWSIScreening={(candidate: Record<string, unknown>) => handleStartWSITextScreening(candidate as unknown as Parameters<typeof handleStartWSITextScreening>[0])}
+                    isFavorite={favorites.has(previewCandidate.id)}
+                    onSendEmail={(candidate: Record<string, unknown>) => handleSendEmail(candidate as unknown as Parameters<typeof handleSendEmail>[0])}
+                    onSendWhatsApp={(candidate: Record<string, unknown>) => handleSendWhatsApp(candidate as unknown as Parameters<typeof handleSendWhatsApp>[0])}
+                    onSendTriagem={(candidate: Record<string, unknown>) => handleSendTriagem(candidate as unknown as Parameters<typeof handleSendTriagem>[0])}
+                    onSendAgendamento={(candidate: Record<string, unknown>) => handleSendAgendamento(candidate as unknown as Parameters<typeof handleSendAgendamento>[0])}
+                    onSendFeedback={(candidate: Record<string, unknown>) => handleSendFeedback(candidate as unknown as Parameters<typeof handleSendFeedback>[0])}
+                  />
+                </div>
               </div>
             )}
-          </TabsContent>
+          </div>
+        )}
 
+        {/* Aba Listas */}
+        {activeTab === 'lists' && (
+          <ListsTab
+            onListSelect={async (listId) => {
+              try {
+                setIsLoading(true)
+                const listDetails = await liaApi.getCandidateList(listId, { limit: 100 })
+                
+                const mappedCandidates = (((listDetails as unknown as Record<string, unknown>).candidates as unknown as { items?: Record<string, unknown>[] })?.items?.map((member: Record<string, unknown>) => {
+                  const c = member.candidate as Record<string, unknown>
+                  const location = [c.location_city, c.location_state, c.location_country].filter(Boolean).join(', ') || 'Não informado'
+                  const workModel = c.work_model_preference === 'remote' ? 'remoto' : 
+                                   c.work_model_preference === 'hybrid' ? 'híbrido' : 'presencial'
+                  
+                  return {
+                    id: c.id,
+                    candidateId: c.id,
+                    name: c.name || 'Sem nome',
+                    email: c.email || '',
+                    phone: c.phone || c.mobile_phone || '',
+                    linkedin_url: c.linkedin_url,
+                    github_url: c.github_url,
+                    portfolio_url: c.portfolio_url,
+                    avatar_url: c.avatar_url,
+                    current_title: c.current_title,
+                    current_company: c.current_company,
+                    seniority_level: c.seniority_level,
+                    years_of_experience: c.years_of_experience,
+                    technical_skills: c.technical_skills || [],
+                    soft_skills: c.soft_skills || [],
+                    languages: c.languages || {},
+                    certifications: c.certifications || [],
+                    location_city: c.location_city,
+                    location_state: c.location_state,
+                    location_country: c.location_country,
+                    is_remote: c.is_remote,
+                    willing_to_relocate: c.willing_to_relocate,
+                    work_model_preference: c.work_model_preference,
+                    contract_type_preference: c.contract_type_preference,
+                    current_salary: c.current_salary,
+                    desired_salary_min: c.desired_salary_min,
+                    desired_salary_max: c.desired_salary_max,
+                    resume_url: c.resume_url,
+                    source: c.source || 'local',
+                    lia_score: c.lia_score,
+                    lia_insights: c.lia_insights,
+                    status: c.status,
+                    tags: c.tags || [],
+                    created_at: c.created_at,
+                    updated_at: c.updated_at,
+                    position: c.current_title || 'Profissional',
+                    monthlySalary: c.current_salary || 0,
+                    location: location,
+                    workModel: workModel as 'remoto' | 'híbrido' | 'presencial',
+                    score: c.lia_score || 0,
+                    contractType: (c.contract_type_preference === 'PJ' ? 'PJ' : 
+                                   c.contract_type_preference === 'Freelancer' ? 'Freelancer' : 'CLT') as 'CLT' | 'PJ' | 'Freelancer',
+                    linkedin: c.linkedin_url || '',
+                    skills: c.technical_skills || [],
+                    experience: c.years_of_experience || 0,
+                    education: '',
+                    workHistory: [] as unknown[],
+                  }
+                }) || []) as unknown as Candidate[]
+                
+                setCandidates(mappedCandidates as unknown as Parameters<typeof setCandidates>[0])
+                setViewingList({ 
+                  id: listDetails.id,
+                  name: listDetails.name,
+                  color: listDetails.color || undefined
+                })
+                setActiveTab('search')
+                setShowSearchResults(true)
+                setDisplayedResultsCount(10)
+                setLastSearchQuery(`Lista: ${listDetails.name}`)
+                
+                toast.success("Lista carregada", { description: `Exibindo ${mappedCandidates.length} candidatos da lista "${listDetails.name}"` })
+              } catch (error) {
+                toast.error("Erro ao carregar lista", { description: error instanceof Error ? error.message : "Não foi possível carregar os candidatos da lista." })
+              } finally {
+                setIsLoading(false)
+              }
+            }}
+            onAddToJobs={(listId) => {
+              liaApi.getCandidateList(listId).then(list => {
+                setSelectedListForVacancies({
+                  id: listId,
+                  name: list.name,
+                  candidateCount: list.candidate_count
+                })
+                setShowAddListToVacanciesModal(true)
+              }).catch(err => {
+                toast.error("Erro ao carregar lista", { description: err.message })
+              })
+            }}
+            onAddCandidateToList={(listId, listName) => {
+              setPreSelectedListForModal({ id: listId, name: listName })
+              setShowAddCandidateModal(true)
+            }}
+          />
+        )}
 
-          {/* Tab: Favoritos */}
-          <TabsContent value="favoritos" className="mt-4">
-            <FavoritesTab
-              candidates={favoriteCandidates as unknown as TableCandidate[]}
-              pinnedCandidates={pinnedIds}
-              favoriteCandidates={favoriteIds}
-              favoriteNotes={favoriteNotes}
-              onTogglePin={togglePinnedCandidate}
-              onToggleFavorite={toggleFavoriteCandidate}
-              onCandidateClick={handleCandidateClick as any}
-              onLIAClick={handleCandidateClick as any}
-            />
-          </TabsContent>
+        {/* Aba Histórico */}
+        {activeTab === 'history' && (
+          <HistoryTab
+            history={talentFunnel.history}
+            onReExecuteSearch={(historyItem) => {
+              setSearchTerm(historyItem.query)
+              setLastSearchQuery(historyItem.query)
+              setLastSearchMode(historyItem.mode || 'natural')
+              if (historyItem.source) {
+                setSearchSource(historyItem.source)
+              }
+              setActiveTab('search')
+              setTimeout(() => {
+                setShowSearchResults(false)
+              }, 100)
+            }}
+            onSaveAsSearch={(historyItem, name, description) => {
+              talentFunnel.saveHistoryAsSearch(historyItem, name, description)
+            }}
+            onDeleteItem={(id) => {
+              talentFunnel.removeFromHistory(id)
+            }}
+            onClearAll={() => {
+              talentFunnel.clearHistory()
+            }}
+          />
+        )}
 
-          {/* Tab: Listas */}
-          <TabsContent value="listas" className="mt-4" forceMount={undefined}>
-            {activeTab === "listas" && (
-              <ListsTab
-                onListSelect={() => undefined}
-                onAddToJobs={() => undefined}
-                onGoToSearch={() => setActiveTab("todos")}
-              />
-            )}
-          </TabsContent>
+        {(activeTab as string) === 'talent-pools' && (
+          <TalentPoolsTab onSelectPool={(id) => {}} />
+        )}
 
-          {/* Tab: Buscas Salvas */}
-          <TabsContent value="buscas" className="mt-4" forceMount={undefined}>
-            {activeTab === "buscas" && (
-              <SavedSearchesTab
-                savedSearches={savedSearches}
-                onExecuteSearch={search => {
-                  updateFilter("search", search.query)
-                  setActiveTab("todos")
-                }}
-                onAddSearch={addSavedSearch}
-                onUpdateSearch={updateSavedSearch}
-                onDeleteSearch={removeSavedSearch}
-                onToggleFavorite={toggleSavedSearchFavorite}
-                onNavigateToSearch={() => setActiveTab("todos")}
-              />
-            )}
-          </TabsContent>
+        {/* Aba Buscas Salvas */}
+        {activeTab === 'saved-searches' && (
+          <SavedSearchesTab
+            savedSearches={talentFunnel.savedSearches}
+            onExecuteSearch={(search) => {
+              setSearchTerm(search.query)
+              setLastSearchQuery(search.query)
+              setLastSearchMode(search.mode)
+              setSearchSource(search.source)
+              setActiveTab('search')
+              talentFunnel.incrementSavedSearchUsage(search.id)
+              setTimeout(() => {
+                setShowSearchResults(false)
+              }, 100)
+            }}
+            onAddSearch={(search) => {
+              talentFunnel.addSavedSearch(search)
+            }}
+            onUpdateSearch={(id, updates) => {
+              talentFunnel.updateSavedSearch(id, updates)
+            }}
+            onDeleteSearch={(id) => {
+              talentFunnel.removeSavedSearch(id)
+            }}
+            onToggleFavorite={(id) => {
+              talentFunnel.toggleSavedSearchFavorite(id)
+            }}
+            onNavigateToSearch={() => {
+              setActiveTab('search')
+              setShowSearchResults(false)
+            }}
+          />
+        )}
 
-          <TabsContent value="bancos-vivos" className="mt-4" forceMount={undefined}>
-            {activeTab === "bancos-vivos" && (
-              <TalentPoolsTab onSelectPool={(id) => { window.location.href = `/bancos-de-talentos/${id}` }} />
-            )}
-          </TabsContent>
-
-          <TabsContent value="historico" className="mt-4" forceMount={undefined}>
-            {activeTab === "historico" && (
-              <HistoryTab
-                history={[]}
-                onReExecuteSearch={() => {}}
-                onSaveAsSearch={() => {}}
-                onDeleteItem={() => {}}
-                onClearAll={() => {}}
-              />
-            )}
-          </TabsContent>
-        </Tabs>
       </div>
 
-      {/* Modal: Compartilhar Busca (H.4) */}
-      {shareModalOpen && (
-        <ShareSearchModal
-          open={shareModalOpen}
-          onClose={() => setShareModalOpen(false)}
-          shareType="search"
-          title={t('shareModal.searchTitle', { query: filters.search || t('shareModal.allCandidates') })}
-          candidateIds={candidates.map(c => c.id)}
-          candidateCount={candidates.length}
-          sourceQuery={JSON.stringify(filters)}
-        />
-      )}
-
-      {/* Modal: Compartilhar Seleção (H.3b via bulk) */}
-      {shareBulkOpen && (
-        <ShareSearchModal
-          open={shareBulkOpen}
-          onClose={() => {
-            setShareBulkOpen(false)
-            clearSelection()
-          }}
-          shareType="list"
-          title={t('shareModal.selectionTitle', { count: selectedCount })}
-          candidateIds={selectedIdsArray}
-          candidateCount={selectedCount}
-        />
-      )}
+      {/* Modals - extracted to CandidatesPageModals */}
+      <CandidatesPageModals
+        selectedCandidateForAction={selectedCandidateForAction}
+        contactModalCandidate={contactModalCandidate as unknown as CandidatesPageModalsProps["contactModalCandidate"]}
+        showContactModal={showContactModal}
+        contactModalAction={contactModalAction}
+        setShowContactModal={setShowContactModal}
+        setSelectedCandidateForAction={setSelectedCandidateForAction as unknown as CandidatesPageModalsProps["setSelectedCandidateForAction"]}
+        setContactModalCandidate={setContactModalCandidate as unknown as CandidatesPageModalsProps["setContactModalCandidate"]}
+        setContactModalAction={setContactModalAction}
+        handleSendMessage={handleSendMessage as unknown as CandidatesPageModalsProps["handleSendMessage"]}
+        showScheduleModal={showScheduleModal}
+        setShowScheduleModal={setShowScheduleModal}
+        handleScheduleComplete={handleScheduleComplete as unknown as CandidatesPageModalsProps["handleScheduleComplete"]}
+        unifiedModalOpen={unifiedModalOpen}
+        unifiedModalCandidate={unifiedModalCandidate}
+        unifiedModalType={unifiedModalType}
+        lastSearchQuery={lastSearchQuery}
+        handleUnifiedModalClose={handleUnifiedModalClose}
+        handleUnifiedModalSend={handleUnifiedModalSend as unknown as CandidatesPageModalsProps["handleUnifiedModalSend"]}
+        showComparisonModal={showComparisonModal}
+        setShowComparisonModal={setShowComparisonModal}
+        selectedCandidatesForBatch={selectedCandidatesForBatch}
+        sortedCandidates={sortedCandidates}
+        candidates={candidates}
+        handleNavigateToFullProfile={handleNavigateToFullProfile}
+        handleScheduleInterview={handleScheduleInterview}
+        handleContactCandidate={handleContactCandidate}
+        showCandidatePage={showCandidatePage}
+        selectedCandidate={selectedCandidate}
+        handleCloseCandidatePage={handleCloseCandidatePage}
+        showAddCandidateModal={showAddCandidateModal}
+        setShowAddCandidateModal={setShowAddCandidateModal}
+        preSelectedListForModal={preSelectedListForModal}
+        setPreSelectedListForModal={setPreSelectedListForModal}
+        handleAddCandidate={handleAddCandidate as unknown as CandidatesPageModalsProps["handleAddCandidate"]}
+        setCandidateListsForModal={setCandidateListsForModal as unknown as CandidatesPageModalsProps["setCandidateListsForModal"]}
+        bulkJobVacancies={bulkJobVacancies}
+        candidateListsForModal={candidateListsForModal}
+        handleCandidatePageOpen={handleCandidatePageOpen}
+        showBatchApproval={showBatchApproval}
+        setShowBatchApproval={setShowBatchApproval}
+        convertCandidatesForBatch={convertCandidatesForBatch}
+        handleBatchApprovalComplete={handleBatchApprovalComplete as unknown as CandidatesPageModalsProps["handleBatchApprovalComplete"]}
+        wsiCandidateForScreening={wsiCandidateForScreening}
+        setWsiCandidateForScreening={setWsiCandidateForScreening}
+        showWSITextModal={showWSITextModal}
+        setShowWSITextModal={setShowWSITextModal}
+        showWSIVoiceModal={showWSIVoiceModal}
+        setShowWSIVoiceModal={setShowWSIVoiceModal}
+        handleWSIScreeningComplete={handleWSIScreeningComplete as unknown as CandidatesPageModalsProps["handleWSIScreeningComplete"]}
+        showWSIInviteModal={showWSIInviteModal}
+        setShowWSIInviteModal={setShowWSIInviteModal}
+        wsiInviteCandidate={wsiInviteCandidate}
+        setWsiInviteCandidate={setWsiInviteCandidate}
+        showRubricModal={showRubricModal}
+        setShowRubricModal={setShowRubricModal}
+        rubricCandidate={rubricCandidate}
+        setRubricCandidate={setRubricCandidate}
+        rubricEvaluationData={rubricEvaluationData}
+        setRubricEvaluationData={setRubricEvaluationData}
+        showSendEmailModal={showSendEmailModal}
+        setShowSendEmailModal={setShowSendEmailModal}
+        emailCandidateSelected={emailCandidateSelected}
+        setEmailCandidateSelected={setEmailCandidateSelected}
+        showRevealModal={showRevealModal}
+        setShowRevealModal={setShowRevealModal}
+        revealCandidate={revealCandidate}
+        setRevealCandidate={setRevealCandidate}
+        handleRevealContact={handleRevealContact as unknown as CandidatesPageModalsProps["handleRevealContact"]}
+        revealType={revealType}
+        showCVPreviewModal={showCVPreviewModal}
+        setShowCVPreviewModal={setShowCVPreviewModal}
+        parsedCVData={parsedCVData}
+        setParsedCVData={setParsedCVData}
+        handleCVConfirmed={handleCVConfirmed as unknown as CandidatesPageModalsProps["handleCVConfirmed"]}
+        showCreditConfirmation={showCreditConfirmation}
+        setShowCreditConfirmation={setShowCreditConfirmation}
+        creditEstimate={creditEstimate as unknown as CandidatesPageModalsProps["creditEstimate"]}
+        pearchSearchOptions={pearchSearchOptions as unknown as CandidatesPageModalsProps["pearchSearchOptions"]}
+        setPearchSearchOptions={setPearchSearchOptions as unknown as CandidatesPageModalsProps["setPearchSearchOptions"]}
+        setPendingSearchRequest={setPendingSearchRequest as unknown as CandidatesPageModalsProps["setPendingSearchRequest"]}
+        handleConfirmPearchSearch={handleConfirmPearchSearch}
+        showGlobalExpansionConfirm={showGlobalExpansionConfirm}
+        setShowGlobalExpansionConfirm={setShowGlobalExpansionConfirm}
+        lastSuccessfulQuery={lastSuccessfulQuery}
+        localResultsCount={localResultsCount}
+        isExpandingToGlobal={isExpandingToGlobal}
+        handleExpandToGlobal={handleExpandToGlobal}
+        showSourceChangeModal={showSourceChangeModal}
+        setShowSourceChangeModal={setShowSourceChangeModal}
+        pendingSourceChange={pendingSourceChange as unknown as CandidatesPageModalsProps["pendingSourceChange"]}
+        setPendingSourceChange={setPendingSourceChange as unknown as CandidatesPageModalsProps["setPendingSourceChange"]}
+        confirmSourceChange={confirmSourceChange}
+        showContactFilterModal={showContactFilterModal}
+        setShowContactFilterModal={setShowContactFilterModal}
+        pendingContactFilter={pendingContactFilter as unknown as CandidatesPageModalsProps["pendingContactFilter"]}
+        setPendingContactFilter={setPendingContactFilter as unknown as CandidatesPageModalsProps["setPendingContactFilter"]}
+        confirmContactFilterChange={confirmContactFilterChange}
+        showSaveAsArchetypeModal={showSaveAsArchetypeModal}
+        setShowSaveAsArchetypeModal={setShowSaveAsArchetypeModal}
+        searchResults={searchResults}
+        isCreatingArchetype={isCreatingArchetype}
+        setIsCreatingArchetype={setIsCreatingArchetype}
+        archetypeCreationStep={archetypeCreationStep}
+        setArchetypeCreationStep={setArchetypeCreationStep as unknown as CandidatesPageModalsProps["setArchetypeCreationStep"]}
+        newArchetypeData={newArchetypeData}
+        setNewArchetypeData={setNewArchetypeData}
+        setUserArchetypes={setUserArchetypes as unknown as CandidatesPageModalsProps["setUserArchetypes"]}
+        setChatMessages={setChatMessages as unknown as CandidatesPageModalsProps["setChatMessages"]}
+        showAdvancedSearch={showAdvancedSearch}
+        setShowAdvancedSearch={setShowAdvancedSearch}
+        activeSearchFilters={activeSearchFilters as unknown as CandidatesPageModalsProps["activeSearchFilters"]}
+        setActiveSearchFilters={setActiveSearchFilters as unknown as CandidatesPageModalsProps["setActiveSearchFilters"]}
+        hideViewedCandidates={hideViewedCandidates as unknown as CandidatesPageModalsProps["hideViewedCandidates"]}
+        showAddToListModal={showAddToListModal}
+        setShowAddToListModal={setShowAddToListModal}
+        addToListCandidateIds={addToListCandidateIds}
+        setAddToListCandidateIds={setAddToListCandidateIds}
+        addToListCandidateNames={addToListCandidateNames}
+        setAddToListCandidateNames={setAddToListCandidateNames}
+        showShareSearchModal={showShareSearchModal}
+        setShowShareSearchModal={setShowShareSearchModal}
+        shareSearchTitle={shareSearchTitle}
+        setShareSearchTitle={setShareSearchTitle}
+        shareSearchCandidates={shareSearchCandidates}
+        setShareSearchCandidates={setShareSearchCandidates as unknown as CandidatesPageModalsProps["setShareSearchCandidates"]}
+        showAddListToVacanciesModal={showAddListToVacanciesModal}
+        setShowAddListToVacanciesModal={setShowAddListToVacanciesModal}
+        selectedListForVacancies={selectedListForVacancies}
+        setSelectedListForVacancies={setSelectedListForVacancies as unknown as CandidatesPageModalsProps["setSelectedListForVacancies"]}
+        showAddToVacancyModal={showAddToVacancyModal}
+        setShowAddToVacancyModal={setShowAddToVacancyModal}
+        setSelectedCandidatesForBatch={setSelectedCandidatesForBatch}
+        user={user}
+        showUnsavedWarningModal={showUnsavedWarningModal}
+        setShowUnsavedWarningModal={setShowUnsavedWarningModal}
+        setPendingTabChange={setPendingTabChange as unknown as CandidatesPageModalsProps["setPendingTabChange"]}
+        handleSaveAllAndExit={handleSaveAllAndExit}
+        handleExitWithoutSaving={handleExitWithoutSaving}
+        unsavedPearchCandidates={unsavedPearchCandidates as unknown as CandidatesPageModalsProps["unsavedPearchCandidates"]}
+        isSavingToBase={isSavingToBase}
+        showEditQueryModal={showEditQueryModal}
+        setShowEditQueryModal={setShowEditQueryModal}
+        editQueryValue={editQueryValue}
+        getActiveSearchFiltersCount={getActiveSearchFiltersCount}
+        searchSource={searchSource}
+        setSearchSource={setSearchSource as unknown as CandidatesPageModalsProps["setSearchSource"]}
+        setSearchTerm={setSearchTerm}
+        setLastSearchQuery={setLastSearchQuery}
+        setLastSearchMode={setLastSearchMode}
+        setLastSearchEntities={setLastSearchEntities}
+        setLastSearchMetadata={setLastSearchMetadata as unknown as CandidatesPageModalsProps["setLastSearchMetadata"]}
+        executeSearch={executeSearch as unknown as CandidatesPageModalsProps["executeSearch"]}
+        previewSuggestion={previewSuggestion}
+        setPreviewSuggestion={setPreviewSuggestion as unknown as CandidatesPageModalsProps["setPreviewSuggestion"]}
+        previewingUserArchetype={previewingUserArchetype}
+        setPreviewingUserArchetype={setPreviewingUserArchetype as unknown as CandidatesPageModalsProps["setPreviewingUserArchetype"]}
+        buildFiltersFromTags={buildFiltersFromTags as unknown as CandidatesPageModalsProps["buildFiltersFromTags"]}
+        setLiaPromptValue={setLiaPromptValue}
+        setActiveSearchTab={setActiveSearchTab as unknown as CandidatesPageModalsProps["setActiveSearchTab"]}
+        archetypeToDelete={archetypeToDelete}
+        setArchetypeToDelete={setArchetypeToDelete as unknown as CandidatesPageModalsProps["setArchetypeToDelete"]}
+      />
     </div>
+    </ErrorBoundarySection>
   )
 }
