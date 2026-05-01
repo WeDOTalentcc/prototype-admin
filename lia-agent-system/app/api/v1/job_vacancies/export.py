@@ -3,7 +3,7 @@ Export routes: PDF and Excel reports.
 """
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ._shared import *
@@ -13,7 +13,7 @@ router = APIRouter()
 
 @router.get("/job-vacancies/{job_id}/export/pdf", response_model=None)
 async def export_job_vacancy_pdf(
-    job_id: UUID,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     report_type: str = Query("analytics", description="Report type: funnel, analytics, or candidates"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
@@ -64,7 +64,7 @@ async def export_job_vacancy_pdf(
 
 @router.get("/job-vacancies/{job_id}/export/excel", response_model=None)
 async def export_job_vacancy_excel(
-    job_id: UUID,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     report_type: str = Query("analytics", description="Report type: funnel, analytics, or candidates"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)

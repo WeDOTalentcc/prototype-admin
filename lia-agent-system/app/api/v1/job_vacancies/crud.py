@@ -13,7 +13,7 @@ from app.shared.services.plan_limits_service import check_active_jobs_limit_or_d
 CRUD routes: finalize, search, GET one, GET list, POST create, PUT update,
 DELETE (archive), PATCH status, duplicate, clone, find-by-identifier.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 
 from ._shared import *
 from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
@@ -371,7 +371,11 @@ async def find_job_by_identifier(
 
 @router.get("/job-vacancies/{job_vacancy_id}", response_model=JobVacancyDetailResponse)
 async def get_job_vacancy(
-    job_vacancy_id: str,
+    # Regex guard (Task #455 + #952): accept UUID OR bigint legacy id,
+    # reject any other token (e.g. "lifecycle-overview", "stats") so that
+    # if router-include order ever regresses, FastAPI returns 422 instead
+    # of swallowing a static collection path into this item handler.
+    job_vacancy_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
@@ -743,8 +747,8 @@ async def create_job_vacancy(
 
 @router.put("/job-vacancies/{job_vacancy_id}", response_model=JobVacancyResponse)
 async def update_job_vacancy(
-    job_vacancy_id: UUID,
-    job_data: JobVacancyUpdate,
+    job_vacancy_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_data: JobVacancyUpdate = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
@@ -831,7 +835,7 @@ async def update_job_vacancy(
 
 @router.delete("/job-vacancies/{job_vacancy_id}", response_model=JobVacancyDeleteResponse)
 async def delete_job_vacancy(
-    job_vacancy_id: UUID,
+    job_vacancy_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -878,8 +882,8 @@ async def delete_job_vacancy(
 
 @router.patch("/job-vacancies/{job_vacancy_id}/status", response_model=JobVacancyStatusUpdateResponse)
 async def update_job_vacancy_status(
-    job_vacancy_id: UUID,
-    status: str,
+    job_vacancy_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    status: str = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -961,8 +965,8 @@ class CloneFromTemplateRequest(BaseModel):
 
 @router.post("/job-vacancies/{job_id}/duplicate", response_model=DuplicateJobResponse)
 async def duplicate_job(
-    job_id: UUID,
-    request: DuplicateJobRequest,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    request: DuplicateJobRequest = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
@@ -1002,8 +1006,8 @@ async def duplicate_job(
 
 @router.post("/job-vacancies/{job_id}/clone-from-template", response_model=CloneFromTemplateResponse)
 async def clone_from_template(
-    job_id: UUID,
-    request: CloneFromTemplateRequest,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    request: CloneFromTemplateRequest = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
@@ -1040,7 +1044,7 @@ async def clone_from_template(
 
 @router.get("/job-vacancies/{job_id}/clone-summary", response_model=CloneSummaryResponse)
 async def get_clone_summary(
-    job_id: UUID,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo)
 ):
     """Get a summary of a job for displaying before cloning."""

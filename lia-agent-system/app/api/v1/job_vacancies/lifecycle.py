@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Path, Request
 
 from ._shared import *
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
@@ -96,7 +96,7 @@ class SourcingStatusResponseV2(BaseModel):
 
 @router.post("/job-vacancies/{job_id}/publish", response_model=JobPublishResponse)
 async def publish_job_vacancy_simple(
-    job_id: UUID,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     request: JobPublishRequest = JobPublishRequest(),
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user)
@@ -168,8 +168,8 @@ async def publish_job_vacancy_simple(
 
 @router.post("/job-vacancies/{job_id}/confirm-global-search", response_model=ConfirmGlobalSearchResponse)
 async def confirm_global_search_simple(
-    job_id: UUID,
-    request: ConfirmGlobalSearchRequest,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    request: ConfirmGlobalSearchRequest = ...,
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -201,7 +201,7 @@ async def confirm_global_search_simple(
 
 @router.get("/job-vacancies/{job_id}/sourcing-status", response_model=SourcingStatusResponseSimple)
 async def get_sourcing_status_simple(
-    job_id: UUID,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -286,7 +286,7 @@ async def _send_candidates_added_notification(
 
 @router.post("/jobs/{job_id}/publish", response_model=JobPublishResponseV2)
 async def publish_job_vacancy_v2(
-    job_id: UUID,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     request: JobPublishRequestV2 = JobPublishRequestV2(),
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user)
@@ -363,8 +363,8 @@ async def publish_job_vacancy_v2(
 
 @router.post("/jobs/{job_id}/confirm-global-search", response_model=ConfirmGlobalSearchResponseV2)
 async def confirm_global_search_v2(
-    job_id: UUID,
-    request: ConfirmGlobalSearchRequest,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    request: ConfirmGlobalSearchRequest = ...,
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -424,7 +424,7 @@ async def confirm_global_search_v2(
 
 @router.get("/jobs/{job_id}/sourcing-status", response_model=SourcingStatusResponseV2)
 async def get_sourcing_status_v2(
-    job_id: UUID,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
@@ -475,8 +475,8 @@ async def get_sourcing_status_v2(
 
 @router.post("/{vacancy_id}/close", response_model=None)
 async def close_vacancy(
-    vacancy_id: str,
-    request: Request,
+    vacancy_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    request: Request = ...,
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_user_or_demo),
     activity_svc: ActivityService = Depends(get_activity_service),

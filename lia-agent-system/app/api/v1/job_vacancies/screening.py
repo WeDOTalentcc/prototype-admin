@@ -5,7 +5,7 @@ from uuid import UUID
 """
 Screening configuration routes.
 """
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path
 
 from ._shared import *
 from app.domains.job_management.repositories.job_vacancy_screening_repository import JobVacancyScreeningRepository
@@ -96,7 +96,7 @@ class ScreeningStatusUpdateRequest(BaseModel):
 
 @router.get("/vagas/{job_id}/screening-config", response_model=ScreeningConfigResponse)
 async def get_screening_config(
-    job_id: UUID,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyScreeningRepository = Depends(get_job_vacancy_screening_repo)
 ):
     """Get screening configuration for a job vacancy."""
@@ -145,8 +145,8 @@ async def get_screening_config(
 
 @router.put("/vagas/{job_id}/screening-config", response_model=ScreeningConfigResponse)
 async def update_screening_config(
-    job_id: UUID,
-    config_data: ScreeningConfigRequest,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    config_data: ScreeningConfigRequest = ...,
     repo: JobVacancyScreeningRepository = Depends(get_job_vacancy_screening_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
@@ -211,8 +211,8 @@ async def update_screening_config(
 
 @router.put("/vagas/{job_id}/screening-status", response_model=None)
 async def update_screening_status(
-    job_id: UUID,
-    request: ScreeningStatusUpdateRequest,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    request: ScreeningStatusUpdateRequest = ...,
     repo: JobVacancyScreeningRepository = Depends(get_job_vacancy_screening_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):

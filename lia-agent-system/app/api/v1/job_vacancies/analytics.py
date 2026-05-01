@@ -6,7 +6,7 @@ from uuid import UUID
 Analytics routes: metrics, analytics deep-dive, history, stats/overview,
 archetypes (already in crud.py), job report.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 
 from ._shared import *
 from ._shared import _is_job_at_risk, _calculate_days_between
@@ -59,7 +59,7 @@ class JobVacancyMetricsResponse(BaseModel):
 
 @router.get("/job-vacancies/{job_vacancy_id}/metrics", response_model=JobVacancyMetricsResponse)
 async def get_job_vacancy_metrics(
-    job_vacancy_id: UUID,
+    job_vacancy_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     current_user: User = Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
 ):
@@ -207,7 +207,7 @@ class JobAnalyticsResponse(BaseModel):
 
 @router.get("/job-vacancies/{job_id}/analytics", response_model=JobAnalyticsResponse)
 async def get_job_analytics(
-    job_id: UUID,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     current_user: User = Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
 ):
@@ -433,7 +433,7 @@ class JobVacancyHistoryResponse(BaseModel):
 
 @router.get("/job-vacancies/{job_id}/history", response_model=JobVacancyHistoryResponse)
 async def get_job_vacancy_history(
-    job_id: UUID,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=100),
     current_user: User = Depends(get_current_user_or_demo),
@@ -854,7 +854,7 @@ class JobReportResponse(BaseModel):
 
 @router.get("/jobs/{job_id}/report", response_model=JobReportResponse)
 async def get_job_report(
-    job_id: UUID,
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     current_user: User = Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
     db=None,
@@ -1180,3 +1180,286 @@ async def get_pipeline_overview(
     stages.sort(key=lambda s: s.count, reverse=True)
 
     return PipelineOverviewResponse(stages=stages, total_candidates=total)
+
+
+# ─── Pipeline Overview — JOB LIFECYCLE (Task #430, restored 2026-05) ─────────
+#
+# Mirrors the candidate-side `/pipeline-overview` but groups *job vacancies*
+# by their lifecycle stage so the panoramic view can render a parallel
+# Vagas|Candidatos toggle without needing two separate consumers.
+#
+# Stage detection is priority-based (top wins). A job belongs to exactly one
+# bucket. The `imported_from_ats` flag is decorative metadata for badges.
+#
+# History note: this endpoint and its 8-stage classifier were originally
+# introduced by Task #430, hardened with multi-tenant + live-count tests by
+# Task #439, and were silently deleted by commit 02361f41c during a docs
+# cherry-pick — leaving the consumer (`/api/backend-proxy/jobs-lifecycle-overview`
+# → `pipeline-overview-page.tsx:332-349`) and the regression tests pointing
+# at a non-existent function. This block restores the canonical contract.
+
+JOB_LIFECYCLE_ORDER = [
+    "ats_importada",
+    "rascunho",
+    "enriquecida",
+    "wsi_config",
+    "aguardando_aprovacao",
+    "publicada",
+    "ao_vivo",
+    "encerrada",
+]
+
+JOB_LIFECYCLE_DISPLAY = {
+    "ats_importada": "ATS Importada",
+    "rascunho": "Rascunho/JD",
+    "enriquecida": "Enriquecida",
+    "wsi_config": "WSI Config",
+    "aguardando_aprovacao": "Aguardando Aprovação",
+    "publicada": "Publicada",
+    "ao_vivo": "Ao Vivo",
+    "encerrada": "Encerrada",
+}
+
+JOB_LIFECYCLE_COLORS = {
+    "ats_importada": "#8A8F98",
+    "rascunho": "#60BED1",
+    "enriquecida": "#9860D1",
+    "wsi_config": "#5DA47A",
+    "aguardando_aprovacao": "#D19960",
+    "publicada": "#6078D1",
+    "ao_vivo": "#4DA67A",
+    "encerrada": "#8A8F98",
+}
+
+
+# Slug -> human-friendly label for the external ATS that originated a vacancy.
+ATS_SOURCE_LABELS: dict[str, str] = {
+    "gupy": "Gupy",
+    "pandape": "Pandapé",
+    "merge": "Merge",
+    "kenoby": "Kenoby",
+    "solides": "Sólides",
+    "abler": "Abler",
+    "greenhouse": "Greenhouse",
+    "ats_other": "ATS externo",
+}
+
+KNOWN_ATS_SOURCES: frozenset[str] = frozenset(ATS_SOURCE_LABELS.keys())
+
+
+def _job_source_system(job: JobVacancy) -> str | None:
+    """Return the structured source_system slug if set, else None."""
+    raw = getattr(job, "source_system", None)
+    if isinstance(raw, str) and raw.strip():
+        return raw.strip().lower()
+    return None
+
+
+def _job_is_imported_from_ats(job: JobVacancy) -> bool:
+    """Detect whether a job was imported from an external ATS.
+
+    Prefers the structured ``source_system`` column (Task #435). Falls back
+    to a heuristic over ``additional_data`` so legacy rows without the
+    column populated still light up the badge.
+    """
+    slug = _job_source_system(job)
+    if slug and slug in KNOWN_ATS_SOURCES:
+        return True
+    extra = job.additional_data or {}
+    if not isinstance(extra, dict):
+        return False
+    if extra.get("imported_from_ats") is True:
+        return True
+    src = extra.get("source") or extra.get("origin") or extra.get("import_source")
+    if isinstance(src, str) and src.strip():
+        s = src.strip().lower()
+        if s.startswith("ats") or s in KNOWN_ATS_SOURCES:
+            return True
+    if extra.get("external_system_id") or extra.get("ats_external_id"):
+        return True
+    return False
+
+
+def _job_ats_source_label(job: JobVacancy) -> str | None:
+    """Return a human-friendly ATS label (e.g. "Gupy") if known, else None."""
+    if not _job_is_imported_from_ats(job):
+        return None
+    slug = _job_source_system(job)
+    if slug and slug in ATS_SOURCE_LABELS:
+        return ATS_SOURCE_LABELS[slug]
+    extra = job.additional_data or {}
+    if isinstance(extra, dict):
+        for key in ("source", "origin", "import_source"):
+            val = extra.get(key)
+            if isinstance(val, str) and val.strip().lower() in ATS_SOURCE_LABELS:
+                return ATS_SOURCE_LABELS[val.strip().lower()]
+    return ATS_SOURCE_LABELS["ats_other"]
+
+
+def _classify_job_lifecycle_stage(job: JobVacancy) -> str:
+    """Classify a JobVacancy into one of the 8 lifecycle stages.
+
+    Priority order (top wins) — see Task #430:
+      1. encerrada            — status in {Concluída, Cancelada, Arquivada}
+      2. ao_vivo              — Ativa AND published to a board
+      3. publicada            — Ativa (approval done, not yet on a board)
+      4. aguardando_aprovacao — approval_status='pendente' AND approval_requested_at set
+      5. wsi_config           — screening_questions populated OR screening_config has wsi/settings
+      6. enriquecida          — enriched_jd populated
+      7. ats_importada        — imported_from_ats AND status=Rascunho
+      8. rascunho             — fallback
+    """
+    status = (job.status or "Rascunho").strip()
+
+    if status in {"Concluída", "Concluida", "Cancelada", "Arquivada"}:
+        return "encerrada"
+
+    if status == "Ativa":
+        on_board = bool(
+            job.published_linkedin
+            or job.published_website
+            or job.published_indeed
+            or job.linkedin_post_id
+            or job.indeed_job_id
+            or job.last_published_at
+        )
+        return "ao_vivo" if on_board else "publicada"
+
+    # status is Rascunho or Pausada from here on
+    if (job.approval_status or "").lower() == "pendente" and job.approval_requested_at:
+        return "aguardando_aprovacao"
+
+    sc = job.screening_config or {}
+    has_wsi = bool(
+        (job.screening_questions or [])
+        or (isinstance(sc, dict) and (sc.get("wsi_skills") or sc.get("settings")))
+    )
+    if has_wsi:
+        return "wsi_config"
+
+    if job.enriched_jd:
+        return "enriquecida"
+
+    if _job_is_imported_from_ats(job) and status == "Rascunho":
+        return "ats_importada"
+
+    return "rascunho"
+
+
+class JobLifecycleVacancyItem(BaseModel):
+    id: str
+    title: str
+    department: str | None = None
+    location: str | None = None
+    work_model: str | None = None
+    seniority_level: str | None = None
+    status: str
+    stage_entered_at: str | None = None
+    updated_at: str | None = None
+    created_at: str | None = None
+    manager: str | None = None
+    imported_from_ats: bool = False
+    source_system: str | None = None
+    ats_source_label: str | None = None
+    approval_status: str | None = None
+    candidate_count: int = 0
+
+
+class JobLifecycleStageItem(BaseModel):
+    stage: str
+    display_name: str
+    color: str
+    stage_order: int
+    count: int
+    vacancies: list[JobLifecycleVacancyItem] = []
+
+
+class JobLifecycleOverviewResponse(BaseModel):
+    stages: list[JobLifecycleStageItem]
+    total_vacancies: int
+
+
+@router.get("/job-vacancies/lifecycle-overview", response_model=JobLifecycleOverviewResponse)
+async def get_job_lifecycle_overview(
+    vacancies_per_stage: int = Query(default=50, ge=1, le=500),
+    current_user: User = Depends(get_current_user_or_demo),
+    repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
+):
+    """Aggregate job vacancies by 8 lifecycle stages for the panoramic view.
+
+    Companion to `/pipeline-overview` (candidate side). Powers the
+    "Vagas|Candidatos" toggle in the Visão do Pipeline page.
+    """
+    company_id = get_user_company_id(current_user)
+    if not company_id:
+        raise HTTPException(status_code=403, detail="Company not associated with user")
+
+    try:
+        jobs = await repo.get_all_company_jobs(company_id)
+        candidate_counts = await repo.get_candidate_counts_by_vacancy_for_company(company_id)
+    except Exception as e:
+        logger.error(f"Error fetching jobs for lifecycle overview: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+    buckets: dict[str, list[JobLifecycleVacancyItem]] = {k: [] for k in JOB_LIFECYCLE_ORDER}
+
+    def _iso(dt):
+        if not dt:
+            return None
+        try:
+            return dt.isoformat() if hasattr(dt, "isoformat") else str(dt)
+        except Exception:
+            return None
+
+    for job in jobs:
+        stage_key = _classify_job_lifecycle_stage(job)
+        if stage_key not in buckets:
+            stage_key = "rascunho"
+
+        cand_total = candidate_counts.get(str(job.id), 0)
+
+        # stage_entered_at is best-effort — use updated_at as proxy since
+        # we don't track per-stage transitions on the JobVacancy itself.
+        item = JobLifecycleVacancyItem(
+            id=str(job.id),
+            title=job.title or "Sem título",
+            department=job.department,
+            location=job.location,
+            work_model=job.work_model,
+            seniority_level=job.seniority_level,
+            status=job.status or "Rascunho",
+            stage_entered_at=_iso(job.updated_at),
+            updated_at=_iso(job.updated_at),
+            created_at=_iso(job.created_at),
+            manager=job.manager,
+            imported_from_ats=_job_is_imported_from_ats(job),
+            source_system=_job_source_system(job),
+            ats_source_label=_job_ats_source_label(job),
+            approval_status=job.approval_status,
+            candidate_count=cand_total,
+        )
+        buckets[stage_key].append(item)
+
+    # Capture full bucket sizes BEFORE truncation so the rail counts reflect
+    # the true number of vacancies in each stage (the `vacancies` array is
+    # only a UI sample bounded by `vacancies_per_stage`).
+    bucket_totals: dict[str, int] = {k: len(v) for k, v in buckets.items()}
+
+    # Sort each bucket by most recently updated first, then truncate.
+    for key, items in buckets.items():
+        items.sort(key=lambda v: v.updated_at or "", reverse=True)
+        buckets[key] = items[:vacancies_per_stage]
+
+    stages: list[JobLifecycleStageItem] = []
+    for order_idx, key in enumerate(JOB_LIFECYCLE_ORDER):
+        items = buckets[key]
+        stages.append(JobLifecycleStageItem(
+            stage=key,
+            display_name=JOB_LIFECYCLE_DISPLAY[key],
+            color=JOB_LIFECYCLE_COLORS[key],
+            stage_order=order_idx,
+            count=bucket_totals[key],
+            vacancies=items,
+        ))
+
+    return JobLifecycleOverviewResponse(stages=stages, total_vacancies=len(jobs))

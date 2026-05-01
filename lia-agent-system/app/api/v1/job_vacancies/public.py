@@ -7,7 +7,7 @@ from uuid import UUID
 
 import uuid as uuid_lib
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Path, UploadFile
 
 from ._shared import *
 from app.domains.job_management.dependencies import get_job_vacancy_public_repo
@@ -77,7 +77,7 @@ class PublicApplicationResponse(BaseModel):
 
 @router.post("/job-vacancies/{vacancy_id}/generate-public-link", response_model=GeneratePublicLinkResponse)
 async def generate_public_link(
-    vacancy_id: UUID,
+    vacancy_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     request: GeneratePublicLinkRequest = GeneratePublicLinkRequest(),
     repo: JobVacancyPublicRepository = Depends(get_job_vacancy_public_repo),
     current_user: User = Depends(get_current_user_or_demo)
@@ -132,7 +132,7 @@ async def generate_public_link(
 
 @router.get("/job-vacancies/{vacancy_id}/share-link", response_model=ShareLinkResponse)
 async def get_share_link(
-    vacancy_id: UUID,
+    vacancy_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyPublicRepository = Depends(get_job_vacancy_public_repo),
     current_user: User = Depends(get_current_user_or_demo)
 ):
