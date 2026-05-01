@@ -41,7 +41,7 @@ vi.mock("sonner", () => ({
   },
 }))
 
-import { useCandidatePageCore } from "@/app/[locale]/funil-de-talentos/candidato/[id]/useCandidatePageCore"
+import { useCandidatePageCore } from "@/app/[locale]/(dashboard)/funil-de-talentos/candidato/[id]/useCandidatePageCore"
 
 describe("useCandidatePageCore — loading watchdog", () => {
   let fetchMock: ReturnType<typeof vi.fn>
