@@ -127,18 +127,8 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         subItems: [
           { icon: Briefcase, label: "Vagas", isCore: true },
           {
-            // T002 (causa raiz do bug "Funil não abre"):
-            // O `injectDynamic` mais abaixo neste arquivo INJETA subItems
-            // dinâmicos (talent pools) dentro deste item quando a empresa
-            // tem pools cadastrados. Como `MenuItem.handleClick` segue a
-            // ordem `if (hasSubItems && navigateOnClick) → navega+expande`
-            // antes de `else if (hasSubItems) → só expande`, sem o
-            // `navigateOnClick` o clique acabava só expandindo o submenu
-            // e nunca navegando. Mantemos `navigateOnClick: true` ciente
-            // de que `dashboard-app.tsx#PAGE_ROUTES` NÃO mapeia mais
-            // "Funil de Talentos" para uma URL — então `handleNavigate`
-            // chama apenas `setCurrentPage("Funil de Talentos")` (SPA
-            // switch), sem `router.push`, sem loop com a rota legada.
+            // navigateOnClick required: injectDynamic injects talent pool
+            // subItems below, so without it handleClick only expands.
             icon: Users,
             label: "Funil de Talentos",
             isCore: true,
