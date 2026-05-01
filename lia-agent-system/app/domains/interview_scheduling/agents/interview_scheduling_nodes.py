@@ -7,13 +7,10 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 from app.core.database import get_db
-from app.shared.providers.llm_factory import (
-    get_provider_for_tenant,
-    get_provider_for_tenant_from_db,
-)
+from app.shared.providers.llm_factory import get_provider_for_tenant
 from app.domains.interview_scheduling.agents.interview_system_prompt import get_extraction_prompt
 from app.domains.interview_scheduling.services.calendar_service import calendar_service
-from lia_models.interview import Interview
+from app.models.interview import Interview
 from app.schemas.interview_scheduling_state import InterviewSchedulingState
 
 logger = logging.getLogger(__name__)
@@ -215,17 +212,7 @@ async def interview_details_collector(state: dict[str, Any]) -> dict[str, Any]:
     )
     
     try:
-        # A3: passa company_id explicitamente para resolver provider/key por tenant
-        # (Choose Your AI). Fallback para contextvar quando ausente do state.
-        _tenant_id = str(state.get("company_id") or "") or None
-        # Task #353: prefer the DB-aware async path so that tenant overrides
-        # in `tenant_llm_configs` are honoured even when the in-memory cache
-        # has not been primed yet (e.g. background runs without an HTTP
-        # request that went through AuthEnforcementMiddleware).
-        if _tenant_id:
-            container = await get_provider_for_tenant_from_db(_tenant_id)
-        else:
-            container = get_provider_for_tenant(tenant_id=_tenant_id)
+        container = get_provider_for_tenant()
         extracted_json = await container.generate_with_fallback(extraction_prompt)
         # Clean JSON
         if "```json" in extracted_json:

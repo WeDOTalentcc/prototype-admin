@@ -396,37 +396,9 @@ class DomainWorkflow:
             return state
 
         if state.intent_result.confidence < self.confidence_threshold:
-            # LIA-LCF-01 (Task #620): Low intent confidence should NOT short-circuit
-            # into a clarification fallback. The domain's keyword matcher is just a
-            # heuristic; the registered ReAct agent can reason from the raw query
-            # (e.g. "quantos candidatos tem a vaga V0037?") and call the right tools
-            # autonomously. We only fall back to "Pode reformular?" if no agent is
-            # registered for the domain or the agent failed to produce a response.
-            try:
-                react_response = await self._try_react_agent(state)
-            except Exception as _react_exc:  # pragma: no cover - defensive
-                logger.warning(
-                    "[LIA-LCF-01] ReAct fallback raised for low-confidence query "
-                    "(domain=%s): %s", state.domain.domain_id, _react_exc,
-                )
-                react_response = None
-
-            if react_response is not None and react_response.success and (react_response.message or "").strip():
-                state.raw_response = react_response
-                state.log_step("execute", {
-                    "status": "success",
-                    "executor": "react_agent_low_confidence",
-                    "confidence": state.intent_result.confidence,
-                    "threshold": self.confidence_threshold,
-                    "response_success": react_response.success,
-                })
-                return state
-
             suggestions = state.domain.get_suggestions(state.context)
-            # Use generic message — never expose internal reasoning/debug strings to user
-            _generic_question = "Não tenho certeza do que você precisa. Pode reformular sua solicitação?"
             state.raw_response = DomainResponse.clarification_response(
-                question=_generic_question,
+                question="Não tenho certeza do que você precisa. Pode reformular?",
                 options=suggestions,
                 metadata={
                     "confidence": state.intent_result.confidence,
@@ -438,7 +410,6 @@ class DomainWorkflow:
                 "reason": "low_confidence",
                 "confidence": state.intent_result.confidence,
                 "threshold": self.confidence_threshold,
-                "react_attempted": react_response is not None,
             })
             return state
 

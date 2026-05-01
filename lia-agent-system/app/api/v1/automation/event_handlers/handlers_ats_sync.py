@@ -101,7 +101,7 @@ async def _notify_ats_sync_failure(activity_svc, request, error: str) -> bool:
 async def _log_ats_sync_audit(db, audit_svc, request, ats_stage: str, is_mapped: bool, sync_status: str, ats_response, error, notification_created: bool) -> None:
     """Log automation execution log and centralized audit for ATS sync."""
     try:
-        from lia_models.automation import AutomationExecutionLog
+        from app.models.automation import AutomationExecutionLog
         db.add(AutomationExecutionLog(
             company_id=request.company_id, trigger_event="ats_sync",
             trigger_data={

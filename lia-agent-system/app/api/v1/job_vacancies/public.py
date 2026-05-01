@@ -14,7 +14,7 @@ from app.domains.job_management.dependencies import get_job_vacancy_public_repo
 from app.domains.cv_screening.services.cv_parser import CVParserService, get_cv_parser_service
 from app.domains.cv_screening.services.lia_score_service import get_lia_score_service, LIAScoreService
 from app.domains.job_management.repositories.job_vacancy_public_repository import JobVacancyPublicRepository
-from lia_models.candidate import Candidate, VacancyCandidate
+from app.models.candidate import Candidate, VacancyCandidate
 from app.services.notification_service import NotificationType
 
 router = APIRouter()
@@ -240,25 +240,11 @@ async def get_public_vacancy(
 
         logger.info(f"Public vacancy accessed: {slug} (views: {job.view_count})")
 
-        # Normalize benefits: DB may store either plain strings (legacy) or
-        # dicts like {"name": ..., "category": ..., "value_type": ...} (current
-        # schema). The public response contract is list[str] for the candidate
-        # UI, so we coerce dicts to their `name` field and skip empty entries.
-        raw_benefits = job.benefits or []
-        benefits: list[str] = []
-        for b in raw_benefits:
-            if isinstance(b, dict):
-                name = b.get("name") or b.get("benefit") or b.get("title")
-                if name:
-                    benefits.append(str(name))
-            elif b:
-                benefits.append(str(b))
-
         return PublicVacancyResponse(
             title=job.title,
             description=job.description,
             requirements=job.requirements or [],
-            benefits=benefits,
+            benefits=job.benefits or [],
             location=job.location,
             work_model=job.work_model,
             employment_type=job.employment_type,
@@ -269,7 +255,7 @@ async def get_public_vacancy(
             company_website=None,
             company_logo=None,
             is_confidential=is_confidential,
-            is_affirmative=bool(job.is_affirmative),
+            is_affirmative=job.is_affirmative,
             technical_requirements=tech_reqs,
             languages=languages,
             behavioral_competencies=competencies,
@@ -322,11 +308,7 @@ async def apply_to_public_vacancy(
         except Exception as e:
             logger.warning(f"CV parsing failed, continuing without parsed data: {e}")
 
-        # Task #346 — escopo (tenant da vaga, email) impede cross-tenant reuse.
-        existing_candidate = await repo.get_candidate_by_email(
-            email,
-            company_id=str(job.company_id) if job.company_id else None,
-        )
+        existing_candidate = await repo.get_candidate_by_email(email)
 
         if existing_candidate:
             candidate = existing_candidate
@@ -344,10 +326,8 @@ async def apply_to_public_vacancy(
             candidate.updated_at = datetime.utcnow()
             await repo.flush_candidate(candidate)
         else:
-            # Task #346 — candidatura pública herda o tenant da própria vaga.
             candidate = Candidate(
                 id=uuid_lib.uuid4(),
-                company_id=str(job.company_id) if job.company_id else None,
                 name=name,
                 email=email,
                 phone=phone,

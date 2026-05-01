@@ -34,8 +34,8 @@ async def get_recruiter_metrics(
 
     try:
         from sqlalchemy import and_, select
-        from lia_models.candidate import VacancyCandidate
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.candidate import VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
 
         period_days = {"week": 7, "month": 30, "quarter": 90, "year": 365}.get(period, 30)
         start_date = datetime.utcnow() - timedelta(days=period_days)
@@ -142,7 +142,7 @@ async def get_velocity_metrics(
 
     try:
         from sqlalchemy import and_, select
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.job_vacancy import JobVacancy
 
         period_days = {"month": 30, "quarter": 90, "year": 365}.get(period, 30)
         start_date = datetime.utcnow() - timedelta(days=period_days)
@@ -224,7 +224,7 @@ async def get_efficiency_metrics(
 
     try:
         from sqlalchemy import and_, select
-        from lia_models.candidate import VacancyCandidate
+        from app.models.candidate import VacancyCandidate
 
         period_days = {"month": 30, "quarter": 90}.get(period, 30)
         start_date = datetime.utcnow() - timedelta(days=period_days)
@@ -324,8 +324,8 @@ async def get_comparative_metrics(
 
     try:
         from sqlalchemy import and_, distinct, select
-        from lia_models.candidate import VacancyCandidate
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.candidate import VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
 
         period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
         start_date = datetime.utcnow() - timedelta(days=period_days)

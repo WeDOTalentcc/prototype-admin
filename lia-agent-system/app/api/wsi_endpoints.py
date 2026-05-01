@@ -219,13 +219,36 @@ class VoiceScreeningStatusResponse(BaseModel):
 # Note: analyze_jd endpoint removed for MVP - will be implemented in Job Intake Agent
 
 
-# Audit task #496 (PR2) — duplicata local consolidada em
-# `wsi_service/question_builder.convert_snapshot_to_wsi_questions`.
-# Esta versão agora cobre as 4 categorias (eligibility/technical/behavioral/company)
-# em uma única fonte de verdade compartilhada com o orquestrador de voz.
-from app.domains.cv_screening.services.wsi_service.question_builder import (
-    convert_snapshot_to_wsi_questions as _convert_snapshot_to_wsi_questions,
-)
+# TODO(phase2): extract to WsiRepository — WSI endpoint DB calls
+def _convert_snapshot_to_wsi_questions(snapshot: list) -> list:
+    converted = []
+    for idx, q in enumerate(snapshot):
+        text = q.get("text", q.get("question", q.get("question_text", "")))
+        if not text:
+            continue
+        category = q.get("category", "technical")
+        framework_map = {
+            "eligibility": "CBI",
+            "technical": "Bloom",
+            "behavioral": "BigFive",
+        }
+        type_map = {
+            "eligibility": "contextual",
+            "technical": "autodeclaration",
+            "behavioral": "situational",
+        }
+        question = WSIQuestion(
+            id=q.get("id", f"qs_{idx}"),
+            competency=q.get("skill_targeted", q.get("competency_validated", category)),
+            framework=framework_map.get(category, "Bloom"),
+            question_type=type_map.get(category, "contextual"),
+            question_text=text,
+            weight=float(q.get("weight", 0.75)),
+            expected_signals=q.get("expected_signals", []),
+            scoring_criteria=q.get("scoring_criteria", {}),
+        )
+        converted.append(question)
+    return converted
 
 
 @router.post("/generate-questions", response_model=GenerateQuestionsResponse)
@@ -257,20 +280,12 @@ async def generate_questions(
                 comp = Competency(**comp_dict)
                 competencies_list.append(comp)
             
-            # Audit task #545 — billing context para WSI chat-screening.
-            _qg_tracking = {
-                "company_id": getattr(request, "company_id", None),
-                "candidate_id": getattr(request, "candidate_id", None),
-                "vacancy_id": getattr(request, "job_vacancy_id", None),
-                "session_id": getattr(request, "session_id", None),
-            }
             questions = await wsi_svc.generate_screening_questions(
                 competencies=competencies_list,
                 mode=request.mode,
                 job_description=request.job_description,
                 seniority=request.seniority,
                 enriched_jd=request.enriched_jd,
-                tracking_context=_qg_tracking,
             )
             qs_version = None
             qs_id = None
@@ -331,23 +346,17 @@ async def analyze_response(
             question_id=request.question_id,
             competency=request.competency,
             response_text=request.response_text,
-            autodeclaration_score=7.0,
-            context_score=7.0,
+            autodeclaration_score=3.5,
+            context_score=3.5,
             bloom_level=3,
             dreyfus_level=3,
             evidences=["Mock evidence"],
             red_flags=[],
-            final_score=7.0,
+            final_score=3.5,
             justification="Mock analysis - will be replaced with real WSI analysis"
         )
         
         analysis_id = str(uuid.uuid4())
-        # Task #511 — hash determinístico explícito (response_hash agora
-        # é argumento obrigatório no repositório).
-        from app.shared.security.wsi_hashing import hash_response
-        resp_hash = hash_response(
-            analysis.response_text, request.session_id, request.question_id
-        )
         await repo.insert_response_analysis(
             analysis_id=analysis_id,
             session_id=request.session_id,
@@ -366,7 +375,6 @@ async def analyze_response(
             consistency_penalty=analysis.consistency_penalty,
             final_score=analysis.final_score,
             justification=analysis.justification,
-            response_hash=resp_hash,
         )
         
         
@@ -546,89 +554,6 @@ async def get_candidate_results(
         raise HTTPException(status_code=500, detail=f"Failed to get candidate results: {str(e)}")
 
 
-def _parse_transparency_extras(raw: Any) -> dict[str, Any]:
-    """Audit task #528 — normaliza coluna JSONB ``transparency_extras``.
-
-    Driver pode devolver dict, string JSON, ou ``None`` (registros legados
-    anteriores à coluna). Sempre devolve dict (vazio em fallback).
-    """
-    if not raw:
-        return {}
-    if isinstance(raw, dict):
-        return raw
-    try:
-        return json.loads(raw)
-    except (TypeError, ValueError):
-        return {}
-
-
-def _build_response_item(r: Any) -> dict[str, Any]:
-    """Audit task #528 — serializa uma análise de resposta com transparência.
-
-    Mantém shape original (consumido pelo recruiter view) e adiciona campos
-    granulares (``flags_structured``, ``penalty_breakdown``, ``bonus_breakdown``,
-    ``degraded_quality``, ``degraded_reasons``, ``layer2_degraded_reason``)
-    com defaults seguros para registros legados sem ``transparency_extras``.
-    Índice [18] é a coluna nova adicionada em ``get_responses_for_session``.
-    """
-    extras = _parse_transparency_extras(r[18] if len(r) > 18 else None)
-    return {
-        "competency": r[0],
-        "response_text": r[1],
-        "scores": {
-            "autodeclaration": float(r[2]) if r[2] else None,
-            "context": float(r[3]) if r[3] else None,
-            "bloom_level": r[4],
-            "dreyfus_level": r[5],
-            "final_score": float(r[9]),
-        },
-        "evidences": r[6] if r[6] else [],
-        "red_flags": r[7] if r[7] else [],
-        "consistency_penalty": float(r[8]) if r[8] else 0,
-        "justification": r[10],
-        "question": {
-            "text": r[12],
-            "framework": r[13],
-            "type": r[14],
-            "weight": float(r[15]) if r[15] else 0,
-            "expected_signals": r[16] if r[16] else [],
-            "sequence": r[17],
-        },
-        "flags_structured": extras.get("flags_structured") or {},
-        "penalty_breakdown": extras.get("penalty_breakdown") or {},
-        "bonus_breakdown": extras.get("bonus_breakdown") or {},
-        "degraded_quality": bool(extras.get("degraded_quality", False)),
-        "degraded_reasons": extras.get("degraded_reasons") or [],
-        "layer2_degraded_reason": extras.get("layer2_degraded_reason"),
-    }
-
-
-def _aggregate_response_degraded(responses: list[Any]) -> dict[str, Any]:
-    """Audit task #528 (G23-02) — agrega selo degradado de N respostas.
-
-    Reúne ``degraded_quality`` / ``degraded_reasons`` / ``layer2_degraded_reason``
-    cross-respostas para o root do detalhe; UI exibe banner global.
-    """
-    reasons_set: set[str] = set()
-    degraded_count = 0
-    for r in responses:
-        extras = _parse_transparency_extras(r[18] if len(r) > 18 else None)
-        is_deg = bool(extras.get("degraded_quality")) or bool(extras.get("layer2_degraded_reason"))
-        if is_deg:
-            degraded_count += 1
-        for reason in (extras.get("degraded_reasons") or []):
-            if reason:
-                reasons_set.add(str(reason))
-        l2 = extras.get("layer2_degraded_reason")
-        if l2:
-            reasons_set.add(f"layer2:{l2}")
-    return {
-        "degraded_quality": degraded_count > 0,
-        "degraded_reasons": sorted(reasons_set),
-        "degraded_count": degraded_count,
-    }
-
-
 @router.get("/results/{result_id}/details", response_model=None)
 async def get_result_details(
     result_id: str,
@@ -673,12 +598,31 @@ async def get_result_details(
                 "duration_minutes": duration_minutes
             },
             "responses": [
-                _build_response_item(r)
+                {
+                    "competency": r[0],
+                    "response_text": r[1],
+                    "scores": {
+                        "autodeclaration": float(r[2]) if r[2] else None,
+                        "context": float(r[3]) if r[3] else None,
+                        "bloom_level": r[4],
+                        "dreyfus_level": r[5],
+                        "final_score": float(r[9])
+                    },
+                    "evidences": r[6] if r[6] else [],
+                    "red_flags": r[7] if r[7] else [],
+                    "consistency_penalty": float(r[8]) if r[8] else 0,
+                    "justification": r[10],
+                    "question": {
+                        "text": r[12],
+                        "framework": r[13],
+                        "type": r[14],
+                        "weight": float(r[15]) if r[15] else 0,
+                        "expected_signals": r[16] if r[16] else [],
+                        "sequence": r[17]
+                    }
+                }
                 for r in responses
             ],
-            # Audit task #528 (G23-02) — agregação root do selo degradado
-            # consumida pelo banner LGPD/EU AI Act do recruiter view.
-            **_aggregate_response_degraded(responses),
             "report": {
                 "executive_summary": report_row[0] if report_row else None,
                 "technical_analysis": report_row[1] if report_row else {},
@@ -1268,8 +1212,7 @@ async def trigger_post_screening_feedback(
         job_vacancy_id = str(wsi_row[1])
         overall_wsi = float(wsi_row[2]) if wsi_row[2] is not None else 0.0
         classification = wsi_row[3] or "não_classificado"
-        from app.domains.cv_screening.constants.wsi_scale import SCALE_MAX
-        score_percent = round((overall_wsi / SCALE_MAX) * 100, 1)  # B0 #523 — canônica /10
+        score_percent = round((overall_wsi / 5) * 100, 1)
 
         if classification in ("alto", "excelente"):
             return {
@@ -1377,7 +1320,7 @@ async def get_feedback_status(
 
         from sqlalchemy import and_, select
 
-        from lia_models.candidate_feedback import CandidateFeedback
+        from app.models.candidate_feedback import CandidateFeedback
         # TODO(phase2-repo-extraction): CandidateFeedback is a Rails-owned model;
         # this query should move to a CandidateFeedbackRepository or Rails adapter.
         sent_result = await db.execute(
@@ -1430,20 +1373,13 @@ async def get_candidates_wsi_scores(
             behavioral_raw = float(row[3]) if row[3] is not None else 0.0
             classification = row[4] or "não_classificado"
             percentile = row[5]
-            # Audit task #530 (G23-02 frontend) — flag de modo degradado vinda
-            # do agregado por sessão na repository (FALSE para registros legados
-            # sem ``transparency_extras``).
-            is_degraded = bool(row[6]) if len(row) > 6 else False
 
-            # B0 #523 — escala canônica /10 (era /5 *20→0-100; agora /10 *SCALE_MAX→0-100)
-            from app.domains.cv_screening.constants.wsi_scale import SCALE_MAX
             candidates[candidate_id] = {
-                "overall_wsi": round(overall_raw * SCALE_MAX, 1),
-                "technical_wsi": round(technical_raw * SCALE_MAX, 1),
-                "behavioral_wsi": round(behavioral_raw * SCALE_MAX, 1),
+                "overall_wsi": round(overall_raw * 20, 1),
+                "technical_wsi": round(technical_raw * 20, 1),
+                "behavioral_wsi": round(behavioral_raw * 20, 1),
                 "classification": classification,
-                "percentile": percentile,
-                "degraded_quality": is_degraded,
+                "percentile": percentile
             }
 
         return {"candidates": candidates}

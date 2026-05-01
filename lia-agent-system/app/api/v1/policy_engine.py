@@ -9,16 +9,14 @@ Provides endpoints for:
 - Seeding default rules
 """
 import logging
-from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from app.domains.policy.dependencies import get_policy_repo
 from app.domains.policy.repositories.policy_repository import PolicyRepository
 from app.domains.policy.services.policy_engine_service import PolicyEngineService, get_policy_engine_service
-from lia_models.policy import BusinessRule, EscalationRule, RateLimitRule
+from app.models.policy import BusinessRule, EscalationRule, RateLimitRule
 from app.schemas.policy import (
     BusinessRuleCreate,
     BusinessRuleResponse,
@@ -45,14 +43,7 @@ from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
-# Task #458 — Same routing-shadowing blindagem as /job-vacancies (Task #455):
-# every ``{*_id}`` path parameter is constrained to UUID-or-digit so a
-# future static sibling segment cannot be silently captured by an item
-# handler. Collection-before-item ordering is reasserted at the bottom of
-# the module via reorder_collection_before_item().
 router = APIRouter(prefix="/policy-engine", tags=["policy-engine"])
-
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 
 def get_user_id_from_header(
@@ -133,7 +124,7 @@ async def create_business_rule(
 
 @router.get("/business-rules/{rule_id}", response_model=BusinessRuleResponse, summary="Get business rule")
 async def get_business_rule(
-    rule_id: _DualId,
+    rule_id: str,
     repo: PolicyRepository = Depends(get_policy_repo),
 ):
     """Get a specific business rule."""
@@ -154,7 +145,7 @@ async def get_business_rule(
 
 @router.put("/business-rules/{rule_id}", response_model=BusinessRuleResponse, summary="Update business rule")
 async def update_business_rule(
-    rule_id: _DualId,
+    rule_id: str,
     data: BusinessRuleUpdate,
     repo: PolicyRepository = Depends(get_policy_repo),
 ):
@@ -178,7 +169,7 @@ async def update_business_rule(
 
 @router.delete("/business-rules/{rule_id}", summary="Delete business rule", response_model=None)
 async def delete_business_rule(
-    rule_id: _DualId,
+    rule_id: str,
     repo: PolicyRepository = Depends(get_policy_repo),
 ):
     """Delete a business rule."""
@@ -227,7 +218,7 @@ async def create_rate_limit_rule(
 
 @router.put("/rate-limit-rules/{rule_id}", response_model=RateLimitRuleResponse, summary="Update rate limit rule")
 async def update_rate_limit_rule(
-    rule_id: _DualId,
+    rule_id: str,
     data: RateLimitRuleUpdate,
     repo: PolicyRepository = Depends(get_policy_repo),
 ):
@@ -279,7 +270,7 @@ async def create_escalation_rule(
 
 @router.put("/escalation-rules/{rule_id}", response_model=EscalationRuleResponse, summary="Update escalation rule")
 async def update_escalation_rule(
-    rule_id: _DualId,
+    rule_id: str,
     data: EscalationRuleUpdate,
     repo: PolicyRepository = Depends(get_policy_repo),
 ):
@@ -383,7 +374,7 @@ async def trigger_escalation(
     response_model=None,
 )
 async def apply_sector_defaults(
-    company_id: _DualId,
+    company_id: str,
     sector: str = Query(..., description="Setor: tech | varejo | logistica | financeiro | saude | rpo"),
     repo: PolicyRepository = Depends(get_policy_repo),
     service: PolicyEngineService = Depends(get_policy_engine_service),
@@ -505,7 +496,7 @@ async def get_escalation_logs(
 
 @router.post("/escalation-logs/{log_id}/resolve", summary="Resolve an escalation", response_model=None)
 async def resolve_escalation(
-    log_id: _DualId,
+    log_id: str,
     resolution_notes: str | None = Query(None, description="Resolution notes"),
     user_id: str | None = Depends(get_user_id_from_header),
     repo: PolicyRepository = Depends(get_policy_repo),
@@ -525,11 +516,3 @@ async def resolve_escalation(
     except Exception as e:
         logger.error(f"Error resolving escalation: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-
-# ---------------------------------------------------------------------------
-# Routing invariant (Task #458) — collection-scoped routes before item routes.
-# ---------------------------------------------------------------------------
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder
-
-_reorder(router)

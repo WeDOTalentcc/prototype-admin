@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 AZURE_CLIENT_ID = os.environ.get("AZURE_CLIENT_ID", "")
 AZURE_CLIENT_SECRET = os.environ.get("AZURE_CLIENT_SECRET", "")
 AZURE_TENANT_ID = os.environ.get("AZURE_TENANT_ID", "")
-PLATFORM_URL = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.cc").rstrip("/")
+PLATFORM_URL = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.com").rstrip("/")
 
 
 class TeamsSSOService:
@@ -133,7 +133,7 @@ class TeamsSSOService:
             return {"company_id": None, "user_id": teams_user_id, "is_authenticated": False}
 
         try:
-            from app.auth.models import User
+            from app.models import User
             from lia_models.teams import TeamsConversation
 
             # Find conversation record
@@ -145,7 +145,7 @@ class TeamsSSOService:
 
             if conv:
                 # Try to find WeDOTalent user by AAD object ID or stored email
-                aad_id = aad_object_id or conv.user_aad_object_id
+                aad_id = aad_object_id or getattr(conv, "user_aad_object_id", None)
                 if aad_id:
                     # Look up by aad_object_id in users table (if column exists)
                     try:
@@ -165,7 +165,7 @@ class TeamsSSOService:
                         pass  # Column may not exist yet
 
                 # Fallback: use company from stored conv reference
-                company_id = conv.company_id
+                company_id = getattr(conv, "company_id", None)
                 if company_id:
                     return {
                         "company_id": company_id,

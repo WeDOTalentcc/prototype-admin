@@ -99,7 +99,7 @@ async def seed_bias_audit_baseline(company_id: str, job_id: str) -> None:
     """Persiste o baseline de bias audit para um par company/job."""
     try:
         from app.core.database import AsyncSessionLocal
-        from app.shared.compliance.bias_audit_service import BiasAuditService
+        from app.shared.services.bias_audit_service import BiasAuditService
 
         candidates = generate_golden_dataset()
         logger.info("[GoldenDataset] Gerando baseline com %d candidatos para company=%s", len(candidates), company_id)

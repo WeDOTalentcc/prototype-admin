@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import re
 import time
 from datetime import datetime, timedelta
 from typing import Any
@@ -26,40 +25,6 @@ from app.domains.sourcing.services.apify_service import (
 APIFY_COST_USD = APIFY_COST_PER_ENRICHMENT_USD
 DEDUP_WINDOW_HOURS = 24
 BATCH_CONCURRENCY = APIFY_MAX_CONCURRENT
-
-_LINKEDIN_SLUG_RE = re.compile(
-    r"linkedin\.com/(?:[a-z]{2}(?:-[a-z]{2})?/)?(?:in|pub)/([^/?#]+)",
-    re.IGNORECASE,
-)
-
-
-def normalize_linkedin_slug(linkedin_url: str | None) -> str | None:
-    """Return a canonical lowercase LinkedIn vanity slug, or None if it can't be
-    extracted unambiguously.
-
-    Handles trailing slashes, query strings, fragments, http/https, www, locale
-    prefixes (e.g. ``linkedin.com/uk/in/foo``) and the legacy ``/pub/`` path.
-    Bare slugs (without a ``linkedin.com`` host) are accepted as-is.
-    Returning ``None`` signals that no safe dedup match can be performed,
-    which prevents broad ILIKE searches matching unrelated profiles.
-    """
-    if not linkedin_url:
-        return None
-    raw = linkedin_url.strip()
-    if not raw:
-        return None
-    cleaned = raw.split("#", 1)[0].split("?", 1)[0].rstrip("/")
-    match = _LINKEDIN_SLUG_RE.search(cleaned)
-    if match:
-        slug = match.group(1)
-    elif "/" in cleaned or "linkedin" in cleaned.lower():
-        return None
-    else:
-        slug = cleaned
-    slug = slug.strip().lower()
-    if len(slug) < 3:
-        return None
-    return slug
 
 
 class ContactEnrichmentService:
@@ -452,28 +417,14 @@ class ContactEnrichmentService:
             return False
 
     async def _linkedin_url_recently_enriched(self, db: AsyncSession, linkedin_url: str) -> bool:
-        slug = normalize_linkedin_slug(linkedin_url)
-        if not slug:
-            logger.debug(
-                "[ContactEnrichment] Could not extract LinkedIn slug from %r — skipping URL dedup",
-                linkedin_url,
-            )
-            return False
-
-        # Anchor the ILIKE on `/in/<slug>` (and the legacy `/pub/<slug>`) so we
-        # never accidentally match unrelated profiles whose URL happens to
-        # contain the slug as a substring. The Python verification below using
-        # ``normalize_linkedin_slug`` is the source of truth.
+        normalized = linkedin_url.strip().rstrip("/").split("?")[0]
         result = await db.execute(
             select(Candidate).where(
-                Candidate.linkedin_url.ilike(f"%/in/{slug}%")
-                | Candidate.linkedin_url.ilike(f"%/pub/{slug}%")
+                Candidate.linkedin_url.ilike(f"%{normalized.split('/in/')[-1]}%")
             )
         )
         candidates = result.scalars().all()
         for cand in candidates:
-            if normalize_linkedin_slug(getattr(cand, "linkedin_url", None)) != slug:
-                continue
             enrichment_data = (cand.additional_data or {}).get("enrichment", {})
             last_enriched = enrichment_data.get("last_enriched_at")
             if not last_enriched:

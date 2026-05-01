@@ -1,5 +1,7 @@
 """Sourcing Domain - Tool definitions and executor for pipeline management."""
-from typing import Any
+from typing import Any, Dict, List
+
+from app.domains.base import DomainContext
 
 SOURCING_TOOLS = [
     {
@@ -72,45 +74,11 @@ def _get_tool_by_id(tool_id: str) -> dict | None:
     return None
 
 
-def _build_context(tenant_id: str, user_id: str | None):
-    """Build a ToolExecutionContext for canonical handlers (_extract_context).
-
-    Canonical pipeline handlers in `cv_screening.tools.candidate_tools` rely on
-    a context object exposing `.company_id` (and optionally `.user_id`) for
-    multi-tenant isolation. We construct it from the explicit tenant_id passed
-    by the caller — never from LLM-generated parameters.
-    """
-    from app.tools.executor import ToolExecutionContext
-    return ToolExecutionContext(
-        user_id=user_id or "system",
-        company_id=tenant_id,
-    )
-
-
 async def execute_sourcing_tool(
     tool_id: str,
     parameters: dict[str, Any],
-    tenant_id: str,
-    user_id: str | None = None,
+    context: DomainContext,
 ) -> dict[str, Any]:
-    """Execute a sourcing tool by id with proper tenant isolation.
-
-    Args:
-        tool_id: Identifier of the tool to execute (must exist in SOURCING_TOOLS).
-        parameters: Keyword arguments forwarded to the tool handler. Must NOT
-            contain tenant overrides — those are derived from `tenant_id`.
-        tenant_id: Tenant (company_id) used for multi-tenant scoping. Used to
-            build the `_context` ToolExecutionContext forwarded to handlers.
-        user_id: Optional acting user. Defaults to "system" when not provided
-            (e.g. for proactive/internal flows).
-
-    The executor forwards both:
-      - `_context`: a ToolExecutionContext consumed by canonical handlers via
-        `_extract_context()` for `company_id` scoping (e.g. candidate_tools).
-      - `_tenant_id`: a string used by query handlers that look it up directly.
-
-    Handlers that ignore unknown kwargs (`**kwargs`) remain safe.
-    """
     tool = _get_tool_by_id(tool_id)
     if not tool:
         return {"error": f"Tool {tool_id} not found", "status": "error"}
@@ -125,13 +93,7 @@ async def execute_sourcing_tool(
         import importlib
         module = importlib.import_module(module_path)
         handler = getattr(module, func_name)
-        if not callable(handler):
-            return {"error": f"Handler not callable: {handler_path}", "status": "error", "tool_id": tool_id}
-
-        call_kwargs = dict(parameters)
-        call_kwargs.setdefault("_context", _build_context(tenant_id, user_id))
-        call_kwargs.setdefault("_tenant_id", tenant_id)
-        result = await handler(**call_kwargs)
+        result = await handler(**parameters) if callable(handler) else handler
         return {"status": "success", "result": result}
     except Exception as e:
         return {"error": str(e), "status": "error", "tool_id": tool_id}

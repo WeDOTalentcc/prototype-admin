@@ -20,7 +20,7 @@ class LearningPatternsRepository:
         seniority: str | None = None,
     ) -> list:
         """Return CorrectionPattern rows for a company, ordered by confidence desc."""
-        from lia_models.intelligence_layer import CorrectionPattern
+        from app.models.intelligence_layer import CorrectionPattern
 
         conditions = [CorrectionPattern.company_id == company_id]
         if field:
@@ -40,7 +40,7 @@ class LearningPatternsRepository:
         company_id: str,
     ) -> list:
         """Return promoted CompanySkill rows for a company, ordered by times_confirmed desc."""
-        from lia_models.company_learning import CompanySkill
+        from app.models.company_learning import CompanySkill
 
         result = await self.db.execute(
             select(CompanySkill)
@@ -61,7 +61,7 @@ class LearningPatternsRepository:
         seniority: str | None = None,
     ) -> list:
         """Return SuccessProfile rows for a company, ordered by sample_size desc."""
-        from lia_models.intelligence_layer import SuccessProfile
+        from app.models.intelligence_layer import SuccessProfile
 
         conditions = [SuccessProfile.company_id == company_id]
         if seniority:

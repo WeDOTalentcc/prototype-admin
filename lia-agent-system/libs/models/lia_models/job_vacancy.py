@@ -54,18 +54,7 @@ class JobVacancy(Base):
     # NEW: Structured bonus range
     bonus_range = Column(JSON, nullable=True)  # {"min": 5000, "max": 8000, "currency": "BRL"}
     
-    # PRV: link to compensation policy (nullable, optional)
-    compensation_policy_id = Column(UUID(as_uuid=True), ForeignKey('compensation_policies.id', ondelete='SET NULL'), nullable=True, index=True)
-
-    # JSON (maps to JSONB in Postgres) — DB schema is JSONB after manual
-    # alteration / external migration. Keeping ARRAY(String) caused
-    # asyncpg.DatatypeMismatchError: "column 'benefits' is of type jsonb
-    # but expression is of type character varying[]" on every job creation
-    # via wizard (post-mortem 2026-04-29 wizard-domain-hint-leak). Same
-    # pattern as technical_requirements/languages/behavioral_competencies.
-    # Future P1: store [{name, id, value, ...}] dicts instead of bare
-    # name strings to preserve structure (currently still list[str]).
-    benefits = Column(JSON, default=list)
+    benefits = Column(ARRAY(String), default=list)
     
     # Status & Workflow
     status = Column(String(50), default="Rascunho", index=True)  # Ativa, Rascunho, Pausada, Concluída, etc
@@ -207,29 +196,6 @@ class JobVacancy(Base):
     # Format: [{"stage_name": "screening", "stage_order": 2, "is_active": true, "sla_hours": 48, "display_name": "Triagem", "color": "#8B5CF6", "icon": "file-text"}]
     pipeline_config = Column(JSON, nullable=True)
     is_pipeline_customized = Column(Boolean, default=False, nullable=False)
-
-    # ── Job Readiness Hub (Task #429) ────────────────────────────────────────
-    # Pipeline canônico de prontidão de uma vaga importada do ATS para
-    # estar pronta para triagem com a LIA. Estágios (string enum):
-    #   importada, sem_jd, jd_rascunho, jd_enriquecido,
-    #   perguntas_triagem, pronta_disparo, em_triagem
-    # NULL = ainda não classificada (legado / pré-migration 086).
-    readiness_stage = Column(String(40), nullable=True, index=True)
-    # JSON list of blocker codes ex.: ["missing_jd", "missing_competencies"]
-    readiness_blockers = Column(JSON, default=list)
-    # Last time JobReadinessService transitioned this row.
-    last_readiness_event_at = Column(DateTime, nullable=True)
-    # Audience policy chosen for screening dispatch:
-    # "new_only" | "imported_untriaged" | "manual_selection"
-    assigned_audience_policy = Column(String(40), nullable=True)
-
-    # Source System (Task #435) — dedicated marker of where this vacancy originated.
-    # Replaces the heuristic over `additional_data` for ATS-imported flag.
-    # Known values: "lia" (created in-app), "lia_chat", "lia_wizard", "lia_fast_track",
-    # "lia_clone", "wedotalent_rails", and external ATS slugs:
-    # "gupy", "pandape", "merge", "kenoby", "solides", "abler", "greenhouse".
-    # NULL means legacy/unknown — fall back to the additional_data heuristic.
-    source_system = Column(String(50), nullable=True, index=True)
 
     # Additional data
     additional_data = Column(JSON, default={})  # Flexible field for future expansion

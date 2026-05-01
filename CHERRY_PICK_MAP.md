@@ -5528,3 +5528,116 @@ ssh replit-wedo 'grep "chat-cyan" /home/runner/workspace/plataforma-lia/src/styl
 
 ---
 
+
+
+---
+
+## §5 — Remediação BYOK + Compliance + Auth hardening (Wave 0 — Sprint 1 + Sprint 2)
+
+> Branches: `fix/sprint-1-quick-wins` (11 commits · 2026-04-30) + `fix/sprint-2-debts` (8 commits · 2026-05-01)
+> Origem: `AUDITORIA_SOBREPOSTA.md v1.0` → `REMEDIACAO_PRIORIZADA.md` Wave 0 (R-001 a R-009) + débitos de harness (DEBT-001, DEBT-002, DEBT-004, DEBT-007, DEBT-009, DEBT-013, DEBT-014)
+
+---
+
+### 5.1 Sprint 1 — Quick Wins Wave 0 (R-001 a R-009)
+
+**Descrição:** 9 cards Wave 0 (4 Crítica/P + 5 Alta/P) do REMEDIATION_BRIEF + 2 commits de navegação (BRANCH_MAP + handoff doc). Fecha bloqueadores de produção enterprise: BYOK enforcement no CI, BYOK bypass removido de skills_ontology_engine, token tracking canônico, criteria_used LGPD Art.20 estruturado, output_schema em ToolDefinition, G2 sensor validado para WSI/pipeline/sourcing, DEV_MODE gateado por ENVIRONMENT, JWT exp/aud/iss explícito, ContextVar company_id hardening anti-forgery.
+**⚠️ Dependências para cherry-pick:** Nenhuma dependência externa. R-008 depende de R-007 — aplicar nessa ordem. Aplicar Sprint 1 completo antes do Sprint 2.
+**Arquivos canônicos:**
+- `lia-agent-system/.github/workflows/ci.yml` — step BYOK linter wired no job lint
+- `lia-agent-system/app/domains/talent_intelligence/services/skills_ontology_engine.py` — BYOK bypass eliminado
+- `lia-agent-system/app/api/v1/wsi/_shared.py` — track_llm_usage_start canonical caller
+- `lia-agent-system/app/shared/compliance/audit_service.py` — criteria_used payload estruturado
+- `lia-agent-system/app/middleware/auth_enforcement.py` — DEV_MODE gate + ContextVar hardening (R-006 + R-008)
+- `lia-agent-system/app/auth/security.py` — JWT exp/aud/iss validação explícita
+**Docs de referência:** `REMEDIACAO_PRIORIZADA.md` (Wave 0 R-001–R-009), `docs/BRANCH_MAP.md §1`, `CROSS_CUTTING_AUDIT_AND_REMEDIATION_PLAN.md`
+- **Commits:** 11  |  **Período:** 2026-04-30  |  **Camadas:** Backend, IA, Testes, Docs  |  **Risco:** 🟢×9 🟡×2 🔴×0
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟢 | `a6bafc7c9` | 2026-04-30 | Backend | fix(sprint-1): R-009 — wire BYOK linter no CI workflow | `.github/workflows/ci.yml`<br>`tests/integration/test_ci_byok_linter_wired.py` |
+| 🟡 | `5eb36f886` | 2026-04-30 | Backend + IA | fix(sprint-1): R-001 — eliminar bypass BYOK em skills_ontology_engine | `app/domains/talent_intelligence/services/skills_ontology_engine.py`<br>`scripts/check_llm_factory_enforcement.py` |
+| 🟡 | `dd0644d75` | 2026-04-30 | Backend | fix(sprint-1): R-002 — track_llm_usage_start helper canonical + wire em wsi/_shared | `app/api/v1/wsi/_shared.py` |
+| 🟢 | `98d7dc3b9` | 2026-04-30 | Backend + Compliance | fix(sprint-1): R-003 — enriquecer criteria_used no AuditService (LGPD Art.20) | `app/shared/compliance/audit_service.py`<br>`tests/integration/test_audit_criteria_enriched.py` |
+| 🟢 | `d81287102` | 2026-04-30 | Backend + IA | fix(sprint-1): R-004 — output_schema field em ToolDefinition + caller exemplar | `app/domains/communication/agents/communication_tool_registry.py`<br>`libs/agents-core/lia_agents_core/tool_adapter.py` |
+| 🟢 | `7697743dc` | 2026-04-30 | Testes | fix(sprint-1): R-005 — pin G2 sensor para WSI/pipeline/sourcing routers (regressão) | `tests/integration/test_response_model_wsi_pipeline_sourcing.py` |
+| 🟢 | `a5e649ba1` | 2026-04-30 | Backend + Infra | fix(sprint-1): R-006 — DEV_MODE gateado por ENVIRONMENT (anti config drift) | `app/middleware/auth_enforcement.py`<br>`tests/security/test_dev_mode_env_gate.py` |
+| 🟢 | `6ec3584eb` | 2026-04-30 | Backend | fix(sprint-1): R-007 — decode_token valida exp/aud/iss explicitamente | `app/auth/security.py`<br>`libs/config/lia_config/config.py` |
+| 🟢 | `1e4de3106` | 2026-04-30 | Backend | fix(sprint-1): R-008 — hardening ContextVar company_id helper canonical (anti JWT forgery) | `app/middleware/auth_enforcement.py`<br>`tests/security/test_red_team_jwt_forgery.py` |
+| 🟢 | `6b6f55464` | 2026-04-30 | Docs | docs(nav): BRANCH_MAP — inicializar com §1 Remediation Wave 0 Sprint 1 | `docs/BRANCH_MAP.md` |
+| 🟢 | `90d770e3b` | 2026-04-30 | Docs | docs(sprint-1): handoff document com 10 commit hashes + UAT criteria + Sprint 2 backlog | `docs/SPRINT_1_HANDOFF.md` |
+
+---
+
+### 5.2 Sprint 2 — Débitos de Harness (DEBT-001, DEBT-002, DEBT-004, DEBT-007, DEBT-009, DEBT-013, DEBT-014)
+
+**Descrição:** 8 commits fechando débitos técnicos identificados durante auditoria final do Sprint 1: E402 cleanup em auth_enforcement (imports reordenados), allowlist LLM para tenant_llm_context.py (infraestrutura BYOK legítima), criteria_used enriquecido em crew_audit e human_review_sampling, token tracking movido para DENTRO do LLM Factory (arquitetura canônica — uma única fonte de rastreamento), e 3 novos sensores computacionais: G-DEVMODE (bloqueia LIA_DEV_MODE em .env.staging/production), G-CONTEXTVAR (bloqueia set direto do ContextVar fora dos 2 helpers canônicos), G-TOOLS (detecta ToolDefinition sem output_schema — 217 baseline violations documentadas).
+**⚠️ Dependências para cherry-pick:** Aplicar Sprint 1 inteiro primeiro. DEBT-002 (llm_factory) depende de DEBT-001 (imports) — aplicar nessa ordem.
+**Arquivos canônicos:**
+- `lia-agent-system/app/middleware/auth_enforcement.py` — E402 resolvido (imports reordenados)
+- `lia-agent-system/scripts/check_llm_imports.py` — tenant_llm_context na ALLOWED_PATHS
+- `lia-agent-system/app/shared/providers/llm_factory.py` — track_llm_usage_start dentro do factory (canônico)
+- `lia-agent-system/app/shared/agents/crew_audit.py` — criteria_used estruturado
+- `lia-agent-system/scripts/check_no_devmode_in_prod_env.py` — sensor G-DEVMODE (novo)
+- `lia-agent-system/scripts/check_no_direct_contextvar_set.py` — sensor G-CONTEXTVAR (novo)
+- `lia-agent-system/scripts/check_tool_output_schemas.py` — sensor G-TOOLS (novo, 217 baseline violations)
+**Docs de referência:** `REMEDIACAO_PRIORIZADA.md` (Sprint 2 DEBTs), `CROSS_CUTTING_AUDIT_AND_REMEDIATION_PLAN.md`
+- **Commits:** 8  |  **Período:** 2026-05-01  |  **Camadas:** Backend, IA, Scripts/Sensores  |  **Risco:** 🟢×7 🟡×1 🔴×0
+
+| Risco | SHA | Data | Camada | O que faz | Arquivos chave |
+|:---:|---|---|---|---|---|
+| 🟢 | `8ff53fc5e` | 2026-05-01 | Backend | fix(sprint-2): DEBT-001 — mover fastapi imports antes do ContextVar (E402 cleanup) | `app/middleware/auth_enforcement.py` |
+| 🟢 | `dd7002d2c` | 2026-05-01 | Backend | fix(sprint-2): DEBT-014 — allowlist tenant_llm_context.py em check_llm_imports.py | `scripts/check_llm_imports.py` |
+| 🟢 | `c8d1644ed` | 2026-05-01 | Backend + Compliance | fix(sprint-2): DEBT-004 — enriquecer criteria_used em crew_audit + human_review_sampling | `app/shared/agents/crew_audit.py`<br>`app/shared/services/human_review_sampling_service.py` |
+| 🟡 | `a0afb6e11` | 2026-05-01 | IA | feat(sprint-2): DEBT-002 — track_llm_usage_start DENTRO de generate_with_fallback (LLM Factory canonical) | `app/shared/providers/llm_factory.py` |
+| 🟢 | `1ab13494b` | 2026-05-01 | Scripts | feat(sprint-2): DEBT-009 — sensor G-DEVMODE anti LIA_DEV_MODE em .env.staging/production | `scripts/check_no_devmode_in_prod_env.py` |
+| 🟢 | `a4161051a` | 2026-05-01 | Scripts | feat(sprint-2): DEBT-013 — sensor G-CONTEXTVAR check_no_direct_contextvar_set.py | `scripts/check_no_direct_contextvar_set.py` |
+| 🟢 | `a33b0efe4` | 2026-05-01 | Scripts | feat(sprint-2): DEBT-007 — sensor G-TOOLS check_tool_output_schemas.py (217 baseline violations) | `scripts/check_tool_output_schemas.py` |
+| 🟢 | `44511dc6b` | 2026-05-01 | Backend + Scripts | fix(sprint-2): ruff cleanup — F401/I001 em crew_audit + I001 em human_review + E701 em sensor | `app/shared/agents/crew_audit.py`<br>`scripts/check_no_direct_contextvar_set.py` |
+
+---
+
+### 5.3 Validação no Replit
+
+```bash
+# Confirmar branches e HEADs
+ssh replit-wedo 'cd /home/runner/workspace && git log --oneline -3 fix/sprint-1-quick-wins'
+ssh replit-wedo 'cd /home/runner/workspace && git log --oneline -3 fix/sprint-2-debts'
+
+# Sprint 1 — testes de segurança e integração
+ssh replit-wedo 'cd /home/runner/workspace/lia-agent-system && \
+  python -m pytest \
+    tests/security/test_dev_mode_env_gate.py \
+    tests/security/test_red_team_jwt_forgery.py \
+    tests/integration/test_ci_byok_linter_wired.py \
+    tests/integration/test_skills_ontology_byok.py \
+    tests/integration/test_audit_criteria_enriched.py \
+    -v --no-cov'
+
+# Sprint 2 — sensores computacionais (todos devem sair exit 0)
+ssh replit-wedo 'cd /home/runner/workspace/lia-agent-system && \
+  python3 scripts/check_llm_factory_enforcement.py && \
+  python3 scripts/check_llm_imports.py && \
+  python3 scripts/check_no_devmode_in_prod_env.py && \
+  python3 scripts/check_no_direct_contextvar_set.py && \
+  echo "Todos os sensores OK"'
+
+# Sensor G-TOOLS (217 baseline violations de ToolDefinitions sem output_schema — esperado)
+ssh replit-wedo 'cd /home/runner/workspace/lia-agent-system && \
+  python3 scripts/check_tool_output_schemas.py 2>&1 | tail -5'
+```
+
+### 5.4 Métricas finais (Sprint 1 + Sprint 2)
+
+| Métrica | Sprint 1 | Sprint 2 | Total |
+|---|---|---|---|
+| Branch | `fix/sprint-1-quick-wins` | `fix/sprint-2-debts` | — |
+| Commits | 11 | 8 | **19** |
+| Cards/DEBTs fechados | R-001–R-009 (Wave 0) | DEBT-001,002,004,007,009,013,014 | **16 itens** |
+| Severidade (Sprint 1) | 4×Crítica/P + 5×Alta/P | 7×Débito harness | — |
+| Testes adicionados | 7 (security + integration) | 0 | **7** |
+| Sensores novos (scripts/) | 0 | 3 (G-DEVMODE, G-CONTEXTVAR, G-TOOLS) | **3** |
+| Ruff violations corrigidas | 0 | 4 (F401+I001+I001+E701) | 4 |
+| Push para GitHub | PENDENTE (Paulo manual → `replit-sync`) | PENDENTE | — |
+
+---

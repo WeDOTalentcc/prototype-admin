@@ -92,10 +92,4 @@ intent_keywords:
   quick screening: start_quick_screening
   triagem inicial: start_quick_screening
   screening rápido: start_quick_screening
-  # PR-Q3: card 8.2 Rail A command = "Iniciar triagem WSI para candidatos"
-  # Must use "triagem" variant — "entrevista wsi" above covers EN-adjacent only
-  triagem wsi: start_wsi_interview
-  iniciar triagem wsi: start_wsi_interview
-  wsi screening: start_wsi_interview
-  iniciar wsi: start_wsi_interview
-  triagem wsi para candidatos: start_wsi_interview
+  iniciar triagem: start_quick_screening

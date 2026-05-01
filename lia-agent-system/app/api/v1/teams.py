@@ -21,61 +21,15 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.auth.dependencies import get_current_user
-from app.auth.models import User, UserRole
 from app.core.database import get_db
 from app.domains.communication.repositories.teams_repository import TeamsRepository
 from app.domains.communication.services.teams_auth import bot_auth
-from app.domains.communication.services.consent_gate import CommunicationConsentGate
 from app.domains.communication.services.teams_simple import simple_teams_bot
-from lia_models.teams import TeamsActionAuditLog, TeamsConversation, TeamsMessage
+from app.models.teams import TeamsActionAuditLog, TeamsConversation, TeamsMessage
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/teams", tags=["teams"])
-
-
-def _enforce_company_id_scope(
-    requested: str | None,
-    current_user: User,
-    *,
-    allow_none: bool = False,
-) -> str | None:
-    """Cross-tenant guard for endpoints that accept ``company_id`` from the request.
-
-    P1 hardening (auditoria 2026-04-27): the Teams proactivity endpoints
-    historically trusted the ``company_id`` query parameter, which let any
-    authenticated recruiter trigger Teams notifications/digests for *another*
-    company. We now enforce: non-admin users may only operate on their own
-    ``company_id``; admins may pass any value (including ``None`` when the
-    endpoint supports a fan-out).
-
-    Returns the resolved ``company_id`` (string), or ``None`` only if
-    ``allow_none`` is ``True`` and the caller is admin AND no value was sent.
-    Raises 403 on cross-tenant attempts.
-    """
-    own = str(current_user.company_id) if current_user.company_id else None
-    is_admin = current_user.role == UserRole.admin
-
-    if requested is None:
-        if is_admin and allow_none:
-            return None
-        if own is None:
-            raise HTTPException(
-                status_code=403,
-                detail="company_id could not be resolved from authenticated user",
-            )
-        return own
-
-    requested_str = str(requested)
-    if is_admin:
-        return requested_str
-    if own is not None and requested_str == own:
-        return requested_str
-    raise HTTPException(
-        status_code=403,
-        detail="cross-tenant company_id is not allowed for this user",
-    )
 
 
 def get_teams_repo(db: AsyncSession = Depends(get_db)) -> TeamsRepository:
@@ -99,9 +53,7 @@ class TeamsWebhookPayload(BaseModel):
     candidate_phone: str | None = Field(None, description="Candidate phone number")
     vacancy_id: str | None = Field(None, description="Job vacancy ID")
     vacancy_title: str | None = Field(None, description="Job vacancy title")
-    # company_id REMOVED (P0-2 fix, auditoria 2026-04-26): server-side
-    # resolution via recruiter_id -> User.company_id lookup. Aceitar do
-    # cliente seria multi-tenant violation (CLAUDE.md global non-negotiable).
+    company_id: str | None = Field(None, description="Company ID")
     recruiter_id: str | None = Field(None, description="Recruiter user ID who performed the action")
     recruiter_name: str | None = Field(None, description="Recruiter name")
     notes: str | None = Field(None, description="Optional notes from recruiter")
@@ -110,8 +62,6 @@ class TeamsWebhookPayload(BaseModel):
     metadata: dict[str, Any] | None = Field(default_factory=dict, description="Additional metadata")
     
     class Config:
-        # P0-2: silently drop any client-sent company_id (extra="ignore").
-        extra = "ignore"
         json_schema_extra = {
             "example": {
                 "action": "approve",
@@ -120,7 +70,7 @@ class TeamsWebhookPayload(BaseModel):
                 "candidate_phone": "+5511999999999",
                 "vacancy_id": "vac_456",
                 "vacancy_title": "Desenvolvedor Python Senior",
-                "recruiter_id": "user_001"
+                "company_id": "comp_789"
             }
         }
 
@@ -152,52 +102,35 @@ class TeamsActionAuditLogSchema(BaseModel):
 
 
 def _verify_teams_webhook_signature(payload: bytes, signature: str | None) -> bool:
-    """Verify webhook signature from Teams using HMAC-SHA256.
-
-    P1-5 fix (auditoria 2026-04-26): 3-state hardening removes the
-    "non-production = open door" anti-pattern. Old behavior allowed all
-    requests when APP_ENV != production AND TEAMS_WEBHOOK_SECRET empty —
-    APP_ENV typo would silently disable auth.
-
-    States:
-      1. production: TEAMS_WEBHOOK_SECRET required -> 403 if missing.
-      2. non-production WITH TEAMS_WEBHOOK_DEV_BYPASS=true: allow all,
-         log error so bypass is visible in operations.
-      3. non-production without bypass flag: secret required -> 403.
-
-    Raises:
-        HTTPException: 403 if secret missing AND no explicit dev bypass.
     """
-    import os
+    Verify webhook signature from Teams.
+    
+    Uses HMAC-SHA256 with TEAMS_WEBHOOK_SECRET.
+    In production, TEAMS_WEBHOOK_SECRET is required and webhook without valid signature is rejected.
+    In development, if no secret is configured, allows all requests.
+    
+    Raises:
+        HTTPException: 403 if in production and secret is not configured
+        HTTPException: 401 if signature is invalid in production
+    """
     teams_webhook_secret = settings.TEAMS_WEBHOOK_SECRET
     is_production = settings.APP_ENV == "production"
-    dev_bypass = os.environ.get("TEAMS_WEBHOOK_DEV_BYPASS", "").lower() == "true"
-
-    if not teams_webhook_secret:
-        if is_production:
-            logger.error(
-                "[TEAMS WEBHOOK SECURITY] TEAMS_WEBHOOK_SECRET not configured in production! "
-                "Webhook authentication is disabled. This is a security risk."
-            )
-            raise HTTPException(
-                status_code=403,
-                detail="Webhook security not configured. TEAMS_WEBHOOK_SECRET is required in production."
-            )
-        if dev_bypass:
-            logger.error(
-                "[TEAMS WEBHOOK SECURITY] DEV BYPASS active (TEAMS_WEBHOOK_DEV_BYPASS=true). "
-                "Signature verification SKIPPED — only safe in local development."
-            )
-            return True
+    
+    # Production security check: require TEAMS_WEBHOOK_SECRET
+    if is_production and not teams_webhook_secret:
         logger.error(
-            "[TEAMS WEBHOOK SECURITY] TEAMS_WEBHOOK_SECRET not configured. "
-            "Set TEAMS_WEBHOOK_DEV_BYPASS=true to bypass in local development only."
+            "[TEAMS WEBHOOK SECURITY] TEAMS_WEBHOOK_SECRET not configured in production! "
+            "Webhook authentication is disabled. This is a security risk."
         )
         raise HTTPException(
             status_code=403,
-            detail="Webhook security not configured. Set TEAMS_WEBHOOK_SECRET or TEAMS_WEBHOOK_DEV_BYPASS=true."
+            detail="Webhook security not configured. TEAMS_WEBHOOK_SECRET is required in production."
         )
-
+    
+    # Development mode: if no secret, allow all requests
+    if not teams_webhook_secret:
+        logger.warning("[TEAMS WEBHOOK] TEAMS_WEBHOOK_SECRET not configured, skipping signature verification (development mode only)")
+        return True
     
     if not signature:
         logger.warning("[TEAMS WEBHOOK] Missing signature header")
@@ -333,8 +266,7 @@ Você está disponível para começar agora? Responda *SIM* para iniciar ou *DEP
 
 async def _handle_approve_action(
     payload: TeamsWebhookPayload,
-    company_id: str | None,
-    db: AsyncSession,
+    db: AsyncSession
 ) -> TeamsWebhookResponse:
     """Handle approve action from Teams Adaptive Card."""
     if not payload.candidate_phone:
@@ -345,51 +277,13 @@ async def _handle_approve_action(
             candidate_id=payload.candidate_id
         )
     
-    # ── W7.3 LGPD: verify WhatsApp consent before initiating screening ─────────
-    if payload.candidate_id and company_id:
-        consent_result = await CommunicationConsentGate(db).check(
-            candidate_id=payload.candidate_id,
-            company_id=company_id,
-            channel="whatsapp",
-        )
-        if not consent_result.allowed:
-            _CONSENT_REASON_MSG: dict[str, str] = {
-                "revoked":     "candidato revogou o consentimento para contato via WhatsApp",
-                "absent":      "candidato não forneceu consentimento para contato via WhatsApp (LGPD Art. 7)",
-                "check_error": "não foi possível verificar consentimento LGPD — tente novamente",
-            }
-            reason_msg = _CONSENT_REASON_MSG.get(consent_result.reason or "", consent_result.reason or "erro")
-            await _log_teams_action_audit(
-                action="approve_blocked_lgpd_consent",
-                result="blocked",
-                actor_id=payload.recruiter_id,
-                actor_name=payload.recruiter_name,
-                candidate_id=payload.candidate_id,
-                vacancy_id=payload.vacancy_id,
-                company_id=company_id,
-                details={
-                    "lgpd_reason": consent_result.reason,
-                    "consent_type": consent_result.consent_type,
-                    "channel": "whatsapp",
-                },
-                db=db,
-            )
-            return TeamsWebhookResponse(
-                success=False,
-                action="approve",
-                message=f"Triagem bloqueada: {reason_msg}.",
-                screening_initiated=False,
-                candidate_id=payload.candidate_id,
-            )
-    # ─────────────────────────────────────────────────────────────────────────
-
     screening_result = await _start_whatsapp_screening(
         candidate_id=payload.candidate_id or "",
         candidate_name=payload.candidate_name or "Candidato",
         candidate_phone=payload.candidate_phone,
         vacancy_id=payload.vacancy_id,
         vacancy_title=payload.vacancy_title,
-        company_id=company_id,
+        company_id=payload.company_id,
         recruiter_name=payload.recruiter_name,
         db=db
     )
@@ -401,7 +295,7 @@ async def _handle_approve_action(
         actor_name=payload.recruiter_name,
         candidate_id=payload.candidate_id,
         vacancy_id=payload.vacancy_id,
-        company_id=company_id,
+        company_id=payload.company_id,
         details={
             "screening_initiated": screening_result.get("success", False),
             "message_id": screening_result.get("message_id"),
@@ -434,8 +328,7 @@ async def _handle_approve_action(
 
 async def _handle_reject_action(
     payload: TeamsWebhookPayload,
-    company_id: str | None,
-    db: AsyncSession,
+    db: AsyncSession
 ) -> TeamsWebhookResponse:
     """Handle reject action from Teams Adaptive Card."""
     audit_id = await _log_teams_action_audit(
@@ -445,7 +338,7 @@ async def _handle_reject_action(
         actor_name=payload.recruiter_name,
         candidate_id=payload.candidate_id,
         vacancy_id=payload.vacancy_id,
-        company_id=company_id,
+        company_id=payload.company_id,
         details={
             "notes": payload.notes,
             "reason": payload.metadata.get("reason") if payload.metadata else None
@@ -469,8 +362,7 @@ async def _handle_reject_action(
 
 async def _handle_schedule_action(
     payload: TeamsWebhookPayload,
-    company_id: str | None,
-    db: AsyncSession,
+    db: AsyncSession
 ) -> TeamsWebhookResponse:
     """Handle schedule/reschedule action from Teams Adaptive Card."""
     action_type = payload.action
@@ -482,7 +374,7 @@ async def _handle_schedule_action(
         actor_name=payload.recruiter_name,
         candidate_id=payload.candidate_id,
         vacancy_id=payload.vacancy_id,
-        company_id=company_id,
+        company_id=payload.company_id,
         details={
             "scheduled_date": payload.scheduled_date,
             "notes": payload.notes
@@ -508,6 +400,7 @@ async def _handle_schedule_action(
 async def teams_adaptive_card_webhook(
     request: Request,
     x_teams_signature: str | None = Header(None, alias="X-Teams-Signature"),
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -563,6 +456,10 @@ async def teams_adaptive_card_webhook(
     try:
         payload_data = json.loads(raw_body)
         payload = TeamsWebhookPayload(**payload_data)
+        
+        if x_company_id and not payload.company_id:
+            payload.company_id = x_company_id
+        
     except json.JSONDecodeError as e:
         logger.error(f"[TEAMS WEBHOOK] Invalid JSON: {e}")
         raise HTTPException(status_code=400, detail="Invalid JSON payload")
@@ -571,56 +468,18 @@ async def teams_adaptive_card_webhook(
         raise HTTPException(status_code=400, detail=f"Invalid payload: {str(e)}")
     
     logger.info(f"[TEAMS WEBHOOK] Received action={payload.action} for candidate={payload.candidate_id}")
-
-    # P0-2: resolve company_id server-side from recruiter_id (canonical, not from payload).
-    # Reuses TeamsRepository.get_user_by_platform_id (existing canonical lookup).
-    resolved_company_id: str | None = None
-    if payload.recruiter_id:
-        try:
-            _repo = TeamsRepository(db)
-            _user = await _repo.get_user_by_platform_id(payload.recruiter_id)
-            if _user:
-                resolved_company_id = _user.company_id
-        except Exception as _exc:
-            logger.warning(
-                "[TEAMS WEBHOOK] recruiter_id=%s lookup failed: %s",
-                payload.recruiter_id, _exc,
-            )
-    if not resolved_company_id:
-        # Fail-closed (security review, Audit Rev 4): never execute a
-        # privileged action (approve/reject/schedule/request_info)
-        # without a verifiable tenant boundary. Returning 403 prevents
-        # cross-tenant data leakage from a forged or stale recruiter_id.
-        logger.error(
-            "[TEAMS WEBHOOK] tenant boundary unresolved (recruiter_id=%s) — refusing action=%s",
-            payload.recruiter_id, payload.action,
-        )
-        await _log_teams_action_audit(
-            action=payload.action.lower(),
-            result="tenant_unresolved",
-            actor_id=payload.recruiter_id,
-            actor_name=payload.recruiter_name,
-            candidate_id=payload.candidate_id,
-            vacancy_id=payload.vacancy_id,
-            details={"reason": "company_id could not be resolved from recruiter_id"},
-            db=db,
-        )
-        raise HTTPException(
-            status_code=403,
-            detail="Tenant boundary could not be verified; action refused.",
-        )
-
+    
     action = payload.action.lower()
-
+    
     if action == TeamsCardAction.APPROVE.value:
-        return await _handle_approve_action(payload, resolved_company_id, db)
-
+        return await _handle_approve_action(payload, db)
+    
     elif action == TeamsCardAction.REJECT.value:
-        return await _handle_reject_action(payload, resolved_company_id, db)
-
+        return await _handle_reject_action(payload, db)
+    
     elif action in [TeamsCardAction.SCHEDULE.value, TeamsCardAction.RESCHEDULE.value]:
-        return await _handle_schedule_action(payload, resolved_company_id, db)
-
+        return await _handle_schedule_action(payload, db)
+    
     elif action == TeamsCardAction.REQUEST_INFO.value:
         audit_id = await _log_teams_action_audit(
             action="request_info",
@@ -629,7 +488,7 @@ async def teams_adaptive_card_webhook(
             actor_name=payload.recruiter_name,
             candidate_id=payload.candidate_id,
             vacancy_id=payload.vacancy_id,
-            company_id=resolved_company_id,
+            company_id=payload.company_id,
             details={"notes": payload.notes},
             db=db
         )
@@ -659,37 +518,23 @@ async def get_teams_audit_logs(
     limit: int = 50,
     action: str | None = None,
     candidate_id: str | None = None,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
     """
-    Retrieve Teams webhook audit logs scoped to the caller tenant.
-
-    P0-3 fix (auditoria 2026-04-26): endpoint requires authentication and
-    filters by current_user.company_id to enforce multi-tenant boundary.
-    Sem isso, qualquer caller autenticado listava logs de TODAS as empresas.
-
+    Retrieve Teams webhook audit logs from database.
+    
     Query parameters:
     - limit: Maximum number of logs to return (default 50)
     - action: Filter by action type
     - candidate_id: Filter by candidate ID
-    Tenant scoping is implicit via the bearer token — caller cannot list
-    audit logs of another tenant.
+    
+    Returns paginated audit logs ordered by most recent first.
     """
     try:
         repo = TeamsRepository(db)
-        logs = await repo.list_audit_logs(
-            action=action,
-            candidate_id=candidate_id,
-            company_id=current_user.company_id,
-            limit=limit,
-        )
-        total_count = await repo.count_audit_logs(
-            action=action,
-            candidate_id=candidate_id,
-            company_id=current_user.company_id,
-        )
-
+        logs = await repo.list_audit_logs(action=action, candidate_id=candidate_id, limit=limit)
+        total_count = await repo.count_audit_logs(action=action, candidate_id=candidate_id)
+        
         return {
             "count": len(logs),
             "total": total_count,
@@ -752,44 +597,24 @@ async def receive_teams_message(
                     from app.domains.communication.services.teams_card_renderer import teams_card_renderer
                     from app.domains.communication.services.teams_orchestrator_bridge import teams_orchestrator_bridge
 
-                    # ── W9.3 multimedia dispatch — route by MIME type ──────────────────
-                    att = file_attachments[0]
-                    ct = (att.get("contentType") or "").lower()
-                    name = (att.get("name") or "").lower()
-
-                    if ct == "application/pdf" or name.endswith(".pdf"):
-                        att_result = await teams_orchestrator_bridge.process_cv_attachment(
-                            activity, att, db=db
-                        )
-                    elif ct.startswith("image/"):
-                        att_result = await teams_orchestrator_bridge.process_image_attachment(
-                            activity, att, db=db
-                        )
-                    elif ct.startswith("video/") or ct.startswith("audio/"):
-                        att_result = await teams_orchestrator_bridge.process_voice_attachment(
-                            activity, att, db=db
-                        )
-                    else:
-                        att_result = await teams_orchestrator_bridge.process_general_document(
-                            activity, att, db=db
-                        )
-                    # ─────────────────────────────────────────────────────────────────
-
-                    att_card = teams_card_renderer.render(att_result)
-                    if att_card:
+                    cv_result = await teams_orchestrator_bridge.process_cv_attachment(
+                        activity, file_attachments[0], db=db
+                    )
+                    cv_card = teams_card_renderer.render(cv_result)
+                    if cv_card:
                         await simple_teams_bot.send_adaptive_card(
                             service_url=service_url,
                             conversation_id=conversation_id,
-                            card_payload=att_card,
+                            card_payload=cv_card,
                         )
                     else:
                         await simple_teams_bot.send_message(
                             service_url=service_url,
                             conversation_id=conversation_id,
-                            text=att_result.get("message", "Arquivo processado."),
+                            text=cv_result.get("message", "CV processado."),
                         )
                 except Exception as cv_err:
-                    logger.error(f"[Teams] attachment processing error: {cv_err}", exc_info=True)
+                    logger.error(f"[Teams] CV attachment processing error: {cv_err}", exc_info=True)
                     await simple_teams_bot.send_message(
                         service_url=service_url,
                         conversation_id=conversation_id,
@@ -836,16 +661,6 @@ async def receive_teams_message(
         if activity.get("type") == "message":
             await _store_conversation_reference(activity, db)
 
-        # ── W9.1 Group/channel: store channel ref when bot joins group/channel ──
-        elif activity.get("type") == "conversationUpdate":
-            members_added = activity.get("membersAdded") or []
-            bot_id = (activity.get("recipient") or {}).get("id", "")
-            if any(m.get("id") == bot_id for m in members_added):
-                conv_type = (activity.get("conversation") or {}).get("conversationType", "")
-                if conv_type in ("groupChat", "channel"):
-                    await _store_channel_conversation_reference(activity, db)
-        # ──────────────────────────────────────────────────────────────────────
-
         # Log the message
         await _log_teams_message(activity, db)
 
@@ -890,72 +705,13 @@ def _parse_teams_timestamp(ts: str | None) -> datetime | None:
         return datetime.utcnow()
 
 
-async def _store_channel_conversation_reference(activity: dict[str, Any], db: AsyncSession):
-    """Store group/channel conversation reference for W9.1 proactive messaging to groups."""
-    try:
-        from app.domains.communication.repositories.teams_repository import TeamsRepository
-        conv = activity.get("conversation") or {}
-        channel_data = activity.get("channelData") or {}
-        conversation_id = conv.get("id")
-        service_url = activity.get("serviceUrl", "")
-        tenant_id = conv.get("tenantId")
-        channel_id = activity.get("channelId")
-        team_id = (channel_data.get("team") or {}).get("id", "")
-        channel_name = (channel_data.get("channel") or {}).get("name", "General")
-
-        if not conversation_id or not service_url:
-            return
-
-        repo = TeamsRepository(db)
-        # user_id prefix "channel:" distinguishes from personal 1:1 refs
-        await repo.upsert_conversation(
-            conversation_id=conversation_id,
-            service_url=service_url,
-            tenant_id=tenant_id,
-            channel_id=channel_id,
-            user_id=f"channel:{team_id or channel_id or conversation_id}",
-            user_name=channel_name,
-            user_aad_object_id=None,
-            conversation_reference=activity,
-            last_message_at=None,
-            company_id=None,
-        )
-        logger.info(
-            "[Teams] W9.1 stored channel conv ref: conv=%s team=%s channel=%s tenant=%s",
-            conversation_id, team_id, channel_name, tenant_id,
-        )
-    except Exception as e:
-        logger.warning("[Teams] W9.1 _store_channel_conversation_reference failed: %s", e)
-
-
 async def _store_conversation_reference(activity: dict[str, Any], db: AsyncSession):
-    """Store conversation reference for proactive messaging.
-
-    P0-1 fix (auditoria 2026-04-26): derive company_id from aad_object_id lookup
-    so multi-tenant boundary is established at write-time. Bridge reads it back
-    on every message for orchestrator context.
-    """
+    """Store conversation reference for proactive messaging."""
     try:
         conversation_id = activity.get("conversation", {}).get("id")
         from_user = activity.get("from", {})
         last_msg_at = _parse_teams_timestamp(activity.get("timestamp"))
-        aad_object_id = from_user.get("aadObjectId")
         repo = TeamsRepository(db)
-
-        # Derive company_id from User via aad_object_id (multi-tenant boundary)
-        company_id: str | None = None
-        if aad_object_id:
-            try:
-                user = await repo.get_user_by_aad_object_id(aad_object_id)
-                if user and user.company_id:
-                    company_id = user.company_id
-            except Exception as user_lookup_exc:
-                logger.warning(
-                    "[TEAMS] User lookup by aad_object_id=%s failed: %s — "
-                    "conversation will be stored without company_id",
-                    aad_object_id, user_lookup_exc,
-                )
-
         await repo.upsert_conversation(
             conversation_id=conversation_id,
             service_url=activity.get("serviceUrl", ""),
@@ -963,10 +719,9 @@ async def _store_conversation_reference(activity: dict[str, Any], db: AsyncSessi
             channel_id=activity.get("channelId"),
             user_id=from_user.get("id", ""),
             user_name=from_user.get("name"),
-            user_aad_object_id=aad_object_id,
+            user_aad_object_id=from_user.get("aadObjectId"),
             conversation_reference=activity,
             last_message_at=last_msg_at,
-            company_id=company_id,
         )
     except Exception as e:
         logger.error(f"Error storing conversation reference: {e}", exc_info=True)
@@ -987,8 +742,7 @@ async def _log_teams_message(activity: dict[str, Any], db: AsyncSession):
 @router.post("/send-notification", response_model=None)
 async def send_proactive_notification(
     notification_data: dict[str, Any],
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Send proactive notification to Teams user.
@@ -1002,41 +756,13 @@ async def send_proactive_notification(
     """
     try:
         user_id = notification_data.get("user_id")
-
+        
         # Get conversation reference
         repo = TeamsRepository(db)
         teams_conv = await repo.get_conversation_by_user_id(user_id)
-
+        
         if not teams_conv:
             raise HTTPException(status_code=404, detail="Teams conversation not found")
-
-        # P1 hardening (auditoria 2026-04-27): IDOR / cross-tenant guard.
-        # Without this, any authenticated recruiter could send proactive
-        # notifications to ANY Teams user by enumerating user_ids. We require
-        # the target conversation to belong to the caller's company (or the
-        # caller to be admin).
-        own_company = (
-            str(current_user.company_id) if current_user.company_id else None
-        )
-        conv_company = (
-            str(teams_conv.company_id) if teams_conv.company_id else None
-        )
-        if current_user.role != UserRole.admin and (
-            own_company is None or conv_company != own_company
-        ):
-            logger.warning(
-                "[Teams] cross-tenant send_proactive_notification blocked",
-                extra={
-                    "caller_user_id": str(current_user.id),
-                    "caller_company_id": own_company,
-                    "target_user_id": user_id,
-                    "target_conversation_company_id": conv_company,
-                },
-            )
-            raise HTTPException(
-                status_code=403,
-                detail="cross-tenant notification is not allowed for this user",
-            )
         
         # Send notification via adaptive card
         from app.domains.communication.services.teams_simple import SimpleTeamsBot
@@ -1122,10 +848,8 @@ def _create_notification_card(notification_type: str, data: dict[str, Any]) -> d
 async def run_proactivity_checks(
     company_id: str | None = None,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     """Run proactivity checks (stalled pipelines, deadlines). Call periodically."""
-    company_id = _enforce_company_id_scope(company_id, current_user, allow_none=True)
     try:
         from app.domains.communication.services.teams_proactivity_engine import teams_proactivity_engine
         stalled_sent = await teams_proactivity_engine.check_stalled_pipelines(company_id)
@@ -1148,10 +872,8 @@ async def notify_new_candidate(
     vacancy_title: str,
     company_id: str,
     estimated_score: float | None = None,
-    current_user: User = Depends(get_current_user),
 ):
     """Notify recruiters when new candidate applies."""
-    company_id = _enforce_company_id_scope(company_id, current_user) or company_id
     try:
         from app.domains.communication.services.teams_proactivity_engine import teams_proactivity_engine
         sent = await teams_proactivity_engine.on_candidate_applied(
@@ -1178,10 +900,8 @@ async def notify_screening_complete(
     recommendation: str,
     company_id: str,
     recruiter_teams_id: str | None = None,
-    current_user: User = Depends(get_current_user),
 ):
     """Notify recruiters when a screening (WSI/BARS) completes."""
-    company_id = _enforce_company_id_scope(company_id, current_user) or company_id
     try:
         from app.domains.communication.services.teams_proactivity_engine import teams_proactivity_engine
         sent = await teams_proactivity_engine.on_screening_complete(
@@ -1203,13 +923,11 @@ async def notify_screening_complete(
 async def send_daily_digest(
     company_id: str | None = None,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     """
     Trigger the daily digest card for all Teams recruiters.
     Should be called by a cron job at 08:00 every weekday.
     """
-    company_id = _enforce_company_id_scope(company_id, current_user, allow_none=True)
     from app.domains.communication.services.teams_proactivity_engine import teams_proactivity_engine
     sent = await teams_proactivity_engine.send_daily_digest(company_id=company_id)
     return {"sent": sent, "status": "ok"}
@@ -1219,38 +937,17 @@ async def send_daily_digest(
 async def receive_card_feedback(
     payload: dict[str, Any],
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     """
     Receive 👍👎 feedback from Teams Adaptive Card buttons.
-
-    P1-7 fix (auditoria 2026-04-26): persists to teams_feedback table for
-    LIA quality metrics and training feedback loop. Auth + tenant boundary
-    enforced via Depends(get_current_user).
+    Logs the feedback for LIA quality improvement.
     """
     feedback_type = payload.get("feedback", "unknown")
-    feedback_text = payload.get("feedback_text") or None
-    card_context = payload.get("card_context") or {
-        # Best-effort context if caller did not send card_context explicitly
-        "raw_payload_keys": list(payload.keys()),
-    }
-
-    logger.info(
-        "[Teams Feedback] type=%s user=%s company=%s text=%s",
-        feedback_type, current_user.id, current_user.company_id,
-        (feedback_text or "")[:80],
-    )
-
-    repo = TeamsRepository(db)
-    entry = await repo.create_feedback(
-        feedback_type=feedback_type,
-        user_id=str(current_user.id),
-        company_id=current_user.company_id,
-        feedback_text=feedback_text,
-        card_context=card_context,
-    )
-    await db.commit()
-    return {"status": "received", "feedback": feedback_type, "id": str(entry.id)}
+    feedback_text = payload.get("feedback_text", "")
+    user_id = payload.get("user_id", "unknown")
+    logger.info(f"[Teams Feedback] type={feedback_type} user={user_id} text={feedback_text[:80]!r}")
+    # TODO: persist to feedback table for LIA training
+    return {"status": "received", "feedback": feedback_type}
 
 
 # ============================================================================
@@ -1362,7 +1059,7 @@ async def teams_sso_callback(
             <html>
             <body style="font-family:sans-serif;text-align:center;padding:40px">
               <h1>✅ Autenticado com sucesso!</h1>
-              <p>Olá, <strong>{html.escape(profile.get("display_name",""))}</strong>!</p>
+              <p>Olá, <strong>{profile.get("display_name","")}</strong>!</p>
               <p>Você pode fechar esta janela e voltar ao Teams.</p>
               <script>setTimeout(() => window.close(), 3000);</script>
             </body>
@@ -1397,7 +1094,6 @@ class ScheduleInterviewRequest(BaseModel):
 async def schedule_interview_via_teams(
     request: ScheduleInterviewRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     """
     Schedule an interview via Microsoft Graph Calendar.
@@ -1444,7 +1140,6 @@ async def cancel_interview_via_teams(
     organizer_email: str,
     message: str | None = None,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     """Cancel a previously scheduled interview event."""
     from app.domains.communication.services.teams_calendar_service import teams_calendar_service
@@ -1778,8 +1473,8 @@ async def teams_tab_auth(
             )
 
         # Generate a platform JWT (reuse existing auth service if available)
-        from app.auth.security import create_access_token
-        platform_token = create_access_token(subject=str(user.id), company_id=user.company_id)
+        from app.core.security import create_access_token
+        platform_token = create_access_token(subject=str(user.id), company_id=getattr(user, "company_id", None))
 
         logger.info(f"[TeamsTabAuth] SSO resolved: AAD={aad_object_id} → user={user.id}")
         return TabAuthResponse(
@@ -1801,31 +1496,13 @@ async def teams_tab_auth(
 async def teams_tab_events(
     payload: TabEventRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     """
     Receive a behavioral event from the Teams Tab iframe tracker.
 
-    P1-8 fix (auditoria 2026-04-26): endpoint requires authentication and
-    validates that payload.platform_user_id matches the authenticated user.
-    Sem isso, atacante poderia chamar este endpoint direto (ignorando o
-    proxy) e disparar Adaptive Card proativo para qualquer outro user
-    fornecendo aad_object_id forjado.
-
     If the event represents a complex action, sends a proactive Adaptive
     Card to the recruiter's Teams chat with a deep link to the platform.
     """
-    # P1-8 hardening: if client sent platform_user_id, it MUST match the
-    # authenticated user. Block forging events for someone else.
-    if payload.platform_user_id and str(payload.platform_user_id) != str(current_user.id):
-        logger.warning(
-            "[TeamsTabEvents] platform_user_id mismatch: payload=%s != current=%s — refusing",
-            payload.platform_user_id, current_user.id,
-        )
-        raise HTTPException(
-            status_code=403,
-            detail="platform_user_id does not match authenticated user",
-        )
 
     from app.domains.communication.services.teams_simple import SimpleTeamsBot
     from app.domains.communication.services.teams_tab_trigger import get_trigger_engine

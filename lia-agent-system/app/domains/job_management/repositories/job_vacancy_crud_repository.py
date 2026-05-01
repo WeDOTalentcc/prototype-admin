@@ -6,7 +6,7 @@ import uuid as uuid_lib
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.job_vacancy import JobVacancy
+from app.models.job_vacancy import JobVacancy
 
 
 class JobVacancyCRUDRepository:
@@ -101,7 +101,7 @@ class JobVacancyCRUDRepository:
 
     async def search_by_query(self, company_id, query: str, offset: int, page_size: int):
         from sqlalchemy import func, select
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.job_vacancy import JobVacancy
         base_filter = JobVacancy.company_id == company_id
         if query and len(query) >= 2:
             search_term = f"%{query}%"

@@ -14,7 +14,7 @@ Tests:
 import uuid
 from datetime import datetime
 
-from lia_models.company_hiring_policy import (
+from app.models.company_hiring_policy import (
     ALL_DEFAULTS,
     AUTOMATION_RULES_DEFAULTS,
     COMMUNICATION_RULES_DEFAULTS,

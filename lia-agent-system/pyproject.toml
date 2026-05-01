@@ -86,7 +86,6 @@ dependencies = [
 dev-dependencies = [
     "pytest==8.3.4",
     "pytest-asyncio==0.24.0",
-    "respx>=0.21.0",
 ]
 
 [tool.uv.workspace]
@@ -122,9 +121,6 @@ extend-select = ["TID"]
 # Violations appear as TID251 and fail CI.
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "app.shared.agents" = { msg = "Import from lia_agents_core.* directly — app.shared.agents shims were removed in task-124." }
-"app.models" = { msg = "Import from lia_models.* directly — app.models shim layer was removed in task-242 (caused duplicate SQLAlchemy class registrations)." }
-"libs.models.lia_models" = { msg = "Import from lia_models.* directly — see ADR-012." }
-"libs.messaging.lia_messaging" = { msg = "Import from lia_messaging.* directly — see ADR-012." }
 
 # ---------------------------------------------------------------------------
 # mypy — static type checking (gradual mode)

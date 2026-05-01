@@ -251,7 +251,7 @@ class TestRoutingFeedbackHashMessage(unittest.TestCase):
             del sys.modules["app.models.routing_feedback"]
 
         try:
-            from lia_models.routing_feedback import RoutingFeedback
+            from app.models.routing_feedback import RoutingFeedback
             h = RoutingFeedback.hash_message("test message")
             assert len(h) == 32
             assert h == hashlib.md5("test message".encode()).hexdigest()

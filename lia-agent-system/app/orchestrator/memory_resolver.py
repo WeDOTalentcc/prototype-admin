@@ -240,29 +240,35 @@ class MemoryResolver:
                         )
                         return enriched, True
 
-        # ── Resolução via ConversationState (WorkingMemoryService removido — import errors) ──
+        # ── Resolução via WorkingMemory (async, com I/O) ──
+        try:
+            from lia_agents_core.working_memory import WorkingMemoryService
+            memory_service = WorkingMemoryService()
+            context = await memory_service.get_context_summary(
+                session_id=session_id,
+                domain=domain or "recruiter_assistant",
+            )
+        except Exception as exc:
+            logger.debug("[MemoryResolver] WorkingMemory unavailable: %s", exc)
+            return message, False
+
+        if not context:
+            return message, False
+
         enriched = message
         resolved = False
 
-        # Usa conversation_state já injetado se disponível
-        _cstate = conversation_state
-        if _cstate is None:
-            try:
-                from app.shared.memory.conversation_state import conversation_state_store
-                _cstate = conversation_state_store.get(session_id or "")
-            except Exception as _exc:
-                logger.debug("[MemoryResolver] ConversationState store lookup failed: %s", _exc)
-
-        if _cstate is not None:
-            context_lines = self._build_context_lines({}, _cstate)
-            if context_lines:
-                enriched = f"[Contexto da sessão: {'; '.join(context_lines)}]\n{message}"
-                resolved = True
-                logger.info(
-                    "[MemoryResolver] Resolved via ConversationState session=%s context_size=%d",
-                    session_id,
-                    len(context_lines),
-                )
+        # Injeta entidades resolvidas como prefixo de contexto para o LLM
+        # (mais seguro que substituição direta de string, que pode alterar semântica)
+        context_lines = self._build_context_lines(context, conversation_state)
+        if context_lines:
+            enriched = f"[Contexto da sessão: {'; '.join(context_lines)}]\n{message}"
+            resolved = True
+            logger.debug(
+                "[MemoryResolver] Resolved session=%s context_size=%d",
+                session_id,
+                len(context_lines),
+            )
 
         return enriched, resolved
 

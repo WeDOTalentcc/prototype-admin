@@ -175,9 +175,3 @@ class ScoreNormalizationService:
 
 
 score_normalization_service = ScoreNormalizationService()
-
-
-# Module-level handler exposed to the chat tool registry
-async def normalize(**kwargs):
-    """Chat-surface wrapper around ScoreNormalizationService.normalize_candidate_scores()."""
-    return await score_normalization_service.normalize_candidate_scores(**kwargs)

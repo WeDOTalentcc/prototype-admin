@@ -19,7 +19,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
 from app.domains.communication.repositories.communication_matrix_repository import CommunicationMatrixRepository
-from lia_models.communication_matrix import (
+from app.models.communication_matrix import (
     DEFAULT_MATRIX_ENTRIES,
     MODULE_LABELS,
     ChannelType,
@@ -27,14 +27,6 @@ from lia_models.communication_matrix import (
     ModuleType,
     RecipientType,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +136,7 @@ async def list_modules():
 
 @router.get("/{entry_id}", summary="Get specific matrix entry", response_model=None)
 async def get_matrix_entry(
-    entry_id: _DualId,
+    entry_id: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
@@ -186,7 +178,7 @@ async def get_matrix_entry(
 
 @router.put("/{entry_id}", summary="Update matrix entry", response_model=None)
 async def update_matrix_entry(
-    entry_id: _DualId,
+    entry_id: str,
     data: UpdateMatrixEntryRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
@@ -426,10 +418,3 @@ async def copy_defaults_to_company(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to copy matrix to company: {str(e)}"
         )
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

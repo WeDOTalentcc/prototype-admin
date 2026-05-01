@@ -42,7 +42,7 @@ async def stream_return_events(
     from sqlalchemy import select as sa_select
 
     from app.core.database import async_session_factory
-    from lia_models.activity_feed import ActivityFeed
+    from app.models.activity_feed import ActivityFeed
 
     effective_company_id = company_id or get_user_company_id(current_user)
 
@@ -229,7 +229,7 @@ async def get_recent_return_events(
     try:
         from sqlalchemy import select as sa_select
 
-        from lia_models.activity_feed import ActivityFeed
+        from app.models.activity_feed import ActivityFeed
 
         query = sa_select(ActivityFeed).where(
             ActivityFeed.activity_type.like("return_event_%")  # type: ignore[union-attr]

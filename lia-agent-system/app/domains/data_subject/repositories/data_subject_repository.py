@@ -9,7 +9,7 @@ from datetime import datetime
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.observability import DataSubjectRequest
+from app.models.observability import DataSubjectRequest
 
 
 class DataSubjectRepository:

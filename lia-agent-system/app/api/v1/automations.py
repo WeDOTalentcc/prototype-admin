@@ -18,15 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.automation.services.automation_service import AutomationService, automation_service, get_automation_service
-from lia_models.automation import ActionType, TriggerType
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
+from app.models.automation import ActionType, TriggerType
 
 logger = logging.getLogger(__name__)
 
@@ -186,7 +178,7 @@ async def create_automation(
 
 @router.get("/{automation_id}", summary="Get automation", response_model=None)
 async def get_automation(
-    automation_id: _DualId,
+    automation_id: str,
     company_id: str = Query(..., description="Company ID (required)"),
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
@@ -226,7 +218,7 @@ async def get_automation(
 
 @router.put("/{automation_id}", summary="Update automation", response_model=None)
 async def update_automation(
-    automation_id: _DualId,
+    automation_id: str,
     data: UpdateAutomationRequest,
     company_id: str = Query(..., description="Company ID (required)"),
     user_id: str | None = Query(None, description="User updating the automation"),
@@ -291,7 +283,7 @@ async def update_automation(
 
 @router.delete("/{automation_id}", summary="Delete automation", response_model=None)
 async def delete_automation(
-    automation_id: _DualId,
+    automation_id: str,
     company_id: str = Query(..., description="Company ID (required)"),
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
@@ -333,7 +325,7 @@ async def delete_automation(
 
 @router.post("/{automation_id}/test", summary="Test automation", response_model=None)
 async def test_automation(
-    automation_id: _DualId,
+    automation_id: str,
     data: TestAutomationRequest = None,
     company_id: str = Query(..., description="Company ID (required)"),
     db: AsyncSession = Depends(get_db),
@@ -420,7 +412,7 @@ async def trigger_automations(
 
 @router.get("/{automation_id}/logs", summary="Get automation execution logs", response_model=None)
 async def get_automation_logs(
-    automation_id: _DualId,
+    automation_id: str,
     company_id: str = Query(..., description="Company ID (required)"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
@@ -566,10 +558,3 @@ async def get_action_types():
             ]
         }
     }
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

@@ -21,8 +21,7 @@ async def export_candidates(
     filters: dict[str, Any] | None = None,
     format: str = "csv",
     include_fields: list[str] | None = None,
-    filename: str | None = None,
-    **kwargs,  # absorbs _context injected by ToolExecutor
+    filename: str | None = None
 ) -> dict[str, Any]:
     """
     Export a list of candidates to a file.
@@ -255,7 +254,7 @@ async def export_job_analytics(
         
         async with AsyncSessionLocal() as db:
             try:
-                from lia_models.job_vacancy import JobVacancy
+                from app.models.job_vacancy import JobVacancy
                 
                 result = await db.execute(
                     select(JobVacancy).where(JobVacancy.id == UUID(job_id))

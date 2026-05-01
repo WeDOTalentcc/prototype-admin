@@ -58,7 +58,7 @@ async def update_candidate_stage(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate, VacancyCandidate
+        from app.models.candidate import Candidate, VacancyCandidate
         
         async with AsyncSessionLocal() as db:
             result = await db.execute(
@@ -179,8 +179,8 @@ async def add_candidate_to_vacancy(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate, VacancyCandidate
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.candidate import Candidate, VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             cand_result = await db.execute(
@@ -332,7 +332,7 @@ async def _generate_rediscovery_embedding(
             except Exception:
                 pass
 
-        company_id = str(candidate.company_id) if candidate else None
+        company_id = str(getattr(candidate, "company_id", None)) if candidate else None
 
         candidate_embedding_id = str(_uuid.uuid5(
             _uuid.NAMESPACE_DNS,
@@ -414,7 +414,7 @@ async def reject_candidate(
         
         async with AsyncSessionLocal() as db:
             try:
-                from lia_models.candidate import Candidate
+                from app.models.candidate import Candidate
                 
                 result = await db.execute(
                     select(Candidate).where(Candidate.id == UUID(candidate_id))
@@ -433,7 +433,7 @@ async def reject_candidate(
                                 candidate_id=candidate_id,
                                 job_id=job_id,
                                 reason=reason,
-                                company_id=str(candidate.company_id) if candidate.company_id else None,
+                                company_id=str(candidate.company_id) if getattr(candidate, 'company_id', None) else None,
                             )
                             logger.info("Dispatched rejection feedback for candidate %s", candidate_id)
                         except Exception as fb_exc:
@@ -542,7 +542,7 @@ async def shortlist_candidate(
         
         async with AsyncSessionLocal() as db:
             try:
-                from lia_models.candidate import Candidate
+                from app.models.candidate import Candidate
                 
                 result = await db.execute(
                     select(Candidate).where(Candidate.id == UUID(candidate_id))
@@ -671,7 +671,7 @@ async def add_to_list(
         from sqlalchemy import select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate
+        from app.models.candidate import Candidate
         
         async with AsyncSessionLocal() as db:
             cand_result = await db.execute(
@@ -750,8 +750,8 @@ async def wsi_screening(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.candidate import Candidate
+        from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             cand_result = await db.execute(
@@ -800,7 +800,7 @@ async def wsi_screening(
             screening_config = {
                 "bloom_levels": ["remember", "understand", "apply", "analyze", "evaluate", "create"],
                 "dreyfus_stages": ["novice", "advanced_beginner", "competent", "proficient", "expert"],
-                "big_five_traits": ["openness", "conscientiousness", "extraversion", "agreeableness", "stability"],
+                "big_five_traits": ["openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism"],
             }
             
             if screening_type == "technical":
@@ -874,7 +874,7 @@ async def hide_candidate(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate, VacancyCandidate
+        from app.models.candidate import Candidate, VacancyCandidate
         
         async with AsyncSessionLocal() as db:
             cand_result = await db.execute(

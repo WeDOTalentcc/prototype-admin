@@ -14,16 +14,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import flag_modified
 
 from app.core.database import get_db
-from lia_models.client_account import ClientAccount
+from app.models.client_account import ClientAccount
 from app.shared.tenant_guard import get_verified_company_id
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/workforce-planning", tags=["workforce-planning"])
@@ -128,7 +120,7 @@ async def list_workforce_plans(
 
 @router.get("/{plan_id}", summary="Get workforce plan by ID", response_model=None)
 async def get_workforce_plan(
-    plan_id: _DualId,
+    plan_id: str,
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
@@ -209,7 +201,7 @@ async def create_workforce_plan(
 
 @router.put("/{plan_id}", summary="Update workforce plan", response_model=None)
 async def update_workforce_plan(
-    plan_id: _DualId,
+    plan_id: str,
     data: WorkforcePlanUpdate,
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
@@ -266,7 +258,7 @@ async def update_workforce_plan(
 
 @router.delete("/{plan_id}", summary="Delete workforce plan", response_model=None)
 async def delete_workforce_plan(
-    plan_id: _DualId,
+    plan_id: str,
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
@@ -307,7 +299,7 @@ async def delete_workforce_plan(
 
 @router.get("/{plan_id}/departments", summary="List departments of a plan", response_model=None)
 async def list_plan_departments(
-    plan_id: _DualId,
+    plan_id: str,
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
@@ -348,7 +340,7 @@ async def list_plan_departments(
 
 @router.post("/{plan_id}/calculate", summary="Recalculate plan metrics", response_model=None)
 async def calculate_plan_metrics(
-    plan_id: _DualId,
+    plan_id: str,
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
@@ -404,10 +396,3 @@ async def calculate_plan_metrics(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to calculate plan metrics: {str(e)}"
         )
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

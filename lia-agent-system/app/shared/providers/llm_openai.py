@@ -4,7 +4,6 @@ import os
 
 from app.shared.providers.llm_provider import LLMProviderABC, LLMResponse, LLMToolCall, LLMToolResponse
 from app.shared.resilience.circuit_breaker import OPENAI_CIRCUIT, circuit_breaker_decorator
-from app.shared.providers.llm_retry import llm_transient_retry
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +36,6 @@ class OpenAILLMProvider(LLMProviderABC):
         return self._client
     
     @circuit_breaker_decorator(OPENAI_CIRCUIT)
-    @llm_transient_retry
     async def generate(self, prompt, model=None, temperature=0.7, max_tokens=4096, **kwargs):
         client = self._get_client()
         response = client.chat.completions.create(model=model or self._default_model, messages=[{"role": "user", "content": prompt}], temperature=temperature, max_tokens=max_tokens)
@@ -46,7 +44,6 @@ class OpenAILLMProvider(LLMProviderABC):
         return LLMResponse(text=text, provider=self._provider_name, model=model or self._default_model, usage=usage, raw_response=response)
     
     @circuit_breaker_decorator(OPENAI_CIRCUIT)
-    @llm_transient_retry
     async def generate_with_system(self, system_prompt, user_message, model=None, temperature=0.7, max_tokens=4096, **kwargs):
         client = self._get_client()
         response = client.chat.completions.create(model=model or self._default_model, messages=[{"role": "system", "content": system_prompt}, {"role": "user", "content": user_message}], temperature=temperature, max_tokens=max_tokens)
@@ -55,7 +52,6 @@ class OpenAILLMProvider(LLMProviderABC):
         return LLMResponse(text=text, provider=self._provider_name, model=model or self._default_model, usage=usage, raw_response=response)
     
     @circuit_breaker_decorator(OPENAI_CIRCUIT)
-    @llm_transient_retry
     async def generate_with_tools(self, messages, tools, system_prompt=None, max_tokens=4096, **kwargs):
         import json
         client = self._get_client()
@@ -72,7 +68,6 @@ class OpenAILLMProvider(LLMProviderABC):
         return LLMToolResponse(text=choice.message.content, is_tool_call=False, provider=self._provider_name, model=self._default_model, raw_response=response)
     
     @circuit_breaker_decorator(OPENAI_CIRCUIT)
-    @llm_transient_retry
     async def generate_structured(self, messages, output_schema, system_prompt=None, max_tokens=4096, **kwargs):
         import json
         client = self._get_client()

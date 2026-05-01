@@ -8,7 +8,7 @@ from uuid import UUID
 from sqlalchemy import or_, select
 from sqlalchemy.orm import selectinload
 
-from lia_models.candidate import Candidate
+from app.models.candidate import Candidate
 from app.shared.repositories.sqlalchemy_base import SQLAlchemyRepository
 
 logger = logging.getLogger(__name__)

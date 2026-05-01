@@ -230,15 +230,7 @@ class LLMCascadeRouter:
           qualquer outro → provider="claude"
         """
         base_prompt = system_prompt_override or _ROUTING_PROMPT
-        # ── W7.1 PII strip antes do LLM cascade — cobre Gemini (não coberto pelo bootstrap) ──
-        _routing_msg = message[:500]
-        try:
-            from app.shared.pii_masking import strip_pii_for_llm_prompt
-            _routing_msg = strip_pii_for_llm_prompt(_routing_msg)
-        except Exception:
-            pass  # fail-open: roteamento por intent não precisa de PII para funcionar
-        # ─────────────────────────────────────────────────────────────────────
-        prompt = base_prompt.replace("{message}", _routing_msg)
+        prompt = base_prompt.replace("{message}", message[:500])
         tokens_est = len(prompt) // 4
         provider: LLMProvider = self._provider_for_model(model_name)
 

@@ -11,7 +11,7 @@ from typing import Any
 from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text
 
-from app.core.database import AsyncSessionLocal, get_tenant_aware_session
+from app.core.database import AsyncSessionLocal
 from app.domains.hiring_policy.agents.policy_tool_registry import INDUSTRY_BENCHMARKS
 from app.shared.compliance.fairness_guard import FairnessGuard
 
@@ -38,7 +38,7 @@ async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> dict[str, Any]:
     filled_jobs = 0
 
     try:
-        async with get_tenant_aware_session() as session:
+        async with AsyncSessionLocal() as session:
             result = await session.execute(
                 text("""
                     SELECT
@@ -109,16 +109,11 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
     department = kwargs.get("department", "all")
     company_id = kwargs.get("company_id", "")
     limit = int(kwargs.get("limit", 30))
-    # Normalize Portuguese "all" synonyms
-    if str(status).lower() in ("todas", "todos", "tudo", "qualquer", "any", "none", ""):
-        status = "all"
-    if str(department).lower() in ("todos", "todas", "tudo", "qualquer", "any", "none", ""):
-        department = "all"
     logger.info(f"[jobs_mgmt_tools] list_jobs called: status={status} department={department}")
     jobs = []
     total = 0
     try:
-        async with get_tenant_aware_session() as session:
+        async with AsyncSessionLocal() as session:
             rows = await session.execute(
                 text("""
                     SELECT id, title, status, priority, department, location,
@@ -176,7 +171,7 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_view_job_details(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     logger.info(f"[jobs_mgmt_tools] view_job_details called for job={job_id}")
-    async with get_tenant_aware_session() as session:
+    async with AsyncSessionLocal() as session:
         row = await session.execute(
             text("""
                 SELECT id, title, status, priority, department, location,
@@ -232,7 +227,7 @@ async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[jobs_mgmt_tools] get_portfolio_metrics called: period={period}")
     metrics: dict[str, Any] = {}
     try:
-        async with get_tenant_aware_session() as session:
+        async with AsyncSessionLocal() as session:
             row = await session.execute(
                 text("""
                     SELECT
@@ -278,7 +273,7 @@ async def _wrap_compare_jobs(**kwargs: Any) -> dict[str, Any]:
     comparison = []
     try:
         if job_ids:
-            async with get_tenant_aware_session() as session:
+            async with AsyncSessionLocal() as session:
                 rows = await session.execute(
                     text("""
                         SELECT jv.id, jv.title, jv.status, jv.priority, jv.department,
@@ -325,7 +320,7 @@ async def _wrap_check_sla(**kwargs: Any) -> dict[str, Any]:
     at_risk_jobs = []
     compliant_count = 0
     try:
-        async with get_tenant_aware_session() as session:
+        async with AsyncSessionLocal() as session:
             rows = await session.execute(
                 text("""
                     SELECT id, title, status, deadline,
@@ -377,7 +372,7 @@ async def _wrap_analyze_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[jobs_mgmt_tools] analyze_bottlenecks called: department={department}")
     bottlenecks = []
     try:
-        async with get_tenant_aware_session() as session:
+        async with AsyncSessionLocal() as session:
             rows = await session.execute(
                 text("""
                     SELECT jv.id, jv.title, jv.department,
@@ -441,7 +436,7 @@ async def _wrap_pause_job(**kwargs: Any) -> dict[str, Any]:
     reason = kwargs.get("reason", "")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[jobs_mgmt_tools] pause_job called: job={job_id} reason={reason}")
-    async with get_tenant_aware_session() as session:
+    async with AsyncSessionLocal() as session:
         result = await session.execute(
             text("""
                 UPDATE job_vacancies SET status = 'Pausada', updated_at = NOW()
@@ -461,7 +456,7 @@ async def _wrap_reopen_job(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[jobs_mgmt_tools] reopen_job called: job={job_id}")
-    async with get_tenant_aware_session() as session:
+    async with AsyncSessionLocal() as session:
         result = await session.execute(
             text("""
                 UPDATE job_vacancies SET status = 'Ativa', updated_at = NOW()
@@ -482,7 +477,7 @@ async def _wrap_close_job(**kwargs: Any) -> dict[str, Any]:
     reason = kwargs.get("reason", "")
     company_id = kwargs.get("company_id", "")
     logger.info(f"[jobs_mgmt_tools] close_job called: job={job_id} reason={reason}")
-    async with get_tenant_aware_session() as session:
+    async with AsyncSessionLocal() as session:
         result = await session.execute(
             text("""
                 UPDATE job_vacancies SET status = 'Concluída', updated_at = NOW()
@@ -506,7 +501,7 @@ async def _wrap_update_priority(**kwargs: Any) -> dict[str, Any]:
                     "alta": "alta", "média": "média", "baixa": "baixa"}
     priority_pt = priority_map.get(priority.lower(), priority)
     logger.info(f"[jobs_mgmt_tools] update_priority called: job={job_id} priority={priority_pt}")
-    async with get_tenant_aware_session() as session:
+    async with AsyncSessionLocal() as session:
         prev = await session.execute(
             text("SELECT priority FROM job_vacancies WHERE id = :jid AND (:cid = '' OR company_id = :cid)"),
             {"jid": job_id, "cid": company_id},
@@ -532,7 +527,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
     summary: dict[str, Any] = {}
     try:
-        async with get_tenant_aware_session() as session:
+        async with AsyncSessionLocal() as session:
             row = await session.execute(
                 text("""
                     SELECT
@@ -870,7 +865,7 @@ _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 STAGE_TOOLS: dict[str, list[str]] = {
     "overview": ["list_jobs", "view_job_details", "get_portfolio_metrics", "get_recruitment_benchmarks", "validate_job_action_fairness", "get_pipeline_prediction"],
     "analysis": ["compare_jobs", "check_sla", "analyze_bottlenecks", "view_job_details", "get_portfolio_metrics", "get_recruitment_benchmarks", "validate_job_action_fairness", "get_pipeline_prediction"],
-    "action": ["pause_job", "reopen_job", "close_job", "update_priority", "duplicate_job", "generate_report", "get_recruitment_benchmarks", "validate_job_action_fairness", "get_pipeline_prediction"],
+    "action": ["pause_job", "reopen_job", "close_job", "update_priority", "generate_report", "get_recruitment_benchmarks", "validate_job_action_fairness", "get_pipeline_prediction"],
 }
 
 
@@ -890,140 +885,3 @@ def get_jobs_mgmt_tools(stage: str = "") -> list[ToolDefinition]:
     tools = [_TOOL_MAP[name] for name in tool_names if name in _TOOL_MAP]
     logger.debug(f"[jobs_mgmt_tools] Stage '{stage}' tools: {[t.name for t in tools]}")
     return tools
-
-
-@tool_handler("jobs_mgmt")
-async def _wrap_duplicate_job(**kwargs: Any) -> dict[str, Any]:
-    """Duplicate an existing job vacancy via canonical job_clone_service.
-
-    Accepts job_id (UUID) OR job_title (resolved by ILIKE within company).
-    Always creates the duplicate as 'Rascunho' (draft) — single source of truth
-    is `app.domains.job_management.services.job_clone_service.duplicate_job`.
-    """
-    from app.domains.job_management.services.job_clone_service import job_clone_service
-
-    job_id_or_title: str = (
-        kwargs.get("job_id") or kwargs.get("vacancy_id") or kwargs.get("job_title") or ""
-    )
-    company_id: str = kwargs.get("company_id", "") or ""
-    new_title: str = kwargs.get("new_title", "") or ""
-    created_by: str = kwargs.get("user_id", "") or kwargs.get("user_email", "") or ""
-
-    if not company_id:
-        return {"success": False, "error": "company_id obrigatorio para duplicar vaga."}
-    if not job_id_or_title:
-        return {"success": False, "error": "Informe o ID ou titulo da vaga a duplicar."}
-
-    logger.info(f"[jobs_mgmt] duplicate_job: identifier={job_id_or_title!r} company={company_id!r}")
-
-    source_uuid: uuid.UUID | None = None
-    original_title: str | None = None
-    try:
-        source_uuid = uuid.UUID(job_id_or_title)
-    except (ValueError, TypeError):
-        source_uuid = None
-
-    try:
-        if source_uuid is None:
-            async with AsyncSessionLocal() as db:
-                lookup = await db.execute(
-                    text(
-                        """
-                        SELECT id, title FROM job_vacancies
-                        WHERE company_id = :cid
-                          AND (job_id = :jid OR title ILIKE :title_pat)
-                        LIMIT 2
-                        """
-                    ),
-                    {
-                        "cid": company_id,
-                        "jid": job_id_or_title,
-                        "title_pat": f"%{job_id_or_title}%",
-                    },
-                )
-                rows = lookup.fetchall()
-
-            if not rows:
-                return {
-                    "success": False,
-                    "error": f"Vaga '{job_id_or_title}' nao encontrada para esta empresa.",
-                }
-            if len(rows) > 1:
-                titles = [r[1] for r in rows]
-                return {
-                    "success": False,
-                    "error": f"Titulo ambiguo — {len(rows)} vagas encontradas: {titles}. Especifique melhor.",
-                }
-            source_uuid = rows[0][0]
-            original_title = rows[0][1]
-
-        overrides = {"title": new_title} if new_title else None
-
-        async with AsyncSessionLocal() as db:
-            result = await job_clone_service.duplicate_job(
-                db=db,
-                source_job_id=source_uuid,
-                company_id=company_id,
-                copies=1,
-                include_candidates=False,
-                overrides=overrides,
-                created_by=created_by or None,
-            )
-
-        if not result.get("success"):
-            return {
-                "success": False,
-                "error": result.get("error", "Falha ao duplicar vaga via servico canonico."),
-            }
-
-        jobs_created = result.get("jobs_created") or []
-        if not jobs_created:
-            return {
-                "success": False,
-                "error": "Servico retornou sucesso mas nao listou vagas criadas.",
-            }
-
-        new_job = jobs_created[0]
-        original_title = original_title or result.get("source_job", {}).get("title", "")
-
-        return {
-            "success": True,
-            "original_title": original_title,
-            "new_title": new_job["title"],
-            "new_job_id": new_job["job_id"],
-            "new_vacancy_id": new_job["id"],
-            "status": new_job.get("status", "Rascunho"),
-            "message": (
-                f"Vaga duplicada com sucesso! "
-                f"Nova vaga '{new_job['title']}' criada como {new_job.get('status', 'Rascunho')} "
-                f"(ID: {new_job['job_id']}). Revise e publique quando estiver pronta."
-            ),
-        }
-    except Exception as exc:
-        logger.exception("[jobs_mgmt] duplicate_job error via canonical service")
-        return {"success": False, "error": f"Erro ao duplicar vaga: {str(exc)[:200]}"}
-
-
-TOOL_DEFINITIONS.append(
-    ToolDefinition(
-        name="duplicate_job",
-        description=(
-            "Duplica uma vaga existente como novo rascunho. "
-            "Use quando o usuario quiser criar uma segunda posicao ou copia de vaga. "
-            "A copia e criada com status Rascunho — nao publicada diretamente. "
-            "Busca por job_id exato ou titulo parcial."
-        ),
-        parameters={
-            "type": "object",
-            "properties": {
-                "job_id": {"type": "string", "description": "ID da vaga a duplicar"},
-                "job_title": {"type": "string", "description": "Titulo da vaga a duplicar"},
-                "new_title": {"type": "string", "description": "Titulo para a nova vaga (opcional)"},
-                "company_id": {"type": "string", "description": "ID da empresa (obrigatorio, multi-tenant)"},
-            },
-            "required": ["company_id"],
-        },
-        function=_wrap_duplicate_job,
-    )
-)
-_TOOL_MAP["duplicate_job"] = TOOL_DEFINITIONS[-1]

@@ -15,8 +15,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
-from lia_models.task import TaskTemplate, TaskType, TaskPriority
-from lia_models.alert import AlertRule, AlertType, AlertSeverity
+from app.models.task import TaskTemplate, TaskType, TaskPriority
+from app.models.alert import AlertRule, AlertType, AlertSeverity
 from app.core.database import Base
 
 logging.basicConfig(level=logging.INFO)

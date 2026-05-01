@@ -12,7 +12,7 @@ from typing import Any
 from sqlalchemy import and_, desc, select
 
 from app.core.database import AsyncSessionLocal
-from lia_models.audit_log import AuditLog, DecisionType
+from app.models.audit_log import AuditLog, DecisionType
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +33,6 @@ DECISION_TYPE_MAPPING = {
     "approved": DecisionType.APPROVE_CANDIDATE,
     "generate_jd": DecisionType.GENERATE_FEEDBACK,
     "generate_wsi_questions": DecisionType.GENERATE_FEEDBACK,
-    "job_creation": DecisionType.JOB_CREATION,
 }
 
 PROTECTED_CRITERIA = [
@@ -61,7 +60,6 @@ class AuditService:
         "send_message": 1825,
         "schedule_interview": 365,
         "generate_feedback": 730,
-        "job_creation": 730,
     }
     
     async def log_decision(
@@ -78,8 +76,7 @@ class AuditService:
         score: float | None = None,
         confidence: float | None = None,
         human_review_required: bool = False,
-        criteria_ignored: list[str] | None = None,
-        actor_user_id: str | None = None,
+        criteria_ignored: list[str] | None = None
     ) -> AuditLog:
         """
         Log an AI decision with full context for auditability.
@@ -98,11 +95,7 @@ class AuditService:
             confidence: Optional confidence level (0-1)
             human_review_required: Whether this decision requires human review
             criteria_ignored: List of criteria explicitly ignored (for anti-bias)
-            actor_user_id: ID of the human user who triggered the action
-                (e.g. the hiring manager editing a policy). Stored as a
-                first-class column so admin reports can filter by user
-                without parsing the free-text reasoning array (Task #366).
-
+            
         Returns:
             Created AuditLog instance
         """
@@ -137,7 +130,6 @@ class AuditService:
                 score=score,
                 confidence=confidence,
                 human_review_required=human_review_required,
-                actor_user_id=actor_user_id,
                 retention_until=retention_until
             )
             
@@ -252,51 +244,6 @@ class AuditService:
             logger.info(f"📋 Retrieved {len(audit_logs)} audit logs for agent {agent_name}")
             return list(audit_logs)
     
-    async def get_decisions_by_user(
-        self,
-        company_id: str,
-        actor_user_id: str,
-        start_date: datetime | None = None,
-        end_date: datetime | None = None,
-        limit: int = 100,
-        offset: int = 0,
-    ) -> dict[str, Any]:
-        """Get decisions triggered by a specific user (Task #366).
-
-        Now that ``actor_user_id`` is a structured column, admin reports can
-        filter audit entries by user without scanning the reasoning JSON.
-        """
-        from sqlalchemy import func
-
-        async with AsyncSessionLocal() as session:
-            where_conditions = [
-                AuditLog.company_id == company_id,
-                AuditLog.actor_user_id == actor_user_id,
-            ]
-            if start_date:
-                where_conditions.append(AuditLog.created_at >= start_date)
-            if end_date:
-                where_conditions.append(AuditLog.created_at <= end_date)
-
-            count_query = select(func.count()).select_from(AuditLog).where(and_(*where_conditions))
-            total = (await session.execute(count_query)).scalar() or 0
-
-            data_query = (
-                select(AuditLog)
-                .where(and_(*where_conditions))
-                .order_by(desc(AuditLog.created_at))
-                .limit(limit)
-                .offset(offset)
-            )
-            result = await session.execute(data_query)
-            audit_logs = result.scalars().all()
-            return {
-                "audit_logs": [log.to_dict() for log in audit_logs],
-                "total": total,
-                "limit": limit,
-                "offset": offset,
-            }
-
     async def log_output(
         self,
         *,
@@ -525,16 +472,8 @@ class AuditService:
         """Log an action (email sent, candidate moved, job published).
 
         Unified entry point — delegates to AuditLog with trace_id.
-        Metadata (field, old_value, new_value, user_id, etc.) is persisted
-        in the ``reasoning`` JSON column for full traceability.
         """
         try:
-            reasoning_payload: list[Any] = []
-            criteria_payload: list[Any] = []
-            if metadata:
-                reasoning_payload = [{"action_metadata": metadata}]
-                criteria_payload = [k for k in metadata.keys()]
-
             async with AsyncSessionLocal() as session:
                 log = AuditLog(
                     id=str(uuid.uuid4()),
@@ -543,8 +482,8 @@ class AuditService:
                     decision_type=action_type,
                     action=action_type,
                     decision="executed",
-                    reasoning=reasoning_payload,
-                    criteria_used=criteria_payload,
+                    reasoning=[],
+                    criteria_used=[],
                     criteria_ignored=[],
                     candidate_id=target_id if target_type == "candidate" else None,
                     job_vacancy_id=target_id if target_type == "job" else None,

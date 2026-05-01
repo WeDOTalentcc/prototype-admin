@@ -8,21 +8,14 @@ Provides REST endpoints for:
 """
 import logging
 from datetime import datetime
-from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Path, Query
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from app.domains.analytics.services.wizard_analytics_service import wizard_analytics_service
 
-# Task #458 — Same routing-shadowing blindagem as /job-vacancies (Task #455):
-# every ``{*_id}`` path parameter is constrained to UUID-or-digit, and a
-# collection-before-item reorder is enforced at the bottom of the module.
 router = APIRouter(prefix="/wizard-analytics", tags=["Wizard Analytics"])
 logger = logging.getLogger(__name__)
-
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 
 class StartSessionRequest(BaseModel):
@@ -157,7 +150,7 @@ async def complete_session(request: CompleteSessionRequest):
 
 @router.get("/metrics/{company_id}", response_model=None)
 async def get_company_metrics(
-    company_id: _DualId,
+    company_id: str,
     days: int = Query(30, ge=1, le=365),
 ):
     """Get aggregated metrics for a company."""
@@ -176,8 +169,8 @@ async def get_company_metrics(
 
 @router.get("/metrics/{company_id}/recruiter/{recruiter_id}", response_model=None)
 async def get_recruiter_metrics(
-    company_id: _DualId,
-    recruiter_id: _DualId,
+    company_id: str,
+    recruiter_id: str,
     days: int = Query(30, ge=1, le=365),
 ):
     """Get metrics for a specific recruiter."""
@@ -197,7 +190,7 @@ async def get_recruiter_metrics(
 
 @router.get("/stages/{company_id}", response_model=None)
 async def get_stage_breakdown(
-    company_id: _DualId,
+    company_id: str,
     days: int = Query(30, ge=1, le=365),
 ):
     """Get time breakdown by wizard stage."""
@@ -216,7 +209,7 @@ async def get_stage_breakdown(
 
 @router.get("/suggestions/{company_id}", response_model=None)
 async def get_suggestion_effectiveness(
-    company_id: _DualId,
+    company_id: str,
     days: int = Query(30, ge=1, le=365),
 ):
     """Get effectiveness metrics for LIA suggestions."""
@@ -241,7 +234,7 @@ async def get_kpi_summary():
 
 @router.get("/dashboard/{company_id}", response_model=None)
 async def get_dashboard_data(
-    company_id: _DualId,
+    company_id: str,
     days: int = Query(30, ge=1, le=365),
 ):
     """Get all dashboard data in a single call."""
@@ -274,11 +267,3 @@ async def get_dashboard_data(
     except Exception as e:
         logger.error(f"Error getting dashboard data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-# ---------------------------------------------------------------------------
-# Routing invariant (Task #458) — collection-scoped routes before item routes.
-# ---------------------------------------------------------------------------
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder
-
-_reorder(router)

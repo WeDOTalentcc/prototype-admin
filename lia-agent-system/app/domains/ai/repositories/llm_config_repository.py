@@ -50,7 +50,7 @@ class LlmConfigRepository:
         """Return a detached snapshot of TenantLLMConfig for company, or None.
         API keys are decrypted for internal use.
         Returns a detached snapshot to avoid ORM dirty-flush of decrypted keys."""
-        from lia_models.tenant_llm_config import TenantLLMConfig
+        from app.models.tenant_llm_config import TenantLLMConfig
 
         result = await self.db.execute(
             select(TenantLLMConfig).where(TenantLLMConfig.company_id == company_id)
@@ -102,7 +102,7 @@ class LlmConfigRepository:
     ):
         """Create or update TenantLLMConfig; return instance (no flush — caller commits).
         API keys are encrypted before persisting. Handles provider removal."""
-        from lia_models.tenant_llm_config import TenantLLMConfig
+        from app.models.tenant_llm_config import TenantLLMConfig
 
         result = await self.db.execute(
             select(TenantLLMConfig).where(TenantLLMConfig.company_id == company_id)

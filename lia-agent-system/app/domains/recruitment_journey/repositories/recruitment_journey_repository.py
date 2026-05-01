@@ -9,7 +9,7 @@ from typing import Any
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.recruitment_journey import (
+from app.models.recruitment_journey import (
     DEFAULT_AUTOMATIONS,
     DEFAULT_SLAS,
     DEFAULT_TEMPLATES,

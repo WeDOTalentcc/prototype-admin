@@ -32,14 +32,6 @@ from app.schemas.health_check import (
     HealthCheckVerifyRequest,
     SeedHealthCheckResponse,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -253,7 +245,7 @@ async def sync_from_library(
 
 @router.get("/{req_id}/history", response_model=HealthCheckHistoryListResponse, summary="Get item history")
 async def get_item_history(
-    req_id: _DualId,
+    req_id: str,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 ):
     """Get status change history for a specific health check item."""
@@ -281,7 +273,7 @@ async def get_item_history(
 
 @router.put("/{req_id}/check", response_model=HealthCheckItemResponse, summary="Mark item as verified")
 async def mark_item_checked(
-    req_id: _DualId,
+    req_id: str,
     data: HealthCheckVerifyRequest,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 ):
@@ -314,7 +306,7 @@ async def mark_item_checked(
 
 @router.put("/{req_id}/status", response_model=HealthCheckItemResponse, summary="Update item status")
 async def update_item_status(
-    req_id: _DualId,
+    req_id: str,
     data: HealthCheckStatusUpdateRequest,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 ):
@@ -348,7 +340,7 @@ async def update_item_status(
 
 @router.get("/{req_id}", response_model=HealthCheckItemResponse, summary="Get health check item by req_id")
 async def get_health_check_item(
-    req_id: _DualId,
+    req_id: str,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 ):
     """Get a single health check item by its requirement ID."""
@@ -436,10 +428,3 @@ async def create_health_check_item(
         await repo.rollback()
         logger.error(f"Error creating health check item: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

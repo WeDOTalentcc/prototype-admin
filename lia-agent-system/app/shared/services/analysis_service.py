@@ -6,10 +6,6 @@ Enhanced with BARS rubric evaluation and WSI inferential trait extraction
 for unified profile analysis (Task #35).
 """
 
-# @deprecated since=2026-04-17
-# @remove-after=2026-07-16
-# @owner=backend-platform
-# @replacement=integrations_hub/rails_adapter::analysis
 # RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
 # Will be deleted after ats-api-rails handoff is complete.
 # Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.

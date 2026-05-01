@@ -15,11 +15,10 @@ from typing import Any
 from sqlalchemy import and_, select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domains.cv_screening.constants.wsi_scale import CLASSIFY_ALTO
 from app.domains.interview_intelligence.services.interview_wsi_service import (
     interview_wsi_service,
 )
-from lia_models.interview import Interview
+from app.models.interview import Interview
 
 logger = logging.getLogger(__name__)
 
@@ -85,12 +84,12 @@ class ComparativeAnalysisService:
                 },
                 "hired_top_performers": {
                     "count": len(hired_scores),
-                    "provenance": f"Candidatos contratados (status=hired) em vagas similares com lia_score >= {CLASSIFY_ALTO} (escala /10)",
+                    "provenance": "Candidatos contratados (status=hired) em vagas similares com lia_score >= 3.5",
                     "scores": hired_scores[:5],
                 },
                 "triaged_high_scorers": {
                     "count": len(triaged_scores),
-                    "provenance": f"Candidatos com alta pontuação na triagem (lia_score >= {CLASSIFY_ALTO}, escala /10) para a mesma vaga",
+                    "provenance": "Candidatos com alta pontuação na triagem (lia_score >= 3.5) para a mesma vaga",
                     "scores": triaged_scores[:5],
                 },
             },
@@ -206,10 +205,7 @@ class ComparativeAnalysisService:
                         VacancyCandidate.vacancy_id.in_(similar_ids),
                         VacancyCandidate.company_id == company_id,
                         VacancyCandidate.status == "hired",
-                        # B0 #523 — escala canônica /10 via constante (CLASSIFY_ALTO).
-                        # NOTA: existe inconsistência conhecida — alguns workflows
-                        # legados populam lia_score em 0-100. Tracking: rev. 14 / #524.
-                        VacancyCandidate.lia_score >= CLASSIFY_ALTO,
+                        VacancyCandidate.lia_score >= 3.5,
                     )
                 ).limit(10)
             )
@@ -251,8 +247,7 @@ class ComparativeAnalysisService:
                     and_(
                         VacancyCandidate.vacancy_id == interview.job_vacancy_id,
                         VacancyCandidate.company_id == company_id,
-                        # B0 #523 — escala canônica /10 via constante (CLASSIFY_ALTO).
-                        VacancyCandidate.lia_score >= CLASSIFY_ALTO,
+                        VacancyCandidate.lia_score >= 3.5,
                     )
                 ).limit(10)
             )

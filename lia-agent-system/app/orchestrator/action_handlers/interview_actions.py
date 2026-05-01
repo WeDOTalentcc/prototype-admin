@@ -387,9 +387,8 @@ async def _generate_self_scheduling_link(params: dict[str, Any], context: dict[s
                 action_type="generate_self_scheduling_link",
             )
 
-        from datetime import timedelta
-
-        from lia_models.self_scheduling import SelfSchedulingLink
+        token = str(uuid_mod.uuid4())[:12]
+        link = f"/schedule/{token}"
 
         async with AsyncSessionLocal() as db:
             if company_id:
@@ -404,42 +403,16 @@ async def _generate_self_scheduling_link(params: dict[str, Any], context: dict[s
                         action_type="generate_self_scheduling_link",
                     )
 
-            cand_row = await db.execute(text(
-                "SELECT name, email FROM candidates WHERE id = CAST(:cid AS uuid) LIMIT 1"
-            ), {"cid": str(candidate_id)})
-            cand = cand_row.fetchone()
-            if cand is None:
-                return ActionResult(
-                    status="error",
-                    message="Candidato não encontrado para gerar o link.",
-                    error_detail="Candidate row missing",
-                    action_type="generate_self_scheduling_link",
-                )
-            candidate_name = cand[0] or candidate_name
-            candidate_email = cand[1]
-            if not candidate_email:
-                return ActionResult(
-                    status="error",
-                    message="Candidato sem e-mail cadastrado; não é possível gerar o link.",
-                    error_detail="Candidate has no email",
-                    action_type="generate_self_scheduling_link",
-                )
-
-            token = SelfSchedulingLink.generate_token()
-            link_record = SelfSchedulingLink(
-                token=token,
-                candidate_id=uuid_mod.UUID(str(candidate_id)),
-                candidate_name=candidate_name,
-                candidate_email=candidate_email,
-                job_vacancy_id=uuid_mod.UUID(str(job_id)) if job_id else None,
-                duration_minutes=duration,
-                expires_at=datetime.utcnow() + timedelta(days=7),
-                created_by="orchestrator",
-            )
-            db.add(link_record)
+            await db.execute(text("""
+                INSERT INTO scheduling_links (id, candidate_id, job_id, token, duration_minutes, expires_at, created_at)
+                VALUES (CAST(:id AS uuid), CAST(:cid AS uuid), CAST(:jid AS uuid), :token, :dur, NOW() + INTERVAL '7 days', NOW())
+                ON CONFLICT DO NOTHING
+            """), {
+                "id": str(uuid_mod.uuid4()), "cid": str(candidate_id),
+                "jid": str(job_id) if job_id else None,
+                "token": token, "dur": duration,
+            })
             await db.commit()
-
-        link = f"/schedule/{token}"
 
         await log_action_audit("generate_self_scheduling_link", company_id, candidate_id=str(candidate_id))
         await sync_to_rails("scheduling_link_created", "scheduling_link", token, {"candidate_id": str(candidate_id)})

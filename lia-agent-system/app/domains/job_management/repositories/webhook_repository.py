@@ -8,7 +8,7 @@ from uuid import UUID
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.webhook_registration import WebhookDeliveryLog, WebhookRegistration
+from app.models.webhook_registration import WebhookDeliveryLog, WebhookRegistration
 
 logger = logging.getLogger(__name__)
 

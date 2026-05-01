@@ -81,7 +81,7 @@ class StudioMeteringService:
 
         if total_tokens > 0:
             try:
-                from app.shared.observability.token_budget_service import increment_usage
+                from app.domains.credits.services.token_budget_service import increment_usage
                 await increment_usage(company_id, total_tokens)
             except Exception as e:
                 logger.warning("[StudioMetering] TokenBudget increment failed: %s", e)
@@ -206,7 +206,7 @@ class StudioMeteringService:
 
         if not quota:
             try:
-                from app.shared.observability.token_budget_service import get_plan_for_company
+                from app.domains.credits.services.token_budget_service import get_plan_for_company
                 plan_code = await get_plan_for_company(company_id)
             except Exception:
                 plan_code = "starter"

@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import flag_modified
 
 from app.auth.workos_models import CompanyWorkOSConfig
-from lia_models.client_account import ClientAccount, ClientStatus
+from app.models.client_account import ClientAccount, ClientStatus
 
 logger = logging.getLogger(__name__)
 

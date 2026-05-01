@@ -94,32 +94,23 @@ def initialize_tools() -> None:
     from app.domains.analytics.tools.query_tools import register_query_tools
     from app.domains.communication.tools.communication_tools import register_communication_tools
     from app.domains.cv_screening.tools.candidate_tools import register_candidate_tools
-    from app.domains.cv_screening.tools.cv_match_tool import get_cv_match_tools
+    from app.domains.cv_screening.tools.cv_match_tool import register_cv_match_tool
     from app.domains.cv_screening.tools.cv_upload_tool import register_cv_upload_tools
     from app.domains.job_management.tools.job_tools import register_job_tools
-    # `job_wizard_tools` removed in Task #850 — JobCreationGraph
-    # composes its services directly (no shared tool registry).
+    from app.domains.job_management.tools.job_wizard_tools import register_job_wizard_tools
     from app.domains.recruiter_assistant.tools.pipeline_tools import register_pipeline_tools
-    from app.domains.sourcing.tools.query_tools import register_sourcing_query_tools
-    from app.domains.sourcing.tools.enrichment_tools import register_enrichment_tools
-    from app.domains.company_settings.tools.import_tools import register_company_settings_tools
-    from app.domains.automation.tools.automation_tools import register_automation_tools
     from app.domains.talent_intelligence.tools.registry import register_talent_intelligence_tools
     from app.shared.tools.export_tools import register_export_tools
     
+    register_job_wizard_tools()
     register_candidate_tools()
     register_communication_tools()
     register_job_tools()
     register_export_tools()
     register_query_tools()
     register_pipeline_tools()
-    register_sourcing_query_tools()
-    register_enrichment_tools()
-    register_company_settings_tools()
-    for _td in get_cv_match_tools():
-        tool_registry.register(_td)
+    register_cv_match_tool()
     register_cv_upload_tools()
-    register_automation_tools()
     register_talent_intelligence_tools()
     
     import logging

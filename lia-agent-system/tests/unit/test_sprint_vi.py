@@ -175,12 +175,51 @@ class TestPolicyLegacyImportRemoved:
 # ---------------------------------------------------------------------------
 # ACH-017 — Stubs removidos; imports diretos funcionam
 # ---------------------------------------------------------------------------
-# Wizard-related assertions removed in Task #850: the legacy wizard pipeline
-# (app/tools/job_wizard_tools.py, app/api/v1/wizard_smart_orchestrator.py,
-# app/domains/job_management/tools/job_wizard_tools.py) was retired in favor
-# of the canonical JobCreationGraph (app.domains.job_creation.graph). The
-# remaining cv_screening/analytics tool migration is exercised by the
-# domain-specific test modules.
+
+class TestToolsStubsRemoved:
+    def test_stubs_deleted(self):
+        """Os 6 stubs devem ter sido removidos de app/tools/."""
+        import pathlib
+        stubs = [
+            "app/tools/job_wizard_tools.py",
+            "app/tools/candidate_tools.py",
+            "app/tools/communication_tools.py",
+            "app/tools/job_tools.py",
+            "app/tools/export_tools.py",
+            "app/tools/query_tools.py",
+        ]
+        for stub in stubs:
+            assert not pathlib.Path(stub).exists(), f"Stub ainda existe: {stub}"
+
+    def test_initialize_tools_imports_from_domains(self):
+        """initialize_tools() deve importar de domain paths, não de stubs."""
+        import inspect
+        from app.tools import initialize_tools
+        source = inspect.getsource(initialize_tools)
+        assert "app.domains.job_management.tools.job_wizard_tools" in source
+        assert "app.domains.cv_screening.tools.candidate_tools" in source
+        assert "app.domains.analytics.tools.query_tools" in source
+        # Garantir que não usa mais os stubs
+        assert "from app.tools.job_wizard_tools" not in source
+        assert "from app.tools.candidate_tools" not in source
+
+    def test_wizard_orchestrator_imports_from_domain(self):
+        """wizard_smart_orchestrator.py deve importar generate_enriched_jd do domain."""
+        import pathlib
+        src = pathlib.Path(
+            "app/api/v1/wizard_smart_orchestrator.py"
+        ).read_text()
+        assert "app.domains.job_management.tools.job_wizard_tools" in src
+        assert "from app.tools.job_wizard_tools" not in src
+
+    def test_domain_imports_resolve(self):
+        """Imports diretos dos domains devem resolver sem erro."""
+        from app.domains.job_management.tools.job_wizard_tools import generate_enriched_jd
+        from app.domains.cv_screening.tools.candidate_tools import register_candidate_tools
+        from app.domains.analytics.tools.query_tools import register_query_tools
+        assert callable(generate_enriched_jd)
+        assert callable(register_candidate_tools)
+        assert callable(register_query_tools)
 
 
 # ---------------------------------------------------------------------------

@@ -12,7 +12,7 @@ LIA_COLOR = "#6366F1"
 # Platform base URL for deep links — set WEDOTALENT_PLATFORM_URL env var in production
 import os as _os
 
-PLATFORM_URL = _os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.cc").rstrip("/")
+PLATFORM_URL = _os.environ.get("WEDOTALENT_PLATFORM_URL", "https://app.wedotalent.com").rstrip("/")
 SUCCESS_COLOR = "#22C55E"
 WARNING_COLOR = "#F59E0B"
 ERROR_COLOR = "#EF4444"

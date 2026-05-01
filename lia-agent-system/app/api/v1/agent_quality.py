@@ -20,15 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from lia_models.agent_quality_evaluation import AgentQualityEvaluation
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
+from app.models.agent_quality_evaluation import AgentQualityEvaluation
 
 logger = logging.getLogger(__name__)
 
@@ -120,7 +112,7 @@ async def list_agent_quality_trends(
 
 @router.get("/{evaluation_id}", response_model=AgentQualityDetail)
 async def get_evaluation_detail(
-    evaluation_id: _DualId,
+    evaluation_id: str,
     db: AsyncSession = Depends(get_db),
 ):
     """Retorna detalhe de uma avaliação específica pelo ID."""
@@ -166,10 +158,3 @@ def _classify_trend(evaluations: list[AgentQualityEvaluation]) -> str:
     if delta < -0.05:
         return "degrading"
     return "stable"
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

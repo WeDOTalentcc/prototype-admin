@@ -20,16 +20,13 @@ import os
 import uuid
 from datetime import datetime
 from enum import Enum, StrEnum
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 
-from app.domains.ats_integration.services.ats_clients.base import ATSClient, ATSClientConfig, ATSJob
+from app.domains.ats_integration.services.ats_clients.base import ATSClient, ATSClientConfig
 from app.domains.ats_integration.services.ats_clients.gupy import GupyClient
 from app.domains.ats_integration.services.ats_clients.merge import MergeClient
 from app.domains.ats_integration.services.ats_clients.pandape import PandapeClient
-
-if TYPE_CHECKING:
-    from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
 
@@ -606,36 +603,25 @@ class ATSSyncService:
         ats_type: str,
         status: str | None = None,
         limit: int = 100,
-        source_agent: str = "system",
-        db: "AsyncSession | None" = None,
-        company_id: str | None = None,
+        source_agent: str = "system"
     ) -> dict[str, Any]:
         """
-        Pull jobs from ATS and (optionally) persist them as JobVacancy rows.
-
-        When ``db`` and ``company_id`` are provided, every fetched job is
-        upserted into the ``job_vacancies`` table with
-        ``source_system`` set to the ATS slug and
-        ``additional_data.external_system_id`` set to the ATS-side id.
-        Re-imports are idempotent on the
-        ``(company_id, source_system, external_system_id)`` key.
-
+        Pull jobs from ATS.
+        
         Args:
             ats_type: Type of ATS
             status: Optional status filter
             limit: Maximum jobs to pull
             source_agent: Agent or system triggering pull
-            db: Optional async database session for persistence
-            company_id: Tenant id (required if ``db`` is provided)
-
+            
         Returns:
-            Pull result with list of jobs and persistence counters when applicable.
+            Pull result with list of jobs
         """
         sync_id = str(uuid.uuid4())
         timestamp = datetime.utcnow()
-
+        
         logger.info(f"📥 Pulling jobs from {ats_type} (status={status}, limit={limit})")
-
+        
         client = self.get_client(ats_type)
         if not client:
             return self._create_result(
@@ -647,39 +633,11 @@ class ATSSyncService:
                 message=f"No {ats_type} client configured",
                 timestamp=timestamp
             )
-
+        
         try:
             jobs = await client.sync_jobs_from_ats(status=status, limit=limit)
-
-            created = 0
-            updated = 0
-            persistence_errors: list[str] = []
-            if db is not None and company_id:
-                for job in jobs:
-                    try:
-                        action = await self.upsert_job_vacancy(
-                            db=db,
-                            company_id=company_id,
-                            ats_type=ats_type,
-                            job=job,
-                        )
-                        if action == "created":
-                            created += 1
-                        elif action == "updated":
-                            updated += 1
-                    except Exception as persist_exc:
-                        logger.error(
-                            f"❌ Failed to persist job {getattr(job, 'ats_id', '?')} "
-                            f"from {ats_type}: {persist_exc}"
-                        )
-                        persistence_errors.append(str(persist_exc))
-                try:
-                    await db.flush()
-                except Exception as flush_exc:
-                    logger.error(f"❌ Failed to flush job upserts: {flush_exc}")
-                    persistence_errors.append(str(flush_exc))
-
-            response: dict[str, Any] = {
+            
+            return {
                 "sync_id": sync_id,
                 "success": True,
                 "result": ATSSyncResult.SUCCESS.value,
@@ -687,16 +645,9 @@ class ATSSyncService:
                 "jobs": [j.to_dict() for j in jobs],
                 "count": len(jobs),
                 "message": f"✅ Obtidas {len(jobs)} vagas de {ats_type}",
-                "timestamp": timestamp.isoformat(),
+                "timestamp": timestamp.isoformat()
             }
-            if db is not None and company_id:
-                response["persisted"] = True
-                response["created"] = created
-                response["updated"] = updated
-                if persistence_errors:
-                    response["persistence_errors"] = persistence_errors
-            return response
-
+            
         except Exception as e:
             logger.error(f"❌ Failed to pull jobs from {ats_type}: {e}")
             return self._create_result(
@@ -708,127 +659,6 @@ class ATSSyncService:
                 message=str(e),
                 timestamp=timestamp
             )
-
-    async def upsert_job_vacancy(
-        self,
-        db: "AsyncSession",
-        company_id: str,
-        ats_type: str,
-        job: ATSJob,
-    ) -> str:
-        """
-        Upsert an ``ATSJob`` payload into ``job_vacancies``.
-
-        Idempotency key: ``(company_id, source_system, external_system_id)``,
-        where ``source_system`` is the ATS slug (e.g. ``gupy``, ``pandape``,
-        ``merge``) and ``external_system_id`` is stored in
-        ``additional_data->>'external_system_id'``.
-
-        Returns:
-            ``"created"``, ``"updated"`` or ``"skipped"`` (when the payload
-            has no ATS id to dedupe on).
-        """
-        from sqlalchemy import select
-        from lia_models.job_vacancy import JobVacancy
-
-        source_system = ats_type.lower()
-        external_id = str(job.ats_id) if job.ats_id else None
-        if not external_id:
-            logger.warning(
-                f"Skipping upsert: missing ats_id for job '{getattr(job, 'title', '')}' from {source_system}"
-            )
-            return "skipped"
-
-        # Filter the lookup at the SQL layer so each upsert is O(1) — backed by
-        # the functional index on
-        # (company_id, source_system, (additional_data->>'external_system_id'))
-        # added in migration 087. Without this, importing N jobs for a tenant
-        # with M existing imported vacancies costs O(N*M) full table scans.
-        stmt = (
-            select(JobVacancy)
-            .where(
-                JobVacancy.company_id == company_id,
-                JobVacancy.source_system == source_system,
-                # Use the raw ``->>`` operator (works on both ``JSON`` and
-                # ``JSONB``) so the predicate matches the functional index
-                # exactly: ``(additional_data->>'external_system_id')``.
-                JobVacancy.additional_data.op("->>")("external_system_id")
-                == external_id,
-            )
-            .limit(1)
-        )
-        result = await db.execute(stmt)
-        existing: JobVacancy | None = result.scalars().first()
-
-        mapped = self._job_to_vacancy_fields(job, source_system, external_id)
-
-        if existing is None:
-            vacancy = JobVacancy(
-                company_id=company_id,
-                source_system=source_system,
-                **mapped,
-            )
-            db.add(vacancy)
-            logger.info(
-                f"✅ Created JobVacancy from {source_system} (external_id={external_id})"
-            )
-            return "created"
-
-        existing_extra = dict(existing.additional_data or {})
-        new_extra = mapped.pop("additional_data", {}) or {}
-        existing_extra.update(new_extra)
-        existing.additional_data = existing_extra
-        for field, value in mapped.items():
-            if value is None:
-                continue
-            setattr(existing, field, value)
-        existing.source_system = source_system
-        existing.updated_at = datetime.utcnow()
-        logger.info(
-            f"♻️ Updated JobVacancy from {source_system} (external_id={external_id})"
-        )
-        return "updated"
-
-    def _job_to_vacancy_fields(
-        self,
-        job: ATSJob,
-        source_system: str,
-        external_id: str,
-    ) -> dict[str, Any]:
-        """Map an ``ATSJob`` to ``JobVacancy`` constructor kwargs."""
-        salary_range: dict[str, Any] | None = None
-        raw_salary = getattr(job, "salary_range", None)
-        if isinstance(raw_salary, dict):
-            salary_range = raw_salary
-        elif isinstance(raw_salary, str) and raw_salary.strip():
-            salary_range = {"raw": raw_salary}
-
-        additional_data: dict[str, Any] = {
-            "external_system_id": external_id,
-            "ats_type": source_system,
-            "imported_at": datetime.utcnow().isoformat(),
-        }
-        if job.raw_data:
-            additional_data["raw"] = job.raw_data
-
-        requirements_list: list[str] | None = None
-        raw_req = getattr(job, "requirements", None)
-        if isinstance(raw_req, list):
-            requirements_list = [str(x) for x in raw_req if x]
-        elif isinstance(raw_req, str) and raw_req.strip():
-            requirements_list = [raw_req.strip()]
-
-        return {
-            "title": job.title or f"[{source_system}] vaga {external_id}",
-            "department": job.department,
-            "location": job.location,
-            "description": job.description,
-            "employment_type": job.employment_type,
-            "status": job.status or "Ativa",
-            "salary_range": salary_range,
-            "requirements": requirements_list,
-            "additional_data": additional_data,
-        }
     
     async def trigger_status_change(
         self,
@@ -1098,155 +928,6 @@ class ATSSyncService:
             "by_ats": by_ats,
             "configured_clients": list(self._clients.keys())
         }
-
-
-    # ------------------------------------------------------------------
-    # Chat tool surface (registered in app/domains/ats_integration/tools/__init__.py)
-    # Thin wrappers around the existing pull/push primitives so the chat
-    # registry resolves to a single canonical method per capability.
-    # ------------------------------------------------------------------
-    async def sync_candidate(
-        self,
-        ats_type: str = "",
-        external_candidate_id: str = "",
-        company_id: str | None = None,
-        **kwargs: Any,
-    ) -> dict[str, Any]:
-        """Pull a single candidate from the source ATS into LIA."""
-        logger.info(
-            "ATSSyncService.sync_candidate ats=%s ext=%s company=%s",
-            ats_type, external_candidate_id, company_id,
-        )
-        return await self.pull_candidate(
-            ats_type=ats_type,
-            external_candidate_id=external_candidate_id,
-            company_id=company_id,
-            **kwargs,
-        )
-
-    async def sync_job(
-        self,
-        ats_type: str = "",
-        external_job_id: str = "",
-        company_id: str | None = None,
-        **kwargs: Any,
-    ) -> dict[str, Any]:
-        """Pull (or upsert) a single job/vacancy from the source ATS."""
-        logger.info(
-            "ATSSyncService.sync_job ats=%s ext=%s company=%s",
-            ats_type, external_job_id, company_id,
-        )
-        result = await self.pull_jobs(
-            ats_type=ats_type,
-            company_id=company_id,
-            external_job_ids=[external_job_id] if external_job_id else None,
-            **kwargs,
-        )
-        return result
-
-    async def check_sync_status(
-        self,
-        ats_type: str = "",
-        company_id: str | None = None,
-        **kwargs: Any,
-    ) -> dict[str, Any]:
-        """Return last-sync health for a given ATS connection."""
-        logger.info("ATSSyncService.check_sync_status ats=%s", ats_type)
-        connected = self.has_client(ats_type) if ats_type else bool(self._clients)
-        last = None
-        for log in reversed(self.audit_log):
-            if not ats_type or log.ats_type == ats_type:
-                last = log.to_dict()
-                break
-        return {
-            "success": True,
-            "ats_type": ats_type,
-            "connected": connected,
-            "last_sync": last,
-            "configured_clients": list(self._clients.keys()),
-        }
-
-    async def list_connections(
-        self,
-        company_id: str | None = None,
-        **kwargs: Any,
-    ) -> dict[str, Any]:
-        """Enumerate ATS connections currently registered."""
-        logger.info("ATSSyncService.list_connections company=%s", company_id)
-        connections = [
-            {"ats_type": ats_type, "client": type(client).__name__}
-            for ats_type, client in self._clients.items()
-        ]
-        return {
-            "success": True,
-            "connections": connections,
-            "count": len(connections),
-        }
-
-    async def view_sync_log(
-        self,
-        ats_type: str = "",
-        limit: int = 50,
-        company_id: str | None = None,
-        **kwargs: Any,
-    ) -> dict[str, Any]:
-        """Return the most recent audit-log entries (newest first)."""
-        logger.info(
-            "ATSSyncService.view_sync_log ats=%s limit=%s", ats_type, limit,
-        )
-        entries = list(reversed(self.audit_log))
-        if ats_type:
-            entries = [e for e in entries if e.ats_type == ats_type]
-        entries = entries[: max(0, int(limit or 0))]
-        return {
-            "success": True,
-            "entries": [e.to_dict() for e in entries],
-            "count": len(entries),
-        }
-
-    async def update_candidate_status(
-        self,
-        ats_type: str = "",
-        external_candidate_id: str = "",
-        new_status: str = "",
-        company_id: str | None = None,
-        **kwargs: Any,
-    ) -> dict[str, Any]:
-        """Push a candidate stage/status change to the source ATS."""
-        logger.info(
-            "ATSSyncService.update_candidate_status ats=%s ext=%s new=%s",
-            ats_type, external_candidate_id, new_status,
-        )
-        return await self.trigger_status_change(
-            ats_type=ats_type,
-            external_candidate_id=external_candidate_id,
-            new_status=new_status,
-            company_id=company_id,
-            **kwargs,
-        )
-
-    async def send_score(
-        self,
-        ats_type: str = "",
-        external_candidate_id: str = "",
-        score: float | None = None,
-        parecer: str = "",
-        company_id: str | None = None,
-        **kwargs: Any,
-    ) -> dict[str, Any]:
-        """Push a WSI/parecer score back to the source ATS."""
-        logger.info(
-            "ATSSyncService.send_score ats=%s ext=%s score=%s",
-            ats_type, external_candidate_id, score,
-        )
-        return await self.trigger_parecer_sync(
-            ats_type=ats_type,
-            external_candidate_id=external_candidate_id,
-            score=score,
-            parecer=parecer,
-            company_id=company_id,
-            **kwargs,
-        )
 
 
 ats_sync_service = ATSSyncService()

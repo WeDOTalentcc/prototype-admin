@@ -25,9 +25,12 @@ agents:
     system_prompt_path: app/domains/sourcing/agents/system_prompt.py
     enabled: true
 
-  # `wizard` agent removed in Task #850 — the canonical job-creation
-  # path is `app/domains/job_creation/graph.py:JobCreationGraph` (a
-  # LangGraph StateGraph, not a ReActAgent — therefore not declared here).
+  - name: wizard
+    domain: wizard
+    class_path: app.domains.job_management.agents.job_wizard_graph.JobWizardGraph
+    model_id: claude-sonnet-4-6
+    system_prompt_path: app/domains/job_management/agents/system_prompt.py
+    enabled: true
 
   - name: talent
     domain: talent
@@ -45,7 +48,7 @@ agents:
 
   - name: policy
     domain: policy
-    class_path: app.domains.policy.agents.agent.PolicySetupAgent
+    class_path: app.domains.policy.agents.policy_agent.PolicySetupAgent
     model_id: claude-haiku-4-5-20251001
     system_prompt_path: null
     enabled: true
@@ -90,24 +93,4 @@ agents:
     class_path: app.domains.autonomous.agents.autonomous_react_agent.AutonomousReActAgent
     model_id: claude-sonnet-4-6
     system_prompt_path: null
-    enabled: true
-
-  # A3 — InterviewGraph (entrevistas / agendamento conversacional).
-  # Composição com tenant_llm_context (provider escolhido via contextvar
-  # por tenant) + AuditCallback + FairnessGuard + pii_masking já presentes.
-  - name: interview_scheduling
-    domain: interview_scheduling
-    class_path: app.domains.interview_scheduling.agents.interview_graph.InterviewGraph
-    model_id: claude-sonnet-4-6
-    system_prompt_path: app/prompts/domains/interview_scheduling.yaml
-    enabled: true
-
-  # A4 — WSIInterviewGraph (entrevistas WSI síncronas).
-  # Composição com tenant_llm_context para WSIScreeningPipeline +
-  # AuditCallback + FairnessGuard + pii_masking já presentes.
-  - name: wsi_interview
-    domain: wsi_interview
-    class_path: app.domains.cv_screening.agents.wsi_interview_graph.WSIInterviewGraph
-    model_id: claude-sonnet-4-6
-    system_prompt_path: app/prompts/domains/wsi_interview.yaml
     enabled: true

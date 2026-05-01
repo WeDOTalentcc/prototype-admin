@@ -9,7 +9,7 @@ from uuid import UUID
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.company_benefit import DEFAULT_BRAZILIAN_BENEFITS, CompanyBenefit
+from app.models.company_benefit import DEFAULT_BRAZILIAN_BENEFITS, CompanyBenefit
 
 logger = logging.getLogger(__name__)
 

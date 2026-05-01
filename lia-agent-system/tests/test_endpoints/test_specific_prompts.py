@@ -41,10 +41,10 @@ def test_policy_session_id_never_default():
     assert "uuid.uuid4()" in content
 
 
-# Wizard endpoint test removed in Task #850 — wizard_smart_orchestrator.py
-# was deleted; the canonical job-creation entry point is now JobCreationGraph
-# (app.domains.job_creation.graph). Multi-tenant company_id resolution is
-# enforced by the graph's intake_node, exercised by tests/unit/test_intake_extractor.py.
+def test_wizard_company_id_uses_helper():
+    """Wizard: company_id usa get_user_company_id."""
+    content = _read_be("app/api/v1/wizard_smart_orchestrator.py")
+    assert "get_user_company_id(current_user)" in content
 
 
 # ── Bloco B: conversation_id persistido na transição ────────────────────────
@@ -128,10 +128,49 @@ def test_policy_graceful_fallback_message():
     assert "Estou com dificuldade" in content or "tente novamente" in content.lower()
 
 
-# Blocos E/F/G — wizard prompt/draft/response tests removed in Task #850.
-# wizard_smart_orchestrator.py and wizard_system_prompt.py were deleted; the
-# canonical JD-enrichment + draft persistence flow lives in JobCreationGraph
-# (app.domains.job_creation.graph) and is covered by graph-level tests.
+# ── Bloco E: generate_enriched_jd autônomo ───────────────────────────────────
+
+def test_wizard_no_auto_call_enriched_jd_in_endpoint():
+    """Endpoint wizard não deve chamar generate_enriched_jd diretamente."""
+    content = _read_be("app/api/v1/wizard_smart_orchestrator.py")
+    # Não deve ter o bloco de auto-call
+    assert "Auto-calling generate_enriched_jd" not in content
+    assert "enrichment_result = await generate_enriched_jd" not in content
+
+
+def test_wizard_system_prompt_instructs_agent_to_call_enriched_jd():
+    """System prompt do wizard deve instruir o agente a chamar generate_enriched_jd autonomamente."""
+    content = _read_be("app/domains/job_management/agents/wizard_system_prompt.py")
+    assert "generate_enriched_jd" in content
+    assert "jd-enrichment" in content
+    assert "autonomo" in content.lower() or "AUTONOMA" in content or "autonomamente" in content.lower()
+
+
+# ── Bloco F: auto-save draft ─────────────────────────────────────────────────
+
+def test_wizard_auto_save_draft_incremental():
+    """Wizard deve salvar draft incremental no Redis após cada turno bem-sucedido."""
+    content = _read_be("app/api/v1/wizard_smart_orchestrator.py")
+    assert "wizard_draft:" in content
+    assert "setex" in content
+    assert "Draft auto-saved" in content or "draft" in content.lower()
+
+
+# ── Bloco G: conversation_id retornado nas responses ─────────────────────────
+
+def test_wizard_response_returns_conversation_id():
+    """SmartOrchestrateResponse deve ter campo conversation_id."""
+    content = _read_be("app/api/v1/wizard_smart_orchestrator.py")
+    assert "conversation_id: Optional[str]" in content
+    # O campo deve ser retornado na response (não apenas no request)
+    response_section = content.split("class SmartOrchestrateResponse")[1].split("\n\n")[0]
+    assert "conversation_id" in response_section
+
+
+def test_wizard_endpoint_returns_session_id_in_conversation_id():
+    """Endpoint smart_orchestrate deve preencher conversation_id=session_id na response."""
+    content = _read_be("app/api/v1/wizard_smart_orchestrator.py")
+    assert "conversation_id=session_id," in content
 
 
 def test_policy_response_schema_has_session_id():

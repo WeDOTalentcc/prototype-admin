@@ -8,7 +8,6 @@ import logging
 import os
 import time as _time
 from dataclasses import dataclass, field
-from collections.abc import Callable
 from typing import Any, Literal, TypeVar
 
 from langchain_anthropic import ChatAnthropic
@@ -50,40 +49,6 @@ class ToolCallResponse:
     tool_calls: list[ToolCallRequest] = field(default_factory=list)
     is_tool_call: bool = False
     raw_response: Any | None = None
-
-
-def _emit_usage_callback(
-    on_usage: "Callable[[dict[str, Any]], None]",
-    response: Any,
-    provider: str,
-    start_time: float,
-) -> None:
-    """Audit task #545 — extrai usage_metadata da resposta LangChain e
-    chama o callback do consumidor. Reusado por `LLMService.generate` e
-    `LLMService.safe_invoke` para garantir consistência."""
-    try:
-        usage_meta = getattr(response, "usage_metadata", None) or {}
-        resp_meta = getattr(response, "response_metadata", None) or {}
-        model_name = (
-            resp_meta.get("model_name")
-            or resp_meta.get("model")
-            or (
-                settings.LLM_PRIMARY_MODEL
-                if provider == "claude"
-                else getattr(settings, "OPENAI_MODEL", None)
-                or "openai-unknown"
-            )
-        )
-        on_usage({
-            "input_tokens": int(usage_meta.get("input_tokens", 0) or 0),
-            "output_tokens": int(usage_meta.get("output_tokens", 0) or 0),
-            "total_tokens": int(usage_meta.get("total_tokens", 0) or 0),
-            "model": model_name,
-            "provider": provider,
-            "latency_ms": (_time.time() - start_time) * 1000,
-        })
-    except Exception as cb_err:  # pragma: no cover - defensive
-        logger.warning("LLM on_usage callback failed: %s", cb_err)
 
 
 class LLMService:
@@ -163,7 +128,7 @@ class LLMService:
             company_id: Optional company ID for tenant-specific model routing.
                         If set and tenant has custom keys, uses tenant model.
         """
-        from app.shared.observability.callbacks import PIIStripCallback, AuditLogCallback
+        from app.shared.llm.callbacks import PIIStripCallback, AuditLogCallback
         import inspect
 
         frame = inspect.currentframe()
@@ -346,8 +311,6 @@ class LLMService:
         prompt: str,
         provider: LLMProvider = "gemini",
         model: str | None = None,
-        *,
-        on_usage: "Callable[[dict[str, Any]], None] | None" = None,
         **kwargs
     ) -> str:
         """
@@ -381,17 +344,16 @@ class LLMService:
             if _cid and _audit_svc:
                 await _audit_svc.log_decision(
                     company_id=_cid,
-                    agent_name="llm_service",
-                    decision_type="llm_usage",
-                    action=f"generate/{provider}",
-                    decision="executed",
-                    reasoning=[
-                        f"provider={provider}",
-                        f"model={model or 'default'}",
-                        f"prompt_len={len(prompt)}",
-                        f"pii_stripped={_stripped}",
-                    ],
-                    criteria_used=["byok_key_source"],
+                    action="llm_call",
+                    resource_type="llm_provider",
+                    resource_id=f"{provider}:{model or 'default'}",
+                    details={
+                        "provider": provider,
+                        "model": model or "default",
+                        "prompt_length": len(prompt),
+                        "pii_stripped": _stripped,
+                    },
+                    user_id="system",
                 )
         except Exception:
             pass  # Audit is non-blocking
@@ -403,24 +365,10 @@ class LLMService:
         if self._tenant_container is not None:
             try:
                 tenant_provider = self._tenant_container.get(provider)
-                _tenant_start = _time.time()
                 if system_prompt := kwargs.pop("system", None):
                     result = await tenant_provider.generate_with_system(system_prompt, prompt, **kwargs)
                 else:
                     result = await tenant_provider.generate(prompt, **kwargs)
-                # Audit task #545 — emite on_usage para o caminho tenant.
-                if on_usage is not None:
-                    try:
-                        _usage = getattr(result, "usage", {}) or {}
-                        on_usage({
-                            "input_tokens": int(_usage.get("input_tokens") or 0),
-                            "output_tokens": int(_usage.get("output_tokens") or 0),
-                            "model": getattr(result, "model", None) or model or "unknown",
-                            "latency_ms": (_time.time() - _tenant_start) * 1000,
-                            "provider": getattr(result, "provider", provider),
-                        })
-                    except Exception as _cb_err:  # pragma: no cover - defensive
-                        logger.warning("LLM tenant on_usage callback failed: %s", _cb_err)
                 return result.text
             except Exception as _tenant_exc:
                 logger.warning(
@@ -430,26 +378,13 @@ class LLMService:
                 # Fall through to global provider
 
         if provider == "gemini":
-            # Audit task #545 — gemini path ainda não suporta on_usage
-            # (mesmo comportamento de safe_invoke).
             return await self.generate_with_gemini(prompt, model=model)
-
-        # Audit task #545 — captura usage para claude/openai quando o
-        # consumidor passa on_usage. Espelha a lógica de safe_invoke.
-        _gen_start = _time.time()
-        if provider == "claude":
-            # B5 LIA-BYOK: use tenant-aware model when _tenant_container is not set.
-            # get_audited_model() resolves the tenant key from _tenant_configs cache,
-            # applies PII strip + audit callbacks, and falls back to global key if
-            # no tenant config exists. Preserves existing behaviour for callers that
-            # already wire _tenant_container via MainOrchestrator.
-            llm = self.get_audited_model(company_id=_cid or None)
+        elif provider == "claude":
+            llm = self.claude
             if kwargs:
                 llm = llm.bind(**kwargs)
             response = await llm.ainvoke(prompt)
             content = response.content
-            if on_usage is not None:
-                _emit_usage_callback(on_usage, response, provider, _gen_start)
             if isinstance(content, list):
                 text_parts: list[str] = []
                 for block in content:
@@ -467,8 +402,6 @@ class LLMService:
                 llm = llm.bind(**kwargs)
             response = await llm.ainvoke(prompt)
             content = response.content
-            if on_usage is not None:
-                _emit_usage_callback(on_usage, response, provider, _gen_start)
             return str(content) if content else ""
         else:
             raise ValueError(f"Unknown provider: {provider}")
@@ -912,28 +845,11 @@ class LLMService:
 
         return ChatAnthropic(**kwargs)  # type: ignore[arg-type]
 
-    async def safe_invoke(
-        self,
-        prompt: str,
-        provider: str = "claude",
-        *,
-        on_usage: "Callable[[dict[str, Any]], None] | None" = None,
-        **kwargs,
-    ) -> str:
+    async def safe_invoke(self, prompt: str, provider: str = "claude", **kwargs) -> str:
         """Wrapper for direct .claude.ainvoke() calls — adds PII stripping + audit.
 
         Use this instead of llm_service.claude.ainvoke(prompt) directly.
         Gradually migrate direct .ainvoke() calls to this method.
-
-        Audit task #532 (G23-04) — token tracking opcional via callback:
-            Quando o consumidor passa `on_usage`, este wrapper extrai os
-            metadados de uso (`response.usage_metadata` da LangChain) e
-            chama o callback com `{input_tokens, output_tokens, total_tokens,
-            model, provider, latency_ms}`. Permite domínios específicos (ex.:
-            triagem WSI Camada 2) gravarem em `AiConsumption` sem refatorar
-            os ~50 outros callsites. Falha do callback NUNCA derruba o
-            invoke — log + segue. Quando `on_usage=None`, comportamento é
-            idêntico ao anterior (zero overhead).
         """
         # E6: PII stripping
         prompt = strip_pii_for_llm_prompt(prompt)
@@ -951,15 +867,9 @@ class LLMService:
         elif provider == "openai":
             response = await self.openai.ainvoke(prompt, **kwargs)
         else:
-            # Gemini path bypassa este wrapper — sem suporte a on_usage aqui.
             return await self.generate_with_gemini(prompt)
 
-        # Audit task #532 (G23-04) — emite usage para o callback opcional.
-        # Compartilha a extração de usage_metadata com `LLMService.generate`
-        # via `_emit_usage_callback` (audit task #545).
-        if on_usage is not None:
-            _emit_usage_callback(on_usage, response, provider, _start)
-
+        _latency = (_time.time() - _start) * 1000
         content = response.content
         if isinstance(content, list):
             text_parts = []

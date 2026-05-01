@@ -23,7 +23,7 @@ class TestConsentHardBlock:
     @pytest.mark.asyncio
     async def test_hard_block_default_true_when_config_fails(self):
         """Quando a leitura da config falha, o default deve ser True (bloquear)."""
-        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService, ConsentCheckResult
+        from app.shared.services.consent_checker_service import ConsentCheckerService, ConsentCheckResult
 
         mock_db = AsyncMock()
         mock_result = MagicMock()
@@ -51,7 +51,7 @@ class TestConsentHardBlock:
     @pytest.mark.asyncio
     async def test_hard_block_true_blocks_absent_consent(self):
         """LGPD_CONSENT_ABSENT_HARD_BLOCK=True deve bloquear quando consent ausente."""
-        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
 
         mock_db = AsyncMock()
         mock_result = MagicMock()
@@ -77,7 +77,7 @@ class TestConsentHardBlock:
     @pytest.mark.asyncio
     async def test_soft_block_false_allows_absent_consent_with_warning(self):
         """LGPD_CONSENT_ABSENT_HARD_BLOCK=False deve permitir com soft_warning=True."""
-        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
 
         mock_db = AsyncMock()
         mock_result = MagicMock()
@@ -104,7 +104,7 @@ class TestConsentHardBlock:
     @pytest.mark.asyncio
     async def test_revoked_consent_always_blocked(self):
         """Consentimento revogado deve sempre bloquear, independente da flag."""
-        from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
+        from app.shared.services.consent_checker_service import ConsentCheckerService
         from datetime import datetime
 
         mock_consent = MagicMock()

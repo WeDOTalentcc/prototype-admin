@@ -14,7 +14,7 @@ from fastapi.responses import StreamingResponse
 
 from app.domains.workforce.dependencies import get_workforce_repo
 from app.domains.workforce.repositories.workforce_repository import WorkforceRepository
-from lia_models.workforce import WorkforceEntry
+from app.models.workforce import WorkforceEntry
 from app.schemas.workforce import (
     HiringPlanCreate,
     HiringPlanResponse,

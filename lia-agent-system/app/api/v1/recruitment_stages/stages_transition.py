@@ -8,11 +8,9 @@ Candidate transition endpoints:
 """
 import uuid
 import logging
-from typing import Annotated, Any
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
-
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from ._shared import (
     ACTION_BEHAVIOR_LABELS,
@@ -86,7 +84,7 @@ async def transition_candidate(
 
 @router.get("/candidate/{vacancy_candidate_id}/info", response_model=None)
 async def get_candidate_stage_info(
-    vacancy_candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    vacancy_candidate_id: str,
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
@@ -114,7 +112,7 @@ async def get_candidate_stage_info(
 
 @router.get("/candidate/{vacancy_candidate_id}/history", response_model=None)
 async def get_candidate_history(
-    vacancy_candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    vacancy_candidate_id: str,
     limit: int = Query(default=50, ge=1, le=200),
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
@@ -275,7 +273,7 @@ async def execute_transition(
     try:
         from sqlalchemy import update as sa_update
 
-        from lia_models.candidate import VacancyCandidate
+        from app.models.candidate import VacancyCandidate
 
         values = {"stage": request.to_stage}
         if request.sub_status:
@@ -355,7 +353,7 @@ async def execute_transition(
             try:
                 from sqlalchemy import select as sa_select
 
-                from lia_models.recruitment_stages import RecruitmentStage as _RS
+                from app.models.recruitment_stages import RecruitmentStage as _RS
                 stage_result = await stage_repo.db.execute(
                     sa_select(_RS).where(_RS.name == request.to_stage)
                 )

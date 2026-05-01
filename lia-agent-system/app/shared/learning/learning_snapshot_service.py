@@ -109,7 +109,7 @@ class LearningSnapshotService:
         """Carrega LearningPattern do DB e serializa para lista de dicts. Mockável em testes."""
         from sqlalchemy import select
 
-        from lia_models.feedback import LearningPattern
+        from app.models.intelligent_cache import LearningPattern
 
         result = await db.execute(
             select(LearningPattern).where(LearningPattern.company_id == company_id)
@@ -234,7 +234,7 @@ class LearningSnapshotService:
         """Remove padrões atuais e restaura a partir do payload. Mockável em testes."""
         from sqlalchemy import delete
 
-        from lia_models.feedback import LearningPattern
+        from app.models.intelligent_cache import LearningPattern
 
         await db.execute(
             delete(LearningPattern).where(LearningPattern.company_id == company_id)

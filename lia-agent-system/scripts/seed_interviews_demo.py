@@ -10,9 +10,9 @@ from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select, delete
 from app.core.database import async_session_factory
-from lia_models.interview import Interview
-from lia_models.candidate import Candidate
-from lia_models.job_vacancy import JobVacancy
+from app.models.interview import Interview
+from app.models.candidate import Candidate
+from app.models.job_vacancy import JobVacancy
 
 BRT = timezone(timedelta(hours=-3))
 

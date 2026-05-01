@@ -24,38 +24,12 @@ _KEYWORD_ACTION_MAP: dict[str, str] = (
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="automation")
 
 
-# Mapeamento canônico action_id -> tool_id (module-level p/ auditor + smoke test).
-_ACTION_TOOL_MAP: dict[str, str] = {
-    "create_task": "automation_create_task",
-    "list_tasks": "automation_list_tasks",
-    "complete_task": "automation_complete_task",
-    "cancel_task": "automation_cancel_task",
-    "decompose_task": "automation_create_task",
-    "plan_execution": "automation_create_task",
-    "get_next_tasks": "automation_list_tasks",
-    "create_automation": "automation_create_rule",
-    "list_automations": "automation_list_rules",
-    "enable_automation": "automation_enable_rule",
-    "disable_automation": "automation_disable_rule",
-    "trigger_automation": "automation_trigger",
-    "view_automation_log": "automation_view_log",
-    "configure_stage_automation": "automation_create_rule",
-    "predict_substatus": "automation_view_log",
-    "check_proactive_alerts": "automation_view_log",
-    "configure_alert": "automation_create_rule",
-    "schedule_recurring": "automation_create_rule",
-    "view_task_dependencies": "automation_list_tasks",
-    "run_autonomous_check": "automation_trigger",
-}
-
-
 @register_domain
 class AutomationDomain(ComplianceDomainPrompt):
 
     _compliance_config = {'high_impact': False}
     domain_id = "automation"
     domain_name = "Automation & Tasks"
-    agent_aliases = ("task_planner",)
 
     def __init__(self):
         from app.domains.automation.actions import AUTOMATION_ACTIONS
@@ -115,6 +89,18 @@ class AutomationDomain(ComplianceDomainPrompt):
                 reasoning=f"Keyword heuristic matched action '{best_action}'",
             )
 
+    _ACTION_TOOL_MAP: dict[str, str] = {
+        "create_task": "automation_create_task",
+        "list_tasks": "automation_list_tasks",
+        "complete_task": "automation_complete_task",
+        "cancel_task": "automation_cancel_task",
+        "create_automation": "automation_create_rule",
+        "list_automations": "automation_list_rules",
+        "enable_automation": "automation_enable_rule",
+        "disable_automation": "automation_disable_rule",
+        "trigger_automation": "automation_trigger",
+        "view_automation_log": "automation_view_log",
+    }
 
     async def execute_action(self, action_id: str, params: dict[str, Any], context: DomainContext) -> DomainResponse:
         action = None
@@ -133,16 +119,10 @@ class AutomationDomain(ComplianceDomainPrompt):
         from app.domains.automation.tools import AUTOMATION_TOOLS, execute_automation_tool
 
         tool_ids = {t["tool_id"] for t in AUTOMATION_TOOLS}
-        mapped_tool = _ACTION_TOOL_MAP.get(action_id)
+        mapped_tool = self._ACTION_TOOL_MAP.get(action_id)
 
         if mapped_tool and mapped_tool in tool_ids:
             result = await execute_automation_tool(mapped_tool, params, context)
-            if isinstance(result, dict) and (result.get("status") == "error" or result.get("success") is False):
-                return DomainResponse.error_response(
-                    error=result.get("error") or result.get("message") or f"Ferramenta '{mapped_tool}' falhou.",
-                    domain_id=self.domain_id,
-                    action_id=action_id,
-                )
             return DomainResponse.success_response(
                 message=f"Ferramenta '{mapped_tool}' executada para ação '{action.name}'.",
                 data={"action_id": action_id, "tool_id": mapped_tool, "result": result},

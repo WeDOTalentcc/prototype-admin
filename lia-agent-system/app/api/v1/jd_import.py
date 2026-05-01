@@ -11,25 +11,18 @@ Endpoints:
 - GET /suggestions/{field} - Get suggestions for a wizard field
 - GET /similar-jobs - Find similar jobs for Fast Track
 """
-import hashlib
 import logging
-import uuid as _uuid_mod
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel, Field
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import (
-    get_current_user_or_demo,
-    get_current_user_strict,
-    get_user_company_id,
-)
+from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
-from app.core.database import AsyncSessionLocal, get_db
+from app.core.database import get_db
 from app.domains.job_management.services.jd_import_service import JDImportService, get_jd_import_service
 
 
@@ -351,272 +344,138 @@ async def get_similar_jobs(
     return await service.get_similar_jobs(db, context, limit)
 
 
-# ---------------------------------------------------------------------------
-# Task #838 — JD upload privacy & audit hardening
-# ---------------------------------------------------------------------------
-# Records consent + each upload event in `audit_logs` (immutable) instead of
-# the previous best-effort `logger.info`. Filename is hashed (SHA-256) before
-# persistence so plaintext PII never reaches the audit trail (mitigates M-13).
-# ---------------------------------------------------------------------------
-
-JD_UPLOAD_CONSENT_AGENT = "jd_upload_consent"
-JD_UPLOAD_AUDIT_AGENT = "jd_upload"
-
-
-def _hash_filename(filename: str) -> str:
-    """Return a stable SHA-256 hex digest of the filename (avoids logging PII)."""
-    return hashlib.sha256((filename or "").encode("utf-8", errors="replace")).hexdigest()
-
-
-async def _company_has_jd_upload_consent(company_id: UUID) -> bool:
-    """Return True if the company has previously granted JD upload consent."""
-    from lia_models.audit_log import AuditLog
-
-    try:
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                select(AuditLog.id)
-                .where(
-                    and_(
-                        AuditLog.company_id == str(company_id),
-                        AuditLog.agent_name == JD_UPLOAD_CONSENT_AGENT,
-                        AuditLog.decision == "granted",
-                    )
-                )
-                .limit(1)
-            )
-            return result.scalar_one_or_none() is not None
-    except Exception as exc:  # pragma: no cover — fail-closed when DB unreachable
-        logger.warning("[jd-import/upload] consent lookup failed: %s", exc)
-        return False
-
-
-async def _record_jd_upload_consent(company_id: UUID, user_id: str | None) -> None:
-    """Persist a one-shot JD-upload consent record per company (LGPD Art. 7/8)."""
-    from lia_models.audit_log import AuditLog
-
-    try:
-        async with AsyncSessionLocal() as session:
-            log = AuditLog(
-                id=str(_uuid_mod.uuid4()),
-                company_id=str(company_id),
-                agent_name=JD_UPLOAD_CONSENT_AGENT,
-                # decision_type is a free-form String(100) on AuditLog; using a
-                # dedicated value keeps governance dashboards able to filter
-                # consent grants without colliding with feedback audits.
-                decision_type="consent_granted",
-                action="jd_upload_consent",
-                decision="granted",
-                reasoning=[
-                    "purpose=jd_processing",
-                    "legal_basis=LGPD Art. 7º, II",
-                    "scope=company",
-                ],
-                criteria_used=["consent_purpose:jd_processing"],
-                criteria_ignored=[],
-                actor_user_id=user_id,
-                retention_until=datetime.utcnow() + timedelta(days=1825),
-            )
-            session.add(log)
-            await session.commit()
-    except Exception as exc:
-        logger.warning("[jd-import/upload] consent persistence failed: %s", exc)
-
-
-async def _record_jd_upload_audit(
-    *,
-    company_id: UUID,
-    user_id: str | None,
-    upload_uuid: str,
-    filename_hash: str,
-    size_bytes: int,
-    extension: str,
-    fairness_warnings_count: int,
-) -> None:
-    """Persist an immutable upload record (M-10): user, company, hash, size, uuid, ts."""
-    from lia_models.audit_log import AuditLog
-
-    try:
-        async with AsyncSessionLocal() as session:
-            log = AuditLog(
-                id=upload_uuid,
-                company_id=str(company_id),
-                agent_name=JD_UPLOAD_AUDIT_AGENT,
-                decision_type="job_creation",
-                action="jd_file_upload",
-                decision="imported",
-                reasoning=[
-                    f"filename_hash={filename_hash}",
-                    f"size_bytes={size_bytes}",
-                    f"extension={extension}",
-                    f"fairness_warnings={fairness_warnings_count}",
-                ],
-                criteria_used=["filename_hash", "size_bytes", "extension"],
-                criteria_ignored=[],
-                actor_user_id=user_id,
-                retention_until=datetime.utcnow() + timedelta(days=1825),
-            )
-            session.add(log)
-            await session.commit()
-    except Exception as exc:
-        # Audit failure should not silently lose the upload trail. Re-raise so
-        # the request fails closed and the operator is alerted.
-        logger.error("[jd-import/upload] audit persistence failed: %s", exc)
-        raise HTTPException(
-            status_code=500,
-            detail="Falha ao registrar auditoria do upload. Tente novamente.",
-        )
-
-
-@router.get("/import/jd-upload/consent-status", response_model=dict[str, bool])
-async def get_jd_upload_consent_status(
-    current_user: User = Depends(get_current_user_strict),
-) -> dict[str, bool]:
-    """
-    Preflight para o gate LGPD de upload de JD (Task #838 / M-01).
-
-    Devolve `{has_consent: bool}` para a empresa do usuário autenticado.
-    O frontend usa essa resposta para suprimir o diálogo de consentimento
-    quando a empresa já consentiu em sessão anterior — concretizando o
-    requisito "bypass para domínios já consentidos".
-
-    Não tem efeito colateral: read-only sobre `audit_logs`.
-    """
-    company_id = parse_company_id(get_user_company_id(current_user))
-    has_consent = await _company_has_jd_upload_consent(company_id)
-    return {"has_consent": bool(has_consent)}
-
-
-@router.post("/import/upload-file", status_code=202)
+@router.post("/import/upload-file", response_model=dict[str, Any])
 async def upload_jd_file(
     file: UploadFile = File(..., description="Arquivo JD (.txt, .pdf, .docx, .md)"),
     title: str = Query("", description="Título da vaga (opcional, extraído do arquivo se vazio)"),
-    consent_acknowledged: bool = Query(
-        False,
-        description=(
-            "LGPD Art. 7: o usuário confirma o consentimento granular para "
-            "processamento da JD nesta sessão. Empresas que já consentiram "
-            "previamente são liberadas automaticamente."
-        ),
-    ),
-    session_id: str = Query(
-        "",
-        description=(
-            "ID da sessão WebSocket que receberá `background_task_update` "
-            "com o progresso. Opcional — se omitido, o cliente precisa "
-            "consultar status por outro canal."
-        ),
-    ),
-    current_user: User = Depends(get_current_user_strict),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
+    service: JDImportService = Depends(get_jd_import_service),
 ) -> dict[str, Any]:
     """
-    Aceita o upload de uma Job Description e enfileira o parse para um worker
-    Celery (Audit B-02). O endpoint só faz validações leves (auth, consent,
-    magic number, tamanho) — a extração PDF/DOCX e o `JDImportService.import_jd`
-    rodam fora do request loop.
+    Importa uma Job Description a partir de upload de arquivo (P3-2).
 
-    Privacidade & auditoria (Task #838 / #858):
-    - Autenticação estrita: o modo demo está desabilitado (M-09).
-    - Consentimento granular explícito uma vez por empresa, com bypass em
-      sessões subsequentes a partir do registro imutável (M-01).
-    - Validação por **magic number** antes de qualquer parse (A-02).
-    - Limite de tamanho compartilhado com o proxy Next.js (M-12) via
-      `UPLOAD_JD_MAX_BYTES`.
-    - Cada upload grava `user_id`, `company_id`, `filename_hash`, `size_bytes`,
-      `uuid` e `timestamp` em `audit_logs` (M-10) — feito pelo worker.
+    Suporta: .txt, .md, .pdf (extrai texto via pypdf se disponível), .docx (extrai via python-docx).
+    O texto extraído é passado para JDImportService.import_jd() para parse estruturado.
 
     Returns:
-        ``202 {task_id, status: "queued", ...}``. O frontend acompanha o
-        progresso via WS `background_task_update` (canal já existente).
+        JD importada e parseada com campos extraídos (título, skills, requisitos, benefícios).
     """
-    from app.jobs.tasks.jd_upload import (
-        jd_upload_process_file_task,
-        new_task_id,
-        stage_payload,
-    )
-    from app.shared.upload_limits import JD_UPLOAD_MAX_BYTES, jd_upload_max_mb
-    from app.shared.upload_validators import UnsupportedFileTypeError, validate_upload
-
-    # Identidade do solicitante — necessária para consent + enfileiramento
-    company_id = parse_company_id(get_user_company_id(current_user))
-    user_id = str(current_user.id) if getattr(current_user, "id", None) else None
-
-    # M-01: Consentimento granular explícito (com bypass para empresas já consentidas)
-    if not consent_acknowledged:
-        already_consented = await _company_has_jd_upload_consent(company_id)
-        if not already_consented:
-            raise HTTPException(
-                status_code=428,
-                detail={
-                    "error": "consent_required",
-                    "message": (
-                        "Para enviar a Job Description, confirme o consentimento "
-                        "granular LGPD para processamento desta JD."
-                    ),
-                    "purpose": "jd_processing",
-                    "consent_param": "consent_acknowledged",
-                    "legal_basis": "LGPD Art. 7º, II / EU AI Act Art. 13",
-                },
-            )
-
-    # M-12: Limite de tamanho idêntico ao proxy Next.js (env UPLOAD_JD_MAX_BYTES,
-    # default 10 MiB). Lê os bytes uma vez e bloqueia antes de qualquer parse.
-    content = await file.read()
-    if len(content) > JD_UPLOAD_MAX_BYTES:
-        raise HTTPException(
-            status_code=413,
-            detail=f"Arquivo muito grande. Máximo: {jd_upload_max_mb()}MB",
-        )
-
+    # Validar tipo de arquivo
+    allowed_extensions = {".txt", ".md", ".pdf", ".docx"}
     filename = file.filename or ""
-
-    # A-02: Validação por magic number antes de aceitar a fila.
-    try:
-        validated = validate_upload(filename, content)
-    except UnsupportedFileTypeError as exc:
-        # Distingue extensão whitelist (400) de bytes que não batem (415).
-        from app.shared.upload_validators import _ALLOWED_EXTENSIONS  # type: ignore
-
-        status_code = 400 if (exc.declared_ext or "") not in _ALLOWED_EXTENSIONS else 415
-        raise HTTPException(status_code=status_code, detail=str(exc))
-
-    # Stage do payload em Redis (TTL 10 min) — mantém o body fora da fila.
-    task_id = new_task_id()
-    await stage_payload(task_id, content)
-
-    # Enfileiramento — soft/hard timeout e rlimits são aplicados dentro do worker.
-    try:
-        jd_upload_process_file_task.apply_async(
-            kwargs={
-                "task_id": task_id,
-                "company_id": str(company_id),
-                "user_id": user_id,
-                "filename": filename,
-                "extension": validated.extension,
-                "title": title,
-                "consent_acknowledged": consent_acknowledged,
-                "session_id": session_id or None,
-            },
-            task_id=task_id,
-        )
-    except Exception as exc:
-        logger.error("[jd-import/upload] enqueue failed: %s", exc)
+    ext = "." + filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if ext not in allowed_extensions:
         raise HTTPException(
-            status_code=503,
-            detail="Fila de processamento indisponível. Tente novamente em instantes.",
+            status_code=400,
+            detail=f"Tipo de arquivo não suportado: '{ext}'. Use: {', '.join(sorted(allowed_extensions))}",
         )
 
-    return {
-        "success": True,
-        "task_id": task_id,
-        "status": "queued",
-        "message": "Upload aceito. Acompanhe o progresso via WebSocket.",
-        "audit": {
-            "uuid": task_id,
-            "filename_hash": _hash_filename(filename),
-            "size_bytes": len(content),
-        },
+    # Validar tamanho (máx 5MB)
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Arquivo muito grande. Máximo: 5MB")
+
+    # Extrair texto conforme tipo
+    raw_text: str = ""
+    if ext in {".txt", ".md"}:
+        raw_text = content.decode("utf-8", errors="replace")
+    elif ext == ".pdf":
+        try:
+            import io
+
+            import pypdf  # type: ignore[import]
+            reader = pypdf.PdfReader(io.BytesIO(content))
+            raw_text = "\n".join(page.extract_text() or "" for page in reader.pages)
+        except ImportError:
+            # pypdf não instalado — retorna texto vazio com aviso
+            raise HTTPException(
+                status_code=422,
+                detail="Parse de PDF não disponível neste ambiente. Use .txt ou .docx.",
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=422, detail=f"Erro ao ler PDF: {exc}")
+    elif ext == ".docx":
+        try:
+            import io
+
+            import docx  # type: ignore[import]
+            doc = docx.Document(io.BytesIO(content))
+            raw_text = "\n".join(p.text for p in doc.paragraphs if p.text.strip())
+        except ImportError:
+            raise HTTPException(
+                status_code=422,
+                detail="Parse de DOCX não disponível neste ambiente. Use .txt.",
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=422, detail=f"Erro ao ler DOCX: {exc}")
+
+    if not raw_text.strip():
+        raise HTTPException(status_code=422, detail="Arquivo vazio ou sem texto extraível.")
+
+    # LGPD: minimizar PII antes de processar (CPF, email, telefone, endereço)
+    try:
+        from app.shared.pii_masking import strip_pii_for_llm_prompt
+        raw_text = strip_pii_for_llm_prompt(raw_text)
+    except Exception:
+        pass  # fail-safe: prosseguir sem stripping se módulo indisponível
+
+    # FairnessGuard: detectar linguagem discriminatória no JD antes de importar
+    fairness_warnings: list[str] = []
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg = FairnessGuard()
+        _result = _fg.check(raw_text[:2000])  # checar amostra inicial
+        if _result.is_blocked:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f"Job description contém linguagem discriminatória e não pode ser importada. "
+                    f"{_result.educational_message or 'Revise o conteúdo e remova critérios protegidos.'}"
+                ),
+            )
+        if _result.soft_warnings:
+            fairness_warnings = _result.soft_warnings
+            logger.warning(
+                "[jd-import/upload] FairnessGuard soft_warnings company=%s file=%s: %s",
+                get_user_company_id(current_user), filename, _result.soft_warnings,
+            )
+    except HTTPException:
+        raise
+    except Exception:
+        pass  # fail-safe
+
+    # Importar via JDImportService
+    company_id = parse_company_id(get_user_company_id(current_user))
+
+    jd_data = {
+        "title": title or filename.rsplit(".", 1)[0],
+        "description": raw_text,
+        "source_file": filename,
     }
+
+    imported = await service.import_jd(
+        db=db,
+        company_id=company_id,
+        jd_data=jd_data,
+        source="file_upload",
+        parse_immediately=True,
+    )
+
+    # Audit log estruturado (LGPD/SOX rastreabilidade)
+    logger.info(
+        "[jd-import/upload] imported company=%s file=%s size_bytes=%d title=%s fairness_warnings=%d",
+        company_id,
+        filename,
+        len(content),
+        jd_data["title"],
+        len(fairness_warnings),
+    )
+
+    result = {**imported.to_dict(), "source_filename": filename}
+    if fairness_warnings:
+        result["fairness_warnings"] = fairness_warnings
+    return result
 
 
 @router.get("/data-coverage", response_model=DataCoverageResponse)

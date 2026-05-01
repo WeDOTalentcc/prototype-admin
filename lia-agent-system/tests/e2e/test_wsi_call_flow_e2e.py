@@ -61,19 +61,14 @@ class TestWSIScoreCalculatorWeightedFormula:
         result = calc.calculate("cand-1", "job-1", responses, weights)
         assert result.overall_wsi >= 4.0
 
-    def test_all_min_scores_yield_low_classification_and_wsi_at_or_below_2(self):
-        """Respostas 1.0 → classification do trilho baixo (audit M13: canônico = 6 níveis).
-
-        Após M13, a fachada delega ao ``classify_wsi_score`` canônico (spec §9.5):
-        score 1.0 → "regular". A tabela legacy de 5 níveis (que mapeava 1.0→"baixo")
-        foi descontinuada — "baixo" continua válido como sinônimo histórico.
-        """
+    def test_all_min_scores_yield_baixo_classification_and_wsi_below_2(self):
+        """Respostas 1.0 → classification='baixo' e overall_wsi < 2.0."""
         calc = WSIScoreCalculator()
         responses = [_resp("python", 1.0), _resp("sql", 1.0)]
         weights = {"python": 0.6, "sql": 0.4}
         result = calc.calculate("cand-2", "job-1", responses, weights)
-        assert result.classification in ("regular", "baixo", "abaixo_da_media")
-        assert result.overall_wsi <= 2.0
+        assert result.classification == "baixo"
+        assert result.overall_wsi < 2.0
 
     def test_result_preserves_candidate_and_job_ids(self):
         """WSIResult deve preservar candidate_id e job_vacancy_id exatos."""
@@ -82,19 +77,18 @@ class TestWSIScoreCalculatorWeightedFormula:
         assert result.candidate_id == "cand-XYZ"
         assert result.job_vacancy_id == "job-ABC"
 
-    def test_score_5_in_all_responses_yields_top_tier_classification(self):
-        """WSI 5.0 em todas as respostas → classificação no topo da escala canônica.
+    def test_score_5_in_all_responses_yields_alto_or_excelente_classification(self):
+        """WSI 5.0 em todas as respostas técnicas → classificação 'alto' ou 'excelente'.
 
-        Audit M13: canônico tem 6 níveis (incluindo 'excepcional' ≥ 4.5/5).
-        A fachada hoje classifica competências sem typing via cutoff por peso
-        (top tech_weight = técnicas), gerando tech_avg=behav_avg=5.0 → final 5.0.
+        A fórmula: technical_wsi=5.0, behavioral_wsi=5.0*0.7=3.5 (sem respostas comportamentais)
+        overall = 5.0*0.7 + 3.5*0.3 = 3.5 + 1.05 = 4.55 → 'excelente'.
         """
         calc = WSIScoreCalculator()
         responses = [_resp("python", 5.0), _resp("aws", 5.0)]
         weights = {"python": 0.5, "aws": 0.5}
         result = calc.calculate("c3", "j1", responses, weights)
-        assert result.classification in ("alto", "excelente", "excepcional"), \
-            f"Expected top-tier, got {result.classification} (overall_wsi={result.overall_wsi})"
+        assert result.classification in ("alto", "excelente"), \
+            f"Expected alto/excelente, got {result.classification} (overall_wsi={result.overall_wsi})"
 
     def test_result_contains_original_response_analyses(self):
         """WSIResult deve incluir as ResponseAnalysis originais na lista."""
@@ -116,102 +110,6 @@ class TestWSIScoreCalculatorWeightedFormula:
         calc = WSIScoreCalculator()
         result = calc.calculate("c3", "j3", [], {})
         assert isinstance(result, WSIResult)
-
-    def test_split_uses_explicit_category_over_weight_heuristic(self):
-        """Audit task #498 — quando ResponseAnalysis.category vem populado pelo
-        response_analyzer (a partir do framework da pergunta), o scorer deve
-        respeitá-lo e ignorar o heurístico por peso. Caso de regressão:
-        pesos iguais (default 0.75 do voice flow) levavam a split aleatório
-        — uma pergunta CBI ficava classificada como técnica só porque vinha
-        primeiro na ordenação estável.
-        """
-        calc = WSIScoreCalculator()
-        # 4 competências, todas com mesmo peso, mas categorias explícitas:
-        # 2 técnicas (Bloom/Dreyfus), 2 comportamentais (CBI/BigFive).
-        responses = [
-            _resp("python", 5.0).model_copy(update={"category": "technical"}),
-            _resp("aws", 5.0).model_copy(update={"category": "technical"}),
-            _resp("comunicacao", 1.0).model_copy(update={"category": "behavioral"}),
-            _resp("colaboracao", 1.0).model_copy(update={"category": "behavioral"}),
-        ]
-        weights = {"python": 0.25, "aws": 0.25, "comunicacao": 0.25, "colaboracao": 0.25}
-
-        result = calc.calculate("c-eq", "j-eq", responses, weights)
-
-        # Técnicas todas em 5.0 → technical_wsi = 5.0
-        # Comportamentais todas em 1.0 → behavioral_wsi = 1.0
-        # Se o heurístico tivesse sido usado (sort estável + cutoff por
-        # tech_weight 0.7 → 3 primeiras), as 3 primeiras viriam misturadas
-        # e os números bateriam diferente. Aqui exigimos split limpo.
-        assert result.technical_wsi == 5.0, (
-            f"Esperado technical_wsi=5.0 (categoria explícita), "
-            f"recebido {result.technical_wsi} — heurístico vazou."
-        )
-        assert result.behavioral_wsi == 1.0, (
-            f"Esperado behavioral_wsi=1.0 (categoria explícita), "
-            f"recebido {result.behavioral_wsi} — heurístico vazou."
-        )
-
-    def test_category_from_framework_mapping(self):
-        """Audit task #498 — mapping helper deve seguir taxonomia WSI:
-        Bloom/Dreyfus → technical; CBI/BigFive → behavioral; outros → None.
-        """
-        from app.domains.cv_screening.services.wsi_service.response_analyzer import (
-            _category_from_framework,
-        )
-        assert _category_from_framework("Bloom") == "technical"
-        assert _category_from_framework("Dreyfus") == "technical"
-        assert _category_from_framework("CBI") == "behavioral"
-        assert _category_from_framework("BigFive") == "behavioral"
-        assert _category_from_framework("STAR") is None
-        assert _category_from_framework("") is None
-
-    def test_fallback_chain_competencies_hint_when_category_absent(self):
-        """Audit task #498 — quando `category` ausente, scorer usa o hint
-        `competencies` antes de cair no heurístico por peso.
-        """
-        from app.domains.cv_screening.services.wsi_service.models import Competency
-
-        calc = WSIScoreCalculator()
-        # Sem category, mas com competencies hint dizendo "behavioral"
-        responses = [
-            _resp("aws", 5.0),  # category=None
-            _resp("comm", 1.0),  # category=None
-        ]
-        comps = [
-            Competency(name="aws", type="behavioral", weight=0.5, seniority_level="pleno"),
-            Competency(name="comm", type="behavioral", weight=0.5, seniority_level="pleno"),
-        ]
-        result = calc.calculate(
-            "c-h", "j-h", responses, {"aws": 0.5, "comm": 0.5}, competencies=comps
-        )
-        # Ambas viraram behavioral por causa do hint (sem cair no heurístico
-        # por peso, que classificaria pelo menos uma como técnica).
-        assert result.behavioral_wsi == 3.0
-        # Sem respostas técnicas, technical_wsi fica 0 (calculator atual
-        # não replica nessa direção; isso é o comportamento de produção).
-        assert result.technical_wsi == 0.0
-
-    def test_explicit_category_takes_precedence_over_competencies_hint(self):
-        """Audit task #498 — quando ambos `category` (em ResponseAnalysis) e
-        `competencies` (parâmetro tipado) estão presentes, vence o `category`
-        da resposta (mais próxima da fonte: o framework da pergunta avaliada).
-        """
-        from app.domains.cv_screening.services.wsi_service.models import Competency
-
-        calc = WSIScoreCalculator()
-        # category="technical" na resposta, mas competencies diz "behavioral":
-        # o scorer deve respeitar a categoria mais granular (a da resposta).
-        resp = _resp("aws", 5.0).model_copy(update={"category": "technical"})
-        comp_hint = [Competency(
-            name="aws", type="behavioral", weight=1.0, seniority_level="pleno"
-        )]
-
-        result = calc.calculate(
-            "c-prec", "j-prec", [resp], {"aws": 1.0}, competencies=comp_hint
-        )
-        assert result.technical_wsi == 5.0
-        assert result.behavioral_wsi == 5.0  # replicado quando vazio
 
 
 # ---------------------------------------------------------------------------

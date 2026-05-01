@@ -60,7 +60,7 @@ async def _create_activity(
 async def _get_vacancy_candidate(
     db: AsyncSession, candidate_id: str, vacancy_id: str
 ):
-    from lia_models.candidate import VacancyCandidate
+    from app.models.candidate import VacancyCandidate
 
     result = await db.execute(
         select(VacancyCandidate).where(
@@ -162,8 +162,8 @@ async def handle_job_closed(event: PlatformEvent) -> None:
 
     db = await _get_db()
     try:
-        from lia_models.candidate import Candidate, VacancyCandidate
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.candidate import Candidate, VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
 
         vacancy_result = await db.execute(
             select(JobVacancy).where(
@@ -307,7 +307,7 @@ async def handle_candidate_moved(event: PlatformEvent) -> None:
     try:
         if from_stage and from_stage != to_stage and vacancy_candidate_id:
             try:
-                from lia_models.candidate import VacancyCandidate
+                from app.models.candidate import VacancyCandidate
 
                 vc = await db.get(VacancyCandidate, vacancy_candidate_id)
                 if vc and vc.company_id == company_id:
@@ -407,7 +407,7 @@ async def handle_company_configured(event: PlatformEvent) -> None:
         )
 
         try:
-            from lia_models.company_hiring_policy import CompanyHiringPolicy
+            from app.models.company_hiring_policy import CompanyHiringPolicy
 
             existing = await db.execute(
                 select(CompanyHiringPolicy).where(
@@ -564,7 +564,7 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
         auto_advance = False
 
         try:
-            from lia_models.company_hiring_policy import CompanyHiringPolicy
+            from app.models.company_hiring_policy import CompanyHiringPolicy
 
             policy_result = await db.execute(
                 select(CompanyHiringPolicy).where(
@@ -687,7 +687,7 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
 
             if feedback_text:
                 try:
-                    from lia_models.candidate import Candidate
+                    from app.models.candidate import Candidate
 
                     cand_result = await db.execute(
                         select(Candidate).where(Candidate.id == candidate_id)

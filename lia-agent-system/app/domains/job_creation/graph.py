@@ -14,7 +14,7 @@ HITL points:
 
 import logging
 import time
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, Optional
 
 from langgraph.graph import StateGraph, END
 
@@ -22,35 +22,10 @@ from app.domains.job_creation.state import (
     JobCreationState,
     calculate_completeness,
 )
-from app.domains.cv_screening.services.seniority_resolver import (
-    SENIORITY_DISPLAY_NAMES,
-    resolve_seniority_full,
-)
 from app.domains.job_creation.services.jd_enrichment import JdEnrichmentService
+from app.domains.job_creation.services.seniority_resolver import resolve_seniority
 from app.domains.job_creation.services.wsi_question_generator import WSIQuestionGenerator
-from app.domains.job_creation.services.intake_extractor import (
-    IntakeExtractor,
-    NEVER_PRECOMPLETED,
-    compute_precompleted_stages,
-    get_intake_extractor,
-)
 from app.domains.job_creation.api_client import JobCreationAPIClient
-from app.domains.job_creation.compliance import (
-    check_input_fairness,
-    check_output_fairness,
-    emit_job_creation_audit,
-    emit_policy_block_audit,
-    mask_pii_for_llm,
-)
-from app.domains.job_creation.policy_gate import (
-    PolicyDecision,
-    WizardIntent,
-    evaluate as evaluate_wizard_policy,
-    record_decision_in_state,
-)
-from app.orchestrator._observability import WIZARD_SPANS
-from app.shared.observability.span_validation import wizard_traced_node
-from app.shared.observability.tracing import finish_span, get_tracer
 
 logger = logging.getLogger(__name__)
 
@@ -58,17 +33,6 @@ logger = logging.getLogger(__name__)
 _jd_service: Optional[JdEnrichmentService] = None
 _wsi_generator: Optional[WSIQuestionGenerator] = None
 _api_client: Optional[JobCreationAPIClient] = None
-
-
-def _is_precompleted(state: JobCreationState, stage: str) -> bool:
-    """Return True if `stage` was marked pre-completed by `intake_node`.
-
-    HITL stages (`jd_enrichment`, `wsi_questions`) are NEVER pre-completed
-    — methodology requires recruiter approval at those points.
-    """
-    if stage in NEVER_PRECOMPLETED:
-        return False
-    return stage in (state.get("precompleted_stages") or [])
 
 
 def _get_jd_service() -> JdEnrichmentService:
@@ -105,100 +69,25 @@ def _get_api_client(state: dict) -> JobCreationAPIClient:
 # Node implementations
 # ---------------------------------------------------------------------------
 
-@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_INTAKE)
 def intake_node(state: JobCreationState) -> JobCreationState:
-    """Pre-F1: Run the canonical IntakeExtractor on the recruiter's free text.
-
-    Produces:
-      * `intake_payload` — the structured `JobIntakePayload` (per-field
-        confidence + source).
-      * `precompleted_stages` — stages downstream that can be skipped
-        because the recruiter already provided enough data. HITL 1
-        (`jd_enrichment`) and HITL 2 (`wsi_questions`) are NEVER included.
-      * `parsed_title`/`parsed_seniority`/`parsed_department`/`raw_input` —
-        kept for backwards compatibility with downstream nodes that still
-        read these flat fields.
-    """
+    """Pre-F1: Parse user input to extract job title, department, seniority, location."""
     t0 = time.time()
     query = state.get("user_query", "") or state.get("raw_input", "")
-    # Multi-source intake — Task #850 canonical contract. The recruiter
-    # may provide data through three channels, merged in priority order
-    # `right_panel_form > user_text > attached_file`:
-    #   * `user_query` / `raw_input`  → free-text chat message
-    #   * `right_panel_form`          → structured form fields
-    #   * `attached_file_text`        → JD/PDF text the recruiter pasted
-    right_panel_form = state.get("right_panel_form") or None
-    attached_file_text = state.get("attached_file_text") or ""
-    logger.info("[JobCreation:intake] query=%s", (query or "")[:80])
+    logger.info("[JobCreation:intake] query=%s", query[:80])
 
-    extractor = get_intake_extractor()
-    if right_panel_form or attached_file_text:
-        payload = extractor.extract_from_sources(
-            user_text=query,
-            right_panel_form=right_panel_form,
-            attached_file_text=attached_file_text,
-        )
-    else:
-        payload = extractor.extract(query)
-    payload_dict = payload.model_dump()
-
-    precompleted = sorted(compute_precompleted_stages(payload))
-
-    # Backwards-compatible flat fields used by jd_enrichment / wsi nodes.
-    parsed_title = payload.title.value or ""
-    parsed_seniority = payload.seniority.value or ""
-    parsed_department = payload.department.value or ""
-
-    # Onda 37.3.3: Template type resolution (canonical, deterministic).
-    # Plugs the resolver into intake_node so the LIA chat path emits
-    # pipeline_template payload that WizardPipelineTemplateCard expects.
-    # Harness: computational sensor, fail-safe (default 'technical').
-    from app.domains.job_creation.services.template_type_resolver import (
-        suggest_template_type,
-        get_template_metadata,
-    )
-    resolved_template_type = suggest_template_type(parsed_title, parsed_department)
-    resolved_template_metadata = get_template_metadata(resolved_template_type)
-
-    logger.info(
-        "[JobCreation:intake] confidence=%.2f precompleted=%s blocked=%s",
-        payload.overall_confidence, precompleted, payload.fairness_blocked,
-    )
-
+    # LLM structured extraction will be implemented in B.1
+    # For now, pass through to jd_enrichment with raw input
     updates: Dict[str, Any] = {
         "current_stage": "intake",
         "raw_input": query,
-        "parsed_title": parsed_title,
-        "parsed_seniority": parsed_seniority,
-        "parsed_department": parsed_department,
-        "intake_confidence": payload.overall_confidence,
-        "intake_payload": payload_dict,
-        "precompleted_stages": precompleted,
-        # Onda 37.3.3: persist template_type in state for downstream nodes
-        # and for the frontend WizardPipelineTemplateCard
-        "template_type": resolved_template_type,
-        "template_metadata": resolved_template_metadata,
+        "intake_confidence": 0.0,
         "stage_history": (state.get("stage_history") or []) + ["intake"],
         "completeness": calculate_completeness("intake"),
         "requires_approval": False,
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "intake",
-            "data": {
-                "raw_input": query,
-                "intake_payload": payload_dict,
-                "precompleted_stages": precompleted,
-                # Onda 37.3.3: pipeline_template payload for the frontend.
-                # Mirrors the shape that WizardStepService used to emit so
-                # `useWizardChatCards` (Onda 28) can render WizardPipelineTemplateCard.
-                "pipeline_template": {
-                    "suggested_type": resolved_template_type,
-                    "display_name": resolved_template_metadata.get("display_name"),
-                    "description": resolved_template_metadata.get("description"),
-                },
-                "fairness_blocked": payload.fairness_blocked,
-                "fairness_message": payload.fairness_message,
-            },
+            "data": {"raw_input": query},
             "completeness": calculate_completeness("intake"),
             "requires_approval": False,
         },
@@ -209,7 +98,6 @@ def intake_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
-@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_JD_ENRICHMENT)
 def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
     """F1: Call JdEnrichmentService to enrich JD + calculate quality score.
 
@@ -220,58 +108,6 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
 
     raw_input = state.get("raw_input", "")
     jd_raw = state.get("jd_raw") or raw_input
-    jd_quality_warnings_extra: list = []
-    fairness_blocked_terms: list = []
-
-    # --- Compliance gate 1: FairnessGuard pre-check on recruiter input ---
-    pre_check = check_input_fairness(jd_raw)
-    if pre_check.is_blocked:
-        logger.warning(
-            "[JobCreation:jd_enrichment] FairnessGuard blocked input | category=%s terms=%s",
-            pre_check.category, pre_check.blocked_terms,
-        )
-        fairness_blocked_terms.extend(pre_check.blocked_terms)
-        jd_quality_warnings_extra.append(
-            pre_check.educational_message
-            or f"Entrada bloqueada por FairnessGuard ({pre_check.category})."
-        )
-        # Persist blocked-terms list so route_after_jd terminates cleanly
-        prior_blocked = list(state.get("fairness_blocked_terms") or [])
-        prior_blocked.extend(pre_check.blocked_terms)
-
-        updates_blocked: Dict[str, Any] = {
-            "current_stage": "jd_enrichment",
-            "jd_raw": jd_raw,
-            "jd_enriched": None,
-            "jd_quality_score": 0.0,
-            "jd_quality_warnings": jd_quality_warnings_extra,
-            "jd_approved": False,
-            "fairness_blocked_terms": prior_blocked,
-            "jd_fairness_blocked": True,
-            "error": pre_check.educational_message
-                or "Sua descrição contém termos potencialmente discriminatórios.",
-            "stage_history": (state.get("stage_history") or []) + ["jd_enrichment"],
-            "completeness": calculate_completeness("jd_enrichment"),
-            "requires_approval": False,
-            "ws_stage_payload": {
-                "type": "wizard_stage",
-                "stage": "jd_enrichment",
-                "data": {
-                    "fairness_blocked": True,
-                    "category": pre_check.category,
-                    "message": pre_check.educational_message,
-                    "blocked_terms": list(pre_check.blocked_terms),
-                },
-                "completeness": calculate_completeness("jd_enrichment"),
-                "requires_approval": False,
-            },
-        }
-        return {**state, **updates_blocked}
-
-    # --- Compliance gate 2: PII masking before LLM ---
-    jd_raw_for_llm = mask_pii_for_llm(jd_raw)
-
-    jd_output_blocked = False
 
     # If already enriched and approved, skip re-enrichment (resume path)
     if state.get("jd_approved") is not None and state.get("jd_enriched"):
@@ -282,39 +118,12 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         # Call JdEnrichmentService (F1.C LLM enrichment)
         service = _get_jd_service()
         enriched_obj, jd_quality_score, jd_quality_warnings = service.enrich(
-            jd_raw=jd_raw_for_llm,
+            jd_raw=jd_raw,
             title=state.get("parsed_title", ""),
             seniority=state.get("parsed_seniority", ""),
             department=state.get("parsed_department", ""),
         )
         jd_enriched_dict = enriched_obj.model_dump()
-
-        # --- Compliance gate 3: FairnessGuard post-check on enriched JD ---
-        enriched_text = " ".join(filter(None, [
-            jd_enriched_dict.get("about_role", ""),
-            " ".join(jd_enriched_dict.get("responsabilidades", []) or []),
-            " ".join(
-                s.get("skill", "")
-                for s in (jd_enriched_dict.get("skills_obrigatorias", []) or [])
-            ),
-        ]))
-        post_check = check_output_fairness(enriched_text)
-        if post_check.is_blocked:
-            logger.warning(
-                "[JobCreation:jd_enrichment] FairnessGuard blocked output | category=%s terms=%s",
-                post_check.category, post_check.blocked_terms,
-            )
-            fairness_blocked_terms.extend(post_check.blocked_terms)
-            jd_quality_warnings = list(jd_quality_warnings or []) + [
-                post_check.educational_message
-                or f"Descrição gerada bloqueada por FairnessGuard ({post_check.category})."
-            ]
-            jd_quality_score = 0.0
-            jd_enriched_dict = None  # explicit block: do not surface biased JD
-            jd_output_blocked = True
-
-    if fairness_blocked_terms:
-        state.setdefault("fairness_blocked_terms", []).extend(fairness_blocked_terms)
 
     updates: Dict[str, Any] = {
         "current_stage": "jd_enrichment",
@@ -322,12 +131,9 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         "jd_enriched": jd_enriched_dict,
         "jd_quality_score": jd_quality_score,
         "jd_quality_warnings": jd_quality_warnings,
-        # Reset per-attempt flag: True only if THIS attempt was blocked.
-        # A subsequent retry with clean input clears it and proceeds.
-        "jd_fairness_blocked": jd_output_blocked,
         "stage_history": (state.get("stage_history") or []) + ["jd_enrichment"],
         "completeness": calculate_completeness("jd_enrichment"),
-        "requires_approval": not jd_output_blocked,
+        "requires_approval": True,
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "jd_enrichment",
@@ -336,25 +142,17 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 "jd_enriched": jd_enriched_dict,
                 "quality_score": jd_quality_score,
                 "quality_warnings": jd_quality_warnings,
-                "fairness_blocked": jd_output_blocked,
             },
             "completeness": calculate_completeness("jd_enrichment"),
-            "requires_approval": not jd_output_blocked,
+            "requires_approval": True,
         },
     }
-    if jd_output_blocked:
-        updates["jd_approved"] = False
-        updates["error"] = (
-            "A descrição gerada contém termos potencialmente discriminatórios "
-            "e foi bloqueada antes de seguir para revisão."
-        )
 
     elapsed = (time.time() - t0) * 1000
     logger.info("[JobCreation:jd_enrichment] score=%.1f | %0.fms", jd_quality_score, elapsed)
     return {**state, **updates}
 
 
-@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_BIGFIVE)
 def bigfive_node(state: JobCreationState) -> JobCreationState:
     """F2+F3: Extract Big Five profile from enriched JD + rank traits.
 
@@ -370,146 +168,35 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
     enriched = EnrichedJobDescription(**jd_enriched_dict) if jd_enriched_dict else None
 
     generator = _get_wsi_generator()
-    bigfive_warnings: list = []
-    bigfive_pending_confirmation = False
 
     if enriched:
-        # --- Policy gate: protected criteria are about to be inferred (N-09 / M-06) ---
-        # Confidence proxy: jd_quality_score (0..100) → 0..1.
-        # NOTE: ``is not None`` not truthiness — `0.0` is a *valid* score
-        # (means "no quality at all") and must NOT be coerced to None,
-        # otherwise the confidence-driven HITL escalation is skipped.
-        _bf_raw_score = state.get("jd_quality_score")
-        _bf_score = float(_bf_raw_score) / 100.0 if _bf_raw_score is not None else None
-        _bf_decision = evaluate_wizard_policy(
-            WizardIntent.SET_PROTECTED_CRITERIA,
-            state,
-            score=_bf_score,
-        )
-        record_decision_in_state(state, _bf_decision, stage="bigfive")
-        if _bf_decision.decision == PolicyDecision.DENY:
-            logger.warning(
-                "[JobCreation:bigfive] PolicyGate DENY | rationale=%s",
-                _bf_decision.rationale,
-            )
-            emit_policy_block_audit(state, stage="bigfive", decision=_bf_decision)
-            updates: Dict[str, Any] = {
-                "current_stage": "bigfive",
-                "bigfive_profile": state.get("bigfive_profile"),
-                "trait_rankings": state.get("trait_rankings", []),
-                "stage_history": (state.get("stage_history") or []) + ["bigfive"],
-                "completeness": calculate_completeness("bigfive"),
-                "requires_approval": False,
-                "error": f"Big Five bloqueado pela política da LIA: {_bf_decision.rationale}",
-                "policy_decisions": list(state.get("policy_decisions") or []),
-                "ws_stage_payload": {
-                    "type": "wizard_stage",
-                    "stage": "bigfive",
-                    "data": {
-                        "policy_decision": _bf_decision.to_audit_dict(stage="bigfive"),
-                        "policy_blocked": True,
-                    },
-                    "completeness": calculate_completeness("bigfive"),
-                    "requires_approval": False,
-                },
-            }
-            return {**state, **updates}
-        if _bf_decision.decision == PolicyDecision.HITL_REQUIRED:
-            bigfive_pending_confirmation = True
+        # F2: Extract Big Five via LLM
+        bigfive_obj = generator.extract_bigfive(enriched)
+        bigfive_profile = bigfive_obj.model_dump()
 
-        # --- Compliance gate: PII mask + FairnessGuard pre-check on enriched JD ---
-        bigfive_input_text = " ".join(filter(None, [
-            jd_enriched_dict.get("about_role", ""),
-            " ".join(jd_enriched_dict.get("responsabilidades", []) or []),
-        ]))
-        pre_check = check_input_fairness(bigfive_input_text)
-        if pre_check.is_blocked:
-            logger.warning(
-                "[JobCreation:bigfive] FairnessGuard blocked input | category=%s terms=%s",
-                pre_check.category, pre_check.blocked_terms,
-            )
-            state.setdefault("fairness_blocked_terms", []).extend(pre_check.blocked_terms)
-            bigfive_warnings.append(
-                pre_check.educational_message
-                or f"Big Five bloqueado por FairnessGuard ({pre_check.category})."
-            )
-            bigfive_profile = state.get("bigfive_profile")
-            trait_rankings = state.get("trait_rankings", [])
-        else:
-            # Mask PII in the enriched payload before sending to the LLM
-            masked_dict = dict(jd_enriched_dict)
-            if masked_dict.get("about_role"):
-                masked_dict["about_role"] = mask_pii_for_llm(masked_dict["about_role"])
-            if masked_dict.get("responsabilidades"):
-                masked_dict["responsabilidades"] = [
-                    mask_pii_for_llm(r) for r in masked_dict["responsabilidades"] or []
-                ]
-            try:
-                from app.domains.job_creation.schemas import EnrichedJobDescription as _EJD
-                enriched_for_llm = _EJD(**masked_dict)
-            except Exception:
-                enriched_for_llm = enriched
-
-            # F2: Extract Big Five via LLM (PII-masked input)
-            bigfive_obj = generator.extract_bigfive(enriched_for_llm)
-            bigfive_profile = bigfive_obj.model_dump()
-
-            # --- Compliance gate: FairnessGuard post-check on bigfive evidences ---
-            def _flatten_strings(obj: Any) -> list[str]:
-                out: list[str] = []
-                if isinstance(obj, str):
-                    out.append(obj)
-                elif isinstance(obj, dict):
-                    for v in obj.values():
-                        out.extend(_flatten_strings(v))
-                elif isinstance(obj, (list, tuple, set)):
-                    for v in obj:
-                        out.extend(_flatten_strings(v))
-                return out
-
-            bigfive_text = " ".join(_flatten_strings(bigfive_profile))
-            post_check = check_output_fairness(bigfive_text)
-            if post_check.is_blocked:
-                logger.warning(
-                    "[JobCreation:bigfive] FairnessGuard blocked output | "
-                    "category=%s terms=%s",
-                    post_check.category, post_check.blocked_terms,
-                )
-                state.setdefault("fairness_blocked_terms", []).extend(post_check.blocked_terms)
-                bigfive_warnings.append(
-                    post_check.educational_message
-                    or f"Saída Big Five bloqueada por FairnessGuard ({post_check.category})."
-                )
-
-            # F3: Rank traits (deterministic)
-            seniority = state.get("seniority_resolved") or state.get("parsed_seniority") or "pleno"
-            trait_rankings = generator.rank_traits(bigfive_obj, seniority)
+        # F3: Rank traits (deterministic)
+        seniority = state.get("seniority_resolved") or state.get("parsed_seniority") or "pleno"
+        trait_rankings = generator.rank_traits(bigfive_obj, seniority)
     else:
         bigfive_profile = state.get("bigfive_profile")
         trait_rankings = state.get("trait_rankings", [])
 
-    _bf_payload_data: Dict[str, Any] = {
-        "bigfive_profile": bigfive_profile,
-        "trait_rankings": trait_rankings,
-    }
-    _bf_history = list(state.get("policy_decisions") or [])
-    if _bf_history:
-        _bf_payload_data["policy_decision"] = _bf_history[-1]
     updates: Dict[str, Any] = {
         "current_stage": "bigfive",
         "bigfive_profile": bigfive_profile,
         "trait_rankings": trait_rankings,
         "stage_history": (state.get("stage_history") or []) + ["bigfive"],
         "completeness": calculate_completeness("bigfive"),
-        "requires_approval": bigfive_pending_confirmation,
-        "pending_human_confirmation": bigfive_pending_confirmation,
-        "policy_decisions": _bf_history,
+        "requires_approval": False,
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "bigfive",
-            "data": _bf_payload_data,
+            "data": {
+                "bigfive_profile": bigfive_profile,
+                "trait_rankings": trait_rankings,
+            },
             "completeness": calculate_completeness("bigfive"),
-            "requires_approval": bigfive_pending_confirmation,
+            "requires_approval": False,
         },
     }
 
@@ -518,7 +205,6 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
-@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_SALARY)
 def salary_node(state: JobCreationState) -> JobCreationState:
     """Validate salary range vs market benchmark."""
     t0 = time.time()
@@ -549,7 +235,6 @@ def salary_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
-@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_COMPETENCY)
 def competency_node(state: JobCreationState) -> JobCreationState:
     """F4+F5: Resolve seniority + calculate question distribution.
 
@@ -563,28 +248,16 @@ def competency_node(state: JobCreationState) -> JobCreationState:
     jd_enriched = state.get("jd_enriched", {})
     skills = [s.get("skill", "") for s in jd_enriched.get("skills_obrigatorias", [])]
 
-    # F4: Resolve seniority using 5 signals (canonical cv_screening resolver)
-    _salary_min = state.get("salary_min")
-    seniority_resolution = resolve_seniority_full(
+    # F4: Resolve seniority using 5 signals
+    seniority_result = resolve_seniority(
         explicit_seniority=state.get("parsed_seniority"),
         job_title=jd_enriched.get("titulo_padronizado") or state.get("parsed_title"),
         job_description=jd_enriched.get("about_role", ""),
-        salary_min=float(_salary_min) if _salary_min else None,
-        salary_max=None,
-        technical_skills=skills,
+        skills=skills,
+        salary_min=state.get("salary_min"),
     )
-    seniority = seniority_resolution.level or "pleno"
-    seniority_signals_used = [
-        {
-            "signal": s.source,
-            "value": s.level,
-            "weight": round(s.weight, 4),
-            "confidence": round(s.confidence, 4),
-            "evidence": s.evidence,
-        }
-        for s in seniority_resolution.signals
-        if s.level is not None
-    ]
+
+    seniority = seniority_result.final_level
     screening_mode = state.get("screening_mode")
 
     # F5: Question distribution by mode (deterministic)
@@ -611,7 +284,7 @@ def competency_node(state: JobCreationState) -> JobCreationState:
     updates: Dict[str, Any] = {
         "current_stage": "competency",
         "seniority_resolved": seniority,
-        "seniority_signals": seniority_signals_used,
+        "seniority_signals": seniority_result.signals_used,
         "question_distribution": distribution,
         "competency_tree": competency_tree,
         "stage_history": (state.get("stage_history") or []) + ["competency"],
@@ -622,16 +295,9 @@ def competency_node(state: JobCreationState) -> JobCreationState:
             "stage": "competency",
             "data": {
                 "seniority": seniority,
-                "seniority_display": SENIORITY_DISPLAY_NAMES.get(seniority, seniority.title()),
-                "seniority_confidence": seniority_resolution.confidence,
-                "seniority_signals": seniority_signals_used,
-                # Onda 37.3.5: emit confidence flag — frontend uses this to ask
-                # the recruiter to confirm seniority when our 5-signal resolver
-                # is unsure. Threshold matches stage_description.py:422 (REST).
-                # Harness: computational sensor (deterministic threshold check).
-                "requires_seniority_confirmation": (
-                    seniority_resolution.confidence < 0.7
-                ),
+                "seniority_display": seniority_result.display_name,
+                "seniority_confidence": seniority_result.confidence,
+                "seniority_signals": seniority_result.signals_used,
                 "screening_mode": screening_mode,
                 "distribution": distribution,
                 "competency_tree": competency_tree,
@@ -642,14 +308,10 @@ def competency_node(state: JobCreationState) -> JobCreationState:
     }
 
     elapsed = (time.time() - t0) * 1000
-    logger.info(
-        "[JobCreation:competency] seniority=%s confidence=%.2f mode=%s | %0.fms",
-        seniority, seniority_resolution.confidence, screening_mode, elapsed,
-    )
+    logger.info("[JobCreation:competency] seniority=%s mode=%s | %0.fms", seniority, screening_mode, elapsed)
     return {**state, **updates}
 
 
-@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_WSI_QUESTIONS)
 def wsi_questions_node(state: JobCreationState) -> JobCreationState:
     """F6: Generate WSI screening questions via LLM.
 
@@ -665,60 +327,9 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
 
     from app.domains.job_creation.schemas import EnrichedJobDescription
 
-    # Per-attempt drop log; cleared on each (re)generation so a clean retry
-    # doesn't carry over stale fairness warnings.
-    dropped_questions: list[Dict[str, Any]] = []
-    input_block: Optional[Dict[str, Any]] = None
-    wsi_pending_confirmation = False
-
-    # --- Policy gate: WSI questions are about to be generated (N-09 / M-06) ---
-    # The score proxy is `jd_quality_score` (0..100) → 0..1 — when low, the
-    # gate forces recruiter confirmation via ConfidencePolicyService.
-    # ``is not None`` not truthiness — `0.0` is a valid score.
-    _wsi_raw_score = state.get("jd_quality_score")
-    _wsi_score = float(_wsi_raw_score) / 100.0 if _wsi_raw_score is not None else None
-    _wsi_decision = evaluate_wizard_policy(
-        WizardIntent.GENERATE_WSI,
-        state,
-        score=_wsi_score,
-    )
-    record_decision_in_state(state, _wsi_decision, stage="wsi_questions")
-    if _wsi_decision.decision == PolicyDecision.DENY:
-        logger.warning(
-            "[JobCreation:wsi_questions] PolicyGate DENY | rationale=%s",
-            _wsi_decision.rationale,
-        )
-        emit_policy_block_audit(state, stage="wsi_questions", decision=_wsi_decision)
-        updates: Dict[str, Any] = {
-            "current_stage": "wsi_questions",
-            "wsi_questions": [],
-            "wsi_dropped_questions": [],
-            "stage_history": (state.get("stage_history") or []) + ["wsi_questions"],
-            "completeness": calculate_completeness("wsi_questions"),
-            "requires_approval": False,
-            "error": f"Geração de perguntas WSI bloqueada: {_wsi_decision.rationale}",
-            "policy_decisions": list(state.get("policy_decisions") or []),
-            "ws_stage_payload": {
-                "type": "wizard_stage",
-                "stage": "wsi_questions",
-                "data": {
-                    "policy_decision": _wsi_decision.to_audit_dict(stage="wsi_questions"),
-                    "policy_blocked": True,
-                },
-                "completeness": calculate_completeness("wsi_questions"),
-                "requires_approval": False,
-            },
-        }
-        return {**state, **updates}
-    if _wsi_decision.decision == PolicyDecision.HITL_REQUIRED:
-        wsi_pending_confirmation = True
-
-    # If already approved, skip re-generation (resume path). Preserve any
-    # previously surfaced drop log so the recruiter can still see why the
-    # question count is what it is when they revisit the stage.
+    # If already approved, skip re-generation (resume path)
     if state.get("questions_approved") is not None and state.get("wsi_questions"):
         questions_data = state["wsi_questions"]
-        dropped_questions = list(state.get("wsi_dropped_questions") or [])
     else:
         jd_enriched_dict = state.get("jd_enriched", {})
         enriched = EnrichedJobDescription(**jd_enriched_dict) if jd_enriched_dict else None
@@ -727,162 +338,41 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
         trait_rankings = state.get("trait_rankings", [])
 
         if enriched:
-            # --- Compliance gate: PII mask + FairnessGuard pre-check ---
-            # `enriched` is an EnrichedJobDescription pydantic model — read
-            # the raw dict (not the model) when running fairness checks.
-            wsi_input_text = " ".join(filter(None, [
-                jd_enriched_dict.get("about_role", "") or "",
-                " ".join(jd_enriched_dict.get("responsabilidades", []) or []),
-            ]))
-            wsi_pre = check_input_fairness(wsi_input_text)
-            if wsi_pre.is_blocked:
-                logger.warning(
-                    "[JobCreation:wsi_questions] FairnessGuard blocked input | "
-                    "category=%s terms=%s",
-                    wsi_pre.category, wsi_pre.blocked_terms,
-                )
-                state.setdefault("fairness_blocked_terms", []).extend(wsi_pre.blocked_terms)
-                input_block = {
-                    "category": wsi_pre.category,
-                    "blocked_terms": list(wsi_pre.blocked_terms),
-                    "message": (
-                        wsi_pre.educational_message
-                        or "A descrição enriquecida contém termos que a LIA "
-                           "considera potencialmente discriminatórios — por "
-                           "isso nenhuma pergunta foi gerada."
-                    ),
-                }
-                questions_data = []
-            else:
-                # Mask PII inside the enriched payload before LLM call.
-                masked_dict = dict(jd_enriched_dict)
-                if masked_dict.get("about_role"):
-                    masked_dict["about_role"] = mask_pii_for_llm(masked_dict["about_role"])
-                if masked_dict.get("responsabilidades"):
-                    masked_dict["responsabilidades"] = [
-                        mask_pii_for_llm(r) for r in masked_dict["responsabilidades"] or []
-                    ]
-                try:
-                    enriched_for_llm = EnrichedJobDescription(**masked_dict)
-                except Exception:
-                    enriched_for_llm = enriched
-
-                generator = _get_wsi_generator()
-                question_objs = generator.generate_questions(
-                    enriched=enriched_for_llm,
-                    seniority=seniority,
-                    distribution=distribution,
-                    trait_rankings=trait_rankings,
-                )
-                questions_data = [q.model_dump() for q in question_objs]
-
-            # --- Compliance gate: FairnessGuard post-check on each question ---
-            safe_questions = []
-            for q in questions_data:
-                check = check_output_fairness(q.get("question", ""))
-                if check.is_blocked:
-                    logger.warning(
-                        "[JobCreation:wsi_questions] FairnessGuard blocked question | "
-                        "category=%s terms=%s",
-                        check.category, check.blocked_terms,
-                    )
-                    dropped_questions.append({
-                        "question": q.get("question", ""),
-                        "category": q.get("category") or q.get("block"),
-                        "blocked_terms": list(check.blocked_terms or []),
-                        "fairness_category": check.category,
-                        "message": (
-                            check.educational_message
-                            or "Pergunta removida porque o FairnessGuard "
-                               "detectou termos potencialmente discriminatórios."
-                        ),
-                    })
-                    continue
-                safe_questions.append(q)
-            if dropped_questions:
-                state.setdefault("fairness_blocked_terms", []).extend(
-                    d["question"][:80] for d in dropped_questions
-                )
-            questions_data = safe_questions
+            generator = _get_wsi_generator()
+            question_objs = generator.generate_questions(
+                enriched=enriched,
+                seniority=seniority,
+                distribution=distribution,
+                trait_rankings=trait_rankings,
+            )
+            questions_data = [q.model_dump() for q in question_objs]
         else:
             questions_data = []
-
-    # Compose a recruiter-friendly summary of the fairness drops, if any.
-    total_dropped = len(dropped_questions)
-    fairness_warning: Optional[Dict[str, Any]] = None
-    if input_block is not None:
-        fairness_warning = {
-            "kind": "input_blocked",
-            "title": "Geração bloqueada pela LIA",
-            "message": input_block["message"],
-            "category": input_block.get("category"),
-            "blocked_terms": input_block.get("blocked_terms", []),
-            "dropped_count": 0,
-        }
-    elif total_dropped:
-        fairness_warning = {
-            "kind": "questions_dropped",
-            "title": (
-                "1 pergunta removida pela verificação de imparcialidade"
-                if total_dropped == 1
-                else f"{total_dropped} perguntas removidas pela verificação de imparcialidade"
-            ),
-            "message": (
-                "A LIA detectou linguagem potencialmente discriminatória nas "
-                "perguntas abaixo e as removeu antes de te mostrar a lista. "
-                "Revise se quer continuar com a triagem reduzida ou regenerar."
-            ),
-            "dropped_count": total_dropped,
-        }
-
-    # If FairnessGuard left the recruiter with no questions to approve, the
-    # wizard cannot legitimately request HITL approval — block the step until
-    # they regenerate or revise the JD.
-    has_any_question = bool(questions_data)
-    requires_approval = has_any_question
-
-    _wsi_history = list(state.get("policy_decisions") or [])
-    _wsi_payload_data: Dict[str, Any] = {
-        "questions": questions_data,
-        "screening_mode": state.get("screening_mode"),
-        "distribution": state.get("question_distribution"),
-        "dropped_questions": dropped_questions,
-        "fairness_warning": fairness_warning,
-    }
-    if _wsi_history:
-        _wsi_payload_data["policy_decision"] = _wsi_history[-1]
 
     updates: Dict[str, Any] = {
         "current_stage": "wsi_questions",
         "wsi_questions": questions_data,
-        "wsi_dropped_questions": dropped_questions,
         "stage_history": (state.get("stage_history") or []) + ["wsi_questions"],
         "completeness": calculate_completeness("wsi_questions"),
-        "requires_approval": requires_approval,
-        "pending_human_confirmation": wsi_pending_confirmation,
-        "policy_decisions": _wsi_history,
+        "requires_approval": True,
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "wsi_questions",
-            "data": _wsi_payload_data,
+            "data": {
+                "questions": questions_data,
+                "screening_mode": state.get("screening_mode"),
+                "distribution": state.get("question_distribution"),
+            },
             "completeness": calculate_completeness("wsi_questions"),
-            "requires_approval": requires_approval,
+            "requires_approval": True,
         },
     }
-    if fairness_warning is not None and not has_any_question:
-        # Surface a top-level error so the wizard UI can also fail loudly
-        # if it doesn't read the structured warning yet.
-        updates["error"] = fairness_warning["message"]
 
     elapsed = (time.time() - t0) * 1000
-    logger.info(
-        "[JobCreation:wsi_questions] %d questions | %d dropped | %0.fms",
-        len(questions_data), total_dropped, elapsed,
-    )
+    logger.info("[JobCreation:wsi_questions] %d questions | %0.fms", len(questions_data), elapsed)
     return {**state, **updates}
 
 
-@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_ELIGIBILITY)
 def eligibility_node(state: JobCreationState) -> JobCreationState:
     """Pre-screening: yes/no eliminatory questions configured by recruiter."""
     t0 = time.time()
@@ -909,7 +399,6 @@ def eligibility_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
-@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_REVIEW)
 def review_node(state: JobCreationState) -> JobCreationState:
     """Readiness check + apply company defaults from Settings.
 
@@ -966,7 +455,6 @@ def review_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
-@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_PUBLISH)
 def publish_node(state: JobCreationState) -> JobCreationState:
     """Publish job via Rails API + save screening config + get share link.
 
@@ -987,100 +475,6 @@ def publish_node(state: JobCreationState) -> JobCreationState:
     job_uid = state.get("job_uid")
     share_link = state.get("share_link")
     error = None
-    publish_pending_confirmation = False
-
-    # --- Policy gate: about to publish a job (N-09 / M-06) ---
-    # No native confidence score for the publish action — we use the JD
-    # quality as a proxy so that a low-quality JD requires explicit
-    # recruiter confirmation before going live.
-    # ``is not None`` not truthiness — `0.0` is a valid score.
-    _pub_raw_score = state.get("jd_quality_score")
-    _pub_score = float(_pub_raw_score) / 100.0 if _pub_raw_score is not None else None
-    _pub_decision = evaluate_wizard_policy(
-        WizardIntent.PUBLISH_JOB,
-        state,
-        score=_pub_score,
-    )
-    record_decision_in_state(state, _pub_decision, stage="publish")
-    if _pub_decision.decision == PolicyDecision.DENY:
-        logger.warning(
-            "[JobCreation:publish] PolicyGate DENY | rationale=%s",
-            _pub_decision.rationale,
-        )
-        emit_policy_block_audit(state, stage="publish", decision=_pub_decision)
-        updates: Dict[str, Any] = {
-            "current_stage": "publish",
-            "job_id": job_id,
-            "job_uid": job_uid,
-            "share_link": share_link,
-            "error": f"Publicação bloqueada pela política da LIA: {_pub_decision.rationale}",
-            "stage_history": (state.get("stage_history") or []) + ["publish"],
-            "completeness": calculate_completeness("publish"),
-            "requires_approval": False,
-            "policy_decisions": list(state.get("policy_decisions") or []),
-            "ws_stage_payload": {
-                "type": "wizard_stage",
-                "stage": "publish",
-                "data": {
-                    "job_id": job_id,
-                    "policy_decision": _pub_decision.to_audit_dict(stage="publish"),
-                    "policy_blocked": True,
-                    "error": _pub_decision.rationale,
-                },
-                "completeness": calculate_completeness("publish"),
-                "requires_approval": False,
-            },
-        }
-        return {**state, **updates}
-    if _pub_decision.decision == PolicyDecision.HITL_REQUIRED:
-        # Side-effecting action: do NOT call Rails until the recruiter
-        # explicitly confirms. Pause the wizard with the rationale and
-        # confidence band visible in the payload so the UI can prompt.
-        # When the recruiter confirms, the front-end sets
-        # ``policy_confirmed_publish`` on the next turn and we re-enter
-        # this node; the gate is then bypassed for that single turn.
-        if not state.get("policy_confirmed_publish"):
-            publish_pending_confirmation = True
-            logger.warning(
-                "[JobCreation:publish] PolicyGate HITL_REQUIRED — "
-                "skipping Rails publish until recruiter confirmation | "
-                "rationale=%s confidence=%s",
-                _pub_decision.rationale,
-                _pub_decision.confidence_band,
-            )
-            emit_policy_block_audit(state, stage="publish", decision=_pub_decision)
-            updates: Dict[str, Any] = {
-                "current_stage": "publish",
-                "job_id": job_id,
-                "job_uid": job_uid,
-                "share_link": share_link,
-                "error": None,
-                "stage_history": (state.get("stage_history") or []) + ["publish"],
-                "completeness": calculate_completeness("publish"),
-                "requires_approval": True,
-                "pending_human_confirmation": True,
-                "policy_decisions": list(state.get("policy_decisions") or []),
-                "ws_stage_payload": {
-                    "type": "wizard_stage",
-                    "stage": "publish",
-                    "data": {
-                        "job_id": job_id,
-                        "policy_decision": _pub_decision.to_audit_dict(stage="publish"),
-                        "policy_pending_confirmation": True,
-                        "rationale": _pub_decision.rationale,
-                        "confidence_band": _pub_decision.confidence_band,
-                    },
-                    "completeness": calculate_completeness("publish"),
-                    "requires_approval": True,
-                },
-            }
-            return {**state, **updates}
-        # Recruiter explicitly confirmed — proceed with publish, but log
-        # the override into state so the audit trail captures it.
-        logger.info(
-            "[JobCreation:publish] PolicyGate HITL bypassed by explicit "
-            "recruiter confirmation (policy_confirmed_publish=True)",
-        )
 
     try:
         from app.shared.services.circuit_breaker import circuit_breaker_call, CircuitBreakerOpenError
@@ -1137,19 +531,6 @@ def publish_node(state: JobCreationState) -> JobCreationState:
         error = str(e)
         logger.error("[JobCreation:publish] Error: %s", e)
 
-    _pub_history = list(state.get("policy_decisions") or [])
-    _pub_payload_data: Dict[str, Any] = {
-        "job_id": job_id,
-        "platforms": state.get("publish_platforms", []),
-        "sourcing_mode": state.get("sourcing_mode"),
-        "contact_channels": state.get("contact_channels", []),
-        "share_link": share_link,
-        "auto_screen": state.get("auto_screen_enabled", True),
-        "error": error,
-    }
-    if _pub_history:
-        _pub_payload_data["policy_decision"] = _pub_history[-1]
-
     updates: Dict[str, Any] = {
         "current_stage": "publish",
         "job_id": job_id,
@@ -1158,15 +539,21 @@ def publish_node(state: JobCreationState) -> JobCreationState:
         "error": error,
         "stage_history": (state.get("stage_history") or []) + ["publish"],
         "completeness": calculate_completeness("publish"),
-        "requires_approval": publish_pending_confirmation,
-        "pending_human_confirmation": publish_pending_confirmation,
-        "policy_decisions": _pub_history,
+        "requires_approval": False,
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "publish",
-            "data": _pub_payload_data,
+            "data": {
+                "job_id": job_id,
+                "platforms": state.get("publish_platforms", []),
+                "sourcing_mode": state.get("sourcing_mode"),
+                "contact_channels": state.get("contact_channels", []),
+                "share_link": share_link,
+                "auto_screen": state.get("auto_screen_enabled", True),
+                "error": error,
+            },
             "completeness": calculate_completeness("publish"),
-            "requires_approval": publish_pending_confirmation,
+            "requires_approval": False,
         },
     }
 
@@ -1175,7 +562,6 @@ def publish_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
-@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_CALIBRATION)
 def calibration_node(state: JobCreationState) -> JobCreationState:
     """Present 3+ candidates for calibration (approve/reject).
 
@@ -1237,7 +623,6 @@ def calibration_node(state: JobCreationState) -> JobCreationState:
     return {**state, **updates}
 
 
-@wizard_traced_node(WIZARD_SPANS.JOB_CREATION_HANDOFF)
 def handoff_node(state: JobCreationState) -> JobCreationState:
     """Navigate recruiter to job page. Inform share link. Chat becomes job assistant."""
     t0 = time.time()
@@ -1245,29 +630,7 @@ def handoff_node(state: JobCreationState) -> JobCreationState:
 
     job_id = state.get("job_id")
     share_link = state.get("share_link")
-    # Canonical fix (post-mortem 2026-04-29 wizard-domain-hint-leak):
-    # The /jobs/<id> route was deleted from the Next.js app on commit
-    # f7627f1bf without updating producers. Returning a hardcoded
-    # /jobs/<id> URL here caused a 404 when the wizard's "Open job page"
-    # button was clicked. Until the canonical "view job detail" route is
-    # decided by product, return None so the chat surface can render the
-    # success card without an external link (share_link below still
-    # works for public sharing). When a canonical route is restored,
-    # update this single producer — consumers must not synthesize URLs.
-    #
-    # Skill canônica: harness-engineering [guide computacional] +
-    # canonical-fix (fix in producer, not consumer).
-    handoff_url = None  # was: f"/jobs/{job_id}" if job_id else None
-
-    # Surface the canonical job title in the closing payload so the chat
-    # surface can render a "Vaga publicada" card with the title without
-    # peeking at intermediate stage data (which it never sees).
-    jd_enriched = state.get("jd_enriched") or {}
-    job_title = (
-        jd_enriched.get("titulo_padronizado")
-        or state.get("parsed_title")
-        or None
-    )
+    handoff_url = f"/jobs/{job_id}" if job_id else None
 
     updates: Dict[str, Any] = {
         "current_stage": "handoff",
@@ -1280,7 +643,6 @@ def handoff_node(state: JobCreationState) -> JobCreationState:
             "stage": "handoff",
             "data": {
                 "job_id": job_id,
-                "job_title": job_title,
                 "handoff_url": handoff_url,
                 "share_link": share_link,
             },
@@ -1288,35 +650,6 @@ def handoff_node(state: JobCreationState) -> JobCreationState:
             "requires_approval": False,
         },
     }
-
-    # --- Compliance gate: emit one job_creation audit row ---
-    try:
-        # Surface the structured WSI drops as extra reasoning so the audit
-        # row records exactly which questions were removed and why, instead
-        # of just a list of blocked terms.
-        dropped = state.get("wsi_dropped_questions") or []
-        extra: list = []
-        if dropped:
-            extra.append({
-                "wsi_dropped_questions": [
-                    {
-                        "question": d.get("question", "")[:160],
-                        "category": d.get("category"),
-                        "fairness_category": d.get("fairness_category"),
-                        "blocked_terms": d.get("blocked_terms", []),
-                        "message": d.get("message"),
-                    }
-                    for d in dropped
-                ]
-            })
-        emit_job_creation_audit(
-            {**state, **updates},
-            success=True,
-            extra_reasoning=extra or None,
-            fairness_blocked=state.get("fairness_blocked_terms") or None,
-        )
-    except Exception as exc:  # pragma: no cover — defensive
-        logger.warning("[JobCreation:handoff] audit emission failed: %s", exc)
 
     elapsed = (time.time() - t0) * 1000
     logger.info("[JobCreation:handoff] url=%s | %0.fms", handoff_url, elapsed)
@@ -1334,15 +667,6 @@ def route_after_jd(state: JobCreationState) -> str:
     """
     approved = state.get("jd_approved")
     quality = state.get("jd_quality_score", 0.0)
-
-    # If FairnessGuard blocked this attempt, terminate cleanly so the wizard
-    # surfaces the error instead of immediately looping with the same input.
-    # The flag is scoped to the current JD attempt and reset at the start of
-    # each `jd_enrichment_node` execution, so a recruiter retry with clean
-    # input proceeds normally to bigfive.
-    if state.get("jd_fairness_blocked"):
-        logger.info("[JobCreation:route] jd_enrichment -> END (fairness blocked)")
-        return "end"
 
     if approved is None:
         # Waiting for recruiter approval — END to return control
@@ -1362,31 +686,6 @@ def route_after_jd(state: JobCreationState) -> str:
     return "bigfive"
 
 
-def route_after_bigfive(state: JobCreationState) -> str:
-    """After bigfive: skip salary if the recruiter already provided a range
-    at intake time (precompleted). Always falls through to competency
-    otherwise. HITL stages are never affected by this routing.
-    """
-    if _is_precompleted(state, "salary"):
-        logger.info("[JobCreation:route] bigfive -> competency (salary precompleted)")
-        return "competency"
-    return "salary"
-
-
-def route_after_salary(state: JobCreationState) -> str:
-    """After salary: skip competency if the recruiter already enumerated
-    both technical and behavioral skills at intake time (precompleted).
-    """
-    if _is_precompleted(state, "competency"):
-        if not state.get("screening_mode"):
-            # Still need recruiter to pick a screening mode — emit competency
-            # so the WS message that requests the choice is sent.
-            return "competency"
-        logger.info("[JobCreation:route] salary -> wsi_questions (competency precompleted)")
-        return "wsi_questions"
-    return "competency"
-
-
 def route_after_competency(state: JobCreationState) -> str:
     """After competency: need screening_mode chosen to proceed."""
     if not state.get("screening_mode"):
@@ -1397,16 +696,8 @@ def route_after_competency(state: JobCreationState) -> str:
 
 
 def route_after_questions(state: JobCreationState) -> str:
-    """After WSI questions: HITL point 2 — recruiter must approve all questions.
-
-    If FairnessGuard removed every generated question, terminate cleanly so the
-    wizard surfaces the warning instead of looping into an empty approval.
-    """
+    """After WSI questions: HITL point 2 — recruiter must approve all questions."""
     approved = state.get("questions_approved")
-
-    if not state.get("wsi_questions") and state.get("wsi_dropped_questions"):
-        logger.info("[JobCreation:route] wsi_questions -> END (all questions blocked by fairness)")
-        return "end"
 
     if approved is None:
         logger.info("[JobCreation:route] wsi_questions -> END (awaiting approval)")
@@ -1567,23 +858,9 @@ def create_job_creation_graph(checkpointer=None) -> StateGraph:
         },
     )
 
-    # F2+F3 -> salary -> F4+F5 (precompletion may skip salary or competency)
-    builder.add_conditional_edges(
-        "bigfive",
-        route_after_bigfive,
-        {
-            "salary": "salary",
-            "competency": "competency",
-        },
-    )
-    builder.add_conditional_edges(
-        "salary",
-        route_after_salary,
-        {
-            "competency": "competency",
-            "wsi_questions": "wsi_questions",
-        },
-    )
+    # F2+F3 -> salary -> F4+F5
+    builder.add_edge("bigfive", "salary")
+    builder.add_edge("salary", "competency")
 
     # F4+F5: needs screening mode
     builder.add_conditional_edges(
@@ -1668,48 +945,6 @@ class JobCreationGraph:
     def graph(self):
         return self._graph
 
-    @staticmethod
-    def _build_audit_callback(state: JobCreationState, thread_id: str):
-        """Attach an AuditCallback so every LLM/tool call inside the
-        wizard graph is captured into the standard execution audit
-        trail. Failures fall back silently (audit must never block UX).
-        """
-        try:
-            from app.shared.compliance.audit_callback import AuditCallback
-
-            company_id = str(state.get("workspace_id") or state.get("company_id") or "")
-            user_id = str(state.get("user_id") or state.get("recruiter_id") or "system")
-            return AuditCallback(
-                user_id=user_id,
-                company_id=company_id,
-                session_id=thread_id,
-                domain="job_creation",
-                agent_type="wizard",
-            )
-        except Exception as exc:  # pragma: no cover — defensive
-            logger.warning("[JobCreationGraph] AuditCallback unavailable: %s", exc)
-            return None
-
-    @staticmethod
-    def _entry_span_attrs(state: Mapping[str, Any], thread_id: str) -> Dict[str, str]:
-        """Build the canonical wizard entry/exit span attributes.
-
-        We accept thread_id as the conversation correlator when state.session_id
-        is missing — invoke()/resume() always have a thread_id, so this keeps
-        the `conversation.id` attribute populated even on a fresh state.
-        """
-        return {
-            "service.name": "wizard",
-            "wizard.graph": "job_creation",
-            "wizard.stage": str(state.get("current_stage") or "entry"),
-            "tenant.company_id": str(
-                state.get("workspace_id") or state.get("company_id") or ""
-            ),
-            "user.id": str(state.get("user_id") or state.get("recruiter_id") or ""),
-            "conversation.id": str(state.get("session_id") or thread_id or ""),
-            "orchestrator.version": "wizard",
-        }
-
     def invoke(self, state: JobCreationState, thread_id: str) -> JobCreationState:
         """Invoke the graph for a wizard session.
 
@@ -1720,139 +955,8 @@ class JobCreationGraph:
         Returns:
             Updated state after graph execution (may END at HITL points).
         """
-        config: Dict[str, Any] = {"configurable": {"thread_id": thread_id}}
-        cb = self._build_audit_callback(state, thread_id)
-        if cb is not None:
-            config["callbacks"] = [cb]
-
-        tracer = get_tracer()
-        attrs = self._entry_span_attrs(state, thread_id)
-        span = tracer.create_span(
-            WIZARD_SPANS.JOB_CREATION_ENTRY, attributes=attrs, _start_otel=True,
-        )
-        try:
-            result = self._graph.invoke(state, config=config)
-        except Exception as exc:
-            finish_span(span, status="error", error=exc)
-            raise
-        # Refresh stage from terminal node so the entry span reports where we
-        # actually paused (e.g. `jd_enrichment` waiting for HITL approval).
-        try:
-            if isinstance(result, Mapping):
-                span.set_attribute(
-                    "wizard.stage", str(result.get("current_stage") or "entry"),
-                )
-        except Exception:  # pragma: no cover — defensive
-            pass
-        finish_span(span, status="ok")
-        return result
-
-    async def stream_invoke(
-        self,
-        state: JobCreationState,
-        thread_id: str,
-        on_token: Any | None = None,
-        max_tokens: int | None = None,
-    ) -> tuple[JobCreationState, int]:
-        """Token-streaming counterpart to :meth:`invoke`.
-
-        PM-02 (Audit Rev 4): drives the compiled LangGraph through
-        ``astream_events("v2")`` so callers can render incremental LLM
-        output in real time. The terminal state is reconstructed from
-        the ``on_chain_end`` event of the top-level graph (matching what
-        ``invoke()`` would have returned).
-
-        Args:
-            state: Current wizard state (accumulated across invocations).
-            thread_id: Unique session ID for checkpointer persistence.
-            on_token: Optional async callback ``(chunk: str) -> None``.
-                Token extraction errors and callback failures are
-                isolated — they MUST NOT break the wizard run.
-            max_tokens: Optional cap; the stream still drains so the
-                final state is materialized, but ``on_token`` stops
-                receiving chunks past this count.
-
-        Returns:
-            ``(final_state, tokens_emitted)`` — ``tokens_emitted`` counts
-            successful ``on_token`` invocations (parity with
-            :func:`stream_wizard_tokens`).
-        """
-        # Local import: keep the compiled graph + helper coupling
-        # contained to the streaming path so non-streaming callers
-        # don't pay the import cost.
-        from app.api.v1._ws_stream_helpers import stream_wizard_tokens
-
-        config: Dict[str, Any] = {"configurable": {"thread_id": thread_id}}
-        cb = self._build_audit_callback(state, thread_id)
-        if cb is not None:
-            config["callbacks"] = [cb]
-
-        tracer = get_tracer()
-        attrs = self._entry_span_attrs(state, thread_id)
-        attrs["wizard.stream_mode"] = "astream_events_v2"
-        span = tracer.create_span(
-            WIZARD_SPANS.JOB_CREATION_ENTRY, attributes=attrs, _start_otel=True,
-        )
-
-        final_state: JobCreationState = state
-        tokens_emitted = 0
-
-        async def _capture_terminal_state(events):
-            """Tee the event stream: forward to `stream_wizard_tokens`
-            (which extracts LLM chunks) AND materialize the final state
-            from the top-level ``on_chain_end`` event.
-
-            Detection strategy (resilient to LangGraph naming changes):
-              1. Primary: ``parent_ids`` is empty → root run.
-              2. Secondary: name in {"LangGraph","job_creation_graph"}
-                 (legacy fallback for older LangGraph releases that did
-                 not set ``parent_ids``).
-              3. Tertiary: last seen ``on_chain_end`` payload that looks
-                 like a wizard state (has ``current_stage``).
-            """
-            nonlocal final_state
-            last_state_like: Mapping[str, Any] | None = None
-            async for ev in events:
-                if ev.get("event") == "on_chain_end":
-                    out = (ev.get("data") or {}).get("output")
-                    parent_ids = ev.get("parent_ids")
-                    name = ev.get("name") or ""
-                    is_root = (
-                        (isinstance(parent_ids, list) and len(parent_ids) == 0)
-                        or name in ("LangGraph", "job_creation_graph")
-                    )
-                    if is_root and isinstance(out, Mapping):
-                        final_state = dict(out)  # type: ignore[assignment]
-                    elif isinstance(out, Mapping) and "current_stage" in out:
-                        last_state_like = out
-                yield ev
-            # Tertiary fallback: if no root event reached us but we saw a
-            # state-shaped payload, prefer it over the seed state.
-            if final_state is state and last_state_like is not None:
-                final_state = dict(last_state_like)  # type: ignore[assignment]
-
-        try:
-            stream = self._graph.astream_events(state, config=config, version="v2")
-            tokens_emitted = await stream_wizard_tokens(
-                _capture_terminal_state(stream),
-                on_token=on_token,
-                max_tokens=max_tokens,
-            )
-        except Exception as exc:
-            finish_span(span, status="error", error=exc)
-            raise
-
-        try:
-            if isinstance(final_state, Mapping):
-                span.set_attribute(
-                    "wizard.stage",
-                    str(final_state.get("current_stage") or "entry"),
-                )
-                span.set_attribute("wizard.tokens_emitted", str(tokens_emitted))
-        except Exception:  # pragma: no cover — defensive
-            pass
-        finish_span(span, status="ok")
-        return final_state, tokens_emitted
+        config = {"configurable": {"thread_id": thread_id}}
+        return self._graph.invoke(state, config=config)
 
     def resume(
         self,
@@ -1870,36 +974,9 @@ class JobCreationGraph:
         state, graph is re-invoked with merged state.
         """
         merged = {**prior_state, **updates}
-        config: Dict[str, Any] = {"configurable": {"thread_id": thread_id}}
-        cb = self._build_audit_callback(merged, thread_id)
-        if cb is not None:
-            config["callbacks"] = [cb]
-
-        tracer = get_tracer()
-        attrs = self._entry_span_attrs(merged, thread_id)
-        span = tracer.create_span(
-            WIZARD_SPANS.JOB_CREATION_RESUME, attributes=attrs, _start_otel=True,
-        )
-        try:
-            result = self._graph.invoke(merged, config=config)
-        except Exception as exc:
-            finish_span(span, status="error", error=exc)
-            raise
-        try:
-            if isinstance(result, Mapping):
-                span.set_attribute(
-                    "wizard.stage", str(result.get("current_stage") or "resume"),
-                )
-        except Exception:  # pragma: no cover — defensive
-            pass
-        finish_span(span, status="ok")
-        return result
+        config = {"configurable": {"thread_id": thread_id}}
+        return self._graph.invoke(merged, config=config)
 
 
 def get_job_creation_graph() -> JobCreationGraph:
     return JobCreationGraph()
-
-
-# Module-level singleton — Task #850 canonical entry point.
-# Consumed by langgraph.json, health_langgraph, and the WS resume path.
-job_creation_graph = JobCreationGraph()

@@ -113,7 +113,7 @@ class TestPearchServiceGuard:
     async def test_search_candidates_blocked_by_guard(self):
         """Query discriminatória não deve chegar à API Pearch."""
         from app.domains.sourcing.services.pearch_service import PearchService
-        from lia_models.pearch import PearchSearchRequest, SearchType
+        from app.models.pearch import PearchSearchRequest, SearchType
 
         service = PearchService()
         service.api_key = "fake-key-for-test"
@@ -138,7 +138,7 @@ class TestPearchServiceGuard:
     async def test_search_candidates_blocked_new_category(self):
         """Nova categoria aparencia_fisica deve bloquear antes do Pearch."""
         from app.domains.sourcing.services.pearch_service import PearchService
-        from lia_models.pearch import PearchSearchRequest, SearchType
+        from app.models.pearch import PearchSearchRequest, SearchType
 
         service = PearchService()
         service.api_key = "fake-key-for-test"
@@ -159,7 +159,7 @@ class TestPearchServiceGuard:
     async def test_search_candidates_allows_neutral_query_reaches_api(self):
         """Query neutra deve tentar alcançar a API Pearch (circuit breaker pode bloquear)."""
         from app.domains.sourcing.services.pearch_service import PearchService
-        from lia_models.pearch import PearchSearchRequest, SearchType
+        from app.models.pearch import PearchSearchRequest, SearchType
 
         service = PearchService()
         service.api_key = "fake-key-for-test"

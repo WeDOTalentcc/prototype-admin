@@ -1,4 +1,3 @@
-import re
 """
 Sourcing Actions — candidate discovery, tagging, ranking, and management.
 
@@ -60,7 +59,7 @@ async def _tag_candidates(params: dict[str, Any], context: dict[str, Any]):
             for cid in candidate_ids:
                 if company_id:
                     authz = await db.execute(text(
-                        "SELECT 1 FROM vacancy_candidates WHERE candidate_id = :cid AND company_id = :co LIMIT 1"
+                        "SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = CAST(:co AS uuid) LIMIT 1"
                     ), {"cid": str(cid), "co": str(company_id)})
                     if authz.fetchone() is None:
                         continue
@@ -111,85 +110,33 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
 
         from app.core.database import AsyncSessionLocal
 
-        _UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
-        _JOB_ID_RE = re.compile(r"^[A-Z][A-Z0-9]{2,9}$", re.I)
-        _ctx_eid = (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
-        _ctx_eid_valid = _ctx_eid and (
-            bool(_UUID_RE.match(str(_ctx_eid))) or bool(_JOB_ID_RE.match(str(_ctx_eid)))
-        )
-        job_id = params.get("job_id") or (_ctx_eid if _ctx_eid_valid else None)
+        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
         company_id = context.get("company_id") if context else None
         limit = int(params.get("limit", 10))
-
-        # If job_id not provided, attempt to resolve by title (e.g. "Product Manager")
-        if not job_id:
-            job_title_hint = (
-                params.get("job_title")
-                or params.get("title")
-                or (context or {}).get("job_title")
-            )
-            if job_title_hint:
-                try:
-                    from sqlalchemy import text as _text
-                    from app.core.database import AsyncSessionLocal as _ASL
-                    async with _ASL() as _db:
-                        _sql = "SELECT id FROM job_vacancies WHERE title ILIKE :t"
-                        _bind: dict[str, Any] = {"t": f"%{job_title_hint}%"}
-                        if company_id:
-                            _sql += " AND company_id = :co"
-                            _bind["co"] = str(company_id)
-                        _sql += " ORDER BY created_at DESC LIMIT 1"
-                        _row = (await _db.execute(_text(_sql), _bind)).fetchone()
-                        if _row:
-                            job_id = str(_row[0])
-                            logger.info(f"[rank_candidates] resolved job_id={job_id} from title='{job_title_hint}'")
-                except Exception as _le:
-                    logger.warning(f"[rank_candidates] title lookup failed: {_le}")
 
         if not job_id:
             return ActionResult(
                 status="error",
-                message="Informe a vaga para rankear os candidatos (ID ou título).",
+                message="Informe a vaga para rankear os candidatos.",
                 error_detail="Missing job_id",
                 action_type="rank_candidates",
             )
 
         async with AsyncSessionLocal() as db:
-            from app.core.database import set_tenant_context
+            sql = """
+                SELECT c.id, c.name, c.current_title, c.seniority_level,
+                       vc.stage, vc.score, vc.lia_score
+                FROM vacancy_candidates vc
+                JOIN candidates c ON c.id = vc.candidate_id
+                WHERE vc.vacancy_id = CAST(:job_id AS uuid)
+            """
+            bind: dict[str, Any] = {"job_id": str(job_id), "lim": limit}
             if company_id:
-                await set_tenant_context(db, str(company_id))
-            rows = []
-            # Try UUID lookup first, fallback to short-id (e.g. "V0037") via job_vacancies.job_id
-            for attempt in range(2):
-                try:
-                    if attempt == 0:
-                        sql = """
-                            SELECT c.id, c.name, c.current_title, c.seniority_level,
-                                   vc.stage, vc.score, vc.lia_score
-                            FROM vacancy_candidates vc
-                            JOIN candidates c ON c.id = CAST(vc.candidate_id AS uuid)
-                            WHERE vc.vacancy_id = CAST(:job_id AS uuid)
-                        """
-                    else:
-                        sql = """
-                            SELECT c.id, c.name, c.current_title, c.seniority_level,
-                                   vc.stage, vc.score, vc.lia_score
-                            FROM vacancy_candidates vc
-                            JOIN candidates c ON c.id = CAST(vc.candidate_id AS uuid)
-                            JOIN job_vacancies jv ON jv.id = vc.vacancy_id
-                            WHERE jv.job_id = :job_id
-                        """
-                    bind: dict[str, Any] = {"job_id": str(job_id), "lim": limit}
-                    if company_id:
-                        sql += " AND vc.company_id = :co"
-                        bind["co"] = str(company_id)
-                    sql += " ORDER BY COALESCE(vc.lia_score, vc.score, 0) DESC LIMIT :lim"
-                    result = await db.execute(text(sql), bind)
-                    rows = result.fetchall()
-                    break
-                except Exception:
-                    rows = []
-                    continue
+                sql += " AND vc.company_id = CAST(:co AS uuid)"
+                bind["co"] = str(company_id)
+            sql += " ORDER BY COALESCE(vc.lia_score, vc.score, 0) DESC LIMIT :lim"
+            result = await db.execute(text(sql), bind)
+            rows = result.fetchall()
 
         if not rows:
             return ActionResult(
@@ -226,12 +173,7 @@ async def _rank_candidates(params: dict[str, Any], context: dict[str, Any]):
         )
 
 
-async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]) -> "ActionResult":
-    """Compare two or more candidates side-by-side using fields from the candidates table.
-
-    company_id is always taken from *context* (JWT-derived), never from params,
-    so cross-tenant reads are prevented.
-    """
+async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]):
     from app.orchestrator.action_executor import ActionResult
     try:
         from sqlalchemy import text
@@ -239,31 +181,8 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]) -
         from app.core.database import AsyncSessionLocal
 
         candidate_ids = params.get("candidate_ids", [])
-        candidate_names = params.get("candidate_names", [])
         company_id = context.get("company_id") if context else None
-
-        # CM-003: resolve names to candidate UUIDs when candidate_ids not available
-        if not candidate_ids and candidate_names:
-            from app.orchestrator.action_handlers._handler_hooks import resolve_candidate_by_name as _rcbn
-            resolved_ids = []
-            for cname in candidate_names:
-                resolved = await _rcbn(cname, company_id)
-                if resolved:
-                    resolved_ids.append(resolved["id"])
-                    logger.info("[compare_candidates] Resolved name %r -> %s", cname, resolved["id"])
-                else:
-                    logger.warning("[compare_candidates] Could not resolve name: %r", cname)
-            candidate_ids = resolved_ids
-
         if len(candidate_ids) < 2:
-            if candidate_names and len(candidate_ids) < len(candidate_names):
-                unresolved = [n for n in candidate_names]
-                return ActionResult(
-                    status="error",
-                    message="Não encontrei todos os candidatos para comparação. Verifique os nomes: " + ", ".join(unresolved) + ".",
-                    error_detail="Could not resolve all candidate names to IDs",
-                    action_type="compare_candidates",
-                )
             return ActionResult(
                 status="error",
                 message="Selecione pelo menos 2 candidatos para comparar.",
@@ -282,20 +201,16 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]) -
                 WHERE c.id IN ({placeholders})
             """
             if company_id:
-                sql += " AND c.company_id = :co"
+                sql += " AND EXISTS (SELECT 1 FROM vacancy_candidates vc WHERE vc.candidate_id = c.id AND vc.company_id = CAST(:co AS uuid))"
                 bind_params["co"] = str(company_id)
             result = await db.execute(text(sql), bind_params)
             rows = result.fetchall()
 
         if len(rows) < 2:
-            # CM-003: Fall through to Phase 1.5 (agentic loop) so it can 
-            # re-resolve candidate names and retry via tool calling
-            logger.warning("[compare_candidates] SQL returned %d rows, returning not_actionable for Phase 1.5 fallback", len(rows))
-            from app.orchestrator.action_executor import ActionResult as _AR
-            return _AR(
-                status="not_actionable",
-                message="",
-                error_detail="Less than 2 candidates found, deferring to agentic loop",
+            return ActionResult(
+                status="error",
+                message="Candidatos não encontrados para comparação.",
+                error_detail="Less than 2 candidates found",
                 action_type="compare_candidates",
             )
 
@@ -317,30 +232,14 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]) -
                 "skills": skills, "location": loc,
             })
 
-        # Add recommendation based on experience/seniority
-        if len(compared) >= 2:
-            best = max(compared, key=lambda c: (c.get("experience") or 0))
-            job_context = params.get("job_title") or params.get("vacancy_title") or ""
-            rec_note = f" para {job_context}" if job_context else ""
-            lines.append(f"\n**Recomendação{rec_note}:** {best['name']} se destaca com {best.get('experience') or 'N/A'} anos de experiência e o perfil mais aderente ao conjunto de habilidades exigido.")
-
         return ActionResult(
             status="executed",
             message="\n".join(lines),
             data={"candidates": compared},
             action_type="compare_candidates",
         )
-    except (ValueError, KeyError, TypeError) as e:
-        logger.warning("compare_candidates value/type error: %s", e)
-        from app.orchestrator.action_executor import ActionResult
-        return ActionResult(
-            status="error",
-            message="Erro ao comparar candidatos.",
-            error_detail=str(e),
-            action_type="compare_candidates",
-        )
     except Exception as e:
-        logger.exception("compare_candidates unexpected error: %s", e)
+        logger.warning(f"compare_candidates failed: {e}")
         from app.orchestrator.action_executor import ActionResult
         return ActionResult(
             status="error",
@@ -351,16 +250,11 @@ async def _compare_candidates(params: dict[str, Any], context: dict[str, Any]) -
 
 
 async def _search_candidates(params: dict[str, Any], context: dict[str, Any]):
-    """Search candidates using RAGPipelineService (pgvector + BM25 hybrid).
-
-    Replaces raw SQL ILIKE search with semantic + keyword hybrid search.
-    Multi-tenant: company_id passed to rag_pipeline_service.search() for tenant isolation.
-    FairnessGuard runs automatically inside rag_pipeline_service.search().
-    """
     from app.orchestrator.action_executor import ActionResult
     try:
+        from sqlalchemy import text
+
         from app.core.database import AsyncSessionLocal
-        from app.domains.ai.services.rag_pipeline_service import rag_pipeline_service
 
         query = params.get("query", "")
         company_id = context.get("company_id") if context else None
@@ -373,46 +267,46 @@ async def _search_candidates(params: dict[str, Any], context: dict[str, Any]):
                 error_detail="Missing query",
                 action_type="search_candidates",
             )
-        if not company_id:
-            return ActionResult(
-                status="error",
-                message="Contexto de empresa não encontrado.",
-                error_detail="Missing company_id",
-                action_type="search_candidates",
-            )
 
+        search_term = f"%{query}%"
         async with AsyncSessionLocal() as db:
-            result = await rag_pipeline_service.search(
-                query=query,
-                company_id=str(company_id),
-                db=db,
-                limit=limit,
-                alpha=0.5,
-                domain="talent",
-            )
+            sql = """
+                SELECT DISTINCT c.id, c.name, c.current_title, c.current_company,
+                       c.location_city, c.seniority_level
+                FROM candidates c
+                LEFT JOIN vacancy_candidates vc ON vc.candidate_id = c.id
+                WHERE (
+                    c.name ILIKE :q OR c.current_title ILIKE :q
+                    OR c.current_company ILIKE :q
+                    OR :raw_q = ANY(c.technical_skills)
+                    OR c.location_city ILIKE :q
+                )
+            """
+            bind = {"q": search_term, "raw_q": query}
+            if company_id:
+                sql += " AND vc.company_id = CAST(:co AS uuid)"
+                bind["co"] = str(company_id)
+            sql += " ORDER BY c.name LIMIT :lim"
+            bind["lim"] = limit
 
-        rows = result.results or []
+            result = await db.execute(text(sql), bind)
+            rows = result.fetchall()
+
         if not rows:
             return ActionResult(
                 status="executed",
-                message=f'Nenhum candidato encontrado para "{query}".',
+                message=f"Nenhum candidato encontrado para \"{query}\".",
                 data={"candidates": [], "query": query},
                 action_type="search_candidates",
             )
 
-        lines = [f'**Resultados para "{query}" ({len(rows)} encontrados):**\n']
+        lines = [f"**Resultados para \"{query}\" ({len(rows)} encontrados):**\n"]
         found = []
         for row in rows:
-            name = row.get("name", "N/A")
-            title = row.get("current_title") or row.get("title") or "N/A"
-            company = row.get("current_company") or row.get("company") or "N/A"
-            city = row.get("location_city") or row.get("city") or "N/A"
-            lines.append(f"- **{name}** — {title} @ {company} | {city}")
+            lines.append(f"- **{row.name}** — {row.current_title or 'N/A'} @ {row.current_company or 'N/A'} | {row.location_city or 'N/A'}")
             found.append({
-                "id": row.get("id", ""),
-                "name": name,
-                "title": title,
-                "company": company,
+                "id": str(row.id), "name": row.name,
+                "title": row.current_title, "company": row.current_company,
             })
 
         return ActionResult(
@@ -439,7 +333,7 @@ async def _suggest_candidates(params: dict[str, Any], context: dict[str, Any]):
 
         from app.core.database import AsyncSessionLocal
 
-        job_id = params.get("job_id") or (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
+        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
         company_id = context.get("company_id") if context else None
         limit = int(params.get("limit", 5))
 
@@ -455,7 +349,7 @@ async def _suggest_candidates(params: dict[str, Any], context: dict[str, Any]):
             job_sql = "SELECT title, requirements, seniority_level, tags FROM job_vacancies WHERE id = CAST(:jid AS uuid)"
             job_bind: dict[str, Any] = {"jid": str(job_id)}
             if company_id:
-                job_sql += " AND company_id = :co"
+                job_sql += " AND company_id = CAST(:co AS uuid)"
                 job_bind["co"] = str(company_id)
             job_row = await db.execute(text(job_sql), job_bind)
             job = job_row.fetchone()
@@ -527,7 +421,7 @@ async def _add_candidate(params: dict[str, Any], context: dict[str, Any]):
         phone = params.get("phone")
         current_title = params.get("current_title")
         current_company = params.get("current_company")
-        job_id = params.get("job_id") or (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
+        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
         company_id = context.get("company_id") if context else None
 
         if not name or not email:
@@ -601,7 +495,7 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
 
         from app.core.database import AsyncSessionLocal
 
-        job_id = params.get("job_id") or (context or {}).get("entity_id") or (context or {}).get("job_vacancy_id")
+        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
         company_id = context.get("company_id") if context else None
 
         async with AsyncSessionLocal() as db:
@@ -610,12 +504,12 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
                     SELECT c.name, c.email, c.phone, c.current_title, c.current_company,
                            vc.stage, vc.score, vc.lia_score
                     FROM vacancy_candidates vc
-                    JOIN candidates c ON c.id = CAST(vc.candidate_id AS uuid)
+                    JOIN candidates c ON c.id = vc.candidate_id
                     WHERE vc.vacancy_id = CAST(:jid AS uuid)
                 """
                 export_bind: dict[str, Any] = {"jid": str(job_id)}
                 if company_id:
-                    export_sql += " AND vc.company_id = :co"
+                    export_sql += " AND vc.company_id = CAST(:co AS uuid)"
                     export_bind["co"] = str(company_id)
                 export_sql += " ORDER BY c.name"
                 result = await db.execute(text(export_sql), export_bind)
@@ -624,8 +518,8 @@ async def _export_candidates(params: dict[str, Any], context: dict[str, Any]):
                     SELECT DISTINCT c.name, c.email, c.phone, c.current_title, c.current_company,
                            vc.stage, vc.score, vc.lia_score
                     FROM vacancy_candidates vc
-                    JOIN candidates c ON c.id = CAST(vc.candidate_id AS uuid)
-                    WHERE vc.company_id = :co
+                    JOIN candidates c ON c.id = vc.candidate_id
+                    WHERE vc.company_id = CAST(:co AS uuid)
                     ORDER BY c.name
                     LIMIT 100
                 """), {"co": str(company_id)})
@@ -702,8 +596,8 @@ async def _favorite_candidate(params: dict[str, Any], context: dict[str, Any]):
         async with AsyncSessionLocal() as db:
             if company_id:
                 authz = await db.execute(text(
-                    "SELECT 1 FROM vacancy_candidates WHERE candidate_id = :cid AND company_id = :co LIMIT 1"
-                ), {"cid": str(candidate_id), "co": str(company_id)})
+                    "SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = CAST(:co AS uuid) LIMIT 1"
+                ), {"cid": candidate_id, "co": str(company_id)})
                 if authz.fetchone() is None:
                     return ActionResult(
                         status="error",

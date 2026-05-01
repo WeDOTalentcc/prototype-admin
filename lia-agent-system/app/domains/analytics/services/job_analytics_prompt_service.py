@@ -860,13 +860,3 @@ class JobAnalyticsPromptService:
 
 
 job_analytics_prompt_service = JobAnalyticsPromptService()
-
-
-def _strip_meta(p: dict) -> dict:
-    return {k: v for k, v in p.items() if not k.startswith("_")}
-
-
-async def get_job_analytics(**params):
-    """Wrapper para o chat. Delega para get_job_quick_insights."""
-    p = _strip_meta(params)
-    return await job_analytics_prompt_service.get_job_quick_insights(**p)

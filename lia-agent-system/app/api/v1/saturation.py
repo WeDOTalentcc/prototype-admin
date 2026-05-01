@@ -8,9 +8,9 @@ from sqlalchemy import and_, func, not_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from lia_models.candidate import VacancyCandidate
-from lia_models.company import CompanyProfile
-from lia_models.job_vacancy import JobVacancy
+from app.models.candidate import VacancyCandidate
+from app.models.company import CompanyProfile
+from app.models.job_vacancy import JobVacancy
 
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies).

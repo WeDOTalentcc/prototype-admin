@@ -1,29 +1,17 @@
 """
 Proactive Actions API - Endpoints for proactive LIA suggestions.
 """
-import asyncio
 import logging
-from typing import Annotated, Any
+from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from app.domains.automation.services.autonomous_agent_service import AutonomousAgentService, get_autonomous_agent_service
 
 logger = logging.getLogger(__name__)
 
-# Task #458 — Same routing-shadowing blindagem applied to /job-vacancies in
-# Task #455 is now applied here. Two layers of defense:
-#   1. Every ``{*_id}`` path parameter is constrained to UUID-or-digit so a
-#      future static sibling segment cannot be silently captured by an item
-#      handler (e.g. ``/proactive-actions/insights`` vs an item route).
-#   2. Collection-scoped routes are kept before item-scoped routes in the
-#      final route list — the ordering is reasserted at the bottom of this
-#      module so source-order regressions cannot reintroduce shadowing.
 router = APIRouter(prefix="/proactive-actions", tags=["Proactive Actions"])
-
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 
 class ActionResponse(BaseModel):
@@ -81,7 +69,7 @@ class MonitorTriggerResponse(BaseModel):
 
 @router.get("/pending/{company_id}", response_model=list[ActionResponse])
 async def get_pending_actions(
-    company_id: _DualId,
+    company_id: str,
     limit: int = Query(default=10, le=50),
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 ):
@@ -113,7 +101,7 @@ async def get_pending_actions(
 
 @router.get("/history/{company_id}", response_model=list[ActionResponse])
 async def get_action_history(
-    company_id: _DualId,
+    company_id: str,
     status: str = Query(default="accepted"),
     limit: int = Query(default=20, le=100),
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
@@ -146,7 +134,7 @@ async def get_action_history(
 
 @router.post("/accept/{action_id}", response_model=AcceptRejectResponse)
 async def accept_action(
-    action_id: _DualId,
+    action_id: str,
     request: AcceptRejectRequest,
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 ):
@@ -167,7 +155,7 @@ async def accept_action(
 
 @router.post("/reject/{action_id}", response_model=AcceptRejectResponse)
 async def reject_action(
-    action_id: _DualId,
+    action_id: str,
     request: AcceptRejectRequest,
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 ):
@@ -187,7 +175,7 @@ async def reject_action(
 
 @router.get("/feed/{company_id}", response_model=list[ProactiveFeedItem])
 async def get_proactive_feed(
-    company_id: _DualId,
+    company_id: str,
     limit: int = Query(default=10, le=30),
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 ):
@@ -224,7 +212,7 @@ async def get_proactive_feed(
 
 
 @router.post("/trigger-monitor/{company_id}", response_model=MonitorTriggerResponse)
-async def trigger_pipeline_monitor(company_id: _DualId):
+async def trigger_pipeline_monitor(company_id: str):
     """
     Manually trigger pipeline monitor for a specific company.
     Useful for testing and admin purposes.
@@ -329,128 +317,3 @@ async def get_proactive_insights(
     except Exception as exc:
         logger.warning("Error getting proactive insights: %s", exc)
         return []
-
-
-# ---------------------------------------------------------------------------
-# Routing invariant (Task #458) — collection-scoped routes before item routes.
-# Combined with ``Path(pattern=DUAL_ID_PATH_PATTERN)`` on every ``{*_id}``,
-# this is the same blindagem applied to /job-vacancies in Task #455.
-# ---------------------------------------------------------------------------
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder
-
-_reorder(router)
-
-
-# ═══════════════════════════════════════════════════════════════════════
-# E.4 — Accept Hint from ProactiveHintsList (PARTE D/E)
-# ═══════════════════════════════════════════════════════════════════════
-# Distinct from /accept/{action_id} (which accepts a stored DB action):
-# this endpoint executes a hint action dispatched by the frontend card
-# click with server-side tool invocation + dry-run preview.
-
-from app.shared.tenant_guard import get_verified_company_id
-
-
-class AcceptHintRequest(BaseModel):
-    action: str  # e.g. "request_website_and_scrape"
-    hint_type: str  # e.g. "company_website_missing"
-    metadata: dict[str, Any] = {}
-
-
-class AcceptHintResponse(BaseModel):
-    success: bool
-    action: str
-    data: dict[str, Any] = {}
-    message: str = ""
-    next_step: str | None = None
-
-
-@router.post("/accept-hint", response_model=AcceptHintResponse)
-async def accept_hint(
-    payload: AcceptHintRequest,
-    company_id: str = Depends(get_verified_company_id),
-) -> AcceptHintResponse:
-    """
-    Execute a proactive hint action dispatched from ProactiveHintsList card.
-
-    Supports:
-      - request_website_and_scrape → calls company_scraper_service.scrape_website
-        (tracked via D0 gateway) and returns preview of fields to save.
-
-    Multi-tenancy enforced via get_verified_company_id (company_id from JWT).
-    Tool calls use ConsumptionTrackingService for budget + tracking.
-    """
-    action = payload.action
-    hint_type = payload.hint_type
-    metadata = payload.metadata or {}
-
-    try:
-        if action == "request_website_and_scrape":
-            url = (metadata.get("url") or "").strip()
-            if not url:
-                raise HTTPException(
-                    status_code=400,
-                    detail="metadata.url is required for request_website_and_scrape",
-                )
-            # Basic URL sanity check
-            if not (url.startswith("http://") or url.startswith("https://")):
-                url = f"https://{url}"
-
-            try:
-                from app.domains.company.services.company_scraper_service import (
-                    company_scraper_service,
-                )
-            except ImportError as _imp_exc:
-                logger.error("[accept-hint] company_scraper import failed: %s", _imp_exc)
-                raise HTTPException(
-                    status_code=503,
-                    detail="Company scraper service unavailable",
-                )
-
-            try:
-                scrape_result = await asyncio.wait_for(
-                    company_scraper_service.scrape_website(url=url, company_id=company_id),
-                    timeout=30.0,
-                )
-            except asyncio.TimeoutError:
-                raise HTTPException(
-                    status_code=504,
-                    detail=(
-                        "A análise do site demorou mais que 30 segundos. "
-                        "Tente novamente ou preencha os campos manualmente em Configurações."
-                    ),
-                )
-            preview_fields = (scrape_result or {}).get("data") or {}
-            if not preview_fields:
-                return AcceptHintResponse(
-                    success=False,
-                    action=action,
-                    message="Não consegui extrair dados úteis do site. Que tal informar manualmente?",
-                    next_step="manual_fill",
-                )
-            return AcceptHintResponse(
-                success=True,
-                action=action,
-                data={"preview": preview_fields, "source_url": url},
-                message=(
-                    f"Extraí dados do site {url}. Vou te mostrar um preview do que "
-                    f"posso preencher. Confirma salvar?"
-                ),
-                next_step="confirm_save",
-            )
-
-        # Unknown action — frontend should handle via chat delegation instead
-        raise HTTPException(
-            status_code=400,
-            detail=f"Action '{action}' not supported by accept-hint endpoint. "
-            f"Route via chat message instead.",
-        )
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.error(
-            "[accept-hint] action=%s type=%s failed: %s",
-            action, hint_type, exc, exc_info=True,
-        )
-        raise HTTPException(status_code=500, detail="Internal error processing hint action")
-

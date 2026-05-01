@@ -18,7 +18,7 @@ import os
 
 logger = logging.getLogger(__name__)
 
-MAX_TOOL_ITERATIONS = int(os.getenv("LIA_MAX_TOOL_ITERATIONS", "8"))
+MAX_TOOL_ITERATIONS = int(os.getenv("LIA_MAX_TOOL_ITERATIONS", "3"))
 
 
 class AgenticLoop:
@@ -95,23 +95,11 @@ class AgenticLoop:
         messages.append({"role": "user", "content": user_message})
 
         # Build security context for tool execution (tenant isolation)
-        if not company_id:
-            try:
-                from app.shared.tenant_llm_context import get_current_llm_tenant
-                company_id = get_current_llm_tenant() or ""
-            except Exception:
-                pass
         exec_context = None
         if company_id and user_id:
             exec_context = self._ToolExecutionContext(
                 user_id=user_id,
                 company_id=company_id,
-            )
-        if not exec_context:
-            logger.warning(
-                "[LIA-A04] ToolExecutionContext not set — company_id=%s user_id=%s. "
-                "Tools will run without tenant isolation.",
-                company_id, user_id,
             )
 
         tool_calls_made: list[dict] = []
@@ -137,24 +125,8 @@ class AgenticLoop:
 
             # --- If LLM responded with text (no tool call), done ---
             if not llm_response.is_tool_call:
-                _response_text = llm_response.text_response
-                _tool_leak_names = (
-                    "search_salary_benchmark", "create_job", "list_jobs",
-                    "get_candidates", "validate_job_fields", "search_candidates",
-                    "parse_and_create_candidate", "send_whatsapp", "schedule_interview",
-                    "wsi_screening", "export_candidates", "generate_enriched_jd",
-                    "analyze_cv_match", "analyze_interview_recording", "generate_interview_opinion",
-                )
-                if _response_text and any(n in _response_text for n in _tool_leak_names):
-                    logger.warning("[LIA-A04] Tool name leakage detected -- sanitizing response")
-                    _response_text = (
-                        "Minhas diretrizes de funcionamento s\u00e3o confidenciais, "
-                        "mas posso te contar o que sou capaz de fazer: "
-                        "criar vagas, buscar candidatos, avaliar CVs, agendar entrevistas e muito mais. "
-                        "Como posso ajudar com seu recrutamento?"
-                    )
                 return {
-                    "response": _response_text,
+                    "response": llm_response.text_response,
                     "tool_calls_made": tool_calls_made,
                     "iterations": iteration + 1,
                 }

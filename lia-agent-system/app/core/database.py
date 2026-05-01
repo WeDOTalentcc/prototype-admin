@@ -19,7 +19,6 @@ from lia_config.database import (  # noqa: F401
     async_session_factory,
     engine,
     get_db,
-    get_tenant_aware_session,
 )
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -176,17 +175,12 @@ async def add_approval_workflow_columns():
 
 async def ensure_default_company():
     """
-    Ensure the companies table exists and the canonical demo company row
-    (id = ``00000000-0000-4000-a000-000000000001``, see
-    ``app.core.tenant.DEMO_COMPANY_UUID``) is present.
-
-    This provides a valid ``company_id`` for multi-tenancy in
-    development/demo environments. The demo company is used as the
-    default tenant for:
-
+    Ensure the companies table exists and the demo_company entry is created.
+    This provides a valid company_id for multi-tenancy in development/demo environments.
+    
+    The demo_company is used as the default tenant for:
     - New users without a specific company assignment
-    - Legacy records that had ``company_id='default'`` or
-      ``company_id='demo_company'`` (post alembic migration 080)
+    - Legacy records that had company_id='default'
     - Development and testing purposes
     """
     async with engine.begin() as conn:
@@ -207,12 +201,10 @@ async def ensure_default_company():
             logger.warning(f"Could not create companies table: {e}")
         
         try:
-            # Canonical demo tenant id (see app.core.tenant.DEMO_COMPANY_UUID
-            # and alembic migration 080_migrate_demo_company_to_uuid).
             await conn.execute(text("""
                 INSERT INTO companies (id, name, display_name, is_active, is_demo, created_at, updated_at)
                 VALUES (
-                    '00000000-0000-4000-a000-000000000001',
+                    'demo_company',
                     'Demo Company',
                     'Demo Company - Development/Testing',
                     TRUE,
@@ -223,42 +215,40 @@ async def ensure_default_company():
                 ON CONFLICT (id) DO UPDATE SET
                     updated_at = CURRENT_TIMESTAMP
             """))
-            logger.debug("Ensured canonical demo company entry exists")
+            logger.debug("Ensured demo_company entry exists")
         except Exception as e:
-            logger.warning(f"Could not create canonical demo company: {e}")
-
-    logger.info("Default company (canonical demo UUID) verified/created successfully")
+            logger.warning(f"Could not create demo_company: {e}")
+    
+    logger.info("Default company (demo_company) verified/created successfully")
 
 
 async def migrate_default_company_ids():
     """
-    Migrate legacy 'default'/'demo_company' company_id values to the canonical
-    demo UUID. Data hygiene operation to ensure all records have valid company
-    references aligned with the post-migration-080 schema.
-
+    Migrate legacy 'default' company_id values to 'demo_company'.
+    This is a data hygiene operation to ensure all records have valid company references.
+    
     Updates the following tables:
     - users
     - job_vacancies
     - vacancy_candidates
     """
-    canonical = "00000000-0000-4000-a000-000000000001"
     tables_to_update = ["users", "job_vacancies", "vacancy_candidates"]
-
+    
     async with engine.begin() as conn:
         for table_name in tables_to_update:
             try:
                 result = await conn.execute(text(f"""
-                    UPDATE {table_name}
-                    SET company_id = :canonical
-                    WHERE company_id IN ('default', 'demo_company')
-                """), {"canonical": canonical})
+                    UPDATE {table_name} 
+                    SET company_id = 'demo_company'
+                    WHERE company_id = 'default'
+                """))
                 if result.rowcount > 0:
-                    logger.info(f"Migrated {result.rowcount} records in {table_name} to canonical demo UUID")
+                    logger.info(f"Migrated {result.rowcount} records in {table_name} from 'default' to 'demo_company'")
                 else:
                     logger.debug(f"No records to migrate in {table_name}")
             except Exception as e:
                 logger.warning(f"Could not migrate company_id in {table_name}: {e}")
-
+    
     logger.info("Company ID migration completed")
 
 
@@ -927,22 +917,11 @@ async def create_feedback_learning_tables():
                     preferred_tools JSON DEFAULT '[]',
                     example_good_responses JSON DEFAULT '[]',
                     example_bad_responses JSON DEFAULT '[]',
-                    pattern_value JSON,
                     positive_feedback_count INTEGER DEFAULT 0,
                     negative_feedback_count INTEGER DEFAULT 0,
                     success_rate FLOAT DEFAULT 0.0,
-                    sample_size INTEGER DEFAULT 1,
-                    acceptance_rate FLOAT DEFAULT 1.0,
                     is_active BOOLEAN DEFAULT TRUE,
                     confidence FLOAT DEFAULT 0.5,
-                    confidence_score FLOAT DEFAULT 0.5,
-                    role_filter VARCHAR(255),
-                    seniority_filter VARCHAR(100),
-                    department_filter VARCHAR(100),
-                    location_filter VARCHAR(255),
-                    expires_at TIMESTAMP,
-                    last_applied_at TIMESTAMP,
-                    last_confirmed_at TIMESTAMP,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
@@ -973,24 +952,6 @@ async def create_feedback_learning_tables():
             await conn.execute(text(
                 "CREATE INDEX IF NOT EXISTS idx_learning_patterns_key ON learning_patterns(pattern_key)"
             ))
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS idx_learning_patterns_created_at ON learning_patterns(created_at)"
-            ))
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS idx_learning_patterns_role_filter ON learning_patterns(role_filter)"
-            ))
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS ix_learning_patterns_company_type ON learning_patterns(company_id, pattern_type)"
-            ))
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS ix_learning_patterns_key ON learning_patterns(company_id, pattern_key)"
-            ))
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS ix_learning_patterns_active ON learning_patterns(company_id, is_active)"
-            ))
-            await conn.execute(text(
-                "CREATE INDEX IF NOT EXISTS ix_learning_patterns_role ON learning_patterns(company_id, role_filter)"
-            ))
             logger.debug("Ensured interaction_feedback and learning_patterns indexes exist")
         except Exception as e:
             logger.warning(f"Could not create interaction_feedback/learning_patterns indexes: {e}")
@@ -1016,49 +977,6 @@ async def add_job_draft_affirmative_columns():
             except Exception as e:
                 logger.warning(f"Could not add column {column_name} to job_drafts: {e}")
     logger.info("Job draft affirmative columns verified/added successfully")
-
-
-async def add_learning_pattern_columns():
-    """Add consolidated columns to learning_patterns for existing databases."""
-    columns_to_add = [
-        ("pattern_value", "JSON"),
-        ("sample_size", "INTEGER DEFAULT 1"),
-        ("acceptance_rate", "FLOAT DEFAULT 1.0"),
-        ("confidence_score", "FLOAT DEFAULT 0.5"),
-        ("role_filter", "VARCHAR(255)"),
-        ("seniority_filter", "VARCHAR(100)"),
-        ("department_filter", "VARCHAR(100)"),
-        ("location_filter", "VARCHAR(255)"),
-        ("expires_at", "TIMESTAMP"),
-        ("last_applied_at", "TIMESTAMP"),
-        ("last_confirmed_at", "TIMESTAMP"),
-    ]
-    async with engine.begin() as conn:
-        for column_name, column_type in columns_to_add:
-            try:
-                await conn.execute(
-                    text(f"ALTER TABLE learning_patterns ADD COLUMN IF NOT EXISTS {column_name} {column_type}")
-                )
-            except Exception as e:
-                logger.warning(f"Could not add column {column_name} to learning_patterns: {e}")
-
-        indexes_to_add = [
-            ("idx_learning_patterns_created_at", "learning_patterns(created_at)"),
-            ("idx_learning_patterns_role_filter", "learning_patterns(role_filter)"),
-            ("ix_learning_patterns_company_type", "learning_patterns(company_id, pattern_type)"),
-            ("ix_learning_patterns_key", "learning_patterns(company_id, pattern_key)"),
-            ("ix_learning_patterns_active", "learning_patterns(company_id, is_active)"),
-            ("ix_learning_patterns_role", "learning_patterns(company_id, role_filter)"),
-        ]
-        for index_name, index_def in indexes_to_add:
-            try:
-                await conn.execute(
-                    text(f"CREATE INDEX IF NOT EXISTS {index_name} ON {index_def}")
-                )
-            except Exception as e:
-                logger.warning(f"Could not create index {index_name}: {e}")
-
-    logger.info("Learning pattern consolidated columns verified/added successfully")
 
 
 async def setup_pgvector():
@@ -1332,7 +1250,6 @@ async def init_db():
     await create_company_workos_config_table()
     await add_client_user_invitation_columns()
     await create_feedback_learning_tables()
-    await add_learning_pattern_columns()
     await add_job_draft_affirmative_columns()
     await create_background_jobs_tables()
     await ensure_job_templates_indexes()

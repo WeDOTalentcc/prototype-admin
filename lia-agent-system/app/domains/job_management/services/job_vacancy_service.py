@@ -558,10 +558,7 @@ class JobVacancyService:
             status="Rascunho",  # Will be Ativa after approval
             stage="Planejamento",
             approval_status="pendente",
-
-            # Origin marker (Task #435)
-            source_system="lia_chat",
-
+            
             # Timestamps
             created_at=state.created_at,
             updated_at=datetime.utcnow(),
@@ -719,8 +716,7 @@ class JobVacancyService:
             status="Rascunho",
             stage="Planejamento",
             approval_status="pendente",
-
-            source_system="lia_wizard",
+            
             additional_data={"wizard_session_id": conversation_id} if conversation_id else {},
             
             created_by=created_by,

@@ -4769,3 +4769,107 @@ python -m pytest tests/unit/test_rail_a_routing.py \
 # test_rail_a_golden_llm_judge.py: 4 passed, 3 skipped (DeepEval gated)
 ```
 
+
+
+---
+
+## 9. Apêndice F — Remediação Wave 0 (Sprint 1 + Sprint 2 · 30/abr → 01/mai/2026)
+
+> Branches: `fix/sprint-1-quick-wins` + `fix/sprint-2-debts`
+> 19 commits · origem: `AUDITORIA_SOBREPOSTA.md v1.0` → `REMEDIACAO_PRIORIZADA.md` Wave 0
+
+### 9.1 Lista cronológica Sprint 1 (mais novo → mais antigo)
+
+| Risco | SHA | Data | Camada | Feature | O que faz |
+|:---:|---|---|---|---|---|
+| 🟢 | `90d770e3b` | 2026-04-30 | Docs | Remediação Wave 0 | docs(sprint-1): handoff document com 10 commit hashes + UAT criteria + Sprint 2 backlog |
+| 🟢 | `6b6f55464` | 2026-04-30 | Docs | Remediação Wave 0 | docs(nav): BRANCH_MAP — inicializar com §1 Remediation Wave 0 Sprint 1 |
+| 🟢 | `1e4de3106` | 2026-04-30 | Backend | Remediação R-008 | fix(sprint-1): R-008 — hardening ContextVar company_id helper canonical (anti JWT forgery) |
+| 🟢 | `6ec3584eb` | 2026-04-30 | Backend | Remediação R-007 | fix(sprint-1): R-007 — decode_token valida exp/aud/iss explicitamente |
+| 🟢 | `a5e649ba1` | 2026-04-30 | Backend + Infra | Remediação R-006 | fix(sprint-1): R-006 — DEV_MODE gateado por ENVIRONMENT (anti config drift) |
+| 🟢 | `7697743dc` | 2026-04-30 | Testes | Remediação R-005 | fix(sprint-1): R-005 — pin G2 sensor para WSI/pipeline/sourcing routers (regressão) |
+| 🟢 | `d81287102` | 2026-04-30 | Backend + IA | Remediação R-004 | fix(sprint-1): R-004 — output_schema field em ToolDefinition + caller exemplar |
+| 🟢 | `98d7dc3b9` | 2026-04-30 | Backend + Compliance | Remediação R-003 | fix(sprint-1): R-003 — enriquecer criteria_used no AuditService (LGPD Art.20) |
+| 🟡 | `dd0644d75` | 2026-04-30 | Backend | Remediação R-002 | fix(sprint-1): R-002 — track_llm_usage_start helper canonical + wire em wsi/_shared |
+| 🟡 | `5eb36f886` | 2026-04-30 | Backend + IA | Remediação R-001 | fix(sprint-1): R-001 — eliminar bypass BYOK em skills_ontology_engine |
+| 🟢 | `a6bafc7c9` | 2026-04-30 | Backend | Remediação R-009 | fix(sprint-1): R-009 — wire BYOK linter no CI workflow |
+
+### 9.2 Lista cronológica Sprint 2 (mais novo → mais antigo)
+
+| Risco | SHA | Data | Camada | Feature | O que faz |
+|:---:|---|---|---|---|---|
+| 🟢 | `44511dc6b` | 2026-05-01 | Backend + Scripts | Débito harness | fix(sprint-2): ruff cleanup — F401/I001 em crew_audit + I001 em human_review + E701 em sensor |
+| 🟢 | `a33b0efe4` | 2026-05-01 | Scripts | DEBT-007 sensor G-TOOLS | feat(sprint-2): DEBT-007 — sensor G-TOOLS check_tool_output_schemas.py (217 baseline violations) |
+| 🟢 | `a4161051a` | 2026-05-01 | Scripts | DEBT-013 sensor G-CONTEXTVAR | feat(sprint-2): DEBT-013 — sensor G-CONTEXTVAR check_no_direct_contextvar_set.py |
+| 🟢 | `1ab13494b` | 2026-05-01 | Scripts | DEBT-009 sensor G-DEVMODE | feat(sprint-2): DEBT-009 — sensor G-DEVMODE anti LIA_DEV_MODE em .env.staging/production |
+| 🟡 | `a0afb6e11` | 2026-05-01 | IA | DEBT-002 LLM Factory | feat(sprint-2): DEBT-002 — track_llm_usage_start DENTRO de generate_with_fallback (LLM Factory canonical) |
+| 🟢 | `c8d1644ed` | 2026-05-01 | Backend + Compliance | DEBT-004 criteria_used | fix(sprint-2): DEBT-004 — enriquecer criteria_used em crew_audit + human_review_sampling |
+| 🟢 | `dd7002d2c` | 2026-05-01 | Backend | DEBT-014 allowlist LLM | fix(sprint-2): DEBT-014 — allowlist tenant_llm_context.py em check_llm_imports.py |
+| 🟢 | `8ff53fc5e` | 2026-05-01 | Backend | DEBT-001 E402 | fix(sprint-2): DEBT-001 — mover fastapi imports antes do ContextVar (E402 cleanup) |
+
+### 9.3 Síntese por camada (19 commits)
+
+| Camada | Sprint 1 | Sprint 2 | Total |
+|---|---:|---:|---:|
+| Backend | 5 | 3 | 8 |
+| Backend + IA | 2 | 1 | 3 |
+| Backend + Compliance | 1 | 1 | 2 |
+| Backend + Infra | 1 | 0 | 1 |
+| Backend + Scripts | 0 | 1 | 1 |
+| Scripts (sensores) | 0 | 3 | 3 |
+| Testes | 1 | 0 | 1 |
+| Docs | 2 | 0 | 2 |
+| **Total** | **11** | **8** | **19** |
+
+### 9.4 Commits canônicos para cherry-pick prioritário (ordem segura)
+
+Para o time receptor que quer aplicar os fixes de remediação de segurança Wave 0, aplicar nesta ordem:
+
+**Sprint 1 (aplicar todos, nessa sequência):**
+1. `a6bafc7c9` — R-009: BYOK linter no CI (sensor ativo antes de tudo)
+2. `5eb36f886` — R-001: BYOK bypass removido de skills_ontology_engine
+3. `dd0644d75` — R-002: token tracking canonical em wsi/_shared
+4. `98d7dc3b9` — R-003: criteria_used LGPD Art.20 estruturado
+5. `d81287102` — R-004: output_schema em ToolDefinition
+6. `7697743dc` — R-005: G2 sensor pinado para WSI/pipeline/sourcing
+7. `a5e649ba1` — R-006: DEV_MODE gate por ENVIRONMENT
+8. `6ec3584eb` — R-007: JWT exp/aud/iss explícito
+9. `1e4de3106` — R-008: ContextVar company_id hardening (depende de R-007)
+10. `6b6f55464` — docs: BRANCH_MAP §1
+11. `90d770e3b` — docs: handoff Sprint 1
+
+**Sprint 2 (aplicar após Sprint 1 completo):**
+1. `8ff53fc5e` — DEBT-001: E402 cleanup
+2. `dd7002d2c` — DEBT-014: allowlist tenant_llm_context
+3. `c8d1644ed` — DEBT-004: criteria_used crew_audit + human_review
+4. `a0afb6e11` — DEBT-002: token tracking no LLM Factory (canônico)
+5. `1ab13494b` — DEBT-009: sensor G-DEVMODE
+6. `a4161051a` — DEBT-013: sensor G-CONTEXTVAR
+7. `a33b0efe4` — DEBT-007: sensor G-TOOLS
+8. `44511dc6b` — ruff cleanup final
+
+**Risco total:** 🟢×17 / 🟡×2 / 🔴×0
+
+**Validação após cherry-pick:**
+```bash
+cd /caminho/lia-agent-system
+
+# Testes de segurança Sprint 1
+python -m pytest \
+  tests/security/test_dev_mode_env_gate.py \
+  tests/security/test_red_team_jwt_forgery.py \
+  tests/integration/test_ci_byok_linter_wired.py \
+  tests/integration/test_skills_ontology_byok.py \
+  tests/integration/test_audit_criteria_enriched.py \
+  -v --no-cov
+
+# Sensores Sprint 2 (todos devem sair exit 0)
+python3 scripts/check_llm_factory_enforcement.py
+python3 scripts/check_llm_imports.py
+python3 scripts/check_no_devmode_in_prod_env.py
+python3 scripts/check_no_direct_contextvar_set.py
+echo "Todos os sensores OK"
+
+# G-TOOLS: 217 violations esperadas (baseline — não é erro, é a dívida documentada)
+python3 scripts/check_tool_output_schemas.py 2>&1 | tail -3
+```

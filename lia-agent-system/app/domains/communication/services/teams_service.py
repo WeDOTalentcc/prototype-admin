@@ -1,17 +1,12 @@
-"""Microsoft Teams - Incoming Webhook client (canonical for channel broadcasts without bot).
+"""
+Microsoft Teams Service - Incoming Webhook integration.
 
-When to use: broadcast notifications to a Teams channel via Incoming Webhook URL,
-without needing a registered bot (jobs notifications, integrations alerts, weekly digest).
-Auth: TEAMS_WEBHOOK_URL env var (per-channel).
-Tech: httpx POST + MessageCard format.
+This service handles sending messages to Microsoft Teams channels using Incoming Webhooks.
+Different from the Bot Framework integration (teams_simple.py), this uses simple HTTP POST
+to Teams Incoming Webhook URLs for channel notifications.
 
-Different from the Bot Framework path (teams_simple.py / teams_bot.py): this uses simple
-HTTP POST to Teams Incoming Webhook URLs. NO bot identity required.
-
-For full decision tree, see:
-lia-agent-system/CLAUDE.md "Teams send paths - when to use which" (W5.5).
-
-Do NOT use this for chat 1:1 with bot - Incoming Webhook is broadcast-only.
+Environment Variables:
+- TEAMS_WEBHOOK_URL: Default Teams Incoming Webhook URL for notifications
 """
 import logging
 import os
@@ -485,12 +480,3 @@ teams_service = TeamsService()
 
 def get_teams_service() -> "TeamsService":
     return teams_service
-
-
-def _strip_meta(p: dict) -> dict:
-    return {k: v for k, v in p.items() if not k.startswith("_")}
-
-
-async def send_teams_message(**params):
-    """Wrapper para o chat. Delega para TeamsService.send_message."""
-    return await teams_service.send_message(**_strip_meta(params))

@@ -9,15 +9,23 @@ Premium tools (module: interview_intelligence):
 - compare_interview_performance: Comparative analysis across candidates
 """
 import logging
+import re
 from typing import Any
 
-from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
 
-# Bias detection delegated to FairnessGuard (SSOT). See task #321.
-_fairness_guard = FairnessGuard()
+BIAS_INDICATORS = [
+    (r"\b(idade|velho|jovem|novo demais)\b", "age_bias", "Referência a idade do candidato"),
+    (r"\b(bonit[oa]|atraente|aparência|feio|magr[oa]|gord[oa])\b", "appearance_bias", "Referência à aparência física"),
+    (r"\b(casad[oa]|solteir[oa]|filhos|grávida|gestante|maternidade)\b", "family_status_bias", "Referência a estado civil/família"),
+    (r"\b(sotaque|regional|periferia|favela)\b", "socioeconomic_bias", "Referência a origem socioeconômica"),
+    (r"\b(deficiente|deficiência|cadeirante|cego|surdo|mudo)\b", "disability_bias", "Referência a deficiência"),
+    (r"\b(raça|cor|negro|branco|pardo|indígena|asiático)\b", "racial_bias", "Referência a raça/cor"),
+    (r"\b(religião|religioso|igreja|deus|ateu)\b", "religious_bias", "Referência a religião"),
+    (r"\b(orientação sexual|gay|lésbica|trans|heterossexual|homossexual)\b", "sexual_orientation_bias", "Referência a orientação sexual"),
+]
 
 COMPETENCY_KEYWORDS = {
     "liderança": ["liderar", "liderança", "equipe", "time", "gerenciar", "coordenar", "delegar", "mentoria"],
@@ -210,7 +218,7 @@ async def detect_interview_bias(
         "message": (
             f"Detecção de viés concluída. "
             f"Viés detectado: {'Sim' if result.get('bias_detected') else 'Não'}. "
-            f"Score de equidade: {result.get('overall_fairness_score', 'N/A')}/10."
+            f"Score de equidade: {result.get('overall_fairness_score', 'N/A')}/5."
         ),
     }
 
@@ -436,20 +444,16 @@ def _analyze_inline(
 
 
 def _detect_bias(text: str) -> list[dict[str, Any]]:
-    # Delegated to FairnessGuard.detect_interview_indicators (SSOT — task #321).
-    raw = _fairness_guard.detect_interview_indicators(text)
-    alerts: list[dict[str, Any]] = []
-    for a in raw:
-        n = a.get("occurrences", 0)
-        # Preserve the historical severity scaling of this entry-point
-        # (varies with occurrence count, not with indicator base severity).
-        severity = "high" if n >= 3 else "medium" if n >= 2 else "low"
-        alerts.append({
-            "type": a["type"],
-            "description": a["description"],
-            "occurrences": n,
-            "severity": severity,
-        })
+    alerts = []
+    for pattern, bias_type, description in BIAS_INDICATORS:
+        matches = re.findall(pattern, text, re.IGNORECASE)
+        if matches:
+            alerts.append({
+                "type": bias_type,
+                "description": description,
+                "occurrences": len(matches),
+                "severity": "high" if len(matches) >= 3 else "medium" if len(matches) >= 2 else "low",
+            })
     return alerts
 
 

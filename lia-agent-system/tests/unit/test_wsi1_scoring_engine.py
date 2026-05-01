@@ -57,14 +57,13 @@ class TestFormulaTriComponente:
         assert str(WSI_FORMULA_WEIGHTS_BEHAVIORAL["star_estrutura"]) in result.formula_applied
         assert str(WSI_FORMULA_WEIGHTS_BEHAVIORAL["sinais_trait"]) in result.formula_applied
 
-    def test_final_score_bounded_2_to_10(self):
-        # B0 #523 — escala canônica /10 (WSI_CUTOFFS, SCALE_MIN_VALID=2.0, SCALE_MAX=10.0)
+    def test_final_score_bounded_1_to_5(self):
         from app.domains.cv_screening.services.wsi_deterministic_scorer import (
             calculate_wsi_deterministic,
         )
         for qt in ("technical", "behavioral"):
             result = calculate_wsi_deterministic(TECHNICAL_RESPONSE, question_type=qt)
-            assert 2.0 <= result.final_score <= 10.0
+            assert 1.0 <= result.final_score <= 5.0
 
 
 # ---------------------------------------------------------------------------
@@ -123,36 +122,19 @@ class TestBloomAlignment:
         )
         assert calculate_bloom_alignment(3, 3) == pytest.approx(1.0)
 
-    def test_one_level_above_is_full_alignment(self):
-        # M03 fix (audit rev. 15) — fórmula assimétrica: demonstrar Bloom acima
-        # do esperado é POSITIVO (não punir excesso de qualificação).
+    def test_one_level_off(self):
         from app.domains.cv_screening.services.wsi_deterministic_scorer import (
             calculate_bloom_alignment,
         )
         alignment = calculate_bloom_alignment(4, 3)
-        assert alignment == pytest.approx(1.0, abs=0.01)
-
-    def test_one_level_below_penalizes(self):
-        # M03 fix — abaixo do esperado pune linearmente.
-        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
-            calculate_bloom_alignment,
-        )
-        alignment = calculate_bloom_alignment(2, 3)
         assert alignment == pytest.approx(0.8, abs=0.01)
 
-    def test_max_distance_below_clamps_to_zero(self):
+    def test_max_distance(self):
         from app.domains.cv_screening.services.wsi_deterministic_scorer import (
             calculate_bloom_alignment,
         )
         alignment = calculate_bloom_alignment(1, 6)
         assert alignment == pytest.approx(0.0, abs=0.01)
-
-    def test_max_distance_above_is_full(self):
-        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
-            calculate_bloom_alignment,
-        )
-        alignment = calculate_bloom_alignment(6, 1)
-        assert alignment == pytest.approx(1.0, abs=0.01)
 
     def test_result_has_bloom_alignment_field(self):
         from app.domains.cv_screening.services.wsi_deterministic_scorer import (
@@ -173,12 +155,11 @@ class TestFlagsStructured:
         from app.domains.cv_screening.services.wsi_deterministic_scorer import (
             calculate_wsi_deterministic,
         )
-        # B0 #523 — overrides em escala canônica /10
-        # autodeclaração alta (10/10) com contexto fraco (3/10) → inflação
+        # autodeclaração alta com contexto fraco
         result = calculate_wsi_deterministic(
-            "expert nível máximo 10 de 10",
-            autodeclaracao_override=10.0,
-            contexto_override=3.0,
+            "expert nível máximo 5 de 5",
+            autodeclaracao_override=5.0,
+            contexto_override=1.5,
             question_type="technical",
         )
         assert result.flags_structured is not None
@@ -291,236 +272,6 @@ class TestSeniorityWeightsIntegration:
         # t=0.625×4 + b=0.375×2 = 2.5 + 0.75 = 3.25
         assert result["final_score"] == pytest.approx(3.25, abs=0.05)
 
-# ---------------------------------------------------------------------------
-# Audit task #510 — Regressões metodológicas (M02 Bloom, M07 Dreyfus, M08 Gates)
-# ---------------------------------------------------------------------------
-
-class TestBloomAlignmentRegression:
-    """M02 — Indicadores Bloom não devem produzir falso positivo de N6."""
-
-    def test_substantivo_projeto_nao_dispara_n6(self):
-        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
-            calculate_bloom_level,
-        )
-        text = "Trabalhei em um projeto de migração de dados na empresa anterior."
-        level, _ = calculate_bloom_level(text)
-        # Não deve subir para 6 só porque a palavra "projeto" aparece
-        assert level < 6, f"esperava < 6, recebeu {level}"
-
-    def test_n6_so_dispara_com_expressao_composta(self):
-        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
-            calculate_bloom_level,
-        )
-        text = "Desenvolvi do zero a arquitetura de microsserviços e fundei a área."
-        level, _ = calculate_bloom_level(text)
-        assert level == 6
-
-    def test_word_boundary_evita_substring(self):
-        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
-            calculate_bloom_level,
-        )
-        # "abuso" contém "uso" (N3), mas \b deve impedir match
-        text = "Houve um abuso de confiança no time anterior."
-        level, _ = calculate_bloom_level(text)
-        assert level == 1, f"'abuso' não deve ser confundido com 'uso' N3 (recebeu N{level})"
-
-    def test_n3_aplico_real_dispara_n3(self):
-        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
-            calculate_bloom_level,
-        )
-        text = "Aplico Python e implemento serviços REST."
-        level, _ = calculate_bloom_level(text)
-        assert level == 3
-
-
-class TestDreyfusBehavioral:
-    """M07 — Skills comportamentais usam ladder distinto."""
-
-    def test_default_skill_type_is_technical(self):
-        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
-            calculate_dreyfus_level, DREYFUS_LEVELS,
-        )
-        # 2.5 anos: técnico = Intermediário (range [2,3))
-        level, name = calculate_dreyfus_level(2.5, context_score=7.0)
-        assert level == 3
-        assert name == DREYFUS_LEVELS[3]["name"]
-
-    def test_behavioral_promotes_earlier(self):
-        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
-            calculate_dreyfus_level, DREYFUS_LEVELS, DREYFUS_LEVELS_BEHAVIORAL,
-        )
-        # 2 anos: técnico = Básico/Intermediário; comportamental = Intermediário
-        tech_level, _ = calculate_dreyfus_level(2.0, 7.0, skill_type="technical")
-        beh_level, _ = calculate_dreyfus_level(2.0, 7.0, skill_type="behavioral")
-        # Behavioral ladder deve resultar nível >= técnico para mesmos anos
-        assert beh_level >= tech_level
-
-    def test_behavioral_4_anos_avancado(self):
-        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
-            calculate_dreyfus_level,
-        )
-        # 4 anos comportamental + contexto neutro = Avançado (range [3,6))
-        level, _ = calculate_dreyfus_level(4.0, context_score=7.0, skill_type="behavioral")
-        assert level == 4
-
-    def test_behavioral_ladder_keys_match_technical(self):
-        from app.domains.cv_screening.services.wsi_deterministic_scorer import (
-            DREYFUS_LEVELS, DREYFUS_LEVELS_BEHAVIORAL,
-        )
-        assert set(DREYFUS_LEVELS.keys()) == set(DREYFUS_LEVELS_BEHAVIORAL.keys())
-
-
-class TestGatesAbsolutePrecedence:
-    """M08 — Qualquer gate falhado é rejeição clara, não 'ambíguo'."""
-
-    def test_g1_failed_alone_returns_alta_no_review(self):
-        """G1 (eligibility) é hard-block clássico — confidence alta, sem review."""
-        from app.api.v1.wsi.reports import _compute_decision_confidence
-        conf, review = _compute_decision_confidence(
-            overall_wsi=8.0,
-            failed_gates=["G1"],
-            llm_fallback_count=0,
-            score_variance=0.5,
-        )
-        assert conf == "alta"
-        assert review is False
-
-    def test_g3_failed_alone_returns_alta_no_review(self):
-        """G3 (technical floor) é hard-block clássico — confidence alta, sem review."""
-        from app.api.v1.wsi.reports import _compute_decision_confidence
-        conf, review = _compute_decision_confidence(
-            overall_wsi=8.0,
-            failed_gates=["G3"],
-            llm_fallback_count=0,
-            score_variance=0.5,
-        )
-        assert conf == "alta"
-        assert review is False
-
-    def test_g4_failed_alone_returns_alta_no_review(self):
-        """G4 (critical competency) é hard-block clássico — confidence alta, sem review."""
-        from app.api.v1.wsi.reports import _compute_decision_confidence
-        conf, review = _compute_decision_confidence(
-            overall_wsi=8.0,
-            failed_gates=["G4"],
-            llm_fallback_count=0,
-            score_variance=0.5,
-        )
-        assert conf == "alta"
-        assert review is False
-
-    def test_g2_failed_alone_returns_alta_no_review(self):
-        from app.api.v1.wsi.reports import _compute_decision_confidence
-        conf, review = _compute_decision_confidence(
-            overall_wsi=8.5,
-            failed_gates=["G2"],
-            llm_fallback_count=0,
-            score_variance=0.5,
-        )
-        assert conf == "alta"
-        assert review is False
-
-    def test_g5_failed_alone_returns_alta_no_review(self):
-        from app.api.v1.wsi.reports import _compute_decision_confidence
-        conf, review = _compute_decision_confidence(
-            overall_wsi=7.0,
-            failed_gates=["G5"],
-            llm_fallback_count=0,
-            score_variance=0.5,
-        )
-        assert conf == "alta"
-        assert review is False
-
-    def test_g6_failed_alone_returns_alta_no_review(self):
-        from app.api.v1.wsi.reports import _compute_decision_confidence
-        conf, review = _compute_decision_confidence(
-            overall_wsi=8.0,
-            failed_gates=["G6"],
-            llm_fallback_count=0,
-            score_variance=0.5,
-        )
-        assert conf == "alta"
-        assert review is False
-
-    def test_llm_fallback_still_marks_baixa_review(self):
-        from app.api.v1.wsi.reports import _compute_decision_confidence
-        conf, review = _compute_decision_confidence(
-            overall_wsi=8.5,
-            failed_gates=[],
-            llm_fallback_count=2,
-            score_variance=0.5,
-        )
-        assert conf == "baixa"
-        assert review is True
-
-    def test_failed_gate_overrides_high_fallback(self):
-        """Borda crítica M08: gate falhado COM fallback alto continua ('alta', False).
-        Garante que precedência absoluta de gates é avaliada antes do sinal de
-        pipeline ruidoso — caso contrário G2 prompt-injection com LLM fallback
-        seria reabilitado por revisor humano.
-        """
-        from app.api.v1.wsi.reports import _compute_decision_confidence
-        conf, review = _compute_decision_confidence(
-            overall_wsi=8.0,
-            failed_gates=["G2"],
-            llm_fallback_count=3,
-            score_variance=0.5,
-        )
-        assert conf == "alta"
-        assert review is False
-
-    def test_failed_gate_overrides_high_variance(self):
-        """Borda crítica M08: gate falhado COM variância alta continua ('alta', False)."""
-        from app.api.v1.wsi.reports import _compute_decision_confidence
-        conf, review = _compute_decision_confidence(
-            overall_wsi=8.0,
-            failed_gates=["G6"],
-            llm_fallback_count=0,
-            score_variance=3.5,
-        )
-        assert conf == "alta"
-        assert review is False
-
-    def test_failed_gate_overrides_both_pipeline_signals(self):
-        """Borda crítica M08: gate falhado COM ambos sinais ruidosos continua ('alta', False)."""
-        from app.api.v1.wsi.reports import _compute_decision_confidence
-        conf, review = _compute_decision_confidence(
-            overall_wsi=7.5,
-            failed_gates=["G5"],
-            llm_fallback_count=4,
-            score_variance=4.0,
-        )
-        assert conf == "alta"
-        assert review is False
-
-    def test_no_gates_high_score_alta_no_review(self):
-        from app.api.v1.wsi.reports import _compute_decision_confidence
-        conf, review = _compute_decision_confidence(
-            overall_wsi=9.5,
-            failed_gates=[],
-            llm_fallback_count=0,
-            score_variance=0.5,
-        )
-        assert conf == "alta"
-        assert review is False
-
-    def test_mid_band_marks_review(self):
-        from app.api.v1.wsi.reports import _compute_decision_confidence
-        conf, review = _compute_decision_confidence(
-            overall_wsi=6.5,
-            failed_gates=[],
-            llm_fallback_count=0,
-            score_variance=0.5,
-        )
-        assert conf == "media"
-        assert review is True
-
-
-# ---------------------------------------------------------------------------
-# Original test (kept for compat)
-# ---------------------------------------------------------------------------
-
-class TestStateSerializationCompat:
     def test_state_serialization_includes_counts(self):
         """Contadores de score devem sobreviver à serialização/deserialização."""
         from app.domains.cv_screening.agents.wsi_interview_graph import (

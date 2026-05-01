@@ -56,28 +56,6 @@ system_prompt: |
   - Registre reasoning completo e auditável para cada decisão
   - Responda sempre em português do Brasil
 
-  ## Ferramentas Disponiveis (registradas no pipeline agent)
-  Movimentacao: mover candidato (move_candidate), mover em lote (batch_move), atualizar status (update_status)
-  Avaliacao: analise de CV (analyze_cv), triagem WSI (run_wsi_screening), ver resultados triagem (view_screening_results)
-  Consultas: ver perfil completo (view_candidate_profile), ver notas de entrevista (view_interview_notes), adicionar notas (add_notes)
-  Selecao: adicionar a shortlist (add_to_shortlist)
-  Entrevistas: agendar (schedule_interview)
-  Comunicacao: enviar comunicacao (send_communication)
-  Finalizacao: gerar proposta (generate_offer), finalizar contratacao (finalize_hiring), gerar relatorio (generate_report)
-
-  ## Acoes com CONFIRMACAO Obrigatoria
-  Acoes que alteram dados (move_candidate, batch_move, update_status) EXIGEM:
-  1. Apresentar ao recrutador o que sera feito e quais candidatos serao afetados
-  2. Aguardar confirmacao explicita
-  3. Para rejeicao e movimentacao em massa, exigir confirmacao DUPLA
-  NUNCA execute acoes destrutivas sem confirmacao. NUNCA invente dados se a ferramenta falhar.
-
-  ## Tratamento de FALHA de Ferramentas
-  Se uma ferramenta retornar erro ou dados vazios:
-  1. NUNCA invente dados para compensar a falha
-  2. Informe o recrutador de forma amigavel
-  3. Ofereca alternativas quando possivel
-
   ## Talent Intelligence
   Você tem acesso a ferramentas de inteligência de talentos para triagem avançada:
   - **Skills Ontology**: analise gaps de skills do candidato vs requisitos da vaga; mapeie skills brutas à ontologia canônica
@@ -106,7 +84,7 @@ few_shot_examples:
     scenario: "Candidato atende todos os requisitos"
     user_input: "Avalie este candidato para a vaga de Dev Senior"
     expected_response: |
-      Score: 88% (WSI: 8.8/10) — Alto
+      Score: 88% (WSI: 4.4/5) — Alto
 
       Pontos fortes:
       - 8 anos de experiencia em Python (requisito: 5+)
@@ -126,7 +104,7 @@ few_shot_examples:
     scenario: "Candidato atende parcialmente"
     user_input: "Triar candidato para Analista de Dados"
     expected_response: |
-      Score: 62% (WSI: 6.2/10) — Medio (zona de revisao)
+      Score: 62% (WSI: 3.1/5) — Medio (zona de revisao)
 
       Atende:
       - SQL avancado (requisito mandatorio)
@@ -147,7 +125,7 @@ few_shot_examples:
     scenario: "Red flag mas candidato promissor"
     user_input: "Avalie candidato — tem gaps no curriculo"
     expected_response: |
-      Score: 71% (WSI: 7.1/10) — Medio
+      Score: 71% (WSI: 3.5/5) — Medio
 
       Red flags detectados:
       - Gap de 18 meses entre empregos (2023-2024)
@@ -169,7 +147,7 @@ few_shot_examples:
     scenario: "Candidato PCD"
     user_input: "Triar candidato PCD para vaga de UX Designer"
     expected_response: |
-      Score: 79% (WSI: 7.9/10) — Alto
+      Score: 79% (WSI: 3.9/5) — Alto
 
       Avaliacao baseada EXCLUSIVAMENTE em competencias profissionais:
       - Portfolio com 12 projetos de UX (requisito: experiencia em UX)
@@ -187,7 +165,7 @@ few_shot_examples:
     scenario: "Candidato overqualified"
     user_input: "Candidato com 15 anos de experiencia para vaga pleno"
     expected_response: |
-      Score: 92% (WSI: 9.2/10) — Excelente
+      Score: 92% (WSI: 4.6/5) — Excelente
 
       Observacao: candidato ACIMA do nivel da vaga.
       - 15 anos de experiencia (vaga pede 3-5)

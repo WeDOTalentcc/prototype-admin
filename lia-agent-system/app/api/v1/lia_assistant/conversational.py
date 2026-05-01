@@ -64,7 +64,7 @@ def _build_conversational_prompt(
 async def _get_active_draft_for_user(db: AsyncSession, user_id: str) -> JobDraft | None:
     """Fetch the most recent active (DRAFT status) JobDraft for a user."""
     try:
-        from lia_models.job_draft import JobDraftStatus
+        from app.models.job_draft import JobDraftStatus
         result = await db.execute(
             select(JobDraft)
             .where(
@@ -371,7 +371,7 @@ async def get_job_draft(
                 "job_draft": None
             }
 
-        from lia_models.job_draft import JobDraftStatus
+        from app.models.job_draft import JobDraftStatus
         user_id = str(current_user.id)
         result = await db.execute(
             select(JobDraft)
@@ -435,7 +435,7 @@ async def clear_job_draft(
         except (ValueError, TypeError):
             return {"success": False, "message": "Invalid conversation_id format"}
 
-        from lia_models.job_draft import JobDraftStatus
+        from app.models.job_draft import JobDraftStatus
         user_id = str(current_user.id)
         result = await db.execute(
             select(JobDraft).where(

@@ -15,12 +15,6 @@ Nós:
   4. interview_validator        — valida completude antes de executar
   5. interview_scheduler_executor — agenda via calendar_service + cria registro no DB
   6. interview_response_planner — planeja resposta final para o usuário
-
-F4 (AUDIT 2026-04) — paridade WSI: FairnessGuard é aplicado em CADA nó que
-produz texto enviado ao candidato (saudação, perguntas, follow-ups e
-encerramento) via ``_fairness_check_and_regenerate`` + wrapper
-``_wrap_node_with_fairness``. Política BLOCK + REGENERATE (1 retry) +
-``audit_service.log_decision(decision="block", criteria_used=["fairness_guard"], ...)``.
 """
 import logging
 from typing import Any
@@ -71,197 +65,6 @@ _RESPONSE = "interview_response_planner"
 _END = "END"
 
 MAX_ITERATIONS = 8  # Proteção contra loops infinitos de coleta
-
-
-# ----------------------------------------------------------------------------
-# F4 (AUDIT 2026-04) — FairnessGuard canonical helpers
-# ----------------------------------------------------------------------------
-
-# Mensagem fallback sanitizada — paridade WSI. Texto neutro, operacional, sem
-# referência a atributos protegidos. Usado quando a regeneração também falha.
-_FAIRNESS_BLOCK_FALLBACK_MESSAGE = (
-    "Sua solicitação de entrevista foi processada. "
-    "Em instantes você receberá uma confirmação por e-mail com os detalhes."
-)
-
-# Nós que produzem texto enviado ao candidato (saudação, follow-up,
-# encerramento, mensagens de erro/coleta). FG é aplicado APÓS a execução
-# desses nós sobre ``response_data["message"]``. Demais nós (loader, router)
-# não escrevem texto candidate-bound.
-_FAIRNESS_GUARDED_NODES: tuple[str, ...] = (
-    "interview_details_collector",
-    "interview_validator",
-    "interview_scheduler_executor",
-    "interview_response_planner",
-)
-
-
-async def _fairness_check_and_regenerate(
-    message: str,
-    node_name: str,
-    session_id: Any,
-    company_id: Any,
-    candidate_id: Any,
-    job_id: Any,
-) -> tuple[str, bool, list[str]]:
-    """
-    Aplica FairnessGuard.check() sobre uma mensagem candidate-bound; em caso
-    de warnings, tenta UMA regeneração (sanitização determinística) e cai em
-    fallback seguro se ainda houver violação. Audita o bloqueio via
-    ``audit_service.log_decision`` (decision="block",
-    criteria_used=["fairness_guard"]).
-
-    Reuso EXCLUSIVO de:
-      - ``app.shared.compliance.fairness_guard_middleware.check_fairness``
-        (que internamente usa ``FairnessGuard``)
-      - ``app.shared.compliance.audit_service.audit_service``
-
-    **Fail-closed (F4 review-fix 2026-04-19)**: se o middleware/import do
-    FairnessGuard falhar para uma mensagem candidate-bound, devolvemos a
-    mensagem de fallback segura — NUNCA permitimos que conteúdo
-    candidate-bound escape sem checagem por erro interno do gate. Erros do
-    audit_service são logados em warning (mensagem segura já foi escolhida;
-    a ausência de audit não reverte a decisão de bloqueio).
-
-    Returns:
-        (mensagem_final, was_blocked_after_regen, warnings)
-    """
-    if not message or not message.strip():
-        return message, False, []
-
-    try:
-        from app.shared.compliance.fairness_guard_middleware import check_fairness
-    except Exception as exc:
-        # Fail-CLOSED: import do gate falhou → não envia conteúdo
-        # candidate-bound não verificado. Devolve fallback seguro e marca
-        # como bloqueado para o caller propagar `fairness_blocked=True`.
-        logger.warning(
-            "[InterviewGraph][FairnessGuard] FAIL-CLOSED: check_fairness "
-            "import failed in node %s: %s — using safe fallback",
-            node_name, exc,
-        )
-        return _FAIRNESS_BLOCK_FALLBACK_MESSAGE, True, [
-            f"fairness_guard_unavailable:{type(exc).__name__}"
-        ]
-
-    fg_out = check_fairness(
-        {"candidate_message": message},
-        context=f"interview_graph::{node_name}",
-        company_id=str(company_id or ""),
-    )
-    if not fg_out.has_warnings and not fg_out.is_blocked:
-        return message, False, []
-
-    # ---- Regeneração (1 retry) — sanitização determinística -------------
-    regenerated = message
-    try:
-        from app.shared.pii_masking import strip_pii_for_llm_prompt
-        regenerated = strip_pii_for_llm_prompt(regenerated)
-    except Exception as exc:
-        logger.debug(
-            "[InterviewGraph][FairnessGuard] PII strip skipped in %s: %s",
-            node_name, exc,
-        )
-
-    if fg_out.blocked_result and fg_out.blocked_result.blocked_terms:
-        for term in fg_out.blocked_result.blocked_terms:
-            if term:
-                regenerated = regenerated.replace(term, "[REMOVIDO]")
-
-    warnings_aggregated: list[str] = list(fg_out.warnings)
-    blocked_after_regen = False
-    final_msg = regenerated
-
-    retry_out = check_fairness(
-        {"candidate_message": regenerated},
-        context=f"interview_graph::{node_name}::retry",
-        company_id=str(company_id or ""),
-    )
-    if retry_out.has_warnings or retry_out.is_blocked:
-        for w in retry_out.warnings:
-            if w not in warnings_aggregated:
-                warnings_aggregated.append(w)
-        final_msg = _FAIRNESS_BLOCK_FALLBACK_MESSAGE
-        blocked_after_regen = True
-
-    # ---- Audit (decision="block") ---------------------------------------
-    try:
-        from app.shared.compliance.audit_service import audit_service
-        await audit_service.log_decision(
-            company_id=str(company_id) if company_id else None,
-            agent_name="interview_graph",
-            decision_type="send_message",
-            action="candidate_message_fairness_block",
-            decision="block",
-            reasoning=[
-                f"FairnessGuard L1/L2 flagged candidate-bound message in node {node_name}",
-                f"Regeneration {'failed' if blocked_after_regen else 'succeeded'}",
-                f"Warnings: {len(warnings_aggregated)}",
-            ],
-            criteria_used=["fairness_guard"],
-            candidate_id=str(candidate_id) if candidate_id else None,
-            job_vacancy_id=str(job_id) if job_id else None,
-            human_review_required=blocked_after_regen,
-            criteria_ignored=[],
-        )
-    except Exception as audit_exc:
-        # A decisão de bloqueio (final_msg/blocked_after_regen) JÁ foi
-        # tomada acima — falha de audit não reverte. Logamos em warning
-        # para visibilidade (audit ausente é gap regulatório a investigar).
-        logger.warning(
-            "[InterviewGraph][FairnessGuard] audit_service.log_decision "
-            "FAILED in node %s (decisão de bloqueio mantida): %s",
-            node_name, audit_exc,
-        )
-
-    logger.warning(
-        "[InterviewGraph][FairnessGuard] node=%s blocked_after_regen=%s "
-        "warnings=%d session=%s",
-        node_name, blocked_after_regen, len(warnings_aggregated), session_id,
-    )
-    return final_msg, blocked_after_regen, warnings_aggregated
-
-
-def _wrap_node_with_fairness(node_fn, node_name: str):
-    """
-    Decorator-style wrapper que aplica ``_fairness_check_and_regenerate``
-    sobre ``response_data["message"]`` após cada nó relevante. Mantém o nó
-    canônico intacto (princípio canonical-fix: não duplicar lógica nos nós).
-    """
-    async def _wrapped(state: dict[str, Any]) -> dict[str, Any]:
-        result = await node_fn(state)
-        try:
-            wd = (result.get("workflow_data") or {}) if isinstance(result, dict) else {}
-            rd = wd.get("response_data") or {}
-            msg = rd.get("message") or ""
-            if not msg:
-                return result
-            final_msg, blocked, warnings = await _fairness_check_and_regenerate(
-                message=msg,
-                node_name=node_name,
-                session_id=state.get("session_id") if isinstance(state, dict) else None,
-                company_id=state.get("company_id") if isinstance(state, dict) else None,
-                candidate_id=state.get("candidate_id") if isinstance(state, dict) else None,
-                job_id=state.get("job_id") if isinstance(state, dict) else None,
-            )
-            if final_msg != msg or warnings:
-                rd["message"] = final_msg
-                if blocked:
-                    rd["fairness_blocked"] = True
-                if warnings:
-                    rd["fairness_warnings"] = warnings
-                wd["response_data"] = rd
-                result["workflow_data"] = wd
-        except Exception as exc:
-            logger.debug(
-                "[InterviewGraph][FairnessGuard] node wrap error on %s: %s",
-                node_name, exc,
-            )
-        return result
-
-    _wrapped.__name__ = f"{node_name}__fairness_guarded"
-    _wrapped.__wrapped__ = node_fn  # type: ignore[attr-defined]
-    return _wrapped
 
 
 class InterviewGraph:
@@ -330,14 +133,8 @@ class InterviewGraph:
         state_schema = _InterviewStateDict if _HAS_TYPED_DICT else dict
         builder = StateGraph(state_schema)
 
-        # F4 (AUDIT 2026-04) — paridade WSI: aplica FairnessGuard como
-        # wrapper sobre os nós que produzem texto candidate-bound. Demais
-        # nós permanecem inalterados (LOADER/ROUTER não escrevem mensagem).
         for name, fn in self._node_fns.items():
-            if name in _FAIRNESS_GUARDED_NODES:
-                builder.add_node(name, _wrap_node_with_fairness(fn, name))
-            else:
-                builder.add_node(name, fn)
+            builder.add_node(name, fn)
 
         builder.set_entry_point(_LOADER)
         builder.add_edge(_LOADER, _COLLECTOR)
@@ -381,41 +178,10 @@ class InterviewGraph:
         """Executa via StateGraph nativo com PostgresSaver checkpoint.
 
         P36 Full: injects 3-layer intelligence before graph execution.
-
-        A3 (compliance) — propaga ``state['company_id']`` para o
-        ``tenant_llm_context`` antes da execução para que ``get_provider_for_tenant``
-        nos nós e qualquer outro consumidor de LLM resolva o provider/key
-        correto por tenant (Choose Your AI). Falha-segura: se o middleware
-        já tiver setado o contextvar, mantém o valor.
         """
         if self._compiled is None:
             self._compiled = self._build_langgraph()
 
-        # --- A3: tenant LLM context propagation ---
-        _tenant_token = None
-        try:
-            from app.middleware.auth_enforcement import _current_company_id
-            _company_id = str(state.get("company_id") or "")
-            if _company_id and not _current_company_id.get(""):
-                _tenant_token = _current_company_id.set(_company_id)
-        except Exception as _tenant_exc:
-            self.logger.debug("[InterviewGraph] tenant_llm_context skipped: %s", _tenant_exc)
-
-        try:
-            return await self._invoke_langgraph_inner(state, audit_callback)
-        finally:
-            # A3: garante restauração do contextvar mesmo em exceção fora do try interno
-            if _tenant_token is not None:
-                try:
-                    from app.middleware.auth_enforcement import _current_company_id
-                    _current_company_id.reset(_tenant_token)
-                except Exception:
-                    pass
-
-    async def _invoke_langgraph_inner(
-        self, state: dict[str, Any], audit_callback=None
-    ) -> dict[str, Any]:
-        """Corpo da execução LangGraph (extraído para garantir reset do tenant context)."""
         # --- P36: Camada 3 — Global scheduling insights ---
         try:
             from app.shared.services.global_insights_service import get_global_insights
@@ -536,19 +302,6 @@ class InterviewGraph:
                     "[InterviewGraph] audit_service skipped (LangGraph path): %s", _audit_exc
                 )
 
-        # F4 (AUDIT 2026-04) — A3/G1: FairnessGuard L2 sobre o texto de saída ao
-        # candidato (paridade com WSIInterviewGraph). Diferente do WSI (fail-open
-        # warnings), aqui aplicamos política BLOCK + REGENERATE: se FG detectar
-        # conteúdo discriminatório, a mensagem é substituída por um fallback
-        # sanitizado e a decisão é auditada (BCB 498 / SOX / EU AI Act Art. 10).
-        result = await self._apply_fairness_guard_to_response(
-            result=result,
-            session_id=session_id,
-            company_id=state.get("company_id"),
-            candidate_id=state.get("candidate_id"),
-            job_id=state.get("job_id"),
-        )
-
         self.logger.info(
             "[InterviewGraph] execução concluída (LangGraph nativo)",
             extra={"session_id": session_id, "graph": "InterviewGraph"},
@@ -562,63 +315,6 @@ class InterviewGraph:
     async def invoke(self, state: dict[str, Any], audit_callback=None) -> dict[str, Any]:
         """Invoca o grafo de agendamento via LangGraph nativo."""
         return await self._invoke_langgraph(state, audit_callback)
-
-    # ------------------------------------------------------------------
-    # F4 (AUDIT 2026-04) — FairnessGuard L2 sobre saída ao candidato
-    # ------------------------------------------------------------------
-
-    # Backward-compat alias — código legado pode importar este símbolo.
-    # A fonte canônica do fallback é o módulo: ``_FAIRNESS_BLOCK_FALLBACK_MESSAGE``.
-    _FAIRNESS_BLOCK_FALLBACK_MESSAGE = _FAIRNESS_BLOCK_FALLBACK_MESSAGE
-
-    async def _apply_fairness_guard_to_response(
-        self,
-        result: dict[str, Any],
-        session_id: str | None,
-        company_id: Any,
-        candidate_id: Any,
-        job_id: Any,
-    ) -> dict[str, Any]:
-        """
-        Defesa em profundidade: re-aplica FairnessGuard sobre
-        ``response_data["message"]`` após a execução completa do grafo. A
-        verificação por-nó (via ``_wrap_node_with_fairness``) já cobre cada
-        gerador de texto — este método é uma rede de segurança final.
-
-        Delega à fonte canônica ``_fairness_check_and_regenerate`` (princípio
-        canonical-fix: lógica única, reutilizada pelos wrappers e pelo
-        post-graph). Política BLOCK + REGENERATE (1 retry) + audit.
-        """
-        try:
-            workflow_data_post = result.get("workflow_data") or {}
-            response_data = workflow_data_post.get("response_data") or {}
-            candidate_msg = response_data.get("message") or ""
-            if not candidate_msg:
-                return result
-
-            final_msg, blocked, warnings = await _fairness_check_and_regenerate(
-                message=candidate_msg,
-                node_name="post_graph",
-                session_id=session_id,
-                company_id=company_id,
-                candidate_id=candidate_id,
-                job_id=job_id,
-            )
-            if final_msg == candidate_msg and not warnings:
-                return result
-
-            response_data["message"] = final_msg
-            if blocked:
-                response_data["fairness_blocked"] = True
-            if warnings:
-                response_data["fairness_warnings"] = [str(w) for w in warnings]
-            workflow_data_post["response_data"] = response_data
-            result["workflow_data"] = workflow_data_post
-        except Exception as fg_exc:
-            self.logger.debug(
-                "[InterviewGraph][A3] FairnessGuard check skipped: %s", fg_exc
-            )
-        return result
 
     def get_graph_structure(self) -> dict[str, Any]:
         """Retorna metadata do grafo para observabilidade."""

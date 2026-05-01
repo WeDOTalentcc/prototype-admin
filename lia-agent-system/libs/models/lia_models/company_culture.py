@@ -4,7 +4,7 @@ Company Culture Profile models for automatic organizational profile analysis.
 from datetime import datetime
 from typing import Optional, List
 from sqlalchemy import Column, String, Integer, DateTime, Text, JSON, Boolean, Float, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
+from sqlalchemy.dialects.postgresql import UUID, ARRAY
 import uuid
 
 from lia_config.database import Base
@@ -54,7 +54,8 @@ class CompanyCultureProfile(Base):
     tech_stack = Column(ARRAY(String), default=[])
     engineering_culture = Column(Text, nullable=True)
     
-    default_languages = Column(JSONB, default=list)
+    # Default languages for job vacancies
+    default_languages = Column(ARRAY(String), default=[])
     
     openness_score = Column(Integer, default=50)
     conscientiousness_score = Column(Integer, default=50)

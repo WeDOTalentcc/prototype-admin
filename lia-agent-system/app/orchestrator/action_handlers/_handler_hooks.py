@@ -19,7 +19,6 @@ _TRIGGER_MAP = {
     "candidate_tagged": "candidate_updated",
     "candidate_favorited": "candidate_updated",
     "screening_started": "status_change",
-    "candidate_rejected": "status_change",
     "interview_scheduled": "interview_scheduled",
     "interview_rescheduled": "interview_scheduled",
     "interview_cancelled": "interview_scheduled",
@@ -31,120 +30,35 @@ async def resolve_candidate_by_name(
     candidate_name: str,
     company_id: str | None = None,
 ) -> dict[str, Any] | None:
-    """
-    Resolve a candidate UUID from a display name.
-
-    Strategy:
-    1. Direct ILIKE query on candidates, filtered by company via vacancy_candidates JOIN.
-       Calls set_config for RLS before every query.
-    2. Fallback: split into words (last name first), search each word, compare full
-       names with accents stripped in Python (handles "Joao" <-> "Joao").
-
-    Each sub-query uses an independent AsyncSessionLocal to avoid nested-session
-    issues in asyncpg connection pools.
-    """
-    import unicodedata
     from sqlalchemy import text
+
     from app.core.database import AsyncSessionLocal
 
     if not candidate_name or candidate_name in ("o candidato", ""):
         return None
 
-    def _strip_accents(s: str) -> str:
-        return "".join(
-            c for c in unicodedata.normalize("NFD", s)
-            if unicodedata.category(c) != "Mn"
-        )
+    async with AsyncSessionLocal() as db:
+        sql = """
+            SELECT c.id, c.name, c.email
+            FROM candidates c
+        """
+        bind: dict[str, Any] = {"q": f"%{candidate_name}%"}
 
-    co_str = str(company_id) if company_id else ""
+        if company_id:
+            sql += """
+                JOIN vacancy_candidates vc ON vc.candidate_id = c.id
+                WHERE vc.company_id = CAST(:co AS uuid)
+                  AND c.name ILIKE :q
+            """
+            bind["co"] = str(company_id)
+        else:
+            sql += " WHERE c.name ILIKE :q"
 
-    # ── Query 1: direct ILIKE match ─────────────────────────────────────────
-    try:
-        async with AsyncSessionLocal() as db:
-            if co_str:
-                await db.execute(
-                    text("SELECT set_config('app.company_id', :co, true)"),
-                    {"co": co_str},
-                )
-                sql = (
-                    "SELECT c.id, c.name, c.email FROM candidates c"
-                    " JOIN vacancy_candidates vc ON CAST(vc.candidate_id AS uuid) = c.id"
-                    " WHERE vc.company_id = :co AND c.name ILIKE :q"
-                    " ORDER BY c.name LIMIT 1"
-                )
-                bind: dict = {"q": f"%{candidate_name}%", "co": co_str}
-            else:
-                sql = (
-                    "SELECT c.id, c.name, c.email FROM candidates c"
-                    " WHERE c.name ILIKE :q ORDER BY c.name LIMIT 1"
-                )
-                bind = {"q": f"%{candidate_name}%"}
-
-            result = await db.execute(text(sql), bind)
-            row = result.fetchone()
-            if row:
-                logger.info("[resolve_by_name] Direct match: %s -> %s", candidate_name, row.name)
-                return {"id": str(row.id), "name": row.name, "email": row.email}
-
-        logger.info(
-            "[resolve_by_name] No direct ILIKE match for '%s' company=%s — word fallback",
-            candidate_name, co_str or "any",
-        )
-    except Exception as exc:
-        logger.error("[resolve_by_name] Query-1 error for '%s': %s", candidate_name, exc)
-
-    # ── Query 2: word-by-word fallback with accent stripping ────────────────
-    target_unaccented = _strip_accents(candidate_name).lower()
-    parts = candidate_name.strip().split()
-    search_parts = (parts[-1:] + parts[:-1]) if len(parts) > 1 else parts
-    rows_fb: list = []
-
-    for part in search_parts:
-        if len(part) < 3:
-            continue
-        try:
-            async with AsyncSessionLocal() as db_fb:
-                if co_str:
-                    await db_fb.execute(
-                        text("SELECT set_config('app.company_id', :co, true)"),
-                        {"co": co_str},
-                    )
-                    sql_fb = (
-                        "SELECT c.id, c.name, c.email FROM candidates c"
-                        " JOIN vacancy_candidates vc ON CAST(vc.candidate_id AS uuid) = c.id"
-                        " WHERE vc.company_id = :cofb AND c.name ILIKE :qfb"
-                        " ORDER BY c.name LIMIT 20"
-                    )
-                    bind_fb: dict = {"qfb": f"%{part}%", "cofb": co_str}
-                else:
-                    sql_fb = (
-                        "SELECT c.id, c.name, c.email FROM candidates c"
-                        " WHERE c.name ILIKE :qfb ORDER BY c.name LIMIT 20"
-                    )
-                    bind_fb = {"qfb": f"%{part}%"}
-
-                res_fb = await db_fb.execute(text(sql_fb), bind_fb)
-                rows_fb = res_fb.fetchall()
-        except Exception as exc:
-            logger.error("[resolve_by_name] Fallback error part '%s': %s", part, exc)
-        if rows_fb:
-            break
-
-    # Exact unaccented match
-    for r in rows_fb:
-        if _strip_accents(r.name).lower() == target_unaccented:
-            logger.info("[resolve_by_name] Fallback exact match: %s", r.name)
-            return {"id": str(r.id), "name": r.name, "email": r.email}
-    # Partial unaccented match (first word)
-    for r in rows_fb:
-        if _strip_accents(r.name).lower().startswith(target_unaccented.split()[0]):
-            logger.info("[resolve_by_name] Fallback partial match: %s", r.name)
-            return {"id": str(r.id), "name": r.name, "email": r.email}
-
-    logger.warning(
-        "[resolve_by_name] No match found for '%s' company=%s",
-        candidate_name, co_str or "any",
-    )
+        sql += " ORDER BY c.name LIMIT 1"
+        result = await db.execute(text(sql), bind)
+        row = result.fetchone()
+        if row:
+            return {"id": str(row.id), "name": row.name, "email": row.email}
     return None
 
 

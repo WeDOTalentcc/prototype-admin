@@ -1250,38 +1250,6 @@ class AutomationService:
         return suggestions
 
 
-    # ------------------------------------------------------------------
-    # Chat tool surface (registered in app/domains/automation/tools/__init__.py)
-    # ------------------------------------------------------------------
-    async def enable_automation(self, db=None, automation_id: str = "", **kwargs):
-        """Activate an automation rule (thin wrapper over update_automation)."""
-        return await self.update_automation(
-            db=db, automation_id=automation_id, updates={"is_active": True}
-        )
-
-    async def disable_automation(self, db=None, automation_id: str = "", **kwargs):
-        """Deactivate an automation rule (thin wrapper over update_automation)."""
-        return await self.update_automation(
-            db=db, automation_id=automation_id, updates={"is_active": False}
-        )
-
-    async def get_execution_log(
-        self,
-        db=None,
-        automation_id: str | None = None,
-        company_id: str | None = None,
-        limit: int = 50,
-        **kwargs,
-    ):
-        """Singular alias around get_execution_logs() exposed to the chat surface."""
-        return await self.get_execution_logs(
-            db=db,
-            automation_id=automation_id,
-            company_id=company_id,
-            limit=limit,
-        )
-
-
 automation_service = AutomationService()
 
 

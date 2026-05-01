@@ -18,7 +18,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.company_hiring_policy import (
+from app.models.company_hiring_policy import (
     ALL_DEFAULTS,
     AUTOMATION_RULES_DEFAULTS,
     COMMUNICATION_RULES_DEFAULTS,

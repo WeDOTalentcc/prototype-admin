@@ -16,7 +16,7 @@ from fastapi import FastAPI
 from httpx import AsyncClient, ASGITransport
 
 from app.api.v1.bias_audit import router as bias_audit_router
-from app.shared.compliance.bias_audit_service import (
+from app.shared.services.bias_audit_service import (
     BiasAuditReport,
     DemographicAuditResult,
 )

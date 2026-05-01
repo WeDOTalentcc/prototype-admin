@@ -23,41 +23,6 @@ _KEYWORD_ACTION_MAP: dict[str, str] = (
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="job_management")
 
 
-# Mapeamento canônico action_id -> tool_id (module-level p/ auditor + smoke test).
-_ACTION_TOOL_MAP: dict[str, str] = {
-    "create_job": "create_job_vacancy",
-    "guided_wizard": "get_wizard_step",
-    "extract_requirements": "enrich_job_description",
-    "generate_rubrics": "enrich_job_description",
-    "update_job": "update_job_vacancy",
-    "health_check": "get_job_health",
-    "suggest_strategy": "get_job_analytics",
-    "duplicate_job": "duplicate_job_vacancy",
-    "create_from_template": "clone_job_vacancy",
-    "clone_job": "clone_job_vacancy",
-    "close_job": "close_job_vacancy",
-    "pause_job": "pause_job_vacancy",
-    "get_benefits": "get_job_analytics",
-    "suggest_jd_improvements": "enrich_job_description",
-    "detect_criteria": "enrich_job_description",
-    "generate_wsi_questions": "enrich_job_description",
-    "advance_wizard_step": "advance_wizard",
-    "get_wizard_step_data": "get_wizard_step",
-    "enrich_jd": "enrich_job_description",
-    "import_jd": "import_job_description",
-    "generate_jd": "generate_job_description",
-    "job_analytics": "get_job_analytics",
-    "qualify_job": "get_job_health",
-    "list_jobs": "get_job_analytics",
-    "publish_job": "update_job_vacancy",
-    "job_status_webhook": "get_job_health",
-    "search_templates": "search_job_templates",
-    "apply_template": "search_job_templates",
-    "analyze_jd": "enrich_job_description",
-    "suggest_compensation": "get_job_analytics",
-}
-
-
 
 @register_domain
 class JobManagementDomain(ComplianceDomainPrompt):
@@ -68,7 +33,6 @@ class JobManagementDomain(ComplianceDomainPrompt):
     domain_id = "job_management"
     domain_name = "Job Management & Wizard"
     description = "Criação, gestão e otimização de vagas de emprego"
-    agent_aliases = ("job_planner", "job_intake")
 
     def get_allowed_actions(self) -> list[DomainAction]:
         from app.domains.job_management.actions import JOB_MANAGEMENT_ACTIONS
@@ -141,6 +105,26 @@ class JobManagementDomain(ComplianceDomainPrompt):
         from app.domains.job_management.tools import JOB_MANAGEMENT_TOOLS, execute_job_management_tool
 
         tool_ids = {t["tool_id"] for t in JOB_MANAGEMENT_TOOLS}
+
+        _ACTION_TOOL_MAP: dict[str, str] = {
+            "create_job": "create_job_vacancy",
+            "update_job": "update_job_vacancy",
+            "close_job": "close_job_vacancy",
+            "pause_job": "pause_job_vacancy",
+            "duplicate_job": "duplicate_job_vacancy",
+            "clone_job": "duplicate_job_vacancy",
+            "generate_jd": "generate_job_description",
+            "enrich_jd": "enrich_job_description",
+            "import_jd": "import_job_description",
+            "search_templates": "search_job_templates",
+            "create_from_template": "search_job_templates",
+            "apply_template": "search_job_templates",
+            "health_check": "get_job_health",
+            "advance_wizard_step": "advance_wizard",
+            "get_wizard_step_data": "get_wizard_step",
+            "guided_wizard": "get_wizard_step",
+            "job_analytics": "get_job_analytics",
+        }
 
         mapped_tool = _ACTION_TOOL_MAP.get(action_id)
         if mapped_tool and mapped_tool in tool_ids:

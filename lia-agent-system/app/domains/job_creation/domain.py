@@ -33,20 +33,15 @@ def _mask_pii(text: str) -> str:
     """Mask PII before audit logging (GOV: LGPD compliance)."""
     if not text:
         return ""
-    from app.shared.pii_masking import mask_pii
-    return mask_pii(text[:500])
+    try:
+        from app.services.pii_filter import mask_pii
+        return mask_pii(text[:500])
+    except ImportError:
+        return text[:500] if len(text) > 500 else text
 
 
 @register_domain
 class JobCreationDomain(ComplianceDomainPrompt):
-
-    domain_id = "job_creation"
-    domain_name = "Criacao de Vaga (Wizard WSI)"
-    description = (
-        "Wizard conversacional para criar vagas com metodologia WSI. "
-        "Guia o recrutador passo a passo: JD enrichment, Big Five, "
-        "competencias, perguntas de triagem, publicacao e calibracao."
-    )
 
     def __init__(self):
         self._graph = None
@@ -56,6 +51,22 @@ class JobCreationDomain(ComplianceDomainPrompt):
         if self._graph is None:
             self._graph = get_job_creation_graph()
         return self._graph
+
+    @property
+    def domain_id(self) -> str:
+        return "job_creation"
+
+    @property
+    def domain_name(self) -> str:
+        return "Criacao de Vaga (Wizard WSI)"
+
+    @property
+    def description(self) -> str:
+        return (
+            "Wizard conversacional para criar vagas com metodologia WSI. "
+            "Guia o recrutador passo a passo: JD enrichment, Big Five, "
+            "competencias, perguntas de triagem, publicacao e calibracao."
+        )
 
     def get_allowed_actions(self) -> List[DomainAction]:
         return [

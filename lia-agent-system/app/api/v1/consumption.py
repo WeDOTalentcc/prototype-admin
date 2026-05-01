@@ -15,7 +15,6 @@ from app.domains.billing.services.consumption_tracking_service import (
     ConsumptionTrackingService,
 )
 from app.shared.tenant_guard import get_verified_company_id
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -186,7 +185,7 @@ async def get_tenant_summary(
     response_model=DetailedInvoiceResponse,
 )
 async def get_detailed_invoice(
-    target_company_id: str = Path(..., description="Company ID", pattern=DUAL_ID_PATH_PATTERN),
+    target_company_id: str = Path(..., description="Company ID"),
     year: int = Path(..., ge=2024, le=2030, description="Invoice year"),
     month: int = Path(..., ge=1, le=12, description="Invoice month"),
     company_id: str = Depends(get_verified_company_id),
@@ -215,10 +214,3 @@ async def get_pricing_analytics(
     except Exception as e:
         logger.error("Error generating pricing analytics: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to generate pricing analytics")
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

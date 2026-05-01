@@ -1,14 +1,6 @@
-"""Microsoft Teams - RESTful Bot Framework client (canonical for /messages webhook).
-
-When to use: response to /messages webhook (chat 1:1 with bot).
-Auth: app credentials (MICROSOFT_APP_ID / MICROSOFT_APP_PASSWORD).
-Tech: httpx direct calls to Bot Framework REST.
-
-For full decision tree of which Teams send path to use, see:
-lia-agent-system/CLAUDE.md "Teams send paths - when to use which" (W5.5).
-
-Do NOT use this for proactive sends without webhook context - use teams_bot.py
-(BotFrameworkAdapter.continue_conversation) instead.
+"""
+Simplified Microsoft Teams integration without Bot Framework SDK.
+Handles webhooks directly from Teams.
 """
 import logging
 from datetime import datetime
@@ -19,20 +11,6 @@ import httpx
 from app.core.config import settings
 
 logger = logging.getLogger(__name__)
-
-# ── W8.7 Slash command constant (module-level so manifest + adapter share) ──
-TEAMS_SLASH_COMMANDS: dict[str, str] = {
-    "/buscar": "Buscar candidatos na plataforma",
-    "/triagem": "Ver status da triagem de candidatos",
-    "/relatorio": "Gerar relatório de recrutamento",
-    "/vaga": "Consultar informações sobre uma vaga",
-    "/agendar": "Agendar entrevista com candidato",
-    "/pipeline": "Ver pipeline de candidatos",
-    "/aprovar": "Aprovar candidato para próxima etapa",
-    "/reprovar": "Reprovar candidato",
-    "/ajuda": "Ver comandos disponíveis",
-}
-# ─────────────────────────────────────────────────────────────────────────────
 
 
 class SimpleTeamsBot:
@@ -70,7 +48,7 @@ class SimpleTeamsBot:
             or "botframework.com"
         )
         token_url = f"https://login.microsoftonline.com/{tenant_id}/oauth2/v2.0/token"
-        logger.debug(f"[Teams] Acquiring token via {token_url}")
+        logger.info(f"[Teams] Acquiring token via {token_url}")
 
         async with httpx.AsyncClient() as client:
             response = await client.post(
@@ -105,7 +83,7 @@ class SimpleTeamsBot:
                 payload_b64 = self._access_token.split(".")[1]
                 payload_b64 += "=" * (4 - len(payload_b64) % 4)
                 claims = _json.loads(base64.b64decode(payload_b64))
-                logger.debug(
+                logger.info(
                     f"[Teams] Token claims: appid={claims.get('appid')} "
                     f"tid={claims.get('tid')} aud={claims.get('aud')} "
                     f"iss={claims.get('iss', '')[:60]}"
@@ -139,9 +117,19 @@ class SimpleTeamsBot:
         
         return None
     
-    # ── Slash command definitions (module-level constant TEAMS_SLASH_COMMANDS) ─
+    # ── Slash command definitions ────────────────────────────────────────────
 
-    _SLASH_COMMANDS = TEAMS_SLASH_COMMANDS
+    _SLASH_COMMANDS = {
+        "/ajuda": "Quais são todas as funcionalidades que você pode me ajudar?",
+        "/help":  "Quais são todas as funcionalidades que você pode me ajudar?",
+        "/buscar": "Busca os melhores candidatos para a vaga mais recente",
+        "/triagem": "Quais candidatos ainda precisam de triagem WSI?",
+        "/relatorio": "Gera o relatório semanal de recrutamento",
+        "/pipeline": "Como está a saúde geral do pipeline de recrutamento?",
+        "/vagas": "Quais são as vagas ativas e seus status?",
+        "/candidatos": "Quais candidatos estão aguardando triagem ou retorno?",
+        "/resumo": "Me dê um resumo das atividades e alertas de hoje",
+    }
 
     def _parse_slash_command(self, text: str) -> str:
         """Convert slash command to a natural language prompt."""
@@ -306,7 +294,7 @@ class SimpleTeamsBot:
                     )
                     return False
                 
-                logger.debug("Message sent successfully to Teams")
+                logger.info("Message sent successfully to Teams")
                 return True
                 
         except Exception as e:
@@ -372,7 +360,7 @@ class SimpleTeamsBot:
                     )
                     return False
                 
-                logger.debug("Adaptive card sent successfully to Teams")
+                logger.info("Adaptive card sent successfully to Teams")
                 return True
                 
         except Exception as e:

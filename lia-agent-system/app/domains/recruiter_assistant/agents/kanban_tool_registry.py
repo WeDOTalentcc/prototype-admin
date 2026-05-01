@@ -12,7 +12,7 @@ from typing import Any
 from lia_agents_core.react_loop import ToolDefinition
 from sqlalchemy import text
 
-from app.core.database import AsyncSessionLocal, get_tenant_aware_session
+from app.core.database import AsyncSessionLocal
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.tool_handler import tool_handler
 
@@ -21,7 +21,6 @@ logger = logging.getLogger(__name__)
 _fairness_guard = FairnessGuard()
 
 
-# require_company=False kept: FairnessGuard text check only, no DB access
 @tool_handler("kanban", require_company=False)
 async def _wrap_check_rejection_fairness(**kwargs: Any) -> dict[str, Any]:
     """Check rejection reason against FairnessGuard for discriminatory bias."""
@@ -76,7 +75,7 @@ async def _wrap_check_rejection_fairness(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("kanban")
+@tool_handler("kanban", require_company=False)
 async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
@@ -89,7 +88,7 @@ async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
     company_averages = {}
 
     try:
-        async with get_tenant_aware_session() as session:
+        async with AsyncSessionLocal() as session:
             if vacancy_id:
                 stage_result = await session.execute(
                     text("""
@@ -363,7 +362,7 @@ async def _wrap_get_at_risk_candidates(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("kanban")
+@tool_handler("kanban", require_company=False)
 async def _wrap_find_silver_medalists(**kwargs: Any) -> dict[str, Any]:
     """Find warm candidates from past processes to re-surface for current vacancies."""
     from app.shared.services.silver_medalist_service import silver_medalist_service
@@ -397,7 +396,7 @@ async def _wrap_find_silver_medalists(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("kanban")
+@tool_handler("kanban", require_company=False)
 async def _wrap_get_pipeline_velocity(**kwargs: Any) -> dict[str, Any]:
     """Return per-stage velocity metrics using precise stage_entered_at timestamps."""
     from app.shared.services.pipeline_velocity_service import pipeline_velocity_service
@@ -415,7 +414,7 @@ async def _wrap_get_pipeline_velocity(**kwargs: Any) -> dict[str, Any]:
     return {"success": True, "data": metrics}
 
 
-@tool_handler("kanban")
+@tool_handler("kanban", require_company=False)
 async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
     """Get overall pipeline summary with candidate counts per stage."""
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -424,7 +423,7 @@ async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
     stages: dict[str, int] = {}
     total = 0
     try:
-        async with get_tenant_aware_session() as session:
+        async with AsyncSessionLocal() as session:
             rows = await session.execute(
                 text("""
                     SELECT stage, COUNT(*) AS cnt
@@ -463,7 +462,7 @@ async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("kanban")
+@tool_handler("kanban", require_company=False)
 async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
     """Get metrics for a specific pipeline stage."""
     stage = kwargs.get("stage", "")
@@ -472,7 +471,7 @@ async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[kanban_tools] get_stage_metrics called: stage={stage} vacancy={vacancy_id or 'all'}")
     metrics: dict[str, Any] = {"stage": stage, "vacancy_id": vacancy_id or "all"}
     try:
-        async with get_tenant_aware_session() as session:
+        async with AsyncSessionLocal() as session:
             row = await session.execute(
                 text("""
                     SELECT COUNT(*) AS cnt,
@@ -507,7 +506,7 @@ async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("kanban")
+@tool_handler("kanban", require_company=False)
 async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
     """List candidates in a specific stage."""
     stage = kwargs.get("stage", "")
@@ -518,7 +517,7 @@ async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
     candidates = []
     total = 0
     try:
-        async with get_tenant_aware_session() as session:
+        async with AsyncSessionLocal() as session:
             rows = await session.execute(
                 text("""
                     SELECT vc.candidate_id, vc.stage, vc.status, vc.lia_score, vc.match_percentage,
@@ -565,7 +564,7 @@ async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("kanban")
+@tool_handler("kanban", require_company=False)
 async def _wrap_analyze_stage(**kwargs: Any) -> dict[str, Any]:
     """Deep analysis of a pipeline stage."""
     stage = kwargs.get("stage", "")
@@ -608,7 +607,7 @@ async def _wrap_analyze_stage(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("kanban")
+@tool_handler("kanban", require_company=False)
 async def _wrap_identify_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     """Identify bottlenecks across the pipeline."""
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -617,7 +616,7 @@ async def _wrap_identify_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     bottlenecks = []
     critical_stages = []
     try:
-        async with get_tenant_aware_session() as session:
+        async with AsyncSessionLocal() as session:
             rows = await session.execute(
                 text("""
                     SELECT stage,
@@ -657,7 +656,7 @@ async def _wrap_identify_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("kanban")
+@tool_handler("kanban", require_company=False)
 async def _wrap_get_candidate_aging(**kwargs: Any) -> dict[str, Any]:
     """Get aging report for candidates stuck in stages."""
     stage = kwargs.get("stage", "")
@@ -667,7 +666,7 @@ async def _wrap_get_candidate_aging(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[kanban_tools] get_candidate_aging called: stage={stage or 'all'} threshold={days_threshold}d")
     aging_candidates = []
     try:
-        async with get_tenant_aware_session() as session:
+        async with AsyncSessionLocal() as session:
             rows = await session.execute(
                 text("""
                     SELECT vc.candidate_id, vc.stage, vc.status, vc.lia_score,
@@ -709,7 +708,7 @@ async def _wrap_get_candidate_aging(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("kanban")
+@tool_handler("kanban", require_company=False)
 async def _wrap_compare_stages(**kwargs: Any) -> dict[str, Any]:
     """Compare metrics between pipeline stages."""
     stages = kwargs.get("stages", [])
@@ -732,7 +731,7 @@ async def _wrap_compare_stages(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("kanban")
+@tool_handler("kanban", require_company=False)
 async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
     """Suggest candidate movements based on score and aging."""
     stage = kwargs.get("stage", "")
@@ -741,7 +740,7 @@ async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[kanban_tools] suggest_movements called: stage={stage} vacancy={vacancy_id or 'all'}")
     suggestions = []
     try:
-        async with get_tenant_aware_session() as session:
+        async with AsyncSessionLocal() as session:
             rows = await session.execute(
                 text("""
                     SELECT vc.candidate_id, vc.stage, vc.lia_score, vc.match_percentage,
@@ -788,7 +787,7 @@ async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("kanban")
+@tool_handler("kanban", require_company=False)
 async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
     """Move multiple candidates to a target stage (real DB UPDATE)."""
     candidate_ids = kwargs.get("candidate_ids", [])
@@ -801,7 +800,7 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "data": {}, "message": "Parametros 'candidate_ids' e 'target_stage' sao obrigatorios."}
     moved = 0
     try:
-        async with get_tenant_aware_session() as session:
+        async with AsyncSessionLocal() as session:
             result = await session.execute(
                 text("""
                     UPDATE vacancy_candidates
@@ -829,7 +828,6 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-# require_company=False kept: stub: echoes recipients, no DB writes
 @tool_handler("kanban", require_company=False)
 async def _wrap_send_batch_communication(**kwargs: Any) -> dict[str, Any]:
     """Send communication to multiple candidates."""
@@ -852,7 +850,6 @@ async def _wrap_send_batch_communication(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-# require_company=False kept: stub: returns initiation status, no DB writes
 @tool_handler("kanban", require_company=False)
 async def _wrap_start_screening_batch(**kwargs: Any) -> dict[str, Any]:
     """Start WSI screening for multiple candidates."""
@@ -874,7 +871,7 @@ async def _wrap_start_screening_batch(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("kanban")
+@tool_handler("kanban", require_company=False)
 async def _wrap_generate_pipeline_report(**kwargs: Any) -> dict[str, Any]:
     """Generate pipeline analytics report with real data."""
     report_type = kwargs.get("report_type", "summary")
@@ -902,7 +899,7 @@ async def _wrap_generate_pipeline_report(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("kanban")
+@tool_handler("kanban", require_company=False)
 async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
     """View complete candidate profile including education, work history and scores."""
     candidate_id = kwargs.get("candidate_id", "")
@@ -910,7 +907,7 @@ async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
 
     profile: dict[str, Any] = {"candidate_id": candidate_id, "profile_loaded": False}
     try:
-        async with get_tenant_aware_session() as session:
+        async with AsyncSessionLocal() as session:
             row = await session.execute(
                 text("""
                     SELECT id, name, email, current_title, current_company,

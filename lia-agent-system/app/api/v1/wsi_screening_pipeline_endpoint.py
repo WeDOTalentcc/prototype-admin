@@ -50,7 +50,7 @@ async def generate_screening_pipeline(
         company_questions_raw = []
         if request.include_company_questions:
             try:
-                from lia_models.screening_question import CompanyScreeningQuestion
+                from app.models.screening_question import CompanyScreeningQuestion
 
                 stmt = select(CompanyScreeningQuestion).where(
                     CompanyScreeningQuestion.company_id == company_id,

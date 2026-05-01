@@ -13,14 +13,6 @@ from app.domains.candidate_lists.dependencies import get_candidate_list_repo
 from app.domains.candidate_lists.repositories.candidate_list_repository import (
     CandidateListRepository,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +126,7 @@ async def create_candidate_list(
 
 @router.get("/{list_id}", response_model=None)
 async def get_candidate_list(
-    list_id: _DualId,
+    list_id: str,
     skip: int = 0,
     limit: int = 50,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
@@ -208,7 +200,7 @@ async def get_candidate_list(
 
 @router.patch("/{list_id}", response_model=None)
 async def update_candidate_list(
-    list_id: _DualId,
+    list_id: str,
     data: CandidateListUpdate,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
@@ -250,7 +242,7 @@ async def update_candidate_list(
 
 @router.delete("/{list_id}", response_model=None)
 async def delete_candidate_list(
-    list_id: _DualId,
+    list_id: str,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
 ):
@@ -278,7 +270,7 @@ async def delete_candidate_list(
 
 @router.post("/{list_id}/candidates", response_model=None)
 async def add_candidates_to_list(
-    list_id: _DualId,
+    list_id: str,
     data: AddCandidatesRequest,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
@@ -352,7 +344,7 @@ async def add_candidates_to_list(
 
 @router.delete("/{list_id}/candidates", response_model=None)
 async def remove_candidates_from_list(
-    list_id: _DualId,
+    list_id: str,
     data: RemoveCandidatesRequest,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
@@ -397,7 +389,7 @@ async def remove_candidates_from_list(
 
 @router.post("/{list_id}/assign-jobs", response_model=None)
 async def assign_list_to_jobs(
-    list_id: _DualId,
+    list_id: str,
     data: AssignJobsRequest,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
@@ -466,10 +458,3 @@ async def assign_list_to_jobs(
         logger.error(f"Error assigning list to jobs: {e}", exc_info=True)
         await repo.rollback()
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

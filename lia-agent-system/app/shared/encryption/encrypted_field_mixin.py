@@ -49,7 +49,6 @@ Security posture
 """
 from __future__ import annotations
 
-import functools
 import hashlib
 import logging
 import os
@@ -64,16 +63,16 @@ class EncryptionKeyMissingError(RuntimeError):
     """Raised when FIELD_ENCRYPTION_KEY is not set in production mode."""
 
 
-@functools.lru_cache(maxsize=1)
-def _build_fernet(key: str | None):
+def _get_fernet():
     """
-    Memoized Fernet builder. Called only when the effective key changes
-    (typically once per process). Avoids reconstructing AES ciphers on
-    every decrypt, which was the dominant cost when serializing rows
-    with multiple encrypted PII fields.
+    Return a Fernet instance using FIELD_ENCRYPTION_KEY env var.
+
+    Raises EncryptionKeyMissingError when the key is absent and
+    IS_DEVELOPMENT is not set.
     """
     from cryptography.fernet import Fernet
 
+    key = os.environ.get("FIELD_ENCRYPTION_KEY")
     if not key:
         if _IS_DEVELOPMENT:
             logger.warning(
@@ -89,16 +88,6 @@ def _build_fernet(key: str | None):
         return Fernet(key.encode() if isinstance(key, str) else key)
     except Exception as exc:
         raise EncryptionKeyMissingError(f"Invalid FIELD_ENCRYPTION_KEY: {exc}") from exc
-
-
-def _get_fernet():
-    """
-    Return a memoized Fernet instance using FIELD_ENCRYPTION_KEY env var.
-
-    Raises EncryptionKeyMissingError when the key is absent and
-    IS_DEVELOPMENT is not set.
-    """
-    return _build_fernet(os.environ.get("FIELD_ENCRYPTION_KEY"))
 
 
 def _encrypt(value: str | None) -> bytes | None:

@@ -17,14 +17,6 @@ from app.schemas.webhook import (
     WebhookResponse,
 )
 from app.services.webhook_dispatcher import webhook_service
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +70,7 @@ async def list_webhooks(
 
 @router.patch("/{webhook_id}", response_model=WebhookResponse)
 async def update_webhook(
-    webhook_id: _DualId,
+    webhook_id: str,
     body: UpdateWebhookRequest,
     current_user=Depends(require_role([UserRole.admin])),
     db: AsyncSession = Depends(get_db),
@@ -98,7 +90,7 @@ async def update_webhook(
 
 @router.delete("/{webhook_id}", status_code=204)
 async def delete_webhook(
-    webhook_id: _DualId,
+    webhook_id: str,
     current_user=Depends(require_role([UserRole.admin])),
     db: AsyncSession = Depends(get_db),
 ):
@@ -113,7 +105,7 @@ async def delete_webhook(
 
 @router.post("/{webhook_id}/test", summary="Send test event to webhook")
 async def test_webhook(
-    webhook_id: _DualId,
+    webhook_id: str,
     current_user=Depends(require_role([UserRole.admin])),
     db: AsyncSession = Depends(get_db),
 ):
@@ -142,10 +134,3 @@ async def test_webhook(
     except Exception as e:
         logger.error("Error queueing test webhook: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to queue test event")
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

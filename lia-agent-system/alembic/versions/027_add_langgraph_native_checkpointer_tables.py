@@ -14,25 +14,6 @@ Estas tabelas são distintas da tabela `agent_checkpoints` existente (criada em 
 O método PostgresSaver.setup() também cria estas tabelas automaticamente, mas
 tê-las via Alembic garante reprodutibilidade em ambientes sem conexão ativa
 (CI, staging cold-start, migrações controladas).
-
-# NOTE (2026-04-29) -- v3.x API change -- ORPHANED TABLES:
-# This migration was written for langgraph-checkpoint-postgres == 2.x, which
-# used the langgraph_* schema. Since v3.x, the package uses canonical table
-# names WITHOUT the prefix:
-#   v3.x creates: checkpoints, checkpoint_blobs, checkpoint_writes, checkpoint_migrations
-#   This migration creates: langgraph_checkpoints, langgraph_checkpoint_blobs, langgraph_checkpoint_writes
-#
-# The langgraph_* tables created here are ORPHANED -- no active code reads or
-# writes them. The production checkpointer (libs/agents-core/lia_agents_core/
-# checkpointer.py) uses PostgresSaver via ConnectionPool and calls saver.setup(),
-# which creates the canonical v3.x table names automatically.
-#
-# Practical implications:
-# - This migration is safe to apply (idempotent: CREATE TABLE IF NOT EXISTS).
-# - If langgraph_* tables already exist in the DB, this is a no-op.
-# - If they do NOT exist and this migration was never applied, that is equally
-#   valid -- the v3.x checkpointer does not depend on them.
-# - Do NOT downgrade this migration in production if there is data in these tables.
 """
 from alembic import op
 import sqlalchemy as sa

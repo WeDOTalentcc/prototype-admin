@@ -15,17 +15,9 @@ from sqlalchemy import and_, case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from lia_models.feedback_learning import SuggestionFeedback
+from app.models.feedback_learning import SuggestionFeedback
 from app.domains.cv_screening.repositories.suggestion_feedback_repository import SuggestionFeedbackRepository
 from app.domains.analytics.services.feedback_learning_service import feedback_learning_service as _feedback_service
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter(prefix="/suggestion-feedback", tags=["Suggestion Feedback"])
 logger = logging.getLogger(__name__)
@@ -111,7 +103,7 @@ async def record_suggestion_feedback(
 
 @router.get("/{company_id}/stats", response_model=SuggestionStatsResponse)
 async def get_suggestion_stats(
-    company_id: _DualId,
+    company_id: str,
     db: AsyncSession = Depends(get_db),
 ):
     try:
@@ -145,7 +137,7 @@ async def get_suggestion_stats(
 
 @router.get("/{company_id}/adjustments", response_model=list[AdjustmentResponse])
 async def get_learned_adjustments(
-    company_id: _DualId,
+    company_id: str,
     role: str | None = Query(default=None),
     seniority: str | None = Query(default=None),
     db: AsyncSession = Depends(get_db),
@@ -175,10 +167,3 @@ async def get_learned_adjustments(
     except Exception as e:
         logger.error(f"Failed to get learned adjustments: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

@@ -8,7 +8,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.recruitment_email_template import RecruitmentEmailTemplate
+from app.models.recruitment_email_template import RecruitmentEmailTemplate
 
 logger = logging.getLogger(__name__)
 

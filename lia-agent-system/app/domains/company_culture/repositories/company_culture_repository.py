@@ -11,8 +11,8 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.company import CompanyProfile
-from lia_models.company_culture import CompanyCultureProfile, CultureAnalysisJob
+from app.models.company import CompanyProfile
+from app.models.company_culture import CompanyCultureProfile, CultureAnalysisJob
 
 logger = logging.getLogger(__name__)
 
@@ -74,17 +74,10 @@ class CompanyCultureRepository:
     async def update_profile_fields(
         self, company_id: UUID, update_data: dict
     ) -> Optional[CompanyCultureProfile]:
-        """Apply recruiter-driven field updates, marking source as 'manual'.
-        Creates the profile if it doesn't exist yet (upsert behaviour)."""
+        """Apply recruiter-driven field updates, marking source as 'manual'."""
         profile = await self.get_profile_by_company(company_id)
         if not profile:
-            profile = CompanyCultureProfile(
-                id=uuid.uuid4(),
-                company_id=company_id,
-                source="manual",
-                website_url="",
-            )
-            self.db.add(profile)
+            return None
         for field, value in update_data.items():
             if hasattr(profile, field):
                 setattr(profile, field, value)

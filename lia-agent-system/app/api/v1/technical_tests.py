@@ -15,7 +15,7 @@ from app.domains.technical_tests.dependencies import get_technical_tests_repo
 from app.domains.technical_tests.repositories.technical_tests_repository import (
     TechnicalTestsRepository,
 )
-from lia_models.technical_tests import (
+from app.models.technical_tests import (
     DEFAULT_TESTS,
     TEST_CATEGORY_OPTIONS,
     TEST_DIFFICULTY_OPTIONS,
@@ -28,14 +28,6 @@ from app.schemas.technical_tests import (
     TechnicalTestCreate,
     TechnicalTestUpdate,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +129,7 @@ async def list_technical_tests(
 
 @router.get("/technical-tests/{test_id}", summary="Get test details", response_model=None)
 async def get_technical_test(
-    test_id: _DualId,
+    test_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 ):
@@ -229,7 +221,7 @@ async def create_technical_test(
 
 @router.put("/technical-tests/{test_id}", summary="Update test", response_model=None)
 async def update_technical_test(
-    test_id: _DualId,
+    test_id: str,
     data: TechnicalTestUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
@@ -292,7 +284,7 @@ async def update_technical_test(
 
 @router.delete("/technical-tests/{test_id}", summary="Delete test", response_model=None)
 async def delete_technical_test(
-    test_id: _DualId,
+    test_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 ):
@@ -344,7 +336,7 @@ async def delete_technical_test(
 
 @router.get("/clients/{client_id}/tests", summary="Get tests configured for a client", response_model=None)
 async def get_client_tests(
-    client_id: _DualId,
+    client_id: str,
     is_enabled: bool | None = Query(None, description="Filter by enabled status"),
     category: str | None = Query(None, description="Filter by category"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
@@ -412,8 +404,8 @@ async def get_client_tests(
 
 @router.put("/clients/{client_id}/tests/{test_id}", summary="Configure test for client", response_model=None)
 async def configure_client_test(
-    client_id: _DualId,
-    test_id: _DualId,
+    client_id: str,
+    test_id: str,
     data: ClientTestConfigCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
@@ -499,8 +491,8 @@ async def configure_client_test(
 
 @router.delete("/clients/{client_id}/tests/{test_id}", summary="Remove test from client", response_model=None)
 async def remove_client_test(
-    client_id: _DualId,
-    test_id: _DualId,
+    client_id: str,
+    test_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 ):
@@ -554,7 +546,7 @@ async def remove_client_test(
 
 @router.get("/clients/{client_id}/tests/stats", summary="Get test statistics for client", response_model=None)
 async def get_client_test_stats(
-    client_id: _DualId,
+    client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
 ):
@@ -710,10 +702,3 @@ async def seed_default_tests(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to seed default tests: {str(e)}"
         )
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

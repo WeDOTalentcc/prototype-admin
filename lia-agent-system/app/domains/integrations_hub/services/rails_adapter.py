@@ -295,13 +295,6 @@ def rails_job_to_fork(data: dict) -> dict:
         "provider": data.get("provider"),
         "provider_job_id": data.get("provider_job_id"),
         "application_deadline": data.get("application_deadline"),
-        # Job readiness (LIA-local concept) — Rails does not own these fields;
-        # we surface defaults so the response shape is consistent and the
-        # Vagas list "Prontidão" column / drawer flow works uniformly across
-        # Rails and local DB modes (Task #448). Rails passthrough may include
-        # them when the upstream payload already carries the keys.
-        "readiness_stage": data.get("readiness_stage"),
-        "readiness_blockers": data.get("readiness_blockers") or [],
     }
 
 
@@ -528,77 +521,6 @@ class RailsAdapter:
             return int(rails_id)
         return None
 
-    async def _resolve_rails_dual_id(
-        self,
-        entity_id: str,
-        client_method_name: str,
-        log_label: str,
-    ) -> int | None:
-        """Shared bigint-or-fork-uuid resolver used by jobs and applications.
-
-        Mirrors `_resolve_rails_candidate_id` for entities that also expose a
-        `fork_uuid` column on Rails (ADR 003 / Task #479). The corresponding
-        client helper (`find_job_by_fork_uuid` / `find_application_by_fork_uuid`)
-        is looked up via `getattr` so older client builds without the helper
-        degrade gracefully (returns None instead of raising).
-        """
-        direct = self._to_rails_id(entity_id)
-        if direct is not None:
-            return direct
-        if not self._looks_like_uuid(entity_id):
-            return None
-
-        client = await self._get_rails_client()
-        if not client:
-            return None
-
-        lookup = getattr(client, client_method_name, None)
-        if not callable(lookup):
-            logger.debug(
-                "[RailsAdapter] Rails client has no %s — falling back to None for %s UUID %s",
-                client_method_name, log_label, entity_id,
-            )
-            return None
-
-        try:
-            data = await lookup(entity_id)
-        except Exception as exc:
-            logger.warning(
-                "[RailsAdapter] %s fork_uuid lookup failed for %s: %s",
-                log_label, entity_id, exc,
-            )
-            return None
-
-        if not data:
-            return None
-        rails_id = data.get("id") if isinstance(data, dict) else None
-        if isinstance(rails_id, int):
-            return rails_id
-        if isinstance(rails_id, str) and rails_id.isdigit():
-            return int(rails_id)
-        return None
-
-    async def _resolve_rails_job_id(self, job_id: str) -> int | None:
-        """Resolve a job ID (bigint or fork UUID) to a Rails bigint ID.
-
-        ADR 003 / Task #479 — Rails carries `jobs.fork_uuid`. When the caller
-        hands us a UUID, we look it up via
-        `WeDOTalentATSClient.find_job_by_fork_uuid`. Returns None when the
-        UUID has no fork_uuid row yet on Rails or the client/endpoint is
-        unavailable, mirroring `_resolve_rails_candidate_id` semantics.
-        """
-        return await self._resolve_rails_dual_id(
-            job_id, "find_job_by_fork_uuid", "job"
-        )
-
-    async def _resolve_rails_application_id(self, application_id: str) -> int | None:
-        """Resolve an application/apply ID (bigint or fork UUID) to a Rails
-        bigint ID. ADR 003 / Task #479 — uses `applies.fork_uuid` via
-        `WeDOTalentATSClient.find_application_by_fork_uuid`."""
-        return await self._resolve_rails_dual_id(
-            application_id, "find_application_by_fork_uuid", "application"
-        )
-
     async def get_candidate_from_rails_only(self, candidate_id: str) -> dict | None:
         """Fetch candidate from Rails only — no local DB fallback.
 
@@ -608,9 +530,9 @@ class RailsAdapter:
         client = await self._get_rails_client()
         if not client:
             return None
-        rails_id = await self._resolve_rails_candidate_id(candidate_id)
+        rails_id = self._to_rails_id(candidate_id)
         if rails_id is None:
-            logger.debug("[RailsAdapter] get_candidate_from_rails_only: unresolvable ID %r — skipping", candidate_id)
+            logger.debug("[RailsAdapter] get_candidate_from_rails_only: non-integer ID %r — skipping", candidate_id)
             return None
         data = await client.get_candidate(rails_id)
         if data:
@@ -657,7 +579,7 @@ class RailsAdapter:
         """Get candidate: Rails first, local DB fallback."""
         client = await self._get_rails_client()
         if client:
-            rails_id = await self._resolve_rails_candidate_id(candidate_id)
+            rails_id = self._to_rails_id(candidate_id)
             if rails_id is not None:
                 try:
                     data = await client.get_candidate(rails_id)
@@ -727,12 +649,6 @@ class RailsAdapter:
         if self.db:
             try:
                 from lia_models.candidate import Candidate
-                # Task #346 — Candidate.company_id é NOT NULL; rejeita
-                # tentativas locais sem tenant resolvido. Caller deve incluir.
-                if not candidate_data.get("company_id"):
-                    raise ValueError(
-                        "rails_adapter.create_candidate: candidate_data['company_id'] é obrigatório"
-                    )
                 candidate = Candidate(**candidate_data)
                 self.db.add(candidate)
                 await self.db.commit()
@@ -753,9 +669,9 @@ class RailsAdapter:
 
         client = await self._get_rails_client()
         if client:
-            rails_id = await self._resolve_rails_candidate_id(candidate_id)
+            rails_id = self._to_rails_id(candidate_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] update_candidate: unresolvable ID %r — skipping Rails", candidate_id)
+                logger.warning("[RailsAdapter] update_candidate: non-integer ID %r — skipping Rails", candidate_id)
                 return None
             try:
                 result = await client.update_candidate(rails_id, rails_data)
@@ -770,9 +686,9 @@ class RailsAdapter:
         """Delete candidate from Rails."""
         client = await self._get_rails_client()
         if client:
-            rails_id = await self._resolve_rails_candidate_id(candidate_id)
+            rails_id = self._to_rails_id(candidate_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] delete_candidate: unresolvable ID %r — skipping Rails", candidate_id)
+                logger.warning("[RailsAdapter] delete_candidate: non-integer ID %r — skipping Rails", candidate_id)
                 return False
             try:
                 return await client.delete_candidate(rails_id)
@@ -791,9 +707,9 @@ class RailsAdapter:
         client = await self._get_rails_client()
         if not client:
             return None
-        rails_id = await self._resolve_rails_job_id(job_id)
+        rails_id = self._to_rails_id(job_id)
         if rails_id is None:
-            logger.debug("[RailsAdapter] get_job_from_rails_only: unresolvable ID %r — skipping", job_id)
+            logger.debug("[RailsAdapter] get_job_from_rails_only: non-integer ID %r — skipping", job_id)
             return None
         try:
             data = await client.get_job(rails_id)
@@ -840,7 +756,7 @@ class RailsAdapter:
         """Get job: Rails first, local DB fallback."""
         client = await self._get_rails_client()
         if client:
-            rails_id = await self._resolve_rails_job_id(job_id)
+            rails_id = self._to_rails_id(job_id)
             if rails_id is not None:
                 try:
                     data = await client.get_job(rails_id)
@@ -909,7 +825,6 @@ class RailsAdapter:
         if self.db:
             try:
                 from lia_models.job_vacancy import JobVacancy
-                job_data.setdefault("source_system", "wedotalent_rails")
                 job = JobVacancy(**job_data)
                 self.db.add(job)
                 await self.db.commit()
@@ -930,9 +845,9 @@ class RailsAdapter:
 
         client = await self._get_rails_client()
         if client:
-            rails_id = await self._resolve_rails_job_id(job_id)
+            rails_id = self._to_rails_id(job_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] update_job: unresolvable ID %r — skipping Rails", job_id)
+                logger.warning("[RailsAdapter] update_job: non-integer ID %r — skipping Rails", job_id)
                 return None
             try:
                 result = await client.update_job(rails_id, rails_data)
@@ -947,9 +862,9 @@ class RailsAdapter:
         """Delete job from Rails."""
         client = await self._get_rails_client()
         if client:
-            rails_id = await self._resolve_rails_job_id(job_id)
+            rails_id = self._to_rails_id(job_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] delete_job: unresolvable ID %r — skipping Rails", job_id)
+                logger.warning("[RailsAdapter] delete_job: non-integer ID %r — skipping Rails", job_id)
                 return False
             try:
                 return await client.delete_job(rails_id)
@@ -977,9 +892,9 @@ class RailsAdapter:
         """Get a single apply from Rails."""
         client = await self._get_rails_client()
         if client:
-            rails_id = await self._resolve_rails_application_id(apply_id)
+            rails_id = self._to_rails_id(apply_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] get_apply: unresolvable ID %r — skipping Rails", apply_id)
+                logger.warning("[RailsAdapter] get_apply: non-integer ID %r — skipping Rails", apply_id)
                 return None
             try:
                 data = await client.get_apply(rails_id)
@@ -993,11 +908,11 @@ class RailsAdapter:
         """Create an apply in Rails."""
         client = await self._get_rails_client()
         if client:
-            cand_rails_id = await self._resolve_rails_candidate_id(candidate_id)
-            job_rails_id = await self._resolve_rails_job_id(job_id)
+            cand_rails_id = self._to_rails_id(candidate_id)
+            job_rails_id = self._to_rails_id(job_id)
             if cand_rails_id is None or job_rails_id is None:
                 logger.warning(
-                    "[RailsAdapter] create_apply: unresolvable IDs candidate=%r job=%r — skipping Rails",
+                    "[RailsAdapter] create_apply: non-integer IDs candidate=%r job=%r — skipping Rails",
                     candidate_id, job_id,
                 )
                 return None
@@ -1013,9 +928,9 @@ class RailsAdapter:
         """Update an apply in Rails."""
         client = await self._get_rails_client()
         if client:
-            rails_id = await self._resolve_rails_application_id(apply_id)
+            rails_id = self._to_rails_id(apply_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] update_apply: unresolvable ID %r — skipping Rails", apply_id)
+                logger.warning("[RailsAdapter] update_apply: non-integer ID %r — skipping Rails", apply_id)
                 return None
             try:
                 data = await client.update_apply(rails_id, apply_data)
@@ -1034,15 +949,7 @@ class RailsAdapter:
         client = await self._get_rails_client()
         if client:
             try:
-                job_id_int = (
-                    await self._resolve_rails_job_id(job_id) if job_id else None
-                )
-                if job_id and job_id_int is None:
-                    logger.warning(
-                        "[RailsAdapter] list_selective_processes: unresolvable job_id %r — skipping Rails",
-                        job_id,
-                    )
-                    return []
+                job_id_int = int(job_id) if job_id and job_id.isdigit() else None
                 results = await client.list_selective_processes(job_id=job_id_int)
                 if results:
                     return [rails_selective_process_to_fork(r) for r in results]
@@ -1051,26 +958,6 @@ class RailsAdapter:
         return []
 
     # ---- Messages ----
-
-    async def _resolve_reference_id(
-        self, reference_type: str | None, reference_id: str | None
-    ) -> int | None:
-        """Resolve a message reference_id (bigint or fork UUID) using the
-        resolver appropriate for ``reference_type``.
-
-        Falls back to bigint passthrough when the type is unknown so we
-        don't regress messages that already worked with raw integer IDs.
-        """
-        if not reference_id:
-            return None
-        normalized = (reference_type or "").strip().lower()
-        if normalized in ("job", "jobs", "vacancy", "job_vacancy"):
-            return await self._resolve_rails_job_id(reference_id)
-        if normalized in ("apply", "application", "applies", "applications"):
-            return await self._resolve_rails_application_id(reference_id)
-        if normalized in ("candidate", "candidates"):
-            return await self._resolve_rails_candidate_id(reference_id)
-        return self._to_rails_id(reference_id)
 
     async def list_messages(
         self,
@@ -1083,13 +970,7 @@ class RailsAdapter:
         client = await self._get_rails_client()
         if client:
             try:
-                ref_id_int = await self._resolve_reference_id(reference_type, reference_id)
-                if reference_id and ref_id_int is None:
-                    logger.warning(
-                        "[RailsAdapter] list_messages: unresolvable reference_id %r (type=%r) — skipping Rails",
-                        reference_id, reference_type,
-                    )
-                    return []
+                ref_id_int = int(reference_id) if reference_id and reference_id.isdigit() else None
                 results = await client.list_messages(
                     page=page,
                     limit=limit,
@@ -1115,13 +996,7 @@ class RailsAdapter:
         client = await self._get_rails_client()
         if client:
             try:
-                ref_id_int = await self._resolve_reference_id(reference_type, reference_id)
-                if reference_id and ref_id_int is None:
-                    logger.warning(
-                        "[RailsAdapter] send_message: unresolvable reference_id %r (type=%r) — skipping Rails",
-                        reference_id, reference_type,
-                    )
-                    return None
+                ref_id_int = int(reference_id) if reference_id and reference_id.isdigit() else None
                 parent_id_int = int(parent_message_id) if parent_message_id and parent_message_id.isdigit() else None
                 result = await client.send_message(
                     content=content,
@@ -1157,52 +1032,6 @@ class RailsAdapter:
         probe["rails_enabled"] = True
         probe["circuit_breaker"] = circuit_stats
         return probe
-
-
-    async def daily_summary(self, company_id: str, user_id: str) -> dict:
-        """Replacement for deprecated BriefingService — pulls live data from Rails ATS.
-
-        Canonical replacement for briefing_service.generate_daily_briefing().
-        Reads active jobs + recent applies from Rails and builds a structured summary.
-        Multi-tenant: company_id is passed explicitly, never inferred.
-        """
-        import asyncio
-        from datetime import datetime, timedelta, date
-
-        jobs_task = asyncio.create_task(self.list_jobs(search="*", page=1, limit=50))
-        applies_task = asyncio.create_task(self.list_applies(search="*", page=1, limit=100))
-        jobs, applies = await asyncio.gather(jobs_task, applies_task, return_exceptions=True)
-
-        jobs = jobs if isinstance(jobs, list) else []
-        applies = applies if isinstance(applies, list) else []
-
-        active_jobs = [j for j in jobs if j.get("status") == "Ativa"]
-        cutoff = datetime.utcnow() - timedelta(days=7)
-        recent_applies = []
-        for a in applies:
-            try:
-                created = datetime.fromisoformat(
-                    a.get("created_at", "").replace("Z", "+00:00")
-                )
-                if created.replace(tzinfo=None) >= cutoff:
-                    recent_applies.append(a)
-            except Exception:
-                pass
-
-        today = date.today().isoformat()
-        return {
-            "date": today,
-            "company_id": company_id,
-            "user_id": user_id,
-            "active_jobs_count": len(active_jobs),
-            "active_jobs": active_jobs[:10],
-            "recent_applies_count": len(recent_applies),
-            "recent_applies": recent_applies[:10],
-            "summary": (
-                f"Hoje ({today}): {len(active_jobs)} vagas ativas, "
-                f"{len(recent_applies)} candidaturas nos últimos 7 dias."
-            ),
-        }
 
     # ---- Cleanup ----
 

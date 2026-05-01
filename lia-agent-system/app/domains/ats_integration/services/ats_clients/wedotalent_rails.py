@@ -229,9 +229,6 @@ class WeDOTalentATSClient:
     async def put(self, path: str, json_body: dict | None = None) -> RailsAPIResponse:
         return await self._request("PUT", path, json_body=json_body)
 
-    async def patch(self, path: str, json_body: dict | None = None) -> RailsAPIResponse:
-        return await self._request("PATCH", path, json_body=json_body)
-
     async def delete(self, path: str) -> RailsAPIResponse:
         return await self._request("DELETE", path)
 
@@ -297,23 +294,6 @@ class WeDOTalentATSClient:
             return self._extract_attributes(resp.data)
         return None
 
-    async def find_job_by_fork_uuid(self, fork_uuid: str) -> dict | None:
-        """Look up a job by its fork UUID via `GET /v1/users/jobs?fork_uuid=...`.
-
-        Used by `RailsAdapter._resolve_rails_job_id` to canonicalize dual-ID
-        retries (ADR 003 / Task #479). Returns the first match or None.
-        """
-        import json as _json
-        params = {
-            "search": "*",
-            "page": 1,
-            "limit": 1,
-            "where": _json.dumps({"fork_uuid": fork_uuid}),
-        }
-        resp = await self.get("/v1/users/jobs", params=params)
-        results = self._extract_list(resp)
-        return results[0] if results else None
-
     # ------------------------------------------------------------------
     # Candidates
     # ------------------------------------------------------------------
@@ -370,25 +350,6 @@ class WeDOTalentATSClient:
         if resp.success:
             return self._extract_attributes(resp.data)
         return None
-
-    async def find_application_by_fork_uuid(self, fork_uuid: str) -> dict | None:
-        """Look up an apply (application) by fork UUID via
-        `GET /v1/users/applies?fork_uuid=...`.
-
-        Used by `RailsAdapter._resolve_rails_application_id` to canonicalize
-        dual-ID idempotency retries (ADR 003 / Task #479). Returns the first
-        match or None.
-        """
-        import json as _json
-        params = {
-            "search": "*",
-            "page": 1,
-            "limit": 1,
-            "where": _json.dumps({"fork_uuid": fork_uuid}),
-        }
-        resp = await self.get("/v1/users/applies", params=params)
-        results = self._extract_list(resp)
-        return results[0] if results else None
 
     async def create_apply(self, candidate_id: int, job_id: int) -> dict | None:
         resp = await self.post("/v1/users/applies", json_body={

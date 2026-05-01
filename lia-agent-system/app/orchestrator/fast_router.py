@@ -53,24 +53,6 @@ class FastRouteResult:
 
 
 _HARDCODED_DOMAIN_PATTERNS: dict[str, list[str]] = {
-    # Onda 37.B.0 — Wizard canonical (JobCreationGraph). Patterns matching
-    # the *initial intent* of CREATING a job (not editing/listing/etc.)
-    # resolve here so the canonical graph runs end-to-end with template
-    # cards, HITL gates, and audit. job_management still has these
-    # patterns as a defensive fallback when upstream forces that domain.
-    # Order matters in fast_router — first match wins.
-    "wizard": [
-        r"criar?\s+\w*\s*vaga",
-        r"abrir?\s+\w*\s*vaga",
-        r"nova\s+vaga",
-        r"publicar?\s+\w*\s*vaga",
-        r"requisi[çc][ãa]o\s+d[eo]\s+vaga",
-        r"\bwizard\b",
-        r"quero\s+criar",
-        r"vou\s+criar\s+\w*\s*vaga",
-        r"preciso\s+contratar",
-        r"vamos\s+criar\s+\w*\s*vaga",
-    ],
     "job_management": [
         r"criar?\s+\w*\s*vaga",
         r"nova\s+vaga",
@@ -86,23 +68,11 @@ _HARDCODED_DOMAIN_PATTERNS: dict[str, list[str]] = {
         r"publicar?\s+\w*\s*vaga",
         r"pausar?\s+\w*\s*vaga",
         r"template\s+d[aeo]\s+vaga",
-        r"\bvagas?\b",
+        r"\bvaga\b",
         r"compet[eê]ncias",
         r"sal[áa]rio",
         r"benef[ií]cios",
         r"enrichment",
-        r"listar?\s+\w*\s*vagas?",
-        r"mostrar?\s+\w*\s*vagas?",
-        r"ver?\s+\w*\s*vagas?",
-        r"todas\s+as?\s+vagas?",
-        r"minhas?\s+vagas?",
-        r"vagas?\s+ativas?",
-        r"vagas?\s+abertas?",
-        r"vagas?\s+em\s+aberto",
-        r"sal[aá]rio\s+da\s+vaga",
-        r"atualiz\w*\s+\w+\s+sal[aá]rio",
-        r"vagas?\s+(pausadas?|conclu[í]das?|abertas?)",
-        r"quantas?\s+vagas?",
     ],
     "sourcing": [
         r"buscar?\s+\w*\s*candidato",
@@ -293,10 +263,10 @@ _HARDCODED_DOMAIN_PATTERNS: dict[str, list[str]] = {
         r"personalize.?communication",
         r"reschedule.?interview",
         r"cancel.?interview",
-        r"atualiza\s+o?\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|modelo\s+de\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)",
+        r"atualiza\s+o?\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|sal[aá]rio|modelo\s+de\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)",
         r"atualizar?\s+campo",
-        r"muda\s+o?\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|modelo\s+de\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)",
-        r"troca\s+o?\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|modelo\s+de\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)",
+        r"muda\s+o?\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|sal[aá]rio|modelo\s+de\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)",
+        r"troca\s+o?\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|sal[aá]rio|modelo\s+de\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)",
     ],
     "analytics": [
         r"gerar?\s+relat[óo]rio",

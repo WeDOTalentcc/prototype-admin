@@ -25,7 +25,7 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.shared.observability.tracing import get_tracer
+from app.shared.tracing import get_tracer
 
 logger = logging.getLogger(__name__)
 
@@ -495,7 +495,7 @@ class RAGPipelineService:
         # FAR-5: Auditoria de disparate impact em tempo real nos resultados
         ranking_audit: dict[str, Any] = {}
         try:
-            from app.shared.compliance.bias_audit_service import bias_audit_service
+            from app.shared.services.bias_audit_service import bias_audit_service
             ranking_audit = bias_audit_service.audit_ranking_results(
                 results=merged,
                 dimension="gender",

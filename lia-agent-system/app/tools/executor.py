@@ -100,7 +100,7 @@ class ToolExecutor:
     """
     
     DEFAULT_TIMEOUT = 30.0
-    MAX_TOOL_CALLS_PER_REQUEST = 10
+    MAX_TOOL_CALLS_PER_REQUEST = 3
     
     def __init__(self, registry: ToolRegistry | None = None):
         self.registry = registry or tool_registry
@@ -261,8 +261,7 @@ class ToolExecutor:
         tool_calls: list[ToolCall],
         timeout: float | None = None,
         agent_type: str | None = None,
-        conversation_id: str | None = None,
-        context: ToolExecutionContext | None = None
+        conversation_id: str | None = None
     ) -> dict[str, ToolResult]:
         """
         Execute multiple tool calls.
@@ -272,7 +271,6 @@ class ToolExecutor:
             timeout: Timeout per tool
             agent_type: Type of agent making the calls
             conversation_id: ID of the conversation context
-            context: Security context with user_id and company_id for tenant isolation
             
         Returns:
             Dict mapping tool call ID to result
@@ -285,8 +283,7 @@ class ToolExecutor:
                 parameters=tool_call.parameters,
                 timeout=timeout,
                 agent_type=agent_type,
-                conversation_id=conversation_id,
-                context=context
+                conversation_id=conversation_id
             )
             results[tool_call.id] = result
         

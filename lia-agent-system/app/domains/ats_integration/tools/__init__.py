@@ -84,24 +84,16 @@ async def execute_ats_integration_tool(
         return {"error": f"Tool {tool_id} not found", "status": "error"}
 
     handler_path = tool["handler"]
+    parts = handler_path.rsplit(".", 1)
+    if len(parts) != 2:
+        return {"error": f"Invalid handler path: {handler_path}", "status": "error"}
+
+    module_path, func_name = parts
     try:
-        from app.shared.tool_handler import resolve_handler_path
-        handler = resolve_handler_path(handler_path)
-        if not callable(handler):
-            return {"error": f"Handler not callable: {handler_path}", "status": "error", "tool_id": tool_id}
-        result = await handler(**parameters) if _is_awaitable_callable(handler) else handler(**parameters)
-        if _is_awaitable(result):
-            result = await result
+        import importlib
+        module = importlib.import_module(module_path)
+        handler = getattr(module, func_name)
+        result = await handler(**parameters) if callable(handler) else handler
         return {"status": "success", "result": result}
     except Exception as e:
         return {"error": str(e), "status": "error", "tool_id": tool_id}
-
-
-def _is_awaitable_callable(fn) -> bool:
-    import asyncio
-    return asyncio.iscoroutinefunction(fn)
-
-
-def _is_awaitable(value) -> bool:
-    import inspect
-    return inspect.isawaitable(value)

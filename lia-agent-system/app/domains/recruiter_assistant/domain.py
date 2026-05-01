@@ -25,21 +25,6 @@ _KEYWORD_ACTION_MAP: dict[str, str] = (
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="recruiter_assistant")
 
 
-# Mapeamento canônico action_id -> tool_id (module-level p/ auditor + smoke test).
-_ACTION_TOOL_MAP: dict[str, str] = {
-    "pipeline_health": "assistant_pipeline_health",
-    "stale_candidates": "assistant_stale_candidates",
-    "move_candidate": "assistant_move_candidate",
-    "search_context": "assistant_search_context",
-    "save_memory": "assistant_save_memory",
-    "recall_memory": "assistant_recall_memory",
-    "conversation_summary": "assistant_conversation_summary",
-    "kanban_analysis": "assistant_kanban_analysis",
-    "send_notification": "assistant_send_notification",
-    "track_goals": "assistant_track_goals",
-}
-
-
 @register_domain
 class RecruiterAssistantDomain(ComplianceDomainPrompt):
 
@@ -139,12 +124,6 @@ class RecruiterAssistantDomain(ComplianceDomainPrompt):
 
         if mapped_tool and mapped_tool in tool_ids:
             result = await execute_recruiter_assistant_tool(mapped_tool, params, context)
-            if isinstance(result, dict) and (result.get("status") == "error" or result.get("success") is False):
-                return DomainResponse.error_response(
-                    error=result.get("error") or result.get("message") or f"Ferramenta '{mapped_tool}' falhou.",
-                    domain_id=self.domain_id,
-                    action_id=action_id,
-                )
             return DomainResponse.success_response(
                 message=f"Ferramenta '{mapped_tool}' executada para ação '{action.name}'.",
                 data={"action_id": action_id, "tool_id": mapped_tool, "result": result},

@@ -18,7 +18,7 @@ from fastapi import FastAPI
 from httpx import AsyncClient, ASGITransport
 
 from app.api.v1.drift import router as drift_router
-from app.shared.observability.model_drift_service import DriftStatus, DriftTrigger, SCORE_DRIFT_THRESHOLD
+from app.shared.services.model_drift_service import DriftStatus, DriftTrigger, SCORE_DRIFT_THRESHOLD
 
 # Mini-app isolado: apenas o drift router (sem carregar o app.main inteiro)
 _test_app = FastAPI()

@@ -11,14 +11,6 @@ from app.core.database import get_db
 from app.domains.automation.repositories.automation_rule_repository import (
     AutomationRuleRepository,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter(prefix="/automation-rules", tags=["automation-rules"])
 
@@ -71,7 +63,7 @@ class AutomationRuleResponse(BaseModel):
 
 @router.get("/company/{company_id}", response_model=None)
 async def get_company_rules(
-    company_id: _DualId,
+    company_id: str,
     is_active: bool | None = None,
     trigger_type: str | None = None,
     db: AsyncSession = Depends(get_db),
@@ -83,7 +75,7 @@ async def get_company_rules(
 
 
 @router.get("/company/{company_id}/{rule_id}", response_model=None)
-async def get_rule(company_id: _DualId, rule_id: _DualId, db: AsyncSession = Depends(get_db)):
+async def get_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db)):
     """Get a specific automation rule."""
     repo = AutomationRuleRepository(db)
     rule = await repo.get_by_id(rule_id, company_id)
@@ -94,7 +86,7 @@ async def get_rule(company_id: _DualId, rule_id: _DualId, db: AsyncSession = Dep
 
 @router.post("/company/{company_id}", response_model=None)
 async def create_rule(
-    company_id: _DualId,
+    company_id: str,
     rule: AutomationRuleCreate,
     db: AsyncSession = Depends(get_db),
 ):
@@ -108,8 +100,8 @@ async def create_rule(
 
 @router.put("/company/{company_id}/{rule_id}", response_model=None)
 async def update_rule(
-    company_id: _DualId,
-    rule_id: _DualId,
+    company_id: str,
+    rule_id: str,
     updates: AutomationRuleUpdate,
     db: AsyncSession = Depends(get_db),
 ):
@@ -126,7 +118,7 @@ async def update_rule(
 
 
 @router.delete("/company/{company_id}/{rule_id}", response_model=None)
-async def delete_rule(company_id: _DualId, rule_id: _DualId, db: AsyncSession = Depends(get_db)):
+async def delete_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db)):
     """Delete an automation rule."""
     repo = AutomationRuleRepository(db)
     rule = await repo.get_by_id(rule_id, company_id)
@@ -137,7 +129,7 @@ async def delete_rule(company_id: _DualId, rule_id: _DualId, db: AsyncSession = 
 
 
 @router.post("/company/{company_id}/toggle/{rule_id}", response_model=None)
-async def toggle_rule(company_id: _DualId, rule_id: _DualId, db: AsyncSession = Depends(get_db)):
+async def toggle_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db)):
     """Toggle the active status of an automation rule."""
     repo = AutomationRuleRepository(db)
     rule = await repo.get_by_id(rule_id, company_id)
@@ -149,7 +141,7 @@ async def toggle_rule(company_id: _DualId, rule_id: _DualId, db: AsyncSession = 
 
 @router.post("/company/{company_id}/seed-defaults", response_model=None)
 async def seed_default_rules(
-    company_id: _DualId,
+    company_id: str,
     force: bool = False,
     db: AsyncSession = Depends(get_db),
 ):
@@ -209,10 +201,3 @@ async def get_available_action_types():
             {"id": "log_activity", "name": "Registrar Atividade", "description": "Registrar atividade no histórico"},
         ]
     }
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

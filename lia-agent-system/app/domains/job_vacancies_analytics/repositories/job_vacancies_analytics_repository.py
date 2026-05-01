@@ -9,9 +9,9 @@ from uuid import UUID
 from sqlalchemy import and_, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.candidate import Candidate, VacancyCandidate
-from lia_models.job_vacancy import JobVacancy
-from lia_models.recruitment_stages import CandidateStageHistory
+from app.models.candidate import Candidate, VacancyCandidate
+from app.models.job_vacancy import JobVacancy
+from app.models.recruitment_stages import CandidateStageHistory
 
 logger = logging.getLogger(__name__)
 
@@ -177,27 +177,6 @@ class JobVacanciesAnalyticsRepository:
             select(JobVacancy).where(JobVacancy.company_id == company_id)
         )
         return list(result.scalars().all())
-
-    async def get_candidate_counts_by_vacancy_for_company(
-        self, company_id: str
-    ) -> dict[str, int]:
-        """Return {vacancy_id: candidate_count} for every vacancy in the
-        company in a single aggregated query (no N+1).
-
-        Joins against job_vacancies to enforce tenant isolation. Vacancies
-        with no candidates are simply absent from the result; callers should
-        default to 0.
-        """
-        result = await self.db.execute(
-            select(
-                VacancyCandidate.vacancy_id,
-                func.count(VacancyCandidate.id).label("count"),
-            )
-            .join(JobVacancy, JobVacancy.id == VacancyCandidate.vacancy_id)
-            .where(JobVacancy.company_id == company_id)
-            .group_by(VacancyCandidate.vacancy_id)
-        )
-        return {str(row.vacancy_id): int(row.count) for row in result.all()}
 
     # ─── Job Report ──────────────────────────────────────────────────────────
 
@@ -421,14 +400,3 @@ class JobVacanciesAnalyticsRepository:
             {"co": company_id, "limit": candidates_per_stage},
         )
         return result.fetchall()
-
-    async def get_active_jobs_count(self, company_id: str) -> int:
-        """Return count of active (status=Ativa) job vacancies for the company."""
-        from sqlalchemy import func as sa_func
-        result = await self.db.execute(
-            select(sa_func.count(JobVacancy.id)).where(
-                JobVacancy.company_id == company_id,
-                JobVacancy.status == "Ativa",
-            )
-        )
-        return int(result.scalar() or 0)

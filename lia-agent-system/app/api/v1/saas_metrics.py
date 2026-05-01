@@ -20,8 +20,8 @@ from app.domains.saas_metrics.dependencies import get_saas_metrics_repo
 from app.domains.saas_metrics.repositories.saas_metrics_repository import (
     SaasMetricsRepository,
 )
-from lia_models.client_account import ClientStatus
-from lia_models.saas_metrics import (
+from app.models.client_account import ClientStatus
+from app.models.saas_metrics import (
     ChurnRisk,
     PaymentHistory,
     PaymentStatus,
@@ -42,14 +42,6 @@ from app.schemas.saas_metrics import (
     RevenueAnalysis,
     RevenueBreakdown,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -364,7 +356,7 @@ async def get_platform_summary(
     summary="Get all metrics for a client",
 )
 async def get_all_client_metrics(
-    client_id: _DualId,
+    client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
 ) -> ClientAllMetricsResponse:
@@ -410,7 +402,7 @@ async def get_all_client_metrics(
     summary="Get revenue metrics for a client",
 )
 async def get_revenue_metrics(
-    client_id: _DualId,
+    client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
 ) -> ClientSaasMetricsResponse:
@@ -453,7 +445,7 @@ async def get_revenue_metrics(
     summary="Get usage metrics for a client",
 )
 async def get_usage_metrics(
-    client_id: _DualId,
+    client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
 ) -> ClientUsageMetricsResponse:
@@ -496,7 +488,7 @@ async def get_usage_metrics(
     summary="Get health metrics for a client",
 )
 async def get_health_metrics(
-    client_id: _DualId,
+    client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
 ) -> ClientHealthMetricsResponse:
@@ -539,7 +531,7 @@ async def get_health_metrics(
     summary="Get payment history for a client",
 )
 async def get_payment_history(
-    client_id: _DualId,
+    client_id: str,
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
@@ -594,7 +586,7 @@ async def get_payment_history(
     summary="Record a payment",
 )
 async def create_payment(
-    client_id: _DualId,
+    client_id: str,
     payment_data: PaymentHistoryCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
@@ -657,7 +649,7 @@ async def create_payment(
     summary="Get client-specific metrics",
 )
 async def get_client_metrics(
-    client_id: _DualId,
+    client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
 ):
@@ -969,10 +961,3 @@ async def get_revenue_analysis(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get revenue analysis: {str(e)}",
         )
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

@@ -23,7 +23,7 @@ from app.core.config import settings
 from app.orchestrator.domain_mappings import AGENT_TYPE_TO_DOMAIN, resolve_domain
 from app.orchestrator.fast_router import FastRouter
 from app.orchestrator.semantic_cache import SemanticCache
-from app.shared.observability.tracing import get_tracer, trace_span
+from app.shared.tracing import get_tracer, trace_span
 
 logger = logging.getLogger(__name__)
 
@@ -182,52 +182,6 @@ class CascadedRouter:
 
         _tracer = get_tracer()
 
-        # ── W7.2 PromptInjectionGuard — guard all callers (direct SSE/REST + orchestrator) ──
-        try:
-            from app.shared.robustness.security_patterns import check_input_security, get_block_response
-            _sec = check_input_security(message)
-            if _sec.is_blocked:
-                logger.warning(
-                    "[CascadedRouter] SecurityPatterns blocked routing: risk=%s categories=%s",
-                    _sec.risk_level, _sec.threat_categories,
-                )
-                return RouteResult(
-                    domain_id="recruiter_assistant",
-                    confidence=1.0,
-                    source="security_blocked",
-                    intent_details={
-                        "blocked": True,
-                        "risk_level": _sec.risk_level,
-                        "threat_categories": list(_sec.threat_categories or []),
-                        "block_response": get_block_response(_sec, language="pt"),
-                    },
-                )
-        except Exception as _sec_exc:
-            logger.debug("[CascadedRouter] security check skipped: %s", _sec_exc)
-        # ─────────────────────────────────────────────────────────────────────
-
-        # PR-A Tier 0.0 — Rail A hint override (FE-H03 do audit enterprise).
-        # Cobre TODOS os transports: WS via MainOrchestrator + SSE/REST que
-        # chamam CascadedRouter direto. Curto-circuita os tiers 0-4 quando
-        # FE forneceu metadata estruturada com domain_hint válido.
-        # Skill canônica: harness-engineering [guide computacional].
-        if context:
-            try:
-                from app.orchestrator.services.rail_a_hint_override import try_hint_route
-                _hint_route = try_hint_route(context)
-                if _hint_route is not None:
-                    logger.info(
-                        "[CascadedRouter] rail_a_hint override: card=%s → domain=%s intent=%s",
-                        (context.get("metadata") or {}).get("card_id", "?"),
-                        _hint_route.domain_id,
-                        (_hint_route.intent_details or {}).get("raw_intent", "?"),
-                    )
-                    if _hit_counter:
-                        _hit_counter.labels(tier="rail_a_hint").inc()
-                    return _hint_route
-            except Exception as _hint_exc:
-                logger.debug("[CascadedRouter] rail_a_hint check skipped: %s", _hint_exc)
-
         # Tier 0 — Resolver pronomes/referências via WorkingMemory antes de rotear
         if session_id:
             async with _tracer.start_span("router.tier0_memory_resolve", attributes={
@@ -270,25 +224,13 @@ class CascadedRouter:
                 _t1_span.set_attribute("domain_id", cached.domain_id)
                 _t1_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
                 logger.debug("CascadedRouter: memory hit for '%s...' → %s", message[:40], cached.domain_id)
-                # Sensor: evict stale LRU entries that would route wizard messages to wrong domain.
-                # harness-engineering [sensor computacional] — validates before serving.
-                if self._wizard_domain_override(message, cached.domain_id):
-                    del self._memory_cache[cache_key]
-                    _t1_span.set_attribute("wizard_eviction", "true")
-                    logger.info(
-                        "[CascadedRouter] Tier1 LRU stale eviction: '%s...' "
-                        "had domain=%s → wizard override, re-routing",
-                        message[:40], cached.domain_id,
-                    )
-                    # Fall through to Tier 2 / Tier 2.5
-                else:
-                    return RouteResult(
-                        domain_id=cached.domain_id,
-                        confidence=cached.confidence,
-                        source="memory",
-                        matched_pattern=cached.matched_pattern,
-                        cached=True,
-                    )
+                return RouteResult(
+                    domain_id=cached.domain_id,
+                    confidence=cached.confidence,
+                    source="memory",
+                    matched_pattern=cached.matched_pattern,
+                    cached=True,
+                )
             _t1_span.set_attribute("hit", "false")
             _t1_span.set_attribute("confidence_score", "0.0")
             _t1_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
@@ -311,92 +253,16 @@ class CascadedRouter:
                 _t2_span.set_attribute("domain_id", redis_hit.get("domain_id", ""))
                 _t2_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
                 logger.debug("CascadedRouter: redis hit for '%s...' → %s", message[:40], redis_hit.get("domain_id"))
-                # Sensor: evict stale Redis entries that would route wizard messages to wrong domain.
-                # harness-engineering [sensor computacional] — validates before serving.
-                if self._wizard_domain_override(message, redis_hit.get("domain_id", "")):
-                    await self._redis_cache.invalidate(message)
-                    _t2_span.set_attribute("wizard_eviction", "true")
-                    logger.info(
-                        "[CascadedRouter] Tier2 Redis stale eviction: '%s...' "
-                        "had domain=%s → wizard override, re-routing",
-                        message[:40], redis_hit.get("domain_id"),
-                    )
-                    # Fall through to Tier 2.5
-                else:
-                    return RouteResult(
-                        domain_id=redis_hit.get("domain_id", "recruiter_assistant"),
-                        confidence=redis_hit.get("confidence", 0.7),
-                        source="redis_cache",
-                        matched_pattern=redis_hit.get("matched_pattern"),
-                        cached=True,
-                    )
+                return RouteResult(
+                    domain_id=redis_hit.get("domain_id", "recruiter_assistant"),
+                    confidence=redis_hit.get("confidence", 0.7),
+                    source="redis_cache",
+                    matched_pattern=redis_hit.get("matched_pattern"),
+                    cached=True,
+                )
             _t2_span.set_attribute("hit", "false")
             _t2_span.set_attribute("confidence_score", "0.0")
             _t2_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
-
-        # Tier 2.5 — Wizard creation guard (harness-engineering guide computacional).
-        #
-        # Runs FastRouter patterns for the 'wizard' domain BEFORE the vector cache
-        # (Tier 3) so stale "criar vaga" → job_management cache entries never surface
-        # for wizard creation intents.
-        #
-        # Root cause (Task #850 / post-mortem 2026-04-29): WizardReActAgent was
-        # replaced by JobCreationGraph but the vector cache was populated when the
-        # wizard domain did not exist yet. Cosine-similar messages like "criar vaga"
-        # hit the cache and return job_management, bypassing Tier 4 (FastRouter)
-        # which correctly resolves to wizard.
-        #
-        # This guard runs the fast_router for all messages BEFORE vector cache and
-        # short-circuits when it returns "wizard" with sufficient confidence. It also
-        # overwrites the vector cache entry so future queries resolve correctly without
-        # needing this guard to fire again.
-        #
-        # Skill canônica: harness-engineering [guide computacional].
-        _wiz_pre = self.fast.match(message)
-        if (
-            _wiz_pre is not None
-            and _wiz_pre.domain_id == "wizard"
-            and _wiz_pre.confidence >= settings.ROUTER_FAST_CONFIDENCE_THRESHOLD
-        ):
-            logger.info(
-                "[CascadedRouter] wizard_guard (Tier 2.5): '%s...' → wizard "
-                "(confidence=%.2f pattern=%s, pre-cache)",
-                message[:40],
-                _wiz_pre.confidence,
-                _wiz_pre.matched_pattern or "?",
-            )
-            if _hit_counter:
-                _hit_counter.labels(tier="wizard_guard").inc()
-            _wiz_result = RouteResult(
-                domain_id="wizard",
-                confidence=_wiz_pre.confidence,
-                source="wizard_guard",
-                matched_pattern=_wiz_pre.matched_pattern,
-            )
-            # Overwrite caches so the vector cache no longer returns the stale
-            # job_management entry for this message and its semantic neighbours.
-            self._cache_store(cache_key, _wiz_result)
-            await self._redis_cache.set(
-                message,
-                {
-                    "domain_id": "wizard",
-                    "confidence": _wiz_pre.confidence,
-                    "matched_pattern": _wiz_pre.matched_pattern,
-                },
-            )
-            if self._vector_cache is not None:
-                try:
-                    await self._vector_cache.set(
-                        message,
-                        {
-                            "domain_id": "wizard",
-                            "confidence": _wiz_pre.confidence,
-                            "source": "wizard_guard",
-                        },
-                    )
-                except Exception as _wiz_vec_exc:
-                    logger.debug("[CascadedRouter] wizard_guard vector update skipped: %s", _wiz_vec_exc)
-            return _wiz_result
 
         # Tier 3 — VectorSemanticCache (pgvector, cosine similarity)
         if self._vector_cache is not None:
@@ -630,7 +496,7 @@ class CascadedRouter:
 
         # Tier 7 — Studio Agent Matcher (custom agents bound to current context)
         _ctx = context or {}
-        _ctx_job_id = _ctx.get("job_id") or _ctx.get("entity_id") or _ctx.get("vacancy_id")
+        _ctx_job_id = _ctx.get("job_id") or _ctx.get("vacancy_id")
         _ctx_pool_id = _ctx.get("talent_pool_id")
         _ctx_company_id = _ctx.get("company_id")
 
@@ -897,28 +763,6 @@ class CascadedRouter:
 
     def _intent_to_domain(self, intent: str) -> str:
         return resolve_domain(intent)
-
-    def _wizard_domain_override(self, message: str, cached_domain_id: str) -> bool:
-        """Sensor computacional: returns True if a stale cache entry should be evicted.
-
-        Fires when LRU (Tier 1) or Redis (Tier 2) would return a non-wizard domain
-        for a message that the fast-router classifies as wizard with high confidence.
-        The caller MUST evict the entry and fall through to Tier 2.5.
-
-        harness-engineering [sensor computacional] — O(n_patterns), ~0.1ms.
-        Fail-open: any exception returns False (trust cache).
-        """
-        if cached_domain_id == "wizard":
-            return False  # Already correct — no override needed
-        try:
-            _check = self.fast.match(message)
-            return (
-                _check is not None
-                and _check.domain_id == "wizard"
-                and _check.confidence >= settings.ROUTER_FAST_CONFIDENCE_THRESHOLD
-            )
-        except Exception:
-            return False  # Fail-open: check failure means trust cache
 
     def _cache_store(self, key: str, result: RouteResult) -> None:
         if len(self._memory_cache) >= self._cache_max_size:

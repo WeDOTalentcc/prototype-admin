@@ -14,7 +14,7 @@ from uuid import uuid4
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.candidate import Candidate
+from app.models.candidate import Candidate
 from app.domains.candidates.services.candidate_enrichment_service import CandidateEnrichmentService
 
 

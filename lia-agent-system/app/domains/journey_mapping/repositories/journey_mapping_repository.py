@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from lia_models.journey_mapping import JourneyBlueprint, JourneyIntegration, JourneyStep
+from app.models.journey_mapping import JourneyBlueprint, JourneyIntegration, JourneyStep
 
 logger = logging.getLogger(__name__)
 

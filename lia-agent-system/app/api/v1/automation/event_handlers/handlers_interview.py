@@ -131,7 +131,7 @@ async def _create_interview_calendar_event(request, candidate_name: str, candida
 async def _log_interview_scheduled_audit(db, request, email_sent: bool, whatsapp_sent: bool, calendar_event_created: bool, notification_created: bool, interview_id, calendar_event_id) -> None:
     """Log automation execution log for interview_scheduled trigger."""
     try:
-        from lia_models.automation import AutomationExecutionLog
+        from app.models.automation import AutomationExecutionLog
         db.add(AutomationExecutionLog(
             company_id=request.company_id, trigger_event="interview_scheduled",
             trigger_data={
@@ -387,23 +387,7 @@ Responda em JSON:
     "confidence": 0.85
 }}"""
 
-                # Audit task #545 — registra custo da análise pós-entrevista
-                # por empresa/candidato/vaga no dashboard de billing.
-                from app.shared.observability.usage_tracking_callback import (
-                    build_usage_callback,
-                )
-                on_usage = build_usage_callback(
-                    {
-                        "company_id": getattr(request, "company_id", None),
-                        "candidate_id": getattr(request, "candidate_id", None),
-                        "vacancy_id": getattr(request, "vacancy_id", None),
-                    },
-                    agent_type="interview_analysis",
-                    default_operation="interview_post_analysis",
-                )
-                content = await llm_service.safe_invoke(
-                    analysis_prompt, provider="claude", on_usage=on_usage,
-                )
+                content = await llm_service.safe_invoke(analysis_prompt, provider="claude")
 
                 import json
                 if "```json" in content:
@@ -451,7 +435,7 @@ Responda em JSON:
             suggested_next_stage = "Reprovado"
 
         try:
-            from lia_models.lia_opinion import LiaOpinion
+            from app.models.lia_opinion import LiaOpinion
 
             score = average_rating if average_rating > 0 else (4.0 if recommendation == "advance" else 2.5 if recommendation == "hold" else 2.0)
 

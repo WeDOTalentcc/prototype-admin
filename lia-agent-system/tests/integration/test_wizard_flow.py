@@ -108,11 +108,7 @@ class TestWizardGraphHITL:
         svc = HITLService()
         svc._memory = {}
 
-        # Path follows the canonical domain location used elsewhere in this test.
-        with patch(
-            "app.domains.cv_screening.services.hitl_service._db_save_pending",
-            new_callable=AsyncMock,
-        ):
+        with patch("app.services.hitl_service._db_save_pending", new_callable=AsyncMock):
             pending_id = await svc.request_approval(
                 thread_id=THREAD_ID,
                 action="create_job",

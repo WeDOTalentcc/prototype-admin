@@ -7,7 +7,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
-from lia_models.admin_settings import (
+from app.models.admin_settings import (
     AVAILABLE_PERMISSIONS,
     NOTIFICATION_EVENT_TYPES,
     PermissionLevel,
@@ -16,14 +16,6 @@ from app.domains.admin_settings.dependencies import get_admin_settings_repo
 from app.domains.admin_settings.repositories.admin_settings_repository import (
     AdminSettingsRepository,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -143,7 +135,7 @@ async def create_role(
 
 @router.put("/roles/{role_id}", response_model=None)
 async def update_role(
-    role_id: _DualId,
+    role_id: str,
     data: RoleUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
@@ -177,7 +169,7 @@ async def update_role(
 
 @router.delete("/roles/{role_id}", response_model=None)
 async def delete_role(
-    role_id: _DualId,
+    role_id: str,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
@@ -285,7 +277,7 @@ async def assign_role_to_user(
 
 @router.delete("/user-roles/{assignment_id}", response_model=None)
 async def remove_role_assignment(
-    assignment_id: _DualId,
+    assignment_id: str,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
@@ -359,7 +351,7 @@ async def create_notification_policy(
 
 @router.put("/notification-policies/{policy_id}", response_model=None)
 async def update_notification_policy(
-    policy_id: _DualId,
+    policy_id: str,
     data: NotificationPolicyUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
@@ -394,7 +386,7 @@ async def update_notification_policy(
 
 @router.delete("/notification-policies/{policy_id}", response_model=None)
 async def delete_notification_policy(
-    policy_id: _DualId,
+    policy_id: str,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
 ):
@@ -532,10 +524,3 @@ async def get_notification_event_types():
         "success": True,
         "data": NOTIFICATION_EVENT_TYPES,
     }
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

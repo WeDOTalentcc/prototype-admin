@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.company.repositories.benefit_template_repository import BenefitTemplateRepository
 from app.domains.company.repositories.benefit_repository import BenefitRepository
-from lia_models.company import Benefit, BenefitTemplate
+from app.models.company import Benefit, BenefitTemplate
 
 logger = logging.getLogger(__name__)
 

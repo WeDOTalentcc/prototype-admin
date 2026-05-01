@@ -15,13 +15,13 @@ class TestAiConsumptionRetentionField:
     """Verifica que o modelo AiConsumption tem o campo de retenção."""
 
     def test_model_has_scheduled_deletion_at(self):
-        from lia_models.ai_consumption import AiConsumption
+        from app.models.ai_consumption import AiConsumption
         assert hasattr(AiConsumption, "scheduled_deletion_at"), (
             "AiConsumption deve ter campo 'scheduled_deletion_at' (LGPD L6)"
         )
 
     def test_scheduled_deletion_at_is_nullable(self):
-        from lia_models.ai_consumption import AiConsumption
+        from app.models.ai_consumption import AiConsumption
         col = AiConsumption.__table__.columns.get("scheduled_deletion_at")
         assert col is not None, "Coluna 'scheduled_deletion_at' não encontrada na tabela"
         assert col.nullable is True, "scheduled_deletion_at deve ser nullable"
@@ -32,7 +32,7 @@ class TestTokenTrackingSetsRetention:
 
     @pytest.mark.asyncio
     async def test_record_usage_sets_scheduled_deletion_365_days(self):
-        from app.shared.observability.token_tracking_service import TokenTrackingService
+        from app.shared.services.token_tracking_service import TokenTrackingService
 
         fake_db = AsyncMock()
         fake_db.add = MagicMock()

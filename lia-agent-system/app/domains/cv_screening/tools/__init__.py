@@ -18,6 +18,16 @@ CV_SCREENING_TOOLS: list[dict[str, Any]] = [
         "handler": "app.domains.cv_screening.services.cv_parser.parse_cv",
     },
     {
+        "tool_id": "score_cv",
+        "name": "Score CV",
+        "description": "Score CV against job requirements",
+        "parameters": {
+            "candidate_id": {"type": "string", "description": "ID do candidato", "required": True},
+            "job_id": {"type": "string", "description": "ID da vaga", "required": True},
+        },
+        "handler": "app.domains.cv_screening.services.cv_scoring_service.score_cv",
+    },
+    {
         "tool_id": "evaluate_rubric",
         "name": "Avaliar Rubrica",
         "description": "Evaluate candidate by rubric",
@@ -144,9 +154,11 @@ async def execute_cv_screening_tool(
         }
 
     handler_path = tool_def["handler"]
+    module_path, func_name = handler_path.rsplit(".", 1)
+
     try:
-        from app.shared.tool_handler import resolve_handler_path
-        handler_fn = resolve_handler_path(handler_path)
+        module = importlib.import_module(module_path)
+        handler_fn = getattr(module, func_name)
     except (ImportError, AttributeError) as exc:
         logger.error(f"Falha ao carregar handler '{handler_path}': {exc}")
         return {

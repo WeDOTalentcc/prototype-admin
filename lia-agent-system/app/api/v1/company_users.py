@@ -24,7 +24,7 @@ from app.domains.company.dependencies import (
 from app.domains.company.repositories.company_profile_repository import CompanyProfileRepository
 from app.domains.company.repositories.department_repository import DepartmentRepository
 from app.domains.company.repositories.global_settings_repository import GlobalSettingsRepository
-from app.domains.auth.repositories.user_repository import UserRepository
+from app.domains.company.repositories.user_repository import UserRepository
 from app.schemas.company import (
     CatalogStatusResponse,
     CompanyUserResponse,
@@ -34,14 +34,6 @@ from app.schemas.company import (
     SmartWizardGreetingResponse,
 )
 from app.domains.company.services.company_configuration_service import company_config_service
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-lia.replit.app")
 
@@ -187,7 +179,7 @@ async def create_user(
 
 @router.put("/users/{user_id}", response_model=UserManagementResponse)
 async def update_user(
-    user_id: _DualId,
+    user_id: str,
     data: UserManagementUpdate,
     user_repo: UserRepository = Depends(get_user_repo),
 ):
@@ -224,7 +216,7 @@ async def update_user(
 
 @router.delete("/users/{user_id}", status_code=204, response_model=None)
 async def delete_user(
-    user_id: _DualId,
+    user_id: str,
     user_repo: UserRepository = Depends(get_user_repo),
 ):
     """Delete a user."""
@@ -250,7 +242,7 @@ async def delete_user(
 
 @router.post("/users/{user_id}/resend-invitation", response_model=None)
 async def resend_invitation(
-    user_id: _DualId,
+    user_id: str,
     user_repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
 ):
@@ -461,10 +453,3 @@ Qual opção você prefere?"""
     except Exception as e:
         logger.error(f"Error getting smart wizard greeting: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

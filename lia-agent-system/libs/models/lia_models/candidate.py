@@ -4,7 +4,7 @@ Candidate models for recruitment platform.
 from datetime import datetime, date
 from typing import Optional
 from sqlalchemy import Column, String, Integer, DateTime, Date, Text, JSON, Boolean, Float, UniqueConstraint, ForeignKey, LargeBinary, func
-from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
+from sqlalchemy.dialects.postgresql import UUID, ARRAY
 from sqlalchemy.orm import relationship, validates
 import uuid
 
@@ -119,14 +119,7 @@ class Candidate(EncryptedFieldMixin, Base):
 
     # Primary key
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-
-    # Multi-tenant scope (added by migration 082 — see auditoria #287, causa raiz #4).
-    # Mantido como String(255) por consistência com VacancyCandidate, CandidateFavorite,
-    # ExternalCandidateProfile, etc. Sempre obrigatório para writes; o repositório
-    # (CandidateRepository._build_list_filters) usa este campo para isolar
-    # candidatos por empresa em todas as listagens e endpoints `get-by-id`.
-    company_id = Column(String(255), nullable=False, index=True)
-
+    
     # Basic Information
     name = Column(String(255), nullable=False, index=True)
     # Raw DB columns for PII fields — always NULL for new writes (post-migration 060).
@@ -338,13 +331,7 @@ class CandidateSearch(Base):
     search_duration_ms = Column(Integer, nullable=True)
     candidates_clicked = Column(ARRAY(String), default=list)  # IDs of candidates clicked
     candidates_contacted = Column(ARRAY(String), default=list)  # IDs of candidates contacted
-
-    # Task #403: candidatos descartados pelo enriquecimento (sem email/telefone
-    # mesmo após Apify) persistidos junto da execução para que o frontend possa
-    # rehidratar a lista após refresh ou em sessões subsequentes. Cada item é
-    # um dict no formato de DiscardedCandidateDTO (id, name, headline, etc.).
-    discarded_candidates = Column(JSONB, default=list, nullable=False)
-
+    
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     

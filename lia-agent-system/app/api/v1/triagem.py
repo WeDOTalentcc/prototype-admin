@@ -12,14 +12,6 @@ from app.domains.recruitment.services.triagem_session_service import (
     TriagemSessionService,
     get_triagem_service,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -67,16 +59,6 @@ async def get_triagem_session(
             raise HTTPException(
                 status_code=410,
                 detail="Este link de triagem expirou. Solicite um novo convite ao recrutador.",
-            )
-        if error == "reopen_limit_exceeded":
-            limit = config.get("limit", 2)
-            count = config.get("reopen_count", limit)
-            raise HTTPException(
-                status_code=410,
-                detail=(
-                    f"Esta triagem já foi retomada {count}x e atingiu o limite de "
-                    f"{limit} reaberturas. Procure o recrutador para liberar uma nova tentativa."
-                ),
             )
 
     return JSONResponse(content=config)
@@ -291,166 +273,8 @@ async def start_triagem(
 
     if result.get("error") == "not_found":
         raise HTTPException(status_code=404, detail="Sessão não encontrada")
-    if result.get("error") == "reopen_limit_exceeded":
-        raise HTTPException(
-            status_code=410,
-            detail=result.get(
-                "message",
-                "Esta triagem atingiu o limite de reaberturas. Procure o recrutador.",
-            ),
-        )
-    if result.get("error") == "session_completed":
-        raise HTTPException(
-            status_code=409,
-            detail=result.get("message", "Esta triagem já foi finalizada e não pode ser reaberta."),
-        )
 
     return JSONResponse(content=result)
-
-
-class WhatsAppInitiateRequest(BaseModel):
-    phone_number: str
-
-
-@router.post("/{token}/whatsapp-initiate", response_model=None)
-async def whatsapp_initiate(
-    token: str,
-    request: WhatsAppInitiateRequest,
-    repo: TriagemRepository = Depends(get_triagem_repo),
-    triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-):
-    """Task #425 — backend-mediated WhatsApp channel selection.
-
-    Validates the candidate token (including reopen cap), records that the
-    candidate chose the WhatsApp channel on the session metadata, and returns
-    the wa.me URL so the frontend can open the WhatsApp conversation. This
-    keeps channel orchestration server-side instead of bypassing the backend.
-    """
-    validation = await triagem_svc.validate_token(repo.db, token)
-    if not validation.get("valid"):
-        error = validation.get("error")
-        if error == "not_found":
-            raise HTTPException(status_code=404, detail="Token inválido")
-        if error == "expired":
-            raise HTTPException(status_code=410, detail="Link expirado")
-        if error == "reopen_limit_exceeded":
-            limit = validation.get("limit", 2)
-            count = validation.get("reopen_count", limit)
-            raise HTTPException(
-                status_code=410,
-                detail=(
-                    f"Esta triagem já foi retomada {count}x e atingiu o limite de "
-                    f"{limit} reaberturas. Procure o recrutador."
-                ),
-            )
-    if validation.get("completed"):
-        raise HTTPException(status_code=409, detail="Triagem já foi concluída")
-
-    # Server-side channel gating: master toggle + WhatsApp must be enabled.
-    # NOTE: get_session_config returns the flags/labels nested under
-    # response["config"] (not at the top level). Read from there.
-    cfg_response = await triagem_svc.get_session_config(repo.db, token)
-    if not cfg_response or not cfg_response.get("valid"):
-        raise HTTPException(status_code=404, detail="Sessão não encontrada")
-    session_cfg = cfg_response.get("config") or {}
-    if not session_cfg.get("whatsappEnabled", False):
-        raise HTTPException(
-            status_code=403,
-            detail="O canal WhatsApp não está habilitado para esta vaga. Escolha outro canal.",
-        )
-
-    # Task #425 — delivery mode picked in screening config:
-    #   'wa_link'        → return wa.me link only (legacy)
-    #   'twilio_direct'  → send via Twilio WA Business only
-    #   'both'           → return wa.me link AND attempt Twilio direct send
-    wa_mode = session_cfg.get("whatsappMode") or "wa_link"
-    if wa_mode not in ("wa_link", "twilio_direct", "both"):
-        wa_mode = "wa_link"
-
-    raw = re.sub(r"\D", "", request.phone_number or "")
-    if len(raw) < 10:
-        raise HTTPException(status_code=400, detail="Telefone inválido")
-    if not raw.startswith("55"):
-        raw = "55" + raw
-
-    job_title = session_cfg.get("jobTitle") or "a vaga"
-    company_name = session_cfg.get("companyName") or "a empresa"
-    candidate_name = session_cfg.get("candidateName") or "candidato(a)"
-    from urllib.parse import quote as _urlquote
-    message = (
-        f"Olá! Sou a LIA, assistente da {company_name}. Vamos continuar a sua "
-        f"triagem para a vaga de {job_title}, {candidate_name}."
-    )
-    wa_url: str | None = (
-        f"https://wa.me/{raw}?text={_urlquote(message)}"
-        if wa_mode in ("wa_link", "both")
-        else None
-    )
-
-    # Twilio WA Business direct send (only when mode requests it).
-    twilio_result: dict[str, Any] | None = None
-    if wa_mode in ("twilio_direct", "both"):
-        try:
-            from app.domains.communication.services.whatsapp_service import (
-                get_whatsapp_service,
-            )
-            wa_svc = get_whatsapp_service()
-            send_res = await wa_svc.send_message(
-                to_phone=f"+{raw}",
-                message=message,
-                metadata={
-                    "source": "triagem.whatsapp_initiate",
-                    "session_token": token,
-                },
-            )
-            twilio_result = {
-                "success": bool(getattr(send_res, "success", False)),
-                "message_id": getattr(send_res, "message_id", None),
-                "status": getattr(send_res, "status", None),
-                "provider": getattr(send_res, "provider", None),
-                "error": getattr(send_res, "error", None),
-            }
-        except Exception as exc:
-            logger.warning(
-                f"[Triagem] whatsapp-initiate Twilio send failed (mode={wa_mode}): {exc}"
-            )
-            twilio_result = {"success": False, "error": str(exc)}
-            # In strict twilio_direct mode with no link fallback, surface the failure.
-            if wa_mode == "twilio_direct":
-                raise HTTPException(
-                    status_code=502,
-                    detail="Falha ao enviar WhatsApp via Twilio. Tente novamente em instantes.",
-                )
-
-    # Persist channel selection on session metadata (best-effort).
-    try:
-        from sqlalchemy import select as _select
-        from lia_models.triagem import TriagemSession as _TS
-        res = await repo.db.execute(_select(_TS).where(_TS.token == token))
-        sess = res.scalar_one_or_none()
-        if sess is not None:
-            meta = dict(sess.metadata_json or {})
-            meta["candidate_selected_channel"] = "whatsapp"
-            meta["candidate_selected_phone"] = f"+{raw}"
-            meta["whatsapp_delivery_mode"] = wa_mode
-            sess.metadata_json = meta
-            await repo.db.flush()
-    except Exception as exc:  # pragma: no cover - best-effort persistence
-        logger.warning(
-            f"[Triagem] whatsapp-initiate could not persist channel selection: {exc}"
-        )
-
-    payload: dict[str, Any] = {
-        "success": True,
-        "channel": "whatsapp",
-        "phone": f"+{raw}",
-        "mode": wa_mode,
-    }
-    if wa_url is not None:
-        payload["wa_url"] = wa_url
-    if twilio_result is not None:
-        payload["twilio"] = twilio_result
-    return JSONResponse(content=payload)
 
 
 @router.post("/{token}/audio", response_model=None)
@@ -476,7 +300,7 @@ async def transcribe_audio(
     if not audio_data:
         raise HTTPException(status_code=400, detail="Arquivo de áudio vazio")
 
-    from app.domains.voice.services.voice_service import voice_service
+    from app.shared.services.voice_service import voice_service
 
     try:
         transcription = await voice_service.transcribe_audio(
@@ -542,7 +366,7 @@ async def synthesize_speech(
 @router.post("/{token}/tts/{message_id}", response_model=None)
 async def synthesize_message_speech(
     token: str,
-    message_id: _DualId,
+    message_id: str,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
 ):
@@ -579,7 +403,7 @@ async def voice_status(
         raise HTTPException(status_code=404, detail="Token inválido")
 
     from app.domains.cv_screening.services.voice_service import triagem_voice_service
-    from app.domains.voice.services.voice_service import voice_service
+    from app.shared.services.voice_service import voice_service
 
     availability = voice_service.is_available()
     return JSONResponse(content={
@@ -694,10 +518,3 @@ async def voip_start(
         "fallback_channel": "chat",
         "message": "Chamada de voz temporariamente indisponível. Use o chat de texto para continuar a triagem.",
     })
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

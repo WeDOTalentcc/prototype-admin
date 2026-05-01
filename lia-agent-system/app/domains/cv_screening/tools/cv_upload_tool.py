@@ -62,18 +62,6 @@ async def parse_and_create_candidate(
             "error": "cv_text_too_short",
         }
 
-    # Task #346 — Candidate.company_id é NOT NULL e o tenant precisa
-    # vir do contexto da chamada. Sem company_id no contexto, falhamos
-    # cedo com erro tratável (não estoura 500 no INSERT).
-    if not company_id:
-        logger.error("parse_and_create_candidate sem company_id no contexto")
-        return {
-            "success": False,
-            "message": "❌ Não foi possível identificar a empresa do usuário (tenant ausente).",
-            "error": "missing_company_id",
-        }
-    company_id = str(company_id)
-
     logger.info(f"📄 Parsing CV for create (company={company_id}, user={user_id})")
 
     try:
@@ -102,16 +90,14 @@ async def parse_and_create_candidate(
         from sqlalchemy import func, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate
+        from app.models.candidate import Candidate
 
         async with AsyncSessionLocal() as db:
-            # Duplicate check — escopo é (tenant, email). Sem o filtro
-            # de company_id, candidatos vazariam entre empresas.
+            # Duplicate check — skip creation if email already exists
             if parsed.email:
                 dup = await db.execute(
                     select(Candidate).where(
-                        Candidate.company_id == company_id,
-                        func.lower(Candidate.email) == parsed.email.lower(),
+                        func.lower(Candidate.email) == parsed.email.lower()
                     )
                 )
                 existing = dup.scalar_one_or_none()
@@ -137,7 +123,6 @@ async def parse_and_create_candidate(
 
             new_candidate = Candidate(
                 id=uuid.uuid4(),
-                company_id=company_id,
                 name=parsed.full_name or "Candidato sem nome",
                 email=parsed.email,
                 phone=parsed.phone,
@@ -247,8 +232,8 @@ async def add_to_vacancy(
         from sqlalchemy import and_, func, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate, VacancyCandidate
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.candidate import Candidate, VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
 
         async with AsyncSessionLocal() as db:
             # Resolve candidate

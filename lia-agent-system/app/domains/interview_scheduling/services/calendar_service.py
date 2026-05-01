@@ -667,57 +667,6 @@ class CalendarService:
         }
 
 
-    # ------------------------------------------------------------------
-    # Chat tool surface (registered in app/domains/interview_scheduling/tools/__init__.py)
-    # ------------------------------------------------------------------
-    async def check_availability(
-        self,
-        interviewer_email: str = "",
-        date=None,
-        duration_minutes: int | None = None,
-        company_id: str | None = None,
-        db=None,
-        **kwargs,
-    ):
-        """Public alias around check_interviewer_availability()."""
-        if isinstance(date, str):
-            try:
-                date = datetime.fromisoformat(date)
-            except Exception:
-                date = datetime.utcnow()
-        if date is None:
-            date = datetime.utcnow()
-        return await self.check_interviewer_availability(
-            interviewer_email=interviewer_email,
-            date=date,
-            duration_minutes=duration_minutes,
-            company_id=company_id,
-            db=db,
-        )
-
-    async def find_common_slots(
-        self,
-        organizer_email: str = "",
-        interviewer_emails: list[str] | None = None,
-        candidate_email: str = "",
-        duration_minutes: int | None = None,
-        preferred_days: list[str] | None = None,
-        company_id: str | None = None,
-        db=None,
-        **kwargs,
-    ):
-        """Public alias around find_best_interview_time() for the chat surface."""
-        return await self.find_best_interview_time(
-            organizer_email=organizer_email,
-            interviewer_emails=list(interviewer_emails or []),
-            candidate_email=candidate_email,
-            duration_minutes=duration_minutes,
-            preferred_days=preferred_days,
-            company_id=company_id,
-            db=db,
-        )
-
-
 # Global calendar service instance
 calendar_service = CalendarService()
 

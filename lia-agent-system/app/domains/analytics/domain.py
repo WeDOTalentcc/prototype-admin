@@ -22,29 +22,6 @@ _KEYWORD_ACTION_MAP: dict[str, str] = (
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="analytics")
 
 
-# Mapeamento canônico action_id -> tool_id (module-level p/ auditor + smoke test).
-_ACTION_TOOL_MAP: dict[str, str] = {
-    "generate_kpi_report": "analytics_generate_kpi",
-    "analyze_funnel": "analytics_analyze_funnel",
-    "job_health_check": "analytics_job_health",
-    "detect_anomalies": "analytics_detect_anomalies",
-    "compare_periods": "analytics_dashboard",
-    "forecast": "analytics_predict",
-    "suggest_strategy": "analytics_get_insights",
-    "answer_data_question": "analytics_get_insights",
-    "get_job_insights": "analytics_get_insights",
-    "generate_job_report": "analytics_generate_report",
-    "generate_candidate_report": "analytics_generate_report",
-    "get_search_analytics": "analytics_search_analytics",
-    "get_wizard_analytics": "analytics_search_analytics",
-    "predict_hiring_probability": "analytics_predict",
-    "predict_time_to_fill": "analytics_predict",
-    "predict_dropout_risk": "analytics_predict",
-    "get_dashboard_data": "analytics_dashboard",
-    "get_agent_monitoring": "analytics_monitoring",
-}
-
-
 
 @register_domain
 class AnalyticsDomain(ComplianceDomainPrompt):
@@ -52,7 +29,6 @@ class AnalyticsDomain(ComplianceDomainPrompt):
     _compliance_config = {'high_impact': False}
     domain_id = "analytics"
     domain_name = "Analytics & Reporting"
-    agent_aliases = ("analyst_feedback",)
 
     def __init__(self):
         from app.domains.analytics.actions import ANALYTICS_ACTIONS
@@ -115,6 +91,21 @@ class AnalyticsDomain(ComplianceDomainPrompt):
         )
 
 
+    _ACTION_TOOL_MAP: dict[str, str] = {
+        "generate_kpi_report": "analytics_generate_kpi",
+        "analyze_funnel": "analytics_analyze_funnel",
+        "job_health_check": "analytics_job_health",
+        "detect_anomalies": "analytics_detect_anomalies",
+        "get_job_insights": "analytics_get_insights",
+        "generate_job_report": "analytics_generate_report",
+        "generate_candidate_report": "analytics_generate_report",
+        "get_search_analytics": "analytics_search_analytics",
+        "predict_hiring_probability": "analytics_predict",
+        "predict_time_to_fill": "analytics_predict",
+        "predict_dropout_risk": "analytics_predict",
+        "get_dashboard_data": "analytics_dashboard",
+        "get_agent_monitoring": "analytics_monitoring",
+    }
 
     async def execute_action(self, action_id: str, params: dict[str, Any], context: DomainContext) -> DomainResponse:
         action = None
@@ -133,7 +124,7 @@ class AnalyticsDomain(ComplianceDomainPrompt):
         from app.domains.analytics.tools import ANALYTICS_TOOLS, execute_analytics_tool
 
         tool_ids = {t["tool_id"] for t in ANALYTICS_TOOLS}
-        mapped_tool = _ACTION_TOOL_MAP.get(action_id)
+        mapped_tool = self._ACTION_TOOL_MAP.get(action_id)
 
         if mapped_tool and mapped_tool in tool_ids:
             result = await execute_analytics_tool(mapped_tool, params, context)

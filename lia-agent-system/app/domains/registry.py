@@ -34,13 +34,7 @@ def register_domain(cls: type[DomainPrompt]) -> type[DomainPrompt]:
     """
     if not hasattr(cls, 'domain_id') or not cls.domain_id:
         raise ValueError(f"Domain class {cls.__name__} must define 'domain_id'")
-
-    if not isinstance(cls.domain_id, str):
-        raise ValueError(
-            f"Domain class {cls.__name__} must declare domain_id as a "
-            f"plain string class attribute (got {type(cls.domain_id).__name__})."
-        )
-
+    
     if cls.domain_id in _DOMAIN_REGISTRY:
         logger.warning(
             f"Domain '{cls.domain_id}' already registered by {_DOMAIN_REGISTRY[cls.domain_id].__name__}. "

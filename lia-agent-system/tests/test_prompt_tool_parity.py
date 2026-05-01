@@ -6,10 +6,8 @@ and are accessible by the corresponding agent at runtime.
 
 Task #145: Alinhar Prompts com Capacidades Reais.
 
-NOTE: These tests are mostly pure string/YAML parsing — no DB, no async. The
-loader (`_load_prompt_constant`) only imports an app module as a last-resort
-fallback when a prompt constant is assigned from a function call rather than a
-literal or alias. This keeps execution fast in the common case.
+NOTE: These tests are pure string/YAML parsing — no DB, no async, no imports
+from app modules that trigger heavy initialization. This ensures fast execution.
 
 Tool sources:
   - YAML registry (tool_registry_metadata.yaml): centralized tool metadata
@@ -76,59 +74,6 @@ def _read_prompt_file(rel_path: str) -> str:
         return f.read()
 
 
-def _load_prompt_constant(rel_path: str, name: str) -> str:
-    """Load a prompt constant body from a Python file.
-
-    Handles three forms:
-      1. NAME = \"\"\"...literal...\"\"\"
-      2. NAME = OTHER_NAME (alias chain in the same file)
-      3. Anything else (e.g. NAME = some_func()) — falls back to importing
-         the module and reading the attribute at runtime.
-    """
-    source = _read_prompt_file(rel_path)
-    body = _resolve_prompt_constant(source, name)
-    if body:
-        return body
-    # Runtime fallback: import the module and read the attribute.
-    module_name = rel_path[:-3].replace("/", ".") if rel_path.endswith(".py") else rel_path
-    import importlib
-    mod = importlib.import_module(module_name)
-    val = getattr(mod, name, None)
-    return val if isinstance(val, str) else ""
-
-
-def _resolve_prompt_constant(source: str, name: str, _seen: set[str] | None = None) -> str | None:
-    """Resolve a module-level string constant from source, following alias chains.
-
-    Handles both forms:
-      NAME = \"\"\"...literal...\"\"\"
-      NAME = OTHER_NAME  # alias to another constant defined in the same file
-    """
-    if _seen is None:
-        _seen = set()
-    if name in _seen:
-        return None
-    _seen.add(name)
-
-    literal = re.search(
-        rf'^{re.escape(name)}\s*=\s*"""(.*?)"""',
-        source,
-        re.DOTALL | re.MULTILINE,
-    )
-    if literal:
-        return literal.group(1)
-
-    alias = re.search(
-        rf'^{re.escape(name)}\s*=\s*([A-Z_][A-Z0-9_]*)\s*(?:#.*)?$',
-        source,
-        re.MULTILINE,
-    )
-    if alias:
-        return _resolve_prompt_constant(source, alias.group(1), _seen)
-
-    return None
-
-
 def _extract_tool_refs_from_prompt_block(text: str) -> set[str]:
     """Extract tool-like identifiers referenced in prompt text (e.g. 'Use tool_name')."""
     patterns = [
@@ -178,13 +123,17 @@ class TestPipelinePromptParity:
 
     @pytest.fixture(autouse=True)
     def _load(self):
-        rel = "app/domains/cv_screening/agents/pipeline_system_prompt.py"
-        self.prompt = _read_prompt_file(rel)
-        self.sys_prompt = _load_prompt_constant(rel, "PIPELINE_SYSTEM_PROMPT")
-        assert self.sys_prompt, "Could not resolve PIPELINE_SYSTEM_PROMPT"
+        self.prompt = _read_prompt_file("app/domains/cv_screening/agents/pipeline_system_prompt.py")
+        self.sys_match = re.search(
+            r'PIPELINE_SYSTEM_PROMPT\s*=\s*"""(.*?)"""',
+            self.prompt,
+            re.DOTALL,
+        )
+        assert self.sys_match, "Could not find PIPELINE_SYSTEM_PROMPT"
+        self.sys_prompt = self.sys_match.group(1)
 
         self.pipeline_tools = _scan_domain_tool_registry(
-            os.path.join(BASE, "app", "domains", "pipeline", "agents", "pipeline_tool_registry.py")
+            os.path.join(BASE, "app", "domains", "cv_screening", "agents", "pipeline_tool_registry.py")
         )
         self.enhanced_tools = _get_enhanced_mixin_tools()
         self.allowed_tools = self.pipeline_tools | self.enhanced_tools
@@ -204,9 +153,13 @@ class TestPipelinePromptParity:
         )
 
     def test_reasoning_tools_match_registry(self):
-        reasoning = _resolve_prompt_constant(self.prompt, "PIPELINE_REASONING_PROMPT")
-        assert reasoning, "Could not resolve PIPELINE_REASONING_PROMPT"
-        refs = _extract_tool_refs_from_prompt_block(reasoning)
+        reasoning_match = re.search(
+            r'PIPELINE_REASONING_PROMPT\s*=\s*"""(.*?)"""',
+            self.prompt,
+            re.DOTALL,
+        )
+        assert reasoning_match, "Could not find PIPELINE_REASONING_PROMPT"
+        refs = _extract_tool_refs_from_prompt_block(reasoning_match.group(1))
         unknown = refs - self.allowed_tools
         assert not unknown, (
             f"Pipeline reasoning references tools not in pipeline_tool_registry "
@@ -407,57 +360,6 @@ class TestScopeDescriptionsParity:
 
     def test_market_data_disclaimer_in_restrictions(self):
         assert "benchmark" in self.prompt.lower()
-
-
-class TestPromptConstantResolver:
-    """Regression: the prompt loader must handle both literal and alias forms."""
-
-    def test_resolves_triple_quoted_literal(self):
-        src = 'FOO_PROMPT = """hello world"""\n'
-        assert _resolve_prompt_constant(src, "FOO_PROMPT") == "hello world"
-
-    def test_resolves_alias_to_literal(self):
-        src = (
-            'BASE_PROMPT = """real body"""\n'
-            'FOO_PROMPT = BASE_PROMPT  # legacy alias\n'
-        )
-        assert _resolve_prompt_constant(src, "FOO_PROMPT") == "real body"
-
-    def test_resolves_chained_alias(self):
-        src = (
-            'A = """deep body"""\n'
-            'B = A\n'
-            'C = B\n'
-        )
-        assert _resolve_prompt_constant(src, "C") == "deep body"
-
-    def test_returns_none_for_missing(self):
-        assert _resolve_prompt_constant("X = 1\n", "MISSING") is None
-
-    def test_alias_cycle_does_not_recurse_forever(self):
-        src = "A = B\nB = A\n"
-        assert _resolve_prompt_constant(src, "A") is None
-
-    def test_resolver_returns_none_for_function_call_assignment(self):
-        src = 'NAME = some_func("key", "default")\n'
-        assert _resolve_prompt_constant(src, "NAME") is None
-
-    def test_loader_falls_back_to_runtime_for_function_call_form(self):
-        body = _load_prompt_constant(
-            "app/domains/cv_screening/agents/pipeline_system_prompt.py",
-            "PIPELINE_DOMAIN_SPECIFIC",
-        )
-        assert isinstance(body, str) and body, (
-            "Loader should fall back to module import when the constant is "
-            "assigned from a function call"
-        )
-
-    def test_loads_actual_pipeline_prompt(self):
-        body = _load_prompt_constant(
-            "app/domains/cv_screening/agents/pipeline_system_prompt.py",
-            "PIPELINE_SYSTEM_PROMPT",
-        )
-        assert body, "Should load PIPELINE_SYSTEM_PROMPT regardless of definition form"
 
 
 class TestCrossFileConsistency:

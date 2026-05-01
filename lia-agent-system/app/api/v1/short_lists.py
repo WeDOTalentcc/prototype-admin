@@ -22,14 +22,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.candidates.repositories.short_list_repository import ShortListRepository
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +51,6 @@ class ShortListResponse(BaseModel):
     created_by: str
     created_at: str
     candidate_count: int
-    candidate_ids: list[str] = []  # IDs of candidates in this list (for FE initialization)
 
 
 class ShortListCandidateResponse(BaseModel):
@@ -97,9 +88,8 @@ def _decode_meta(description: str | None) -> tuple[str, str]:
 
 
 def _to_short_list_response(record) -> ShortListResponse:
-    from lia_models.candidate_list import CandidateList
+    from app.models.candidate_list import CandidateList
     job_id, desc = _decode_meta(record.description)
-    members = record.members or []
     return ShortListResponse(
         id=str(record.id),
         job_id=job_id,
@@ -107,8 +97,7 @@ def _to_short_list_response(record) -> ShortListResponse:
         description=desc or None,
         created_by=record.created_by,
         created_at=record.created_at.isoformat() if record.created_at else "",
-        candidate_count=len(members),
-        candidate_ids=[str(m.candidate_id) for m in members],
+        candidate_count=len(record.members) if record.members else 0,
     )
 
 
@@ -189,7 +178,7 @@ async def add_candidate(
 @router.delete("/{list_id}/candidates/{candidate_id}", status_code=204, response_model=None)
 async def remove_candidate(
     list_id: UUID,
-    candidate_id: _DualId,
+    candidate_id: str,
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
 ):
@@ -204,10 +193,3 @@ async def remove_candidate(
         raise HTTPException(status_code=404, detail="Candidato não encontrado na short list")
 
     await repo.remove_member(member)
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

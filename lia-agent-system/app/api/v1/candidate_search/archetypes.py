@@ -11,7 +11,6 @@ from ._shared import (
     ArchetypeFromSearchResponse,
     ArchetypeResponse,
     CandidateSearchResultDTO,
-    DiscardedCandidateDTO,
     HybridSearchRequest,
     PearchService,
     SearchType,
@@ -23,7 +22,6 @@ from ._shared import (
     get_db,
     get_pearch_service,
     logger,
-    persist_search_with_discards,
 )
 
 router = APIRouter()
@@ -111,11 +109,6 @@ class ArchetypeSearchResponse(BaseModel):
     credits_remaining: int | None = None
     search_time_seconds: float | None = None
     warning_message: str | None = None
-    filtered_no_contact: int = 0
-    enrichment_attempted: int = 0
-    filtered_candidates: list[DiscardedCandidateDTO] = Field(default_factory=list)
-    # Task #403 — id em ``candidate_searches`` para recuperar descartados depois.
-    search_id: str | None = None
 
 
 @router.get("/archetypes", response_model=ArchetypeListResponse)
@@ -133,7 +126,7 @@ async def list_archetypes(
     """
     from sqlalchemy import select
 
-    from lia_models.archetype import SearchArchetype, seed_default_archetypes
+    from app.models.archetype import SearchArchetype, seed_default_archetypes
     
     try:
         # Seed default archetypes if needed
@@ -207,7 +200,7 @@ async def create_archetype(
 
     from sqlalchemy import select
 
-    from lia_models.archetype import SearchArchetype
+    from app.models.archetype import SearchArchetype
     
     try:
         # Generate ID if not provided
@@ -376,7 +369,7 @@ async def get_closed_job_suggestions(
     """
     from sqlalchemy import desc, or_, select
 
-    from lia_models.job_vacancy import JobVacancy
+    from app.models.job_vacancy import JobVacancy
     
     try:
         result = await db.execute(
@@ -455,8 +448,8 @@ async def create_archetype_from_job(
 
     from sqlalchemy import select
 
-    from lia_models.archetype import SearchArchetype
-    from lia_models.job_vacancy import JobVacancy
+    from app.models.archetype import SearchArchetype
+    from app.models.job_vacancy import JobVacancy
     
     try:
         result = await db.execute(
@@ -602,7 +595,7 @@ async def create_archetype_from_description(
     import re
     import uuid as uuid_lib
 
-    from lia_models.archetype import SearchArchetype
+    from app.models.archetype import SearchArchetype
     
     try:
         description = request.description.lower()
@@ -725,7 +718,7 @@ async def get_archetype(
     """Obtém detalhes de um arquétipo específico."""
     from sqlalchemy import select
 
-    from lia_models.archetype import SearchArchetype
+    from app.models.archetype import SearchArchetype
     
     try:
         result = await db.execute(
@@ -771,7 +764,7 @@ async def delete_archetype(
     """
     from sqlalchemy import delete, select
 
-    from lia_models.archetype import SearchArchetype
+    from app.models.archetype import SearchArchetype
     
     try:
         result = await db.execute(
@@ -815,7 +808,7 @@ async def update_archetype(
     """
     from sqlalchemy import select
 
-    from lia_models.archetype import SearchArchetype
+    from app.models.archetype import SearchArchetype
     
     try:
         result = await db.execute(
@@ -881,7 +874,6 @@ async def search_by_archetype(
     db: AsyncSession = Depends(get_db)
 ,
     pearch_svc: PearchService = Depends(get_pearch_service),
-    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Executa busca de candidatos usando um arquétipo específico.
@@ -893,7 +885,7 @@ async def search_by_archetype(
 
     from sqlalchemy import select, update
 
-    from lia_models.archetype import SearchArchetype
+    from app.models.archetype import SearchArchetype
     from app.shared.services.lia_score_service import lia_score_service
     
     logger = logging.getLogger(__name__)
@@ -1034,7 +1026,7 @@ async def search_by_archetype(
             
             candidates.append(candidate_dto)
         
-        candidates, _enrich_stats = await enrich_and_filter_candidates(db, candidates)
+        candidates = await enrich_and_filter_candidates(db, candidates)
         if request.calculate_lia_score:
             candidates.sort(key=lambda x: x.lia_score or 0, reverse=True)
         
@@ -1054,19 +1046,6 @@ async def search_by_archetype(
             created_at=archetype.created_at.isoformat() if archetype.created_at else None
         )
         
-        _search_id = await persist_search_with_discards(
-            db,
-            user=current_user,
-            query=archetype.query,
-            search_source=("hybrid" if request.search_pearch else "local"),
-            local_count=search_result.local_count,
-            pearch_count=search_result.pearch_count,
-            total_count=len(candidates),
-            used_global_search=bool(request.search_pearch),
-            discarded=_enrich_stats.filtered_candidates,
-            search_filters={"mode": "archetype", "archetype_id": archetype_id},
-        )
-
         return ArchetypeSearchResponse(
             archetype=archetype_dto,
             query=archetype.query,
@@ -1077,11 +1056,7 @@ async def search_by_archetype(
             total_count=len(candidates),
             credits_remaining=search_result.pearch_credits_remaining,
             search_time_seconds=(search_result.local_search_time or 0) + (search_result.pearch_search_time or 0),
-            warning_message=search_result.warning_message,
-            filtered_no_contact=_enrich_stats.filtered_no_contact,
-            enrichment_attempted=_enrich_stats.enrichment_attempted,
-            filtered_candidates=_enrich_stats.filtered_candidates,
-            search_id=_search_id,
+            warning_message=search_result.warning_message
         )
     
     except HTTPException:
@@ -1136,8 +1111,8 @@ async def generate_archetype_from_job(
 
     from sqlalchemy import select
 
-    from lia_models.archetype import SearchArchetype
-    from lia_models.job_vacancy import JobVacancy
+    from app.models.archetype import SearchArchetype
+    from app.models.job_vacancy import JobVacancy
     from app.shared.providers.llm_factory import get_provider_for_tenant
 
     try:
@@ -1296,7 +1271,7 @@ async def generate_archetype_from_description(
     import json
     import uuid as uuid_lib
 
-    from lia_models.archetype import SearchArchetype
+    from app.models.archetype import SearchArchetype
     from app.shared.providers.llm_factory import get_provider_for_tenant
 
     try:
@@ -1418,7 +1393,7 @@ async def get_archetype_suggestions(
     """
     from sqlalchemy import select
 
-    from lia_models.job_vacancy import JobVacancy
+    from app.models.job_vacancy import JobVacancy
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.

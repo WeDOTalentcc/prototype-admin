@@ -7,7 +7,6 @@ Orchestrates:
 - Block 4: Behavioral/Situational (Big Five/CBI via WSIService)
 """
 import logging
-from contextlib import contextmanager
 from difflib import SequenceMatcher
 from typing import Any
 
@@ -95,62 +94,12 @@ class WSIScreeningPipeline:
     def __init__(self):
         self.logger = logging.getLogger(self.__class__.__name__)
 
-    @staticmethod
-    def _tracking_context_for(
-        request: WSIScreeningPipelineRequest, operation: str
-    ) -> dict[str, Any] | None:
-        """Build a tracking_context that carries the recruiter's tenant id.
-
-        Ensures every LLM call dispatched by the pipeline (technical and
-        behavioral block generators) resolves the provider/key configured by
-        the tenant via Choose Your AI, instead of falling back to the global
-        Anthropic key when the contextvar is not yet set.
-        """
-        cid = getattr(request, "company_id", None)
-        if not cid:
-            return None
-        return {"company_id": str(cid), "operation": operation}
-
-    @contextmanager
-    def _tenant_scope(self, request: WSIScreeningPipelineRequest):
-        """Set the tenant LLM contextvar for the duration of build_pipeline.
-
-        No-op when ``request.company_id`` is empty or when the contextvar has
-        already been set by an upstream caller (e.g. WSIInterviewGraph).
-        """
-        token = None
-        try:
-            from app.middleware.auth_enforcement import _current_company_id
-            cid = str(getattr(request, "company_id", "") or "")
-            if cid and not _current_company_id.get(""):
-                token = _current_company_id.set(cid)
-        except Exception as exc:  # pragma: no cover - defensive
-            self.logger.debug("tenant_llm_context skipped: %s", exc)
-        try:
-            yield
-        finally:
-            if token is not None:
-                try:
-                    from app.middleware.auth_enforcement import _current_company_id
-                    _current_company_id.reset(token)
-                except Exception:  # pragma: no cover - defensive
-                    pass
-
     async def build_pipeline(
         self,
         request: WSIScreeningPipelineRequest,
         company_questions_raw: list[dict[str, Any]],
     ) -> WSIScreeningPipelineResponse:
-        with self._tenant_scope(request):
-            return await self._build_pipeline_impl(request, company_questions_raw)
-
-    async def _build_pipeline_impl(
-        self,
-        request: WSIScreeningPipelineRequest,
-        company_questions_raw: list[dict[str, Any]],
-    ) -> WSIScreeningPipelineResponse:
         seniority_resolution_meta = None
-        seniority_default_warning: str | None = None
         if SENIORITY_RESOLVER_ENABLED:
             resolution = resolve_seniority_full(
                 explicit_seniority=request.seniority,
@@ -203,28 +152,16 @@ class WSIScreeningPipeline:
             self.logger.info(f"Seniority from explicit input: {effective_seniority}")
         else:
             effective_seniority = "pleno"
-            seniority_default_warning = (
-                "Senioridade não foi informada e o resolver multi-sinal está "
-                "desabilitado. Usando fallback 'pleno' — confirme a senioridade "
-                "antes de prosseguir, pois isso afeta a calibração das perguntas WSI."
-            )
             seniority_resolution_meta = {
                 "resolved": False,
                 "source": "default",
                 "effective_level": effective_seniority,
                 "explicit_input": None,
-                "requires_confirmation": True,
-                "warning": seniority_default_warning,
             }
-            self.logger.warning(
-                "Seniority defaulted to '%s' (no explicit input, resolver disabled)",
-                effective_seniority,
-            )
+            self.logger.info(f"Seniority defaulted to: {effective_seniority}")
 
         all_questions: list[UnifiedScreeningQuestion] = []
         quality_warnings: list[str] = []
-        if seniority_default_warning:
-            quality_warnings.append(seniority_default_warning)
 
         seniority_dist = SENIORITY_DISTRIBUTIONS.get(request.format, SENIORITY_DISTRIBUTIONS["full"])
         model = seniority_dist.get(effective_seniority, MODEL_DISTRIBUTIONS.get(request.format, MODEL_DISTRIBUTIONS["full"]))
@@ -460,7 +397,6 @@ class WSIScreeningPipeline:
             seniority=effective_seniority,
             job_description=request.job_description,
             mode="compact",
-            tracking_context=self._tracking_context_for(request, "wsi_pipeline_technical"),
         )
 
         tech_questions = [q for q in wsi_questions if q.question_type != "situational"]
@@ -528,7 +464,6 @@ class WSIScreeningPipeline:
             seniority=effective_seniority,
             job_description=request.job_description,
             mode="compact",
-            tracking_context=self._tracking_context_for(request, "wsi_pipeline_behavioral"),
         )
 
         behav_questions = [q for q in wsi_questions if q.framework == "BigFive" or q.question_type == "situational"]
@@ -679,9 +614,3 @@ class WSIScreeningPipeline:
 
 
 wsi_screening_pipeline = WSIScreeningPipeline()
-
-
-# Module-level handler exposed to the chat tool registry
-async def run_pipeline(**kwargs):
-    """Chat-surface wrapper around WSIScreeningPipeline.build_pipeline()."""
-    return await wsi_screening_pipeline.build_pipeline(**kwargs)

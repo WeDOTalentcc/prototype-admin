@@ -15,19 +15,6 @@ from datetime import datetime
 from enum import Enum
 from typing import Any
 
-# B0 #523 — escala canônica /10 (cv_screening.constants.wsi_scale).
-# Refactor no source: o analyzer agora emite scores na escala WSI canônica
-# (era /5; consumidores precisavam multiplicar). Bloom (1-6), Dreyfus (1-5)
-# e Big Five (-1..1) seguem como escalas próprias — não convertidos.
-from app.domains.cv_screening.constants.wsi_scale import (
-    CLASSIFY_ALTO,
-    CLASSIFY_EXCELENTE,
-    CLASSIFY_MEDIO,
-    CUTOFF_REVIEW_MIN,
-    GATE_G3_THRESHOLD,
-    SCALE_MAX,
-)
-
 logger = logging.getLogger(__name__)
 
 
@@ -262,7 +249,7 @@ class TranscriptAnalysisResult:
     candidate_id: str
     job_vacancy_id: str | None
     
-    # Scores WSI (0-10 — escala canônica /10 desde B0 #523)
+    # Scores WSI (0-5)
     technical_score: float
     behavioral_score: float
     cultural_score: float
@@ -808,30 +795,29 @@ class InterviewTranscriptAnalysisService:
         bloom_level: int,
         dreyfus_stage: int
     ) -> float:
-        """Calculate technical competency score (0-SCALE_MAX, canônico /10)."""
+        """Calculate technical competency score (0-5)."""
         technical_comps = [c for c in competencies if c.get("type") == "technical"]
-
+        
         if not technical_comps:
-            # Use detected technical keywords. Base 4.0 = GATE_G3_THRESHOLD
-            # (técnico mínimo aceitável); cada match adiciona 0.4 cap em 8.0.
+            # Use detected technical keywords
             tech_keywords = []
             for name, keywords in self.competency_keywords.items():
                 if name not in ["leadership", "communication", "teamwork", "problem_solving"]:
                     tech_keywords.extend(keywords)
-
+            
             matches = self._count_indicator_matches(text, tech_keywords)
-            base_score = min(CLASSIFY_EXCELENTE, GATE_G3_THRESHOLD + (matches * 0.4))
+            base_score = min(4.0, 2.0 + (matches * 0.2))
         else:
             match_score = self._calculate_competency_match(text, technical_comps)
-            base_score = match_score * SCALE_MAX
-
-        # Adjust based on Bloom/Dreyfus (modificadores dobrados pra escala /10)
-        bloom_modifier = (bloom_level - 3) * 0.4
-        dreyfus_modifier = (dreyfus_stage - 3) * 0.4
-
+            base_score = match_score * 5
+        
+        # Adjust based on Bloom/Dreyfus
+        bloom_modifier = (bloom_level - 3) * 0.2
+        dreyfus_modifier = (dreyfus_stage - 3) * 0.2
+        
         final_score = base_score + bloom_modifier + dreyfus_modifier
-
-        return max(0.0, min(SCALE_MAX, final_score))
+        
+        return max(0.0, min(5.0, final_score))
     
     def _calculate_behavioral_score(
         self,
@@ -839,10 +825,10 @@ class InterviewTranscriptAnalysisService:
         cbi_score: float,
         evidences: list[CompetencyEvidence]
     ) -> float:
-        """Calculate behavioral competency score (0-SCALE_MAX, canônico /10)."""
+        """Calculate behavioral competency score (0-5)."""
         # CBI completeness contributes 40%
-        cbi_contribution = cbi_score * SCALE_MAX * 0.4
-
+        cbi_contribution = cbi_score * 5 * 0.4
+        
         # Big Five positive traits contribute 40%
         positive_traits = [
             big_five.get("conscientiousness", 0),
@@ -850,12 +836,12 @@ class InterviewTranscriptAnalysisService:
             big_five.get("openness", 0)
         ]
         trait_avg = sum(positive_traits) / len(positive_traits)
-        trait_contribution = ((trait_avg + 1) / 2) * SCALE_MAX * 0.4
-
+        trait_contribution = ((trait_avg + 1) / 2) * 5 * 0.4
+        
         # Behavioral evidences contribute 20%
         behavioral_evidences = [e for e in evidences if e.category == "behavioral"]
-        evidence_contribution = min(1.0, len(behavioral_evidences) / 3) * SCALE_MAX * 0.2
-
+        evidence_contribution = min(1.0, len(behavioral_evidences) / 3) * 5 * 0.2
+        
         return cbi_contribution + trait_contribution + evidence_contribution
     
     def _calculate_cultural_score(
@@ -863,22 +849,22 @@ class InterviewTranscriptAnalysisService:
         big_five: dict[str, float],
         evidences: list[CompetencyEvidence]
     ) -> float:
-        """Calculate cultural fit score (0-SCALE_MAX, canônico /10)."""
+        """Calculate cultural fit score (0-5)."""
         # Extraversion and agreeableness indicate cultural adaptability
         cultural_traits = [
             big_five.get("extraversion", 0),
             big_five.get("agreeableness", 0),
             big_five.get("openness", 0)
         ]
-
+        
         trait_avg = sum(cultural_traits) / len(cultural_traits)
-        base_score = ((trait_avg + 1) / 2) * SCALE_MAX
-
-        # Low neuroticism is positive for cultural fit (modifier dobrado /10)
+        base_score = ((trait_avg + 1) / 2) * 5
+        
+        # Low neuroticism is positive for cultural fit
         neuroticism = big_five.get("neuroticism", 0)
-        neuroticism_modifier = -neuroticism * 1.0
-
-        return max(0.0, min(SCALE_MAX, base_score + neuroticism_modifier))
+        neuroticism_modifier = -neuroticism * 0.5
+        
+        return max(0.0, min(5.0, base_score + neuroticism_modifier))
     
     def _calculate_overall_wsi(
         self,
@@ -902,17 +888,16 @@ class InterviewTranscriptAnalysisService:
             "cbi": 0.30,
             "competency": 0.20
         }
-
-        # Normalize to canonical SCALE_MAX (/10). Bloom raw é 1-6, Dreyfus 1-5
-        # — pra estourarem ~SCALE_MAX dobramos os pesos brutos (× 2).
+        
+        # Normalize to 0-5 scale
         score = (
-            bloom * weights["bloom"] * 2 +
-            dreyfus * weights["dreyfus"] * 2 +
-            cbi * SCALE_MAX * weights["cbi"] +
-            competency_match * SCALE_MAX * weights["competency"]
+            bloom * weights["bloom"] +
+            dreyfus * weights["dreyfus"] +
+            cbi * 5 * weights["cbi"] +
+            competency_match * 5 * weights["competency"]
         )
-
-        return round(min(SCALE_MAX, max(0.0, score)), 2)
+        
+        return round(min(5.0, max(0.0, score)), 2)
     
     def _generate_recommendation(
         self,
@@ -921,57 +906,55 @@ class InterviewTranscriptAnalysisService:
         evidence_count: int
     ) -> str:
         """Generate recommendation based on scores."""
-        # B0 #523 — thresholds em escala canônica /10 (constantes wsi_scale).
         if len(red_flags) >= 3:
             return "reject"
-
-        if wsi_score >= CLASSIFY_EXCELENTE and evidence_count >= 5 and len(red_flags) == 0:
+        
+        if wsi_score >= 4.0 and evidence_count >= 5 and len(red_flags) == 0:
             return "approve"
-
-        if wsi_score >= CLASSIFY_ALTO and evidence_count >= 3:
+        
+        if wsi_score >= 3.5 and evidence_count >= 3:
             return "approve"
-
-        if wsi_score >= CUTOFF_REVIEW_MIN:
+        
+        if wsi_score >= 3.0:
             return "pending_review"
-
-        # < (CUTOFF_REVIEW_MIN - 1.0) = 5.0 → reject; entre 5.0-6.0 → review
-        if wsi_score < (CUTOFF_REVIEW_MIN - 1.0):
+        
+        if wsi_score < 2.5:
             return "reject"
-
+        
         return "pending_review"
     
     def _generate_summary(self, result: "TranscriptAnalysisResult") -> str:
         """Generate human-readable summary in Portuguese."""
-        # B0 #523 — Classification thresholds via constantes wsi_scale (/10).
-        if result.overall_wsi_score >= CLASSIFY_EXCELENTE:
+        # Classification based on WSI
+        if result.overall_wsi_score >= 4.0:
             classification = "Excelente"
             classification_desc = "O candidato demonstrou alto nível de competência"
-        elif result.overall_wsi_score >= CLASSIFY_ALTO:
+        elif result.overall_wsi_score >= 3.5:
             classification = "Bom"
             classification_desc = "O candidato apresentou bom desempenho"
-        elif result.overall_wsi_score >= CLASSIFY_MEDIO:
+        elif result.overall_wsi_score >= 3.0:
             classification = "Satisfatório"
             classification_desc = "O candidato atendeu expectativas básicas"
-        elif result.overall_wsi_score >= (CUTOFF_REVIEW_MIN - 1.0):
+        elif result.overall_wsi_score >= 2.5:
             classification = "Regular"
             classification_desc = "O candidato apresentou desempenho abaixo do esperado"
         else:
             classification = "Insuficiente"
             classification_desc = "O candidato não atendeu os requisitos mínimos"
-
+        
         # Build summary
         summary_parts = []
-
+        
         # Header
         summary_parts.append(f"**Parecer de Triagem WSI - {classification}**")
-        summary_parts.append(f"\nScore WSI Geral: {result.overall_wsi_score}/{SCALE_MAX}")
+        summary_parts.append(f"\nScore WSI Geral: {result.overall_wsi_score}/5.0")
         summary_parts.append(f"\n{classification_desc}.")
-
+        
         # Scores breakdown
         summary_parts.append("\n\n**Scores por Dimensão:**")
-        summary_parts.append(f"- Técnico: {result.technical_score}/{SCALE_MAX}")
-        summary_parts.append(f"- Comportamental: {result.behavioral_score}/{SCALE_MAX}")
-        summary_parts.append(f"- Cultural: {result.cultural_score}/{SCALE_MAX}")
+        summary_parts.append(f"- Técnico: {result.technical_score}/5.0")
+        summary_parts.append(f"- Comportamental: {result.behavioral_score}/5.0")
+        summary_parts.append(f"- Cultural: {result.cultural_score}/5.0")
         
         # Frameworks
         summary_parts.append("\n\n**Análise por Framework:**")

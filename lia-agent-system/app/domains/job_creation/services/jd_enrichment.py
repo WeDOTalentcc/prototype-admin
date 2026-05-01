@@ -27,27 +27,89 @@ import re
 from typing import List, Tuple
 
 from app.domains.job_creation.schemas import EnrichedJobDescription
-from app.shared.compliance.fairness_guard import (
-    BLOCKED_FILTER_FIELDS as BLOCKED_FILTERS,
-    INCLUSIVE_LANGUAGE_REPLACEMENTS_EN as BIAS_TERMS_EN,
-    INCLUSIVE_LANGUAGE_REPLACEMENTS_PT as BIAS_TERMS_PT,
-    FairnessGuard,
-)
 
 logger = logging.getLogger(__name__)
 
-# Single source of truth for inclusive-language replacements is FairnessGuard.
-_fairness_guard = FairnessGuard()
+# ---------------------------------------------------------------------------
+# Fairness: Bias term detection (WSI P7 — linguagem inclusiva)
+# Merged from lia-hardening/fairness/fairness_guard_patch.py
+# ---------------------------------------------------------------------------
+
+BIAS_TERMS_PT = {
+    # Age proxy
+    "jovem e dinâmico": "proativo e engajado",
+    "jovem e dinamico": "proativo e engajado",
+    "energia jovem": "alta energia",
+    "recém-formado apenas": "formação recente é diferencial",
+    "recem-formado apenas": "formacao recente e diferencial",
+    # Gender proxy
+    "ele deve": "a pessoa deve",
+    "ele precisa": "a pessoa precisa",
+    "o candidato ideal": "a pessoa ideal",
+    # Culture fit (class bias proxy)
+    "fit cultural": "alinhamento com valores",
+    "cultural fit": "alinhamento com valores",
+    "cara da empresa": "alinhamento com a missao",
+    # Appearance proxy
+    "boa aparência": "",
+    "boa aparencia": "",
+    "boa apresentação pessoal": "",
+    "boa apresentacao pessoal": "",
+    # Marital/family
+    "sem filhos": "",
+    "disponibilidade total": "disponibilidade conforme combinado",
+}
+
+BIAS_TERMS_EN = {
+    "young and dynamic": "proactive and engaged",
+    "culture fit": "values alignment",
+    "he should": "the person should",
+    "he must": "the person must",
+    "native speaker": "fluent in",
+    "good looking": "",
+    "attractive": "",
+}
+
+# BLOCKED filters (from fairness_guard)
+BLOCKED_FILTERS = {
+    "gender", "genero", "sexo", "age", "idade",
+    "race", "raca", "ethnicity", "etnia",
+    "marital", "estado_civil", "religion", "religiao",
+}
 
 
 def check_fairness(text: str) -> Tuple[str, List[str]]:
     """Apply fairness corrections to JD text.
 
-    Thin wrapper over FairnessGuard.apply_inclusive_language() (task #321).
     Returns:
         tuple of (corrected_text, list_of_corrections_applied)
     """
-    return _fairness_guard.apply_inclusive_language(text)
+    corrections = []
+    corrected = text
+
+    # Check PT bias terms
+    for bias_term, replacement in BIAS_TERMS_PT.items():
+        pattern = re.compile(re.escape(bias_term), re.IGNORECASE)
+        if pattern.search(corrected):
+            if replacement:
+                corrected = pattern.sub(replacement, corrected)
+                corrections.append(f"Substituido '{bias_term}' por '{replacement}' (linguagem inclusiva)")
+            else:
+                corrected = pattern.sub("", corrected)
+                corrections.append(f"Removido '{bias_term}' (termo potencialmente discriminatorio)")
+
+    # Check EN bias terms
+    for bias_term, replacement in BIAS_TERMS_EN.items():
+        pattern = re.compile(re.escape(bias_term), re.IGNORECASE)
+        if pattern.search(corrected):
+            if replacement:
+                corrected = pattern.sub(replacement, corrected)
+                corrections.append(f"Replaced '{bias_term}' with '{replacement}' (inclusive language)")
+            else:
+                corrected = pattern.sub("", corrected)
+                corrections.append(f"Removed '{bias_term}' (potentially discriminatory term)")
+
+    return corrected.strip(), corrections
 
 # WSI F1.B minimum thresholds
 MIN_TECHNICAL_SKILLS = 9

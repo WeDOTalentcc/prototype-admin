@@ -8,7 +8,6 @@ This service handles:
 - Integration with TaskService and JobAlertService
 - Configurable thresholds for sourcing decisions
 """
-import hashlib
 import logging
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -25,26 +24,6 @@ from lia_models.job_vacancy import JobVacancy
 from lia_models.task import Task, TaskPriority, TaskStatus, TaskType
 
 logger = logging.getLogger(__name__)
-
-
-def _build_criteria_text(job: JobVacancy, skill_names: list[str] | None = None) -> str:
-    """Build a textual representation of sourcing filter criteria for fairness/audit."""
-    parts: list[str] = []
-    if job.title:
-        parts.append(str(job.title))
-    if getattr(job, "location", None):
-        parts.append(str(job.location))
-    if getattr(job, "description", None):
-        parts.append(str(job.description)[:500])
-    if skill_names:
-        parts.append(" ".join(s for s in skill_names if s))
-    if isinstance(getattr(job, "requirements", None), list):
-        parts.append(" ".join(str(r) for r in job.requirements[:10] if r))
-    return " | ".join(parts)
-
-
-def _prompt_hash(text: str) -> str:
-    return hashlib.sha256((text or "").encode("utf-8")).hexdigest()
 
 
 @dataclass
@@ -252,9 +231,9 @@ class SourcingPipelineService:
             
             status = await self._build_job_status(db, job)
             
-            local_candidates, local_prompt_hash = await self._run_local_search(db, job)
+            local_candidates = await self._run_local_search(db, job)
             candidates_added_local = await self._add_candidates_to_job(
-                db, job, local_candidates, prompt_hash=local_prompt_hash
+                db, job, local_candidates
             )
             
             global_candidates_found = 0
@@ -269,10 +248,10 @@ class SourcingPipelineService:
             
             if should_expand:
                 try:
-                    global_candidates, global_prompt_hash = await self._run_global_search(job)
+                    global_candidates = await self._run_global_search(job)
                     global_candidates_found = len(global_candidates)
                     candidates_added_global = await self._add_pearch_candidates_to_job(
-                        db, job, global_candidates, prompt_hash=global_prompt_hash
+                        db, job, global_candidates
                     )
                     expanded_to_global = True
                 except Exception as e:
@@ -459,165 +438,20 @@ class SourcingPipelineService:
             recommended_action=recommended_action
         )
     
-    async def _check_fairness_on_criteria(
-        self,
-        job: JobVacancy,
-        skill_names: list[str] | None,
-        context: str,
-    ) -> tuple[bool, str | None, str]:
-        """
-        Run FairnessGuard on the sourcing filter criteria.
-
-        Returns: (is_blocked, category_or_none, prompt_hash)
-        Audits the FairnessGuard outcome (best-effort) when blocked or warnings.
-        """
-        criteria_text = _build_criteria_text(job, skill_names)
-        criteria_hash = _prompt_hash(criteria_text)
-
-        try:
-            from app.shared.compliance.fairness_guard import FairnessGuard
-            fg = FairnessGuard()
-            fg_result = fg.check(criteria_text)
-            if fg_result.is_blocked or fg_result.soft_warnings:
-                try:
-                    await fg.log_check(
-                        result=fg_result,
-                        context=context,
-                        company_id=str((job.company_id or "") or ""),
-                        job_id=str(job.id) if getattr(job, "id", None) else None,
-                    )
-                except Exception:
-                    pass
-            if fg_result.is_blocked:
-                logger.warning(
-                    "[SourcingPipeline][FairnessGuard] BLOCKED criteria for job=%s "
-                    "category=%s terms=%s context=%s",
-                    job.id, fg_result.category, fg_result.blocked_terms, context,
-                )
-                await self._notify_recruiter_of_block(
-                    job=job,
-                    category=fg_result.category,
-                    blocked_terms=list(fg_result.blocked_terms or []),
-                    educational_message=getattr(fg_result, "educational_message", None),
-                    context=context,
-                )
-                return True, fg_result.category, criteria_hash
-        except Exception as exc:
-            logger.debug("[SourcingPipeline] FairnessGuard check skipped: %s", exc)
-
-        return False, None, criteria_hash
-
-    async def _notify_recruiter_of_block(
-        self,
-        *,
-        job: JobVacancy,
-        category: str | None,
-        blocked_terms: list[str],
-        educational_message: str | None,
-        context: str,
-    ) -> None:
-        """Best-effort: surface a real-time bell notification when a sourcing run is blocked.
-
-        The notification is delivered to the recruiter that created the job (mirroring the
-        pattern used by the WSI abandoned-session alert). The frontend's notification poller
-        picks it up within ~60s and triggers a Sonner toast — the recruiter no longer needs
-        to reopen the job page to discover that FairnessGuard rejected the criteria.
-        """
-        recipient = str(getattr(job, "created_by", "") or "").strip()
-        if not recipient:
-            return
-
-        category_label = (category or "criterio_restrito").replace("_", " ")
-        title = f"Busca bloqueada: {job.title or 'vaga'}"
-        terms_preview = ", ".join(blocked_terms[:3]) if blocked_terms else ""
-        message = (
-            f"A busca por candidatos foi bloqueada por critério discriminatório "
-            f"({category_label})."
-        )
-        if terms_preview:
-            message += f" Termos identificados: {terms_preview}."
-        if educational_message:
-            message += f" {educational_message}"
-
-        action_url = f"/jobs/{job.id}" if getattr(job, "id", None) else None
-
-        try:
-            from app.services.notification_service import (
-                NotificationType,
-                notification_service,
-            )
-
-            await notification_service.create_notification(
-                user_id=recipient,
-                title=title,
-                message=message,
-                notification_type=NotificationType.URGENT,
-                category="pipeline",
-                source_agent="sourcing_pipeline_service",
-                source_trigger="fairness_block",
-                related_job_id=str(job.id) if getattr(job, "id", None) else None,
-                action_url=action_url,
-                action_label="Abrir vaga",
-                channels=["bell", "in_app"],
-                metadata={
-                    "fairness_category": category,
-                    "blocked_terms": blocked_terms[:10],
-                    "context": context,
-                },
-                expires_in_hours=72,
-            )
-        except Exception as exc:
-            logger.debug(
-                "[SourcingPipeline] recruiter fairness-block notification skipped: %s", exc
-            )
-
-    async def _audit_sourcing_decision(
-        self,
-        *,
-        job: JobVacancy,
-        candidate_id: str | None,
-        decision_type: str,
-        decision: str,
-        prompt_hash: str,
-        reasoning: list[str],
-        criteria_used: list[str],
-        score: float | None = None,
-    ) -> None:
-        """Best-effort AuditService log for a sourcing inclusion/exclusion decision."""
-        try:
-            from app.shared.compliance.audit_service import (
-                PROTECTED_CRITERIA,
-                audit_service,
-            )
-            full_reasoning = list(reasoning) + [f"prompt_hash={prompt_hash}"]
-            await audit_service.log_decision(
-                company_id=str((job.company_id or "") or ""),
-                agent_name="sourcing_pipeline_service",
-                decision_type=decision_type,
-                action=f"{decision_type}:prompt_hash={prompt_hash}",
-                decision=decision,
-                reasoning=full_reasoning,
-                criteria_used=criteria_used,
-                criteria_ignored=list(PROTECTED_CRITERIA),
-                candidate_id=str(candidate_id) if candidate_id else None,
-                job_vacancy_id=str(job.id) if getattr(job, "id", None) else None,
-                score=score,
-            )
-        except Exception as exc:
-            logger.debug("[SourcingPipeline] AuditService skipped: %s", exc)
-
     async def _run_local_search(
         self,
         db: AsyncSession,
         job: JobVacancy
-    ) -> tuple[list[Candidate], str]:
+    ) -> list[Candidate]:
         """
         Search for matching candidates in local database.
-
+        
+        Args:
+            db: Database session
+            job: Job to match against
+            
         Returns:
-            Tuple of (matching candidates, prompt_hash) — the prompt_hash MUST be
-            forwarded to subsequent audit calls so every include/exclude decision
-            for this run is traceable to the same criteria fingerprint.
+            List of matching candidates
         """
         skills = job.technical_requirements or []
         skill_names = []
@@ -632,25 +466,7 @@ class SourcingPipelineService:
         
         if not skill_names:
             skill_names = [job.title]
-
-        is_blocked, blocked_category, criteria_hash = await self._check_fairness_on_criteria(
-            job, skill_names, context="sourcing_pipeline_local"
-        )
-        if is_blocked:
-            await self._audit_sourcing_decision(
-                job=job,
-                candidate_id=None,
-                decision_type="reject_candidate",
-                decision="rejected",
-                prompt_hash=criteria_hash,
-                reasoning=[
-                    "Local sourcing aborted: discriminatory filter criteria detected",
-                    f"FairnessGuard category: {blocked_category}",
-                ],
-                criteria_used=["job_filter_criteria"],
-            )
-            return [], criteria_hash
-
+        
         existing_candidates = await db.execute(
             select(Interview.candidate_id).where(
                 Interview.job_vacancy_id == job.id
@@ -671,17 +487,8 @@ class SourcingPipelineService:
         matched_candidates = []
         for candidate in all_candidates:
             if candidate.id in existing_ids:
-                await self._audit_sourcing_decision(
-                    job=job,
-                    candidate_id=str(candidate.id),
-                    decision_type="reject_candidate",
-                    decision="rejected",
-                    prompt_hash=criteria_hash,
-                    reasoning=["Excluded by local sourcing: already in pipeline"],
-                    criteria_used=["existing_pipeline_membership"],
-                )
                 continue
-
+                
             candidate_skills = candidate.technical_skills or []
             if any(
                 skill.lower() in [s.lower() for s in candidate_skills]
@@ -689,22 +496,12 @@ class SourcingPipelineService:
                 if skill
             ):
                 matched_candidates.append(candidate)
-            else:
-                await self._audit_sourcing_decision(
-                    job=job,
-                    candidate_id=str(candidate.id),
-                    decision_type="reject_candidate",
-                    decision="rejected",
-                    prompt_hash=criteria_hash,
-                    reasoning=["Excluded by local sourcing: skill mismatch"],
-                    criteria_used=["technical_skills", "job_requirements"],
-                )
-
+        
         logger.info(f"Local search found {len(matched_candidates)} matching candidates for {job.title}")
-
-        return matched_candidates, criteria_hash
+        
+        return matched_candidates
     
-    async def _run_global_search(self, job: JobVacancy) -> tuple[list[dict[str, Any]], str]:
+    async def _run_global_search(self, job: JobVacancy) -> list[dict[str, Any]]:
         """
         Search for candidates using Pearch AI global database.
         
@@ -731,38 +528,12 @@ class SourcingPipelineService:
         
         if skill_names:
             search_query += f" with {', '.join(skill_names)}"
-
-        # FairnessGuard pre-check on filter criteria (C6)
-        is_blocked, blocked_category, criteria_hash = await self._check_fairness_on_criteria(
-            job, skill_names, context="sourcing_pipeline_global"
-        )
-        if is_blocked:
-            await self._audit_sourcing_decision(
-                job=job,
-                candidate_id=None,
-                decision_type="reject_candidate",
-                decision="rejected",
-                prompt_hash=criteria_hash,
-                reasoning=[
-                    "Global sourcing aborted: discriminatory filter criteria detected",
-                    f"FairnessGuard category: {blocked_category}",
-                ],
-                criteria_used=["job_filter_criteria"],
-            )
-            return [], criteria_hash
-
-        # PII masking before sending the query to Pearch (LLM-backed external service)
-        try:
-            from app.shared.pii_masking import strip_pii_for_llm_prompt
-            search_query_masked = strip_pii_for_llm_prompt(search_query)
-        except Exception:
-            search_query_masked = search_query
-
-        logger.info(f"Running Pearch global search: {search_query_masked}")
-
+        
+        logger.info(f"Running Pearch global search: {search_query}")
+        
         try:
             response = await pearch_service.search_candidates(
-                query=search_query_masked,
+                query=search_query,
                 search_type="fast",
                 limit=self.config.search_limit_global
             )
@@ -781,9 +552,9 @@ class SourcingPipelineService:
                     "skills": profile.skills,
                     "match_score": profile.match_score
                 })
-
-            return candidates, criteria_hash
-
+            
+            return candidates
+            
         except Exception as e:
             logger.error(f"Pearch search failed: {e}")
             raise
@@ -853,8 +624,7 @@ class SourcingPipelineService:
         self,
         db: AsyncSession,
         job: JobVacancy,
-        candidates: list[Candidate],
-        prompt_hash: str | None = None,
+        candidates: list[Candidate]
     ) -> int:
         """
         Add found candidates to the job pipeline by creating initial interview records.
@@ -868,8 +638,7 @@ class SourcingPipelineService:
             Number of candidates added
         """
         added_count = 0
-        effective_hash = prompt_hash or _prompt_hash(job.title or "")
-
+        
         for candidate in candidates:
             existing_interview = await db.execute(
                 select(Interview).where(
@@ -880,17 +649,8 @@ class SourcingPipelineService:
                 )
             )
             if existing_interview.scalar_one_or_none():
-                await self._audit_sourcing_decision(
-                    job=job,
-                    candidate_id=str(candidate.id),
-                    decision_type="reject_candidate",
-                    decision="rejected",
-                    prompt_hash=effective_hash,
-                    reasoning=["Skipped: candidate already has interview for this job"],
-                    criteria_used=["existing_interview"],
-                )
                 continue
-
+            
             match_score = self._calculate_local_match_score(candidate, job)
             candidate.lia_score = match_score
             
@@ -915,22 +675,9 @@ class SourcingPipelineService:
             
             db.add(interview)
             added_count += 1
-
+            
             candidate.updated_at = datetime.utcnow()
-
-            await self._audit_sourcing_decision(
-                job=job,
-                candidate_id=str(candidate.id),
-                decision_type="approve_candidate",
-                decision="approved",
-                prompt_hash=effective_hash,
-                reasoning=[
-                    "Local sourcing pipeline included candidate based on skill match",
-                ],
-                criteria_used=["technical_skills", "job_requirements"],
-                score=match_score,
-            )
-
+        
         if added_count > 0:
             await db.commit()
         
@@ -940,8 +687,7 @@ class SourcingPipelineService:
         self,
         db: AsyncSession,
         job: JobVacancy,
-        pearch_candidates: list[dict[str, Any]],
-        prompt_hash: str | None = None,
+        pearch_candidates: list[dict[str, Any]]
     ) -> int:
         """
         Add Pearch candidates to the database and job pipeline.
@@ -955,8 +701,7 @@ class SourcingPipelineService:
             Number of candidates added
         """
         added_count = 0
-        effective_hash = prompt_hash or _prompt_hash(job.title or "")
-
+        
         for data in pearch_candidates:
             email = data.get("email")
             existing_candidate = None
@@ -984,21 +729,10 @@ class SourcingPipelineService:
                     )
                 )
                 if existing_interview.scalar_one_or_none():
-                    await self._audit_sourcing_decision(
-                        job=job,
-                        candidate_id=str(existing_candidate.id),
-                        decision_type="reject_candidate",
-                        decision="rejected",
-                        prompt_hash=effective_hash,
-                        reasoning=["Skipped: candidate already has interview for this job (Pearch)"],
-                        criteria_used=["existing_interview"],
-                    )
                     continue
                 candidate = existing_candidate
             else:
-                # Task #346 — sourcing herda o tenant da própria vaga.
                 candidate = Candidate(
-                    company_id=str(job.company_id) if job.company_id else None,
                     name=data.get("name", "Unknown"),
                     email=email,
                     phone=data.get("phone"),
@@ -1036,20 +770,7 @@ class SourcingPipelineService:
             
             db.add(interview)
             added_count += 1
-
-            await self._audit_sourcing_decision(
-                job=job,
-                candidate_id=str(candidate.id),
-                decision_type="approve_candidate",
-                decision="approved",
-                prompt_hash=effective_hash,
-                reasoning=[
-                    "Global sourcing (Pearch) pipeline included candidate based on match",
-                ],
-                criteria_used=["pearch_match_score", "job_requirements"],
-                score=data.get("match_score"),
-            )
-
+        
         if added_count > 0:
             await db.commit()
         
@@ -1226,26 +947,24 @@ class SourcingPipelineService:
                 "error": f"Job {job_id} not found"
             }
         
-        local_candidates, local_prompt_hash = await self._run_local_search(db, job)
+        local_candidates = await self._run_local_search(db, job)
         local_candidates_found = len(local_candidates)
-        local_candidates_added = await self._add_candidates_to_job(
-            db, job, local_candidates, prompt_hash=local_prompt_hash
-        )
-
+        local_candidates_added = await self._add_candidates_to_job(db, job, local_candidates)
+        
         global_candidates_found = 0
         global_candidates_added = 0
-
+        
         credits_per_candidate = 1
         credits_required = self.config.search_limit_global * credits_per_candidate
         global_search_available = user_credits >= credits_required
         awaiting_global_confirmation = False
-
+        
         if expand_to_global and global_search_available:
             try:
-                global_candidates_list, global_prompt_hash = await self._run_global_search(job)
+                global_candidates_list = await self._run_global_search(job)
                 global_candidates_found = len(global_candidates_list)
                 global_candidates_added = await self._add_pearch_candidates_to_job(
-                    db, job, global_candidates_list, prompt_hash=global_prompt_hash
+                    db, job, global_candidates_list
                 )
             except Exception as e:
                 logger.warning(f"Global search failed during post-publish: {e}")
@@ -1317,11 +1036,11 @@ class SourcingPipelineService:
             }
         
         try:
-            global_candidates, global_prompt_hash = await self._run_global_search(job)
+            global_candidates = await self._run_global_search(job)
             candidates_found = len(global_candidates)
-
+            
             candidates_added = await self._add_pearch_candidates_to_job(
-                db, job, global_candidates, prompt_hash=global_prompt_hash
+                db, job, global_candidates
             )
             
             credits_per_candidate = 1

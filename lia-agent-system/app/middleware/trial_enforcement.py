@@ -28,7 +28,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_active_user, get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
-from lia_models.billing import Subscription, SubscriptionStatus
+from app.models.billing import Subscription, SubscriptionStatus
 
 logger = logging.getLogger(__name__)
 

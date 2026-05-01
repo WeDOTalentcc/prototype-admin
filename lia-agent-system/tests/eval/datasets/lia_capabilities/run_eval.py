@@ -42,7 +42,7 @@ except ImportError as e:
     sys.exit(1)
 
 
-ROOT = Path(__file__).resolve().parents[4]  # lia-agent-system/
+ROOT = Path(__file__).resolve().parents[3]  # lia-agent-system/
 SCENARIOS_FILE = Path(__file__).resolve().parent / "scenarios.yaml"
 RUBRIC_FILE = ROOT / "tests" / "eval" / "rubrics" / "chat.yaml"
 

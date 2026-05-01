@@ -7,57 +7,15 @@ This module handles:
 3. Automatic feedback for low adherence candidates
 4. CV resubmission handling
 """
-import hashlib
-import json
 import logging
 import uuid
 from datetime import datetime
 from enum import Enum as PyEnum
-from typing import Annotated, Any
+from typing import Any
 
-from fastapi import APIRouter, Depends, File, HTTPException, Path, Query, UploadFile
-
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel, EmailStr, Field
 
-from app.auth.dependencies import get_current_user
-from app.auth.models import User
-from fastapi import Request
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.database import get_db
-
-
-async def _require_auth_401(
-    request: Request,
-    db: AsyncSession = Depends(get_db),
-) -> User:
-    """Auth dependency that returns 401 (not 403) when credentials are missing.
-
-    FastAPI's HTTPBearer defaults to 403 on missing Authorization header; this
-    wrapper enforces the 401 status required by the LGPD/EU AI Act audit spec
-    for the application apply endpoint.
-    """
-    auth_header = request.headers.get("Authorization") or request.headers.get("authorization")
-    if not auth_header or not auth_header.lower().startswith("bearer "):
-        raise HTTPException(
-            status_code=401,
-            detail="Authentication required",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    from fastapi.security import HTTPAuthorizationCredentials
-    creds = HTTPAuthorizationCredentials(
-        scheme="Bearer", credentials=auth_header.split(" ", 1)[1].strip()
-    )
-    try:
-        return await get_current_user(credentials=creds, db=db)
-    except HTTPException as exc:
-        if exc.status_code == 403:
-            raise HTTPException(
-                status_code=401,
-                detail=exc.detail,
-                headers={"WWW-Authenticate": "Bearer"},
-            )
-        raise
 from app.domains.recruitment.dependencies import get_application_repo
 from app.domains.recruitment.repositories.application_repository import ApplicationRepository
 from app.domains.cv_screening.services.cv_parser import CVParserService, cv_parser_service, get_cv_parser_service
@@ -66,13 +24,6 @@ from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
 from app.domains.candidates.services.candidate_feedback_service import candidate_feedback_service
 from app.domains.cv_screening.services.lia_score_service import lia_score_service
 from app.services.notification_service import NotificationType, notification_service
-from app.shared.compliance.audit_service import AuditService
-from app.shared.compliance.fairness_guard import FairnessGuard
-from app.shared.robustness.idempotency import reject_duplicate_async
-from app.domains.integrations_hub.services.rails_adapter import RailsAdapter
-from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
-
-audit_service = AuditService()
 
 logger = logging.getLogger(__name__)
 
@@ -147,14 +98,12 @@ class FeedbackAnalyticsDTO(BaseModel):
 
 @router.post("/apply/{vacancy_id}", response_model=ApplicationResponseDTO)
 async def apply_to_vacancy(
-    vacancy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    vacancy_id: str,
     application: CandidateApplicationRequest,
     cv_file: UploadFile | None = File(None),
     repo: ApplicationRepository = Depends(get_application_repo),
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
-    current_user: User = Depends(_require_auth_401),
-    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
     """
     Processa inscricao de candidato em uma vaga.
@@ -169,43 +118,16 @@ async def apply_to_vacancy(
         ApplicationResponseDTO com status da inscricao e proximos passos
     """
     try:
-        company_id = str(current_user.company_id) if current_user.company_id else None
-        if not company_id:
-            raise HTTPException(
-                status_code=400,
-                detail="Usuario autenticado nao possui empresa associada.",
-            )
-
-        # Task #478 / ADR 003 — apply double-submits (browser refresh, axios
-        # retry, double-click) must not create duplicate `vacancy_candidate`
-        # rows or fire feedback emails twice.
-        await reject_duplicate_async(
-            "apply_to_vacancy",
-            {"vacancy_id": vacancy_id, "candidate_email": (application.email or "").lower()},
-            rails_adapter,
-            scope=f"company:{company_id}",
-        )
-
         vacancy = await repo.get_vacancy_by_id(vacancy_id)
 
         if not vacancy:
             raise HTTPException(status_code=404, detail=f"Vaga {vacancy_id} nao encontrada")
 
-        if vacancy.company_id and str(vacancy.company_id) != company_id:
-            raise HTTPException(
-                status_code=403,
-                detail="Voce nao tem permissao para acessar esta vaga.",
-            )
-
         if vacancy.status not in ["open", "active", "published"]:
             raise HTTPException(status_code=400, detail="Esta vaga nao esta aberta para candidaturas")
 
         candidate_data = application.model_dump()
-        # Task #346 — Candidate.company_id é NOT NULL; injeta o tenant
-        # do usuário autenticado para garantir que create_candidate funcione.
-        candidate_data["company_id"] = company_id
 
-        cv_text_for_fairness = ""
         if cv_file:
             try:
                 cv_content = await cv_file.read()
@@ -213,8 +135,6 @@ async def apply_to_vacancy(
                     file_content=cv_content,
                     filename=cv_file.filename
                 )
-
-                cv_text_for_fairness = parsed_cv.get("raw_text") or parsed_cv.get("text") or ""
 
                 if parsed_cv.get("skills"):
                     candidate_data["technical_skills"] = list(set(
@@ -228,87 +148,7 @@ async def apply_to_vacancy(
             except Exception as e:
                 logger.warning(f"Failed to parse CV: {e}")
 
-        fairness_payload = " ".join(
-            filter(
-                None,
-                [
-                    cv_text_for_fairness,
-                    candidate_data.get("cover_letter") or "",
-                    candidate_data.get("current_title") or "",
-                ],
-            )
-        ).strip()
-        if fairness_payload:
-            fairness_unavailable = False
-            try:
-                fairness_result = FairnessGuard().check(fairness_payload)
-            except Exception as fg_err:
-                logger.error(
-                    "FairnessGuard execution failed; failing closed: %s", fg_err
-                )
-                fairness_result = None
-                fairness_unavailable = True
-
-            if fairness_unavailable:
-                try:
-                    await audit_service.log_decision(
-                        company_id=company_id,
-                        agent_name="applications_api",
-                        decision_type="application_apply",
-                        action="fairness_unavailable",
-                        decision="blocked",
-                        reasoning=[
-                            "FairnessGuard execution failed; application blocked (fail-closed)",
-                            f"inputs_hash={hashlib.sha256(fairness_payload.encode('utf-8')).hexdigest()}",
-                        ],
-                        criteria_used=["fairness_guard"],
-                        job_vacancy_id=vacancy_id,
-                        human_review_required=True,
-                    )
-                except Exception as audit_err:
-                    logger.warning(f"audit log_decision (fairness_unavailable) failed: {audit_err}")
-                raise HTTPException(
-                    status_code=503,
-                    detail={
-                        "error": "fairness_unavailable",
-                        "message": "Verificacao de fairness indisponivel. Tente novamente em instantes.",
-                    },
-                )
-
-            if fairness_result and fairness_result.is_blocked:
-                logger.warning(
-                    "FairnessGuard blocked application: vacancy=%s category=%s",
-                    vacancy_id, fairness_result.category,
-                )
-                try:
-                    await audit_service.log_decision(
-                        company_id=company_id,
-                        agent_name="applications_api",
-                        decision_type="application_apply",
-                        action="fairness_block",
-                        decision="rejected",
-                        reasoning=[
-                            f"FairnessGuard blocked: category={fairness_result.category}",
-                            f"inputs_hash={hashlib.sha256(fairness_payload.encode('utf-8')).hexdigest()}",
-                        ],
-                        criteria_used=["fairness_guard"],
-                        job_vacancy_id=vacancy_id,
-                        human_review_required=True,
-                    )
-                except Exception as audit_err:
-                    logger.warning(f"audit log_decision (fairness_block) failed: {audit_err}")
-                raise HTTPException(
-                    status_code=422,
-                    detail={
-                        "error": "fairness_block",
-                        "message": fairness_result.educational_message
-                            or "Conteudo bloqueado pelo guardrail de fairness.",
-                        "category": fairness_result.category,
-                    },
-                )
-
-        # Task #346 — escopo (tenant, email) impede cross-tenant reuse.
-        existing_candidate = await repo.get_candidate_by_email(application.email, company_id=company_id)
+        existing_candidate = await repo.get_candidate_by_email(application.email)
 
         if existing_candidate:
             candidate = await repo.update_candidate_from_data(existing_candidate, candidate_data)
@@ -346,42 +186,6 @@ async def apply_to_vacancy(
         candidate.skills_match_percentage = score_result.breakdown.skills_match
         candidate.lia_insights = score_result.to_dict()
 
-        try:
-            inputs_for_hash = {
-                "vacancy_id": vacancy_id,
-                "skills": sorted(candidate_data.get("technical_skills", []) or []),
-                "experience_years": candidate_data.get("years_of_experience"),
-                "current_title": candidate_data.get("current_title"),
-                "location": candidate_data.get("location"),
-            }
-            inputs_hash = hashlib.sha256(
-                json.dumps(inputs_for_hash, sort_keys=True, default=str).encode("utf-8")
-            ).hexdigest()
-            decision_label = (
-                "rejected"
-                if adherence_score < candidate_feedback_service.ADHERENCE_THRESHOLD
-                else "approved"
-            )
-            await audit_service.log_decision(
-                company_id=company_id,
-                agent_name="applications_api",
-                decision_type="application_apply",
-                action="adherence_score_calculated",
-                decision=decision_label,
-                reasoning=[
-                    f"adherence_score={adherence_score}",
-                    f"matched_skills={len(matched_skills)}",
-                    f"missing_skills={len(missing_skills)}",
-                    f"inputs_hash={inputs_hash}",
-                ],
-                criteria_used=["skills_match", "experience_match", "location_match"],
-                candidate_id=str(candidate.id),
-                job_vacancy_id=vacancy_id,
-                score=float(adherence_score),
-            )
-        except Exception as audit_err:
-            logger.warning(f"audit log_decision (application_apply) failed: {audit_err}")
-
         if adherence_score < candidate_feedback_service.ADHERENCE_THRESHOLD:
             feedback_result = await candidate_feedback_service.check_and_send_feedback(
                 candidate_id=str(candidate.id),
@@ -416,10 +220,10 @@ async def apply_to_vacancy(
 
             is_saturated = False
             try:
-                vacancy_company_id = vacancy.company_id or company_id
-                if not vacancy.company_id:
+                company_id = vacancy.company_id
+                if not company_id:
                     logger.warning(f"Vacancy {vacancy_id} has no company_id set")
-                threshold_web = await repo.get_company_threshold(vacancy_company_id, default_threshold=20)
+                threshold_web = await repo.get_company_threshold(company_id, default_threshold=20)
 
                 governance = vacancy.governance_rules or {} if hasattr(vacancy, "governance_rules") else {}
                 threshold_web = governance.get("threshold_web", threshold_web)
@@ -524,13 +328,13 @@ async def apply_to_vacancy(
 
 @router.post("/resubmit/{vacancy_id}", response_model=ResubmitResponseDTO)
 async def resubmit_cv(
-    vacancy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    vacancy_id: str,
     candidate_id: str = Query(..., description="ID do candidato"),
     token: str = Query(..., description="Token de reenvio"),
     cv_file: UploadFile = File(..., description="Curriculo atualizado"),
-    repo: ApplicationRepository = Depends(get_application_repo),
+    repo: ApplicationRepository = Depends(get_application_repo)
+,
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
-    current_user: User = Depends(_require_auth_401),
 ):
     """
     Processa reenvio de CV apos feedback de baixa aderencia.
@@ -538,18 +342,11 @@ async def resubmit_cv(
     Workflow:
     1. Validar token de reenvio
     2. Atualizar perfil do candidato com novos dados do CV
-    3. Recalcular score de aderencia (com FairnessGuard sobre o texto do CV)
-    4. Registrar melhoria no feedback original e auditar a decisao automatizada
+    3. Recalcular score de aderencia
+    4. Registrar melhoria no feedback original
     5. Se novo score >= 50%: adicionar ao pipeline
     """
     try:
-        company_id = str(current_user.company_id) if current_user.company_id else None
-        if not company_id:
-            raise HTTPException(
-                status_code=400,
-                detail="Usuario autenticado nao possui empresa associada.",
-            )
-
         feedback = await repo.get_feedback_by_token(candidate_id, vacancy_id, token)
 
         if not feedback:
@@ -565,90 +362,11 @@ async def resubmit_cv(
         if not vacancy:
             raise HTTPException(status_code=404, detail="Vaga nao encontrada")
 
-        if vacancy.company_id and str(vacancy.company_id) != company_id:
-            raise HTTPException(
-                status_code=403,
-                detail="Voce nao tem permissao para acessar esta vaga.",
-            )
-
         cv_content = await cv_file.read()
         parsed_cv = await cv_parser_svc.parse_cv(
             file_content=cv_content,
             filename=cv_file.filename
         )
-
-        cv_text_for_fairness = parsed_cv.get("raw_text") or parsed_cv.get("text") or ""
-        fairness_payload = cv_text_for_fairness.strip()
-        if fairness_payload:
-            fairness_unavailable = False
-            try:
-                fairness_result = FairnessGuard().check(fairness_payload)
-            except Exception as fg_err:
-                logger.error(
-                    "FairnessGuard execution failed on resubmit; failing closed: %s", fg_err
-                )
-                fairness_result = None
-                fairness_unavailable = True
-
-            if fairness_unavailable:
-                try:
-                    await audit_service.log_decision(
-                        company_id=company_id,
-                        agent_name="applications_api",
-                        decision_type="application_resubmit",
-                        action="fairness_unavailable",
-                        decision="blocked",
-                        reasoning=[
-                            "FairnessGuard execution failed; resubmission blocked (fail-closed)",
-                            f"inputs_hash={hashlib.sha256(fairness_payload.encode('utf-8')).hexdigest()}",
-                        ],
-                        criteria_used=["fairness_guard"],
-                        candidate_id=str(candidate_id),
-                        job_vacancy_id=vacancy_id,
-                        human_review_required=True,
-                    )
-                except Exception as audit_err:
-                    logger.warning(f"audit log_decision (fairness_unavailable resubmit) failed: {audit_err}")
-                raise HTTPException(
-                    status_code=503,
-                    detail={
-                        "error": "fairness_unavailable",
-                        "message": "Verificacao de fairness indisponivel. Tente novamente em instantes.",
-                    },
-                )
-
-            if fairness_result and fairness_result.is_blocked:
-                logger.warning(
-                    "FairnessGuard blocked resubmission: vacancy=%s category=%s",
-                    vacancy_id, fairness_result.category,
-                )
-                try:
-                    await audit_service.log_decision(
-                        company_id=company_id,
-                        agent_name="applications_api",
-                        decision_type="application_resubmit",
-                        action="fairness_block",
-                        decision="rejected",
-                        reasoning=[
-                            f"FairnessGuard blocked: category={fairness_result.category}",
-                            f"inputs_hash={hashlib.sha256(fairness_payload.encode('utf-8')).hexdigest()}",
-                        ],
-                        criteria_used=["fairness_guard"],
-                        candidate_id=str(candidate_id),
-                        job_vacancy_id=vacancy_id,
-                        human_review_required=True,
-                    )
-                except Exception as audit_err:
-                    logger.warning(f"audit log_decision (fairness_block resubmit) failed: {audit_err}")
-                raise HTTPException(
-                    status_code=422,
-                    detail={
-                        "error": "fairness_block",
-                        "message": fairness_result.educational_message
-                            or "Conteudo bloqueado pelo guardrail de fairness.",
-                        "category": fairness_result.category,
-                    },
-                )
 
         if parsed_cv.get("skills"):
             candidate.technical_skills = list(set(
@@ -697,39 +415,6 @@ async def resubmit_cv(
         )
 
         qualified = new_adherence_score >= candidate_feedback_service.ADHERENCE_THRESHOLD
-
-        try:
-            inputs_for_hash = {
-                "vacancy_id": vacancy_id,
-                "candidate_id": str(candidate_id),
-                "skills": sorted(candidate.technical_skills or []),
-                "experience_years": candidate.years_of_experience,
-                "current_title": candidate.current_title,
-                "location": candidate.location_city,
-            }
-            inputs_hash = hashlib.sha256(
-                json.dumps(inputs_for_hash, sort_keys=True, default=str).encode("utf-8")
-            ).hexdigest()
-            decision_label = "approved" if qualified else "rejected"
-            await audit_service.log_decision(
-                company_id=company_id,
-                agent_name="applications_api",
-                decision_type="application_resubmit",
-                action="adherence_score_recalculated",
-                decision=decision_label,
-                reasoning=[
-                    f"new_adherence_score={new_adherence_score}",
-                    f"previous_adherence_score={previous_score}",
-                    f"improvement={improvement}",
-                    f"inputs_hash={inputs_hash}",
-                ],
-                criteria_used=["skills_match", "experience_match", "location_match"],
-                candidate_id=str(candidate_id),
-                job_vacancy_id=vacancy_id,
-                score=float(new_adherence_score),
-            )
-        except Exception as audit_err:
-            logger.warning(f"audit log_decision (application_resubmit) failed: {audit_err}")
 
         if qualified:
             existing_vc = await repo.get_vacancy_candidate(vacancy_id, candidate.id)
@@ -786,7 +471,7 @@ async def resubmit_cv(
 
 @router.get("/feedback/{vacancy_id}/analytics", response_model=FeedbackAnalyticsDTO)
 async def get_feedback_analytics(
-    vacancy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    vacancy_id: str,
     days: int = Query(30, ge=1, le=365, description="Periodo em dias"),
     repo: ApplicationRepository = Depends(get_application_repo)
 ):
@@ -815,7 +500,7 @@ async def get_feedback_analytics(
 
 @router.post("/feedback/{feedback_id}/track-click", response_model=None)
 async def track_resubmit_click(
-    feedback_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    feedback_id: str,
     repo: ApplicationRepository = Depends(get_application_repo)
 ):
     """Registra clique no link de reenvio de CV."""

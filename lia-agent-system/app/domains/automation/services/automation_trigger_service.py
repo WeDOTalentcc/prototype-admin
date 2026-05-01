@@ -796,42 +796,4 @@ class AutomationTriggerService:
         return False
 
 
-    # ------------------------------------------------------------------
-    # Chat tool surface (registered in app/domains/automation/tools/__init__.py)
-    # ------------------------------------------------------------------
-    async def trigger(
-        self,
-        trigger_id: str = "",
-        company_id: str | None = None,
-        context: dict | None = None,
-        **kwargs,
-    ) -> dict:
-        """Manually invoke a configured trigger by id.
-
-        Resolves the trigger config and runs its actions against the provided
-        context. If the trigger doesn't exist or has no actions, returns a
-        structured error rather than raising.
-        """
-        config = next(
-            (t for t in self.triggers_config if t.get("id") == trigger_id),
-            None,
-        )
-        if config is None:
-            logger.warning("AutomationTriggerService.trigger: id=%s not found", trigger_id)
-            return {"success": False, "error": "trigger_not_found", "trigger_id": trigger_id}
-        actions = config.get("actions") or []
-        if not actions:
-            return {"success": True, "trigger_id": trigger_id, "executed": [], "message": "no actions configured"}
-        executed: list[str] = []
-        for action in actions:
-            executed.append(str(action.get("type") if isinstance(action, dict) else action))
-        return {
-            "success": True,
-            "trigger_id": trigger_id,
-            "company_id": company_id,
-            "executed": executed,
-            "context_keys": sorted((context or {}).keys()),
-        }
-
-
 automation_trigger_service = AutomationTriggerService()

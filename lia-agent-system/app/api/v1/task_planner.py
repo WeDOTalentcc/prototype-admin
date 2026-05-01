@@ -18,15 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
 from app.domains.automation.services.planned_task_service import CycleDetectedError, planned_task_service
-from lia_models.planned_task import PlannedTaskPriority, PlannedTaskStatus
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
+from app.models.planned_task import PlannedTaskPriority, PlannedTaskStatus
 
 router = APIRouter(prefix="/task-planner", tags=["Task Planner"])
 
@@ -153,7 +145,7 @@ async def create_planned_task(
 
 @router.get("/tasks/{task_id}", response_model=None)
 async def get_planned_task(
-    task_id: _DualId,
+    task_id: str,
     db: AsyncSession = Depends(get_db)
 ):
     """Get a planned task by ID."""
@@ -167,7 +159,7 @@ async def get_planned_task(
 
 @router.patch("/tasks/{task_id}/status", response_model=None)
 async def update_task_status(
-    task_id: _DualId,
+    task_id: str,
     request: UpdateTaskStatusRequest,
     db: AsyncSession = Depends(get_db)
 ):
@@ -196,7 +188,7 @@ async def update_task_status(
 
 @router.get("/tasks/{task_id}/subtasks", response_model=None)
 async def get_subtasks(
-    task_id: _DualId,
+    task_id: str,
     db: AsyncSession = Depends(get_db)
 ):
     """Get all subtasks of a parent task."""
@@ -211,7 +203,7 @@ async def get_subtasks(
 
 @router.get("/tasks/{task_id}/dependencies", response_model=None)
 async def check_task_dependencies(
-    task_id: _DualId,
+    task_id: str,
     db: AsyncSession = Depends(get_db)
 ):
     """Check the dependency status for a task."""
@@ -225,7 +217,7 @@ async def check_task_dependencies(
 
 @router.get("/goal/{goal_id}/tasks", response_model=None)
 async def get_tasks_by_goal(
-    goal_id: _DualId,
+    goal_id: str,
     include_completed: bool = Query(False),
     db: AsyncSession = Depends(get_db)
 ):
@@ -330,7 +322,7 @@ async def create_execution_plan(
 
 @router.get("/execution-plans/{plan_id}", response_model=None)
 async def get_execution_plan(
-    plan_id: _DualId,
+    plan_id: str,
     db: AsyncSession = Depends(get_db)
 ):
     """Get an execution plan by ID."""
@@ -382,7 +374,7 @@ async def get_next_tasks(
 
 @router.post("/tasks/{task_id}/chain-of-thought", response_model=None)
 async def add_chain_of_thought(
-    task_id: _DualId,
+    task_id: str,
     thought: str = Body(..., embed=True),
     thought_type: str = Body("reasoning", embed=True),
     db: AsyncSession = Depends(get_db)
@@ -403,10 +395,3 @@ async def add_chain_of_thought(
         "task_id": task_id,
         "chain_of_thought": task.chain_of_thought
     }
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

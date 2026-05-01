@@ -250,7 +250,7 @@ class TestKanbanAssistantService:
     @pytest.mark.asyncio
     async def test_stale_candidate_suggestion(self):
         """Should suggest action for stale candidates."""
-        from app.domains.recruiter_assistant.services.kanban_assistant_service import KanbanAssistantService
+        from app.domains.pipeline.kanban_assistant_service import KanbanAssistantService
         
         candidates = [
             {"id": "1", "name": "João Silva", "days_in_stage": 10, "wsi_score": 70},
@@ -270,7 +270,7 @@ class TestKanbanAssistantService:
     @pytest.mark.asyncio
     async def test_high_score_suggestion(self):
         """Should suggest advancing high-score candidates."""
-        from app.domains.recruiter_assistant.services.kanban_assistant_service import KanbanAssistantService
+        from app.domains.pipeline.kanban_assistant_service import KanbanAssistantService
         
         candidates = [
             {"id": "2", "name": "Ana Costa", "days_in_stage": 2, "wsi_score": 85},
@@ -288,7 +288,7 @@ class TestKanbanAssistantService:
     @pytest.mark.asyncio
     async def test_empty_candidates(self):
         """Should handle empty candidate list."""
-        from app.domains.recruiter_assistant.services.kanban_assistant_service import KanbanAssistantService
+        from app.domains.pipeline.kanban_assistant_service import KanbanAssistantService
         
         suggestions = await KanbanAssistantService.get_suggestions(
             candidates_in_stage=[],

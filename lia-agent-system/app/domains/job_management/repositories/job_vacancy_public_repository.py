@@ -6,9 +6,9 @@ import uuid as uuid_lib
 from sqlalchemy import and_, func, not_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.job_vacancy import JobVacancy
-from lia_models.candidate import Candidate, VacancyCandidate
-from lia_models.company import CompanyProfile
+from app.models.job_vacancy import JobVacancy
+from app.models.candidate import Candidate, VacancyCandidate
+from app.models.company import CompanyProfile
 
 
 class JobVacancyPublicRepository:
@@ -51,21 +51,16 @@ class JobVacancyPublicRepository:
 
     # ── apply flow ────────────────────────────────────────────────────────────
 
-    async def get_candidate_by_email(self, email: str, company_id: str | None = None):
-        # Task #346 — escopo (tenant, email) impede cross-tenant reuse na
-        # candidatura pública (mesma pessoa pode existir em várias empresas).
+    async def get_candidate_by_email(self, email: str):
         from app.shared.encryption.encrypted_field_mixin import _sha256_hash
         from sqlalchemy import or_
-        conditions = [
-            or_(
-                Candidate.email_hash == _sha256_hash(email),
-                Candidate._email_raw == email,
-            )
-        ]
-        if company_id:
-            conditions.append(Candidate.company_id == str(company_id))
         result = await self.db.execute(
-            select(Candidate).where(*conditions)
+            select(Candidate).where(
+                or_(
+                    Candidate.email_hash == _sha256_hash(email),
+                    Candidate._email_raw == email,
+                )
+            )
         )
         return result.scalar_one_or_none()
 

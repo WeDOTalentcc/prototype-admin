@@ -9,7 +9,7 @@ from datetime import datetime
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.email_template import EmailTemplate
+from app.models.email_template import EmailTemplate
 
 logger = logging.getLogger(__name__)
 

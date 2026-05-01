@@ -16,14 +16,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -158,7 +150,7 @@ async def list_conversations(
 
 @router.get("/{conversation_id}", response_model=ConversationDetailResponse)
 async def get_conversation(
-    conversation_id: _DualId,
+    conversation_id: str,
     include_messages: bool = Query(True, description="Include messages"),
     include_summaries: bool = Query(True, description="Include conversation summaries"),
     message_limit: int = Query(50, ge=1, le=200),
@@ -275,7 +267,7 @@ async def create_conversation(
 
 @router.post("/{conversation_id}/messages", response_model=MessageResponse)
 async def add_message(
-    conversation_id: _DualId,
+    conversation_id: str,
     request: AddMessageRequest,
     db: AsyncSession = Depends(get_db),
 ):
@@ -314,7 +306,7 @@ async def add_message(
 
 @router.post("/{conversation_id}/summary", response_model=dict[str, Any])
 async def update_summary(
-    conversation_id: _DualId,
+    conversation_id: str,
     request: UpdateSummaryRequest = UpdateSummaryRequest(),
     db: AsyncSession = Depends(get_db),
 ):
@@ -343,7 +335,7 @@ async def update_summary(
 
 @router.patch("/{conversation_id}")
 async def rename_conversation(
-    conversation_id: _DualId,
+    conversation_id: str,
     request: RenameConversationRequest,
     db: AsyncSession = Depends(get_db),
 ):
@@ -373,7 +365,7 @@ async def rename_conversation(
 
 @router.delete("/{conversation_id}", response_model=None)
 async def delete_conversation(
-    conversation_id: _DualId,
+    conversation_id: str,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -400,7 +392,7 @@ async def delete_conversation(
 
 @router.post("/{conversation_id}/archive", response_model=None)
 async def archive_conversation(
-    conversation_id: _DualId,
+    conversation_id: str,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -427,7 +419,7 @@ async def archive_conversation(
 
 @router.post("/{conversation_id}/clear", response_model=None)
 async def clear_conversation(
-    conversation_id: _DualId,
+    conversation_id: str,
     db: AsyncSession = Depends(get_db),
 ):
     """
@@ -454,7 +446,7 @@ async def clear_conversation(
 
 @router.get("/{conversation_id}/context", response_model=None)
 async def get_conversation_context(
-    conversation_id: _DualId,
+    conversation_id: str,
     max_messages: int = Query(20, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
 ):
@@ -474,10 +466,3 @@ async def get_conversation_context(
     except Exception as e:
         logger.error(f"Error getting conversation context: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

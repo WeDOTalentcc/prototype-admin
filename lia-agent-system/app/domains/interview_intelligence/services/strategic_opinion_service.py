@@ -16,7 +16,7 @@ from typing import Any, Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.interview import Interview
+from app.models.interview import Interview
 
 logger = logging.getLogger(__name__)
 
@@ -28,10 +28,10 @@ DADOS DA ENTREVISTA:
 - Candidato: {candidate_name}
 - Vaga: {job_title}
 - Tipo: {interview_type}
-- Score WSI: {wsi_score}/10.0
-- Score Técnico: {technical_score}/10.0
-- Score Comportamental: {behavioral_score}/10.0
-- Score Cultural: {cultural_score}/10.0
+- Score WSI: {wsi_score}/5.0
+- Score Técnico: {technical_score}/5.0
+- Score Comportamental: {behavioral_score}/5.0
+- Score Cultural: {cultural_score}/5.0
 - Nível Bloom: {bloom_level}
 - Estágio Dreyfus: {dreyfus_stage}
 - Completude CBI: {cbi_completeness}%
@@ -102,8 +102,7 @@ class StrategicOpinionService:
             if bias_data.get("bias_detected"):
                 count = len(bias_data.get("findings", []))
                 score = bias_data.get("overall_fairness_score", "N/A")
-                # #525 fechado: bias_detector_service emite /10 nativamente.
-                bias_summary = f"{count} indicador(es) de viés (equidade: {score}/10)"
+                bias_summary = f"{count} indicador(es) de viés (equidade: {score}/5)"
             else:
                 bias_summary = "Entrevista justa (sem viés detectado)"
 
@@ -182,28 +181,16 @@ class StrategicOpinionService:
         wsi_score = wsi_data.get("wsi_score", 0)
         red_flags = wsi_data.get("red_flags", [])
 
-        # B0 #523 — thresholds importados do canônico wsi_scale (escala /10).
-        from app.domains.cv_screening.constants.wsi_scale import (
-            CLASSIFY_ALTO,
-            CLASSIFY_EXCELENTE,
-            CUTOFF_REVIEW_MIN,
-            GATE_G3_THRESHOLD,
-        )
-        # REJECT_BAND: 1.0 abaixo do cutoff de revisão = "não contratar".
-        # CONFIDENT_REJECT: <= GATE_G3_THRESHOLD (técnico crítico).
-        REJECT_BAND = CUTOFF_REVIEW_MIN - 1.0  # 5.0 em /10
-        CONFIDENT_REJECT = GATE_G3_THRESHOLD    # 4.0 em /10
-
-        if len(red_flags) >= 3 or wsi_score < REJECT_BAND:
+        if len(red_flags) >= 3 or wsi_score < 2.5:
             recommendation = "NÃO CONTRATAR"
-            confidence = "alto" if wsi_score < CONFIDENT_REJECT else "médio"
-        elif wsi_score >= CLASSIFY_EXCELENTE and len(red_flags) == 0:
+            confidence = "alto" if wsi_score < 2.0 else "médio"
+        elif wsi_score >= 4.0 and len(red_flags) == 0:
             recommendation = "CONTRATAR"
             confidence = "alto"
-        elif wsi_score >= CLASSIFY_ALTO:
+        elif wsi_score >= 3.5:
             recommendation = "CONTRATAR"
             confidence = "médio"
-        elif wsi_score >= CUTOFF_REVIEW_MIN:
+        elif wsi_score >= 3.0:
             recommendation = "AVALIAR MAIS"
             confidence = "médio"
         else:
@@ -218,7 +205,7 @@ class StrategicOpinionService:
             "recommendation": recommendation,
             "confidence": confidence,
             "executive_summary": (
-                f"Score WSI: {wsi_score}/10.0. "
+                f"Score WSI: {wsi_score}/5.0. "
                 f"Recomendação: {recommendation} (confiança {confidence}). "
                 f"Parecer gerado por análise determinística (fallback)."
             ),

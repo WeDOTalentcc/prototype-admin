@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
+from app.shared.services.briefing_service import briefing_service
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/briefing", tags=["briefing"])
@@ -30,11 +30,18 @@ _EMPTY_BRIEFING = {
 @router.get("", response_model=None)
 async def get_daily_briefing(
     user_id: str = "default_user",
-    current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Get daily briefing for a user.
+
+    Returns comprehensive briefing including:
+    - Urgent actions
+    - Pipeline summary
+    - Today's schedule
+    - Pending tasks
+    - Active alerts
+    - AI-powered insights
 
     Safety: para "default_user" (pre-auth / anonymous), retorna briefing vazio
     em vez de 500 — evita o card quebrar enquanto o auth context hidrata no FE.
@@ -44,13 +51,7 @@ async def get_daily_briefing(
         return {"success": True, "data": _EMPTY_BRIEFING}
 
     try:
-        company_id = get_user_company_id(current_user)
-        from app.domains.integrations_hub.services.rails_adapter import RailsAdapter
-        _adapter = RailsAdapter(db=db)
-        briefing = await _adapter.daily_summary(
-            company_id=str(company_id or ""),
-            user_id=str(user_id),
-        )
+        briefing = await briefing_service.generate_daily_briefing(user_id, db)
         return {
             "success": True,
             "data": briefing
@@ -66,20 +67,13 @@ async def get_daily_briefing(
 @router.post("/refresh", response_model=None)
 async def refresh_briefing(
     user_id: str = "default_user",
-    current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db)
 ):
     """
     Force refresh the daily briefing.
     """
     try:
-        company_id = get_user_company_id(current_user)
-        from app.domains.integrations_hub.services.rails_adapter import RailsAdapter
-        _adapter = RailsAdapter(db=db)
-        briefing = await _adapter.daily_summary(
-            company_id=str(company_id or ""),
-            user_id=str(user_id),
-        )
+        briefing = await briefing_service.generate_daily_briefing(user_id, db)
         return {
             "success": True,
             "data": briefing,

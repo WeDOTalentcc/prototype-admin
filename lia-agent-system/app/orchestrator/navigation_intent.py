@@ -53,7 +53,7 @@ _NAV_IMPERATIVE_PREFIXES = re.compile(
     re.IGNORECASE,
 )
 
-_PATTERNS_FALLBACK: list[tuple[list[tuple[str, float]], str, str]] = [
+_PATTERNS: list[tuple[list[tuple[str, float]], str, str]] = [
     # ([(keyword, weight), ...], page_name, hint_text)
     # weight: 1.0 = strong action phrase, 0.3 = generic/ambiguous word
 
@@ -112,44 +112,7 @@ _PATTERNS_FALLBACK: list[tuple[list[tuple[str, float]], str, str]] = [
         "Painel de Controle",
         "Quer que eu abra o Painel de Controle?",
     ),
-
-    # 7. Indicadores — BUG-NAV-10.4: page declared in docstring but had no patterns
-    (
-        [("indicadores", 1.0), ("métricas", 0.7), ("metricas", 0.7),
-         ("relatório", 0.5), ("relatorio", 0.5), ("kpis", 1.0), ("kpi", 0.8),
-         ("ver indicadores", 1.0), ("analytics", 0.5), ("desempenho", 0.4),
-         ("performance recrutamento", 1.0), ("taxa de conversão", 0.7),
-         ("tempo de contratação", 0.7)],
-        "Indicadores",
-        "Quer que eu abra os Indicadores?",
-    ),
 ]
-
-
-
-def _get_patterns() -> list[tuple[list[tuple[str, float]], str, str]]:
-    """Load navigation patterns from platform_manifest.yaml, falling back to
-    hardcoded _PATTERNS_FALLBACK if manifest is unavailable.
-
-    Called once at module-load; result is cached in _PATTERNS.
-    """
-    try:
-        from app.shared.platform_manifest import get_navigation_patterns
-        patterns = get_navigation_patterns()
-        if patterns and len(patterns) > 0:
-            logger.info(
-                "[NavigationIntent] Loaded %d patterns from platform_manifest.yaml",
-                len(patterns),
-            )
-            return patterns
-    except Exception as exc:
-        logger.warning(
-            "[NavigationIntent] Manifest load failed, using fallback: %s", exc,
-        )
-    return _PATTERNS_FALLBACK
-
-
-_PATTERNS = _get_patterns()
 
 _HAS_STRONG_PHRASE_THRESHOLD = 0.7
 _FINAL_CONFIDENCE_MIN = 0.50

@@ -210,10 +210,13 @@ def register_react_agents() -> ReactAgentRegistry:
         logger.debug("[register_react_agents] Agentes já registrados, pulando")
         return registry
 
-    # Wizard agent removed in Task #850 — JobCreationGraph
-    # (`app/domains/job_creation/graph.py`) is the canonical job-creation
-    # path and is not registered here because it is a stateful StateGraph,
-    # not a ReActAgent.
+    from app.domains.job_management.agents.wizard_react_agent import WizardReActAgent
+    registry.register("wizard", WizardReActAgent, {
+        "description": "Agente do wizard de criação de vagas",
+        "model_provider": "claude",
+        "max_iterations": 5,
+        "langgraph_native": True,
+    })
 
     from app.domains.cv_screening.agents.pipeline_react_agent import PipelineReActAgent
     registry.register("pipeline", PipelineReActAgent, {

@@ -441,7 +441,7 @@ class StageAutomationEngine:
     ):
         """Log automation event to audit trail."""
         try:
-            from app.shared.compliance.audit_service import audit_service
+            from app.shared.services.audit_service import audit_service
             
             await audit_service.log_decision(
                 company_id=event.company_id,

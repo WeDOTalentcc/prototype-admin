@@ -13,52 +13,23 @@ O CÁLCULO FINAL é sempre determinístico.
 import logging
 import re
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
-
-if TYPE_CHECKING:
-    from app.domains.cv_screening.services.wsi_service.models import Layer2Signals
-
-
-@runtime_checkable
-class TransparencyExtrasSource(Protocol):
-    """Audit task #534 — interface mínima consumida por
-    ``build_transparency_extras_payload``. Implementada tanto pela
-    dataclass ``DeterministicWSIResult`` (saída crua do scorer) quanto pelo
-    pydantic ``ResponseAnalysis`` (envelope do analyzer), evitando a
-    necessidade de ``# type: ignore`` nos call-sites."""
-
-    flags_structured: dict[str, bool] | None
-    penalty_breakdown: dict[str, float] | None
-    bonus_breakdown: dict[str, float] | None
-    degraded_quality: bool
-    degraded_reasons: list[str] | None
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
-# Audit task #510 (M02) — Indicadores Bloom revisados:
-#  - Removida keyword ambígua "projeto" do nível 3 (colidia com N6 e produzia
-#    falsos positivos sistemáticos: substantivo "projeto" em qualquer resposta
-#    técnica era classificado como N6 "Criar").
-#  - N6 agora usa expressões compostas que sinalizam criação original
-#    ("desenvolvi do zero", "do zero", "arquitetei", "fundei", "concebi",
-#    "criei do zero"), evitando match acidental.
-#  - Match em `calculate_bloom_level` usa word boundary regex (\b) — keywords
-#    multi-palavra são tratadas como literais; keywords mono-palavra exigem
-#    boundary completo para impedir match parcial (ex: "uso" em "abuso").
 BLOOM_LEVELS = {
-    1: {"name": "Recordar", "description": "Recordar fatos e conceitos básicos",
+    1: {"name": "Recordar", "description": "Recordar fatos e conceitos básicos", 
         "indicators": ["lembro", "sei", "conheço", "aprendi", "estudei", "vi", "ouvi"]},
-    2: {"name": "Compreender", "description": "Explicar ideias ou conceitos",
+    2: {"name": "Compreender", "description": "Explicar ideias ou conceitos", 
         "indicators": ["entendo", "explico", "compreendo", "descrevo", "interpreto", "resumo"]},
-    3: {"name": "Aplicar", "description": "Usar conhecimento na prática",
-        "indicators": ["aplico", "uso", "implemento", "desenvolvo", "construo", "faço"]},
-    4: {"name": "Analisar", "description": "Fazer conexões entre ideias",
+    3: {"name": "Aplicar", "description": "Usar conhecimento na prática", 
+        "indicators": ["aplico", "uso", "implemento", "desenvolvo", "construo", "projeto", "faço"]},
+    4: {"name": "Analisar", "description": "Fazer conexões entre ideias", 
         "indicators": ["analiso", "comparo", "diferencio", "diagnostico", "investigo", "otimizo"]},
-    5: {"name": "Avaliar", "description": "Justificar decisões",
+    5: {"name": "Avaliar", "description": "Justificar decisões", 
         "indicators": ["avalio", "julgo", "recomendo", "decido", "valido", "defendo", "escolhi"]},
-    6: {"name": "Criar", "description": "Produzir trabalho original",
-        "indicators": ["criei do zero", "desenvolvi do zero", "do zero", "arquitetei",
-                       "concebi", "inovei", "fundei", "lidero criação", "projetei do zero"]}
+    6: {"name": "Criar", "description": "Produzir trabalho original", 
+        "indicators": ["crio", "arquiteto", "projeto", "inovo", "lidero", "fundei", "desenvolvi do zero"]}
 }
 
 DREYFUS_LEVELS = {
@@ -69,91 +40,11 @@ DREYFUS_LEVELS = {
     5: {"name": "Especialista", "description": "Intuição transcende análise",     "years_range": (5, 99)}
 }
 
-# Audit task #510 (M07) — Ladder Dreyfus comportamental:
-# Skills comportamentais (CBI, BigFive, soft skills) maturam em ritmo distinto
-# das técnicas. Aplicar a tabela técnica produzia subestimação sistemática
-# (ex: 2 anos liderando virava "Básico" mesmo com evidências fortes de
-# autonomia e julgamento). A spec WeDOTalent §F8 prevê duas escalas. Os
-# ranges abaixo refletem a curva de maturidade interpessoal:
-#   - Iniciante (0–6 meses): reage seguindo regras gerais
-#   - Básico (6m–1.5a): identifica padrões interpessoais
-#   - Intermediário (1.5–3a): adapta comportamento ao contexto
-#   - Avançado (3–6a): lidera com julgamento próprio
-#   - Especialista (6+): mentora outros, intuição madura
-DREYFUS_LEVELS_BEHAVIORAL = {
-    1: {"name": "Iniciante",    "description": "Reage segundo regras gerais",      "years_range": (0, 0.5)},
-    2: {"name": "Básico",       "description": "Identifica padrões interpessoais", "years_range": (0.5, 1.5)},
-    3: {"name": "Intermediário","description": "Adapta comportamento ao contexto", "years_range": (1.5, 3)},
-    4: {"name": "Avançado",     "description": "Lidera com julgamento próprio",    "years_range": (3, 6)},
-    5: {"name": "Especialista", "description": "Mentora outros, intuição madura",  "years_range": (6, 99)}
-}
-
 from app.domains.cv_screening.constants.wsi_constants import (
     BLOOM_LEVEL_LABELS as BLOOM_RECRUITER_LABELS,
 )
 from app.domains.cv_screening.constants.wsi_constants import (
     DREYFUS_STAGE_LABELS as DREYFUS_RECRUITER_LABELS,
-)
-# Audit task #497 (PR1) — escala WSI consolidada em wsi_scale. Nenhum
-# literal numérico de escala deve ficar inline neste módulo. Trocar a
-# escala (ex: 0-5 → 0-10) é uma alteração isolada em wsi_scale.py.
-from app.domains.cv_screening.constants.wsi_scale import (
-    AUTODECLARATION_LEVEL_KEYWORDS,
-    BONUS_BLOOM_EXCEEDS,
-    BONUS_DREYFUS_EXCEEDS,
-    BONUS_EXCEPTIONAL_EVIDENCE,
-    BONUS_HUMILITY,
-    BONUS_MAX,
-    BONUS_QUANTIFICATION,
-    BONUS_TRAIT_SIGNALS_EXCEED,
-    CLASSIFY_ABAIXO_MEDIA,
-    CLASSIFY_ALTO,
-    CLASSIFY_EXCELENTE,
-    CLASSIFY_EXCEPCIONAL,
-    CLASSIFY_MEDIO,
-    CONTEXT_EVIDENCE_BOOST_MAX,
-    CONTEXT_EVIDENCE_BOOST_PER,
-    CONTEXT_FLOOR_HEAVY,
-    CONTEXT_FLOOR_LIGHT,
-    CONTEXT_PENALTY_LOW_HEAVY,
-    CONTEXT_PENALTY_LOW_LIGHT,
-    CONTEXT_SCORE_BASE,
-    CONTEXT_SCORE_HIGH,
-    CONTEXT_SCORE_HIGH_BASE,
-    CONTEXT_SCORE_HIGH_STEP,
-    CONTEXT_SCORE_MAX,
-    CONTEXT_SCORE_MEDIUM_BASE,
-    CONTEXT_SCORE_MEDIUM_HIGH,
-    CONTEXT_SCORE_MEDIUM_STEP,
-    CONTEXT_SCORE_MIN,
-    DEFAULT_BEHAVIORAL_WEIGHT,
-    DEFAULT_TECHNICAL_WEIGHT,
-    DREYFUS_DEMOTE_CONTEXT_MAX,
-    DREYFUS_PROMOTE_CONTEXT_MIN,
-    ELIGIBILITY_WEIGHT,
-    GATE_G3_THRESHOLD,
-    INFLATION_AUTODECLARATION_MIN,
-    INFLATION_CONTEXT_MAX,
-    JUSTIFICATION_CONTEXT_ADEQUATE,
-    JUSTIFICATION_CONTEXT_STRONG,
-    NON_ELIGIBILITY_WEIGHT,
-    NORMALIZATION_FACTOR,
-    PENALTY_DREYFUS_BELOW,
-    PENALTY_GENERIC,
-    PENALTY_INFLATION,
-    PENALTY_LANGUAGE_MISMATCH,
-    PENALTY_MISSING_R_OUTCOME,
-    PENALTY_NO_CONTEXT,
-    PENALTY_NO_CONTEXT_MIN_WORDS,
-    PENALTY_NO_FIRST_PERSON,
-    PENALTY_NO_TRAIT_SIGNALS,
-    PENALTY_PARAPHRASE,
-    PENALTY_WORD_BAND_SHORT,
-    PENALTY_WORD_BAND_VERY_SHORT,
-    PROMPT_INJECTION_OVERRIDE_SCORE,
-    SCALE_MAX,
-    SCALE_MIN_VALID,
-    WSI_CUTOFFS,
 )
 
 BIG_FIVE_RECRUITER_LABELS = {
@@ -208,9 +99,14 @@ STAR_INDICATORS = {
           "entregamos", "economizamos", "impacto foi", "ficou", "passou a", "hoje está"],
 }
 
-# Audit task #497 (PR1): WSI_CUTOFFS e GATE_G3_THRESHOLD vivem em
-# wsi_scale.py (importados acima). NÃO redefinir aqui — caso contrário o
-# flip de escala do PR2 vira no-op silencioso.
+WSI_CUTOFFS = {
+    "approved_auto": 3.75,
+    "review_min":    3.00,
+    "rejected_below": 3.00,
+    "rejected_max": 3.00,
+}
+
+GATE_G3_THRESHOLD = 2.0
 
 CONTEXT_INDICATORS = {
     "high_quality": [
@@ -231,27 +127,27 @@ CONTEXT_INDICATORS = {
 PENALTY_TRIGGERS = {
     "inflation": {
         "keywords": ["expert", "especialista", "domino completamente", "5 de 5", "nível máximo"],
-        "penalty": PENALTY_INFLATION,
+        "penalty": -1.0
     },
     "generic": {
         "keywords": ["trabalhei com isso", "tenho experiência", "já fiz", "sei fazer"],
-        "penalty": PENALTY_GENERIC,
+        "penalty": -0.5
     },
     "no_context": {
-        "min_words": PENALTY_NO_CONTEXT_MIN_WORDS,
-        "penalty": PENALTY_NO_CONTEXT,
-    },
+        "min_words": 20,
+        "penalty": -0.3
+    }
 }
 
 BONUS_TRIGGERS = {
     "humility": {
         "keywords": ["ainda estou aprendendo", "preciso melhorar", "3 de 5", "intermediário"],
-        "bonus": BONUS_HUMILITY,
+        "bonus": 0.5
     },
     "exceptional_evidence": {
         "keywords": ["open source", "contribuí", "palestrei", "publiquei", "patente", "prêmio"],
-        "bonus": BONUS_EXCEPTIONAL_EVIDENCE,
-    },
+        "bonus": 0.3
+    }
 }
 
 
@@ -277,43 +173,24 @@ class DeterministicWSIResult:
     star_score: float = 0.0                             # score ponderado STAR
     bloom_alignment: float = 1.0                        # alinhamento bloom demonstrado vs esperado
     flags_structured: dict[str, bool] | None = None  # is_inflation/is_generic/is_short
-    # M11 fix (rev. 15) — sinaliza que o cálculo usou um valor padrão silencioso
-    # (ex.: bloom_expected default, autodeclaração inferida por contexto). UI/auditor
-    # pode mostrar selo "qualidade degradada" e EU AI Act Art. 13 fica auditável.
-    degraded_quality: bool = False
-    degraded_reasons: list[str] | None = None
-    # Audit task #528 (rev. 23 G23-03) — breakdown granular das penalidades/bônus
-    # aplicadas. Cada chave é um motivo (ex.: "paraphrase", "quantification") e
-    # o valor é a contribuição assinada (negativa para penalidade, positiva
-    # para bônus). UI consome para mostrar "por que o score caiu/subiu".
-    # None quando não calculado (compat. com chamadores legados).
-    penalty_breakdown: dict[str, float] | None = None
-    bonus_breakdown: dict[str, float] | None = None
 
 
 def extract_autodeclaracao_score(text: str) -> float | None:
     """
     Extrai score de autodeclaração do texto.
-
-    Patterns detectados (legacy escala 0–5 falada pelo candidato):
-    - "4 de 5", "4/5", "nota 4", "nível 4"
+    
+    Patterns detectados:
+    - "4 de 5", "4/5", "nota 4"
     - "intermediário", "avançado", "básico"
     - "domino bem", "tenho facilidade"
-
-    Os patterns extraem o número FALADO pelo candidato na escala 0–5 e
-    convertem para a escala interna do engine via ``SCALE_MAX/5.0``. Em
-    escala 0–5 isso é identidade (×1.0); em escala 0–10 (PR2) vira ×2.0
-    automaticamente. Patterns adicionais para "/10" são introduzidos no
-    PR2 para reconhecer respostas novas em 0–10.
     """
     text_lower = text.lower()
-    legacy_to_engine = SCALE_MAX / 5.0  # 1.0 em 0-5, 2.0 em 0-10
-
+    
     patterns = [
-        (r"(\d)[/\s]?de[/\s]?5", lambda m: float(m.group(1)) * legacy_to_engine),
-        (r"nota\s*(\d)",         lambda m: float(m.group(1)) * legacy_to_engine),
-        (r"(\d)/5",              lambda m: float(m.group(1)) * legacy_to_engine),
-        (r"nível\s*(\d)",        lambda m: float(m.group(1)) * legacy_to_engine),
+        (r"(\d)[/\s]?de[/\s]?5", lambda m: float(m.group(1))),
+        (r"nota\s*(\d)", lambda m: float(m.group(1))),
+        (r"(\d)/5", lambda m: float(m.group(1))),
+        (r"nível\s*(\d)", lambda m: float(m.group(1))),
     ]
     
     for pattern, extractor in patterns:
@@ -321,11 +198,17 @@ def extract_autodeclaracao_score(text: str) -> float | None:
         if match:
             return extractor(match)
     
-    # Keywords também estão no vocabulário /5 do candidato (chaves 1.0-5.0).
-    # Aplicar mesma conversão para a escala interna do engine.
-    for score, keywords in AUTODECLARATION_LEVEL_KEYWORDS.items():
+    level_keywords = {
+        5.0: ["expert", "especialista", "domínio completo", "mestre", "5 de 5"],
+        4.0: ["avançado", "domino bem", "proficiente", "sólido", "4 de 5"],
+        3.0: ["intermediário", "razoável", "competente", "3 de 5"],
+        2.0: ["básico", "iniciante", "aprendendo", "2 de 5"],
+        1.0: ["muito básico", "nunca usei", "não tenho experiência", "1 de 5"]
+    }
+    
+    for score, keywords in level_keywords.items():
         if any(kw in text_lower for kw in keywords):
-            return score * legacy_to_engine
+            return score
     
     return None
 
@@ -337,56 +220,49 @@ def calculate_context_score(text: str, evidences: list[str] | None = None) -> fl
     Returns: Score de 1.0 a 5.0
     """
     text_lower = text.lower()
-    score = CONTEXT_SCORE_BASE
-
+    score = 3.0
+    
     high_count = sum(1 for ind in CONTEXT_INDICATORS["high_quality"] if ind in text_lower)
     medium_count = sum(1 for ind in CONTEXT_INDICATORS["medium_quality"] if ind in text_lower)
     low_count = sum(1 for ind in CONTEXT_INDICATORS["low_quality"] if ind in text_lower)
-
+    
     if high_count >= 3:
-        score = CONTEXT_SCORE_HIGH
+        score = 5.0
     elif high_count >= 1:
-        score = CONTEXT_SCORE_HIGH_BASE + (high_count * CONTEXT_SCORE_HIGH_STEP)
+        score = 4.0 + (high_count * 0.2)
     elif medium_count >= 3:
-        score = CONTEXT_SCORE_MEDIUM_HIGH
+        score = 3.5
     elif medium_count >= 1:
-        score = CONTEXT_SCORE_MEDIUM_BASE + (medium_count * CONTEXT_SCORE_MEDIUM_STEP)
-
+        score = 3.0 + (medium_count * 0.1)
+    
     if low_count >= 2:
-        score = max(CONTEXT_FLOOR_HEAVY, score - CONTEXT_PENALTY_LOW_HEAVY)
+        score = max(1.0, score - 1.0)
     elif low_count >= 1:
-        score = max(CONTEXT_FLOOR_LIGHT, score - CONTEXT_PENALTY_LOW_LIGHT)
-
+        score = max(1.5, score - 0.5)
+    
     if evidences:
-        evidence_boost = min(
-            CONTEXT_EVIDENCE_BOOST_MAX, len(evidences) * CONTEXT_EVIDENCE_BOOST_PER
-        )
+        evidence_boost = min(0.5, len(evidences) * 0.1)
         score += evidence_boost
-
-    return min(CONTEXT_SCORE_MAX, max(CONTEXT_SCORE_MIN, round(score, 2)))
+    
+    return min(5.0, max(1.0, round(score, 2)))
 
 
 def calculate_bloom_level(text: str) -> tuple[int, str]:
     """
     Classifica nível Bloom baseado em indicadores de texto.
-
-    Audit task #510 (M02) — Match com word boundary (\\b) elimina falso
-    positivo de substring (ex: "uso" em "abuso", "vi" em "previ"). Para
-    indicadores multi-palavra, usa-se o literal escapado entre boundaries.
-
+    
     Returns: (level, name)
     """
     text_lower = text.lower()
     detected_level = 1
-
+    
     for level in range(6, 0, -1):
         level_data = BLOOM_LEVELS[level]
         for indicator in level_data["indicators"]:
-            pattern = r"\b" + re.escape(indicator) + r"\b"
-            if re.search(pattern, text_lower):
+            if indicator in text_lower:
                 detected_level = max(detected_level, level)
                 break
-
+    
     return detected_level, BLOOM_LEVELS[detected_level]["name"]
 
 
@@ -394,24 +270,19 @@ def calculate_dreyfus_level(
     years_experience: float,
     context_score: float,
     years_reference: dict[str, tuple[float, float]] | None = None,
-    skill_type: str = "technical",
 ) -> tuple[int, str]:
     """
     Classifica nível Dreyfus baseado em anos de experiência e qualidade do contexto.
-
+    
     Args:
         years_experience: Anos de experiência do candidato
         context_score: Score de contexto (1-5)
         years_reference: Ranges contextuais do calibrador (ex: {"junior": (0,2), "pleno": (2,4), ...}).
-                         Se None, usa DREYFUS_LEVELS / DREYFUS_LEVELS_BEHAVIORAL estáticos.
-        skill_type: "technical" (default) ou "behavioral". Audit task #510 (M07):
-                    skills comportamentais usam ladder distinto (mais sensível
-                    em ranges baixos), evitando subestimação sistemática.
-
+                         Se None, usa DREYFUS_LEVELS estáticos.
+    
     Returns: (level, name)
     """
     base_level = 1
-    ladder = DREYFUS_LEVELS_BEHAVIORAL if skill_type == "behavioral" else DREYFUS_LEVELS
 
     if years_reference:
         seniority_to_dreyfus_map = {
@@ -433,18 +304,18 @@ def calculate_dreyfus_level(
             if years_experience >= years_reference[max_key][1]:
                 base_level = seniority_to_dreyfus_map.get(max_key, 5)
     else:
-        for level, data in ladder.items():
+        for level, data in DREYFUS_LEVELS.items():
             min_years, max_years = data["years_range"]
             if min_years <= years_experience < max_years:
                 base_level = level
                 break
-
-    if context_score >= DREYFUS_PROMOTE_CONTEXT_MIN:
+    
+    if context_score >= 4.5:
         base_level = min(5, base_level + 1)
-    elif context_score < DREYFUS_DEMOTE_CONTEXT_MAX:
+    elif context_score < 2.5:
         base_level = max(1, base_level - 1)
-
-    return base_level, ladder[base_level]["name"]
+    
+    return base_level, DREYFUS_LEVELS[base_level]["name"]
 
 
 def extract_years_experience(text: str) -> float:
@@ -470,270 +341,68 @@ def extract_years_experience(text: str) -> float:
     return 2.0
 
 
-def detect_red_flags(
-    text: str,
-    autodeclaracao: float | None,
-    context_score: float,
-    layer2: "Layer2Signals | None" = None,
-) -> list[str]:
+def detect_red_flags(text: str, autodeclaracao: float | None, context_score: float) -> list[str]:
     """
     Detecta red flags na resposta.
-
-    Audit M06 (rev. 19): quando ``layer2`` está disponível, a detecção de
-    inflação prioriza ``layer2.semantic_inflation`` (sinal LLM-validado) em
-    cima da heurística lexical autodeclaração×contexto. O fallback lexical
-    é mantido quando a Camada 2 não rodou ou retornou degradada.
-
+    
     Returns: Lista de red flags detectados
     """
     red_flags = []
     text_lower = text.lower()
-
-    # M06 — inflação semântica (Camada 2) tem prioridade sobre lexical.
-    if layer2 is not None and layer2.semantic_inflation:
-        red_flags.append(
-            "Inflação semântica detectada: claims sem evidência concreta"
-        )
-    elif (
-        autodeclaracao
-        and autodeclaracao >= INFLATION_AUTODECLARATION_MIN
-        and context_score < INFLATION_CONTEXT_MAX
-    ):
+    
+    if autodeclaracao and autodeclaracao >= 4.5 and context_score < 3.0:
         red_flags.append("Inflação de score: autodeclaração alta, contexto fraco")
-
+    
     if len(text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"]:
         red_flags.append("Resposta muito curta, falta contexto")
-
+    
     generic_count = sum(1 for kw in PENALTY_TRIGGERS["generic"]["keywords"] if kw in text_lower)
     if generic_count >= 2 and len(text.split()) < 50:
         red_flags.append("Resposta genérica sem detalhes específicos")
-
-    # M04 — red flags estruturais derivadas dos sinais semânticos
-    if layer2 is not None:
-        if layer2.is_paraphrase:
-            red_flags.append("Resposta apenas reformula a pergunta sem agregar conteúdo")
-        if not layer2.language_consistency:
-            red_flags.append("Resposta em idioma divergente da pergunta")
-        if layer2.prompt_injection_detected:
-            red_flags.append("Tentativa de prompt-injection detectada — score zerado")
-
+    
     return red_flags
 
 
-def calculate_penalty_detailed(
-    text: str,
-    autodeclaracao: float | None,
-    context_score: float,
-    layer2: "Layer2Signals | None" = None,
-    *,
-    expects_first_person: bool = False,
-) -> tuple[float, dict[str, float]]:
-    """Mesma lógica de ``calculate_penalty``, mas retorna ``(total, breakdown)``.
-
-    O ``breakdown`` mapeia o motivo (chave canônica) → contribuição negativa
-    aplicada. Permite à UI mostrar "por que o score caiu" (LGPD Art. 20 —
-    direito à explicação). Audit task #528 (rev. 23 G23-03).
-
-    Chaves possíveis (todas opcionais; só presente quando aplicada):
-      - ``inflation_lex``           heurística lexical (autodec×contexto)
-      - ``generic_lex``             keywords genéricas detectadas
-      - ``no_context_lex``          resposta < min words (Camada 1)
-      - ``paraphrase``              Camada 2: respondeu reformulando a pergunta
-      - ``language_mismatch``       Camada 2: idioma divergente
-      - ``missing_r_outcome``       Camada 2: STAR sem R
-      - ``no_first_person``         Camada 2: comportamental sem 1ª pessoa
-      - ``word_band_very_short``    Camada 2: word_count_band == "<30"
-      - ``word_band_short``         Camada 2: word_count_band == "30-50"
-    """
-    breakdown: dict[str, float] = {}
-    text_lower = text.lower()
-
-    if (
-        autodeclaracao
-        and autodeclaracao >= INFLATION_AUTODECLARATION_MIN
-        and context_score < INFLATION_CONTEXT_MAX
-    ):
-        breakdown["inflation_lex"] = float(PENALTY_TRIGGERS["inflation"]["penalty"])
-
-    generic_count = sum(1 for kw in PENALTY_TRIGGERS["generic"]["keywords"] if kw in text_lower)
-    if generic_count >= 2:
-        breakdown["generic_lex"] = float(PENALTY_TRIGGERS["generic"]["penalty"])
-
-    if len(text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"]:
-        breakdown["no_context_lex"] = float(PENALTY_TRIGGERS["no_context"]["penalty"])
-
-    if layer2 is not None:
-        if layer2.is_paraphrase:
-            breakdown["paraphrase"] = float(PENALTY_PARAPHRASE)
-        if not layer2.language_consistency:
-            breakdown["language_mismatch"] = float(PENALTY_LANGUAGE_MISMATCH)
-        if not layer2.has_R_outcome:
-            breakdown["missing_r_outcome"] = float(PENALTY_MISSING_R_OUTCOME)
-        if expects_first_person and not layer2.is_first_person:
-            breakdown["no_first_person"] = float(PENALTY_NO_FIRST_PERSON)
-        if layer2.word_count_band == "<30":
-            if len(text.split()) >= PENALTY_TRIGGERS["no_context"]["min_words"]:
-                breakdown["word_band_very_short"] = float(PENALTY_WORD_BAND_VERY_SHORT)
-        elif layer2.word_count_band == "30-50":
-            breakdown["word_band_short"] = float(PENALTY_WORD_BAND_SHORT)
-
-    total = round(sum(breakdown.values()), 2)
-    return total, {k: round(v, 2) for k, v in breakdown.items()}
-
-
-def calculate_penalty(
-    text: str,
-    autodeclaracao: float | None,
-    context_score: float,
-    layer2: "Layer2Signals | None" = None,
-    *,
-    expects_first_person: bool = False,
-) -> float:
+def calculate_penalty(text: str, autodeclaracao: float | None, context_score: float) -> float:
     """
     Calcula penalidade determinística.
-
-    Audit M04 (rev. 19): quando ``layer2`` está disponível, soma 6 penalidades
-    semânticas alinhadas à spec WeDOTalent §F8.3:
-
-    - paráfrase (``is_paraphrase``)               → ``PENALTY_PARAPHRASE``
-    - idioma divergente (``language_consistency=False``) → ``PENALTY_LANGUAGE_MISMATCH``
-    - STAR sem R (``has_R_outcome=False``)        → ``PENALTY_MISSING_R_OUTCOME``
-    - sem 1ª pessoa em comportamental             → ``PENALTY_NO_FIRST_PERSON``
-    - word-band ``"<30"``                         → ``PENALTY_WORD_BAND_VERY_SHORT``
-    - word-band ``"30-50"``                       → ``PENALTY_WORD_BAND_SHORT``
-
-    Prompt-injection NÃO entra como penalty — vira override absoluto do score
-    em ``calculate_wsi_deterministic`` (final_score = ``PROMPT_INJECTION_OVERRIDE_SCORE``).
-
-    Args:
-        text: texto bruto da resposta
-        autodeclaracao: score de autodeclaração (1-10) ou None
-        context_score: score de contexto (1-10)
-        layer2: sinais semânticos da Camada 2 (None = camada desligada/degradada)
-        expects_first_person: se True, pergunta espera 1ª pessoa (CBI/comportamental).
-            ``PENALTY_NO_FIRST_PERSON`` só se aplica quando este flag é True.
-
+    
     Returns: Valor negativo da penalidade
-
-    Nota: Para obter o breakdown granular por motivo (UI G23-03),
-    use ``calculate_penalty_detailed`` — esta função preserva o contrato
-    legado retornando apenas o total.
     """
-    total, _ = calculate_penalty_detailed(
-        text, autodeclaracao, context_score, layer2,
-        expects_first_person=expects_first_person,
-    )
-    return total
-
-
-def calculate_bonus_detailed(
-    text: str,
-    layer2: "Layer2Signals | None" = None,
-    *,
-    bloom_expected: int | None = None,
-    dreyfus_expected: int | None = None,
-    trait_signals_expected: int | None = None,
-    is_behavioral: bool = False,
-) -> tuple[float, dict[str, float]]:
-    """Mesma lógica de ``calculate_bonus``, mas retorna ``(total, breakdown)``.
-
-    O ``breakdown`` mapeia o motivo (chave canônica) → contribuição assinada.
-    Valores negativos são ajustes spec descontados (ex.: ``no_trait_signals``).
-    O total é clampado em ``[-BONUS_MAX, +BONUS_MAX]``; o breakdown traz os
-    valores brutos antes do clamp para permitir auditoria fiel. Audit task
-    #528 (rev. 23 G23-03).
-
-    Chaves possíveis:
-      - ``humility_lex``           keywords de humildade
-      - ``exceptional_evidence_lex`` evidências excepcionais (open-source, prêmio)
-      - ``quantification``         Camada 2: tem números/métricas
-      - ``bloom_exceeds``          Camada 2: bloom > esperado
-      - ``trait_signals_exceed``   Camada 2: # sinais > esperado
-      - ``dreyfus_exceeds``        Camada 2: dreyfus > esperado
-      - ``no_trait_signals``       (negativo) comportamental sem sinais de trait
-      - ``dreyfus_below``          (negativo) dreyfus < (esperado − 1)
-    """
-    breakdown: dict[str, float] = {}
+    penalty = 0.0
     text_lower = text.lower()
+    
+    if autodeclaracao and autodeclaracao >= 4.5 and context_score < 3.0:
+        penalty += PENALTY_TRIGGERS["inflation"]["penalty"]
+    
+    generic_count = sum(1 for kw in PENALTY_TRIGGERS["generic"]["keywords"] if kw in text_lower)
+    if generic_count >= 2:
+        penalty += PENALTY_TRIGGERS["generic"]["penalty"]
+    
+    if len(text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"]:
+        penalty += PENALTY_TRIGGERS["no_context"]["penalty"]
+    
+    return round(penalty, 2)
 
+
+def calculate_bonus(text: str) -> float:
+    """
+    Calcula bônus determinístico.
+    
+    Returns: Valor positivo do bônus
+    """
+    bonus = 0.0
+    text_lower = text.lower()
+    
     humility_count = sum(1 for kw in BONUS_TRIGGERS["humility"]["keywords"] if kw in text_lower)
     if humility_count >= 1:
-        breakdown["humility_lex"] = float(BONUS_TRIGGERS["humility"]["bonus"])
-
+        bonus += BONUS_TRIGGERS["humility"]["bonus"]
+    
     exceptional_count = sum(1 for kw in BONUS_TRIGGERS["exceptional_evidence"]["keywords"] if kw in text_lower)
     if exceptional_count >= 1:
-        breakdown["exceptional_evidence_lex"] = float(BONUS_TRIGGERS["exceptional_evidence"]["bonus"])
-
-    if layer2 is not None:
-        if layer2.has_quantification:
-            breakdown["quantification"] = float(BONUS_QUANTIFICATION)
-        if bloom_expected is not None and layer2.bloom_demonstrated > bloom_expected:
-            breakdown["bloom_exceeds"] = float(BONUS_BLOOM_EXCEEDS)
-        if (
-            trait_signals_expected is not None
-            and layer2.trait_signals_count > trait_signals_expected
-        ):
-            breakdown["trait_signals_exceed"] = float(BONUS_TRAIT_SIGNALS_EXCEED)
-        if dreyfus_expected is not None:
-            if layer2.dreyfus_demonstrated > dreyfus_expected:
-                breakdown["dreyfus_exceeds"] = float(BONUS_DREYFUS_EXCEEDS)
-            if layer2.dreyfus_demonstrated < (dreyfus_expected - 1):
-                breakdown["dreyfus_below"] = float(PENALTY_DREYFUS_BELOW)
-        if is_behavioral and layer2.trait_signals_count == 0:
-            breakdown["no_trait_signals"] = float(PENALTY_NO_TRAIT_SIGNALS)
-
-    raw = sum(breakdown.values())
-    total = round(max(-BONUS_MAX, min(BONUS_MAX, raw)), 2)
-    return total, {k: round(v, 2) for k, v in breakdown.items()}
-
-
-def calculate_bonus(
-    text: str,
-    layer2: "Layer2Signals | None" = None,
-    *,
-    bloom_expected: int | None = None,
-    dreyfus_expected: int | None = None,
-    trait_signals_expected: int | None = None,
-    is_behavioral: bool = False,
-) -> float:
-    """
-    Calcula bônus determinístico (líquido — pode ser negativo se ajustes spec
-    pesarem mais que os bônus lexicais).
-
-    Audit M05 (rev. 19): quando ``layer2`` está disponível, aplica 6 ajustes
-    semânticos alinhados à spec WeDOTalent §F8.3:
-
-    - +``BONUS_QUANTIFICATION`` se ``has_quantification``
-    - +``BONUS_BLOOM_EXCEEDS`` se ``bloom_demonstrated > bloom_expected``
-    - +``BONUS_TRAIT_SIGNALS_EXCEED`` se ``trait_signals_count > expected``
-    - +``BONUS_DREYFUS_EXCEEDS`` se ``dreyfus_demonstrated > dreyfus_expected``
-    - −``PENALTY_NO_TRAIT_SIGNALS`` se comportamental e ``trait_signals_count == 0``
-    - −``PENALTY_DREYFUS_BELOW`` se ``dreyfus_demonstrated < dreyfus_expected - 1``
-
-    O resultado é clampado em ``[-BONUS_MAX, +BONUS_MAX]`` para preservar a
-    bound original do bônus (impede ajustes spec de viraram penalidade dominante).
-
-    Args:
-        text: texto bruto (bonus lexicais lêem daqui)
-        layer2: sinais semânticos da Camada 2
-        bloom_expected: nível Bloom esperado (1-6) — só usado para excede-comparação
-        dreyfus_expected: nível Dreyfus esperado (1-5)
-        trait_signals_expected: # de sinais de trait esperados na pergunta
-        is_behavioral: pergunta é comportamental (controla penalidade no_trait_signals)
-
-    Returns: Valor (assinado) do bônus líquido após os ajustes spec
-
-    Nota: Para obter o breakdown granular por motivo (UI G23-03),
-    use ``calculate_bonus_detailed``.
-    """
-    total, _ = calculate_bonus_detailed(
-        text, layer2,
-        bloom_expected=bloom_expected,
-        dreyfus_expected=dreyfus_expected,
-        trait_signals_expected=trait_signals_expected,
-        is_behavioral=is_behavioral,
-    )
-    return total
+        bonus += BONUS_TRIGGERS["exceptional_evidence"]["bonus"]
+    
+    return round(min(1.0, bonus), 2)
 
 
 def extract_evidences(text: str) -> list[str]:
@@ -791,21 +460,13 @@ def calculate_star_score(text: str) -> tuple[dict[str, bool], float]:
 def calculate_bloom_alignment(bloom_demonstrated: int, bloom_expected: int) -> float:
     """
     Calcula alinhamento entre nível Bloom demonstrado e esperado (0.0–1.0).
-    Spec F8.4 — componente bloom_alinhamento (ASSIMÉTRICO).
+    Spec F8 — componente bloom_alinhamento.
 
-    Regra (rev. 15, M03 fix):
-      • demonstrated >= expected  → alignment = 1.0  (não punir excesso de qualificação)
-      • demonstrated <  expected  → alignment = 1.0 - (expected - demonstrated) / max_distance
-        max_distance = 5 (Bloom range 1–6)
-
-    Antes da correção a fórmula era simétrica (`abs(d - e) / 5`), o que punia
-    candidatos que demonstravam Bloom acima do esperado — viola a spec §8.4
-    que trata Bloom como ladder cognitivo (ir além é positivo).
+    alignment = 1.0 - |demonstrated - expected| / max_distance
+    max_distance = 5 (range 1–6)
     """
-    if bloom_demonstrated >= bloom_expected:
-        return 1.0
     max_distance = 5
-    alignment = 1.0 - (bloom_expected - bloom_demonstrated) / max_distance
+    alignment = 1.0 - abs(bloom_demonstrated - bloom_expected) / max_distance
     return round(max(0.0, alignment), 3)
 
 
@@ -818,11 +479,7 @@ def calculate_wsi_deterministic(
     years_experience: float | None = None,
     years_reference: dict[str, tuple[float, float]] | None = None,
     question_type: str = "technical",   # "technical" | "behavioral"
-    *,
-    bloom_expected: int | None = None,  # keyword-only — nível Bloom esperado (None = degradado)
-    dreyfus_expected: int | None = None,
-    trait_signals_expected: int | None = None,
-    layer2_signals: "Layer2Signals | None" = None,
+    bloom_expected: int = 3,            # nível Bloom esperado pela pergunta
 ) -> DeterministicWSIResult:
     """
     Calcula WSI de forma 100% determinística — Spec F8 fórmula v2.
@@ -845,9 +502,6 @@ def calculate_wsi_deterministic(
     Returns:
         DeterministicWSIResult com todos os componentes do cálculo
     """
-    # M11 fix (rev. 15) — rastreia razões de qualidade degradada
-    degraded_reasons: list[str] = []
-
     if autodeclaracao_override is not None:
         autodeclaracao = autodeclaracao_override
     else:
@@ -862,65 +516,25 @@ def calculate_wsi_deterministic(
 
     if autodeclaracao is None:
         autodeclaracao = context_score
-        degraded_reasons.append("autodeclaracao_inferida_por_contexto")
-
-    if bloom_expected is None:
-        bloom_expected = 3
-        degraded_reasons.append("bloom_expected_default_aplicado")
 
     bloom_level, bloom_name = calculate_bloom_level(response_text)
     bloom_align = calculate_bloom_alignment(bloom_level, bloom_expected)
 
     years = years_experience if years_experience is not None else extract_years_experience(response_text)
-    # Audit task #510 (M07) — propaga question_type para usar ladder
-    # Dreyfus correto (técnico vs comportamental).
-    dreyfus_level, dreyfus_name = calculate_dreyfus_level(
-        years, context_score,
-        years_reference=years_reference,
-        skill_type=question_type,
-    )
+    dreyfus_level, dreyfus_name = calculate_dreyfus_level(years, context_score, years_reference=years_reference)
 
-    red_flags = detect_red_flags(response_text, autodeclaracao, context_score, layer2=layer2_signals)
+    red_flags = detect_red_flags(response_text, autodeclaracao, context_score)
 
     # Flags estruturadas para G6 (spec F10)
     flags_structured: dict[str, bool] = {
-        "is_inflation": (
-            autodeclaracao >= INFLATION_AUTODECLARATION_MIN
-            and context_score < INFLATION_CONTEXT_MAX
-        ),
+        "is_inflation": autodeclaracao >= 4.5 and context_score < 3.0,
         "is_generic": sum(1 for kw in PENALTY_TRIGGERS["generic"]["keywords"]
                          if kw in response_text.lower()) >= 2,
         "is_short": len(response_text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"],
     }
-    # M04 — flag estruturada de inflação semântica via Layer2.
-    if layer2_signals is not None:
-        flags_structured["is_semantic_inflation"] = bool(layer2_signals.semantic_inflation)
-        flags_structured["is_paraphrase"] = bool(layer2_signals.is_paraphrase)
-        flags_structured["is_prompt_injection"] = bool(layer2_signals.prompt_injection_detected)
-    # Audit task #528 (G23-02 / G23-03) — flag de fallback LLM (Camada 2).
-    # Default: True quando `layer2_signals is None` (Camada 2 indisponível ou
-    # falhou e foi degradada). O analyzer ajusta a flag novamente após
-    # consolidar `layer2_degraded_reason` para casos onde a Camada 2 retornou
-    # sinais mas com baixa confiança. UI usa este booleano para exibir o
-    # selo "análise semântica indisponível" sem parsear strings.
-    flags_structured["is_llm_fallback"] = layer2_signals is None
 
-    is_behavioral = (question_type == "behavioral")
-    penalty, penalty_breakdown = calculate_penalty_detailed(
-        response_text,
-        autodeclaracao,
-        context_score,
-        layer2=layer2_signals,
-        expects_first_person=is_behavioral,
-    )
-    bonus, bonus_breakdown = calculate_bonus_detailed(
-        response_text,
-        layer2=layer2_signals,
-        bloom_expected=bloom_expected,
-        dreyfus_expected=dreyfus_expected,
-        trait_signals_expected=trait_signals_expected,
-        is_behavioral=is_behavioral,
-    )
+    penalty = calculate_penalty(response_text, autodeclaracao, context_score)
+    bonus = calculate_bonus(response_text)
 
     # Fórmula v2 — tri-componente por tipo (Spec F8)
     if question_type == "behavioral":
@@ -928,14 +542,14 @@ def calculate_wsi_deterministic(
         # sinais_trait ≈ context_score (qualidade do contexto comportamental)
         weights = WSI_FORMULA_WEIGHTS_BEHAVIORAL
         raw_score = (
-            weights["star_estrutura"]    * (star_score * NORMALIZATION_FACTOR) +
+            weights["star_estrutura"]    * (star_score * 5.0) +  # normaliza 0–1 → 0–5
             weights["sinais_trait"]      * context_score +
-            weights["bloom_alinhamento"] * (bloom_align * NORMALIZATION_FACTOR)
+            weights["bloom_alinhamento"] * (bloom_align * 5.0)   # normaliza 0–1 → 0–5
         )
         formula_desc = (
-            f"behavioral: ({weights['star_estrutura']}×STAR{star_score:.2f}×{NORMALIZATION_FACTOR:g}) + "
+            f"behavioral: ({weights['star_estrutura']}×STAR{star_score:.2f}×5) + "
             f"({weights['sinais_trait']}×ctx{context_score:.1f}) + "
-            f"({weights['bloom_alinhamento']}×bloom{bloom_align:.2f}×{NORMALIZATION_FACTOR:g})"
+            f"({weights['bloom_alinhamento']}×bloom{bloom_align:.2f}×5)"
         )
     else:
         star_components, star_score = {}, 0.0
@@ -944,36 +558,25 @@ def calculate_wsi_deterministic(
         raw_score = (
             weights["autodeclaracao"]      * autodeclaracao +
             weights["evidencias_tecnicas"] * context_score +
-            weights["bloom_alinhamento"]   * (bloom_align * NORMALIZATION_FACTOR)
+            weights["bloom_alinhamento"]   * (bloom_align * 5.0)
         )
         formula_desc = (
             f"technical: ({weights['autodeclaracao']}×auto{autodeclaracao:.1f}) + "
             f"({weights['evidencias_tecnicas']}×ctx{context_score:.1f}) + "
-            f"({weights['bloom_alinhamento']}×bloom{bloom_align:.2f}×{NORMALIZATION_FACTOR:g})"
+            f"({weights['bloom_alinhamento']}×bloom{bloom_align:.2f}×5)"
         )
 
-    # M04 — override absoluto: prompt-injection zera o score (não soma).
-    # Spec WeDOTalent §F8.3 — tentativas de manipulação do avaliador são
-    # tratadas como falha de integridade, não apenas penalidade marginal.
-    if layer2_signals is not None and layer2_signals.prompt_injection_detected:
-        final_score = PROMPT_INJECTION_OVERRIDE_SCORE
-        formula = (
-            f"prompt_injection_override → score = "
-            f"{PROMPT_INJECTION_OVERRIDE_SCORE} "
-            f"(raw={raw_score:.2f}, penalty={penalty}, bonus={bonus} ignorados)"
-        )
-    else:
-        final_score = max(SCALE_MIN_VALID, min(SCALE_MAX, raw_score + penalty + bonus))
-        final_score = round(final_score, 2)
-        formula = f"{formula_desc} + penalty({penalty}) + bonus({bonus}) = {final_score:.2f}"
+    final_score = max(1.0, min(5.0, raw_score + penalty + bonus))
+    final_score = round(final_score, 2)
+    formula = f"{formula_desc} + penalty({penalty}) + bonus({bonus}) = {final_score:.2f}"
 
     justification_parts = []
-    if context_score >= JUSTIFICATION_CONTEXT_STRONG:
-        justification_parts.append(f"Contexto forte ({context_score:.1f}/{SCALE_MAX:g})")
-    elif context_score >= JUSTIFICATION_CONTEXT_ADEQUATE:
-        justification_parts.append(f"Contexto adequado ({context_score:.1f}/{SCALE_MAX:g})")
+    if context_score >= 4.0:
+        justification_parts.append(f"Contexto forte ({context_score:.1f}/5)")
+    elif context_score >= 3.0:
+        justification_parts.append(f"Contexto adequado ({context_score:.1f}/5)")
     else:
-        justification_parts.append(f"Contexto fraco ({context_score:.1f}/{SCALE_MAX:g})")
+        justification_parts.append(f"Contexto fraco ({context_score:.1f}/5)")
 
     justification_parts.append(f"Bloom: {bloom_name} (esperado L{bloom_expected})")
     justification_parts.append(f"Dreyfus: {dreyfus_name}")
@@ -1004,10 +607,6 @@ def calculate_wsi_deterministic(
         star_score=star_score,
         bloom_alignment=bloom_align,
         flags_structured=flags_structured,
-        degraded_quality=bool(degraded_reasons),
-        degraded_reasons=degraded_reasons or None,
-        penalty_breakdown=penalty_breakdown or None,
-        bonus_breakdown=bonus_breakdown or None,
     )
 
 
@@ -1022,11 +621,10 @@ def get_seniority_weights(seniority: str | None) -> dict[str, float]:
     Returns:
         Dict com 'technical' e 'behavioral' (somam 1.0)
     """
-    default = {"technical": DEFAULT_TECHNICAL_WEIGHT, "behavioral": DEFAULT_BEHAVIORAL_WEIGHT}
     if not seniority:
-        return default
+        return {"technical": 0.625, "behavioral": 0.375}
     key = seniority.lower().strip()
-    return SENIORITY_WEIGHTS.get(key, default)
+    return SENIORITY_WEIGHTS.get(key, {"technical": 0.625, "behavioral": 0.375})
 
 
 def classify_wsi_score(score: float) -> str:
@@ -1042,15 +640,15 @@ def classify_wsi_score(score: float) -> str:
         Abaixo da média ≥ 4.5/10 → ≥ 2.25/5
         Regular/Baixo < 4.5/10 → < 2.25/5
     """
-    if score >= CLASSIFY_EXCEPCIONAL:
+    if score >= 4.5:
         return "excepcional"
-    if score >= CLASSIFY_EXCELENTE:
+    if score >= 4.0:
         return "excelente"
-    if score >= CLASSIFY_ALTO:
+    if score >= 3.5:
         return "alto"
-    if score >= CLASSIFY_MEDIO:
+    if score >= 3.0:
         return "medio"
-    if score >= CLASSIFY_ABAIXO_MEDIA:
+    if score >= 2.25:
         return "abaixo_da_media"
     return "regular"
 
@@ -1148,22 +746,22 @@ def calculate_final_wsi_score(
         t_weight = technical_weight
         b_weight = behavioral_weight
     else:
-        t_weight = DEFAULT_TECHNICAL_WEIGHT
-        b_weight = DEFAULT_BEHAVIORAL_WEIGHT
+        t_weight = 0.625
+        b_weight = 0.375
 
     tech_avg  = weighted_avg(technical_scores)
     behav_avg = weighted_avg(behavioral_scores)
 
     if eligibility_score is not None:
-        t_weight  = t_weight  * NON_ELIGIBILITY_WEIGHT
-        b_weight  = b_weight  * NON_ELIGIBILITY_WEIGHT
-        e_weight  = ELIGIBILITY_WEIGHT
+        t_weight  = t_weight  * 0.80
+        b_weight  = b_weight  * 0.80
+        e_weight  = 0.20
         final_score = (t_weight * tech_avg) + (b_weight * behav_avg) + (e_weight * eligibility_score)
     else:
         e_weight = 0.0
         final_score = (t_weight * tech_avg) + (b_weight * behav_avg)
 
-    final_score = round(max(SCALE_MIN_VALID, min(SCALE_MAX, final_score)), 2)
+    final_score = round(max(1.0, min(5.0, final_score)), 2)
 
     if final_score >= WSI_CUTOFFS["approved_auto"]:
         decision = "approved"
@@ -1206,59 +804,6 @@ def calculate_final_wsi_score(
             + f" = {final_score:.2f}"
         ),
         "cutoffs_applied": WSI_CUTOFFS,
-    }
-
-
-def build_transparency_extras_payload(
-    result: TransparencyExtrasSource,
-    *,
-    layer2_degraded_reason: str | None = None,
-    extra_degraded_reasons: list[str] | None = None,
-    force_llm_fallback: bool = False,
-) -> dict[str, Any]:
-    """Audit task #534 — fonte única do payload `transparency_extras`.
-
-    Tanto o writer ao vivo (``wsi_voice_orchestrator``) quanto o backfill
-    histórico (``scripts/backfill_wsi_transparency_extras.py``) precisam
-    serializar o mesmo dicionário JSONB para a coluna
-    ``wsi_response_analyses.transparency_extras``. Centralizar aqui evita
-    que o formato divirja entre os dois caminhos (LGPD Art. 20 / EU AI Act
-    §13 — a UI consome chaves estáveis).
-
-    Args:
-        result: ``DeterministicWSIResult`` (saída crua do scorer) ou
-            ``ResponseAnalysis`` (envelope do analyzer); o helper lê apenas
-            os atributos comuns: ``flags_structured``, ``penalty_breakdown``,
-            ``bonus_breakdown``, ``degraded_quality``, ``degraded_reasons``.
-        layer2_degraded_reason: motivo registrado pelo analyzer quando a
-            Camada 2 (LLM) falhou ou não rodou. ``None`` em runtime
-            saudável; string descritiva no backfill.
-        extra_degraded_reasons: razões adicionais (ex.: "backfill_recalculated")
-            mescladas às já presentes em ``result.degraded_reasons``,
-            preservando ordem e sem duplicar.
-        force_llm_fallback: marca ``flags_structured.is_llm_fallback=True``
-            mesmo quando o scorer não setou — usado pelo backfill, que
-            nunca re-executa a Camada 2.
-    """
-    flags_structured = dict(result.flags_structured or {})
-    if force_llm_fallback:
-        flags_structured["is_llm_fallback"] = True
-
-    degraded_reasons = list(result.degraded_reasons or [])
-    if extra_degraded_reasons:
-        for reason in extra_degraded_reasons:
-            if reason not in degraded_reasons:
-                degraded_reasons.append(reason)
-
-    degraded_quality = bool(result.degraded_quality) or bool(extra_degraded_reasons)
-
-    return {
-        "flags_structured": flags_structured,
-        "penalty_breakdown": result.penalty_breakdown or {},
-        "bonus_breakdown": result.bonus_breakdown or {},
-        "degraded_quality": degraded_quality,
-        "degraded_reasons": degraded_reasons,
-        "layer2_degraded_reason": layer2_degraded_reason,
     }
 
 

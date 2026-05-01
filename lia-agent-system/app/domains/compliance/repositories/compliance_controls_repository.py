@@ -13,7 +13,7 @@ from uuid import UUID
 from sqlalchemy import and_, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.observability import (
+from app.models.observability import (
     CompanyComplianceControl,
     ComplianceAudit,
     ComplianceControlLibrary,

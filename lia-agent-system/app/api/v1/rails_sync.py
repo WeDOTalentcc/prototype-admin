@@ -9,10 +9,6 @@ Endpoints:
   GET  /api/v1/rails-sync/jobs/{id}/intelligence       — sourcing, saturation, analytics
   GET  /api/v1/rails-sync/compliance/status             — LGPD, audit summary
   POST /api/v1/rails-sync/bulk-sync/candidates          — batch enrichment
-
-Architecture:
-  - All persistence access goes through ``RailsSyncRepository`` (ADR-001).
-  - All responses declare ``response_model`` from ``libs/schemas/ats`` (ADR-005).
 """
 import logging
 import os
@@ -22,46 +18,20 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import ValidationError
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.ats_integration.repositories.rails_sync_repository import (
-    RailsSyncRepository,
-)
-from libs.schemas.ats import (
-    BulkSyncCandidatesRequest,
-    BulkSyncCandidatesResponse,
-    CandidateAIInsights,
-    CandidateEnrichmentItem,
-    CandidateEnrichmentResponse,
-    CandidateWSIData,
-    ComplianceAuditBlock,
-    ComplianceLGPDBlock,
-    ComplianceStatsBlock,
-    ComplianceStatusResponse,
-    JobIntelligenceResponse,
-    JobSaturationData,
-    JobSourcingData,
-)
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
+from app.models.candidate import Candidate
+from app.models.email_template import EmailTemplate
+from app.models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/rails-sync", tags=["rails-sync"])
 
-
 def _get_rails_api_token() -> str:
     return os.environ.get("RAILS_API_TOKEN", "")
-
-
 _MAX_BULK_SIZE = 50
 _RATE_LIMIT_WINDOW = 60
 _RATE_LIMIT_MAX = 120
@@ -107,136 +77,130 @@ def _audit_log(endpoint: str, details: dict[str, Any]) -> None:
     )
 
 
-def get_rails_sync_repo(db: AsyncSession = Depends(get_db)) -> RailsSyncRepository:
-    return RailsSyncRepository(db)
-
-
-def _now() -> datetime:
-    return datetime.now(timezone.utc)
-
-
-# ──────────────────────────────────────────────────────────────────────────
-# Endpoints
-# ──────────────────────────────────────────────────────────────────────────
-
-
-@router.get(
-    "/candidates/{candidate_id}/enrichment",
-    response_model=CandidateEnrichmentResponse,
-    response_model_exclude_none=True,
-)
+@router.get("/candidates/{candidate_id}/enrichment")
 async def get_candidate_enrichment(
-    candidate_id: _DualId,
+    candidate_id: str,
+    request: Request,
     token: str = Depends(verify_rails_token),
-    repo: RailsSyncRepository = Depends(get_rails_sync_repo),
-) -> CandidateEnrichmentResponse:
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
     _check_rate_limit()
     _audit_log("candidates.enrichment", {"candidate_id": candidate_id})
 
-    candidate = await repo.get_candidate(candidate_id)
+    result = await db.execute(
+        select(Candidate).where(Candidate.id == candidate_id)
+    )
+    candidate = result.scalar_one_or_none()
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate not found")
 
-    wsi = CandidateWSIData(
-        wsi_score=getattr(candidate, "wsi_score", None),
-        wsi_report=getattr(candidate, "wsi_report", None),
-        screening_result=getattr(candidate, "screening_result", None),
-    )
-    ai_insights = CandidateAIInsights(
-        ai_summary=getattr(candidate, "ai_summary", None),
-        skills_extracted=getattr(candidate, "skills_extracted", None),
-        has_embedding=(
-            True if getattr(candidate, "embedding_vector", None) is not None else None
-        ),
-    )
+    wsi_data: dict[str, Any] = {}
+    if hasattr(candidate, "wsi_score") and candidate.wsi_score is not None:
+        wsi_data["wsi_score"] = candidate.wsi_score
+    if hasattr(candidate, "wsi_report") and candidate.wsi_report is not None:
+        wsi_data["wsi_report"] = candidate.wsi_report
+    if hasattr(candidate, "screening_result") and candidate.screening_result is not None:
+        wsi_data["screening_result"] = candidate.screening_result
 
-    return CandidateEnrichmentResponse(
-        candidate_id=candidate_id,
-        name=getattr(candidate, "name", None),
-        email=getattr(candidate, "email", None),
-        status=candidate.status,
-        wsi=wsi,
-        ai_insights=ai_insights,
-        synced_at=_now(),
-    )
+    ai_insights: dict[str, Any] = {}
+    if hasattr(candidate, "ai_summary") and candidate.ai_summary is not None:
+        ai_insights["ai_summary"] = candidate.ai_summary
+    if hasattr(candidate, "skills_extracted") and candidate.skills_extracted is not None:
+        ai_insights["skills_extracted"] = candidate.skills_extracted
+    if hasattr(candidate, "embedding_vector") and candidate.embedding_vector is not None:
+        ai_insights["has_embedding"] = True
+
+    return {
+        "candidate_id": candidate_id,
+        "name": getattr(candidate, "name", None),
+        "email": getattr(candidate, "email", None),
+        "status": getattr(candidate, "status", None),
+        "wsi": wsi_data,
+        "ai_insights": ai_insights,
+        "source": "fastapi",
+        "synced_at": datetime.now(timezone.utc).isoformat(),
+    }
 
 
-@router.get(
-    "/jobs/{job_id}/intelligence",
-    response_model=JobIntelligenceResponse,
-    response_model_exclude_none=True,
-)
+@router.get("/jobs/{job_id}/intelligence")
 async def get_job_intelligence(
-    job_id: _DualId,
+    job_id: str,
     token: str = Depends(verify_rails_token),
-    repo: RailsSyncRepository = Depends(get_rails_sync_repo),
-) -> JobIntelligenceResponse:
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
     _check_rate_limit()
     _audit_log("jobs.intelligence", {"job_id": job_id})
 
-    job = await repo.get_job(job_id)
+    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
+    job = result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    return JobIntelligenceResponse(
-        job_id=job_id,
-        title=getattr(job, "title", None),
-        status=job.status,
-        company_id=job.company_id,
-        sourcing_data=JobSourcingData(
-            channels=getattr(job, "sourcing_channels", None) or [],
-        ),
-        saturation=JobSaturationData(
-            market_available=getattr(job, "market_candidates", None),
-            saturation_score=getattr(job, "saturation_score", None),
-        ),
-        synced_at=_now(),
-    )
+    return {
+        "job_id": job_id,
+        "title": getattr(job, "title", None),
+        "status": getattr(job, "status", None),
+        "company_id": getattr(job, "company_id", None),
+        "sourcing_data": {
+            "channels": getattr(job, "sourcing_channels", []) or [],
+        },
+        "saturation": {
+            "market_available": getattr(job, "market_candidates", None),
+            "saturation_score": getattr(job, "saturation_score", None),
+        },
+        "source": "fastapi",
+        "synced_at": datetime.now(timezone.utc).isoformat(),
+    }
 
 
-@router.get(
-    "/compliance/status",
-    response_model=ComplianceStatusResponse,
-    response_model_exclude_none=True,
-)
+@router.get("/compliance/status")
 async def get_compliance_status(
     token: str = Depends(verify_rails_token),
-    repo: RailsSyncRepository = Depends(get_rails_sync_repo),
-) -> ComplianceStatusResponse:
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
     _check_rate_limit()
     _audit_log("compliance.status", {})
 
-    total_candidates = await repo.count_candidates()
-    total_jobs = await repo.count_jobs()
-    total_templates = await repo.count_email_templates()
+    candidate_count_result = await db.execute(select(func.count(Candidate.id)))
+    total_candidates = candidate_count_result.scalar() or 0
 
-    now = _now()
-    return ComplianceStatusResponse(
-        lgpd=ComplianceLGPDBlock(),
-        platform_stats=ComplianceStatsBlock(
-            total_candidates=total_candidates,
-            total_jobs=total_jobs,
-            total_email_templates=total_templates,
-        ),
-        audit=ComplianceAuditBlock(last_check=now),
-        synced_at=now,
-    )
+    job_count_result = await db.execute(select(func.count(JobVacancy.id)))
+    total_jobs = job_count_result.scalar() or 0
+
+    template_count_result = await db.execute(select(func.count(EmailTemplate.id)))
+    total_templates = template_count_result.scalar() or 0
+
+    return {
+        "lgpd": {
+            "status": "compliant",
+            "data_retention_policy": "365_days",
+            "pii_masking_enabled": True,
+            "consent_tracking": True,
+        },
+        "platform_stats": {
+            "total_candidates": total_candidates,
+            "total_jobs": total_jobs,
+            "total_email_templates": total_templates,
+        },
+        "audit": {
+            "last_check": datetime.now(timezone.utc).isoformat(),
+            "fairness_guard_active": True,
+            "bias_audit_enabled": True,
+            "eu_ai_act_compliance": "in_progress",
+        },
+        "source": "fastapi",
+        "synced_at": datetime.now(timezone.utc).isoformat(),
+    }
 
 
-@router.post(
-    "/bulk-sync/candidates",
-    response_model=BulkSyncCandidatesResponse,
-    response_model_exclude_none=True,
-)
+@router.post("/bulk-sync/candidates")
 async def bulk_sync_candidates(
     request: Request,
     token: str = Depends(verify_rails_token),
-    repo: RailsSyncRepository = Depends(get_rails_sync_repo),
-) -> BulkSyncCandidatesResponse:
+    db: AsyncSession = Depends(get_db),
+) -> dict[str, Any]:
     _check_rate_limit()
 
-    # Preserve legacy 400-with-message error contract instead of FastAPI's
-    # default 422 for body validation. Rails ATS depends on the 400 codes.
     try:
         body = await request.json()
     except Exception:
@@ -246,6 +210,7 @@ async def bulk_sync_candidates(
         raise HTTPException(status_code=400, detail="Request body must be a JSON object")
 
     candidate_ids = body.get("candidate_ids", [])
+
     if not isinstance(candidate_ids, list):
         raise HTTPException(status_code=400, detail="candidate_ids must be an array")
     if not candidate_ids:
@@ -256,45 +221,38 @@ async def bulk_sync_candidates(
             detail=f"Maximum {_MAX_BULK_SIZE} candidates per batch",
         )
 
-    try:
-        payload = BulkSyncCandidatesRequest(candidate_ids=[str(c) for c in candidate_ids])
-    except ValidationError as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
-
-    candidate_ids = payload.candidate_ids
     _audit_log("bulk-sync.candidates", {"count": len(candidate_ids)})
 
-    candidates = await repo.list_candidates_by_ids(candidate_ids)
+    result = await db.execute(
+        select(Candidate).where(Candidate.id.in_(candidate_ids))
+    )
+    candidates = list(result.scalars().all())
     found_ids = {str(getattr(c, "id", "")) for c in candidates}
 
-    enrichments = [
-        CandidateEnrichmentItem(
-            candidate_id=str(getattr(c, "id", "")),
-            name=getattr(c, "name", None),
-            email=getattr(c, "email", None),
-            status=getattr(c, "status", None),
-            wsi=CandidateWSIData(
-                wsi_score=getattr(c, "wsi_score", None),
-                screening_result=getattr(c, "screening_result", None),
-            ),
-        )
-        for c in candidates
-    ]
+    enrichments = []
+    for c in candidates:
+        wsi_data: dict[str, Any] = {}
+        if hasattr(c, "wsi_score") and c.wsi_score is not None:
+            wsi_data["wsi_score"] = c.wsi_score
+        if hasattr(c, "screening_result") and c.screening_result is not None:
+            wsi_data["screening_result"] = c.screening_result
+
+        enrichments.append({
+            "candidate_id": str(getattr(c, "id", "")),
+            "name": getattr(c, "name", None),
+            "email": getattr(c, "email", None),
+            "status": getattr(c, "status", None),
+            "wsi": wsi_data,
+        })
 
     missing_ids = [cid for cid in candidate_ids if str(cid) not in found_ids]
 
-    return BulkSyncCandidatesResponse(
-        total_requested=len(candidate_ids),
-        total_found=len(enrichments),
-        total_missing=len(missing_ids),
-        enrichments=enrichments,
-        missing_ids=missing_ids,
-        synced_at=_now(),
-    )
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)
+    return {
+        "total_requested": len(candidate_ids),
+        "total_found": len(enrichments),
+        "total_missing": len(missing_ids),
+        "enrichments": enrichments,
+        "missing_ids": missing_ids,
+        "source": "fastapi",
+        "synced_at": datetime.now(timezone.utc).isoformat(),
+    }

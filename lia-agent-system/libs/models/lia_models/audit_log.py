@@ -21,7 +21,6 @@ class DecisionType(str, enum.Enum):
     SEND_MESSAGE = "send_message"
     SCHEDULE_INTERVIEW = "schedule_interview"
     GENERATE_FEEDBACK = "generate_feedback"
-    JOB_CREATION = "job_creation"
 
 
 class AuditLog(Base):
@@ -57,11 +56,6 @@ class AuditLog(Base):
     criteria_used = Column(JSON, nullable=False, default=list)
     criteria_ignored = Column(JSON, nullable=False, default=list)
     
-    # Task #366 — promote actor_user_id to a structured field so admin
-    # reports can filter audit entries by user (previously this id was
-    # stuffed into the free-text reasoning array).
-    actor_user_id = Column(String(255), nullable=True, index=True)
-
     human_review_required = Column(Boolean, default=False)
     human_reviewed_by = Column(String(255), nullable=True)
     human_reviewed_at = Column(DateTime, nullable=True)
@@ -97,7 +91,6 @@ class AuditLog(Base):
             "reasoning": self.reasoning,
             "criteria_used": self.criteria_used,
             "criteria_ignored": self.criteria_ignored,
-            "actor_user_id": self.actor_user_id,
             "human_review_required": self.human_review_required,
             "human_reviewed_by": self.human_reviewed_by,
             "human_reviewed_at": self.human_reviewed_at.isoformat() if self.human_reviewed_at else None,

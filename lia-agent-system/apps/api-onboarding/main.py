@@ -21,7 +21,7 @@ from app.core.config import settings
 from app.core.database import init_db
 from app.core.logging_config import configure_logging
 from app.shared.pii_masking import install_global_pii_masking
-from app.shared.observability.langsmith import configure_langsmith
+from app.config.langsmith import configure_langsmith
 from app.middleware.rate_limiter import RateLimitMiddleware
 from app.middleware.request_id import RequestIdMiddleware
 from app.core.logging_middleware import StructuredLoggingMiddleware
@@ -95,6 +95,7 @@ from app.api.v1 import (
     company,
     company_culture,
     company_benefits,
+    company_benefits_api,
     workforce,
     goals,
     benefits,
@@ -137,6 +138,7 @@ app.include_router(workos.router, prefix="/api/v1", tags=["workos"])
 app.include_router(company.router, prefix="/api/v1", tags=["company"])
 app.include_router(company_culture.router, prefix="/api/v1", tags=["company-culture"])
 app.include_router(company_benefits.router, prefix="/api/v1", tags=["company-benefits"])
+app.include_router(company_benefits_api.router, prefix="/api/v1", tags=["company"])
 app.include_router(workforce.router, prefix="/api/v1", tags=["workforce"])
 app.include_router(goals.router, prefix="/api/v1", tags=["goals"])
 app.include_router(benefits.router, prefix="/api/v1", tags=["benefits"])

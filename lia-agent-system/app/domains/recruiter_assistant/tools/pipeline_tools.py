@@ -55,7 +55,7 @@ async def create_pipeline_stage(
         from sqlalchemy import and_, func, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.recruitment_stages import RecruitmentStage
+        from app.models.recruitment_stages import RecruitmentStage
 
         async with AsyncSessionLocal() as db:
             existing = await db.execute(

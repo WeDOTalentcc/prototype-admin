@@ -472,7 +472,7 @@ async def list_conversations_authenticated(
 
     from app.auth.dependencies import get_user_company_id
     from app.auth.models import User, UserRole
-    from lia_models.whatsapp_conversation import ConversationState, WhatsAppConversation
+    from app.models.whatsapp_conversation import ConversationState, WhatsAppConversation
     
     from app.shared.encryption.encrypted_field_mixin import _sha256_hash
     from sqlalchemy import or_

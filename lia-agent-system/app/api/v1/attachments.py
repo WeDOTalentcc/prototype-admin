@@ -11,10 +11,8 @@ from datetime import datetime
 from pathlib import Path
 
 from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile, status
-from fastapi import Path as FPath
 from fastapi.responses import StreamingResponse
 
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from app.schemas.attachment import (
     AttachmentCreate,
     AttachmentListResponse,
@@ -24,14 +22,6 @@ from app.schemas.attachment import (
     FileUploadResponse,
 )
 from app.shared.services.attachment_service import attachment_service
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path as _ApiPath
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, _ApiPath(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +149,7 @@ async def list_attachments(
 
 
 @router.get("/{attachment_id}", response_model=AttachmentResponse)
-async def get_attachment(attachment_id: _DualId):
+async def get_attachment(attachment_id: str):
     """
     Get a single attachment by ID.
     
@@ -189,7 +179,7 @@ async def get_attachment(attachment_id: _DualId):
 
 
 @router.delete("/{attachment_id}", response_model=AttachmentResponse)
-async def delete_attachment(attachment_id: _DualId):
+async def delete_attachment(attachment_id: str):
     """
     Soft delete an attachment (deactivate).
     
@@ -220,7 +210,7 @@ async def delete_attachment(attachment_id: _DualId):
 
 @candidate_attachments_router.get("/{candidate_id}/attachments", response_model=AttachmentListResponse)
 async def get_candidate_attachments(
-    candidate_id: str = FPath(..., pattern=DUAL_ID_PATH_PATTERN),
+    candidate_id: str,
     company_id: str = Query(..., description="Company ID (required)"),
     limit: int = Query(100, ge=1, le=500, description="Max results (default: 100, max: 500)"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
@@ -257,7 +247,7 @@ async def get_candidate_attachments(
 
 @candidate_attachments_router.post("/{candidate_id}/files", response_model=FileUploadResponse)
 async def upload_candidate_file(
-    candidate_id: str = FPath(..., pattern=DUAL_ID_PATH_PATTERN),
+    candidate_id: str,
     file: UploadFile = File(...),
     candidate_name: str = Form(default="Candidato"),
     category: str = Form(default=""),
@@ -349,7 +339,7 @@ async def upload_candidate_file(
 
 @candidate_attachments_router.get("/{candidate_id}/files", response_model=CandidateFilesResponse)
 async def get_candidate_files(
-    candidate_id: str = FPath(..., pattern=DUAL_ID_PATH_PATTERN),
+    candidate_id: str,
     company_id: str = Query(..., description="Company ID"),
     category: str | None = Query(None, description="Filter by category"),
 ):
@@ -406,8 +396,8 @@ async def get_candidate_files(
 
 @candidate_attachments_router.get("/{candidate_id}/files/download/{filename}")
 async def download_candidate_file(
-    candidate_id: str = FPath(..., pattern=DUAL_ID_PATH_PATTERN),
-    filename: str = FPath(...),
+    candidate_id: str,
+    filename: str,
 ):
     """
     Download a candidate file.
@@ -453,8 +443,8 @@ async def download_candidate_file(
 
 @candidate_attachments_router.delete("/{candidate_id}/files/{attachment_id}")
 async def delete_candidate_file(
-    candidate_id: str = FPath(..., pattern=DUAL_ID_PATH_PATTERN),
-    attachment_id: str = FPath(..., pattern=DUAL_ID_PATH_PATTERN),
+    candidate_id: str,
+    attachment_id: str,
 ):
     """
     Delete a candidate file.
@@ -486,10 +476,3 @@ async def delete_candidate_file(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete file: {str(e)}"
         )
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

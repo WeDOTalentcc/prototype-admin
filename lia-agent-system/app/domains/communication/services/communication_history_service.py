@@ -12,7 +12,7 @@ from typing import Any
 from sqlalchemy import and_, desc, func, select
 
 from app.core.database import AsyncSessionLocal
-from lia_models import (
+from app.models import (
     CommunicationHistory,
     CommunicationStatus,
 )
@@ -363,15 +363,3 @@ class CommunicationHistoryService:
 
 
 communication_history_service = CommunicationHistoryService()
-
-
-def _strip_meta(p: dict) -> dict:
-    return {k: v for k, v in p.items() if not k.startswith("_")}
-
-
-async def get_history(**params):
-    """Wrapper para o chat. Delega para list_communications."""
-    p = _strip_meta(params)
-    if "candidate_id" in p and hasattr(communication_history_service, "get_candidate_communications"):
-        return await communication_history_service.get_candidate_communications(**p)
-    return await communication_history_service.list_communications(**p)

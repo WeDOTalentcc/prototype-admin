@@ -9,8 +9,8 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from app.domains.communication.services.teams_service import teams_service
-from lia_messaging.notification_service import notification_service
-from lia_models.job_vacancy import JobVacancy
+from libs.messaging.lia_messaging.notification_service import notification_service
+from app.models.job_vacancy import JobVacancy
 from app.schemas.job_vacancy_state import JobVacancyState
 
 logger = logging.getLogger(__name__)
@@ -34,37 +34,6 @@ SATURATION_EXCLUDED_STATUSES = ('rejected', 'declined', 'withdrawn')
 ADHERENCE_THRESHOLD = 55.0
 
 VALID_SCREENING_STATUSES = {"not_configured", "not_started", "active", "paused", "completed"}
-
-# =============================================
-# PATH PARAMETER CONTRACT (Task #455)
-# =============================================
-#
-# Job vacancy IDs in this API can be either:
-#   * UUIDs (local DB primary key)               — "550e8400-e29b-41d4-a716-446655440000"
-#   * Decimal integers (Rails bigint, when the
-#     RailsAdapter is enabled and the row was
-#     authored on the legacy Rails side)         — "12345"
-#
-# Constraining `{job_vacancy_id}` / `{job_id}` / `{vacancy_id}` path
-# parameters to this pattern serves two purposes:
-#   1. Collection-scoped sibling routes (e.g. `/job-vacancies/lifecycle-overview`,
-#      `/job-vacancies/bulk/pause`, `/job-vacancies/stats/overview`) can never
-#      be silently captured by an item handler if router ordering regresses.
-#   2. Garbage IDs receive a 422 from FastAPI before the handler runs, instead
-#      of a misleading 404 raised by a `UUID("garbage")` ValueError inside the
-#      handler.
-#
-# Routes that already declare the parameter as `UUID` get this for free from
-# Pydantic, but `str`-typed parameters (kept that way to accept Rails bigints)
-# need this explicit contract.
-#
-# The canonical regex now lives in ``app.api.v1._path_patterns`` as
-# ``DUAL_ID_PATH_PATTERN`` (see ADR 003) so it can be reused by the candidate,
-# application, and interview-stage routers. ``JOB_ID_PATH_PATTERN`` is kept
-# as a backward-compatible alias so existing imports keep working.
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-
-JOB_ID_PATH_PATTERN = DUAL_ID_PATH_PATTERN
 
 # =============================================
 # HELPER FUNCTIONS
@@ -249,8 +218,7 @@ class JobVacancyUpdate(BaseModel):
     salary: str | None = None
     salary_range: dict | None = None
     bonus_range: dict | None = None
-    benefits: list[str | dict] | None = None
-    compensation_policy_id: str | None = None
+    benefits: list[str] | None = None
     manager: str | None = None
     manager_email: str | None = None
     recruiter: str | None = None
@@ -294,8 +262,7 @@ class JobVacancyResponse(BaseModel):
     salary: str | None = None
     salary_range: dict | None = None
     bonus_range: dict | None = None
-    benefits: list[str | dict] | None = []
-    compensation_policy_id: str | None = None
+    benefits: list[str] | None = []
     manager: str | None = None
     manager_email: str | None = None
     recruiter: str | None = None
@@ -337,7 +304,6 @@ class JobVacancyResponse(BaseModel):
     conversation_id: str | None = None
     screening_config: dict | None = None
     enriched_jd: dict | None = None
-    fairness_warnings: list[str] | None = None
 
 
 class FinalizeJobVacancyRequest(BaseModel):
@@ -352,147 +318,6 @@ class FinalizeJobVacancyResponse(BaseModel):
     title: str
     status: str
     message: str
-    fairness_warnings: list[str] | None = None
-
-
-# =============================================
-# FAIRNESS GUARD HELPER (Task #358)
-# =============================================
-#
-# Run FairnessGuard against the user-authored portions of a JobVacancy
-# (title, description, requirements, requirement-like dicts) at the moment
-# the recruiter creates or updates the row. Hard blocks raise an HTTP 422
-# with the offending category/message so the row never lands in the DB;
-# soft warnings are returned for the endpoint to attach to the response so
-# the recruiter sees them but the save still succeeds.
-
-_REQUIREMENT_DICT_TEXT_KEYS = (
-    "technology", "skill", "name", "competency", "competencia",
-    "language", "idioma", "description", "descricao",
-)
-
-
-def _stringify_requirement_entries(entries) -> list[str]:
-    """Best-effort extract human-readable text from a mixed list of
-    strings / dicts (technical_requirements, behavioral_competencies,
-    languages, requirements). Unknown shapes fall back to ``str()``.
-    """
-    out: list[str] = []
-    if not entries:
-        return out
-    for item in entries:
-        if item is None:
-            continue
-        if isinstance(item, str):
-            text = item.strip()
-            if text:
-                out.append(text)
-        elif isinstance(item, dict):
-            collected = []
-            for key in _REQUIREMENT_DICT_TEXT_KEYS:
-                val = item.get(key)
-                if isinstance(val, str) and val.strip():
-                    collected.append(val.strip())
-            if collected:
-                out.append(" ".join(collected))
-            else:
-                # Last resort: stringify all string-valued fields
-                fallback = " ".join(
-                    str(v) for v in item.values()
-                    if isinstance(v, str) and v.strip()
-                )
-                if fallback:
-                    out.append(fallback)
-        else:
-            text = str(item).strip()
-            if text:
-                out.append(text)
-    return out
-
-
-def _build_jd_fairness_text(
-    *,
-    title: str | None = None,
-    description: str | None = None,
-    requirements=None,
-    technical_requirements=None,
-    behavioral_competencies=None,
-    languages=None,
-) -> str:
-    """Concatenate the user-authored JD fields that recruiters can fill
-    with discriminatory language. Order/separator only matter for log
-    readability — FairnessGuard scans the full string."""
-    parts: list[str] = []
-    if title and title.strip():
-        parts.append(title.strip())
-    if description and description.strip():
-        parts.append(description.strip())
-    parts.extend(_stringify_requirement_entries(requirements))
-    parts.extend(_stringify_requirement_entries(technical_requirements))
-    parts.extend(_stringify_requirement_entries(behavioral_competencies))
-    parts.extend(_stringify_requirement_entries(languages))
-    return "\n".join(parts)
-
-
-def run_fairness_guard_on_jd(
-    *,
-    title: str | None = None,
-    description: str | None = None,
-    requirements=None,
-    technical_requirements=None,
-    behavioral_competencies=None,
-    languages=None,
-    context: str = "job_vacancy_save",
-) -> list[str]:
-    """Run FairnessGuard against the JD fields. Raises HTTPException(422)
-    when explicit discriminatory content is detected (Layer 1 block).
-    Returns the list of soft warnings (Layer 2 implicit-bias hits) for
-    the caller to surface to the recruiter — these never block the save.
-
-    Best-effort: any unexpected error in the guard itself is logged and
-    treated as "no warnings" so a guard regression cannot make the JD
-    save endpoint unusable.
-    """
-    text = _build_jd_fairness_text(
-        title=title,
-        description=description,
-        requirements=requirements,
-        technical_requirements=technical_requirements,
-        behavioral_competencies=behavioral_competencies,
-        languages=languages,
-    )
-    if not text.strip():
-        return []
-
-    try:
-        from app.shared.compliance.fairness_guard import FairnessGuard
-        guard = FairnessGuard()
-        result = guard.check(text)
-    except HTTPException:
-        raise
-    except Exception as exc:  # noqa: BLE001 — defensive
-        logger.warning(
-            "[FairnessGuard] JD check skipped (%s): %s", context, exc
-        )
-        return []
-
-    if result.is_blocked:
-        logger.warning(
-            "[FairnessGuard] BLOCKED JD save (%s): category=%s terms=%s",
-            context, result.category, result.blocked_terms,
-        )
-        raise HTTPException(
-            status_code=422,
-            detail={
-                "code": "fairness_blocked",
-                "category": result.category,
-                "message": result.educational_message,
-                "blocked_terms": result.blocked_terms,
-                "soft_warnings": result.soft_warnings,
-            },
-        )
-
-    return list(result.soft_warnings or [])
 
 
 class BulkActionError(BaseModel):

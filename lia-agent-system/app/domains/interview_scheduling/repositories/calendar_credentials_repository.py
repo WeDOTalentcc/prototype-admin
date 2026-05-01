@@ -16,7 +16,7 @@ class CalendarCredentialsRepository:
 
     async def get_credentials(self, company_id: uuid.UUID, provider: str):
         """Return CompanyCalendarCredentials for company+provider, or None."""
-        from lia_models.company_calendar_credentials import CompanyCalendarCredentials
+        from app.models.company_calendar_credentials import CompanyCalendarCredentials
 
         result = await self.db.execute(
             select(CompanyCalendarCredentials).where(
@@ -35,7 +35,7 @@ class CalendarCredentialsRepository:
         timezone: str = "America/Sao_Paulo",
     ):
         """Create or update calendar credentials record."""
-        from lia_models.company_calendar_credentials import CompanyCalendarCredentials
+        from app.models.company_calendar_credentials import CompanyCalendarCredentials
 
         record = await self.get_credentials(company_id, provider)
         if record:

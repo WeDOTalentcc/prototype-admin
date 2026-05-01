@@ -107,7 +107,6 @@ class JobCreationState(TypedDict, total=False):
     workspace_id: int
     auth_token: str
     language: str  # default "pt-BR"
-    company_id: str  # tenant id -- injected from JWT in intake_node, never from user input
 
     # --- Current stage ---
     current_stage: WizardStage
@@ -126,10 +125,6 @@ class JobCreationState(TypedDict, total=False):
     parsed_location: Optional[str]
     parsed_model: Optional[str]  # remote/hybrid/onsite
     intake_confidence: float
-
-    # --- Onda 37.3.2: Template type (from template_type_resolver) ---
-    template_type: Optional[Literal["technical", "executive", "operational", "mass_hiring", "intern"]]
-    template_metadata: Optional[Dict[str, str]]  # display_name + description
 
     # --- F1: JD Enrichment ---
     jd_raw: Optional[str]  # recruiter's original JD text
@@ -160,11 +155,6 @@ class JobCreationState(TypedDict, total=False):
     wsi_questions: List[ScreeningQuestion]
     questions_approved: Optional[bool]  # HITL point 2
     questions_approval_details: List[Dict[str, Any]]  # per-question decisions
-    # Structured record of questions removed by FairnessGuard during F6.
-    # Each item: {question, category, blocked_terms, message}.
-    # Surfaced in ws_stage_payload.data.dropped_questions and in the audit row
-    # so recruiters never see questions silently disappear.
-    wsi_dropped_questions: List[Dict[str, Any]]
 
     # --- Eligibility ---
     eligibility_questions: List[EligibilityQuestion]
@@ -172,7 +162,6 @@ class JobCreationState(TypedDict, total=False):
     # --- Review ---
     readiness_check: Optional[Dict[str, Any]]
     company_defaults_applied: List[str]  # which defaults from Settings were loaded
-    manager_preferences_loaded: bool  # True after ManagerPreferencesService.apply_to_state ran
 
     # --- Publish ---
     job_id: Optional[int]  # Rails job ID after creation
@@ -192,38 +181,10 @@ class JobCreationState(TypedDict, total=False):
     # --- Handoff ---
     handoff_url: Optional[str]  # URL to the job page
 
-    # --- Pre-completion bookkeeping ---
-    # Stages that the recruiter already provided enough information for
-    # at intake time and which can be skipped by the routing functions.
-    # NEVER includes HITL stages (`jd_enrichment`, `wsi_questions`).
-    # Populated by `intake_node` from the canonical IntakeExtractor.
-    precompleted_stages: List[WizardStage]
-    # Canonical structured intake payload. Source-of-truth for what the
-    # recruiter said up-front. Each field carries (value, confidence,
-    # source). Schema: `JobIntakePayload` in
-    # `app/domains/job_creation/services/intake_extractor.py`.
-    intake_payload: Optional[Dict[str, Any]]
-
     # --- WS protocol fields ---
     ws_stage_payload: Optional[Dict[str, Any]]  # last wizard_stage WS message sent
     requires_approval: bool  # current stage needs HITL
     completeness: float  # 0.0 to 1.0 overall wizard progress
-
-    # --- Policy gate (N-09 + M-06) ---
-    # Per-turn decisions emitted by `app.domains.job_creation.policy_gate`.
-    # Each entry: {stage, intent, policy_decision, confidence_band,
-    # rationale, requires_human_confirmation}. Surfaced verbatim in the
-    # `job_creation` audit row so EU AI Act §FRIA gets per-turn traceability.
-    policy_decisions: List[Dict[str, Any]]
-    # Set by the wizard policy gate when the underlying PolicyGateService
-    # returns HITL_REQUIRED — tells the chat surface that the recruiter
-    # must explicitly approve this turn before the wizard advances.
-    pending_human_confirmation: Optional[bool]
-    # Recruiter-confirmation flag: set to True by the chat surface on the
-    # turn that explicitly confirms a paused publish action. Causes
-    # `publish_node` to bypass the HITL pause for that single turn so the
-    # Rails publish actually fires. Audited via `policy_decisions`.
-    policy_confirmed_publish: Optional[bool]
 
 
 # Stage order for progress calculation

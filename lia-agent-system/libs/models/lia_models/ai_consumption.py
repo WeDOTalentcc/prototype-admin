@@ -104,7 +104,7 @@ class AiCreditsBalance(Base):
     
     def __repr__(self):
         return f"<AiCreditsBalance {self.id} - company {self.company_id}>"
-
+    
     def to_dict(self):
         return {
             "id": str(self.id),
@@ -120,40 +120,3 @@ class AiCreditsBalance(Base):
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
-
-
-class AiConsumptionOutbox(Base):
-    """
-    Audit task #544 — outbox durável de eventos de tracking de IA.
-
-    Cada linha representa um payload pendente de gravação em
-    `AiConsumption`. O fluxo (escrito em `app/shared/observability/
-    usage_tracking_callback.py`) é:
-
-    1. Callback síncrono recebe `usage` da chamada LLM.
-    2. Insere uma linha aqui (escrita pequena, sem PII — apenas IDs).
-    3. Worker periódico (`app/shared/observability/
-       ai_consumption_outbox_worker.py`) drena lotes, persiste em
-       `AiConsumption` via `TokenTrackingService.record_usage` e marca
-       `delivered_at`.
-
-    Compliance:
-    - LGPD/EU AI Act §12: payload contém apenas IDs (nada de PII).
-    - Retenção: linhas entregues são mantidas para reconciliação por
-      janela curta (ver job de purge em `app/jobs/`); a retenção
-      regulatória de 365d aplica-se ao destino (`AiConsumption`).
-    """
-    __tablename__ = "ai_consumption_outbox"
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    payload = Column(JSON, nullable=False)
-    created_at = Column(DateTime, server_default=func.now(), nullable=False, index=True)
-    delivered_at = Column(DateTime, nullable=True)
-    attempts = Column(Integer, default=0, nullable=False)
-    last_error = Column(Text, nullable=True)
-
-    def __repr__(self):
-        return (
-            f"<AiConsumptionOutbox {self.id} "
-            f"delivered={self.delivered_at is not None} attempts={self.attempts}>"
-        )

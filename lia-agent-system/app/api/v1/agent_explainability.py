@@ -6,14 +6,6 @@ from pydantic import BaseModel
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +65,7 @@ class StatsResponse(BaseModel):
 
 
 @router.get("/timeline/{session_id}", response_model=list[TimelineStepResponse])
-async def get_timeline(session_id: _DualId, current_user: User = Depends(get_current_user_or_demo)):
+async def get_timeline(session_id: str, current_user: User = Depends(get_current_user_or_demo)):
     try:
         timeline = await store.get_timeline(session_id)
         if not timeline:
@@ -87,7 +79,7 @@ async def get_timeline(session_id: _DualId, current_user: User = Depends(get_cur
 
 
 @router.get("/session/{session_id}/summary", response_model=SessionSummaryResponse)
-async def get_session_summary(session_id: _DualId, current_user: User = Depends(get_current_user_or_demo)):
+async def get_session_summary(session_id: str, current_user: User = Depends(get_current_user_or_demo)):
     try:
         records = await store.get_by_session(session_id, limit=1)
         if not records:
@@ -124,7 +116,7 @@ async def get_session_summary(session_id: _DualId, current_user: User = Depends(
 
 @router.get("/company/{company_id}/recent", response_model=list[ExecutionSummaryResponse])
 async def get_recent_executions(
-    company_id: _DualId,
+    company_id: str,
     domain: str | None = Query(None, description="Filter by domain"),
     limit: int = Query(20, le=100, ge=1),
     current_user: User = Depends(get_current_user_or_demo),
@@ -154,17 +146,10 @@ async def get_recent_executions(
 
 
 @router.get("/stats/{company_id}", response_model=StatsResponse)
-async def get_company_stats(company_id: _DualId, current_user: User = Depends(get_current_user_or_demo)):
+async def get_company_stats(company_id: str, current_user: User = Depends(get_current_user_or_demo)):
     try:
         stats = await store.get_stats(company_id)
         return StatsResponse(**stats)
     except Exception as e:
         logger.error(f"Error fetching stats for company {company_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch stats")
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

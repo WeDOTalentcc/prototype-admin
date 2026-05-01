@@ -22,7 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domains.interview_scheduling.services.interview_transcript_analysis_service import (
     interview_transcript_analysis_service,
 )
-from lia_models.interview import Interview
+from app.models.interview import Interview
 
 logger = logging.getLogger(__name__)
 
@@ -86,20 +86,16 @@ class InterviewWSIService:
 
         seven_blocks = self._map_to_seven_blocks(analysis, transcript)
 
-        # B0 #523 — analyzer (interview_transcript_analysis_service) refatorado
-        # no source para emitir scores em escala canônica /10. Sem fatores de
-        # compatibilidade aqui. Bloom (1-6) e Dreyfus (1-5) ficam como escalas
-        # próprias (denominadores de framework, não convertidos).
         return {
             "success": True,
             "interview_id": interview_id,
             "candidate_id": str(interview.candidate_id) if interview.candidate_id else None,
             "job_vacancy_id": str(interview.job_vacancy_id) if interview.job_vacancy_id else None,
             "interview_type": interview.interview_type,
-            "wsi_score": round(analysis.overall_wsi_score, 2),
-            "technical_score": round(analysis.technical_score, 2),
-            "behavioral_score": round(analysis.behavioral_score, 2),
-            "cultural_score": round(analysis.cultural_score, 2),
+            "wsi_score": analysis.overall_wsi_score,
+            "technical_score": analysis.technical_score,
+            "behavioral_score": analysis.behavioral_score,
+            "cultural_score": analysis.cultural_score,
             "bloom_level": analysis.bloom_average,
             "dreyfus_stage": analysis.dreyfus_average,
             "cbi_completeness": analysis.cbi_completeness,
@@ -122,37 +118,21 @@ class InterviewWSIService:
         }
 
     def _map_to_seven_blocks(self, analysis: Any, transcript: str) -> dict[str, Any]:
-        # B0 #523 — Scores expostos em escala canônica /10. analyzer emite
-        # nativamente em /10 (sem fator de conversão). Bloom (1-6) e Dreyfus
-        # (1-5) ficam como escalas próprias — sem conversão.
-        from app.domains.cv_screening.constants.wsi_scale import (
-            GATE_G3_THRESHOLD,
-            SCALE_MAX,
-        )
-        # Base inicial = GATE_G3_THRESHOLD (4.0 em /10): score técnico mínimo
-        # aceitável. Cada evidência adiciona 1 ponto, capado em SCALE_MAX.
-        BASE_KEYWORD_SCORE = GATE_G3_THRESHOLD
-
         text_lower = transcript.lower()
 
         leadership_hits = sum(1 for kw in LEADERSHIP_KEYWORDS if kw in text_lower)
-        leadership_score = min(SCALE_MAX, BASE_KEYWORD_SCORE + leadership_hits * 1.0)
+        leadership_score = min(5.0, 2.0 + leadership_hits * 0.5)
 
         comm_hits = sum(1 for kw in COMMUNICATION_KEYWORDS if kw in text_lower)
-        communication_score = min(SCALE_MAX, BASE_KEYWORD_SCORE + comm_hits * 1.0)
+        communication_score = min(5.0, 2.0 + comm_hits * 0.5)
 
         big_five = analysis.big_five_profile or {}
         extraversion = big_five.get("extraversion", 0)
         agreeableness = big_five.get("agreeableness", 0)
         if extraversion > 0.3 or agreeableness > 0.3:
-            communication_score = min(SCALE_MAX, communication_score + 1.0)
+            communication_score = min(5.0, communication_score + 0.5)
 
-        # `analysis.bloom_average` é o score Bloom já normalizado 0-5
-        # pelo analyzer (ver `_calculate_bloom_score` docstring — retorna
-        # tuple `(normalized_score 0-5, highest_level 1-6)`). O `bloom_level`
-        # é o highest level 1-6 — não usado aqui. Pra projetar em /10:
-        BLOOM_NORMALIZED_MAX = 5.0  # range de bloom_average vindo do analyzer
-        potential_score = min(SCALE_MAX, (analysis.bloom_average / BLOOM_NORMALIZED_MAX) * SCALE_MAX)
+        potential_score = min(5.0, analysis.bloom_average)
 
         return {
             "hard_skills": {
@@ -166,7 +146,7 @@ class InterviewWSIService:
                 "description": "Competências comportamentais e interpessoais",
             },
             "experience": {
-                "score": round(analysis.dreyfus_average, 2),  # Dreyfus 1-5: escala própria
+                "score": round(analysis.dreyfus_average, 2),
                 "label": "Experiência (Dreyfus)",
                 "description": f"Estágio de expertise: {self._dreyfus_label(analysis.dreyfus_average)}",
             },

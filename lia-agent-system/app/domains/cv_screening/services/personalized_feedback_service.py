@@ -94,9 +94,9 @@ class JobContext(BaseModel):
 
 class WSIEvaluationContext(BaseModel):
     """WSI evaluation results for personalization."""
-    overall_wsi: float = Field(ge=0, le=10)
-    technical_wsi: float | None = Field(default=None, ge=0, le=10)
-    behavioral_wsi: float | None = Field(default=None, ge=0, le=10)
+    overall_wsi: float = Field(ge=0, le=5)
+    technical_wsi: float | None = Field(default=None, ge=0, le=5)
+    behavioral_wsi: float | None = Field(default=None, ge=0, le=5)
     classification: Literal[
         "excepcional", "excelente", "alto", "medio", "abaixo_da_media", "regular"
     ] = "medio"
@@ -274,9 +274,9 @@ CONTEXT:
   - Seniority Level: {job_seniority}
 
 - Evaluation Results:
-  - Overall WSI Score: {wsi_score}/10.0 ({wsi_classification})
-  - Technical Score: {technical_wsi}/10.0
-  - Behavioral Score: {behavioral_wsi}/10.0
+  - Overall WSI Score: {wsi_score}/5.0 ({wsi_classification})
+  - Technical Score: {technical_wsi}/5.0
+  - Behavioral Score: {behavioral_wsi}/5.0
   
 - Strengths Identified:
 {strengths_list}
@@ -400,16 +400,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
 
             whatsapp_message = None
             if request.channel in [FeedbackChannel.WHATSAPP, FeedbackChannel.BOTH]:
-                # Audit task #545 — encaminha contexto para tracking de IA por
-                # empresa/candidato/vaga no AiConsumption.
-                _wpp_tracking = {
-                    "company_id": request.company_id,
-                    "candidate_id": request.candidate.candidate_id,
-                    "vacancy_id": request.job.job_id,
-                }
-                whatsapp_message = await self._generate_whatsapp_version(
-                    body_text, tracking_context=_wpp_tracking,
-                )
+                whatsapp_message = await self._generate_whatsapp_version(body_text)
 
             feedback_id = str(uuid.uuid4())
 
@@ -474,7 +465,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                     reasoning=[
                         "Personalized feedback generated",
                         f"WSI classification: {request.evaluation.classification}",
-                        f"WSI score: {request.evaluation.overall_wsi}/10.0",
+                        f"WSI score: {request.evaluation.overall_wsi}/5.0",
                         f"Decision: {request.decision_type}",
                         "AI-generated: True",
                         f"Auto-send: {getattr(request, 'auto_send', False)}",
@@ -527,9 +518,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         cand = request.candidate
         job = request.job
 
-        # Task #497 PR2: overall_wsi já vem em escala /10 (post-migration 090).
-        # A conversão *2 que existia aqui era da época em que a fonte era /5.
-        score_10 = round(eval_ctx.overall_wsi, 1)
+        score_10 = round(eval_ctx.overall_wsi * 2, 1)
         seniority_label = getattr(eval_ctx, "seniority_label", None) or job.seniority_level or "a vaga"
 
         _CLASS_LABEL = {
@@ -563,8 +552,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
 
         if comp_scores:
             for competency, raw_score in comp_scores.items():
-                # Task #497 PR2: comp_scores já em /10 (post-migration 090).
-                score_comp = round(float(raw_score), 1)
+                score_comp = round(float(raw_score) * 2, 1)
                 lines.append("─" * 60)
                 lines.append(f"Avaliação — {competency}")
                 lines.append("─" * 60)
@@ -572,23 +560,23 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                 lines.append(f"Sua resposta foi avaliada em {score_comp}/10 nesta competência.")
                 lines.append("")
 
-                if float(raw_score) >= 9.0:
+                if float(raw_score) >= 4.5:
                     lines.append("Pontos identificados como destaque:")
-                elif float(raw_score) >= 7.0:
+                elif float(raw_score) >= 3.5:
                     lines.append("Pontos identificados como fortes:")
-                elif float(raw_score) >= 5.0:
+                elif float(raw_score) >= 2.5:
                     lines.append("Pontos presentes na sua resposta:")
 
                 detected = [s for s in strengths if competency.lower() in s.lower()] or (
-                    strengths[:2] if float(raw_score) >= 5.0 else []
+                    strengths[:2] if float(raw_score) >= 2.5 else []
                 )
                 for sig in detected[:3]:
                     lines.append(f"• {sig}")
 
-                if float(raw_score) < 8.0 or dev_areas:
+                if float(raw_score) < 4.0 or dev_areas:
                     lines.append("")
                     absent = [d for d in dev_areas if competency.lower() in d.lower()] or (
-                        dev_areas[:2] if float(raw_score) < 7.0 else []
+                        dev_areas[:2] if float(raw_score) < 3.5 else []
                     )
                     if absent:
                         lines.append("Pontos que poderiam enriquecer a resposta:")
@@ -596,9 +584,9 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                             lines.append(f"• {sig}")
 
                 lines.append("")
-                if float(raw_score) >= 7.0:
+                if float(raw_score) >= 3.5:
                     lines.append(f"Nível de maturidade esperado para {seniority_label}: atingido ✓")
-                elif float(raw_score) >= 5.0:
+                elif float(raw_score) >= 2.5:
                     lines.append(
                         f"Nível esperado para {seniority_label}: a resposta demonstrou boa base — "
                         "aprofundar exemplos com processo próprio desenvolvido fortaleceria a avaliação."
@@ -617,10 +605,10 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             lines.append(f"Sua avaliação geral foi de {score_10}/10 ({classification_label}).")
             lines.append("")
 
-            if eval_ctx.overall_wsi >= 5.0 and strengths:
-                if eval_ctx.overall_wsi >= 9.0:
+            if eval_ctx.overall_wsi >= 2.5 and strengths:
+                if eval_ctx.overall_wsi >= 4.5:
                     lines.append("Pontos identificados como destaque:")
-                elif eval_ctx.overall_wsi >= 7.0:
+                elif eval_ctx.overall_wsi >= 3.5:
                     lines.append("Pontos identificados como fortes:")
                 else:
                     lines.append("Pontos presentes na sua candidatura:")
@@ -634,9 +622,9 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                     lines.append(f"• {d}")
                 lines.append("")
 
-            if eval_ctx.overall_wsi >= 7.0:
+            if eval_ctx.overall_wsi >= 3.5:
                 lines.append(f"Nível de maturidade esperado para {seniority_label}: atingido ✓")
-            elif eval_ctx.overall_wsi >= 5.0:
+            elif eval_ctx.overall_wsi >= 2.5:
                 lines.append(
                     f"Nível esperado para {seniority_label}: a resposta demonstrou boa base — "
                     "aprofundar exemplos com processo próprio desenvolvido fortaleceria a avaliação."
@@ -946,26 +934,11 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         
         return html
     
-    async def _generate_whatsapp_version(
-        self,
-        email_body: str,
-        tracking_context: dict[str, Any] | None = None,
-    ) -> str:
+    async def _generate_whatsapp_version(self, email_body: str) -> str:
         """Generate a shorter WhatsApp-appropriate version of the feedback."""
         try:
-            from app.shared.observability.usage_tracking_callback import (
-                build_usage_callback,
-            )
-
             prompt = self.WHATSAPP_PROMPT_TEMPLATE.format(email_body=email_body)
-            on_usage = build_usage_callback(
-                tracking_context,
-                agent_type="personalized_feedback_whatsapp",
-                default_operation="personalized_feedback_whatsapp",
-            )
-            _response = await self.llm.safe_invoke(
-                prompt, provider="claude", on_usage=on_usage,
-            )
+            _response = await self.llm.safe_invoke(prompt, provider="claude")
             response = type("R", (), {"content": _response})()
             content = response.content if isinstance(response.content, str) else str(response.content)
             
@@ -1242,7 +1215,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
 
             try:
                 await audit_service.log_decision(
-                    company_id=record.company_id,
+                    company_id=getattr(record, "company_id", None),
                     agent_name="personalized_feedback",
                     decision_type="send_message",
                     action="feedback_sent",
@@ -1255,7 +1228,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                         f"Send result: {send_result.get('message_id', 'N/A') if isinstance(send_result, dict) else 'N/A'}",
                     ],
                     criteria_used=["feedback_status", "channel_availability", "approval_status"],
-                    candidate_id=record.candidate_id,
+                    candidate_id=getattr(record, "candidate_id", None),
                     job_vacancy_id=getattr(record, "job_vacancy_id", None),
                     human_review_required=False,
                 )
@@ -1408,15 +1381,3 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
 
 
 personalized_feedback_service = PersonalizedFeedbackService()
-
-
-# Module-level handler exposed to the chat tool registry
-async def send_feedback(**kwargs):
-    """Chat-surface wrapper around PersonalizedFeedbackService.
-
-    Routes to send_approval_feedback() when an `approval_id`/`feedback_id` is
-    present, otherwise falls back to generate_personalized_feedback().
-    """
-    if kwargs.get("feedback_id") or kwargs.get("approval_id"):
-        return await personalized_feedback_service.send_approval_feedback(**kwargs)
-    return await personalized_feedback_service.generate_personalized_feedback(**kwargs)

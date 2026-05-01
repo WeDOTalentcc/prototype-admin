@@ -9,7 +9,7 @@ from sqlalchemy import and_, delete, select
 from sqlalchemy import update as sa_update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.recruitment_stages import RecruitmentStage
+from app.models.recruitment_stages import RecruitmentStage
 
 logger = logging.getLogger(__name__)
 

@@ -39,10 +39,8 @@ from __future__ import annotations
 
 import logging
 import os
-import time
 from typing import Callable
 
-import httpx
 from fastapi import Depends, HTTPException, Request, Response, status
 
 logger = logging.getLogger(__name__)
@@ -56,90 +54,6 @@ def _is_strict_mode() -> bool:
 def _rails_url() -> str:
     """Return the configured Rails API URL, or empty string if unset."""
     return os.environ.get("RAILS_API_URL", "").rstrip("/")
-
-
-# Estado de logging idempotente — emitir ERROR/WARNING apenas uma vez por
-# boot por causa, em vez de poluir o log a cada request. Resetado
-# naturalmente no próximo restart.
-_strict_mode_no_url_logged = False
-_strict_mode_unhealthy_logged = False
-
-# Cache simples do health-probe do Rails para não bater na rede a cada
-# request guardado. TTL curto: queremos detectar recuperação rápida.
-_RAILS_HEALTH_TTL_SECS = 30.0
-_RAILS_HEALTH_TIMEOUT_SECS = 2.0
-_rails_health_cache: dict[str, float | bool] = {"ok": False, "checked_at": 0.0}
-
-
-def _probe_rails_healthy(rails_url: str) -> bool:
-    """Best-effort sync probe contra `RAILS_HEALTH_PATH` (default /health).
-
-    Resultado cacheado por `_RAILS_HEALTH_TTL_SECS`. Timeout curto pra não
-    pendurar requests do usuário se Rails estiver lento. Qualquer 2xx/3xx
-    conta como saudável; rede caída ou 5xx contam como unhealthy.
-    """
-    now = time.monotonic()
-    last_check = float(_rails_health_cache.get("checked_at", 0.0))
-    if now - last_check < _RAILS_HEALTH_TTL_SECS:
-        return bool(_rails_health_cache.get("ok", False))
-
-    health_path = os.environ.get("RAILS_HEALTH_PATH", "/health").lstrip("/")
-    url = f"{rails_url}/{health_path}"
-    try:
-        resp = httpx.get(url, timeout=_RAILS_HEALTH_TIMEOUT_SECS)
-        ok = resp.status_code < 500
-    except Exception as exc:  # noqa: BLE001 — best-effort probe
-        logger.debug("[rails-migration] health probe failed: %s", exc)
-        ok = False
-
-    _rails_health_cache["ok"] = ok
-    _rails_health_cache["checked_at"] = now
-    return ok
-
-
-def _strict_mode_is_safe() -> bool:
-    """Validate that STRICT_RAILS_ONLY pode realmente ser honrado.
-
-    Task #298 / audit causa raiz #9: se alguém liga STRICT_RAILS_ONLY=true sem
-    `RAILS_API_URL` configurado, ou com Rails fora do ar, todas as rotas
-    guardadas devolveriam 410 Gone — derrubando o Funil. Este guard:
-
-      1. Sem `RAILS_API_URL`: log ERROR uma vez e devolve False (ignora
-         kill-switch, cai no fallback Python local).
-      2. Com URL mas adapter unhealthy (probe `RAILS_HEALTH_PATH`, default
-         /health, com timeout curto e cache de 30s): log WARNING uma vez e
-         devolve False — mesmo fallback.
-      3. Tudo OK: devolve True, kill-switch honrado normalmente.
-
-    Operador vê o motivo nos logs; usuário não vê 410 surpresa.
-    """
-    global _strict_mode_no_url_logged, _strict_mode_unhealthy_logged
-    rails_url = _rails_url()
-    if not rails_url:
-        if not _strict_mode_no_url_logged:
-            logger.error(
-                "[rails-migration] STRICT_RAILS_ONLY=true mas RAILS_API_URL "
-                "está vazio — kill-switch IGNORADO para não derrubar "
-                "endpoints. Configure RAILS_API_URL ou desligue "
-                "STRICT_RAILS_ONLY."
-            )
-            _strict_mode_no_url_logged = True
-        return False
-
-    if not _probe_rails_healthy(rails_url):
-        if not _strict_mode_unhealthy_logged:
-            logger.warning(
-                "[rails-migration] STRICT_RAILS_ONLY=true mas Rails adapter "
-                "(%s) está unhealthy — kill-switch IGNORADO temporariamente. "
-                "Endpoints servem fallback local até Rails recuperar.",
-                rails_url,
-            )
-            _strict_mode_unhealthy_logged = True
-        return False
-
-    # Rails recuperou — permite que próximo log de unhealthy seja emitido.
-    _strict_mode_unhealthy_logged = False
-    return True
 
 
 def deprecated_in_favor_of_rails(
@@ -188,7 +102,7 @@ def deprecated_in_favor_of_rails(
                 f'<{rails_url}{rails_path}>; rel="successor-version"'
             )
 
-        if _is_strict_mode() and _strict_mode_is_safe():
+        if _is_strict_mode():
             detail = {
                 "error": "resource_moved",
                 "resource": resource,

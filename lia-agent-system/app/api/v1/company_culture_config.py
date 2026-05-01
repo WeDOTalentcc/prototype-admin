@@ -5,11 +5,9 @@ Handles CRUD for culture values and ideal profiles (config data, not analysis).
 import logging
 import uuid
 from datetime import datetime
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-
-from app.auth.dependencies import get_current_user_or_demo, validate_company_access
-from app.auth.models import User
 from app.domains.company.dependencies import (
     get_culture_value_repo,
     get_ideal_profile_repo,
@@ -36,21 +34,17 @@ async def list_culture_values(
     category: str | None = Query(None),
     include_inactive: bool = Query(False),
     cv_repo: CultureValueRepository = Depends(get_culture_value_repo),
-    current_user: User = Depends(get_current_user_or_demo),
 ):
     """List all culture values for a company."""
     try:
         if not company_id:
             return []
-        validate_company_access(current_user, str(company_id))
         values = await cv_repo.list_for_company(company_id)
         if category:
             values = [v for v in values if v.category == category]
         if not include_inactive:
             values = [v for v in values if v.is_active]
         return values
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Error listing culture values: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -61,16 +55,12 @@ async def create_culture_value(
     company_id: uuid.UUID,
     data: CultureValueCreate,
     cv_repo: CultureValueRepository = Depends(get_culture_value_repo),
-    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Create a new culture value."""
     try:
-        validate_company_access(current_user, str(company_id))
         cv = await cv_repo.create({"company_id": company_id, **data.model_dump()})
         logger.info(f"Created culture value: {cv.name}")
         return cv
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Error creating culture value: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -81,14 +71,9 @@ async def update_culture_value(
     value_id: uuid.UUID,
     data: CultureValueUpdate,
     cv_repo: CultureValueRepository = Depends(get_culture_value_repo),
-    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Update a culture value."""
     try:
-        existing = await cv_repo.get_by_id(value_id)
-        if not existing:
-            raise HTTPException(status_code=404, detail="Culture value not found")
-        validate_company_access(current_user, str(existing.company_id))
         update_data = data.model_dump(exclude_unset=True)
         update_data["updated_at"] = datetime.utcnow()
         cv = await cv_repo.update(value_id, update_data)
@@ -106,14 +91,9 @@ async def update_culture_value(
 async def delete_culture_value(
     value_id: uuid.UUID,
     cv_repo: CultureValueRepository = Depends(get_culture_value_repo),
-    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Soft delete a culture value."""
     try:
-        existing = await cv_repo.get_by_id(value_id)
-        if not existing:
-            raise HTTPException(status_code=404, detail="Culture value not found")
-        validate_company_access(current_user, str(existing.company_id))
         deleted = await cv_repo.delete(value_id)
         if not deleted:
             raise HTTPException(status_code=404, detail="Culture value not found")
@@ -133,13 +113,11 @@ async def list_ideal_profiles(
     seniority_level: str | None = Query(None),
     include_inactive: bool = Query(False),
     ip_repo: IdealProfileRepository = Depends(get_ideal_profile_repo),
-    current_user: User = Depends(get_current_user_or_demo),
 ):
     """List all ideal profiles."""
     try:
         if not company_id:
             return []
-        validate_company_access(current_user, str(company_id))
         profiles = await ip_repo.list_for_company(company_id)
         if department_id:
             profiles = [p for p in profiles if p.department_id == department_id]
@@ -150,8 +128,6 @@ async def list_ideal_profiles(
         if not include_inactive:
             profiles = [p for p in profiles if p.is_active]
         return profiles
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Error listing ideal profiles: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -162,16 +138,12 @@ async def create_ideal_profile(
     company_id: uuid.UUID,
     data: IdealProfileCreate,
     ip_repo: IdealProfileRepository = Depends(get_ideal_profile_repo),
-    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Create a new ideal profile."""
     try:
-        validate_company_access(current_user, str(company_id))
         profile = await ip_repo.create({"company_id": company_id, **data.model_dump()})
         logger.info(f"Created ideal profile: {profile.name}")
         return profile
-    except HTTPException:
-        raise
     except Exception as e:
         logger.error(f"Error creating ideal profile: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -182,15 +154,13 @@ async def update_ideal_profile(
     profile_id: uuid.UUID,
     data: IdealProfileUpdate,
     ip_repo: IdealProfileRepository = Depends(get_ideal_profile_repo),
-    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Update an ideal profile."""
     try:
+        update_data = data.model_dump(exclude_unset=True)
         existing = await ip_repo.get_by_id(profile_id)
         if not existing:
             raise HTTPException(status_code=404, detail="Ideal profile not found")
-        validate_company_access(current_user, str(existing.company_id))
-        update_data = data.model_dump(exclude_unset=True)
         if data.validated and not existing.validated_at:
             update_data["validated_at"] = datetime.utcnow()
         update_data["updated_at"] = datetime.utcnow()
@@ -207,14 +177,9 @@ async def update_ideal_profile(
 async def delete_ideal_profile(
     profile_id: uuid.UUID,
     ip_repo: IdealProfileRepository = Depends(get_ideal_profile_repo),
-    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Soft delete an ideal profile."""
     try:
-        existing = await ip_repo.get_by_id(profile_id)
-        if not existing:
-            raise HTTPException(status_code=404, detail="Ideal profile not found")
-        validate_company_access(current_user, str(existing.company_id))
         deleted = await ip_repo.delete(profile_id)
         if not deleted:
             raise HTTPException(status_code=404, detail="Ideal profile not found")

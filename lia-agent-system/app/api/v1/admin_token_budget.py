@@ -12,18 +12,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
 from app.core.auth import get_current_user
-from app.shared.observability.token_budget_service import (
+from app.domains.credits.services.token_budget_service import (
     check_budget,
     get_budget_status,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter(prefix="/admin/token-budget", tags=["admin-token-budget"])
 logger = logging.getLogger(__name__)
@@ -65,7 +57,7 @@ class BudgetCheckResponse(BaseModel):
     ),
 )
 async def get_company_token_budget(
-    company_id: _DualId,
+    company_id: str,
     plan_code: str | None = Query(
         default=None,
         description="Código do plano da assinatura ativa. Se omitido, usa fallback (starter/10k).",
@@ -95,7 +87,7 @@ async def get_company_token_budget(
     description="Retorna se a empresa ainda pode fazer chamadas LLM hoje.",
 )
 async def check_company_budget(
-    company_id: _DualId,
+    company_id: str,
     plan_code: str | None = Query(default=None),
     current_user=Depends(get_current_user),
 ):
@@ -113,10 +105,3 @@ async def check_company_budget(
             company_id, exc
         )
         raise HTTPException(status_code=500, detail="Erro ao verificar token budget")
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

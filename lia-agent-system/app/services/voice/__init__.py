@@ -1,8 +1,10 @@
-"""Legacy voice services package.
+"""Voice services — Deepgram STT and OpenMic.ai automated voice screening."""
+from app.services.voice.deepgram_service import deepgram_service, DeepgramService
+from app.services.voice.openmic_service import openmic_service, OpenMicService
 
-The OpenMic.ai and Deepgram providers were removed in 2026-04-18 (audit
-P0-4). The canonical voice stack is now Twilio Programmable Voice (PSTN /
-WhatsApp) plus Gemini Live Audio (web VoIP), implemented under
-``app/domains/voice/services/``.
-"""
-__all__: list[str] = []
+__all__ = [
+    "deepgram_service",
+    "DeepgramService",
+    "openmic_service",
+    "OpenMicService",
+]

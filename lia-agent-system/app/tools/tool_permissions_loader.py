@@ -211,24 +211,14 @@ def _build_tenant_config(
     provider = global_provider
     fallback_order = global_fallback
 
-    # Apply per-tenant scope overrides if tenant_id is provided.
-    # Per ADR-016 / Task #353: per-tenant `llm_provider` and
-    # `llm_fallback_order` are NO LONGER read from this YAML — they live
-    # in the `tenant_llm_configs` table. Only scope `overrides` are honoured
-    # here. Any `llm_provider` / `llm_fallback_order` keys under
-    # `tenants:` are silently ignored (and a one-time warning is logged).
+    # Apply per-tenant overrides if tenant_id is provided
     if tenant_id:
         tenants_cfg = raw.get("tenants", {}) or {}
         tenant_cfg = tenants_cfg.get(tenant_id, {})
 
         if tenant_cfg:
-            if "llm_provider" in tenant_cfg or "llm_fallback_order" in tenant_cfg:
-                logger.warning(
-                    "[ToolPermissionsLoader] tenant=%s has legacy llm_provider/"
-                    "llm_fallback_order in YAML — these are ignored. Move to "
-                    "tenant_llm_configs table (see ADR-016).",
-                    tenant_id,
-                )
+            provider = tenant_cfg.get("llm_provider", provider)
+            fallback_order = list(tenant_cfg.get("llm_fallback_order", fallback_order))
 
             overrides = tenant_cfg.get("overrides", {}) or {}
             for scope_name, override in overrides.items():

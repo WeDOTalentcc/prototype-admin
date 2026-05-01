@@ -118,57 +118,54 @@ def _check_circuit_breakers() -> dict:
 
 
 def _check_voice_services() -> dict:
-    """Check voice services (Twilio Programmable Voice + Gemini Live Audio) configuration and circuit breaker status."""
+    """Check Deepgram STT and OpenMic.ai configuration and circuit breaker status."""
     try:
-        twilio_configured = bool(
-            os.getenv("TWILIO_ACCOUNT_SID") and os.getenv("TWILIO_AUTH_TOKEN")
-        )
-        gemini_configured = bool(
-            os.getenv("GOOGLE_AI_API_KEY") or os.getenv("GEMINI_API_KEY")
-        )
+        deepgram_configured = bool(os.getenv("DEEPGRAM_API_KEY"))
+        openmic_configured = bool(os.getenv("OPENMIC_API_KEY"))
+        openmic_webhook_secret = bool(os.getenv("OPENMIC_WEBHOOK_SECRET"))
 
         from app.shared.resilience.circuit_breaker import ALL_CIRCUITS
-        twilio_circuit = ALL_CIRCUITS.get("twilio_voice")
-        gemini_live_circuit = ALL_CIRCUITS.get("gemini_live")
+        deepgram_circuit = ALL_CIRCUITS.get("deepgram")
+        openmic_circuit = ALL_CIRCUITS.get("openmic")
 
-        twilio_circuit_state = twilio_circuit.state.value if twilio_circuit else "unknown"
-        gemini_live_circuit_state = (
-            gemini_live_circuit.state.value if gemini_live_circuit else "unknown"
-        )
+        deepgram_circuit_state = deepgram_circuit.state.value if deepgram_circuit else "unknown"
+        openmic_circuit_state = openmic_circuit.state.value if openmic_circuit else "unknown"
 
-        twilio_status = (
-            "healthy" if (twilio_configured and twilio_circuit_state != "open")
-            else "degraded" if twilio_configured
+        deepgram_status = (
+            "healthy" if (deepgram_configured and deepgram_circuit_state != "open")
+            else "degraded" if deepgram_configured
             else "not_configured"
         )
-        gemini_live_status = (
-            "healthy" if (gemini_configured and gemini_live_circuit_state != "open")
-            else "degraded" if gemini_configured
+        openmic_status = (
+            "healthy" if (openmic_configured and openmic_circuit_state != "open")
+            else "degraded" if openmic_configured
             else "not_configured"
         )
 
         any_circuit_open = (
-            twilio_circuit_state == "open" or gemini_live_circuit_state == "open"
+            deepgram_circuit_state == "open" or openmic_circuit_state == "open"
         )
         overall_status = (
             "healthy"
-            if (twilio_configured and gemini_configured and not any_circuit_open)
+            if (deepgram_configured and openmic_configured and not any_circuit_open)
             else "degraded"
         )
 
         return {
             "status": overall_status,
-            "twilio_voice": {
-                "configured": twilio_configured,
-                "circuit_state": twilio_circuit_state,
-                "status": twilio_status,
-                "channels": ["PSTN", "WhatsApp"],
+            "deepgram": {
+                "configured": deepgram_configured,
+                "circuit_state": deepgram_circuit_state,
+                "status": deepgram_status,
+                "model": "nova-2",
+                "languages": ["pt-BR", "en-US"],
             },
-            "gemini_live": {
-                "configured": gemini_configured,
-                "circuit_state": gemini_live_circuit_state,
-                "status": gemini_live_status,
-                "model": "gemini-live-audio",
+            "openmic": {
+                "configured": openmic_configured,
+                "webhook_secret_configured": openmic_webhook_secret,
+                "circuit_state": openmic_circuit_state,
+                "status": openmic_status,
+                "webhook_endpoint": "/api/v1/openmic/webhook",
             },
         }
     except Exception as exc:
@@ -383,13 +380,14 @@ async def system_health(db: AsyncSession = Depends(get_db)):
         "gemini": "configured" if (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")) else "not_configured",
         "workos": "configured" if os.getenv("WORKOS_API_KEY") else "not_configured",
         "mailgun": "configured" if (os.getenv("MAILGUN_API_KEY") and os.getenv("MAILGUN_DOMAIN")) else "not_configured",
-        "twilio_voice": "configured" if (os.getenv("TWILIO_ACCOUNT_SID") and os.getenv("TWILIO_AUTH_TOKEN")) else "not_configured",
+        "deepgram": "configured" if os.getenv("DEEPGRAM_API_KEY") else "not_configured",
+        "openmic": "configured" if os.getenv("OPENMIC_API_KEY") else "not_configured",
     }
 
     # --- External integrations health (WhatsApp, Calendar, LinkedIn/Indeed, Pearch, Slack) ---
     components["integrations"] = _check_external_integrations()
 
-    # --- Voice services (Twilio Programmable Voice + Gemini Live Audio) ---
+    # --- Voice services (Deepgram STT + OpenMic) ---
     components["voice_services"] = _check_voice_services()
 
     status_code = 200 if overall_healthy else 503
@@ -402,38 +400,6 @@ async def system_health(db: AsyncSession = Depends(get_db)):
             "version": os.getenv("APP_VERSION", "1.0.0"),
             "environment": os.getenv("APP_ENV", "development"),
             "components": components,
-        },
-    )
-
-
-@router.get("/health/providers", response_model=None)
-async def providers_health():
-    """
-    Structured per-provider configuration check (Task #297).
-
-    Reports OK/WARN/FAIL for Pearch, Apify, OpenAI, Anthropic, Gemini, WorkOS,
-    and DEV_MODE based on env-var presence. Same data used by boot logger.
-
-    Returns:
-        200 if overall OK or WARN
-        503 if overall FAIL (some user-facing feature is broken)
-    """
-    from app.shared.health.providers_health import (
-        collect_provider_health,
-        overall_status,
-    )
-
-    report = collect_provider_health()
-    overall = overall_status(report)
-    status_code = 503 if overall == "fail" else 200
-
-    return JSONResponse(
-        status_code=status_code,
-        content={
-            "overall": overall,
-            "providers": report,
-            "runbook": "docs/runbooks/sourcing-env-vars.md",
-            "timestamp": datetime.utcnow().isoformat(),
         },
     )
 

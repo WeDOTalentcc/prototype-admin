@@ -12,7 +12,7 @@ from typing import Any
 from sqlalchemy import and_, desc, or_, select
 
 from app.core.database import AsyncSessionLocal
-from lia_models import ActivityFeed
+from app.models import ActivityFeed
 
 logger = logging.getLogger(__name__)
 

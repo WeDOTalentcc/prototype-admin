@@ -9,10 +9,10 @@ from datetime import datetime
 from sqlalchemy import and_, func, not_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.candidate import Candidate, VacancyCandidate
-from lia_models.candidate_feedback import CandidateFeedback
-from lia_models.job_vacancy import JobVacancy
-from lia_models.rubric import JobRequirement
+from app.models.candidate import Candidate, VacancyCandidate
+from app.models.candidate_feedback import CandidateFeedback
+from app.models.job_vacancy import JobVacancy
+from app.models.rubric import JobRequirement
 
 logger = logging.getLogger(__name__)
 
@@ -35,23 +35,16 @@ class ApplicationRepository:
     # Candidate
     # ------------------------------------------------------------------
 
-    async def get_candidate_by_email(self, email: str, company_id: str | None = None):
-        # Task #346 — escopo é (tenant, email). Sem company_id, candidatos
-        # com o mesmo email vazariam entre empresas (cross-tenant reuse).
-        # Mantemos o parâmetro opcional para retrocompatibilidade com
-        # callers internos que ainda não foram migrados.
+    async def get_candidate_by_email(self, email: str):
         from app.shared.encryption.encrypted_field_mixin import _sha256_hash
         from sqlalchemy import or_
-        conditions = [
-            or_(
-                Candidate.email_hash == _sha256_hash(email),
-                Candidate._email_raw == email,
-            )
-        ]
-        if company_id:
-            conditions.append(Candidate.company_id == str(company_id))
         result = await self.db.execute(
-            select(Candidate).where(*conditions)
+            select(Candidate).where(
+                or_(
+                    Candidate.email_hash == _sha256_hash(email),
+                    Candidate._email_raw == email,
+                )
+            )
         )
         return result.scalar_one_or_none()
 
@@ -62,15 +55,8 @@ class ApplicationRepository:
         return result.scalar_one_or_none()
 
     async def create_candidate(self, candidate_data: dict) -> Candidate:
-        # Task #346 — todo Candidate precisa carregar tenant. O caller
-        # (geralmente um endpoint de application) deve incluir company_id
-        # no dict; sem ele falhamos cedo para evitar NOT NULL no banco.
-        company_id = candidate_data.get("company_id")
-        if not company_id:
-            raise ValueError("create_candidate: candidate_data['company_id'] é obrigatório")
         candidate = Candidate(
             id=uuid.uuid4(),
-            company_id=str(company_id),
             name=candidate_data["name"],
             email=candidate_data["email"],
             phone=candidate_data.get("phone"),
@@ -156,7 +142,7 @@ class ApplicationRepository:
 
     async def get_company_threshold(self, company_id, default_threshold: int = 20) -> int:
         try:
-            from lia_models.company import CompanyProfile
+            from app.models.company import CompanyProfile
             if not company_id:
                 return default_threshold
             cp_result = await self.db.execute(

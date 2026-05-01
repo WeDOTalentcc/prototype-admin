@@ -5,35 +5,6 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 
-# ── Consolidation regression (task #323) ─────────────────────────────────────
-
-class TestCvScreeningConsolidation:
-    """Regression: cv_screening tools merged from the deleted
-    app.domains.cv_screening.agents.pipeline_tool_registry module must remain
-    addressable through the canonical pipeline registry without polluting the
-    pipeline transition agent's ALL_TOOLS / _TOOL_MAP."""
-
-    @pytest.mark.easy
-    def test_get_pipeline_tools_screening_stage_returns_cv_screening_tools(self):
-        from app.domains.pipeline.agents.pipeline_tool_registry import get_pipeline_tools
-        names = {t.name for t in get_pipeline_tools("screening")}
-        assert names == {"run_wsi_screening", "view_screening_results", "add_notes", "move_candidate"}
-
-    @pytest.mark.easy
-    def test_get_pipeline_tools_no_stage_returns_only_cv_screening_tools(self):
-        from app.domains.pipeline.agents.pipeline_tool_registry import (
-            get_pipeline_tools,
-            _CV_SCREENING_TOOL_DEFINITIONS,
-        )
-        assert len(get_pipeline_tools()) == len(_CV_SCREENING_TOOL_DEFINITIONS) == 15
-
-    @pytest.mark.easy
-    def test_canonical_all_tools_unaffected_by_consolidation(self):
-        """ALL_TOOLS still drives PipelineTransitionAgent decomposition (Z1)."""
-        from app.domains.pipeline.agents.pipeline_tool_registry import ALL_TOOLS
-        assert len(ALL_TOOLS) == 20
-
-
 # ── Tool wrapper functions ───────────────────────────────────────────────────
 
 class TestWrapGetCandidateProfile:

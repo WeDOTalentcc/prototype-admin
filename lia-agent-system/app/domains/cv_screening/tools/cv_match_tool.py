@@ -1,5 +1,5 @@
 """
-CV Match Tool — Rubric-based CV matching authored via @tool_handler (ADR-016).
+CV Match Tool — Rubric-based CV matching via tool_registry (Opção B).
 
 Wires the orchestrator LLM to the real BARS evaluation pipeline so that
 a recruiter can request CV analysis from ANY context — including the general
@@ -9,25 +9,27 @@ Methodology: BARS (Behaviorally Anchored Rating Scales) + André Methodology v1
 Reference:   LIA_METHODOLOGY.md Section 4
 """
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any, Optional
 
-from app.shared.tool_handler import tool_handler
-from app.tools.registry import ToolDefinition
+from app.tools.registry import ToolDefinition, tool_registry
+
+if TYPE_CHECKING:
+    from app.tools.executor import ToolExecutionContext
 
 logger = logging.getLogger(__name__)
 
 
-# require_company=False kept: TBD por dono (cv_screening) — tool aceita company_id opcional
-# para chamada via chat global; quando presente, filtra JobVacancy por company_id.
-# Revisar em ticket dedicado: avaliar flip para require_company=True com fail-closed.
-@tool_handler(domain="cv_screening", require_company=False)
+def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]:
+    """Extract and remove _context from kwargs if present."""
+    return kwargs.pop("_context", None)
+
+
 async def analyze_cv_match(
     candidate_id: str | None = None,
     candidate_name: str | None = None,
     vacancy_id: str | None = None,
     vacancy_title: str | None = None,
-    company_id: str | None = None,
-    **kwargs: Any,
+    **kwargs,
 ) -> dict[str, Any]:
     """
     Evaluate a candidate's CV against a job vacancy using BARS rubric methodology.
@@ -40,12 +42,14 @@ async def analyze_cv_match(
         candidate_name: Candidate name for fuzzy search (used if ID not provided).
         vacancy_id:     UUID of the vacancy (preferred — exact match).
         vacancy_title:  Vacancy title for fuzzy search (used if ID not provided).
-        company_id:     Tenant context (resolved by @tool_handler when available).
 
     Returns:
         Dict with success status, human-readable message, match_score, matched_skills,
         missing_skills, recommendation, and full BARS evaluation detail.
     """
+    context = _extract_context(kwargs)
+    company_id: str | None = context.company_id if context else None
+
     logger.info(
         "[analyze_cv_match] candidate=%s|%r  vacancy=%s|%r  company=%s",
         candidate_id, candidate_name, vacancy_id, vacancy_title, company_id,
@@ -65,150 +69,159 @@ async def analyze_cv_match(
             "message": "Informe o título ou ID da vaga para a análise.",
         }
 
-    from sqlalchemy import func, select
+    try:
+        from sqlalchemy import func, select
 
-    from app.core.database import AsyncSessionLocal
-    from lia_models.candidate import Candidate
-    from lia_models.job_vacancy import JobVacancy
+        from app.core.database import AsyncSessionLocal
+        from app.models.candidate import Candidate
+        from app.models.job_vacancy import JobVacancy
 
-    # ── Resolve IDs (one DB round-trip) ─────────────────────────────────────
-    async with AsyncSessionLocal() as db:
+        # ── Resolve IDs (one DB round-trip) ─────────────────────────────────
+        async with AsyncSessionLocal() as db:
 
-        # — Candidate —
-        resolved_candidate_id = candidate_id
-        resolved_candidate_name = candidate_name
+            # — Candidate —
+            resolved_candidate_id = candidate_id
+            resolved_candidate_name = candidate_name
 
-        if not resolved_candidate_id and candidate_name:
-            # Candidate is a platform-wide table (no company_id column)
-            q = select(Candidate).where(
-                func.lower(Candidate.name).contains(candidate_name.strip().lower())
-            )
-            row = await db.execute(q.limit(1))
-            found = row.scalar_one_or_none()
-            if found:
-                resolved_candidate_id = str(found.id)
-                resolved_candidate_name = found.name
-            else:
-                return {
-                    "success": False,
-                    "error": "candidate_not_found",
-                    "message": (
-                        f"Candidato '{candidate_name}' não encontrado. "
-                        "Verifique o nome ou forneça o ID diretamente."
-                    ),
-                }
+            if not resolved_candidate_id and candidate_name:
+                # Candidate is a platform-wide table (no company_id column)
+                q = select(Candidate).where(
+                    func.lower(Candidate.name).contains(candidate_name.strip().lower())
+                )
+                row = await db.execute(q.limit(1))
+                found = row.scalar_one_or_none()
+                if found:
+                    resolved_candidate_id = str(found.id)
+                    resolved_candidate_name = found.name
+                else:
+                    return {
+                        "success": False,
+                        "error": "candidate_not_found",
+                        "message": (
+                            f"Candidato '{candidate_name}' não encontrado. "
+                            "Verifique o nome ou forneça o ID diretamente."
+                        ),
+                    }
 
-        # — Vacancy —
-        resolved_vacancy_id = vacancy_id
-        resolved_vacancy_title = vacancy_title
+            # — Vacancy —
+            resolved_vacancy_id = vacancy_id
+            resolved_vacancy_title = vacancy_title
 
-        if not resolved_vacancy_id and vacancy_title:
-            q = select(JobVacancy).where(
-                func.lower(JobVacancy.title).contains(vacancy_title.strip().lower())
-            )
-            if company_id:
-                q = q.where(JobVacancy.company_id == company_id)
-            row = await db.execute(q.limit(1))
-            found = row.scalar_one_or_none()
-            if found:
-                resolved_vacancy_id = str(found.id)
-                resolved_vacancy_title = found.title
-            else:
-                return {
-                    "success": False,
-                    "error": "vacancy_not_found",
-                    "message": (
-                        f"Vaga '{vacancy_title}' não encontrada. "
-                        "Verifique o título ou forneça o ID diretamente."
-                    ),
-                }
+            if not resolved_vacancy_id and vacancy_title:
+                q = select(JobVacancy).where(
+                    func.lower(JobVacancy.title).contains(vacancy_title.strip().lower())
+                )
+                if company_id:
+                    q = q.where(JobVacancy.company_id == company_id)
+                row = await db.execute(q.limit(1))
+                found = row.scalar_one_or_none()
+                if found:
+                    resolved_vacancy_id = str(found.id)
+                    resolved_vacancy_title = found.title
+                else:
+                    return {
+                        "success": False,
+                        "error": "vacancy_not_found",
+                        "message": (
+                            f"Vaga '{vacancy_title}' não encontrada. "
+                            "Verifique o título ou forneça o ID diretamente."
+                        ),
+                    }
 
-    # ── Run BARS rubric screening ───────────────────────────────────────────
-    from app.domains.cv_screening.services.cv_scoring_service import CVScoringService
+        # ── Run BARS rubric screening ────────────────────────────────────────
+        from app.domains.cv_screening.services.cv_scoring_service import CVScoringService
 
-    scoring_service = CVScoringService()
-    result = await scoring_service.screen_candidate(
-        candidate_id=resolved_candidate_id,
-        vacancy_id=resolved_vacancy_id,
-        company_id=company_id,
-    )
+        scoring_service = CVScoringService()
+        result = await scoring_service.screen_candidate(
+            candidate_id=resolved_candidate_id,
+            vacancy_id=resolved_vacancy_id,
+            company_id=company_id,
+        )
 
-    if not result.get("success"):
+        if not result.get("success"):
+            return {
+                "success": False,
+                "error": result.get("error", "screening_failed"),
+                "message": result.get("message", "Erro ao executar triagem. Tente novamente."),
+            }
+
+        # ── Build human-readable message ─────────────────────────────────────
+        score = float(result.get("rubric_score", 0))
+        recommendation = result.get("recommendation", "EM_ANALISE")
+        strengths = result.get("strengths", [])
+        concerns = result.get("concerns", [])
+
+        candidate_label = (
+            result.get("candidate_name")
+            or resolved_candidate_name
+            or resolved_candidate_id
+        )
+        vacancy_label = (
+            result.get("job_title")
+            or resolved_vacancy_title
+            or resolved_vacancy_id
+        )
+
+        if score >= 85:
+            emoji, label = "🟢", "Altamente Recomendado"
+        elif score >= 70:
+            emoji, label = "✅", "Recomendado"
+        elif score >= 55:
+            emoji, label = "🟡", "Potencial"
+        elif score >= 40:
+            emoji, label = "🟠", "Baixo Match"
+        else:
+            emoji, label = "🔴", "Não Recomendado"
+
+        strengths_md = (
+            "\n".join(f"• {s}" for s in strengths[:5])
+            if strengths else "• (nenhum destaque identificado)"
+        )
+        concerns_md = (
+            "\n".join(f"• {c}" for c in concerns[:4])
+            if concerns else "• (sem gaps críticos)"
+        )
+
+        human_message = (
+            f"{emoji} **Match: {candidate_label} × {vacancy_label}**\n\n"
+            f"**Score BARS:** {score:.0f}/100 — {label}\n"
+            f"**Recomendação:** {recommendation}\n\n"
+            f"**Pontos fortes:**\n{strengths_md}\n\n"
+            f"**Gaps identificados:**\n{concerns_md}\n\n"
+            f"*Metodologia: Rubricas Estruturadas (BARS) + André Methodology v1 — "
+            f"triagem CV-only. Para avaliação completa, use WSI.*"
+        )
+
         return {
-            "success": False,
-            "error": result.get("error", "screening_failed"),
-            "message": result.get("message", "Erro ao executar triagem. Tente novamente."),
+            "success": True,
+            "message": human_message,
+            "action_taken": "cv_match_analyzed",
+            "affected_entities": [resolved_candidate_id, resolved_vacancy_id],
+            # ── Structured output (C-05 contract) ──
+            "match_score": round(score),
+            "matched_skills": strengths,
+            "missing_skills": concerns,
+            "recommendation": recommendation,
+            # ── Extended detail ──
+            "cv_fit": result.get("cv_fit", {}),
+            "sub_status": result.get("sub_status"),
+            "evaluations": result.get("evaluations", []),
+            "methodology": result.get("methodology", {}),
+            "evaluated_at": result.get("evaluated_at"),
         }
 
-    # ── Build human-readable message ────────────────────────────────────────
-    score = float(result.get("rubric_score", 0))
-    recommendation = result.get("recommendation", "EM_ANALISE")
-    strengths = result.get("strengths", [])
-    concerns = result.get("concerns", [])
-
-    candidate_label = (
-        result.get("candidate_name")
-        or resolved_candidate_name
-        or resolved_candidate_id
-    )
-    vacancy_label = (
-        result.get("job_title")
-        or resolved_vacancy_title
-        or resolved_vacancy_id
-    )
-
-    if score >= 85:
-        emoji, label = "🟢", "Altamente Recomendado"
-    elif score >= 70:
-        emoji, label = "✅", "Recomendado"
-    elif score >= 55:
-        emoji, label = "🟡", "Potencial"
-    elif score >= 40:
-        emoji, label = "🟠", "Baixo Match"
-    else:
-        emoji, label = "🔴", "Não Recomendado"
-
-    strengths_md = (
-        "\n".join(f"• {s}" for s in strengths[:5])
-        if strengths else "• (nenhum destaque identificado)"
-    )
-    concerns_md = (
-        "\n".join(f"• {c}" for c in concerns[:4])
-        if concerns else "• (sem gaps críticos)"
-    )
-
-    human_message = (
-        f"{emoji} **Match: {candidate_label} × {vacancy_label}**\n\n"
-        f"**Score BARS:** {score:.0f}/100 — {label}\n"
-        f"**Recomendação:** {recommendation}\n\n"
-        f"**Pontos fortes:**\n{strengths_md}\n\n"
-        f"**Gaps identificados:**\n{concerns_md}\n\n"
-        f"*Metodologia: Rubricas Estruturadas (BARS) + André Methodology v1 — "
-        f"triagem CV-only. Para avaliação completa, use WSI.*"
-    )
-
-    return {
-        "success": True,
-        "message": human_message,
-        "action_taken": "cv_match_analyzed",
-        "affected_entities": [resolved_candidate_id, resolved_vacancy_id],
-        # ── Structured output (C-05 contract) ──
-        "match_score": round(score),
-        "matched_skills": strengths,
-        "missing_skills": concerns,
-        "recommendation": recommendation,
-        # ── Extended detail ──
-        "cv_fit": result.get("cv_fit", {}),
-        "sub_status": result.get("sub_status"),
-        "evaluations": result.get("evaluations", []),
-        "methodology": result.get("methodology", {}),
-        "evaluated_at": result.get("evaluated_at"),
-    }
+    except Exception as exc:
+        logger.error("[analyze_cv_match] Unexpected error: %s", exc, exc_info=True)
+        return {
+            "success": False,
+            "error": "unexpected_error",
+            "message": f"Erro inesperado ao analisar match de CV: {exc}",
+        }
 
 
-def get_cv_match_tools() -> list[ToolDefinition]:
-    """Return the canonical tool definitions for CV match (ADR-016)."""
-    return [
+def register_cv_match_tool() -> None:
+    """Register analyze_cv_match in the global tool registry."""
+    tool_registry.register(
         ToolDefinition(
             name="analyze_cv_match",
             description=(
@@ -244,5 +257,6 @@ def get_cv_match_tools() -> list[ToolDefinition]:
             },
             handler=analyze_cv_match,
             allowed_agents=["recruiter_assistant", "cv_screening", "orchestrator", "global"],
-        ),
-    ]
+        )
+    )
+    logger.info("✅ Registered tool: analyze_cv_match (BARS rubric — Opção B)")

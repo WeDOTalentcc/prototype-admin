@@ -8,9 +8,7 @@ Also provides direct email and WhatsApp sending via Mailgun and Twilio integrati
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query, status
-
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
 from app.domains.communication.schemas.email_schemas import (
     SendBulkEmailRequest,
@@ -32,15 +30,6 @@ from app.schemas.communication import (
     CommunicationResponse,
     CommunicationStatusUpdate,
 )
-
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -181,7 +170,7 @@ async def get_communication_history(
 
 
 @router.get("/{communication_id}", response_model=CommunicationResponse)
-async def get_communication(communication_id: _DualId):
+async def get_communication(communication_id: str):
     """
     Get a single communication by ID.
     
@@ -212,7 +201,7 @@ async def get_communication(communication_id: _DualId):
 
 @router.put("/{communication_id}/status", response_model=CommunicationResponse)
 async def update_communication_status(
-    communication_id: _DualId,
+    communication_id: str,
     data: CommunicationStatusUpdate
 ):
     """
@@ -257,7 +246,7 @@ async def update_communication_status(
 
 @candidate_communications_router.get("/{candidate_id}/communications", response_model=CommunicationListResponse)
 async def get_candidate_communications(
-    candidate_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
+    candidate_id: str,
     company_id: str = Query(..., description="Company ID (required)"),
     limit: int = Query(100, ge=1, le=500, description="Max results (default: 100, max: 500)"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
@@ -608,6 +597,7 @@ async def send_whatsapp_interactive(
 
 from pydantic import BaseModel
 
+
 class TransferCommunicationsRequest(BaseModel):
     """Request model for transferring communications between recruiters."""
     job_ids: list[str]
@@ -653,10 +643,3 @@ async def transfer_communications(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Erro ao transferir comunicações: {str(e)}"
         )
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

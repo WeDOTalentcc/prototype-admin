@@ -9,21 +9,13 @@ from app.auth.dependencies import get_current_active_user, get_user_company_id
 from app.auth.models import User
 from app.domains.cv_screening.dependencies import get_screening_repo, WSIService, get_wsi_service
 from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
-from lia_models.screening import ScreeningTask
+from app.models.screening import ScreeningTask
 from app.schemas.screening import (
     RegenerateQuestionsRequest,
     ScreeningQuestion,
     ScreeningQuestionRequest,
     ScreeningQuestionResponse,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -119,11 +111,6 @@ async def generate_screening_questions(
         logger.info(f"Generating screening questions for: {request.title} ({request.seniority}) - company: {company_id}, user: {current_user.id}")
 
         mode = "full" if request.question_count > 10 else "compact"
-        # Audit task #545 — propaga billing context para WSI question gen.
-        _qg_tracking = {
-            "company_id": company_id,
-            "user_id": str(getattr(current_user, "id", "")) or None,
-        }
         wsi_questions = await wsi_svc.generate_from_simple_inputs(
             skills=request.skills or [],
             behavioral=[],
@@ -131,7 +118,6 @@ async def generate_screening_questions(
             job_description=request.job_description,
             mode=mode,
             max_questions=request.question_count,
-            tracking_context=_qg_tracking,
         )
 
         response = _wsi_questions_to_screening_response(wsi_questions, request)
@@ -161,18 +147,12 @@ async def regenerate_questions(
         company_id = get_user_company_id(current_user)
         logger.info(f"Regenerating questions for: {request.context.title} - company: {company_id}, user: {current_user.id}")
 
-        # Audit task #545 — propaga billing context para regenerate.
-        _qg_tracking = {
-            "company_id": company_id,
-            "user_id": str(getattr(current_user, "id", "")) or None,
-        }
         wsi_questions = await wsi_svc.generate_from_simple_inputs(
             skills=request.context.skills or [],
             behavioral=[],
             seniority=request.context.seniority or "pleno",
             job_description=request.context.job_description,
             mode="compact",
-            tracking_context=_qg_tracking,
         )
 
         response = _wsi_questions_to_screening_response(wsi_questions, request.context)
@@ -271,7 +251,7 @@ async def auto_trigger_screening(
 
 @router.get("/tasks/{job_id}", response_model=None)
 async def list_screening_tasks(
-    job_id: _DualId,
+    job_id: str,
     repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     try:
@@ -284,7 +264,7 @@ async def list_screening_tasks(
 
 @router.post("/tasks/{task_id}/execute", response_model=None)
 async def execute_screening_task(
-    task_id: _DualId,
+    task_id: str,
     repo: ScreeningRepository = Depends(get_screening_repo),
 ):
     try:
@@ -315,10 +295,3 @@ async def execute_screening_task(
         logger.error(f"Failed to execute screening task {task_id}: {e}")
         await repo.rollback()
         raise HTTPException(status_code=500, detail="Failed to execute screening task")
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

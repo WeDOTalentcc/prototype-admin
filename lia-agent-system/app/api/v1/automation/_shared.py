@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domains.automation.services.automation_service import AutomationService, automation_service, get_automation_service  # noqa: F401
 from app.domains.automation.services.automation_trigger_service import automation_trigger_service  # noqa: F401
 from app.domains.communication.services.communication_service import CommunicationService, communication_service, get_communication_service  # noqa: F401
-from app.shared.compliance.audit_service import audit_service
+from app.shared.services.audit_service import audit_service
 
 logger = logging.getLogger(__name__)
 
@@ -217,8 +217,8 @@ async def validate_multi_tenancy(
     Uses VacancyCandidate for candidate company validation since the main
     Candidate model may not have direct company_id.
     """
-    from lia_models.candidate import VacancyCandidate
-    from lia_models.job_vacancy import JobVacancy
+    from app.models.candidate import VacancyCandidate
+    from app.models.job_vacancy import JobVacancy
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
@@ -890,7 +890,7 @@ async def log_automation_execution(
     across every event handler.
     """
     try:
-        from lia_models.automation import AutomationExecutionLog
+        from app.models.automation import AutomationExecutionLog
 
         db.add(AutomationExecutionLog(
             company_id=company_id,

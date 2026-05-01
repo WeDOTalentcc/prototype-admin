@@ -341,7 +341,7 @@ class WeeklyDigestService:
         delivery = await self.deliver_digest(digest, recruiter_id, recruiter_name, db)
 
         try:
-            from app.shared.compliance.audit_service import AuditService
+            from app.shared.services.audit_service import AuditService
             await AuditService.log_decision(
                 decision_type="weekly_digest_delivered",
                 agent="WeeklyDigestService",

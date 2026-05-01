@@ -7,13 +7,11 @@ Provides endpoints for:
 - Automated Decision Explanations (Article 20 compliance)
 """
 import logging
-from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from app.auth.dependencies import require_admin
 from app.auth.models import User
 from app.domains.lgpd.dependencies import get_lgpd_repo
@@ -47,14 +45,7 @@ from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
-# Task #458 — Same routing-shadowing blindagem as /job-vacancies (Task #455):
-# every ``{*_id}`` path parameter is constrained to UUID-or-digit so a
-# future static sibling segment cannot be silently captured by an item
-# handler. Collection-before-item ordering is reasserted at the bottom of
-# the module via reorder_collection_before_item().
 router = APIRouter(prefix="/lgpd", tags=["lgpd-compliance"])
-
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 
 @router.get("/stats", response_model=LGPDComplianceStats, summary="Get LGPD compliance statistics")
@@ -109,7 +100,7 @@ async def list_dpo_entries(
 
 @router.get("/dpo/{target_company_id}", response_model=DPORegistryResponse, summary="Get DPO for company")
 async def get_dpo_for_company(
-    target_company_id: _DualId,
+    target_company_id: str,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
 ):
@@ -220,7 +211,7 @@ async def list_breach_notifications(
 
 @router.get("/breaches/{breach_id}", response_model=BreachNotificationResponse, summary="Get breach notification")
 async def get_breach_notification(
-    breach_id: _DualId,
+    breach_id: str,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
 ):
@@ -273,7 +264,7 @@ async def create_breach_notification(
 
 @router.put("/breaches/{breach_id}", response_model=BreachNotificationResponse, summary="Update breach notification")
 async def update_breach_notification(
-    breach_id: _DualId,
+    breach_id: str,
     data: BreachNotificationUpdate,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
@@ -308,7 +299,7 @@ async def update_breach_notification(
 
 @router.put("/breaches/{breach_id}/notify-anpd", response_model=BreachNotificationResponse, summary="Mark ANPD notified")
 async def mark_anpd_notified(
-    breach_id: _DualId,
+    breach_id: str,
     data: ANPDNotification,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
@@ -341,7 +332,7 @@ async def mark_anpd_notified(
 
 @router.put("/breaches/{breach_id}/notify-subjects", response_model=BreachNotificationResponse, summary="Mark subjects notified")
 async def mark_subjects_notified(
-    breach_id: _DualId,
+    breach_id: str,
     data: SubjectsNotification,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
@@ -366,7 +357,7 @@ async def mark_subjects_notified(
 
 @router.put("/breaches/{breach_id}/resolve", response_model=BreachNotificationResponse, summary="Resolve breach")
 async def resolve_breach(
-    breach_id: _DualId,
+    breach_id: str,
     data: BreachResolution,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
@@ -423,7 +414,7 @@ async def list_automated_decisions(
 
 @router.get("/decisions/{decision_id}", response_model=AutomatedDecisionResponse, summary="Get automated decision")
 async def get_automated_decision(
-    decision_id: _DualId,
+    decision_id: str,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
 ):
@@ -476,7 +467,7 @@ async def create_automated_decision(
 
 @router.post("/decisions/{decision_id}/request-human-review", response_model=AutomatedDecisionResponse, summary="Request human review")
 async def request_human_review(
-    decision_id: _DualId,
+    decision_id: str,
     data: HumanReviewRequest,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
@@ -505,7 +496,7 @@ async def request_human_review(
 
 @router.post("/decisions/{decision_id}/complete-human-review", response_model=AutomatedDecisionResponse, summary="Complete human review")
 async def complete_human_review(
-    decision_id: _DualId,
+    decision_id: str,
     data: HumanReviewComplete,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
@@ -626,11 +617,3 @@ async def pending_deletions(
 ):
     """Return count of records pending deletion (monitoring/DPO dashboard)."""
     return await get_pending_deletions_count(lgpd_repo.db)
-
-
-# ---------------------------------------------------------------------------
-# Routing invariant (Task #458) — collection-scoped routes before item routes.
-# ---------------------------------------------------------------------------
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder
-
-_reorder(router)

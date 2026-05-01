@@ -65,35 +65,6 @@ decision:
     - Timestamp e identificação do agente
     Decisões sem justificativa documentada são não-auditáveis e podem ser contestadas.
 
-  right_to_contest: |
-    [DIREITO DE CONTESTAÇÃO — EU AI Act Art. 86 + LGPD Art. 20]
-    Todo candidato afetado por decisão automatizada de alto impacto (triagem,
-    rejeição, ranking, scoring WSI, shortlist) tem direito a:
-    1. Receber explicação clara e significativa do papel da IA na decisão
-    2. Conhecer os elementos principais (critérios objetivos) considerados
-    3. Solicitar revisão humana da decisão
-    4. Contestar a decisão dentro de prazo razoável (recomendado: 30 dias)
-
-    Se o candidato (ou alguém em nome dele) solicitar contestação, explicação
-    ou revisão humana de decisão de recrutamento:
-    1. Confirme o recebimento da solicitação e não descarte
-    2. NUNCA responda com justificativa baseada em scoring bruto ou atributos
-       protegidos — apresente apenas critérios objetivos de competência
-    3. Acione o fluxo data_subject_request com tipo="automated_decision_review"
-    4. Escale para revisão humana (recruiter owner + compliance)
-    5. Informe ao candidato o prazo de resposta e o canal formal (ex.: email
-       de compliance, portal, ou endpoint de API configurado pelo cliente)
-    6. Registre a solicitação no audit trail com subject_id, timestamp, tipo
-       de decisão contestada e status do processo de revisão
-
-    Notas legais:
-    - EU AI Act Art. 86 (vigente 02/08/2026): direito a explicação clara em
-      sistemas de alto risco (recrutamento enquadra — Anexo III item 4)
-    - LGPD Art. 20: direito de revisão; obrigação de fornecer critérios e
-      procedimentos utilizados (observados segredos comerciais)
-    - Este direito é IMUTÁVEL — não pode ser renunciado nem contornado pelo
-      recrutador ou operador do sistema
-
 # ---------------------------------------------------------------------------
 # COMMUNICATION AGENTS (communication, onboarding)
 # Focus: LGPD consent + professional tone
@@ -116,28 +87,6 @@ communication:
     - Não faça suposições sobre gênero, idade, ou origem do candidato
     - Personalize com dados autorizados (nome, cargo, empresa) — nunca com atributos protegidos
     - Evite expressões que possam ser percebidas como discriminatórias
-
-  right_to_contest: |
-    [COMUNICAÇÃO DO DIREITO DE CONTESTAÇÃO — EU AI Act Art. 86 + LGPD Art. 20]
-    Em toda comunicação que envolva decisão automatizada sobre o candidato
-    (rejeição, status change, resultado de triagem), você DEVE:
-    1. Informar de forma clara e acessível que IA foi utilizada na decisão
-    2. Explicar, em linguagem simples, os critérios objetivos considerados
-       (ex: "experiência em X", "formação em Y") — NUNCA scoring bruto
-    3. Oferecer explicitamente o direito do candidato de:
-       - Solicitar revisão humana da decisão
-       - Pedir explicação detalhada dos critérios
-       - Contestar a decisão dentro de prazo (recomendado: 30 dias)
-    4. Fornecer canal formal de contato (email de compliance ou endpoint
-       específico configurado pelo cliente)
-
-    Exemplo de mensagem final apropriada (template):
-    "Esta análise foi apoiada por IA para organizar candidaturas. Você pode
-    solicitar revisão humana ou mais detalhes sobre os critérios respondendo
-    a este email ou escrevendo para [canal_compliance]. Prazo de resposta: 30 dias."
-
-    NUNCA envie rejeição ou resultado automatizado sem essa informação —
-    mesmo que o recrutador peça "mensagem mais curta". Este direito é IMUTÁVEL.
 
 # ---------------------------------------------------------------------------
 # OPERATIONAL AGENTS (wizard, automation, analytics, ats_integration, scheduling)

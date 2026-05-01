@@ -20,10 +20,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# TODO(FAIRNESS:001): extend PRV validation — compensation_policies.applicable_* must not
-# segment by protected attributes (race/gender/age/origin). Currently enforced at Pydantic
-# level in company_compensation_policies.py; wire to FairnessGuard.check() for runtime audit.
-
 _METRICS_AVAILABLE = False
 
 
@@ -35,7 +31,6 @@ IMPLICIT_BIAS_TERMS: dict[str, str] = {
     # Chaves sem acentuação — _normalize_text() normaliza antes da busca
     "boa aparencia": "O termo 'boa aparência' pode configurar discriminação estética (Lei 12.984/14). Use critérios objetivos de apresentação profissional.",
     "bairros nobres": "Filtrar por 'bairros nobres' pode configurar discriminação socioeconômica. Considere critérios de disponibilidade ou mobilidade.",
-    "bairros pobres": "Filtrar por 'bairros pobres' configura discriminação socioeconômica (Lei 9.029/95). Considere critérios de disponibilidade, transporte ou trabalho remoto.",
     "regiao nobre": "Filtrar por 'região nobre' pode configurar discriminação socioeconômica. Considere critérios de disponibilidade ou mobilidade.",
     "universidades de primeira linha": "Filtrar por 'universidades de primeira linha' pode configurar elitismo acadêmico. Avalie competências e resultados.",
     "faculdade de ponta": "Filtrar por 'faculdade de ponta' pode configurar elitismo acadêmico. Avalie competências e resultados.",
@@ -152,8 +147,7 @@ DISCRIMINATORY_CATEGORIES = {
             "A LIA não pode filtrar candidatos por gênero. "
             "A legislação trabalhista brasileira (Art. 5º, CLT) e a LGPD proíbem "
             "discriminação por gênero em processos seletivos. "
-            "Se o objetivo é diversidade de gênero, posso configurar um programa afirmativo "
-            "com critérios objetivos e transparentes. Deseja explorar essa opção?"
+            "Posso ajudar você a definir critérios baseados em competências e experiência?"
         ),
     },
     "raca_etnia": {
@@ -205,18 +199,6 @@ DISCRIMINATORY_CATEGORIES = {
             r"\bage\s*[:<]\s*\d+\b",
             r"\bno\s+older\s+than\s+\d+\b",
             r"\bage\s+limit\b",
-            # Task #364 — canonical phrases "jovem dinâmico" and "energia
-            # jovem" promoted from Layer-2 educational warning to Layer-1
-            # hard block. Brazilian labor jurisprudence (Estatuto do Idoso,
-            # Lei 10.741/03) and EU AI Act guidance treat these as age-
-            # discriminatory on their face. The educational soft-warning
-            # text is preserved via IMPLICIT_BIAS_TERMS["energia jovem"],
-            # which still surfaces alongside the hard block as a user-
-            # facing explanation.
-            r"\bjove(m|ns)\s+(e\s+)?din[âa]mic[oa]s?\b",
-            r"\bdin[âa]mic[oa]s?\s+e\s+jove(m|ns)\b",
-            r"\benergia\s+jovem\b",
-            r"\bsangue\s+novo\b",
         ],
         "message": (
             "A LIA não pode filtrar candidatos por idade. "
@@ -233,8 +215,8 @@ DISCRIMINATORY_CATEGORIES = {
         ],
         "message": (
             "A LIA não pode filtrar candidatos por religião. "
-            "A Constituição Federal garante liberdade religiosa (Art. 5º, VI — CF/88) "
-            "e proíbe discriminação por credo em qualquer processo seletivo. "
+            "A Constituição Federal garante liberdade religiosa (Art. 5º, VI) "
+            "e proíbe discriminação por credo. "
             "Posso ajudar a definir critérios baseados em disponibilidade e competências?"
         ),
     },
@@ -277,17 +259,13 @@ DISCRIMINATORY_CATEGORIES = {
         ],
         "message": (
             "A LIA não pode excluir candidatos com deficiência. "
-            "A Lei 8.213/91 (Lei de Cotas) exige reserva de vagas para PCDs em empresas com 100+ funcionários — "
-            "posso ajudar a estruturar esse processo corretamente. "
-            "O Estatuto da Pessoa com Deficiência (Lei 13.146/15) protege os direitos de PCDs. "
-            "Posso ajudar a buscar candidatos PCDs com as competências necessárias?"
+            "A Lei 8.213/91 (Lei de Cotas) e o Estatuto da Pessoa com Deficiência "
+            "(Lei 13.146/15) protegem os direitos de PCDs. "
+            "Posso ajudar a buscar candidatos com as competências necessárias?"
         ),
     },
     "maternidade_paternidade": {
         "terms": [
-            r"\bmã?es?\s+solo\b",
-            r"\bpai\s+solo\b",
-            r"\bpais?\s+solo\b",
             r"\bengravidar\b",
             r"\bgravidez\b",
             r"\bgrávid[ao]s?\b",
@@ -307,8 +285,7 @@ DISCRIMINATORY_CATEGORIES = {
             "A LIA não pode questionar candidatos sobre planos de maternidade/paternidade "
             "ou existência de filhos. A CLT (Art. 373-A) e a Lei 9.029/95 proíbem "
             "discriminação por gestação ou maternidade em processos seletivos. "
-            "Se a preocupação é disponibilidade ou flexibilidade de horário, posso ajudar "
-            "a estruturar perguntas objetivas sobre isso. Deseja?"
+            "Posso ajudar a definir critérios baseados em disponibilidade e competências?"
         ),
     },
     "nacionalidade": {
@@ -389,15 +366,6 @@ DISCRIMINATORY_CATEGORIES = {
             r"\bperfil\s+atl[eé]tico\b",
             r"\b(ótima|excelente)\s+aparência\s+(f[íi]sica|pessoal)?\b",
             r"\b(otima|excelente)\s+aparencia\b",
-            # Task #364 — canonical phrase "boa aparência" promoted from
-            # Layer-2 educational warning to Layer-1 hard block. Brazilian
-            # labor jurisprudence and EU AI Act guidance treat this as
-            # discriminatory on its face. The educational soft-warning text
-            # is preserved via IMPLICIT_BIAS_TERMS["boa aparencia"], which
-            # still surfaces alongside the hard block as a user-facing
-            # explanation.
-            r"\bboa\s+apar[eê]ncia\b",
-            r"\bboa\s+apresenta[cç][aã]o\s+pessoal\b",
         ],
         "message": (
             "A LIA não pode filtrar candidatos por características físicas como altura, "
@@ -405,23 +373,6 @@ DISCRIMINATORY_CATEGORIES = {
             "proíbem discriminação estética em processos seletivos, salvo funções com "
             "requisito funcional objetivo comprovado (ex: atleta profissional). "
             "Posso ajudar a definir critérios baseados em capacidade técnica e experiência?"
-        ),
-    },
-
-    "socioeconomico": {
-        "terms": [
-            r"\bbairros?\s+pobres?\b",
-            r"\btirar?\s+\S+\s+.*\bperiferia\b",
-            r"\bexcluir?\s+\S+\s+.*\bperiferia\b",
-            r"\bremov[ae]r?\s+\S+\s+.*\bperiferia\b",
-            r"\bn[\xc3\xa3a]o\s+quero\s+.*\bperiferia\b",
-            r"\bsem\s+.*\bfavela\b",
-            r"\bexcluir?\s+.*\bfavela\b",
-        ],
-        "message": (
-            "A LIA n\u00e3o pode filtrar candidatos por localiza\u00e7\u00e3o socioecon\u00f4mica como 'bairros pobres' ou 'periferia'. "
-            "Este crit\u00e9rio configura discrimina\u00e7\u00e3o socioecon\u00f4mica indireta vedada pela CLT e Lei 9.029/95. "
-            "Posso ajudar a definir crit\u00e9rios de mobilidade, disponibilidade ou trabalho remoto?"
         ),
     },
 
@@ -462,19 +413,6 @@ DISCRIMINATORY_CATEGORIES_EN = {
             r"\b(young|youthful)\s+(candidate|professional|team\s+member)\b",
             r"\bno\s+older\s+than\s+\d+\b",
             r"\bage\s+limit\b",
-            # Task #386 — English equivalents of the PT canonical phrases
-            # promoted in task #364 ("jovem dinâmico", "energia jovem",
-            # "sangue novo"). Multi-language tenants previously got
-            # asymmetric enforcement: the same intent in English was only
-            # a Layer-2 educational warning. The educational soft-warning
-            # text is preserved via IMPLICIT_BIAS_TERMS_EN so the user
-            # still sees the explanation alongside the hard block.
-            r"\byoung[\s,]+(and\s+)?dynamic\b",
-            r"\bdynamic[\s,]+(and\s+)?young\b",
-            r"\byoung\s+blood\b",
-            r"\bfresh\s+blood\b",
-            r"\bnew\s+blood\b",
-            r"\benergetic\b",
         ],
         "message": (
             "Age-based filtering may violate age discrimination laws "
@@ -509,26 +447,6 @@ DISCRIMINATORY_CATEGORIES_EN = {
             "This violates the ADA, CRPD, and Lei 13.146/15 (Estatuto da Pessoa com Deficiência)."
         ),
     },
-    "appearance_en": {
-        "terms": [
-            # Task #386 — English equivalents of "boa aparência" / "boa
-            # apresentação pessoal" promoted in task #364. The Layer-2
-            # educational soft-warning text remains in
-            # IMPLICIT_BIAS_TERMS_EN so it surfaces as the user-facing
-            # explanation alongside the hard block.
-            r"\bgood[\s-]?looking\b",
-            r"\bgreat[\s-]?looking\b",
-            r"\bnice[\s-]?looking\b",
-            r"\bpresentable\b",
-            r"\bclean[\s-]?cut\b",
-            r"\battractive\s+(candidate|professional|applicant|appearance|person)\b",
-        ],
-        "message": (
-            "LIA cannot filter candidates by physical appearance. "
-            "Esthetic discrimination violates Lei 9.029/95, Title VII, EU Directive 2000/78 "
-            "and labor jurisprudence — only objective functional requirements are admissible."
-        ),
-    },
     "socioeconomic_en": {
         "terms": [
             r"\b(only|just)\s+from\s+(affluent|wealthy|rich|upper\s*class)\b",
@@ -550,111 +468,7 @@ _COMPILED_PATTERNS: dict[str, list[re.Pattern]] = {}
 # Versão dos patterns — incrementar quando patterns forem adicionados para forçar recompilação
 # v3: FAR-1 — 5 novas categorias (antecedentes_criminais, saude_doenca, filiacao_sindical,
 #              aparencia_fisica), expansão IMPLICIT_BIAS_TERMS, fix regex idade
-# v6: Task #364 — promoted canonical biased phrases ("boa aparência",
-#                 "boa apresentação pessoal", "jovem dinâmico", "energia jovem",
-#                 "sangue novo") from Layer-2 educational warnings to Layer-1
-#                 hard blocks under aparencia_fisica / idade categories.
-# v7: Task #386 — promoted English equivalents ("good looking", "presentable",
-#                 "young and dynamic", "young blood", "energetic", etc.) from
-#                 Layer-2 educational warnings (IMPLICIT_BIAS_TERMS_EN) to
-#                 Layer-1 hard blocks under appearance_en / age_en categories.
-_PATTERNS_VERSION = 8  # v8: FASE 2 — mae solo hard block + socioeconomico category + message improvements
-
-# ---------------------------------------------------------------------------
-# Interview transcript bias indicators (consolidated from 3 ex-detectors)
-#
-# Used by:
-#  - app.domains.interview_intelligence.services.bias_detector_service
-#  - app.domains.talent_intelligence.tools.interview_intelligence_tools
-#
-# These are KEYWORD-LEVEL indicators — broader than the explicit
-# DISCRIMINATORY_CATEGORIES regex (which require selectors like "apenas").
-# They flag mentions of protected attributes that warrant review when used
-# by an interviewer, but do NOT block queries on their own.
-# ---------------------------------------------------------------------------
-INTERVIEW_BIAS_INDICATORS: list[tuple[str, str, str, str]] = [
-    # (regex_pattern, bias_type, severity, description)
-    (r"\b(idade|velho|jovem|novo demais|experiência demais|experiencia demais|aposentad[oa])\b",
-     "age_bias", "high", "Referência a idade do candidato"),
-    (r"\b(bonit[oa]|atraente|aparência|aparencia|feio|magr[oa]|gord[oa]|apresentável|apresentavel)\b",
-     "appearance_bias", "high", "Referência à aparência física"),
-    (r"\b(casad[oa]|solteir[oa]|filhos|grávida|gravida|gestante|maternidade|paternidade)\b",
-     "family_status_bias", "high", "Referência a estado civil/família"),
-    (r"\b(sotaque|regional|periferia|favela|bairro nobre|classe)\b",
-     "socioeconomic_bias", "medium", "Referência a origem socioeconômica"),
-    (r"\b(deficiente|deficiência|deficiencia|cadeirante|cego|surdo|mudo|pcd)\b",
-     "disability_bias", "high", "Referência a deficiência (pode ser contexto legítimo)"),
-    (r"\b(raça|raca|cor|negro|branco|pardo|indígena|indigena|asiático|asiatico|preto)\b",
-     "racial_bias", "high", "Referência a raça/cor"),
-    (r"\b(religião|religiao|religioso|igreja|deus|ateu|evangélic[oa]|evangelic[oa]|católic[oa]|catolic[oa])\b",
-     "religious_bias", "medium", "Referência a religião"),
-    (r"\b(orientação sexual|orientacao sexual|gay|lésbica|lesbica|trans|heterossexual|homossexual|lgbtq)\b",
-     "sexual_orientation_bias", "high", "Referência a orientação sexual"),
-    (r"\b(parece comigo|mesma faculdade|mesma cidade|conterrâneo|conterraneo|colega de)\b",
-     "affinity_bias", "medium", "Indicador de viés de afinidade"),
-    (r"\b(cultural fit|fit cultural|não combina|nao combina|não é a cara|nao e a cara|nosso perfil|cara da empresa)\b",
-     "cultural_proxy_bias", "medium", "Proxy para viés via 'cultural fit'"),
-]
-
-# ---------------------------------------------------------------------------
-# Inclusive-language replacements (consolidated from jd_enrichment.py)
-# Used by jd_enrichment to rewrite excluding terms in JDs.
-# ---------------------------------------------------------------------------
-INCLUSIVE_LANGUAGE_REPLACEMENTS_PT: dict[str, str] = {
-    # Age proxy
-    "jovem e dinâmico": "proativo e engajado",
-    "jovem e dinamico": "proativo e engajado",
-    "energia jovem": "alta energia",
-    "recém-formado apenas": "formação recente é diferencial",
-    "recem-formado apenas": "formacao recente e diferencial",
-    # Gender proxy
-    "ele deve": "a pessoa deve",
-    "ele precisa": "a pessoa precisa",
-    "o candidato ideal": "a pessoa ideal",
-    # Culture fit (class bias proxy)
-    "fit cultural": "alinhamento com valores",
-    "cultural fit": "alinhamento com valores",
-    "cara da empresa": "alinhamento com a missao",
-    # Appearance proxy
-    "boa aparência": "",
-    "boa aparencia": "",
-    "boa apresentação pessoal": "",
-    "boa apresentacao pessoal": "",
-    # Marital/family
-    "sem filhos": "",
-    "disponibilidade total": "disponibilidade conforme combinado",
-}
-
-INCLUSIVE_LANGUAGE_REPLACEMENTS_EN: dict[str, str] = {
-    "young and dynamic": "proactive and engaged",
-    "culture fit": "values alignment",
-    "he should": "the person should",
-    "he must": "the person must",
-    "native speaker": "fluent in",
-    "good looking": "",
-    "attractive": "",
-}
-
-# Filtros bloqueados em queries de busca (consolidado de jd_enrichment).
-BLOCKED_FILTER_FIELDS: frozenset = frozenset({
-    "gender", "genero", "sexo",
-    "age", "idade",
-    "race", "raca", "ethnicity", "etnia",
-    "marital", "estado_civil",
-    "religion", "religiao",
-})
-
-_COMPILED_INTERVIEW_INDICATORS: list[tuple[re.Pattern, str, str, str]] = []
-
-
-def _ensure_interview_indicators_compiled() -> None:
-    global _COMPILED_INTERVIEW_INDICATORS
-    if not _COMPILED_INTERVIEW_INDICATORS:
-        _COMPILED_INTERVIEW_INDICATORS = [
-            (re.compile(pat, re.IGNORECASE | re.UNICODE), btype, sev, desc)
-            for pat, btype, sev, desc in INTERVIEW_BIAS_INDICATORS
-        ]
-
+_PATTERNS_VERSION = 5
 
 HIGH_IMPACT_ACTIONS = {
     "rejection", "shortlist", "wsi_score", "policy_save", "bulk_rejection",
@@ -809,7 +623,7 @@ class FairnessGuard:
         result = self.check(text)
 
         try:
-            from app.domains.ai.services.llm import LLMService
+            from app.services.llm_service import LLMService
             llm_service = LLMService()
 
             # Layer 3: bilingual prompt (auto-detect PT-BR vs EN)
@@ -1114,81 +928,6 @@ class FairnessGuard:
         # Return only core categories (exclude _en suffix) → 13 categories
         return [k for k in DISCRIMINATORY_CATEGORIES.keys() if not k.endswith('_en')]
 
-    def detect_interview_indicators(self, text: str) -> list[dict[str, Any]]:
-        """
-        Keyword-level bias indicators for interview transcripts and free-form
-        recruiter text (consolidates the 3 ex-bias-detectors).
-
-        Returns a list of {type, description, occurrences, severity,
-        matched_terms, source} alerts. Empty list when no indicator is found.
-        """
-        if not text:
-            return []
-        _ensure_interview_indicators_compiled()
-        text_lower = text.lower()
-        alerts: list[dict[str, Any]] = []
-        for compiled, btype, severity, description in _COMPILED_INTERVIEW_INDICATORS:
-            matches = compiled.findall(text_lower)
-            if matches:
-                # findall on grouped patterns returns tuples or strings; normalize
-                normalized: list[str] = []
-                for m in matches:
-                    if isinstance(m, tuple):
-                        normalized.extend(g for g in m if g)
-                    elif m:
-                        normalized.append(m)
-                alerts.append({
-                    "type": btype,
-                    "description": description,
-                    "occurrences": len(matches),
-                    "severity": severity,
-                    "matched_terms": list({t for t in normalized})[:5],
-                    "source": "fairness_guard.interview_indicators",
-                })
-        return alerts
-
-    def apply_inclusive_language(self, text: str) -> tuple[str, list[str]]:
-        """
-        Rewrite a text replacing or removing non-inclusive terms (PT/EN).
-        Returns (corrected_text, list_of_corrections_applied).
-
-        Consolidated from jd_enrichment.check_fairness().
-        """
-        if not text:
-            return text, []
-        corrected = text
-        corrections: list[str] = []
-
-        for term, replacement in INCLUSIVE_LANGUAGE_REPLACEMENTS_PT.items():
-            pattern = re.compile(re.escape(term), re.IGNORECASE)
-            if pattern.search(corrected):
-                if replacement:
-                    corrected = pattern.sub(replacement, corrected)
-                    corrections.append(
-                        f"Substituido '{term}' por '{replacement}' (linguagem inclusiva)"
-                    )
-                else:
-                    corrected = pattern.sub("", corrected)
-                    corrections.append(
-                        f"Removido '{term}' (termo potencialmente discriminatorio)"
-                    )
-
-        for term, replacement in INCLUSIVE_LANGUAGE_REPLACEMENTS_EN.items():
-            pattern = re.compile(re.escape(term), re.IGNORECASE)
-            if pattern.search(corrected):
-                if replacement:
-                    corrected = pattern.sub(replacement, corrected)
-                    corrections.append(
-                        f"Replaced '{term}' with '{replacement}' (inclusive language)"
-                    )
-                else:
-                    corrected = pattern.sub("", corrected)
-                    corrections.append(
-                        f"Removed '{term}' (potentially discriminatory term)"
-                    )
-
-        return corrected.strip(), corrections
-
     async def log_check(
         self,
         result: "FairnessCheckResult",
@@ -1230,7 +969,7 @@ class FairnessGuard:
         async def _persist(session: "AsyncSession") -> None:
             import uuid as _uuid
 
-            from lia_models.fairness_audit import FairnessAuditLog
+            from app.models.fairness_audit import FairnessAuditLog
             query_hash = hashlib.sha256(result.original_query.encode("utf-8")).hexdigest()
             record = FairnessAuditLog(
                 company_id=_uuid.UUID(company_id) if company_id else None,
@@ -1266,17 +1005,3 @@ class FairnessGuard:
             except Exception:
                 pass
             logger.error("FairnessGuard audit log failed (non-blocking): %s", e)
-
-
-def get_educational_message_for_category(category: str | None) -> str | None:
-    """Return the educational/coaching message associated with a bias category.
-
-    Used by reporting endpoints to surface why a query was blocked without
-    re-running FairnessGuard. Returns None for unknown categories.
-    """
-    if not category:
-        return None
-    entry = DISCRIMINATORY_CATEGORIES.get(category)
-    if not entry:
-        return None
-    return entry.get("message")

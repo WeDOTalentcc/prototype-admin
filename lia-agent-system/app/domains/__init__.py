@@ -11,7 +11,6 @@ from app.domains.base import (
 from app.domains.communication.domain import CommunicationDomain  # noqa: F401
 from app.domains.compliance_base import ComplianceDomainPrompt  # LIA-C01
 from app.domains.cv_screening.domain import CVScreeningDomain  # noqa: F401
-from app.domains.company_settings.domain import CompanySettingsDomain  # noqa: F401
 from app.domains.hiring_policy.domain import HiringPolicyDomain  # noqa: F401
 from app.domains.interview_scheduling.domain import InterviewSchedulingDomain  # noqa: F401
 from app.domains.job_management.domain import JobManagementDomain  # noqa: F401
@@ -28,8 +27,6 @@ from app.domains.talent_pool.domain import TalentPoolDomain  # noqa: F401
 from app.domains.agent_studio.domain import AgentStudioDomain  # noqa: F401
 from app.domains.digital_twin.domain import DigitalTwinDomain  # noqa: F401
 from app.domains.recruitment_campaign.domain import RecruitmentCampaignDomain  # noqa: F401
-from app.domains.candidate_self_service.domain import CandidateSelfServiceDomain  # noqa: F401
-from app.domains.offer.domain import OfferDomain  # noqa: F401  # PR-B: Wave 4
 try:
     from app.domains.job_creation.domain import JobCreationDomain  # noqa: F401  # Wizard WSI Phase B
 except ImportError as _e:

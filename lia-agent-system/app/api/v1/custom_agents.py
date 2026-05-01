@@ -30,14 +30,6 @@ from app.schemas.custom_agent import (
     UpdateCustomAgentRequest,
 )
 from app.services.agent_marketplace_service import agent_marketplace_service
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +94,7 @@ async def list_custom_agents(
 
 @router.get("/{agent_id}", response_model=CustomAgentResponse)
 async def get_custom_agent(
-    agent_id: _DualId,
+    agent_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -116,7 +108,7 @@ async def get_custom_agent(
 
 @router.patch("/{agent_id}", response_model=CustomAgentResponse)
 async def update_custom_agent(
-    agent_id: _DualId,
+    agent_id: str,
     body: UpdateCustomAgentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -168,7 +160,7 @@ async def update_custom_agent(
 
 @router.delete("/{agent_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_custom_agent(
-    agent_id: _DualId,
+    agent_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -189,7 +181,7 @@ async def delete_custom_agent(
 
 @router.post("/{agent_id}/test", response_model=TestCustomAgentResponse)
 async def test_custom_agent(
-    agent_id: _DualId,
+    agent_id: str,
     body: TestCustomAgentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -202,6 +194,7 @@ async def test_custom_agent(
 
     try:
         from app.domains.agent_studio.custom_agent_runtime import get_or_create_runtime
+
         runtime = get_or_create_runtime(
             agent_id=str(agent.id),
             agent_name=agent.name,
@@ -247,7 +240,7 @@ async def test_custom_agent(
 
 @router.post("/{agent_id}/execute", response_model=ExecuteCustomAgentResponse)
 async def execute_custom_agent(
-    agent_id: _DualId,
+    agent_id: str,
     body: ExecuteCustomAgentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -417,7 +410,7 @@ async def execute_custom_agent(
 
 @router.post("/{agent_id}/publish", response_model=MarketplaceListingResponse)
 async def publish_to_marketplace(
-    agent_id: _DualId,
+    agent_id: str,
     body: PublishToMarketplaceRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -596,7 +589,7 @@ async def review_listing(
 
 @router.get("/{agent_id}/executions", summary="Get execution history for an agent")
 async def get_agent_executions(
-    agent_id: _DualId,
+    agent_id: str,
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
@@ -664,7 +657,7 @@ async def get_studio_quota(
         )
         quota = result.scalar_one_or_none()
         if not quota:
-            from app.shared.observability.token_budget_service import get_plan_for_company
+            from app.domains.credits.services.token_budget_service import get_plan_for_company
             plan_code = await get_plan_for_company(company_id)
             limits = get_limits_for_plan(plan_code)
             return {
@@ -684,7 +677,7 @@ async def get_studio_quota(
 
 @router.get("/{agent_id}/versions", summary="List agent version history")
 async def list_agent_versions(
-    agent_id: _DualId,
+    agent_id: str,
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
@@ -709,7 +702,7 @@ async def list_agent_versions(
 
 @router.get("/{agent_id}/versions/{version}", summary="Get specific version snapshot")
 async def get_agent_version(
-    agent_id: _DualId,
+    agent_id: str,
     version: int,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -729,7 +722,7 @@ async def get_agent_version(
 
 @router.post("/{agent_id}/revert/{version}", summary="Revert agent to previous version")
 async def revert_agent_to_version(
-    agent_id: _DualId,
+    agent_id: str,
     version: int,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -1165,7 +1158,7 @@ Responda APENAS com o JSON, sem texto adicional."""
 
 @router.post("/{agent_id}/clone", summary="Clone an existing agent")
 async def clone_custom_agent(
-    agent_id: _DualId,
+    agent_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -1208,7 +1201,7 @@ async def clone_custom_agent(
 
 @router.get("/{agent_id}/preview-prompt")
 async def preview_agent_prompt(
-    agent_id: _DualId,
+    agent_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -1260,10 +1253,3 @@ async def preview_agent_prompt(
         "preview_lines": 80,
         "prompt_preview": "\n".join(preview_lines),
     }
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

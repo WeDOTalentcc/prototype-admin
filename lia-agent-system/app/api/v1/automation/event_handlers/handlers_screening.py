@@ -37,8 +37,8 @@ router = APIRouter()
 async def _fetch_candidate_and_vacancy(db, candidate_id: str, vacancy_id: str):
     """Fetch candidate and vacancy from DB, raise 404 if not found."""
     from sqlalchemy import select
-    from lia_models.candidate import Candidate
-    from lia_models.job_vacancy import JobVacancy
+    from app.models.candidate import Candidate
+    from app.models.job_vacancy import JobVacancy
 
     # TODO(phase2-repo-extraction): Move this DB call to AutomationRepository
     candidate_result = await db.execute(select(Candidate).where(Candidate.id == candidate_id))
@@ -64,11 +64,6 @@ def _build_screening_response_analyses(responses: list) -> list:
     from app.domains.cv_screening.services.wsi_service import ResponseAnalysis
     result = []
     for resp in responses:
-        # Audit task #498 — propaga `category` quando o emissor informa
-        # (event payload pode trazer 'category' explícita derivada do
-        # framework da pergunta a montante). Caso ausente, fica None e
-        # o scorer usa o `competencies` hint ou, em último caso, o
-        # heurístico de peso.
         result.append(ResponseAnalysis(
             question_id=resp.get("question_id", str(uuid.uuid4())),
             competency=resp.get("competency", "general"),
@@ -76,8 +71,7 @@ def _build_screening_response_analyses(responses: list) -> list:
             evidences=resp.get("evidences", []),
             red_flags=resp.get("red_flags", []),
             final_score=resp.get("score", 3.0),
-            justification=resp.get("justification", "Análise automática"),
-            category=resp.get("category"),
+            justification=resp.get("justification", "Análise automática")
         ))
     return result
 
@@ -171,7 +165,7 @@ async def _create_screening_recruiter_notification(
 def _add_screening_execution_log(db, request, overall_wsi: float, wsi_result, recommendation: str, passed: bool) -> None:
     """Persist AutomationExecutionLog for screening WSI calculation."""
     try:
-        from lia_models.automation import AutomationExecutionLog
+        from app.models.automation import AutomationExecutionLog
         execution_time = int((request.metadata or {}).get("duration_seconds", 0) * 1000)
         db.add(AutomationExecutionLog(
             company_id=request.company_id, trigger_event="screening_completed",
@@ -286,8 +280,6 @@ def _parse_wsi_llm_response(content: str, transcript: str, ResponseAnalysis) -> 
                 red_flags=r.get("red_flags", []),
                 final_score=float(r.get("score", 3.0)),
                 justification=r.get("justification", "Análise automática"),
-                # Audit task #498 — quando o LLM emite 'category', confiamos.
-                category=r.get("category"),
             )
             for r in json.loads(content).get("responses", [])
         ]
@@ -300,27 +292,12 @@ def _parse_wsi_llm_response(content: str, transcript: str, ResponseAnalysis) -> 
         )]
 
 
-async def _analyze_transcript_for_wsi(
-    transcript: str,
-    vacancy_title: str,
-    wsi_service,
-    tracking_context: dict | None = None,
-) -> list:
+async def _analyze_transcript_for_wsi(transcript: str, vacancy_title: str, wsi_service) -> list:
     """Analyze a conversation transcript and extract structured ResponseAnalysis objects via LLM."""
     from app.domains.cv_screening.services.wsi_service import ResponseAnalysis
     from app.domains.ai.services.llm import llm_service
-    from app.shared.observability.usage_tracking_callback import build_usage_callback
     try:
-        on_usage = build_usage_callback(
-            tracking_context,
-            agent_type="wsi_transcript_analysis",
-            default_operation="wsi_transcript_analysis",
-        )
-        content = await llm_service.safe_invoke(
-            _build_wsi_prompt(transcript, vacancy_title),
-            provider="claude",
-            on_usage=on_usage,
-        )
+        content = await llm_service.safe_invoke(_build_wsi_prompt(transcript, vacancy_title), provider="claude")
         return _parse_wsi_llm_response(content, transcript, ResponseAnalysis)
     except Exception as e:
         logger.error(f"Failed to analyze transcript: {e}")
@@ -337,16 +314,8 @@ async def _calculate_wsi(request, vacancy, wsi_service) -> tuple:
     if request.responses:
         response_analyses = _build_screening_response_analyses(request.responses)
     else:
-        # Audit task #545 — propaga contexto de billing por empresa/candidato/vaga
-        # para a chamada de análise de transcript do screening.
-        tracking_context = {
-            "company_id": getattr(request, "company_id", None),
-            "candidate_id": getattr(request, "candidate_id", None),
-            "vacancy_id": getattr(request, "vacancy_id", None),
-        }
         response_analyses = await _analyze_transcript_for_wsi(
-            transcript=request.transcript, vacancy_title=vacancy.title,
-            wsi_service=wsi_service, tracking_context=tracking_context,
+            transcript=request.transcript, vacancy_title=vacancy.title, wsi_service=wsi_service
         )
     weights = _normalize_weights(request.competency_weights or {}, response_analyses)
     wsi_result = wsi_service.calculate_wsi(
@@ -422,16 +391,8 @@ async def _process_screening_completed(request, db, audit_svc, activity_svc, com
     wsi_result, response_analyses, weights, overall_wsi, passed, recommendation, decision, suggested_next_stage = \
         await _score_and_decide(request, vacancy, wsi_service)
 
-    # Audit task #545 — propaga billing context (empresa/candidato/vaga)
-    # também para a geração de feedback ao candidato pós-screening.
-    _feedback_tracking = {
-        "company_id": getattr(request, "company_id", None),
-        "candidate_id": getattr(request, "candidate_id", None),
-        "vacancy_id": getattr(request, "vacancy_id", None),
-    }
     candidate_feedback = await wsi_service.generate_candidate_feedback(
-        wsi_result=wsi_result, responses=response_analyses, decision=decision,
-        tracking_context=_feedback_tracking,
+        wsi_result=wsi_result, responses=response_analyses, decision=decision
     )
     communication_sent = await _send_screening_communication(
         comm_svc, db, request, passed, overall_wsi, candidate, vacancy, candidate_feedback

@@ -29,11 +29,6 @@ from lia_models.job_vacancy import JobVacancy
 from lia_models.rubric import JobRequirement
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
 from app.domains.analytics.services.activity_service import activity_service
-from app.shared.compliance.scoring_safeguards import (
-    hash_payload,
-    log_scoring_decision,
-    run_fairness_check,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -112,62 +107,7 @@ class CVScoringService:
                 }
             
             job_info = await self._get_job_info(vacancy_id, db)
-
-            fairness_payload = " ".join(
-                str(part) for part in [
-                    candidate_data.get("resume_text") or "",
-                    candidate_data.get("self_introduction") or "",
-                    candidate_data.get("current_title") or "",
-                    candidate_data.get("current_company") or "",
-                ] if part
-            ).strip()
-            fg_result, fg_unavailable = run_fairness_check(fairness_payload)
-            if fg_unavailable:
-                await log_scoring_decision(
-                    company_id=company_id,
-                    agent_name="cv_scoring_service",
-                    decision_type="cv_screening",
-                    action="fairness_unavailable",
-                    decision="blocked",
-                    reasoning=[
-                        "FairnessGuard execution failed; CV screening blocked (fail-closed)",
-                        f"inputs_hash={hash_payload(fairness_payload)}",
-                    ],
-                    criteria_used=["fairness_guard"],
-                    candidate_id=candidate_id,
-                    job_vacancy_id=vacancy_id,
-                    human_review_required=True,
-                )
-                return {
-                    "success": False,
-                    "error": "fairness_unavailable",
-                    "message": "Verificação de fairness indisponível. Tente novamente em instantes.",
-                }
-            if fg_result and fg_result.is_blocked:
-                await log_scoring_decision(
-                    company_id=company_id,
-                    agent_name="cv_scoring_service",
-                    decision_type="cv_screening",
-                    action="fairness_block",
-                    decision="rejected",
-                    reasoning=[
-                        f"FairnessGuard blocked: category={fg_result.category}",
-                        f"blocked_terms={fg_result.blocked_terms}",
-                        f"inputs_hash={hash_payload(fairness_payload)}",
-                    ],
-                    criteria_used=["fairness_guard"],
-                    candidate_id=candidate_id,
-                    job_vacancy_id=vacancy_id,
-                    human_review_required=True,
-                )
-                return {
-                    "success": False,
-                    "error": "fairness_block",
-                    "message": fg_result.educational_message
-                        or "Conteúdo bloqueado pelo guardrail de fairness.",
-                    "category": fg_result.category,
-                }
-
+            
             evaluation_result = await rubric_evaluation_service.evaluate_candidate(
                 candidate_data=candidate_data,
                 requirements=requirements
@@ -245,35 +185,7 @@ class CVScoringService:
             )
             
             await db.commit()
-
-            await log_scoring_decision(
-                company_id=company_id,
-                agent_name="cv_scoring_service",
-                decision_type="cv_screening",
-                action="screen_candidate",
-                decision="scored",
-                reasoning=[
-                    f"rubric_score={rubric_score:.2f}",
-                    f"recommendation={recommendation}",
-                    f"sub_status={sub_status}",
-                ],
-                criteria_used=[
-                    "rubric_evaluation",
-                    "evidence_weights",
-                    "auto_exclusion_essential",
-                ],
-                candidate_id=candidate_id,
-                job_vacancy_id=vacancy_id,
-                score=rubric_score,
-                score_breakdown={
-                    "rubric_score": round(rubric_score, 2),
-                    "cv_fit_score": cv_fit["cv_fit_score"],
-                    "sub_status": sub_status,
-                    "recommendation": recommendation,
-                },
-                human_review_required=False,
-            )
-
+            
             logger.info(
                 f"✅ [CV_SCORING] Completed screening for candidate={candidate_id}: "
                 f"score={rubric_score:.1f}%, recommendation={recommendation}"

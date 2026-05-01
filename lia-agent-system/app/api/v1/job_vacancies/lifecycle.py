@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 from ._shared import *
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
@@ -473,14 +473,10 @@ async def get_sourcing_status_v2(
 
 # ─── Close vacancy ────────────────────────────────────────────────────────────
 
-@router.post("/job-vacancies/{vacancy_id}/close", response_model=None)
+@router.post("/{vacancy_id}/close", response_model=None)
 async def close_vacancy(
+    vacancy_id: str,
     request: Request,
-    vacancy_id: str = Path(
-        ...,
-        pattern=JOB_ID_PATH_PATTERN,
-        description="UUID (local DB) or decimal integer (Rails bigint).",
-    ),
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_user_or_demo),
     activity_svc: ActivityService = Depends(get_activity_service),

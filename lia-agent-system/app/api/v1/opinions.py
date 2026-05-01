@@ -11,7 +11,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.domains.opinions.dependencies import get_opinions_repo
 from app.domains.opinions.repositories.opinions_repository import OpinionsRepository
-from lia_models.lia_opinion import LiaOpinion
+from app.models.lia_opinion import LiaOpinion
 from app.schemas.lia_opinion import (
     CandidateOpinionsSummary,
     LiaOpinionCompact,

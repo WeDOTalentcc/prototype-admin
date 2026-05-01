@@ -90,9 +90,6 @@ class OrchestratedJobsManagementRequest(BaseModel):
     company_id: str = Field(default="", description="Tenant company ID for multi-tenancy isolation")
 
 
-# P1-A — guard against unbounded context window consumption
-_MAX_HISTORY_MESSAGES = 20  # 10 user+assistant turns; keeps ~2K tokens max
-
 class OrchestratedJobsManagementResponse(BaseModel):
     success: bool
     content: str = Field(..., description="Formatted markdown response")
@@ -363,7 +360,7 @@ async def orchestrated_jobs_management(request: OrchestratedJobsManagementReques
                 },
                 conversation_history=[
                     {"role": m.get("role", "user"), "content": m.get("content", "")}
-                    for m in (request.conversation_history or [])[-_MAX_HISTORY_MESSAGES:]
+                    for m in (request.conversation_history or [])
                 ],
             )
 
@@ -397,7 +394,7 @@ async def orchestrated_jobs_management(request: OrchestratedJobsManagementReques
                     jobs_context=request.jobs_context,
                     selected_jobs=request.selected_jobs,
                     top_jobs=request.top_jobs,
-                    conversation_history=(request.conversation_history or [])[-_MAX_HISTORY_MESSAGES:],
+                    conversation_history=request.conversation_history,
                 )
 
                 return OrchestratedJobsManagementResponse(

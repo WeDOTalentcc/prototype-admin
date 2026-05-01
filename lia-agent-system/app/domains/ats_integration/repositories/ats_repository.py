@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.ats_integration import (
+from app.models.ats_integration import (
     ATSCandidate,
     ATSConnection,
     ATSJobMapping,

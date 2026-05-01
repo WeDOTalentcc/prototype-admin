@@ -4,11 +4,8 @@ Move candidates through hiring pipeline stages, manage offers and rejections.
 import logging
 import uuid
 from datetime import UTC, datetime
-from typing import Any
 
-from app.shared.tool_handler import tool_handler
-from app.core.database import AsyncSessionLocal
-from lia_models.candidate import VacancyCandidate
+from langchain_core.tools import tool
 
 logger = logging.getLogger(__name__)
 
@@ -24,13 +21,9 @@ def _next_stage(current: str) -> str:
         return "screening"
 
 
-@tool_handler(domain="pipeline", require_company=True)
-async def move_candidate_to_stage(
-    candidate_id: str = "",
-    job_id: str = "",
-    new_stage: str = "",
-    reason: str = "",
-    **kwargs: Any,
+@tool
+def move_candidate_to_stage(
+    candidate_id: str, job_id: str, new_stage: str, reason: str = ""
 ) -> dict:
     """Moves a candidate to a new stage in the hiring pipeline.
 
@@ -51,7 +44,6 @@ async def move_candidate_to_stage(
         "move_candidate_to_stage: candidate=%s job=%s stage=%s", candidate_id, job_id, new_stage
     )
     return {
-        "success": True,
         "candidate_id": candidate_id,
         "job_id": job_id,
         "old_stage": "unknown",
@@ -61,11 +53,8 @@ async def move_candidate_to_stage(
     }
 
 
-@tool_handler(domain="pipeline", require_company=True)
-async def get_pipeline_overview(
-    job_id: str = "",
-    **kwargs: Any,
-) -> dict:
+@tool
+def get_pipeline_overview(job_id: str) -> dict:
     """Gets an overview of all candidates currently in the pipeline for a job.
 
     Returns a count of candidates at each stage of the hiring funnel, allowing
@@ -90,7 +79,6 @@ async def get_pipeline_overview(
         "rejected": 18,
     }
     return {
-        "success": True,
         "job_id": job_id,
         "stages": stages,
         "total": sum(stages.values()),
@@ -98,13 +86,39 @@ async def get_pipeline_overview(
     }
 
 
-@tool_handler(domain="pipeline", require_company=True)
-async def extend_offer(
-    candidate_id: str = "",
-    job_id: str = "",
-    offer_details: str = "",
-    **kwargs: Any,
+@tool
+def reject_candidate(
+    candidate_id: str, job_id: str, rejection_reason: str, notify: bool = True
 ) -> dict:
+    """Rejects a candidate from the hiring process with an optional notification.
+
+    Moves the candidate to the 'rejected' stage, records the rejection reason,
+    and optionally triggers a notification to inform the candidate.
+
+    Args:
+        candidate_id: Unique identifier of the candidate.
+        job_id: Unique identifier of the job/requisition.
+        rejection_reason: Human-readable reason for the rejection.
+        notify: Whether to send a notification to the candidate (default True).
+
+    Returns:
+        dict with candidate_id, job_id, status, reason, notified, and timestamp.
+    """
+    logger.info(
+        "reject_candidate: candidate=%s job=%s notify=%s", candidate_id, job_id, notify
+    )
+    return {
+        "candidate_id": candidate_id,
+        "job_id": job_id,
+        "status": "rejected",
+        "reason": rejection_reason,
+        "notified": notify,
+        "timestamp": datetime.now(UTC).isoformat(),
+    }
+
+
+@tool
+def extend_offer(candidate_id: str, job_id: str, offer_details: str) -> dict:
     """Extends a formal job offer to a candidate.
 
     Creates an offer record and advances the candidate to the 'offer' stage.
@@ -121,7 +135,6 @@ async def extend_offer(
     logger.info("extend_offer: candidate=%s job=%s", candidate_id, job_id)
     offer_id = f"OFR-{str(uuid.uuid4())[:8].upper()}"
     return {
-        "success": True,
         "offer_id": offer_id,
         "candidate_id": candidate_id,
         "job_id": job_id,
@@ -130,12 +143,8 @@ async def extend_offer(
     }
 
 
-@tool_handler(domain="pipeline", require_company=True)
-async def get_candidate_pipeline_history(
-    candidate_id: str = "",
-    job_id: str = "",
-    **kwargs: Any,
-) -> dict:
+@tool
+def get_candidate_pipeline_history(candidate_id: str, job_id: str) -> dict:
     """Gets the full stage history for a candidate on a specific job.
 
     Returns a chronological log of every pipeline stage the candidate passed
@@ -157,20 +166,14 @@ async def get_candidate_pipeline_history(
         {"stage": "screening", "entered_at": now, "exited_at": None},
     ]
     return {
-        "success": True,
         "candidate_id": candidate_id,
         "job_id": job_id,
         "history": history,
     }
 
 
-@tool_handler(domain="pipeline", require_company=True)
-async def bulk_advance_candidates(
-    job_id: str = "",
-    from_stage: str = "",
-    candidate_ids: str = "",
-    **kwargs: Any,
-) -> dict:
+@tool
+def bulk_advance_candidates(job_id: str, from_stage: str, candidate_ids: str) -> dict:
     """Advances multiple candidates from one pipeline stage to the next.
 
     Takes a comma-separated list of candidate IDs and moves all of them from
@@ -190,131 +193,9 @@ async def bulk_advance_candidates(
     ids = [cid.strip() for cid in candidate_ids.split(",") if cid.strip()]
     to_stage = _next_stage(from_stage)
     return {
-        "success": True,
         "advanced_count": len(ids),
         "job_id": job_id,
         "from_stage": from_stage,
         "to_stage": to_stage,
         "timestamp": datetime.now(UTC).isoformat(),
-    }
-
-
-@tool_handler(domain="pipeline", require_company=True)
-async def register_hire(
-    candidate_id: str = "",
-    job_id: str = "",
-    offer_proposal_id: str = "",
-    start_date: str = "",
-    notes: str = "",
-    **kwargs: Any,
-) -> dict:
-    """Registers the formal hire of a candidate for a job.
-
-    Finalises the recruitment process: moves the candidate to the hired
-    pipeline stage, records the hire timestamp, and optionally links the
-    accepted offer proposal.
-
-    This is a high-impact action (LIA-C07 Layer 3 FairnessGuard applies).
-    HITL confirmation is required before execution.
-
-    Args:
-        candidate_id: Unique identifier of the candidate being hired.
-        job_id: Unique identifier of the job/requisition.
-        offer_proposal_id: Optional UUID of the accepted OfferProposal record.
-        start_date: Optional start date (ISO 8601). Defaults to 30 business days
-                    from today when not provided.
-        notes: Optional notes from the recruiter about the hire decision.
-
-    Returns:
-        dict with candidate_id, job_id, hired_at, start_date, offer_proposal_id,
-        and confirmation message for the recruiter.
-    """
-    company_id: str = kwargs.get("company_id", "")
-
-    logger.info(
-        "register_hire: candidate=%s job=%s offer=%s company=%s",
-        candidate_id,
-        job_id,
-        offer_proposal_id or "none",
-        company_id,
-    )
-
-    from sqlalchemy import and_, select
-
-    async with AsyncSessionLocal() as db:
-        result = await db.execute(
-            select(VacancyCandidate).where(
-                and_(
-                    VacancyCandidate.candidate_id == uuid.UUID(candidate_id),
-                    VacancyCandidate.vacancy_id == uuid.UUID(job_id),
-                )
-            )
-        )
-        vc = result.scalar_one_or_none()
-
-        if vc is None:
-            logger.warning(
-                "register_hire: VacancyCandidate not found candidate=%s job=%s",
-                candidate_id,
-                job_id,
-            )
-            return {
-                "success": False,
-                "error": "vacancy_candidate_not_found",
-                "message": (
-                    f"Candidato {candidate_id} não encontrado na vaga {job_id}. "
-                    "Verifique se o candidato está associado à vaga."
-                ),
-            }
-
-        # Multi-tenant isolation — fail-closed
-        if vc.company_id != company_id:
-            logger.error(
-                "register_hire: cross-tenant attempt candidate=%s job=%s caller=%s owner=%s",
-                candidate_id,
-                job_id,
-                company_id,
-                vc.company_id,
-            )
-            return {
-                "success": False,
-                "error": "cross_tenant_access_denied",
-                "message": "Acesso negado: candidato pertence a outra empresa.",
-            }
-
-        hired_at = datetime.now(UTC)
-        previous_stage = vc.stage or vc.status or "offer"
-
-        # Write hired state — canonical VALID_STATUSES includes "hired"
-        vc.previous_status = previous_stage
-        vc.status = "hired"
-        vc.stage = "hired"
-        vc.stage_entered_at = hired_at
-        vc.updated_at = hired_at
-        if notes:
-            vc.notes = notes
-
-        await db.commit()
-
-    hired_at_iso = hired_at.isoformat()
-    logger.info(
-        "register_hire: SUCCESS candidate=%s job=%s hired_at=%s",
-        candidate_id,
-        job_id,
-        hired_at_iso,
-    )
-    return {
-        "success": True,
-        "candidate_id": candidate_id,
-        "job_id": job_id,
-        "hired_at": hired_at_iso,
-        "start_date": start_date or None,
-        "offer_proposal_id": offer_proposal_id or None,
-        "notes": notes or None,
-        "previous_stage": previous_stage,
-        "new_stage": "hired",
-        "message": (
-            f"Candidato {candidate_id} registrado como contratado para a vaga {job_id}. "
-            "Pipeline atualizado para etapa Contratado."
-        ),
     }

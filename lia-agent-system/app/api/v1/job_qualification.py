@@ -13,19 +13,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.job_management.services.job_qualification_service import job_qualification_service
-from lia_models.job_vacancy import JobVacancy
+from app.models.job_vacancy import JobVacancy
+
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
-
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +72,7 @@ async def classify_job(body: ClassifyJobRequest):
 
 
 @router.post("/{job_id}/classify", response_model=JobQualificationResponse)
-async def classify_and_save(job_id: _DualId, db: AsyncSession = Depends(get_db)):
+async def classify_and_save(job_id: str, db: AsyncSession = Depends(get_db)):
     """Classify a job vacancy and save the result to the database."""
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     job = result.scalar_one_or_none()
@@ -125,7 +117,7 @@ async def classify_and_save(job_id: _DualId, db: AsyncSession = Depends(get_db))
 
 
 @router.get("/{job_id}", response_model=JobQualificationResponse)
-async def get_qualification(job_id: _DualId, db: AsyncSession = Depends(get_db)):
+async def get_qualification(job_id: str, db: AsyncSession = Depends(get_db)):
     """Get the current qualification level of a job vacancy."""
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     job = result.scalar_one_or_none()
@@ -143,7 +135,7 @@ async def get_qualification(job_id: _DualId, db: AsyncSession = Depends(get_db))
 
 
 @router.put("/{job_id}/override", response_model=JobQualificationResponse)
-async def override_qualification(job_id: _DualId, body: OverrideQualificationRequest, db: AsyncSession = Depends(get_db)):
+async def override_qualification(job_id: str, body: OverrideQualificationRequest, db: AsyncSession = Depends(get_db)):
     """Manually override the qualification level of a job vacancy."""
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     job = result.scalar_one_or_none()
@@ -165,10 +157,3 @@ async def override_qualification(job_id: _DualId, body: OverrideQualificationReq
         qualification_override=True,
         classified=True,
     )
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

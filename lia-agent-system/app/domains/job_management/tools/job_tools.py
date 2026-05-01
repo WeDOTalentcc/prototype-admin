@@ -72,20 +72,11 @@ async def create_job(
     
     try:
         from app.core.database import AsyncSessionLocal
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.job_vacancy import JobVacancy
         
         status = "Ativa" if publish else "Rascunho"
         
         async with AsyncSessionLocal() as db:
-            # Fix RLS: set role and tenant context before INSERT to satisfy pg row-level security
-            import sqlalchemy as _sa_rls
-            from app.core.database import set_tenant_context as _set_tenant
-            try:
-                await db.execute(_sa_rls.text("SET ROLE lia_app"))
-            except Exception as _role_err:
-                logger.warning("[create_job] SET ROLE lia_app failed: %s", _role_err)
-            if effective_company_id:
-                await _set_tenant(db, str(effective_company_id))
             salary_range = None
             if salary_min or salary_max:
                 salary_range = {
@@ -94,21 +85,7 @@ async def create_job(
                     "currency": "BRL"
                 }
             
-            # Generate the UUID explicitly in Python (not via SQLAlchemy
-            # column default) so we have a stable id BEFORE INSERT/commit
-            # and never need to read `job.id` back from the (potentially
-            # expired) ORM instance after commit. Avoids both:
-            #   - `str(job.id)` returning literal "None" when the column
-            #     default `uuid.uuid4` only fires on flush, AND
-            #   - `MissingGreenlet` lazy-load when accessing job.id after
-            #     `expire_on_commit=True` clears the in-memory state.
-            # Post-mortem 2026-04-29 wizard-domain-hint-leak (parts 2+3).
-            import uuid as _uuid_mod
-            job_uuid = _uuid_mod.uuid4()
-            job_id = str(job_uuid)
-
             job = JobVacancy(
-                id=job_uuid,
                 title=title,
                 company_id=effective_company_id,
                 department=department,
@@ -120,47 +97,27 @@ async def create_job(
                 salary_range=salary_range,
                 status=status,
                 stage="Planejamento" if not publish else "Publicada",
-                source_system="lia_chat",
                 created_by=user_id,
                 recruiter=user_id,
                 created_at=datetime.utcnow(),
                 updated_at=datetime.utcnow(),
                 published_at=datetime.utcnow() if publish else None
             )
-
+            
             if skills:
                 job.additional_data = {"skills": skills}
-
+            
             db.add(job)
             await db.commit()
-            # Best-effort refresh: the new transaction opened by refresh
-            # may be blocked by Postgres RLS (it doesn't carry
-            # `set_config('app.company_id', ...)`). Non-fatal — we already
-            # have job_id captured above, and created_at/updated_at were
-            # set explicitly in Python. Wrapped so a future RLS
-            # reconfiguration that fixes refresh is non-breaking.
-            try:
-                await db.refresh(job)
-            except Exception as _refresh_exc:
-                logger.debug(
-                    "[create_job] db.refresh skipped (RLS or session): %s",
-                    _refresh_exc,
-                )
+            await db.refresh(job)
+            
+            job_id = str(job.id)
             
             logger.info(f"✅ Created job vacancy: {job_id} - {title}")
             
-            _skills_str = ", ".join(skills) if skills else "não especificadas"
-            _wm = work_model or "não especificado"
-            _remote_note = " (remote/remoto)" if work_model and "remot" in work_model.lower() else ""
-            _pub_note = " e publicada" if publish else " como rascunho"
             return {
                 "success": True,
-                "message": (
-                    f"✅ Vaga '{title}' criada{_pub_note}. "
-                    f"Requirements/requisitos extraídos: {_skills_str}. "
-                    f"Modalidade: {_wm}{_remote_note}. "
-                    f"Status: {'publicada' if publish else 'rascunho — aguardando approval/confirmação antes de publicar'}."
-                ),
+                "message": f"✅ Vaga '{title}' criada com sucesso{' e publicada' if publish else ' como rascunho'}.",
                 "action_taken": "create_job",
                 "affected_entities": [job_id],
                 "data": {
@@ -217,7 +174,7 @@ async def update_job(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             result = await db.execute(
@@ -309,7 +266,7 @@ async def pause_job(
         
         async with AsyncSessionLocal() as db:
             try:
-                from lia_models.job_vacancy import JobVacancy
+                from app.models.job_vacancy import JobVacancy
                 
                 result = await db.execute(
                     select(JobVacancy).where(JobVacancy.id == UUID(job_id))
@@ -418,7 +375,7 @@ async def close_job(
         
         async with AsyncSessionLocal() as db:
             try:
-                from lia_models.job_vacancy import JobVacancy
+                from app.models.job_vacancy import JobVacancy
                 
                 result = await db.execute(
                     select(JobVacancy).where(JobVacancy.id == UUID(job_id))
@@ -447,7 +404,7 @@ async def close_job(
                 
                 try:
                     from app.domains.job_management.services.outcome_tracker import outcome_tracker
-                    company_id = (job.company_id or 'demo_company')
+                    company_id = getattr(job, 'company_id', 'demo_company')
                     await outcome_tracker.record_job_close(
                         job_id=job_id,
                         company_id=company_id,
@@ -538,7 +495,7 @@ async def publish_job(
         
         async with AsyncSessionLocal() as db:
             try:
-                from lia_models.job_vacancy import JobVacancy
+                from app.models.job_vacancy import JobVacancy
                 
                 result = await db.execute(
                     select(JobVacancy).where(JobVacancy.id == UUID(job_id))

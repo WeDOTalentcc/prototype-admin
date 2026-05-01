@@ -15,7 +15,6 @@ from app.shared.tool_handler import tool_handler
 logger = logging.getLogger(__name__)
 
 
-# require_company=False kept: public market intelligence data — tenant-agnostic (gated by module flag)
 @tool_handler("talent_intelligence", require_company=False, module="talent_intelligence_pro")
 async def get_market_intelligence(
     job_title: str = "",

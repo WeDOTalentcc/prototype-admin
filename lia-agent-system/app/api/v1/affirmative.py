@@ -10,14 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.shared.services.affirmative_service import AffirmativeService
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter(prefix="/affirmative", tags=["affirmative"])
 
@@ -96,7 +88,7 @@ async def check_eligibility(
 
 @router.get("/pending-documents/{company_id}", response_model=PendingDocumentsResponse)
 async def get_pending_documents(
-    company_id: _DualId,
+    company_id: str,
     vacancy_id: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
@@ -157,17 +149,10 @@ async def verify_document_recruiter(
 
 @router.post("/check-expired/{company_id}", response_model=ExpiredDocumentsResponse)
 async def check_expired_documents(
-    company_id: _DualId,
+    company_id: str,
     db: AsyncSession = Depends(get_db)
 ):
     """Check and mark expired documents."""
     service = AffirmativeService(db)
     count = service.check_expired_documents(company_id)
     return {"expired_count": count}
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

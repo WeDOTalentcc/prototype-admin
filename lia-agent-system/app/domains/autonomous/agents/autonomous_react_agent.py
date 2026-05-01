@@ -26,7 +26,6 @@ _CURRENT_COMPANY_ID: contextvars.ContextVar[str] = contextvars.ContextVar(
 from lia_agents_core.agent_interface import AgentInput, AgentOutput, AgentAction
 from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
 from lia_agents_core.langgraph_react_base import LangGraphReActBase
-from app.shared.agents.agent_registry import register_agent
 from lia_agents_core.working_memory import WorkingMemoryService
 
 from app.domains.autonomous.agents.autonomous_tool_registry import (
@@ -63,7 +62,6 @@ def _get_circuit_breaker() -> Any:
     return _CIRCUIT_BREAKER
 
 
-@register_agent("autonomous", aliases=["cross_domain", "tier_6"])
 class AutonomousReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     """
     Agente ReAct autônomo cross-domain — Tier 6 do CascadedRouter.

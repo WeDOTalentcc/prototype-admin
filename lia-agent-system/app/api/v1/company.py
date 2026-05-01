@@ -20,25 +20,29 @@ from app.auth.security import generate_secure_token, get_password_hash
 from app.domains.company.dependencies import (
     get_approver_repo,
     get_benefit_repo,
+    get_big_five_repo,
     get_company_profile_repo,
     get_culture_profile_repo,
     get_culture_value_repo,
     get_department_repo,
     get_global_settings_repo,
     get_ideal_profile_repo,
+    get_technical_test_repo,
     get_tenant_repo,
     get_user_repo,
 )
 from app.domains.company.repositories.approver_repository import ApproverRepository
 from app.domains.company.repositories.benefit_repository import BenefitRepository
+from app.domains.company.repositories.big_five_repository import BigFiveRepository
 from app.domains.company.repositories.company_profile_repository import CompanyProfileRepository
 from app.domains.company.repositories.culture_profile_repository import CultureProfileRepository
 from app.domains.company.repositories.culture_value_repository import CultureValueRepository
 from app.domains.company.repositories.department_repository import DepartmentRepository
 from app.domains.company.repositories.global_settings_repository import GlobalSettingsRepository
 from app.domains.company.repositories.ideal_profile_repository import IdealProfileRepository
+from app.domains.company.repositories.technical_test_repository import TechnicalTestRepository
 from app.domains.company.repositories.tenant_repository import TenantRepository
-from app.domains.auth.repositories.user_repository import UserRepository
+from app.domains.company.repositories.user_repository import UserRepository
 from app.domains.sourcing.services.apify_service import apify_service
 from app.schemas.company import (
     ApproverCreate,
@@ -46,6 +50,12 @@ from app.schemas.company import (
     ApproverUpdate,
     AutoEnrichResponse,
     BenefitResponse,
+    BigFiveQuestionCreate,
+    BigFiveQuestionResponse,
+    BigFiveQuestionUpdate,
+    BigFiveRoleProfileCreate,
+    BigFiveRoleProfileResponse,
+    BigFiveRoleProfileUpdate,
     CatalogStatusResponse,
     CompanyEnrichRequest,
     CompanyEnrichResponse,
@@ -79,6 +89,12 @@ from app.schemas.company import (
     OnboardingCultureProfile,
     OnboardingData,
     SmartWizardGreetingResponse,
+    TechnicalQuestionCreate,
+    TechnicalQuestionResponse,
+    TechnicalQuestionUpdate,
+    TechnicalTestTemplateCreate,
+    TechnicalTestTemplateResponse,
+    TechnicalTestTemplateUpdate,
     TenantResolutionResponse,
 )
 from app.domains.company.services.company_configuration_service import company_config_service
@@ -103,18 +119,10 @@ async def resolve_tenant(
 ):
     """Resolve tenant IDs from WorkOS organization ID or client account ID."""
     try:
-        from app.core.tenant import normalize_demo_company_id as _norm_tenant
-        if client_account_id:
-            client_account_id = _norm_tenant(
-                client_account_id, context="company.resolve_tenant.input"
-            ) or client_account_id
         resolved_client_id = client_account_id
 
         if not resolved_client_id and current_user and hasattr(current_user, 'company_id') and current_user.company_id:
-            from app.core.tenant import normalize_demo_company_id
-            resolved_client_id = normalize_demo_company_id(
-                str(current_user.company_id), context="company.resolve_tenant"
-            ) or str(current_user.company_id)
+            resolved_client_id = str(current_user.company_id)
 
         if workos_organization_id and not resolved_client_id:
             config = await tenant_repo.get_workos_config(workos_organization_id)
@@ -125,10 +133,7 @@ async def resolve_tenant(
             raise HTTPException(status_code=404, detail="No tenant found for the given identifiers")
 
         if current_user and hasattr(current_user, 'company_id') and current_user.company_id:
-            from app.core.tenant import normalize_demo_company_id
-            user_company = normalize_demo_company_id(
-                str(current_user.company_id), context="company.resolve_tenant.cross_check"
-            ) or str(current_user.company_id)
+            user_company = str(current_user.company_id)
             if client_account_id and client_account_id != user_company:
                 logger.warning(f"Cross-tenant access attempt: user {current_user.id} (company={user_company}) tried to resolve tenant {client_account_id}")
                 raise HTTPException(status_code=403, detail="Access denied: cross-tenant resolution not allowed")
@@ -136,12 +141,10 @@ async def resolve_tenant(
         client = await tenant_repo.get_client_account(resolved_client_id)
         profile = await tenant_repo.get_company_by_client_account(resolved_client_id)
 
-        _profile_id = str(profile.id) if profile else (str(resolved_client_id) if resolved_client_id else None)
-        _company_name = (client.name if client else None) or (profile.name if profile else None)
         return TenantResolutionResponse(
             client_account_id=str(resolved_client_id) if resolved_client_id else None,
-            company_profile_id=_profile_id,
-            company_name=_company_name,
+            company_profile_id=str(profile.id) if profile else None,
+            company_name=client.name if client else (profile.name if profile else None),
             plan_id=str(client.plan_id) if client and client.plan_id else None,
             status=client.status if client else None,
         )
@@ -150,7 +153,6 @@ async def resolve_tenant(
     except Exception as e:
         logger.error(f"Error resolving tenant: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
 
 
 @router.post("/onboarding", response_model=None)
@@ -548,7 +550,7 @@ async def get_company_profile(
 
         if not effective_company_id:
             logger.warning("get_company_profile called without company_id and no auth context — rejecting")
-            raise HTTPException(status_code=400, detail="company_id is required. Authenticate via JWT — tenant is derived from the session.")
+            raise HTTPException(status_code=400, detail="company_id is required. Use /api/v1/company/resolve-tenant to obtain your tenant ID.")
 
         try:
             company_uuid = uuid.UUID(effective_company_id)
@@ -768,6 +770,74 @@ REGRAS:
     except Exception as e:
         logger.error(f"Error generating EVP: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/stats", response_model=None)
+async def get_company_stats(
+    company_id: uuid.UUID | None = Query(None),
+    profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
+    dept_repo: DepartmentRepository = Depends(get_department_repo),
+    benefit_repo: BenefitRepository = Depends(get_benefit_repo),
+    cv_repo: CultureValueRepository = Depends(get_culture_value_repo),
+    ip_repo: IdealProfileRepository = Depends(get_ideal_profile_repo),
+    bf_repo: BigFiveRepository = Depends(get_big_five_repo),
+    tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
+):
+    """Get statistics for company setup completion."""
+    try:
+        stats = {
+            "profile_complete": False,
+            "departments_count": 0,
+            "benefits_count": 0,
+            "culture_values_count": 0,
+            "ideal_profiles_count": 0,
+            "big_five_questions_count": 0,
+            "technical_questions_count": 0,
+            "completion_percentage": 0,
+        }
+
+        profile = None
+        if company_id:
+            profile = await profile_repo.get_by_id(company_id)
+        else:
+            profile = await profile_repo.get_default()
+
+        if profile:
+            stats["profile_complete"] = bool(profile.name and profile.industry and profile.description)
+
+            departments = await dept_repo.list_for_company(profile.id)
+            stats["departments_count"] = len([d for d in departments if d.is_active])
+
+            benefits = await benefit_repo.list_for_company(profile.id)
+            stats["benefits_count"] = len([b for b in benefits if b.is_active])
+
+            culture_values = await cv_repo.list_for_company(profile.id)
+            stats["culture_values_count"] = len([v for v in culture_values if v.is_active])
+
+            ideal_profiles = await ip_repo.list_for_company(profile.id)
+            stats["ideal_profiles_count"] = len([p for p in ideal_profiles if p.is_active])
+
+        bf_questions = await bf_repo.list_questions()
+        stats["big_five_questions_count"] = len(bf_questions)
+
+        tech_questions = await tt_repo.list_questions()
+        stats["technical_questions_count"] = len(tech_questions)
+
+        completed_steps = sum([
+            1 if stats["profile_complete"] else 0,
+            1 if stats["departments_count"] > 0 else 0,
+            1 if stats["benefits_count"] > 0 else 0,
+            1 if stats["culture_values_count"] > 0 else 0,
+            1 if stats["ideal_profiles_count"] > 0 else 0,
+            1 if stats["big_five_questions_count"] >= 5 else 0,
+            1 if stats["technical_questions_count"] >= 3 else 0,
+        ])
+        stats["completion_percentage"] = round((completed_steps / 7) * 100)
+
+        return stats
+    except Exception as e:
+        logger.error(f"Error getting company stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/analyze-culture", response_model=CultureAnalysisResponse)
 async def analyze_company_culture(

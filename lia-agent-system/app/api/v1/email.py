@@ -16,14 +16,6 @@ from pydantic import BaseModel, EmailStr
 
 from app.domains.communication.dependencies import get_email_repo
 from app.domains.communication.repositories.email_repository import EmailRepository
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -130,7 +122,7 @@ async def send_direct_email(
 
 @router.get("/history/{candidate_id}", response_model=EmailHistoryResponse)
 async def get_email_history_by_candidate(
-    candidate_id: _DualId,
+    candidate_id: str,
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     repo: EmailRepository = Depends(get_email_repo),
@@ -262,10 +254,3 @@ async def get_email_system_status():
         "database_logging": True,
         "audit_trail": True,
     }
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

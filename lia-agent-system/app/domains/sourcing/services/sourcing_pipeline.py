@@ -747,9 +747,7 @@ class SourcingPipelineService:
                     continue
                 candidate = existing_candidate
             else:
-                # Task #346 — sourcing herda o tenant da própria vaga.
                 candidate = Candidate(
-                    company_id=str(job.company_id) if job.company_id else None,
                     name=data.get("name", "Unknown"),
                     email=email,
                     phone=data.get("phone"),

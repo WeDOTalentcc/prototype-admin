@@ -20,7 +20,7 @@ from app.core.sentry import init_sentry
 init_sentry()
 
 from app.api import orchestrator_routes
-from app.shared.observability.langsmith import configure_langsmith
+from app.config.langsmith import configure_langsmith
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal, init_db
 from app.core.logging_middleware import StructuredLoggingMiddleware
@@ -69,18 +69,13 @@ async def lifespan(app: FastAPI):
         logger.warning("⚠️  Microsoft Graph API NOT configured (AZURE_CLIENT_ID/SECRET/TENANT_ID missing)")
         logger.warning("   Calendar/scheduling features will not work until credentials are added")
     
-    # Structured provider healthcheck — Task #297
-    # Reports OK/WARN/FAIL for Pearch, Apify, OpenAI, Anthropic, Gemini,
-    # WorkOS, DEV_MODE based on env-var presence. Non-blocking in dev.
-    try:
-        from app.shared.health.providers_health import (
-            collect_provider_health,
-            log_boot_report,
-        )
-        _provider_report = collect_provider_health()
-        log_boot_report(_provider_report)
-    except Exception as exc:
-        logger.warning("⚠️  Provider healthcheck error (non-blocking): %s", exc)
+    # Validate Pearch AI configuration
+    pearch_api_key = os.getenv("PEARCH_API_KEY")
+    if pearch_api_key:
+        logger.info("✅ Pearch AI configured (candidate search in 190M+ profiles enabled)")
+    else:
+        logger.warning("⚠️  Pearch AI NOT configured (PEARCH_API_KEY missing)")
+        logger.warning("   Candidate search features will not work until API key is added")
 
     # ─── Validate global LLM provider keys ────────────────────────────────────
     # The platform uses a hybrid LLM provisioning strategy:
@@ -89,12 +84,15 @@ async def lifespan(app: FastAPI):
     #   2. Global env vars as fallback for tenants without their own config
     # Without at least ONE provider key, agents will fail at runtime when the
     # first chat message arrives — silent outage. Warn loudly here.
-    # Source-of-truth for key detection lives in providers_health so /health/providers
-    # and the boot LLM gate never disagree (Task #297 code-review follow-up).
-    _llm_report = _provider_report if "_provider_report" in dir() else {}
-    has_anthropic = _llm_report.get("anthropic", {}).get("status") == "ok"
-    has_gemini = _llm_report.get("gemini", {}).get("status") == "ok"
-    has_openai = _llm_report.get("openai", {}).get("status") == "ok"
+    has_anthropic = bool(
+        getattr(settings, "AI_INTEGRATIONS_ANTHROPIC_API_KEY", None)
+        or getattr(settings, "ANTHROPIC_API_KEY", None)
+    )
+    has_gemini = bool(getattr(settings, "AI_INTEGRATIONS_GEMINI_API_KEY", None))
+    has_openai = bool(
+        getattr(settings, "AI_INTEGRATIONS_OPENAI_API_KEY", None)
+        or getattr(settings, "OPENAI_API_KEY", None)
+    )
     if has_anthropic or has_gemini or has_openai:
         providers = [
             name
@@ -121,10 +119,31 @@ async def lifespan(app: FastAPI):
                 "Set AI_INTEGRATIONS_ANTHROPIC_API_KEY (or another provider) before deploying."
             )
 
-    # OpenMic.ai webhook + Deepgram STT removed in 2026-04-18 (audit P0-4).
-    # Voice screening is now handled inline by Twilio + Gemini Live under
-    # ``app/domains/voice/services/``; no webhook signature guard required.
-
+    # Production safety guard: OPENMIC_ALLOW_UNSIGNED_WEBHOOK must never be true in prod
+    _allow_unsigned = os.getenv("OPENMIC_ALLOW_UNSIGNED_WEBHOOK", "false").lower()
+    _is_production = os.getenv("APP_ENV", "development").lower() in ("production", "prod", "staging")
+    if _allow_unsigned == "true" and _is_production:
+        logger.critical(
+            "🚨 SECURITY: OPENMIC_ALLOW_UNSIGNED_WEBHOOK=true is set in a production environment! "
+            "This disables webhook signature verification. Remove this env var immediately."
+        )
+        raise RuntimeError(
+            "OPENMIC_ALLOW_UNSIGNED_WEBHOOK=true is not permitted in production. "
+            "This bypasses webhook HMAC validation and must only be used in local development."
+        )
+    elif _allow_unsigned == "true":
+        logger.warning(
+            "⚠️  OPENMIC_ALLOW_UNSIGNED_WEBHOOK=true — webhook signature check bypassed "
+            "(dev mode only). Remove before deploying to production."
+        )
+    elif not os.getenv("OPENMIC_WEBHOOK_SECRET"):
+        logger.warning(
+            "⚠️  OPENMIC_WEBHOOK_SECRET not set — OpenMic webhook endpoint will return 503 "
+            "for all incoming requests. Set OPENMIC_WEBHOOK_SECRET to enable the endpoint."
+        )
+    else:
+        logger.info("✅ OpenMic webhook configured (HMAC-SHA256 signature validation enabled)")
+    
     # Initialize database
     try:
         await init_db()
@@ -132,34 +151,6 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.error(f"❌ Database initialization failed: {e}")
         raise
-
-    # Audit task #528 (G23-02 / G23-03) — garante coluna de transparência
-    # granular antes que qualquer writer (orchestrator, repository, completion)
-    # tente persistir `transparency_extras`. Idempotente; falha não-bloqueante.
-    try:
-        from sqlalchemy import text as _sql_text
-        async with AsyncSessionLocal() as _db:
-            await _db.execute(_sql_text(
-                "ALTER TABLE wsi_response_analyses "
-                "ADD COLUMN IF NOT EXISTS transparency_extras JSONB"
-            ))
-            await _db.commit()
-        logger.info("✅ wsi_response_analyses.transparency_extras ensured")
-    except Exception as _exc:
-        logger.warning(
-            "⚠️  Failed to ensure wsi_response_analyses.transparency_extras "
-            "(write path may degrade until column is present): %s", _exc
-        )
-
-    # Seed dev demo user (idempotent) so dev auto-login can succeed on first request
-    try:
-        if os.getenv("APP_ENV", "development").lower() in ("development", "dev", "local"):
-            from app.auth.dependencies import ensure_demo_user
-            async with AsyncSessionLocal() as db:
-                await ensure_demo_user(db)
-            logger.info("✅ Dev demo user ensured (demo@wedotalent.com)")
-    except Exception as e:
-        logger.warning(f"⚠️ Dev demo user seed failed: {e}")
 
     # Domain auto-discovery
     from app.domains.registry import DomainRegistry
@@ -195,7 +186,7 @@ async def lifespan(app: FastAPI):
         orchestrator_routes.initialize_orchestrator(llm_service)
         logger.info("✅ Multi-Agent Orchestrator initialized")
     except Exception as e:
-        logger.error(f"❌ Orchestrator initialization failed: {e}")
+        logger.error(f"❌ Orchestrator initialization failed: {e}", exc_info=True)
         logger.warning("   Orchestrator endpoints will not work until initialization succeeds")
     
     # Start Automation Scheduler
@@ -288,16 +279,6 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️  Platform Event Handlers não registrados: {e}")
 
-    # Audit task #544 — start AiConsumption outbox drainer worker.
-    try:
-        from app.shared.observability.ai_consumption_outbox_worker import (
-            get_outbox_worker,
-        )
-        await get_outbox_worker().start()
-        logger.info("✅ AiConsumption outbox drainer started")
-    except Exception as e:
-        logger.warning("⚠️  AiConsumption outbox drainer NOT started: %s", e)
-
     # Seed A/B Testing email template variants (Fase 5 / A5 — idempotent)
     try:
         from app.shared.intelligence.ab_testing import seed_email_ab_tests
@@ -337,16 +318,6 @@ async def lifespan(app: FastAPI):
         await rabbitmq_consumer.stop()
     except Exception:
         pass
-
-    # Close PostgresSaver ConnectionPool (checkpointer singleton -- prevents connection leak on restart)
-    try:
-        import lia_agents_core.checkpointer as _ckpt_mod
-        if getattr(_ckpt_mod, "_pg_pool", None) is not None:
-            _ckpt_mod._pg_pool.close()
-            logger.info("PostgresSaver ConnectionPool closed")
-    except Exception as _pool_exc:
-        logger.warning("Error closing PostgresSaver pool (non-critical): %s", _pool_exc)
-
     logger.info("🛑 Shutting down LIA Agent System...")
     
     try:
@@ -367,15 +338,6 @@ async def lifespan(app: FastAPI):
         automation_scheduler.stop()
     except Exception as e:
         logger.error(f"Error stopping Automation Scheduler: {e}")
-
-    # Audit task #544 — stop AiConsumption outbox drainer (drains final batch).
-    try:
-        from app.shared.observability.ai_consumption_outbox_worker import (
-            get_outbox_worker,
-        )
-        await get_outbox_worker().stop()
-    except Exception as e:
-        logger.warning("Error stopping AiConsumption outbox drainer: %s", e)
 
 
 # ---------------------------------------------------------------------------
@@ -495,31 +457,6 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.shared.errors import LIAError, LIAComplianceError
 
 
-from app.shared.compliance.scoring_safeguards import FairnessBlockedError
-
-
-@app.exception_handler(FairnessBlockedError)
-async def fairness_blocked_error_handler(request: FastAPIRequest, exc: FairnessBlockedError):
-    """Fairness-block from candidate-scoring services. Returns 451 with controlled payload."""
-    request_id = getattr(request.state, "request_id", "unknown")
-    logger.warning(
-        f"FairnessGuard blocked scoring decision: category={exc.result.category} "
-        f"blocked_terms={exc.result.blocked_terms} request_id={request_id}"
-    )
-    return JSONResponse(
-        status_code=451,
-        content={
-            "error": {
-                "code": "fairness_blocked",
-                "message": exc.result.educational_message
-                or "Solicitação bloqueada por verificação de fairness.",
-                "category": exc.result.category,
-                "request_id": request_id,
-            }
-        },
-    )
-
-
 @app.exception_handler(LIAComplianceError)
 async def lia_compliance_error_handler(request: FastAPIRequest, exc: LIAComplianceError):
     """Compliance errors return 451 (Unavailable For Legal Reasons). Never silenced."""
@@ -570,7 +507,7 @@ async def http_exception_handler(request: FastAPIRequest, exc: StarletteHTTPExce
     )
 
 
-from app.shared.observability.token_budget_service import RequestBudgetExceededError
+from app.domains.credits.services.token_budget_service import RequestBudgetExceededError
 
 
 @app.exception_handler(RequestBudgetExceededError)

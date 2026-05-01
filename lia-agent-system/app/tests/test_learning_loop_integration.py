@@ -17,7 +17,7 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.company_learning import AgentFeedback, CompanyResponsibility, CompanySkill
+from app.models.company_learning import AgentFeedback, CompanyResponsibility, CompanySkill
 from app.shared.services.learning_hub_service import LearningHubService
 from app.shared.services.skills_catalog_service import skills_catalog_service
 

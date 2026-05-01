@@ -14,15 +14,7 @@ from pydantic import BaseModel
 
 from app.domains.goals.dependencies import get_goals_repo
 from app.domains.goals.repositories.goals_repository import GoalsRepository
-from lia_models.goal import Goal
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
+from app.models.goal import Goal
 
 logger = logging.getLogger(__name__)
 
@@ -141,7 +133,7 @@ async def list_goals(
 
 @router.get("/by-user/{user_id}", response_model=None)
 async def get_goals_by_user(
-    user_id: _DualId,
+    user_id: str,
     include_inactive: bool = Query(False),
     repo: GoalsRepository = Depends(get_goals_repo),
 ):
@@ -647,10 +639,3 @@ async def import_goals(
         await repo.rollback()
         logger.error(f"Error importing goals: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

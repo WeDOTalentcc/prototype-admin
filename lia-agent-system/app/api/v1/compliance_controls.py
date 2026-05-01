@@ -18,7 +18,7 @@ from app.domains.compliance.dependencies import get_compliance_repo
 from app.domains.compliance.repositories.compliance_controls_repository import (
     ComplianceControlsRepository,
 )
-from lia_models.observability import ComplianceControlLibrary
+from app.models.observability import ComplianceControlLibrary
 from app.schemas.compliance_controls import (
     CompanyControlCreate,
     CompanyControlListResponse,
@@ -40,14 +40,6 @@ from app.schemas.compliance_controls import (
     SOXControlUpdate,
 )
 from app.shared.tenant_guard import get_verified_company_id
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -212,7 +204,7 @@ async def create_company_control(
 
 @router.put("/company-controls/{control_id}", response_model=CompanyControlResponse, summary="Update company control")
 async def update_company_control(
-    control_id: _DualId,
+    control_id: str,
     data: CompanyControlUpdate,
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
@@ -248,7 +240,7 @@ async def update_company_control(
 
 @router.post("/company-controls/{control_id}/evidence", response_model=CompanyControlResponse, summary="Upload evidence")
 async def upload_evidence(
-    control_id: _DualId,
+    control_id: str,
     data: EvidenceUpload,
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
@@ -472,7 +464,7 @@ async def create_sox_control(
 
 @router.put("/sox/{control_id}", response_model=SOXControlResponse, summary="Update SOX control")
 async def update_sox_control(
-    control_id: _DualId,
+    control_id: str,
     data: SOXControlUpdate,
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
@@ -754,10 +746,3 @@ async def seed_control_library(
         await repo.rollback()
         logger.error(f"Error seeding control library: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

@@ -8,7 +8,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.recruitment_stages import RecruitmentSubStatus
+from app.models.recruitment_stages import RecruitmentSubStatus
 
 logger = logging.getLogger(__name__)
 

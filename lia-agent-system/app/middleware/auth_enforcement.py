@@ -63,6 +63,7 @@ PUBLIC_PATHS = {
     "/api/v1/teams/messages",
     "/api/v1/webhooks/twilio-voice",
     "/api/v1/webhooks/mailgun",
+    "/api/v1/openmic/webhook",
     "/favicon.ico",
     "/api/v1/health",
     "/api/v1/rails/health",
@@ -70,7 +71,6 @@ PUBLIC_PATHS = {
     "/api/v1/health/performance",
     "/api/v1/health/",
     "/api/v1/health/langgraph",
-    "/api/v1/health/providers",
     "/api/v1/navigation-intent",
     # Calendar OAuth callbacks — provider redirects do not carry Bearer tokens;
     # CSRF protection is enforced via HMAC-signed state parameter in each callback handler.
@@ -126,7 +126,6 @@ PUBLIC_PREFIXES = (
     "/api/v1/teams/",
     "/api/v1/auth/invitation-info/",
     "/api/v1/wsi/async/",
-    "/api/v1/public-vacancies/",
     "/api/public/",
     "/docs/",
     "/static/",
@@ -225,13 +224,10 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 rejection = _check_dev_api_key(request, path)
                 if rejection is not None:
                     return rejection
-                # Canonical demo UUID (the legacy non-UUID slug is in
-                # _INVALID_TENANT_VALUES and breaks resolve_tenant_id).
-                from app.core.tenant import DEMO_COMPANY_UUID
-                request.state.token_payload = {"sub": "dev-user", "company_id": DEMO_COMPANY_UUID, "role": "admin"}
+                request.state.token_payload = {"sub": "dev-user", "company_id": "demo_company", "role": "admin"}
                 request.state.user_id = "dev-user"
-                request.state.company_id = DEMO_COMPANY_UUID
-                _current_company_id.set(DEMO_COMPANY_UUID)
+                request.state.company_id = "demo_company"
+                _current_company_id.set("demo_company")
                 request.state.user_role = "admin"
                 logger.debug(f"[AuthEnforcement] DEV MODE: synthetic user for {request.method} {path}")
                 return await call_next(request)
@@ -269,11 +265,10 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 rejection = _check_dev_api_key(request, path)
                 if rejection is not None:
                     return rejection
-                from app.core.tenant import DEMO_COMPANY_UUID
-                request.state.token_payload = {"sub": "dev-user", "company_id": DEMO_COMPANY_UUID, "role": "admin"}
+                request.state.token_payload = {"sub": "dev-user", "company_id": "demo_company", "role": "admin"}
                 request.state.user_id = "dev-user"
-                request.state.company_id = DEMO_COMPANY_UUID
-                _current_company_id.set(DEMO_COMPANY_UUID)
+                request.state.company_id = "demo_company"
+                _current_company_id.set("demo_company")
                 request.state.user_role = "admin"
                 logger.debug(f"[AuthEnforcement] DEV MODE: synthetic user for invalid token on {path}")
                 return await call_next(request)
@@ -291,22 +286,6 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
             request.state.company_id = payload.get("company_id", "")
             _current_company_id.set(payload.get("company_id", ""))
             request.state.user_role = payload.get("role", "")
-
-            # Task #353: prime the in-memory tenant LLM config cache so that
-            # synchronous llm_factory.get_provider_for_tenant(...) calls
-            # downstream observe DB-backed per-tenant overrides without
-            # blocking on the DB inside the event loop. Cheap on cache hit,
-            # silently no-ops on failure.
-            jwt_company_id = payload.get("company_id", "")
-            if jwt_company_id:
-                try:
-                    from app.shared.tenant_llm_context import prime_tenant_llm_cache
-                    await prime_tenant_llm_cache(jwt_company_id)
-                except Exception as prime_exc:  # pragma: no cover - defensive
-                    logger.debug(
-                        "[AuthEnforcement] tenant LLM cache prime failed: %s",
-                        prime_exc,
-                    )
 
             # If company_id from X-Company-ID header differs from JWT, reject
             header_company = request.headers.get("X-Company-ID", "")
@@ -334,11 +313,10 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 rejection = _check_dev_api_key(request, path)
                 if rejection is not None:
                     return rejection
-                from app.core.tenant import DEMO_COMPANY_UUID
-                request.state.token_payload = {"sub": "dev-user", "company_id": DEMO_COMPANY_UUID, "role": "admin"}
+                request.state.token_payload = {"sub": "dev-user", "company_id": "demo_company", "role": "admin"}
                 request.state.user_id = "dev-user"
-                request.state.company_id = DEMO_COMPANY_UUID
-                _current_company_id.set(DEMO_COMPANY_UUID)
+                request.state.company_id = "demo_company"
+                _current_company_id.set("demo_company")
                 request.state.user_role = "admin"
                 logger.debug(f"[AuthEnforcement] DEV MODE: synthetic user after token error on {path}: {e}")
                 return await call_next(request)

@@ -29,30 +29,8 @@ def get_current_llm_tenant() -> str:
         return ""
 
 
-# In-memory cache of tenant LLM configs with 5-min TTL (loaded from DB on first access).
-# Entries expire automatically; clear_tenant_config_cache() forces immediate eviction.
-import time as _time_mod
-_tenant_configs: dict = {}          # company_id → config dict
-_tenant_configs_ts: dict = {}       # company_id → last-loaded monotonic timestamp
-_TENANT_CONFIG_TTL: float = 300.0   # 5 minutes
-
-
-def _cache_get(company_id: str) -> dict | None:
-    """Return cached config if still fresh, else evict and return None."""
-    if company_id not in _tenant_configs:
-        return None
-    age = _time_mod.monotonic() - _tenant_configs_ts.get(company_id, 0.0)
-    if age > _TENANT_CONFIG_TTL:
-        _tenant_configs.pop(company_id, None)
-        _tenant_configs_ts.pop(company_id, None)
-        return None
-    return _tenant_configs[company_id]
-
-
-def _cache_set(company_id: str, config: dict) -> None:
-    """Store config in cache with current timestamp."""
-    _tenant_configs[company_id] = config
-    _tenant_configs_ts[company_id] = _time_mod.monotonic()
+# In-memory cache of tenant LLM configs (loaded from DB on first access)
+_tenant_configs: dict = {}
 
 
 async def get_tenant_llm_config(company_id: str) -> dict | None:
@@ -75,9 +53,8 @@ async def get_tenant_llm_config(company_id: str) -> dict | None:
     }
     Returns None if no custom config (use global defaults).
     """
-    cached = _cache_get(company_id)
-    if cached is not None:
-        return cached
+    if company_id in _tenant_configs:
+        return _tenant_configs[company_id]
 
     try:
         from lia_config.database import AsyncSessionLocal
@@ -92,7 +69,7 @@ async def get_tenant_llm_config(company_id: str) -> dict | None:
                     "providers": row.providers or {},
                     "routing": row.routing or {},
                 }
-                _cache_set(company_id, config)
+                _tenant_configs[company_id] = config
                 return config
     except Exception as e:
         logger.debug("[TenantLLM] No DB config for %s: %s", company_id, e)
@@ -114,7 +91,7 @@ def get_gemini_client_for_tenant(company_id: str | None = None):
 
     tenant_id = company_id or get_current_llm_tenant()
     if tenant_id:
-        config = _cache_get(tenant_id) or _tenant_configs.get(tenant_id)
+        config = _tenant_configs.get(tenant_id)
         if config:
             providers = config.get("providers", {})
             gemini_cfg = providers.get("gemini", {})
@@ -125,11 +102,6 @@ def get_gemini_client_for_tenant(company_id: str | None = None):
                     tenant_id,
                 )
                 return genai.Client(api_key=tenant_key)
-        logger.warning(
-            "[LIA-BYOK] tenant=%s Gemini: sem key própria — "
-            "usando key da plataforma. Configure em Configurações > Integrações > LLM.",
-            tenant_id,
-        )
 
     api_key = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY")
     base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
@@ -185,34 +157,12 @@ def get_claude_model_for_tenant(company_id: str | None = None):
         return None
 
 
-async def prime_tenant_llm_cache(company_id: str) -> None:
-    """Eagerly populate the in-memory tenant LLM cache for the given tenant.
-
-    Safe to call from any async path (e.g. AuthEnforcementMiddleware). Silently
-    swallows DB / import errors so it never breaks the parent request.
-
-    This is the async-side counterpart that lets the synchronous
-    ``llm_factory._resolve_provider_config`` read DB-backed tenant config
-    without blocking inside a running event loop.
-    """
-    if not company_id:
-        return
-    if company_id in _tenant_configs:
-        return
-    try:
-        await get_tenant_llm_config(company_id)
-    except Exception as exc:  # pragma: no cover - defensive
-        logger.debug("[TenantLLM] prime_tenant_llm_cache(%s) failed: %s", company_id, exc)
-
-
 def clear_tenant_config_cache(company_id: str = ""):
     """Clear cached config when tenant updates their LLM settings."""
     if company_id:
         _tenant_configs.pop(company_id, None)
-        _tenant_configs_ts.pop(company_id, None)
     else:
         _tenant_configs.clear()
-        _tenant_configs_ts.clear()
 
 
 def get_anthropic_streaming_client_for_tenant(

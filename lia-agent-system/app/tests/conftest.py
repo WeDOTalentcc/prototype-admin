@@ -17,8 +17,8 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from app.auth.models import User, UserRole
 from app.auth.security import create_access_token, get_password_hash
 from app.core.config import settings
-from lia_models.candidate import Candidate, VacancyCandidate
-from lia_models.job_vacancy import JobVacancy
+from app.models.candidate import Candidate, VacancyCandidate
+from app.models.job_vacancy import JobVacancy
 
 
 def get_test_database_url():
@@ -175,13 +175,11 @@ class TestCandidateFactory:
         db: AsyncSession,
         name: str,
         email: str,
-        source: str = "manual",
-        company_id: str = "test_company",
+        source: str = "manual"
     ) -> Candidate:
         """Create a candidate in the database."""
         candidate = Candidate(
             id=uuid4(),
-            company_id=company_id,
             name=name,
             email=email,
             source=source,

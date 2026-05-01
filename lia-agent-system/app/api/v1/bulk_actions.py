@@ -19,97 +19,7 @@ from app.domains.bulk_actions.dependencies import get_bulk_actions_repo
 from app.domains.bulk_actions.repositories.bulk_actions_repository import BulkActionsRepository
 from app.domains.communication.services.email_service import get_email_service
 from app.domains.communication.services.email_service import EmailService
-from app.shared.compliance.audit_service import audit_service
-from app.shared.compliance.fairness_guard import FairnessGuard
-from lia_models.job_vacancy import JobVacancy
-
-_fairness_guard = FairnessGuard()
-
-
-def _check_free_text_fairness(text: str | None, field: str) -> None:
-    """Run FairnessGuard on a free-text field. Raise 422 if blocked.
-
-    Used to gate bulk operations that would otherwise persist or send
-    discriminatory content (rejection reason, communication body, notes).
-    """
-    if not text or not str(text).strip():
-        return
-    result = _fairness_guard.check(str(text))
-    if result.is_blocked:
-        logger.warning(
-            "bulk_actions: FairnessGuard blocked field=%s category=%s terms=%s",
-            field, result.category, result.blocked_terms,
-        )
-        raise HTTPException(
-            status_code=422,
-            detail={
-                "error": "fairness_blocked",
-                "field": field,
-                "category": result.category,
-                "blocked_terms": result.blocked_terms,
-                "message": result.educational_message,
-                "needs_review": [field],
-            },
-        )
-
-
-async def _audit_bulk_item(
-    *,
-    company_id: str | None,
-    actor_user_id: str,
-    action: str,
-    decision_type: str,
-    candidate_id: str,
-    job_vacancy_id: str | None = None,
-    from_stage: str | None = None,
-    to_stage: str | None = None,
-    reason: str | None = None,
-    decision: str = "executed",
-) -> None:
-    """Best-effort per-candidate audit log for bulk operations.
-
-    Mirrors the payload conventions used by applications.apply and the
-    scoring services (see audit_service.log_decision).
-    """
-    try:
-        reasoning: list[Any] = [
-            f"bulk action: {action}",
-        ]
-        if from_stage is not None:
-            reasoning.append(f"from_stage: {from_stage}")
-        if to_stage is not None:
-            reasoning.append(f"to_stage: {to_stage}")
-        if reason:
-            reasoning.append(f"reason: {reason[:500]}")
-
-        # Task #366 — actor_user_id is a structured column now, no longer
-        # stuffed into reasoning/criteria_used.
-        criteria_used: list[Any] = []
-        if from_stage is not None:
-            criteria_used.append("from_stage")
-        if to_stage is not None:
-            criteria_used.append("to_stage")
-        if reason:
-            criteria_used.append("reason")
-
-        await audit_service.log_decision(
-            company_id=str(company_id) if company_id else "unknown",
-            agent_name="bulk_actions_api",
-            decision_type=decision_type,
-            action=action,
-            decision=decision,
-            reasoning=reasoning,
-            criteria_used=criteria_used,
-            candidate_id=candidate_id,
-            job_vacancy_id=job_vacancy_id,
-            human_review_required=False,
-            actor_user_id=actor_user_id,
-        )
-    except Exception as exc:  # never block the bulk flow on audit failures
-        logger.warning(
-            "bulk_actions: audit log failed action=%s candidate=%s err=%s",
-            action, candidate_id, exc,
-        )
+from app.models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 
@@ -314,24 +224,10 @@ async def bulk_update_candidate_status(
                     ))
                     continue
 
-                previous_status = candidate.status
                 candidate.status = request.new_status
                 candidate.updated_at = datetime.utcnow()
                 candidate.last_activity_at = datetime.utcnow()
                 processed_ids.append(candidate_id)
-
-                _decision_type = (
-                    "reject_candidate" if request.new_status == "rejected" else "move_stage"
-                )
-                await _audit_bulk_item(
-                    company_id=getattr(current_user, "company_id", None),
-                    actor_user_id=str(current_user.id),
-                    action="bulk_update_status",
-                    decision_type=_decision_type,
-                    candidate_id=candidate_id,
-                    from_stage=previous_status,
-                    to_stage=request.new_status,
-                )
 
             except ValueError:
                 errors.append(BulkOperationError(
@@ -384,8 +280,6 @@ async def bulk_assign_to_job(
     processed_ids: list[str] = []
 
     try:
-        _check_free_text_fairness(request.notes, "notes")
-
         job_vacancy = await repo.get_job_vacancy_by_id(uuid.UUID(request.job_vacancy_id))
 
         if not job_vacancy:
@@ -425,17 +319,6 @@ async def bulk_assign_to_job(
                 candidate.updated_at = datetime.utcnow()
                 candidate.last_activity_at = datetime.utcnow()
                 processed_ids.append(candidate_id)
-
-                await _audit_bulk_item(
-                    company_id=getattr(current_user, "company_id", None),
-                    actor_user_id=str(current_user.id),
-                    action="bulk_assign_job",
-                    decision_type="move_stage",
-                    candidate_id=candidate_id,
-                    job_vacancy_id=request.job_vacancy_id,
-                    to_stage="assigned",
-                    reason=request.notes,
-                )
 
             except ValueError:
                 errors.append(BulkOperationError(
@@ -492,11 +375,6 @@ async def bulk_send_email(
     processed_ids: list[str] = []
 
     try:
-        if request.custom_variables:
-            for _k, _v in request.custom_variables.items():
-                if isinstance(_v, str):
-                    _check_free_text_fairness(_v, f"custom_variables.{_k}")
-
         template = await repo.get_email_template_by_id(uuid.UUID(request.template_id))
 
         if not template:
@@ -553,16 +431,6 @@ async def bulk_send_email(
                     candidate.last_contacted_at = datetime.utcnow()
                     candidate.last_activity_at = datetime.utcnow()
                     processed_ids.append(candidate_id)
-
-                    await _audit_bulk_item(
-                        company_id=getattr(current_user, "company_id", None),
-                        actor_user_id=str(current_user.id),
-                        action="bulk_send_email",
-                        decision_type="send_message",
-                        candidate_id=candidate_id,
-                        reason=f"template_id={request.template_id}",
-                        decision="sent",
-                    )
 
                 except Exception as e:
                     errors.append(BulkOperationError(
@@ -694,25 +562,12 @@ async def bulk_start_screening(
                 additional_data["screening_sessions"] = screening_sessions
                 candidate.additional_data = additional_data
 
-                previous_status = candidate.status
                 if candidate.status == "new":
                     candidate.status = "screening"
 
                 candidate.updated_at = datetime.utcnow()
                 candidate.last_activity_at = datetime.utcnow()
                 processed_ids.append(candidate_id)
-
-                await _audit_bulk_item(
-                    company_id=getattr(current_user, "company_id", None),
-                    actor_user_id=str(current_user.id),
-                    action="bulk_start_screening",
-                    decision_type="move_stage",
-                    candidate_id=candidate_id,
-                    job_vacancy_id=request.job_vacancy_id,
-                    from_stage=previous_status,
-                    to_stage="screening",
-                    reason=f"screening_type={request.screening_type}",
-                )
 
                 logger.info(f"Created screening session {screening_session['session_id']} for candidate {candidate_id}")
 
@@ -941,7 +796,6 @@ async def bulk_delete_candidates(
                     ))
                     continue
 
-                previous_status = candidate.status
                 if request.permanent:
                     await repo.delete_candidate(candidate)
                 else:
@@ -949,17 +803,6 @@ async def bulk_delete_candidates(
                     candidate.updated_at = datetime.utcnow()
 
                 processed_ids.append(candidate_id)
-
-                await _audit_bulk_item(
-                    company_id=getattr(current_user, "company_id", None),
-                    actor_user_id=str(current_user.id),
-                    action="bulk_delete" if not request.permanent else "bulk_delete_permanent",
-                    decision_type="reject_candidate",
-                    candidate_id=candidate_id,
-                    from_stage=previous_status,
-                    to_stage="deleted" if request.permanent else "inactive",
-                    reason="permanent" if request.permanent else "soft_delete",
-                )
 
             except ValueError:
                 errors.append(BulkOperationError(

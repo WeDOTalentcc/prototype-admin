@@ -21,7 +21,7 @@ from typing import Any
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.shared.observability.tracing import trace_span
+from app.shared.tracing import trace_span
 
 logger = logging.getLogger(__name__)
 
@@ -220,7 +220,7 @@ class LearningLoopService:
         Returns the feedback event ID.
         """
         try:
-            from lia_models.intelligent_cache import FeedbackEvent
+            from app.models.intelligent_cache import FeedbackEvent
             
             modification_delta = None
             if capture.outcome == FeedbackOutcome.MODIFIED:
@@ -263,7 +263,7 @@ class LearningLoopService:
                 if capture.outcome in (FeedbackOutcome.REJECTED, FeedbackOutcome.IGNORED):
                     import asyncio
 
-                    from app.shared.observability.model_drift_service import ModelDriftService
+                    from app.shared.services.model_drift_service import ModelDriftService
                     asyncio.create_task(
                         ModelDriftService().check_drift_trigger(
                             company_id=capture.company_id,
@@ -337,7 +337,7 @@ class LearningLoopService:
         Returns the number of events processed.
         """
         try:
-            from lia_models.intelligent_cache import FeedbackEvent
+            from app.models.intelligent_cache import FeedbackEvent
             
             result = await db.execute(
                 select(FeedbackEvent)
@@ -476,7 +476,7 @@ class LearningLoopService:
         data: dict
     ) -> None:
         """Update or create a learning pattern."""
-        from lia_models.feedback import LearningPattern
+        from app.models.intelligent_cache import LearningPattern
         
         result = await db.execute(
             select(LearningPattern)
@@ -603,7 +603,7 @@ class LearningLoopService:
         Returns patterns sorted by specificity and confidence.
         """
         try:
-            from lia_models.feedback import LearningPattern
+            from app.models.intelligent_cache import LearningPattern
             
             pattern_type = self._get_pattern_type(field_name)
             
@@ -737,7 +737,7 @@ class LearningLoopService:
     ) -> dict[str, Any]:
         """Get feedback statistics for analytics."""
         try:
-            from lia_models.intelligent_cache import FeedbackEvent
+            from app.models.intelligent_cache import FeedbackEvent
             
             cutoff = datetime.utcnow() - timedelta(days=days_back)
             
@@ -798,7 +798,7 @@ class LearningLoopService:
             job_context: Context data (job_title, department, seniority, etc.)
         """
         try:
-            from lia_models.skills_catalog import SkillUsageAnalytics
+            from app.models.skills_catalog import SkillUsageAnalytics
             
             # Get job context details
             job_id = job_context.get("job_id")
@@ -912,7 +912,7 @@ class LearningLoopService:
         company_id: str
     ) -> int:
         """Count unprocessed skill analytics records for a company."""
-        from lia_models.skills_catalog import SkillUsageAnalytics
+        from app.models.skills_catalog import SkillUsageAnalytics
         
         result = await db.execute(
             select(func.count(SkillUsageAnalytics.id))
@@ -938,7 +938,7 @@ class LearningLoopService:
             company_id: Company identifier
         """
         try:
-            from lia_models.skills_catalog import SkillSuggestionPattern, SkillUsageAnalytics
+            from app.models.skills_catalog import SkillSuggestionPattern, SkillUsageAnalytics
             
             # Get all analytics for the company
             result = await db.execute(

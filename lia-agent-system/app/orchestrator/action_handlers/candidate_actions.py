@@ -74,10 +74,6 @@ async def execute_candidate_action(
         return await _analyze_profile(params, context)
     elif action_id == "batch_move_candidates":
         return await _batch_move_candidates(params, context)
-    elif action_id == "bulk_move_by_stage":
-        return await _bulk_move_by_stage(params, context)
-    elif action_id in ("reject_candidate", "rejeitar_candidato", "reprovar_candidato"):
-        return await _reject_candidate(params, context)
     return None
 
 
@@ -117,7 +113,7 @@ async def _move_candidate(params: dict[str, Any], context: dict[str, Any]):
             result = await db.execute(text("""
                 UPDATE vacancy_candidates
                 SET stage = :to_stage, status = 'active', updated_at = NOW()
-                WHERE (id = CAST(:candidate_id AS uuid) OR candidate_id = :candidate_id)
+                WHERE (id = CAST(:candidate_id AS uuid) OR candidate_id = CAST(:candidate_id AS uuid))
             """), {
                 "to_stage": to_stage,
                 "candidate_id": str(candidate_id),
@@ -208,7 +204,7 @@ async def _update_candidate_field(params: dict[str, Any], context: dict[str, Any
         async with AsyncSessionLocal() as db:
             if company_id and candidate_id:
                 authz = await db.execute(
-                    text("SELECT 1 FROM vacancy_candidates WHERE candidate_id = :cid AND company_id = :co LIMIT 1"),
+                    text("SELECT 1 FROM vacancy_candidates WHERE candidate_id = CAST(:cid AS uuid) AND company_id = CAST(:co AS uuid) LIMIT 1"),
                     {"cid": candidate_id, "co": str(company_id)},
                 )
                 if authz.fetchone() is None:
@@ -296,7 +292,6 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
             or params.get("vacancy_id")
             or params.get("job_id")
             or (context or {}).get("job_vacancy_id")
-            or (context or {}).get("entity_id")  # SC-001: Kanban page passes entity_id
         )
         company_id = (context or {}).get("company_id")
 
@@ -310,88 +305,12 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                 candidate_name = resolved["name"]
 
         if not candidate_ids:
-            # SC-001 fix: when job_id is provided (from context), auto-fetch candidates
-            # in "Novo" or "Triagem" (waiting) stage rather than asking for UUIDs.
-            # Two-attempt pattern: attempt 0 treats job_vacancy_id as UUID;
-            # attempt 1 falls back to job_vacancies.job_id (short codes like "V0037").
-            _auto_fetched = False
-            if job_vacancy_id and company_id:
-                from sqlalchemy import text as _text
-                from app.core.database import AsyncSessionLocal as _ASL
-                for _attempt in range(2):
-                    try:
-                        async with _ASL() as _db:
-                            # RLS: set company context
-                            await _db.execute(_text("SELECT set_config('app.company_id', :co, true)"), {"co": str(company_id)})
-                            if _attempt == 0:
-                                _sql = _text("""
-                                    SELECT vc.candidate_id
-                                    FROM vacancy_candidates vc
-                                    WHERE vc.vacancy_id = CAST(:jid AS uuid)
-                                      AND vc.company_id = :co
-                                      AND vc.stage IN ('Novo', 'Triagem', 'Aguardando', 'sourcing', 'screening', 'new')
-                                      LIMIT 50
-                                """)
-                                _bind = {"jid": str(job_vacancy_id), "co": str(company_id)}
-                            else:
-                                # Fallback: job_vacancy_id is a short job_id code (e.g. "V0037")
-                                _sql = _text("""
-                                    SELECT vc.candidate_id
-                                    FROM vacancy_candidates vc
-                                    JOIN job_vacancies jv ON jv.id = vc.vacancy_id
-                                    WHERE jv.job_id = :jid
-                                      AND vc.company_id = :co
-                                      AND vc.stage IN ('Novo', 'Triagem', 'Aguardando', 'sourcing', 'screening', 'new')
-                                      LIMIT 50
-                                """)
-                                _bind = {"jid": str(job_vacancy_id), "co": str(company_id)}
-                            _rows = await _db.execute(_sql, _bind)
-                            _found = [str(r[0]) for r in _rows.fetchall()]
-                            # On first attempt: if UUID cast succeeded but no rows,
-                            # pre-resolve UUID from short code for downstream queries
-                            if not _found and _attempt == 0:
-                                _uuid_row = await _db.execute(_text(
-                                    "SELECT id FROM job_vacancies WHERE job_id = :jid LIMIT 1"
-                                ), {"jid": str(job_vacancy_id)})
-                                _uuid_result = _uuid_row.fetchone()
-                                if _uuid_result:
-                                    job_vacancy_id = str(_uuid_result[0])
-                                    logger.info(
-                                        "start_screening: resolved short job_id -> UUID %s",
-                                        job_vacancy_id,
-                                    )
-                        if _found:
-                            candidate_ids = _found
-                            _auto_fetched = True
-                            logger.info(
-                                "start_screening: auto-fetched %d waiting candidates for job %s (attempt %d)",
-                                len(candidate_ids), job_vacancy_id, _attempt,
-                            )
-                            break
-                    except Exception as _fe:
-                        logger.warning("start_screening: auto-fetch attempt %d failed: %s", _attempt, _fe)
-                        if _attempt == 1:
-                            break  # both attempts failed
-
-            if not candidate_ids:
-                # If job_id is known but no candidates found, give useful message
-                if job_vacancy_id:
-                    return ActionResult(
-                        status="executed",
-                        message=(
-                            "Não encontrei candidatos em espera (etapa Novo/Triagem) "
-                            "para esta vaga no momento. "
-                            "Verifique se há candidatos na etapa inicial do pipeline."
-                        ),
-                        data={"job_vacancy_id": str(job_vacancy_id), "candidates_found": 0},
-                        action_type="start_screening",
-                    )
-                return ActionResult(
-                    status="error",
-                    message="Nenhum candidato identificado para iniciar a triagem.",
-                    error_detail="No candidate_ids or candidate_name provided",
-                    action_type="start_screening",
-                )
+            return ActionResult(
+                status="error",
+                message="Nenhum candidato identificado para iniciar a triagem.",
+                error_detail="No candidate_ids or candidate_name provided",
+                action_type="start_screening",
+            )
 
         if not job_vacancy_id:
             return ActionResult(
@@ -399,71 +318,6 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                 message="Vaga não identificada. Informe a vaga para iniciar a triagem.",
                 error_detail="job_vacancy_id missing from params and context",
                 action_type="start_screening",
-            )
-
-        # SC-001: Confirmation gate — ask before starting WSI for multiple candidates
-        # P0-FIX: confirmed comes from user payload (params) which is spoofable.
-        # We add a nonce-based check: on the first (unconfirmed) pass we issue a
-        # server-side nonce stored in context["_pending_nonces"]; on the confirmed
-        # pass we require the nonce to match before proceeding.
-        import secrets as _secrets
-        _confirmed: bool = bool(params.get("confirmed") or params.get("confirmado"))
-        _nonce_from_params: str = params.get("_confirm_nonce", "")
-        _pending_nonces: dict = (context or {}).get("_pending_nonces", {})
-        _nonce_key: str = f"start_screening:{str(job_vacancy_id)}"
-
-        if not _confirmed and len(candidate_ids) > 1:
-            # Issue a nonce so the orchestrator can embed it in the confirmation reply
-            _nonce: str = _secrets.token_hex(16)
-            if context is not None:
-                context.setdefault("_pending_nonces", {})[_nonce_key] = _nonce
-            job_label = str(job_vacancy_id)
-            logger.info(
-                "start_screening: confirmation gate issued nonce for %d candidates, job=%s",
-                len(candidate_ids), job_vacancy_id,
-            )
-            return ActionResult(
-                status="pending",
-                message=(
-                    f"Vou iniciar a triagem WSI para **{len(candidate_ids)} candidatos** "
-                    f"na vaga **{job_label}**. Confirma?"
-                ),
-                data={
-                    "candidate_ids": candidate_ids,
-                    "job_vacancy_id": str(job_vacancy_id),
-                    "candidates_count": len(candidate_ids),
-                    "requires_confirmation": True,
-                    "_confirm_nonce": _nonce,
-                    "action": "start_screening",
-                },
-                action_type="start_screening",
-            )
-
-        if _confirmed and len(candidate_ids) > 1:
-            # Validate nonce when context supports it
-            if _pending_nonces:
-                _expected_nonce: str = _pending_nonces.get(_nonce_key, "")
-                if _expected_nonce and _nonce_from_params != _expected_nonce:
-                    logger.warning(
-                        "start_screening: nonce mismatch for job=%s — possible replay attack",
-                        job_vacancy_id,
-                    )
-                    return ActionResult(
-                        status="error",
-                        message="Confirmação inválida. Tente novamente.",
-                        error_detail="Confirmation nonce mismatch",
-                        action_type="start_screening",
-                    )
-                # Consume the nonce (one-time use)
-                _pending_nonces.pop(_nonce_key, None)
-            else:
-                logger.warning(
-                    "start_screening: _pending_nonces not in context — nonce check skipped "
-                    "(wire _pending_nonces into OrchestratorContext to enforce)",
-                )
-            logger.info(
-                "start_screening: confirmed=True accepted for %d candidates, job=%s",
-                len(candidate_ids), job_vacancy_id,
             )
 
         triagem_service = TriagemSessionService()
@@ -479,33 +333,15 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
             )
 
         async with AsyncSessionLocal() as db:
-            # RLS: set company context before job_vacancies/vacancy_candidates queries
-            await db.execute(text("SELECT set_config('app.company_id', :co, true)"), {"co": str(company_id)})
-            # SC-001: resolve short job_id (e.g. "V0037") to UUID if not already done
-            import re as _re
-            _UUID_RE_SC = _re.compile(
-                r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
-                _re.IGNORECASE
+            job_row = await db.execute(
+                text("""
+                    SELECT title FROM job_vacancies
+                    WHERE id = CAST(:jid AS uuid) AND company_id = CAST(:co AS uuid)
+                    LIMIT 1
+                """),
+                {"jid": str(job_vacancy_id), "co": str(company_id)},
             )
-            job_info = None
-            if _UUID_RE_SC.match(str(job_vacancy_id)):
-                # job_vacancy_id looks like a UUID — try direct id lookup
-                _jr = await db.execute(
-                    text("SELECT id, title FROM job_vacancies WHERE id = :jid AND company_id = :co LIMIT 1"),
-                    {"jid": str(job_vacancy_id), "co": str(company_id)},
-                )
-                job_info = _jr.fetchone()
-            if not job_info:
-                # Fallback: lookup by short job_id code (e.g. "V0037")
-                job_row2 = await db.execute(
-                    text("""
-                        SELECT id, title FROM job_vacancies
-                        WHERE job_id = :jid AND company_id = :co
-                        LIMIT 1
-                    """),
-                    {"jid": str(job_vacancy_id), "co": str(company_id)},
-                )
-                job_info = job_row2.fetchone()
+            job_info = job_row.fetchone()
             if not job_info:
                 return ActionResult(
                     status="error",
@@ -513,12 +349,10 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                     error_detail="job_vacancy_id not found for company",
                     action_type="start_screening",
                 )
-            # Update job_vacancy_id to the real UUID for all downstream queries
-            job_vacancy_id = str(job_info.id)
             job_title = job_info.title
 
             company_row = await db.execute(
-                text("SELECT name FROM companies WHERE id = :cid LIMIT 1"),
+                text("SELECT name FROM companies WHERE id = CAST(:cid AS uuid) LIMIT 1"),
                 {"cid": str(company_id)},
             )
             company_name_db = company_row.fetchone()
@@ -531,10 +365,10 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                     text("""
                         SELECT c.id, c.name, c.email
                         FROM candidates c
-                        JOIN vacancy_candidates vc ON CAST(vc.candidate_id AS uuid) = c.id
+                        JOIN vacancy_candidates vc ON vc.candidate_id = c.id
                         WHERE c.id = CAST(:cid AS uuid)
-                          AND vc.company_id = :co
-                          AND vc.vacancy_id = CAST(:jid AS uuid)
+                          AND vc.company_id = CAST(:co AS uuid)
+                          AND vc.job_vacancy_id = CAST(:jid AS uuid)
                         LIMIT 1
                     """),
                     {"cid": cid_str, "co": str(company_id), "jid": str(job_vacancy_id)},
@@ -549,9 +383,9 @@ async def _start_screening(params: dict[str, Any], context: dict[str, Any]):
                     text("""
                         UPDATE vacancy_candidates
                         SET stage = 'Triagem', status = 'screening', updated_at = NOW()
-                        WHERE candidate_id = :cid
-                          AND vacancy_id = CAST(:jid AS uuid)
-                          AND company_id = :co
+                        WHERE candidate_id = CAST(:cid AS uuid)
+                          AND job_vacancy_id = CAST(:jid AS uuid)
+                          AND company_id = CAST(:co AS uuid)
                     """),
                     {"cid": cid_str, "jid": str(job_vacancy_id), "co": str(company_id)},
                 )
@@ -646,7 +480,7 @@ async def _analyze_profile(params: dict[str, Any], context: dict[str, Any]):
         from sqlalchemy import text as sql_text
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate
+        from app.models.candidate import Candidate
         from app.shared.services.analysis_service import analysis_service
 
         candidate_id = params.get("candidate_id", "")
@@ -654,35 +488,23 @@ async def _analyze_profile(params: dict[str, Any], context: dict[str, Any]):
         vacancy_id = params.get("vacancy_id") or params.get("job_vacancy_id") or (context or {}).get("job_vacancy_id")
         company_id = (context or {}).get("company_id")
 
-        # CM-001: resolve candidate by name when candidate_id is missing
-        if not candidate_id and candidate_name and candidate_name != "o candidato":
-            from app.orchestrator.action_handlers._handler_hooks import resolve_candidate_by_name as _resolve_by_name
-            resolved = await _resolve_by_name(candidate_name, company_id)
-            if resolved:
-                candidate_id = resolved["id"]
-                candidate_name = resolved["name"]
-                logger.info("[analyze_profile] Resolved candidate by name: %s -> %s", candidate_name, candidate_id)
-
         if not candidate_id:
             return ActionResult(
                 status="error",
-                message=f"Não encontrei o candidato \"{candidate_name}\". Por favor, verifique o nome ou forneça o ID.",
-                error_detail="candidate_id missing and name resolution failed",
+                message="ID do candidato não fornecido para análise.",
+                error_detail="candidate_id missing",
                 action_type="analyze_profile",
             )
 
         async with AsyncSessionLocal() as db:
-            # RLS: set company context before any vacancy_candidates query
-            if company_id:
-                await db.execute(sql_text("SELECT set_config('app.company_id', :co, true)"), {"co": str(company_id)})
             if company_id:
                 authz = await db.execute(
                     sql_text(
                         "SELECT 1 FROM vacancy_candidates "
-                        "WHERE candidate_id = :cid "
+                        "WHERE candidate_id = CAST(:cid AS uuid) "
                         "AND company_id = :co LIMIT 1"
                     ),
-                    {"cid": str(candidate_id), "co": str(company_id)},
+                    {"cid": candidate_id, "co": str(company_id)},
                 )
                 if authz.fetchone() is None:
                     return ActionResult(
@@ -696,10 +518,10 @@ async def _analyze_profile(params: dict[str, Any], context: dict[str, Any]):
                 vac_authz = await db.execute(
                     sql_text(
                         "SELECT 1 FROM vacancy_candidates "
-                        "WHERE vacancy_id = :vid "
+                        "WHERE vacancy_id = CAST(:vid AS uuid) "
                         "AND company_id = :co LIMIT 1"
                     ),
-                    {"vid": str(vacancy_id), "co": str(company_id)},
+                    {"vid": vacancy_id, "co": str(company_id)},
                 )
                 if vac_authz.fetchone() is None:
                     vacancy_id = None
@@ -819,11 +641,11 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
                 update_sql = """
                     UPDATE vacancy_candidates
                     SET stage = :to_stage, status = 'active', updated_at = NOW()
-                    WHERE (id = CAST(:cid AS uuid) OR candidate_id = :cid)
+                    WHERE (id = CAST(:cid AS uuid) OR candidate_id = CAST(:cid AS uuid))
                 """
                 bind: dict[str, Any] = {"to_stage": to_stage, "cid": str(cid)}
                 if company_id:
-                    update_sql += " AND company_id = :co"
+                    update_sql += " AND company_id = CAST(:co AS uuid)"
                     bind["co"] = str(company_id)
                 result = await db.execute(text(update_sql), bind)
                 moved += result.rowcount
@@ -851,332 +673,4 @@ async def _batch_move_candidates(params: dict[str, Any], context: dict[str, Any]
             message="Erro ao mover candidatos em lote.",
             error_detail=str(e),
             action_type="batch_move_candidates",
-        )
-
-
-async def _bulk_move_by_stage(params: dict, context: dict):
-    """Move ALL candidates in a given stage to another stage for a specific job."""
-    from app.orchestrator.action_executor import ActionResult
-    try:
-        from sqlalchemy import text
-        from app.core.database import AsyncSessionLocal
-        from app.orchestrator.action_handlers._handler_hooks import log_action_audit
-
-        job_id = params.get("job_id") or (context or {}).get("job_vacancy_id")
-        if not job_id:
-            _cstate = (context or {}).get("conversation_state")
-            if _cstate and getattr(_cstate, "last_job_id", None):
-                job_id = _cstate.last_job_id
-        from_stage = params.get("from_stage", "")
-        to_stage = params.get("to_stage", "")
-        company_id = (context or {}).get("company_id")
-
-        if not from_stage or not to_stage:
-            missing = []
-            if not from_stage:
-                missing.append("etapa de origem")
-            if not to_stage:
-                missing.append("etapa destino")
-            return ActionResult(
-                status="clarification_needed",
-                message=f"Para mover em bloco, preciso saber: {' e '.join(missing)}. "
-                        "Qual etapa de origem e qual etapa destino?",
-                action_type="bulk_move_by_stage",
-            )
-
-        if not job_id:
-            return ActionResult(
-                status="clarification_needed",
-                message="Para mover todos os candidatos de uma etapa, preciso saber qual é a vaga. "
-                        "Qual vaga você quer usar?",
-                action_type="bulk_move_by_stage",
-            )
-
-        async with AsyncSessionLocal() as db:
-            moved = 0
-            for attempt in range(2):
-                try:
-                    if attempt == 0:
-                        sql = """
-                            UPDATE vacancy_candidates
-                            SET stage = :to_stage, updated_at = NOW()
-                            WHERE vacancy_id = CAST(:jid AS uuid)
-                              AND stage = :from_stage
-                        """
-                    else:
-                        # Fallback: look up vacancy UUID from job_id short code
-                        sql = """
-                            UPDATE vacancy_candidates vc
-                            SET stage = :to_stage, updated_at = NOW()
-                            FROM job_vacancies jv
-                            WHERE jv.id = vc.vacancy_id
-                              AND jv.job_id = :jid
-                              AND vc.stage = :from_stage
-                        """
-                    bind: dict = {
-                        "to_stage": to_stage,
-                        "from_stage": from_stage,
-                        "jid": str(job_id),
-                    }
-                    if company_id and attempt == 0:
-                        sql += " AND company_id = :co"
-                        bind["co"] = str(company_id)
-                    elif company_id and attempt == 1:
-                        sql += " AND vc.company_id = :co"
-                        bind["co"] = str(company_id)
-                    result = await db.execute(text(sql), bind)
-                    moved = result.rowcount
-                    await db.commit()
-                    break
-                except Exception:
-                    await db.rollback()
-                    if attempt == 0:
-                        continue
-                    raise
-
-        await log_action_audit(
-            "bulk_move_by_stage", company_id,
-            extra={"from_stage": from_stage, "to_stage": to_stage, "job_id": str(job_id)}
-        )
-
-        return ActionResult(
-            status="executed",
-            message=f"**{moved} candidato(s)** movido(s) de **{from_stage}** para **{to_stage}**.",
-            data={
-                "from_stage": from_stage,
-                "to_stage": to_stage,
-                "job_id": str(job_id),
-                "moved_count": moved,
-                "moved_at": datetime.utcnow().isoformat(),
-            },
-            action_type="bulk_move_by_stage",
-        )
-    except Exception as e:
-        logger.warning(f"bulk_move_by_stage failed: {e}")
-        from app.orchestrator.action_executor import ActionResult
-        return ActionResult(
-            status="error",
-            message="Erro ao mover candidatos por etapa.",
-            error_detail=str(e),
-            action_type="bulk_move_by_stage",
-        )
-
-
-async def _reject_candidate(params: dict[str, Any], context: dict[str, Any]):
-    """
-    Reject a candidate from a vacancy.
-    - Validates company_id tenant isolation via vacancy_candidates
-    - Confirms rejection by returning a pending/confirmation response unless confirmed=True
-    - Sets stage to 'rejected' in vacancy_candidates
-    - Applies fairness check on rejection reason
-    - Logs audit trail
-    """
-    from app.orchestrator.action_executor import ActionResult
-    try:
-        from sqlalchemy import text as sql_text
-        from app.core.database import AsyncSessionLocal
-        from app.orchestrator.action_handlers._handler_hooks import (
-            log_action_audit,
-            resolve_candidate_by_name,
-        )
-
-        candidate_id = params.get("candidate_id", "")
-        candidate_name = params.get("candidate_name", "o candidato")
-        vacancy_id = (
-            params.get("vacancy_id")
-            or params.get("job_vacancy_id")
-            or (context or {}).get("job_vacancy_id")
-        )
-        reason = (
-            params.get("reason")
-            or params.get("motivo")
-            or "Perfil nao aderente a vaga"
-        )
-        confirmed = params.get("confirmed", False)
-        company_id = (context or {}).get("company_id")
-
-        # Resolve candidate by name if no ID
-        if not candidate_id and candidate_name and candidate_name != "o candidato":
-            resolved = await resolve_candidate_by_name(candidate_name, company_id)
-            if resolved:
-                candidate_id = resolved["id"]
-                candidate_name = resolved["name"]
-
-        if not candidate_id:
-            return ActionResult(
-                status="error",
-                message=f"Nao encontrei o candidato \"{candidate_name}\". Verifique o nome.",
-                error_detail="candidate_id missing and name resolution failed",
-                action_type="reject_candidate",
-            )
-
-        # Rejection must be scoped to a single vacancy. Without
-        # `vacancy_id` the UPDATE would affect every vacancy this
-        # candidate is on for the tenant. Auto-resolve a unique active
-        # vacancy when possible; otherwise stop and ask the user.
-        if not vacancy_id:
-            async with AsyncSessionLocal() as db:
-                # RLS: set company context before vacancy_candidates query
-                if company_id:
-                    await db.execute(sql_text("SELECT set_config('app.company_id', :co, true)"), {"co": str(company_id)})
-                row = await db.execute(
-                    sql_text(
-                        "SELECT vacancy_id FROM vacancy_candidates "
-                        "WHERE candidate_id = :cid AND company_id = :co "
-                        "AND COALESCE(stage,'') <> 'rejected' "
-                        "LIMIT 2"
-                    ),
-                    {"cid": str(candidate_id), "co": str(company_id)},
-                )
-                rows = row.fetchall()
-            if len(rows) == 1:
-                vacancy_id = str(rows[0][0])
-            elif len(rows) == 0:
-                return ActionResult(
-                    status="error",
-                    message=(
-                        f"Nao encontrei vagas ativas para **{candidate_name}**. "
-                        "Informe a vaga (ex.: V0037) que deseja reprovar."
-                    ),
-                    error_detail="no active vacancy_candidates row",
-                    action_type="reject_candidate",
-                )
-            else:
-                return ActionResult(
-                    status="pending",
-                    message=(
-                        f"**{candidate_name}** esta em mais de uma vaga ativa. "
-                        "Diga em qual vaga voce quer reprova-lo (ex.: V0037)."
-                    ),
-                    data={
-                        "candidate_id": str(candidate_id),
-                        "candidate_name": candidate_name,
-                        "requires_vacancy_disambiguation": True,
-                    },
-                    action_type="reject_candidate",
-                )
-
-        # Authz: verify candidate belongs to company
-        async with AsyncSessionLocal() as db:
-            # RLS: set company context before vacancy_candidates query
-            if company_id:
-                await db.execute(sql_text("SELECT set_config('app.company_id', :co, true)"), {"co": str(company_id)})
-            authz_row = await db.execute(
-                sql_text(
-                    "SELECT 1 FROM vacancy_candidates "
-                    "WHERE candidate_id = :cid "
-                    "AND company_id = :co LIMIT 1"
-                ),
-                {"cid": str(candidate_id), "co": str(company_id)},
-            )
-            if authz_row.fetchone() is None:
-                return ActionResult(
-                    status="error",
-                    message="Sem permissao para reprovar este candidato.",
-                    error_detail="Candidate does not belong to caller company",
-                    action_type="reject_candidate",
-                )
-
-        # Confirmation gate
-        if not confirmed:
-            return ActionResult(
-                status="pending",
-                message=(
-                    f"Vou reprovar **{candidate_name}** com o motivo: \"{reason}\"."
-                    "\n\nEsta acao e irreversivel. Confirma a reprovacao? (sim/nao)"
-                ),
-                data={
-                    "candidate_id": str(candidate_id),
-                    "candidate_name": candidate_name,
-                    "reason": reason,
-                    "vacancy_id": str(vacancy_id) if vacancy_id else None,
-                    "action": "reject_candidate",
-                    "requires_confirmation": True,
-                },
-                action_type="reject_candidate",
-            )
-
-        # Fairness check on reason text
-        reason_lower = reason.lower()
-        discriminatory_terms = [
-            "genero", "raca", "religiao", "idade", "estado civil",
-            "saude", "etnia", "mulher", "homem", "negro", "branco",
-        ]
-        for term in discriminatory_terms:
-            if term in reason_lower:
-                return ActionResult(
-                    status="error",
-                    message=(
-                        "Motivo de reprovacao contem criterio discriminatorio. "
-                        "Use criterios tecnicos e objetivos relacionados a vaga."
-                    ),
-                    error_detail=f"Discriminatory term: {term}",
-                    action_type="reject_candidate",
-                )
-
-        # Apply rejection — always scoped to a single vacancy now (the
-        # disambiguation block above guarantees vacancy_id is set).
-        async with AsyncSessionLocal() as db:
-            # RLS: set company context before UPDATE on vacancy_candidates
-            if company_id:
-                await db.execute(sql_text("SELECT set_config('app.company_id', :co, true)"), {"co": str(company_id)})
-            result = await db.execute(
-                sql_text(
-                    "UPDATE vacancy_candidates "
-                    "SET stage = 'rejected', updated_at = NOW() "
-                    "WHERE candidate_id = :cid "
-                    "AND company_id = :co "
-                    "AND vacancy_id = :vid"
-                ),
-                {"cid": str(candidate_id), "co": str(company_id), "vid": str(vacancy_id)},
-            )
-            await db.commit()
-            affected = result.rowcount or 0
-
-        # Verify the UPDATE actually touched a row before claiming success.
-        if affected == 0:
-            return ActionResult(
-                status="error",
-                message=(
-                    f"Nao consegui reprovar **{candidate_name}** na vaga indicada — "
-                    "verifique se ele realmente esta nessa vaga."
-                ),
-                error_detail=f"reject UPDATE affected 0 rows (cid={candidate_id}, vid={vacancy_id})",
-                action_type="reject_candidate",
-            )
-
-        # Audit log
-        await log_action_audit(
-            "candidate_rejected",
-            str(company_id),
-            str(candidate_id),
-            str(vacancy_id) if vacancy_id else None,
-        )
-
-        return ActionResult(
-            status="executed",
-            message=(
-                f"Candidato **{candidate_name}** reprovado com sucesso.\n\n"
-                f"Motivo registrado: \"{reason}\"\n\n"
-                "Feedback profissional sera enviado por email conforme LGPD."
-            ),
-            data={
-                "candidate_id": str(candidate_id),
-                "candidate_name": candidate_name,
-                "stage": "rejected",
-                "reason": reason,
-                "vacancy_id": str(vacancy_id) if vacancy_id else None,
-                "fairness_check": "passed",
-            },
-            action_type="reject_candidate",
-        )
-
-    except Exception as e:
-        logger.warning(f"reject_candidate failed: {e}")
-        from app.orchestrator.action_executor import ActionResult as _AR
-        return _AR(
-            status="error",
-            message="Erro ao reprovar candidato.",
-            error_detail=str(e),
-            action_type="reject_candidate",
         )

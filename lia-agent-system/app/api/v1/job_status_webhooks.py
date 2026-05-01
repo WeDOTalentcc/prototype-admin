@@ -18,9 +18,9 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.domains.job_management.repositories.webhook_repository import WebhookRepository
 from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
-from lia_models.webhook_registration import JOB_STATUS_WEBHOOK_EVENTS, WebhookDeliveryLog, WebhookRegistration
+from app.models.webhook_registration import JOB_STATUS_WEBHOOK_EVENTS, WebhookDeliveryLog, WebhookRegistration
 
-router = APIRouter(prefix="/job-status-webhooks", tags=["job-status-webhooks"])
+router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 logger = logging.getLogger(__name__)
 
 

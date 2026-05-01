@@ -622,7 +622,7 @@ class TestAiConsumptionNonUuidCompanyId:
 
     @pytest.mark.asyncio
     async def test_record_apify_usage_handles_unattributed(self):
-        from app.shared.observability.token_tracking_service import TokenTrackingService
+        from app.domains.analytics.services.token_tracking_service import TokenTrackingService
 
         svc = TokenTrackingService.__new__(TokenTrackingService)
 

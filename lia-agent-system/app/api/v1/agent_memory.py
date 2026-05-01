@@ -9,14 +9,6 @@ from app.auth.models import User
 from app.domains.agent_memory.dependencies import get_agent_memory_repo
 from app.domains.agent_memory.repositories.agent_memory_repository import AgentMemoryRepository
 from lia_agents_core.working_memory import AgentWorkingMemory
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger("lia.agent_memory")
 router = APIRouter(prefix="/agent-memory", tags=["Agent Memory"])
@@ -112,7 +104,7 @@ async def get_active_sessions(
 
 @router.get("/{session_id}/summary", response_model=None)
 async def get_memory_summary(
-    session_id: _DualId,
+    session_id: str,
     domain: str = Query("wizard"),
     current_user: User = Depends(get_current_user_or_demo),
     repo: AgentMemoryRepository = Depends(get_agent_memory_repo),
@@ -130,7 +122,7 @@ async def get_memory_summary(
 
 @router.get("/{session_id}", response_model=None)
 async def get_memory(
-    session_id: _DualId,
+    session_id: str,
     domain: str = Query("wizard"),
     current_user: User = Depends(get_current_user_or_demo),
     repo: AgentMemoryRepository = Depends(get_agent_memory_repo),
@@ -148,7 +140,7 @@ async def get_memory(
 
 @router.delete("/{session_id}", response_model=None)
 async def reset_memory(
-    session_id: _DualId,
+    session_id: str,
     domain: str = Query("wizard"),
     current_user: User = Depends(get_current_user_or_demo),
     repo: AgentMemoryRepository = Depends(get_agent_memory_repo),
@@ -169,10 +161,3 @@ async def reset_memory(
     except Exception as e:
         logger.error(f"Failed to reset memory for session={session_id}: {e}")
         return {"status": "error", "message": "Failed to reset working memory"}
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

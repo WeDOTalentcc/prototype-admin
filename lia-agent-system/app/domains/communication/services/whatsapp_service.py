@@ -557,12 +557,3 @@ whatsapp_service = WhatsAppService()
 
 def get_whatsapp_service() -> "WhatsAppService":
     return whatsapp_service
-
-
-def _strip_meta(p: dict) -> dict:
-    return {k: v for k, v in p.items() if not k.startswith("_")}
-
-
-async def send_whatsapp_message(**params):
-    """Wrapper módulo-level para o chat. Delega para WhatsAppService.send_message."""
-    return await whatsapp_service.send_message(**_strip_meta(params))

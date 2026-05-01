@@ -208,18 +208,15 @@ class TestCandidateListStoreRedis:
         store = self._make_redis_store(redis_mock)
 
         await store.set("conv-1", CANDIDATES)
-        # Deve ter caído no fallback in-memory (entry stores TTL alongside data)
-        entry = store._memory.get("conv-1")
-        assert entry is not None
-        assert entry[0] == CANDIDATES
+        # Deve ter caído no fallback in-memory
+        assert store._memory.get("conv-1") == CANDIDATES
 
     @pytest.mark.asyncio
     async def test_redis_get_failure_falls_back_to_memory(self):
-        from app.shared.memory.candidate_list_store import _now
         redis_mock = AsyncMock()
         redis_mock.get = AsyncMock(side_effect=Exception("Redis down"))
         store = self._make_redis_store(redis_mock)
-        store._memory["conv-1"] = (CANDIDATES, _now() + 600)
+        store._memory["conv-1"] = CANDIDATES
 
         result = await store.get("conv-1")
         assert result == CANDIDATES

@@ -8,7 +8,7 @@ from datetime import datetime
 from sqlalchemy import and_, select
 
 from app.core.database import AsyncSessionLocal
-from lia_models.message_queue import MessageChannel, MessagePriority, MessageQueue, MessageStatus
+from app.models.message_queue import MessageChannel, MessagePriority, MessageQueue, MessageStatus
 from app.shared.channels.channel_adapter import (
     ChannelAdapter,
     ChannelMessage,
@@ -100,7 +100,7 @@ class EmailChannelAdapter(ChannelAdapter):
         message_id = str(uuid.uuid4())
 
         # I5: LGPD opt-out check before sending (company-scoped)
-        if await _is_opted_out(message.recipient_contact, message.company_id):
+        if await _is_opted_out(message.recipient_contact, getattr(message, "company_id", None)):
             logger.info(f"[EMAIL_ADAPTER] Skipping email to {message.recipient_contact} — opted out (LGPD)")
             return DeliveryResult(
                 success=False,
@@ -115,7 +115,7 @@ class EmailChannelAdapter(ChannelAdapter):
             if not (message.template_vars or {}).get("unsubscribe_url"):
                 if message.template_vars is None:
                     message.template_vars = {}
-                _cid = message.company_id
+                _cid = getattr(message, "company_id", None)
                 if not _cid:
                     logger.warning(
                         "[EMAIL_ADAPTER] company_id missing on message to %s. "

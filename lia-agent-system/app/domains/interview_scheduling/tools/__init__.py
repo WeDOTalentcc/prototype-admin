@@ -73,13 +73,13 @@ INTERVIEW_SCHEDULING_TOOLS = [
         "tool_id": "scheduling_transcribe_audio",
         "name": "Transcrever Áudio",
         "description": "Transcreve áudio de entrevista usando OpenAI Whisper STT",
-        "handler": "app.domains.voice.services.voice_service.voice_service.transcribe_audio",
+        "handler": "app.services.voice_service.voice_service.transcribe_audio",
     },
     {
         "tool_id": "scheduling_analyze_voice",
         "name": "Analisar Voz",
         "description": "Analisa tom de voz e confiança do candidato na entrevista",
-        "handler": "app.domains.voice.services.voice_service.voice_service.transcribe_audio",
+        "handler": "app.services.voice_service.voice_service.transcribe_audio",
     },
 ]
 
@@ -101,15 +101,16 @@ async def execute_interview_scheduling_tool(
         return {"error": f"Tool {tool_id} not found", "status": "error"}
 
     handler_path = tool["handler"]
+    parts = handler_path.rsplit(".", 1)
+    if len(parts) != 2:
+        return {"error": f"Invalid handler path: {handler_path}", "status": "error"}
+
+    module_path, func_name = parts
     try:
-        from app.shared.tool_handler import resolve_handler_path
-        import asyncio, inspect
-        handler = resolve_handler_path(handler_path)
-        if not callable(handler):
-            return {"error": f"Handler not callable: {handler_path}", "status": "error", "tool_id": tool_id}
-        result = await handler(**parameters) if asyncio.iscoroutinefunction(handler) else handler(**parameters)
-        if inspect.isawaitable(result):
-            result = await result
+        import importlib
+        module = importlib.import_module(module_path)
+        handler = getattr(module, func_name)
+        result = await handler(**parameters) if callable(handler) else handler
         return {"status": "success", "result": result}
     except Exception as e:
         return {"error": str(e), "status": "error", "tool_id": tool_id}

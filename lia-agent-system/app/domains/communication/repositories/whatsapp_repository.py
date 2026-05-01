@@ -22,7 +22,7 @@ class WhatsappRepository:
     async def get_company_id_by_meta_phone(self, phone_number_id: str) -> str | None:
         """Return company_id for a given Meta WhatsApp phone_number_id, or None."""
         try:
-            from lia_models.company import Company
+            from app.models.company import Company
             result = await self.db.execute(
                 select(Company.id).where(Company.whatsapp_phone_number_id == phone_number_id)
             )
@@ -36,7 +36,7 @@ class WhatsappRepository:
     async def get_company_id_by_twilio_number(self, twilio_number: str) -> str | None:
         """Return company_id for a given Twilio WhatsApp number, or None."""
         try:
-            from lia_models.company import Company
+            from app.models.company import Company
             result = await self.db.execute(
                 select(Company.id).where(Company.twilio_whatsapp_number == twilio_number)
             )
@@ -54,7 +54,7 @@ class WhatsappRepository:
         limit: int = 50,
     ) -> list:
         """Return WhatsApp conversations for a company, optionally filtered by status."""
-        from lia_models.whatsapp_conversation import ConversationState, WhatsAppConversation
+        from app.models.whatsapp_conversation import ConversationState, WhatsAppConversation
 
         query = (
             select(WhatsAppConversation)

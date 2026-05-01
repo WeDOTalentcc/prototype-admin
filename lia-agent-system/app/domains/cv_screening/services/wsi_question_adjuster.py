@@ -172,8 +172,7 @@ Responda APENAS com JSON válido, sem markdown."""
         behavioral_competencies: list[str],
         seniority: str | None = None,
         department: str | None = None,
-        description: str | None = None,
-        company_id: str | None = None,
+        description: str | None = None
     ) -> dict[str, Any]:
         """
         Evaluate a Job Description for WSI question generation readiness.
@@ -244,10 +243,12 @@ Gere uma avaliação curta (2-3 frases) em português do Brasil:
 
 Responda APENAS com o texto da avaliação, sem formatação especial."""
 
-            from app.shared.providers.llm_factory import get_provider_for_tenant
-            _container = get_provider_for_tenant()
-            _raw = await _container.generate_with_fallback(eval_prompt, task_type="wsi")
-            lia_suggestion = (_raw or "").strip()
+            response = llm_service.generate_native_gemini_sync(
+                contents=[{"role": "user", "parts": [{"text": eval_prompt}]}],
+                model="gemini-2.5-flash",
+                generation_config={"temperature": 0.5, "max_output_tokens": 500},
+            )
+            lia_suggestion = response.text.strip()
         except Exception as e:
             logger.error(f"Failed to generate LIA JD evaluation: {e}")
             suggestions = []
@@ -283,9 +284,3 @@ Responda APENAS com o texto da avaliação, sem formatação especial."""
 
 
 wsi_question_adjuster_service = WSIQuestionAdjusterService()
-
-
-# Module-level handler exposed to the chat tool registry
-async def adjust_questions(**kwargs):
-    """Chat-surface wrapper around WSIQuestionAdjusterService.adjust_questions()."""
-    return await wsi_question_adjuster_service.adjust_questions(**kwargs)

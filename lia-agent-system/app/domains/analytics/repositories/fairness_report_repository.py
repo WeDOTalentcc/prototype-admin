@@ -26,7 +26,7 @@ class FairnessReportRepository:
         company_id: str | None = None,
     ) -> list:
         """Return (category, blocks, warnings, last_occurrence) grouped by category."""
-        from lia_models.fairness_audit import FairnessAuditLog
+        from app.models.fairness_audit import FairnessAuditLog
 
         stmt = select(
             FairnessAuditLog.category,
@@ -48,7 +48,7 @@ class FairnessReportRepository:
         company_id: str | None = None,
     ) -> list:
         """Return (day, blocks, warnings) per day for a time-series trend."""
-        from lia_models.fairness_audit import FairnessAuditLog
+        from app.models.fairness_audit import FairnessAuditLog
 
         stmt = select(
             cast(FairnessAuditLog.created_at, Date).label("day"),
@@ -73,7 +73,7 @@ class FairnessReportRepository:
         offset: int = 0,
     ) -> tuple[int, list]:
         """Return (total_count, rows) for paginated audit log queries."""
-        from lia_models.fairness_audit import FairnessAuditLog
+        from app.models.fairness_audit import FairnessAuditLog
 
         stmt = select(FairnessAuditLog).where(FairnessAuditLog.created_at >= since)
 
@@ -86,57 +86,6 @@ class FairnessReportRepository:
         if category:
             stmt = stmt.where(FairnessAuditLog.category == category)
 
-        if blocked_only:
-            stmt = stmt.where(FairnessAuditLog.is_blocked.is_(True))
-
-        count_stmt = select(func.count()).select_from(stmt.subquery())
-        total = (await self.db.execute(count_stmt)).scalar() or 0
-
-        stmt = stmt.order_by(FairnessAuditLog.created_at.desc()).limit(limit).offset(offset)
-        rows = (await self.db.execute(stmt)).scalars().all()
-        return total, list(rows)
-
-    async def get_latest_block_for_job(self, job_id: str):
-        """Return the single most recent ``is_blocked=True`` event for a job, or None."""
-        from lia_models.fairness_audit import FairnessAuditLog
-
-        try:
-            job_uuid = uuid.UUID(job_id)
-        except (ValueError, TypeError):
-            return None
-
-        stmt = (
-            select(FairnessAuditLog)
-            .where(
-                FairnessAuditLog.job_id == job_uuid,
-                FairnessAuditLog.is_blocked.is_(True),
-            )
-            .order_by(FairnessAuditLog.created_at.desc())
-            .limit(1)
-        )
-        return (await self.db.execute(stmt)).scalar_one_or_none()
-
-    async def get_blocks_for_job(
-        self,
-        job_id: str,
-        limit: int = 20,
-        offset: int = 0,
-        blocked_only: bool = True,
-    ) -> tuple[int, list]:
-        """Return (total_count, rows) of FairnessGuard events for a single job.
-
-        Used by the recruiter dashboard to surface why a sourcing search
-        returned no candidates. Defaults to blocked events only; pass
-        ``blocked_only=False`` to also include soft warnings.
-        """
-        from lia_models.fairness_audit import FairnessAuditLog
-
-        try:
-            job_uuid = uuid.UUID(job_id)
-        except (ValueError, TypeError):
-            return 0, []
-
-        stmt = select(FairnessAuditLog).where(FairnessAuditLog.job_id == job_uuid)
         if blocked_only:
             stmt = stmt.where(FairnessAuditLog.is_blocked.is_(True))
 

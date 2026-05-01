@@ -5,28 +5,18 @@ import os
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from app.auth.dependencies import get_current_user_or_demo, validate_company_access
-from app.auth.models import User
 from pydantic import BaseModel
 # sqlalchemy ORM imports moved to ProfileAnalysisRepository
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.cv_screening.repositories.profile_analysis_repository import ProfileAnalysisRepository
-from lia_models.lia_profile_analysis import LiaProfileAnalysis
+from app.models.lia_profile_analysis import LiaProfileAnalysis
 from app.schemas.lia_profile_analysis import (
     CandidateAnalysesSummary,
     LiaProfileAnalysisCreate,
     LiaProfileAnalysisResponse,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -143,54 +133,36 @@ Use hífen (-) para bullet points. Seja abrangente mas conciso."""
 
 
 @router.post("", response_model=ProfileAnalysisResponse)
-async def generate_profile_analysis(
-    request: ProfileAnalysisRequest,
-    company_id: str | None = Query(None, description="Company ID for tenant resolution"),
-    current_user: User = Depends(get_current_user_or_demo),
-):
+async def generate_profile_analysis(request: ProfileAnalysisRequest):
     """Generate an AI-powered profile analysis for a candidate."""
-    from app.shared.observability.token_budget_service import RequestBudgetExceededError
-
+    
     valid_types = ['bullet_points', 'short_paragraph', 'detailed_bullets']
     if request.analysis_type not in valid_types:
         raise HTTPException(status_code=400, detail=f"Invalid analysis_type. Must be one of: {valid_types}")
-
+    
     candidate_info = format_candidate_info(request.candidate_data)
-
+    
     if not candidate_info or len(candidate_info) < 20:
         raise HTTPException(status_code=400, detail="Insufficient candidate data to generate analysis")
-
-    if company_id:
-        validate_company_access(current_user, company_id)
-
+    
     try:
         from app.shared.providers.llm_factory import get_provider_for_tenant
-        tenant_id = company_id or None
-        container = get_provider_for_tenant(tenant_id=tenant_id)
+
+        container = get_provider_for_tenant()
         analysis_text = await container.generate_with_fallback(
             f"Generate a {request.analysis_type.replace('_', ' ')} profile summary for this candidate:\n\n{candidate_info}",
             system=get_system_prompt(request.analysis_type),
-            agent_type="ProfileAnalysisAgent",
-            company_id=tenant_id,
         )
         analysis_text = analysis_text.strip()
-
+        
         return ProfileAnalysisResponse(
             analysis=analysis_text,
             analysis_type=request.analysis_type,
             candidate_id=request.candidate_id
         )
-
-    except RequestBudgetExceededError as exc:
-        logger.warning("Profile analysis exceeded request budget: %s", exc)
-        raise HTTPException(
-            status_code=413,
-            detail="Perfil muito extenso para gerar análise. Reduza os dados do candidato e tente novamente.",
-        )
-    except HTTPException:
-        raise
+        
     except Exception as e:
-        logger.error("Error generating profile analysis: %s", e)
+        print(f"Error generating profile analysis: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to generate analysis: {str(e)}")
 
 
@@ -198,11 +170,9 @@ async def generate_profile_analysis(
 async def save_profile_analysis(
     request: LiaProfileAnalysisCreate,
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db)
 ):
     """Save a generated profile analysis to the database."""
-    validate_company_access(current_user, company_id)
     try:
         repo = ProfileAnalysisRepository(db)
         existing = await repo.get_active_by_candidate_type_company(
@@ -253,13 +223,11 @@ async def save_profile_analysis(
 
 @router.get("/candidate/{candidate_id}", response_model=CandidateAnalysesSummary)
 async def get_candidate_analyses(
-    candidate_id: _DualId,
+    candidate_id: str,
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db)
 ):
     """Get all saved analyses for a candidate."""
-    validate_company_access(current_user, company_id)
     try:
         repo = ProfileAnalysisRepository(db)
         analyses = await repo.get_all_active_for_candidate(candidate_id, company_id)
@@ -305,14 +273,12 @@ async def get_candidate_analyses(
 
 @router.delete("/candidate/{candidate_id}/{analysis_type}", response_model=None)
 async def delete_candidate_analysis(
-    candidate_id: _DualId,
+    candidate_id: str,
     analysis_type: str,
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo),
+    db: AsyncSession = Depends(get_db)
 ):
     """Delete a specific analysis for a candidate."""
-    validate_company_access(current_user, company_id)
     try:
         repo = ProfileAnalysisRepository(db)
         analysis = await repo.soft_delete(candidate_id, analysis_type, company_id)
@@ -327,10 +293,3 @@ async def delete_candidate_analysis(
     except Exception as e:
         logger.error(f"Error deleting analysis: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to delete analysis: {str(e)}")
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

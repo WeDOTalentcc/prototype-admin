@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy import and_, desc, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.policy import (
+from app.models.policy import (
     BusinessRule,
     EscalationLog,
     EscalationRule,

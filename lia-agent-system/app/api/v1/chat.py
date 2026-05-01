@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.orchestrator.domain_mappings import resolve_domain
@@ -89,212 +89,6 @@ async def resolve_candidate_by_name(
     return await repo.resolve_candidate_by_name(candidate_name, company_id=company_id, job_id=job_id)
 
 
-
-
-# ---------------------------------------------------------------------------
-# Action response builder + multi-turn flow — testable interface.
-#
-# _build_response_from_action: pure formatter, returns human-readable string
-#   from action metadata (action_result OR pending_action).
-# handle_action_flow: async state-machine wrapper for pending-action collection;
-#   delegates to pending_action_store + action_executor.
-#
-# Both were previously inlined in route handlers; extracted for testability.
-# MainOrchestrator._handle_pending_action mirrors this logic inside the full
-# orchestration pipeline. Tests import from this module (canonical location).
-#
-# Skill canônica: harness-engineering [sensor computacional].
-# ---------------------------------------------------------------------------
-
-
-def _build_response_from_action(metadata: "dict[str, Any] | None") -> "str | None":
-    """Build a human-readable response string from action metadata.
-
-    Covers 4 paths:
-      - action_result.status == "executed"  → success message
-      - action_result.status == "cancelled" → cancellation message
-      - action_result.status == "error"     → error message
-      - pending_action (awaiting_confirmation or missing_params)
-
-    Returns None when metadata carries no actionable payload.
-    """
-    if not metadata:
-        return None
-
-    # ── action_result paths ──────────────────────────────────────────────────
-    action_result = metadata.get("action_result")
-    if action_result:
-        status = action_result.get("status", "")
-        msg = action_result.get("message", "")
-        if status == "executed":
-            return msg or "Ação executada com sucesso."
-        if status == "cancelled":
-            return "Ação cancelada."
-        if status == "error":
-            return f"Não foi possível executar a ação. {msg}".strip()
-
-    # ── pending_action paths ─────────────────────────────────────────────────
-    pending = metadata.get("pending_action")
-    if not pending:
-        return None
-
-    awaiting: bool = pending.get("awaiting_confirmation", False)
-    collected: "dict[str, Any]" = pending.get("collected_params", {})
-    missing: list = pending.get("missing_params", [])
-    intent: str = pending.get("intent", "")
-
-    if awaiting:
-        candidate = collected.get("candidate_name", "")
-        stage = collected.get("to_stage", "")
-        if candidate and stage:
-            return f"Confirma mover **{candidate}** para **{stage}**?"
-        if candidate:
-            return f"Confirma a ação para **{candidate}**?"
-        return "Confirma a ação?"
-
-    if missing:
-        next_param = missing[0]
-        config = ACTIONABLE_INTENTS.get(intent, {})
-        clarification = config.get("clarification_prompts", {}).get(next_param)
-        if clarification:
-            return clarification
-        # Generic fallback — param name included for diagnosability
-        return f"Qual é o valor para: **{next_param}**?"
-
-    return None
-
-
-async def handle_action_flow(
-    conversation_id: str,
-    user_message_text: str,
-    intent: str,
-    entities: "dict[str, Any]",
-    user_id: str,
-    current_user: Any,
-    db: Any,
-) -> "dict[str, Any] | None":
-    """Multi-turn action parameter collection and execution (testable interface).
-
-    Called from route handlers when an action intent is detected.  Returns a
-    dict with either ``pending_action`` (still collecting params) or
-    ``action_result`` (action was executed or cancelled) keys.  Returns None
-    when no pending action is found for the conversation.
-
-    Mirrors MainOrchestrator._handle_pending_action; exists here so the
-    pending-action state machine can be unit-tested without spinning up the
-    full orchestrator.
-    """
-    pending = pending_action_store.get(conversation_id)
-    if pending is None:
-        return None
-
-    # ── Awaiting confirmation ─────────────────────────────────────────────
-    if pending.awaiting_confirmation:
-        if is_confirmation(user_message_text):
-            config = ACTIONABLE_INTENTS.get(pending.intent, {})
-            exec_result = await action_executor._execute_action(
-                pending.intent,
-                config,
-                pending.collected_params,
-                {"conversation_id": conversation_id, "user_id": user_id},
-            )
-            pending_action_store.remove(conversation_id)
-            return {
-                "action_result": {
-                    "status": exec_result.status,
-                    "message": getattr(exec_result, "message", ""),
-                    "data": getattr(exec_result, "data", {}),
-                    "action_type": getattr(exec_result, "action_type", ""),
-                    "success": exec_result.status == "executed",
-                }
-            }
-        if is_rejection(user_message_text):
-            pending_action_store.remove(conversation_id)
-            return {"action_result": {"status": "cancelled", "success": False}}
-        # Not confirmation/rejection — cancel and fall through to normal routing
-        pending_action_store.remove(conversation_id)
-        return None
-
-    # ── Collecting missing params ─────────────────────────────────────────
-    if pending.missing_params:
-        next_param = pending.next_missing_param()
-        if next_param:
-            if next_param == "candidate_id":
-                company_id = getattr(current_user, "company_id", None)
-                resolved = await resolve_candidate_by_name(
-                    user_message_text,
-                    company_id=str(company_id) if company_id else None,
-                    db=db,
-                )
-                if resolved:
-                    pending.add_param("candidate_id", str(resolved["id"]))
-                    pending.collected_params["candidate_name"] = user_message_text
-                    if resolved.get("stage"):
-                        pending.collected_params["from_stage"] = resolved["stage"]
-                else:
-                    # Candidate not found — store raw name, keep candidate_id in missing_params
-                    pending.collected_params["candidate_name"] = user_message_text
-                    pending_action_store.save(conversation_id, pending)
-                    return {
-                        "pending_action": {
-                            "intent": pending.intent,
-                            "action_id": pending.action_id,
-                            "awaiting_confirmation": False,
-                            "missing_params": list(pending.missing_params),
-                            "collected_params": dict(pending.collected_params),
-                        }
-                    }
-            else:
-                raw = user_message_text.strip()[:200]
-                pending.add_param(next_param, raw)
-
-            if pending.is_complete:
-                config = ACTIONABLE_INTENTS.get(pending.intent, {})
-                if config.get("requires_confirmation", False):
-                    pending.awaiting_confirmation = True
-                    pending_action_store.save(conversation_id, pending)
-                    return {
-                        "pending_action": {
-                            "intent": pending.intent,
-                            "action_id": pending.action_id,
-                            "awaiting_confirmation": True,
-                            "missing_params": [],
-                            "collected_params": dict(pending.collected_params),
-                        }
-                    }
-                # Auto-execute if confirmation not required
-                exec_result = await action_executor._execute_action(
-                    pending.intent,
-                    config,
-                    pending.collected_params,
-                    {"conversation_id": conversation_id, "user_id": user_id},
-                )
-                pending_action_store.remove(conversation_id)
-                return {
-                    "action_result": {
-                        "status": exec_result.status,
-                        "message": getattr(exec_result, "message", ""),
-                        "data": getattr(exec_result, "data", {}),
-                        "action_type": getattr(exec_result, "action_type", ""),
-                        "success": exec_result.status == "executed",
-                    }
-                }
-            else:
-                # Still missing params — save progress and return current state
-                pending_action_store.save(conversation_id, pending)
-                return {
-                    "pending_action": {
-                        "intent": pending.intent,
-                        "action_id": pending.action_id,
-                        "awaiting_confirmation": False,
-                        "missing_params": list(pending.missing_params),
-                        "collected_params": dict(pending.collected_params),
-                    }
-                }
-
-    pending_action_store.remove(conversation_id)
-    return None
-
 async def _invoke_orchestrator_legacy(
     user_message: str,
     user_id: str,
@@ -321,11 +115,7 @@ async def _invoke_orchestrator_legacy(
             "workflow_data": {},
         }
 
-    orch_context: dict[str, Any] = {
-        "company_id": company_id,
-        "user_id": user_id,
-        "actor_user_id": user_id,
-    }
+    orch_context: dict[str, Any] = {"company_id": company_id}
     if page_context:
         if page_context.get("job_vacancy_id"):
             orch_context["job_vacancy_id"] = page_context["job_vacancy_id"]
@@ -337,10 +127,6 @@ async def _invoke_orchestrator_legacy(
             orch_context["page_type"] = page_context["page_type"]
         if page_context.get("job_context"):
             orch_context["job_context"] = page_context["job_context"]
-        if page_context.get("entity_id"):
-            orch_context["entity_id"] = page_context["entity_id"]
-        if page_context.get("scope"):
-            orch_context["scope"] = page_context["scope"]
 
     result = await _orch.process_request(
         user_id=user_id,
@@ -433,57 +219,18 @@ async def send_message(
     }
 
     _c3b_company = str(current_user.company_id) if current_user.company_id else ""
-    from app.core.tenant import normalize_demo_company_id as _norm_cid
-    _c3b_company = _norm_cid(_c3b_company, context="chat.send_message") or _c3b_company
     _c3b_pre = await pre_compliance(
         message_data.content,
         _c3b_company,
         page_context.get("domain", ""),
     )
     if _c3b_pre.fairness_blocked:
-        # Return a 200 response with the educational refusal message so the
-        # conversation UI displays it properly (instead of a silent 422 error).
-        import datetime as _dt
-        _block_msg = _c3b_pre.block_reason or "Solicitação bloqueada por critérios de equidade."
-        _now_block = _dt.datetime.utcnow()
-        return ChatResponse(
-            message=MessageResponse(
-                id=str(uuid.uuid4()),
-                conversation_id=conversation_id,
-                role="assistant",
-                content=_block_msg,
-                message_metadata={
-                    "fairness_blocked": True,
-                    "fairness_flags": _c3b_pre.fairness_flags,
-                    # Task #552: even compliance-blocked replies must echo the
-                    # answering "agent" so the routing audit always populates
-                    # `agent_observed` (and downstream tooling can distinguish
-                    # blocks from regular routes).
-                    "routed_agent": "fairness_guard",
-                    "agent_used": "fairness_guard",
-                    "agents_consulted": ["fairness_guard"],
-                },
-                created_at=_now_block,
-            ),
-            conversation=ConversationResponse(
-                id=_conv_snapshot["id"],
-                user_id=_conv_snapshot["user_id"],
-                user_role=_conv_snapshot["user_role"],
-                title=_conv_snapshot["title"] or message_data.content[:100],
-                intent=_conv_snapshot["intent"],
-                workflow_type=_conv_snapshot["workflow_type"],
-                workflow_step=_conv_snapshot["workflow_step"] or 0,
-                workflow_data=_conv_snapshot["workflow_data"],
-                status=_conv_snapshot["status"],
-                created_at=_conv_snapshot["created_at"],
-                updated_at=_now_block,
-            ),
-        )
+        raise HTTPException(status_code=422, detail=_c3b_pre.block_reason or "Solicitação bloqueada por critérios de equidade.")
 
     orch_result = await _get_chat_adapter().process_message(
         user_message=_c3b_pre.clean_message,
         user_id=user_id,
-        company_id=_c3b_company,  # A1-B: already normalized above
+        company_id=str(current_user.company_id) if current_user.company_id else "",
         conversation_id=conversation_id,
         page_context=page_context,
         db=repo.db,
@@ -527,16 +274,9 @@ async def send_message(
         # Item 2: handle_action_flow deleted — MainOrchestrator Phase 0+1 handles all actions
         final_response = lia_response
 
-        # Task #552: always echo the routed specialist so eval/diagnostic
-        # tooling (persona-diagnostic routing audit) can populate
-        # `agent_observed` without scanning a dozen fallback fields.
-        _routed_agent = orch_result.get("agent_used") or "main_orchestrator"
         msg_metadata: dict[str, Any] = {
             "intent": detected_intent,
             "entities": detected_entities,
-            "routed_agent": _routed_agent,
-            "agent_used": _routed_agent,
-            "agents_consulted": list(orch_result.get("agents_consulted") or []),
         }
 
         # Item 2: action_metadata removed — MainOrchestrator handles actions
@@ -588,14 +328,6 @@ async def send_message(
         if context_data:
             _meta["context_data"] = context_data
 
-        # Task #432: forward pipeline_rail payload (rich response in chat)
-        _pipeline_rail = workflow_data.get("pipeline_rail") if isinstance(workflow_data, dict) else None
-        if _pipeline_rail and isinstance(_pipeline_rail, dict):
-            _meta["pipeline_rail"] = _pipeline_rail
-            _meta.setdefault("context_data", {})
-            if isinstance(_meta["context_data"], dict):
-                _meta["context_data"]["pipeline_rail"] = _pipeline_rail
-
         # Update snapshot with orchestrator results
         _conv_snapshot["title"] = _conv_snapshot["title"] or message_data.content[:100]
         _conv_snapshot["intent"] = detected_intent or _conv_snapshot["intent"]
@@ -607,7 +339,6 @@ async def send_message(
                 role="assistant",
                 content=final_response,
                 message_metadata=_meta,
-                tool_calls=list(orch_result.get("actions") or []),
                 created_at=_now,
             ),
             conversation=ConversationResponse(
@@ -747,27 +478,14 @@ async def send_message_with_attachments(
 
         import uuid as _uuid
         _now = __import__("datetime").datetime.utcnow()
-        # Task #552: echo routed specialist on attachments path too.
-        _routed_agent2 = orch_result.get("agent_used") or "main_orchestrator"
         _meta = {
             "intent": orch_result.get("intent"),
             "entities": orch_result.get("entities"),
-            "routed_agent": _routed_agent2,
-            "agent_used": _routed_agent2,
-            "agents_consulted": list(orch_result.get("agents_consulted") or []),
             "processed_attachments": attachment_info,
             "processed_audio": audio_info,
         }
         if context_data:
             _meta["context_data"] = context_data
-
-        # Task #432: forward pipeline_rail payload (rich response in chat)
-        _pipeline_rail2 = workflow_data.get("pipeline_rail") if isinstance(workflow_data, dict) else None
-        if _pipeline_rail2 and isinstance(_pipeline_rail2, dict):
-            _meta["pipeline_rail"] = _pipeline_rail2
-            _meta.setdefault("context_data", {})
-            if isinstance(_meta["context_data"], dict):
-                _meta["context_data"]["pipeline_rail"] = _pipeline_rail2
 
         if attachment_info:
             _conv_snapshot["title"] = _conv_snapshot["title"] or f"Analise de {len(attachment_info)} arquivo(s)"
@@ -783,7 +501,6 @@ async def send_message_with_attachments(
                 role="assistant",
                 content=lia_response,
                 message_metadata=_meta,
-                tool_calls=list(orch_result.get("actions") or []),
                 created_at=_now,
             ),
             conversation=ConversationResponse(
@@ -1165,8 +882,6 @@ async def stream_message(
     # Fetch tenant context (same pattern as MainOrchestrator)
     _tenant_snippet = ""
     _company_id = str(getattr(current_user, "company_id", "")) or ""
-    from app.core.tenant import normalize_demo_company_id as _norm_cid_s
-    _company_id = _norm_cid_s(_company_id, context="chat.stream_message") or _company_id
     if _company_id:
         try:
             from app.shared.services.tenant_context_service import TenantContextService

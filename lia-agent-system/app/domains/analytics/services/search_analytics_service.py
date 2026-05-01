@@ -595,12 +595,3 @@ class SearchAnalyticsService:
 
 
 search_analytics_service = SearchAnalyticsService()
-
-
-def _strip_meta(p: dict) -> dict:
-    return {k: v for k, v in p.items() if not k.startswith("_")}
-
-
-async def get_search_analytics(**params):
-    """Wrapper para o chat. Delega para analyze_search_results."""
-    return await search_analytics_service.analyze_search_results(**_strip_meta(params))

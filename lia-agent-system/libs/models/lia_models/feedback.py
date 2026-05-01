@@ -9,7 +9,7 @@ Enables LIA to learn from:
 """
 from datetime import datetime
 from uuid import uuid4
-from sqlalchemy import Column, String, Integer, DateTime, Text, JSON, Float, Boolean, Index
+from sqlalchemy import Column, String, Integer, DateTime, Text, JSON, Float, Boolean
 from sqlalchemy.dialects.postgresql import UUID
 
 from lia_config.database import Base
@@ -88,11 +88,6 @@ class LearningPattern(Base):
     - Which tools are preferred for specific tasks
     - Common corrections that can be proactively applied
     - Trigger phrases that indicate specific user needs
-    
-    Also stores learned patterns for intelligent suggestions:
-    - Salary patterns: "Senior Python in SP avg R$18k"
-    - Skill patterns: "90% of Data roles use SQL"
-    - Preference patterns: "This company always adds 'Day Off Aniversário'"
     """
     __tablename__ = "learning_patterns"
     
@@ -108,36 +103,15 @@ class LearningPattern(Base):
     example_good_responses = Column(JSON, default=list)
     example_bad_responses = Column(JSON, default=list)
     
-    pattern_value = Column(JSON, nullable=True)
-    
     positive_feedback_count = Column(Integer, default=0)
     negative_feedback_count = Column(Integer, default=0)
     success_rate = Column(Float, default=0.0)
-    sample_size = Column(Integer, default=1)
-    acceptance_rate = Column(Float, default=1.0)
     
     is_active = Column(Boolean, default=True)
     confidence = Column(Float, default=0.5)
-    confidence_score = Column(Float, default=0.5)
-    
-    role_filter = Column(String(255), nullable=True, index=True)
-    seniority_filter = Column(String(100), nullable=True)
-    department_filter = Column(String(100), nullable=True)
-    location_filter = Column(String(255), nullable=True)
-    
-    expires_at = Column(DateTime, nullable=True)
-    last_applied_at = Column(DateTime, nullable=True)
-    last_confirmed_at = Column(DateTime, nullable=True)
     
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    __table_args__ = (
-        Index('ix_learning_patterns_company_type', 'company_id', 'pattern_type'),
-        Index('ix_learning_patterns_key', 'company_id', 'pattern_key'),
-        Index('ix_learning_patterns_active', 'company_id', 'is_active'),
-        Index('ix_learning_patterns_role', 'company_id', 'role_filter'),
-    )
     
     def to_dict(self) -> dict:
         """Convert to dictionary."""
@@ -151,19 +125,11 @@ class LearningPattern(Base):
             "preferred_tools": self.preferred_tools or [],
             "example_good_responses": self.example_good_responses or [],
             "example_bad_responses": self.example_bad_responses or [],
-            "pattern_value": self.pattern_value,
             "positive_feedback_count": self.positive_feedback_count,
             "negative_feedback_count": self.negative_feedback_count,
             "success_rate": self.success_rate,
-            "sample_size": self.sample_size,
-            "acceptance_rate": self.acceptance_rate,
             "is_active": self.is_active,
             "confidence": self.confidence,
-            "confidence_score": self.confidence_score,
-            "role_filter": self.role_filter,
-            "seniority_filter": self.seniority_filter,
-            "department_filter": self.department_filter,
-            "location_filter": self.location_filter,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

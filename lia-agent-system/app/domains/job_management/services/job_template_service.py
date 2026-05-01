@@ -495,16 +495,3 @@ Para description, escreva 2-3 parágrafos descrevendo a vaga.
         pass
     
     return template_data
-
-
-def _strip_meta(p: dict) -> dict:
-    return {k: v for k, v in p.items() if not k.startswith("_")}
-
-
-async def search_job_templates(**params):
-    """Wrapper para o chat. Acquire sessão e delega para JobTemplateService.search_templates."""
-    from app.core.database import AsyncSessionLocal
-
-    async with AsyncSessionLocal() as session:
-        service = JobTemplateService(db=session)
-        return await service.search_templates(**_strip_meta(params))

@@ -11,34 +11,12 @@ import logging
 import os
 from typing import Optional
 
-from app.shared.observability.token_budget_service import check_request_budget_before_llm
+from app.domains.credits.services.token_budget_service import check_request_budget_before_llm
 from app.shared.providers.llm_provider import LLMProviderABC
 
 logger = logging.getLogger(__name__)
 
 FALLBACK_ORDER: list[str] = ["gemini", "claude", "openai"]
-
-# LIA-BYOK: Quality tier mapping for Choose Your AI enforcement.
-# Tier 1 supports complex reasoning (WSI / Bloom / Dreyfus).
-# Tier 2 is optimised for speed/cost — not suitable for critical tasks.
-QUALITY_TIERS: dict[str, str] = {
-    "claude-sonnet-4-6": "tier1",
-    "claude-opus-4-7":   "tier1",
-    "gemini-2.5-pro":    "tier1",
-    "gemini-2.5-flash":  "tier1",
-    "gpt-4o":            "tier1",
-    "gpt-4-turbo":       "tier1",
-    "claude-haiku-3-5":  "tier2",
-    "gemini-2.0-flash":  "tier2",
-    "gpt-4o-mini":       "tier2",
-}
-
-# Tasks that require Tier 1 for quality guarantee.
-TASK_MINIMUM_TIER: dict[str, str] = {
-    "screening": "tier1",
-    "wsi":       "tier1",
-    "chat":      "tier2",
-}
 
 
 # ---------------------------------------------------------------------------
@@ -118,7 +96,6 @@ class ProviderContainer:
         primary_provider: str | None = None,
         fallback_order: list[str] | None = None,
         provider_api_keys: dict[str, str] | None = None,
-        provider_models: dict[str, str] | None = None,
     ) -> None:
         self._tenant_id = tenant_id
         self._primary = primary_provider or os.environ.get("LLM_DEFAULT_PROVIDER", "gemini")
@@ -128,7 +105,6 @@ class ProviderContainer:
         ]
         self._instances: dict[str, LLMProviderABC] = {}
         self._api_keys: dict[str, str] = provider_api_keys or {}
-        self._provider_models: dict[str, str] = provider_models or {}
 
     @property
     def tenant_id(self) -> str | None:
@@ -167,10 +143,8 @@ class ProviderContainer:
                 )
             else:
                 self._instances[provider_name] = global_providers[provider_name]()
-                logger.warning(
-                    "[LIA-BYOK] tenant=%s provider=%s: sem key própria — "
-                    "usando key da plataforma. Configure em Configurações > "
-                    "Integrações > LLM para isolar quota e cumprir contrato BYOK.",
+                logger.debug(
+                    "[ProviderContainer] tenant=%s created provider=%s with system key",
                     self._tenant_id, provider_name,
                 )
         return self._instances[provider_name]
@@ -205,27 +179,10 @@ class ProviderContainer:
         company_id = kwargs.pop("company_id", None) or self._tenant_id
         user_id = kwargs.pop("user_id", None)
         expected_output_tokens = kwargs.pop("expected_output_tokens", None)
-        task_type = kwargs.pop("task_type", None)
-
-        # LIA-BYOK B7: Quality Tier Guard — if tenant configured a Tier 2
-        # model for a task that requires Tier 1, bypass tenant key and use
-        # the platform's default model (which is always Tier 1).
-        _force_system_model = False
-        if task_type and task_type in TASK_MINIMUM_TIER:
-            _min_tier = TASK_MINIMUM_TIER[task_type]
-            _configured_model = self._provider_models.get(self._primary, "")
-            _model_tier = QUALITY_TIERS.get(_configured_model, "tier1")
-            if _min_tier == "tier1" and _model_tier == "tier2":
-                logger.warning(
-                    "[LIA-QUALITY] tenant=%s task=%s model=%s (tier2) — "
-                    "Tier 1 obrigatório. Usando modelo da plataforma.",
-                    self._tenant_id, task_type, _configured_model,
-                )
-                _force_system_model = True
 
         try:
             if plan_code is None and company_id is not None:
-                from app.shared.observability.token_budget_service import get_plan_for_company
+                from app.domains.credits.services.token_budget_service import get_plan_for_company
                 plan_code = await get_plan_for_company(str(company_id))
         except Exception as exc:
             logger.warning(
@@ -244,40 +201,10 @@ class ProviderContainer:
 
         from app.shared.resilience.circuit_breaker import CircuitBreakerError
 
-        async def _audit_llm_usage(pname: str, key_src: str, reason: str = "") -> None:
-            """Non-blocking audit log for every LLM call (G14 / LIA-BYOK)."""
-            try:
-                from app.shared.compliance.audit_service import audit_service as _fa
-                _model = self._provider_models.get(pname, "default")
-                _reasons = [
-                    f"task_type={task_type}",
-                    f"provider={pname}",
-                    f"model={_model}",
-                    f"key_source={key_src}",
-                    f"quality_tier_override={_force_system_model}",
-                ]
-                if reason:
-                    _reasons.append(reason)
-                await _fa.log_decision(
-                    company_id=str(company_id or ""),
-                    agent_name="llm_factory",
-                    decision_type="llm_usage",
-                    action=f"generate/{pname}",
-                    decision="executed",
-                    reasoning=_reasons,
-                    criteria_used=["byok_key_source", "quality_tier_guard"],
-                )
-            except Exception:
-                pass  # audit is always non-blocking
-
         errors: list[str] = []
         for provider_name in self._fallback_order:
             try:
-                if _force_system_model:
-                    _gp = LLMProviderFactory._providers
-                    provider = _gp[provider_name]()
-                else:
-                    provider = self.get(provider_name)
+                provider = self.get(provider_name)
                 result = await self._try_generate(provider, prompt, system, **kwargs)
                 if provider_name != self._primary:
                     logger.warning(
@@ -285,8 +212,6 @@ class ProviderContainer:
                         self._tenant_id,
                         provider_name,
                     )
-                _key_src = "tenant" if (not _force_system_model and provider_name in self._api_keys) else "system"
-                await _audit_llm_usage(provider_name, _key_src)
                 return result.text
             except CircuitBreakerError as e:
                 errors.append(
@@ -302,20 +227,17 @@ class ProviderContainer:
                 tenant_key = self._api_keys.get(provider_name)
                 if tenant_key:
                     logger.warning(
-                        "[LIA-BYOK] tenant=%s provider '%s' key própria falhou — "
-                        "tentando key da plataforma: %s",
+                        "[ProviderContainer] tenant=%s provider '%s' tenant-key failed, retrying with system key: %s",
                         self._tenant_id, provider_name, e,
                     )
                     try:
                         global_providers = LLMProviderFactory._providers
                         system_provider = global_providers[provider_name]()
                         result = await self._try_generate(system_provider, prompt, system, **kwargs)
-                        logger.warning(
-                            "[LIA-BYOK] tenant=%s provider '%s' usou key da plataforma "
-                            "(key própria falhou — verifique validade da key configurada).",
+                        logger.info(
+                            "[ProviderContainer] tenant=%s provider '%s' succeeded with system key (tenant key failed)",
                             self._tenant_id, provider_name,
                         )
-                        await _audit_llm_usage(provider_name, "system", "tenant_key_failed")
                         return result.text
                     except Exception as e2:
                         errors.append(f"{provider_name}(system-key): {type(e2).__name__}: {e2}")
@@ -407,7 +329,7 @@ class TenantProviderRegistry:
             resolved_fallback = fallback_order
 
             if not resolved_primary or not resolved_fallback:
-                resolved_primary, resolved_fallback = self._resolve_provider_config(
+                resolved_primary, resolved_fallback = self._load_from_permissions(
                     tenant_id, resolved_primary, resolved_fallback
                 )
 
@@ -425,113 +347,26 @@ class TenantProviderRegistry:
         return self._containers[key]
 
     @staticmethod
-    def _resolve_provider_config(
+    def _load_from_permissions(
         tenant_id: str | None,
         primary_override: str | None,
         fallback_override: list[str] | None,
     ) -> tuple[str, list[str]]:
-        """Resolve provider config for a tenant.
-
-        Per ADR-016 / Task #353, the source of truth is the
-        `tenant_llm_configs` table. Resolution order:
-
-          1. Explicit overrides passed by the caller (highest priority).
-          2. In-memory tenant config cache populated from the DB
-             (`app.shared.tenant_llm_context._tenant_configs`).
-          3. A best-effort synchronous DB load when called from a sync
-             context (skipped if an asyncio loop is already running).
-          4. YAML *global* defaults from `tool_permissions.yaml`.
-          5. Environment defaults / hardcoded fallback.
-
-        Per-tenant entries in `tool_permissions.yaml` are intentionally
-        ignored — those have moved to the database.
-        """
-        if tenant_id:
-            db_primary, db_fallback = TenantProviderRegistry._load_db_config_sync(
-                tenant_id
-            )
-            if db_primary:
-                return (
-                    primary_override or db_primary,
-                    fallback_override or db_fallback or list(FALLBACK_ORDER),
-                )
-
-        # Fall back to YAML global defaults (no per-tenant lookup).
+        """Load provider config from ToolPermissionsLoader (YAML)."""
         try:
             from app.tools.tool_permissions_loader import get_permissions
-            cfg = get_permissions(None)
+            cfg = get_permissions(tenant_id)
             primary = primary_override or cfg.llm_provider
             fallback = fallback_override or cfg.llm_fallback_order
             return primary, fallback
         except Exception as exc:
             logger.debug(
-                "[TenantProviderRegistry] Could not load global permissions: %s",
+                "[TenantProviderRegistry] Could not load permissions for tenant=%s: %s",
+                tenant_id,
                 exc,
             )
             default = os.environ.get("LLM_DEFAULT_PROVIDER", "gemini")
-            return (
-                primary_override or default,
-                fallback_override or list(FALLBACK_ORDER),
-            )
-
-    @staticmethod
-    def _load_db_config_sync(
-        tenant_id: str,
-    ) -> tuple[str | None, list[str] | None]:
-        """Best-effort synchronous lookup of tenant LLM config from the DB.
-
-        Returns ``(primary, fallback)`` or ``(None, None)`` on miss/failure.
-
-        Strategy:
-          1. Read the in-memory cache (cheap, always safe).
-          2. If empty AND no asyncio loop is currently running, drive the
-             async DB lookup with ``asyncio.run`` to populate the cache.
-             When called from inside an event loop we skip the DB hit
-             rather than blocking — callers that need DB freshness inside
-             an async context should use ``get_provider_for_tenant_from_db``.
-        """
-        try:
-            from app.shared.tenant_llm_context import (
-                _tenant_configs,
-                get_tenant_llm_config,
-            )
-        except Exception as exc:  # pragma: no cover - defensive
-            logger.debug(
-                "[TenantProviderRegistry] tenant_llm_context unavailable: %s", exc
-            )
-            return None, None
-
-        cached = _tenant_configs.get(tenant_id)
-        if cached is None:
-            import asyncio
-
-            try:
-                asyncio.get_running_loop()
-                loop_running = True
-            except RuntimeError:
-                loop_running = False
-
-            if not loop_running:
-                try:
-                    cached = asyncio.run(get_tenant_llm_config(tenant_id))
-                except Exception as exc:
-                    logger.debug(
-                        "[TenantProviderRegistry] sync DB load failed for "
-                        "tenant=%s: %s",
-                        tenant_id,
-                        exc,
-                    )
-                    cached = None
-
-        if not cached:
-            return None, None
-
-        primary = cached.get("primary_provider") or None
-        fallback = cached.get("fallback_order") or None
-        return primary, list(fallback) if fallback else None
-
-    # Backwards-compat alias — older callers / tests may still import this.
-    _load_from_permissions = _resolve_provider_config
+            return primary_override or default, fallback_override or list(FALLBACK_ORDER)
 
     async def load_from_db(self, tenant_id: str) -> ProviderContainer | None:
         """Load tenant config from DB and create a container with tenant API keys.
@@ -556,11 +391,6 @@ class TenantProviderRegistry:
                     name: prov.get("api_key")
                     for name, prov in providers_cfg.items()
                     if prov.get("api_key")
-                },
-                provider_models={
-                    name: prov.get("model", "")
-                    for name, prov in providers_cfg.items()
-                    if prov.get("model")
                 },
             )
             key = tenant_id or "__global__"
@@ -643,24 +473,9 @@ async def get_provider_for_tenant_from_db(
 ) -> ProviderContainer:
     """
     Get a ProviderContainer for the given tenant, loading from DB if available.
-
-    Recommended entry point for async call sites that pass a concrete
-    `tenant_id` (e.g. background workers, agent nodes). Unlike the sync
-    ``get_provider_for_tenant``, this path always touches the DB on a
-    cache miss, so it works even inside a running event loop where the
-    sync resolver would otherwise skip the DB lookup.
-
     Falls back to system defaults if no DB config exists.
     """
     registry = TenantProviderRegistry.get_instance()
-    # Make sure the in-memory cache is warm so a subsequent sync
-    # `get_provider_for_tenant(tenant_id)` from the same request also sees
-    # the DB-backed config.
-    try:
-        from app.shared.tenant_llm_context import prime_tenant_llm_cache
-        await prime_tenant_llm_cache(tenant_id)
-    except Exception:  # pragma: no cover - defensive
-        pass
     container = await registry.load_from_db(tenant_id)
     if container:
         return container

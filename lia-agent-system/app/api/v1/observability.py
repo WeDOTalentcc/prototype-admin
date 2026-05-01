@@ -49,14 +49,6 @@ from app.schemas.observability import (
     ObservabilityDashboardResponse,
 )
 from app.shared.tenant_guard import get_verified_company_id
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -148,7 +140,7 @@ async def list_ai_inference_logs(
 
 @router.get("/ai-logs/{log_id}", response_model=AIInferenceLogResponse, summary="Get AI inference log by ID")
 async def get_ai_inference_log(
-    log_id: _DualId,
+    log_id: str,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
 ):
@@ -278,7 +270,7 @@ async def list_consent_records(
 
 @router.get("/consents/{candidate_id}", response_model=ConsentRecordListResponse, summary="Get consents by candidate")
 async def get_candidate_consents(
-    candidate_id: _DualId,
+    candidate_id: str,
     is_active: bool | None = Query(None, description="Filter by active status"),
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
@@ -339,7 +331,7 @@ async def create_consent_record(
 
 @router.put("/consents/{consent_id}/revoke", response_model=ConsentRecordResponse, summary="Revoke consent")
 async def revoke_consent(
-    consent_id: _DualId,
+    consent_id: str,
     data: ConsentRevoke,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
@@ -431,7 +423,7 @@ async def create_incident(
 
 @router.put("/incidents/{incident_id}", response_model=IncidentReportResponse, summary="Update incident")
 async def update_incident(
-    incident_id: _DualId,
+    incident_id: str,
     data: IncidentUpdate,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
@@ -475,7 +467,7 @@ async def update_incident(
 
 @router.put("/incidents/{incident_id}/resolve", response_model=IncidentReportResponse, summary="Resolve incident")
 async def resolve_incident(
-    incident_id: _DualId,
+    incident_id: str,
     data: IncidentResolve,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
@@ -632,7 +624,7 @@ async def list_compliance_controls(
 
 @router.put("/compliance/{control_id}", response_model=ComplianceControlResponse, summary="Update compliance control")
 async def update_compliance_control(
-    control_id: _DualId,
+    control_id: str,
     data: ComplianceControlUpdate,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
@@ -834,7 +826,7 @@ async def list_bias_audits(
 
 @router.get("/bias-audits/{audit_id}", response_model=BiasAuditReportResponse, summary="Get bias audit by ID")
 async def get_bias_audit(
-    audit_id: _DualId,
+    audit_id: str,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
 ):
@@ -910,7 +902,7 @@ async def create_bias_audit(
 
 @router.post("/bias-audits/{audit_id}/publish", response_model=BiasAuditReportResponse, summary="Publish bias audit")
 async def publish_bias_audit(
-    audit_id: _DualId,
+    audit_id: str,
     data: BiasAuditPublish,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
@@ -940,10 +932,3 @@ async def publish_bias_audit(
     except Exception as e:
         logger.error(f"Error publishing bias audit: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

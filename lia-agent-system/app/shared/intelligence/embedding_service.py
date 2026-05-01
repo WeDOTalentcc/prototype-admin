@@ -15,7 +15,7 @@ import os
 import time
 from collections import OrderedDict
 
-from app.shared.observability.tracing import get_tracer, trace_span
+from app.shared.tracing import get_tracer, trace_span
 
 logger = logging.getLogger(__name__)
 
@@ -288,7 +288,7 @@ class EmbeddingService:
             span.set_attribute("chunks_produced", str(len(chunks)))
             return chunks
         finally:
-            from app.shared.observability.tracing import finish_span
+            from app.shared.tracing import finish_span
             finish_span(span, status="ok")
 
 

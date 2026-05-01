@@ -58,7 +58,7 @@ AGENT_TYPES = [
 
 AGENT_DOMAIN_FILES = {
     "orchestrator": "app/orchestrator/orchestrator.py",
-    "job_planner": "app/domains/job_creation/graph.py",
+    "job_planner": "app/domains/job_management/agents/wizard_react_agent.py",
     "sourcing": "app/domains/sourcing/agents/sourcing_react_agent.py",
     "cv_screening": "app/domains/cv_screening/agents/pipeline_react_agent.py",
     "wsi_evaluator": "app/domains/cv_screening/agents/avaliador_wsi_agent.py",

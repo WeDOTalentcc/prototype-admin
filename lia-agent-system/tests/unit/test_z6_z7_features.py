@@ -76,7 +76,7 @@ def test_settings_has_otel_fields():
 
 @pytest.mark.asyncio
 async def test_trace_span_decorator_works():
-    from app.shared.observability.tracing import trace_span
+    from app.shared.tracing import trace_span
 
     calls = []
 
@@ -95,7 +95,7 @@ async def test_trace_span_noop_when_disabled():
     with patch.dict(os.environ, {"OTEL_TRACES_ENABLED": "false"}):
         # Reimport to pick up env var
         import importlib
-        import app.shared.observability.tracing as tracing_mod
+        import app.shared.tracing as tracing_mod
         old = tracing_mod._TRACES_ENABLED
         tracing_mod._TRACES_ENABLED = False
 
@@ -113,7 +113,7 @@ async def test_trace_span_noop_when_disabled():
 
 
 def test_trace_stats_has_otlp_fields():
-    from app.shared.observability.tracing import get_trace_stats
+    from app.shared.tracing import get_trace_stats
     stats = get_trace_stats()
     assert "otlp_active" in stats
     assert "traces_enabled" in stats
@@ -121,7 +121,7 @@ def test_trace_stats_has_otlp_fields():
 
 def test_try_init_otlp_returns_false_when_no_endpoint():
     with patch.dict(os.environ, {"OTEL_EXPORTER_OTLP_ENDPOINT": ""}):
-        from app.shared.observability.tracing import _try_init_otlp
+        from app.shared.tracing import _try_init_otlp
         result = _try_init_otlp()
         # Must be False when no endpoint configured
         assert result is False

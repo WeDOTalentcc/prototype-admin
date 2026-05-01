@@ -21,7 +21,7 @@ from app.core.config import settings
 from app.core.database import init_db
 from app.core.logging_config import configure_logging
 from app.shared.pii_masking import install_global_pii_masking
-from app.shared.observability.langsmith import configure_langsmith
+from app.config.langsmith import configure_langsmith
 from app.middleware.rate_limiter import RateLimitMiddleware
 from app.middleware.request_id import RequestIdMiddleware
 from app.core.logging_middleware import StructuredLoggingMiddleware
@@ -104,8 +104,9 @@ from app.api.v1 import (
     jd_generation,
     wizard_analytics,
     wizard_suggestions,
-    # `wizard_smart_orchestrator` removed in Task #850 — JobCreationGraph
-    # is now the canonical job-creation path.
+    wizard_smart_orchestrator,
+    wsi_questions,
+    wsi_question_adjust,
     wsi_observability,
     wsi_screening_pipeline_endpoint,
     orchestrated_job_chat,
@@ -135,11 +136,10 @@ app.include_router(jd_import.router, prefix="/api/v1", tags=["jd_import"])
 app.include_router(jd_generation.router, prefix="/api/v1", tags=["jd_generation"])
 app.include_router(wizard_analytics.router, prefix="/api/v1", tags=["wizard_analytics"])
 app.include_router(wizard_suggestions.router, prefix="/api/v1", tags=["wizard_suggestions"])
-# `wizard_smart_orchestrator.router` removed in Task #850.
+app.include_router(wizard_smart_orchestrator.router, prefix="/api/v1", tags=["wizard_smart_orchestrator"])
 app.include_router(wsi_v1.router, tags=["wsi"])
-# NOTE: `wsi_questions` and `wsi_question_adjust` standalone routers were
-# merged into `app/api/v1/wsi/questions.py` (above via `wsi_v1.router`)
-# in Task #244. Do not re-add them here.
+app.include_router(wsi_questions.router, prefix="/api/v1", tags=["wsi_questions"])
+app.include_router(wsi_question_adjust.router, prefix="/api/v1", tags=["wsi_question_adjust"])
 app.include_router(wsi_observability.router, prefix="/api/v1", tags=["wsi_observability"])
 app.include_router(wsi_screening_pipeline_endpoint.router, prefix="/api/v1", tags=["wsi_pipeline"])
 app.include_router(orchestrated_job_chat.router, prefix="/api/v1", tags=["orchestrated_job_chat"])

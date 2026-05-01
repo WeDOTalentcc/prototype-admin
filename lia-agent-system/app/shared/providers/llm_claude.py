@@ -6,7 +6,6 @@ import time
 
 from app.shared.providers.llm_provider import LLMProviderABC, LLMResponse, LLMToolCall, LLMToolResponse
 from app.shared.resilience.circuit_breaker import ANTHROPIC_CIRCUIT, circuit_breaker_decorator
-from app.shared.providers.llm_retry import llm_transient_retry
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +55,6 @@ class ClaudeLLMProvider(LLMProviderABC):
 
     @circuit_breaker_decorator(ANTHROPIC_CIRCUIT)
     @_traceable(name="Claude Generate", run_type="llm")
-    @llm_transient_retry
     async def generate(self, prompt, model=None, temperature=0.7, max_tokens=4096, **kwargs):
         client = self._get_client()
         t_start = time.time()
@@ -86,7 +84,6 @@ class ClaudeLLMProvider(LLMProviderABC):
 
     @circuit_breaker_decorator(ANTHROPIC_CIRCUIT)
     @_traceable(name="Claude GenerateWithSystem", run_type="llm")
-    @llm_transient_retry
     async def generate_with_system(self, system_prompt, user_message, model=None, temperature=0.7, max_tokens=4096, **kwargs):
         client = self._get_client()
         t_start = time.time()
@@ -117,7 +114,6 @@ class ClaudeLLMProvider(LLMProviderABC):
 
     @circuit_breaker_decorator(ANTHROPIC_CIRCUIT)
     @_traceable(name="Claude GenerateWithTools", run_type="llm")
-    @llm_transient_retry
     async def generate_with_tools(self, messages, tools, system_prompt=None, max_tokens=4096, **kwargs):
         client = self._get_client()
         t_start = time.time()
@@ -161,7 +157,6 @@ class ClaudeLLMProvider(LLMProviderABC):
 
     @circuit_breaker_decorator(ANTHROPIC_CIRCUIT)
     @_traceable(name="Claude GenerateStructured", run_type="llm")
-    @llm_transient_retry
     async def generate_structured(self, messages, output_schema, system_prompt=None, max_tokens=4096, **kwargs):
         tool = {"name": "respond", "description": "Respond with structured output", "input_schema": output_schema}
         client = self._get_client()

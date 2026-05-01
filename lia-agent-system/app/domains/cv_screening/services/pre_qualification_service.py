@@ -13,14 +13,6 @@ from datetime import datetime
 from enum import Enum, StrEnum
 from typing import Any
 
-from app.shared.compliance.scoring_safeguards import (
-    FairnessBlockedError,
-    hash_payload,
-    log_scoring_decision,
-    run_fairness_check,
-    schedule_audit_log,
-)
-
 logger = logging.getLogger(__name__)
 
 
@@ -163,60 +155,11 @@ class PreQualificationService:
             PreQualificationOutput with result, message, and buttons
         """
         thresholds = thresholds or self.default_thresholds
-
+        
+        result = self._determine_result(adherence_score, thresholds)
+        
         matched_names = self._extract_requirement_names(matched_requirements)
         missing_names = self._extract_requirement_names(missing_requirements)
-
-        fairness_payload = " ".join(
-            str(p) for p in (
-                [job_title or "", job_area or ""]
-                + list(matched_names)
-                + list(missing_names)
-            ) if p
-        ).strip()
-        fg_result, fg_unavailable = run_fairness_check(fairness_payload)
-        if fg_unavailable:
-            schedule_audit_log(log_scoring_decision(
-                company_id=None,
-                agent_name="pre_qualification_service",
-                decision_type="screening_evaluation",
-                action="fairness_unavailable",
-                decision="blocked",
-                reasoning=[
-                    "FairnessGuard execution failed; pre-qualification blocked (fail-closed)",
-                    f"job_title={job_title}",
-                    f"inputs_hash={hash_payload(fairness_payload)}",
-                ],
-                criteria_used=["fairness_guard"],
-                human_review_required=True,
-            ))
-            from app.shared.compliance.fairness_guard import FairnessCheckResult
-            raise FairnessBlockedError(
-                FairnessCheckResult(
-                    is_blocked=True,
-                    category="fairness_unavailable",
-                    educational_message="Verificação de fairness indisponível.",
-                )
-            )
-        if fg_result and fg_result.is_blocked:
-            schedule_audit_log(log_scoring_decision(
-                company_id=None,
-                agent_name="pre_qualification_service",
-                decision_type="screening_evaluation",
-                action="fairness_block",
-                decision="rejected",
-                reasoning=[
-                    f"FairnessGuard blocked: category={fg_result.category}",
-                    f"blocked_terms={fg_result.blocked_terms}",
-                    f"job_title={job_title}",
-                    f"inputs_hash={hash_payload(fairness_payload)}",
-                ],
-                criteria_used=["fairness_guard"],
-                human_review_required=True,
-            ))
-            raise FairnessBlockedError(fg_result)
-
-        result = self._determine_result(adherence_score, thresholds)
         
         message = self._generate_message(
             result=result,
@@ -236,40 +179,7 @@ class PreQualificationService:
             f"Pre-qualification result: {result.value} (score: {adherence_score:.1f}%) "
             f"for job '{job_title}' - ask_confirmation: {should_ask}"
         )
-
-        schedule_audit_log(log_scoring_decision(
-            company_id=None,
-            agent_name="pre_qualification_service",
-            decision_type="screening_evaluation",
-            action="pre_qualify_candidate",
-            decision=result.value,
-            reasoning=[
-                f"adherence_score={adherence_score:.2f}",
-                f"result={result.value}",
-                f"job_title={job_title}",
-                f"matched={matched_names[:5]}",
-                f"missing={missing_names[:5]}",
-            ],
-            criteria_used=[
-                "rubric_adherence",
-                "matched_requirements",
-                "missing_requirements",
-                "thresholds",
-            ],
-            score=adherence_score,
-            score_breakdown={
-                "adherence_score": round(adherence_score, 2),
-                "result": result.value,
-                "should_ask_confirmation": should_ask,
-                "thresholds": {
-                    "auto_advance": thresholds.auto_advance,
-                    "ask_continue": thresholds.ask_continue,
-                    "strong_warning": thresholds.strong_warning,
-                },
-            },
-            human_review_required=should_ask,
-        ))
-
+        
         return PreQualificationOutput(
             result=result,
             score=int(adherence_score),
@@ -442,14 +352,3 @@ class PreQualificationService:
 
 
 pre_qualification_service = PreQualificationService()
-
-
-# Module-level handler exposed to the chat tool registry
-async def pre_qualify(**kwargs):
-    """Chat-surface wrapper around PreQualificationService.evaluate()."""
-    result = pre_qualification_service.evaluate(**kwargs)
-    if hasattr(result, "to_dict"):
-        return {"success": True, "result": result.to_dict()}
-    if hasattr(result, "__dict__"):
-        return {"success": True, "result": dict(result.__dict__)}
-    return {"success": True, "result": result}

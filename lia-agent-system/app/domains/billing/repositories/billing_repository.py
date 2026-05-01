@@ -6,8 +6,8 @@ from uuid import UUID
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.billing import Invoice, PaymentMethod, Subscription
-from lia_models.client_account import ClientAccount
+from app.models.billing import Invoice, PaymentMethod, Subscription
+from app.models.client_account import ClientAccount
 
 
 class BillingRepository:

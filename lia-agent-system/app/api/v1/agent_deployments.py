@@ -18,14 +18,6 @@ from app.schemas.agent_deployment import (
     UpdateDeploymentRequest,
 )
 from app.services.agent_deployment_service import agent_deployment_service
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +26,7 @@ router = APIRouter(prefix="/custom-agents", tags=["Agent Deployments"])
 
 @router.post("/{agent_id}/deployments", response_model=DeploymentResponse, status_code=201)
 async def create_deployment(
-    agent_id: _DualId,
+    agent_id: str,
     body: CreateDeploymentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -102,7 +94,7 @@ async def create_deployment(
 
 @router.get("/{agent_id}/deployments", response_model=DeploymentListResponse)
 async def list_agent_deployments(
-    agent_id: _DualId,
+    agent_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -206,6 +198,7 @@ async def run_deployment(
 
     # Execute
     from app.domains.agent_studio.custom_agent_runtime import get_or_create_runtime
+
     runtime = get_or_create_runtime(
         agent_id=str(agent.id),
         agent_name=agent.name,
@@ -253,10 +246,3 @@ async def run_deployment(
         execution_time_ms=elapsed_ms,
         status="completed",
     )
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

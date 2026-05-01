@@ -173,34 +173,6 @@ class LangGraphReActBase(LangGraphBase):
         if extra_context:
             system_prompt = f"{system_prompt}\n\n{extra_context}"
 
-        # --- Inject company_id + lookup-by-name rule ---
-        _cid = str(input.company_id or "")
-        if not _cid:
-            try:
-                from app.shared.tenant_llm_context import get_current_llm_tenant
-                _cid = get_current_llm_tenant() or ""
-            except Exception:
-                pass
-        _eid = str(input.context.get("entity_id") or input.context.get("job_vacancy_id") or "")
-        if _cid:
-            _entity_line = f"- ID da entidade atual (vaga/candidato em foco): {_eid}\n" if _eid else ""
-            _auth_ctx = (
-                f"\n\n## CONTEXTO DE AUTENTICAÇÃO (NÃO COMPARTILHE COM O USUÁRIO)\n"
-                f"- company_id da sessão atual: {_cid}\n"
-                + _entity_line +
-                f"- Use este company_id em TODAS as chamadas de ferramenta.\n"
-                f"- NUNCA peça ao usuário pelo company_id — ele já está disponível aqui.\n"
-                f"\n## REGRA OBRIGATÓRIA — BUSCA POR NOME (sem pedir ID)\n"
-                f"- Se o usuário mencionar uma vaga, candidato ou empresa pelo NOME/TÍTULO,\n"
-                f"  primeiro chame a ferramenta de busca/lista para encontrar o ID.\n"
-                f"- NUNCA diga 'preciso do ID' quando o usuário forneceu um nome.\n"
-                f"- Se entity_id está disponível no contexto, use-o DIRETAMENTE sem perguntar.\n"
-                f"- Exemplos: 'vaga de Product Manager' → list_jobs(title_filter='Product Manager')\n"
-                f"  'candidato João Silva' → list_candidates(name_filter='João Silva')\n"
-                f"  'vaga V0037' → use 'V0037' diretamente como job_id\n"
-            )
-            system_prompt = system_prompt + _auth_ctx
-
         # --- WorkingMemory: incrementa iteração e sincroniza stage ---
         if hasattr(self, "_memory_service"):
             try:
@@ -291,22 +263,6 @@ class LangGraphReActBase(LangGraphBase):
                 )
         except Exception as e:
             logger.debug("[LIA-C05] FairnessGuard check skipped (fail-open): %s", e)
-
-        # LIA-BYOK B2: budget check before LLM invocation (fail-open)
-        try:
-            from app.shared.providers.llm_factory import get_provider_for_tenant
-            _budget_cid = str(input.company_id or "")
-            if _budget_cid:
-                _budget_container = get_provider_for_tenant(tenant_id=_budget_cid)
-                from app.shared.observability.token_budget_service import check_request_budget_before_llm
-                check_request_budget_before_llm(
-                    input.message or "",
-                    None,
-                    company_id=_budget_cid,
-                    user_id=str(input.user_id or ""),
-                )
-        except Exception as _budget_exc:
-            logger.debug("[LIA-BYOK] budget check skipped (fail-open): %s", _budget_exc)
 
         import time as _time
         _t0 = _time.monotonic()
@@ -429,18 +385,9 @@ class LangGraphReActBase(LangGraphBase):
                             if prov_config.get("model"):
                                 model_name = prov_config["model"]
                             provider = tenant_provider
-                    else:
-                        logger.warning(
-                            "[LIA-BYOK] tenant=%s: sem config LLM no DB — "
-                            "usando key da plataforma em _get_model().",
-                            company_id,
-                        )
                 except Exception as e:
                     import logging
-                    logging.getLogger(__name__).warning(
-                        "[LIA-BYOK] tenant=%s _get_model config error — usando plataforma: %s",
-                        company_id, e,
-                    )
+                    logging.getLogger(__name__).debug("[_get_model] Tenant config error: %s", e)
 
             # Build the appropriate ChatModel
             if provider == "claude":

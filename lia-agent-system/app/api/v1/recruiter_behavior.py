@@ -17,7 +17,6 @@ from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.recruiter_behavior_service import recruiter_behavior_service
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +50,7 @@ class BehaviorSignalRequest(BaseModel):
 
 @router.get("/{recruiter_id}/behavior-profile", response_model=BehaviorProfileResponse)
 async def get_behavior_profile(
-    recruiter_id: str = Path(..., description="ID do recrutador", pattern=DUAL_ID_PATH_PATTERN),
+    recruiter_id: str = Path(..., description="ID do recrutador"),
     force_refresh: bool = False,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
@@ -83,7 +82,7 @@ async def get_behavior_profile(
 @router.post("/{recruiter_id}/behavior-signal", status_code=202, response_model=None)
 async def record_behavior_signal(
     body: BehaviorSignalRequest,
-    recruiter_id: str = Path(..., description="ID do recrutador", pattern=DUAL_ID_PATH_PATTERN),
+    recruiter_id: str = Path(..., description="ID do recrutador"),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """
@@ -107,7 +106,7 @@ async def record_behavior_signal(
 
 @router.post("/{recruiter_id}/behavior-invalidate", status_code=200, response_model=None)
 async def invalidate_behavior_cache(
-    recruiter_id: str = Path(..., description="ID do recrutador", pattern=DUAL_ID_PATH_PATTERN),
+    recruiter_id: str = Path(..., description="ID do recrutador"),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Força re-computação do perfil comportamental (remove cache Redis)."""
@@ -116,10 +115,3 @@ async def invalidate_behavior_cache(
         raise HTTPException(status_code=403, detail="Permissão negada.")
     await recruiter_behavior_service.invalidate(recruiter_id, company_id)
     return {"invalidated": True, "recruiter_id": recruiter_id}
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

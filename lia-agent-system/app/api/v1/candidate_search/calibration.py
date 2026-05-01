@@ -133,7 +133,7 @@ async def submit_calibration_feedback(
     from datetime import datetime
     import uuid
 
-    from lia_models.calibration import CalibrationFeedback, CalibrationSession
+    from app.models.calibration import CalibrationFeedback, CalibrationSession
 
     try:
         session = None
@@ -241,7 +241,7 @@ async def start_calibration_session(
     """
     import uuid
 
-    from lia_models.calibration import CalibrationSession
+    from app.models.calibration import CalibrationSession
 
     try:
         session_id = str(uuid.uuid4())
@@ -455,7 +455,7 @@ async def add_candidates_to_vacancy(
     """
     import uuid
 
-    from lia_models.candidate import VacancyCandidate
+    from app.models.candidate import VacancyCandidate
 
     try:
         vacancy = await repo.get_job_vacancy_by_id(vacancy_id)

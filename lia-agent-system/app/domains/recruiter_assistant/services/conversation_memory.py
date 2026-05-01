@@ -9,22 +9,9 @@ Provides:
 - User preference tracking across sessions
 """
 import logging
-import re
 from datetime import datetime
 from typing import Any
 from uuid import UUID
-
-_UUID_RE = re.compile(
-    r"\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-"
-    r"[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b"
-)
-_LONG_NUMERIC_RE = re.compile(r"\b\d{10,}\b")
-_LABELED_REF_RE = re.compile(
-    r"\b(vaga|vagas|candidato|candidatos|candidata|candidatas|"
-    r"job|jobs|vacancy|vacancies|talent|talents)\s+"
-    r"(?:#|n[º°o]\.?\s*)?((?=[A-Za-z0-9_-]*\d)[A-Za-z0-9_-]{1,})",
-    re.IGNORECASE,
-)
 
 from sqlalchemy import and_, delete, desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -349,7 +336,6 @@ class ConversationMemory:
         db: AsyncSession,
         conversation_id: str,
         force: bool = False,
-        tracking_context: dict[str, Any] | None = None,
     ) -> str | None:
         """
         Generate and update conversation summary using LLM.
@@ -377,15 +363,7 @@ class ConversationMemory:
         if len(messages) < 3:
             return None
         
-        # Audit task #545 — herda user_id da própria conversa quando o caller
-        # não preencheu, mantendo o billing por empresa quando company_id é
-        # fornecido externamente.
-        _resolved_tracking = dict(tracking_context or {})
-        if "user_id" not in _resolved_tracking and conversation.user_id:
-            _resolved_tracking["user_id"] = conversation.user_id
-        summary_text = await self._generate_summary(
-            messages, tracking_context=_resolved_tracking or None,
-        )
+        summary_text = await self._generate_summary(messages)
         
         if summary_text:
             summary = ConversationSummary(
@@ -584,21 +562,14 @@ class ConversationMemory:
         self,
         db: AsyncSession,
         conversation: Conversation,
-        tracking_context: dict[str, Any] | None = None,
     ) -> None:
         """Trigger async summary generation."""
         try:
-            await self.update_summary(
-                db, str(conversation.id), tracking_context=tracking_context,
-            )
+            await self.update_summary(db, str(conversation.id))
         except Exception as e:
             logger.warning(f"Summary generation failed: {e}")
     
-    async def _generate_summary(
-        self,
-        messages: list[Message],
-        tracking_context: dict[str, Any] | None = None,
-    ) -> str | None:
+    async def _generate_summary(self, messages: list[Message]) -> str | None:
         """
         Generate a summary of messages using LLM.
         
@@ -628,19 +599,7 @@ Conversa:
 
 Resumo (máximo 200 palavras):"""
 
-            # Audit task #545 — tracking opcional do uso de IA na sumarização
-            # de conversas do recruiter assistant.
-            from app.shared.observability.usage_tracking_callback import (
-                build_usage_callback,
-            )
-            on_usage = build_usage_callback(
-                tracking_context,
-                agent_type="recruiter_conversation_summary",
-                default_operation="conversation_summary_messages",
-            )
-            return await self.llm_service.safe_invoke(
-                prompt, provider="claude", on_usage=on_usage,
-            )
+            return await self.llm_service.safe_invoke(prompt, provider="claude")
             
         except Exception as e:
             logger.error(f"LLM summary generation failed: {e}")
@@ -669,8 +628,7 @@ Resumo (máximo 200 palavras):"""
     async def summarize_history(
         self,
         messages: list[dict],
-        max_messages: int = None,
-        tracking_context: dict[str, Any] | None = None,
+        max_messages: int = None
     ) -> dict[str, Any]:
         """
         Summariza histórico longo mantendo últimas N mensagens.
@@ -704,9 +662,7 @@ Resumo (máximo 200 palavras):"""
         recent_messages = messages[-max_messages:]
         summarized_count = len(messages_to_summarize)
         
-        summary = await self._generate_summary_from_dicts(
-            messages_to_summarize, tracking_context=tracking_context,
-        )
+        summary = await self._generate_summary_from_dicts(messages_to_summarize)
         
         return {
             "summary": summary,
@@ -715,11 +671,7 @@ Resumo (máximo 200 palavras):"""
             "summarized_count": summarized_count
         }
     
-    async def _generate_summary_from_dicts(
-        self,
-        messages: list[dict],
-        tracking_context: dict[str, Any] | None = None,
-    ) -> str:
+    async def _generate_summary_from_dicts(self, messages: list[dict]) -> str:
         """
         Generate summary from dict-format messages.
         
@@ -732,12 +684,8 @@ Resumo (máximo 200 palavras):"""
         if not messages:
             return ""
         
-        structured_ids = self._extract_structured_ids(messages)
-        prefix = f"[IDs preservados: {structured_ids}]\n" if structured_ids else ""
-
         if not self.llm_service:
-            base = self._generate_simple_summary_from_dicts(messages)
-            return f"{prefix}{base}"
+            return self._generate_simple_summary_from_dicts(messages)
         
         try:
             messages_text = "\n".join([
@@ -759,87 +707,12 @@ Conversa:
 
 Resumo conciso:"""
 
-            # Audit task #545 — tracking opcional do uso de IA na compressão
-            # de histórico longo do recruiter assistant.
-            from app.shared.observability.usage_tracking_callback import (
-                build_usage_callback,
-            )
-            on_usage = build_usage_callback(
-                tracking_context,
-                agent_type="recruiter_conversation_summary",
-                default_operation="conversation_summary_dicts",
-            )
-            llm_summary = await self.llm_service.safe_invoke(
-                prompt, provider="claude", on_usage=on_usage,
-            )
-            return f"{prefix}{llm_summary}" if llm_summary else f"{prefix}".rstrip("\n")
+            return await self.llm_service.safe_invoke(prompt, provider="claude")
             
         except Exception as e:
             logger.error(f"LLM summary generation from dicts failed: {e}")
-            return f"{prefix}{self._generate_simple_summary_from_dicts(messages)}"
-
-    def _extract_structured_ids(self, messages: list[dict]) -> str:
-        """
-        Extract structured IDs (UUIDs, long numeric IDs, labeled refs) from
-        message content so they survive LLM-based summarization.
-
-        Returns a single-line, deduplicated string suitable for prepending to
-        the summary, e.g.:
-            "refs: vaga 1776373052020, candidato 42 | UUIDs: 550e8400-..."
-        Returns an empty string when no IDs are found.
-        """
-        if not messages:
-            return ""
-
-        uuids: list[str] = []
-        long_numerics: list[str] = []
-        labeled_refs: list[str] = []
-        seen_uuids: set[str] = set()
-        seen_numerics: set[str] = set()
-        seen_refs: set[str] = set()
-
-        for msg in messages:
-            content = msg.get("content", "")
-            if not isinstance(content, str):
-                content = str(content)
-            if not content:
-                continue
-
-            for match in _UUID_RE.findall(content):
-                key = match.lower()
-                if key not in seen_uuids:
-                    seen_uuids.add(key)
-                    uuids.append(match)
-
-            for label, value in _LABELED_REF_RE.findall(content):
-                ref = f"{label.lower()} {value}"
-                if ref not in seen_refs:
-                    seen_refs.add(ref)
-                    labeled_refs.append(ref)
-
-            for match in _LONG_NUMERIC_RE.findall(content):
-                if match in seen_numerics:
-                    continue
-                # Skip numerics already captured as part of a labeled ref or
-                # embedded in a UUID — avoids duplicating
-                # "vaga 1776373052020" or the trailing block of a UUID.
-                if any(match in ref for ref in labeled_refs):
-                    continue
-                if any(match in u for u in uuids):
-                    continue
-                seen_numerics.add(match)
-                long_numerics.append(match)
-
-        parts: list[str] = []
-        if labeled_refs:
-            parts.append(f"refs: {', '.join(labeled_refs)}")
-        if long_numerics:
-            parts.append(f"IDs: {', '.join(long_numerics)}")
-        if uuids:
-            parts.append(f"UUIDs: {', '.join(uuids)}")
-
-        return " | ".join(parts)
-
+            return self._generate_simple_summary_from_dicts(messages)
+    
     def _generate_simple_summary_from_dicts(self, messages: list[dict]) -> str:
         """Generate a simple summary from dict-format messages without LLM."""
         user_messages = [

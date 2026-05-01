@@ -7,7 +7,7 @@ import logging
 from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.lia_profile_analysis import LiaProfileAnalysis
+from app.models.lia_profile_analysis import LiaProfileAnalysis
 
 logger = logging.getLogger(__name__)
 

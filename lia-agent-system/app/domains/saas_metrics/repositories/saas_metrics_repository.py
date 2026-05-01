@@ -6,10 +6,10 @@ from uuid import UUID
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.ai_consumption import AiConsumption, AiCreditsBalance
-from lia_models.client_account import ClientAccount, ClientStatus
-from lia_models.client_user import ClientUser, ClientUserStatus
-from lia_models.saas_metrics import (
+from app.models.ai_consumption import AiConsumption, AiCreditsBalance
+from app.models.client_account import ClientAccount, ClientStatus
+from app.models.client_user import ClientUser, ClientUserStatus
+from app.models.saas_metrics import (
     ChurnRisk,
     ClientHealthMetrics,
     ClientSaasMetrics,

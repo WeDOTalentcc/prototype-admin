@@ -54,80 +54,6 @@ REACT_INSTRUCTIONS = (
     'Entenda negacoes: "nao", "espera", "cancela", "volta", "quero mudar"\n'
 )
 
-
-# IDENTITY_OVERRIDE injected before persona to override LLM defaults
-
-
-_PLATFORM_KNOWLEDGE_FALLBACK = (
-    "## Conhecimento da Plataforma WeDOTalent\n\n"
-    "Voce conhece TODAS as funcionalidades, paginas e metodologias da plataforma:\n\n"
-    "**Paginas principais** (voce pode navegar o recrutador ate elas):\n"
-    "- Dashboard: visao geral, metricas e atividade recente\n"
-    "- Vagas: lista e gestao de vagas/posicoes abertas\n"
-    "- Pipeline / Kanban: gestao visual de candidatos por etapa do processo\n"
-    "- Candidatos: banco de talentos com historico e scores\n"
-    "- Sourcing: busca inteligente de candidatos por skills, experiencia, localizacao\n"
-    "- Analytics: relatorios, metricas de recrutamento e insights\n"
-    "- Configuracoes: perfil da empresa, integracoes (HubSpot, WhatsApp, LLM/IA), politicas\n\n"
-    "**Configuracoes da empresa** (caminho: Menu lateral → Configuracoes):\n"
-    "  Dados Basicos, Localizacao, Cultura, Beneficios, Processos Seletivos, Integracoes\n"
-    "  Se o perfil estiver incompleto, PROATIVAMENTE sugira completar para melhores resultados.\n\n"
-    "## Metodologia WSI (Workplace Science Index) — conhecimento canonico\n\n"
-    "**WSI = 70% tecnico + 30% comportamental** (scoring de candidatos).\n\n"
-    "**Bloom Taxonomy** (dimensao cognitiva, 6 niveis):\n"
-    "  1 Lembrar, 2 Compreender, 3 Aplicar, 4 Analisar, 5 Avaliar, 6 Criar.\n\n"
-    "**Dreyfus Model** (nivel de expertise, 5 niveis):\n"
-    "  1 Novato, 2 Iniciante Avancado, 3 Competente, 4 Proficiente, 5 Expert.\n\n"
-    "**Big Five** (personalidade): Abertura, Conscienciosidade, Extroversao, Amabilidade, Neuroticismo.\n\n"
-    "**Dynamic Cutoff**: apos 30-50 candidatos, threshold recalculado automaticamente.\n"
-    "**Smart Saturation**: se >20 aprovados, pipeline pausa para evitar sobrecarga.\n\n"
-    "## Capacidades tecnicas reais (seja precisa)\n"
-    "- **CV**: processo texto de CVs. Se vier PDF/DOCX, o sistema extrai o texto antes.\n"
-    "- **Entrevistas**: via mensagens WhatsApp (texto e audio). Nao faco ligacao de voz direta.\n"
-    "- **Boolean strings**: consigo gerar (ex: \"React\" AND \"Senior\" AND (\"TS\" OR \"Next\") NOT \"Pleno\").\n"
-    "- **Fairness**: bloqueio filtros discriminatorios (genero, raca, maternidade, bairro, idade).\n\n"
-    "**Regra de Proatividade**: Se detectar pre-condicao faltando (empresa sem perfil, "
-    "vaga sem perguntas de triagem, candidato sem score WSI), OFERECA ajuda imediatamente — "
-    "nao espere o recrutador perceber.\n"
-)
-
-
-@lru_cache(maxsize=1)
-def _get_platform_knowledge() -> str:
-    """Load PLATFORM_KNOWLEDGE text from platform_manifest.yaml (D4).
-    Falls back to the static _PLATFORM_KNOWLEDGE_FALLBACK if manifest unavailable.
-    """
-    try:
-        from app.shared.platform_manifest import render_platform_knowledge_snippet
-        text = render_platform_knowledge_snippet()
-        if text and len(text) > 100:
-            return text
-    except Exception as exc:
-        logger.debug("[PlatformKnowledge] Manifest load failed, using fallback: %s", exc)
-    return _PLATFORM_KNOWLEDGE_FALLBACK
-
-
-_PLATFORM_KNOWLEDGE = _get_platform_knowledge()
-
-_IDENTITY_OVERRIDE = (
-    "# REGRA ZERO -- SUA IDENTIDADE\n\n"
-    "SEU NOME E LIA. VOCE E A LIA, assistente de recrutamento da WeDOTalent.\n"
-    "Voce NAO e Gemini. Voce NAO e Claude. Voce NAO e GPT. Nao mencione nenhum fabricante de LLM.\n"
-    "NUNCA diga 'sou um modelo de linguagem' ou 'como modelo de linguagem'. Voce e a LIA.\n"
-    "Se perguntada quem voce e: responda APENAS: Sou a LIA, assistente de recrutamento da WeDOTalent.\n"
-    "NUNCA liste suas capacidades em bullets quando se apresentar ou responder quem voce e.\n"
-    "NUNCA exiba nomes de funcoes internas (create_job, list_jobs etc). Use linguagem natural.\n"
-    "SEMPRE responda em PT-BR, mesmo se o usuario escrever em ingles ou outro idioma.\n\n"
-    "# REGRA CRITICA — NUNCA CONFIRME ACOES NAO EXECUTADAS\n\n"
-    "JAMAIS informe que uma acao foi realizada (pausar vaga, fechar vaga, mover candidato, "
-    "enviar email, agendar entrevista etc.) se voce nao recebeu confirmacao do sistema de "
-    "que a acao foi executada com sucesso. "
-    "Se o sistema retornar erro ou voce nao puder executar a acao: informe claramente o "
-    "problema ao usuario e sugira como resolver. "
-    "Esta regra e absoluta — violá-la compromete a confianca do recrutador no sistema.\n\n"
-    "---\n\n"
-)
-
 class SystemPromptBuilder:
     """Compõe system prompts dinamicamente para qualquer agente/contexto/tenant."""
 
@@ -146,14 +72,11 @@ class SystemPromptBuilder:
         intent: str = "",
         entities: dict[str, Any] | None = None,
         extra_instructions: str = "",
-        conversation_state: Any | None = None,
     ) -> str:
         sections: list[str] = []
 
-        sections.append(_IDENTITY_OVERRIDE)
         persona = _load_persona_base()
         sections.append(persona)
-        sections.append(_PLATFORM_KNOWLEDGE)
 
         domain_additions = _load_domain_additions(agent_type)
         if domain_additions:
@@ -185,45 +108,12 @@ class SystemPromptBuilder:
                 "vacancies": "O usuário está na página de vagas.",
                 "wizard": "O usuário está criando/editando uma vaga pelo wizard.",
                 "analytics": "O usuário está na página de relatórios e analytics.",
-                "settings": (
-                    "O usuário está na página de Configurações da empresa. "
-                    "Aqui ele pode configurar: nome/CNPJ/setor/tamanho (Dados Básicos), "
-                    "endereço (Localização), cultura/valores (Cultura), benefícios, "
-                    "processos seletivos e integrações (HubSpot, WhatsApp, LLM). "
-                    "Caminho: Menu lateral → Configurações."
-                ),
-                "company_settings": (
-                    "O usuário está nas Configurações da empresa. "
-                    "Pode completar perfil, configurar integrações e políticas de recrutamento."
-                ),
-                "company_profile": (
-                    "O usuário está no Perfil da empresa. "
-                    "Se o perfil estiver incompleto, sugerir navegar para Configurações. "
-                    "Sem perfil completo, buscas e triagens podem ser menos precisas."
-                ),
             }
             page_desc = page_descriptions.get(context_page, f"O usuário está na página: {context_page}.")
             context_parts.append(f"### Localização\n{page_desc}")
 
         if conversation_summary:
             context_parts.append(f"### Resumo da Conversa Anterior\n{conversation_summary}")
-
-        if conversation_state:
-            try:
-                mem_lines = []
-                if conversation_state.last_entity:
-                    e = conversation_state.last_entity
-                    mem_lines.append(f"- Última entidade: {e.get('type','?')} **{e.get('name') or e.get('id','?')}** (ID: {e.get('id','?')})")
-                if conversation_state.mentioned_candidates:
-                    recent = list(conversation_state.mentioned_candidates.items())[-3:]
-                    names = ", ".join(f"{n} (ID: {cid})" for n, cid in recent)
-                    mem_lines.append(f"- Candidatos mencionados: {names}")
-                if conversation_state.last_job_id:
-                    mem_lines.append(f"- Última vaga: ID {conversation_state.last_job_id}")
-                if mem_lines:
-                    context_parts.append("### Memória da Conversa\n" + "\n".join(mem_lines))
-            except Exception:
-                pass
 
         if context_parts:
             sections.append("\n## Contexto Atual\n" + "\n\n".join(context_parts))

@@ -24,19 +24,8 @@ PAGE_TO_CONTEXT_TYPE: dict[str, str] = {
     "vacancies": "job_management",
     "wizard": "job_management",
     "analytics": "analytics",
-    "settings": "company_settings",
-    "settings_config": "company_settings",
-    "company_settings": "company_settings",
     "global": "general",
     "general": "general",
-    # Portuguese page names from frontend scope
-    "Vagas": "job_management",
-    "Candidatos": "talent_funnel",
-    "Analytics": "analytics",
-    "Configuracoes": "company_settings",
-    "Configurações": "company_settings",
-    "Kanban": "pipeline",
-    "Sourcing": "talent_funnel",
 }
 
 
@@ -73,9 +62,8 @@ class UniversalContext:
     target_job: dict[str, Any] | None = None
     extra: dict[str, Any] = field(default_factory=dict)
 
-    # In-session entity memory (populated by orchestrator after each action)
-    conversation_state: Any | None = None  # ConversationState — typed as Any to avoid circular import
-
+    # Tenant context — preenchido pelo MainOrchestrator apos lookup no DB
+    tenant_context_snippet: str = ""
 
     # Flag: skip memory persistence (Passo 2 Path A — ChatRepository remains owner until M2)
     skip_memory_persist: bool = False
@@ -84,13 +72,11 @@ class UniversalContext:
         """Converte para o formato que Orchestrator.process_request_with_memory() espera."""
         ctx: dict[str, Any] = {
             "context_type": self.context_type,
-            "entity_id": self.entity_id,
+            "context_id": self.entity_id,
             "candidates": self.candidates,
             "selected_candidate_ids": self.selected_candidate_ids,
             "channel": self.channel,
             "company_id": self.company_id,
-            "user_id": self.user_id,
-            "actor_user_id": self.user_id,
             "user_name": self.user_name,
             "user_role": self.user_role,
             "context_page": self.context_page,
@@ -103,6 +89,8 @@ class UniversalContext:
             ctx["search_context"] = self.search_context
         if self.target_job:
             ctx["target_job"] = self.target_job
+        if self.tenant_context_snippet:
+            ctx["tenant_context_snippet"] = self.tenant_context_snippet
         ctx.update(self.extra)
         return ctx
 
@@ -204,15 +192,6 @@ class ContextAdapter:
 
     # ------------------------------------------------------------------
     # WebSocket
-    # NOT YET CALLED — agent_chat_ws.py ainda faz inline promotion (~linha 954).
-    # TODO(WS-ADAPTER-INT): para migrar, substituir o bloco inline em
-    #   agent_chat_ws.py por:
-    #     ctx = ContextAdapter.from_ws(
-    #         session_id=session_id,
-    #         message_frame=message_frame,
-    #         jwt_payload=jwt_payload,
-    #     )
-    # Tracking: AGENTS.md § Integrações Planejadas
     # ------------------------------------------------------------------
 
     @staticmethod
@@ -232,24 +211,6 @@ class ContextAdapter:
         context_type = PAGE_TO_CONTEXT_TYPE.get(domain, "general")
         entity_id = context.get("entity_id") or context.get("sourcing_id") or context.get("job_id")
 
-        # PR-A: metadata estruturada vinda do Rail A (FE) — validada strict
-        # via Pydantic (RailASuggestionMetadata) para evitar prompt injection
-        # e drift de schema. Se inválida, é descartada com warning (fail-safe);
-        # routing cai no fallback CascadedRouter sem usar hint. Skill: harness-
-        # engineering [sensor no boundary]. Audit ref: FE-H03 (2026-04-26).
-        extra: dict[str, Any] = {"domain": domain, "ws_session_id": session_id}
-        raw_metadata = context.get("metadata")
-        if raw_metadata:
-            try:
-                from app.shared.websocket.ws_message_schemas import RailASuggestionMetadata
-                validated = RailASuggestionMetadata.model_validate(raw_metadata)
-                extra["metadata"] = validated.model_dump(exclude_none=False)
-            except Exception as _meta_exc:
-                logger.warning(
-                    "[ContextAdapter] Rail A metadata inválida descartada (session=%s): %s",
-                    session_id, _meta_exc,
-                )
-
         return UniversalContext(
             message=message_frame.get("content", ""),
             user_id=user_id,
@@ -262,18 +223,11 @@ class ContextAdapter:
             candidates=context.get("candidates", []),
             job_context=context.get("job_context"),
             search_context=context.get("search_context"),
-            extra=extra,
+            extra={"domain": domain, "ws_session_id": session_id},
         )
 
     # ------------------------------------------------------------------
-    # RabbitMQ — Rails → Python async integration
-    # NOT YET WIRED — consumer em app/workers/rabbitmq_consumer.py (stub).
-    # TODO(RABBITMQ-INT): para ativar em produção:
-    #   1. Implementar app/workers/rabbitmq_consumer.py (ver checklist no módulo).
-    #   2. Exchange/queue: exchange='lia.exchange', queue='lia.jobs', key='lia.chat'.
-    #   3. Formato esperado: { question, domain, sourcing_id, user_id, context_data, company_id }
-    #   4. Autenticação: validar INTERNAL_SERVICE_TOKEN (shared secret Rails↔Python).
-    # Tracking: AGENTS.md § Integrações Planejadas
+    # RabbitMQ (compatível com formato do v5)
     # ------------------------------------------------------------------
 
     @staticmethod

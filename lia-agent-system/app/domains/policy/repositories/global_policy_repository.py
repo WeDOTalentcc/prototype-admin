@@ -9,7 +9,7 @@ from uuid import UUID
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.global_policy import GlobalPolicy, PolicyScope
+from app.models.global_policy import GlobalPolicy, PolicyScope
 
 logger = logging.getLogger(__name__)
 

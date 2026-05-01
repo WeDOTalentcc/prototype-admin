@@ -6,7 +6,7 @@ from datetime import UTC
 
 from app.core.celery_app import celery_app
 from app.shared.pii_masking import get_masked_logger
-from app.shared.observability.tracing import finish_span, get_tracer
+from app.shared.tracing import finish_span, get_tracer
 
 logger = get_masked_logger(__name__)
 

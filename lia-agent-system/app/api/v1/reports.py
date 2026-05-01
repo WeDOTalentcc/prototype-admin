@@ -11,14 +11,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.analytics.services.candidate_report_service import candidate_report_service
 from app.domains.analytics.services.report_service import report_service
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -115,7 +107,7 @@ async def generate_comparison_report(
 
 @router.get("/candidate/{candidate_id}", response_model=None)
 async def get_candidate_report(
-    candidate_id: _DualId,
+    candidate_id: str,
     job_id: str | None = None,
     format: str = Query(default="detailed", enum=["detailed", "executive", "comparison"]),
     db: AsyncSession = Depends(get_db)
@@ -279,10 +271,3 @@ async def preview_report_json(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating preview: {str(e)}")
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

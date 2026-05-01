@@ -7,7 +7,7 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.automation import DEFAULT_STAGE_AUTOMATION_RULES, StageAutomationRule
+from app.models.automation import DEFAULT_STAGE_AUTOMATION_RULES, StageAutomationRule
 
 logger = logging.getLogger(__name__)
 

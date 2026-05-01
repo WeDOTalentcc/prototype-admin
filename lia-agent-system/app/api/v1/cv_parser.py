@@ -15,7 +15,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.domains.cv_screening.services.cv_parser import CVParserService, cv_parser_service, get_cv_parser_service
 from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
-from lia_models.candidate import Candidate, CandidateEducation, CandidateExperience
+from app.models.candidate import Candidate, CandidateEducation, CandidateExperience
 from app.schemas.cv_parser import (
     CVConfirmRequest,
     CVConfirmResponse,
@@ -384,13 +384,8 @@ async def confirm_cv_and_create_candidate(
         
         candidate_id = uuid.uuid4()
         
-        # Task #346 — propaga tenant do JWT para a row criada.
-        company_id = getattr(current_user, "company_id", None)
-        if not company_id:
-            raise HTTPException(status_code=400, detail="company_id obrigatório.")
         candidate = Candidate(
             id=candidate_id,
-            company_id=str(company_id),
             name=parsed_cv.full_name,
             email=parsed_cv.email or f"unknown_{uuid.uuid4().hex[:8]}@placeholder.com",
             phone=parsed_cv.phone,

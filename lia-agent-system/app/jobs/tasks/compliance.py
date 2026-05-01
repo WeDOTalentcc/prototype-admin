@@ -340,7 +340,7 @@ async def _run_retention_cleanup_async() -> dict:
     try:
         from lia_models.candidate import Candidate
     except ImportError:
-        from lia_models.candidate import Candidate
+        from app.models.candidate import Candidate
 
     total_anonymized = 0
     companies_processed = 0

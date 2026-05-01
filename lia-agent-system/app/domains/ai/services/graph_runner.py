@@ -10,17 +10,11 @@ from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
-from fastapi import HTTPException
 from lia_agents_core.state_machine import JobWizardState, WizardStage, create_initial_state
 from sqlalchemy import and_, select, update
 
 from app.core.database import AsyncSessionLocal
-# Task #850 — JobWizardGraph was removed. The legacy `lia_assistant_graph`
-# endpoints that use this runner are now dead code and will surface a
-# clear NotImplementedError if invoked. The canonical job-creation
-# pipeline is `app.domains.job_creation.graph.JobCreationGraph`.
-JobWizardGraph: Any = None  # type: ignore[assignment]
-job_wizard_graph: Any = None
+from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph, job_wizard_graph
 from app.domains.recruiter_assistant.services.memory_service import MemoryService, memory_service
 from lia_models.graph_session import GraphSession
 
@@ -150,38 +144,14 @@ class GraphRunnerService:
     
     def __init__(
         self,
-        graph: "Any | None" = None,
+        graph: JobWizardGraph | None = None,
         memory: MemoryService | None = None
     ):
-        # Task #850: `job_wizard_graph` is intentionally `None` at module
-        # scope — the legacy graph was deleted. When `graph` is not
-        # supplied, `run_job_wizard()` reroutes to the canonical
-        # `JobCreationGraph` instead of operating on the legacy graph.
-        self.graph = graph if graph is not None else job_wizard_graph
+        self.graph = graph or job_wizard_graph
         self.memory = memory or memory_service
         self.state_store = DatabaseSessionStore()
         self.logger = logging.getLogger(self.__class__.__name__)
     
-    @staticmethod
-    def _summarize_stage(stage: str, intake_payload: dict[str, Any]) -> str:
-        """Build a recruiter-facing message when the canonical graph
-        node didn't emit one explicitly. Used by the legacy
-        `run_job_wizard` reroute so REST callers always see a
-        non-empty `response_text`.
-        """
-        title = ((intake_payload or {}).get("title") or {}).get("value") or ""
-        seniority = ((intake_payload or {}).get("seniority") or {}).get("value") or ""
-        head = (title + (f" ({seniority})" if seniority else "")).strip()
-        if stage == "intake":
-            if head:
-                return f"Captei a vaga: {head}. Vou seguir para o próximo passo."
-            return "Captei o pedido inicial. Pode me dar mais detalhes da vaga?"
-        if stage == "jd_enrichment":
-            return "Enriqueci a descrição da vaga — preciso da sua aprovação."
-        if stage == "wsi_questions":
-            return "Sugeri perguntas de triagem WSI — preciso da sua aprovação."
-        return f"Etapa atual: {stage}."
-
     async def run_job_wizard(
         self,
         session_id: str,
@@ -213,73 +183,6 @@ class GraphRunnerService:
             - reasoning_steps: List of reasoning steps taken
             - execution_id: Unique ID for this execution
         """
-        # Task #850: legacy JobWizardGraph was retired. This entry point
-        # is the supported compatibility shim — REST routes
-        # (`/lia-assistant/job-wizard/graph-orchestrate`) call it and we
-        # forward to the canonical `JobCreationGraph`, then translate
-        # the canonical state back into the legacy
-        # `GraphOrchestratorResponse` shape.
-        if self.graph is None:
-            from app.domains.job_creation.graph import job_creation_graph
-            from app.domains.job_creation.services.intake_extractor import (
-                get_intake_extractor,
-            )
-
-            self.logger.info(
-                "[GraphRunnerService] Routing run_job_wizard to "
-                "JobCreationGraph (Task #850 canonical) | session=%s",
-                session_id,
-            )
-            payload = get_intake_extractor().extract(user_message)
-            initial_state: dict[str, Any] = {
-                "company_id": company_id,
-                "user_id": user_id,
-                "session_id": session_id,
-                "raw_input": user_message,
-                "query": user_message,
-                "intake_payload": payload.model_dump(),
-                "messages": [{"role": "user", "content": user_message}],
-                "current_stage": current_stage or "intake",
-                "draft": existing_draft or {},
-            }
-            # `JobCreationGraph.invoke(state, thread_id)` — state is
-            # the first positional, the thread_id (session_id) is the
-            # second. Reversing these silently corrupts checkpointing.
-            result = job_creation_graph.invoke(initial_state, session_id)
-
-            # Translate canonical state → legacy GraphOrchestratorResponse.
-            # Canonical keys we map from:
-            #   - intake_payload  : dict shape of JobIntakePayload (the draft)
-            #   - ws_stage_payload: per-stage UI payload {type, stage, data}
-            #   - current_stage   : the stage we landed on
-            #   - stage_history   : list of stages traversed → reasoning trace
-            stage_payload = result.get("ws_stage_payload") or {}
-            stage_data = stage_payload.get("data") or {}
-            response_text = (
-                stage_data.get("message")
-                or stage_data.get("response_text")
-                or self._summarize_stage(
-                    result.get("current_stage", "intake"),
-                    result.get("intake_payload") or {},
-                )
-            )
-            job_draft = (
-                result.get("intake_payload")
-                or stage_data.get("intake_payload")
-                or existing_draft
-                or {}
-            )
-            reasoning_steps = [
-                f"stage:{s}" for s in (result.get("stage_history") or [])
-            ]
-            return {
-                "response_text": response_text,
-                "job_draft": job_draft,
-                "current_stage": result.get("current_stage", "intake"),
-                "reasoning_steps": reasoning_steps,
-                "execution_id": session_id,
-            }
-
         self.logger.info(f"Running job wizard for session {session_id}")
         
         existing_state = await self.state_store.get(session_id)
@@ -380,37 +283,12 @@ class GraphRunnerService:
     ) -> AsyncIterator[dict[str, Any]]:
         """
         Stream job wizard execution for real-time updates.
-
-        Task #850: this method targeted the legacy `JobWizardGraph` which
-        is now retired. The canonical `JobCreationGraph` does not
-        currently expose a streaming interface — recruiter UI streaming
-        is handled via the WS layer (`agent_chat_ws`) directly. There
-        are no in-tree callers (verified by grep). To prevent silent
-        failure if a future caller is wired up, we fail loudly with a
-        clear migration message instead of dispatching to the removed
-        legacy graph.
+        
+        Yields state updates as the graph executes each node.
+        Useful for showing progress in the UI.
         """
-        if self.graph is None:
-            self.logger.info(
-                "wizard.legacy.deprecated_call",
-                extra={
-                    "tenant.company_id": str(company_id) if company_id else None,
-                    "caller": "GraphRunnerService.stream_job_wizard",
-                    "path": "app.domains.ai.services.graph_runner:stream_job_wizard",
-                    "session_id": session_id,
-                },
-            )
-            raise HTTPException(
-                status_code=410,
-                detail={
-                    "error": (
-                        "Endpoint deprecated. Use WS /ws/agent-chat with "
-                        "domain=job_creation."
-                    ),
-                },
-            )
         self.logger.info(f"Streaming job wizard for session {session_id}")
-
+        
         existing_state = await self.state_store.get(session_id)
         
         if existing_state:

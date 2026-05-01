@@ -7,7 +7,7 @@ from uuid import UUID
 
 from sqlalchemy import or_, select
 
-from lia_models.job_vacancy import JobVacancy
+from app.models.job_vacancy import JobVacancy
 from app.shared.repositories.sqlalchemy_base import SQLAlchemyRepository
 
 logger = logging.getLogger(__name__)

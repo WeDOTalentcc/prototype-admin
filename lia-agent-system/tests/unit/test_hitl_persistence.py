@@ -251,15 +251,15 @@ class TestHITLServiceGetPending:
 class TestHITLModels:
 
     def test_hitl_pending_action_importable(self):
-        from lia_models.hitl import HITLPendingAction
+        from app.models.hitl import HITLPendingAction
         assert HITLPendingAction.__tablename__ == "hitl_pending_actions"
 
     def test_hitl_audit_trail_importable(self):
-        from lia_models.hitl import HITLAuditTrail
+        from app.models.hitl import HITLAuditTrail
         assert HITLAuditTrail.__tablename__ == "hitl_audit_trail"
 
     def test_hitl_pending_action_to_dict(self):
-        from lia_models.hitl import HITLPendingAction
+        from app.models.hitl import HITLPendingAction
         import uuid
         now = datetime.now(timezone.utc)
         record = HITLPendingAction(
@@ -284,7 +284,7 @@ class TestHITLModels:
         assert d["approved"] is None
 
     def test_hitl_audit_trail_to_dict(self):
-        from lia_models.hitl import HITLAuditTrail
+        from app.models.hitl import HITLAuditTrail
         now = datetime.now(timezone.utc)
         trail = HITLAuditTrail(
             company_id="acme",
@@ -303,14 +303,14 @@ class TestHITLModels:
         assert d["resolved_by"] == "manager@acme.com"
 
     def test_hitl_pending_action_has_required_columns(self):
-        from lia_models.hitl import HITLPendingAction
+        from app.models.hitl import HITLPendingAction
         cols = {c.name for c in HITLPendingAction.__table__.columns}
         required = {"id", "thread_id", "pending_id", "domain", "action",
                     "status", "created_at", "expires_at"}
         assert required <= cols
 
     def test_hitl_audit_trail_has_required_columns(self):
-        from lia_models.hitl import HITLAuditTrail
+        from app.models.hitl import HITLAuditTrail
         cols = {c.name for c in HITLAuditTrail.__table__.columns}
         required = {"id", "thread_id", "pending_id", "domain", "action",
                     "approved", "resolved_at"}

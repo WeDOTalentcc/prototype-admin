@@ -12,18 +12,10 @@ from pydantic import BaseModel, EmailStr
 from app.domains.interview_scheduling.dependencies import get_interview_repo
 from app.domains.interview_scheduling.repositories.interview_repository import InterviewRepository
 from app.domains.interview_scheduling.services.calendar_service import calendar_service
-from lia_models.interview import Interview, InterviewFeedback
+from app.models.interview import Interview, InterviewFeedback
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = get_masked_logger(__name__)
 
@@ -330,7 +322,7 @@ async def list_interviews(
 
 @router.post("/interviews/{interview_id}/cancel", response_model=dict)
 async def cancel_interview(
-    interview_id: _DualId,
+    interview_id: str,
     cancellation_message: str | None = None,
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
@@ -377,7 +369,7 @@ class CompleteInterviewRequest(BaseModel):
 
 @router.post("/interviews/{interview_id}/complete", response_model=dict)
 async def complete_interview(
-    interview_id: _DualId,
+    interview_id: str,
     request: CompleteInterviewRequest,
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
@@ -424,7 +416,7 @@ async def complete_interview(
 
 @router.post("/interviews/{interview_id}/reschedule", response_model=dict)
 async def reschedule_interview(
-    interview_id: _DualId,
+    interview_id: str,
     request: RescheduleInterviewRequest,
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
@@ -504,7 +496,7 @@ async def check_availability(request: CheckAvailabilityRequest):
 
 @router.post("/interviews/{interview_id}/feedback", response_model=dict)
 async def submit_interview_feedback(
-    interview_id: _DualId,
+    interview_id: str,
     feedback: InterviewFeedbackRequest,
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
@@ -934,7 +926,7 @@ class TranscribeInterviewRequest(BaseModel):
 
 @router.patch("/interviews/{interview_id}/recording", response_model=dict)
 async def upload_recording(
-    interview_id: _DualId,
+    interview_id: str,
     request: UploadRecordingRequest,
     request_obj: Request,
     background_tasks: BackgroundTasks,
@@ -990,7 +982,7 @@ async def upload_recording(
 
 @router.post("/interviews/{interview_id}/transcribe", response_model=dict)
 async def transcribe_interview(
-    interview_id: _DualId,
+    interview_id: str,
     request: TranscribeInterviewRequest,
     request_obj: Request,
     background_tasks: BackgroundTasks,
@@ -1048,7 +1040,7 @@ async def transcribe_interview(
 
 @router.get("/interviews/{interview_id}/transcript", response_model=dict)
 async def get_interview_transcript(
-    interview_id: _DualId,
+    interview_id: str,
     request_obj: Request,
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
@@ -1125,10 +1117,3 @@ async def _run_transcription_background(
             )
     except Exception as e:
         logger.error("Background transcription failed for interview %s: %s", interview_id, e)
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

@@ -756,15 +756,3 @@ Respond ONLY with the JSON."""
 
 
 jd_generator_service = JobDescriptionGeneratorService()
-
-
-def _strip_meta(p: dict) -> dict:
-    return {k: v for k, v in p.items() if not k.startswith("_")}
-
-
-async def generate_job_description(**params):
-    """Wrapper para o chat. Delega para JobDescriptionGeneratorService.generate_full_description."""
-    p = _strip_meta(params)
-    if hasattr(jd_generator_service, "generate_full_description"):
-        return await jd_generator_service.generate_full_description(**p)
-    return await jd_generator_service.generate_description(**p)

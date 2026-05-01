@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 # CandidateStageHistory may not be in the shim; import gracefully
 try:
-    from lia_models.recruitment_stages import CandidateStageHistory
+    from app.models.recruitment_stages import CandidateStageHistory
     _HAS_HISTORY_MODEL = True
 except ImportError:
     _HAS_HISTORY_MODEL = False

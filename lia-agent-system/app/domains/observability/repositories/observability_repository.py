@@ -6,7 +6,7 @@ from uuid import UUID
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.observability import (
+from app.models.observability import (
     AIInferenceLog,
     BiasAuditReport,
     ComplianceControl,

@@ -18,7 +18,7 @@ from app.auth.dependencies import require_admin
 from app.auth.models import User
 from app.core.database import get_db
 from app.jobs.drift_job import run_drift_check_all_companies
-from app.shared.observability.model_drift_service import (
+from app.shared.services.model_drift_service import (
     DriftStatus,
     model_drift_service,
 )

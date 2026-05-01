@@ -40,24 +40,11 @@ from app.shared.chat_event_serializer import (
     serialize_token_done,
 )
 from app.shared.prompt_injection import PromptInjectionGuard
-from app.shared.compliance.c3b_layer import (
-    ComplianceContext,
-    pre_compliance,
-    post_compliance,
-)
-from app.shared.observability.token_budget_service import (
+from app.domains.credits.services.token_budget_service import (
     check_budget,
     get_plan_for_company,
     increment_usage,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -83,11 +70,8 @@ def _extract_auth(token: str | None) -> dict[str, Any]:
     try:
         import jwt as pyjwt
         payload = pyjwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        from app.core.tenant import normalize_demo_company_id
-        raw_cid = str(payload.get("company_id") or payload.get("organization_id") or "")
-        normalized_cid = normalize_demo_company_id(raw_cid, context="agent_chat_sse._extract_auth") or ""
         return {
-            "company_id": normalized_cid,
+            "company_id": str(payload.get("company_id") or payload.get("organization_id") or ""),
             "user_id": str(payload.get("sub") or payload.get("user_id") or "anonymous"),
         }
     except Exception:
@@ -177,7 +161,7 @@ async def sse_chat_action(
 
 @router.post("/chat/{session_id}/stream", response_model=None)
 async def sse_chat_stream(
-    session_id: _DualId,
+    session_id: str,
     req: SSEChatRequest,
     request: Request,
     authorization: str = Header(default=""),
@@ -214,8 +198,9 @@ async def sse_chat_stream(
         )
 
 
-    # LIA-P03: SecurityPatterns input check (kept inline; not part of c3b layer)
+    # LIA-P03: Add FairnessGuard and SecurityPatterns to agent SSE
     try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
         from app.shared.robustness.security_patterns import check_input_security
 
         _security_result = check_input_security(content)
@@ -224,10 +209,18 @@ async def sse_chat_stream(
                 status_code=400,
                 detail="Mensagem bloqueada por verificacao de seguranca."
             )
+
+        _fg = FairnessGuard()
+        _fr = _fg.check(content)
+        if _fr and _fr.is_blocked:
+            raise HTTPException(
+                status_code=400,
+                detail=_fr.educational_message or "Sua solicitacao contem termos que podem gerar vies."
+            )
     except HTTPException:
         raise
     except Exception as e:
-        logger.debug("[LIA-P03] Agent SSE security_patterns skipped: %s", e)
+        logger.debug("[LIA-P03] Agent SSE compliance skipped: %s", e)
 
     active_domain = req.domain or "recruiter_assistant"
     context = req.context or {}
@@ -235,17 +228,6 @@ async def sse_chat_stream(
     context.setdefault("user_id", user_id)
     if req.conversation_id:
         context["conversation_id"] = req.conversation_id
-
-    # R7: Converge SSE chat path on the same pre/post compliance used by
-    # chat.py and agent_chat_ws.py (PII masking + FairnessGuard L3 for HR
-    # domains, plus post-response FactChecker + audit log).
-    _c3b_pre = await pre_compliance(content, company_id or "", active_domain)
-    if _c3b_pre.fairness_blocked:
-        raise HTTPException(
-            status_code=422,
-            detail=_c3b_pre.block_reason or "Solicitação bloqueada por critérios de equidade.",
-        )
-    content = _c3b_pre.clean_message
 
     async def event_generator():
         event_seq = 0
@@ -396,20 +378,6 @@ async def sse_chat_stream(
 
                         clean_message = _strip_react_json(output.message or "")
 
-                        # R7: Post-compliance (FactChecker + audit log) — same
-                        # path as chat.py / agent_chat_ws.py.
-                        if clean_message:
-                            _c3b_ctx = ComplianceContext(
-                                company_id=company_id or "",
-                                user_id=user_id,
-                                session_id=session_id,
-                                domain=resolved_domain,
-                                agent_id=resolved_domain,
-                                original_message=_c3b_pre.original_message,
-                                fairness_flags=_c3b_pre.fairness_flags,
-                            )
-                            clean_message = await post_compliance(clean_message, _c3b_ctx)
-
                         panel_meta = (output.metadata or {}).get("panel_update")
                         if panel_meta and isinstance(panel_meta, dict):
                             yield format_sse_event(
@@ -455,10 +423,3 @@ async def sse_chat_stream(
             "X-Transport": "sse",
         },
     )
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

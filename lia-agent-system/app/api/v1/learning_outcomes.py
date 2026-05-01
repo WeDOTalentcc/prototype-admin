@@ -16,15 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.recruitment.repositories.learning_outcome_repository import LearningOutcomeRepository
 from app.domains.job_management.services.outcome_tracker import outcome_tracker
-from lia_models.feedback_learning import JobOutcome, JobOutcomeType
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
+from app.models.feedback_learning import JobOutcome, JobOutcomeType
 
 router = APIRouter(prefix="/learning-outcomes", tags=["Learning Outcomes"])
 logger = logging.getLogger(__name__)
@@ -108,7 +100,7 @@ async def record_outcome(request: OutcomeRecordRequest, db: AsyncSession = Depen
 
 @router.get("/outcomes/{company_id}", response_model=list[OutcomeResponse])
 async def list_outcomes(
-    company_id: _DualId,
+    company_id: str,
     limit: int = Query(default=20, le=100),
     offset: int = Query(default=0, ge=0),
     outcome_type: str | None = Query(default=None),
@@ -155,7 +147,7 @@ async def list_outcomes(
 
 @router.get("/outcomes/{company_id}/stats", response_model=OutcomeStatsResponse)
 async def get_outcome_stats(
-    company_id: _DualId,
+    company_id: str,
     repo: LearningOutcomeRepository = Depends(get_learning_outcome_repo),
 ):
     try:
@@ -184,7 +176,7 @@ async def get_outcome_stats(
 
 @router.get("/outcomes/{company_id}/patterns", response_model=list[OutcomePatternResponse])
 async def get_outcome_patterns(
-    company_id: _DualId,
+    company_id: str,
     group_by: str = Query(default="role", regex="^(role|seniority|department)$"),
     repo: LearningOutcomeRepository = Depends(get_learning_outcome_repo),
 ):
@@ -207,10 +199,3 @@ async def get_outcome_patterns(
     except Exception as e:
         logger.error(f"Failed to get outcome patterns: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

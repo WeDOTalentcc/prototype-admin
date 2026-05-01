@@ -7,7 +7,7 @@ from typing import Any
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.feedback_learning import (
+from app.models.feedback_learning import (
     JobOutcome,
     JobOutcomeType,
     SuggestionFeedback,

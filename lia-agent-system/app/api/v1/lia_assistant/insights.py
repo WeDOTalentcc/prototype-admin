@@ -15,7 +15,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
 from app.dependencies.token_budget import require_token_budget
-from lia_models.job_vacancy import JobVacancy
+from app.models.job_vacancy import JobVacancy
 from app.domains.ai.services.llm import LLMService, get_llm_service
 
 from ._shared import (

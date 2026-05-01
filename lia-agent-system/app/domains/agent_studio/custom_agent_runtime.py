@@ -125,12 +125,10 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         domain_tool_loaders = {
             "sourcing": "app.domains.sourcing.agents.sourcing_tool_registry.get_sourcing_tools",
             "pipeline": "app.domains.pipeline.agents.pipeline_tool_registry.get_pipeline_tools",
-            "screening": "app.domains.pipeline.agents.pipeline_tool_registry.get_pipeline_tools",
+            "screening": "app.domains.cv_screening.agents.pipeline_tool_registry.get_pipeline_tools",
             "communication": "app.domains.communication.agents.communication_tool_registry.get_communication_tools",
             "analytics": "app.domains.analytics.agents.analytics_tool_registry.get_analytics_tools",
-            # Task #850: `wizard_tool_registry.get_wizard_tools` removed —
-            # JobCreationGraph wires its own tools per node.
-            "job_management": None,
+            "job_management": "app.domains.job_management.agents.wizard_tool_registry.get_wizard_tools",
             "automation": "app.domains.automation.agents.automation_tool_registry.get_automation_tools",
         }
         loader_path = domain_tool_loaders.get(domain)
@@ -228,7 +226,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         }
         # === 2.4 + 2.5: Auto-inject PII strip + Audit callbacks ===
         try:
-            from app.shared.observability.callbacks import AuditLogCallback, PIIStripCallback
+            from app.shared.llm.callbacks import AuditLogCallback, PIIStripCallback
             auto_callbacks = [
                 PIIStripCallback(),
                 AuditLogCallback(
@@ -350,8 +348,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
             "pipeline": lambda: self._safe_import("app.domains.cv_screening.agents.pipeline_system_prompt", "PIPELINE_DOMAIN_SPECIFIC"),
             "analytics": lambda: self._safe_import("app.domains.analytics.agents.analytics_system_prompt", "ANALYTICS_DOMAIN_SPECIFIC"),
             "communication": lambda: self._safe_import("app.domains.communication.agents.communication_system_prompt", "COMMUNICATION_DOMAIN_SPECIFIC"),
-            # `job_management` legacy `wizard_system_prompt` removed in Task #850.
-            # JobCreationGraph composes its prompts via dedicated services.
+            "job_management": lambda: self._safe_import("app.domains.job_management.agents.wizard_system_prompt", "WIZARD_DOMAIN_SPECIFIC"),
             "automation": lambda: self._safe_import("app.domains.automation.agents.automation_system_prompt", "AUTOMATION_DOMAIN_SPECIFIC"),
         }
         loader = _domain_loaders.get(domain)

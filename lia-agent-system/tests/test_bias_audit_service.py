@@ -17,7 +17,7 @@ from datetime import date, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
-from app.shared.compliance.bias_audit_service import (
+from app.shared.services.bias_audit_service import (
     BiasAuditService,
     BiasAuditReport,
     DemographicAuditResult,

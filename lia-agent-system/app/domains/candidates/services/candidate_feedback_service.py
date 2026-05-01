@@ -223,22 +223,6 @@ class CandidateFeedbackService:
                 missing_skills=missing_skills or [],
                 resubmit_url=resubmit_url
             )
-
-            # C7: FairnessGuard post-generation check on candidate-facing text.
-            # If blocked, regenerate once with safe defaults (drop custom tips and
-            # missing_skills) and re-check. If still blocked, raise a fairness error.
-            message, improvement_tips, fairness_meta = await self._enforce_fairness_on_message(
-                message=message,
-                candidate_name=candidate_name or "Candidato",
-                vacancy_title=vacancy_title or "Vaga",
-                company_name=company_name or "Nossa Empresa",
-                adherence_score=adherence_score,
-                improvement_tips=improvement_tips,
-                missing_skills=missing_skills or [],
-                resubmit_url=resubmit_url,
-                candidate_id=candidate_id,
-                vacancy_id=vacancy_id,
-            )
             
             feedback_record = CandidateFeedback(
                 id=str(uuid.uuid4()),
@@ -427,105 +411,6 @@ class CandidateFeedbackService:
             "whatsapp_message": short_message
         }
     
-    async def _enforce_fairness_on_message(
-        self,
-        *,
-        message: dict[str, str],
-        candidate_name: str,
-        vacancy_title: str,
-        company_name: str,
-        adherence_score: float,
-        improvement_tips: list[str],
-        missing_skills: list[str],
-        resubmit_url: str,
-        candidate_id: str,
-        vacancy_id: str,
-    ) -> tuple[dict[str, str], list[str], dict[str, Any]]:
-        """
-        Enforce FairnessGuard on candidate-facing feedback message.
-
-        Strategy ("regenerate-with-correction"):
-          1. Run FairnessGuard on the composed text.
-          2. If blocked, drop user-supplied tips and missing_skills (which are the
-             only inputs that can carry biased text) and regenerate using the safe
-             default tips. Re-check.
-          3. If still blocked, raise LIAFairnessError so the caller can return 422.
-
-        Returns: (final_message, final_tips, fairness_metadata)
-        """
-        meta: dict[str, Any] = {"fairness_blocked": False, "regenerated": False}
-
-        try:
-            from app.shared.compliance.fairness_guard import FairnessGuard
-            fg = FairnessGuard()
-        except Exception as exc:
-            logger.debug("[CandidateFeedback] FairnessGuard unavailable: %s", exc)
-            return message, improvement_tips, meta
-
-        def _composed(msg: dict[str, str]) -> str:
-            return " ".join([
-                msg.get("subject", ""),
-                msg.get("short_message", ""),
-                msg.get("body_text", ""),
-            ])
-
-        result = fg.check(_composed(message))
-        if not result.is_blocked:
-            return message, improvement_tips, meta
-
-        logger.warning(
-            "[CandidateFeedback][FairnessGuard] Blocked generated feedback "
-            "candidate=%s vaga=%s category=%s — regenerating with safe defaults",
-            candidate_id, vacancy_id, result.category,
-        )
-        try:
-            await fg.log_check(
-                result=result,
-                context="candidate_feedback_pre_regenerate",
-                candidate_id=candidate_id,
-            )
-        except Exception:
-            pass
-
-        safe_tips = self._generate_improvement_tips(adherence_score, missing_skills=None)
-        regenerated = await self._generate_feedback_message(
-            candidate_name=candidate_name,
-            vacancy_title=vacancy_title,
-            company_name=company_name,
-            adherence_score=adherence_score,
-            improvement_tips=safe_tips,
-            missing_skills=[],
-            resubmit_url=resubmit_url,
-        )
-        meta["regenerated"] = True
-
-        result2 = fg.check(_composed(regenerated))
-        if result2.is_blocked:
-            logger.error(
-                "[CandidateFeedback][FairnessGuard] Regenerated feedback still blocked "
-                "candidate=%s category=%s — refusing to send",
-                candidate_id, result2.category,
-            )
-            try:
-                await fg.log_check(
-                    result=result2,
-                    context="candidate_feedback_post_regenerate",
-                    candidate_id=candidate_id,
-                )
-            except Exception:
-                pass
-            from app.shared.errors import LIAFairnessError
-            raise LIAFairnessError(
-                message=(
-                    "Mensagem de feedback bloqueada por FairnessGuard mesmo após "
-                    "regeneração com tips padrão."
-                ),
-                code="FAIRNESS_BLOCKED",
-            )
-
-        meta["fairness_blocked"] = False
-        return regenerated, safe_tips, meta
-
     async def _send_email_feedback(
         self,
         email: str,

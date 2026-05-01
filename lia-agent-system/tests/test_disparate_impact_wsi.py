@@ -176,12 +176,11 @@ class TestWSIAdverseImpactRatio:
     ]
 
     def test_score_range_within_tolerance(self):
-        """Perfis equivalentes não podem ter dispersão de score > 4.0 pontos
-        (escala canônica /10 — B0/#523; tolerância anterior 2.0 era em /5)."""
+        """Perfis equivalentes não podem ter dispersão de score > 2.0 pontos."""
         results = [calculate_wsi_deterministic(p, "Java") for p in self.EQUIVALENT_PROFILES]
         scores = [r.final_score for r in results]
         score_range = max(scores) - min(scores)
-        assert score_range < 4.0, (
+        assert score_range < 2.0, (
             f"Dispersão de score muito alta em perfis equivalentes: "
             f"min={min(scores):.2f}, max={max(scores):.2f}, range={score_range:.2f}"
         )
@@ -212,10 +211,10 @@ class TestWSIScoreInvariants:
         (JUNIOR_TECH_CONTENT, "Python"),
     ])
     def test_score_always_in_valid_range(self, text, competency):
-        """Score final deve sempre estar entre 0.0 e 10.0 (escala canônica /10 — B0/#523)."""
+        """Score final deve sempre estar entre 0.0 e 5.0."""
         result = calculate_wsi_deterministic(text, competency)
-        assert 0.0 <= result.final_score <= 10.0, (
-            f"Score {result.final_score} fora do intervalo [0, 10] para: '{text[:40]}'"
+        assert 0.0 <= result.final_score <= 5.0, (
+            f"Score {result.final_score} fora do intervalo [0, 5] para: '{text[:40]}'"
         )
 
     def test_high_quality_context_scores_higher(self):

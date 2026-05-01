@@ -10,7 +10,7 @@ from uuid import UUID
 from sqlalchemy import and_, case, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.technical_tests import (
+from app.models.technical_tests import (
     ClientTestConfig,
     TechnicalTest,
     TestResult,

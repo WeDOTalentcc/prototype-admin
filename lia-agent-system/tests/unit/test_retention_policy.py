@@ -17,36 +17,36 @@ class TestCompanyRetentionPolicyModel:
     """Testa defaults e estrutura do model."""
 
     def test_model_exists(self):
-        from lia_models.retention_policy import CompanyRetentionPolicy
+        from libs.models.lia_models.retention_policy import CompanyRetentionPolicy
         assert CompanyRetentionPolicy is not None
 
     def test_model_retention_months_default(self):
-        from lia_models.retention_policy import CompanyRetentionPolicy
+        from libs.models.lia_models.retention_policy import CompanyRetentionPolicy
         # Verificar que o default está definido na coluna
         col = CompanyRetentionPolicy.__table__.columns.get("retention_months")
         assert col is not None
         assert col.default.arg == 24
 
     def test_model_auto_anonymize_default_false(self):
-        from lia_models.retention_policy import CompanyRetentionPolicy
+        from libs.models.lia_models.retention_policy import CompanyRetentionPolicy
         col = CompanyRetentionPolicy.__table__.columns.get("auto_anonymize")
         assert col is not None
         assert col.default.arg is False
 
     def test_model_tablename(self):
-        from lia_models.retention_policy import CompanyRetentionPolicy
+        from libs.models.lia_models.retention_policy import CompanyRetentionPolicy
         assert CompanyRetentionPolicy.__tablename__ == "company_retention_policies"
 
     def test_model_has_company_id_column(self):
-        from lia_models.retention_policy import CompanyRetentionPolicy
+        from libs.models.lia_models.retention_policy import CompanyRetentionPolicy
         assert hasattr(CompanyRetentionPolicy, "company_id")
 
     def test_model_has_activated_at_column(self):
-        from lia_models.retention_policy import CompanyRetentionPolicy
+        from libs.models.lia_models.retention_policy import CompanyRetentionPolicy
         assert hasattr(CompanyRetentionPolicy, "activated_at")
 
     def test_model_has_last_cleanup_at_column(self):
-        from lia_models.retention_policy import CompanyRetentionPolicy
+        from libs.models.lia_models.retention_policy import CompanyRetentionPolicy
         assert hasattr(CompanyRetentionPolicy, "last_cleanup_at")
 
 
@@ -122,7 +122,7 @@ class TestRetentionCleanupAsync:
         mock_session.execute = AsyncMock(return_value=mock_result)
         mock_session.commit = AsyncMock()
 
-        with patch.dict(sys.modules, {"lia_models.candidate": mock_candidate}):
+        with patch.dict(sys.modules, {"libs.models.lia_models.candidate": mock_candidate}):
             with patch("lia_config.database.AsyncSessionLocal", return_value=mock_session):
                 from app.jobs.celery_tasks import _run_retention_cleanup_async
                 result = await _run_retention_cleanup_async()
@@ -145,7 +145,7 @@ class TestRetentionCleanupAsync:
         mock_session.execute = AsyncMock(return_value=mock_result)
         mock_session.commit = AsyncMock()
 
-        with patch.dict(sys.modules, {"lia_models.candidate": mock_candidate}):
+        with patch.dict(sys.modules, {"libs.models.lia_models.candidate": mock_candidate}):
             with patch("lia_config.database.AsyncSessionLocal", return_value=mock_session):
                 from app.jobs.celery_tasks import _run_retention_cleanup_async
                 result = await _run_retention_cleanup_async()
@@ -182,7 +182,7 @@ class TestRetentionCleanupAsync:
 
         mock_session.execute = mock_execute
 
-        with patch.dict(sys.modules, {"lia_models.candidate": mock_candidate}):
+        with patch.dict(sys.modules, {"libs.models.lia_models.candidate": mock_candidate}):
             with patch("lia_config.database.AsyncSessionLocal", return_value=mock_session):
                 from app.jobs.celery_tasks import _run_retention_cleanup_async
                 result = await _run_retention_cleanup_async()

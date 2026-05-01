@@ -13,7 +13,7 @@ from uuid import uuid4
 
 import pytest
 
-from lia_models.lia_field_toggles import (
+from app.models.lia_field_toggles import (
     DEFAULT_FIELD_TOGGLES,
     FALLBACK_STRATEGIES,
     FIELD_FALLBACK_CONFIG,
@@ -481,7 +481,7 @@ class TestEmptyFieldDetection:
     
     def test_reminder_actions_defined(self):
         """Test that reminder action constants are defined."""
-        from lia_models.recruiter_profile import REMINDER_ACTIONS
+        from app.models.recruiter_profile import REMINDER_ACTIONS
         
         assert "fill_now" in REMINDER_ACTIONS
         assert "remind_later" in REMINDER_ACTIONS
@@ -490,7 +490,7 @@ class TestEmptyFieldDetection:
     
     def test_field_impact_descriptions_defined(self):
         """Test that field impact descriptions are defined."""
-        from lia_models.recruiter_profile import DEFAULT_IMPACT_DESCRIPTION, FIELD_IMPACT_DESCRIPTIONS
+        from app.models.recruiter_profile import DEFAULT_IMPACT_DESCRIPTION, FIELD_IMPACT_DESCRIPTIONS
         
         assert "benefits" in FIELD_IMPACT_DESCRIPTIONS
         assert "tech_stack" in FIELD_IMPACT_DESCRIPTIONS
@@ -501,7 +501,7 @@ class TestEmptyFieldDetection:
         """Test that RecruiterFieldPreference has the reminder fields."""
         import inspect
 
-        from lia_models.recruiter_profile import RecruiterFieldPreference
+        from app.models.recruiter_profile import RecruiterFieldPreference
         
         source = inspect.getsource(RecruiterFieldPreference)
         

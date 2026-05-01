@@ -16,8 +16,8 @@ from fastapi import HTTPException, status
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.observability import BiasAuditReport, ComplianceControl
-from lia_models.trust_center import (
+from app.models.observability import BiasAuditReport, ComplianceControl
+from app.models.trust_center import (
     Subprocessor,
     TrustCenterResource,
     TrustCenterSettings,

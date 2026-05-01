@@ -1,24 +1,6 @@
 """
 EnhancedIntentClassifier - Classificador de intenções com extração rica de entidades.
 
-ARCHITECTURE NOTE (INT-S02, 2026-04-30):
-  This is the LLM-BASED (Tier 2) classifier — semantic, rich entity extraction, LLM cost.
-  Used for complex flows that require entity context beyond keyword matching.
-
-  TIER 1: keyword_intent_matcher (app/shared/services/)
-    - Deterministic, fast, zero LLM cost
-    - Used by: all domain can_handle() methods, fast_router
-    - harness-engineering guide computacional — prefer for domain routing
-
-  TIER 2: enhanced_intent_classifier (this file)
-    - LLM-based entity extraction and intent classification
-    - Used by: wizard_step_service, lia_assistant
-    - Use for: flows needing rich context (candidate name, job title, stage extraction)
-
-  This file is NOT a replacement for keyword_intent_matcher — they serve different tiers.
-  See app/shared/services/keyword_intent_matcher.py for the Tier 1 architecture note.
-
-
 Melhorias sobre o IntentClassifier básico:
 - Extrai TODAS as entidades mencionadas pelo usuário
 - Detecta contexto específico (vaga afirmativa, benefícios, idiomas, etc.)
@@ -334,8 +316,7 @@ class EnhancedIntentClassifierService:
         user_input: str,
         stage: int = 1,
         filled_fields: dict[str, Any] | None = None,
-        context: dict[str, Any] | None = None,
-        tracking_context: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None
     ) -> EnhancedClassificationResult:
         """
         Classifica a intenção do usuário e extrai todas as entidades.
@@ -371,21 +352,10 @@ class EnhancedIntentClassifierService:
                 user_input=user_input
             )
             
-            # Audit task #545 — captura tokens da classificação enhanced.
-            from app.shared.observability.usage_tracking_callback import (
-                build_usage_callback,
-            )
-            _on_usage = build_usage_callback(
-                tracking_context,
-                agent_type="intent_classifier",
-                default_operation="enhanced_intent_classification",
-                extra={"stage": stage, "classifier": "enhanced"},
-            )
             response = await self._llm_service.generate(
                 prompt=prompt,
                 max_tokens=1000,
-                temperature=0.1,
-                on_usage=_on_usage,
+                temperature=0.1
             )
             
             json_match = re.search(r'\{[\s\S]*\}', response)

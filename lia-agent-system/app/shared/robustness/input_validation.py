@@ -111,8 +111,8 @@ class WSIInput(BaseAgentInput):
     candidate_id: str = Field(..., min_length=1)
     job_id: str = Field(..., min_length=1)
     responses: dict[str, Any] | None = None
-    autodeclaracao_override: float | None = Field(None, ge=1.0, le=10.0)
-    contexto_override: float | None = Field(None, ge=1.0, le=10.0)
+    autodeclaracao_override: float | None = Field(None, ge=1.0, le=5.0)
+    contexto_override: float | None = Field(None, ge=1.0, le=5.0)
     years_experience: int | None = Field(None, ge=0, le=50)
 
 

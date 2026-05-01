@@ -323,7 +323,7 @@ Analyze and provide:
    - Agreeableness: Cooperation, empathy, teamwork
    - Neuroticism: Emotional sensitivity (low = stable/calm)
 
-4. **Score (0-10)**: Overall quality of response (escala canônica WSI /10)
+4. **Score (0-5)**: Overall quality of response
 5. **Feedback**: Brief constructive feedback in Portuguese
 6. **Evidences**: Key points that support the evaluation
 7. **Red Flags**: Any concerns or inconsistencies
@@ -339,7 +339,7 @@ Return ONLY valid JSON:
     "agreeableness": 60,
     "neuroticism": 35
   }},
-  "score": 7.0,
+  "score": 3.5,
   "feedback": "Resposta demonstra boa capacidade analítica...",
   "evidences": ["Exemplo concreto citado", "Métricas mencionadas"],
   "red_flags": []
@@ -350,8 +350,7 @@ Return ONLY valid JSON:
             model="claude-sonnet-4-6",
             max_tokens=1024,
             messages=[{"role": "user", "content": prompt}],
-            timeout=30.0,
-            task_type="wsi",
+            timeout=30.0
         )
         try:
             if response is None:
@@ -373,11 +372,6 @@ Return ONLY valid JSON:
     analysis_id = str(uuid.uuid4())
     try:
         _repo = WsiRepository(db)
-        # Task #511 — response_hash explícito (mandatory no repositório).
-        from app.shared.security.wsi_hashing import hash_response
-        resp_hash = hash_response(
-            request.response_text, request.session_id, request.question_id
-        )
         await _repo.insert_response_analysis_simple(
             analysis_id=analysis_id,
             session_id=request.session_id,
@@ -390,9 +384,8 @@ Return ONLY valid JSON:
             dreyfus_level=dreyfus_level,
             evidences=data.get("evidences", []),
             red_flags=data.get("red_flags", []),
-            final_score=data.get("score", 6.0),
+            final_score=data.get("score", 3.0),
             justification=data.get("feedback", ""),
-            response_hash=resp_hash,
         )
     except Exception as e:
         logger.warning(f"Failed to save analysis: {e}")
@@ -408,7 +401,7 @@ Return ONLY valid JSON:
     _found = sum(1 for group in _star_keywords if any(kw in _resp_lower for kw in group))
     star_completeness = round(_found / 4.0, 2)
 
-    _score = data.get("score", 6.0)
+    _score = data.get("score", 3.0)
 
     return AnalyzeResponseOutput(
         question_id=request.question_id,
@@ -424,8 +417,8 @@ Return ONLY valid JSON:
             neuroticism=big_five.get("neuroticism", 50)
         ),
         score=_score,
-        score_max=10.0,
-        score_normalized=round(_score, 1),  # PR2 #497: scores já em /10, sem conversão
+        score_max=5.0,
+        score_normalized=round(_score / 5.0 * 10.0, 1),
         star_completeness=star_completeness,
         feedback=data.get("feedback", "Análise em processamento"),
         evidences=data.get("evidences", []),
@@ -442,7 +435,7 @@ async def complete_screening(
     Complete WSI screening by analyzing all responses and generating final report.
 
     Returns comprehensive assessment including:
-    - Overall score (0-10) — escala canônica WSI
+    - Overall score (0-5)
     - Cognitive level (Bloom average)
     - Proficiency level (Dreyfus average)
     - Big Five personality profile
@@ -465,7 +458,7 @@ async def complete_screening(
 
     avg_bloom = sum(a.bloom_score for a in response_analyses) / len(response_analyses) if response_analyses else 3
     avg_dreyfus = sum(a.dreyfus_level for a in response_analyses) / len(response_analyses) if response_analyses else 3
-    avg_score = sum(a.score for a in response_analyses) / len(response_analyses) if response_analyses else 6.0
+    avg_score = sum(a.score for a in response_analyses) / len(response_analyses) if response_analyses else 3.0
 
     avg_big_five = BigFiveIndicators(
         openness=int(sum(a.big_five_indicators.openness for a in response_analyses) / len(response_analyses)) if response_analyses else 50,
@@ -531,7 +524,7 @@ async def complete_screening(
 
     class_label = WSI_CLASSIFICATION_MAP.get(classification, {}).get("label", classification)
     summary = (
-        f"Candidato avaliado como {class_label} (Score: {avg_score:.1f}/10.0). "
+        f"Candidato avaliado como {class_label} (Score: {avg_score:.1f}/5.0). "
         f"Demonstra nível cognitivo {bloom_level_name['name_pt']} (Bloom {round(avg_bloom)}) "
         f"e proficiência {dreyfus_level_name['name_pt']} (Dreyfus {round(avg_dreyfus)}). "
         f"Arquétipo predominante: {archetypes[0].archetype}."
@@ -608,16 +601,11 @@ async def complete_screening(
         })
         new_version = version_result.scalar() or 1
 
-        # Determine recommendation per canonical WSI_CUTOFFS (Spec §10.3, escala /10)
-        from app.domains.cv_screening.constants.wsi_scale import (
-            BLOOM_MAX,
-            CUTOFF_APPROVED_AUTO,
-            CUTOFF_REVIEW_MIN,
-            DREYFUS_MAX,
-        )
-        if avg_score >= CUTOFF_APPROVED_AUTO:
+        # Determine recommendation per canonical WSI_CUTOFFS (Spec §10.3)
+        # approved_auto ≥ 3.75/5 (= 7.5/10), review_min ≥ 3.0/5 (= 6.0/10)
+        if avg_score >= 3.75:
             recommendation = "approved"
-        elif avg_score >= CUTOFF_REVIEW_MIN:
+        elif avg_score >= 3.0:
             recommendation = "pending_review"
         else:
             recommendation = "not_approved"
@@ -654,8 +642,8 @@ async def complete_screening(
             "score_breakdown": json.dumps({
                 "bloom_level": round(avg_bloom),
                 "dreyfus_level": round(avg_dreyfus),
-                "cognitive_score": round(avg_bloom / BLOOM_MAX * 100),
-                "proficiency_score": round(avg_dreyfus / DREYFUS_MAX * 100)
+                "cognitive_score": round(avg_bloom / 6 * 100),
+                "proficiency_score": round(avg_dreyfus / 5 * 100)
             }),
             "strengths": json.dumps(strengths),
             "concerns": json.dumps(concerns),

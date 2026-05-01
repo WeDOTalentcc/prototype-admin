@@ -21,10 +21,12 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+_CONFIG_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "..", "app", "config", "protected_attributes.yaml"
+)
+# Resolve relative to this file's location
 _CONFIG_PATH = os.path.normpath(
-    os.path.join(
-        os.path.dirname(__file__), "..", "..", "config", "protected_attributes.yaml"
-    )
+    os.path.join(os.path.dirname(__file__), "..", "config", "protected_attributes.yaml")
 )
 
 

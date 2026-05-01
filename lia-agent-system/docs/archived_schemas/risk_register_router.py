@@ -15,7 +15,7 @@ import logging
 from uuid import UUID
 
 from app.core.database import get_db
-from lia_models.observability import RiskEntry, RiskTreatment
+from app.models.observability import RiskEntry, RiskTreatment
 from app.shared.tenant_guard import get_verified_company_id
 from app.schemas.risk_register import (
     RiskResponse, RiskListResponse, RiskCreate, RiskUpdate,

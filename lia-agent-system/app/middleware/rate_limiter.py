@@ -34,10 +34,6 @@ class RateLimiter:
     }
 
     BLOCK_DURATION_SECONDS = 60
-    # How often to scan the fallback dicts for empty buckets / expired blocks.
-    # Without this every unique user_id ever seen kept a permanent (eventually
-    # empty) entry — slow leak on long-running dev pods. (Task #871)
-    _FALLBACK_SWEEP_INTERVAL_SECONDS = 60
 
     def __init__(self):
         self._redis = None
@@ -50,41 +46,6 @@ class RateLimiter:
         self._fallback_blocked_users: dict[str, datetime] = {}
         self._fallback_blocked_companies: dict[str, datetime] = {}
         self._fallback_lock = asyncio.Lock()
-        self._fallback_last_sweep: datetime | None = None
-
-    def _sweep_fallback_state(self, now: datetime) -> None:
-        """Drop empty buckets and expired blocks from the in-memory fallback.
-
-        Called from inside ``_check_memory`` while holding ``_fallback_lock``.
-        Without it the outer dict keeps one entry per unique
-        user_id / company_id forever, even after their request history has
-        been pruned to an empty list, which would slowly leak on a
-        single-process pod that never reconnects to Redis.
-        """
-        if (
-            self._fallback_last_sweep is not None
-            and (now - self._fallback_last_sweep).total_seconds()
-                < self._FALLBACK_SWEEP_INTERVAL_SECONDS
-        ):
-            return
-        self._fallback_last_sweep = now
-        hour_cutoff = now - timedelta(hours=1)
-
-        for store in (self._fallback_user_requests, self._fallback_company_requests):
-            empty_keys: list[str] = []
-            for key, timestamps in store.items():
-                trimmed = [t for t in timestamps if t > hour_cutoff]
-                if not trimmed:
-                    empty_keys.append(key)
-                else:
-                    store[key] = trimmed
-            for key in empty_keys:
-                store.pop(key, None)
-
-        for blocked in (self._fallback_blocked_users, self._fallback_blocked_companies):
-            stale = [k for k, until in blocked.items() if until <= now]
-            for key in stale:
-                blocked.pop(key, None)
 
     async def _get_redis(self):
         """Lazily initialise Redis connection with cooldown to avoid hammering unavailable Redis."""
@@ -217,10 +178,6 @@ class RateLimiter:
         """In-memory fallback rate limiting."""
         async with self._fallback_lock:
             now = datetime.utcnow()
-            # Drop empty buckets / expired blocks so the dicts stop growing
-            # by one entry per unique user_id seen in the lifetime of the
-            # process. (Task #871)
-            self._sweep_fallback_state(now)
 
             # Check blocks
             for blocked, entity_id in [

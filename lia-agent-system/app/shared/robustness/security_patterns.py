@@ -173,7 +173,7 @@ SECURITY_PATTERNS: list[dict[str, Any]] = [
             re.compile(r"(rank|prioritize|favor|prefer)\s+candidates?\s+(by|based\s+on)\s+(gender|sex|race|nationality)", re.IGNORECASE),
             re.compile(r"(prioritize|priorize?|favor|rank)\s+(female|male|women|men)\s+candidates?", re.IGNORECASE),
             re.compile(r"prefira?\s+(homens?|mulheres?|brancos?|negros?)\s*(candidatos?|candidatas?|para|\.)", re.IGNORECASE),
-            re.compile(r"priorize?(?![\w\W]{0,40}diversidade).{0,20}(mulheres?|homens?|g.{0,3}nero|sexo)", re.IGNORECASE | re.DOTALL),
+            re.compile(r"priorize?.{0,20}(mulheres?|homens?|g.{0,3}nero|sexo)", re.IGNORECASE | re.DOTALL),
             re.compile(r"(priorizar|dar\s+prefer.{0,5}ncia).{0,30}(g.{0,3}nero|sexo|ra.{0,3}a|cor)\b", re.IGNORECASE | re.DOTALL),
         ],
     },

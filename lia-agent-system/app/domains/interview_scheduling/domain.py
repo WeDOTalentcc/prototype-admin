@@ -33,28 +33,12 @@ _KEYWORD_ACTION_MAP: dict[str, str] = (
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="interview_scheduling")
 
 
-# Mapeamento canônico action_id -> tool_id (module-level p/ auditor + smoke test).
-_ACTION_TOOL_MAP: dict[str, str] = {
-    "schedule_interview": "scheduling_schedule_interview",
-    "reschedule_interview": "scheduling_reschedule",
-    "cancel_interview": "scheduling_cancel",
-    "check_availability": "scheduling_check_availability",
-    "generate_self_scheduling_link": "scheduling_self_scheduling_link",
-    "find_common_slots": "scheduling_find_slots",
-    "send_reminder": "scheduling_send_reminder",
-    "list_today_interviews": "scheduling_list_today",
-    "transcribe_audio": "scheduling_transcribe_audio",
-    "analyze_voice": "scheduling_analyze_voice",
-}
-
-
 @register_domain
 class InterviewSchedulingDomain(ComplianceDomainPrompt):
 
     _compliance_config = {'high_impact': False}
     domain_id = "interview_scheduling"
     domain_name = "Interview & Scheduling"
-    agent_aliases = ("interviewer", "scheduling")
 
     def __init__(self):
         from app.domains.interview_scheduling.actions import INTERVIEW_SCHEDULING_ACTIONS
@@ -151,12 +135,6 @@ class InterviewSchedulingDomain(ComplianceDomainPrompt):
 
         if mapped_tool and mapped_tool in tool_ids:
             result = await execute_interview_scheduling_tool(mapped_tool, params, context)
-            if isinstance(result, dict) and (result.get("status") == "error" or result.get("success") is False):
-                return DomainResponse.error_response(
-                    error=result.get("error") or result.get("message") or f"Ferramenta '{mapped_tool}' falhou.",
-                    domain_id=self.domain_id,
-                    action_id=action_id,
-                )
             return DomainResponse.success_response(
                 message=f"Ferramenta '{mapped_tool}' executada para ação '{action.name}'.",
                 data={"action_id": action_id, "tool_id": mapped_tool, "result": result},

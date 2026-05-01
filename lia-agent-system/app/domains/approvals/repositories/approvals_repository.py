@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
-from lia_models.approval import ApprovalRequest
-from lia_models.company import CompanyProfile
+from app.models.approval import ApprovalRequest
+from app.models.company import CompanyProfile
 import uuid
 from uuid import UUID
 from typing import Optional

@@ -195,40 +195,33 @@ async def _wrap_get_job_details(**kwargs: Any) -> dict[str, Any]:
 # ── Sourcing ────────────────────────────────────────────────────────────────
 
 
-@tool_handler("autonomous")
 async def _wrap_rag_search(**kwargs: Any) -> dict[str, Any]:
     """Semantic hybrid search (BM25 + pgvector)."""
-    return await _delegate_sourcing(fn_name="rag_search", **kwargs)
+    return await _delegate_sourcing("rag_search", **kwargs)
 
-
-@tool_handler("autonomous")
 async def _wrap_auto_search_candidates(**kwargs: Any) -> dict[str, Any]:
     """Search candidates matching given criteria."""
-    return await _delegate_sourcing(fn_name="search_candidates", **kwargs)
+    return await _delegate_sourcing("search_candidates", **kwargs)
 
 
-@tool_handler("autonomous")
 async def _wrap_auto_analyze_profile(**kwargs: Any) -> dict[str, Any]:
     """Analyze a candidate profile in detail."""
-    return await _delegate_sourcing(fn_name="analyze_profile", **kwargs)
+    return await _delegate_sourcing("analyze_profile", **kwargs)
 
 
-@tool_handler("autonomous")
 async def _wrap_auto_compare_candidates(**kwargs: Any) -> dict[str, Any]:
     """Compare multiple candidate profiles side by side."""
-    return await _delegate_sourcing(fn_name="compare_candidates", **kwargs)
+    return await _delegate_sourcing("compare_candidates", **kwargs)
 
 
-@tool_handler("autonomous")
 async def _wrap_auto_score_candidate(**kwargs: Any) -> dict[str, Any]:
     """Score a candidate against a specific job vacancy using WSI."""
-    return await _delegate_sourcing(fn_name="score_candidate", **kwargs)
+    return await _delegate_sourcing("score_candidate", **kwargs)
 
 
-@tool_handler("autonomous")
 async def _wrap_auto_filter_candidates(**kwargs: Any) -> dict[str, Any]:
     """Filter candidates by skills, location, seniority, experience."""
-    return await _delegate_sourcing(fn_name="filter_results", **kwargs)
+    return await _delegate_sourcing("filter_results", **kwargs)
 
 
 # ── Pipeline / CV Screening ─────────────────────────────────────────────────
@@ -443,7 +436,7 @@ async def _wrap_match_candidates_to_job(**kwargs: Any) -> dict[str, Any]:
 
 # ── Analytics ───────────────────────────────────────────────────────────────
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_auto_get_job_insights(**kwargs: Any) -> dict[str, Any]:
     """Get analytics insights for a job: pipeline funnel, time-to-fill, source metrics."""
     logger.info("[autonomous_tools] get_job_insights called")
@@ -451,7 +444,7 @@ async def _wrap_auto_get_job_insights(**kwargs: Any) -> dict[str, Any]:
     return await _wrap_get_job_insights(**kwargs)
 
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_auto_generate_report(**kwargs: Any) -> dict[str, Any]:
     """Generate a comprehensive job or candidate report."""
     logger.info("[autonomous_tools] generate_report called")
@@ -464,7 +457,7 @@ async def _wrap_auto_generate_report(**kwargs: Any) -> dict[str, Any]:
         return await _wrap_generate_job_report(**kwargs)
 
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_auto_hiring_metrics(**kwargs: Any) -> dict[str, Any]:
     """Predict hiring probability and expected time-to-fill for a vacancy."""
     logger.info("[autonomous_tools] hiring_metrics called")
@@ -474,7 +467,7 @@ async def _wrap_auto_hiring_metrics(**kwargs: Any) -> dict[str, Any]:
 
 # ── Interview Scheduling ─────────────────────────────────────────────────────
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_get_scheduled_interviews(**kwargs: Any) -> dict[str, Any]:
     """Get upcoming or past interviews for a candidate or job with tenant isolation."""
     logger.info("[autonomous_tools] get_scheduled_interviews called")
@@ -607,168 +600,74 @@ async def _wrap_get_communication_history(**kwargs: Any) -> dict[str, Any]:
 
 # ── Additional tools: Job Management (extended) ──────────────────────────────
 
-# Task #850: `wizard_tool_registry` was removed. The three handlers
-# below are wired to the canonical services that back the
-# JobCreationGraph: `salary_benchmark_service` (analytics),
-# `IntakeExtractor` (validate_job_requirements), and
-# `CompanyConfigurationService` (get_company_config). Errors are
-# surfaced explicitly via `{"success": False, "error": ...}` instead of
-# silent fallbacks.
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_get_salary_benchmark(**kwargs: Any) -> dict[str, Any]:
-    """Get salary benchmark for a role."""
-    try:
-        from app.domains.analytics.services.salary_benchmark_service import (
-            salary_benchmark_service,
-        )
-        result = await salary_benchmark_service.get_market_range(
-            job_title=kwargs.get("job_title", ""),
-            seniority=kwargs.get("seniority", "pleno"),
-            location=kwargs.get("location", "Brasil"),
-        )
-        return {"success": True, "data": result}
-    except Exception as exc:
-        return {"success": False, "error": str(exc), "data": {}}
+    """Get salary benchmark for a role from wizard registry."""
+    from app.domains.job_management.agents.wizard_tool_registry import _wrap_get_salary_benchmarks
+    return await _wrap_get_salary_benchmarks(**kwargs)
 
 
 @tool_handler("autonomous", require_company=False)
 async def _wrap_validate_job_requirements(**kwargs: Any) -> dict[str, Any]:
-    """Validate job requirements for completeness and quality.
-
-    Task #850: routes through the canonical IntakeExtractor + the
-    `field_is_filled` contract on JobIntakePayload. Reports the missing
-    fields and the categorical confidence label per field — the same
-    information the JobCreationGraph uses to decide whether to request
-    clarification.
-    """
-    try:
-        from app.domains.job_creation.services.intake_extractor import (
-            JobIntakePayload,
-            get_intake_extractor,
-        )
-
-        raw = kwargs.get("requirements_text") or kwargs.get("text") or ""
-        form = kwargs.get("form_data")
-        attached = kwargs.get("attached_file_text", "")
-        extractor = get_intake_extractor()
-        if form or attached:
-            payload: JobIntakePayload = extractor.extract_from_sources(
-                user_text=raw, right_panel_form=form, attached_file_text=attached,
-            )
-        else:
-            payload = extractor.extract(raw)
-
-        required = ["title", "seniority", "work_model", "responsibilities"]
-        missing = [f for f in required if not payload.field_is_filled(f)]
-        per_field = {
-            f: getattr(payload, f).confidence_label
-            for f in payload.model_fields
-            if hasattr(getattr(payload, f, None), "confidence_label")
-        }
-        return {
-            "success": True,
-            "data": {
-                "is_complete": not missing,
-                "missing_fields": missing,
-                "overall_confidence": payload.overall_confidence,
-                "overall_confidence_label": payload.overall_confidence_label,
-                "fields": per_field,
-                "fairness_blocked": payload.fairness_blocked,
-            },
-        }
-    except Exception as exc:
-        return {"success": False, "error": str(exc), "data": {}}
+    """Validate job requirements for completeness and quality."""
+    from app.domains.job_management.agents.wizard_tool_registry import _wrap_validate_job_requirements
+    return await _wrap_validate_job_requirements(**kwargs)
 
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_get_company_config(**kwargs: Any) -> dict[str, Any]:
-    """Get company configuration including hiring policies and preferences.
-
-    Task #850: routes to the canonical CompanyConfigurationService which
-    is the same source consumed by the company_settings agent and the
-    JobCreationGraph during the eligibility/calibration nodes.
-    """
-    try:
-        from app.domains.company.services.company_configuration_service import (
-            CompanyConfigurationService,
-        )
-
-        company_id = kwargs.get("company_id")
-        if not company_id:
-            return {
-                "success": False,
-                "error": "company_id is required",
-                "data": {},
-            }
-        service = CompanyConfigurationService()
-        config = await service.get_configuration(company_id)
-        if config is None:
-            return {
-                "success": True,
-                "data": {"configured": False, "ai_context": ""},
-            }
-        return {
-            "success": True,
-            "data": {
-                "configured": True,
-                "ai_context": config.to_ai_context(),
-                "benefits": config.get_benefits_for_seniority(
-                    kwargs.get("seniority")
-                ),
-                "eliminatory_questions": config.get_eliminatory_questions(),
-            },
-        }
-    except Exception as exc:
-        return {"success": False, "error": str(exc), "data": {}}
+    """Get company configuration including hiring policies and preferences."""
+    from app.domains.job_management.agents.wizard_tool_registry import _wrap_get_company_config
+    return await _wrap_get_company_config(**kwargs)
 
 
 # ── Additional tools: CV Screening / Pipeline (extended) ─────────────────────
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     """View full candidate profile from pipeline perspective."""
-    from app.domains.pipeline.agents.pipeline_tool_registry import _wrap_view_candidate_profile
+    from app.domains.cv_screening.agents.pipeline_tool_registry import _wrap_view_candidate_profile
     return await _wrap_view_candidate_profile(**kwargs)
 
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_view_screening_results(**kwargs: Any) -> dict[str, Any]:
     """View WSI screening results for a candidate."""
-    from app.domains.pipeline.agents.pipeline_tool_registry import _wrap_view_screening_results
+    from app.domains.cv_screening.agents.pipeline_tool_registry import _wrap_view_screening_results
     return await _wrap_view_screening_results(**kwargs)
 
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_view_interview_notes(**kwargs: Any) -> dict[str, Any]:
     """View interview notes and feedback for a candidate."""
-    from app.domains.pipeline.agents.pipeline_tool_registry import _wrap_view_interview_notes
+    from app.domains.cv_screening.agents.pipeline_tool_registry import _wrap_view_interview_notes
     return await _wrap_view_interview_notes(**kwargs)
 
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_run_wsi_screening(**kwargs: Any) -> dict[str, Any]:
     """Run WSI automated screening for a candidate against a job."""
-    from app.domains.pipeline.agents.pipeline_tool_registry import _wrap_run_wsi_screening
+    from app.domains.cv_screening.agents.pipeline_tool_registry import _wrap_run_wsi_screening
     return await _wrap_run_wsi_screening(**kwargs)
 
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_add_candidate_notes(**kwargs: Any) -> dict[str, Any]:
     """Add notes or observations to a candidate's pipeline record."""
-    from app.domains.pipeline.agents.pipeline_tool_registry import _wrap_add_notes
+    from app.domains.cv_screening.agents.pipeline_tool_registry import _wrap_add_notes
     return await _wrap_add_notes(**kwargs)
 
 
 # ── Additional tools: Sourcing (extended) ────────────────────────────────────
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_suggest_skills(**kwargs: Any) -> dict[str, Any]:
     """Suggest relevant skills for a role based on historical data."""
     from app.domains.sourcing.agents.sourcing_tool_registry import _wrap_suggest_skills
     return await _wrap_suggest_skills(**kwargs)
 
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
     """Add a candidate to a shortlist (write operation — use with care)."""
     from app.domains.sourcing.agents.sourcing_tool_registry import _wrap_add_to_shortlist
@@ -831,14 +730,14 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
 
 # ── Additional tools: Analytics (extended) ───────────────────────────────────
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_get_agent_performance(**kwargs: Any) -> dict[str, Any]:
     """Get performance metrics for LIA agents."""
     from app.domains.analytics.agents.analytics_tool_registry import _wrap_get_agent_performance
     return await _wrap_get_agent_performance(**kwargs)
 
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_get_search_analytics(**kwargs: Any) -> dict[str, Any]:
     """Get search quality analytics and metrics."""
     from app.domains.analytics.agents.analytics_tool_registry import _wrap_get_search_analytics
@@ -1007,7 +906,7 @@ async def _wrap_get_job_applications_summary(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "error": str(_db_exc), "data": {}}
 
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_cross_domain_funnel_analysis(**kwargs: Any) -> dict[str, Any]:
     """
     CROSS-DOMAIN: Full funnel analysis combining sourcing pool size, pipeline
@@ -1040,7 +939,7 @@ async def _wrap_cross_domain_funnel_analysis(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_candidate_360_view(**kwargs: Any) -> dict[str, Any]:
     """
     CROSS-DOMAIN: 360° view of a candidate combining profile, pipeline status,
@@ -1125,10 +1024,10 @@ async def _wrap_get_shortlists(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "error": str(_db_exc), "data": {}}
 
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_schedule_interview(**kwargs: Any) -> dict[str, Any]:
     """Schedule an interview for a candidate (write operation)."""
-    from app.domains.pipeline.agents.pipeline_tool_registry import _wrap_schedule_interview as _pi_sched
+    from app.domains.cv_screening.agents.pipeline_tool_registry import _wrap_schedule_interview as _pi_sched
     return await _pi_sched(**kwargs)
 
 
@@ -1180,7 +1079,7 @@ async def _wrap_get_job_history(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "error": str(_db_exc), "data": {}}
 
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_get_tenant_hiring_overview(**kwargs: Any) -> dict[str, Any]:
     """
     CROSS-DOMAIN: Overview de contratação do tenant — vagas abertas, candidatos em pipeline,
@@ -1206,7 +1105,7 @@ async def _wrap_get_tenant_hiring_overview(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("autonomous")
+@tool_handler("autonomous", require_company=False)
 async def _wrap_list_jobs_with_candidates(**kwargs: Any) -> dict[str, Any]:
     """List open jobs with candidate counts per stage — cross-domain overview."""
     logger.info("[autonomous_tools] list_jobs_with_candidates called")
@@ -1236,7 +1135,6 @@ async def _wrap_list_jobs_with_candidates(**kwargs: Any) -> dict[str, Any]:
 
 # ── Shared / Cross-domain ────────────────────────────────────────────────────
 
-# require_company=False kept: consolidates context provided by caller, no DB access
 @tool_handler("autonomous", require_company=False)
 async def _wrap_summarize_context(**kwargs: Any) -> dict[str, Any]:
     """
@@ -1257,7 +1155,6 @@ async def _wrap_summarize_context(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-# require_company=False kept: returns clarification question to user, no DB access
 @tool_handler("autonomous", require_company=False)
 async def _wrap_clarify_request(**kwargs: Any) -> dict[str, Any]:
     """

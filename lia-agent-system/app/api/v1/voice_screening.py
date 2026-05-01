@@ -4,11 +4,7 @@ Voice Screening API — endpoints for managing voice interview sessions.
 Context: Talent Pool only. In jobs, the existing screening agent handles triagem.
 
 Apply to: lia-agent-system/app/api/v1/voice_screening.py
-Register: app.include_router(voice_screening_router, prefix="/api/v1")
-NOTE: The router itself uses prefix="/voice-screening"; the global "/api/v1"
-is added at mount time in app/api/routes.py to avoid the double-prefix
-bug that surfaced as "/api/v1/api/v1/voice-screening/..." in the
-generated OpenAPI client (audit NEW-4).
+Register: app.include_router(voice_screening_router)
 """
 
 import json
@@ -19,18 +15,10 @@ from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/voice-screening", tags=["Voice Screening"])
+router = APIRouter(prefix="/api/v1/voice-screening", tags=["Voice Screening"])
 
 # In-memory session store (production: use Redis with TTL)
 _sessions: dict = {}
@@ -100,7 +88,7 @@ async def create_voice_session(
 
 @router.post("/sessions/{session_id}/audio", response_model=SessionResponse)
 async def submit_audio(
-    session_id: _DualId,
+    session_id: str,
     file: UploadFile = File(...),
 ):
     """
@@ -132,7 +120,7 @@ async def submit_audio(
 
 @router.post("/sessions/{session_id}/text", response_model=SessionResponse)
 async def submit_text(
-    session_id: _DualId,
+    session_id: str,
     body: dict,
 ):
     """
@@ -168,7 +156,7 @@ async def submit_text(
 
 
 @router.get("/sessions/{session_id}")
-async def get_session_status(session_id: _DualId):
+async def get_session_status(session_id: str):
     """Get current status of a voice screening session."""
     session = _sessions.get(session_id)
     if not session:
@@ -205,6 +193,7 @@ async def _persist_results(session) -> None:
     try:
         from app.core.database import get_db_session
         from sqlalchemy import text
+
         screening_data = {
             "type": "voice",
             "session_id": session.session_id,
@@ -242,10 +231,3 @@ async def _persist_results(session) -> None:
         )
     except Exception as e:
         logger.error("[VoiceScreening] Failed to persist results: %s", e)
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

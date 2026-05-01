@@ -32,7 +32,7 @@ async def get_workload_distribution(
 
     try:
         from sqlalchemy import and_, select
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.job_vacancy import JobVacancy
 
         async with analytics_db() as db:
             conditions = [
@@ -123,8 +123,8 @@ async def get_bottleneck_analysis(
 
     try:
         from sqlalchemy import and_, select
-        from lia_models.candidate import Candidate, VacancyCandidate
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.candidate import Candidate, VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
 
         async with analytics_db() as db:
             job_result = await db.execute(

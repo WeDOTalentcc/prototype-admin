@@ -526,7 +526,7 @@ async def handle_candidate_no_show(
 
         # Step 2: Create AI suggestion
         try:
-            from lia_models.automation import AISuggestion
+            from app.models.automation import AISuggestion
 
             if no_show_count == 1:
                 suggestion_title = f"Reagendar entrevista - {candidate_name}"
@@ -929,7 +929,7 @@ async def handle_candidate_hired(
 
         try:
             from sqlalchemy import and_, select
-            from lia_models.candidate import VacancyCandidate
+            from app.models.candidate import VacancyCandidate
 
             # TODO(phase2-repo-extraction): Move this DB call to AutomationRepository
             vc_result = await db.execute(
@@ -1174,7 +1174,7 @@ async def handle_candidate_rejected(
 
         try:
             from sqlalchemy import and_, select
-            from lia_models.candidate import VacancyCandidate
+            from app.models.candidate import VacancyCandidate
 
             # TODO(phase2-repo-extraction): Move this DB call to AutomationRepository
             vc_result = await db.execute(

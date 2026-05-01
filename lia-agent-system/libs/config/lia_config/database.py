@@ -10,7 +10,6 @@ Exports:
 """
 import os
 import logging
-from contextlib import asynccontextmanager
 from contextvars import ContextVar
 from typing import AsyncGenerator
 import sqlalchemy as sa
@@ -123,45 +122,3 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
             except Exception:
                 pass
             await session.close()
-
-@asynccontextmanager
-async def get_tenant_aware_session():
-    """
-    Async context manager that provides an RLS-scoped session using the
-    contextvar-based company_id (set by AuthEnforcementMiddleware).
-
-    Use this in tools/background tasks that cannot use the FastAPI get_db()
-    dependency but still need tenant isolation.
-
-    Usage:
-        async with get_tenant_aware_session() as db:
-            result = await db.execute(select(MyModel))
-    """
-    async with AsyncSessionLocal() as session:
-        try:
-            try:
-                await session.execute(sa.text("RESET ROLE"))
-            except Exception:
-                pass
-            _cid = _get_current_company_id()
-            if _cid:
-                try:
-                    await session.execute(sa.text("SET ROLE lia_app"))
-                except Exception as role_err:
-                    logger.error("[RLS] SET ROLE lia_app failed: %s", role_err)
-                    raise RuntimeError("RLS role enforcement failed") from role_err
-                await session.execute(
-                    sa.text("SELECT set_config('app.company_id', :cid, true)"),
-                    {"cid": _cid},
-                )
-            yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            try:
-                await session.execute(sa.text("RESET ROLE"))
-            except Exception:
-                pass
-

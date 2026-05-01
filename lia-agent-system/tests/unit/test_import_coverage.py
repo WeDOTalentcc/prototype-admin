@@ -58,7 +58,7 @@ class TestSchemaImports:
         assert recruiter_preferences is not None
 
     def test_event_store_model(self):
-        from lia_models import event_store
+        from app.models import event_store
         assert event_store is not None
 
 
@@ -104,6 +104,13 @@ class TestServiceImports:
         try:
             from app.domains.analytics.services import event_dispatcher
             assert event_dispatcher is not None
+        except ImportError:
+            pytest.skip("Module not importable")
+
+    def test_company_benefits_api(self):
+        try:
+            from app.api.v1 import company_benefits_api
+            assert company_benefits_api is not None
         except ImportError:
             pytest.skip("Module not importable")
 

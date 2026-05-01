@@ -21,7 +21,7 @@ from app.core.database import get_db
 from app.domains.lgpd.repositories.data_request_repository import DataRequestRepository
 from app.domains.communication.services.data_request_service import data_request_service
 from app.domains.communication.services.data_request_whatsapp_service import data_request_whatsapp_service
-from lia_models.data_request import (
+from app.models.data_request import (
     DEFAULT_STAGE_FIELD_MAPPINGS,
     DataFieldType,
     DataRequestStatus,

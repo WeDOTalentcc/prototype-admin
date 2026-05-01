@@ -16,10 +16,6 @@ The service scores each medalist by:
   - Stage reached (deeper = stronger signal)
 """
 
-# @deprecated since=2026-04-17
-# @remove-after=2026-07-16
-# @owner=backend-platform
-# @replacement=integrations_hub/rails_adapter::silver_medalist
 # RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
 # Will be deleted after ats-api-rails handoff is complete.
 # Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
@@ -171,13 +167,8 @@ class SilverMedalistService:
                 seen_candidates.add(cid)
 
                 days_ago = float(row["days_since_process"] or 0)
-                # #524 fechado: lia_score wire-format único = /100 (SSOT em
-                # app/domains/cv_screening/services/lia_score_service.py:139
-                # → return max(0.0, min(100.0, final))). Producers (analysis_service,
-                # seed_service) escrevem /100. Aqui normalizamos para [0, 1] sem
-                # sniff de magnitude — clamp defensivo cobre dados corrompidos.
                 raw_score = float(row["past_lia_score"] or 0)
-                lia_score = max(0.0, min(1.0, raw_score / 100.0))
+                lia_score = raw_score / 100.0 if raw_score > 1.0 else raw_score
                 stage = row["reached_stage"] or ""
 
                 # Composite relevance score [0..1]

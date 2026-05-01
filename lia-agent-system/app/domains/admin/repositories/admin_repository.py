@@ -7,8 +7,8 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.alert import AlertRule
-from lia_models.task import TaskTemplate
+from app.models.alert import AlertRule
+from app.models.task import TaskTemplate
 from app.shared.services.seed_service import clear_demo_data, seed_demo_data
 
 logger = logging.getLogger(__name__)

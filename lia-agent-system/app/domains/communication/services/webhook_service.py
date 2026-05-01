@@ -772,28 +772,3 @@ class WebhookService:
 
 
 webhook_service = WebhookService()
-
-
-def _strip_meta(p: dict) -> dict:
-    return {k: v for k, v in p.items() if not k.startswith("_")}
-
-
-async def manage_webhook(**params):
-    """Wrapper para o chat. Roteia para register/update/delete/list por 'action'."""
-    p = _strip_meta(params)
-    action = (p.pop("action", "list") or "list").lower()
-    method_map = {
-        "register": "register_webhook",
-        "create": "register_webhook",
-        "update": "update_webhook",
-        "delete": "delete_webhook",
-        "list": "list_webhooks",
-        "get": "get_webhook",
-        "trigger": "trigger_webhook",
-        "test": "test_webhook",
-    }
-    method_name = method_map.get(action)
-    if not method_name:
-        raise ValueError(f"Ação de webhook desconhecida: {action}")
-    method = getattr(webhook_service, method_name)
-    return await method(**p)

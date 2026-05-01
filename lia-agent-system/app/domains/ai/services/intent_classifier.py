@@ -170,8 +170,7 @@ Responda APENAS em JSON:
         self,
         user_input: str,
         stage_context: str | None = None,
-        use_llm: bool = True,
-        tracking_context: dict[str, Any] | None = None,
+        use_llm: bool = True
     ) -> ClassificationResult:
         """
         Classify user input into an intent category.
@@ -216,10 +215,7 @@ Responda APENAS em JSON:
 
         if use_llm:
             try:
-                result = await self._classify_with_llm(
-                    user_input, stage_context, entities,
-                    tracking_context=tracking_context,
-                )
+                result = await self._classify_with_llm(user_input, stage_context, entities)
                 return result
             except Exception as e:
                 logger.warning(f"LLM classification failed, falling back to rules: {e}")
@@ -254,8 +250,7 @@ Responda APENAS em JSON:
         self,
         user_input: str,
         stage_context: str | None,
-        pre_extracted_entities: dict[str, Any],
-        tracking_context: dict[str, Any] | None = None,
+        pre_extracted_entities: dict[str, Any]
     ) -> ClassificationResult:
         """Use Claude for intent classification."""
         prompt = self.CLASSIFICATION_PROMPT.format(
@@ -263,17 +258,7 @@ Responda APENAS em JSON:
             user_input=user_input[:500]
         )
 
-        # Audit task #545 — registra custo da classificação de intenção
-        # por empresa quando o caller fornece tracking_context.
-        from app.shared.observability.usage_tracking_callback import (
-            build_usage_callback,
-        )
-        on_usage = build_usage_callback(
-            tracking_context,
-            agent_type="intent_classifier",
-            default_operation="intent_classification",
-        )
-        response = await self._llm_service.generate(prompt, on_usage=on_usage)
+        response = await self._llm_service.generate(prompt)
 
         json_match = re.search(r'\{[\s\S]*?\}', response)
         if not json_match:

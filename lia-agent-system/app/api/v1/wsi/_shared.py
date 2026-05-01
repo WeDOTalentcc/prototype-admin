@@ -40,36 +40,27 @@ BIG_FIVE_TRAITS = {
     "neuroticism":       {"name": "Neuroticism",        "name_pt": "Estabilidade emocional",   "high": "Sensitive, anxious",        "low": "Calm, resilient"},
 }
 
-from app.domains.cv_screening.constants.wsi_scale import (
-    CLASSIFY_ABAIXO_MEDIA,
-    CLASSIFY_ALTO,
-    CLASSIFY_EXCELENTE,
-    CLASSIFY_EXCEPCIONAL,
-    CLASSIFY_MEDIO,
-    SCALE_MAX,
-)
-
 WSI_CLASSIFICATION_MAP = {
-    "excepcional":     {"label": "Excepcional",      "min_score": CLASSIFY_EXCEPCIONAL,  "color": "emerald-700"},
-    "excelente":       {"label": "Excelente",         "min_score": CLASSIFY_EXCELENTE,    "color": "green-600"},
-    "alto":            {"label": "Alto",               "min_score": CLASSIFY_ALTO,         "color": "blue-600"},
-    "medio":           {"label": "Médio",              "min_score": CLASSIFY_MEDIO,        "color": "amber-600"},
-    "abaixo_da_media": {"label": "Abaixo da média",   "min_score": CLASSIFY_ABAIXO_MEDIA, "color": "orange-600"},
-    "regular":         {"label": "Regular / Baixo",   "min_score": 0.0,                   "color": "red-600"},
+    "excepcional":     {"label": "Excepcional",      "min_score": 4.5,  "color": "emerald-700"},
+    "excelente":       {"label": "Excelente",         "min_score": 4.0,  "color": "green-600"},
+    "alto":            {"label": "Alto",               "min_score": 3.5,  "color": "blue-600"},
+    "medio":           {"label": "Médio",              "min_score": 3.0,  "color": "amber-600"},
+    "abaixo_da_media": {"label": "Abaixo da média",   "min_score": 2.25, "color": "orange-600"},
+    "regular":         {"label": "Regular / Baixo",   "min_score": 0.0,  "color": "red-600"},
 }
 
 
 def classify_wsi_score(score: float) -> str:
-    """Classifica o score WSI nos 6 níveis canônicos (spec Seção 9.5, escala /10)."""
-    if score >= CLASSIFY_EXCEPCIONAL:
+    """Classifica o score WSI nos 6 níveis canônicos (spec Seção 9.5, escala /5)."""
+    if score >= 4.5:
         return "excepcional"
-    if score >= CLASSIFY_EXCELENTE:
+    if score >= 4.0:
         return "excelente"
-    if score >= CLASSIFY_ALTO:
+    if score >= 3.5:
         return "alto"
-    if score >= CLASSIFY_MEDIO:
+    if score >= 3.0:
         return "medio"
-    if score >= CLASSIFY_ABAIXO_MEDIA:
+    if score >= 2.25:
         return "abaixo_da_media"
     return "regular"
 
@@ -112,8 +103,6 @@ class GenerateQuestionsResponse(BaseModel):
     questions: list[WSIQuestionOutput]
     job_title: str | None
     methodology: str = "WSI (Bloom + Dreyfus + Big Five)"
-    fairness_warnings: list[str] = Field(default_factory=list)
-    fairness_blocked_count: int = 0
 
 
 class BigFiveIndicators(BaseModel):
@@ -138,8 +127,8 @@ class AnalyzeResponseOutput(BaseModel):
     dreyfus_level: int = Field(ge=1, le=5)
     dreyfus_level_name: str
     big_five_indicators: BigFiveIndicators
-    score: float = Field(ge=0, le=10)  # Escala 0.0 – 10.0 (PR2 #497)
-    score_max: float = 10.0
+    score: float = Field(ge=0, le=5)  # Escala 0.0 – 5.0
+    score_max: float = 5.0
     score_normalized: float = 0.0
     star_completeness: float | None = None
     feedback: str
@@ -169,7 +158,7 @@ class CompleteScreeningResponse(BaseModel):
     result_id: str
     candidate_id: str
     job_vacancy_id: str | None
-    overall_score: float = Field(ge=0, le=10)
+    overall_score: float = Field(ge=0, le=5)
     classification: str
     cognitive_level: dict[str, Any]
     proficiency_level: dict[str, Any]
@@ -259,17 +248,12 @@ def _jd_get_band(score: int):
 # ---------------------------------------------------------------------------
 
 async def get_anthropic_client():
-    """Returns a tenant-aware ProviderContainer via LLMProviderFactory.
+    """DEPRECATED: Returns a ProviderContainer via LLMProviderFactory (Task #93).
 
-    Reads company_id from AuthEnforcementMiddleware contextvar so BYOK
-    key is respected. Falls back to platform defaults when no tenant set.
+    Callers should migrate to using generate_with_llm() directly.
+    Returns None only on critical init failure.
     """
     try:
-        from app.shared.tenant_llm_context import get_current_llm_tenant
-        tenant_id = get_current_llm_tenant()
-        if tenant_id:
-            from app.shared.providers.llm_factory import get_provider_for_tenant_from_db
-            return await get_provider_for_tenant_from_db(tenant_id)
         from app.shared.providers.llm_factory import get_provider_for_tenant
         return get_provider_for_tenant()
     except Exception as e:
@@ -303,19 +287,15 @@ class _FakeResponse:
         self.content = [type("Block", (), {"text": text})()]
 
 
-async def _run_anthropic_sync(
-    client, model: str, max_tokens: int, messages: list,
-    timeout: float = 30.0, task_type: str = "chat",
-):
+async def _run_anthropic_sync(client, model: str, max_tokens: int, messages: list, timeout: float = 30.0):
     """
     MIGRATED: Now uses LLMProviderFactory instead of direct Anthropic SDK (Task #93).
     Returns a _FakeResponse shim so callers can still access response.content[0].text.
-    task_type activates Quality Tier Guard — use "wsi" for screening analysis.
     """
     try:
         prompt = "\n".join(m.get("content", "") for m in messages if m.get("role") == "user")
         text = await asyncio.wait_for(
-            client.generate_with_fallback(prompt, task_type=task_type),
+            client.generate_with_fallback(prompt),
             timeout=timeout,
         )
         return _FakeResponse(text)

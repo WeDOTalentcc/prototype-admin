@@ -11,7 +11,7 @@ Cobre:
 - Campos obrigatórios presentes em cada sub-status
 """
 
-from lia_models.recruitment_stages import CANONICAL_SUB_STATUSES, DEFAULT_SUB_STATUSES
+from app.models.recruitment_stages import CANONICAL_SUB_STATUSES, DEFAULT_SUB_STATUSES
 
 REQUIRED_STAGES = [
     "sourcing", "screening", "long_list", "short_list",

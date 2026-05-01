@@ -5,7 +5,7 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.company import CultureValue
+from app.models.company import CultureValue
 
 logger = logging.getLogger(__name__)
 

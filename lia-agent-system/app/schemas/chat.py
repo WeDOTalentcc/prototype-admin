@@ -21,12 +21,8 @@ class MessageResponse(BaseModel):
     role: str
     content: str
     message_metadata: dict[str, Any] = {}
-    # LIA-LCF-01 (Task #620): tool calls observed during this turn (ReAct agent
-    # tool invocations). Surfaced at the top level of the message so external
-    # consumers (eval/judge) can read the executed tool list directly.
-    tool_calls: list[dict[str, Any]] = []
     created_at: datetime
-
+    
     class Config:
         from_attributes = True
 

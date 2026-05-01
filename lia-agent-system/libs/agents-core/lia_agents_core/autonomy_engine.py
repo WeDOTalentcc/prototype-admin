@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy import select
 
 from lia_config.database import AsyncSessionLocal
-from lia_models.company_hiring_policy import CompanyHiringPolicy, AUTOMATION_RULES_DEFAULTS
+from app.models.company_hiring_policy import CompanyHiringPolicy, AUTOMATION_RULES_DEFAULTS
 
 logger = logging.getLogger(__name__)
 

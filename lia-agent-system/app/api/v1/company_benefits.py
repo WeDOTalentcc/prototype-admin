@@ -1,78 +1,15 @@
 """
 Company Benefits API endpoints.
 CRUD operations for company-specific benefits management.
-
-Schema-alvo: 1:1 com Rails canonical (`ats-api-copia/db/migrate/20250715000005_create_benefits.rb`).
-Cobre 24 colunas (22 do Rails + icon e timestamps).
-
-Multi-tenancy: scoping por company_id em toda query (RLS no DB tambem aplicada).
-
-LGPD: provider_contact e PII. Camadas downstream (logs, JD publicada) devem
-mascarar — ver // TODO(LGPD:001) em jd_template_service.
-
-Mudancas Fase 1 (2026-04-30):
-  - Pydantic Create/Update/Response cobrem 22 campos editaveis (antes: 8).
-  - Validacao condicional por value_type (monetary|percentage|informative).
-  - Helper _to_response retorna 24 colunas.
 """
 import logging
-from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
-# ---------------------------------------------------------------------------
-# Fairness guard — // TODO(FAIRNESS:001) — non-negotiable rule (CLAUDE.md)
-# ---------------------------------------------------------------------------
-# Beneficios NAO podem ter elegibilidade por atributo protegido (raca, genero,
-# idade, religiao, etnia, estado civil, saude, deficiencia). Lista PT-BR + EN
-# para cobrir input em ambos idiomas. Verificacao case-insensitive em
-# applicable_to[], seniority_levels[], contract_types[] e chaves de departments{}.
-#
-# Source-of-truth: app/shared/compliance/protected_attributes.py (existe — Fase 4
-# vai consolidar). Por ora, lista local mantida em sincronia com fairness_guard.py.
-PROHIBITED_ELIGIBILITY_TERMS = frozenset({
-    # PT-BR
-    "raca", "raça", "genero", "gênero", "religiao", "religião", "etnia",
-    "estado_civil", "estado civil", "casado", "solteiro", "divorciado",
-    "idade", "anos", "menor_de", "maior_de", "jovem", "idoso",
-    "saude", "saúde", "doenca", "doença", "deficiencia", "deficiência",
-    "gravidez", "gestante", "maternidade",
-    "homem", "mulher", "masculino", "feminino", "lgbt", "lgbtqia",
-    "branco", "negro", "pardo", "amarelo", "indigena", "indígena",
-    "catolico", "evangelico", "judeu", "muculmano", "ateu",
-    # EN (defensivo — recrutador internacional)
-    "race", "gender", "religion", "ethnicity", "marital", "single", "married",
-    "age", "elderly", "young", "youth",
-    "health", "disease", "disability", "pregnancy", "pregnant", "maternity",
-    "male", "female", "white", "black", "asian", "hispanic",
-})
-
-
-def _check_fairness_violation(values: list[str] | None, field_name: str) -> None:
-    """Raise se valores contiverem termo discriminatorio. Computacional, fail-loud."""
-    if not values:
-        return
-    for v in values:
-        if not v:
-            continue
-        normalized = str(v).lower().strip()
-        for prohibited in PROHIBITED_ELIGIBILITY_TERMS:
-            if prohibited in normalized:
-                raise ValueError(
-                    f"Termo discriminatorio detectado em {field_name}: '{v}'. "
-                    f"Beneficios NAO podem ter elegibilidade por atributo protegido "
-                    f"(raca, genero, idade, religiao, etnia, estado civil, saude, "
-                    f"deficiencia, gravidez). LGPD + non-negotiable rule (CLAUDE.md). "
-                    f"Use criterios neutros como cargo, senioridade, tipo de contrato. "
-                    f"Para casos especificos (ex: licenca-maternidade), use 'all' em "
-                    f"applicable_to e descreva no campo description."
-                )
-
-from app.auth.dependencies import get_current_user_or_demo, get_user_company_id, validate_company_access
+from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
 from app.domains.company.repositories.company_benefit_repository import (
@@ -83,122 +20,41 @@ router = APIRouter(prefix="/company/benefits", tags=["company-benefits"])
 logger = logging.getLogger(__name__)
 
 
-# ---------------------------------------------------------------------------
-# Pydantic schemas
-# ---------------------------------------------------------------------------
-
-class CompanyBenefitBase(BaseModel):
-    """Campos editaveis (mesmos para Create e Update)."""
-
-    name: str | None = Field(None, max_length=255)
+class CompanyBenefitCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=255)
     category: str | None = None
     description: str | None = None
     icon: str | None = None
-
-    # Valor (3 modos)
     value: float | None = None
-    percentage_value: float | None = None
-    value_type: str | None = "informative"  # monetary | percentage | informative
-    value_details: str | None = None
-
-    # Elegibilidade
-    applicable_to: list[str] | None = Field(default_factory=list)
-    seniority_levels: list[str] | None = Field(default_factory=list)
-    contract_types: list[str] | None = Field(default_factory=list)
-    departments: dict[str, Any] | None = Field(default_factory=dict)
-
-    # Regras operacionais
-    waiting_period_days: int | None = None
-    is_mandatory: bool | None = False
-    is_active: bool | None = True
-    is_highlighted: bool | None = False
-    is_discount: bool | None = False
-
-    # Apresentacao
-    order: int | None = 0
-
-    # Provider (PII em provider_contact — // TODO(LGPD:001) em jd_template_service)
-    provider: str | None = None
-    provider_contact: str | None = None
+    value_type: str | None = "informative"
+    is_highlighted: bool = False
+    order: int = 0
 
 
-class CompanyBenefitCreate(CompanyBenefitBase):
-    """Create exige `name` (override).
-
-    Validacao condicional por value_type:
-      - monetary    -> value e obrigatorio
-      - percentage  -> percentage_value e obrigatorio
-      - informative -> value_details e obrigatorio (ou description como fallback)
-    """
-    name: str = Field(..., min_length=1, max_length=255)
-
-    @model_validator(mode="after")
-    def validate_value_by_type(self) -> "CompanyBenefitCreate":
-        vt = (self.value_type or "informative").lower()
-        if vt == "monetary" and self.value is None:
-            raise ValueError("value e obrigatorio quando value_type='monetary'")
-        if vt == "percentage" and self.percentage_value is None:
-            raise ValueError("percentage_value e obrigatorio quando value_type='percentage'")
-        if vt == "informative" and not self.value_details and not self.description:
-            raise ValueError(
-                "value_details (ou description) e obrigatorio quando value_type='informative'"
-            )
-        return self
-
-    # // TODO(FAIRNESS:001) — fairness guard (LGPD + non-negotiable CLAUDE.md)
-    @field_validator("applicable_to", "seniority_levels", "contract_types")
-    @classmethod
-    def _no_discriminatory_terms_in_lists(cls, v: list[str] | None, info) -> list[str] | None:
-        _check_fairness_violation(v, info.field_name)
-        return v
-
-    @field_validator("departments")
-    @classmethod
-    def _no_discriminatory_keys_in_departments(
-        cls, v: dict | None, info
-    ) -> dict | None:
-        if v:
-            _check_fairness_violation(list(v.keys()), info.field_name)
-        return v
-
-
-class CompanyBenefitUpdate(CompanyBenefitBase):
-    """Update aceita campos parciais. Sem validacao condicional pois pode
-    estar atualizando so um pedaco; UI deve garantir consistencia."""
-    pass
+class CompanyBenefitUpdate(BaseModel):
+    name: str | None = None
+    category: str | None = None
+    description: str | None = None
+    icon: str | None = None
+    value: float | None = None
+    value_type: str | None = None
+    is_active: bool | None = None
+    is_highlighted: bool | None = None
+    order: int | None = None
 
 
 class CompanyBenefitResponse(BaseModel):
-    """Response com 24 colunas (22 Rails + icon + timestamps)."""
     id: str
     company_id: str
-
     name: str
     category: str | None = None
     description: str | None = None
     icon: str | None = None
-
     value: float | None = None
-    percentage_value: float | None = None
     value_type: str | None = None
-    value_details: str | None = None
-
-    applicable_to: list[str] = Field(default_factory=list)
-    seniority_levels: list[str] = Field(default_factory=list)
-    contract_types: list[str] = Field(default_factory=list)
-    departments: dict[str, Any] = Field(default_factory=dict)
-
-    waiting_period_days: int | None = None
-    is_mandatory: bool = False
     is_active: bool = True
     is_highlighted: bool = False
-    is_discount: bool = False
-
     order: int = 0
-
-    provider: str | None = None
-    provider_contact: str | None = None
-
     created_at: str | None = None
     updated_at: str | None = None
 
@@ -215,29 +71,14 @@ def _to_response(b) -> CompanyBenefitResponse:
         description=b.description,
         icon=b.icon,
         value=b.value,
-        percentage_value=getattr(b, "percentage_value", None),
         value_type=b.value_type,
-        value_details=getattr(b, "value_details", None),
-        applicable_to=getattr(b, "applicable_to", None) or [],
-        seniority_levels=getattr(b, "seniority_levels", None) or [],
-        contract_types=getattr(b, "contract_types", None) or [],
-        departments=getattr(b, "departments", None) or {},
-        waiting_period_days=getattr(b, "waiting_period_days", None),
-        is_mandatory=getattr(b, "is_mandatory", False) or False,
         is_active=b.is_active,
         is_highlighted=b.is_highlighted,
-        is_discount=getattr(b, "is_discount", False) or False,
-        order=b.order or 0,
-        provider=getattr(b, "provider", None),
-        provider_contact=getattr(b, "provider_contact", None),
+        order=b.order,
         created_at=b.created_at.isoformat() if b.created_at else None,
         updated_at=b.updated_at.isoformat() if b.updated_at else None,
     )
 
-
-# ---------------------------------------------------------------------------
-# Routes
-# ---------------------------------------------------------------------------
 
 @router.get("/", response_model=list[CompanyBenefitResponse])
 async def list_company_benefits(
@@ -251,7 +92,6 @@ async def list_company_benefits(
     """List company benefits."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
-        validate_company_access(current_user, effective_company_id)
         repo = CompanyBenefitRepository(db)
         benefits = await repo.list_for_company(
             effective_company_id,
@@ -275,7 +115,6 @@ async def create_company_benefit(
     """Create a new company benefit."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
-        validate_company_access(current_user, effective_company_id)
         repo = CompanyBenefitRepository(db)
         new_benefit = await repo.create(effective_company_id, benefit.model_dump())
         logger.info(f"Created company benefit: {new_benefit.name} for company: {effective_company_id}")
@@ -298,7 +137,6 @@ async def get_company_benefit(
         benefit = await repo.get_by_id(benefit_id)
         if not benefit:
             raise HTTPException(status_code=404, detail="Benefit not found")
-        validate_company_access(current_user, benefit.company_id)
         return _to_response(benefit)
     except HTTPException:
         raise
@@ -320,7 +158,6 @@ async def update_company_benefit(
         benefit = await repo.get_by_id(benefit_id)
         if not benefit:
             raise HTTPException(status_code=404, detail="Benefit not found")
-        validate_company_access(current_user, benefit.company_id)
         benefit = await repo.update(benefit, updates.model_dump(exclude_unset=True))
         logger.info(f"Updated company benefit: {benefit.name}")
         return _to_response(benefit)
@@ -345,7 +182,6 @@ async def delete_company_benefit(
         benefit = await repo.get_by_id(benefit_id)
         if not benefit:
             raise HTTPException(status_code=404, detail="Benefit not found")
-        validate_company_access(current_user, benefit.company_id)
         if hard_delete:
             await repo.hard_delete(benefit)
             message = f"Benefit '{benefit.name}' permanently deleted"
@@ -371,7 +207,6 @@ async def seed_default_benefits(
     """Seed default Brazilian benefits for a company."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
-        validate_company_access(current_user, effective_company_id)
         repo = CompanyBenefitRepository(db)
         existing_count = await repo.count_for_company(effective_company_id)
         if existing_count > 0:

@@ -70,7 +70,7 @@ class TestEnrichAndFilterCandidates:
             return_value=mock_svc,
         ):
             db = AsyncMock()
-            result, _stats = await enrich_and_filter_candidates(db, candidates)
+            result = await enrich_and_filter_candidates(db, candidates)
 
         assert len(result) == 3
         mock_svc.enrich_batch.assert_not_called()
@@ -96,7 +96,7 @@ class TestEnrichAndFilterCandidates:
             return_value=mock_svc,
         ):
             db = AsyncMock()
-            result, _stats = await enrich_and_filter_candidates(db, candidates)
+            result = await enrich_and_filter_candidates(db, candidates)
 
         assert len(result) == 1
         assert result[0].id == "1"
@@ -135,7 +135,7 @@ class TestEnrichAndFilterCandidates:
             return_value=mock_svc,
         ):
             db = AsyncMock()
-            result, _stats = await enrich_and_filter_candidates(db, candidates)
+            result = await enrich_and_filter_candidates(db, candidates)
 
         assert len(result) == 19
         mock_svc.enrich_batch.assert_called_once()
@@ -164,7 +164,7 @@ class TestEnrichAndFilterCandidates:
             return_value=mock_svc,
         ):
             db = AsyncMock()
-            result, _stats = await enrich_and_filter_candidates(db, candidates)
+            result = await enrich_and_filter_candidates(db, candidates)
 
         assert len(result) == 2
         mock_svc.enrich_batch.assert_not_called()
@@ -186,68 +186,10 @@ class TestEnrichAndFilterCandidates:
             return_value=mock_svc,
         ):
             db = AsyncMock()
-            result, _stats = await enrich_and_filter_candidates(db, candidates)
+            result = await enrich_and_filter_candidates(db, candidates)
 
         assert len(result) == 1
         assert result[0].id == "1"
-
-
-class TestEnrichmentStats:
-    """Task #394: enrich_and_filter_candidates returns stats so the frontend
-    can show how many candidates were dropped for missing contact."""
-
-    @pytest.mark.asyncio
-    async def test_stats_counts_filtered_and_attempted(self):
-        from app.api.v1.candidate_search._shared import enrich_and_filter_candidates
-
-        candidates = [
-            _make_candidate_dto("1", email="ok@test.com"),
-            _make_candidate_dto("2", linkedin_url="https://linkedin.com/in/u2"),
-            _make_candidate_dto("3", linkedin_url="https://linkedin.com/in/u3"),
-        ]
-
-        mock_svc = MagicMock()
-        mock_svc.enrich_batch = AsyncMock(return_value=[
-            {"success": False},
-            {"success": False},
-        ])
-
-        with patch(
-            "app.api.v1.candidate_search._shared.get_contact_enrichment_service",
-            return_value=mock_svc,
-        ):
-            db = AsyncMock()
-            kept, stats = await enrich_and_filter_candidates(db, candidates)
-
-        assert len(kept) == 1
-        assert stats.filtered_no_contact == 2
-        assert stats.enrichment_attempted == 2
-        # Task #400: também devolvemos a lista detalhada dos descartados.
-        assert len(stats.filtered_candidates) == 2
-        discarded_ids = {c.id for c in stats.filtered_candidates}
-        assert discarded_ids == {"2", "3"}
-        assert all(c.linkedin_url for c in stats.filtered_candidates)
-
-    @pytest.mark.asyncio
-    async def test_stats_zero_when_nothing_filtered(self):
-        from app.api.v1.candidate_search._shared import enrich_and_filter_candidates
-
-        candidates = [_make_candidate_dto("1", email="a@b.com")]
-
-        mock_svc = MagicMock()
-        mock_svc.enrich_batch = AsyncMock(return_value=[])
-
-        with patch(
-            "app.api.v1.candidate_search._shared.get_contact_enrichment_service",
-            return_value=mock_svc,
-        ):
-            db = AsyncMock()
-            kept, stats = await enrich_and_filter_candidates(db, candidates)
-
-        assert len(kept) == 1
-        assert stats.filtered_no_contact == 0
-        assert stats.enrichment_attempted == 0
-        assert stats.filtered_candidates == []
 
 
 class TestToolRegistryInclusion:

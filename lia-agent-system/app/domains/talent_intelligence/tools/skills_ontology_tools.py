@@ -16,7 +16,6 @@ from app.shared.tool_handler import tool_handler
 logger = logging.getLogger(__name__)
 
 
-# require_company=False kept: global skill ontology — tenant-agnostic by design (gated by module flag)
 @tool_handler("talent_intelligence", require_company=False, module="talent_intelligence_pro")
 async def infer_related_skills(
     skills: list[str] | None = None,
@@ -68,8 +67,7 @@ async def infer_related_skills(
     }
 
 
-# require_company=False kept: global skill adjacency graph — tenant-agnostic (gated by module flag)
-@tool_handler("talent_intelligence", module="talent_intelligence_pro", require_company=False)
+@tool_handler("talent_intelligence", require_company=False, module="talent_intelligence_pro")
 async def get_skill_adjacencies(
     skill: str = "",
     min_weight: float = 0.0,

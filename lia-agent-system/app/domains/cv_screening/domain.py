@@ -23,23 +23,6 @@ _KEYWORD_ACTION_MAP: dict[str, str] = (
 _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id="cv_screening")
 
 
-# Mapeamento canônico action_id -> tool_id (module-level p/ auditor + smoke test).
-# Mantido em uma única definição (módulo) e referenciado diretamente em
-# execute_action — mesmo padrão adotado em SourcingDomain (task #579).
-_ACTION_TOOL_MAP: dict[str, str] = {
-    "parse_cv": "parse_cv",
-    "calculate_wsi_score": "calculate_wsi",
-    "evaluate_rubric": "evaluate_rubric",
-    "generate_questions": "generate_wsi_questions",
-    "adjust_questions": "adjust_wsi_questions",
-    "voice_screening": "run_screening_pipeline",
-    "normalize_scores": "normalize_scores",
-    "assess_seniority": "assess_seniority",
-    "send_feedback": "send_candidate_feedback",
-    "pre_qualify": "pre_qualify_candidate",
-}
-
-
 
 @register_domain
 class CVScreeningDomain(ComplianceDomainPrompt):
@@ -50,7 +33,6 @@ class CVScreeningDomain(ComplianceDomainPrompt):
     domain_id = "cv_screening"
     domain_name = "CV Screening & WSI Assessment"
     description = "Triagem curricular, avaliação WSI e scoring de candidatos"
-    agent_aliases = ("screening", "wsi_evaluator")
 
     def get_allowed_actions(self) -> list[DomainAction]:
         from app.domains.cv_screening.actions import CV_SCREENING_ACTIONS
@@ -113,6 +95,20 @@ class CVScreeningDomain(ComplianceDomainPrompt):
         )
 
 
+    _ACTION_TOOL_MAP: dict[str, str] = {
+        "parse_cv": "parse_cv",
+        "auto_screen": "score_cv",
+        "calculate_wsi_score": "calculate_wsi",
+        "evaluate_rubric": "evaluate_rubric",
+        "generate_questions": "generate_wsi_questions",
+        "adjust_questions": "adjust_wsi_questions",
+        "normalize_scores": "normalize_scores",
+        "assess_seniority": "assess_seniority",
+        "send_feedback": "send_candidate_feedback",
+        "pre_qualify": "pre_qualify_candidate",
+        "voice_screening": "run_screening_pipeline",
+    }
+
     async def execute_action(
         self, action_id: str, params: dict[str, Any], context: DomainContext
     ) -> DomainResponse:
@@ -127,7 +123,7 @@ class CVScreeningDomain(ComplianceDomainPrompt):
         from app.domains.cv_screening.tools import CV_SCREENING_TOOLS, execute_cv_screening_tool
 
         tool_ids = {t["tool_id"] for t in CV_SCREENING_TOOLS}
-        mapped_tool = _ACTION_TOOL_MAP.get(action_id)
+        mapped_tool = self._ACTION_TOOL_MAP.get(action_id)
 
         if mapped_tool and mapped_tool in tool_ids:
             result = await execute_cv_screening_tool(
@@ -135,12 +131,6 @@ class CVScreeningDomain(ComplianceDomainPrompt):
                 params=params,
                 tenant_id=context.tenant_id,
             )
-            if isinstance(result, dict) and (result.get("status") == "error" or result.get("success") is False):
-                return DomainResponse.error_response(
-                    error=result.get("error") or result.get("message") or f"Ferramenta '{mapped_tool}' falhou.",
-                    domain_id=self.domain_id,
-                    action_id=action_id,
-                )
             return DomainResponse.success_response(
                 message=f"Ferramenta '{mapped_tool}' executada para ação '{action.name}'.",
                 data={"action_id": action_id, "tool_id": mapped_tool, "result": result},
@@ -149,7 +139,6 @@ class CVScreeningDomain(ComplianceDomainPrompt):
             )
 
         handler_map = {
-            "auto_screen": self._handle_auto_screen,
             "batch_screen": self._handle_batch_screen,
             "rank_candidates": self._handle_rank_candidates,
             "dynamic_cutoff": self._handle_dynamic_cutoff,
@@ -184,38 +173,8 @@ class CVScreeningDomain(ComplianceDomainPrompt):
             action_id=action_id,
         )
 
-    async def _handle_auto_screen(self, params: dict, context: DomainContext) -> DomainResponse:
-        from app.domains.cv_screening.services.cv_scoring_service import cv_scoring_service
-
-        candidate_id = params.get("candidate_id")
-        job_id = params.get("job_id") or params.get("vacancy_id")
-
-        if not candidate_id or not job_id:
-            return DomainResponse.clarification_response(
-                question="Informe o ID do candidato e da vaga para a triagem automática.",
-                domain_id=self.domain_id, action_id="auto_screen",
-            )
-
-        result = await cv_scoring_service.screen_candidate(
-            candidate_id=str(candidate_id),
-            vacancy_id=str(job_id),
-            company_id=context.tenant_id,
-        )
-
-        if isinstance(result, dict) and result.get("success") is False:
-            return DomainResponse.error_response(
-                error=result.get("error") or result.get("message") or "Falha na triagem automática.",
-                domain_id=self.domain_id, action_id="auto_screen",
-            )
-
-        return DomainResponse.success_response(
-            message=f"Triagem automática concluída para candidato #{candidate_id} na vaga #{job_id}.",
-            data={"action_id": "auto_screen", "candidate_id": candidate_id, "job_id": job_id, "result": result},
-            domain_id=self.domain_id, action_id="auto_screen",
-        )
-
     async def _handle_batch_screen(self, params: dict, context: DomainContext) -> DomainResponse:
-        from app.domains.cv_screening.services.cv_scoring_service import cv_scoring_service
+        from app.domains.cv_screening.tools import execute_cv_screening_tool
 
         job_id = params.get("job_id")
         candidate_ids = params.get("candidate_ids", [])
@@ -228,10 +187,10 @@ class CVScreeningDomain(ComplianceDomainPrompt):
 
         results = []
         for cid in (candidate_ids or []):
-            result = await cv_scoring_service.screen_candidate(
-                candidate_id=str(cid),
-                vacancy_id=str(job_id),
-                company_id=context.tenant_id,
+            result = await execute_cv_screening_tool(
+                "score_cv",
+                {"candidate_id": str(cid), "job_id": str(job_id)},
+                context.tenant_id,
             )
             results.append({"candidate_id": cid, "result": result})
 

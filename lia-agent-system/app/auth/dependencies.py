@@ -12,87 +12,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.models import User, UserRole
-from app.auth.security import decode_token, get_password_hash
+from app.auth.security import decode_token
 from app.core.database import get_db
-from app.core.tenant import DEMO_COMPANY_UUID, normalize_demo_company_id
-
-DEMO_USER_EMAIL = "demo@wedotalent.com"
-DEMO_USER_PASSWORD = os.getenv("DEV_AUTO_LOGIN_PASSWORD", "demo123")
-
-_DEV_ENVS = {"development", "dev", "local"}
-
-
-def _is_dev_environment() -> bool:
-    """Single source of truth for dev-mode gating (canonical APP_ENV)."""
-    from app.core.config import settings as app_settings
-    env = (
-        getattr(app_settings, "APP_ENV", None)
-        or getattr(app_settings, "ENVIRONMENT", None)
-        or os.getenv("APP_ENV", "development")
-    )
-    return str(env).lower() in _DEV_ENVS
-
-
-async def ensure_demo_user(db: AsyncSession) -> User:
-    """
-    Ensure the dev demo user exists with a usable bcrypt password hash.
-
-    Idempotent: creates the user if missing, repairs the password hash if it
-    was previously seeded with a placeholder (e.g. "demo_not_for_login").
-    Used both lazily by `get_current_user_or_demo` and eagerly at startup
-    (in dev mode) so that the dev auto-login flow can reach `/auth/login`
-    successfully on the very first request.
-
-    Defense-in-depth: refuses to create or repair the demo account outside
-    of dev environments, so a forgotten gate at the call site cannot expose
-    a credentialed back-door account in production/staging.
-    """
-    if not _is_dev_environment():
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Demo user is disabled outside development",
-        )
-    from app.shared.encryption.encrypted_field_mixin import _sha256_hash
-    from sqlalchemy import or_
-    from uuid import uuid4
-
-    result = await db.execute(
-        select(User).where(
-            or_(
-                User.email_hash == _sha256_hash(DEMO_USER_EMAIL),
-                User._email_raw == DEMO_USER_EMAIL,
-            )
-        )
-    )
-    demo_user = result.scalar_one_or_none()
-
-    expected_hash_prefix = ("$2a$", "$2b$", "$2y$")
-    if demo_user is not None:
-        changed = False
-        if not demo_user.password_hash or not demo_user.password_hash.startswith(expected_hash_prefix):
-            demo_user.password_hash = get_password_hash(DEMO_USER_PASSWORD)
-            changed = True
-        if demo_user.company_id and str(demo_user.company_id) == "demo_company":
-            demo_user.company_id = DEMO_COMPANY_UUID
-            changed = True
-        if changed:
-            await db.commit()
-            await db.refresh(demo_user)
-        return demo_user
-
-    demo_user = User(
-        id=uuid4(),
-        email=DEMO_USER_EMAIL,
-        name="Demo User",
-        password_hash=get_password_hash(DEMO_USER_PASSWORD),
-        role=UserRole.recruiter,
-        company_id=DEMO_COMPANY_UUID,
-        is_active=True,
-    )
-    db.add(demo_user)
-    await db.commit()
-    await db.refresh(demo_user)
-    return demo_user
 
 security = HTTPBearer()
 optional_security = HTTPBearer(auto_error=False)
@@ -323,13 +244,44 @@ async def get_current_user_or_demo(
             return rails_user
 
     # Multi-tenancy: only allow demo user in development
-    if not _is_dev_environment():
+    from app.core.config import settings as app_settings
+    if getattr(app_settings, "ENVIRONMENT", "development") != "development":
         raise HTTPException(
             status_code=401,
             detail="Authentication required"
         )
 
-    return await ensure_demo_user(db)
+    from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+    from sqlalchemy import or_
+    _demo_email = "demo@wedotalent.com"
+    result = await db.execute(
+        select(User).where(
+            or_(
+                User.email_hash == _sha256_hash(_demo_email),
+                User._email_raw == _demo_email,
+            )
+        )
+    )
+    demo_user = result.scalar_one_or_none()
+    
+    if demo_user:
+        return demo_user
+    
+    from uuid import uuid4
+    demo_user = User(
+        id=uuid4(),
+        email="demo@wedotalent.com",
+        name="Demo User",
+        password_hash="demo_not_for_login",
+        role=UserRole.recruiter,
+        company_id="demo_company",
+        is_active=True
+    )
+    db.add(demo_user)
+    await db.commit()
+    await db.refresh(demo_user)
+    
+    return demo_user
 
 
 async def get_current_user_strict(
@@ -409,12 +361,6 @@ def get_user_company_id(user: User) -> str:
     Returns:
         The company ID for the user
     """
-    _normalized_cid = normalize_demo_company_id(
-        str(user.company_id) if user.company_id is not None else None,
-        context="auth.get_user_company_id",
-    )
-    if _normalized_cid and _normalized_cid != (str(user.company_id) if user.company_id else None):
-        user.company_id = _normalized_cid
     if not user.company_id:
         from fastapi import HTTPException
         raise HTTPException(

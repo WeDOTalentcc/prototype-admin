@@ -11,7 +11,6 @@ from ._shared import (
     CandidateProfile,
     CandidateSearchResultDTO,
     CreditEstimateDTO,
-    DiscardedCandidateDTO,
     EducationDTO,
     EvaluateForJobRequest,
     EvaluateForJobResponse,
@@ -43,7 +42,6 @@ from ._shared import (
     _normalize_priority,
     assert_resource_ownership,
     enrich_and_filter_candidates,
-    persist_search_with_discards,
     get_current_user_or_demo,
     get_cv_parser_service,
     get_db,
@@ -76,11 +74,6 @@ class SimilarSearchResponse(BaseModel):
     total_count: int = 0
     credits_remaining: int | None = None
     search_time_seconds: float | None = None
-    filtered_no_contact: int = 0
-    enrichment_attempted: int = 0
-    filtered_candidates: list[DiscardedCandidateDTO] = Field(default_factory=list)
-    # Task #403 — id em ``candidate_searches`` para recuperar descartados depois.
-    search_id: str | None = None
 
 
 @router.post("/similar", response_model=SimilarSearchResponse)
@@ -89,7 +82,6 @@ async def search_similar_candidates(
     db: AsyncSession = Depends(get_db)
 ,
     pearch_svc: PearchService = Depends(get_pearch_service),
-    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Encontra candidatos similares a um perfil específico.
@@ -102,7 +94,7 @@ async def search_similar_candidates(
 
     from sqlalchemy import select
 
-    from lia_models.candidate import Candidate
+    from app.models.candidate import Candidate
     
     if not request.linkedin_url and not request.candidate_id:
         raise HTTPException(
@@ -184,25 +176,8 @@ async def search_similar_candidates(
         for profile in result.pearch_candidates:
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "pearch"))
         
-        candidates, _enrich_stats = await enrich_and_filter_candidates(db, candidates)
-
-        _search_id = await persist_search_with_discards(
-            db,
-            user=current_user,
-            query=generated_query,
-            search_source=("hybrid" if request.search_pearch else "local"),
-            local_count=result.local_count,
-            pearch_count=result.pearch_count,
-            total_count=len(candidates),
-            used_global_search=bool(request.search_pearch),
-            discarded=_enrich_stats.filtered_candidates,
-            search_filters={
-                "mode": "similar",
-                "linkedin_url": request.linkedin_url,
-                "candidate_id": request.candidate_id,
-            },
-        )
-
+        candidates = await enrich_and_filter_candidates(db, candidates)
+        
         return SimilarSearchResponse(
             reference_profile=reference_profile,
             query_generated=generated_query,
@@ -211,11 +186,7 @@ async def search_similar_candidates(
             pearch_count=result.pearch_count,
             total_count=len(candidates),
             credits_remaining=result.pearch_credits_remaining,
-            search_time_seconds=(result.local_search_time or 0) + (result.pearch_search_time or 0),
-            filtered_no_contact=_enrich_stats.filtered_no_contact,
-            enrichment_attempted=_enrich_stats.enrichment_attempted,
-            filtered_candidates=_enrich_stats.filtered_candidates,
-            search_id=_search_id,
+            search_time_seconds=(result.local_search_time or 0) + (result.pearch_search_time or 0)
         )
     
     except HTTPException:

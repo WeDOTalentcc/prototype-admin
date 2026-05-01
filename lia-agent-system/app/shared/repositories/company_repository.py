@@ -5,7 +5,7 @@ import logging
 
 from sqlalchemy import select
 
-from lia_models.company import CompanyProfile
+from app.models.company import CompanyProfile
 from app.shared.repositories.sqlalchemy_base import SQLAlchemyRepository
 
 logger = logging.getLogger(__name__)

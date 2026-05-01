@@ -32,7 +32,7 @@ async def _get_drift_status(company_id: str, db: AsyncSession) -> dict[str, Any]
 
     # Quantitative drift (existing ModelDriftService)
     try:
-        from app.shared.observability.model_drift_service import ModelDriftService
+        from app.domains.ai.services.model_drift_service import ModelDriftService
         svc = ModelDriftService()
         status = await svc.evaluate(db, company_id)
         result["quantitative"] = {
@@ -95,7 +95,7 @@ async def get_agent_quality_dashboard(
 
     # --- 1. Audit logs: executions, confidence, errors per agent ---
     try:
-        from lia_models.audit_log import AuditLog
+        from app.models.audit_log import AuditLog
 
         audit_result = await db.execute(
             select(

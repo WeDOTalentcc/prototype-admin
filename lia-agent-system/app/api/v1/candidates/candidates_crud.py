@@ -3,11 +3,9 @@ CRUD endpoints for candidates: list, get, create, update, stage-update, delete, 
 """
 import uuid
 from datetime import datetime
-from typing import Annotated, Optional
+from typing import Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path, Query, Request
-
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 
 from ._shared import (
     ActivityService,
@@ -25,18 +23,15 @@ from ._shared import (
     get_activity_service,
     get_audit_service,
     get_candidate_repo,
-    get_current_user_or_demo,
     get_stage_rank,
     get_vacancy_candidate_repo,
     logger,
     normalize_array_field,
-    User,
 )
 from pydantic import BaseModel
 from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RAILS_ENABLED
 from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
 from app.shared.rails_migration.deprecation import enforce_candidates_deprecation
-from app.shared.robustness.idempotency import reject_duplicate_async
 
 # MIGRATION_PLAN item 7.2 — Python CRUD deprecated in favor of Rails (ats-api-copia).
 #
@@ -53,59 +48,6 @@ router = APIRouter(
 # ---------------------------------------------------------------------------
 # Response helper: serialize a candidate ORM object to dict
 # ---------------------------------------------------------------------------
-def _serialize_candidate_light(c) -> dict:
-    """
-    Serialização enxuta para a LISTAGEM (GET /candidates).
-
-    Remove colunas JSON/TEXT pesadas que o UI da listagem não consome —
-    elas permanecem disponíveis via GET /candidates/{id} (serializer `full`).
-    Motivação: reduzir payload de ~2.3KB/candidato para ~800B/candidato e
-    evitar CPU de parsing de JSONs grandes (pearch_insights, lia_insights,
-    additional_data, work_history, etc.) no hot path do list.
-    Veja também `CandidateRepository.list_candidates(slim=True)` que evita
-    trazer essas colunas do Postgres logo na query (defer).
-    """
-    return {
-        # Identificação + contato básico exibido nos cards/rows
-        "id": str(c.id),
-        "name": c.name,
-        "email": c.email,
-        "phone": c.phone,
-        "mobile_phone": c.mobile_phone,
-        "linkedin_url": c.linkedin_url,
-        "avatar_url": c.avatar_url,
-        # Perfil profissional resumido
-        "current_title": c.current_title,
-        "current_company": c.current_company,
-        "seniority_level": c.seniority_level,
-        "years_of_experience": c.years_of_experience,
-        "headline": c.headline,
-        "technical_skills": c.technical_skills or [],
-        "location_city": c.location_city,
-        "location_state": c.location_state,
-        "location_country": c.location_country,
-        # Flags usadas para badges/filtros no card
-        "is_remote": c.is_remote,
-        "is_open_to_work": c.is_open_to_work,
-        "is_decision_maker": c.is_decision_maker,
-        "is_top_universities": c.is_top_universities,
-        "is_hiring": c.is_hiring,
-        # Métricas exibidas no card
-        "lia_score": c.lia_score,
-        "skills_match_percentage": c.skills_match_percentage,
-        # Fonte + workflow
-        "source": c.source,
-        "status": c.status,
-        "is_active": c.is_active,
-        "is_blacklisted": c.is_blacklisted,
-        "tags": c.tags or [],
-        # Timestamps
-        "created_at": c.created_at.isoformat() if c.created_at else None,
-        "updated_at": c.updated_at.isoformat() if c.updated_at else None,
-        "last_activity_at": c.last_activity_at.isoformat() if c.last_activity_at else None,
-    }
-
-
 def _serialize_candidate(c, *, full: bool = False) -> dict:
     """Return a dict representation of a Candidate ORM object."""
     base = {
@@ -223,39 +165,10 @@ async def list_candidates(
     limit: int = Query(default=50, le=200),
     sort_by: str | None = None,
     sort_order: str | None = None,
-    full: bool = Query(
-        default=False,
-        description=(
-            "Quando true retorna o payload completo de cada candidato (inclui JSONs "
-            "pesados: work_history, pearch_insights, lia_insights, additional_data, "
-            "resume_text etc). Por padrão (false) é retornado payload enxuto ~3x menor "
-            "adequado para o hot path da listagem."
-        ),
-    ),
-    request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
-    current_user: User = Depends(get_current_user_or_demo),
 ):
-    """List candidates. When RAILS_API_URL is configured, tries Rails first then falls back to local DB.
-
-    Security contract (tasks #290 + #295):
-      1. Endpoint depends on `get_current_user_or_demo`, which raises 401
-         outside DEV_MODE when no valid token is presented. The upstream
-         `AuthEnforcementMiddleware` provides a second line of defence.
-      2. The authenticated user's `company_id` is propagated to BOTH
-         `count_candidates` and `list_candidates`; the repo layer applies
-         `Candidate.company_id == cid` so a recruiter in tenant A can never
-         see rows belonging to tenant B.
-      3. Any exception raised below the repo boundary is logged with full
-         context and re-raised as a sanitized HTTP 500 — the global
-         StarletteHTTPException handler in `app.main` further rewrites the
-         body to `{"message": "Internal server error", ...}` so DB driver
-         strings, DSNs and tracebacks never reach the client.
-      Regression coverage: tests/integration/test_candidates_tenant_isolation.py
-    """
-    _company_id = str(current_user.company_id) if current_user.company_id else None
-    _request_id = getattr(request.state, "request_id", "unknown") if request else "unknown"
+    """List candidates. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
     # bypassing endpoint-level filters and authorization.
     if RAILS_ENABLED:
@@ -297,80 +210,30 @@ async def list_candidates(
                 id_list = None
 
         effective_skip = offset if offset > 0 else skip
-
-        # Instrumentação de perf (task #276): mede cada etapa separadamente para
-        # detectar regressões futuras (count lento, list lento ou serialização
-        # pesada). p95 alvo: <1s com limit=20. Logs estruturados para grep.
-        import time as _time
-        _t_total = _time.perf_counter()
-        _t0 = _time.perf_counter()
         total = await candidate_repo.count_candidates(
             search=search, status=status, source=source, seniority=seniority, ids=id_list,
-            company_id=_company_id,
         )
-        _t_count_ms = (_time.perf_counter() - _t0) * 1000.0
-
-        _t0 = _time.perf_counter()
         candidates = await candidate_repo.list_candidates(
             search=search, status=status, source=source, seniority=seniority, ids=id_list,
             skip=effective_skip, limit=limit, sort_by=sort_by, sort_order=sort_order,
-            slim=not full, company_id=_company_id,
         )
-        _t_list_ms = (_time.perf_counter() - _t0) * 1000.0
-
-        _t0 = _time.perf_counter()
-        if full:
-            items = [_serialize_candidate(c, full=True) for c in candidates]
-        else:
-            items = [_serialize_candidate_light(c) for c in candidates]
-        _t_ser_ms = (_time.perf_counter() - _t0) * 1000.0
-        _t_total_ms = (_time.perf_counter() - _t_total) * 1000.0
-
-        logger.info(
-            "[list_candidates] total=%d returned=%d limit=%d full=%s "
-            "count=%.1fms list=%.1fms serialize=%.1fms endpoint=%.1fms",
-            total, len(items), limit, full,
-            _t_count_ms, _t_list_ms, _t_ser_ms, _t_total_ms,
-        )
-
         return {
             "total": total,
             "skip": effective_skip,
             "limit": limit,
             "source": "local",
-            "items": items,
+            "items": [_serialize_candidate(c) for c in candidates],
         }
-    except Exception:
-        logger.exception(
-            "[list_candidates] failed request_id=%s user_id=%s company_id=%s search=%r status=%r",
-            _request_id, getattr(current_user, "id", None), _company_id, search, status,
-        )
-        raise HTTPException(status_code=500, detail="Falha ao listar candidatos.")
-
-
-def _assert_tenant_scope(candidate, current_user: User) -> None:
-    """Enforce tenant scope on a candidate row (task #295).
-
-    No-op enquanto `Candidate.company_id` não existir (ver auditoria #287
-    causa raiz #4 e follow-up de migração). Quando a coluna landar, qualquer
-    acesso cross-tenant por id vira 404 (em vez de 403, para não vazar
-    existência da row para outros tenants).
-    """
-    row_company = candidate.company_id
-    if row_company is None:
-        return
-    user_company = str(current_user.company_id) if current_user.company_id else None
-    if user_company and str(row_company) != user_company:
-        raise HTTPException(status_code=404, detail="Candidate not found")
+    except Exception as e:
+        logger.error(f"Error listing candidates: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{candidate_id}", response_model=None)
 async def get_candidate(
-    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
-    request: Request = None,  # type: ignore[assignment]
+    candidate_id: str,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
-    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Get a candidate by ID. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
@@ -392,17 +255,12 @@ async def get_candidate(
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        _assert_tenant_scope(candidate, current_user)
         return _serialize_candidate(candidate, full=True)
     except HTTPException:
         raise
-    except Exception:
-        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
-        logger.exception(
-            "[get_candidate] failed request_id=%s candidate_id=%s user_id=%s",
-            _rid, candidate_id, getattr(current_user, "id", None),
-        )
-        raise HTTPException(status_code=500, detail="Falha ao carregar o candidato.")
+    except Exception as e:
+        logger.error(f"Error getting candidate: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 async def _background_enrich_candidate(candidate_id: uuid.UUID, linkedin_url: str):
@@ -433,33 +291,13 @@ async def _background_enrich_candidate(candidate_id: uuid.UUID, linkedin_url: st
 async def create_candidate(
     candidate_data: CandidateCreate,
     background_tasks: BackgroundTasks,
-    request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-    current_user: User = Depends(get_current_user_or_demo),
-    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
     """Create a new candidate. If auto_enrich=True and linkedin_url is provided, enrichment runs in background."""
     try:
         logger.info(f"Creating candidate: {candidate_data.name}")
-        # Task #346 — toda criação propaga o tenant do usuário autenticado.
-        # Em DEV/demo, `current_user.company_id` cai no UUID demo canônico
-        # (ver app.core.tenant.DEMO_COMPANY_UUID).
-        company_id = str(current_user.company_id) if current_user.company_id else None
-        if not company_id:
-            raise HTTPException(status_code=400, detail="company_id obrigatório.")
-        # Task #478 / ADR 003 — drop double-submit retries before they hit
-        # the DB. `generate_idempotency_key_async` collapses dual-ID retries
-        # via `RailsAdapter`; here the params are email-keyed but we still
-        # route through the async variant for consistency.
-        await reject_duplicate_async(
-            "create_candidate",
-            {"email": (candidate_data.email or "").lower(), "company_id": company_id},
-            rails_adapter,
-            scope=f"company:{company_id}",
-        )
         candidate = Candidate(
             id=uuid.uuid4(),
-            company_id=company_id,
             name=candidate_data.name,
             email=candidate_data.email,
             phone=candidate_data.phone,
@@ -515,45 +353,23 @@ async def create_candidate(
             "message": "Candidate created successfully",
             "enrichment_scheduled": enrichment_scheduled,
         }
-    except HTTPException:
-        # Preserva semântica 4xx (ex.: tenant ausente vira 400, não 500).
-        raise
-    except Exception:
-        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
-        logger.exception(
-            "[create_candidate] failed request_id=%s user_id=%s name=%s",
-            _rid, getattr(current_user, "id", None), candidate_data.name,
-        )
-        raise HTTPException(status_code=500, detail="Falha ao criar o candidato.")
+    except Exception as e:
+        logger.error(f"Error creating candidate: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.put("/{candidate_id}", response_model=None)
 async def update_candidate(
-    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    candidate_id: str,
     candidate_data: CandidateUpdate,
-    request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-    current_user: User = Depends(get_current_user_or_demo),
-    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
     """Update an existing candidate."""
     try:
-        # Task #478 / ADR 003 — collapse retries that switch between fork
-        # UUID and Rails bigint onto the same idempotency key so the update
-        # only runs once.
-        company_scope = str(getattr(current_user, "company_id", "") or "global")
-        update_payload = candidate_data.model_dump(exclude_unset=True)
-        await reject_duplicate_async(
-            "update_candidate",
-            {"candidate_id": candidate_id, "payload": update_payload},
-            rails_adapter,
-            scope=f"company:{company_scope}",
-        )
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        _assert_tenant_scope(candidate, current_user)
-        update_data = update_payload
+        update_data = candidate_data.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             if hasattr(candidate, field):
                 setattr(candidate, field, value)
@@ -570,48 +386,25 @@ async def update_candidate(
         }
     except HTTPException:
         raise
-    except Exception:
-        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
-        logger.exception(
-            "[update_candidate] failed request_id=%s candidate_id=%s user_id=%s",
-            _rid, candidate_id, getattr(current_user, "id", None),
-        )
-        raise HTTPException(status_code=500, detail="Falha ao atualizar o candidato.")
+    except Exception as e:
+        logger.error(f"Error updating candidate: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.patch("/{candidate_id}/stage", response_model=None)
 async def update_candidate_stage(
-    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    candidate_id: str,
     stage_data: CandidateStageUpdate,
-    request: Request = None,  # type: ignore[assignment]
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     vc_repo: VacancyCandidateRepository = Depends(get_vacancy_candidate_repo),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service),
-    current_user: User = Depends(get_current_user_or_demo),
-    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
     """Update candidate pipeline stage (used when moving candidates in Kanban)."""
     try:
-        # Task #478 / ADR 003 — same-stage transitions retried with both ID
-        # formats must collapse so we don't double-write the Kanban move.
-        company_scope = str(getattr(current_user, "company_id", "") or "global")
-        await reject_duplicate_async(
-            "update_candidate_stage",
-            {
-                "candidate_id": candidate_id,
-                "job_vacancy_id": str(stage_data.job_vacancy_id) if stage_data.job_vacancy_id else None,
-                "stage": stage_data.stage,
-                "sub_status": stage_data.sub_status,
-                "user_id": stage_data.user_id,
-            },
-            rails_adapter,
-            scope=f"company:{company_scope}",
-        )
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        _assert_tenant_scope(candidate, current_user)
 
         vacancy_candidate = await vc_repo.get_for_candidate_and_job(
             candidate_id=candidate_id,
@@ -772,49 +565,29 @@ async def update_candidate_stage(
         }
     except HTTPException:
         raise
-    except Exception:
-        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
-        logger.exception(
-            "[update_candidate_stage] failed request_id=%s candidate_id=%s user_id=%s stage=%s",
-            _rid, candidate_id, getattr(current_user, "id", None),
-            getattr(stage_data, "stage", None),
-        )
-        raise HTTPException(status_code=500, detail="Falha ao atualizar a etapa do candidato.")
+    except Exception as e:
+        logger.error(f"Error updating candidate stage: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.delete("/{candidate_id}", response_model=None)
 async def delete_candidate(
-    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
-    request: Request = None,  # type: ignore[assignment]
+    candidate_id: str,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-    current_user: User = Depends(get_current_user_or_demo),
-    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
     """Soft delete (deactivate) a candidate."""
     try:
-        company_scope = str(getattr(current_user, "company_id", "") or "global")
-        await reject_duplicate_async(
-            "delete_candidate",
-            {"candidate_id": candidate_id},
-            rails_adapter,
-            scope=f"company:{company_scope}",
-        )
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        _assert_tenant_scope(candidate, current_user)
         await candidate_repo.soft_delete(candidate)
         logger.info(f"Candidate deactivated: {candidate_id}")
         return {"message": "Candidate deactivated successfully", "id": candidate_id}
     except HTTPException:
         raise
-    except Exception:
-        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
-        logger.exception(
-            "[delete_candidate] failed request_id=%s candidate_id=%s user_id=%s",
-            _rid, candidate_id, getattr(current_user, "id", None),
-        )
-        raise HTTPException(status_code=500, detail="Falha ao remover o candidato.")
+    except Exception as e:
+        logger.error(f"Error deleting candidate: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ---------------------------------------------------------------------------
@@ -830,26 +603,20 @@ class EnrichmentRequest(BaseModel):
 
 @router.post("/{candidate_id}/enrich", response_model=None)
 async def enrich_candidate(
-    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
-    enrichment_request: EnrichmentRequest = EnrichmentRequest(),
-    http_request: Request = None,  # type: ignore[assignment]
+    candidate_id: str,
+    request: EnrichmentRequest = EnrichmentRequest(),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Enrich candidate data from LinkedIn using Apify scrapers."""
     try:
-        existing = await candidate_repo.get_by_id_str(candidate_id)
-        if not existing:
-            raise HTTPException(status_code=404, detail="Candidate not found")
-        _assert_tenant_scope(existing, current_user)
         from app.domains.candidates.services.candidate_enrichment_service import candidate_enrichment_service
         result = await candidate_enrichment_service.enrich_candidate(
             db=candidate_repo.db,
             candidate_id=uuid.UUID(candidate_id),
-            linkedin_url=enrichment_request.linkedin_url,
-            include_experiences=enrichment_request.include_experiences,
-            include_education=enrichment_request.include_education,
-            include_email_discovery=enrichment_request.include_email_discovery,
+            linkedin_url=request.linkedin_url,
+            include_experiences=request.include_experiences,
+            include_education=request.include_education,
+            include_email_discovery=request.include_email_discovery,
         )
         if not result["success"]:
             raise HTTPException(status_code=400, detail=result.get("error", "Enrichment failed"))
@@ -867,10 +634,6 @@ async def enrich_candidate(
         }
     except HTTPException:
         raise
-    except Exception:
-        _rid = getattr(http_request.state, "request_id", "unknown") if http_request else "unknown"
-        logger.exception(
-            "[enrich_candidate] failed request_id=%s candidate_id=%s user_id=%s",
-            _rid, candidate_id, getattr(current_user, "id", None),
-        )
-        raise HTTPException(status_code=500, detail="Falha ao enriquecer o candidato.")
+    except Exception as e:
+        logger.error(f"Error enriching candidate: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))

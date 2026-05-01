@@ -8,7 +8,7 @@ from datetime import datetime
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.goal import Goal, GoalTemplate
+from app.models.goal import Goal, GoalTemplate
 
 logger = logging.getLogger(__name__)
 

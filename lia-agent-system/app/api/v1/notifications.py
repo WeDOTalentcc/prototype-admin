@@ -22,14 +22,6 @@ from app.services.notification_service import (
     ProactiveNotificationType,
 )
 from app.domains.communication.services.email_service import EmailService, get_email_service
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/notifications", tags=["notifications"])
@@ -226,7 +218,7 @@ async def create_notification(
 
 @router.post("/{notification_id}/read", response_model=None)
 async def mark_notification_as_read(
-    notification_id: _DualId,
+    notification_id: str,
     user_id: str = "default_user",
     repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
@@ -268,7 +260,7 @@ async def mark_all_as_read(
 
 @router.post("/{notification_id}/dismiss", response_model=None)
 async def dismiss_notification(
-    notification_id: _DualId,
+    notification_id: str,
     user_id: str = "default_user",
     repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
@@ -443,7 +435,7 @@ async def get_chat_notifications(
 
 @router.post("/chat/{notification_id}/delivered", response_model=None)
 async def mark_chat_notification_delivered(
-    notification_id: _DualId,
+    notification_id: str,
     user_id: str = "default_user",
     repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
@@ -955,10 +947,3 @@ Recrutador: {request.recruiter_name or request.recruiter_email}
     except Exception as e:
         logger.error(f"Error sending job created notification: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

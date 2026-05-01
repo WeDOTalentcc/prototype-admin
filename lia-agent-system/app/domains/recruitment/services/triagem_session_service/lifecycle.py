@@ -11,7 +11,6 @@ from typing import Any
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.candidate import Candidate
 from lia_models.job_vacancy import JobVacancy
 from lia_models.triagem import TriagemMessage, TriagemSession
 
@@ -32,21 +31,7 @@ from .wsi_blocks import _load_or_generate_blocks
 logger = logging.getLogger(__name__)
 
 
-async def validate_token(
-    db: AsyncSession,
-    token: str,
-    *,
-    count_as_resume: bool = False,
-) -> dict[str, Any]:
-    """Validate a triagem token.
-
-    Task #425 — when ``count_as_resume`` is True (only the candidate-facing
-    GET /triagem/{token} path passes it), this function increments the
-    reopen counter (subject to a 30-min cooldown) and blocks once the cap
-    of 2 retomadas is reached. All other callers (POST chat, whatsapp-
-    initiate, voice initiates, status checks, etc.) leave the counter
-    untouched so regular in-session traffic does not consume reopens.
-    """
+async def validate_token(db: AsyncSession, token: str) -> dict[str, Any]:
     result = await db.execute(
         select(TriagemSession).where(TriagemSession.token == token)
     )
@@ -61,59 +46,11 @@ async def validate_token(
     if session.status == "completed":
         return {"valid": True, "completed": True, "session": session.to_dict()}
 
-    # Task #425 — enforce reopen cap AND counting on the candidate-facing GET
-    # path. The frontend resume flow re-enters via GET /triagem/{token}
-    # without calling /start when the session is already started/in_progress,
-    # so the counter must be incremented here (with the same 30-min cooldown
-    # used in start_session to absorb refreshes/double-loads).
-    # MVP requirement: até 2 retomadas; a 3ª bloqueia. Block when the
-    # already-persisted count is at the cap, else increment outside cooldown.
-    REOPEN_LIMIT = 2
-    REOPEN_COOLDOWN_MIN = 30
-    if session.status in ("started", "in_progress"):
-        meta = dict(session.metadata_json or {})
-        current = int(meta.get("reopen_count", 0))
-        if current >= REOPEN_LIMIT:
-            return {
-                "valid": False,
-                "error": "reopen_limit_exceeded",
-                "status_code": 410,
-                "reopen_count": current,
-                "limit": REOPEN_LIMIT,
-                "retry_after_minutes": REOPEN_COOLDOWN_MIN,
-                "session": session.to_dict(),
-            }
-        # Only the candidate-entry GET path (get_session_config) requests
-        # increment. In-session traffic (chat POSTs, channel initiates,
-        # status checks) must NOT consume a reopen attempt.
-        if count_as_resume:
-            last_iso = meta.get("last_reopened_at")
-            within_cooldown = False
-            if last_iso:
-                try:
-                    last_dt = datetime.fromisoformat(str(last_iso))
-                    if (datetime.utcnow() - last_dt) < timedelta(minutes=REOPEN_COOLDOWN_MIN):
-                        within_cooldown = True
-                except (TypeError, ValueError):
-                    within_cooldown = False
-            if not within_cooldown:
-                meta["reopen_count"] = current + 1
-                meta["last_reopened_at"] = datetime.utcnow().isoformat()
-                session.metadata_json = meta
-                try:
-                    await db.flush()
-                except Exception as exc:  # pragma: no cover - best-effort persistence
-                    logger.warning(f"[Triagem] validate_token reopen flush failed: {exc}")
-
     return {"valid": True, "completed": False, "session": session.to_dict()}
 
 
 async def get_session_config(db: AsyncSession, token: str) -> dict[str, Any] | None:
-    # Task #425 — this is the candidate-entry GET path (called by GET
-    # /triagem/{token}); pass count_as_resume so the reopen counter is
-    # incremented exactly once per candidate session entry (subject to
-    # the 30-min cooldown).
-    validation = await validate_token(db, token, count_as_resume=True)
+    validation = await validate_token(db, token)
     if not validation["valid"]:
         return validation
 
@@ -159,51 +96,16 @@ async def get_session_config(db: AsyncSession, token: str) -> dict[str, Any] | N
                 job_info["showSalary"] = show_salary
                 job_info["showBenefits"] = show_benefits
                 sc = getattr(job, "screening_config", None) or {}
-                channels = sc.get("channels") or {}
-                # Task #425 — canonical 4-channel model with legacy fallback,
-                # all gated by the master channel toggle (default ON for back-compat).
-                chat_ch = channels.get("chat_web") or {}
-                whatsapp_ch = channels.get("whatsapp") or {}
-                phone_ch = channels.get("phone_pstn") or channels.get("phone") or {}
-                voice_ch = channels.get("voice_web") or channels.get("voip_web") or {}
-                master_enabled = sc.get("channels_master_enabled", True)
-                job_info["chatWebEnabled"] = bool(master_enabled) and bool(chat_ch.get("enabled", True))
-                job_info["whatsappEnabled"] = bool(master_enabled) and bool(whatsapp_ch.get("enabled", True))
-                # Task #425 — whatsapp delivery mode: 'wa_link' (default), 'twilio_direct', or 'both'.
-                wa_mode = (whatsapp_ch.get("mode") or "wa_link")
-                if wa_mode not in ("wa_link", "twilio_direct", "both"):
-                    wa_mode = "wa_link"
-                job_info["whatsappMode"] = wa_mode
-                job_info["phoneEnabled"] = bool(master_enabled) and bool(phone_ch.get("enabled", False))
-                job_info["voiceWebEnabled"] = bool(master_enabled) and bool(voice_ch.get("enabled", True))
+                phone_ch = (sc.get("channels") or {}).get("phone") or {}
+                job_info["phoneEnabled"] = bool(phone_ch.get("enabled", False))
         except Exception as e:
             logger.warning(f"[Triagem] Could not fetch job info for job_id={job_id}: {e}")
-
-    # Task #425 — resolve candidate phone for PhoneConfirmModal pre-fill
-    candidate_phone: str | None = session_data.get("candidate_phone")
-    if not candidate_phone:
-        cand_id = session_data.get("candidate_id")
-        if cand_id:
-            try:
-                cand_uuid = uuid.UUID(cand_id) if isinstance(cand_id, str) else cand_id
-                cand_result = await db.execute(
-                    select(Candidate).where(Candidate.id == cand_uuid)
-                )
-                cand = cand_result.scalar_one_or_none()
-                if cand:
-                    candidate_phone = (
-                        getattr(cand, "mobile_phone", None)
-                        or getattr(cand, "phone", None)
-                    )
-            except Exception as e:
-                logger.warning(f"[Triagem] Could not fetch candidate phone for candidate_id={cand_id}: {e}")
 
     config = {
         "companyName": session_data.get("company_name", ""),
         "companyLogoUrl": session_data.get("company_logo_url"),
         "jobTitle": session_data.get("job_title", ""),
         "candidateName": session_data.get("candidate_name", ""),
-        "candidatePhone": candidate_phone,
         "estimatedMinutes": 20,
         "privacyPolicyUrl": "/politica-privacidade",
         "audioEnabled": True,
@@ -389,33 +291,9 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
     if not session:
         return {"error": "not_found"}
 
-    # Task #425 — reopen counting/blocking is now centralized in validate_token
-    # (called by GET /triagem/{token}, which the frontend ALWAYS hits before
-    # /start). start_session only handles the invited→started transition and
-    # blocks if the cap was already reached. The 30-min cooldown in
-    # validate_token absorbs the typical /token + /start chained call.
-    REOPEN_LIMIT = 2
     if session.status == "invited":
         session.status = "started"
         session.started_at = datetime.utcnow()
-    elif session.status in ("started", "in_progress"):
-        meta = dict(session.metadata_json or {})
-        current = int(meta.get("reopen_count", 0))
-        if current > REOPEN_LIMIT:
-            return {
-                "error": "reopen_limit_exceeded",
-                "reopen_count": current,
-                "limit": REOPEN_LIMIT,
-                "message": (
-                    f"Esta triagem já foi retomada {current}x e atingiu o limite "
-                    f"de {REOPEN_LIMIT} reaberturas. Procure o recrutador para liberar uma nova tentativa."
-                ),
-            }
-    elif session.status == "completed":
-        return {
-            "error": "session_completed",
-            "message": "Esta triagem já foi finalizada e não pode ser reaberta.",
-        }
 
     if voice_mode is not None:
         session.voice_mode = voice_mode
@@ -424,33 +302,6 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
     use_voice = voice_mode if voice_mode is not None else session.voice_mode
 
     active_blocks = _get_session_blocks(session)
-
-    # Task #425 — true resume: if this session already has prior question
-    # messages, do NOT re-inject the first question. Return the most recent
-    # LIA question so the candidate continues exactly where they left off.
-    existing_q = await db.execute(
-        select(TriagemMessage)
-        .where(
-            TriagemMessage.session_id == session.id,
-            TriagemMessage.sender == "lia",
-            TriagemMessage.message_type == "question",
-        )
-        .order_by(TriagemMessage.created_at.desc())
-        .limit(1)
-    )
-    last_question = existing_q.scalar_one_or_none()
-    if last_question is not None:
-        return {
-            "session": session.to_dict(),
-            "lia_response": last_question.to_dict(),
-            "progress": _build_progress(
-                session.current_block,
-                getattr(session, "current_question", 0) or 0,
-                active_blocks,
-            ),
-            "resumed": True,
-        }
-
     first_block = active_blocks[0]
     first_question = first_block["questions"][0]
     transition = f"Vamos começar pela etapa de **{first_block['name']}**.\n\n{first_question}"

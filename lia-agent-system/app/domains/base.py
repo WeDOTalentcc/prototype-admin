@@ -35,14 +35,7 @@ class ConfidenceLevel(StrEnum):
 
 @dataclass
 class DomainAction:
-    """Represents an action a domain can perform.
-
-    Both ``id`` and ``action_id`` are accepted for backward compatibility:
-    legacy domains declare ``id="..."`` while newer domains use
-    ``action_id="..."``. ``__post_init__`` mirrors them so consumers can
-    rely on either field being populated. New code should prefer
-    ``action_id``.
-    """
+    """Represents an action a domain can perform."""
     id: str = ""
     action_id: str = ""
     name: str = ""
@@ -54,15 +47,6 @@ class DomainAction:
     tags: list[str] = field(default_factory=list)
     is_async: bool = False
     examples: tuple[str, ...] | list[str] = field(default_factory=tuple)
-
-    def __post_init__(self) -> None:
-        # Normalize legacy `id=` ↔ canonical `action_id=` so downstream
-        # auditors and the chat smoke test see a populated identifier no
-        # matter which keyword the domain used at construction time.
-        if self.action_id and not self.id:
-            self.id = self.action_id
-        elif self.id and not self.action_id:
-            self.action_id = self.id
 
 
 @dataclass
@@ -156,26 +140,6 @@ class DomainPrompt(ABC):
     domain_name: str = ""
     description: str = ""
     version: str = "1.0.0"
-
-    # Extra agent-type strings that should resolve to this domain in addition
-    # to ``domain_id`` itself. Used by the orchestrator to build
-    # ``AGENT_TYPE_TO_DOMAIN`` via auto-discovery instead of a hand-maintained
-    # dict (avoids drift — see ``app/orchestrator/domain_mappings.py``).
-    agent_aliases: tuple[str, ...] = ()
-
-    @classmethod
-    def get_agent_aliases(cls) -> list[str]:
-        """Return all agent-type strings that should resolve to this domain.
-
-        Always includes ``domain_id``. Subclasses can extend by setting the
-        class-level ``agent_aliases`` tuple or by overriding this method.
-        """
-        seen: dict[str, None] = {}
-        if cls.domain_id:
-            seen[cls.domain_id] = None
-        for alias in cls.agent_aliases:
-            seen[alias] = None
-        return list(seen.keys())
 
     @abstractmethod
     def get_allowed_actions(self) -> list[DomainAction]:

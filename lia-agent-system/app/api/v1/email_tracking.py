@@ -18,7 +18,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db as get_async_db
 from app.shared.learning.ab_testing_service import ABTestingService, get_ab_testing_service
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 
 router = APIRouter(prefix="/email-tracking", tags=["Email Tracking"])
 communication_webhook_router = APIRouter(prefix="/communication/webhook", tags=["Email Tracking"])
@@ -311,7 +310,7 @@ async def tracking_webhook(
 
 @router.get("/stats/{notification_id}", response_model=None)
 async def get_tracking_stats(
-    notification_id: str = Path(..., pattern=DUAL_ID_PATH_PATTERN),
+    notification_id: str = Path(...),
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
     db: AsyncSession = Depends(get_async_db),
 ):
@@ -338,10 +337,3 @@ async def communication_webhook_tracking(
 ):
     """Alias route: POST /api/v1/communication/webhook/tracking → tracking_webhook."""
     return await tracking_webhook(request, db)
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

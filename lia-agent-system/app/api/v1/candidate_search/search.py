@@ -3,8 +3,7 @@ import time as _time
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -44,7 +43,6 @@ from ._shared import (
     _normalize_priority,
     assert_resource_ownership,
     enrich_and_filter_candidates,
-    persist_search_with_discards,
     get_current_user_or_demo,
     get_cv_parser_service,
     get_db,
@@ -101,7 +99,6 @@ async def _evaluate_candidates_with_rubrics(
 @router.post("/candidates", response_model=SearchResponseDTO)
 async def search_candidates(
     request: SearchRequestDTO,
-    http_request: Request = None,  # type: ignore[assignment]
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     pearch_svc: PearchService = Depends(get_pearch_service),
@@ -118,22 +115,8 @@ async def search_candidates(
     4. Se job_id fornecido, avalia candidatos com rubricas
     """
     try:
-        # Normalize free-text query before passing downstream (post-mortem
-        # 2026-04-29 Bug 5). The user/LIA may pass queries with trailing
-        # punctuation like "candidatos?" — the search index tokenizer
-        # then treats it as a literal token and returns zero results.
-        # Centralized in app.shared.search_utils for consistency.
-        from app.shared.search_utils import normalize_search_query
-        _original_query = request.query
-        _normalized_query = normalize_search_query(request.query)
-        if _normalized_query != _original_query:
-            logger.info(
-                "[search_candidates] query normalized: %r -> %r",
-                _original_query, _normalized_query,
-            )
-
         hybrid_request = HybridSearchRequest(
-            query=_normalized_query,
+            query=request.query,
             thread_id=request.thread_id,
             search_spec=request.search_spec,
             search_local_first=request.search_local,
@@ -155,42 +138,20 @@ async def search_candidates(
         _fb_pearch_count = 0
         _fb_search_time = 0.0
         _fb_can_load_more = False
-        _degraded_sources: list[str] = []
-        _total_degradation = False
 
         _pearch_is_open = PEARCH_CIRCUIT.state == CircuitState.OPEN
         _apify_search_is_open = APIFY_SEARCH_CIRCUIT.state == CircuitState.OPEN
 
-        # Task #296: ao invés de 503 imediato quando Pearch + Apify ambos open,
-        # pulamos as fontes externas e tentamos a busca local primeiro. Se a
-        # busca local devolver resultados, retornamos 200 com warning_message
-        # estruturado; só se o local também vier vazio é que devolvemos 503
-        # estruturado (após o hybrid_search).
-        if (
-            _pearch_is_open
-            and request.search_pearch
-            and APIFY_SEARCH_FALLBACK_ENABLED
-            and _apify_search_is_open
-        ):
-            _total_degradation = True
-            _degraded_sources = ["pearch", "apify_search"]
-            hybrid_request.include_pearch = False
-            _apify_fallback_warning = (
-                "Busca externa temporariamente indisponível "
-                "(Pearch e Apify fora do ar). Mostrando apenas resultados locais."
+        if _pearch_is_open and request.search_pearch and APIFY_SEARCH_FALLBACK_ENABLED and _apify_search_is_open:
+            raise HTTPException(
+                status_code=503,
+                detail="Serviço de busca temporariamente indisponível. Pearch e Apify fallback estão fora do ar. Tente novamente em alguns minutos.",
             )
 
-        _skip_pearch = (
-            _pearch_is_open
-            and request.search_pearch
-            and APIFY_SEARCH_FALLBACK_ENABLED
-            and not _apify_search_is_open
-            and not _total_degradation
-        )
+        _skip_pearch = _pearch_is_open and request.search_pearch and APIFY_SEARCH_FALLBACK_ENABLED and not _apify_search_is_open
 
         if _skip_pearch:
             hybrid_request.include_pearch = False
-            _degraded_sources.append("pearch")
 
         result = await pearch_svc.hybrid_search(db, hybrid_request)
 
@@ -258,13 +219,9 @@ async def search_candidates(
                 )
             except CircuitBreakerError:
                 _apify_fallback_warning = get_degraded_response("apify_search")
-                if "apify_search" not in _degraded_sources:
-                    _degraded_sources.append("apify_search")
                 logger.warning("[SearchFallback] Apify search circuit opened during call")
             except Exception as _fb_err:
                 _apify_fallback_warning = "Busca fallback via Apify falhou. Tente novamente em instantes."
-                if "apify_search" not in _degraded_sources:
-                    _degraded_sources.append("apify_search")
                 logger.error("[SearchFallback] Apify fallback error: %s", _fb_err)
                 if _company_id:
                     try:
@@ -284,34 +241,8 @@ async def search_candidates(
         elif _pearch_is_open and request.search_pearch and not APIFY_SEARCH_FALLBACK_ENABLED:
             _apify_fallback_warning = get_degraded_response("pearch")
         
-        candidates, _enrich_stats = await enrich_and_filter_candidates(db, candidates)
-
-        # Task #296: degradação total + nenhum resultado local → 503 estruturado.
-        # Mantemos o 503 só para o caso (a) Pearch+Apify ambos open e (b) banco
-        # local não tem nada para mostrar. Caso contrário devolvemos 200 com
-        # warning_message para o frontend renderizar aviso amarelo + lista local.
-        if _total_degradation and not candidates:
-            _rid = getattr(http_request.state, "request_id", "unknown") if http_request else "unknown"
-            logger.warning(
-                "[search_candidates] sourcing_unavailable request_id=%s user_id=%s query=%r",
-                _rid, getattr(current_user, "id", None), request.query,
-            )
-            return JSONResponse(
-                status_code=503,
-                content={
-                    "ok": False,
-                    "error_code": "sourcing_unavailable",
-                    "message": (
-                        "Serviço de busca temporariamente indisponível. "
-                        "Pearch e Apify fallback estão fora do ar e a busca "
-                        "local não retornou resultados. Tente novamente em alguns minutos."
-                    ),
-                    "warning_message": _apify_fallback_warning,
-                    "degraded_sources": _degraded_sources,
-                    "request_id": _rid,
-                },
-            )
-
+        candidates = await enrich_and_filter_candidates(db, candidates)
+        
         # Rubric evaluation if job_id is provided
         if request.job_id and candidates:
             try:
@@ -370,22 +301,6 @@ async def search_candidates(
         _effective_search_time = (result.local_search_time or 0) + (result.pearch_search_time or 0) + _fb_search_time
         _effective_can_load_more = (result.pearch_count >= request.pearch_limit) or _fb_can_load_more
 
-        # Task #403 — persiste a execução com a lista de descartados para
-        # que o frontend consiga recuperar após refresh/sessão nova.
-        _search_id = await persist_search_with_discards(
-            db,
-            user=current_user,
-            query=result.query,
-            search_source=("hybrid" if request.search_pearch else "local"),
-            local_count=result.local_count,
-            pearch_count=_effective_pearch_count,
-            total_count=len(candidates),
-            used_global_search=bool(request.search_pearch),
-            discarded=_enrich_stats.filtered_candidates,
-            search_filters=request.search_spec or {},
-            search_duration_ms=int((_effective_search_time or 0) * 1000) or None,
-        )
-
         return SearchResponseDTO(
             query=result.query,
             thread_id=result.thread_id,
@@ -396,33 +311,17 @@ async def search_candidates(
             credits_remaining=result.pearch_credits_remaining,
             search_time_seconds=_effective_search_time,
             warning_message=_apify_fallback_warning or _credit_warning or result.warning_message,
-            degraded_sources=_degraded_sources or None,
             can_load_more=_effective_can_load_more,
             should_expand_to_global=should_expand,
             expansion_message=expansion_message,
-            high_adherence_count=high_adherence_count,
-            filtered_no_contact=_enrich_stats.filtered_no_contact,
-            enrichment_attempted=_enrich_stats.enrichment_attempted,
-            filtered_candidates=_enrich_stats.filtered_candidates,
-            search_id=_search_id,
+            high_adherence_count=high_adherence_count
         )
     
     except HTTPException:
         raise
     except ValueError as e:
-        # Validação semântica do request — mensagem segura para o cliente.
         raise HTTPException(status_code=400, detail=str(e))
-    except Exception:
-        # Task #296: não vazar mensagens cruas (LLM/embeddings/RAG/driver) ao cliente.
-        # Stack completo vai pro log com request_id; usuário recebe pt-BR sanitizado.
-        _rid = getattr(http_request.state, "request_id", "unknown") if http_request else "unknown"
-        logger.exception(
-            "[search_candidates] unexpected failure request_id=%s user_id=%s query=%r",
-            _rid, getattr(current_user, "id", None), request.query,
-        )
-        raise HTTPException(
-            status_code=500,
-            detail="Falha ao executar a busca. Tente novamente em instantes.",
-        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
 
 

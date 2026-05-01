@@ -353,6 +353,253 @@ class IdealProfileResponse(IdealProfileBase):
         from_attributes = True
 
 
+class BigFiveQuestionBase(BaseModel):
+    text: str
+    text_en: str | None = None
+    trait: str
+    facet: str | None = None
+    polarity: str | None = "positive"
+    scale_min: int | None = 1
+    scale_max: int | None = 5
+    scale_labels: dict[str, str] | None = {}
+    category: str | None = "general"
+    role_specific: list[str] | None = []
+    weight: float | None = 1.0
+    is_core: bool | None = False
+    order: int | None = 0
+
+
+class BigFiveQuestionCreate(BigFiveQuestionBase):
+    pass
+
+
+class BigFiveQuestionUpdate(BaseModel):
+    text: str | None = None
+    text_en: str | None = None
+    trait: str | None = None
+    facet: str | None = None
+    polarity: str | None = None
+    scale_min: int | None = None
+    scale_max: int | None = None
+    scale_labels: dict[str, str] | None = None
+    category: str | None = None
+    role_specific: list[str] | None = None
+    weight: float | None = None
+    is_core: bool | None = None
+    is_active: bool | None = None
+    order: int | None = None
+
+
+class BigFiveQuestionResponse(BigFiveQuestionBase):
+    id: UUID
+    is_active: bool
+    ai_generated: bool
+    validation_stats: dict[str, Any]
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class BigFiveRoleProfileBase(BaseModel):
+    name: str
+    description: str | None = None
+    role_category: str | None = None
+    seniority_level: str | None = None
+    openness_min: float | None = 1.0
+    openness_max: float | None = 5.0
+    openness_ideal: float | None = 3.0
+    openness_weight: float | None = 1.0
+    conscientiousness_min: float | None = 1.0
+    conscientiousness_max: float | None = 5.0
+    conscientiousness_ideal: float | None = 3.0
+    conscientiousness_weight: float | None = 1.0
+    extroversion_min: float | None = 1.0
+    extroversion_max: float | None = 5.0
+    extroversion_ideal: float | None = 3.0
+    extroversion_weight: float | None = 1.0
+    agreeableness_min: float | None = 1.0
+    agreeableness_max: float | None = 5.0
+    agreeableness_ideal: float | None = 3.0
+    agreeableness_weight: float | None = 1.0
+    neuroticism_min: float | None = 1.0
+    neuroticism_max: float | None = 5.0
+    neuroticism_ideal: float | None = 3.0
+    neuroticism_weight: float | None = 1.0
+    facet_requirements: dict[str, Any] | None = {}
+
+
+class BigFiveRoleProfileCreate(BigFiveRoleProfileBase):
+    company_id: UUID | None = None
+
+
+class BigFiveRoleProfileUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    role_category: str | None = None
+    seniority_level: str | None = None
+    openness_min: float | None = None
+    openness_max: float | None = None
+    openness_ideal: float | None = None
+    openness_weight: float | None = None
+    conscientiousness_min: float | None = None
+    conscientiousness_max: float | None = None
+    conscientiousness_ideal: float | None = None
+    conscientiousness_weight: float | None = None
+    extroversion_min: float | None = None
+    extroversion_max: float | None = None
+    extroversion_ideal: float | None = None
+    extroversion_weight: float | None = None
+    agreeableness_min: float | None = None
+    agreeableness_max: float | None = None
+    agreeableness_ideal: float | None = None
+    agreeableness_weight: float | None = None
+    neuroticism_min: float | None = None
+    neuroticism_max: float | None = None
+    neuroticism_ideal: float | None = None
+    neuroticism_weight: float | None = None
+    facet_requirements: dict[str, Any] | None = None
+    is_active: bool | None = None
+
+
+class BigFiveRoleProfileResponse(BigFiveRoleProfileBase):
+    id: UUID
+    company_id: UUID | None
+    is_active: bool
+    is_template: bool
+    usage_count: int
+    created_at: datetime
+    updated_at: datetime
+    created_by: str | None
+    
+    class Config:
+        from_attributes = True
+
+
+class TechnicalQuestionBase(BaseModel):
+    title: str
+    description: str | None = None
+    question_type: str
+    difficulty: str | None = "medium"
+    estimated_time: int | None = 5
+    area: str
+    tags: list[str] | None = []
+    options: list[dict[str, Any]] | None = []
+    correct_answer: dict[str, Any] | None = None
+    explanation: str | None = None
+    code_template: str | None = None
+    code_solution: str | None = None
+    code_language: str | None = None
+    test_cases: list[dict[str, Any]] | None = []
+    rubric: dict[str, Any] | None = {}
+    ai_correction_enabled: bool | None = True
+
+
+class TechnicalQuestionCreate(TechnicalQuestionBase):
+    pass
+
+
+class TechnicalQuestionUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    question_type: str | None = None
+    difficulty: str | None = None
+    estimated_time: int | None = None
+    area: str | None = None
+    tags: list[str] | None = None
+    options: list[dict[str, Any]] | None = None
+    correct_answer: dict[str, Any] | None = None
+    explanation: str | None = None
+    code_template: str | None = None
+    code_solution: str | None = None
+    code_language: str | None = None
+    test_cases: list[dict[str, Any]] | None = None
+    rubric: dict[str, Any] | None = None
+    ai_correction_enabled: bool | None = None
+    is_active: bool | None = None
+    is_public: bool | None = None
+
+
+class TechnicalQuestionResponse(TechnicalQuestionBase):
+    id: UUID
+    ai_generated: bool
+    is_active: bool
+    is_public: bool
+    usage_count: int
+    avg_score: float | None
+    avg_time: float | None
+    created_at: datetime
+    updated_at: datetime
+    created_by: str | None
+    
+    class Config:
+        from_attributes = True
+
+
+class TechnicalTestTemplateBase(BaseModel):
+    name: str
+    description: str | None = None
+    area: str | None = None
+    role_type: str | None = None
+    seniority_level: str | None = None
+    question_ids: list[UUID] | None = []
+    question_config: dict[str, Any] | None = {}
+    total_time: int | None = 60
+    passing_score: float | None = 70.0
+    instructions: str | None = None
+    instructions_en: str | None = None
+    randomize_questions: bool | None = True
+    randomize_options: bool | None = True
+    show_score: bool | None = True
+    proctoring_enabled: bool | None = False
+    webcam_required: bool | None = False
+    ai_correction_enabled: bool | None = True
+    ai_correction_prompt: str | None = None
+
+
+class TechnicalTestTemplateCreate(TechnicalTestTemplateBase):
+    company_id: UUID | None = None
+
+
+class TechnicalTestTemplateUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    area: str | None = None
+    role_type: str | None = None
+    seniority_level: str | None = None
+    question_ids: list[UUID] | None = None
+    question_config: dict[str, Any] | None = None
+    total_time: int | None = None
+    passing_score: float | None = None
+    instructions: str | None = None
+    instructions_en: str | None = None
+    randomize_questions: bool | None = None
+    randomize_options: bool | None = None
+    show_score: bool | None = None
+    proctoring_enabled: bool | None = None
+    webcam_required: bool | None = None
+    ai_correction_enabled: bool | None = None
+    ai_correction_prompt: str | None = None
+    is_active: bool | None = None
+    is_public: bool | None = None
+
+
+class TechnicalTestTemplateResponse(TechnicalTestTemplateBase):
+    id: UUID
+    company_id: UUID | None
+    is_active: bool
+    is_public: bool
+    usage_count: int
+    avg_score: float | None
+    completion_rate: float | None
+    created_at: datetime
+    updated_at: datetime
+    created_by: str | None
+    
+    class Config:
+        from_attributes = True
+
 
 class CultureAnalysisRequest(BaseModel):
     website_url: str | None = None
@@ -382,6 +629,33 @@ class IdealProfileGenerateResponse(BaseModel):
     profile: IdealProfileResponse
     confidence: float
     reasoning: str
+
+
+class BigFiveGenerateRequest(BaseModel):
+    trait: str
+    count: int | None = 5
+    role_specific: list[str] | None = None
+
+
+class BigFiveGenerateResponse(BaseModel):
+    success: bool
+    questions: list[BigFiveQuestionBase]
+    trait: str
+
+
+class TechnicalQuestionsGenerateRequest(BaseModel):
+    area: str
+    difficulty: str
+    question_type: str
+    count: int | None = 5
+    context: str | None = None
+
+
+class TechnicalQuestionsGenerateResponse(BaseModel):
+    success: bool
+    questions: list[TechnicalQuestionBase]
+    area: str
+    difficulty: str
 
 
 class GlobalSearchSettingsBase(BaseModel):

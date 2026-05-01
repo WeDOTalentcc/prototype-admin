@@ -81,13 +81,6 @@ HIRING_POLICY_ACTIONS = [
         required_params=["company_id"],
         tags=["policy", "progress"],
     ),
-    DomainAction(
-        action_id="configure_candidate_portal",
-        name="Configurar Portal do Candidato",
-        description="Ativa e configura o Portal do Candidato (WhatsApp + link web) para candidatos consultarem seu status no processo seletivo",
-        required_params=["company_id"],
-        tags=["policy", "candidate_portal", "communication"],
-    ),
 ]
 
 _ACTION_BLOCK_MAP: dict[str, str] = {
@@ -97,7 +90,6 @@ _ACTION_BLOCK_MAP: dict[str, str] = {
     "configure_communication": "communication_rules",
     "configure_screening": "screening_rules",
     "configure_automation": "automation_rules",
-    "configure_candidate_portal": "communication_rules",
 }
 
 _VALID_BLOCKS = [
@@ -192,7 +184,6 @@ class HiringPolicyDomain(ComplianceDomainPrompt):
             "configure_automation": self._handle_configure,
             "validate_compliance": self._handle_validate_compliance,
             "get_progress": self._handle_get_progress,
-            "configure_candidate_portal": self._handle_configure_candidate_portal,
         }
 
         handler = handler_map.get(action_id)
@@ -333,40 +324,6 @@ class HiringPolicyDomain(ComplianceDomainPrompt):
             domain_id=self.domain_id,
             action_id=action_id,
         )
-
-    async def _handle_configure_candidate_portal(
-        self, action_id: str, params: dict[str, Any], context: DomainContext
-    ) -> DomainResponse:
-        """Delegates to configure_candidate_portal tool in policy_tools."""
-        from app.domains.hiring_policy.tools.policy_tools import configure_candidate_portal
-        try:
-            result = await configure_candidate_portal(
-                enable_portal=str(params.get("enable_portal", "false")),
-                show_wsi_feedback=str(params.get("show_wsi_feedback", "false")),
-                lgpd_review_contact=str(params.get("lgpd_review_contact", "")),
-                farewell_message=str(params.get("farewell_message", "")),
-                company_id=context.tenant_id,
-            )
-            portal_on = result.get("candidate_portal_enabled", False)
-            status_line = "ativado" if portal_on else "desativado"
-            steps_text = "\n".join(f"• {step}" for step in result.get("next_steps", []))
-            msg = f"Portal do Candidato **{status_line}** com sucesso!\n\n{steps_text}"
-            if result.get("note"):
-                msg += f"\n\n_{result['note']}_"
-            return DomainResponse.success_response(
-                message=msg,
-                data=result,
-                domain_id=self.domain_id,
-                action_id=action_id,
-            )
-        except Exception as exc:
-            logger.error("configure_candidate_portal failed: %s", exc, exc_info=True)
-            return DomainResponse.error_response(
-                error=str(exc),
-                message=f"Erro ao configurar Portal do Candidato: {exc}",
-                domain_id=self.domain_id,
-                action_id=action_id,
-            )
 
     async def _handle_get_progress(
         self, action_id: str, params: dict[str, Any], context: DomainContext

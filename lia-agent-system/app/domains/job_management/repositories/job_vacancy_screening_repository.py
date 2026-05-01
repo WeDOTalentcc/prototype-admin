@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import flag_modified
 
-from lia_models.job_vacancy import JobVacancy
+from app.models.job_vacancy import JobVacancy
 
 
 class JobVacancyScreeningRepository:

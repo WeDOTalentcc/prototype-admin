@@ -19,16 +19,14 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, R
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import get_current_user_or_demo, validate_company_access
-from app.auth.models import User
 from app.core.database import get_db
 from app.domains.communication.services.teams_recording_service import teams_recording_service
 from app.domains.interview_scheduling.repositories.interview_analysis_repository import InterviewAnalysisRepository
 from app.domains.interview_scheduling.services.interview_transcript_analysis_service import (
     interview_transcript_analysis_service,
 )
-from lia_models.interview import Interview
-from lia_models.lia_opinion import LiaOpinion
+from app.models.interview import Interview
+from app.models.lia_opinion import LiaOpinion
 from app.schemas.lia_opinion import LiaOpinionCreate, OpinionSourceEnum, OpinionTypeEnum, RecommendationEnum
 from app.services.notification_service import (
     NotificationChannel,
@@ -36,14 +34,6 @@ from app.services.notification_service import (
     ProactiveNotificationType,
     notification_service,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -107,9 +97,7 @@ async def create_opinion_from_analysis(
             RecommendationEnum.PENDING_REVIEW
         )
 
-        # B0 #523 — analyzer agora emite em /10; normalize via SCALE_MAX.
-        from app.domains.cv_screening.constants.wsi_scale import SCALE_MAX
-        normalized_score = (analysis_result.overall_wsi_score / SCALE_MAX) * 100.0
+        normalized_score = (analysis_result.overall_wsi_score / 5.0) * 100.0
 
         new_opinion_type = OpinionTypeEnum.WSI if job_vacancy_id else OpinionTypeEnum.GENERAL
 
@@ -268,26 +256,19 @@ async def send_analysis_notification(
 
 @router.post("/analyze/{interview_id}", response_model=None)
 async def analyze_interview(
-    interview_id: _DualId,
+    interview_id: str,
     force_refresh: bool = Query(False, description="Force fetch new transcript from Teams"),
     company_id: str = Query(..., description="Company ID for tenant scoping"),
-    current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Analyze an interview's transcript using WSI methodology.
     """
     try:
-        validate_company_access(current_user, company_id)
-
         repo = InterviewAnalysisRepository(db)
         interview = await repo.get_interview_by_id(interview_id)
 
         if not interview:
-            raise HTTPException(status_code=404, detail="Interview not found")
-
-        # Defense-in-depth: ensure the interview belongs to the asserted tenant.
-        if hasattr(interview, "company_id") and interview.company_id and str(interview.company_id) != str(company_id):
             raise HTTPException(status_code=404, detail="Interview not found")
 
         transcript_text = None
@@ -364,15 +345,12 @@ async def analyze_interview(
 async def analyze_raw_transcript(
     request: AnalyzeTranscriptRequest,
     company_id: str = Query(..., description="Company ID for tenant scoping"),
-    current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db)
 ):
     """
     Analyze a raw transcript text using WSI methodology.
     """
     try:
-        validate_company_access(current_user, company_id)
-
         if not request.transcript_text or len(request.transcript_text.strip()) < 100:
             raise HTTPException(
                 status_code=400,
@@ -481,9 +459,8 @@ async def teams_meeting_webhook(
 
 @router.get("/status/{interview_id}", response_model=None)
 async def get_analysis_status(
-    interview_id: _DualId,
-    current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
+    interview_id: str,
+    db: AsyncSession = Depends(get_db)
 ) -> AnalysisStatusResponse:
     """Get status of interview analysis."""
     try:
@@ -492,11 +469,6 @@ async def get_analysis_status(
 
         if not interview:
             raise HTTPException(status_code=404, detail="Interview not found")
-
-        # Lookup-then-check tenant guard: derive company_id from the resource.
-        if not hasattr(interview, "company_id") or not interview.company_id:
-            raise HTTPException(status_code=404, detail="Interview not found")
-        validate_company_access(current_user, str(interview.company_id))
 
         feedback = interview.feedback or {}
         has_transcript = bool(feedback.get("transcript_text"))
@@ -529,9 +501,8 @@ async def get_analysis_status(
 
 @router.get("/results/{interview_id}", response_model=None)
 async def get_analysis_results(
-    interview_id: _DualId,
-    current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db),
+    interview_id: str,
+    db: AsyncSession = Depends(get_db)
 ):
     """Get full analysis results for an interview."""
     try:
@@ -540,11 +511,6 @@ async def get_analysis_results(
 
         if not interview:
             raise HTTPException(status_code=404, detail="Interview not found")
-
-        # Lookup-then-check tenant guard: derive company_id from the resource.
-        if not hasattr(interview, "company_id") or not interview.company_id:
-            raise HTTPException(status_code=404, detail="Interview not found")
-        validate_company_access(current_user, str(interview.company_id))
 
         feedback = interview.feedback or {}
         analysis = feedback.get("wsi_analysis")
@@ -673,10 +639,3 @@ async def process_meeting_transcript(resource_data: dict, resource_path: str = "
 
     except Exception as e:
         logger.error(f"❌ Failed to process meeting transcript: {e}")
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

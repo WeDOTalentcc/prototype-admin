@@ -13,19 +13,14 @@ from app.shared.services.plan_limits_service import check_active_jobs_limit_or_d
 CRUD routes: finalize, search, GET one, GET list, POST create, PUT update,
 DELETE (archive), PATCH status, duplicate, clone, find-by-identifier.
 """
-from typing import Annotated
+from fastapi import APIRouter, Depends, HTTPException, Query
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
-
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
 from ._shared import *
 from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
 from app.domains.job_management.dependencies import get_job_vacancy_crud_repo
 from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RAILS_ENABLED
 from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
 from app.shared.rails_migration.deprecation import enforce_job_vacancies_deprecation
-from app.shared.robustness.idempotency import reject_duplicate_async
-from sqlalchemy import text
 
 # MIGRATION_PLAN item 7.1 — Python CRUD deprecated in favor of Rails (ats-api-copia).
 #
@@ -101,7 +96,6 @@ class JobVacancyListResponse(BaseModel):
     skip: int
     limit: int
     items: list[JobVacancyListItemResponse]
-    source: str | None = None
 
 
 class JobVacancyDeleteResponse(BaseModel):
@@ -162,24 +156,6 @@ async def finalize_job_vacancy(
         if not request.job_vacancy_state.is_ready_for_publication():
             raise HTTPException(status_code=400, detail="Job vacancy is not ready for publication. Missing required fields.")
 
-        # Task #358: block discriminatory text on the conversational
-        # finalize path too — the wizard ultimately writes the same
-        # JobVacancy row as the direct POST endpoint.
-        state = request.job_vacancy_state
-        fairness_warnings = run_fairness_guard_on_jd(
-            title=state.job_title,
-            description=(
-                state.job_description_generated
-                or state.description
-            ),
-            requirements=getattr(state, "required_skills", None),
-            technical_requirements=[
-                tr.model_dump() if hasattr(tr, "model_dump") else tr
-                for tr in (state.technical_requirements or [])
-            ],
-            context="job_vacancy_finalize",
-        )
-
         db = repo.get_session()
         job_vacancy = await job_vacancy_service.finalize_job_vacancy(
             state=request.job_vacancy_state,
@@ -211,8 +187,7 @@ async def finalize_job_vacancy(
             job_vacancy_id=job_id,
             title=job_title,
             status=job_status,
-            message=f"Vaga \{job_title}\ criada com sucesso!",
-            fairness_warnings=fairness_warnings or None,
+            message=f"Vaga \{job_title}\ criada com sucesso!"
         )
 
     except HTTPException:
@@ -396,11 +371,7 @@ async def find_job_by_identifier(
 
 @router.get("/job-vacancies/{job_vacancy_id}", response_model=JobVacancyDetailResponse)
 async def get_job_vacancy(
-    job_vacancy_id: str = Path(
-        ...,
-        pattern=JOB_ID_PATH_PATTERN,
-        description="UUID (local DB) or decimal integer (Rails bigint).",
-    ),
+    job_vacancy_id: str,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
@@ -412,18 +383,8 @@ async def get_job_vacancy(
     try:
         # When Rails is enabled and the ID is a bigint (Rails-style), try Rails first.
         # UUID-style IDs are always served from local DB with full authorization checks.
-        # Any failure inside the Rails branch (network, parsing, mapping) must fall through
-        # to the local DB path instead of bubbling up as a 500 — the bridge being unavailable
-        # cannot block normal use of locally-stored vacancies (Task #241).
         if RAILS_ENABLED and job_vacancy_id.isdigit():
-            try:
-                rails_job = await rails_adapter.get_job_from_rails_only(job_vacancy_id)
-            except Exception as bridge_err:  # noqa: BLE001 — bridge isolation
-                logger.warning(
-                    "[get_job_vacancy] Rails bridge failed for job %s, falling back to local DB: %s",
-                    job_vacancy_id, bridge_err,
-                )
-                rails_job = None
+            rails_job = await rails_adapter.get_job_from_rails_only(job_vacancy_id)
             if rails_job:
                 # Apply visibility/confidentiality checks equivalent to local path.
                 # Rails is the authoritative auth source for its own data, but we
@@ -533,28 +494,14 @@ async def list_job_vacancies(
         user_id = str(current_user.id) if current_user.id else ""
         is_admin = current_user.role == UserRole.admin if hasattr(current_user, "role") else False
 
-        rails_bridge_failed = False
         if RAILS_ENABLED:
             page = skip // limit + 1 if limit else 1
-            # Bridge isolation: any failure inside the Rails branch (network, parsing,
-            # mapping, unexpected formats) must fall through to the local DB rather than
-            # surfacing as a 500. The frontend depends on this endpoint being resilient
-            # so newly-created vacancies remain navigable when Rails is misconfigured
-            # or unavailable (Task #241).
-            try:
-                rails_jobs = await rails_adapter.list_jobs_from_rails_only(
-                    page=page,
-                    limit=limit,
-                    status=status,
-                    visibility=visibility,
-                )
-            except Exception as bridge_err:  # noqa: BLE001 — bridge isolation
-                logger.warning(
-                    "[list_job_vacancies] Rails bridge failed, falling back to local DB: %s",
-                    bridge_err,
-                )
-                rails_jobs = None
-                rails_bridge_failed = True
+            rails_jobs = await rails_adapter.list_jobs_from_rails_only(
+                page=page,
+                limit=limit,
+                status=status,
+                visibility=visibility,
+            )
             if rails_jobs is not None:
                 # Apply the same confidentiality/visibility filtering used in the local DB path.
                 # This is a defense-in-depth layer — Rails may enforce its own access control,
@@ -627,7 +574,6 @@ async def list_job_vacancies(
             "total": len(job_vacancies),
             "skip": skip,
             "limit": limit,
-            "source": "local-fallback" if rails_bridge_failed else None,
             "items": [
                 {
                     "id": str(jv.id),
@@ -644,7 +590,6 @@ async def list_job_vacancies(
                     "behavioral_competencies": jv.behavioral_competencies or [],
                     "salary_range": jv.salary_range,
                     "benefits": jv.benefits or [],
-                    "compensation_policy_id": str(jv.compensation_policy_id) if getattr(jv, "compensation_policy_id", None) else None,
                     "manager": jv.manager,
                     "manager_email": jv.manager_email,
                     "recruiter": jv.recruiter,
@@ -688,8 +633,6 @@ async def list_job_vacancies(
                     "affirmative_description": jv.affirmative_description,
                     "affirmative_document_required": jv.affirmative_document_required or False,
                     "affirmative_document_types": jv.affirmative_document_types or [],
-                    "readiness_stage": jv.readiness_stage,
-                    "readiness_blockers": jv.readiness_blockers or [],
                 }
                 for jv in job_vacancies
             ]
@@ -709,7 +652,6 @@ async def create_job_vacancy(
     job_data: JobVacancyCreate,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo),
-    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
     _trial_check: None = Depends(require_active_subscription_or_demo),
     _plan_check: None = Depends(check_active_jobs_limit_or_demo),
 ):
@@ -717,31 +659,6 @@ async def create_job_vacancy(
     try:
         company_id = get_user_company_id(current_user)
         logger.info(f"Creating job vacancy: {job_data.title} for company: {company_id}")
-        # Task #478 / ADR 003 — same-key safeguard: drop double-click /
-        # axios-retry vacancy creates so we don't end up with twin rows.
-        await reject_duplicate_async(
-            "create_job_vacancy",
-            {
-                "company_id": str(company_id) if company_id else None,
-                "title": (job_data.title or "").strip().lower(),
-                "department": job_data.department,
-                "conversation_id": job_data.conversation_id,
-            },
-            rails_adapter,
-            scope=f"company:{company_id}",
-        )
-
-        # Task #358: refuse to persist a discriminatory JD. Soft warnings
-        # (implicit-bias) are surfaced on the response without blocking.
-        fairness_warnings = run_fairness_guard_on_jd(
-            title=job_data.title,
-            description=job_data.description,
-            requirements=job_data.requirements,
-            technical_requirements=job_data.technical_requirements,
-            behavioral_competencies=job_data.behavioral_competencies,
-            languages=job_data.languages,
-            context="job_vacancy_create",
-        )
 
         job_vacancy = JobVacancy(
             id=uuid_lib.uuid4(),
@@ -775,7 +692,6 @@ async def create_job_vacancy(
             disabled_eligibility_question_ids=job_data.disabled_eligibility_question_ids or [],
             conversation_id=uuid_lib.UUID(job_data.conversation_id) if job_data.conversation_id else None,
             company_id=company_id,
-            source_system="lia",
             created_by=str(current_user.id),
             created_at=datetime.utcnow(),
             updated_at=datetime.utcnow()
@@ -801,7 +717,6 @@ async def create_job_vacancy(
             salary=job_vacancy.salary,
             salary_range=job_vacancy.salary_range,
             benefits=job_vacancy.benefits or [],
-            compensation_policy_id=str(job_vacancy.compensation_policy_id) if getattr(job_vacancy, 'compensation_policy_id', None) else None,
             manager=job_vacancy.manager,
             manager_email=job_vacancy.manager_email,
             recruiter=job_vacancy.recruiter,
@@ -814,8 +729,7 @@ async def create_job_vacancy(
             screening_questions=job_vacancy.screening_questions or [],
             interview_stages=job_vacancy.interview_stages or [],
             disabled_eligibility_question_ids=job_vacancy.disabled_eligibility_question_ids or [],
-            conversation_id=str(job_vacancy.conversation_id) if job_vacancy.conversation_id else None,
-            fairness_warnings=fairness_warnings or None,
+            conversation_id=str(job_vacancy.conversation_id) if job_vacancy.conversation_id else None
         )
 
     except HTTPException:
@@ -829,16 +743,10 @@ async def create_job_vacancy(
 
 @router.put("/job-vacancies/{job_vacancy_id}", response_model=JobVacancyResponse)
 async def update_job_vacancy(
-    # Task #486 — accept both fork UUID and Rails bigint at the path so that
-    # a network-blip retry that switches ID format reaches the same dedup
-    # check the candidate endpoint already has. The handler still operates
-    # on the local UUID; bigint paths only exist as the canonical retry
-    # target and will collapse onto the original UUID's idempotency key.
-    job_vacancy_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    job_vacancy_id: UUID,
     job_data: JobVacancyUpdate,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
-    current_user: User = Depends(get_current_user_or_demo),
-    rails_adapter: RailsAdapter = Depends(get_rails_adapter),
+    current_user: User = Depends(get_current_user_or_demo)
 ):
     """Update an existing job vacancy."""
     try:
@@ -847,72 +755,12 @@ async def update_job_vacancy(
         user_company = get_user_company_id(current_user)
         db = repo.get_session()
 
-        update_data = job_data.model_dump(exclude_unset=True, exclude_none=True)
-
-        # multi-tenancy guard: compensation_policy_id must belong to the same company
-        if update_data.get("compensation_policy_id"):
-            db = repo.get_session()
-            row = (await db.execute(
-                text(
-                    "SELECT id FROM compensation_policies "
-                    "WHERE id = :id AND company_id = :cid AND is_active = true"
-                ),
-                {"id": str(update_data["compensation_policy_id"]), "cid": user_company},
-            )).fetchone()
-            if not row:
-                raise HTTPException(
-                    status_code=400,
-                    detail="compensation_policy_id inválido ou não pertence a esta empresa",
-                )
-
-        # Task #478 / ADR 003 — drop duplicate update retries for the same
-        # vacancy/payload before they execute audit + persistence twice.
-        # Task #486 — `job_vacancy_id` is now in `_DUAL_ID_PARAM_RESOLVERS`
-        # so a UUID retry followed by a bigint retry collapses here.
-        await reject_duplicate_async(
-            "update_job_vacancy",
-            {"job_vacancy_id": str(job_vacancy_id), "payload": update_data},
-            rails_adapter,
-            scope=f"company:{user_company}",
-        )
-
-        # Local Postgres stores `JobVacancy.id` as UUID. A bigint-only first
-        # call (without a prior UUID call to register the key) can't be
-        # served by this Python shim — surface 404 instead of crashing on
-        # the UUID cast.
-        try:
-            job_vacancy_uuid = UUID(job_vacancy_id)
-        except (ValueError, AttributeError):
-            raise HTTPException(status_code=404, detail="Job vacancy not found")
-
-        job_vacancy = await repo.get_vacancy_by_id_and_company(job_vacancy_uuid, user_company)
+        job_vacancy = await repo.get_vacancy_by_id_and_company(job_vacancy_id, user_company)
 
         if not job_vacancy:
             raise HTTPException(status_code=404, detail="Job vacancy not found")
 
-        # Task #358: re-run FairnessGuard whenever any user-authored JD
-        # field is being changed. Use the *post-update* value so a partial
-        # PATCH (e.g. only description) still gets the full text checked.
-        jd_fields = {
-            "title", "description", "requirements", "technical_requirements",
-            "behavioral_competencies", "languages",
-        }
-        fairness_warnings: list[str] = []
-        if jd_fields & update_data.keys():
-            fairness_warnings = run_fairness_guard_on_jd(
-                title=update_data.get("title", job_vacancy.title),
-                description=update_data.get("description", job_vacancy.description),
-                requirements=update_data.get("requirements", job_vacancy.requirements),
-                technical_requirements=update_data.get(
-                    "technical_requirements", job_vacancy.technical_requirements
-                ),
-                behavioral_competencies=update_data.get(
-                    "behavioral_competencies", job_vacancy.behavioral_competencies
-                ),
-                languages=update_data.get("languages", job_vacancy.languages),
-                context="job_vacancy_update",
-            )
-
+        update_data = job_data.model_dump(exclude_unset=True, exclude_none=True)
         update_data["updated_at"] = datetime.utcnow()
 
         changes = {}
@@ -956,7 +804,6 @@ async def update_job_vacancy(
             salary=job_vacancy.salary,
             salary_range=job_vacancy.salary_range,
             benefits=job_vacancy.benefits or [],
-            compensation_policy_id=str(job_vacancy.compensation_policy_id) if getattr(job_vacancy, 'compensation_policy_id', None) else None,
             manager=job_vacancy.manager,
             manager_email=job_vacancy.manager_email,
             recruiter=job_vacancy.recruiter,
@@ -970,8 +817,7 @@ async def update_job_vacancy(
             interview_stages=job_vacancy.interview_stages or [],
             disabled_eligibility_question_ids=job_vacancy.disabled_eligibility_question_ids or [],
             conversation_id=str(job_vacancy.conversation_id) if job_vacancy.conversation_id else None,
-            enriched_jd=job_vacancy.enriched_jd,
-            fairness_warnings=fairness_warnings or None,
+            enriched_jd=job_vacancy.enriched_jd
         )
 
     except HTTPException:

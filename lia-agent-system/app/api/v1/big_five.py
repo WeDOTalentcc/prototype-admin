@@ -17,15 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import flag_modified
 
 from app.core.database import get_db
-from lia_models.client_account import ClientAccount
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
+from app.models.client_account import ClientAccount
 
 logger = logging.getLogger(__name__)
 
@@ -284,7 +276,7 @@ async def create_profile(
 
 @router.get("/profiles/{profile_id}", summary="Get Big Five profile", response_model=None)
 async def get_profile(
-    profile_id: _DualId,
+    profile_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
@@ -318,7 +310,7 @@ async def get_profile(
 
 @router.put("/profiles/{profile_id}", summary="Update Big Five profile", response_model=None)
 async def update_profile(
-    profile_id: _DualId,
+    profile_id: str,
     data: BigFiveProfileUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
@@ -377,7 +369,7 @@ async def update_profile(
 
 @router.delete("/profiles/{profile_id}", summary="Delete Big Five profile", response_model=None)
 async def delete_profile(
-    profile_id: _DualId,
+    profile_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db)
 ):
@@ -512,10 +504,3 @@ async def analyze_candidate(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to analyze candidate: {str(e)}"
         )
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

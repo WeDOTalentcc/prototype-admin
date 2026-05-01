@@ -26,7 +26,6 @@ JOB_MANAGEMENT_ACTIONS: list[DomainAction] = [
     DomainAction(action_id="generate_jd", name="Gerar JD", description="Gerar job description completa com IA"),
     DomainAction(action_id="job_analytics", name="Analytics de vagas", description="Métricas e analytics de vagas"),
     DomainAction(action_id="qualify_job", name="Qualificar vaga", description="Qualificar vaga para publicação"),
-    DomainAction(action_id="list_jobs", name="Listar vagas", description="Listar vagas abertas/ativas do tenant"),
     DomainAction(action_id="publish_job", name="Publicar vaga", description="Publicar vaga em job boards"),
     DomainAction(action_id="job_status_webhook", name="Webhook de status", description="Gerenciar webhooks de status"),
     DomainAction(action_id="search_templates", name="Buscar templates", description="Buscar templates de vaga"),

@@ -161,7 +161,7 @@ class TestUpdateCandidateScorePersistence:
     async def test_update_candidate_score_calls_db_execute(self):
         """_update_candidate_score deve chamar db.execute para buscar VacancyCandidate."""
         from app.domains.cv_screening.services.cv_scoring_service import CVScoringService
-        from lia_models.candidate import VacancyCandidate
+        from app.models.candidate import VacancyCandidate
         svc = CVScoringService()
 
         mock_vc = MagicMock()

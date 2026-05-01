@@ -544,7 +544,7 @@ class PredictiveAnalyticsService:
                     "wsi_score": getattr(candidate, 'wsi_score', None),
                     "experience_years": getattr(candidate, 'experience_years', 0),
                     "skills": getattr(candidate, 'skills', []) or [],
-                    "status": (candidate.status or 'active'),
+                    "status": getattr(candidate, 'status', 'active'),
                 }
         except Exception as e:
             logger.warning(f"Could not fetch candidate {candidate_id}: {e}")
@@ -924,22 +924,3 @@ class PredictiveAnalyticsService:
 
 
 predictive_analytics_service = PredictiveAnalyticsService()
-
-
-def _strip_meta(p: dict) -> dict:
-    return {k: v for k, v in p.items() if not k.startswith("_")}
-
-
-async def predict(**params):
-    """Wrapper para o chat. Roteia entre tipos de previsão via 'prediction_type'."""
-    p = _strip_meta(params)
-    pt = (p.pop("prediction_type", "dashboard") or "dashboard").lower()
-    if pt in ("hiring", "hiring_probability"):
-        return await predictive_analytics_service.predict_hiring_probability(**p)
-    if pt in ("time_to_fill", "ttf"):
-        return await predictive_analytics_service.predict_time_to_fill(**p)
-    if pt in ("dropout", "dropout_risk"):
-        return await predictive_analytics_service.predict_dropout_risk(**p)
-    if pt in ("forecast", "pipeline_forecast"):
-        return await predictive_analytics_service.generate_pipeline_forecast(**p)
-    return await predictive_analytics_service.get_analytics_dashboard(**p)

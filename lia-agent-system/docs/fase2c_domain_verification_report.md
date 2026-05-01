@@ -1,60 +1,8 @@
 # Fase 2C - Domain Actions & Execute() Verification Report
 
-> ⚠️ **OBSOLETO desde 19/abr/2026** — este documento foi superado por
-> [`chat_capabilities_audit.md`](./chat_capabilities_audit.md) (auditoria
-> programática completa via `scripts/audit_chat_capabilities.py`).
->
-> O relatório abaixo cobre apenas ~10 domínios e afirmava que "all domains
-> properly implement execute_action()". A nova auditoria revelou que dos
-> **17 domínios registrados**, **13 têm gaps críticos** (mapeamentos
-> quebrados, handlers com import quebrado, actions sem executor, tools
-> órfãs). Mantido aqui apenas como histórico — **não usar como fonte da
-> verdade**.
-
 **Date**: February 16, 2026  
-**Status**: Superseded (April 19, 2026)  
+**Status**: Complete  
 **Task**: Verify that each domain has proper actions.py/execute_action() to handle the tool intents from the legacy INTENT_TO_TOOL_MAPPING.
-
----
-
-## Gaps fechados em 19/abr/2026 — Sourcing Domain (task #579)
-
-Saneamento canônico do `sourcing`, eliminando os 3 defeitos detectados pela
-auditoria de `chat_capabilities_audit.md`:
-
-- **Gap A — `_ACTION_TOOL_MAP` quebrado:** removidas 7 entradas que apontavam
-  para tool ids inexistentes (`pearch_search`, `boolean_search`,
-  `search_analytics`, `talent_pool_*`, `outreach_messaging`, etc.). Mapa
-  reduzido para 6 entradas, todas validadas contra `SOURCING_TOOLS`. Ações sem
-  tool dedicada (`global_search`, `filter_candidates`, `compare_candidates`,
-  `assess_market`) caem corretamente no `handler_map` interno.
-- **Gap B — 4 pipeline tools órfãs:** adicionadas 4 `DomainAction`
-  (`update_candidate_stage`, `reject_candidate`, `shortlist_candidate`,
-  `add_candidate_to_vacancy`), mapeadas no `_ACTION_TOOL_MAP` para os tool ids
-  `sourcing_*` correspondentes. Total de actions: 30 → **34**. Keywords PT-BR
-  adicionadas em `config/capabilities.yaml` ("mover candidato", "rejeitar",
-  "shortlist", "favoritar", "adicionar à vaga").
-- **Gap C — assinatura de `execute_sourcing_tool`:** corrigida para
-  `(tool_id, parameters, tenant_id: str, user_id: str | None = None)`,
-  alinhando com os 5 call-sites existentes que já passavam `context.tenant_id`
-  (agora também `context.user_id`). O executor constrói um
-  `ToolExecutionContext(user_id=..., company_id=tenant_id)` e o encaminha como
-  `_context` — formato consumido por `_extract_context()` nos handlers
-  canônicos de `cv_screening/tools/candidate_tools.py` para isolamento
-  multi-tenant via `company_id`. Também encaminha `_tenant_id` (str) para
-  handlers de query que dependem dele. Garante que as 4 pipeline tools
-  recém-conectadas executam com escopo de tenant correto (sem risco de
-  acesso cross-tenant).
-- **Bônus — código morto removido:** `app/domains/sourcing/tools.py` foi
-  deletado. O módulo era sombreado pelo pacote `tools/` (regra de import do
-  Python), nunca era executado, e mantinha referências divergentes da fonte da
-  verdade (anti-pattern #2 de `canonical-fix`).
-
-**Cobertura de testes:** `tests/test_domains/test_sourcing_domain.py` — 19
-casos cobrindo integridade do mapa, presença das 4 actions novas, roteamento
-por keywords, assinatura do executor e smoke das 4 tools de pipeline.
-
-**Acceptance criteria do task #579:** ✅ todos atendidos.
 
 ---
 

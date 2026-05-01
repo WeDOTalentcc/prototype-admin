@@ -12,12 +12,12 @@ from uuid import UUID
 from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.health_check import (
+from app.models.health_check import (
     DEFAULT_HEALTH_CHECK_ITEMS,
     ComplianceHealthCheckHistory,
     ComplianceHealthCheckItem,
 )
-from lia_models.observability import ComplianceControlLibrary
+from app.models.observability import ComplianceControlLibrary
 
 
 class HealthCheckRepository:

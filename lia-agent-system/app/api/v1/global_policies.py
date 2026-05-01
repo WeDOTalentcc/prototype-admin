@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.policy.repositories.global_policy_repository import GlobalPolicyRepository
-from lia_models.global_policies import PlatformPolicy
+from app.models.global_policies import PlatformPolicy
 from app.schemas.global_policies import (
     CategoryCount,
     CategoryListResponse,
@@ -29,14 +29,6 @@ from app.schemas.global_policies import (
     PolicyWithHistoryResponse,
     SeedPoliciesResponse,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +96,7 @@ async def list_categories(db: AsyncSession = Depends(get_db)):
 
 @router.get("/{policy_id}", response_model=PolicyWithHistoryResponse)
 async def get_policy(
-    policy_id: _DualId,
+    policy_id: str,
     include_history: bool = Query(True),
     history_limit: int = Query(10, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -134,7 +126,7 @@ async def get_policy(
 
 @router.put("/{policy_id}", response_model=PolicyResponse)
 async def update_policy(
-    policy_id: _DualId,
+    policy_id: str,
     data: PolicyUpdate,
     user_id: str | None = Depends(get_user_id_from_header),
     db: AsyncSession = Depends(get_db),
@@ -179,7 +171,7 @@ async def update_policy(
 
 @router.get("/{policy_id}/history", response_model=PolicyAuditLogListResponse)
 async def get_policy_history(
-    policy_id: _DualId,
+    policy_id: str,
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
@@ -219,10 +211,3 @@ async def seed_default_policies(db: AsyncSession = Depends(get_db)):
         await db.rollback()
         logger.error(f"Error seeding policies: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

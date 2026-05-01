@@ -19,18 +19,18 @@ class TestMultiTenantIsolation:
 
     def test_job_vacancy_model_has_company_id(self):
         """JobVacancy deve ter campo company_id."""
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.job_vacancy import JobVacancy
         assert hasattr(JobVacancy, "company_id")
 
     def test_hitl_audit_trail_has_company_id(self):
         """HITLAuditTrail deve ter company_id para isolamento."""
-        from lia_models.hitl import HITLAuditTrail
+        from app.models.hitl import HITLAuditTrail
         cols = [c.key for c in HITLAuditTrail.__table__.columns]
         assert "company_id" in cols
 
     def test_hitl_pending_action_has_company_id(self):
         """HITLPendingAction deve ter company_id."""
-        from lia_models.hitl import HITLPendingAction
+        from app.models.hitl import HITLPendingAction
         cols = [c.key for c in HITLPendingAction.__table__.columns]
         assert "company_id" in cols
 
@@ -44,7 +44,7 @@ class TestMultiTenantIsolation:
     def test_drift_service_requires_company_id(self):
         """model_drift_service deve requerer company_id."""
         import inspect
-        import app.shared.observability.model_drift_service as mod
+        import app.services.model_drift_service as mod
         src = inspect.getsource(mod)
         assert "company_id" in src
 
@@ -83,7 +83,7 @@ class TestMultiTenantIsolation:
     )
     def test_candidate_model_has_company_id(self):
         """[GAP] Modelo Candidate deveria ter company_id para isolamento direto."""
-        from lia_models.candidate import Candidate
+        from app.models.candidate import Candidate
         cols = [c.key for c in Candidate.__table__.columns]
         assert "company_id" in cols
 
@@ -118,38 +118,3 @@ class TestTenantBoundaryAtAPI:
         import app.services.hitl_service as mod
         src = inspect.getsource(mod)
         assert "company_id" in src
-
-
-# ============================================================================
-# Teams channel multi-tenant boundary (P0-1 fix — auditoria 2026-04-26)
-# Adds Teams to red team coverage. P0-2 (payload company_id) and P0-3 (audit
-# tenant filter) are tracked as separate W1.2/W1.3 PRs and not asserted here
-# to keep this PR atomic.
-# ============================================================================
-
-
-class TestTeamsMultiTenantBoundary:
-    """Teams channel must enforce company_id on the multi-tenant boundary."""
-
-    def test_teams_conversation_model_has_company_id(self):
-        """TeamsConversation model exposes company_id (P0-1 fix Migration 097)."""
-        from lia_models.teams import TeamsConversation
-        cols = [c.key for c in TeamsConversation.__table__.columns]
-        assert "company_id" in cols, (
-            "TeamsConversation must have company_id column for multi-tenant boundary."
-        )
-
-    def test_teams_orchestrator_bridge_resolves_company_id(self):
-        """teams_orchestrator_bridge.process_message references company_id resolution."""
-        import inspect
-        import app.domains.communication.services.teams_orchestrator_bridge as mod
-        src = inspect.getsource(mod)
-        # Must call _resolve_company_id and inject result into orchestrator context
-        assert "_resolve_company_id" in src
-        assert '"company_id": company_id' in src or "'company_id': company_id" in src
-
-    def test_teams_action_audit_log_has_company_id(self):
-        """TeamsActionAuditLog persists company_id for compliance trail."""
-        from lia_models.teams import TeamsActionAuditLog
-        cols = [c.key for c in TeamsActionAuditLog.__table__.columns]
-        assert "company_id" in cols

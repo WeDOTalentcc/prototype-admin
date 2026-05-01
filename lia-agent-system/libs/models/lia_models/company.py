@@ -272,75 +272,6 @@ class IdealProfile(Base):
     created_by = Column(String(255), nullable=True)
 
 
-class BenefitTemplate(Base):
-    """
-    Pre-registered benefit templates for recruiters.
-    Global templates not linked to any specific company.
-    """
-    __tablename__ = "benefit_templates"
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    
-    name = Column(String(255), nullable=False)
-    description = Column(Text, nullable=True)
-    category = Column(String(100), nullable=False)
-    
-    is_popular = Column(Boolean, default=False)
-    is_active = Column(Boolean, default=True)
-    order = Column(Integer, default=0)
-    
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-
-class GlobalSearchSettings(Base):
-    """
-    Global search configuration settings per company.
-    """
-    __tablename__ = "global_search_settings"
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    company_id = Column(String(255), nullable=True, index=True)
-    
-    default_limit = Column(Integer, default=50)
-    search_type = Column(String(20), default='fast')
-    show_emails = Column(Boolean, default=False)
-    show_phone_numbers = Column(Boolean, default=False)
-    high_freshness = Column(Boolean, default=False)
-    auto_expand_global = Column(Boolean, default=False)
-    confirm_before_search = Column(Boolean, default=True)
-    global_search_enabled = Column(Boolean, default=True)
-    
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-
-class Approver(Base):
-    """
-    Approval workflow levels for job vacancies and hiring decisions.
-    """
-    __tablename__ = "approvers"
-    
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=False)
-    
-    user_id = Column(UUID(as_uuid=True), nullable=True)
-    user_name = Column(String(255), nullable=False)
-    email = Column(String(255), nullable=False)
-    role = Column(String(255), nullable=True)
-    
-    level = Column(Integer, nullable=False, default=1)
-    
-    is_active = Column(Boolean, default=True)
-    
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-
-
-
-
-
 class BigFiveQuestion(Base):
     """
     Big Five personality assessment questions bank.
@@ -521,3 +452,66 @@ class TechnicalTestTemplate(Base):
     created_by = Column(String(255), nullable=True)
 
 
+class BenefitTemplate(Base):
+    """
+    Pre-registered benefit templates for recruiters.
+    Global templates not linked to any specific company.
+    """
+    __tablename__ = "benefit_templates"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    
+    name = Column(String(255), nullable=False)
+    description = Column(Text, nullable=True)
+    category = Column(String(100), nullable=False)
+    
+    is_popular = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=True)
+    order = Column(Integer, default=0)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class GlobalSearchSettings(Base):
+    """
+    Global search configuration settings per company.
+    """
+    __tablename__ = "global_search_settings"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    company_id = Column(String(255), nullable=True, index=True)
+    
+    default_limit = Column(Integer, default=50)
+    search_type = Column(String(20), default='fast')
+    show_emails = Column(Boolean, default=False)
+    show_phone_numbers = Column(Boolean, default=False)
+    high_freshness = Column(Boolean, default=False)
+    auto_expand_global = Column(Boolean, default=False)
+    confirm_before_search = Column(Boolean, default=True)
+    global_search_enabled = Column(Boolean, default=True)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class Approver(Base):
+    """
+    Approval workflow levels for job vacancies and hiring decisions.
+    """
+    __tablename__ = "approvers"
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=False)
+    
+    user_id = Column(UUID(as_uuid=True), nullable=True)
+    user_name = Column(String(255), nullable=False)
+    email = Column(String(255), nullable=False)
+    role = Column(String(255), nullable=True)
+    
+    level = Column(Integer, nullable=False, default=1)
+    
+    is_active = Column(Boolean, default=True)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

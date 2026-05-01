@@ -477,8 +477,8 @@ class ScheduledReportJob:
         
         try:
             async with AsyncSessionLocal() as db:
-                from lia_models.company import Company
-                from lia_models.user import User
+                from app.models.company import Company
+                from app.models.user import User
                 
                 result = await db.execute(
                     select(User, Company)
@@ -520,8 +520,8 @@ class ScheduledReportJob:
         
         try:
             async with AsyncSessionLocal() as db:
-                from lia_models.company import Company
-                from lia_models.user import User
+                from app.models.company import Company
+                from app.models.user import User
                 
                 result = await db.execute(
                     select(User, Company)
@@ -570,8 +570,8 @@ class ScheduledReportJob:
         
         try:
             async with AsyncSessionLocal() as db:
-                from lia_models.company import Company
-                from lia_models.user import User
+                from app.models.company import Company
+                from app.models.user import User
                 
                 result = await db.execute(
                     select(User, Company)

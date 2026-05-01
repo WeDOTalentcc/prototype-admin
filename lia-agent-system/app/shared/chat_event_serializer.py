@@ -62,8 +62,6 @@ def serialize_message(
     fairness_warnings: list | None = None,
     execution_plan: dict | None = None,
     conversation_id: str | None = None,
-    proactive_hints: list[dict] | None = None,
-    wizard_step_response: dict | None = None,
 ) -> dict[str, Any]:
     payload = serialize_event(
         "message",
@@ -84,10 +82,6 @@ def serialize_message(
         payload["execution_plan"] = execution_plan
     if conversation_id:
         payload["conversation_id"] = conversation_id
-    if proactive_hints:
-        payload["proactive_hints"] = proactive_hints
-    if wizard_step_response:
-        payload["metadata"] = {"wizard_step_response": wizard_step_response}
     return payload
 
 

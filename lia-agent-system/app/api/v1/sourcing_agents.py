@@ -14,14 +14,6 @@ from app.auth.models import User
 from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +134,7 @@ async def list_sourcing_agents(
 
 
 @router.get("/{agent_id}")
-async def get_sourcing_agent(agent_id: _DualId, db: AsyncSession = Depends(get_db)):
+async def get_sourcing_agent(agent_id: str, db: AsyncSession = Depends(get_db)):
     """Get details of a specific sourcing agent."""
     from lia_models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
@@ -167,7 +159,7 @@ async def get_sourcing_agent(agent_id: _DualId, db: AsyncSession = Depends(get_d
 
 @router.post("/{agent_id}/feedback")
 async def submit_feedback(
-    agent_id: _DualId,
+    agent_id: str,
     body: FeedbackRequest,
     db: AsyncSession = Depends(get_db),
 ):
@@ -196,7 +188,7 @@ async def submit_feedback(
 
 @router.get("/{agent_id}/calibration-candidates")
 async def get_calibration_candidates(
-    agent_id: _DualId,
+    agent_id: str,
     limit: int = 10,
     db: AsyncSession = Depends(get_db),
 ):
@@ -210,7 +202,7 @@ async def get_calibration_candidates(
 
 @router.get("/{agent_id}/timeline")
 async def get_agent_timeline(
-    agent_id: _DualId,
+    agent_id: str,
     limit: int = 20,
     db: AsyncSession = Depends(get_db),
 ):
@@ -223,7 +215,7 @@ async def get_agent_timeline(
 
 
 @router.patch("/{agent_id}/pause")
-async def pause_agent(agent_id: _DualId, db: AsyncSession = Depends(get_db)):
+async def pause_agent(agent_id: str, db: AsyncSession = Depends(get_db)):
     """Pause a sourcing agent."""
     from lia_models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
@@ -239,7 +231,7 @@ async def pause_agent(agent_id: _DualId, db: AsyncSession = Depends(get_db)):
 
 
 @router.patch("/{agent_id}/resume")
-async def resume_agent(agent_id: _DualId, db: AsyncSession = Depends(get_db)):
+async def resume_agent(agent_id: str, db: AsyncSession = Depends(get_db)):
     """Resume a paused sourcing agent."""
     from lia_models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
@@ -252,10 +244,3 @@ async def resume_agent(agent_id: _DualId, db: AsyncSession = Depends(get_db)):
     agent.status = "active"
     await db.commit()
     return {"status": "active"}
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

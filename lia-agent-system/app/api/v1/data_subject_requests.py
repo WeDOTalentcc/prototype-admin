@@ -34,14 +34,6 @@ from app.schemas.data_subject_requests import (
     DataSubjectRequestVerifyIdentity,
 )
 from app.shared.tenant_guard import get_verified_company_id
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -210,7 +202,7 @@ async def create_data_subject_request(
 
 @router.get("/track/{request_id}", response_model=DataSubjectRequestPublicTrack, summary="Track request status (public)")
 async def track_request_status(
-    request_id: _DualId,
+    request_id: str,
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 ):
     """
@@ -323,7 +315,7 @@ async def list_data_subject_requests(
 
 @router.get("/{request_id}", response_model=DataSubjectRequestResponse, summary="Get request details")
 async def get_data_subject_request(
-    request_id: _DualId,
+    request_id: str,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 ):
@@ -349,7 +341,7 @@ async def get_data_subject_request(
 
 @router.put("/{request_id}/assign", response_model=DataSubjectRequestResponse, summary="Assign request to user")
 async def assign_request(
-    request_id: _DualId,
+    request_id: str,
     data: DataSubjectRequestAssign,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
@@ -394,7 +386,7 @@ async def assign_request(
 
 @router.put("/{request_id}/verify-identity", response_model=DataSubjectRequestResponse, summary="Verify subject identity")
 async def verify_identity(
-    request_id: _DualId,
+    request_id: str,
     data: DataSubjectRequestVerifyIdentity,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
@@ -450,7 +442,7 @@ async def verify_identity(
 
 @router.put("/{request_id}/process", response_model=DataSubjectRequestResponse, summary="Start processing request")
 async def start_processing(
-    request_id: _DualId,
+    request_id: str,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 ):
@@ -497,7 +489,7 @@ async def start_processing(
 
 @router.put("/{request_id}/complete", response_model=DataSubjectRequestResponse, summary="Complete request")
 async def complete_request(
-    request_id: _DualId,
+    request_id: str,
     data: DataSubjectRequestComplete,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
@@ -571,7 +563,7 @@ async def complete_request(
 
 @router.put("/{request_id}/reject", response_model=DataSubjectRequestResponse, summary="Reject request")
 async def reject_request(
-    request_id: _DualId,
+    request_id: str,
     data: DataSubjectRequestReject,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
@@ -640,10 +632,3 @@ async def reject_request(
         await repo.rollback()
         logger.error("Error rejecting data subject request: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

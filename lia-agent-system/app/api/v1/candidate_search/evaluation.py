@@ -74,7 +74,7 @@ async def evaluate_candidates_for_job(
     """
     from sqlalchemy import select
 
-    from lia_models.candidate import Candidate, ExternalCandidateProfile
+    from app.models.candidate import Candidate, ExternalCandidateProfile
     
     results = []
     evaluated_count = 0

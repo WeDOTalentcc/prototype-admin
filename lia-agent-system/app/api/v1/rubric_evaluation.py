@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
 from app.domains.cv_screening.services.rubric_evaluation_service import RubricEvaluationService, get_rubric_evaluation_service
-from lia_models.rubric import JobRequirement, RubricEvaluation
+from app.models.rubric import JobRequirement, RubricEvaluation
 from app.schemas.rubric import (
     BatchEvaluateRequest,
     BatchEvaluateResponse,
@@ -24,7 +24,7 @@ from app.schemas.rubric import (
     RubricEvaluationResponse,
     RubricEvaluationResult,
 )
-from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
+from app.shared.services.consent_checker_service import ConsentCheckerService
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.pii_masking import get_masked_logger

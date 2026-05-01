@@ -21,14 +21,6 @@ from datetime import datetime
 from difflib import SequenceMatcher
 from typing import Any
 
-# Cap the in-memory fallback so a long-running pod without Redis cannot pin
-# unbounded numbers of LLM responses in RAM. Crossing this threshold triggers
-# a sweep of expired entries, then evicts oldest-by-cached_at if still over.
-# (Task #871)
-_MEMORY_CACHE_MAX_ENTRIES = int(
-    os.environ.get("AI_CACHE_MAX_MEMORY_ENTRIES", "500")
-)
-
 try:
     import redis
     REDIS_AVAILABLE = True
@@ -69,45 +61,6 @@ class AICacheService:
         self._misses = 0
         self._similarity_hits = 0
         self._init_redis()
-
-    def _sweep_memory_cache(self) -> None:
-        """Drop expired entries and bound total size of the in-memory fallback.
-
-        Without this, ``set_cached`` writes to ``self._memory_cache`` on every
-        call and never proactively evicts. Long-running pods without Redis
-        would slowly accumulate one entry per (cache_type, company, content)
-        tuple. (Task #871)
-        """
-        now = datetime.utcnow()
-        expired_keys = [
-            k
-            for k, entry in self._memory_cache.items()
-            if (
-                (exp := entry.get("expires_at"))
-                and datetime.fromisoformat(exp) <= now
-            )
-        ]
-        for key in expired_keys:
-            self._memory_cache.pop(key, None)
-
-        # Hard cap: evict oldest-by-cached_at if still over the limit.
-        if len(self._memory_cache) > _MEMORY_CACHE_MAX_ENTRIES:
-            ordered = sorted(
-                self._memory_cache.items(),
-                key=lambda kv: kv[1].get("cached_at", ""),
-            )
-            overflow = len(self._memory_cache) - _MEMORY_CACHE_MAX_ENTRIES
-            for key, _ in ordered[:overflow]:
-                self._memory_cache.pop(key, None)
-
-        # Drop similarity-index pointers that no longer resolve to a cache key
-        # so the index doesn't keep stale references alive forever.
-        for index_key, entries in list(self._similarity_index.items()):
-            cleaned = [(c, k) for c, k in entries if k in self._memory_cache]
-            if cleaned:
-                self._similarity_index[index_key] = cleaned
-            else:
-                self._similarity_index.pop(index_key, None)
     
     def _init_redis(self):
         """Initialize Redis connection if available."""
@@ -303,12 +256,9 @@ class AICacheService:
                 )
             except Exception as e:
                 logger.warning(f"Redis set failed: {e}")
-
+        
         self._memory_cache[cache_key] = cache_data
-        # Sweep + cap so the in-memory fallback cannot grow without bound on
-        # long-running pods that lost Redis. (Task #871)
-        self._sweep_memory_cache()
-
+        
         index_key = f"{cache_type}:{company_id}"
         if index_key not in self._similarity_index:
             self._similarity_index[index_key] = []

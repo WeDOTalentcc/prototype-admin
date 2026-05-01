@@ -9,15 +9,12 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Body, Depends, Header, HTTPException, Query, Request
 from pydantic import BaseModel
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
-from app.core.database import get_db
 from app.domains.ats_integration.dependencies import get_ats_repo
 from app.domains.ats_integration.repositories.ats_repository import ATSRepository
 from app.domains.ats_integration.services.gupy_service import GupyService
 from app.domains.ats_integration.services.pandape_service import PandapeService
-from lia_models.ats_integration import (
+from app.models.ats_integration import (
     ATSCandidate,
     ATSConnection,
     ATSJobMapping,
@@ -28,14 +25,6 @@ from lia_models.ats_integration import (
 )
 from app.shared.encryption import encrypt_value, decrypt_value
 from app.domains.ats_integration.services.ats_sync_service import ATSSyncService, get_ats_sync_service
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -300,7 +289,7 @@ async def save_field_mappings(
 
 @router.get("/ats/field-mappings/{connection_id}", response_model=dict)
 async def get_field_mappings(
-    connection_id: _DualId,
+    connection_id: str,
     repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
 ):
@@ -329,12 +318,11 @@ async def get_field_mappings(
 
 @router.post("/ats/connections/{connection_id}/sync", response_model=dict)
 async def trigger_ats_sync(
-    connection_id: _DualId,
+    connection_id: str,
     request: TriggerSyncRequest,
     repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
     sync_service: ATSSyncService = Depends(get_ats_sync_service),
-    db: AsyncSession = Depends(get_db),
 ):
     """
     Manually trigger synchronization for an ATS connection.
@@ -421,15 +409,9 @@ async def trigger_ats_sync(
                     ats_type=provider_name,
                     source_agent="user_trigger",
                     limit=200,
-                    db=db,
-                    company_id=str(company_id) if company_id else None,
                 )
                 if jobs_result.get("success"):
-                    if jobs_result.get("persisted"):
-                        records_created += jobs_result.get("created", 0)
-                        records_updated += jobs_result.get("updated", 0)
-                    else:
-                        records_created += jobs_result.get("count", 0)
+                    records_created += jobs_result.get("count", 0)
                 else:
                     records_failed += 1
                     error_message = (error_message or "") + " " + jobs_result.get("message", "")
@@ -1021,10 +1003,3 @@ async def list_webhook_logs(
     except Exception as e:
         logger.error(f"❌ Failed to list webhook logs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

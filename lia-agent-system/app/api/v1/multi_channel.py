@@ -8,14 +8,6 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.shared.channels.channel_adapter import ChannelMessage, ChannelType
 from app.shared.channels.multi_channel_service import multi_channel_service
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -135,7 +127,7 @@ async def send_message(request: SendMessageRequest, current_user: User = Depends
 
 
 @router.get("/status/{message_id}", response_model=DeliveryStatusResponse)
-async def get_delivery_status(message_id: _DualId, current_user: User = Depends(get_current_user_or_demo)):
+async def get_delivery_status(message_id: str, current_user: User = Depends(get_current_user_or_demo)):
     try:
         status = await multi_channel_service.get_delivery_status(message_id)
         if status is None:
@@ -228,10 +220,3 @@ async def send_bulk_messages(request: BulkSendRequest, current_user: User = Depe
             f"[MULTI_CHANNEL_API] Erro no envio em massa: {e}", exc_info=True
         )
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

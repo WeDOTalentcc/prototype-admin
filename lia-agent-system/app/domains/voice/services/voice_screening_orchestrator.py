@@ -45,24 +45,31 @@ from app.domains.communication.services.twilio_voice_service import (
 from app.domains.communication.services.twilio_voice_service import (
     twilio_voice_service as _twilio_voice_service,
 )
-from app.domains.voice.services.voice_service import VoiceService
+from app.shared.services.voice_service import VoiceService
 from app.shared.compliance.fairness_guard_middleware import check_fairness
 from app.shared.pii_masking import mask_pii
 from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
 from app.shared.resilience.circuit_breaker import TWILIO_VOICE_CIRCUIT, CircuitBreakerError
 
 try:
-    from app.domains.voice.services.gemini_voice_service import get_voice_service as _get_voice_service
+    from app.shared.services.gemini_voice_service import get_voice_service as _get_voice_service
 except ImportError:
     _get_voice_service = None  # type: ignore[assignment]
 
 try:
-    from app.domains.voice.services.voice_screening_analysis import analyze_voice_screening as _analyze_voice_screening
+    from app.services.voice.deepgram_service import deepgram_service as _deepgram_service
+    from app.services.voice.deepgram_service import DeepgramUnconfiguredError as _DeepgramUnconfiguredError
+except ImportError:
+    _deepgram_service = None  # type: ignore[assignment]
+    _DeepgramUnconfiguredError = Exception  # type: ignore[assignment,misc]
+
+try:
+    from app.shared.services.voice_screening_analysis import analyze_voice_screening as _analyze_voice_screening
 except ImportError:
     _analyze_voice_screening = None  # type: ignore[assignment]
 
 try:
-    from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService as _ConsentCheckerService
+    from app.shared.services.consent_checker_service import ConsentCheckerService as _ConsentCheckerService
 except ImportError:
     _ConsentCheckerService = None  # type: ignore[assignment]
 
@@ -723,7 +730,7 @@ class VoiceScreeningOrchestrator:
         )
 
         try:
-            from app.domains.voice.services.gemini_live_audio_service import get_gemini_live_service
+            from app.shared.services.gemini_live_audio_service import get_gemini_live_service
             from app.shared.resilience.circuit_breaker import GEMINI_LIVE_CIRCUIT
 
             live_service = get_gemini_live_service()
@@ -832,14 +839,39 @@ class VoiceScreeningOrchestrator:
                     text = result.get("text", "").strip() or None
                 except Exception as gemini_exc:
                     logger.warning(
-                        "[VOICE SCREENING] Gemini STT failed session=%s: %s",
+                        "[VOICE SCREENING] Gemini STT failed session=%s — attempting Deepgram fallback: %s",
                         session_id,
                         gemini_exc,
                     )
 
+            # Fallback STT: Deepgram nova-2 (if Gemini unavailable or failed)
+            if text is None and _deepgram_service is not None:
+                try:
+                    if _deepgram_service.is_configured():
+                        dg_result = await _deepgram_service.transcribe(
+                            audio_data=wav_data,
+                            mime_type="audio/wav",
+                            language=language if language in ("pt-BR", "en-US") else "pt-BR",
+                        )
+                        text = dg_result.get("transcript", "").strip() or None
+                        if text:
+                            logger.debug(
+                                "[VOICE SCREENING] Deepgram STT fallback success session=%s chars=%d",
+                                session_id,
+                                len(text),
+                            )
+                except _DeepgramUnconfiguredError:
+                    pass  # Deepgram not configured — continue without transcript
+                except Exception as dg_exc:
+                    logger.warning(
+                        "[VOICE SCREENING] Deepgram STT fallback failed session=%s: %s",
+                        session_id,
+                        dg_exc,
+                    )
+
             if text is None:
                 logger.warning(
-                    "[VOICE SCREENING] STT (Gemini) failed or unavailable session=%s",
+                    "[VOICE SCREENING] All STT providers failed or unavailable session=%s",
                     session_id,
                 )
                 return None
@@ -1069,11 +1101,9 @@ class VoiceScreeningOrchestrator:
                 )
             )
 
-            from app.shared.tenant_llm_context import get_gemini_client_for_tenant
-            _voice_client = get_gemini_client_for_tenant(session.company_id)
-            _voice_resp = _voice_client.models.generate_content(
-                model="gemini-2.5-flash",
+            response = self._llm_service.generate_native_gemini_sync(
                 contents=conversation_history,
+                model="gemini-2.5-flash",
                 config=types.GenerateContentConfig(
                     system_instruction=system_prompt,
                     temperature=0.7,
@@ -1081,7 +1111,7 @@ class VoiceScreeningOrchestrator:
                 ),
             )
 
-            lia_text = (_voice_resp.text or "").strip()
+            lia_text = response.text.strip() if response.text else ""
 
             if lia_text:
                 fairness_result = check_fairness(

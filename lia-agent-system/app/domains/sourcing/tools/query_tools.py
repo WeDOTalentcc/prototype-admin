@@ -29,7 +29,6 @@ def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]
 
 
 async def search_candidates(
-    query: str | None = None,
     skills: list[str] | None = None,
     min_experience_years: int | None = None,
     max_experience_years: int | None = None,
@@ -44,21 +43,9 @@ async def search_candidates(
     **kwargs
 ) -> dict[str, Any]:
     """
-    Search candidates. Supports two modes:
-
-    1. **Natural language (RAG hybrid)**: Provide `query` as free text.
-       Routes to pgvector + BM25 hybrid search with FairnessGuard.
-       Example: query="desenvolvedor Python sênior São Paulo"
-
-    2. **Structured filters (SQL)**: Provide individual filter params.
-       Backward-compatible with existing usage.
-       Example: skills=["Python"], seniority="Sênior", location="São Paulo"
-
-    When both are provided, query takes precedence (RAG path).
-    RAG failures fall back gracefully to SQL structured path.
-
+    Search candidates with various filters.
+    
     Args:
-        query: Natural language search query (enables RAG hybrid mode)
         skills: List of required skills to filter by
         min_experience_years: Minimum years of experience
         max_experience_years: Maximum years of experience
@@ -70,86 +57,20 @@ async def search_candidates(
         language: Language requirement (e.g., 'Inglês Fluente')
         in_vacancy_id: Filter candidates in a specific vacancy
         limit: Maximum number of results (default 20)
-
+        
     Returns:
-        dict with success, message, search_mode, and data.candidates list
+        List of matching candidates with their details
     """
     context = _extract_context(kwargs)
     company_id = context.company_id if context else None
-
-    # ─── RAG hybrid path ─────────────────────────────────────────────────────
-    # When a natural-language query is provided, use pgvector + BM25.
-    # FairnessGuard is wired inside rag_pipeline_service.search() (FAR-2).
-    # Multi-tenant: company_id enforced inside the RAG service.
-    # Fallback: if RAG fails, fall through to SQL structured path below.
-    if query:
-        logger.info(f"[search_candidates] RAG mode: query={query!r} company={company_id}")
-        try:
-            from app.core.database import AsyncSessionLocal
-            from app.domains.ai.services.rag_pipeline_service import (
-                rag_pipeline_service,
-            )
-
-            async with AsyncSessionLocal() as db:
-                rag_result = await rag_pipeline_service.search(
-                    query=query,
-                    company_id=company_id,
-                    db=db,
-                    limit=limit,
-                    alpha=0.5,  # hybrid: equal weight BM25 + semantic
-                    domain="talent",
-                )
-
-            candidates_list = [
-                {
-                    "id": r.get("id"),
-                    "name": r.get("name", "N/A"),
-                    "email": r.get("email"),
-                    "seniority": r.get("seniority_level"),
-                    "location": r.get("location"),
-                    "status": r.get("status"),
-                    "lia_score": r.get("lia_score"),
-                    "wsi_score": r.get("wsi_score"),
-                    "years_experience": r.get("years_experience"),
-                    "skills": r.get("skills") or [],
-                    "available_immediately": r.get("available_immediately"),
-                    "rag_score": r.get("rag_score", 0.0),
-                    "search_source": rag_result.source,
-                }
-                for r in rag_result.results
-            ]
-
-            return {
-                "success": True,
-                "message": (
-                    f"✅ Encontrados {len(candidates_list)} candidatos via busca semântica."
-                    + (" ⚠️ Diversidade de gênero: revisar top-10." if not rag_result.fairness_ok else "")
-                ),
-                "search_mode": "rag_hybrid",
-                "fairness_ok": rag_result.fairness_ok,
-                "search_time_ms": rag_result.search_time_ms,
-                "data": {
-                    "total": rag_result.total,
-                    "candidates": candidates_list,
-                    "query": query,
-                    "rag_source": rag_result.source,
-                },
-            }
-        except Exception as _rag_err:
-            logger.warning(
-                "[search_candidates] RAG search failed, falling back to SQL: %s",
-                _rag_err,
-            )
-            # Fall through to structured SQL path below
-    # ─── END RAG path ────────────────────────────────────────────────────────
-
+    
     logger.info(f"🔍 Searching candidates with filters (company: {company_id})")
     
     try:
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate, VacancyCandidate
+        from app.models.candidate import Candidate, VacancyCandidate
         
         async with AsyncSessionLocal() as db:
             query = select(Candidate)
@@ -165,12 +86,6 @@ async def search_candidates(
                 conditions.append(Candidate.seniority_level == seniority)
             
             if location:
-                if not hasattr(Candidate, 'location'):
-                    return {
-                        "success": False,
-                        "message": "Filtro por localização não disponível — campo 'location' não existe no modelo Candidate.",
-                        "error": "location_filter_unavailable",
-                    }
                 conditions.append(Candidate.location.ilike(f"%{location}%"))
             
             if min_score is not None and hasattr(Candidate, 'lia_score'):
@@ -298,7 +213,7 @@ async def rank_candidates(
 
         from app.core.database import AsyncSessionLocal
         from app.domains.sourcing.services.wrf_service import wrf_dynamic_k_service
-        from lia_models.candidate import Candidate, VacancyCandidate
+        from app.models.candidate import Candidate, VacancyCandidate
 
         async with AsyncSessionLocal() as db:
             query = select(Candidate)
@@ -396,7 +311,7 @@ async def get_candidate_details(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate, VacancyCandidate
+        from app.models.candidate import Candidate, VacancyCandidate
         
         async with AsyncSessionLocal() as db:
             result = await db.execute(
@@ -424,7 +339,7 @@ async def get_candidate_details(
                 "linkedin": getattr(candidate, 'linkedin_url', None),
                 "location": getattr(candidate, 'location', None),
                 "seniority": getattr(candidate, 'seniority_level', None),
-                "status": candidate.status,
+                "status": getattr(candidate, 'status', None),
                 "lia_score": getattr(candidate, 'lia_score', None),
                 "wsi_score": getattr(candidate, 'wsi_score', None),
                 "fit_score": getattr(candidate, 'fit_score', None),
@@ -497,7 +412,7 @@ async def get_candidate_stats(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate, VacancyCandidate
+        from app.models.candidate import Candidate, VacancyCandidate
         
         period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
         datetime.utcnow() - timedelta(days=period_days)
@@ -601,7 +516,7 @@ async def get_candidate_history(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import VacancyCandidate
+        from app.models.candidate import VacancyCandidate
         
         async with AsyncSessionLocal() as db:
             if candidate_id:
@@ -729,7 +644,7 @@ async def get_talent_quality(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate, VacancyCandidate
+        from app.models.candidate import Candidate, VacancyCandidate
         
         period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
         start_date = datetime.utcnow() - timedelta(days=period_days)
@@ -839,7 +754,7 @@ async def get_talent_engagement(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import VacancyCandidate
+        from app.models.candidate import VacancyCandidate
         
         period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
         start_date = datetime.utcnow() - timedelta(days=period_days)
@@ -925,7 +840,7 @@ async def get_talent_availability(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate, VacancyCandidate
+        from app.models.candidate import Candidate, VacancyCandidate
         
         async with AsyncSessionLocal() as db:
             query = select(Candidate).join(
@@ -1031,7 +946,7 @@ async def get_diversity_metrics(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate, VacancyCandidate
+        from app.models.candidate import Candidate, VacancyCandidate
         
         period_days = {
             "month": 30,
@@ -1145,23 +1060,14 @@ async def get_market_benchmarks(
     context = _extract_context(kwargs)
     company_id = context.company_id if context else None
     
-    logger.info("Getting market benchmarks (company: %s, title: %s)", company_id, job_title)
-
-    # NOTE: company_id is used to compare against company own data but
-    # market benchmarks (external stats) are not tenant-scoped.
-    # If company_id is absent, proceed with global market benchmarks only.
-    if not company_id:
-        logger.warning(
-            "get_market_benchmarks: no company_id in context — skipping internal comparison, "
-            "returning global market benchmarks only"
-        )
-
+    logger.info(f"🏆 Getting market benchmarks (company: {company_id}, title: {job_title})")
+    
     try:
         from sqlalchemy import and_, func, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import VacancyCandidate
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.candidate import VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             start_date = datetime.utcnow() - timedelta(days=90)
@@ -1189,35 +1095,18 @@ async def get_market_benchmarks(
             market_avg_salary_range = {"min": 8000, "max": 15000, "median": 11500}
             market_position = "competitive"
             
-            # Check seniority from job_title or from explicit seniority param (kwargs)
-            _seniority_hint = (kwargs.get("seniority") or "").lower()
             if job_title:
                 title_lower = job_title.lower()
-                _is_senior = "senior" in title_lower or "sênior" in title_lower or "senior" in _seniority_hint or "sênior" in _seniority_hint
-                _is_junior = "junior" in title_lower or "júnior" in title_lower or "junior" in _seniority_hint or "júnior" in _seniority_hint
-                _is_lead = "tech lead" in title_lower or "arquiteto" in title_lower
-                if _is_senior:
+                if "senior" in title_lower or "sênior" in title_lower:
                     market_avg_salary_range = {"min": 15000, "max": 28000, "median": 21000}
                     market_avg_ttf = 50
-                elif _is_junior:
+                elif "junior" in title_lower or "júnior" in title_lower:
                     market_avg_salary_range = {"min": 4000, "max": 8000, "median": 6000}
                     market_avg_ttf = 30
-                elif _is_lead:
+                elif "tech lead" in title_lower or "arquiteto" in title_lower:
                     market_avg_salary_range = {"min": 20000, "max": 35000, "median": 27000}
                     market_avg_ttf = 60
-            elif _seniority_hint:
-                _is_senior = "senior" in _seniority_hint or "sênior" in _seniority_hint
-                _is_junior = "junior" in _seniority_hint or "júnior" in _seniority_hint
-                if _is_senior:
-                    market_avg_salary_range = {"min": 15000, "max": 28000, "median": 21000}
-                    market_avg_ttf = 50
-                elif _is_junior:
-                    market_avg_salary_range = {"min": 4000, "max": 8000, "median": 6000}
-                    market_avg_ttf = 30
             
-            _region_check = region or kwargs.get("location") or ""
-            if _region_check:
-                region = _region_check  # unify
             if region:
                 if "são paulo" in region.lower() or "sp" in region.lower():
                     market_avg_salary_range = {k: v * 1.2 for k, v in market_avg_salary_range.items()}
@@ -1277,178 +1166,31 @@ async def get_market_benchmarks(
             }
             
     except Exception as e:
-        logger.error("Error getting market benchmarks: %s", e, exc_info=True)
+        logger.error(f"❌ Error getting market benchmarks: {e}", exc_info=True)
         return {
             "success": False,
-            "message": f"Erro ao buscar benchmarks de mercado: {str(e)}",
+            "message": f"❌ Erro ao buscar benchmarks de mercado: {str(e)}",
             "error": str(e)
         }
 
-
-
-
-async def compare_candidates(
-    candidate_names: list[str] | None = None,
-    candidate_ids: list[str] | None = None,
-    company_id: str | None = None,  # DEPRECATED — always overridden by context; kept for compat
-    **kwargs
-) -> dict:
-    """Compare multiple candidate profiles side-by-side.
-
-    Accepts candidate names (will resolve to IDs) or UUIDs directly.
-
-    SECURITY: company_id is ALWAYS taken from the JWT/session context object
-    (_context kwarg).  Any value supplied via the *company_id* parameter is
-    ignored when context is available, preventing cross-tenant reads.
-    """
-    from app.core.database import AsyncSessionLocal
-    from sqlalchemy import text
-
-    context = kwargs.get("_context")
-    # P0-FIX: context company_id always wins — never trust caller-supplied company_id
-    _ctx_company_id: str | None = None
-    if context:
-        _ctx_company_id = getattr(context, "company_id", None)
-        if _ctx_company_id is not None:
-            _ctx_company_id = str(_ctx_company_id)
-    if _ctx_company_id:
-        if company_id and company_id != _ctx_company_id:
-            import logging as _logging
-            _logging.getLogger(__name__).warning(
-                "compare_candidates: caller supplied company_id=%s but context has %s — "
-                "using context value (caller value ignored)",
-                company_id, _ctx_company_id,
-            )
-        company_id = _ctx_company_id
-    if not company_id:
-        # P0-FIX (#591): fail-fast — sem tenant nao ha como garantir isolamento.
-        # Antes degradavamos silenciosamente (sem WHERE company_id), o que
-        # expunha dados cross-tenant se o dispatcher nao injetasse _context.
-        import logging as _logging
-        _logging.getLogger(__name__).error(
-            "compare_candidates: no company_id in context — refusing to execute "
-            "to prevent cross-tenant data leak."
-        )
-        return {
-            "success": False,
-            "message": "Contexto de empresa ausente — nao e possivel comparar candidatos sem identificar o tenant.",
-            "error": "missing_tenant_context",
-            "candidates": [],
-        }
-
-    # Resolve names to UUIDs if needed
-    if not candidate_ids and candidate_names:
-        from app.orchestrator.action_handlers._handler_hooks import resolve_candidate_by_name as _rcbn
-        resolved = []
-        for name in candidate_names:
-            r = await _rcbn(name, company_id or None)
-            if r:
-                resolved.append(r["id"])
-        candidate_ids = resolved
-
-    if not candidate_ids or len(candidate_ids) < 2:
-        return {
-            "success": False,
-            "message": "Informe ao menos 2 nomes ou IDs de candidatos para comparar.",
-            "candidates": []
-        }
-
-    placeholders = ", ".join([f":id_{i}" for i in range(len(candidate_ids))])
-    params = {f"id_{i}": cid for i, cid in enumerate(candidate_ids)}
-
-    # P0-FIX (#591): tenant predicate is MANDATORY — never run a SELECT on
-    # candidates without filtering by company_id (IDOR defense).
-    params["_company_id"] = str(company_id)
-    company_filter = "AND company_id = :_company_id"
-
-    try:
-        async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                text(f"""
-                    SELECT id, name, current_title, current_company, seniority_level,
-                           years_of_experience, technical_skills, soft_skills,
-                           location_city, location_state, lia_score
-                    FROM candidates
-                    WHERE id IN ({placeholders})
-                    {company_filter}
-                """),
-                params,
-            )
-            rows = result.mappings().all()
-    except Exception as e:
-        import logging as _logging
-        _logging.getLogger(__name__).exception("compare_candidates DB error: %s", e)
-        return {
-            "success": False,
-            "message": "Erro ao consultar candidatos no banco de dados.",
-            "candidates": [],
-            "error": str(e),
-        }
-
-    if not rows:
-        return {"success": False, "message": "Candidatos nao encontrados.", "candidates": []}
-    
-    comparison = []
-    for row in rows:
-        comparison.append({
-            "name": row["name"],
-            "title": row["current_title"] or "N/A",
-            "company": row["current_company"] or "N/A",
-            "seniority": row["seniority_level"] or "N/A",
-            "experience_years": row["years_of_experience"] or 0,
-            "skills": (row["technical_skills"] or [])[:6],
-            "location": f"{row['location_city'] or ''}/{row['location_state'] or ''}".strip("/"),
-            "lia_score": row["lia_score"] or 0.0,
-        })
-    
-    comparison.sort(key=lambda x: (x["lia_score"], x["experience_years"] or 0), reverse=True)
-    for i, c in enumerate(comparison):
-        c["rank"] = i + 1
-    
-    lines = ["**Comparação de Candidatos:**\n"]
-    for c in comparison:
-        skills_str = ", ".join(c["skills"]) if c["skills"] else "N/A"
-        lines.append(
-            f"- **{c['name']}** (#{c['rank']}): {c['title']} @ {c['company']} | "
-            f"{c['seniority']} | {c['experience_years']} anos | "
-            f"Score: {c['lia_score']:.1f} | Skills: {skills_str}"
-        )
-    
-    return {
-        "success": True,
-        "message": "\n".join(lines),
-        "candidates": comparison,
-    }
 
 def register_sourcing_query_tools() -> None:
     """Register sourcing-domain query tools in the tool registry."""
     
     tool_registry.register(ToolDefinition(
         name="search_candidates",
-        description=(
-            "Buscar candidatos na base de talentos. DOIS MODOS:\n"
-            "1. NATURAL (recomendado): use `query` com texto livre — ex: 'engenheiro Python sênior São Paulo'. "
-            "Usa busca semântica pgvector + BM25 com FairnessGuard automático.\n"
-            "2. FILTROS ESTRUTURADOS: use skills, seniority, location etc. para busca exata por campos.\n"
-            "Use o modo natural quando o recrutador descrever o perfil em linguagem natural. "
-            "Use filtros quando precisar de busca determinística por atributos específicos."
-        ),
+        description="Buscar candidatos com filtros como skills, experiência, senioridade, score LIA, localização. Use para encontrar candidatos específicos ou responder perguntas sobre a base de candidatos.",
         parameters_schema={
             "type": "object",
             "properties": {
-                "query": {
-                    "type": "string",
-                    "description": "Busca em linguagem natural: 'desenvolvedor Python pleno São Paulo disponível imediatamente'. "
-                    "Quando fornecido, usa busca semântica (RAG hybrid) — ignora outros filtros."
-                },
-                "skills": {"type": "array", "items": {"type": "string"}, "description": "Lista de skills para filtrar (modo estruturado)"},
+                "skills": {"type": "array", "items": {"type": "string"}, "description": "Lista de skills para filtrar"},
                 "min_experience_years": {"type": "integer", "description": "Anos mínimos de experiência"},
                 "max_experience_years": {"type": "integer", "description": "Anos máximos de experiência"},
                 "seniority": {"type": "string", "enum": ["Júnior", "Pleno", "Sênior", "Especialista"], "description": "Nível de senioridade"},
                 "min_score": {"type": "number", "description": "Score mínimo LIA/WSI (0-100)"},
                 "status": {"type": "string", "description": "Status do candidato"},
                 "available_immediately": {"type": "boolean", "description": "Disponibilidade imediata"},
-                "location": {"type": "string", "description": "Localização (modo estruturado)"},
+                "location": {"type": "string", "description": "Localização"},
                 "limit": {"type": "integer", "default": 20, "description": "Número máximo de resultados"}
             }
         },
@@ -1540,7 +1282,7 @@ def register_sourcing_query_tools() -> None:
     
     tool_registry.register(ToolDefinition(
         name="get_diversity_metrics",
-        description="Obter métricas de diversidade e inclusão: distribuição por gênero, etnia, PCD e faixa etária dos candidatos. LGPD: dados exibidos como agregados estatísticos apenas — nunca expõe dados individuais identificáveis.",
+        description="Obter métricas de diversidade e inclusão: distribuição por gênero, etnia, PCD e faixa etária dos candidatos.",
         parameters_schema={
             "type": "object",
             "properties": {
@@ -1554,7 +1296,7 @@ def register_sourcing_query_tools() -> None:
     
     tool_registry.register(ToolDefinition(
         name="get_market_benchmarks",
-        description="Retorna faixa salarial de mercado (min, max, mediana) e benchmarks para um cargo/localidade. Use para: 'qual a faixa salarial para X?', 'quanto paga o mercado para Y em Z?', 'benchmark salarial de PM', 'faixa de remuneração para analista'. Aceita job_title e region.",
+        description="Obter benchmarks de mercado para comparação: competitividade salarial, tempo de contratação vs mercado, posição competitiva da empresa.",
         parameters_schema={
             "type": "object",
             "properties": {
@@ -1566,46 +1308,5 @@ def register_sourcing_query_tools() -> None:
         handler=get_market_benchmarks,
         allowed_agents=["recruiter_assistant", "analyst_feedback", "orchestrator"]
     ))
-
-    # AN-003: alias so eval expected_tools: ["get_salary_benchmark"] resolves
-    tool_registry.register(ToolDefinition(
-        name="get_salary_benchmark",
-        description="Retorna faixa salarial de mercado com percentis (P25/P50/P75) para um cargo e localidade. Alias de get_market_benchmarks focado em salary range.",
-        parameters_schema={
-            "type": "object",
-            "properties": {
-                "job_title": {"type": "string", "description": "Cargo para benchmarking (ex: Product Manager Sênior)"},
-                "location": {"type": "string", "description": "Cidade/estado (ex: São Paulo, SP)"},
-                "region": {"type": "string", "description": "Região geográfica"},
-                "seniority": {"type": "string", "description": "Nível de senioridade"},
-            }
-        },
-        handler=get_market_benchmarks,
-        allowed_agents=["recruiter_assistant", "analyst_feedback", "orchestrator"]
-    ))
     
-    tool_registry.register(ToolDefinition(
-        name="compare_candidates",
-        description="Compara dois ou mais candidatos lado a lado. Aceita nomes dos candidatos diretamente — nao precisa de IDs. Use quando solicitado a comparar perfis.",
-        parameters_schema={
-            "type": "object",
-            # NOTE: company_id is intentionally absent — the handler extracts it
-            # from JWT/session context (_context kwarg) injected by the tool dispatcher.
-            "properties": {
-                "candidate_names": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "Nomes dos candidatos para comparar (use quando tiver nomes, nao IDs)"
-                },
-                "candidate_ids": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "UUIDs dos candidatos (use quando souber os IDs)"
-                },
-            }
-        },
-        handler=compare_candidates,
-        allowed_agents=["recruiter_assistant", "sourcing", "orchestrator"]
-    ))
-    
-    logger.info("\u2705 Registered 10 sourcing query tools")
+    logger.info("✅ Registered 9 sourcing query tools")

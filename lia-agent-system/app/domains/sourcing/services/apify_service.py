@@ -9,7 +9,6 @@ Supports:
 """
 import logging
 import os
-import time
 
 import httpx
 
@@ -39,87 +38,21 @@ class ApifyService:
         self.base_url = APIFY_BASE_URL
         self.timeout = httpx.Timeout(120.0, connect=30.0)
     
-    async def run_apify_actor(
-        self,
-        actor_id: str,
-        input_data: dict,
-        *,
-        company_id: str | None = None,
-        operation: str | None = None,
-        user_id: str | None = None,
-        candidate_id: str | None = None,
-        metadata: dict | None = None,
-    ) -> dict:
+    async def run_apify_actor(self, actor_id: str, input_data: dict) -> dict:
         """
         Run an Apify actor and wait for results.
-
-        Gateway-style: enforces consumption tracking + budget check per tenant.
-
+        
         Args:
-            actor_id: Apify actor ID (e.g., "voyager/linkedin-company-profile-scraper")
+            actor_id: The Apify actor ID (e.g., "voyager/linkedin-company-profile-scraper")
             input_data: Input parameters for the actor
-            company_id: Tenant isolation — REQUIRED for production calls.
-            operation: Operation name for pricing. Derived from actor_id if omitted.
-            user_id: User who initiated (audit trail)
-            candidate_id: Related candidate (audit trail)
-            metadata: Extra fields for consumption record
-
+            
         Returns:
-            Dict with actor results or empty dict on failure.
+            Dict with actor results or empty dict on failure
         """
         if not self.api_key:
             logger.error("APIFY_API_KEY not configured")
             return {}
-
-        # Derive operation from actor_id when not provided
-        if not operation:
-            low = actor_id.lower()
-            if "email" in low:
-                operation = "email_finder"
-            elif "glassdoor" in low:
-                operation = "glassdoor_scrape"
-            elif "company" in low:
-                operation = "company_scrape"
-            elif "profile" in low or "person" in low:
-                operation = "profile_scrape"
-            elif "salary" in low:
-                operation = "salary_benchmark"
-            else:
-                operation = "apify_call"
-
-        # Budget check (fail-open)
-        if company_id:
-            try:
-                from app.core.database import AsyncSessionLocal
-                from app.domains.billing.services.consumption_tracking_service import (
-                    ConsumptionTrackingService,
-                )
-                async with AsyncSessionLocal() as _db:
-                    current = await ConsumptionTrackingService.get_monthly_apify_spend(_db, company_id)
-                    limit = ConsumptionTrackingService.get_tenant_budget(company_id, "apify")
-                    if current >= limit:
-                        logger.warning(
-                            "[ApifyGateway] BUDGET EXCEEDED",
-                            extra={
-                                "tenant_id": company_id,
-                                "actor_id": actor_id,
-                                "current_usd": current,
-                                "limit_usd": limit,
-                            },
-                        )
-                        return {"_error": "budget_exceeded", "current_usd": current, "limit_usd": limit}
-            except Exception as _budget_exc:
-                logger.debug("[ApifyGateway] budget check skipped: %s", _budget_exc)
-        else:
-            logger.warning(
-                "[ApifyGateway] call WITHOUT company_id — tenant isolation compromised. actor=%s op=%s",
-                actor_id, operation,
-            )
-
-        _start_time = time.monotonic()
-        _success = False
-        _error_msg: str | None = None
-
+        
         run_url = f"{self.base_url}/acts/{actor_id}/runs?token={self.api_key}"
         
         try:
@@ -160,58 +93,21 @@ class ApifyService:
                     if status == "SUCCEEDED":
                         dataset_id = status_data.get("data", {}).get("defaultDatasetId")
                         if dataset_id:
-                            _result = await self._get_dataset_items(client, dataset_id)
-                            _success = True
-                            return _result
-                        _success = True
+                            return await self._get_dataset_items(client, dataset_id)
                         return {}
                     elif status in ["FAILED", "ABORTED", "TIMED-OUT"]:
-                        _error_msg = f"Actor run failed with status: {status}"
-                        logger.error(_error_msg)
+                        logger.error(f"Actor run failed with status: {status}")
                         return {}
-
-                _error_msg = f"Actor run timed out after {max_wait_seconds} seconds"
-                logger.error(_error_msg)
+                
+                logger.error(f"Actor run timed out after {max_wait_seconds} seconds")
                 return {}
-
+                
         except httpx.HTTPStatusError as e:
-            _error_msg = f"HTTP error running Apify actor {actor_id}: {e.response.status_code} - {e.response.text}"
-            logger.error(_error_msg)
+            logger.error(f"HTTP error running Apify actor {actor_id}: {e.response.status_code} - {e.response.text}")
             return {}
         except Exception as e:
-            _error_msg = f"Error running Apify actor {actor_id}: {type(e).__name__}: {e}"
-            logger.error(_error_msg)
+            logger.error(f"Error running Apify actor {actor_id}: {type(e).__name__}: {e}")
             return {}
-        finally:
-            # Mandatory consumption tracking (success or failure)
-            if company_id:
-                try:
-                    from app.core.database import AsyncSessionLocal
-                    from app.domains.billing.services.consumption_tracking_service import (
-                        ConsumptionTrackingService,
-                    )
-                    _duration_ms = int((time.monotonic() - _start_time) * 1000)
-                    _cost = ConsumptionTrackingService.get_operation_price("apify", operation) or APIFY_COST_PER_ENRICHMENT_USD
-                    async with AsyncSessionLocal() as _track_db:
-                        await ConsumptionTrackingService.record_apify_call(
-                            db=_track_db,
-                            company_id=company_id,
-                            user_id=user_id,
-                            candidate_id=candidate_id,
-                            linkedin_url=(metadata or {}).get("linkedin_url"),
-                            operation=operation,
-                            cost_usd=_cost,
-                            success=_success,
-                            result_status="success" if _success else "fail",
-                            response_time_ms=_duration_ms,
-                            error_message=_error_msg,
-                            actor_id=actor_id,
-                            pipeline_id=(metadata or {}).get("pipeline_id"),
-                            search_session_id=(metadata or {}).get("search_session_id"),
-                        )
-                        await _track_db.commit()
-                except Exception as _track_exc:
-                    logger.error("[ApifyGateway] tracking failed: %s", _track_exc)
     
     async def _get_dataset_items(self, client: httpx.AsyncClient, dataset_id: str) -> dict:
         """Fetch items from an Apify dataset."""
@@ -233,13 +129,7 @@ class ApifyService:
         import asyncio
         await asyncio.sleep(seconds)
     
-    async def scrape_linkedin_company(
-        self,
-        linkedin_url: str,
-        *,
-        company_id: str | None = None,
-        user_id: str | None = None,
-    ) -> dict:
+    async def scrape_linkedin_company(self, linkedin_url: str) -> dict:
         """
         Scrape LinkedIn company profile data.
         
@@ -262,25 +152,14 @@ class ApifyService:
             }
         }
         
-        result = await self.run_apify_actor(
-            LINKEDIN_ACTOR_ID, input_data,
-            company_id=company_id, user_id=user_id,
-            operation="company_scrape",
-            metadata={"linkedin_url": linkedin_url},
-        )
+        result = await self.run_apify_actor(LINKEDIN_ACTOR_ID, input_data)
         
         if result:
             return self._extract_linkedin_culture_data(result)
         
         return {}
     
-    async def scrape_glassdoor_company(
-        self,
-        company_name: str,
-        *,
-        company_id: str | None = None,
-        user_id: str | None = None,
-    ) -> dict:
+    async def scrape_glassdoor_company(self, company_name: str) -> dict:
         """
         Scrape Glassdoor company data including reviews and culture.
         
@@ -306,12 +185,7 @@ class ApifyService:
             }
         }
         
-        result = await self.run_apify_actor(
-            GLASSDOOR_ACTOR_ID, input_data,
-            company_id=company_id, user_id=user_id,
-            operation="glassdoor_scrape",
-            metadata={"company_name": company_name},
-        )
+        result = await self.run_apify_actor(GLASSDOOR_ACTOR_ID, input_data)
         
         if result:
             return self._extract_glassdoor_culture_data(result)
@@ -415,10 +289,6 @@ class ApifyService:
         linkedin_url: str | None = None,
         candidate_name: str | None = None,
         candidate_email: str | None = None,
-        *,
-        company_id: str | None = None,
-        user_id: str | None = None,
-        candidate_id: str | None = None,
     ) -> dict:
         """
         Enrich a candidate profile with data from LinkedIn and email discovery.
@@ -440,10 +310,6 @@ class ApifyService:
                 "source": "apify",
             }
         """
-        # Propagate tenant context for downstream run_apify_actor calls
-        self._current_company_id = company_id
-        self._current_user_id = user_id
-        self._current_candidate_id = candidate_id
         enriched: dict = {"source": "apify"}
 
         if linkedin_url:
@@ -479,13 +345,7 @@ class ApifyService:
             "proxy": {"useApifyProxy": True},
         }
 
-        result = await self.run_apify_actor(
-            LINKEDIN_PERSON_ACTOR_ID, input_data,
-            company_id=getattr(self, "_current_company_id", None),
-            user_id=getattr(self, "_current_user_id", None),
-            candidate_id=getattr(self, "_current_candidate_id", None),
-            operation="profile_scrape",
-        )
+        result = await self.run_apify_actor(LINKEDIN_PERSON_ACTOR_ID, input_data)
         if not result:
             return {}
 
@@ -626,13 +486,7 @@ class ApifyService:
         if linkedin_url:
             input_data["linkedinUrl"] = linkedin_url
 
-        result = await self.run_apify_actor(
-            EMAIL_FINDER_ACTOR_ID, input_data,
-            company_id=getattr(self, "_current_company_id", None),
-            user_id=getattr(self, "_current_user_id", None),
-            candidate_id=getattr(self, "_current_candidate_id", None),
-            operation="email_finder",
-        )
+        result = await self.run_apify_actor(EMAIL_FINDER_ACTOR_ID, input_data)
         if not result:
             return []
 
@@ -653,18 +507,12 @@ class ApifyService:
         self,
         job_title: str,
         location: str,
-        *,
-        company_id: str | None = None,
-        user_id: str | None = None,
     ) -> dict:
         """
         Scrapes salary data via Apify actors.
         Strategy: Google Jobs -> Indeed -> fallback empty.
         Returns dict with salaries list (BRL values).
         """
-        # Propagate tenant context for downstream run_apify_actor calls
-        self._current_company_id = company_id
-        self._current_user_id = user_id
         import re as _re
 
         actors = [
@@ -680,12 +528,7 @@ class ApifyService:
 
         for actor_cfg in actors:
             try:
-                result = await self.run_apify_actor(
-                    actor_cfg["id"], actor_cfg["input"],
-                    company_id=getattr(self, "_current_company_id", None),
-                    user_id=getattr(self, "_current_user_id", None),
-                    operation="salary_benchmark",
-                )
+                result = await self.run_apify_actor(actor_cfg["id"], actor_cfg["input"])
                 if not result:
                     continue
                 items = result if isinstance(result, list) else result.get("items", [])

@@ -22,14 +22,6 @@ from app.domains.interview_scheduling.repositories.scheduling_repository import 
 from app.domains.interview_scheduling.services.scheduling_service import scheduling_service
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = get_masked_logger(__name__)
 
@@ -309,7 +301,7 @@ async def list_interviews(
 
 @router.get("/interviews/{interview_id}", response_model=InterviewResponse)
 async def get_interview(
-    interview_id: _DualId,
+    interview_id: str,
     repo: SchedulingRepository = Depends(get_scheduling_repo)
 ):
     """
@@ -332,7 +324,7 @@ async def get_interview(
 
 @router.put("/interviews/{interview_id}", response_model=InterviewResponse)
 async def update_interview(
-    interview_id: _DualId,
+    interview_id: str,
     request: UpdateInterviewRequest,
     repo: SchedulingRepository = Depends(get_scheduling_repo)
 ):
@@ -361,7 +353,7 @@ async def update_interview(
 
 @router.delete("/interviews/{interview_id}", response_model=None)
 async def cancel_interview(
-    interview_id: _DualId,
+    interview_id: str,
     reason: str | None = Query(None, description="Cancellation reason"),
     repo: SchedulingRepository = Depends(get_scheduling_repo)
 ):
@@ -394,7 +386,7 @@ async def cancel_interview(
 
 @router.get("/interviews/{interview_id}/ics", response_model=None)
 async def download_interview_ics(
-    interview_id: _DualId,
+    interview_id: str,
     repo: SchedulingRepository = Depends(get_scheduling_repo)
 ):
     """
@@ -589,10 +581,3 @@ async def send_interview_confirmation(
     except Exception as e:
         logger.error(f"Failed to send interview confirmation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

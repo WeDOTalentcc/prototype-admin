@@ -29,7 +29,7 @@ class TriagemVoiceService:
     @property
     def voice_service(self):
         if self._voice_service is None:
-            from app.domains.voice.services.voice_service import voice_service
+            from app.shared.services.voice_service import voice_service
             self._voice_service = voice_service
         return self._voice_service
 

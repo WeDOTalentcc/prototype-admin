@@ -207,7 +207,7 @@ class TwinKnowledgeIndexer:
     async def _transcribe(self, audio_bytes: bytes, audio_format: str, language: str) -> str:
         """Transcribe audio using available STT service."""
         try:
-            from app.domains.voice.services.gemini_voice_service import GeminiVoiceService
+            from app.shared.services.gemini_voice_service import GeminiVoiceService
             svc = GeminiVoiceService()
             result = await svc.transcribe_audio(audio_bytes, audio_format, language)
             return result.text

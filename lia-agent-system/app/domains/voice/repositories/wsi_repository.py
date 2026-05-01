@@ -17,8 +17,6 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.shared.security.wsi_hashing import hash_response
-
 
 class WsiRepository:
     """Repository for WSI screening workflow data access."""
@@ -155,48 +153,20 @@ class WsiRepository:
         consistency_penalty: float | None,
         final_score: float,
         justification: str,
-        response_hash: str,
     ) -> None:
-        """Persist a response analysis record.
-
-        Task #511 round 3: `response_hash` é argumento obrigatório
-        (NOT NULL na coluna após migration 091). Callers DEVEM computar
-        via `app.shared.security.wsi_hashing.hash_response`. Mantemos
-        guard runtime — string vazia também é inválida.
-        """
-        if not response_hash:
-            raise ValueError(
-                "response_hash is required (Task #511 EU AI Act audit trail)"
-            )
-        # Audit trail paralelo (wsi_responses) — mesmo hash, FAIL-FAST.
-        await self.db.execute(text("""
-            INSERT INTO wsi_responses (
-                session_id, question_id, raw_text, response_hash,
-                candidate_id
-            )
-            VALUES (:session_id, :question_id, :raw_text, :response_hash,
-                    :candidate_id)
-        """), {
-            "session_id": session_id,
-            "question_id": question_id,
-            "raw_text": response_text or "",
-            "response_hash": response_hash,
-            "candidate_id": candidate_id,
-        })
+        """Persist a response analysis record."""
         await self.db.execute(text("""
             INSERT INTO wsi_response_analyses (
                 id, session_id, question_id, candidate_id, job_vacancy_id,
                 competency, response_text, response_audio_url,
                 autodeclaration_score, context_score, bloom_level, dreyfus_level,
-                evidences, red_flags, consistency_penalty, final_score, justification,
-                response_hash
+                evidences, red_flags, consistency_penalty, final_score, justification
             )
             VALUES (
                 :id, :session_id, :question_id, :candidate_id, :job_vacancy_id,
                 :competency, :response_text, :response_audio_url,
                 :autodeclaration_score, :context_score, :bloom_level, :dreyfus_level,
-                :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification,
-                :response_hash
+                :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification
             )
         """), {
             "id": analysis_id,
@@ -216,7 +186,6 @@ class WsiRepository:
             "consistency_penalty": consistency_penalty,
             "final_score": final_score,
             "justification": justification,
-            "response_hash": response_hash,
         })
 
     async def get_response_scores_for_session(self, session_id: str) -> list:
@@ -229,15 +198,12 @@ class WsiRepository:
 
     async def get_responses_for_session(self, session_id: str) -> list:
         """Return full response-analysis rows joined with question details."""
-        # Audit task #528 (G23-02 / G23-03) — inclui transparency_extras (JSONB)
-        # como índice [18] para que o endpoint /results/{id}/details exponha
-        # flags estruturadas, breakdown de penalidades/bônus e selo degradado.
         result = await self.db.execute(text("""
             SELECT ra.competency, ra.response_text, ra.autodeclaration_score, ra.context_score,
                    ra.bloom_level, ra.dreyfus_level, ra.evidences, ra.red_flags,
                    ra.consistency_penalty, ra.final_score, ra.justification, ra.created_at,
                    q.question_text, q.framework, q.question_type, q.weight, q.expected_signals,
-                   q.sequence_order, ra.transparency_extras
+                   q.sequence_order
             FROM wsi_response_analyses ra
             JOIN wsi_questions q ON ra.question_id = q.id
             WHERE ra.session_id = :session_id
@@ -438,30 +404,14 @@ class WsiRepository:
         return result.fetchone()
 
     async def get_latest_scores_per_candidate(self, job_vacancy_id: str) -> list:
-        """Return one result per candidate (latest) for a vacancy with WSI scores.
-
-        Audit task #530 (G23-02 frontend) — também devolve ``is_degraded`` por
-        candidato (booleano agregado das respostas da última sessão), para o
-        kanban poder exibir um indicador de modo degradado ao lado do score
-        WSI sem precisar buscar o detalhe completo. Fallback seguro para
-        registros legados: COALESCE retorna FALSE quando ``transparency_extras``
-        é nulo ou a coluna não tem nenhuma análise associada.
-        """
+        """Return one result per candidate (latest) for a vacancy with WSI scores."""
         result = await self.db.execute(text("""
-            SELECT DISTINCT ON (r.candidate_id)
-                r.candidate_id, r.overall_wsi, r.technical_wsi, r.behavioral_wsi,
-                r.classification, r.percentile,
-                COALESCE((
-                    SELECT bool_or(
-                        COALESCE((ra.transparency_extras->>'degraded_quality')::boolean, FALSE)
-                        OR (ra.transparency_extras->>'layer2_degraded_reason') IS NOT NULL
-                    )
-                    FROM wsi_response_analyses ra
-                    WHERE ra.session_id = r.session_id
-                ), FALSE) AS is_degraded
-            FROM wsi_results r
-            WHERE r.job_vacancy_id = :job_vacancy_id
-            ORDER BY r.candidate_id, r.created_at DESC
+            SELECT DISTINCT ON (candidate_id)
+                candidate_id, overall_wsi, technical_wsi, behavioral_wsi,
+                classification, percentile
+            FROM wsi_results
+            WHERE job_vacancy_id = :job_vacancy_id
+            ORDER BY candidate_id, created_at DESC
         """), {"job_vacancy_id": job_vacancy_id})
         return result.fetchall()
 
@@ -492,40 +442,17 @@ class WsiRepository:
         red_flags: list,
         final_score: float,
         justification: str,
-        response_hash: str,
     ) -> None:
-        """Persist a simplified response-analysis record (ON CONFLICT DO NOTHING).
-
-        Task #511 round 3: `response_hash` é argumento obrigatório
-        (NOT NULL após migration 091). Callers DEVEM computar via
-        `hash_response`. Guard runtime contra string vazia.
-
-        IMPORTANTE — escopo de auditoria:
-        Este método grava APENAS em `wsi_response_analyses` (tabela de
-        análise) e NÃO em `wsi_responses` (tabela de trilha imutável).
-        É intencional: este path é usado pelo endpoint legado
-        `/api/wsi/analyze-response` e pelo `evaluation.py simple`, que são
-        rotas de teste/diagnóstico, NÃO ingestão de produção do candidato.
-        Os paths de produção (chat completion + voice orchestrator)
-        gravam em AMBAS as tabelas via `insert_response_analysis`.
-        Se este método passar a ser usado em produção no futuro,
-        adicionar INSERT em `wsi_responses` aqui também (EU AI Act Art. 12).
-        """
-        if not response_hash:
-            raise ValueError(
-                "response_hash is required (Task #511 EU AI Act audit trail)"
-            )
+        """Persist a simplified response-analysis record (ON CONFLICT DO NOTHING)."""
         await self.db.execute(text("""
             INSERT INTO wsi_response_analyses (
                 id, session_id, question_id, candidate_id, job_vacancy_id,
                 competency, response_text, bloom_level, dreyfus_level,
-                evidences, red_flags, final_score, justification,
-                response_hash
+                evidences, red_flags, final_score, justification
             )
             VALUES (:id, :session_id, :question_id, :candidate_id, :job_vacancy_id,
                     :competency, :response_text, :bloom_level, :dreyfus_level,
-                    :evidences::jsonb, :red_flags::jsonb, :final_score, :justification,
-                    :response_hash)
+                    :evidences::jsonb, :red_flags::jsonb, :final_score, :justification)
             ON CONFLICT (id) DO NOTHING
         """), {
             "id": analysis_id,
@@ -541,7 +468,6 @@ class WsiRepository:
             "red_flags": json.dumps(red_flags),
             "final_score": final_score,
             "justification": justification,
-            "response_hash": response_hash,
         })
 
     async def upsert_result(
@@ -657,33 +583,6 @@ class WsiRepository:
             "block_id": block_id,
             "source": source,
         })
-
-    async def get_job_screening_questions(self, job_id: str) -> list[dict]:
-        """Return active job_screening_questions rows for *job_id*, ordered by id.
-
-        Used as a fallback read path when no active screening_question_sets record
-        exists for the job.
-        """
-        result = await self.db.execute(text("""
-            SELECT id, question_text, category, question_type, weight, skill_targeted, block_id
-            FROM job_screening_questions
-            WHERE job_vacancy_id = :job_id
-              AND is_active = TRUE
-            ORDER BY id
-        """), {"job_id": job_id})
-        rows = result.fetchall()
-        return [
-            {
-                "id": r[0],
-                "text": r[1],
-                "category": r[2],
-                "type": r[3],
-                "weight": r[4],
-                "skill_targeted": r[5],
-                "block_id": r[6],
-            }
-            for r in rows
-        ]
 
     # ------------------------------------------------------------------
     # Voice call — session/call_id binding (twilio_voice.py Phase 2)

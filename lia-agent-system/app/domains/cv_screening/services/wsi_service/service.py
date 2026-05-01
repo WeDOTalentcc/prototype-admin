@@ -21,8 +21,6 @@ from .score_calculator import WSIScoreCalculator
 from .report_generator import WSIReportGenerator
 
 from app.domains.ai.services.llm import llm_service
-# Audit task #545 — tracking de IA estendido para os principais fluxos WSI.
-from app.shared.observability.usage_tracking_callback import build_usage_callback
 
 logger = logging.getLogger(__name__)
 
@@ -39,20 +37,10 @@ class WSIService:
     6. Gerar feedbacks construtivos para candidatos
     """
     
-    def __init__(self, *, enable_layer2: bool = True):
-        """
-        Args:
-            enable_layer2: Ativa a Camada 2 LLM-extractor (default ON,
-                audit M01+M04+M05+M06 rev. 19, spec WeDOTalent §F8.3).
-                Pode ser desligada explicitamente para evitar custo LLM
-                em testes/cenários offline. Falha graciosa preserva
-                Camada 1 quando o LLM cai (degraded_quality=True).
-        """
+    def __init__(self):
         self.llm = llm_service
         self.question_generator = WSIQuestionGenerator(self.llm)
-        self.response_analyzer = WSIResponseAnalyzer(
-            self.llm, enable_layer2=enable_layer2
-        )
+        self.response_analyzer = WSIResponseAnalyzer(self.llm)
         self.score_calculator = WSIScoreCalculator()
         self.report_generator = WSIReportGenerator(self.llm)
     
@@ -60,8 +48,7 @@ class WSIService:
         self,
         job_description: str,
         company_culture: dict | None = None,
-        seniority: Literal["junior", "pleno", "senior", "lead", "executive"] = "pleno",
-        tracking_context: dict[str, Any] | None = None,
+        seniority: Literal["junior", "pleno", "senior", "lead", "executive"] = "pleno"
     ) -> CompetencySuggestion:
         """
         ETAPA 1: Analisa JD e sugere competências automaticamente.
@@ -122,14 +109,7 @@ Responda em JSON:
   "confidence_score": 0.95
 }}"""
 
-        on_usage = build_usage_callback(
-            tracking_context,
-            agent_type="wsi_competency_suggestion",
-            default_operation="wsi_jd_competency_suggest",
-        )
-        content_str = await self.llm.safe_invoke(
-            prompt, provider="claude", on_usage=on_usage,
-        )
+        content_str = await self.llm.safe_invoke(prompt, provider="claude")
         data = json.loads(content_str)
         
         # Converter para Competency objects
@@ -181,7 +161,6 @@ Responda em JSON:
         job_description: str | None = None,
         seniority: str | None = None,
         enriched_jd: dict | None = None,
-        tracking_context: dict[str, Any] | None = None,
     ) -> list[WSIQuestion]:
         """
         ETAPA 2: Gera perguntas científicas baseadas em competências.
@@ -220,7 +199,6 @@ Responda em JSON:
             mode,
             job_description=job_description,
             seniority=seniority,
-            tracking_context=tracking_context,
         )
 
     async def generate_from_simple_inputs(
@@ -231,7 +209,6 @@ Responda em JSON:
         job_description: str | None = None,
         mode: Literal["compact", "full"] = "compact",
         max_questions: int | None = None,
-        tracking_context: dict[str, Any] | None = None,
     ) -> list[WSIQuestion]:
         """Convenience wrapper: converts string skill/behavioral lists into Competency
         objects and delegates to ``generate_screening_questions()``.
@@ -284,7 +261,6 @@ Responda em JSON:
             mode=mode,
             job_description=job_description,
             seniority=_seniority_level if _seniority_level in ("junior", "pleno", "senior", "lead", "executive") else "pleno",
-            tracking_context=tracking_context,
         )
         if max_questions is not None and len(questions) > max_questions:
             questions = questions[:max_questions]
@@ -403,9 +379,7 @@ Responda em JSON:
     async def analyze_response(
         self,
         question: WSIQuestion,
-        response: str,
-        *,
-        tracking_context: dict | None = None,
+        response: str
     ) -> ResponseAnalysis:
         """
         ETAPA 3: Analisa resposta e atribui score 1-5.
@@ -424,12 +398,7 @@ Responda em JSON:
         Returns:
             ResponseAnalysis com scores e justificativas
         """
-        # Audit task #532 (G23-04) — `tracking_context` opcional propagado
-        # à Camada 2 para gravar consumo em `AiConsumption`. Quando None,
-        # comportamento idêntico ao anterior.
-        return await self.response_analyzer.analyze(
-            question, response, tracking_context=tracking_context
-        )
+        return await self.response_analyzer.analyze(question, response)
     
     def calculate_wsi(
         self,
@@ -442,11 +411,13 @@ Responda em JSON:
         ETAPA 4: Calcula WSI final.
         
         Fórmula: WSI = Σ(peso_i × score_i) / 100
-
-        Classificação (escala canônica /10 — WSI_CUTOFFS):
-        - >= 7.5: Aprovado automático (Excelente/Alto)
-        - 6.0-7.4: Aguardando / revisão humana (Médio)
-        - < 6.0: Não aprovado (Regular/Baixo)
+        
+        Classificação:
+        - 4.5-5.0: Excelente
+        - 4.0-4.4: Alto
+        - 3.0-3.9: Médio
+        - 2.0-2.9: Regular
+        - < 2.0: Baixo
         
         Args:
             candidate_id: ID do candidato
@@ -471,8 +442,7 @@ Responda em JSON:
         self,
         candidate_id: str,
         wsi_result: WSIResult,
-        responses: list[ResponseAnalysis],
-        tracking_context: dict[str, Any] | None = None,
+        responses: list[ResponseAnalysis]
     ) -> StructuredReport:
         """
         ETAPA 5: Gera parecer estruturado.
@@ -493,15 +463,14 @@ Responda em JSON:
             StructuredReport com parecer completo
         """
         return await self.report_generator.generate_report(
-            candidate_id, wsi_result, responses, tracking_context=tracking_context,
+            candidate_id, wsi_result, responses
         )
     
     async def generate_candidate_feedback(
         self,
         wsi_result: WSIResult,
         responses: list[ResponseAnalysis],
-        decision: Literal["aprovado", "aguardando", "nao_aprovado"],
-        tracking_context: dict[str, Any] | None = None,
+        decision: Literal["aprovado", "aguardando", "nao_aprovado"]
     ) -> CandidateFeedback:
         """
         ETAPA 6: Gera feedback estruturado para candidato.
@@ -522,49 +491,12 @@ Responda em JSON:
             CandidateFeedback estruturado e construtivo
         """
         return await self.report_generator.generate_feedback(
-            wsi_result, responses, decision, tracking_context=tracking_context,
+            wsi_result, responses, decision
         )
 
 
 
 wsi_service = WSIService()
-
-
-async def calculate_wsi(
-    candidate_id: str = "",
-    responses: list[Any] | None = None,
-    decision: str = "aguardando",
-    tracking_context: dict[str, Any] | None = None,
-    **kwargs: Any,
-) -> dict[str, Any]:
-    """Chat-surface entry point: compute WSI score + structured report.
-
-    Pulls together score calculation and parecer generation around the
-    `WSIService` singleton so the chat tool registry has a single resolvable
-    handler. When `responses` are not provided, returns a structured
-    placeholder rather than attempting an empty calculation.
-    """
-    if not responses:
-        return {
-            "success": False,
-            "error": "missing_responses",
-            "message": "responses (list[ResponseAnalysis]) is required to calculate WSI",
-            "candidate_id": candidate_id,
-        }
-    score_calculator = wsi_service.score_calculator
-    wsi_result = score_calculator.calculate(responses=responses, **kwargs.get("score_kwargs", {}))
-    report = await wsi_service.generate_structured_report(
-        candidate_id=candidate_id,
-        wsi_result=wsi_result,
-        responses=responses,
-        tracking_context=tracking_context,
-    )
-    return {
-        "success": True,
-        "candidate_id": candidate_id,
-        "wsi": wsi_result.dict() if hasattr(wsi_result, "dict") else wsi_result,
-        "report": report.dict() if hasattr(report, "dict") else report,
-    }
 
 
 async def generate_wsi_questions_tool(job_id: str, count: int = 5, **kwargs) -> list[dict[str, Any]]:

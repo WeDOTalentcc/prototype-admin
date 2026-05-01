@@ -20,20 +20,12 @@ from app.auth.dependencies import (
 from app.auth.models import User
 from app.core.database import get_db
 from app.domains.recruitment.repositories.company_screening_question_repository import CompanyScreeningQuestionRepository
-from lia_models.screening_question import (
+from app.models.screening_question import (
     DEFAULT_SCREENING_QUESTIONS,
     QUESTION_CATEGORIES,
     QUESTION_TYPES,
     CompanyScreeningQuestion,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -206,7 +198,7 @@ async def create_screening_question(
 
 @router.put("/company/screening-questions/{question_id}", response_model=ScreeningQuestionResponse)
 async def update_screening_question(
-    question_id: _DualId,
+    question_id: str,
     request: ScreeningQuestionUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
@@ -254,7 +246,7 @@ async def update_screening_question(
 
 @router.delete("/company/screening-questions/{question_id}", response_model=None)
 async def delete_screening_question(
-    question_id: _DualId,
+    question_id: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
@@ -377,10 +369,3 @@ async def get_categories(
         categories=QUESTION_CATEGORIES,
         types=QUESTION_TYPES
     )
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

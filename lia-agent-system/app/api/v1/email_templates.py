@@ -20,7 +20,7 @@ from app.domains.email_templates.repositories.email_templates_repository import 
 )
 from app.domains.job_management.services.template_seeder import clone_templates_for_client as clone_for_client_service
 from app.domains.job_management.services.template_seeder import seed_default_templates as seed_system_templates
-from lia_models.email_template import EmailLog, EmailTemplate
+from app.models.email_template import EmailLog, EmailTemplate
 from app.schemas.email_template import (
     DefaultTemplatesResponse,
     EmailLogListResponse,
@@ -43,14 +43,6 @@ from app.schemas.email_template import (
     TemplatePreviewByIdRequest,
     TemplatePreviewByIdResponse,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +177,7 @@ async def list_email_template_categories(
 
 @router.get("/{template_id}", response_model=EmailTemplateResponse)
 async def get_email_template(
-    template_id: _DualId,
+    template_id: str,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 ):
     """
@@ -290,7 +282,7 @@ async def create_email_template(
 
 @router.put("/{template_id}", response_model=EmailTemplateResponse)
 async def update_email_template(
-    template_id: _DualId,
+    template_id: str,
     template_data: EmailTemplateUpdate,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
     email_svc: EmailService = Depends(get_email_service),
@@ -354,7 +346,7 @@ async def update_email_template(
 
 @router.delete("/{template_id}", response_model=None)
 async def delete_email_template(
-    template_id: _DualId,
+    template_id: str,
     hard_delete: bool = Query(False, description="If True, permanently delete. If False, soft delete (deactivate)."),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 ):
@@ -419,7 +411,7 @@ async def preview_email(
 
 @router.post("/{template_id}/preview", response_model=TemplatePreviewByIdResponse)
 async def preview_template_by_id(
-    template_id: _DualId,
+    template_id: str,
     request: TemplatePreviewByIdRequest,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 ):
@@ -465,7 +457,7 @@ async def preview_template_by_id(
 
 @router.post("/{template_id}/send", response_model=EmailSendResponse)
 async def send_email(
-    template_id: _DualId,
+    template_id: str,
     request: EmailSendRequest,
     current_user: User = Depends(get_current_user),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
@@ -629,7 +621,7 @@ async def seed_default_templates(
 
 @router.post("/clone-for-client/{client_id}", response_model=None)
 async def clone_templates_for_client(
-    client_id: _DualId,
+    client_id: str,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 ):
     """
@@ -901,10 +893,3 @@ Responda APENAS com o JSON, sem texto adicional."""
     except Exception as e:
         logger.error(f"Error adjusting template with AI: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

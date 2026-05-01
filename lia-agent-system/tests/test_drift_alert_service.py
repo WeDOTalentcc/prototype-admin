@@ -14,8 +14,8 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
-from app.shared.observability.drift_alert_service import DriftAlertService, ALERT_CHANNELS
-from app.shared.observability.model_drift_service import DriftStatus, DriftTrigger
+from app.shared.services.drift_alert_service import DriftAlertService, ALERT_CHANNELS
+from app.shared.services.model_drift_service import DriftStatus, DriftTrigger
 from app.services.notification_service import NotificationType, NotificationChannel
 
 COMPANY_ID = uuid4()
@@ -71,10 +71,10 @@ class TestDriftAlertService:
         status = _make_status([_make_trigger("score_drift", triggered=False)])
 
         with patch(
-            "app.shared.observability.drift_alert_service.model_drift_service.evaluate",
+            "app.services.drift_alert_service.model_drift_service.evaluate",
             new=AsyncMock(return_value=status),
         ), patch(
-            "app.shared.observability.drift_alert_service.notification_service.send_multi_channel_notification",
+            "app.services.drift_alert_service.notification_service.send_multi_channel_notification",
             new=AsyncMock(),
         ) as mock_notify:
             svc = DriftAlertService()
@@ -89,10 +89,10 @@ class TestDriftAlertService:
         status = _make_status([_make_trigger("score_drift", triggered=True)])
 
         with patch(
-            "app.shared.observability.drift_alert_service.model_drift_service.evaluate",
+            "app.services.drift_alert_service.model_drift_service.evaluate",
             new=AsyncMock(return_value=status),
         ), patch(
-            "app.shared.observability.drift_alert_service.notification_service.send_multi_channel_notification",
+            "app.services.drift_alert_service.notification_service.send_multi_channel_notification",
             new=AsyncMock(),
         ) as mock_notify:
             svc = DriftAlertService()
@@ -111,10 +111,10 @@ class TestDriftAlertService:
         ])
 
         with patch(
-            "app.shared.observability.drift_alert_service.model_drift_service.evaluate",
+            "app.services.drift_alert_service.model_drift_service.evaluate",
             new=AsyncMock(return_value=status),
         ), patch(
-            "app.shared.observability.drift_alert_service.notification_service.send_multi_channel_notification",
+            "app.services.drift_alert_service.notification_service.send_multi_channel_notification",
             new=AsyncMock(),
         ) as mock_notify:
             svc = DriftAlertService()
@@ -130,10 +130,10 @@ class TestDriftAlertService:
         status = _make_status([_make_trigger("cost_drift", triggered=True)])
 
         with patch(
-            "app.shared.observability.drift_alert_service.model_drift_service.evaluate",
+            "app.services.drift_alert_service.model_drift_service.evaluate",
             new=AsyncMock(return_value=status),
         ), patch(
-            "app.shared.observability.drift_alert_service.notification_service.send_multi_channel_notification",
+            "app.services.drift_alert_service.notification_service.send_multi_channel_notification",
             new=AsyncMock(),
         ) as mock_notify:
             svc = DriftAlertService()
@@ -148,10 +148,10 @@ class TestDriftAlertService:
         status = _make_status([_make_trigger("latency_drift", triggered=True)])
 
         with patch(
-            "app.shared.observability.drift_alert_service.model_drift_service.evaluate",
+            "app.services.drift_alert_service.model_drift_service.evaluate",
             new=AsyncMock(return_value=status),
         ), patch(
-            "app.shared.observability.drift_alert_service.notification_service.send_multi_channel_notification",
+            "app.services.drift_alert_service.notification_service.send_multi_channel_notification",
             new=AsyncMock(),
         ):
             svc = DriftAlertService()
@@ -166,10 +166,10 @@ class TestDriftAlertService:
         status = _make_status([_make_trigger("cost_drift", triggered=True)])
 
         with patch(
-            "app.shared.observability.drift_alert_service.model_drift_service.evaluate",
+            "app.services.drift_alert_service.model_drift_service.evaluate",
             new=AsyncMock(return_value=status),
         ), patch(
-            "app.shared.observability.drift_alert_service.notification_service.send_multi_channel_notification",
+            "app.services.drift_alert_service.notification_service.send_multi_channel_notification",
             new=AsyncMock(),
         ) as mock_notify:
             svc = DriftAlertService()

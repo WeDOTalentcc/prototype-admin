@@ -64,24 +64,16 @@ async def search_jobs(
     """
     context = _extract_context(kwargs)
     company_id = context.company_id if context else None
-
-    # Fallback: read from AuthEnforcementMiddleware contextvar (LangGraph path)
-    if not company_id:
-        try:
-            from app.shared.tenant_llm_context import get_current_llm_tenant
-            company_id = get_current_llm_tenant() or None
-        except Exception:
-            pass
-
+    
     logger.info(f"🔍 Searching jobs with filters (company: {company_id})")
     
     try:
         from sqlalchemy import and_, select
 
-        from app.core.database import get_tenant_aware_session
-        from lia_models.job_vacancy import JobVacancy
-
-        async with get_tenant_aware_session() as db:
+        from app.core.database import AsyncSessionLocal
+        from app.models.job_vacancy import JobVacancy
+        
+        async with AsyncSessionLocal() as db:
             query = select(JobVacancy)
             conditions = [JobVacancy.company_id == company_id]
             
@@ -117,9 +109,9 @@ async def search_jobs(
             query = query.where(and_(*conditions))
             query = query.order_by(JobVacancy.created_at.desc())
             query = query.limit(limit)
+            
             result = await db.execute(query)
             jobs = result.scalars().all()
-            logger.info(f"🔍 search_jobs DB result: {len(jobs)} rows, company_id={company_id}")
             
             jobs_list = []
             for j in jobs:
@@ -190,42 +182,20 @@ async def get_job_details(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate, VacancyCandidate
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.candidate import Candidate, VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
-            job = None
-            # First attempt: treat job_id as UUID
-            try:
-                job_uuid_attempt = UUID(job_id)
-            except (ValueError, AttributeError, TypeError):
-                job_uuid_attempt = None
-
-            if job_uuid_attempt is not None:
-                result = await db.execute(
-                    select(JobVacancy).where(
-                        and_(
-                            JobVacancy.id == job_uuid_attempt,
-                            JobVacancy.company_id == company_id
-                        )
+            result = await db.execute(
+                select(JobVacancy).where(
+                    and_(
+                        JobVacancy.id == UUID(job_id),
+                        JobVacancy.company_id == company_id
                     )
                 )
-                job = result.scalar_one_or_none()
-
-            # Fallback: job_id is a short code (e.g. "V0039")
-            if job is None:
-                from sqlalchemy import text as _text
-                _row = await db.execute(
-                    _text("SELECT id FROM job_vacancies WHERE job_id = :jid AND company_id = :co LIMIT 1"),
-                    {"jid": job_id, "co": str(company_id) if company_id else ""},
-                )
-                _found = _row.fetchone()
-                if _found:
-                    result2 = await db.execute(
-                        select(JobVacancy).where(JobVacancy.id == _found[0])
-                    )
-                    job = result2.scalar_one_or_none()
-
+            )
+            job = result.scalar_one_or_none()
+            
             if not job:
                 return {
                     "success": False,
@@ -261,7 +231,7 @@ async def get_job_details(
                         )
                     ).where(
                         and_(
-                            VacancyCandidate.vacancy_id == job.id,
+                            VacancyCandidate.vacancy_id == UUID(job_id),
                             VacancyCandidate.company_id == company_id
                         )
                     )
@@ -328,8 +298,8 @@ async def get_job_velocity(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import VacancyCandidate
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.candidate import VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             job_result = await db.execute(
@@ -469,8 +439,8 @@ async def get_job_quality_metrics(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import Candidate, VacancyCandidate
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.candidate import Candidate, VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             job_result = await db.execute(
@@ -624,8 +594,8 @@ async def get_job_benchmark(
         from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        from lia_models.candidate import VacancyCandidate
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.candidate import VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
             job_result = await db.execute(

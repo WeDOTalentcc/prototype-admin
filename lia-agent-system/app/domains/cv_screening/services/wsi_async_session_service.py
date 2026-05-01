@@ -74,7 +74,7 @@ class WSIAsyncSessionService:
         try:
             from sqlalchemy import insert
 
-            from lia_models.wsi_session import WSISession
+            from app.models.wsi_session import WSISession
             await db.execute(
                 insert(WSISession).values(
                     id=session_id,
@@ -158,7 +158,7 @@ class WSIAsyncSessionService:
         try:
             from sqlalchemy import and_, update
 
-            from lia_models.wsi_session import WSISession
+            from app.models.wsi_session import WSISession
 
             expired_at = datetime.utcnow() - timedelta(hours=WSI_SESSION_TIMEOUT_HOURS)
             result = await db.execute(

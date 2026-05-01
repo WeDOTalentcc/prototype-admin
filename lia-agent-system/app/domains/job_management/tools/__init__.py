@@ -64,26 +64,12 @@ JOB_MANAGEMENT_TOOLS: list[dict[str, Any]] = [
     {
         "tool_id": "duplicate_job_vacancy",
         "name": "Duplicar Vaga",
-        "description": "Duplica uma vaga existente com todos os dados (e opcionalmente candidatos)",
+        "description": "Duplica uma vaga existente com todos os dados",
         "parameters": {
-            "job_id": {"type": "string", "description": "ID, código ou trecho do título da vaga de origem", "required": True},
-            "copies": {"type": "integer", "description": "Número de cópias a criar", "required": False, "default": 1},
-            "include_candidates": {"type": "boolean", "description": "Incluir candidatos da vaga original", "required": False, "default": True},
-            "candidate_filter": {"type": "string", "description": "Filtro de candidatos: 'all' ou 'approved'", "required": False},
-            "overrides": {"type": "object", "description": "Campos a sobrescrever na nova vaga", "required": False},
+            "job_id": {"type": "string", "description": "ID da vaga a duplicar", "required": True},
+            "include_candidates": {"type": "boolean", "description": "Incluir candidatos na duplicação", "required": False, "default": False},
         },
         "handler": "app.tools.job_tools.duplicate_job_vacancy",
-    },
-    {
-        "tool_id": "clone_job_vacancy",
-        "name": "Clonar Vaga (Template)",
-        "description": "Clona uma vaga existente como nova vaga, sem trazer candidatos",
-        "parameters": {
-            "job_id": {"type": "string", "description": "ID, código ou trecho do título da vaga de origem", "required": True},
-            "new_title": {"type": "string", "description": "Título da nova vaga", "required": False},
-            "overrides": {"type": "object", "description": "Campos a sobrescrever na nova vaga", "required": False},
-        },
-        "handler": "app.tools.job_tools.clone_job_vacancy",
     },
     {
         "tool_id": "generate_job_description",

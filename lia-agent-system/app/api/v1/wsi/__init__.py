@@ -9,7 +9,7 @@ Sub-modules:
 """
 from fastapi import APIRouter
 
-from . import admin, evaluation, questions, reports, sessions
+from . import evaluation, questions, reports, sessions
 
 router = APIRouter(prefix="/api/v1/wsi", tags=["WSI Text Screening"])
 
@@ -17,6 +17,5 @@ router.include_router(questions.router)
 router.include_router(evaluation.router)
 router.include_router(sessions.router)
 router.include_router(reports.router)
-router.include_router(admin.router)
 
 __all__ = ["router"]

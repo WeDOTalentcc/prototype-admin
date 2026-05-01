@@ -13,7 +13,7 @@ from app.auth.workos_models import (
     WorkOSGroupMembership,
     WorkOSGroupRoleMapping,
 )
-from lia_models.client_account import ClientAccount
+from app.models.client_account import ClientAccount
 
 logger = logging.getLogger(__name__)
 

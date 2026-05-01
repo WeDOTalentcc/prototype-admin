@@ -193,99 +193,12 @@ class ContextManager:
         self.idempotency_keys.add(operation_key)
         return True
     
-    # ID-shaped param keys → resolver method name on the adapter.
-    #
-    # Dual-ID entities accept both a fork UUID and a Rails bigint; without
-    # canonicalization, an idempotent operation that retries with the other
-    # ID format hashes to a different key and runs twice (ADR 003).
-    #
-    # Only entries whose resolver is actually implemented on `RailsAdapter`
-    # are listed here — adding a key for which no resolver exists would be
-    # dead weight that gives a false sense of coverage. Candidates, jobs
-    # and applications all have `_resolve_rails_*_id` resolvers backed by
-    # Rails' `fork_uuid` columns (ADR 003 / Task #479).
-    _DUAL_ID_PARAM_RESOLVERS: dict[str, str] = {
-        "candidate_id": "_resolve_rails_candidate_id",
-        "candidate": "_resolve_rails_candidate_id",
-        "job_id": "_resolve_rails_job_id",
-        "vacancy_id": "_resolve_rails_job_id",
-        # Task #486 — `update_job_vacancy` (and other vacancy CRUD routes)
-        # spell the path param `job_vacancy_id`; without an entry here the
-        # canonicalization branch silently no-ops and a UUID/bigint retry
-        # hashes to two distinct keys.
-        "job_vacancy_id": "_resolve_rails_job_id",
-        "application_id": "_resolve_rails_application_id",
-        "apply_id": "_resolve_rails_application_id",
-    }
-
-    @classmethod
-    async def _canonicalize_params(
-        cls,
-        params: dict[str, Any],
-        adapter: Any | None,
-    ) -> dict[str, Any]:
-        """Return a copy of `params` with dual-ID fields collapsed to the
-        canonical Rails bigint when an adapter is provided. UUIDs that can't
-        be resolved (no adapter, Rails offline, no `fork_uuid` row yet) are
-        passed through verbatim so behavior matches the legacy hash for
-        non-dual-ID params and unresolvable IDs."""
-        if not params:
-            return {}
-        canonical: dict[str, Any] = dict(params)
-        if adapter is None:
-            return canonical
-        for key, raw_value in params.items():
-            resolver_name = cls._DUAL_ID_PARAM_RESOLVERS.get(key)
-            if resolver_name is None or not isinstance(raw_value, str) or not raw_value:
-                continue
-            resolver = getattr(adapter, resolver_name, None)
-            if not callable(resolver):
-                continue
-            try:
-                rails_id = await resolver(raw_value)
-            except Exception as exc:  # pragma: no cover - defensive
-                logger.debug(
-                    "Idempotency canonicalization: %s(%r) failed: %s",
-                    resolver_name, raw_value, exc,
-                )
-                rails_id = None
-            if rails_id is not None:
-                canonical[key] = int(rails_id)
-        return canonical
-
     def generate_idempotency_key(self, operation: str, params: dict[str, Any]) -> str:
-        """Generate an idempotency key for an operation.
-
-        This sync variant hashes the params verbatim. For dual-ID entities
-        (currently candidates), use :meth:`generate_idempotency_key_async`
-        with a ``RailsAdapter`` so retries that switch between UUID and
-        Rails bigint collapse to the same key.
-        """
+        """Generate an idempotency key for an operation."""
         key_data = {
             "session_id": self.session_id,
             "operation": operation,
-            "params": sorted((params or {}).items())
-        }
-        key_str = json.dumps(key_data, sort_keys=True, default=str)
-        return hashlib.sha256(key_str.encode()).hexdigest()[:16]
-
-    async def generate_idempotency_key_async(
-        self,
-        operation: str,
-        params: dict[str, Any],
-        adapter: Any | None = None,
-    ) -> str:
-        """Async variant that canonicalizes dual-ID params via the adapter
-        before hashing, so retries that switch between UUID and Rails bigint
-        collapse to the same idempotency key (ADR 003).
-
-        With ``adapter=None``, behavior is identical to the sync version.
-        """
-        canonical = await self._canonicalize_params(params or {}, adapter)
-        key_data = {
-            "session_id": self.session_id,
-            "operation": operation,
-            "params": sorted(canonical.items()),
+            "params": sorted(params.items())
         }
         key_str = json.dumps(key_data, sort_keys=True, default=str)
         return hashlib.sha256(key_str.encode()).hexdigest()[:16]
@@ -331,19 +244,9 @@ class CancellationHandler:
     
     @staticmethod
     def is_cancellation_request(message: str) -> bool:
-        """Check if a message is a cancellation request.
-
-        Uses word boundaries to prevent false positives like matching
-        'pare' inside 'parecer'. Each keyword must appear as a
-        complete word, not embedded in a longer word.
-        """
-        import re as _re
+        """Check if a message is a cancellation request."""
         message_lower = message.lower().strip()
-        for keyword in CANCELLATION_KEYWORDS:
-            pattern = r"\b" + _re.escape(keyword) + r"\b"
-            if _re.search(pattern, message_lower):
-                return True
-        return False
+        return any(keyword in message_lower for keyword in CANCELLATION_KEYWORDS)
     
     @staticmethod
     def is_restart_request(message: str) -> bool:

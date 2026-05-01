@@ -10,7 +10,7 @@ from uuid import UUID
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.screening_question import CompanyScreeningQuestion
+from app.models.screening_question import CompanyScreeningQuestion
 
 logger = logging.getLogger(__name__)
 

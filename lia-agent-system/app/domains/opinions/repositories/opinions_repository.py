@@ -9,8 +9,8 @@ from uuid import UUID
 from sqlalchemy import and_, desc, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.job_vacancy import JobVacancy
-from lia_models.lia_opinion import LiaOpinion
+from app.models.job_vacancy import JobVacancy
+from app.models.lia_opinion import LiaOpinion
 
 logger = logging.getLogger(__name__)
 

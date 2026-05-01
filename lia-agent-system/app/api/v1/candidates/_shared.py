@@ -22,13 +22,13 @@ from app.domains.candidates.repositories.candidate_favorites_repository import (
 from app.domains.candidates.repositories.candidate_repository import CandidateRepository
 from app.domains.candidates.repositories.vacancy_candidate_repository import VacancyCandidateRepository
 from app.domains.sourcing.services.pearch_service import PearchService, get_pearch_service, pearch_service
-from lia_models.candidate import (
+from app.models.candidate import (
     Candidate,
     CandidateFavorite,
     CandidateHidden,
     CandidateSearch,
 )
-from lia_models.pearch import PearchSearchRequest, PearchSearchResponse
+from app.models.pearch import PearchSearchRequest, PearchSearchResponse
 from app.schemas.candidate import (
     CandidateCreate,
     CandidateResponse,
@@ -39,7 +39,7 @@ from app.schemas.candidate import (
 )
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
 from app.shared.services.calibration_service import CalibrationService
-from app.domains.lgpd.services.consent_checker_service import ConsentCheckerService
+from app.shared.services.consent_checker_service import ConsentCheckerService
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard_middleware import check_rejection_reason
 from app.shared.pii_masking import get_masked_logger

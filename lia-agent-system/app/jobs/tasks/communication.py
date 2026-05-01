@@ -146,7 +146,7 @@ def send_daily_briefing_task(self) -> dict:
                     logger.info(
                         "[briefing.send_daily] sent user=%s company=%s urgent=%d",
                         user.id,
-                        user.company_id,
+                        getattr(user, "company_id", None),
                         len(briefing.get("urgent_actions", [])),
                     )
                     sent += 1

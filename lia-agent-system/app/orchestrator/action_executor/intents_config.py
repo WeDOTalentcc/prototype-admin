@@ -53,16 +53,6 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
             "candidate_id": "Qual candidato você quer reprovar?",
         },
     },
-    "reject_candidate": {
-        "domain_id": "pipeline_transition",
-        "action_id": "reject_candidate",
-        "required_params": [],
-        "optional_params": ["candidate_id", "candidate_name", "vacancy_id", "reason", "confirmed"],
-        "risk_level": "high",
-        "requires_confirmation": False,  # handler manages its own confirmation gate
-        "param_labels": {"candidate_name": "candidato", "reason": "motivo"},
-        "clarification_prompts": {},
-    },
     "aprovar_candidato": {
         "domain_id": "pipeline_transition",
         "action_id": "move_candidate",
@@ -151,8 +141,8 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
     "analisar_perfil": {
         "domain_id": "cv_screening",
         "action_id": "analyze_profile",
-        "required_params": [],  # CM-001: candidate_id or candidate_name resolved in handler
-        "optional_params": ["candidate_id", "candidate_name", "vacancy_id", "job_vacancy_id"],
+        "required_params": ["candidate_id"],
+        "optional_params": [],
         "risk_level": "low",
         "requires_confirmation": False,
         "param_labels": {"candidate_id": "candidato"},
@@ -163,8 +153,8 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
     "analise_detalhada": {
         "domain_id": "cv_screening",
         "action_id": "analyze_profile",
-        "required_params": [],  # CM-001: candidate_id or candidate_name resolved in handler
-        "optional_params": ["candidate_id", "candidate_name", "vacancy_id", "job_vacancy_id"],
+        "required_params": ["candidate_id"],
+        "optional_params": [],
         "risk_level": "low",
         "requires_confirmation": False,
         "param_labels": {"candidate_id": "candidato"},
@@ -209,8 +199,8 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
     "duplicar_vaga": {
         "domain_id": "job_management",
         "action_id": "duplicate_job",
-        "required_params": [],
-        "optional_params": ["job_id", "job_title", "new_title"],
+        "required_params": ["job_id"],
+        "optional_params": ["new_title"],
         "risk_level": "low",
         "requires_confirmation": False,
         "param_labels": {
@@ -486,8 +476,8 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
     "comparar_candidatos": {
         "domain_id": "sourcing",
         "action_id": "compare_candidates",
-        "required_params": [],  # CM-003: candidate_ids or candidate_names resolved in handler
-        "optional_params": ["candidate_ids", "candidate_names", "job_id", "criteria"],
+        "required_params": ["candidate_ids"],
+        "optional_params": ["job_id", "criteria"],
         "risk_level": "low",
         "requires_confirmation": False,
         "param_labels": {
@@ -552,8 +542,8 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
         "action_id": "generate_kpi_report",
         "required_params": [],
         "optional_params": ["period", "job_id", "metrics"],
-        "risk_level": "low",
-        "requires_confirmation": False,
+        "risk_level": "medium",
+        "requires_confirmation": True,
         "param_labels": {},
         "clarification_prompts": {},
     },
@@ -689,121 +679,6 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
         "param_labels": {},
         "clarification_prompts": {},
     },
-    "vagas_sem_candidatos": {
-        "domain_id": "analytics",
-        "action_id": "vacancies_without_candidates",
-        "required_params": [],
-        "optional_params": ["days"],
-        "risk_level": "read",
-        "requires_confirmation": False,
-        "param_labels": {"days": "dias"},
-    },
-    "mover_candidatos_por_etapa": {
-        "domain_id": "pipeline_transition",
-        "action_id": "bulk_move_by_stage",
-        "required_params": ["job_id", "from_stage", "to_stage"],
-        "optional_params": [],
-        "risk_level": "high",
-        "requires_confirmation": True,
-        "param_labels": {
-            "job_id": "vaga",
-            "from_stage": "etapa de origem",
-            "to_stage": "etapa destino",
-        },
-        "clarification_prompts": {
-            "job_id": "Qual vaga você quer usar?",
-            "from_stage": "De qual etapa quer mover os candidatos?",
-            "to_stage": "Para qual etapa quer movê-los?",
-        },
-    },
-    "listar_candidatos_por_etapa": {
-        "domain_id": "analytics",
-        "action_id": "list_candidates_by_stage",
-        "required_params": [],
-        "optional_params": ["job_id", "stage"],
-        "risk_level": "low",
-        "requires_confirmation": False,
-        "param_labels": {
-            "job_id": "vaga",
-            "stage": "etapa",
-        },
-        "clarification_prompts": {
-            "job_id": "Para qual vaga você quer listar os candidatos?",
-        },
-    },
-    # INT:003 — wizard compensation intents (PRV + bonus override + package confirmation)
-    "apply_compensation_policy": {
-        "domain_id": "job_management",
-        "action_id": "apply_compensation_policy",
-        "required_params": ["job_id"],
-        "optional_params": ["policy_id"],
-        "risk_level": "medium",
-        "requires_confirmation": True,
-        "param_labels": {
-            "job_id": "vaga",
-            "policy_id": "política de PRV",
-        },
-        "clarification_prompts": {
-            "job_id": "Para qual vaga você quer vincular a política de remuneração?",
-            "policy_id": "Qual política de remuneração variável quer aplicar?",
-        },
-    },
-    "override_bonus_in_job": {
-        "domain_id": "job_management",
-        "action_id": "override_bonus_in_job",
-        "required_params": ["job_id", "bonus_min", "bonus_max"],
-        "optional_params": [],
-        "risk_level": "medium",
-        "requires_confirmation": True,
-        "param_labels": {
-            "job_id": "vaga",
-            "bonus_min": "bônus mínimo",
-            "bonus_max": "bônus máximo",
-        },
-        "clarification_prompts": {
-            "job_id": "Para qual vaga você quer definir o bônus pontual?",
-            "bonus_min": "Qual o valor mínimo do bônus (R$)?",
-            "bonus_max": "Qual o valor máximo do bônus (R$)?",
-        },
-    },
-    "confirm_total_package": {
-        "domain_id": "job_management",
-        "action_id": "confirm_total_package",
-        "required_params": ["job_id"],
-        "optional_params": [],
-        "risk_level": "low",
-        "requires_confirmation": False,
-        "param_labels": {
-            "job_id": "vaga",
-        },
-        "clarification_prompts": {
-            "job_id": "Para qual vaga você quer confirmar o pacote total de remuneração?",
-        },
-    },
-    "sugerir_salario": {
-        "domain_id": "job_management",
-        "action_id": "suggest_salary",
-        "required_params": ["job_title"],
-        "optional_params": ["location", "seniority", "years_experience"],
-        "risk_level": "read",
-        "requires_confirmation": False,
-    },
-    "gerar_jd": {
-        "domain_id": "job_management",
-        "action_id": "generate_jd_direct",
-        "required_params": ["job_title"],
-        "optional_params": ["skills", "requirements", "seniority"],
-        "risk_level": "read",
-        "requires_confirmation": False,
-    },
-    "lia_identidade": {
-        "domain_id": "direct_response",
-        "action_id": "respond_identity",
-        "required_params": [],
-        "optional_params": [],
-        "risk_level": "read",
-        "requires_confirmation": False,
-    },
 }
 
 CONFIRMATION_PATTERNS = [
@@ -882,18 +757,12 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
         r"(bloquear?|reservar?)\s+(tempo|horário|slot)\s+(para|na|no)",
         r"(tenho|marcar?)\s+(reunião|meeting|call|compromisso)\s+(com|no|na|amanhã|hoje|semana)",
     ]),
-    # Agendar entrevista (must come before resumo_agenda to avoid false positives)
-    ("agendar_entrevista", [
-        r"(convida[rn]?)\s+.{2,40}(para|pra)\s+(entrevista|interview)(?!\s+wsi)",
-        r"(convida[rn]?)\s+.{2,40}entrevista\s+(amanhã|hoje|às|no\s+dia)",
-        r"(agenda[rn]?|marca[rn]?)\s+(uma?\s+)?(entrevista|interview)\s+(com|para|pra)\s+\w+",
-    ]),
     # Resumo da agenda / briefing diário
     ("resumo_agenda", [
         r"(minha|meus?)\s+(agenda|compromissos?|tarefas?|entrevistas?)\s+(de\s+)?(hoje|amanhã|esta semana|dessa? semana)",
         r"(o\s+que|quais?)\s+(tenho|tem|preciso\s+fazer|preciso\s+atender)\s+(hoje|amanhã|agora)",
         r"(resumo|sumário|briefing|overview)\s+(do\s+)?(dia|diário|de hoje|agenda)",
-        r"(minha|meus?)\s+(agenda|entrevistas?|compromissos?)\s+(de\s+)?(hoje|amanhã|essa? semana|esta semana)",
+        r"(agenda|entrevistas?|compromissos?)\s+(de\s+)?(hoje|amanhã|essa? semana|esta semana)",
         r"(o\s+que\s+tenho|minha\s+agenda)\s+(hoje|amanhã)",
         r"(mostre?|veja?|me\s+dê)\s+(minha|meus?)\s+(agenda|tarefas?|compromissos?)",
     ]),
@@ -950,21 +819,12 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
     ("rankear_candidatos", [
         r"(rankea[rn]?|ordena[rn]?|classifica[rn]?)\s+(os?\s+)?(candidatos?)\s+(por|segundo|conforme)",
         r"(ranking|rank)\s+(d[eo]s?\s+)?(candidatos?)",
-        r"(?!.*(?:avança|manda|envia|move|agenda).*)(?:quais?\s+)?(melhores?|top|piores?)\s+(candidatos?)",
-    ]),
-    # Analisar perfil de candidato (CM-001)
-    ("analisar_perfil", [
-        r"(avali[ae]r?|analisa[rn]?)\s+(o\s+)?(currículo|curriculo|cv|perfil)\s+(d[eo]\s+|do?\s+candidato\s+)?",
-        r"(avalia|analisa)\s+.{2,40}\s+(para|pra)\s+(a\s+)?(vaga|posição)",
-        r"(currículo|curriculo|cv|perfil)\s+(d[eo]\s+)?.{3,40}\s+(para|pra)\s+(a\s+)?(vaga|posição)",
-        r"(faz[er]?|realiza[rn]?)\s+(um[a]?\s+)?(análise|analise|avaliação|avaliacao)\s+(d[eo]\s+)?(currículo|curriculo|cv|perfil)",
+        r"(quais?\s+)?(melhores?|top|piores?)\s+(candidatos?)",
     ]),
     # Comparar candidatos
     ("comparar_candidatos", [
         r"(compara[rn]?|comparação|comparar?)\s+(os?\s+)?(candidatos?|perfis?)",
         r"(candidatos?)\s+(lado a lado|versus|vs|comparação|compara)",
-        r"compara[rn]?\s+[A-Z].{2,30}\s+e\s+[A-Z].{2,30}",
-        r"compara[rn]?\s+[a-z].{2,20}\s+e\s+[a-z].{2,20}\s+(para|pra)\s+(a\s+)?(vaga|posição)",
     ]),
     # Buscar candidatos
     ("buscar_candidatos", [
@@ -991,10 +851,6 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
         r"(gera[rn]?|cria[rn]?|mostra[rn]?)\s+(o?\s*)?(relatório|report)\s+(de\s+)?(kpi|indicadores?|métricas?|performance)",
         r"(kpis?|indicadores?|métricas?)\s+(de\s+|do\s+)?(recrutamento|vagas?|contratação)",
         r"(como\s+(estão|andam)|quais?\s+são)\s+(os?\s+)?(kpis?|indicadores?|métricas?|números?)",
-        r"(tempo\s+médio|ttf|time.to.hire|time_to_hire|prazo\s+médio)\s+(de\s+)?(contratação|preenchimento|fill)",
-        r"(qual|quanto)\s+(é\s+o|o\s+)?(tempo|prazo)\s+(médio|de)\s+(contratação|fill|preenchimento)",
-        r"(diversidade|índice\s+de\s+diversidade|paridade\s+de\s+gênero|distribuição\s+de\s+gênero)",
-        r"(overview|visão\s+geral|resumo)\s+(dos?\s+)?(kpis?|indicadores?|dados?|números?|recrutamento)",
     ]),
     # Enviar parecer de candidato ao gestor
     ("enviar_relatorio_candidato", [
@@ -1042,87 +898,15 @@ MESSAGE_INTENT_PATTERNS: list[tuple] = [
         r"(move[rn]?|avança[rn]?)\s+(em\s+)?(lote|massa|batch|bulk)",
         r"(move[rn]?|mova)\s+todos?\s+(os\s+)?(candidatos?|selecionados?)\s+(para|pra)\s+",
     ]),
-    # Duplicar vaga
-    ("reject_candidate", [
-        r"(rejeita[rn]?|reprova[rn]?)\s+(o\s+|a\s+)?(candidato|candidata)\s+\w",
-        r"(reprovar?|rejeitar?)\s+(o\s+)?(candidato|candidata)",
-        r"rejeita[rn]?\s+\w+\s+\w+",
-    ]),
-    ("duplicar_vaga", [
-        r"(duplica[rn]?|clona[rn]?|copia[rn]?)\s+(a\s+|uma?\s+)?(vaga|posição|job)",
-        r"(abrir\s+)?(uma?\s+)?segunda\s+(posição|vaga|oportunidade)",
-        r"(cria[rn]?|adiciona[rn]?)\s+(mais\s+)?(uma?\s+)?(cópia|copia|versão)\s+(da\s+|do\s+)?(vaga|posição|job)",
-    ]),
     # Health check da vaga
     ("health_check_vaga", [
         r"(health\s*check|diagnóstico|diagnose|saúde)\s+(da\s+|do\s+)?(vaga|processo|pipeline)",
-        r"(como\s+está|status|saúde)\s+(da\s+|do\s+|essa\s+|este\s+|esta\s+|o\s+|a\s+)?(vaga|processo|pipeline|funil)",
+        r"(como\s+está|status|saúde)\s+(da\s+|do\s+)?(vaga|processo|pipeline|funil)",
     ]),
-    # Análise de funil / KB-005: tempo por etapa
+    # Análise de funil
     ("analisar_funil", [
         r"(analisa[rn]?|análise)\s+(do\s+|o\s+)?(funil|pipeline|conversão|taxa)",
-        r"(tempo|média|médio)\s+(que|d[eo]s?)\s+(candidatos?|pessoas?)\s+(ficam?|permanecem?|passam?)\s+(em\s+cada|nas?)\s+(etapa|fase|estágio|stage)",
-        r"(quanto\s+tempo|tempo\s+médio)\s+(em\s+cada|por|nas?)\s+(etapa|fase|stage)",
-        r"(etapas?|fases?)\s+(do\s+)?(processo|pipeline)\s+(tempo|duração|média)",
         r"(funil|pipeline)\s+(de\s+)?(recrutamento|contratação|conversão|seleção)",
         r"(taxa|percentual|%)\s+(de\s+)?(conversão|aprovação|rejeição|desistência)\s+(do\s+|no\s+)?(funil|pipeline)",
-    ]),
-    # Iniciar / disparar triagem WSI
-    ("iniciar_triagem", [
-        r"(inicia[rn]?|dispara[rn]?|comeca[rn]?|comecar?|iniciar?)\s+(a\s+)?triagem(\s+wsi)?",
-        r"triagem\s+wsi\s+(para|dos?|com)\s+",
-        r"(iniciar?|disparar?)\s+triagem\s+(dos?\s+)?(candidatos?|todos?)",
-        r"triagem\s+(para|dos?)\s+(os?\s+)?(candidatos?\s+)?(em\s+espera|aguardando|novos?)",
-    ]),
-    ("disparar_triagem", [
-        r"dispara[rn]?\s+(a?\s*)?triagem",
-        r"(envia[rn]?|manda[rn]?|dispara[rn]?)\s+(a\s+)?triagem\s+(wsi|automatica|para)",
-    ]),
-    # Listar candidatos por etapa
-    ("mover_candidatos_por_etapa", [
-        r"(move[rn]?|transfere[rn]?|muda[rn]?)\s+(todos?\s+)?(os?\s+)?candidatos?.*?(para\s+)(reprovado|aprovado|triagem|entrevista|proposta|oferta)",
-        r"(limpa[rn]?|fecha[rn]?|arquiva[rn]?)\s+(a\s+)?(etapa|fase|fila)\s+(de\s+)?",
-        r"(move[rn]?|mova)\s+todos?\s+(os\s+)?candidatos?\s+(d[ae]\s+)?(etapa\s+d[ae]?\s+)?",
-    ]),
-    # Mover candidatos por etapa (bulk stage move without explicit candidate list)
-    ("listar_candidatos_por_etapa", [
-        r"(quais?|quem|que|liste?|mostra[rn]?|veja?)\s+(os?\s+|são\s+os?\s+)?(candidatos?)\s+(que\s+)?(est[aã][o]?|est[aá]|tem|há|estão|ficaram)\s+(na|em|da|no)\s+(etapa|fase|stage)",
-        r"candidatos?\s+(est[aã][o]?|est[aá]|ficaram)\s+(na|em|da)\s+(etapa|fase|stage|entrevista|triagem|proposta|oferta)",
-        r"candidatos?\s+(na|em|da)\s+(etapa|fase|stage)\s+(de\s+)?(entrevista|triagem|proposta|oferta|shortlist)",
-        r"(quais?|quem)\s+(est[aã][o]?|est[aá])\s+na\s+etapa",
-        r"quem\s+(está|estão)\s+(na|em|da)\s+(etapa|fase|stage|entrevista|triagem|proposta|oferta)",
-        r"(listar?|mostrar?)\s+(os?\s+)?(candidatos?)\s+(por\s+)?etapa",
-    ]),
-    # Vagas sem candidatos
-    ("vagas_sem_candidatos", [
-        r"vaga(s)?\s+(sem|sem\s+nenhum)\s+candidato",
-        r"vaga(s)?\s+(aberta(s)?|ativa(s)?)\s+(sem|sem\s+nenhum|sem\s+qualquer)\s+candidato",
-        r"(alguma|quais?)\s+vaga(s)?\s+(sem\s+|não\s+tem\s+|sem\s+nenhum\s+)candidato",
-    ]),
-    # Identidade da LIA -- respondida localmente, nunca pelo LLM
-    ("sugerir_salario", [
-        r"qual\s+(é\s+o\s+)?salário\s+sugerir",
-        r"qual\s+(é\s+o\s+)?(salário|remuneração|faixa\s+salarial)\s+(para|de|do?|ao?|sugerir)",
-        r"(quanto|qual)\s+(pagar|oferecer|remunerar|salário)\s+(para|a|sugerir)\s+(um[a]?\s+)?\w+",
-        r"(sugerir?|recomendar?|indicar?)\s+(salário|remuneração|faixa)\s+(para|de|ao?)",
-        r"benchmark\s+salarial\s+(para|de)",
-        r"(salário|remuneração)\s+(de\s+mercado|ideal|sugerido)\s+(para|de)",
-        r"qual\s+salário\s+(?:eu\s+)?(?:devo\s+|posso\s+|deveria\s+)?(?:sugerir|pagar|oferecer)",
-    ]),
-    ("gerar_jd", [
-        r"(gerar?s?|gera[rs]?|cria[rn]?|produz[ir]*)\s+(um[a]?\s+)?(descrição\s+d[ae]\s+vaga|job\s+description|jd)\s+(para|de)",
-        r"(escreve[rn]?|elabora[rn]?|monta[rn]?)\s+(um[a]?\s+)?(descrição|job\s+description|jd)\s+(para|de|ao?)",
-        r"(me\s+)?ajuda\s+(a\s+)?(criar|escrever|montar)\s+(um[a]?\s+)?(descrição|jd|job\s+description)",
-        r"(descrição|job\s+description)\s+(para\s+o\s+cargo|para\s+a\s+vaga)\s+de\s+",
-        r"gera\s+(?:uma?\s+)?descrição\s+d[ae]\s+vaga",
-    ]),
-    ("lia_identidade", [
-        r"quem\s+(é\s+)?(você|vc|a\s+lia)",
-        r"quem\s+(e\s+)?(voce|vc|a\s+lia)",
-        r"(o\s+que|quem)\s+(é|es?)\s+(você|vc|a\s+lia)",
-        r"(o\s+que|quem)\s+(e|es?)\s+(voce|vc|a\s+lia)",
-        r"(quem|o\s+que)\s+(é\s+)?a\s+lia",
-        r"(você|vc)\s+é\s+(gemini|claude|gpt|google|openai|anthropic)",
-        r"^(quem\s+é\s+você|who\s+are\s+you|what\s+are\s+you)[\?\!]?$",
     ]),
 ]

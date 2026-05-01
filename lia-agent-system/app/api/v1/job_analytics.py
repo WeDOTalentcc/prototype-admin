@@ -13,14 +13,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.analytics.services.job_analytics_prompt_service import job_analytics_prompt_service
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -233,7 +225,7 @@ async def natural_query(
 
 @router.get("/quick-insights/{job_id}", response_model=QuickInsightsResponse)
 async def get_quick_insights(
-    job_id: _DualId,
+    job_id: str,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -310,7 +302,7 @@ async def compare_jobs(
 
 @router.get("/suggestions/{job_id}", response_model=SuggestionsResponse)
 async def get_suggestions(
-    job_id: _DualId,
+    job_id: str,
     db: AsyncSession = Depends(get_db)
 ):
     """
@@ -425,10 +417,3 @@ async def batch_analyze(
         failed=failed,
         results=list(results)
     )
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

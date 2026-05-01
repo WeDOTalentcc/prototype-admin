@@ -8,22 +8,6 @@ description: |
   No code change needed — config-as-data.
 
 domains:
-  # Onda 37.B.0 — Wizard canonical (JobCreationGraph). Order matters:
-  # `criar vaga` and friends should resolve here so the canonical graph
-  # runs end-to-end (intake → jd_enrichment → ... ) with template cards,
-  # HITL gates, and audit. Listing/editing/etc still goes to job_management.
-  wizard:
-    - "abrir?\\s+\\w*\\s*vaga"
-    - "requisi[\u00e7c][\u00e3a]o\\s+d[eo]\\s+vaga"
-    - "\\bwizard\\b"
-    - "quero\\s+criar\\s+\\w*\\s*vaga"
-    - "vou\\s+criar\\s+\\w*\\s*vaga"
-    - "preciso\\s+contratar"
-    - "vamos\\s+criar\\s+\\w*\\s*vaga"
-    - "nova\\s+vaga"
-    - "criar?\\s+\\w*\\s*vaga"
-    - "publicar?\\s+\\w*\\s*vaga"
-
   job_management:
     # ── Leitura / Listagem (BUG-17 fix: sem esses patterns, "listar vagas" caía no
     # genérico \bvaga\b e era roteado para job_wizard, que não tem list_jobs no
@@ -35,29 +19,27 @@ domains:
     - "quais\\s+(\\w+\\s+)*vagas?"
     - "quantas\\s+vagas?"
     - "vagas?\\s+(abertas?|ativas?|em\\s+aberto|em\\s+andamento|pendentes?|fechadas?|pausadas?|canceladas?)"
-    # English patterns (EX-007 resilience)
-    - "show\\s+(me\\s+)?(the\\s+)?(active\\s+)?jobs?"
-    - "list\\s+(me\\s+)?(all\\s+)?(active\\s+)?jobs?"
-    - "get\\s+(me\\s+)?(the\\s+)?jobs?"
-    - "\\bactive\\s+jobs?\\b"
     - "ranking\\s+d[eo]?\\s+vagas?"
     - "\\bfunil\\s+d[ae]\\s+vaga"
     - "detalhes\\s+d[ae]\\s+vaga"
     # ── Criação / Edição
+    - "criar?\\s+\\w*\\s*vaga"
+    - "nova\\s+vaga"
     - "editar?\\s+\\w*\\s*vaga"
     - "atualizar?\\s+\\w*\\s*vaga"
     - "gerar?\\s+jd"
     - "job\\s+description"
     - "descri[çc][ãa]o\\s+d[aeo]\\s+vaga"
+    - "wizard"
     - "requisitos\\s+d[aeo]"
     - "clonar?\\s+\\w*\\s*vaga"
     - "fechar?\\s+\\w*\\s*vaga"
+    - "publicar?\\s+\\w*\\s*vaga"
     - "pausar?\\s+\\w*\\s*vaga"
     - "template\\s+d[aeo]\\s+vaga"
+    - "\\bvaga\\b"
     - "compet[eê]ncias"
     - "sal[áa]rio"
-    - "sal[aá]rio\\s+da\\s+vaga"
-    - "atualiz\\w*\\s+\\w+\\s+sal[aá]rio\\s+da\\s+vaga"
     - "benef[ií]cios"
     - "enrichment"
   sourcing:
@@ -74,8 +56,6 @@ domains:
     - "ranking\\s+d[eo]"
     - "top\\s+\\d+\\s+candidato"
     - "filtrar?\\s+\\w*\\s*candidato"
-    - "melhor\\s+match\\s+para\\s+(?:a\\s+)?vaga"
-    - "match.*candidatos.*vaga"
   sourcing_planner:
     - "crit[eé]rios\\s+de\\s+busca"
     - "definir?\\s+\\w*\\s*crit[eé]rios"
@@ -157,13 +137,7 @@ domains:
     - "comunicar?\\s+\\w*\\s*candidato"
     - "feedback\\s+para?\\s+\\w*\\s*candidato"
     - "\\bteams\\b"
-    - "mand[ao].*\\bwhatsapp\\b"
-    - "mand[ao].*\\b(email|mensagem)\\b"
-    - "convid[ao]\\w*.*\\bentrevista\\b"
-    - "email\\s+de\\s+rejei[çc][aã]o"
   kanban_search:
-    - "pipeline\\s+(da|dessa|desta|do|de)\\s+vaga"
-    - "como\\s+est[áa]\\s+(essa|a|o)\\s+vaga"
     - "\\bver\\s+\\w*\\s*candidato"
     - "\\blistar?\\s+\\w*\\s*candidato"
     - "\\bmostrar?\\s+\\w*\\s*candidato"
@@ -239,10 +213,10 @@ domains:
     - "personalize.?communication"
     - "reschedule.?interview"
     - "cancel.?interview"
-    - "atualiza\\s+o?\\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|modelo\\s+de\\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)"
+    - "atualiza\\s+o?\\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|sal[aá]rio|modelo\\s+de\\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)"
     - "atualizar?\\s+campo"
-    - "muda\\s+o?\\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|modelo\\s+de\\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)"
-    - "troca\\s+o?\\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|modelo\\s+de\\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)"
+    - "muda\\s+o?\\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|sal[aá]rio|modelo\\s+de\\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)"
+    - "troca\\s+o?\\s+(email|telefone|celular|linkedin|cargo|empresa|cidade|estado|sal[aá]rio|modelo\\s+de\\s+trabalho|forma[çc][aã]o|idiomas?|disponibilidade)"
   analytics:
     - "gerar?\\s+relat[óo]rio"
     - "relat[óo]rio\\b"
@@ -254,11 +228,6 @@ domains:
     - "exportar?\\s+\\w*\\s*candidato"
     - "exportar?\\s+\\w*\\s*dados"
     - "report"
-    - "tempo\\s+m[eé]dio\\s+de\\s+contrata"
-    - "[íi]ndice\\s+de\\s+diversidade"
-    - "diversidade\\s+das?\\s+contrata"
-    - "time.?to.?hire"
-    - "taxa\\s+de\\s+convers[aã]o"
   ats_integration:
     - "sync\\s+ats"
     - "sincronizar?\\s+\\w*\\s*ats"
@@ -360,48 +329,3 @@ domains:
     - "avan[cç]ar\\s+\\w*\\s*campanha"
     - "progresso\\s+\\w*\\s*campanha"
     - "workflow\\s+rail"
-  # Task #320 — close routing for CompanySettingsReActAgent (W16/W19).
-  # Intents that mutate company-level configuration: profile, branding,
-  # culture, tech stack, default pipeline stages, corporate domain, policies.
-  # Patterns are anchored on "empresa" / "companhia" / "organiza[cç][ãa]o"
-  # or unambiguous company-config nouns (logo, logotipo, tech stack) to
-  # avoid colliding with job_management ("benef[ií]cios", "compet[eê]ncias")
-  # or kanban/pipeline domains.
-  company_settings:
-    - "configura[çc][ãa]o\\s+d[ae]\\s+(empresa|companhia|organiza[çc][ãa]o)"
-    - "configurar?\\s+\\w*\\s*(empresa|companhia|organiza[çc][ãa]o)"
-    - "ajustes?\\s+d[ae]\\s+(empresa|companhia|organiza[çc][ãa]o)"
-    - "ajustar?\\s+d[ae]\\s+(empresa|companhia|organiza[çc][ãa]o)"
-    - "perfil\\s+d[ae]\\s+(empresa|companhia|organiza[çc][ãa]o)"
-    - "dados\\s+d[ae]\\s+(empresa|companhia|organiza[çc][ãa]o)"
-    - "pol[ií]tica[s]?\\s+d[ae]\\s+(empresa|companhia|organiza[çc][ãa]o)"
-    - "alterar?\\s+\\w*\\s*pol[ií]tica"
-    - "atualizar?\\s+\\w*\\s*pol[ií]tica"
-    - "mudar?\\s+\\w*\\s*pol[ií]tica"
-    - "cultura\\s+d[ae]\\s+(empresa|companhia|organiza[çc][ãa]o)"
-    - "miss[ãa]o\\s+d[ae]\\s+(empresa|companhia|organiza[çc][ãa]o)"
-    - "valores\\s+d[ae]\\s+(empresa|companhia|organiza[çc][ãa]o)"
-    - "tech\\s+stack"
-    - "stack\\s+t[eé]cnico"
-    - "benef[ií]cios\\s+d[ae]\\s+(empresa|companhia|organiza[çc][ãa]o)"
-    - "etapas?\\s+padr[ãa]o"
-    - "etapas?\\s+default"
-    - "etapas?\\s+padronizadas?"
-    - "atualizar?\\s+\\w*\\s*etapas?\\s+padr"
-    - "configurar?\\s+\\w*\\s*etapas?\\s+padr"
-    - "dom[ií]nio\\s+d[ae]\\s+(empresa|email|corporativo)"
-    - "dom[ií]nio\\s+corporativo"
-    - "trocar?\\s+\\w*\\s*dom[ií]nio"
-    - "alterar?\\s+\\w*\\s*dom[ií]nio"
-    - "mudar?\\s+\\w*\\s*dom[ií]nio"
-    - "atualizar?\\s+\\w*\\s*dom[ií]nio"
-    - "logo\\s+d[ae]\\s+(empresa|companhia|organiza[çc][ãa]o)"
-    - "\\blogotipo\\b"
-    - "trocar?\\s+\\w*\\s*logo"
-    - "mudar?\\s+\\w*\\s*logo"
-    - "atualizar?\\s+\\w*\\s*logo"
-    - "alterar?\\s+\\w*\\s*logo"
-    - "subir\\s+\\w*\\s*logo"
-    - "branding\\s+d[ae]\\s+(empresa|companhia|organiza[çc][ãa]o)"
-    - "workforce\\s+planning"
-    - "planejamento\\s+d[ae]\\s+for[çc]a\\s+de\\s+trabalho"

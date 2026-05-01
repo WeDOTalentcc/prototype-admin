@@ -31,8 +31,8 @@ async def get_ml_predictions(
 
     try:
         from sqlalchemy import and_, select
-        from lia_models.candidate import Candidate, VacancyCandidate
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.candidate import Candidate, VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
 
         async with analytics_db() as db:
             predictions = []
@@ -186,7 +186,7 @@ async def get_conversion_patterns(
 
     try:
         from sqlalchemy import and_, select
-        from lia_models.candidate import Candidate, VacancyCandidate
+        from app.models.candidate import Candidate, VacancyCandidate
 
         period_days = {"month": 30, "quarter": 90, "year": 365}.get(period, 30)
         start_date = datetime.utcnow() - timedelta(days=period_days)
@@ -318,8 +318,8 @@ async def get_smart_alerts(
 
     try:
         from sqlalchemy import and_, select
-        from lia_models.candidate import Candidate, VacancyCandidate
-        from lia_models.job_vacancy import JobVacancy
+        from app.models.candidate import Candidate, VacancyCandidate
+        from app.models.job_vacancy import JobVacancy
 
         async with analytics_db() as db:
             sla_at_risk = []

@@ -52,7 +52,7 @@ class TestPreCallBudgetCheck:
             mock_settings.REACT_TOKEN_BUDGET_DEFAULT = None
 
             with patch(
-                "app.shared.observability.token_tracking_service.token_tracking_service",
+                "app.services.token_tracking_service.token_tracking_service",
                 mock_tracking,
             ):
                 state = await loop.run(
@@ -103,7 +103,7 @@ class TestPreCallBudgetCheck:
                 mock_settings.REACT_MAX_ITERATIONS_DEFAULT = 1
                 mock_settings.REACT_TOKEN_BUDGET_DEFAULT = None
                 with patch(
-                    "app.shared.observability.token_tracking_service.token_tracking_service",
+                    "app.services.token_tracking_service.token_tracking_service",
                     mock_tracking,
                 ):
                     state = await loop.run(
@@ -127,7 +127,7 @@ class TestPreCallBudgetCheck:
                 mock_settings.REACT_TOKEN_BUDGET_DEFAULT = None
                 # Simula exceção no serviço — deve ser silenciosa (fail-safe)
                 with patch(
-                    "app.shared.observability.token_tracking_service.token_tracking_service",
+                    "app.services.token_tracking_service.token_tracking_service",
                     side_effect=Exception("Redis unavailable"),
                 ):
                     state = await loop.run(

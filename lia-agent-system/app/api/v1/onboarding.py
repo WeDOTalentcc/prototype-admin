@@ -37,10 +37,10 @@ class WebEventRequest(BaseModel):
 async def _get_db():
     """Get database connection. Replace with your actual dependency."""
     try:
-        from app.core.database import AsyncSessionLocal
-        return AsyncSessionLocal()
-    except Exception as exc:
-        logger.warning("[Onboarding] AsyncSessionLocal not available: %s", exc)
+        from app.shared.database import get_db
+        return await get_db()
+    except ImportError:
+        logger.warning("[Onboarding] get_db not available")
         return None
 
 
@@ -50,15 +50,10 @@ async def _load_session(db, user_id: int):
         return None
 
     try:
-        from sqlalchemy import text
-
-        result = await db.execute(
-            text(
-                "SELECT * FROM onboarding_agent_state WHERE user_id = :uid ORDER BY updated_at DESC LIMIT 1"
-            ),
-            {"uid": user_id},
+        row = await db.fetch_one(
+            "SELECT * FROM onboarding_agent_state WHERE user_id = $1 ORDER BY updated_at DESC LIMIT 1",
+            [user_id],
         )
-        row = result.mappings().first()
         if row:
             from app.services.onboarding_orchestrator import OnboardingSession, OnboardingPhase
             session_data = json.loads(row["session_data"]) if row["session_data"] else {}
@@ -220,10 +215,3 @@ async def get_whatsapp_context(user_id: int):
         "phase": session.phase.value,
         "progress": session.progress,
     }
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

@@ -24,18 +24,12 @@ _matcher = KeywordIntentMatcher.from_keyword_map(_KEYWORD_ACTION_MAP, domain_id=
 
 
 _ACTION_TOOL_MAP: dict[str, str] = {
-    "search_candidates": "sourcing_search_candidates",
-    "rank_candidates": "sourcing_rank_candidates",
-    "update_candidate_stage": "sourcing_update_candidate_stage",
-    "reject_candidate": "sourcing_reject_candidate",
-    "shortlist_candidate": "sourcing_shortlist_candidate",
-    "add_candidate_to_vacancy": "sourcing_add_candidate_to_vacancy",
-    "global_search": "sourcing_search_candidates",
-    "filter_candidates": "sourcing_search_candidates",
-    "compare_candidates": "sourcing_get_candidate_details",
-    "assess_market": "sourcing_get_talent_quality",
-    "get_candidate_stats": "sourcing_get_candidate_stats",
-    "get_candidate_history": "sourcing_get_candidate_history",
+    "search_candidates": "search_candidates",
+    "global_search": "pearch_search",
+    "rank_candidates": "candidate_match",
+    "filter_candidates": "boolean_search",
+    "compare_candidates": "search_candidates",
+    "assess_market": "search_analytics",
 }
 
 
@@ -48,12 +42,6 @@ class SourcingDomain(ComplianceDomainPrompt):
     domain_id = "sourcing"
     domain_name = "Sourcing & Talent Search"
     description = "Busca, identificação e gestão de candidatos em múltiplas fontes"
-    agent_aliases = (
-        "sourcing_planner",
-        "sourcing_search",
-        "sourcing_enrich",
-        "sourcing_engagement",
-    )
 
     def get_allowed_actions(self) -> list[DomainAction]:
         from app.domains.sourcing.actions import SOURCING_ACTIONS
@@ -133,7 +121,6 @@ class SourcingDomain(ComplianceDomainPrompt):
                 mapped_tool,
                 params,
                 context.tenant_id,
-                user_id=context.user_id,
             )
             return DomainResponse.success_response(
                 message=f"Ferramenta '{mapped_tool}' executada para ação '{action.name}'.",

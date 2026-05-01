@@ -4,10 +4,6 @@ WSI Report Generator - Structured reports and candidate feedback.
 import logging
 from typing import Any, Literal
 
-from app.shared.security.wsi_hashing import EU_AI_ACT_DISCLAIMER
-# Audit task #545 — tracking de IA estendido para o gerador de pareceres / feedback WSI.
-from app.shared.observability.usage_tracking_callback import build_usage_callback
-
 from .models import (
     CandidateFeedback,
     ResponseAnalysis,
@@ -36,14 +32,13 @@ class WSIReportGenerator:
         self,
         candidate_id: str,
         wsi_result: WSIResult,
-        responses: list[ResponseAnalysis],
-        tracking_context: dict[str, Any] | None = None,
+        responses: list[ResponseAnalysis]
     ) -> StructuredReport:
         """Gera parecer estruturado para recrutadores."""
         
         # Preparar contexto das respostas
         responses_summary = "\n".join([
-            f"- {r.competency} (Score: {r.final_score}/10): {r.justification}"
+            f"- {r.competency} (Score: {r.final_score}/5): {r.justification}"
             for r in responses
         ])
         
@@ -52,55 +47,49 @@ class WSIReportGenerator:
         )]
         behav_responses = [r for r in responses if r not in tech_responses]
         
-        tech_strong = [f"{r.competency} ({r.final_score}/10)" for r in tech_responses if r.final_score >= 8.0]
-        tech_gaps = [f"{r.competency} ({r.final_score}/10)" for r in tech_responses if r.final_score < 6.0]
-        behav_strong = [f"{r.competency} ({r.final_score}/10)" for r in behav_responses if r.final_score >= 8.0]
+        tech_strong = [f"{r.competency} ({r.final_score}/5)" for r in tech_responses if r.final_score >= 4.0]
+        tech_gaps = [f"{r.competency} ({r.final_score}/5)" for r in tech_responses if r.final_score < 3.0]
+        behav_strong = [f"{r.competency} ({r.final_score}/5)" for r in behav_responses if r.final_score >= 4.0]
         
         prompt = f"""Gere um parecer estruturado completo para recrutadores usando a metodologia WSI.
 
 CANDIDATO ID: {candidate_id}
 
 WSI RESULTADOS:
-- WSI Técnico: {wsi_result.technical_wsi}/10.0
-- WSI Comportamental: {wsi_result.behavioral_wsi}/10.0
-- WSI Geral: {wsi_result.overall_wsi}/10.0
+- WSI Técnico: {wsi_result.technical_wsi}/5.0
+- WSI Comportamental: {wsi_result.behavioral_wsi}/5.0
+- WSI Geral: {wsi_result.overall_wsi}/5.0
 - Classificação: {wsi_result.classification.upper()}
 
 ANÁLISES DAS RESPOSTAS:
 {responses_summary}
 
-PONTOS FORTES TÉCNICOS: {tech_strong or "Nenhum score >= 8.0"}
-GAPS TÉCNICOS: {tech_gaps or "Nenhum score < 6.0"}
-PONTOS FORTES COMPORTAMENTAIS: {behav_strong or "Nenhum score >= 8.0"}
+PONTOS FORTES TÉCNICOS: {tech_strong or "Nenhum score >= 4.0"}
+GAPS TÉCNICOS: {tech_gaps or "Nenhum score < 3.0"}
+PONTOS FORTES COMPORTAMENTAIS: {behav_strong or "Nenhum score >= 4.0"}
 
 TEMPLATES DE REFERÊNCIA (exemplos do RAG):
 {self.report_templates[:3000]}
 
 ---
 
-CRITÉRIOS OBJETIVOS PARA DECISÃO (OBRIGATÓRIO seguir — WSI_CUTOFFS canônicos, escala /10):
-- WSI Geral >= 7.5 → decisao = "APROVADO"
-- WSI Geral >= 6.0 e < 7.5 → decisao = "AGUARDANDO" / "EM_AVALIACAO"
-- WSI Geral < 6.0 → decisao = "NÃO APROVADO"
-- PRECEDÊNCIA ABSOLUTA DOS GATES (audit task #510 / spec §F10): qualquer
-  gate falhado (G1 elegibilidade, G2 prompt injection, G3 piso técnico,
-  G4 competência crítica, G5 engajamento, G6 inflação) força decisão =
-  "NÃO APROVADO" independente do WSI Geral. Gates NÃO são "indícios
-  ambíguos" — são contratos hard.
-- EXCEÇÃO menor: Se WSI Geral >= 7.5, sem gates falhados, MAS há red_flags
-  qualitativos → rebaixa para "AGUARDANDO".
+CRITÉRIOS OBJETIVOS PARA DECISÃO (OBRIGATÓRIO seguir — WSI_CUTOFFS canônicos):
+- WSI Geral >= 3.75 → decisao = "APROVADO" (= 7.5/10)
+- WSI Geral >= 3.0 e < 3.75 → decisao = "AGUARDANDO" / "EM_AVALIACAO" (= 6.0–7.4/10)
+- WSI Geral < 3.0 → decisao = "NÃO APROVADO" (= < 6.0/10)
+- EXCEÇÃO: Se WSI Geral >= 3.75 MAS há red_flags graves → rebaixa para "AGUARDANDO"
 
 REGRAS DE QUALIDADE DO PARECER:
 1. **Sumário Executivo** DEVE ter 2-3 frases completas (mínimo 100 caracteres), incluindo: perfil resumido, principal ponto forte e recomendação clara
 2. **Análise Técnica**: Citar ao menos 2 evidências concretas extraídas das respostas (projetos, métricas, tecnologias mencionadas)
-3. **Análise Comportamental**: Scores de 1.0 a 10.0 para cada dimensão, baseados nas respostas observadas
-4. **Fit Cultural**: Identificar ao menos 1 valor alinhado e 1 ponto de atenção quando WSI < 8.0
+3. **Análise Comportamental**: Scores de 1.0 a 5.0 para cada dimensão, baseados nas respostas observadas
+4. **Fit Cultural**: Identificar ao menos 1 valor alinhado e 1 ponto de atenção quando WSI < 4.0
 5. **Recomendação**: Justificativa DEVE referenciar dados do WSI (scores, classificação). Próximos passos DEVEM ser acionáveis
 
 Gere parecer estruturado incluindo:
 1. **Sumário Executivo** (2-3 frases): Resumo do perfil, pontos fortes, recomendação
 2. **Análise Técnica**: Pontos fortes (top 3), gaps (se houver), evidências concretas das respostas
-3. **Análise Comportamental**: Colaboração, inovação, organização, resiliência (scores 1.0-10.0)
+3. **Análise Comportamental**: Colaboração, inovação, organização, resiliência (scores 1.0-5.0)
 4. **Fit Cultural**: Score geral, valores alinhados, pontos de atenção
 5. **Recomendação**: Decisão (seguir critérios acima), justificativa com dados, próximos passos acionáveis
 
@@ -113,13 +102,13 @@ RETORNE APENAS JSON:
     "evidencias": ["Projeto X", "Métrica Y"]
   }},
   "behavioral_analysis": {{
-    "colaboracao": 8.0,
-    "inovacao": 9.0,
-    "organizacao": 8.0,
-    "resiliencia": 7.0
+    "colaboracao": 4.0,
+    "inovacao": 4.5,
+    "organizacao": 4.0,
+    "resiliencia": 3.5
   }},
   "cultural_fit": {{
-    "score": 8.0,
+    "score": 4.0,
     "valores_alinhados": ["Excelência técnica", "..."],
     "atencoes": ["..."]
   }},
@@ -130,30 +119,24 @@ RETORNE APENAS JSON:
   }}
 }}"""
 
-        on_usage = build_usage_callback(
-            tracking_context,
-            agent_type="wsi_report_generator",
-            default_operation="wsi_structured_report",
-            extra={"candidate_id": str(candidate_id)},
-        )
         try:
-            _response = await self.llm.safe_invoke(prompt, provider="claude", on_usage=on_usage)
+            _response = await self.llm.safe_invoke(prompt, provider="claude")
             response = type("R", (), {"content": _response})()
             data = safe_json_parse(response.content, fallback={
-                "executive_summary": f"Candidato com WSI {wsi_result.classification} ({wsi_result.overall_wsi}/10.0). Análise detalhada não disponível.",
+                "executive_summary": f"Candidato com WSI {wsi_result.classification} ({wsi_result.overall_wsi}/5.0). Análise detalhada não disponível.",
                 "technical_analysis": {
                     "pontos_fortes": ["Análise em processamento"],
                     "gaps": [],
                     "evidencias": []
                 },
                 "behavioral_analysis": {
-                    "colaboracao": 6.0,
-                    "inovacao": 6.0,
-                    "organizacao": 6.0,
-                    "resiliencia": 6.0
+                    "colaboracao": 3.0,
+                    "inovacao": 3.0,
+                    "organizacao": 3.0,
+                    "resiliencia": 3.0
                 },
                 "cultural_fit": {
-                    "score": 6.0,
+                    "score": 3.0,
                     "valores_alinhados": ["Em avaliação"],
                     "atencoes": []
                 },
@@ -167,20 +150,20 @@ RETORNE APENAS JSON:
             logger.error(f"Failed to generate report for candidate {candidate_id}: {e}")
             # Use fallback
             data = {
-                "executive_summary": f"Candidato com WSI {wsi_result.classification} ({wsi_result.overall_wsi}/10.0). Análise detalhada não disponível.",
+                "executive_summary": f"Candidato com WSI {wsi_result.classification} ({wsi_result.overall_wsi}/5.0). Análise detalhada não disponível.",
                 "technical_analysis": {
                     "pontos_fortes": ["Análise em processamento"],
                     "gaps": [],
                     "evidencias": []
                 },
                 "behavioral_analysis": {
-                    "colaboracao": 6.0,
-                    "inovacao": 6.0,
-                    "organizacao": 6.0,
-                    "resiliencia": 6.0
+                    "colaboracao": 3.0,
+                    "inovacao": 3.0,
+                    "organizacao": 3.0,
+                    "resiliencia": 3.0
                 },
                 "cultural_fit": {
-                    "score": 6.0,
+                    "score": 3.0,
                     "valores_alinhados": ["Em avaliação"],
                     "atencoes": []
                 },
@@ -191,20 +174,10 @@ RETORNE APENAS JSON:
                 }
             }
         
-        # Task #511 — EU AI Act Art. 13 (transparência) / LGPD Art. 20.
-        # Disclaimer prefixado ao executive_summary para garantir que qualquer
-        # consumidor (recrutador humano, exportação PDF, JSON do F11) veja o
-        # aviso de IA de Alto Risco antes de qualquer score.
-        executive_summary = (
-            EU_AI_ACT_DISCLAIMER
-            + "\n\n"
-            + data.get("executive_summary", "Análise não disponível")
-        )
-
         return StructuredReport(
             candidate_id=candidate_id,
             wsi_result=wsi_result,
-            executive_summary=executive_summary,
+            executive_summary=data.get("executive_summary", "Análise não disponível"),
             technical_analysis=data.get("technical_analysis", {}),
             behavioral_analysis=data.get("behavioral_analysis", {}),
             cultural_fit=data.get("cultural_fit", {}),
@@ -215,8 +188,7 @@ RETORNE APENAS JSON:
         self,
         wsi_result: WSIResult,
         responses: list[ResponseAnalysis],
-        decision: Literal["aprovado", "aguardando", "nao_aprovado"],
-        tracking_context: dict[str, Any] | None = None,
+        decision: Literal["aprovado", "aguardando", "nao_aprovado"]
     ) -> CandidateFeedback:
         """Gera feedback construtivo para candidato.
         
@@ -235,13 +207,13 @@ RETORNE APENAS JSON:
           - Foco em comportamentos observáveis e desenvolvimento
         """
         
-        strong_responses = [r for r in responses if r.final_score >= 8.0]
-        development_responses = [r for r in responses if r.final_score < 7.0]
+        strong_responses = [r for r in responses if r.final_score >= 4.0]
+        development_responses = [r for r in responses if r.final_score < 3.5]
         
-        strong_competencies = [f"{r.competency} ({r.final_score}/10)" for r in strong_responses]
-        development_competencies = [f"{r.competency} ({r.final_score}/10)" for r in development_responses]
+        strong_competencies = [f"{r.competency} ({r.final_score}/5)" for r in strong_responses]
+        development_competencies = [f"{r.competency} ({r.final_score}/5)" for r in development_responses]
         
-        tech_strong = [r for r in responses if r.final_score >= 8.0 and r not in development_responses]
+        tech_strong = [r for r in responses if r.final_score >= 4.0 and r not in development_responses]
         behav_strong_list = [r.competency for r in tech_strong if r.competency and not any(
             kw in r.competency.lower() for kw in ["python", "react", "java", "sql", "aws", "node", "go", "rust", "docker", "kubernetes", "api", "backend", "frontend", "devops", "data", "machine", "deep", "cloud"]
         )]
@@ -249,7 +221,7 @@ RETORNE APENAS JSON:
         prompt = f"""Gere um feedback estruturado e construtivo para o candidato após a etapa de triagem.
 
 PONTOS FORTES TÉCNICOS: {strong_competencies}
-PONTOS FORTES COMPORTAMENTAIS: {behav_strong_list or "Nenhum identificado com score >= 8.0"}
+PONTOS FORTES COMPORTAMENTAIS: {behav_strong_list or "Nenhum identificado com score >= 4.0"}
 OPORTUNIDADES DE DESENVOLVIMENTO: {development_competencies}
 
 TEMPLATES DE REFERÊNCIA (exemplos do RAG):
@@ -299,17 +271,8 @@ RETORNE APENAS JSON:
             "recommended_resources": []
         }
 
-        on_usage = build_usage_callback(
-            tracking_context,
-            agent_type="wsi_candidate_feedback",
-            default_operation="wsi_candidate_feedback",
-            extra={
-                "candidate_id": str(wsi_result.candidate_id),
-                "decision": decision,
-            },
-        )
         try:
-            _response = await self.llm.safe_invoke(prompt, provider="claude", on_usage=on_usage)
+            _response = await self.llm.safe_invoke(prompt, provider="claude")
             response = type("R", (), {"content": _response})()
             data = safe_json_parse(response.content, fallback=_fallback)
         except Exception as e:

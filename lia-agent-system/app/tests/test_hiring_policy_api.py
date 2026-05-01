@@ -14,7 +14,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from app.main import app
-from lia_models.company_hiring_policy import (
+from app.models.company_hiring_policy import (
     AUTOMATION_RULES_DEFAULTS,
     COMMUNICATION_RULES_DEFAULTS,
     PIPELINE_RULES_DEFAULTS,

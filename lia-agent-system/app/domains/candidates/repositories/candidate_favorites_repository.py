@@ -7,7 +7,7 @@ import logging
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.candidate import CandidateFavorite, CandidateHidden
+from app.models.candidate import CandidateFavorite, CandidateHidden
 
 logger = logging.getLogger(__name__)
 

@@ -17,7 +17,6 @@ import logging
 import os
 import time
 from datetime import datetime, timedelta
-from collections.abc import Callable
 from typing import Any
 
 
@@ -790,7 +789,6 @@ class RubricEvaluationService:
         prompt: str,
         max_retries: int = 3,
         initial_delay: float = 1.0,
-        on_usage: "Callable[[dict[str, Any]], None] | None" = None,
     ) -> str | None:
         """
         Call LLM with retry logic and fallback to different providers.
@@ -809,11 +807,7 @@ class RubricEvaluationService:
             for attempt in range(max_retries):
                 try:
                     logger.info(f"LLM call attempt {attempt + 1}/{max_retries} with {provider}")
-                    # Audit task #545 — instrumenta CV-screening Camada 1
-                    # (rubric LLM evaluation) via outbox.
-                    response = await self.llm_service.generate(
-                        prompt, provider=provider, on_usage=on_usage,
-                    )
+                    response = await self.llm_service.generate(prompt, provider=provider)
                     
                     if response and response.strip():
                         logger.info(f"LLM call successful with {provider}")
@@ -842,7 +836,6 @@ class RubricEvaluationService:
         requirements: list[JobRequirementCreate],
         use_cache: bool = True,
         force_refresh: bool = False,
-        tracking_context: "dict[str, Any] | None" = None,
     ) -> RubricEvaluationResult:
         """
         Evaluate a candidate against job requirements using structured rubrics.
@@ -915,19 +908,8 @@ class RubricEvaluationService:
         if _benchmark_ctx:
             prompt = prompt + f"\n\n## Benchmark Setorial (anti-sycophancy)\n{_benchmark_ctx}"
 
-        # Audit task #545 — propaga callback de tracking para o LLM.
-        from app.shared.observability.usage_tracking_callback import (
-            build_usage_callback,
-        )
-        _on_usage = build_usage_callback(
-            tracking_context,
-            agent_type="cv_screening_rubric",
-            default_operation="rubric_evaluate_candidate",
-            extra={"layer": 1},
-        )
-
         _llm_call_start = time.monotonic()
-        response = await self._call_llm_with_retry(prompt, on_usage=_on_usage)
+        response = await self._call_llm_with_retry(prompt)
         _llm_latency_ms = (time.monotonic() - _llm_call_start) * 1000
 
         if response:
@@ -1189,7 +1171,7 @@ class RubricEvaluationService:
         # Fail-open: se serviço indisponível ou db=None, avaliação prossegue normalmente.
         if db is not None:
             try:
-                from app.domains.lgpd.services.granular_consent_service import GranularConsentService
+                from app.shared.services.granular_consent_service import GranularConsentService
                 _consent_svc = GranularConsentService(db)
                 _has_consent = await _consent_svc.check_purpose(
                     candidate_id, company_id, "ai_screening"
@@ -1404,9 +1386,3 @@ rubric_evaluation_service = RubricEvaluationService()
 
 def get_rubric_evaluation_service() -> RubricEvaluationService:
     return rubric_evaluation_service
-
-
-# Module-level handler exposed to the chat tool registry
-async def evaluate_rubric(**kwargs):
-    """Chat-surface wrapper around RubricEvaluationService.evaluate_candidate()."""
-    return await rubric_evaluation_service.evaluate_candidate(**kwargs)

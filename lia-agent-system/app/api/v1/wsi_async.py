@@ -19,20 +19,42 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/wsi/async", tags=["wsi-async"])
 
 
+class InviteRequest(BaseModel):
+    candidate_id: str
+    job_id: str
+    company_id: str
+    expire_hours: int = 72
+
+
 class AnswerRequest(BaseModel):
     answer: str
 
 
-# NOTE: o endpoint POST /wsi/async/invite foi REMOVIDO em 2026-04-18 (audit P1-5,
-# Phase 2). Era duplicado de /api/v1/communication/send-screening-invite, que é o
-# canônico — único usado pelo frontend (wsi-triagem-invite-modal.tsx) e pelo
-# proxy /api/backend-proxy/communication/send-screening-invite. Manter dois
-# endpoints com mesmo propósito mas semânticas levemente diferentes mantinha
-# ambiguidade para integrações externas (recrutadores via curl, ATS).
-# A criação de sessão WSI async agora é responsabilidade exclusiva de
-# CommunicationService.send_screening_invite quando o canal é 'chat'/'whatsapp'.
-# O hook frontend useWsiAsync continua funcionando (consome /{token}, /{token}/answer,
-# /{token}/complete) — apenas o convite mudou de origem.
+@router.post("/invite", response_model=None)
+async def create_async_invite(
+    payload: InviteRequest,
+    db: AsyncSession = Depends(get_db),
+    svc: WSIAsyncSessionService = Depends(get_wsi_async_session_service),
+) -> dict:
+    """
+    Cria sessão WSI assíncrona e retorna token de acesso para o candidato.
+    """
+    try:
+        token = await svc.create_session(
+            candidate_id=payload.candidate_id,
+            job_id=payload.job_id,
+            company_id=payload.company_id,
+            db=db,
+        )
+        return {
+            "token": str(token),
+            "link": f"/wsi-async/{token}",
+            "expires_in_hours": payload.expire_hours,
+            "status": "created",
+        }
+    except Exception as exc:
+        logger.error("[WSI Async] create_invite failed: %s", exc)
+        raise HTTPException(status_code=500, detail="Erro ao criar convite WSI assíncrono")
 
 
 @router.get("/{token}", response_model=None)

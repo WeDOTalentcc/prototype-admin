@@ -18,8 +18,8 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
 from app.domains.job_management.services.vacancy_search_service import vacancy_search_service
-from lia_models import JobVacancy
-from app.domains.ai.services.intent_classifier import IntentType, intent_classifier_service
+from app.models import JobVacancy
+from app.shared.services.intent_classifier import IntentType, intent_classifier_service
 
 logger = logging.getLogger(__name__)
 
@@ -87,15 +87,7 @@ async def fast_track_wizard_step(
         created_job = None
 
         if current_state == FastTrackState.PRE_WIZARD:
-            # Audit task #545 — billing por empresa para classificação de intenção.
-            classification = await intent_classifier_service.classify(
-                user_input,
-                tracking_context={
-                    "company_id": company_id,
-                    "user_id": str(getattr(current_user, "id", "")) or None,
-                    "session_id": conversation_id,
-                } if company_id else None,
-            )
+            classification = await intent_classifier_service.classify(user_input)
 
             if classification.intent_type == IntentType.REUSE_VACANCY:
                 criteria = await vacancy_search_service.extract_search_criteria(user_input)
@@ -251,7 +243,6 @@ async def fast_track_wizard_step(
                             eligibility_questions=vacancy_details.eligibility_questions or [],
                             status="Rascunho",
                             stage="Planejamento",
-                            source_system="lia_fast_track",
                             additional_data={"source": "fast_track", "base_vacancy_id": str(selected_id)}
                         )
                         db.add(new_job)

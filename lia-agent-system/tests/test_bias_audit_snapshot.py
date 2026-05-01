@@ -22,8 +22,8 @@ from httpx import AsyncClient, ASGITransport
 
 from app.api.v1.bias_audit import router as bias_audit_router
 from app.core.database import get_db
-from lia_models.bias_audit_snapshot import BiasAuditSnapshot
-from app.shared.compliance.bias_audit_service import (
+from app.models.bias_audit_snapshot import BiasAuditSnapshot
+from app.shared.services.bias_audit_service import (
     BiasAuditService,
     BiasAuditReport,
     DemographicAuditResult,
@@ -172,7 +172,7 @@ class TestBiasAuditServiceSnapshot:
 # Testes de integração — endpoint /history
 # ---------------------------------------------------------------------------
 
-_HISTORY_PATH = "app.shared.compliance.bias_audit_service.BiasAuditService.get_snapshot_history"
+_HISTORY_PATH = "app.services.bias_audit_service.BiasAuditService.get_snapshot_history"
 _VALID_HEADERS = {"X-Company-ID": str(COMPANY_ID)}
 
 

@@ -12,21 +12,13 @@ from app.domains.recruitment_journey.dependencies import get_recruitment_journey
 from app.domains.recruitment_journey.repositories.recruitment_journey_repository import (
     RecruitmentJourneyRepository,
 )
-from lia_models.recruitment_journey import (
+from app.models.recruitment_journey import (
     DEFAULT_AUTOMATIONS,
     DEFAULT_SLAS,
     DEFAULT_TEMPLATES,
     AutomationType,
     TemplateType,
 )
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +177,7 @@ async def create_template(
 
 @router.put("/templates/{template_id}", response_model=None)
 async def update_template(
-    template_id: _DualId,
+    template_id: str,
     data: TemplateUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
@@ -207,7 +199,7 @@ async def update_template(
 
 @router.delete("/templates/{template_id}", response_model=None)
 async def delete_template(
-    template_id: _DualId,
+    template_id: str,
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
@@ -299,7 +291,7 @@ async def create_sla(
 
 @router.put("/slas/{sla_id}", response_model=None)
 async def update_sla(
-    sla_id: _DualId,
+    sla_id: str,
     data: SLAUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
@@ -324,7 +316,7 @@ async def update_sla(
 
 @router.delete("/slas/{sla_id}", response_model=None)
 async def delete_sla(
-    sla_id: _DualId,
+    sla_id: str,
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
@@ -446,7 +438,7 @@ async def create_automation(
 
 @router.put("/automations/{automation_id}", response_model=None)
 async def update_automation(
-    automation_id: _DualId,
+    automation_id: str,
     data: AutomationUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
@@ -468,7 +460,7 @@ async def update_automation(
 
 @router.delete("/automations/{automation_id}", response_model=None)
 async def delete_automation(
-    automation_id: _DualId,
+    automation_id: str,
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
@@ -656,10 +648,3 @@ async def ai_optimize_sla(
     except Exception as e:
         logger.error(f"Error optimizing SLA: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

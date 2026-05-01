@@ -21,7 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.admin.repositories.audit_log_repository import AuditLogRepository
-from lia_models.audit_logs import SOXAuditLog
+from app.models.audit_logs import SOXAuditLog
 from app.schemas.audit_logs import (
     AuditLogCreate,
     AuditLogListResponse,
@@ -33,14 +33,6 @@ from app.schemas.audit_logs import (
     SeedRetentionPoliciesResponse,
 )
 from app.shared.tenant_guard import get_verified_company_id
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -215,7 +207,7 @@ async def create_retention_policy(
 
 @router.get("/{log_id}", response_model=AuditLogResponse)
 async def get_audit_log(
-    log_id: _DualId,
+    log_id: str,
     company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
 ):
@@ -311,10 +303,3 @@ async def create_audit_log(
         await db.rollback()
         logger.error(f"Error creating audit log: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)

@@ -22,14 +22,8 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.cv_screening.constants.wsi_scale import (
-    CLASSIFY_ALTO,
-    CLASSIFY_EXCEPCIONAL,
-    CLASSIFY_EXCELENTE,
-    CUTOFF_APPROVED_AUTO,
-    CUTOFF_REVIEW_MIN,
-    GATE_G3_THRESHOLD,
-    SCALE_MAX,
+from app.domains.cv_screening.services.wsi_deterministic_scorer import (
+    GATE_G3_THRESHOLD as _GATE_G3_THRESHOLD_CANONICAL,
 )
 from app.domains.cv_screening.services.wsi_deterministic_scorer import (
     SENIORITY_WEIGHTS,
@@ -51,10 +45,8 @@ router = APIRouter()
 # F11 models, constants and helper functions
 # ---------------------------------------------------------------------------
 
-# B0 #523 — aliases locais que preservam compatibilidade com o nome do gate
-# (G3 = score técnico mínimo; G4 = curto-circuito de score crítico ~30% do max).
-_GATE_G3_THRESHOLD = GATE_G3_THRESHOLD
-_GATE_G4_THRESHOLD = SCALE_MAX * 0.3   # 3.0 em /10: corte severo (≤30% do teto)
+_GATE_G3_THRESHOLD = _GATE_G3_THRESHOLD_CANONICAL
+_GATE_G4_THRESHOLD = 1.5   # /5 scale (= 3.0/10)
 _INJECTION_KEYWORDS = ["ignore", "esquece", "esqueça", "novo prompt", "sys:", "system:", "jailbreak", "prompt injection"]
 
 _SENIORITY_WEIGHTS = SENIORITY_WEIGHTS
@@ -115,9 +107,6 @@ class F11ReportResponse(BaseModel):
     decision_reason: str | None
     human_review_required: bool = False
     already_generated: bool = False
-    # Task #511 — EU AI Act Art. 13 (transparência) / LGPD Art. 20.
-    # Disclaimer obrigatório no payload do F11 (visível em UI, PDF e JSON).
-    compliance_disclaimer: str | None = None
     responses_hash: str
     response_analyses: list[dict[str, Any]]
     interview_questions: list[CBIQuestion]
@@ -127,12 +116,7 @@ class F11ReportResponse(BaseModel):
     seniority_weights: dict[str, float] | None = None
     attention_flags: list[str] = []
     generated_at: str
-    # Audit task #528 (rev. 23 G23-02) — selo de qualidade degradada agregado.
-    # True quando QUALQUER análise (Camada 1 ou Camada 2) sinalizou degradação.
-    # UI exibe banner global "Análise semântica não disponível em N respostas".
-    degraded_quality: bool = False
-    degraded_reasons: list[str] = []
-    degraded_count: int = 0
+    methodology_version: str = "WSI v2.0"
 
 
 def _get_seniority_weights(seniority: str | None) -> dict[str, float] | None:
@@ -154,7 +138,7 @@ def _build_attention_flags(analyses: list[dict], gates: GateStatus) -> list[str]
     low_star = sum(1 for a in analyses if sum(a.get("star", {}).values()) <= 1)
     if low_star >= 2:
         flags.append(f"{low_star} respostas com STAR incompleto")
-    critical_gaps = [a for a in analyses if a.get("is_critical") and a.get("final_score", SCALE_MAX) < CUTOFF_REVIEW_MIN]
+    critical_gaps = [a for a in analyses if a.get("is_critical") and a.get("final_score", 5) < 3.0]
     if critical_gaps:
         flags.append(f"{len(critical_gaps)} competência(s) crítica(s) abaixo do esperado")
     return flags
@@ -166,46 +150,32 @@ def _compute_decision_confidence(
     llm_fallback_count: int,
     score_variance: float,
 ) -> tuple:
-    """F10-6 — Computa decision.confidence e human_review_required de forma determinística.
-
-    Audit task #510 (M08) — Precedência absoluta de gates:
-    A spec WeDOTalent §F10 não distingue gates "claros" de "ambíguos". G1
-    (eligibility), G2 (prompt injection), G3 (technical floor), G4 (critical
-    competency), G5 (engagement) e G6 (inflation) têm TODOS precedência
-    absoluta sobre o overall_wsi — qualquer falha gera rejeição clara.
-
-    A categoria "ambiguous_gates = {G2, G5, G6}" eliminada nesta task fazia
-    G2/G5/G6 derrubarem a confiança para "media" + human_review_required,
-    permitindo que casos de injection ou inflation fossem reabilitados pelo
-    revisor humano. Isso violava o gate como contrato hard.
-
-    `human_review_required` permanece como flag de auditoria SEPARADA da
-    decisão final, acionada apenas por sinais de baixa qualidade do
-    pipeline (LLM fallback acumulado ou variância anormal entre scores).
-
-    ORDEM IMPORTA: failed_gates é avaliado ANTES de fallback/variance
-    para garantir precedência absoluta — caso contrário um gate falhado
-    com pipeline ruidoso seria rebaixado para ("baixa", True) e cairia
-    em revisão humana, reabrindo o vetor que esta task fechou.
-    """
-    if failed_gates:
-        # Gate falhado = rejeição clara, alta confiança, sem human review.
-        # Avaliado primeiro para precedência absoluta sobre sinais de pipeline.
-        return "alta", False
-
-    if llm_fallback_count >= 2 or score_variance > 2.0:
+    """F10-6 — Computa decision.confidence e human_review_required de forma determinística."""
+    ambiguous_gates = {"G2", "G5", "G6"}
+    clear_reject_gates = {"G1", "G3", "G4"}
+    if (
+        "G2" in failed_gates
+        or llm_fallback_count >= 2
+        or score_variance > 2.0
+    ):
         return "baixa", True
 
-    if overall_wsi >= CLASSIFY_EXCEPCIONAL:
+    if overall_wsi >= 4.5 and not failed_gates:
         return "alta", False
 
-    if CUTOFF_APPROVED_AUTO <= overall_wsi < CLASSIFY_EXCEPCIONAL:
-        return "media", False
+    if failed_gates and clear_reject_gates.intersection(failed_gates) and not ambiguous_gates.intersection(failed_gates):
+        return "alta", False
 
-    if CUTOFF_REVIEW_MIN <= overall_wsi < CUTOFF_APPROVED_AUTO:
+    if 3.0 <= overall_wsi < 3.75:
         return "media", True
 
-    return "media", overall_wsi < CUTOFF_APPROVED_AUTO
+    if 3.75 <= overall_wsi < 4.5 and not failed_gates:
+        return "media", False
+
+    if failed_gates and ambiguous_gates.issuperset(failed_gates):
+        return "media", True
+
+    return "media", overall_wsi < 3.75
 
 
 def _f11_fallback_questions(gaps: list[dict[str, Any]]) -> list[CBIQuestion]:
@@ -262,7 +232,7 @@ async def _generate_cbi_questions_llm(
     from app.shared.providers.llm_factory import get_provider_for_tenant
 
     gaps_formatted = "\n".join(
-        f"[{g.get('severity','MÉDIO')}] {g.get('competency','')} ({g.get('type','técnico')}) — score {g.get('score',0):.1f}/10 — sinais ausentes: {g.get('missing_signals','n/a')}"
+        f"[{g.get('severity','MÉDIO')}] {g.get('competency','')} ({g.get('type','técnico')}) — score {g.get('score',0):.1f}/5 — sinais ausentes: {g.get('missing_signals','n/a')}"
         for g in gaps[:3]
     ) or "Nenhum gap crítico identificado — perguntas de aprofundamento"
 
@@ -382,32 +352,6 @@ Retorne JSON:
 # Routes
 # ---------------------------------------------------------------------------
 
-def _aggregate_degraded(analyses_list: list[dict[str, Any]]) -> dict[str, Any]:
-    """Audit task #528 (G23-02) — agrega selo de qualidade degradada para o root.
-
-    Reúne ``degraded_quality`` / ``degraded_reasons`` / ``layer2_degraded_reason``
-    de todas as análises, deduplica e devolve para o ``F11ReportResponse``.
-    UI exibe banner global "Análise semântica não disponível em N respostas".
-    """
-    reasons_set: set[str] = set()
-    degraded_count = 0
-    for a in analyses_list:
-        is_degraded = bool(a.get("degraded_quality")) or bool(a.get("layer2_degraded_reason"))
-        if is_degraded:
-            degraded_count += 1
-        for r in (a.get("degraded_reasons") or []):
-            if r:
-                reasons_set.add(str(r))
-        l2 = a.get("layer2_degraded_reason")
-        if l2:
-            reasons_set.add(f"layer2:{l2}")
-    return {
-        "degraded_quality": degraded_count > 0,
-        "degraded_reasons": sorted(reasons_set),
-        "degraded_count": degraded_count,
-    }
-
-
 @router.get("/f11-report/{session_id}", summary="F11 — Relatório completo do consultor WSI", response_model=None)
 async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
     """Gera o relatório completo F11 para uma sessão WSI concluída.
@@ -425,11 +369,6 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
         except Exception:
             await db.rollback()
 
-        # Audit task #528 (rev. 23) — coluna `transparency_extras` agora é
-        # garantida por migração formal (`database/migrations/016_*.sql`) e
-        # reforçada no startup do FastAPI (lifespan). DDL no request-path foi
-        # removido para evitar mutação de schema fora da janela de deploy.
-
         # F11-3 — verificar cache antes de regenerar
         cache_r = await db.execute(text("""
             SELECT f11_report_json FROM wsi_results
@@ -438,33 +377,9 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
         """), {"sid": session_id})
         cached = cache_r.fetchone()
         if cached and cached[0]:
-            cached_payload = cached[0]
-            # Audit task #528 (G23-02 / G23-03) — invalida cache antigo que não
-            # contém os campos de transparência granular. Sem isso, sessões
-            # geradas antes desta feature continuariam servindo um payload sem
-            # `degraded_quality` agregado e sem `flags_structured` por resposta,
-            # quebrando o banner LGPD/EU AI Act na UI.
-            # Chave correta no payload F11 é `response_analyses` (não `responses`).
-            cached_analyses = cached_payload.get("response_analyses") or []
-            cache_has_transparency = (
-                "degraded_count" in cached_payload
-                and (
-                    not cached_analyses
-                    or "flags_structured" in (cached_analyses[0] or {})
-                )
-            )
-            if cache_has_transparency:
-                report = F11ReportResponse(**cached_payload)
-                report.already_generated = True
-                # Task #511 — disclaimer EU AI Act/LGPD sempre presente, mesmo em
-                # respostas cacheadas (cache pode ter sido gerado antes da feature).
-                report.compliance_disclaimer = EU_AI_ACT_DISCLAIMER
-                return report
-            # Cache obsoleto — segue o fluxo abaixo para regenerar e re-cachear.
-            logger.info(
-                "[F11 cache] Invalidando payload sem transparência granular para sessão %s",
-                session_id,
-            )
+            report = F11ReportResponse(**cached[0])
+            report.already_generated = True
+            return report
 
         sess_r = await db.execute(text("""
             SELECT s.id, s.candidate_id, s.job_vacancy_id, s.screening_type, s.mode,
@@ -512,8 +427,7 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
         ana_r = await db.execute(text("""
             SELECT ra.id, ra.question_id, ra.competency, ra.response_text,
                    ra.autodeclaration_score, ra.context_score, ra.bloom_level, ra.dreyfus_level,
-                   ra.evidences, ra.red_flags, ra.consistency_penalty, ra.final_score, ra.justification,
-                   ra.transparency_extras
+                   ra.evidences, ra.red_flags, ra.consistency_penalty, ra.final_score, ra.justification
             FROM wsi_response_analyses ra
             WHERE ra.session_id = :sid
         """), {"sid": session_id})
@@ -528,21 +442,8 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
         analyses_list = []
         for a in analyses:
             (a_id, q_id, competency, resp_text, auto_score, ctx_score,
-             bloom_lv, dreyfus_lv, evidences, red_flags, cons_pen, final_score,
-             justification, transparency_extras) = a
+             bloom_lv, dreyfus_lv, evidences, red_flags, cons_pen, final_score, justification) = a
             q = q_map.get(str(q_id), None)
-            # Audit task #528 (G23-02 / G23-03) — transparência granular.
-            # Coluna pode estar NULL (registro legado anterior à coluna) ou string
-            # (driver pode devolver JSON como string em alguns paths). Normaliza.
-            extras: dict[str, Any] = {}
-            if transparency_extras:
-                if isinstance(transparency_extras, dict):
-                    extras = transparency_extras
-                else:
-                    try:
-                        extras = json.loads(transparency_extras)
-                    except (TypeError, ValueError):
-                        extras = {}
             bloom_info  = BLOOM_LEVELS.get(bloom_lv or 3, BLOOM_LEVELS[3])
             dreyfus_info = DREYFUS_LEVELS.get(dreyfus_lv or 3, DREYFUS_LEVELS[3])
 
@@ -606,15 +507,6 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
                 "consistency_penalty": float(cons_pen) if cons_pen else 0.0,
                 "final_score": float(final_score) if final_score else 0.0,
                 "justification": justification or "",
-                # Audit task #528 (G23-02 / G23-03) — campos de transparência
-                # consumidos pela UI (modal/kanban). Defaults seguros quando o
-                # registro foi gravado antes da coluna existir.
-                "flags_structured": extras.get("flags_structured") or {},
-                "penalty_breakdown": extras.get("penalty_breakdown") or {},
-                "bonus_breakdown": extras.get("bonus_breakdown") or {},
-                "degraded_quality": bool(extras.get("degraded_quality", False)),
-                "degraded_reasons": extras.get("degraded_reasons") or [],
-                "layer2_degraded_reason": extras.get("layer2_degraded_reason"),
             })
 
         g1_failed = any(
@@ -665,7 +557,7 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             g2_prompt_injection=not g2_failed,
             g2_detail=f"{injection_count} tentativa(s) de manipulação detectada(s)" if g2_failed else "Sem injeção de prompt detectada",
             g3_wsi_tecnico=not g3_failed,
-            g3_detail=f"WSI Técnico {tech_wsi:.2f}/10 {'< limiar 4.0 — reprovado' if g3_failed else '≥ limiar 4.0 — aprovado'}",
+            g3_detail=f"WSI Técnico {tech_wsi:.2f}/5 {'< limiar 2.0 — reprovado' if g3_failed else '≥ limiar 2.0 — aprovado'}",
             g4_skill_critica=not g4_failed,
             g4_detail="Skill crítica com score abaixo do mínimo absoluto" if g4_failed else "Nenhuma skill crítica abaixo do mínimo",
             g5_engajamento=not g5_failed,
@@ -692,21 +584,15 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             decision_result = "REPROVADO"
             gate_reasons = [gate_labels.get(g, g) for g in failed_gates]
             decision_reason = f"Gate(s) ativado(s): {', '.join(gate_reasons)}"
-        elif overall_wsi >= CUTOFF_APPROVED_AUTO:
+        elif overall_wsi >= 3.75:
             decision_result = "APROVADO"
             decision_reason = None
-        elif overall_wsi >= CUTOFF_REVIEW_MIN:
+        elif overall_wsi >= 3.0:
             decision_result = "EM_AVALIACAO"
-            decision_reason = (
-                f"Score WSI {overall_wsi:.2f}/{SCALE_MAX:.0f} requer revisão humana "
-                f"(faixa {CUTOFF_REVIEW_MIN:.1f}–{CUTOFF_APPROVED_AUTO - 0.01:.2f})"
-            )
+            decision_reason = f"Score WSI {overall_wsi:.2f}/5 requer revisão humana (faixa 3.0–3.74)"
         else:
             decision_result = "REPROVADO"
-            decision_reason = (
-                f"Score WSI {overall_wsi:.2f}/{SCALE_MAX:.0f} abaixo do mínimo "
-                f"(< {CUTOFF_REVIEW_MIN:.1f})"
-            )
+            decision_reason = f"Score WSI {overall_wsi:.2f}/5 abaixo do mínimo (< 3.0)"
 
         decision_confidence, human_review_required = _compute_decision_confidence(
             overall_wsi=overall_wsi,
@@ -717,22 +603,19 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
 
         sorted_analyses = sorted(analyses_list, key=lambda x: x["final_score"], reverse=True)
         strengths = [
-            f"{a['competency']} — {a['final_score']:.1f}/{SCALE_MAX:.0f}"
+            f"{a['competency']} — {a['final_score']:.1f}/5"
             for a in sorted_analyses[:3]
-            if a["final_score"] >= CLASSIFY_ALTO
+            if a["final_score"] >= 3.5
         ]
 
         gap_items = [
-            a for a in sorted_analyses if a["final_score"] < CUTOFF_REVIEW_MIN and a["final_score"] > 0.0
+            a for a in sorted_analyses if a["final_score"] < 3.0 and a["final_score"] > 0.0
         ]
         gap_items.sort(key=lambda x: x["final_score"])
         gaps = []
         for a in gap_items[:3]:
-            delta = CUTOFF_REVIEW_MIN - a["final_score"]
-            # Severidade derivada de bandas relativas ao cutoff: ≥ 3.0 = metade
-            # da escala de gap; ≥ 1.5 = quarto. Não há constante semântica
-            # para essas bandas — ficam locais e bem comentadas.
-            severity = "ALTO" if delta >= 3.0 else ("MÉDIO" if delta >= 1.5 else "BAIXO")
+            delta = 3.0 - a["final_score"]
+            severity = "ALTO" if delta >= 1.5 else ("MÉDIO" if delta >= 0.75 else "BAIXO")
             gaps.append({
                 "competency": a["competency"],
                 "type": a["question_type"],
@@ -790,11 +673,6 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
             seniority_weights=_get_seniority_weights(str(seniority) if seniority else None),
             attention_flags=_build_attention_flags(analyses_list, gates),
             generated_at=datetime.utcnow().isoformat() + "Z",
-            # Task #511 — disclaimer EU AI Act/LGPD no payload do F11.
-            compliance_disclaimer=EU_AI_ACT_DISCLAIMER,
-            # Audit task #528 (G23-02) — agregação do selo de qualidade degradada.
-            # Razões agregadas (deduplicadas) a partir dos extras + reasons da Camada 2.
-            **_aggregate_degraded(analyses_list),
         )
 
         # F11-3 — persistir no cache para evitar re-geração
@@ -874,9 +752,9 @@ async def get_vacancy_ranking(
                 "candidate_id": str(row[1]),
                 "candidate_name": row[2],
                 "candidate_title": row[3],
-                "overall_wsi": round(score, 2),        # PR2 #497 — DB já em /10
-                "technical_wsi": round(float(row[5]), 2),
-                "behavioral_wsi": round(float(row[6]), 2),
+                "overall_wsi": round(score * 2, 2),        # /5 → /10
+                "technical_wsi": round(float(row[5]) * 2, 2),
+                "behavioral_wsi": round(float(row[6]) * 2, 2),
                 "classification": row[7] or "regular",
                 "percentile": percentile,
                 "screening_type": row[8] or "text",
@@ -887,9 +765,9 @@ async def get_vacancy_ranking(
             "job_vacancy_id": job_vacancy_id,
             "total_screened": total,
             "averages": {
-                "overall":    round(sum(overall_vals) / total, 2),
-                "technical":  round(sum(tech_vals) / total, 2),
-                "behavioral": round(sum(behav_vals) / total, 2),
+                "overall":    round(sum(overall_vals) / total * 2, 2),
+                "technical":  round(sum(tech_vals) / total * 2, 2),
+                "behavioral": round(sum(behav_vals) / total * 2, 2),
             },
             "ranking": ranking,
         }
@@ -939,132 +817,8 @@ async def get_candidate_ranking(
             "ranked": True,
             "rank": rank,
             "total": total,
-            "overall_wsi": round(cand_score, 2),
+            "overall_wsi": round(cand_score * 2, 2),
         }
     except Exception as e:
         logger.error(f"F11-6 candidate ranking failed for {candidate_id}/{job_vacancy_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-
-# ────────────────────────────────────────────────────────────────────────────
-# Task #511 — EU AI Act Art. 12 (logging) / LGPD Art. 20 (revisão humana).
-# Endpoint de auditoria: expõe a trilha imutável de respostas WSI a perfis
-# autorizados (admin). Requer autenticação estrita — sem fallback demo.
-# ────────────────────────────────────────────────────────────────────────────
-from app.auth.dependencies import (  # noqa: E402
-    UserRole,
-    get_current_user_strict,
-    require_role,
-    validate_company_access,
-)
-from app.auth.models import User  # noqa: E402
-from app.shared.security.wsi_hashing import EU_AI_ACT_DISCLAIMER  # noqa: E402
-
-
-@router.get(
-    "/reports/audit/{session_id}",
-    summary="Audit trail WSI — EU AI Act Art. 12 / LGPD Art. 20",
-    response_model=None,
-    dependencies=[Depends(require_role([UserRole.admin, UserRole.dpo]))],
-)
-async def get_wsi_audit_trail(
-    session_id: str,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_strict),
-):
-    """Retorna a trilha de auditoria imutável das respostas WSI da sessão.
-
-    Acesso: `admin` (cross-tenant) ou `dpo` (escopado à própria company via
-    `validate_company_access`). Inclui:
-      - lista de respostas brutas + hash SHA-256 + timestamps (`wsi_responses`)
-      - hashes correlatos da análise (`wsi_response_analyses.response_hash`)
-      - metadados da sessão para correlação
-
-    O hash permite verificar integridade sem reprocessar o texto e detectar
-    duplicatas / adulterações posteriores.
-    """
-    # 1) Sessão existe? (join com job_vacancies para obter company_id)
-    sess_row = (await db.execute(text(
-        "SELECT s.id, s.status, s.candidate_id, s.job_vacancy_id, "
-        "       s.created_at, s.completed_at, jv.company_id "
-        "FROM wsi_sessions s "
-        "LEFT JOIN job_vacancies jv ON jv.id = s.job_vacancy_id "
-        "WHERE s.id = :sid"
-    ), {"sid": session_id})).fetchone()
-    if not sess_row:
-        raise HTTPException(status_code=404, detail="WSI session not found")
-
-    # 2) Tenant scoping (Task #511 round 3) — bloqueia IDOR cross-tenant.
-    # `admin` tem acesso global (User.can_access_company); demais perfis
-    # autorizados pelo RBAC (dpo) só veem dados da própria company.
-    #
-    # Round 3 fix (deny-by-default): se a sessão não resolve company
-    # (job_vacancy ausente/órfão, dado legado, sessão sem job), apenas
-    # admin pode acessar. Para dpo retornamos 403 — sem company resolvível
-    # não há como provar pertencimento ao tenant.
-    session_company_id = sess_row[6]
-    if session_company_id is not None:
-        validate_company_access(current_user, str(session_company_id))
-    else:
-        if current_user.role != UserRole.admin:
-            logger.warning(
-                "[WSI-AUDIT] deny: company unresolved for session=%s "
-                "(non-admin role=%s, user=%s)",
-                session_id, current_user.role, current_user.id,
-            )
-            raise HTTPException(
-                status_code=403,
-                detail="Cannot resolve session tenant; access denied",
-            )
-
-    responses_rows = (await db.execute(text(
-        "SELECT id, question_id, raw_text, response_hash, candidate_id, created_at "
-        "FROM wsi_responses WHERE session_id = :sid ORDER BY created_at ASC"
-    ), {"sid": session_id})).fetchall()
-
-    analyses_rows = (await db.execute(text(
-        "SELECT question_id, competency, response_hash, final_score "
-        "FROM wsi_response_analyses WHERE session_id = :sid"
-    ), {"sid": session_id})).fetchall()
-
-    logger.info(
-        "[WSI-AUDIT] session=%s requested_by=%s role=%s items=%d",
-        session_id, current_user.id, current_user.role, len(responses_rows),
-    )
-
-    return {
-        "session_id": session_id,
-        "session": {
-            "status": sess_row[1],
-            "candidate_id": sess_row[2],
-            "job_vacancy_id": sess_row[3],
-            "created_at": sess_row[4].isoformat() if sess_row[4] else None,
-            "completed_at": sess_row[5].isoformat() if sess_row[5] else None,
-        },
-        "responses": [
-            {
-                "id": str(r[0]),
-                "question_id": r[1],
-                "raw_text": r[2],
-                "response_hash": r[3],
-                "candidate_id": r[4],
-                "created_at": r[5].isoformat() if r[5] else None,
-            }
-            for r in responses_rows
-        ],
-        "analyses_hashes": [
-            {
-                "question_id": a[0],
-                "competency": a[1],
-                "response_hash": a[2],
-                "final_score": float(a[3]) if a[3] is not None else None,
-            }
-            for a in analyses_rows
-        ],
-        "compliance": {
-            "framework": "EU AI Act Art. 12 / LGPD Art. 20",
-            "hash_algorithm": "SHA-256",
-            "accessed_by": str(current_user.id),
-            "accessed_at": datetime.utcnow().isoformat() + "Z",
-        },
-    }

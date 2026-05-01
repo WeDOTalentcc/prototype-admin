@@ -53,29 +53,12 @@ class ChatAdapter:
             page_context=page_context,
         )
 
-        # Load conversation state for entity memory
-        try:
-            from app.shared.memory.conversation_state import conversation_state_store, ConversationState
-            _cstate = conversation_state_store.get(conversation_id or "") or ConversationState()
-            _cstate.company_id = company_id  # Ensure tenant isolation
-            ctx.conversation_state = _cstate
-        except Exception:
-            pass  # Fail-safe
-
         # ── Step 2: Call MainOrchestrator ──
         try:
             orch_response = await self._orch.process(ctx, db)
         except Exception as exc:
             logger.error(f"[ChatAdapter] MainOrchestrator failed: {exc}", exc_info=True)
             return self._error_response(str(exc))
-
-        # Save updated conversation state back to store
-        try:
-            if ctx.conversation_state and conversation_id:
-                from app.shared.memory.conversation_state import conversation_state_store
-                conversation_state_store.set(conversation_id, ctx.conversation_state)
-        except Exception:
-            pass
 
         # ── Step 3: Convert ChatResponse → dict ──
         return self._convert_response(orch_response)
@@ -97,22 +80,19 @@ class ChatAdapter:
         pc = page_context or {}
 
         # Extract entity_id from page_context (job_vacancy_id or job_id)
-        entity_id = pc.get("entity_id") or pc.get("job_vacancy_id") or pc.get("job_id")
+        entity_id = pc.get("job_vacancy_id") or pc.get("job_id")
         entity_type = "job" if entity_id else None
-
-        context_page = pc.get("page_type") or pc.get("domain") or "general"
 
         ctx = ContextAdapter.from_rest(
             message=user_message,
             user_id=user_id,
             company_id=str(company_id) if company_id else "",
             conversation_id=conversation_id,
-            context_page=context_page,
+            context_page=pc.get("page_type", "general"),
             entity_id=str(entity_id) if entity_id else None,
             entity_type=entity_type,
             selected_candidate_ids=pc.get("candidate_ids"),
             job_context=pc.get("job_context"),
-            actor_user_id=user_id,
         )
 
         # Passo 2: ChatRepository remains memory owner until M2
@@ -135,30 +115,19 @@ class ChatAdapter:
         - entities: dict
         - workflow_data: dict
         - prompt_version: str
-        - agent_used: str  (Task #552 — routed specialist identifier)
-        - agents_consulted: list[str]  (Task #552)
         - action_result: dict | None (new)
         - pending_action: dict | None (new)
         - fairness_warnings: list[str] (new)
         - from_cache: bool (new)
         """
-        _agent_used = getattr(orch_response, "agent_used", "") or "main_orchestrator"
         result: dict[str, Any] = {
             "response": getattr(orch_response, "content", "") or "",
             "intent": getattr(orch_response, "intent_detected", "general"),
             "entities": {},
             "workflow_data": {},
-            # Task #552: expose the routed specialist explicitly so chat.py can
-            # echo it on the response payload (instead of overloading
-            # prompt_version, which is meant for the prompt-registry hash).
-            "agent_used": _agent_used,
-            "agents_consulted": list(getattr(orch_response, "agents_consulted", []) or []),
-            "prompt_version": _agent_used,
+            "prompt_version": getattr(orch_response, "agent_used", "main_orchestrator"),
             "fairness_warnings": getattr(orch_response, "fairness_warnings", []),
             "from_cache": getattr(orch_response, "from_cache", False),
-            # LIA-LCF-01 (Task #620): expose tool calls observed by the ReAct agent
-            # so chat.py can surface them on the response body for eval/judge.
-            "actions": list(getattr(orch_response, "actions", []) or []),
         }
 
         # ── Structured data → workflow_data ──
@@ -204,8 +173,6 @@ class ChatAdapter:
             "intent": "error",
             "entities": {},
             "workflow_data": {},
-            "agent_used": "chat_adapter_error",
-            "agents_consulted": [],
             "prompt_version": "chat_adapter_error",
             "error": error_msg,
         }

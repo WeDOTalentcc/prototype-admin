@@ -8,7 +8,7 @@ from uuid import UUID
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.feedback_learning import JobOutcome
+from app.models.feedback_learning import JobOutcome
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +77,7 @@ class LearningOutcomeRepository:
 
     async def get_stats(self, company_id: str) -> dict:
         from sqlalchemy import and_, case, func
-        from lia_models.feedback_learning import JobOutcomeType
+        from app.models.feedback_learning import JobOutcomeType
 
         base_filter = JobOutcome.company_id == company_id
 
@@ -132,7 +132,7 @@ class LearningOutcomeRepository:
 
     async def get_patterns(self, company_id: str, group_by: str, limit: int = 20) -> list:
         from sqlalchemy import and_, case, func
-        from lia_models.feedback_learning import JobOutcomeType
+        from app.models.feedback_learning import JobOutcomeType
 
         group_col = getattr(JobOutcome, group_by)
         base_filter = and_(

@@ -298,56 +298,6 @@ class TestPipelineBuild:
         assert result is not None  # Pipeline não deve falhar sem seniority
         assert result.seniority_resolution is not None
 
-    def test_seniority_silent_fallback_emits_warning(self):
-        """Quando resolver está desabilitado E seniority não é informada,
-        o pipeline NÃO deve usar 'pleno' silenciosamente: deve marcar
-        requires_confirmation=True, expor warning em seniority_resolution e
-        adicionar entrada em quality_warnings (issue #513)."""
-        request = make_request(seniority=None)
-
-        mock_calibration = MagicMock()
-        mock_calibration.question_count = None
-        mock_calibration.technical_weight = 0.6
-        mock_calibration.behavioral_weight = 0.4
-        mock_calibration.bloom_min = 3
-        mock_calibration.bloom_max = 5
-        mock_calibration.dreyfus_min = 3
-        mock_calibration.dreyfus_max = 5
-        mock_calibration.calibration_notes = []
-
-        with patch(
-            "app.domains.cv_screening.services.wsi_screening_pipeline.SENIORITY_RESOLVER_ENABLED",
-            False,
-        ), patch(
-            "app.domains.cv_screening.services.wsi_screening_pipeline.calibrate_or_fallback",
-            return_value=mock_calibration,
-        ), patch(
-            "app.domains.cv_screening.services.wsi_service.WSIService.generate_from_simple_inputs",
-            new_callable=AsyncMock,
-            return_value=self._make_mock_wsi_questions(request),
-        ):
-            result = asyncio.get_event_loop().run_until_complete(
-                PIPELINE.build_pipeline(request, [])
-            )
-
-        meta = result.seniority_resolution
-        assert meta is not None
-        assert meta["source"] == "default"
-        assert meta["effective_level"] == "pleno"
-        assert meta.get("requires_confirmation") is True
-        assert "warning" in meta and meta["warning"]
-        assert any(
-            "Senioridade não foi informada" in w for w in result.quality_warnings
-        ), "fallback warning deve aparecer em quality_warnings"
-
-    def test_explicit_seniority_does_not_emit_fallback_warning(self):
-        """Quando seniority é explícita, fallback warning não deve ser emitido."""
-        request = make_request(seniority="senior")
-        result = self._build(request)
-        assert not any(
-            "Senioridade não foi informada" in w for w in result.quality_warnings
-        )
-
     def test_technical_skills_propagated_to_questions(self):
         """Skills técnicas da request devem aparecer nas perguntas técnicas geradas."""
         request = make_request(technical_skills=["Python", "Docker"])

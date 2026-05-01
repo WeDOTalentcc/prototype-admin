@@ -12,24 +12,24 @@ from uuid import UUID, uuid4
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domains.analytics.services.job_insights_service import job_insights_service
+from app.domains.job_management.services.job_insights_service import job_insights_service
 from app.domains.analytics.services.market_benchmark_service import market_benchmark_service
 from app.domains.analytics.services.feedback_learning_service import feedback_learning_service
 from app.domains.cv_screening.services.config_completeness_service import config_completeness_service as completeness_service
 
 # SourcingAgent and AvaliadorWSIAgent moved to lia_assistant_wizard_stages.py (Phase 6 deprecation)
-from lia_models.job_draft import ChangeType, DraftFieldHistory, JobDraft
-from lia_models.structured_responses import (
+from app.models.job_draft import ChangeType, DraftFieldHistory, JobDraft
+from app.models.structured_responses import (
     IntentClassification,
     OrchestrationDecision,
     SalaryAnalysis,
     WizardOrchestrationResult,  # noqa: F401
 )
-from app.domains.ai.services.enhanced_intent_classifier import (
+from app.shared.services.enhanced_intent_classifier import (
     EnhancedIntentType,  # noqa: F401
     enhanced_intent_classifier,  # noqa: F401
 )
-from app.domains.ai.services.intent_classifier import (
+from app.shared.services.intent_classifier import (
     ClassificationResult,
 )
 from app.domains.ai.services.llm import LLMService, llm_service
@@ -330,7 +330,7 @@ class WizardOrchestratorRequest(BaseModel):
     message: str
     current_stage: str
     collected_data: dict[str, Any]
-    conversation_history: list[dict[str, str]] | None = None  # trimmed to _MAX_HISTORY_MESSAGES by callers
+    conversation_history: list[dict[str, str]] | None = None
     company_id: str
     use_structured_outputs: bool = False
     llm_provider: str | None = "gemini"

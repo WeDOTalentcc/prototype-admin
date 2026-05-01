@@ -16,7 +16,7 @@ class CommunicationSettingsRepository:
 
     async def get_by_company_id(self, company_id: str):
         """Return CommunicationSettings for company, or None."""
-        from lia_models.communication_settings import CommunicationSettings
+        from app.models.communication_settings import CommunicationSettings
 
         result = await self.db.execute(
             select(CommunicationSettings).where(
@@ -27,7 +27,7 @@ class CommunicationSettingsRepository:
 
     async def upsert(self, company_id: str, update_data: dict):
         """Create or update CommunicationSettings; flush and refresh; return instance."""
-        from lia_models.communication_settings import (
+        from app.models.communication_settings import (
             DEFAULT_COMMUNICATION_SETTINGS,
             CommunicationSettings,
         )

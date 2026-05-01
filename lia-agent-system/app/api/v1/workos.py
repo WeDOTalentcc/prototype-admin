@@ -36,14 +36,6 @@ from app.domains.auth.dependencies import get_user_repo, get_workos_repo
 from app.domains.auth.repositories.user_repository import UserRepository
 from app.domains.auth.repositories.workos_repository import WorkOSRepository
 from app.shared.resilience.circuit_breaker import WORKOS_CIRCUIT, circuit_breaker_decorator
-from app.api.v1._path_patterns import DUAL_ID_PATH_PATTERN
-from typing import Annotated
-from fastapi import Path
-
-# Task #489 — UUID-or-digit constraint for dual-ID path params,
-# preventing static sibling routes from being shadowed by
-# item handlers (Task #455-class bug).
-_DualId = Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)]
 
 logger = logging.getLogger(__name__)
 
@@ -880,7 +872,7 @@ async def get_groups(
 
 @router.post("/admin/groups/{group_id}/role-mapping", response_model=None)
 async def set_group_role_mapping(
-    group_id: _DualId,
+    group_id: str,
     mapping: RoleMappingRequest,
     company_id: str = Query(...),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
@@ -1406,10 +1398,3 @@ async def scim_webhook(
         status_code=status.HTTP_200_OK,
         content={"success": True, "event_id": event_id, "event_type": event_type}
     )
-
-# Task #489 — Keep collection-scoped routes ahead of item-scoped
-# routes so a static sibling segment cannot be silently shadowed
-# by an {*_id} handler (the Task #455 routing-shadowing bug).
-from app.api.v1._path_patterns import reorder_collection_before_item as _reorder_collection_before_item  # noqa: E402
-
-_reorder_collection_before_item(router)
