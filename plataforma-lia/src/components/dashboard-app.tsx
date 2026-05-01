@@ -191,7 +191,14 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
     }
   })
 
-  
+  // SPA-switch override: when the user clicks a sidebar item that mutates
+  // currentPage WITHOUT a router.push (e.g. "Funil de Talentos" — removed
+  // from PAGE_ROUTES on purpose), the route-driven `children` would still
+  // be the previous URL's page (e.g. PipelineOverviewPage from /recrutar).
+  // Detect divergence and prefer the in-memory switch case so SPA-switch
+  // navigation actually swaps the visible page.
+  const isSpaSwitched = currentPage !== initialPage
+
   const renderCurrentPage = () => {
     if (currentPage.startsWith('upgrade-')) {
       const moduleId = currentPage.replace('upgrade-', '')
@@ -289,7 +296,7 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
       <main id="main-content" className="flex-1 flex flex-col overflow-hidden" aria-label={currentPage}>
         <div className="flex-1 min-h-0 overflow-hidden flex">
           <div className="flex-1 min-w-0 overflow-hidden">
-            {children ?? renderCurrentPage()}
+            {children && !isSpaSwitched ? children : renderCurrentPage()}
           </div>
           {splitView.active && (
             <LiaSplitPanel onNavigate={page => {
