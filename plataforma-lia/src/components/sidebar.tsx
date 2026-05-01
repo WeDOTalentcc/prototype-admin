@@ -127,13 +127,22 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         subItems: [
           { icon: Briefcase, label: "Vagas", isCore: true },
           {
-            // T002: removed `navigateOnClick: true` so this item routes through
-            // setCurrentPage("Funil de Talentos") (SPA switch) instead of a
-            // full-page nav to /funil-de-talentos. The /funil-de-talentos URL
-            // still 308-redirects to "/" for back-compat.
+            // T002 (causa raiz do bug "Funil não abre"):
+            // O `injectDynamic` mais abaixo neste arquivo INJETA subItems
+            // dinâmicos (talent pools) dentro deste item quando a empresa
+            // tem pools cadastrados. Como `MenuItem.handleClick` segue a
+            // ordem `if (hasSubItems && navigateOnClick) → navega+expande`
+            // antes de `else if (hasSubItems) → só expande`, sem o
+            // `navigateOnClick` o clique acabava só expandindo o submenu
+            // e nunca navegando. Mantemos `navigateOnClick: true` ciente
+            // de que `dashboard-app.tsx#PAGE_ROUTES` NÃO mapeia mais
+            // "Funil de Talentos" para uma URL — então `handleNavigate`
+            // chama apenas `setCurrentPage("Funil de Talentos")` (SPA
+            // switch), sem `router.push`, sem loop com a rota legada.
             icon: Users,
             label: "Funil de Talentos",
             isCore: true,
+            navigateOnClick: true,
             maxVisibleSubItems: 3,
             seeAllLabel: "Ver todos os bancos",
             seeAllTarget: "Funil de Talentos",
