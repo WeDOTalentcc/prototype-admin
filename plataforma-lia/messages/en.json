@@ -1653,7 +1653,7 @@
     }
   },
   "pipelineOverview": {
-    "title": "Pipeline View",
+    "title": "Recruit",
     "metaDescription": "Consolidated pipeline view — candidates per stage and vacancy lifecycle.",
     "toggle": {
       "candidates": "Candidates",

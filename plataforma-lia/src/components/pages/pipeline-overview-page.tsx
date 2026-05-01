@@ -466,7 +466,7 @@ export function PipelineOverviewPage() {
           <div className="px-4 pt-3 pb-0 flex-shrink-0 border-b border-lia-border-subtle">
             <div className="flex items-center justify-between mb-2">
               <h1 className="text-lg font-semibold text-lia-text-primary">
-                Visão Global
+                {tOverview("title")}
               </h1>
               <Button
                 variant="outline"
