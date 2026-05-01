@@ -3,22 +3,17 @@
 import { useState, useMemo, useCallback } from"react"
 import dynamic from "next/dynamic"
 import { useTranslations, useLocale } from "next-intl"
-import { LogIn } from"lucide-react"
 import { Button } from"@/components/ui/button"
-import { Input } from"@/components/ui/input"
-import { Chip } from "@/components/ui/chip"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from"@/components/ui/tabs"
 import { BulkActionsBar } from"@/components/ui/bulk-actions-bar"
-import { CandidatesTable } from"@/components/pages/candidates/CandidatesTable"
+import { ExpandableAIPrompt } from "@/components/expandable-ai-prompt"
 import { useCandidatesList } from"@/hooks/candidates/use-candidates-list"
 import { useBulkSelection } from"@/hooks/candidates/use-bulk-selection"
 import { useTalentFunnel } from"@/hooks/candidates/use-talent-funnel"
-import { textStyles } from"@/lib/design-tokens"
-import { Search, Heart, Share2, Users, ChevronLeft, ChevronRight, AlertCircle, List, Bookmark, Database, Clock } from"lucide-react"
-import type { Candidate, SortConfig } from"@/components/pages/candidates/types"
+import { Brain, Heart, Share2, Users, AlertCircle, List, Bookmark, Database, Clock, LogIn } from"lucide-react"
+import type { Candidate } from"@/components/pages/candidates/types"
 import type { TableCandidate } from"@/components/tables"
 import type { CandidateLocal } from"@/services/lia-api"
-import { cn } from"@/lib/utils"
 import { LoadingFallback } from"@/components/ui/loading"
 
 function DynamicLoadingFallback({ textKey }: { textKey: string }) {
@@ -97,22 +92,17 @@ export default function FunilDeTalentosPage() {
   const locale = useLocale()
   const {
     candidates: rawCandidates,
-    loading,
     error,
     errorKind,
     total,
-    currentPage,
-    totalPages,
     filters,
     updateFilter,
-    goToPage,
     refresh,
   } = useCandidatesList()
 
   const {
     selectedCandidates,
     selectedCount,
-    toggleCandidate,
     selectAll,
     clearSelection,
   } = useBulkSelection()
@@ -131,13 +121,11 @@ export default function FunilDeTalentosPage() {
     favoriteCandidatesData,
   } = useTalentFunnel()
 
-  const [sortConfig, setSortConfig] = useState<SortConfig>({ column:"created_at", direction:"desc" })
   const [activeTab, setActiveTab] = useState("todos")
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [shareBulkOpen, setShareBulkOpen] = useState(false)
 
   const candidates = useMemo(() => rawCandidates.map(toCandidateTableRow), [rawCandidates])
-  const selectedIds = useMemo(() => selectedCandidates, [selectedCandidates])
   const selectedIdsArray = useMemo(() => Array.from(selectedCandidates), [selectedCandidates])
 
   // Candidates filtered by favorites (for FavoritesTab)
@@ -148,14 +136,6 @@ export default function FunilDeTalentosPage() {
     () => favoriteCandidatesData.map(toCandidateTableRow),
     [favoriteCandidatesData]
   )
-
-  const handleSort = (column: string) => {
-    setSortConfig(prev =>
-      prev.column === column
-        ? { column, direction: prev.direction ==="asc" ?"desc" :"asc" }
-        : { column, direction:"asc" }
-    )
-  }
 
   const handleSelectAll = () => {
     selectAll(candidates.map(c => c.id))
@@ -193,27 +173,15 @@ export default function FunilDeTalentosPage() {
     return t(key)
   })()
 
-  // Filtros rápidos
-  
-const STATUS_COLORS: Record<string, { active: string; inactive: string }> = {
-  "Novo": { active:"bg-cyan-50 dark:bg-cyan-950/30 text-cyan-700 dark:text-cyan-400 border-cyan-200 dark:border-cyan-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-cyan-300" },
-  "Em triagem": { active:"bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-amber-300" },
-  "Aprovado": { active:"bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-emerald-300" },
-  "Reprovado": { active:"bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800", inactive:"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-rose-300" },
-}
-
-const STATUS_OPTIONS = [
-  { value: "Novo", labelKey: "filters.statusNew" },
-  { value: "Em triagem", labelKey: "filters.statusScreening" },
-  { value: "Aprovado", labelKey: "filters.statusApproved" },
-  { value: "Reprovado", labelKey: "filters.statusRejected" },
-] as const
-const SENIORITY_OPTIONS = [
-  { value: "Júnior", labelKey: "filters.seniorityJunior" },
-  { value: "Pleno", labelKey: "filters.seniorityMid" },
-  { value: "Sênior", labelKey: "filters.senioritySenior" },
-  { value: "Especialista", labelKey: "filters.senioritySpecialist" },
-] as const
+  // Wrapper para o EAP — registra comandos disparados pelo canvas de busca
+  // canônico (Linguagem Natural / Boolean / Job Description / Filtros).
+  // TODO: Wirar o command->updateFilter do useCandidatesList numa próxima
+  // iteração quando o contrato for definido com produto.
+  const handleSearchCommand = useCallback((command: string, _action: string) => {
+    if (process.env.NODE_ENV !== "production") {
+      console.log("[FunilDeTalentos.EAP] command", { command })
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
@@ -255,18 +223,13 @@ const SENIORITY_OPTIONS = [
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-lg">
             <TabsTrigger value="todos" className="rounded-lg text-xs">
-              <Search className="w-3.5 h-3.5 mr-1" />
+              <Brain className="w-3.5 h-3.5 mr-1" />
               {t('tabs.search')}
-              {activeTab ==="todos" && total > 0 && (
-                <Chip variant="neutral" muted className="ml-1.5 h-4 px-1.5 text-micro  dark:bg-wedo-cyan/20 dark:text-wedo-cyan">
-                  {total}
-                </Chip>
-              )}
             </TabsTrigger>
             <TabsTrigger value="favoritos" className="rounded-lg text-xs"><Heart className="w-3.5 h-3.5 mr-1" />{t('tabs.favorites')}</TabsTrigger>
             <TabsTrigger value="listas" className="rounded-lg text-xs"><List className="w-3.5 h-3.5 mr-1" />{t('tabs.lists')}</TabsTrigger>
-            <TabsTrigger value="buscas" className="rounded-lg text-xs"><Bookmark className="w-3.5 h-3.5 mr-1" />{t('tabs.savedSearches')}</TabsTrigger>
             <TabsTrigger value="bancos-vivos" className="rounded-lg text-xs"><Database className="w-3.5 h-3.5 mr-1" />{t('tabs.talentPools')}</TabsTrigger>
+            <TabsTrigger value="buscas" className="rounded-lg text-xs"><Bookmark className="w-3.5 h-3.5 mr-1" />{t('tabs.savedSearches')}</TabsTrigger>
             <TabsTrigger value="historico" className="rounded-lg text-xs"><Clock className="w-3.5 h-3.5 mr-1" />{t('tabs.history')}</TabsTrigger>
           </TabsList>
 
@@ -286,53 +249,7 @@ const SENIORITY_OPTIONS = [
           </div>
 
           {/* Tab: Todos */}
-          <TabsContent value="todos" className="mt-4 space-y-3">
-            {/* SearchBar + filtros rápidos */}
-            <div className="bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl p-3 space-y-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-lia-text-tertiary" aria-hidden="true" />
-                <Input
-                  id="funil-search"
-                  aria-label={t('searchAriaLabel')}
-                  placeholder={t('searchPlaceholder')}
-                  value={filters.search ??""}
-                  onChange={e => updateFilter("search", e.target.value)}
-                  className="pl-9 text-xs rounded-xl border-lia-border-subtle dark:border-lia-border-subtle bg-transparent focus:border-wedo-cyan/40 transition-colors"
-                />
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {STATUS_OPTIONS.map(s => (
-                  <button
-                    key={s.value}
-                    onClick={() => updateFilter("status", filters.status === s.value ? undefined : s.value)}
-                    className={cn("px-2.5 py-1 text-xs rounded-md border transition-colors",
-                      filters.status === s.value
-                        ? (STATUS_COLORS[s.value]?.active ||"bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white dark:text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-subtle")
-                        : (STATUS_COLORS[s.value]?.inactive ||"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium")
-                    )}
-                  >
-                    {t(s.labelKey)}
-                  </button>
-                ))}
-                <div className="w-px h-5 bg-lia-border-subtle self-center" />
-                {SENIORITY_OPTIONS.map(s => (
-                  <button
-                    key={s.value}
-                    onClick={() => updateFilter("seniority", filters.seniority === s.value ? undefined : s.value)}
-                    className={cn("px-2.5 py-1 text-xs rounded-md border transition-colors",
-                      filters.seniority === s.value
-                        ?"bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white dark:text-lia-text-primary border-lia-btn-primary-bg dark:border-lia-border-subtle"
-                        :"bg-lia-bg-primary dark:bg-lia-bg-primary text-lia-text-secondary dark:text-lia-text-tertiary border-lia-border-subtle dark:border-lia-border-subtle hover:border-lia-border-medium"
-                    )}
-                  >
-                    {t(s.labelKey)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 401/403 → estado dedicado de relogin que substitui a tabela;
-                5xx/network → banner inline com retry. */}
+          <TabsContent value="todos" className="mt-4">
             {isAuthError ? (
               <div
                 role="alert"
@@ -359,103 +276,40 @@ const SENIORITY_OPTIONS = [
                   {t('auth.reloginCta')}
                 </Button>
               </div>
-            ) : error ? (
-              <div
-                role="alert"
-                aria-live="polite"
-                data-testid="funil-error-state"
-                className="flex items-start gap-2 p-3 bg-status-error/10 dark:bg-status-error/10 border border-status-error/30 dark:border-status-error/30 rounded-xl text-xs text-status-error dark:text-status-error"
-              >
-                <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                <div className="flex-1 flex items-center justify-between gap-3">
-                  <span>{errorMessage}</span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => refresh()}
-                    className="h-7 rounded-lg text-xs border-status-error/40"
-                  >
-                    {t('auth.retryCta')}
-                  </Button>
+            ) : (
+              <div className="flex flex-col items-center gap-6 py-12">
+                <div className="flex items-center gap-2 text-lia-text-primary">
+                  <Brain className="h-5 w-5 text-wedo-cyan" />
+                  <h2 className="text-base font-medium">Vamos buscar de forma inteligente?</h2>
                 </div>
-              </div>
-            ) : null}
-
-            {/* Tabela — oculta durante estado de relogin. */}
-            {!isAuthError && (
-              <div className="bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl overflow-hidden">
-                {!loading && candidates.length === 0 && !error ? (
-                  <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-                    <Users className="h-10 w-10 text-lia-text-disabled dark:text-lia-text-secondary mb-3" />
-                    <p className="text-sm font-medium text-lia-text-secondary dark:text-lia-text-tertiary" aria-live="polite" aria-atomic="true">
-                      {filters.search || filters.status || filters.seniority
-                        ? t('emptyState.noResults')
-                        : t('emptyState.searchPrompt')}
-                    </p>
-                  </div>
-                ) : (
-                  <CandidatesTable
-                    candidates={candidates}
-                    selectedIds={selectedIds}
-                    onToggleSelect={toggleCandidate}
-                    onSelectAll={handleSelectAll}
-                    onCandidateClick={handleCandidateClick}
-                    sortConfig={sortConfig}
-                    onSort={handleSort}
-                    isLoading={loading}
-                  />
-                )}
-              </div>
-            )}
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between bg-lia-bg-primary dark:bg-lia-bg-primary border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl px-4 py-2.5">
-                <span className="text-xs text-lia-text-secondary dark:text-lia-text-tertiary">
-                  {t('pagination.page', { current: currentPage, total: totalPages })}
-                </span>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => goToPage(currentPage - 1)}
-                    disabled={currentPage <= 1}
-                    aria-label={t('pagination.previousPage')}
-                    className="h-7 w-7 p-0 rounded-xl border-lia-border-subtle dark:border-lia-border-subtle"
+                {error && (
+                  <div
+                    role="alert"
+                    aria-live="polite"
+                    data-testid="funil-error-state"
+                    className="flex items-start gap-2 p-3 max-w-2xl w-full bg-status-error/10 dark:bg-status-error/10 border border-status-error/30 dark:border-status-error/30 rounded-xl text-xs text-status-error dark:text-status-error"
                   >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    const start = Math.max(1, currentPage - 2)
-                    const page = start + i
-                    if (page > totalPages) return null
-                    return (
+                    <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1 flex items-center justify-between gap-3">
+                      <span>{errorMessage}</span>
                       <Button
-                        key={page}
-                        variant={page === currentPage ?"primary" :"outline"}
                         size="sm"
-                        onClick={() => goToPage(page)}
-                        className={cn("h-7 w-7 p-0 rounded-md text-xs",
-                          page === currentPage
-                            ?"bg-lia-btn-primary-bg dark:bg-lia-bg-secondary text-white dark:text-lia-text-primary"
-                            :"border-lia-border-subtle dark:border-lia-border-subtle"
-                        )}
+                        variant="outline"
+                        onClick={() => refresh()}
+                        className="h-7 rounded-lg text-xs border-status-error/40"
                       >
-                        {page}
+                        {t('auth.retryCta')}
                       </Button>
-                    )
-                  })}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => goToPage(currentPage + 1)}
-                    disabled={currentPage >= totalPages}
-                    aria-label={t('pagination.nextPage')}
-                    className="h-7 w-7 p-0 rounded-xl border-lia-border-subtle dark:border-lia-border-subtle"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
+                    </div>
+                  </div>
+                )}
+                <ExpandableAIPrompt
+                  selectedCandidates={selectedIdsArray}
+                  onCommand={handleSearchCommand}
+                  filteredCount={candidates.length}
+                  totalCount={total}
+                  pageContext="candidates"
+                />
               </div>
             )}
           </TabsContent>
