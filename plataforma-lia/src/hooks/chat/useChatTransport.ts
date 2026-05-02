@@ -102,9 +102,9 @@ export function useChatTransport(
 
   const buildWsUrl = useCallback((): string => {
     const base = WS_BASE_URL.replace(/\/$/, "")
-    const url = `${base}/api/v1/ws/chat/${sessionId}`
-    return authToken ? `${url}?token=${encodeURIComponent(authToken)}` : url
-  }, [sessionId, authToken])
+    // UC-P0-19: token must NOT be in the URL — sent as first WS message in onopen.
+    return `${base}/api/v1/ws/chat/${sessionId}`
+  }, [sessionId])
 
   const disconnectWs = useCallback(() => {
     if (reconnectTimerRef.current) {
@@ -177,6 +177,10 @@ export function useChatTransport(
 
       ws.onopen = () => {
         if (!mountedRef.current) return
+        // UC-P0-19: send JWT as first message to avoid token in URL/logs
+        if (authToken) {
+          ws.send(JSON.stringify({ type: "auth", token: authToken }))
+        }
         reconnectCountRef.current = 0
         sseFailureCountRef.current = 0
         setIsConnected(true)
@@ -246,7 +250,8 @@ export function useChatTransport(
         setError(null)
       }
     }
-  }, [sessionId, buildWsUrl, autoReconnect, maxReconnectAttempts, reconnectBaseDelay, handleParsedEvent])
+  // UC-P0-19: authToken added to deps so connectWs re-creates when token rotates
+  }, [sessionId, authToken, buildWsUrl, autoReconnect, maxReconnectAttempts, reconnectBaseDelay, handleParsedEvent])
 
   const connect = useCallback(() => {
     wsFailedPermanentlyRef.current = false
