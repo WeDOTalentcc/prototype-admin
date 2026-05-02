@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.pipeline.repositories.pipeline_template_repository import (
     PipelineTemplateRepository,
 )
@@ -91,7 +91,7 @@ async def list_pipeline_templates(
     size: int = Query(20, ge=1, le=100),
     search: str | None = None,
     is_active: bool | None = True,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """List all pipeline templates for the company."""
@@ -114,7 +114,7 @@ async def list_pipeline_templates(
 @router.post("/", response_model=PipelineTemplateResponse)
 async def create_pipeline_template(
     data: PipelineTemplateCreate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Create a new pipeline template."""
@@ -143,7 +143,7 @@ async def create_pipeline_template(
 @router.get("/{template_id}", response_model=PipelineTemplateResponse)
 async def get_pipeline_template(
     template_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Get a specific pipeline template by ID."""
@@ -163,7 +163,7 @@ async def get_pipeline_template(
 async def update_pipeline_template(
     template_id: str,
     data: PipelineTemplateUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Update a pipeline template."""
@@ -201,7 +201,7 @@ async def update_pipeline_template(
 @router.delete("/{template_id}", response_model=None)
 async def delete_pipeline_template(
     template_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Delete (soft delete) a pipeline template."""
@@ -224,7 +224,7 @@ async def delete_pipeline_template(
 async def clone_pipeline_template(
     template_id: str,
     new_name: str | None = Query(None),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Clone an existing pipeline template."""
@@ -251,7 +251,7 @@ async def clone_pipeline_template(
 @router.post("/seed-defaults", response_model=None)
 async def seed_default_templates(
     force: bool = Query(False, description="Force re-seeding even if templates exist"),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Seed default pipeline templates for the company."""
@@ -275,7 +275,7 @@ async def seed_default_templates(
 @router.post("/{template_id}/increment-usage", response_model=None)
 async def increment_template_usage(
     template_id: str,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Increment the usage count of a template (called when applied to a job)."""

@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user, require_admin
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.domains.agent_studio.custom_agent_runtime import get_available_tool_names
 from lia_models.custom_agent import CustomAgent
 from app.schemas.custom_agent import (
@@ -47,7 +47,7 @@ async def list_available_tools(
 async def create_custom_agent(
     body: CreateCustomAgentRequest,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     from app.services.quota_enforcement import enforce_quota
     await enforce_quota("custom_agents", current_user.company_id, db)
@@ -76,7 +76,7 @@ async def list_custom_agents(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     agents, total = await agent_marketplace_service.list_agents(
         db=db,
@@ -96,7 +96,7 @@ async def list_custom_agents(
 async def get_custom_agent(
     agent_id: str,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     agent = await agent_marketplace_service.get_agent(
         db=db, agent_id=agent_id, company_id=current_user.company_id
@@ -111,7 +111,7 @@ async def update_custom_agent(
     agent_id: str,
     body: UpdateCustomAgentRequest,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     """Update custom agent. Automatically creates a version snapshot before applying changes."""
     # P2.2: Snapshot before update
@@ -162,7 +162,7 @@ async def update_custom_agent(
 async def delete_custom_agent(
     agent_id: str,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     try:
         deleted = await agent_marketplace_service.delete_agent(
@@ -184,7 +184,7 @@ async def test_custom_agent(
     agent_id: str,
     body: TestCustomAgentRequest,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     agent = await agent_marketplace_service.get_agent(
         db=db, agent_id=agent_id, company_id=current_user.company_id
@@ -243,7 +243,7 @@ async def execute_custom_agent(
     agent_id: str,
     body: ExecuteCustomAgentRequest,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     agent = await agent_marketplace_service.get_agent(
         db=db, agent_id=agent_id, company_id=current_user.company_id
@@ -413,7 +413,7 @@ async def publish_to_marketplace(
     agent_id: str,
     body: PublishToMarketplaceRequest,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     try:
         listing = await agent_marketplace_service.publish_to_marketplace(
@@ -446,7 +446,7 @@ async def browse_marketplace(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     listings, total = await agent_marketplace_service.list_marketplace(
         db=db,
@@ -465,7 +465,7 @@ async def browse_marketplace(
 async def install_marketplace_agent(
     body: InstallAgentRequest,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     try:
         installation = await agent_marketplace_service.install_agent(
@@ -489,7 +489,7 @@ async def list_installations(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     installations, total = await agent_marketplace_service.list_installations(
         db=db,
@@ -507,7 +507,7 @@ async def list_installations(
 async def uninstall_agent(
     installation_id: str,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     try:
         result = await agent_marketplace_service.uninstall_agent(
@@ -529,7 +529,7 @@ async def uninstall_agent(
 @marketplace_router.get("/billing", response_model=list[MarketplaceBillingResponse])
 async def get_marketplace_billing(
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     summaries = await agent_marketplace_service.get_billing_summary(
         db=db,
@@ -549,7 +549,7 @@ async def list_pending_reviews(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     _user=Depends(require_admin),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     listings, total = await agent_marketplace_service.get_pending_reviews(
         db=db, limit=limit, offset=offset
@@ -565,7 +565,7 @@ async def review_listing(
     listing_id: str,
     body: MarketplaceReviewRequest,
     _user=Depends(require_admin),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     try:
         listing = await agent_marketplace_service.review_listing(
@@ -593,7 +593,7 @@ async def get_agent_executions(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     """Paginated execution history for a specific agent."""
     from sqlalchemy import select, and_, func
@@ -627,7 +627,7 @@ async def get_agent_executions(
 async def get_studio_consumption(
     days: int = Query(default=30, ge=1, le=365),
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     from app.services.studio_metering_service import studio_metering_service
 
@@ -645,7 +645,7 @@ async def get_studio_consumption(
 @router.get("/studio/quota", summary="Get Studio agent quota status")
 async def get_studio_quota(
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     from lia_models.agent_quota import AgentQuota, get_limits_for_plan
     from sqlalchemy import select
@@ -681,7 +681,7 @@ async def list_agent_versions(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     """Paginated list of version snapshots for an agent."""
     from app.services.agent_version_service import agent_version_service
@@ -705,7 +705,7 @@ async def get_agent_version(
     agent_id: str,
     version: int,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     """Get full snapshot data for a specific version."""
     from app.services.agent_version_service import agent_version_service
@@ -725,7 +725,7 @@ async def revert_agent_to_version(
     agent_id: str,
     version: int,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     """Revert agent state to a previous version. Creates a new snapshot before reverting."""
     from app.services.agent_version_service import agent_version_service
@@ -764,7 +764,7 @@ async def search_agents_by_name(
     name: str = Query(..., min_length=1, max_length=256),
     limit: int = Query(5, ge=1, le=20),
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     """Fuzzy search for agents by name. Used by chat to find agent mentioned by user.
 
@@ -797,7 +797,7 @@ async def search_agents_by_name(
 async def get_studio_compliance_summary(
     period_days: int = Query(30, ge=1, le=365),
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     """Aggregated compliance metrics across all Studio agents in the period.
 
@@ -932,7 +932,7 @@ async def get_studio_compliance_summary(
 async def get_studio_metrics_summary(
     period_days: int = Query(7, ge=1, le=90),
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     """Returns aggregated metrics across all tenant agents for the specified period.
 
@@ -1160,7 +1160,7 @@ Responda APENAS com o JSON, sem texto adicional."""
 async def clone_custom_agent(
     agent_id: str,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     """Create a copy of an existing agent with '(copia)' appended to name."""
     agent = await agent_marketplace_service.get_agent(
@@ -1203,7 +1203,7 @@ async def clone_custom_agent(
 async def preview_agent_prompt(
     agent_id: str,
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     """Preview the composed system prompt for a custom agent.
 

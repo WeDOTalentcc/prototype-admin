@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.shared.services.recruiter_personalization_service import recruiter_personalization_service
 
 router = APIRouter()
@@ -77,7 +77,7 @@ class RecordEventRequest(BaseModel):
 
 @router.get("/me", response_model=RecruiterProfileResponse)
 async def get_my_profile(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 
 ):
@@ -112,7 +112,7 @@ async def get_my_profile(
 
 @router.get("/me/settings", response_model=PersonalizationSettingsResponse)
 async def get_my_settings(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """
@@ -141,7 +141,7 @@ async def get_my_settings(
 @router.patch("/me/settings", response_model=PersonalizationSettingsResponse)
 async def update_my_settings(
     request: PersonalizationSettingsUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """
@@ -175,7 +175,7 @@ async def update_my_settings(
 
 @router.get("/me/field-preferences", response_model=list[FieldPreferenceResponse])
 async def get_my_field_preferences(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 
 ):
@@ -213,7 +213,7 @@ async def get_my_field_preferences(
 @router.get("/me/thresholds", response_model=PersonalizedThresholdsResponse)
 async def get_personalized_thresholds(
     base_threshold: float = 0.7,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 
 ):
@@ -242,7 +242,7 @@ async def get_personalized_thresholds(
 @router.post("/me/events", response_model=None)
 async def record_personalization_event(
     request: RecordEventRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 
 ):
@@ -282,7 +282,7 @@ async def record_personalization_event(
 
 @router.post("/me/recalculate", response_model=None)
 async def recalculate_profile(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 
 ):
@@ -310,7 +310,7 @@ async def recalculate_profile(
 
 @router.delete("/me/data", response_model=None)
 async def delete_my_personalization_data(
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """

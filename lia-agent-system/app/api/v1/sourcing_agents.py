@@ -11,7 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from pydantic import BaseModel, Field
 from typing import Optional
 
@@ -39,7 +39,7 @@ class FeedbackRequest(BaseModel):
 async def create_sourcing_agent(
     body: CreateSourcingAgentRequest,
     current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     """Create a new persistent sourcing agent for a job or talent pool."""
     from app.services.quota_enforcement import enforce_quota
@@ -64,7 +64,7 @@ async def list_sourcing_agents(
     talent_pool_id: Optional[str] = None,
     status: Optional[str] = None,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     """List sourcing agents for the current company."""
     from lia_models.sourcing_agent import SourcingAgent

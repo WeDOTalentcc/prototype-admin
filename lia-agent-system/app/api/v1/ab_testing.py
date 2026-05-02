@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user, get_user_company_id
 from app.auth.models import User
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from app.shared.learning.ab_testing_service import ab_testing_service as _service, ABTestingService
 
 router = APIRouter(prefix="/ab-tests", tags=["ab-testing"])
@@ -75,7 +75,7 @@ async def record_metric(
     test_name: str,
     body: MetricRecord,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     # UC-P0-08: company_id MUST come from the JWT, never from the request body
     company_id = get_user_company_id(current_user)
@@ -99,7 +99,7 @@ async def record_business_metrics(
     test_name: str,
     body: BusinessMetricRecord,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ):
     # UC-P0-08: company_id MUST come from the JWT, never from the request body
     company_id = get_user_company_id(current_user)
