@@ -354,3 +354,191 @@ else:
 
         def get_tools(self) -> List[Any]:
             return self._tools_list
+
+
+
+# ---------------------------------------------------------------------------
+# GovernanceToolNode — pós-execução: PII masking + audit + fail-safe
+# ---------------------------------------------------------------------------
+# Estende TimedToolNode (que já aplica FairnessGuard PRÉ-execução, LIA-C03).
+# Esta classe adiciona camada PÓS-execução:
+#   1. PII masking em campos declarados em ToolContract.pii_output_fields
+#   2. Audit log não-bloqueante via AuditService (asyncio.create_task)
+#   3. Fail-safe: exceções em governança NUNCA quebram o pipeline principal
+#
+# Harness Engineering: tipo SENSOR computacional (feedback pós-execução).
+# Referência: ToolContract.touches_pii / pii_output_fields / affects_candidate_decision
+# ---------------------------------------------------------------------------
+
+if _HAS_LANGGRAPH:
+    class GovernanceToolNode(TimedToolNode):
+        """
+        ToolNode com governança pós-execução sobre ToolMessage.content.
+
+        Uso:
+            contracts = [ToolContract(name="search", touches_pii=True, pii_output_fields=["email"])]
+            node = GovernanceToolNode(tools=[...], tool_contracts=contracts, domain="pipeline")
+            graph = create_react_agent(model, tools=node)
+        """
+
+        def __init__(
+            self,
+            tools: List[Any],
+            tool_contracts: Optional[List[Any]] = None,
+            **kwargs: Any,
+        ) -> None:
+            super().__init__(tools=tools, **kwargs)
+            self._contract_map: Dict[str, Any] = {}
+            for contract in (tool_contracts or []):
+                name = getattr(contract, "name", None)
+                if name:
+                    self._contract_map[name] = contract
+
+        async def ainvoke(self, input: Any, config: Any = None, **kwargs: Any) -> Any:
+            result = await super().ainvoke(input, config, **kwargs)
+            return await self._apply_governance(result, config)
+
+        async def _apply_governance(self, state: Any, config: Any) -> Any:
+            """Aplica PII masking e audit a ToolMessages do resultado. Fail-safe."""
+            try:
+                from langchain_core.messages import ToolMessage
+
+                messages: List[Any] = (
+                    list(state.get("messages", [])) if isinstance(state, dict)
+                    else list(getattr(state, "messages", []))
+                )
+                new_messages = list(messages)
+
+                configurable: Dict[str, Any] = (
+                    (config or {}).get("configurable", {})
+                    if isinstance(config, dict) else {}
+                )
+                company_id: Optional[str] = configurable.get("company_id")
+                user_id: Optional[str] = configurable.get("user_id")
+
+                for i, msg in enumerate(new_messages):
+                    if not isinstance(msg, ToolMessage):
+                        continue
+
+                    tool_name: str = getattr(msg, "name", None) or ""
+                    contract = self._contract_map.get(tool_name)
+                    if contract is None:
+                        continue  # unknown tool — passthrough, no governance
+
+                    content: str = msg.content
+                    modified = False
+
+                    # PII masking: field-level over parsed JSON output
+                    if (
+                        getattr(contract, "touches_pii", False)
+                        and getattr(contract, "pii_output_fields", None)
+                    ):
+                        try:
+                            content_dict = json.loads(content)
+                            if isinstance(content_dict, dict):
+                                content_dict = self._mask_pii_fields(
+                                    content_dict, contract.pii_output_fields
+                                )
+                                content = json.dumps(content_dict, ensure_ascii=False)
+                                modified = True
+                        except Exception:
+                            pass  # fail-safe: invalid JSON → keep original content
+
+                    if modified:
+                        new_messages[i] = ToolMessage(
+                            content=content,
+                            tool_call_id=getattr(msg, "tool_call_id", "unknown"),
+                            name=tool_name,
+                        )
+
+                    # Audit: non-blocking background task (always for known tools)
+                    asyncio.create_task(
+                        self._audit(
+                            tool_name=tool_name,
+                            company_id=company_id,
+                            user_id=user_id,
+                            success=True,
+                            output_snippet=content[:200],
+                        )
+                    )
+
+                if isinstance(state, dict):
+                    return {**state, "messages": new_messages}
+                try:
+                    return state.model_copy(update={"messages": new_messages})
+                except Exception:
+                    return state
+
+            except Exception as exc:
+                logger.warning("[GovernanceToolNode] _apply_governance fail-safe: %s", exc)
+                return state
+
+        def _mask_pii_fields(self, data: Any, fields: List[str]) -> Any:
+            """Recursivamente mascara campos PII declarados em pii_output_fields."""
+            if isinstance(data, dict):
+                result_dict: Dict[str, Any] = {}
+                for key, value in data.items():
+                    if key in fields:
+                        try:
+                            import app.shared.pii_masking as _pm
+                            result_dict[key] = _pm.mask_pii(value)
+                        except Exception:
+                            result_dict[key] = "[REDACTED]"
+                    else:
+                        result_dict[key] = self._mask_pii_fields(value, fields)
+                return result_dict
+            elif isinstance(data, list):
+                return [self._mask_pii_fields(item, fields) for item in data]
+            return data
+
+        async def _audit(
+            self,
+            *,
+            tool_name: str,
+            company_id: Optional[str],
+            user_id: Optional[str],
+            success: bool,
+            output_snippet: str,
+        ) -> None:
+            """Audit log assíncrono. Fail-safe: nunca propaga exceção."""
+            try:
+                from app.shared.compliance.audit_service import get_audit_service
+                audit = get_audit_service()
+                await audit.log_action(
+                    action_type="tool_execution",
+                    tool_name=tool_name,
+                    company_id=company_id,
+                    user_id=user_id,
+                    success=success,
+                    output_snippet=output_snippet,
+                )
+            except Exception as exc:
+                logger.debug(
+                    "[GovernanceToolNode] audit fail-safe: tool=%s error=%s",
+                    tool_name,
+                    exc,
+                )
+
+else:
+    class GovernanceToolNode(TimedToolNode):  # type: ignore[no-redef]
+        """Stub quando LangGraph não disponível."""
+
+        def __init__(
+            self,
+            tools: List[Any],
+            tool_contracts: Optional[List[Any]] = None,
+            **kwargs: Any,
+        ) -> None:
+            super().__init__(tools=tools, **kwargs)
+            self._contract_map: Dict[str, Any] = {}
+            for contract in (tool_contracts or []):
+                name = getattr(contract, "name", None)
+                if name:
+                    self._contract_map[name] = contract
+
+        async def ainvoke(self, input: Any, config: Any = None, **kwargs: Any) -> Any:
+            logger.error("[GovernanceToolNode] LangGraph não disponível")
+            return input
+
+        async def _apply_governance(self, state: Any, config: Any) -> Any:
+            return state

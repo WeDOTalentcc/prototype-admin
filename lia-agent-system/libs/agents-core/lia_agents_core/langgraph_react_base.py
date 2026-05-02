@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Optional
 from lia_config.config import settings
 from lia_agents_core.agent_interface import AgentInput, AgentOutput
 from lia_agents_core.langgraph_base import LangGraphBase
-from lia_agents_core.timed_tool_node import TimedToolNode
+from lia_agents_core.timed_tool_node import TimedToolNode, GovernanceToolNode
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +109,19 @@ class LangGraphReActBase(LangGraphBase):
         )
         return graph
 
+    def _get_tool_contracts(self) -> list:
+        """
+        Retorna lista de ToolContract para uso com GovernanceToolNode.
+
+        Override em subclasses que declaram ToolContracts:
+            def _get_tool_contracts(self):
+                from app.domains.X.agents.x_tool_registry import TOOL_CONTRACTS
+                return TOOL_CONTRACTS
+
+        Retorna [] por default → usa TimedToolNode (backward compat).
+        """
+        return []
+
     def _get_compiled_graph(self) -> Optional[Any]:
         """create_react_agent já retorna grafo compilado."""
         if not _HAS_LANGGRAPH_PREBUILT:
@@ -118,19 +131,24 @@ class LangGraphReActBase(LangGraphBase):
                 model = self._get_model()
                 tools = self._get_tools()
                 # TimedToolNode: timeout 15s padrão + overrides por tool (André P4)
-                tool_node = TimedToolNode(
+                _contracts = self._get_tool_contracts()
+                _NodeClass = GovernanceToolNode if _contracts else TimedToolNode
+                _node_kwargs = dict(
                     tools=tools,
                     domain=self.domain_name,
                     default_timeout_seconds=getattr(self, "_tool_timeout_seconds", 15),
                     tool_timeouts=getattr(self, "_per_tool_timeouts", {}),
                 )
+                if _contracts:
+                    _node_kwargs["tool_contracts"] = _contracts
+                tool_node = _NodeClass(**_node_kwargs)
                 self._compiled = create_react_agent(
                     model=model,
                     tools=tool_node,
                     checkpointer=self._checkpointer,
                 )
-                logger.info("[%s] create_react_agent compilado com TimedToolNode (LangGraph nativo)",
-                            self.__class__.__name__)
+                logger.info("[%s] create_react_agent compilado com %s (LangGraph nativo)",
+                            self.__class__.__name__, _NodeClass.__name__)
             except Exception as exc:
                 logger.error("[%s] Falha ao criar react_agent: %s", self.__class__.__name__, exc)
                 self._compiled = None

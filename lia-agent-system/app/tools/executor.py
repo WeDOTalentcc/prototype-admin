@@ -16,6 +16,13 @@ from typing import Any, Optional
 from pydantic import BaseModel, ValidationError, create_model
 
 from app.tools.registry import ToolRegistry, tool_registry
+try:
+    from app.shared.compliance.fairness_guard import FairnessGuard
+    from app.shared.compliance.audit_service import get_audit_service
+    from app.shared.pii_masking import mask_pii
+except ImportError as _gov_dep_err:
+    raise RuntimeError(f"GovernanceExecutor deps missing: {_gov_dep_err}") from _gov_dep_err
+
 
 logger = logging.getLogger(__name__)
 
@@ -332,3 +339,148 @@ class ToolExecutor:
 
 
 tool_executor = ToolExecutor()
+
+
+class GovernanceExecutor:
+    """8-step enterprise governance pipeline for tool execution.
+
+    Pipeline:
+      1. Validate input parameters against contract schema
+      2. company_id isolation (fail-closed if required)
+      3. Execute function with SLA timeout
+      4. FairnessGuard (if affects_candidate_decision)
+      5. PII masking (if touches_pii)
+      6. Output schema validation
+      7. AuditService.log_action (non-blocking background task)
+      8. _emit_metrics hook
+    """
+
+    def __init__(self) -> None:
+        self._fairness_guard = FairnessGuard()
+        self._audit_service = get_audit_service()
+
+    async def execute(
+        self,
+        contract: Any,
+        parameters: dict[str, Any],
+        context: ToolExecutionContext,
+        agent_type: str = "unknown",
+        conversation_id: str | None = None,
+    ) -> ToolResult:
+        start = datetime.utcnow()
+
+        # Step 1: validate input parameters
+        err = self._validate_params(parameters, contract.parameters)
+        if err:
+            return ToolResult(success=False, error=err, tool_name=contract.name)
+
+        # Step 2: company_id isolation — fail-closed
+        if contract.requires_company_id and not context.company_id:
+            return ToolResult(
+                success=False,
+                error="company_id is required but missing from execution context",
+                tool_name=contract.name,
+            )
+
+        # Step 3: execute with SLA timeout
+        timeout_s = contract.sla_ms / 1000.0
+        try:
+            raw_result = await asyncio.wait_for(
+                contract.function(**parameters),
+                timeout=timeout_s,
+            )
+        except asyncio.TimeoutError:
+            elapsed = (datetime.utcnow() - start).total_seconds() * 1000
+            self._emit_metrics(contract.name, success=False, elapsed_ms=elapsed)
+            return ToolResult(
+                success=False,
+                error=f"Tool timed out after {contract.sla_ms}ms",
+                tool_name=contract.name,
+                execution_time_ms=elapsed,
+            )
+        except Exception as exc:
+            elapsed = (datetime.utcnow() - start).total_seconds() * 1000
+            self._emit_metrics(contract.name, success=False, elapsed_ms=elapsed)
+            return ToolResult(
+                success=False,
+                error=str(exc),
+                tool_name=contract.name,
+                execution_time_ms=elapsed,
+            )
+
+        # Step 4: FairnessGuard — only for candidate-decision tools
+        if contract.affects_candidate_decision:
+            fr = self._fairness_guard.check(json.dumps(raw_result, default=str))
+            if fr.is_biased():
+                terms = getattr(fr, "blocked_terms", [])
+                return ToolResult(
+                    success=False,
+                    error=f"Fairness check blocked output: {terms}",
+                    tool_name=contract.name,
+                )
+
+        # Step 5: PII masking on declared output fields
+        if contract.touches_pii and contract.pii_output_fields:
+            data = raw_result.get("data", {}) if isinstance(raw_result, dict) else {}
+            for pii_field in contract.pii_output_fields:
+                if pii_field in data:
+                    data[pii_field] = mask_pii(str(data[pii_field]))
+
+        # Step 6: output schema validation
+        if contract.output_schema:
+            required_fields = contract.output_schema.get("required", [])
+            if isinstance(raw_result, dict):
+                missing = [f for f in required_fields if f not in raw_result]
+                if missing:
+                    return ToolResult(
+                        success=False,
+                        error=f"Output schema violation — missing fields: {missing}",
+                        tool_name=contract.name,
+                    )
+
+        elapsed = (datetime.utcnow() - start).total_seconds() * 1000
+
+        # Step 7: audit log — non-blocking background task
+        asyncio.create_task(
+            self._audit_service.log_action(
+                trace_id=context.session_id or "unknown",
+                company_id=context.company_id,
+                action_type="tool_call",
+                actor=context.user_id,
+                target_id=contract.name,
+                target_type="tool",
+                metadata={
+                    "agent_type": agent_type,
+                    "conversation_id": conversation_id,
+                    "elapsed_ms": elapsed,
+                },
+            )
+        )
+
+        # Step 8: metrics
+        self._emit_metrics(contract.name, success=True, elapsed_ms=elapsed)
+
+        return ToolResult(
+            success=True,
+            result=raw_result,
+            tool_name=contract.name,
+            execution_time_ms=elapsed,
+        )
+
+    def _validate_params(self, parameters: dict[str, Any], schema: dict[str, Any]) -> str | None:
+        required = schema.get("required", [])
+        for field_name in required:
+            if field_name not in parameters:
+                return f"Missing required parameter: {field_name}"
+        return None
+
+    def _emit_metrics(self, tool_name: str, *, success: bool, elapsed_ms: float) -> None:
+        logger.debug(
+            "tool.metric name=%s success=%s elapsed_ms=%.1f",
+            tool_name,
+            success,
+            elapsed_ms,
+        )
+
+
+governance_executor = GovernanceExecutor()

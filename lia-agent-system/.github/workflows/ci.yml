@@ -174,3 +174,30 @@ jobs:
       # G-DOMAIN: all domain.py must call super().get_system_prompt() — BLOCKING
       - name: "G-DOMAIN: compliance super() in domain prompts"
         run: python scripts/check_domain_prompt_super.py
+
+      # G-PII-LOGS: no PII in log statements -- BLOCKING (exit 0 on 1933 files)
+      - name: "G-PII-LOGS: no PII in log calls"
+        run: python scripts/check_no_pii_in_logs.py
+
+      # G-LLM-IMPORT: no direct LLM SDK imports outside providers/ -- TODO: make blocking after fixing 2 violations
+      # Violations: app/domains/talent_intelligence/services/skills_ontology_engine.py:535,
+      #             app/shared/tenant_llm_context.py:190
+      - name: "G-LLM-IMPORT: no direct LLM SDK imports (non-blocking - 2 violations to fix)"
+        run: python scripts/check_llm_imports.py
+        continue-on-error: true
+
+      # G-SQL-CTRL: no raw SQL/DB calls in API controllers -- TODO: make blocking after fixing 334 violations
+      # Violations: 334 locations across app/api/ (legacy pattern; see ARCHITECTURE.md ADR-001)
+      - name: "G-SQL-CTRL: no DB calls in API controllers (non-blocking - 334 violations to fix)"
+        run: python scripts/check_no_sql_in_controllers.py
+        continue-on-error: true
+
+      # G-RESPONSE: every FastAPI endpoint must declare response_model -- TODO: make blocking after fixing 101 violations
+      # Violations: 101/1780 routes missing response_model (see ARCHITECTURE.md ADR-005)
+      - name: "G-RESPONSE: all FastAPI routes have response_model (non-blocking - 101 violations to fix)"
+        run: python scripts/check_response_models.py
+        continue-on-error: true
+
+      # G-DEVMODE: scripts/check_no_devmode_in_prod_env.py does not exist yet -- wire once created
+      # G-CONTEXTVAR: scripts/check_no_direct_contextvar_set.py does not exist yet -- wire once created
+      # G-TOOLS: scripts/check_tool_output_schemas.py does not exist yet -- wire once created

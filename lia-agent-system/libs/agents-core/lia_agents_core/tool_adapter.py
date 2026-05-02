@@ -1,49 +1,153 @@
 """
-Tool Adapter — ToolDefinition e tool_definition_to_langchain_tool.
+Tool Adapter — ToolContract (canônico) e tool_definition_to_langchain_tool.
 
-Extrai as definições de compatibilidade do react_loop legado para uso
-direto pelos tool registries e agentes LangGraph sem depender do ReActLoop.
+ToolContract é o contrato enterprise canônico para tools LIA.
+Declara explicitamente:
+  - Contratos de entrada/saída (parameters + output_schema)
+  - Efeitos colaterais (side_effects)
+  - PII / LGPD (touches_pii, pii_output_fields, lgpd_legal_basis)
+  - Fairness / Governança (affects_candidate_decision, requires_human_review)
+  - Observabilidade (sla_ms)
+
+ToolDefinition é mantido como alias para backward compatibility com os 223
+tool registries existentes — sem quebrar nenhum import.
 
 Uso:
-    from lia_agents_core.tool_adapter import ToolDefinition, tool_definition_to_langchain_tool
+    from lia_agents_core.tool_adapter import ToolContract, tool_definition_to_langchain_tool
 
-    @ToolDefinition(name="my_tool", description="...", function=my_fn)
-    ...
+    tc = ToolContract(
+        name="move_candidate_stage",
+        description="Move candidato de etapa no pipeline",
+        function=_wrap_move,
+        side_effects=["write"],
+        affects_candidate_decision=True,
+        output_schema={
+            "type": "object",
+            "properties": {
+                "success": {"type": "boolean"},
+                "data": {"type": "object"},
+                "message": {"type": "string"},
+            },
+            "required": ["success"],
+        },
+    )
 """
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, List, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
-class ToolDefinition(BaseModel):
-    """Schema for a tool compatible with LangGraph create_react_agent."""
+class ToolContract(BaseModel):
+    """
+    Contrato enterprise canônico para tools LIA.
 
-    name: str = Field(..., description="Unique name of the tool")
-    description: str = Field(..., description="What the tool does")
+    Harness Engineering (Hashimoto):
+      Guide (feedforward): campos obrigatórios declaram intenção antes da execução.
+      Sensor (feedback): ToolExecutor valida output_schema e aplica fairness/PII/audit.
+
+    Todos os campos de governança têm defaults seguros (fail-closed):
+      - requires_company_id=True  → rejeita tool sem tenant
+      - side_effects=["read"]     → conservador por padrão
+      - touches_pii=False         → mascaramento opt-in
+      - affects_candidate_decision=False → fairness guard opt-in
+    """
+
+    # ── Identidade ────────────────────────────────────────────────────────────
+    name: str = Field(..., description="Nome único do tool")
+    description: str = Field(..., description="O que o tool faz (visível ao LLM)")
+    version: str = Field("1.0.0", description="Versão semântica do contrato")
+    owner_team: str = Field("backend", description="Time responsável")
+
+    # ── Contratos de dados ────────────────────────────────────────────────────
     parameters: Dict[str, Any] = Field(
         default_factory=dict,
-        description="JSON Schema describing the tool parameters",
+        description="JSON Schema descrevendo os parâmetros de entrada",
     )
+    output_schema: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="JSON Schema descrevendo o output esperado do tool",
+    )
+
+    # ── Efeitos colaterais ────────────────────────────────────────────────────
+    side_effects: List[Literal["read", "write", "send", "delete"]] = Field(
+        default_factory=lambda: ["read"],
+        description="Efeitos colaterais declarados. Default conservador: ['read'].",
+    )
+
+    # ── Multi-tenancy ─────────────────────────────────────────────────────────
+    requires_company_id: bool = Field(
+        True,
+        description="Rejeita execução sem company_id. Default: True (fail-closed).",
+    )
+
+    # ── PII / LGPD ────────────────────────────────────────────────────────────
+    touches_pii: bool = Field(
+        False,
+        description="True se o output contém campos PII (nome, e-mail, CPF, telefone...).",
+    )
+    pii_output_fields: List[str] = Field(
+        default_factory=list,
+        description="Campos do output que contêm PII (ex: ['name','email','phone']).",
+    )
+    lgpd_legal_basis: Optional[str] = Field(
+        None,
+        description="Base legal LGPD para acesso a dados pessoais (ex: 'legitimate_interest').",
+    )
+
+    # ── Fairness / Governança ─────────────────────────────────────────────────
+    affects_candidate_decision: bool = Field(
+        False,
+        description="True se o tool afeta o destino do candidato. Ativa FairnessGuard.",
+    )
+    requires_human_review: bool = Field(
+        False,
+        description="True se o output requer revisão humana (HITL gate).",
+    )
+
+    # ── Observabilidade ───────────────────────────────────────────────────────
+    sla_ms: int = Field(
+        5000,
+        description="SLA de latência esperado em ms. Usado para alertas de timeout.",
+    )
+
+    # ── Função ────────────────────────────────────────────────────────────────
     function: Callable = Field(
         ...,
-        description="Async or sync function to execute when the tool is called",
+        description="Função async ou sync executada quando o tool é chamado",
     )
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = {"arbitrary_types_allowed": True}
+
+    @field_validator("side_effects", mode="before")
+    @classmethod
+    def validate_side_effects(cls, v: Any) -> Any:
+        allowed = {"read", "write", "send", "delete"}
+        if isinstance(v, list):
+            invalid = [e for e in v if e not in allowed]
+            if invalid:
+                raise ValueError(
+                    f"side_effects inválidos: {invalid}. "
+                    f"Valores permitidos: {sorted(allowed)}. "
+                    "Corrija o ToolContract declarando apenas efeitos reais do tool."
+                )
+        return v
 
 
-def tool_definition_to_langchain_tool(td: ToolDefinition) -> Any:
+# Alias backward-compatible: os 223 tool registries existentes importam
+# ToolDefinition — mantemos o nome funcionando sem nenhuma migração.
+ToolDefinition = ToolContract
+
+
+def tool_definition_to_langchain_tool(td: ToolContract) -> Any:
     """
-    Converte um ToolDefinition em LangChain StructuredTool
-    compatível com LangGraph create_react_agent.
+    Converte um ToolContract em LangChain StructuredTool compatível com
+    LangGraph create_react_agent.
 
     Suporta funções async e sync automaticamente.
 
     Uso em agentes (_get_tools()):
         from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
-        tool_defs = get_my_tools()
-        lc_tools = [tool_definition_to_langchain_tool(td) for td in tool_defs]
+        lc_tools = [tool_definition_to_langchain_tool(tc) for tc in get_my_tools()]
     """
     import inspect
 
