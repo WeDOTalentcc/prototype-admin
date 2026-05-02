@@ -73,8 +73,13 @@ class TestLayer3Integration:
                "sourcing_search" in str(call_args)
 
     @pytest.mark.asyncio
-    async def test_layer3_fail_open_when_llm_unavailable(self):
-        """Se o LLM não está disponível, Layer 3 deve retornar resultado limpo (fail-open)."""
+    async def test_layer3_fail_closed_when_llm_unavailable(self):
+        """UC-P0-15: Se o LLM não está disponível, Layer 3 deve bloquear (fail-closed).
+
+        UPDATED: Previous behavior was fail-open (is_blocked=False on LLM error).
+        UC-P0-15 fixes this — any LLM/exception must block the action to prevent
+        potentially-biased decisions from slipping through silently.
+        """
         from app.shared.compliance.fairness_guard import FairnessGuard
 
         guard = FairnessGuard()
@@ -86,8 +91,12 @@ class TestLayer3Integration:
                 action_type="sourcing_search",
             )
 
-        # Deve retornar resultado não-bloqueado (fail-open)
-        assert not result.is_blocked
+        # UC-P0-15: deve retornar resultado bloqueado (fail-closed), não fail-open
+        assert result.is_blocked, (
+            "Layer3 LLM error must block the action (fail-closed). "
+            "See UC-P0-15 for rationale."
+        )
+        assert result.educational_message is not None
 
     @pytest.mark.asyncio
     async def test_layer3_skips_low_impact_actions(self):

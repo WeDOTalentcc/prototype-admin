@@ -183,9 +183,27 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
                     context="pipeline_transition",
                     company_id=str(input.company_id or ""),
                 )
-        except Exception as _fg_exc:
-            logger.debug("[PipelineTransitionAgent] FairnessGuard check skipped: %s", _fg_exc)
+        except ImportError as _fg_exc:
+            logger.debug("[PipelineTransitionAgent] FairnessGuard not available: %s", _fg_exc)
             _soft_warnings = []
+        except Exception as _fg_exc:
+            logger.error(
+                "[LIA-FG-04] FairnessGuard error on HIGH_IMPACT pipeline_move — blocking: %s",
+                _fg_exc,
+            )
+            from app.shared.compliance.fairness_guard import FairnessCheckResult
+            return AgentOutput(
+                message=(
+                    "Não foi possível verificar conformidade de fairness para esta transição. "
+                    "Por precaução, a ação foi bloqueada. Tente novamente."
+                ),
+                confidence=1.0,
+                metadata={
+                    "fairness_blocked": True,
+                    "fairness_error": str(_fg_exc),
+                    "domain": self.domain_name,
+                },
+            )
 
         # ── HITL pre-check: transição de candidato requer aprovação ──────────
         action_behavior = input.context.get("action_behavior", "passive")

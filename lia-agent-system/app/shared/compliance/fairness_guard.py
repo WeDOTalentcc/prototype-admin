@@ -481,6 +481,8 @@ HIGH_IMPACT_ACTIONS = {
     "job_create", "job_edit",    # job_management domain
     "bulk_automation",           # automation domain
     "policy_check", "diversity_check",  # hiring_policy domain
+    # UC-P0-15: offer_send is irreversible — must be fail-closed
+    "offer_send",
 }
 
 
@@ -671,7 +673,7 @@ class FairnessGuard:
                 result.soft_warnings.extend(semantic_warnings)
 
         except (ImportError, Exception) as e:
-            logger.debug(f"Semantic analysis unavailable: {e}")
+            logger.warning("[LIA-FG-01] FairnessGuard Redis/semantic unavailable: %s", e)
 
         return result
 
@@ -776,14 +778,19 @@ class FairnessGuard:
                 soft_warnings=implicit_warnings,
             )
         except Exception as exc:
-            logger.debug("[FairnessGuard] Layer 3 skipped: %s", exc)
+            logger.error(
+                "[LIA-FG-03] FairnessGuard Layer3 ERROR — failing CLOSED for safety: %s", exc
+            )
             return FairnessCheckResult(
-                is_blocked=False,
+                is_blocked=True,
                 blocked_terms=[],
                 category=None,
-                educational_message=None,
+                educational_message=(
+                    "Não foi possível verificar conformidade de fairness. "
+                    "Por precaução, esta ação foi bloqueada. Tente novamente."
+                ),
                 original_query=text,
-                confidence=0.5,
+                confidence=0.0,
                 soft_warnings=implicit_warnings,
             )
 

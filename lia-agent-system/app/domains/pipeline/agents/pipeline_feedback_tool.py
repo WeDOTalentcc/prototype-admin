@@ -103,8 +103,10 @@ async def send_gate_feedback(
                     gate_number, candidate_id,
                 )
                 feedback_text = _get_safe_fallback_feedback(gate_number, candidate_name, job_title)
+        except ImportError as fg_err:
+            logger.debug("[PipelineFeedback] FairnessGuard not available: %s", fg_err)
         except Exception as fg_err:
-            logger.debug("[PipelineFeedback] FairnessGuard check skipped: %s", fg_err)
+            logger.error("[LIA-FG-04] FairnessGuard error on pipeline feedback: %s", fg_err)
 
         logger.info(
             "[PipelineFeedback][COMP-9] Feedback gate=%d gerado candidate=%s company=%s len=%d",
