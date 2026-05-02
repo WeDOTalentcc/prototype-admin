@@ -206,12 +206,6 @@ class JobCreationDomain(ComplianceDomainPrompt):
         ]
 
     def get_system_prompt(self, context: DomainContext, **kwargs) -> str:
-        # LIA-C01: Merge compliance base prompt with domain-specific prompt
-        _base_prompt = ""
-        try:
-            _base_prompt = super().get_system_prompt(context, **kwargs)
-        except Exception:
-            pass  # fail-open: if compliance base unavailable, use domain prompt only
 
         wizard_state = context.metadata.get("wizard_state", {})
         current_stage = wizard_state.get("current_stage", "not_started")
@@ -245,10 +239,7 @@ FLUXO DO WIZARD:
 
 Responda de forma conversacional, guiando o recrutador pela etapa atual.
 Sempre informe qual e a proxima etapa e o que precisa ser feito."""
-        # Combine compliance base + domain-specific prompt
-        if _base_prompt:
-            return f"{_base_prompt}\n\n---\n\n{_domain_prompt}"
-        return _domain_prompt
+        return super().get_system_prompt(base_prompt=_domain_prompt)
 
     def process_intent(self, user_query: str, context: DomainContext) -> Dict[str, Any]:
         """Route user message to the appropriate wizard action."""

@@ -36,7 +36,8 @@ class DigitalTwinDomain(ComplianceDomainPrompt):
 
     def get_system_prompt(self):
         from app.prompts import PromptLoader
-        return PromptLoader.get_domain_prompt("digital_twin")
+        domain_specific = PromptLoader.get_domain_prompt("digital_twin")
+        return super().get_system_prompt(base_prompt=domain_specific)
 
     async def process_intent(self, query, context):
         # LIA-I07: Check if query is an info request (e.g., "como funciona X?")

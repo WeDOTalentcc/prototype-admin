@@ -170,3 +170,7 @@ jobs:
 
       - name: Run ruff
         run: ruff check app/ --select=E,F --ignore=E501,F401,F403 || true
+
+      # G-DOMAIN: all domain.py must call super().get_system_prompt() — BLOCKING
+      - name: "G-DOMAIN: compliance super() in domain prompts"
+        run: python scripts/check_domain_prompt_super.py

@@ -72,11 +72,12 @@ class CandidateSelfServiceDomain(ComplianceDomainPrompt):
         return CANDIDATE_SELF_SERVICE_ACTIONS
 
     def get_system_prompt(self) -> str:
-        return (
+        domain_specific = (
             "Assistente de autoatendimento para candidatos da WeDOTalent. "
             "Responda apenas sobre o processo seletivo do candidato autenticado, "
             "com empatia e clareza. Nunca revele scores internos ou dados de terceiros."
         )
+        return super().get_system_prompt(base_prompt=domain_specific)
 
     async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
         if _matcher.is_info_query(query):

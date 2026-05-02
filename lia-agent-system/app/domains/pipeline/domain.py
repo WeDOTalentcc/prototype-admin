@@ -155,15 +155,16 @@ class PipelineTransitionDomain(ComplianceDomainPrompt):
         try:
             with open(prompt_path) as f:
                 config = yaml.safe_load(f)
-                return config.get("system_prompt", "")
+                domain_specific = config.get("system_prompt", "")
         except FileNotFoundError:
             logger.warning(f"Pipeline prompt YAML not found at {prompt_path}, using fallback")
-            return (
+            domain_specific = (
                 "Especialista em gerenciar o pipeline de candidatos. "
                 "Você pode mover candidatos entre etapas, interpretar contextos de transição, predizer sub-status "
                 "e sugerir próximas ações baseadas no estado atual do pipeline. "
                 "Sempre confirme ações destrutivas ou irreversíveis com o recrutador antes de executar."
             )
+        return super().get_system_prompt(base_prompt=domain_specific)
 
     async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
         # LIA-I07: Check if query is an info request (e.g., "como funciona X?")
