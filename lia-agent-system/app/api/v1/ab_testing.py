@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import get_current_user, get_user_company_id
+from app.auth.models import User
 from app.core.database import get_db
 from app.shared.learning.ab_testing_service import ab_testing_service as _service, ABTestingService
 
@@ -25,7 +27,7 @@ class TestCreate(BaseModel):
 class MetricRecord(BaseModel):
     variant_name: str
     session_id: str
-    company_id: str
+    # company_id intentionally removed — derived from JWT to prevent IDOR (UC-P0-08)
     metric_name: str
     metric_value: float
     context: dict[str, Any] | None = None
@@ -34,7 +36,7 @@ class MetricRecord(BaseModel):
 class BusinessMetricRecord(BaseModel):
     variant_name: str
     session_id: str
-    company_id: str
+    # company_id intentionally removed — derived from JWT to prevent IDOR (UC-P0-08)
     satisfaction_score: float | None = None
     response_edited: bool | None = None
     time_to_decision_ms: float | None = None
@@ -72,13 +74,16 @@ async def get_test_results(
 async def record_metric(
     test_name: str,
     body: MetricRecord,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # UC-P0-08: company_id MUST come from the JWT, never from the request body
+    company_id = get_user_company_id(current_user)
     record = await _service.record_metric(
         test_name=test_name,
         variant_name=body.variant_name,
         session_id=body.session_id,
-        company_id=body.company_id,
+        company_id=company_id,
         metric_name=body.metric_name,
         metric_value=body.metric_value,
         db=db,
@@ -93,8 +98,11 @@ async def record_metric(
 async def record_business_metrics(
     test_name: str,
     body: BusinessMetricRecord,
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # UC-P0-08: company_id MUST come from the JWT, never from the request body
+    company_id = get_user_company_id(current_user)
     recorded_ids: list[str] = []
 
     if body.satisfaction_score is not None:
@@ -102,7 +110,7 @@ async def record_business_metrics(
             test_name=test_name,
             variant_name=body.variant_name,
             session_id=body.session_id,
-            company_id=body.company_id,
+            company_id=company_id,
             metric_name="satisfaction_score",
             metric_value=body.satisfaction_score,
             db=db,
@@ -116,7 +124,7 @@ async def record_business_metrics(
             test_name=test_name,
             variant_name=body.variant_name,
             session_id=body.session_id,
-            company_id=body.company_id,
+            company_id=company_id,
             metric_name="response_edited",
             metric_value=1.0 if body.response_edited else 0.0,
             db=db,
@@ -130,7 +138,7 @@ async def record_business_metrics(
             test_name=test_name,
             variant_name=body.variant_name,
             session_id=body.session_id,
-            company_id=body.company_id,
+            company_id=company_id,
             metric_name="time_to_decision_ms",
             metric_value=body.time_to_decision_ms,
             db=db,
