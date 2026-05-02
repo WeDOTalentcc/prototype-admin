@@ -60,6 +60,39 @@ class WSManager:
             logger.error("[WS] Connection failed: %s", e)
             return False
 
+    async def connect_already_accepted(
+        self,
+        websocket: WebSocket,
+        session_id: str,
+        company_id: str,
+        user_id: str = "anonymous",
+    ) -> bool:
+        """Register a WebSocket that has already been accepted (UC-P0-19 first-message auth path).
+
+        Identical to connect() but skips websocket.accept() to avoid
+        "websocket already accepted" errors when the auth handshake pre-accepted it.
+        """
+        try:
+            # Do NOT call websocket.accept() — already done before first-message auth
+            self._sessions[session_id] = websocket
+            if user_id not in self._user_sessions:
+                self._user_sessions[user_id] = set()
+            self._user_sessions[user_id].add(session_id)
+
+            # Subscribe this session to its Redis channel
+            await self._subscribe_session(session_id)
+
+            logger.info(
+                "[WS] Connected (pre-accepted) session=%s user=%s company=%s",
+                session_id,
+                user_id,
+                company_id,
+            )
+            return True
+        except Exception as e:
+            logger.error("[WS] Connection failed (pre-accepted): %s", e)
+            return False
+
     def disconnect(self, session_id: str):
         self._sessions.pop(session_id, None)
         for sessions in self._user_sessions.values():

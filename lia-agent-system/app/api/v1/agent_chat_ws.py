@@ -399,17 +399,70 @@ async def agent_chat_ws(
     - token: JWT para autenticação (query param)
     - domain: domínio do agente alvo (query param)
     """
-    auth = _extract_auth(token)
-    company_id = auth["company_id"]
-    user_id = auth["user_id"]
-
-    if not token or user_id == "anonymous":
+    # UC-P0-19: first-message auth — JWT must NOT be in the URL query string.
+    # New path: connect without token, then send {type:auth,token:...} as the
+    # very first WS message.  The query-string path still works (backward compat)
+    # but logs a deprecation warning so we can remove it once all clients migrate.
+    _first_msg_raw: str | None = None
+    if token:
+        # Legacy path — token in query param (DEPRECATED, UC-P0-19)
+        logger.warning(
+            "[AgentChatWS][DEPRECATED] JWT via query param exposes token in logs "
+            "(session=%s). Clients must migrate to first-message auth (UC-P0-19).",
+            session_id,
+        )
+        auth = _extract_auth(token)
+        company_id = auth["company_id"]
+        user_id = auth["user_id"]
+        if user_id == "anonymous":
+            await websocket.accept()
+            await websocket.close(code=1008, reason="Authentication required")
+            logger.warning("[AgentChatWS] Rejected invalid token (query param) session=%s", session_id)
+            return
+    else:
+        # New path (UC-P0-19): accept the connection, then wait for the auth message
         await websocket.accept()
-        await websocket.close(code=1008, reason="Authentication required")
-        logger.warning("[AgentChatWS] Rejected unauthenticated WS session=%s", session_id)
-        return
+        try:
+            _first_msg_raw = await asyncio.wait_for(websocket.receive_text(), timeout=10.0)
+        except asyncio.TimeoutError:
+            await websocket.close(code=1008, reason="Auth timeout")
+            logger.warning("[AgentChatWS] Auth timeout session=%s", session_id)
+            return
+        except Exception:
+            await websocket.close(code=1008, reason="Auth read error")
+            logger.warning("[AgentChatWS] Auth read error session=%s", session_id)
+            return
+        try:
+            _first_msg = json.loads(_first_msg_raw)
+        except (json.JSONDecodeError, ValueError):
+            await websocket.close(code=1008, reason="Invalid auth message format")
+            logger.warning("[AgentChatWS] Invalid auth message format session=%s", session_id)
+            return
+        if _first_msg.get("type") != "auth" or not _first_msg.get("token"):
+            await websocket.close(code=1008, reason="Authentication required as first message")
+            logger.warning("[AgentChatWS] Missing auth first-message session=%s", session_id)
+            return
+        token = _first_msg["token"]
+        auth = _extract_auth(token)
+        company_id = auth["company_id"]
+        user_id = auth["user_id"]
+        if user_id == "anonymous":
+            await websocket.close(code=1008, reason="Invalid token")
+            logger.warning("[AgentChatWS] Rejected invalid token (first-msg) session=%s", session_id)
+            return
 
-    connected = await ws_mgr.connect(websocket, session_id, company_id or "anonymous", user_id=user_id)
+    # Connect to WS session manager.
+    # ws_mgr.connect() calls websocket.accept() internally.
+    # When the first-message auth path was taken, accept() was already called;
+    # use connect_already_accepted() to skip the double-accept.
+    if _first_msg_raw is not None:
+        # first-message auth path — socket already accepted
+        connected = await ws_mgr.connect_already_accepted(
+            websocket, session_id, company_id or "anonymous", user_id=user_id
+        )
+    else:
+        # legacy query-param path — ws_mgr.connect() will call accept()
+        connected = await ws_mgr.connect(websocket, session_id, company_id or "anonymous", user_id=user_id)
     if not connected:
         return
 
