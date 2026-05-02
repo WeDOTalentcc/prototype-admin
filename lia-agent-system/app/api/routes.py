@@ -212,6 +212,7 @@ from app.api.v1.admin_external import router as admin_external_router
 from app.api.v1.admin_circuit_breakers import router as admin_cb_router
 from app.api.v1.admin_dlq import router as admin_dlq_router
 from app.api.v1.admin_lgpd import router as admin_lgpd_router
+from app.api.v1.incident_response import router as incident_response_router
 from app.api.v1.agent_chat_ws import router as agent_chat_ws_router
 from app.api.v1.agent_chat_sse import router as agent_chat_sse_router
 from app.api.v1.agent_memory import router as agent_memory_router
@@ -510,6 +511,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(granular_consent_router, prefix="/api/v1", tags=["granular-consent"])
     app.include_router(data_request.router, prefix="/api/v1", tags=["data-requests"])
     app.include_router(admin_lgpd_router, prefix="/api/v1")
+    app.include_router(incident_response_router, prefix="/api/v1")
     app.include_router(admin_compliance_fairness.router, prefix="/api/v1")
     app.include_router(bias_audit.router, prefix="/api/v1", tags=["bias-audit"])
     app.include_router(admin_bias_audit.router, prefix="/api/v1", tags=["bias-audit-admin"])
