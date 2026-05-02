@@ -94,13 +94,22 @@ class AgenticLoop:
                 messages.append({"role": role, "content": msg.get("content", "")})
         messages.append({"role": "user", "content": user_message})
 
-        # Build security context for tool execution (tenant isolation)
-        exec_context = None
-        if company_id and user_id:
-            exec_context = self._ToolExecutionContext(
-                user_id=user_id,
-                company_id=company_id,
+        # FAIL-CLOSED (UC-P0-10): abort immediately if tenant context is missing.
+        # Allowing exec_context=None would let unidentified sessions execute
+        # tool calls against the production database without tenant isolation.
+        if not company_id or not user_id:
+            logger.warning(
+                "[LIA-A04] Agentic loop blocked: missing tenant context "
+                "(company_id=%r, user_id=%r). Refusing to execute tool calls without isolation.",
+                company_id, user_id,
             )
+            return {"response": None, "tool_calls_made": [], "iterations": 0}
+
+        # Build security context for tool execution (tenant isolation)
+        exec_context = self._ToolExecutionContext(
+            user_id=user_id,
+            company_id=company_id,
+        )
 
         tool_calls_made: list[dict] = []
 
