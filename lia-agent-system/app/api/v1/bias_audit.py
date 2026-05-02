@@ -20,10 +20,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.shared.tenant_guard import get_verified_company_id
-from app.shared.services.bias_audit_service import (
-    BiasAuditReport,
-    bias_audit_service,
-)
+# UC-P0-13: import through rails_adapter instead of deprecated service directly.
+# The adapter delegates to Python BiasAuditService until Rails endpoints are live.
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    # Type-only: BiasAuditReport is the return type of the delegate; not imported at runtime.
+    from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    # Type-only: BiasAuditReport is the return type of the delegate; not imported at runtime.
+    from app.shared.services.bias_audit_service import BiasAuditReport
+from app.domains.integrations_hub.services.rails_adapter import RailsAdapter as _RailsAdapterClass
+_bias_adapter = _RailsAdapterClass()
 
 
 logger = logging.getLogger(__name__)
@@ -97,7 +104,7 @@ async def get_bias_audit(
     alert_level: "ok" | "warning" (ratio < 0.80)
     """
     try:
-        report = await bias_audit_service.get_adverse_impact_by_job(
+        report = await _bias_adapter.get_adverse_impact_by_job(
             db, job_id, company_id=UUID(company_id)
         )
         return _to_response(report)
@@ -120,7 +127,7 @@ async def get_bias_audit_history(
     Isolamento multi-tenant via X-Company-ID header.
     """
     try:
-        snapshots = await bias_audit_service.get_snapshot_history(
+        snapshots = await _bias_adapter.get_bias_audit_snapshot_history(
             db, UUID(company_id), job_id, limit
         )
         return {

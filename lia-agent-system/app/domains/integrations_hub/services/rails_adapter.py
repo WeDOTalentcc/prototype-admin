@@ -1038,3 +1038,58 @@ class RailsAdapter:
     async def close(self):
         if self._rails_client:
             await self._rails_client.close()
+
+    # ---- Bias Audit (UC-P0-13) ----
+    # TODO(UC-P0-13): Rails has bias_audit_reports table (migration 20250716000039)
+    # but no API endpoints yet. Once GET /api/v1/bias_audits/job/:job_id is live
+    # in ats-api, replace Python delegates below with Rails HTTP calls.
+    # Deadline: 2026-07-16 (same as @remove-after on the deprecated service).
+
+    async def get_adverse_impact_by_job(
+        self,
+        db,
+        job_id,
+        company_id=None,
+    ):
+        """Returns adverse impact report for a job.
+
+        Delegates to Python BiasAuditService until Rails GET /api/v1/bias_audits/job/:job_id
+        is implemented. Multi-tenant: company_id validated by caller endpoint via JWT.
+        LGPD-safe: only aggregate stats returned, no PII.
+        """
+        from app.shared.services.bias_audit_service import bias_audit_service as _svc
+        return await _svc.get_adverse_impact_by_job(db, job_id, company_id=company_id)
+
+    async def get_bias_audit_snapshot_history(
+        self,
+        db,
+        company_id,
+        job_id: str,
+        limit: int = 10,
+    ):
+        """Returns historical bias audit snapshots for a job, newest-first.
+
+        Delegates to Python BiasAuditService until Rails endpoint is live.
+        Multi-tenant isolation enforced via company_id filter.
+        """
+        from app.shared.services.bias_audit_service import bias_audit_service as _svc
+        return await _svc.get_snapshot_history(db, company_id, job_id, limit)
+
+    def audit_ranking_results(
+        self,
+        results: list,
+        dimension: str = "gender",
+        top_n: int = 10,
+        company_id=None,
+    ) -> dict:
+        """FAR-5: Real-time disparate impact audit on a ranked candidate list.
+
+        Delegates to Python BiasAuditService (sync, no DB needed).
+        Applies Four-Fifths Rule to top-N results.
+        Returns dict with fairness_ok, group_counts, adverse_impact_ratios, flagged_groups.
+        """
+        from app.shared.services.bias_audit_service import bias_audit_service as _svc
+        return _svc.audit_ranking_results(
+            results, dimension=dimension, top_n=top_n, company_id=company_id
+        )
+
