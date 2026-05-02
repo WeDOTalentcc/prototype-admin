@@ -22,6 +22,7 @@ import { TypingIndicator } from"@/components/chat/typing-indicator"
 import { Message } from"@/types/chat"
 import FlowStepMessage from"@/components/workflow-rail/FlowStepMessage"
 import { renderMarkdown } from"@/lib/render-markdown"
+import { sanitizeHtml } from"@/lib/sanitize"
 import { ProactiveHintsList, type ProactiveHint } from "./proactive-hints-list"
 
 interface Props {
@@ -95,10 +96,11 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                     <div
                       className="text-xs leading-relaxed text-lia-text-primary lia-markdown-content"
                       dangerouslySetInnerHTML={{
-                        __html: onHighlightSearchTerm(
+                        // UC-P0-20: sanitizeHtml as defense-in-depth after highlight injection
+                        __html: sanitizeHtml(onHighlightSearchTerm(
                           renderMarkdown(message.content),
                           searchTerm
-                        ),
+                        )),
                       }}
                     />
                   )}
@@ -391,10 +393,11 @@ const ChatMessageListComponent = memo(function ChatMessageList({
                     <div
                       className="text-xs text-lia-text-primary mb-4"
                       dangerouslySetInnerHTML={{
-                        __html: onHighlightSearchTerm(
+                        // UC-P0-20: sanitizeHtml as defense-in-depth after highlight injection
+                        __html: sanitizeHtml(onHighlightSearchTerm(
                           renderMarkdown(message.content),
                           searchTerm
-                        ),
+                        )),
                       }}
                     />
                     <CompletionMessage

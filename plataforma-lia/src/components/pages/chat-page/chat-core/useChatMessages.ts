@@ -284,8 +284,14 @@ export function useChatMessages({
   const highlightSearchTerm = useCallback((text: string, term: string) => {
     const formatted = formatMessageContent(text)
     if (!term) return formatted
-    const regex = new RegExp(`(${term})`, 'gi')
-    return formatted.replace(regex, '<mark class="bg-status-warning/10 dark:bg-status-warning/10">$1</mark>')
+    // UC-P0-20: escape regex metacharacters to prevent ReDoS
+    const safeTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const regex = new RegExp(`(${safeTerm})`, 'gi')
+    // UC-P0-20: HTML-encode each match to prevent XSS in dangerouslySetInnerHTML
+    return formatted.replace(regex, (match) => {
+      const encoded = match.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      return `<mark class="bg-status-warning/10 dark:bg-status-warning/10">${encoded}</mark>`
+    })
   }, [formatMessageContent])
 
   const getQuickSuggestions = useCallback(() => {
