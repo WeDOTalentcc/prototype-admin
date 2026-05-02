@@ -4,6 +4,7 @@ from lia_models.teams import TeamsConversation, TeamsMessage, TeamsNotification
 from lia_models.voice_screening import VoiceScreeningCall, VoiceScreeningAnalysis
 from lia_models.activity_feed import ActivityFeed
 from lia_models.candidate import Candidate, CandidateSearch, CreditsUsage, ViewedCandidate, VacancyCandidate
+from lia_models.lgpd_references import LegalBasis, ConsentVersion
 from lia_models.job_vacancy import JobVacancy, JobVacancyInterviewStage, JobVacancyTemplate
 from lia_models.interview import Interview, InterviewFeedback, CalendarAvailability, InterviewNote
 from lia_models.agent_checkpoint import AgentCheckpoint
@@ -703,4 +704,7 @@ __all__ = [
     # Triagem WSI
     "TriagemSession",
     "TriagemMessage",
+    # LGPD reference tables
+    "LegalBasis",
+    "ConsentVersion",
 ]

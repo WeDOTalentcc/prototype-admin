@@ -292,6 +292,22 @@ class Candidate(EncryptedFieldMixin, Base):
     last_activity_at = Column(DateTime, nullable=True)
     scheduled_deletion_at = Column(DateTime, nullable=True, index=True)  # LGPD retention policy
 
+    # LGPD Art.18 — legal basis for data processing
+    legal_basis_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("lgpd_legal_bases.id"),
+        nullable=True,  # nullable initially — backfill happens separately
+        index=True,
+        comment="LGPD Art.7: legal basis authorizing data processing for this candidate",
+    )
+    consent_version_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("lgpd_consent_versions.id"),
+        nullable=True,  # nullable when legal basis is not consent
+        index=True,
+        comment="Version of consent form candidate agreed to (required when legal_basis=consent)",
+    )
+
     # Relationships
     experiences = relationship("CandidateExperience", backref="candidate", cascade="all, delete-orphan", lazy="dynamic")
     education_records = relationship("CandidateEducation", backref="candidate", cascade="all, delete-orphan", lazy="dynamic")
