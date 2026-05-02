@@ -25,9 +25,15 @@ RAILS_EVENT_EXCHANGE = "lia_rails_events"
 
 @dataclass
 class BaseRailsEvent:
-    """Base event schema for Rails integration."""
-    event_type: str
-    company_id: str
+    """Base event schema for Rails integration.
+
+    Field ordering note: event_type and company_id have defaults here so that
+    subclasses can override event_type with a concrete default without violating
+    the 'non-default argument follows default argument' rule.  Both fields are
+    required in practice — callers must always pass company_id explicitly.
+    """
+    event_type: str = ""
+    company_id: str = ""
     timestamp: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     source: str = "lia-agent-system"
     version: str = "1.0"

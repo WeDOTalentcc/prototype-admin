@@ -16,6 +16,7 @@ from sqlalchemy import text
 from app.core.database import AsyncSessionLocal
 
 from app.shared.tool_handler import tool_handler
+from app.shared.messaging.rails_event_publisher import publish_rails_event
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,22 @@ async def _wrap_move_candidate(**kwargs: Any) -> dict[str, Any]:
             {"target_stage": target_stage, "candidate_id": candidate_id},
         )
         await session.commit()
+        # UC-P0-21: publish pipeline.moved event to Rails (non-blocking fire-and-forget)
+        try:
+            await publish_rails_event(
+                event_type="pipeline.moved",
+                payload={
+                    "candidate_id": candidate_id,
+                    "job_id": kwargs.get("job_id"),
+                    "apply_id": kwargs.get("apply_id"),
+                    "from_stage": previous_stage,
+                    "to_stage": target_stage,
+                    "reason": reason,
+                },
+                company_id=kwargs.get("company_id", ""),
+            )
+        except Exception as _e:
+            logger.warning("[pipeline_tools] Failed to publish pipeline.moved event: %s", _e)
         return {
             "success": True,
             "data": {
@@ -253,6 +270,22 @@ async def _wrap_schedule_interview(**kwargs: Any) -> dict[str, Any]:
             },
         )
         await session.commit()
+        # UC-P0-21: publish interview.scheduled event to Rails (non-blocking fire-and-forget)
+        try:
+            await publish_rails_event(
+                event_type="interview.scheduled",
+                payload={
+                    "candidate_id": candidate_id,
+                    "job_id": kwargs.get("job_id"),
+                    "apply_id": kwargs.get("apply_id"),
+                    "scheduled_at": interview_datetime or None,
+                    "channel": kwargs.get("channel"),
+                    "interview_type": interview_type,
+                },
+                company_id=kwargs.get("company_id", ""),
+            )
+        except Exception as _e:
+            logger.warning("[pipeline_tools] Failed to publish interview.scheduled event: %s", _e)
         return {
             "success": True,
             "data": {

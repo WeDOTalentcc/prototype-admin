@@ -8,6 +8,8 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.shared.messaging.rails_event_publisher import publish_rails_event
+
 logger = logging.getLogger(__name__)
 
 
@@ -370,7 +372,25 @@ async def handle_offer_sent(
             },
             category="automation"
         )
-        
+
+        # UC-P0-21: publish offer.sent event to Rails (non-blocking fire-and-forget)
+        try:
+            _salary = (offer_details or {}).get("salary")
+            _channel = (offer_details or {}).get("channel")
+            await publish_rails_event(
+                event_type="offer.sent",
+                payload={
+                    "candidate_id": candidate_id,
+                    "job_id": kwargs.get("job_id"),
+                    "apply_id": kwargs.get("apply_id"),
+                    "salary_offered": float(_salary) if _salary is not None else None,
+                    "channel": _channel,
+                },
+                company_id=company_id,
+            )
+        except Exception as _e:
+            logger.warning("[HANDLER] Failed to publish offer.sent event: %s", _e)
+
         return {
             "action": "offer_sent",
             "candidate_id": candidate_id,
