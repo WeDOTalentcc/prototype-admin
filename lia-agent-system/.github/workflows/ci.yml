@@ -200,4 +200,11 @@ jobs:
 
       # G-DEVMODE: scripts/check_no_devmode_in_prod_env.py does not exist yet -- wire once created
       # G-CONTEXTVAR: scripts/check_no_direct_contextvar_set.py does not exist yet -- wire once created
-      # G-TOOLS: scripts/check_tool_output_schemas.py does not exist yet -- wire once created
+      # G-TOOLS: output_schema em ToolDefinition/ToolContract -- non-blocking until DEBT-005 resolved (223 violations)
+      - name: "G-TOOLS: tool output schemas (non-blocking - 223 violations to fix - DEBT-005)"
+        run: python scripts/check_tool_output_schemas.py
+        continue-on-error: true
+
+      # G-GOV: PII/decision/delete com contrato de governanca -- BLOCKING (0 violations)
+      - name: "G-GOV: tool governance contracts (PII/decision/delete)"
+        run: python scripts/check_tool_governance.py
