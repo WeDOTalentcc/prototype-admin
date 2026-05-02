@@ -59,7 +59,7 @@ class SOXAuditLog(Base):
     user_id = Column(String(255), nullable=True, index=True)
     user_email = Column(String(255), nullable=True)
     
-    client_id = Column(String(255), nullable=True, index=True)
+    client_id = Column(String(255), nullable=True, index=True, server_default="system")
     client_name = Column(String(255), nullable=True)
     
     action = Column(String(255), nullable=False, index=True)
