@@ -10,6 +10,8 @@ Referências:
 - dei-fairness §4 (Four-Fifths Rule)
 - EU AI Act Art. 10 (dados de treino / auditoria)
 """
+from __future__ import annotations
+
 import logging
 from datetime import datetime
 from uuid import UUID
@@ -23,9 +25,6 @@ from app.shared.tenant_guard import get_verified_company_id
 # UC-P0-13: import through rails_adapter instead of deprecated service directly.
 # The adapter delegates to Python BiasAuditService until Rails endpoints are live.
 from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    # Type-only: BiasAuditReport is the return type of the delegate; not imported at runtime.
-    from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     # Type-only: BiasAuditReport is the return type of the delegate; not imported at runtime.
     from app.shared.services.bias_audit_service import BiasAuditReport
