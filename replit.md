@@ -40,7 +40,7 @@ The platform uses Next.js, React, and TypeScript for the frontend, styled with R
 - **LLM Configuration**: Allows per-tenant configuration of LLM providers (Gemini, Claude, OpenAI).
 - **Recursive RAG Chunking**: Implements a `RecursiveTextSplitter` strategy for hierarchical document chunking.
 - **CrewAI-Style Delegation on AgentBus**: A formal multi-agent delegation system built on AgentBus for task orchestration.
-- **Database Migrations**: Uses Alembic for schema management, automated via `scripts/post-merge.sh`.
+- **Database Migrations**: Uses Alembic for schema management, automated via `scripts/post-merge.sh`. Schema head: `5880556c6d91` (LGPD Art.18 — `legal_basis_id`/`consent_version_id` em candidates + tabelas `lgpd_legal_bases`/`lgpd_consent_versions` com seed dos 4 fundamentos do Art.7). Anti-padrão conhecido: `Base.metadata.create_all()` em `app/core/database.py:1234` cria tabelas no startup antes do Alembic — pode causar schema drift parcial. Workflow `lia-backend` chama uvicorn direto (não `start.sh`), portanto não roda `alembic upgrade head` no boot — depende exclusivamente do post-merge.
 - **Tenant Minimum Config Spec**: Defines the minimum viable configuration for any LIA tenant, covering critical settings and onboarding hints.
 - **JD Upload**: Supports asynchronous Job Description uploads with progress tracking and validation, orchestrating the wizard intake process.
 - **Settings Menu Architecture**: `settings-page-enhanced.tsx` is the single entry point for the settings menu, featuring 9 canonical hubs, dynamic deep-linking, and mandatory conventions for new hubs.
