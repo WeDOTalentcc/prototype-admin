@@ -43,8 +43,8 @@ dependencies = [
     # Microsoft Integration
     "msal>=1.31.1",
     "msgraph-sdk==1.12.0",
-    "botbuilder-core==4.17.0",
-    "botbuilder-schema==4.17.0",
+    "botbuilder-core==4.17.1",
+    "botbuilder-schema==4.17.1",
     "jsonpickle>=3.3.4",
     "msrest==0.7.1",
     "pyjwt[crypto]==2.12.1",
@@ -67,10 +67,10 @@ dependencies = [
     "icalendar==6.0.1",
     "pytz==2024.2",
     # Google Calendar
-    "google-api-python-client==2.151.0",
-    "google-auth==2.36.0",
-    "google-auth-httplib2==0.2.0",
-    "google-auth-oauthlib==1.2.1",
+    "google-api-python-client>=2.151.0",
+    "google-auth>=2.45.0,<3.0.0",
+    "google-auth-httplib2>=0.2.0",
+    "google-auth-oauthlib>=1.2.1",
     # Scheduler
     "APScheduler==3.10.4",
     # Workspace libs (editable installs)
