@@ -66,3 +66,6 @@ docker-compose.override.yml
 # Alembic
 alembic/versions/*.pyc
 .coverage
+
+# Eval results (auto-generated, not to be committed)
+eval/eval_results_*.json
