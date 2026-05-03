@@ -181,6 +181,29 @@ async def search_candidates(
                     await PEARCH_CIRCUIT.record_failure()
                 except Exception as _cb_err:
                     logger.debug("[search_candidates] PEARCH_CIRCUIT.record_failure failed: %s", _cb_err)
+            # Task #961 — audit explícito do timeout de rota.
+            try:
+                import uuid as _uuid
+                from app.shared.compliance.audit_service import AuditService
+                _company_id_audit = (
+                    getattr(current_user, "company_id", None)
+                    or getattr(getattr(current_user, "state", None), "company_id", None)
+                )
+                await AuditService().log_action(
+                    trace_id=str(_uuid.uuid4()),
+                    company_id=str(_company_id_audit) if _company_id_audit else "unattributed",
+                    action_type="pearch.search.timeout",
+                    actor="api:search_candidates",
+                    target_type="external_api",
+                    target_id="pearch",
+                    metadata={
+                        "source": "route_deadline",
+                        "deadline_seconds": _route_deadline,
+                        "query": request.query,
+                    },
+                )
+            except Exception as _audit_err:
+                logger.debug("[search_candidates] timeout audit emit failed: %s", _audit_err)
             return SearchResponseDTO(
                 query=request.query,
                 thread_id=request.thread_id or "",
@@ -189,7 +212,7 @@ async def search_candidates(
                 pearch_count=0,
                 total_count=0,
                 credits_remaining=None,
-                search_time_seconds=18.0,
+                search_time_seconds=_route_deadline,
                 warning_message=(
                     "Busca demorou mais que o esperado e foi interrompida. "
                     "Tente novamente em alguns segundos."

@@ -11,7 +11,7 @@ Cobre:
 from __future__ import annotations
 
 import asyncio
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import httpx
 import pytest
@@ -66,23 +66,54 @@ async def test_hybrid_search_returns_warning_when_pearch_stalls(monkeypatch):
 @pytest.mark.asyncio
 async def test_search_candidates_records_cancellation():
     """Cancelamento (asyncio.CancelledError) deve registrar consumption como
-    ``cancelled`` e somar falha ao PEARCH_CIRCUIT."""
+    ``timed_out`` (status normalizado), somar falha ao PEARCH_CIRCUIT e
+    emitir o evento ``pearch.search.timeout`` no audit log."""
     svc = PearchService()
     svc.api_key = "fake-key-for-test"
 
     failures_before = PEARCH_CIRCUIT._failure_count
 
     tracking = AsyncMock()
+    audit_emit = AsyncMock()
     with patch.object(PearchService, "_track_pearch_consumption", new=tracking), \
+         patch.object(PearchService, "_emit_timeout_audit", new=audit_emit), \
          patch("httpx.AsyncClient.post", side_effect=asyncio.CancelledError()):
         req = PearchSearchRequest(query="qa engineer", limit=3, type=SearchType.FAST)
         with pytest.raises(asyncio.CancelledError):
             await svc.search_candidates(req, company_id="tenant-test")
 
-    # consumption registrado com result_status="cancelled"
+    # consumption registrado com result_status="timed_out"
     assert tracking.await_count >= 1
     kwargs = tracking.await_args.kwargs
-    assert kwargs.get("result_status") == "cancelled"
+    assert kwargs.get("result_status") == "timed_out"
     assert kwargs.get("success") is False
+    # audit do timeout foi emitido
+    assert audit_emit.await_count == 1
     # circuit breaker contabilizou a falha
     assert PEARCH_CIRCUIT._failure_count >= failures_before
+
+
+def test_search_route_uses_config_deadline_not_hardcoded():
+    """Task #961 — garante que a rota /search/candidates lê o deadline e o
+    search_time_seconds da config canônica (SEARCH_CANDIDATES_DEADLINE_SECONDS)
+    em vez de literais hard-coded como 18.0; e que emite o evento
+    ``pearch.search.timeout`` no path degradado."""
+    import inspect
+    from app.api.v1.candidate_search import search as search_module
+
+    src = inspect.getsource(search_module.search_candidates)
+
+    # 1) deadline da rota vem da config
+    assert "_settings.SEARCH_CANDIDATES_DEADLINE_SECONDS" in src, (
+        "Route deadline deve ler settings.SEARCH_CANDIDATES_DEADLINE_SECONDS"
+    )
+    # 2) `timeout=` deve referenciar a variável _route_deadline, não literal
+    assert "timeout=_route_deadline" in src
+    # 3) search_time_seconds devolvido na resposta degradada usa _route_deadline,
+    #    não o literal 18.0 do hotfix anterior.
+    assert "search_time_seconds=_route_deadline" in src
+    assert "search_time_seconds=18.0" not in src
+    # 4) audit explícito do timeout — action_type canônico.
+    assert '"pearch.search.timeout"' in src
+    # 5) circuit breaker é alimentado quando search_pearch=True na rota.
+    assert "PEARCH_CIRCUIT.record_failure" in src

@@ -33,7 +33,7 @@ from lia_models.pearch import (
     SearchConfirmation,
     SearchType,
 )
-from app.shared.resilience.circuit_breaker import circuit_breaker
+from app.shared.resilience.circuit_breaker import PEARCH_CIRCUIT, circuit_breaker
 
 logger = logging.getLogger(__name__)
 
@@ -416,28 +416,32 @@ class PearchService:
                 result_status="timed_out",
                 error_message=f"httpx.TimeoutException: {type(e).__name__}",
             )
+            await self._emit_timeout_audit(company_id, source="httpx", detail=type(e).__name__)
             try:
                 await PEARCH_CIRCUIT.record_failure()
-            except Exception:
-                pass
+            except Exception as _cb_err:
+                logger.warning("[PearchService] PEARCH_CIRCUIT.record_failure failed: %s", _cb_err)
             raise
         except asyncio.CancelledError:
             # Task #961 — quando o caller cancela (deadline asyncio.wait_for
             # ou cliente desconectou), contamos como falha externa para que
             # o circuit breaker, audit e consumption reflitam o evento.
+            # Status normalizado para "timed_out" para consistência com
+            # observabilidade — cancelamento por deadline = stall externo.
             logger.warning("[PearchService] search_candidates cancelled by caller (deadline/disconnect)")
             await self._track_pearch_consumption(
                 company_id=company_id,
                 operation="search",
                 credits_consumed=0,
                 success=False,
-                result_status="cancelled",
+                result_status="timed_out",
                 error_message="asyncio.CancelledError: caller deadline exceeded",
             )
+            await self._emit_timeout_audit(company_id, source="cancelled", detail="caller deadline")
             try:
                 await PEARCH_CIRCUIT.record_failure()
-            except Exception:
-                pass
+            except Exception as _cb_err:
+                logger.warning("[PearchService] PEARCH_CIRCUIT.record_failure failed: %s", _cb_err)
             raise
         except Exception as e:
             logger.error(f"Unexpected error calling Pearch API: {e}")
@@ -451,6 +455,28 @@ class PearchService:
             )
             raise
     
+    @staticmethod
+    async def _emit_timeout_audit(company_id: str | None, source: str, detail: str) -> None:
+        """
+        Task #961 — registra evento ``pearch.search.timeout`` no audit log
+        unificado para que governança/observabilidade vejam o stall externo.
+        Best-effort: nunca propaga exceção (audit não pode quebrar a busca).
+        """
+        try:
+            import uuid as _uuid
+            from app.shared.compliance.audit_service import AuditService
+            await AuditService().log_action(
+                trace_id=str(_uuid.uuid4()),
+                company_id=company_id or "unattributed",
+                action_type="pearch.search.timeout",
+                actor="system:pearch_service",
+                target_type="external_api",
+                target_id="pearch",
+                metadata={"source": source, "detail": detail},
+            )
+        except Exception as _e:
+            logger.debug("[PearchService] timeout audit emit failed: %s", _e)
+
     @staticmethod
     async def _track_pearch_consumption(
         company_id: str | None,
