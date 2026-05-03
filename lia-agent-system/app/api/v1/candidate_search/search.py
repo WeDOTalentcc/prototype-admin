@@ -1,4 +1,5 @@
 """Candidate search route: POST /candidates"""
+import asyncio
 import time as _time
 from typing import Any
 from uuid import UUID
@@ -153,7 +154,40 @@ async def search_candidates(
         if _skip_pearch:
             hybrid_request.include_pearch = False
 
-        result = await pearch_svc.hybrid_search(db, hybrid_request)
+        # Hotfix: outer deadline as a safety net so a stalled hybrid_search
+        # cannot freeze the request beyond what the proxy timeout tolerates.
+        # Inner Pearch call already has its own 12s timeout. The 18s outer
+        # bound covers local DB + light overhead. Canonical fix tracked
+        # separately (config-driven timeouts + global httpx.Timeout policy).
+        try:
+            result = await asyncio.wait_for(
+                pearch_svc.hybrid_search(db, hybrid_request),
+                timeout=18.0,
+            )
+        except asyncio.TimeoutError:
+            logger.error(
+                "[search_candidates] hybrid_search exceeded 18s deadline; "
+                "returning empty degraded response (query=%s)",
+                request.query,
+            )
+            return SearchResponseDTO(
+                query=request.query,
+                thread_id=request.thread_id or "",
+                candidates=[],
+                local_count=0,
+                pearch_count=0,
+                total_count=0,
+                credits_remaining=None,
+                search_time_seconds=18.0,
+                warning_message=(
+                    "Busca demorou mais que o esperado e foi interrompida. "
+                    "Tente novamente em alguns segundos."
+                ),
+                can_load_more=False,
+                should_expand_to_global=False,
+                expansion_message=None,
+                high_adherence_count=0,
+            )
 
         candidates = []
 

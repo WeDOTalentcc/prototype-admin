@@ -2,6 +2,7 @@
 Pearch AI integration service for candidate search (API v2).
 Based on https://apidocs.pearch.ai/reference/post_v2-search
 """
+import asyncio
 import logging
 import os
 from datetime import datetime
@@ -1211,10 +1212,19 @@ class PearchService:
             
             pearch_start = datetime.now()
             try:
-                pearch_response = await self.search_candidates(pearch_request)
+                # Hotfix: hard deadline on external Pearch call so a stalled
+                # upstream cannot freeze the whole /search/candidates request.
+                # Canonical fix tracked separately (see follow-up task).
+                pearch_response = await asyncio.wait_for(
+                    self.search_candidates(pearch_request),
+                    timeout=12.0,
+                )
                 pearch_candidates = pearch_response.get_candidates()
                 pearch_credits_remaining = pearch_response.credits_remaining
                 pearch_time = (datetime.now() - pearch_start).total_seconds()
+            except asyncio.TimeoutError:
+                logger.error("Pearch search timed out after 12s; returning local-only results")
+                warning_message = "Busca externa demorou demais e foi ignorada. Mostrando apenas resultados locais."
             except Exception as e:
                 logger.error(f"Pearch search failed: {e}")
                 warning_message = f"Busca externa falhou: {str(e)}"
