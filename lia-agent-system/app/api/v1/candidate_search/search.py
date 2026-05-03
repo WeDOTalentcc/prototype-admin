@@ -154,22 +154,33 @@ async def search_candidates(
         if _skip_pearch:
             hybrid_request.include_pearch = False
 
-        # Hotfix: outer deadline as a safety net so a stalled hybrid_search
-        # cannot freeze the request beyond what the proxy timeout tolerates.
-        # Inner Pearch call already has its own 12s timeout. The 18s outer
-        # bound covers local DB + light overhead. Canonical fix tracked
-        # separately (config-driven timeouts + global httpx.Timeout policy).
+        # Task #961 — deadline canônico (config-driven) da rota. Cobre busca
+        # local + chamada Pearch. A chamada Pearch já tem sua própria política
+        # de timeouts httpx + asyncio.wait_for interno; este wait_for é o
+        # cinto-de-segurança que garante que a rota nunca exceda o deadline
+        # antes do proxy do Next.js (90s) ou do browser desistirem.
+        from lia_config.config import settings as _settings
+        _route_deadline = _settings.SEARCH_CANDIDATES_DEADLINE_SECONDS
         try:
             result = await asyncio.wait_for(
                 pearch_svc.hybrid_search(db, hybrid_request),
-                timeout=18.0,
+                timeout=_route_deadline,
             )
         except asyncio.TimeoutError:
             logger.error(
-                "[search_candidates] hybrid_search exceeded 18s deadline; "
-                "returning empty degraded response (query=%s)",
-                request.query,
+                "[search_candidates] hybrid_search exceeded %.1fs deadline; "
+                "returning degraded response (query=%s)",
+                _route_deadline, request.query,
             )
+            # Contabiliza o cancelamento no circuit breaker do Pearch quando
+            # ele estava habilitado para esta busca: o stall externo é o
+            # culpado mais provável. Cancellation interna em search_candidates
+            # já cuida do consumption/audit; aqui garantimos circuit failure.
+            if request.search_pearch:
+                try:
+                    await PEARCH_CIRCUIT.record_failure()
+                except Exception as _cb_err:
+                    logger.debug("[search_candidates] PEARCH_CIRCUIT.record_failure failed: %s", _cb_err)
             return SearchResponseDTO(
                 query=request.query,
                 thread_id=request.thread_id or "",

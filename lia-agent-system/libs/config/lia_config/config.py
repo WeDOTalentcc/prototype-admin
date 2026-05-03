@@ -275,6 +275,22 @@ class IntegrationSettings(BaseSettings):
     # Pearch AI
     PEARCH_API_KEY: Optional[str] = None
     PEARCH_API_URL: str = "https://api.pearch.ai"
+    # Task #961 — timeouts canônicos (config-driven) para o pipeline de busca.
+    # Política httpx.Timeout explícita evita stalls indefinidos quando o
+    # upstream Pearch fica preso em connect/read/write/pool sem fechar o
+    # socket, e os deadlines asyncio garantem hard-stop antes do proxy do
+    # Next.js (90s) ou do client browser interromperem a request.
+    PEARCH_HTTP_CONNECT_TIMEOUT_SECONDS: float = 5.0
+    PEARCH_HTTP_READ_TIMEOUT_SECONDS: float = 10.0
+    PEARCH_HTTP_WRITE_TIMEOUT_SECONDS: float = 5.0
+    PEARCH_HTTP_POOL_TIMEOUT_SECONDS: float = 5.0
+    # Hard deadline na chamada externa Pearch (envolve search_candidates):
+    # supera read_timeout para acomodar 1 retry de tenacity (stop_after_attempt=2)
+    # mas mantém-se abaixo do deadline da rota.
+    PEARCH_CALL_DEADLINE_SECONDS: float = 12.0
+    # Hard deadline da rota POST /api/v1/search/candidates: cobre busca local
+    # + chamada Pearch. Acima disso devolvemos resposta degradada (warning).
+    SEARCH_CANDIDATES_DEADLINE_SECONDS: float = 18.0
 
     # Twilio / WhatsApp
     TWILIO_ACCOUNT_SID: Optional[str] = None
